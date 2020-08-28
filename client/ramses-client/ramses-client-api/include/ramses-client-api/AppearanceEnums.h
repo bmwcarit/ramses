@@ -74,6 +74,15 @@ namespace ramses
         EBlendFactor_OneMinusSrcAlpha,
         EBlendFactor_DstAlpha,
         EBlendFactor_OneMinusDstAlpha,
+        EBlendFactor_SrcColor,
+        EBlendFactor_OneMinusSrcColor,
+        EBlendFactor_DstColor,
+        EBlendFactor_OneMinusDstColor,
+        EBlendFactor_ConstColor,
+        EBlendFactor_OneMinusConstColor,
+        EBlendFactor_ConstAlpha,
+        EBlendFactor_OneMinusConstAlpha,
+        EBlendFactor_AlphaSaturate,
         EBlendFactor_NUMBER_OF_ELEMENTS
     };
 

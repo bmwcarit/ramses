@@ -23,7 +23,6 @@ namespace ramses
     class GeometryBinding;
     class GeometryBindingImpl;
     class AppearanceImpl;
-    class UInt16Array;
 
     class MeshNodeImpl final : public NodeImpl
     {

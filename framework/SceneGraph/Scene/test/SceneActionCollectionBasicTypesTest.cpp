@@ -93,7 +93,7 @@ namespace ramses_internal
 
     TYPED_TEST(ASceneActionCollectionBasicTypes, WriteAndReadSingleElement)
     {
-        this->m_collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        this->m_collection.beginWriteSceneAction(ESceneActionId::TestAction);
         this->m_collection.write(TestFixture::m_value);
         EXPECT_EQ(sizeof(TypeParam), this->m_collection.collectionData().size());
 
@@ -111,7 +111,7 @@ namespace ramses_internal
     {
         const UInt32 numElements = 10;
 
-        this->m_collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        this->m_collection.beginWriteSceneAction(ESceneActionId::TestAction);
         for (UInt32 i = 0; i < numElements; ++i)
         {
             this->m_collection.write(TestFixture::m_value);
@@ -138,7 +138,7 @@ namespace ramses_internal
         const UInt32 numReadIterations = 2;
         const UInt32 numElements = 10;
 
-        this->m_collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        this->m_collection.beginWriteSceneAction(ESceneActionId::TestAction);
         for (UInt i = 0; i < numElements; ++i)
         {
             this->m_collection.write(TestFixture::m_value);
@@ -169,7 +169,7 @@ namespace ramses_internal
 
         for (UInt32 i = 0; i < numIterations; ++i)
         {
-            this->m_collection.beginWriteSceneAction(ESceneActionId_TestAction);
+            this->m_collection.beginWriteSceneAction(ESceneActionId::TestAction);
             for (UInt32 j = 0; j < numElements; ++j)
             {
                 this->m_collection.write(TestFixture::m_value);
@@ -200,8 +200,8 @@ namespace ramses_internal
         const UInt32 numElements = 5;
         SceneActionCollection other;
 
-        this->m_collection.beginWriteSceneAction(ESceneActionId_TestAction);
-        other.beginWriteSceneAction(ESceneActionId_TestAction);
+        this->m_collection.beginWriteSceneAction(ESceneActionId::TestAction);
+        other.beginWriteSceneAction(ESceneActionId::TestAction);
         for (UInt32 i = 0; i < numElements; ++i)
         {
             this->m_collection.write(TestFixture::m_value);
@@ -217,8 +217,8 @@ namespace ramses_internal
         const UInt32 numElements = 5;
         SceneActionCollection other;
 
-        this->m_collection.beginWriteSceneAction(ESceneActionId_TestAction);
-        other.beginWriteSceneAction(ESceneActionId_TestAction);
+        this->m_collection.beginWriteSceneAction(ESceneActionId::TestAction);
+        other.beginWriteSceneAction(ESceneActionId::TestAction);
         for (UInt32 i = 0; i < numElements; ++i)
         {
             this->m_collection.write(TestFixture::m_value);

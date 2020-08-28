@@ -25,7 +25,7 @@ namespace ramses_internal
         if (m_seat == nullptr)
         {
             const uint32_t seatInterfaceVersion = 1;
-            m_seat = reinterpret_cast<wl_seat*>(wl_registry_bind(wl_registry, name, &wl_seat_interface, seatInterfaceVersion));
+            m_seat = static_cast<wl_seat*>(wl_registry_bind(wl_registry, name, &wl_seat_interface, seatInterfaceVersion));
             wl_seat_add_listener(m_seat, &m_seatListener, this);
         }
         else
@@ -106,7 +106,7 @@ namespace ramses_internal
         UNUSED(pointer)
         UNUSED(time)
 
-        InputHandling_Wayland& inputHandling = *reinterpret_cast<InputHandling_Wayland*>(data);
+        InputHandling_Wayland& inputHandling = *static_cast<InputHandling_Wayland*>(data);
         inputHandling.m_cursorPosX = wl_fixed_to_double(sx);
         inputHandling.m_cursorPosY = wl_fixed_to_double(sy);
         inputHandling.m_windowEventHandler.onMouseEvent(EMouseEventType_Move, inputHandling.m_cursorPosX, inputHandling.m_cursorPosY);
@@ -118,7 +118,7 @@ namespace ramses_internal
         UNUSED(serial)
         UNUSED(time)
 
-        InputHandling_Wayland& inputHandling = *reinterpret_cast<InputHandling_Wayland*>(data);
+        InputHandling_Wayland& inputHandling = *static_cast<InputHandling_Wayland*>(data);
         const bool buttonPressed = (state == WL_POINTER_BUTTON_STATE_PRESSED);
 
         switch (button)
@@ -157,7 +157,7 @@ namespace ramses_internal
         UNUSED(pointer)
         UNUSED(time)
 
-        InputHandling_Wayland& inputHandling = *reinterpret_cast<InputHandling_Wayland*>(data);
+        InputHandling_Wayland& inputHandling = *static_cast<InputHandling_Wayland*>(data);
 
         switch (axis)
         {
@@ -231,7 +231,7 @@ namespace ramses_internal
             break;
         }
 
-        InputHandling_Wayland& inputHandling = *reinterpret_cast<InputHandling_Wayland*>(data);
+        InputHandling_Wayland& inputHandling = *static_cast<InputHandling_Wayland*>(data);
 
         switch (state_w)
         {
@@ -264,7 +264,7 @@ namespace ramses_internal
 
     void InputHandling_Wayland::SeatHandleCapabilities(void *data, wl_seat *seat, unsigned int caps)
     {
-        InputHandling_Wayland& inputHandling = *reinterpret_cast<InputHandling_Wayland*>(data);
+        InputHandling_Wayland& inputHandling = *static_cast<InputHandling_Wayland*>(data);
 
         const Bool hasPointerCapability = (caps & WL_SEAT_CAPABILITY_POINTER) != 0;
 

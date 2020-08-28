@@ -24,8 +24,7 @@ namespace ramses_internal
 {
     void ResourcePersistation::WriteOneResourceToStream(IOutputStream& outStream, const ManagedResource& resource)
     {
-        const IResource& r = *resource.getResourceObject();
-        SingleResourceSerialization::SerializeResource(outStream, r);
+        SingleResourceSerialization::SerializeResource(outStream, *resource.get());
     }
 
     IResource* ResourcePersistation::ReadOneResourceFromStream(IInputStream& inStream, const ResourceContentHash& hash)
@@ -52,26 +51,25 @@ namespace ramses_internal
         // possible compress all resources before writing
         for (const auto& res : resourcesForFile)
         {
-            res.getResourceObject()->compress(compress ? IResource::CompressionLevel::OFFLINE : IResource::CompressionLevel::NONE);
+            res->compress(compress ? IResource::CompressionLevel::OFFLINE : IResource::CompressionLevel::NONE);
         }
 
         for (const auto& res : resourcesForFile)
         {
             WriteOneResourceToStream(dummyStream, res);
-            currentPosAfterWrite = dummyStream.getSize();
+            currentPosAfterWrite = static_cast<uint32_t>(dummyStream.getSize());
             const UInt32 bytesWritten = currentPosAfterWrite - offsetBeforeWrite;
             resourceOffsetSize.push_back(offsetBeforeWrite);
             resourceOffsetSize.push_back(bytesWritten);
 
-            const IResource* resourceObject = res.getResourceObject();
-            dummyToc.registerContents(ResourceInfo(resourceObject), 0, 0);
+            dummyToc.registerContents(ResourceInfo(res.get()), 0, 0);
 
             offsetBeforeWrite = static_cast<UInt32>(currentPosAfterWrite);
         }
 
         // get size of TOC by writing to dummy stream
         dummyToc.writeTOCToStream(dummyStream);
-        currentPosAfterWrite = dummyStream.getSize();
+        currentPosAfterWrite = static_cast<uint32_t>(dummyStream.getSize());
         const UInt32 tocSize = currentPosAfterWrite - offsetBeforeWrite;
 
         // create final TOC with correct resource offsets
@@ -79,10 +77,9 @@ namespace ramses_internal
         UInt32 i = 0;
         for (const auto& res : resourcesForFile)
         {
-            const IResource* resourceObject = res.getResourceObject();
             const UInt32 resourceOffset = resourceOffsetSize[i++];
             const UInt32 resourceSize = resourceOffsetSize[i++];
-            toc.registerContents(ResourceInfo(resourceObject), static_cast<UInt32>(offsetForTOC) + tocSize + resourceOffset, resourceSize);
+            toc.registerContents(ResourceInfo(res.get()), static_cast<UInt32>(offsetForTOC) + tocSize + resourceOffset, resourceSize);
         }
 
         // write final toc and resources to output stream

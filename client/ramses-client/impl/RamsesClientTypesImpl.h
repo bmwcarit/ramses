@@ -13,8 +13,7 @@
 #include "ramses-client-api/TextureSwizzle.h"
 #include "SceneAPI/TextureEnums.h"
 #include "TextureUtils.h"
-#include "ramses-client-api/ResourceFileDescription.h"
-#include "ramses-client-api/ResourceFileDescriptionSet.h"
+#include "ramses-client-api/EDataType.h"
 
 template <>
 struct fmt::formatter<ramses::TextureSwizzle> : public ramses_internal::SimpleFormatterBase
@@ -30,43 +29,19 @@ struct fmt::formatter<ramses::TextureSwizzle> : public ramses_internal::SimpleFo
     }
 };
 
-
-template <>
-struct fmt::formatter<ramses::ResourceFileDescription> : public ramses_internal::SimpleFormatterBase
+namespace ramses
 {
-    template<typename FormatContext>
-    auto format(const ramses::ResourceFileDescription& rhs, FormatContext& ctx)
+    static const char* DataTypeNames[] =
     {
-        const auto numResources = rhs.getNumberOfResources();
-        fmt::format_to(ctx.out(), "Filename: {}; Resource count {}: [", rhs.getFilename(), numResources);
-        for (uint32_t i = 0; i < numResources; ++i)
-            fmt::format_to(ctx.out(), "{} ", rhs.getResource(i).getResourceId());
-        return fmt::format_to(ctx.out(), "]");
-    }
-};
+        "DATATYPE_UINT16",
+        "DATATYPE_UINT32",
+        "DATATYPE_FLOAT",
+        "DATATYPE_VECTOR2F",
+        "DATATYPE_VECTOR3F",
+        "DATATYPE_VECTOR4F",
+    };
+}
 
-template <>
-struct fmt::formatter<ramses::ResourceFileDescriptionSet> : public ramses_internal::SimpleFormatterBase
-{
-    template<typename FormatContext>
-    auto format(const ramses::ResourceFileDescriptionSet& rhs, FormatContext& ctx)
-    {
-        const auto numDescriptions = rhs.getNumberOfDescriptions();
-        fmt::format_to(ctx.out(), "{} Resource File Descriptions: [", numDescriptions);
-        for (uint32_t i = 0; i < numDescriptions; ++i)
-            fmt::format_to(ctx.out(), "{}; ", rhs.getDescription(i));
-        return fmt::format_to(ctx.out(), "]");
-    }
-};
-
-template <>
-struct fmt::formatter<ramses::resourceId_t> : public ramses_internal::SimpleFormatterBase
-{
-    template<typename FormatContext>
-    auto format(const ramses::resourceId_t& res, FormatContext& ctx)
-    {
-        return fmt::format_to(ctx.out(), "0x{:016X}:{:016X}", res.highPart, res.lowPart);
-    }
-};
+MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses::EDataType, ramses::DataTypeNames, ramses::EDataType::Vector4F)
 
 #endif

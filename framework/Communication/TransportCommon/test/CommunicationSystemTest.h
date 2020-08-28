@@ -13,7 +13,7 @@
 #include "gmock/gmock.h"
 #include "MockConnectionStatusListener.h"
 #include "CommunicationSystemTestWrapper.h"
-#include "CommunicationSystemTestFactory.h"
+#include "TransportCommon/IConnectionStatusUpdateNotifier.h"
 
 namespace ramses_internal
 {
@@ -22,32 +22,13 @@ namespace ramses_internal
     class ACommunicationSystem : public ::testing::TestWithParam<ECommunicationSystemType>
     {
     public:
-        ACommunicationSystem()
-            : state(CommunicationSystemTestFactory::ConstructTestState(GetParam(), EServiceType::Ramses))
-        {
-        }
-
-        ~ACommunicationSystem()
-        {
-        }
-
-        std::unique_ptr<CommunicationSystemTestState> state;
+        std::unique_ptr<CommunicationSystemTestState> state{std::make_unique<CommunicationSystemTestState>(GetParam(), EServiceType::Ramses)};
         StrictMock<MockConnectionStatusListener> listener;
     };
 
     class ACommunicationSystemWithDaemon : public ::testing::TestWithParam<std::tuple<ECommunicationSystemType, EServiceType>>
     {
     public:
-        ACommunicationSystemWithDaemon()
-            : state(CommunicationSystemTestFactory::ConstructTestState(std::get<0>(GetParam()), std::get<1>(GetParam())))
-            , daemon(CommunicationSystemTestFactory::ConstructDiscoveryDaemonTestWrapper(*state))
-        {
-        }
-
-        ~ACommunicationSystemWithDaemon()
-        {
-        }
-
         void SetUp() override
         {
             EXPECT_TRUE(daemon->start());
@@ -58,8 +39,8 @@ namespace ramses_internal
             EXPECT_TRUE(daemon->stop());
         }
 
-        std::unique_ptr<CommunicationSystemTestState> state;
-        std::unique_ptr<CommunicationSystemDiscoveryDaemonTestWrapper> daemon;
+        std::unique_ptr<CommunicationSystemTestState> state{std::make_unique<CommunicationSystemTestState>(std::get<0>(GetParam()), std::get<1>(GetParam()))};
+        std::unique_ptr<ConnectionSystemTestDaemon> daemon{std::make_unique<ConnectionSystemTestDaemon>()};
     };
 
 #define TESTING_SERVICETYPE_RAMSES(commsysProvider) \

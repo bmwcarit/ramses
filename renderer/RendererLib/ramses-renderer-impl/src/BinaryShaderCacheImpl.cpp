@@ -140,12 +140,12 @@ namespace ramses
 
         const uint32_t contentSize = fileHeader.fileSize - sizeof(fileHeader);
 
-        std::vector<uint8_t> content(contentSize);
-        ramses_internal::Char* contentData = reinterpret_cast<ramses_internal::Char*>(content.data());
+        using ramses_internal::Byte;
+        std::vector<Byte> content(contentSize);
 
-        fileInputStream.read(contentData, contentSize);
+        fileInputStream.read(content.data(), contentSize);
 
-        const uint64_t checksum = cityhash::CityHash64(contentData, contentSize);
+        const uint64_t checksum = cityhash::CityHash64(reinterpret_cast<const char*>(content.data()), contentSize);
 
         if (checksum != fileHeader.checksum)
         {
@@ -154,7 +154,7 @@ namespace ramses
             return false;
         }
 
-        ramses_internal::BinaryInputStream inputStream(contentData);
+        ramses_internal::BinaryInputStream inputStream(content.data());
 
         uint32_t numBinaryShaders = 0;
         inputStream >> numBinaryShaders;
@@ -189,7 +189,7 @@ namespace ramses
         }
 
         const uint32_t contentSize = static_cast<uint32_t>(outputStream.getSize());
-        const uint64_t checksum = cityhash::CityHash64(outputStream.getData(), contentSize);
+        const uint64_t checksum = cityhash::CityHash64(reinterpret_cast<const char*>(outputStream.getData()), contentSize);
 
         FileHeader fileHeader = {};
         fileHeader.fileSize         = static_cast<uint32_t>(sizeof(FileHeader)) + contentSize;

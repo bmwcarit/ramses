@@ -155,21 +155,6 @@ TEST_F(ARamsesRenderer, canOnlyGetOneSceneControlAPI_RendererSceneControl)
     EXPECT_EQ(api, renderer.getSceneControlAPI());
     EXPECT_EQ(api, renderer.getSceneControlAPI());
 
-    EXPECT_TRUE(renderer.getSceneControlAPI_legacy() == nullptr);
-    EXPECT_TRUE(renderer.getSceneControlAPI_legacy() == nullptr);
-    EXPECT_TRUE(renderer.createDcsmContentControl(m_dcsmContentControlConfig) == nullptr);
-    EXPECT_TRUE(renderer.createDcsmContentControl(m_dcsmContentControlConfig) == nullptr);
-}
-
-TEST_F(ARamsesRenderer, canOnlyGetOneSceneControlAPI_RendererSceneControl_legacy)
-{
-    const auto api = renderer.getSceneControlAPI_legacy();
-    EXPECT_TRUE(api != nullptr);
-    EXPECT_EQ(api, renderer.getSceneControlAPI_legacy());
-    EXPECT_EQ(api, renderer.getSceneControlAPI_legacy());
-
-    EXPECT_TRUE(renderer.getSceneControlAPI() == nullptr);
-    EXPECT_TRUE(renderer.getSceneControlAPI() == nullptr);
     EXPECT_TRUE(renderer.createDcsmContentControl(m_dcsmContentControlConfig) == nullptr);
     EXPECT_TRUE(renderer.createDcsmContentControl(m_dcsmContentControlConfig) == nullptr);
 }
@@ -180,8 +165,6 @@ TEST_F(ARamsesRenderer, canOnlyGetOneSceneControlAPI_DcsmContentControl)
 
     EXPECT_TRUE(renderer.getSceneControlAPI() == nullptr);
     EXPECT_TRUE(renderer.getSceneControlAPI() == nullptr);
-    EXPECT_TRUE(renderer.getSceneControlAPI_legacy() == nullptr);
-    EXPECT_TRUE(renderer.getSceneControlAPI_legacy() == nullptr);
 }
 
 TEST_F(ARamsesRenderer, canCreateDcsmContentControlOnlyOnce)

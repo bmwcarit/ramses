@@ -26,7 +26,7 @@ namespace ramses
         /**
          * @brief This creates a Cube Texture. All texels are pre-allocated and initialized to 0.
          */
-        TextureCubeImpl(ramses_internal::ResourceHashUsage texture, RamsesClientImpl& client, const char* name);
+        TextureCubeImpl(ramses_internal::ResourceHashUsage texture, SceneImpl& scene, const char* name);
         virtual ~TextureCubeImpl();
 
         void initializeFromFrameworkData(uint32_t size, ETextureFormat textureFormat, const TextureSwizzle& swizzle);

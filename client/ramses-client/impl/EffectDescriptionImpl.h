@@ -33,14 +33,17 @@ namespace ramses
 
         status_t setVertexShader(const char* shaderSource);
         status_t setFragmentShader(const char* shaderSource);
+        status_t setGeometryShader(const char* shaderSource);
         status_t setVertexShaderFromFile(const char* shaderSourceFileName);
         status_t setFragmentShaderFromFile(const char* shaderSourceFileName);
+        status_t setGeometryShaderFromFile(const char* shaderSourceFileName);
         status_t addCompilerDefine(const char* define);
         status_t setUniformSemantic(const char* semanticName, EEffectUniformSemantic semanticType);
         status_t setAttributeSemantic(const char* semanticName, EEffectAttributeSemantic semanticType);
 
         const char*                          getVertexShader() const;
         const char*                          getFragmentShader() const;
+        const char*                          getGeometryShader() const;
         uint32_t                             getNumberOfCompilerDefines() const;
         const ramses_internal::StringVector& getCompilerDefines() const;
         const char*                          getCompilerDefine(uint32_t index) const;
@@ -53,6 +56,7 @@ namespace ramses
 
         ramses_internal::String m_vertexShaderSource;
         ramses_internal::String m_fragmentShaderSource;
+        ramses_internal::String m_geometryShaderSource;
 
         ramses_internal::StringVector m_compilerDefines;
         SemanticsMap                  m_inputSemantics;

@@ -22,14 +22,10 @@
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
-#include "ramses-client-api/FloatArray.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
-#include "ramses-client-api/Vector4fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/TextureCube.h"
-#include "ramses-client-api/UInt16Array.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/DataFloat.h"
 #include "ramses-client-api/DataVector2f.h"
@@ -43,8 +39,7 @@
 #include "ramses-client-api/DataVector3i.h"
 #include "ramses-client-api/DataVector4i.h"
 #include "ramses-client-api/StreamTexture.h"
-#include "ramses-client-api/IndexDataBuffer.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/PickableObject.h"
 
@@ -52,6 +47,27 @@
 #include "SceneImpl.h"
 #include "ClientTestUtils.h"
 #include "RamsesObjectTestTypes.h"
+#include "AnimationSystemImpl.h"
+#include "NodeImpl.h"
+#include "MeshNodeImpl.h"
+#include "CameraNodeImpl.h"
+#include "GeometryBindingImpl.h"
+#include "RenderGroupImpl.h"
+#include "RenderPassImpl.h"
+#include "BlitPassImpl.h"
+#include "RenderBufferImpl.h"
+#include "RenderTargetImpl.h"
+#include "TextureSamplerImpl.h"
+#include "DataObjectImpl.h"
+#include "StreamTextureImpl.h"
+#include "ArrayBufferImpl.h"
+#include "Texture2DBufferImpl.h"
+#include "PickableObjectImpl.h"
+#include "SceneReferenceImpl.h"
+#include "Texture2DImpl.h"
+#include "Texture3DImpl.h"
+#include "TextureCubeImpl.h"
+#include "EffectImpl.h"
 
 namespace ramses
 {
@@ -130,7 +146,7 @@ namespace ramses
 
     TYPED_TEST(SceneOwnershipTest, sceneObjectsAreOfTypeSceneObject)
     {
-        const SceneObject* obj = &this->template createObject<TypeParam>("objectName");
+        auto obj = &this->template createObject<TypeParam>("objectName");
         ASSERT_TRUE(nullptr != obj);
         EXPECT_TRUE(obj->isOfType(ERamsesObjectType_SceneObject));
         EXPECT_TRUE(obj->isOfType(ERamsesObjectType_ClientObject));
@@ -138,7 +154,7 @@ namespace ramses
 
     TYPED_TEST(SceneOwnershipTest, sceneObjectsHaveReferenceToTheirScene)
     {
-        const SceneObject* obj = &this->template createObject<TypeParam>("objectName");
+        auto obj = &this->template createObject<TypeParam>("objectName");
         ASSERT_TRUE(nullptr != obj);
         EXPECT_EQ(&this->m_scene.impl, &obj->impl.getSceneImpl());
         EXPECT_EQ(&this->m_scene.impl.getIScene(), &obj->impl.getIScene());
@@ -161,7 +177,7 @@ namespace ramses
     // contain the LL components of the HL object which is being deleted
     TYPED_TEST(SceneOwnershipTest, sceneDoesNotContainDestroyedObject)
     {
-        SceneObject* obj = &this->template createObject<TypeParam>("objectName");
+        auto obj = &this->template createObject<TypeParam>("objectName");
         ASSERT_TRUE(nullptr != obj);
         EXPECT_EQ(StatusOK, this->m_scene.destroy(*obj));
         const RamsesObject* sn = this->m_scene.findObjectByName("objectName");
@@ -174,30 +190,45 @@ namespace ramses
     {
         this->m_scene.impl.getStatisticCollection().nextTimeInterval(); //object number is updated by nextTimeInterval()
         ramses_internal::UInt32 initialNumber = this->m_scene.impl.getStatisticCollection().statObjectsNumber.getCounterValue();
+        ramses_internal::UInt32 initialResNumber = this->m_scene.impl.getStatisticCollection().statResourceObjectsNumber.getCounterValue();
         EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statObjectsCreated.getCounterValue());
         EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statObjectsDestroyed.getCounterValue());
+        EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statResourceObjectsCreated.getCounterValue());
+        EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statResourceObjectsDestroyed.getCounterValue());
 
-        SceneObject* obj = &this->template createObject<TypeParam>("objectName");
+        auto obj = &this->template createObject<TypeParam>("objectName");
+        bool isResource = obj->isOfType(ERamsesObjectType_Resource);
         ramses_internal::UInt32 numberCreated = this->m_scene.impl.getStatisticCollection().statObjectsCreated.getCounterValue();
+        ramses_internal::UInt32 numberResCreated = this->m_scene.impl.getStatisticCollection().statResourceObjectsCreated.getCounterValue();
         EXPECT_LE(1u, numberCreated); //some types create multiple scene objects (e.g. RenderTarget)
+        EXPECT_LE(isResource ? 1u : 0u, numberResCreated); //some types create multiple scene objects (e.g. RenderTarget)
         EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statObjectsDestroyed.getCounterValue());
+        EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statResourceObjectsDestroyed.getCounterValue());
 
         this->m_scene.impl.getStatisticCollection().nextTimeInterval();
         EXPECT_EQ(initialNumber + numberCreated, this->m_scene.impl.getStatisticCollection().statObjectsNumber.getCounterValue());
+        EXPECT_EQ(initialResNumber + numberResCreated, this->m_scene.impl.getStatisticCollection().statResourceObjectsNumber.getCounterValue());
 
         this->m_scene.destroy(*obj);
+
         EXPECT_LE(1u, this->m_scene.impl.getStatisticCollection().statObjectsDestroyed.getCounterValue());
+        EXPECT_LE(isResource ? 1u : 0u, this->m_scene.impl.getStatisticCollection().statResourceObjectsDestroyed.getCounterValue());
 
         this->m_scene.impl.getStatisticCollection().nextTimeInterval();
         EXPECT_GT(initialNumber + numberCreated, this->m_scene.impl.getStatisticCollection().statObjectsNumber.getCounterValue());
         EXPECT_LE(initialNumber, this->m_scene.impl.getStatisticCollection().statObjectsNumber.getCounterValue());
+        if (isResource)
+        {
+            EXPECT_GT(initialResNumber + numberResCreated, this->m_scene.impl.getStatisticCollection().statResourceObjectsNumber.getCounterValue());
+            EXPECT_LE(initialResNumber, this->m_scene.impl.getStatisticCollection().statResourceObjectsNumber.getCounterValue());
+        }
     }
 
     TYPED_TEST(ClientOwnershipTest, clientContainsCreatedObject)
     {
         const RamsesObject* obj = &this->template createObject<TypeParam>("objectName");
         ASSERT_TRUE(nullptr != obj);
-        const RamsesObject* sn = this->client.findObjectByName("objectName");
+        const RamsesObject* sn = this->client.findSceneByName("objectName");
         ASSERT_TRUE(nullptr != sn);
         EXPECT_EQ(obj, sn);
     }
@@ -206,15 +237,8 @@ namespace ramses
     {
         RamsesObject* obj = &this->template createObject<TypeParam>("objectName");
         ASSERT_TRUE(nullptr != obj);
-        if (obj->getType() == ERamsesObjectType_Scene)
-        {
-            this->client.destroy(static_cast<Scene&>(*obj));
-        }
-        else
-        {
-            this->client.destroy(static_cast<Resource&>(*obj));
-        }
-        const RamsesObject* sn = this->client.findObjectByName("objectName");
+        this->client.destroy(static_cast<Scene&>(*obj));
+        const RamsesObject* sn = this->client.findSceneByName("objectName");
         ASSERT_TRUE(nullptr == sn);
     }
 
@@ -242,12 +266,12 @@ namespace ramses
         EXPECT_EQ(&this->client.impl, &obj->impl.getClientImpl());
     }
 
-    TYPED_TEST(ClientOwnershipTest, clinetObjectNameChanged)
+    TYPED_TEST(ClientOwnershipTest, clientObjectNameChanged)
     {
         RamsesObject* obj = &this->template createObject<TypeParam>("objectName");
         ASSERT_TRUE(nullptr != obj);
         obj->setName("otherObjectName");
-        RamsesObject* sn = this->client.findObjectByName("otherObjectName");
+        RamsesObject* sn = this->client.findSceneByName("otherObjectName");
         ASSERT_TRUE(nullptr != sn);
         EXPECT_EQ(obj, sn);
     }
@@ -262,13 +286,13 @@ namespace ramses
         EXPECT_EQ(nullptr, sn);
     }
 
-    TYPED_TEST(ClientOwnershipTest, clientNotContainsDestroyedObject)
+    TYPED_TEST(ClientOwnershipTest, clientDoesNotFindDestroyedObject)
     {
-        RamsesObject& obj = this->template createObject<TypeParam>("objectName");
-        TypeParam& objTyped = static_cast<TypeParam&>(obj);
-
+        RamsesObject* obj = &this->template createObject<TypeParam>("objectName");
+        TypeParam& objTyped = static_cast<TypeParam&>(*obj);
+        ASSERT_TRUE(obj);
         this->client.destroy(objTyped);
-        const RamsesObject* sn = this->client.findObjectByName("objectName");
-        EXPECT_EQ(nullptr, sn);
+        RamsesObject* sn = this->client.findSceneByName("objectName");
+        ASSERT_FALSE(sn);
     }
 }

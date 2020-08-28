@@ -14,8 +14,7 @@
 namespace ramses
 {
     class Effect;
-    class Vector3fArray;
-    class UInt16Array;
+    class ArrayResource;
     class Texture3D;
 }
 
@@ -24,7 +23,7 @@ namespace ramses_internal
     class Texture3DScene : public IntegrationScene
     {
     public:
-        Texture3DScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        Texture3DScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {
@@ -36,8 +35,8 @@ namespace ramses_internal
 
         ramses::Effect* m_effect;
         ramses::Node* m_groupNode;
-        const ramses::Vector3fArray* m_vertexPositions;
-        const ramses::UInt16Array* m_indices;
+        const ramses::ArrayResource* m_vertexPositions;
+        const ramses::ArrayResource* m_indices;
         ramses::Texture3D* m_texture;
     };
 }

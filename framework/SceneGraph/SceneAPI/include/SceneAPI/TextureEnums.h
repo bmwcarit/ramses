@@ -89,80 +89,80 @@ namespace ramses_internal
     };
     ENUM_TO_STRING(ERenderBufferAccessMode, RenderBufferAccessModeNames, ERenderBufferAccessMode_NUMBER_OF_ELEMENTS);
 
-    enum ETextureFormat
+    enum class ETextureFormat
     {
-        ETextureFormat_Invalid = 0,
+        Invalid = 0,
 
-        ETextureFormat_R8,
-        ETextureFormat_R16,
+        R8,
+        R16,
 
-        ETextureFormat_RG8,
-        ETextureFormat_RG16,
+        RG8,
+        RG16,
 
-        ETextureFormat_RGB16,
-        ETextureFormat_RGB8,
-        ETextureFormat_RGB565,
+        RGB16,
+        RGB8,
+        RGB565,
 
-        ETextureFormat_RGBA16,
-        ETextureFormat_RGBA8,
-        ETextureFormat_RGBA4,
-        ETextureFormat_RGBA5551,
+        RGBA16,
+        RGBA8,
+        RGBA4,
+        RGBA5551,
 
-        ETextureFormat_ETC2RGB, // ericsson texture compression 2
-        ETextureFormat_ETC2RGBA, // ericsson texture compression 2 with alpha
-        ETextureFormat_DXT1RGB, // S3 texture compression 1
-        ETextureFormat_DXT3RGBA, // S3 texture compression 3 with alpha
-        ETextureFormat_DXT5RGBA, // S3 texture compression 5 with alpha
+        ETC2RGB, // ericsson texture compression 2
+        ETC2RGBA, // ericsson texture compression 2 with alpha
+        DXT1RGB, // S3 texture compression 1
+        DXT3RGBA, // S3 texture compression 3 with alpha
+        DXT5RGBA, // S3 texture compression 5 with alpha
 
-        ETextureFormat_Depth16,
-        ETextureFormat_Depth24,
-        ETextureFormat_Depth24_Stencil8,
+        Depth16,
+        Depth24,
+        Depth24_Stencil8,
 
         // Floating point formats
-        ETextureFormat_R16F,
-        ETextureFormat_R32F,
-        ETextureFormat_RG16F,
-        ETextureFormat_RG32F,
-        ETextureFormat_RGB16F,
-        ETextureFormat_RGB32F,
-        ETextureFormat_RGBA16F,
-        ETextureFormat_RGBA32F,
+        R16F,
+        R32F,
+        RG16F,
+        RG32F,
+        RGB16F,
+        RGB32F,
+        RGBA16F,
+        RGBA32F,
 
         // sRGB formats
-        ETextureFormat_SRGB8,
-        ETextureFormat_SRGB8_ALPHA8,
+        SRGB8,
+        SRGB8_ALPHA8,
 
         // ASTC formats
-        ETextureFormat_ASTC_RGBA_4x4,
-        ETextureFormat_ASTC_RGBA_5x4,
-        ETextureFormat_ASTC_RGBA_5x5,
-        ETextureFormat_ASTC_RGBA_6x5,
-        ETextureFormat_ASTC_RGBA_6x6,
-        ETextureFormat_ASTC_RGBA_8x5,
-        ETextureFormat_ASTC_RGBA_8x6,
-        ETextureFormat_ASTC_RGBA_8x8,
-        ETextureFormat_ASTC_RGBA_10x5,
-        ETextureFormat_ASTC_RGBA_10x6,
-        ETextureFormat_ASTC_RGBA_10x8,
-        ETextureFormat_ASTC_RGBA_10x10,
-        ETextureFormat_ASTC_RGBA_12x10,
-        ETextureFormat_ASTC_RGBA_12x12,
-        ETextureFormat_ASTC_SRGBA_4x4,
-        ETextureFormat_ASTC_SRGBA_5x4,
-        ETextureFormat_ASTC_SRGBA_5x5,
-        ETextureFormat_ASTC_SRGBA_6x5,
-        ETextureFormat_ASTC_SRGBA_6x6,
-        ETextureFormat_ASTC_SRGBA_8x5,
-        ETextureFormat_ASTC_SRGBA_8x6,
-        ETextureFormat_ASTC_SRGBA_8x8,
-        ETextureFormat_ASTC_SRGBA_10x5,
-        ETextureFormat_ASTC_SRGBA_10x6,
-        ETextureFormat_ASTC_SRGBA_10x8,
-        ETextureFormat_ASTC_SRGBA_10x10,
-        ETextureFormat_ASTC_SRGBA_12x10,
-        ETextureFormat_ASTC_SRGBA_12x12,
+        ASTC_RGBA_4x4,
+        ASTC_RGBA_5x4,
+        ASTC_RGBA_5x5,
+        ASTC_RGBA_6x5,
+        ASTC_RGBA_6x6,
+        ASTC_RGBA_8x5,
+        ASTC_RGBA_8x6,
+        ASTC_RGBA_8x8,
+        ASTC_RGBA_10x5,
+        ASTC_RGBA_10x6,
+        ASTC_RGBA_10x8,
+        ASTC_RGBA_10x10,
+        ASTC_RGBA_12x10,
+        ASTC_RGBA_12x12,
+        ASTC_SRGBA_4x4,
+        ASTC_SRGBA_5x4,
+        ASTC_SRGBA_5x5,
+        ASTC_SRGBA_6x5,
+        ASTC_SRGBA_6x6,
+        ASTC_SRGBA_8x5,
+        ASTC_SRGBA_8x6,
+        ASTC_SRGBA_8x8,
+        ASTC_SRGBA_10x5,
+        ASTC_SRGBA_10x6,
+        ASTC_SRGBA_10x8,
+        ASTC_SRGBA_10x10,
+        ASTC_SRGBA_12x10,
+        ASTC_SRGBA_12x12,
 
-        ETextureFormat_NUMBER_OF_TYPES
+        NUMBER_OF_TYPES
     };
 
     enum ETextureCubeFace
@@ -202,39 +202,39 @@ namespace ramses_internal
     {
         switch (textureformat)
         {
-        case ramses_internal::ETextureFormat_ETC2RGB:
-        case ramses_internal::ETextureFormat_ETC2RGBA:
-        case ramses_internal::ETextureFormat_DXT1RGB:
-        case ramses_internal::ETextureFormat_DXT3RGBA:
-        case ramses_internal::ETextureFormat_DXT5RGBA:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_4x4:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_5x4:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_5x5:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_6x5:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_6x6:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_8x5:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_8x6:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_8x8:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_10x5:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_10x6:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_10x8:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_10x10:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_12x10:
-        case ramses_internal::ETextureFormat_ASTC_RGBA_12x12:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_4x4:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_5x4:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_5x5:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_6x5:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_6x6:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_8x5:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_8x6:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_8x8:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_10x5:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_10x6:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_10x8:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_10x10:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_12x10:
-        case ramses_internal::ETextureFormat_ASTC_SRGBA_12x12:
+        case ramses_internal::ETextureFormat::ETC2RGB:
+        case ramses_internal::ETextureFormat::ETC2RGBA:
+        case ramses_internal::ETextureFormat::DXT1RGB:
+        case ramses_internal::ETextureFormat::DXT3RGBA:
+        case ramses_internal::ETextureFormat::DXT5RGBA:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_4x4:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_5x4:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_5x5:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_6x5:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_6x6:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_8x5:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_8x6:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_8x8:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_10x5:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_10x6:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_10x8:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_10x10:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_12x10:
+        case ramses_internal::ETextureFormat::ASTC_RGBA_12x12:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_4x4:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_5x4:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_5x5:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_6x5:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_6x6:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_8x5:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_8x6:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_8x8:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_10x5:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_10x6:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_10x8:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_10x10:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_12x10:
+        case ramses_internal::ETextureFormat::ASTC_SRGBA_12x12:
             return true;
         default:
             return false;
@@ -245,37 +245,37 @@ namespace ramses_internal
     {
         switch (texelFormat)
         {
-        case ETextureFormat_R8:
+        case ETextureFormat::R8:
             return 1u;
-        case ETextureFormat_R16:
-        case ETextureFormat_R16F:
-        case ETextureFormat_RG8:
-        case ETextureFormat_RGB565:
-        case ETextureFormat_RGBA4:
-        case ETextureFormat_RGBA5551:
-        case ETextureFormat_Depth16:
+        case ETextureFormat::R16:
+        case ETextureFormat::R16F:
+        case ETextureFormat::RG8:
+        case ETextureFormat::RGB565:
+        case ETextureFormat::RGBA4:
+        case ETextureFormat::RGBA5551:
+        case ETextureFormat::Depth16:
             return 2u;
-        case ETextureFormat_RGB8:
-        case ETextureFormat_Depth24:
-        case ETextureFormat_SRGB8:
+        case ETextureFormat::RGB8:
+        case ETextureFormat::Depth24:
+        case ETextureFormat::SRGB8:
             return 3u;
-        case ETextureFormat_RG16:
-        case ETextureFormat_RG16F:
-        case ETextureFormat_RGBA8:
-        case ETextureFormat_Depth24_Stencil8:
-        case ETextureFormat_R32F:
-        case ETextureFormat_SRGB8_ALPHA8:
+        case ETextureFormat::RG16:
+        case ETextureFormat::RG16F:
+        case ETextureFormat::RGBA8:
+        case ETextureFormat::Depth24_Stencil8:
+        case ETextureFormat::R32F:
+        case ETextureFormat::SRGB8_ALPHA8:
             return 4u;
-        case ETextureFormat_RGB16:
-        case ETextureFormat_RGB16F:
+        case ETextureFormat::RGB16:
+        case ETextureFormat::RGB16F:
             return 6u;
-        case ETextureFormat_RG32F:
-        case ETextureFormat_RGBA16:
-        case ETextureFormat_RGBA16F:
+        case ETextureFormat::RG32F:
+        case ETextureFormat::RGBA16:
+        case ETextureFormat::RGBA16F:
             return 8u;
-        case ETextureFormat_RGB32F:
+        case ETextureFormat::RGB32F:
             return 12u;
-        case ETextureFormat_RGBA32F:
+        case ETextureFormat::RGBA32F:
             return 16u;
 
         default:
@@ -345,7 +345,7 @@ namespace ramses_internal
         "ETextureFormat_ASTC_SRGBA_12x12"
     };
 
-    ENUM_TO_STRING(ETextureFormat, TextureFormatNames, ETextureFormat_NUMBER_OF_TYPES);
+    ENUM_TO_STRING(ETextureFormat, TextureFormatNames, ETextureFormat::NUMBER_OF_TYPES);
 }
 
 #endif

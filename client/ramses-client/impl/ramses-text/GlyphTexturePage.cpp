@@ -36,10 +36,10 @@ namespace ramses
         : m_size(size)
         , m_ownerScene(scene)
         , m_textureBuffer(*scene.createTexture2DBuffer(
-            1u,
+            ETextureFormat::R8,
             size.x,
             size.y,
-            ETextureFormat_R8,
+            1u,
             ""))
         , m_textureSampler(*scene.createTextureSampler(
             ETextureAddressMode_Clamp,
@@ -203,9 +203,7 @@ namespace ramses
 
     void GlyphTexturePage::updateTextureResource(const Quad& updateQuade, const GlyphPageData& pageData)
     {
-        // Cast is needed because texture buffer API is more generic and allows more data types -> hence char*, not uint8_t
-        const char* castedData = reinterpret_cast<const char*>(pageData.data());
-        m_textureBuffer.setData(castedData, 0, updateQuade.getOrigin().x, updateQuade.getOrigin().y, updateQuade.getSize().x, updateQuade.getSize().y);
+        m_textureBuffer.updateData(0, updateQuade.getOrigin().x, updateQuade.getOrigin().y, updateQuade.getSize().x, updateQuade.getSize().y, pageData.data());
     }
 
     GlyphTexturePage::QuadIndex GlyphTexturePage::findFreeSpace(QuadSize const& size) const

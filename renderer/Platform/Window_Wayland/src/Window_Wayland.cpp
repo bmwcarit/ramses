@@ -163,7 +163,7 @@ namespace ramses_internal
     void Window_Wayland::RegistryGlobalCreated(void* data, wl_registry* wl_registry, uint32_t name, const char* interface, uint32_t version)
     {
         UNUSED(version);
-        Window_Wayland& window = *reinterpret_cast<Window_Wayland*>(data);
+        Window_Wayland& window = *static_cast<Window_Wayland*>(data);
         window.registryGlobalCreated(wl_registry, name, interface, version);
     }
 

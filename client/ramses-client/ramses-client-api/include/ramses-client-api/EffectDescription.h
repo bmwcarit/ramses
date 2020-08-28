@@ -40,6 +40,13 @@ namespace ramses
         */
         status_t setFragmentShader(const char* shaderSource);
         /**
+        * @brief Sets geometry shader source from string.
+        * @param[in] shaderSource Geometry shader source code.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setGeometryShader(const char* shaderSource);
+        /**
         * @brief Reads and sets vertex shader source from file.
         * @param[in] shaderSourceFileName File with vertex shader source code.
         * @return StatusOK for success, otherwise the returned status can be used
@@ -53,6 +60,13 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t setFragmentShaderFromFile(const char* shaderSourceFileName);
+        /**
+        * @brief Reads and sets geometry shader source from file.
+        * @param[in] shaderSourceFileName File with geometry shader source code.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setGeometryShaderFromFile(const char* shaderSourceFileName);
         /**
         * @brief Adds a compiler define.
         *        The define string will be injected as defined into the final shader code.
@@ -96,6 +110,11 @@ namespace ramses
         * @return Fragment shader source code. Empty string if not previously set.
         */
         const char*        getFragmentShader() const;
+        /**
+        * @brief Gets geometry shader code that is currently set.
+        * @return Geometry shader source code. Empty string if not previously set.
+        */
+        const char*        getGeometryShader() const;
 
         /**
         * @brief Gets number of compiler defines.

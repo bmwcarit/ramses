@@ -64,22 +64,22 @@ int main(int argc, char* argv[])
     // Two different vertex arrays, to show two different mipmap levels of the texture
     // The ...Near quad will show mipmap level 0, the ...Far quad will show mipmap level 1
     float vertexPositionsNearArray[] = { -1.f, -1.f, -1.f,  1.f, -1.f, -1.f,  -1.f, 1.f, -1.f,  1.f, 1.f, -1.f };
-    const ramses::Vector3fArray* vertexPositionsNear = ramses.createConstVector3fArray(4, vertexPositionsNearArray);
+    ramses::ArrayResource* vertexPositionsNear = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsNearArray);
 
     float vertexPositionsFarArray[] = { -5.f, -1.f, -5.f,   -3.f, -1.f, -5.f,   -5.f,  1.f, -5.f,   -3.f,  1.f, -5.f };
-    const ramses::Vector3fArray* vertexPositionsFar = ramses.createConstVector3fArray(4, vertexPositionsFarArray);
+    ramses::ArrayResource* vertexPositionsFar = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsFarArray);
 
     float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f};
-    const ramses::Vector2fArray* textureCoords = ramses.createConstVector2fArray(4, textureCoordsArray);
+    ramses::ArrayResource* textureCoords = scene->createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
 
     uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    const ramses::UInt16Array* indices = ramses.createConstUInt16Array(6, indicesArray);
+    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
 
     // The texture will show different color gradients in the different mipmap levels
     // The gradients will then be cycled inside a region whithin the texture itself
     // First all the dimensions for these different layers and regions are defined
-    const ramses::ETextureFormat format = ramses::ETextureFormat_RGB8;
+    const ramses::ETextureFormat format = ramses::ETextureFormat::RGB8;
     const uint32_t numChannels          = 3;
 
     const uint32_t textureWidthLevel0   = 32;
@@ -142,11 +142,11 @@ int main(int argc, char* argv[])
     //                 This should not be the case for real applications.
 
     // Create the Texture2DBuffer via the scene
-    ramses::Texture2DBuffer* texture = scene->createTexture2DBuffer(2u, textureWidthLevel0, textureHeightLevel0, format, "A varying texture");
+    ramses::Texture2DBuffer* texture = scene->createTexture2DBuffer(format, textureWidthLevel0, textureHeightLevel0, 2u, "A varying texture");
 
     // Whith Texture2DBuffer::setData you can pass a buffer for a specific mipmap level
-    texture->setData(reinterpret_cast<const char*>(textureDataLevel0.data()), 0, 0, 0, textureWidthLevel0, textureHeightLevel0);
-    texture->setData(reinterpret_cast<const char*>(textureDataLevel1.data()), 1, 0, 0, textureWidthLevel1, textureHeightLevel1);
+    texture->updateData(0, 0, 0, textureWidthLevel0, textureHeightLevel0, textureDataLevel0.data());
+    texture->updateData(1, 0, 0, textureWidthLevel1, textureHeightLevel1, textureDataLevel1.data());
 
     // Just like resources or render buffers you add it via createTextureSampler
     ramses::TextureSampler* sampler = scene->createTextureSampler(
@@ -162,7 +162,7 @@ int main(int argc, char* argv[])
     effectDesc.setFragmentShaderFromFile("res/ramses-example-data-buffers-texture.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    const ramses::Effect* effectTex = ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearanceNear = scene->createAppearance(*effectTex, "quad appearance (near)");
     ramses::Appearance* appearanceFar  = scene->createAppearance(*effectTex, "quad appearance (far)");
 
@@ -249,8 +249,8 @@ int main(int argc, char* argv[])
         }
 
         // with Texture2DBuffer::setData you can pass the updated array data to the data buffer
-        texture->setData(reinterpret_cast<const char*>(regionDataLevel0.data()), 0, regionOffsetXLevel0, regionOffsetYLevel0, regionWidthLevel0, regionHeightLevel0);
-        texture->setData(reinterpret_cast<const char*>(regionDataLevel1.data()), 1, regionOffsetXLevel1, regionOffsetYLevel1, regionWidthLevel1, regionHeightLevel1);
+        texture->updateData(0, regionOffsetXLevel0, regionOffsetYLevel0, regionWidthLevel0, regionHeightLevel0, regionDataLevel0.data());
+        texture->updateData(1, regionOffsetXLevel1, regionOffsetYLevel1, regionWidthLevel1, regionHeightLevel1, regionDataLevel1.data());
 
         scene->flush();
 
@@ -260,11 +260,11 @@ int main(int argc, char* argv[])
 
     // shutdown: stop distribution, free resources, unregister
     scene->unpublish();
+    scene->destroy(*vertexPositionsNear);
+    scene->destroy(*vertexPositionsFar);
+    scene->destroy(*textureCoords);
+    scene->destroy(*indices);
     ramses.destroy(*scene);
-    ramses.destroy(*vertexPositionsNear);
-    ramses.destroy(*vertexPositionsFar);
-    ramses.destroy(*textureCoords);
-    ramses.destroy(*indices);
     framework.disconnect();
 
     return 0;

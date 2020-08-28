@@ -15,8 +15,8 @@
 
 namespace ramses
 {
-    class VertexDataBufferImpl;
-    class VertexDataBuffer;
+    class ArrayBufferImpl;
+    class ArrayBuffer;
     class CameraNodeImpl;
     class LocalCamera;
 
@@ -26,14 +26,14 @@ namespace ramses
         PickableObjectImpl(SceneImpl& scene, const char* pickableObjectName);
         virtual ~PickableObjectImpl() = default;
 
-        void         initializeFrameworkData(const VertexDataBufferImpl& geometryBuffer, pickableObjectId_t id);
+        void         initializeFrameworkData(const ArrayBufferImpl& geometryBuffer, pickableObjectId_t id);
         virtual void deinitializeFrameworkData() override;
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
         virtual status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
         virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
-        const VertexDataBuffer& getGeometryBuffer() const;
+        const ArrayBuffer& getGeometryBuffer() const;
 
         status_t setCamera(const CameraNodeImpl& cameraImpl);
         const LocalCamera* getCamera() const;
@@ -48,7 +48,7 @@ namespace ramses
 
     private:
         ramses_internal::PickableObjectHandle m_pickableObjectHandle;
-        const VertexDataBufferImpl*           m_geometryBufferImpl = nullptr;
+        const ArrayBufferImpl*                m_geometryBufferImpl = nullptr;
         const CameraNodeImpl*                 m_cameraImpl = nullptr;
     };
 }

@@ -21,7 +21,7 @@
 #include "PlatformFactoryMock.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/PickableObject.h"
 
 namespace ramses_internal
@@ -110,8 +110,8 @@ namespace ramses_internal
         orthographicCamera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
         orthographicCamera->setViewport(0, 0, 1280, 480);
 
-        ramses::VertexDataBuffer* pickableGeometryBuffer = m_scene.createVertexDataBuffer(sizeof(geometryData), ramses::EDataType_Vector3F, "geometryBuffer");
-        pickableGeometryBuffer->setData(reinterpret_cast<const char*>(geometryData.data()), sizeof(geometryData));
+        ramses::ArrayBuffer* pickableGeometryBuffer = m_scene.createArrayBuffer(ramses::EDataType::Vector3F, 3u, "geometryBuffer");
+        pickableGeometryBuffer->updateData(0, 3, geometryData.data());
 
         ramses::PickableObject* pickableObject = m_scene.createPickableObject(*pickableGeometryBuffer, pickableId, "pickableObject");
         pickableObject->setCamera(*orthographicCamera);
@@ -136,8 +136,8 @@ namespace ramses_internal
         perspectiveCamera->translate(-4.f, 0.f, 11.f);
         perspectiveCamera->rotate(0.f, 40.f, 0.f);
 
-        ramses::VertexDataBuffer* pickableGeometryBuffer = m_scene.createVertexDataBuffer(sizeof(geometryData), ramses::EDataType_Vector3F, "geometryBuffer");
-        pickableGeometryBuffer->setData(reinterpret_cast<const char*>(geometryData.data()), sizeof(geometryData));
+        ramses::ArrayBuffer* pickableGeometryBuffer = m_scene.createArrayBuffer(ramses::EDataType::Vector3F, 3u, "geometryBuffer");
+        pickableGeometryBuffer->updateData(0, 3, geometryData.data());
 
         ramses::PickableObject* pickableObject1 = m_scene.createPickableObject(*pickableGeometryBuffer, pickableId1, "pickableObject1");
         pickableObject1->setCamera(*perspectiveCamera);

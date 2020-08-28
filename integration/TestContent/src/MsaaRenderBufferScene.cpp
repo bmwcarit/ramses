@@ -18,14 +18,13 @@
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include <cassert>
 
 namespace ramses_internal
 {
-    MsaaRenderBufferScene::MsaaRenderBufferScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : CommonRenderBufferTestScene(ramsesClient, scene, cameraPosition)
+    MsaaRenderBufferScene::MsaaRenderBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : CommonRenderBufferTestScene(scene, cameraPosition)
         , m_colorBufferMsaa2(*scene.createRenderBuffer(2u, 2u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_WriteOnly, 2u))
         , m_colorBufferMsaa4(*scene.createRenderBuffer(2u, 2u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_WriteOnly, 4u))
         , m_blittingColorBuffer(*scene.createRenderBuffer(2u, 2u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
@@ -129,7 +128,7 @@ namespace ramses_internal
                                             -1.f, -1.f, 0.f,
                                             1.f, -1.f, 0.f,
                                             -1.f, 1.f, 0.f };
-        const ramses::Vector3fArray* vertexPositions = m_client.createConstVector3fArray(3, vertexPositionsData);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
         meshNode.getGeometryBinding()->setInputBuffer(positionsInput, *vertexPositions);
 
         return meshNode;

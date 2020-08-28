@@ -47,7 +47,7 @@ namespace ramses
             , sceneActionsCollector()
         {
             sceneActionsCollector.init(framework.impl.getScenegraphComponent());
-            framework.impl.getScenegraphComponent().setSceneRendererServiceHandler(&sceneActionsCollector);
+            framework.impl.getScenegraphComponent().setSceneRendererHandler(&sceneActionsCollector);
         }
 
         template <typename ObjectType>
@@ -101,22 +101,22 @@ namespace ramses
             return m_internalScene;
         }
 
-        const ramses::UInt16Array& createValidIndexArray()
+        ramses::ArrayResource& createValidIndexArray()
         {
-            return createObject<UInt16Array>("indices");
+            return createObject<ArrayResource>("indices");
         }
 
         GeometryBinding& createValidGeometry(Effect* effect = nullptr, bool useIndices = true)
         {
             if (nullptr == effect)
             {
-                effect = TestEffects::CreateTestEffect(client);
+                effect = TestEffects::CreateTestEffect(m_scene);
             }
             GeometryBinding* geometry = m_scene.createGeometryBinding(*effect, "geometry");
             EXPECT_TRUE(geometry != nullptr);
             if (useIndices)
             {
-                const UInt16Array& indexArray = createValidIndexArray();
+                const ArrayResource& indexArray = createValidIndexArray();
                 geometry->setIndices(indexArray);
             }
             return *geometry;
@@ -125,7 +125,7 @@ namespace ramses
         MeshNode& createValidMeshNode()
         {
             MeshNode* mesh = m_scene.createMeshNode();
-            Appearance* appearance = m_scene.createAppearance(*TestEffects::CreateTestEffect(client), "appearance");
+            Appearance* appearance = m_scene.createAppearance(*TestEffects::CreateTestEffect(m_scene), "appearance");
             mesh->setAppearance(*appearance);
             GeometryBinding& geometry = createValidGeometry();
             mesh->setGeometryBinding(geometry);
@@ -161,6 +161,51 @@ namespace ramses
         }
 
         AnimationSystem& animationSystem;
+    };
+
+    class ClientTestUtils
+    {
+    public:
+        static bool CompareBinaryFiles(char const* fileName1, char const* fileName2)
+        {
+            using namespace ramses_internal;
+            File file1(fileName1);
+            EXPECT_TRUE(file1.open(File::Mode::ReadOnlyBinary));
+            File file2(fileName2);
+            EXPECT_TRUE(file2.open(File::Mode::ReadOnlyBinary));
+
+            if (!file1.isOpen() || !file2.isOpen())
+            {
+                return false;
+            }
+
+            UInt length1 = 0u;
+            UInt length2 = 0u;
+            EXPECT_TRUE(file1.getSizeInBytes(length1));
+            EXPECT_TRUE(file2.getSizeInBytes(length2));
+            if (length1 != length2)
+            {
+                return false;
+            }
+
+            const UInt bufferLength = 1024 * 1024;
+            std::vector<Char> buf1(bufferLength);
+            std::vector<Char> buf2(bufferLength);
+
+            UInt offset = 0;
+            UInt dummy = 0;
+            bool equal = true;
+            while (offset < length1 && equal)
+            {
+                UInt left = std::min(length1 - offset, bufferLength);
+                EXPECT_EQ(EStatus::Ok, file1.read(buf1.data(), left, dummy));
+                EXPECT_EQ(EStatus::Ok, file2.read(buf2.data(), left, dummy));
+                equal = (PlatformMemory::Compare(buf1.data(), buf2.data(), left) == 0);
+                offset += left;
+            }
+
+            return equal;
+        }
     };
 }
 

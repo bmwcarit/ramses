@@ -55,7 +55,7 @@ TEST_F(ARendererResourceRegistry, registeredResourceHasCorrectStatus)
 
     const ResourceDescriptor& rd = registry.getResourceDescriptor(resource);
     EXPECT_FALSE(rd.deviceHandle.isValid());
-    EXPECT_TRUE(nullptr == rd.resource.getResourceObject());
+    EXPECT_FALSE(rd.resource);
     EXPECT_TRUE(rd.sceneUsage.empty());
     EXPECT_EQ(EResourceStatus_Registered, rd.status);
     EXPECT_EQ(EResourceType_Invalid, rd.type);
@@ -132,8 +132,8 @@ TEST_F(ARendererResourceRegistry, canSetResourceData)
 
     const DeviceResourceHandle deviceHandle(123456u);
 
-    const ArrayResource res(EResourceType_IndexArray, 0, EDataType_UInt16, nullptr, ResourceCacheFlag_DoNotCache, String());
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    const ArrayResource res(EResourceType_IndexArray, 0, EDataType::UInt16, nullptr, ResourceCacheFlag_DoNotCache, String());
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
 
     registry.setResourceData(resource, managedRes, deviceHandle, EResourceType_IndexArray);
 

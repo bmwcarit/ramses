@@ -32,6 +32,7 @@ namespace ramses_internal
     public:
         GlslEffect(const String& vertexShader,
             const String& fragmentShader,
+            const String& geometryShader,
             const std::vector<String>& compilerDefines,
             const HashMap<String, EFixedSemantics>& semanticInputs,
             const String& name);
@@ -40,11 +41,7 @@ namespace ramses_internal
 
         EffectResource* createEffectResource(ResourceCacheFlag cacheFlag);
 
-        // must be called after createEffectResource
-        UInt32 getVertexShaderVersion() const;
-        // must be called after createEffectResource
-        UInt32 getFragmentShaderVersion() const;
-
+        UInt32 getShadingLanguageVersion() const;
         String getEffectErrorMessages() const;
 
     private:
@@ -57,20 +54,20 @@ namespace ramses_internal
 
         const String m_vertexShader;
         const String m_fragmentShader;
+        const String m_geometryShader;
         const std::vector<String> m_compilerDefines;
         const HashMap<String, EFixedSemantics> m_semanticInputs;
         const String m_name;
 
         mutable StringOutputStream m_errorMessages;
         EffectResource* m_effectResource;
-        UInt32 m_vertexShaderVersion;
-        UInt32 m_fragmentShaderVersion;
+        UInt32 m_shadingLanguageVersion;
 
         String createDefineString() const;
         bool createShaderParts(ShaderParts& outParts, const String& defineString, const String& userShader) const;
         String mergeShaderParts(const ShaderParts& shaderParts) const;
         bool parseShader(glslang::TShader& tShader, const TBuiltInResource& glslCompilationResources, const ShaderParts& shaderParts, const String& shaderName);
-        glslang::TProgram* linkProgram(glslang::TShader* vertexShader, glslang::TShader* fragmentShader) const;
+        glslang::TProgram* linkProgram(glslang::TShader* vertexShader, glslang::TShader* fragmentShader, glslang::TShader* geometryShader) const;
         bool extractAndCheckShaderVersions(const glslang::TProgram* program);
         bool extractAndCheckExtensions(const glslang::TProgram* program);
         bool isSupportedExtension(const String& extension) const;

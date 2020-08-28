@@ -34,7 +34,7 @@ namespace ramses_internal
     class RendererScenes;
     class DisplayConfig;
     class SceneExpirationMonitor;
-    class SceneActionCollection;
+    struct SceneUpdate;
     class DataReferenceLinkManager;
     class TransformationLinkManager;
     class TextureLinkManager;
@@ -57,7 +57,7 @@ namespace ramses_internal
             IRendererResourceCache* rendererResourceCache = nullptr);
         virtual ~RendererSceneUpdater();
 
-        virtual void handleSceneActions(SceneId sceneId, SceneActionCollection&& actionsForScene);
+        virtual void handleSceneActions(SceneId sceneId, SceneUpdate&& sceneUpdate);
 
         void createDisplayContext(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle);
         void destroyDisplayContext(DisplayHandle handle);
@@ -106,7 +106,7 @@ namespace ramses_internal
         Bool areClientResourcesInUseUploaded(SceneId sceneId) const;
 
         void logTooManyFlushesAndUnsubscribeIfRemoteScene(SceneId sceneId, std::size_t numPendingFlushes);
-        void consolidatePendingSceneActions(SceneId sceneID, SceneActionCollection&& actionsForScene);
+        void consolidatePendingSceneActions(SceneId sceneID, SceneUpdate&& sceneUpdate);
         void consolidateResourceChanges(PendingData& pendingData, const SceneResourceChanges& resourceChanges, ResourceContentHashVector& newlyNeededClientResources) const;
         void requestAndUploadAndUnloadResources(DisplayHandle& activeDisplay);
         void updateEmbeddedCompositingResources(DisplayHandle& activeDisplay);

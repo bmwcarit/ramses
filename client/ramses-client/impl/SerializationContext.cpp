@@ -46,6 +46,17 @@ namespace ramses
         return ObjectIDType(0u);
     }
 
+
+    void SerializationContext::serializeSceneObjectIds(bool flag)
+    {
+        m_serializeSceneObjectIds = flag;
+    }
+
+    bool SerializationContext::getSerializeSceneObjectIds() const
+    {
+        return m_serializeSceneObjectIds;
+    }
+
     bool DeserializationContext::registerObjectImpl(RamsesObjectImpl* obj, ObjectIDType id)
     {
         if (m_objectImpls.size() <= id)

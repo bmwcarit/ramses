@@ -11,12 +11,14 @@
 #include "ConsoleUtils.h"
 
 #include "ramses-client-api/RamsesClient.h"
-#include "ramses-client-api/ResourceFileDescription.h"
-#include "ramses-client-api/ResourceFileDescriptionSet.h"
+#include "ramses-client-api/Scene.h"
+#include "ramses-client-api/ResourceDataPool.h"
+#include "ramses-client-api/Resource.h"
 #include "ramses-framework-api/RamsesFramework.h"
-#include "RamsesClientImpl.h"
-#include "ResourceFileDescriptionImpl.h"
 #include "RamsesObjectTypeUtils.h"
+#include "ramses-hmi-utils.h"
+#include "ResourceDataPoolImpl.h"
+#include "RamsesClientImpl.h"
 
 bool ResourcePacker::Pack(const RamsesResourcePackerArguments& arguments)
 {
@@ -34,26 +36,33 @@ bool ResourcePacker::Pack(const RamsesResourcePackerArguments& arguments)
         return false;
     }
 
+    ramses::Scene* scene(ramsesClient->createScene(ramses::sceneId_t{ 0xf00 }));
+    if (!scene)
+    {
+        PRINT_ERROR("failed to create ramses scene.\n");
+        return false;
+    }
+
     for(const auto& file : inputFiles)
     {
-        ramses::ResourceFileDescription fileDescription(file.c_str());
-        if (ramses::StatusOK != ramsesClient->loadResources(fileDescription))
+        if (!ramses::RamsesHMIUtils::GetResourceDataPoolForClient(*ramsesClient).addResourceDataFile(file.c_str()))
         {
             PRINT_ERROR("ramses fail to load input resource file:\"{}\".\n", file);
             return false;
         }
     }
 
-    ramses::ResourceFileDescription outputFile(arguments.getOutputResourceFile().c_str());
-    const ramses::RamsesObjectVector resourceObjects = ramsesClient->impl.getListOfResourceObjects();
-    for(const auto& resObj : resourceObjects)
+    std::vector<ramses::resourceId_t> resourceIDs;
+    ramsesClient->impl.getResourceDataPool().impl.getAllResourceDataFileResourceIds(resourceIDs);
+
+    ramses::RamsesObjectVector resourceObjects;
+    for (auto const& id : resourceIDs)
     {
-        const ramses::Resource& resource = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Resource>(*resObj);
-        outputFile.impl->m_resources.push_back(&resource);
+        if (auto res = ramses::RamsesHMIUtils::GetResourceDataPoolForClient(*ramsesClient).createResourceForScene(*scene, id))
+            resourceObjects.push_back(res);
     }
 
-    const ramses::status_t savingStatus = ramsesClient->saveResources(outputFile, arguments.getUseCompression());
-    if (ramses::StatusOK != savingStatus)
+    if (!ramses::RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(*scene, arguments.getOutputResourceFile().c_str(), arguments.getUseCompression()))
     {
         PRINT_ERROR("ramses fail to save to output resource file.\n");
         return false;

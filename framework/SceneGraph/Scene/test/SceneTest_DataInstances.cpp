@@ -33,7 +33,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, InitializesDataInstanceFieldsWithZero)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float), DataFieldInfo(EDataType_Float) }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType::Float), DataFieldInfo(EDataType::Float) }, ResourceContentHash(123u, 0u));
         const DataInstanceHandle containerHandle = this->m_scene.allocateDataInstance(dataLayout);
 
         EXPECT_EQ(0.0f, this->m_scene.getDataSingleFloat(containerHandle, DataFieldHandle(0u)));
@@ -42,7 +42,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, InitializesDataInstanceBufferFieldsWithInvalidHashAndDataBufferAndZeroDivisor)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_UInt16Buffer), DataFieldInfo(EDataType_FloatBuffer) }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType::UInt16Buffer), DataFieldInfo(EDataType::FloatBuffer) }, ResourceContentHash(123u, 0u));
         const DataInstanceHandle containerHandle = this->m_scene.allocateDataInstance(dataLayout);
 
         {
@@ -64,20 +64,22 @@ namespace ramses_internal
     {
         const DataFieldInfoVector dataFields =
         {
-            DataFieldInfo(EDataType_Float),
-            DataFieldInfo(EDataType_Vector2F),
-            DataFieldInfo(EDataType_Vector3F),
-            DataFieldInfo(EDataType_Vector4F),
-            DataFieldInfo(EDataType_Int32),
-            DataFieldInfo(EDataType_Vector2I),
-            DataFieldInfo(EDataType_Vector3I),
-            DataFieldInfo(EDataType_Vector4I),
-            DataFieldInfo(EDataType_Vector3Buffer),
-            DataFieldInfo(EDataType_TextureSampler),
-            DataFieldInfo(EDataType_Matrix22F),
-            DataFieldInfo(EDataType_Matrix33F),
-            DataFieldInfo(EDataType_Matrix44F),
-            DataFieldInfo(EDataType_DataReference)
+            DataFieldInfo(EDataType::Float),
+            DataFieldInfo(EDataType::Vector2F),
+            DataFieldInfo(EDataType::Vector3F),
+            DataFieldInfo(EDataType::Vector4F),
+            DataFieldInfo(EDataType::Int32),
+            DataFieldInfo(EDataType::Vector2I),
+            DataFieldInfo(EDataType::Vector3I),
+            DataFieldInfo(EDataType::Vector4I),
+            DataFieldInfo(EDataType::Vector3Buffer),
+            DataFieldInfo(EDataType::TextureSampler2D),
+            DataFieldInfo(EDataType::TextureSampler3D),
+            DataFieldInfo(EDataType::TextureSamplerCube),
+            DataFieldInfo(EDataType::Matrix22F),
+            DataFieldInfo(EDataType::Matrix33F),
+            DataFieldInfo(EDataType::Matrix44F),
+            DataFieldInfo(EDataType::DataReference)
         };
         const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout(dataFields, ResourceContentHash(123u, 0u));
         const DataInstanceHandle containerHandle = this->m_scene.allocateDataInstance(dataLayout);
@@ -102,14 +104,18 @@ namespace ramses_internal
             EXPECT_EQ(0u, dataResource.instancingDivisor);
         }
         EXPECT_EQ(TextureSamplerHandle::Invalid()   , this->m_scene.getDataTextureSamplerHandle           (containerHandle, DataFieldHandle(9u)));
-        EXPECT_TRUE(matrixFloatEquals(zeroMatrix22  , this->m_scene.getDataSingleMatrix22f                (containerHandle, DataFieldHandle(10u))));
-        EXPECT_TRUE(matrixFloatEquals(zeroMatrix33  , this->m_scene.getDataSingleMatrix33f                (containerHandle, DataFieldHandle(11u))));
-        EXPECT_TRUE(matrixFloatEquals(zeroMatrix44  , this->m_scene.getDataSingleMatrix44f                (containerHandle, DataFieldHandle(12u))));
-        EXPECT_EQ(DataInstanceHandle::Invalid()     , this->m_scene.getDataReference                      (containerHandle, DataFieldHandle(13u)));
+        EXPECT_EQ(TextureSamplerHandle::Invalid()   , this->m_scene.getDataTextureSamplerHandle           (containerHandle, DataFieldHandle(10u)));
+        EXPECT_EQ(TextureSamplerHandle::Invalid()   , this->m_scene.getDataTextureSamplerHandle           (containerHandle, DataFieldHandle(11u)));
+        EXPECT_TRUE(matrixFloatEquals(zeroMatrix22  , this->m_scene.getDataSingleMatrix22f                (containerHandle, DataFieldHandle(12u))));
+        EXPECT_TRUE(matrixFloatEquals(zeroMatrix33  , this->m_scene.getDataSingleMatrix33f                (containerHandle, DataFieldHandle(13u))));
+        EXPECT_TRUE(matrixFloatEquals(zeroMatrix44  , this->m_scene.getDataSingleMatrix44f                (containerHandle, DataFieldHandle(14u))));
+        EXPECT_EQ(DataInstanceHandle::Invalid()     , this->m_scene.getDataReference                      (containerHandle, DataFieldHandle(15u)));
 
         //change values
         const ResourceContentHash hash(1234u, 0);
         const TextureSamplerHandle samplerHandle(4321u);
+        const TextureSamplerHandle samplerHandle3d(4322u);
+        const TextureSamplerHandle samplerHandlecube(4323u);
         const DataInstanceHandle dataRef = DataInstanceHandle(124u);
 
         this->m_scene.setDataSingleFloat          (containerHandle, DataFieldHandle(0u) , 12.3f);
@@ -122,10 +128,12 @@ namespace ramses_internal
         this->m_scene.setDataSingleVector4i       (containerHandle, DataFieldHandle(7u) , Vector4i(14, 36, 47, 58));
         this->m_scene.setDataResource             (containerHandle, DataFieldHandle(8u) , hash, DataBufferHandle::Invalid(), 123u);
         this->m_scene.setDataTextureSamplerHandle (containerHandle, DataFieldHandle(9u), samplerHandle);
-        this->m_scene.setDataSingleMatrix22f      (containerHandle, DataFieldHandle(10u), Matrix22f(1.f, 2.f, 3.f, 4.f));
-        this->m_scene.setDataSingleMatrix33f      (containerHandle, DataFieldHandle(11u), Matrix33f::RotationEulerZYX(1.0f, 2.0f, 3.0f));
-        this->m_scene.setDataSingleMatrix44f      (containerHandle, DataFieldHandle(12u), Matrix44f::Translation(1.0f, 2.0f, 3.0f));
-        this->m_scene.setDataReference            (containerHandle, DataFieldHandle(13u), dataRef);
+        this->m_scene.setDataTextureSamplerHandle (containerHandle, DataFieldHandle(10u), samplerHandle3d);
+        this->m_scene.setDataTextureSamplerHandle (containerHandle, DataFieldHandle(11u), samplerHandlecube);
+        this->m_scene.setDataSingleMatrix22f      (containerHandle, DataFieldHandle(12u), Matrix22f(1.f, 2.f, 3.f, 4.f));
+        this->m_scene.setDataSingleMatrix33f      (containerHandle, DataFieldHandle(13u), Matrix33f::RotationEulerZYX(1.0f, 2.0f, 3.0f));
+        this->m_scene.setDataSingleMatrix44f      (containerHandle, DataFieldHandle(14u), Matrix44f::Translation(1.0f, 2.0f, 3.0f));
+        this->m_scene.setDataReference            (containerHandle, DataFieldHandle(15u), dataRef);
 
         EXPECT_EQ(12.3f                                 , this->m_scene.getDataSingleFloat                    (containerHandle, DataFieldHandle(0u)));
         EXPECT_EQ(Vector2(0.12f, 0.34f)                 , this->m_scene.getDataSingleVector2f                 (containerHandle, DataFieldHandle(1u)));
@@ -142,10 +150,12 @@ namespace ramses_internal
             EXPECT_EQ(123u, dataResourceOut.instancingDivisor);
         }
         EXPECT_EQ(samplerHandle                         , this->m_scene.getDataTextureSamplerHandle           (containerHandle, DataFieldHandle(9u)));
-        EXPECT_TRUE(matrixFloatEquals(Matrix22f(1.f, 2.f, 3.f, 4.f), this->m_scene.getDataSingleMatrix22f     (containerHandle, DataFieldHandle(10u))));
-        EXPECT_TRUE(matrixFloatEquals(Matrix33f::RotationEulerZYX(1.0f, 2.0f, 3.0f), this->m_scene.getDataSingleMatrix33f(containerHandle, DataFieldHandle(11u))));
-        EXPECT_TRUE(matrixFloatEquals(Matrix44f::Translation(1.0f, 2.0f, 3.0f), this->m_scene.getDataSingleMatrix44f(containerHandle, DataFieldHandle(12u))));
-        EXPECT_EQ(dataRef                               , this->m_scene.getDataReference                      (containerHandle, DataFieldHandle(13u)));
+        EXPECT_EQ(samplerHandle3d                       , this->m_scene.getDataTextureSamplerHandle           (containerHandle, DataFieldHandle(10u)));
+        EXPECT_EQ(samplerHandlecube                     , this->m_scene.getDataTextureSamplerHandle           (containerHandle, DataFieldHandle(11u)));
+        EXPECT_TRUE(matrixFloatEquals(Matrix22f(1.f, 2.f, 3.f, 4.f), this->m_scene.getDataSingleMatrix22f     (containerHandle, DataFieldHandle(12u))));
+        EXPECT_TRUE(matrixFloatEquals(Matrix33f::RotationEulerZYX(1.0f, 2.0f, 3.0f), this->m_scene.getDataSingleMatrix33f(containerHandle, DataFieldHandle(13u))));
+        EXPECT_TRUE(matrixFloatEquals(Matrix44f::Translation(1.0f, 2.0f, 3.0f), this->m_scene.getDataSingleMatrix44f(containerHandle, DataFieldHandle(14u))));
+        EXPECT_EQ(dataRef                               , this->m_scene.getDataReference                      (containerHandle, DataFieldHandle(15u)));
 
         this->m_scene.setDataResource(containerHandle, DataFieldHandle(8u), ResourceContentHash::Invalid(), DataBufferHandle(1u), 123u);
         {
@@ -165,7 +175,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, DataInstanceWithFieldWithElementCountGreaterOneReturnsSameValue)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Int32, 4u) }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType::Int32, 4u) }, ResourceContentHash(123u, 0u));
         const DataFieldHandle field(0u);
 
         const DataInstanceHandle instance = this->m_scene.allocateDataInstance(dataLayout);
@@ -181,7 +191,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, DataInstanceFieldsWithElementCountGreaterOneDoesNotInfluenceOtherField)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float, 3u), DataFieldInfo(EDataType_Vector4Buffer) }, ResourceContentHash::Invalid());
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType::Float, 3u), DataFieldInfo(EDataType::Vector4Buffer) }, ResourceContentHash::Invalid());
 
         const DataInstanceHandle instance = this->m_scene.allocateDataInstance(dataLayout);
         const Float inValues0[3] = { 0.f, 0.f, 0.f };

@@ -7,12 +7,9 @@
 //  -------------------------------------------------------------------------
 
 
-#include "ramses-client-api/UInt16Array.h"
-#include "ramses-client-api/UInt32Array.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/VertexDataBuffer.h"
-#include "ramses-client-api/IndexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 
 #include "GeometryBindingImpl.h"
 #include "EffectInputImpl.h"
@@ -21,13 +18,13 @@
 #include "RamsesClientImpl.h"
 #include "RamsesObjectTypeUtils.h"
 #include "Scene/ClientScene.h"
-#include "VertexDataBufferImpl.h"
-#include "IndexDataBufferImpl.h"
 #include "SceneObjectImpl.h"
 #include "SceneImpl.h"
-#include "DataBufferImpl.h"
+#include "ArrayBufferImpl.h"
 #include "RamsesObjectRegistryIterator.h"
-#include "ResourceIteratorImpl.h"
+#include "ArrayResourceUtils.h"
+#include "ObjectIteratorImpl.h"
+#include "SerializationContext.h"
 
 namespace ramses
 {
@@ -66,13 +63,9 @@ namespace ramses
     status_t GeometryBindingImpl::serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const
     {
         CHECK_RETURN_ERR(SceneObjectImpl::serialize(outStream, serializationContext));
-        resourceId_t effectResID;
-        if (nullptr != m_effectImpl)
-        {
-            effectResID = m_effectImpl->getResourceId();
-        }
-        outStream << effectResID.highPart;
-        outStream << effectResID.lowPart;
+
+        outStream << (m_effectImpl ? serializationContext.getIDForObject(m_effectImpl) : serializationContext.GetObjectIDNull());
+
         outStream << m_attributeLayout;
         outStream << m_attributeInstance;
         outStream << m_indicesCount;
@@ -83,25 +76,23 @@ namespace ramses
     status_t GeometryBindingImpl::deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext)
     {
         CHECK_RETURN_ERR(SceneObjectImpl::deserialize(inStream, serializationContext));
-        resourceId_t effectResID;
-        inStream >> effectResID.highPart;
-        inStream >> effectResID.lowPart;
-        if (effectResID.isValid())
-        {
-            Resource* rImpl = getClientImpl().getHLResource_Threadsafe(effectResID);
-            if (rImpl)
-            {
-                m_effectImpl = static_cast<EffectImpl*>(&rImpl->impl);
-            }
-            else
-            {
-                return addErrorEntry("GeometryBindingImpl::deserializeInternal failed, referenced effect resource is not available");
-            }
-        }
+
+        serializationContext.ReadDependentPointerAndStoreAsID(inStream, m_effectImpl);
 
         inStream >> m_attributeLayout;
         inStream >> m_attributeInstance;
         inStream >> m_indicesCount;
+
+        serializationContext.addForDependencyResolve(this);
+
+        return StatusOK;
+    }
+
+    status_t GeometryBindingImpl::resolveDeserializationDependencies(DeserializationContext& serializationContext)
+    {
+        CHECK_RETURN_ERR(SceneObjectImpl::resolveDeserializationDependencies(serializationContext));
+
+        serializationContext.resolveDependencyIDImplAndStoreAsPointer(m_effectImpl);
 
         return StatusOK;
     }
@@ -127,7 +118,7 @@ namespace ramses
 
     status_t GeometryBindingImpl::validateEffect(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        ResourceIteratorImpl iter(getClientImpl(), ERamsesObjectType_Effect);
+        ObjectIteratorImpl iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_Effect);
         RamsesObject* ramsesObject = iter.getNext();
         while (nullptr != ramsesObject)
         {
@@ -182,7 +173,7 @@ namespace ramses
 
     status_t GeometryBindingImpl::validateResource(uint32_t indent, ramses_internal::ResourceContentHash resourceHash, StatusObjectSet& visitedObjects) const
     {
-        const Resource* resource = getClientImpl().scanForResourceWithHash(resourceHash);
+        const Resource* resource = getSceneImpl().scanForResourceWithHash(resourceHash);
         if (nullptr == resource)
         {
             addValidationMessage(EValidationSeverity_Error, indent, "GeometryBinding is referring to resource that does not exist");
@@ -200,31 +191,22 @@ namespace ramses
             return getValidationErrorStatus();
         }
 
-        if (!dataBufferDataTypeMatchesInputType(getIScene().getDataBuffer(dataBuffer).dataType, fieldDataType))
+        if (!dataTypeMatchesInputType(getIScene().getDataBuffer(dataBuffer).dataType, fieldDataType))
         {
             addValidationMessage(EValidationSeverity_Error, indent, "GeometryBinding is referring to data buffer with type that does not match data layout field type");
             return getValidationErrorStatus();
         }
 
-        const DataBufferImpl* dataBufferImpl = findDataBuffer(dataBuffer);
+        const ArrayBufferImpl* dataBufferImpl = findDataBuffer(dataBuffer);
         assert(nullptr != dataBufferImpl);
 
         return addValidationOfDependentObject(indent, *dataBufferImpl, visitedObjects);
     }
 
-    ramses::DataBufferImpl* GeometryBindingImpl::findDataBuffer(ramses_internal::DataBufferHandle dataBufferHandle) const
+    ramses::ArrayBufferImpl* GeometryBindingImpl::findDataBuffer(ramses_internal::DataBufferHandle dataBufferHandle) const
     {
-        RamsesObjectRegistryIterator indexDataBufferIter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_IndexDataBuffer);
-        while (const IndexDataBuffer* dataBuffer = indexDataBufferIter.getNext<IndexDataBuffer>())
-        {
-            if (dataBuffer->impl.getDataBufferHandle() == dataBufferHandle)
-            {
-                return &dataBuffer->impl;
-            }
-        }
-
-        RamsesObjectRegistryIterator vertexDataBufferIter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_VertexDataBuffer);
-        while (const VertexDataBuffer* dataBuffer = vertexDataBufferIter.getNext<VertexDataBuffer>())
+        RamsesObjectRegistryIterator arrayBufferIter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_DataBufferObject);
+        while (const ArrayBuffer* dataBuffer = arrayBufferIter.getNext<ArrayBuffer>())
         {
             if (dataBuffer->impl.getDataBufferHandle() == dataBufferHandle)
             {
@@ -244,7 +226,7 @@ namespace ramses
         dataFields.reserve(attributesList.size());
 
         // Indices are always stored at fixed data slot with index IndicesDataFieldIndex
-        dataFields.push_back(ramses_internal::DataFieldInfo{ ramses_internal::EDataType_Indices, 1u, ramses_internal::EFixedSemantics_Indices });
+        dataFields.push_back(ramses_internal::DataFieldInfo{ ramses_internal::EDataType::Indices, 1u, ramses_internal::EFixedSemantics_Indices });
         for (const auto& attribInfo : attributesList)
         {
             dataFields.push_back(ramses_internal::DataFieldInfo{ attribInfo.dataType, attribInfo.elementCount, attribInfo.semantics });
@@ -276,9 +258,14 @@ namespace ramses
 
     status_t GeometryBindingImpl::setIndices(const ArrayResourceImpl& arrayResource)
     {
-        if (!isFromTheSameClientAs(arrayResource))
+        if (!isFromTheSameSceneAs(arrayResource))
         {
             return addErrorEntry("GeometryBinding::setIndices failed, indicesResource is not from the same client as this GeometryBinding.");
+        }
+
+        if (!ArrayResourceUtils::IsValidIndicesType(arrayResource.getElementType()))
+        {
+            return addErrorEntry("GeometryBinding::setIndices failed, indicesResource is not of valid data type.");
         }
 
         const ramses_internal::DataLayout& layout = getIScene().getDataLayout(m_attributeLayout);
@@ -302,11 +289,16 @@ namespace ramses
         return addErrorEntry("GeometryBinding::setIndices failed - indices slot was not enabled in this geometry.");
     }
 
-    status_t GeometryBindingImpl::setIndices(const IndexDataBufferImpl& dataBuffer)
+    status_t GeometryBindingImpl::setIndices(const ArrayBufferImpl& dataBuffer)
     {
         if (!isFromTheSameSceneAs(dataBuffer))
         {
             return addErrorEntry("GeometryBinding::setIndices failed, dataBuffer is not from the same scene as this GeometryBinding.");
+        }
+
+        if (!ArrayResourceUtils::IsValidIndicesType(dataBuffer.getDataType()))
+        {
+            return addErrorEntry("GeometryBinding::setIndices failed, arrayBuffer is not of valid data type.");
         }
 
         const ramses_internal::DataLayout& layout = getIScene().getDataLayout(m_attributeLayout);
@@ -333,11 +325,16 @@ namespace ramses
         return addErrorEntry("GeometryBinding::setIndices failed - indices slot was not enabled in this geometry.");
     }
 
-    status_t GeometryBindingImpl::setInputBuffer(const EffectInputImpl& input, const ResourceImpl& bufferResource, uint32_t instancingDivisor)
+    status_t GeometryBindingImpl::setInputBuffer(const EffectInputImpl& input, const ArrayResourceImpl& bufferResource, uint32_t instancingDivisor)
     {
-        if (!isFromTheSameClientAs(bufferResource))
+        if (!isFromTheSameSceneAs(bufferResource))
         {
             return addErrorEntry("GeometryBinding::setInputBuffer failed, bufferResource is not from the same client as the GeometryBinding.");
+        }
+
+        if (!ArrayResourceUtils::IsValidVerticesType(bufferResource.getElementType()))
+        {
+            return addErrorEntry("GeometryBinding::setInputBuffer failed, bufferResource is not of valid data type.");
         }
 
         if (input.getEffectHash() != m_effectImpl->getLowlevelResourceHash())
@@ -345,7 +342,7 @@ namespace ramses
             return addErrorEntry("GeometryBinding::setInputBuffer failed, input is not properly initialized or cannot be used with this geometry binding.");
         }
 
-        if (!resourceDataTypeMatchesInputType(bufferResource.getType(), input.getDataType()))
+        if (!dataTypeMatchesInputType(ArrayResourceUtils::ConvertDataTypeForResourceToInternal(bufferResource.getElementType()), input.getDataType()))
         {
             return addErrorEntry("GeometryBinding::setInputBuffer failed, resource buffer type does not match input data type");
         }
@@ -357,11 +354,16 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t GeometryBindingImpl::setInputBuffer(const EffectInputImpl& input, const VertexDataBufferImpl& dataBuffer, uint32_t instancingDivisor /*= 0*/)
+    status_t GeometryBindingImpl::setInputBuffer(const EffectInputImpl& input, const ArrayBufferImpl& dataBuffer, uint32_t instancingDivisor /*= 0*/)
     {
         if (!isFromTheSameSceneAs(dataBuffer))
         {
             return addErrorEntry("GeometryBinding::setInputBuffer failed, dataBuffer is not from the same scene as the GeometryBinding.");
+        }
+
+        if (!ArrayResourceUtils::IsValidVerticesType(dataBuffer.getDataType()))
+        {
+            return addErrorEntry("GeometryBinding::setInputBuffer failed, arrayBuffer is not of valid data type.");
         }
 
         if (input.getEffectHash() != m_effectImpl->getLowlevelResourceHash())
@@ -372,7 +374,7 @@ namespace ramses
         const ramses_internal::DataBufferHandle dataBufferHandle = dataBuffer.getDataBufferHandle();
         const ramses_internal::EDataType dataBufferDataType = getIScene().getDataBuffer(dataBufferHandle).dataType;
 
-        if (!dataBufferDataTypeMatchesInputType(dataBufferDataType, input.getDataType()))
+        if (!dataTypeMatchesInputType(dataBufferDataType, input.getDataType()))
         {
             return addErrorEntry("GeometryBinding::setInputBuffer failed, vertex data buffer type does not match input data type");
         }
@@ -384,39 +386,21 @@ namespace ramses
         return StatusOK;
     }
 
-    bool GeometryBindingImpl::resourceDataTypeMatchesInputType(ERamsesObjectType resourceType, ramses_internal::EDataType inputDataType)
+    bool GeometryBindingImpl::dataTypeMatchesInputType(ramses_internal::EDataType resourceType, ramses_internal::EDataType inputDataType)
     {
         switch (resourceType)
         {
-            // Currently only these types are supported as vertex array attributes
-        case ERamsesObjectType_FloatArray:
-            return inputDataType == ramses_internal::EDataType_FloatBuffer;
-        case ERamsesObjectType_Vector2fArray:
-            return inputDataType == ramses_internal::EDataType_Vector2Buffer;
-        case ERamsesObjectType_Vector3fArray:
-            return inputDataType == ramses_internal::EDataType_Vector3Buffer;
-        case ERamsesObjectType_Vector4fArray:
-            return inputDataType == ramses_internal::EDataType_Vector4Buffer;
-        default:
-            return false;
-        }
-    }
-
-    bool GeometryBindingImpl::dataBufferDataTypeMatchesInputType(ramses_internal::EDataType resourceType, ramses_internal::EDataType inputDataType)
-    {
-        switch (resourceType)
-        {
-        case ramses_internal::EDataType_UInt16:
-        case ramses_internal::EDataType_UInt32:
-            return inputDataType == ramses_internal::EDataType_Indices;
-        case ramses_internal::EDataType_Float:
-            return inputDataType == ramses_internal::EDataType_FloatBuffer;
-        case ramses_internal::EDataType_Vector2F:
-            return inputDataType == ramses_internal::EDataType_Vector2Buffer;
-        case ramses_internal::EDataType_Vector3F:
-            return inputDataType == ramses_internal::EDataType_Vector3Buffer;
-        case ramses_internal::EDataType_Vector4F:
-            return inputDataType == ramses_internal::EDataType_Vector4Buffer;
+        case ramses_internal::EDataType::UInt16:
+        case ramses_internal::EDataType::UInt32:
+            return inputDataType == ramses_internal::EDataType::Indices;
+        case ramses_internal::EDataType::Float:
+            return inputDataType == ramses_internal::EDataType::FloatBuffer;
+        case ramses_internal::EDataType::Vector2F:
+            return inputDataType == ramses_internal::EDataType::Vector2Buffer;
+        case ramses_internal::EDataType::Vector3F:
+            return inputDataType == ramses_internal::EDataType::Vector3Buffer;
+        case ramses_internal::EDataType::Vector4F:
+            return inputDataType == ramses_internal::EDataType::Vector4Buffer;
         default:
             return false;
         }

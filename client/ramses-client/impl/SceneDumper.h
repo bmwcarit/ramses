@@ -23,9 +23,8 @@ namespace ramses
     class RamsesObjectRegistry;
     class RamsesObject;
 
-    class VertexDataBufferImpl;
+    class ArrayBufferImpl;
     class GeometryBindingImpl;
-    class IndexDataBufferImpl;
     class Texture2DBufferImpl;
     class TextureSamplerImpl;
     class StreamTextureImpl;

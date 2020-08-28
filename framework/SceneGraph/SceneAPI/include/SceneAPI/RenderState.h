@@ -12,6 +12,7 @@
 #include "Common/BitForgeMacro.h"
 #include "Utils/LoggingUtils.h"
 #include "Math3d/Quad.h"
+#include "Math3d/Vector4.h"
 
 namespace ramses_internal
 {
@@ -34,6 +35,15 @@ namespace ramses_internal
         OneMinusSrcAlpha,
         DstAlpha,
         OneMinusDstAlpha,
+        SrcColor,
+        OneMinusSrcColor,
+        DstColor,
+        OneMinusDstColor,
+        ConstColor,
+        OneMinusConstColor,
+        ConstAlpha,
+        OneMinusConstAlpha,
+        AlphaSaturate,
         Invalid,
         NUMBER_OF_ELEMENTS
     };
@@ -152,7 +162,16 @@ namespace ramses_internal
         "SrcAlpha",
         "OneMinusSrcAlpha",
         "DstAlpha",
-        "OneMinustDstAlpha",
+        "OneMinusDstAlpha",
+        "SrcColor",
+        "OneMinusSrcColor",
+        "DstColor",
+        "OneMinusDstColor",
+        "ConstColor",
+        "OneMinusConstColor",
+        "ConstAlpha",
+        "OneMinusConstAlpha",
+        "AlphaSaturate",
         "Invalid",
     };
 
@@ -253,6 +272,7 @@ namespace ramses_internal
         };
 
         ScissorRegion   scissorRegion;
+        Vector4         blendColor{ 0.f, 0.f, 0.f, 0.f };
         EBlendFactor    blendFactorSrcColor = EBlendFactor::SrcAlpha;
         EBlendFactor    blendFactorDstColor = EBlendFactor::OneMinusSrcAlpha;
         EBlendFactor    blendFactorSrcAlpha = EBlendFactor::One;
@@ -271,7 +291,14 @@ namespace ramses_internal
         EStencilOp      stencilOpDepthPass = EStencilOp::Keep;
         uint8_t         stencilRefValue = 0;
         uint8_t         stencilMask = 0xFF;
+        // explicit padding, consume when adding members
+        uint8_t padding[2] = { 0 };
     };
+
+    static constexpr size_t ExpectedSize = sizeof(RenderState::ScissorRegion) + sizeof(Vector4) + 4 * sizeof(EBlendFactor) + 2 * sizeof(EBlendOperation) + sizeof(ColorWriteMask)
+        + sizeof(ECullMode) + sizeof(EDrawMode) + sizeof(EDepthFunc) + sizeof(EDepthWrite) + sizeof(EScissorTest) + sizeof(EStencilFunc)
+        + 3 * sizeof(EStencilOp) + sizeof(RenderState::stencilRefValue) + sizeof(RenderState::stencilMask) + sizeof(RenderState::padding);
+    static_assert(sizeof(RenderState) == ExpectedSize, "Avoid padding in this struct, add padding explicitly as member");
 }
 
 #endif

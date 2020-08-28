@@ -24,7 +24,6 @@ public:
             ramses::TextCache&      textCache,
             ramses::FontInstanceId  fontInstance,
             int32_t                 lineHeight,
-            ramses::RamsesClient&   client,
             ramses::Scene&          scene,
             ramses::RenderGroup*    renderGroup,
             int32_t                 renderOrder);
@@ -38,7 +37,7 @@ private:
                          ramses::TextCache&         textCache,
                          ramses::FontInstanceId     fontInstance,
                          int32_t                    lineHeight,
-                         ramses::RamsesClient&      client,
+                         ramses::Scene&             scene,
                          ramses::Node&              node,
                          ramses::LayoutUtils::StringBoundingBox& boundingBox);
 

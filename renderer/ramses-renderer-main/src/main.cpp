@@ -21,6 +21,9 @@
 #include "RendererMate.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "ContentStates.h"
+#include "Ramsh/RamshCommandExit.h"
+#include "RamsesFrameworkImpl.h"
+#include "Ramsh/Ramsh.h"
 
 #include <atomic>
 #include <unordered_set>
@@ -173,6 +176,8 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
     config.setDLTApplicationID("REND");
     ramses::RamsesFramework framework(config);
+    ramses_internal::RamshCommandExit commandExit;
+    framework.impl.getRamsh().add(commandExit);
 
     if (helpRequested)
     {
@@ -204,7 +209,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
         //This is a workaround for the need of unique Wayland surface IDs.
         //Typically this will be configured by the applications which use ramses, but the stand-alone renderer does not allow
         //to have explicit configuration of several Wayland surface IDs as command line arguments
-        displayConfig.setWaylandIviSurfaceID(displayConfig.getWaylandIviSurfaceID() + i);
+        displayConfig.setWaylandIviSurfaceID(ramses::waylandIviSurfaceId_t(displayConfig.getWaylandIviSurfaceID().getValue() + i));
 
         renderer.createDisplay(displayConfig);
     }
@@ -222,7 +227,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
         Handler handler(dcsmContentControl);
         dcsmContentControl.update(0u, handler);
 
-        while (handler.readyContents.empty())
+        while (!commandExit.exitRequested() && handler.readyContents.empty())
         {
             auto now = std::chrono::system_clock::now();
             auto tsNow = std::chrono::duration_cast<std::chrono::milliseconds>((now).time_since_epoch()).count();
@@ -232,7 +237,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
         KeyGatherer keyGatherer;
         bool hasSizeA = true;
         bool isVisible = true;
-        while (!handler.readyContents.empty())
+        while (!commandExit.exitRequested() && !handler.readyContents.empty())
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
             auto now = std::chrono::system_clock::now();
@@ -285,7 +290,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
             rendererMate.setSceneState(command.sceneId, ramses::RendererSceneState::Rendered);
         }
 
-        while (rendererMate.isRunning())
+        while (!commandExit.exitRequested() && rendererMate.isRunning())
         {
             rendererMate.dispatchAndFlush(dmEventHandler);
             ramses_internal::PlatformThread::Sleep(20u);

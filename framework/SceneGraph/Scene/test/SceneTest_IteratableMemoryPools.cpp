@@ -125,7 +125,7 @@ namespace ramses_internal
 
     TYPED_TEST(AnIteratableScene, CanIterateOverDataInstances)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType_Float), DataFieldInfo(EDataType_Float) }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType::Float), DataFieldInfo(EDataType::Float) }, ResourceContentHash(123u, 0u));
 
         auto allocateF = std::bind(&TypeParam::allocateDataInstance, &this->m_scene, dataLayout, DataInstanceHandle{});
         auto releaseF = std::bind(&TypeParam::releaseDataInstance, &this->m_scene, std::placeholders::_1);
@@ -170,8 +170,8 @@ namespace ramses_internal
 
     TYPED_TEST(AnIteratableScene, CanIterateOverBlitPasses)
     {
-        const auto srcRenderBufferHandle = this->m_scene.allocateRenderBuffer({ 1u, 2u, ERenderBufferType_DepthBuffer, ETextureFormat_Depth16, ERenderBufferAccessMode_ReadWrite, 0u });
-        const auto dstRenderBufferHandle = this->m_scene.allocateRenderBuffer({ 1u, 2u, ERenderBufferType_DepthBuffer, ETextureFormat_Depth16, ERenderBufferAccessMode_ReadWrite, 0u });
+        const auto srcRenderBufferHandle = this->m_scene.allocateRenderBuffer({ 1u, 2u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth16, ERenderBufferAccessMode_ReadWrite, 0u });
+        const auto dstRenderBufferHandle = this->m_scene.allocateRenderBuffer({ 1u, 2u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth16, ERenderBufferAccessMode_ReadWrite, 0u });
 
         auto allocateF = std::bind(&TypeParam::allocateBlitPass, &this->m_scene, srcRenderBufferHandle, dstRenderBufferHandle, BlitPassHandle{});
         auto releaseF = std::bind(&TypeParam::releaseBlitPass, &this->m_scene, std::placeholders::_1);
@@ -194,7 +194,7 @@ namespace ramses_internal
 
     TYPED_TEST(AnIteratableScene, CanIterateOverRenderBuffers)
     {
-        const RenderBuffer renderBuffer{ 1u, 2u, ERenderBufferType_DepthBuffer, ETextureFormat_Depth16, ERenderBufferAccessMode_ReadWrite, 0u };
+        const RenderBuffer renderBuffer{ 1u, 2u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth16, ERenderBufferAccessMode_ReadWrite, 0u };
         auto allocateF = std::bind(&TypeParam::allocateRenderBuffer, &this->m_scene, renderBuffer, RenderBufferHandle{});
         auto releaseF = std::bind(&TypeParam::releaseRenderBuffer, &this->m_scene, std::placeholders::_1);
         this->runTest(allocateF, releaseF, this->m_scene.getRenderBuffers());
@@ -209,14 +209,14 @@ namespace ramses_internal
 
     TYPED_TEST(AnIteratableScene, CanIterateOverDataBuffers)
     {
-        auto allocateF = std::bind(&TypeParam::allocateDataBuffer, &this->m_scene, EDataBufferType::IndexBuffer, EDataType::EDataType_Int32, 4u, DataBufferHandle{});
+        auto allocateF = std::bind(&TypeParam::allocateDataBuffer, &this->m_scene, EDataBufferType::IndexBuffer, EDataType::Int32, 4u, DataBufferHandle{});
         auto releaseF = std::bind(&TypeParam::releaseDataBuffer, &this->m_scene, std::placeholders::_1);
         this->runTest(allocateF, releaseF, this->m_scene.getDataBuffers());
     }
 
     TYPED_TEST(AnIteratableScene, CanIterateOverTextureBuffers)
     {
-        auto allocateF = std::bind(&TypeParam::allocateTextureBuffer, &this->m_scene, ETextureFormat_R16F, MipMapDimensions{ {1, 1} }, TextureBufferHandle{});
+        auto allocateF = std::bind(&TypeParam::allocateTextureBuffer, &this->m_scene, ETextureFormat::R16F, MipMapDimensions{ {1, 1} }, TextureBufferHandle{});
         auto releaseF = std::bind(&TypeParam::releaseTextureBuffer, &this->m_scene, std::placeholders::_1);
         this->runTest(allocateF, releaseF, this->m_scene.getTextureBuffers());
     }

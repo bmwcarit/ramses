@@ -12,6 +12,7 @@
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/TextureEnums.h"
 #include "ramses-client-api/MipLevelData.h"
+#include "ramses-client-api/TextureSwizzle.h"
 #include "SceneAPI/TextureEnums.h"
 #include "Resource/TextureMetaInfo.h"
 #include "PlatformAbstraction/PlatformMemory.h"
@@ -28,109 +29,109 @@ namespace ramses
         {
             switch (textureformat)
             {
-            case ETextureFormat_R8:
-                return ramses_internal::ETextureFormat_R8;
+            case ETextureFormat::R8:
+                return ramses_internal::ETextureFormat::R8;
 
-            case ETextureFormat_RG8:
-                return ramses_internal::ETextureFormat_RG8;
+            case ETextureFormat::RG8:
+                return ramses_internal::ETextureFormat::RG8;
 
-            case ETextureFormat_RGB8:
-                return ramses_internal::ETextureFormat_RGB8;
-            case ETextureFormat_RGB565:
-                return ramses_internal::ETextureFormat_RGB565;
+            case ETextureFormat::RGB8:
+                return ramses_internal::ETextureFormat::RGB8;
+            case ETextureFormat::RGB565:
+                return ramses_internal::ETextureFormat::RGB565;
 
-            case ETextureFormat_RGBA8:
-                return ramses_internal::ETextureFormat_RGBA8;
-            case ETextureFormat_RGBA4:
-                return ramses_internal::ETextureFormat_RGBA4;
-            case ETextureFormat_RGBA5551:
-                return ramses_internal::ETextureFormat_RGBA5551;
+            case ETextureFormat::RGBA8:
+                return ramses_internal::ETextureFormat::RGBA8;
+            case ETextureFormat::RGBA4:
+                return ramses_internal::ETextureFormat::RGBA4;
+            case ETextureFormat::RGBA5551:
+                return ramses_internal::ETextureFormat::RGBA5551;
 
-            case ETextureFormat_ETC2RGB:
-                return ramses_internal::ETextureFormat_ETC2RGB;
-            case ETextureFormat_ETC2RGBA:
-                return ramses_internal::ETextureFormat_ETC2RGBA;
-            case ETextureFormat_ASTC_RGBA_4x4:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_4x4;
-            case ETextureFormat_ASTC_RGBA_5x4:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_5x4;
-            case ETextureFormat_ASTC_RGBA_5x5:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_5x5;
-            case ETextureFormat_ASTC_RGBA_6x5:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_6x5;
-            case ETextureFormat_ASTC_RGBA_6x6:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_6x6;
-            case ETextureFormat_ASTC_RGBA_8x5:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_8x5;
-            case ETextureFormat_ASTC_RGBA_8x6:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_8x6;
-            case ETextureFormat_ASTC_RGBA_8x8:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_8x8;
-            case ETextureFormat_ASTC_RGBA_10x5:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_10x5;
-            case ETextureFormat_ASTC_RGBA_10x6:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_10x6;
-            case ETextureFormat_ASTC_RGBA_10x8:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_10x8;
-            case ETextureFormat_ASTC_RGBA_10x10:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_10x10;
-            case ETextureFormat_ASTC_RGBA_12x10:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_12x10;
-            case ETextureFormat_ASTC_RGBA_12x12:
-                return ramses_internal::ETextureFormat_ASTC_RGBA_12x12;
-            case ETextureFormat_ASTC_SRGBA_4x4:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_4x4;
-            case ETextureFormat_ASTC_SRGBA_5x4:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_5x4;
-            case ETextureFormat_ASTC_SRGBA_5x5:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_5x5;
-            case ETextureFormat_ASTC_SRGBA_6x5:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_6x5;
-            case ETextureFormat_ASTC_SRGBA_6x6:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_6x6;
-            case ETextureFormat_ASTC_SRGBA_8x5:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_8x5;
-            case ETextureFormat_ASTC_SRGBA_8x6:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_8x6;
-            case ETextureFormat_ASTC_SRGBA_8x8:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_8x8;
-            case ETextureFormat_ASTC_SRGBA_10x5:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_10x5;
-            case ETextureFormat_ASTC_SRGBA_10x6:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_10x6;
-            case ETextureFormat_ASTC_SRGBA_10x8:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_10x8;
-            case ETextureFormat_ASTC_SRGBA_10x10:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_10x10;
-            case ETextureFormat_ASTC_SRGBA_12x10:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_12x10;
-            case ETextureFormat_ASTC_SRGBA_12x12:
-                return ramses_internal::ETextureFormat_ASTC_SRGBA_12x12;
-            case ETextureFormat_R16F:
-                return ramses_internal::ETextureFormat_R16F;
-            case ETextureFormat_R32F:
-                return ramses_internal::ETextureFormat_R32F;
-            case ETextureFormat_RG16F:
-                return ramses_internal::ETextureFormat_RG16F;
-            case ETextureFormat_RG32F:
-                return ramses_internal::ETextureFormat_RG32F;
-            case ETextureFormat_RGB16F:
-                return ramses_internal::ETextureFormat_RGB16F;
-            case ETextureFormat_RGB32F:
-                return ramses_internal::ETextureFormat_RGB32F;
-            case ETextureFormat_RGBA16F:
-                return ramses_internal::ETextureFormat_RGBA16F;
-            case ETextureFormat_RGBA32F:
-                return ramses_internal::ETextureFormat_RGBA32F;
+            case ETextureFormat::ETC2RGB:
+                return ramses_internal::ETextureFormat::ETC2RGB;
+            case ETextureFormat::ETC2RGBA:
+                return ramses_internal::ETextureFormat::ETC2RGBA;
+            case ETextureFormat::ASTC_RGBA_4x4:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_4x4;
+            case ETextureFormat::ASTC_RGBA_5x4:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_5x4;
+            case ETextureFormat::ASTC_RGBA_5x5:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_5x5;
+            case ETextureFormat::ASTC_RGBA_6x5:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_6x5;
+            case ETextureFormat::ASTC_RGBA_6x6:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_6x6;
+            case ETextureFormat::ASTC_RGBA_8x5:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_8x5;
+            case ETextureFormat::ASTC_RGBA_8x6:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_8x6;
+            case ETextureFormat::ASTC_RGBA_8x8:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_8x8;
+            case ETextureFormat::ASTC_RGBA_10x5:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_10x5;
+            case ETextureFormat::ASTC_RGBA_10x6:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_10x6;
+            case ETextureFormat::ASTC_RGBA_10x8:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_10x8;
+            case ETextureFormat::ASTC_RGBA_10x10:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_10x10;
+            case ETextureFormat::ASTC_RGBA_12x10:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_12x10;
+            case ETextureFormat::ASTC_RGBA_12x12:
+                return ramses_internal::ETextureFormat::ASTC_RGBA_12x12;
+            case ETextureFormat::ASTC_SRGBA_4x4:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_4x4;
+            case ETextureFormat::ASTC_SRGBA_5x4:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_5x4;
+            case ETextureFormat::ASTC_SRGBA_5x5:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_5x5;
+            case ETextureFormat::ASTC_SRGBA_6x5:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_6x5;
+            case ETextureFormat::ASTC_SRGBA_6x6:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_6x6;
+            case ETextureFormat::ASTC_SRGBA_8x5:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_8x5;
+            case ETextureFormat::ASTC_SRGBA_8x6:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_8x6;
+            case ETextureFormat::ASTC_SRGBA_8x8:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_8x8;
+            case ETextureFormat::ASTC_SRGBA_10x5:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_10x5;
+            case ETextureFormat::ASTC_SRGBA_10x6:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_10x6;
+            case ETextureFormat::ASTC_SRGBA_10x8:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_10x8;
+            case ETextureFormat::ASTC_SRGBA_10x10:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_10x10;
+            case ETextureFormat::ASTC_SRGBA_12x10:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_12x10;
+            case ETextureFormat::ASTC_SRGBA_12x12:
+                return ramses_internal::ETextureFormat::ASTC_SRGBA_12x12;
+            case ETextureFormat::R16F:
+                return ramses_internal::ETextureFormat::R16F;
+            case ETextureFormat::R32F:
+                return ramses_internal::ETextureFormat::R32F;
+            case ETextureFormat::RG16F:
+                return ramses_internal::ETextureFormat::RG16F;
+            case ETextureFormat::RG32F:
+                return ramses_internal::ETextureFormat::RG32F;
+            case ETextureFormat::RGB16F:
+                return ramses_internal::ETextureFormat::RGB16F;
+            case ETextureFormat::RGB32F:
+                return ramses_internal::ETextureFormat::RGB32F;
+            case ETextureFormat::RGBA16F:
+                return ramses_internal::ETextureFormat::RGBA16F;
+            case ETextureFormat::RGBA32F:
+                return ramses_internal::ETextureFormat::RGBA32F;
 
-            case ETextureFormat_SRGB8:
-                return ramses_internal::ETextureFormat_SRGB8;
-            case ETextureFormat_SRGB8_ALPHA8:
-                return ramses_internal::ETextureFormat_SRGB8_ALPHA8;
+            case ETextureFormat::SRGB8:
+                return ramses_internal::ETextureFormat::SRGB8;
+            case ETextureFormat::SRGB8_ALPHA8:
+                return ramses_internal::ETextureFormat::SRGB8_ALPHA8;
 
             default:
                 assert(false);
-                return ramses_internal::ETextureFormat_RGBA8;
+                return ramses_internal::ETextureFormat::RGBA8;
             }
         }
 
@@ -138,111 +139,111 @@ namespace ramses
         {
             switch (textureformat)
             {
-            case ramses_internal::ETextureFormat_R8:
-                return ETextureFormat_R8;
+            case ramses_internal::ETextureFormat::R8:
+                return ETextureFormat::R8;
 
-            case ramses_internal::ETextureFormat_RG8:
-                return ETextureFormat_RG8;
+            case ramses_internal::ETextureFormat::RG8:
+                return ETextureFormat::RG8;
 
-            case ramses_internal::ETextureFormat_RGB8:
-                return ETextureFormat_RGB8;
-            case ramses_internal::ETextureFormat_RGB565:
-                return ETextureFormat_RGB565;
+            case ramses_internal::ETextureFormat::RGB8:
+                return ETextureFormat::RGB8;
+            case ramses_internal::ETextureFormat::RGB565:
+                return ETextureFormat::RGB565;
 
-            case ramses_internal::ETextureFormat_RGBA8:
-                return ETextureFormat_RGBA8;
-            case ramses_internal::ETextureFormat_RGBA4:
-                return ETextureFormat_RGBA4;
-            case ramses_internal::ETextureFormat_RGBA5551:
-                return ETextureFormat_RGBA5551;
+            case ramses_internal::ETextureFormat::RGBA8:
+                return ETextureFormat::RGBA8;
+            case ramses_internal::ETextureFormat::RGBA4:
+                return ETextureFormat::RGBA4;
+            case ramses_internal::ETextureFormat::RGBA5551:
+                return ETextureFormat::RGBA5551;
 
-            case ramses_internal::ETextureFormat_ETC2RGB:
-                return ETextureFormat_ETC2RGB;
-            case ramses_internal::ETextureFormat_ETC2RGBA:
-                return ETextureFormat_ETC2RGBA;
+            case ramses_internal::ETextureFormat::ETC2RGB:
+                return ETextureFormat::ETC2RGB;
+            case ramses_internal::ETextureFormat::ETC2RGBA:
+                return ETextureFormat::ETC2RGBA;
 
-            case ramses_internal::ETextureFormat_ASTC_RGBA_4x4:
-                return ETextureFormat_ASTC_RGBA_4x4;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_5x4:
-                return ETextureFormat_ASTC_RGBA_5x4;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_5x5:
-                return ETextureFormat_ASTC_RGBA_5x5;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_6x5:
-                return ETextureFormat_ASTC_RGBA_6x5;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_6x6:
-                return ETextureFormat_ASTC_RGBA_6x6;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_8x5:
-                return ETextureFormat_ASTC_RGBA_8x5;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_8x6:
-                return ETextureFormat_ASTC_RGBA_8x6;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_8x8:
-                return ETextureFormat_ASTC_RGBA_8x8;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_10x5:
-                return ETextureFormat_ASTC_RGBA_10x5;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_10x6:
-                return ETextureFormat_ASTC_RGBA_10x6;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_10x8:
-                return ETextureFormat_ASTC_RGBA_10x8;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_10x10:
-                return ETextureFormat_ASTC_RGBA_10x10;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_12x10:
-                return ETextureFormat_ASTC_RGBA_12x10;
-            case ramses_internal::ETextureFormat_ASTC_RGBA_12x12:
-                return ETextureFormat_ASTC_RGBA_12x12;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_4x4:
-                return ETextureFormat_ASTC_SRGBA_4x4;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_5x4:
-                return ETextureFormat_ASTC_SRGBA_5x4;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_5x5:
-                return ETextureFormat_ASTC_SRGBA_5x5;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_6x5:
-                return ETextureFormat_ASTC_SRGBA_6x5;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_6x6:
-                return ETextureFormat_ASTC_SRGBA_6x6;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_8x5:
-                return ETextureFormat_ASTC_SRGBA_8x5;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_8x6:
-                return ETextureFormat_ASTC_SRGBA_8x6;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_8x8:
-                return ETextureFormat_ASTC_SRGBA_8x8;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_10x5:
-                return ETextureFormat_ASTC_SRGBA_10x5;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_10x6:
-                return ETextureFormat_ASTC_SRGBA_10x6;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_10x8:
-                return ETextureFormat_ASTC_SRGBA_10x8;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_10x10:
-                return ETextureFormat_ASTC_SRGBA_10x10;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_12x10:
-                return ETextureFormat_ASTC_SRGBA_12x10;
-            case ramses_internal::ETextureFormat_ASTC_SRGBA_12x12:
-                return ETextureFormat_ASTC_SRGBA_12x12;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_4x4:
+                return ETextureFormat::ASTC_RGBA_4x4;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_5x4:
+                return ETextureFormat::ASTC_RGBA_5x4;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_5x5:
+                return ETextureFormat::ASTC_RGBA_5x5;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_6x5:
+                return ETextureFormat::ASTC_RGBA_6x5;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_6x6:
+                return ETextureFormat::ASTC_RGBA_6x6;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_8x5:
+                return ETextureFormat::ASTC_RGBA_8x5;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_8x6:
+                return ETextureFormat::ASTC_RGBA_8x6;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_8x8:
+                return ETextureFormat::ASTC_RGBA_8x8;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_10x5:
+                return ETextureFormat::ASTC_RGBA_10x5;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_10x6:
+                return ETextureFormat::ASTC_RGBA_10x6;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_10x8:
+                return ETextureFormat::ASTC_RGBA_10x8;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_10x10:
+                return ETextureFormat::ASTC_RGBA_10x10;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_12x10:
+                return ETextureFormat::ASTC_RGBA_12x10;
+            case ramses_internal::ETextureFormat::ASTC_RGBA_12x12:
+                return ETextureFormat::ASTC_RGBA_12x12;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_4x4:
+                return ETextureFormat::ASTC_SRGBA_4x4;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_5x4:
+                return ETextureFormat::ASTC_SRGBA_5x4;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_5x5:
+                return ETextureFormat::ASTC_SRGBA_5x5;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_6x5:
+                return ETextureFormat::ASTC_SRGBA_6x5;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_6x6:
+                return ETextureFormat::ASTC_SRGBA_6x6;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_8x5:
+                return ETextureFormat::ASTC_SRGBA_8x5;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_8x6:
+                return ETextureFormat::ASTC_SRGBA_8x6;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_8x8:
+                return ETextureFormat::ASTC_SRGBA_8x8;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_10x5:
+                return ETextureFormat::ASTC_SRGBA_10x5;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_10x6:
+                return ETextureFormat::ASTC_SRGBA_10x6;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_10x8:
+                return ETextureFormat::ASTC_SRGBA_10x8;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_10x10:
+                return ETextureFormat::ASTC_SRGBA_10x10;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_12x10:
+                return ETextureFormat::ASTC_SRGBA_12x10;
+            case ramses_internal::ETextureFormat::ASTC_SRGBA_12x12:
+                return ETextureFormat::ASTC_SRGBA_12x12;
 
-            case ramses_internal::ETextureFormat_R16F:
-                return ETextureFormat_R16F;
-            case ramses_internal::ETextureFormat_R32F:
-                return ETextureFormat_R32F;
-            case ramses_internal::ETextureFormat_RG16F:
-                return ETextureFormat_RG16F;
-            case ramses_internal::ETextureFormat_RG32F:
-                return ETextureFormat_RG32F;
-            case ramses_internal::ETextureFormat_RGB16F:
-                return ETextureFormat_RGB16F;
-            case ramses_internal::ETextureFormat_RGB32F:
-                return ETextureFormat_RGB32F;
-            case ramses_internal::ETextureFormat_RGBA16F:
-                return ETextureFormat_RGBA16F;
-            case ramses_internal::ETextureFormat_RGBA32F:
-                return ETextureFormat_RGBA32F;
+            case ramses_internal::ETextureFormat::R16F:
+                return ETextureFormat::R16F;
+            case ramses_internal::ETextureFormat::R32F:
+                return ETextureFormat::R32F;
+            case ramses_internal::ETextureFormat::RG16F:
+                return ETextureFormat::RG16F;
+            case ramses_internal::ETextureFormat::RG32F:
+                return ETextureFormat::RG32F;
+            case ramses_internal::ETextureFormat::RGB16F:
+                return ETextureFormat::RGB16F;
+            case ramses_internal::ETextureFormat::RGB32F:
+                return ETextureFormat::RGB32F;
+            case ramses_internal::ETextureFormat::RGBA16F:
+                return ETextureFormat::RGBA16F;
+            case ramses_internal::ETextureFormat::RGBA32F:
+                return ETextureFormat::RGBA32F;
 
-            case ramses_internal::ETextureFormat_SRGB8:
-                return ETextureFormat_SRGB8;
-            case ramses_internal::ETextureFormat_SRGB8_ALPHA8:
-                return ETextureFormat_SRGB8_ALPHA8;
+            case ramses_internal::ETextureFormat::SRGB8:
+                return ETextureFormat::SRGB8;
+            case ramses_internal::ETextureFormat::SRGB8_ALPHA8:
+                return ETextureFormat::SRGB8_ALPHA8;
 
             default:
                 assert(false);
-                return ETextureFormat_RGBA8;
+                return ETextureFormat::RGBA8;
             }
         }
 
@@ -300,90 +301,100 @@ namespace ramses
             };
         }
 
+        static TextureSwizzle GetTextureSwizzleFromInternal(const ramses_internal::TextureSwizzleArray& swizzle)
+        {
+            return TextureSwizzle{
+                GetTextureChannelColorFromInternal(swizzle[0]),
+                GetTextureChannelColorFromInternal(swizzle[1]),
+                GetTextureChannelColorFromInternal(swizzle[2]),
+                GetTextureChannelColorFromInternal(swizzle[3])
+            };
+        }
+
         static bool IsTextureSizeSupportedByFormat(uint32_t width, uint32_t height, ETextureFormat textureformat)
         {
             switch (textureformat)
             {
-            case ETextureFormat_R8:
-            case ETextureFormat_RG8:
-            case ETextureFormat_RGB8:
-            case ETextureFormat_RGB565:
-            case ETextureFormat_RGBA8:
-            case ETextureFormat_RGBA4:
-            case ETextureFormat_RGBA5551:
-            case ETextureFormat_R16F:
-            case ETextureFormat_R32F:
-            case ETextureFormat_RG16F:
-            case ETextureFormat_RG32F:
-            case ETextureFormat_RGB16F:
-            case ETextureFormat_RGB32F:
-            case ETextureFormat_RGBA16F:
-            case ETextureFormat_RGBA32F:
-            case ETextureFormat_SRGB8:
-            case ETextureFormat_SRGB8_ALPHA8:
+            case ETextureFormat::R8:
+            case ETextureFormat::RG8:
+            case ETextureFormat::RGB8:
+            case ETextureFormat::RGB565:
+            case ETextureFormat::RGBA8:
+            case ETextureFormat::RGBA4:
+            case ETextureFormat::RGBA5551:
+            case ETextureFormat::R16F:
+            case ETextureFormat::R32F:
+            case ETextureFormat::RG16F:
+            case ETextureFormat::RG32F:
+            case ETextureFormat::RGB16F:
+            case ETextureFormat::RGB32F:
+            case ETextureFormat::RGBA16F:
+            case ETextureFormat::RGBA32F:
+            case ETextureFormat::SRGB8:
+            case ETextureFormat::SRGB8_ALPHA8:
                 // no special requirements
                 return true;
 
-            case ETextureFormat_ETC2RGB:
-            case ETextureFormat_ETC2RGBA:
-            case ETextureFormat_ASTC_RGBA_4x4:
-            case ETextureFormat_ASTC_SRGBA_4x4:
+            case ETextureFormat::ETC2RGB:
+            case ETextureFormat::ETC2RGBA:
+            case ETextureFormat::ASTC_RGBA_4x4:
+            case ETextureFormat::ASTC_SRGBA_4x4:
                 return (width % 4 == 0) && (height % 4 == 0);
 
-            case ETextureFormat_ASTC_RGBA_5x4:
-            case ETextureFormat_ASTC_SRGBA_5x4:
+            case ETextureFormat::ASTC_RGBA_5x4:
+            case ETextureFormat::ASTC_SRGBA_5x4:
                 return (width % 5 == 0) && (height % 4 == 0);
 
-            case ETextureFormat_ASTC_RGBA_5x5:
-            case ETextureFormat_ASTC_SRGBA_5x5:
+            case ETextureFormat::ASTC_RGBA_5x5:
+            case ETextureFormat::ASTC_SRGBA_5x5:
                 return (width % 5 == 0) && (height % 5 == 0);
 
-            case ETextureFormat_ASTC_RGBA_6x5:
-            case ETextureFormat_ASTC_SRGBA_6x5:
+            case ETextureFormat::ASTC_RGBA_6x5:
+            case ETextureFormat::ASTC_SRGBA_6x5:
                 return (width % 6 == 0) && (height % 5 == 0);
 
-            case ETextureFormat_ASTC_RGBA_6x6:
-            case ETextureFormat_ASTC_SRGBA_6x6:
+            case ETextureFormat::ASTC_RGBA_6x6:
+            case ETextureFormat::ASTC_SRGBA_6x6:
                 return (width % 6 == 0) && (height % 6 == 0);
 
-            case ETextureFormat_ASTC_RGBA_8x5:
-            case ETextureFormat_ASTC_SRGBA_8x5:
+            case ETextureFormat::ASTC_RGBA_8x5:
+            case ETextureFormat::ASTC_SRGBA_8x5:
                 return (width % 8 == 0) && (height % 5 == 0);
 
-            case ETextureFormat_ASTC_RGBA_8x6:
-            case ETextureFormat_ASTC_SRGBA_8x6:
+            case ETextureFormat::ASTC_RGBA_8x6:
+            case ETextureFormat::ASTC_SRGBA_8x6:
                 return (width % 8 == 0) && (height % 6 == 0);
 
-            case ETextureFormat_ASTC_RGBA_8x8:
-            case ETextureFormat_ASTC_SRGBA_8x8:
+            case ETextureFormat::ASTC_RGBA_8x8:
+            case ETextureFormat::ASTC_SRGBA_8x8:
                 return (width % 8 == 0) && (height % 8 == 0);
 
-            case ETextureFormat_ASTC_RGBA_10x5:
-            case ETextureFormat_ASTC_SRGBA_10x5:
+            case ETextureFormat::ASTC_RGBA_10x5:
+            case ETextureFormat::ASTC_SRGBA_10x5:
                 return (width % 10 == 0) && (height % 5 == 0);
 
-            case ETextureFormat_ASTC_RGBA_10x6:
-            case ETextureFormat_ASTC_SRGBA_10x6:
+            case ETextureFormat::ASTC_RGBA_10x6:
+            case ETextureFormat::ASTC_SRGBA_10x6:
                 return (width % 10 == 0) && (height % 6 == 0);
 
-            case ETextureFormat_ASTC_RGBA_10x8:
-            case ETextureFormat_ASTC_SRGBA_10x8:
+            case ETextureFormat::ASTC_RGBA_10x8:
+            case ETextureFormat::ASTC_SRGBA_10x8:
                 return (width % 10 == 0) && (height % 8 == 0);
 
-            case ETextureFormat_ASTC_RGBA_10x10:
-            case ETextureFormat_ASTC_SRGBA_10x10:
+            case ETextureFormat::ASTC_RGBA_10x10:
+            case ETextureFormat::ASTC_SRGBA_10x10:
                 return (width % 10 == 0) && (height % 10 == 0);
 
-            case ETextureFormat_ASTC_RGBA_12x10:
-            case ETextureFormat_ASTC_SRGBA_12x10:
+            case ETextureFormat::ASTC_RGBA_12x10:
+            case ETextureFormat::ASTC_SRGBA_12x10:
                 return (width % 12 == 0) && (height % 10 == 0);
 
-            case ETextureFormat_ASTC_RGBA_12x12:
-            case ETextureFormat_ASTC_SRGBA_12x12:
+            case ETextureFormat::ASTC_RGBA_12x12:
+            case ETextureFormat::ASTC_SRGBA_12x12:
                 return (width % 12 == 0) && (height % 12 == 0);
 
-            case ETextureFormat_Invalid:
-            case ETextureFormat_NUMBER_OF_ELEMENTS:
+            case ETextureFormat::Invalid:
+            case ETextureFormat::NUMBER_OF_ELEMENTS:
                 assert(false);
                 return false;
             }
@@ -527,38 +538,38 @@ namespace ramses
             switch (bufferFormat)
             {
             case ramses::ERenderBufferFormat_RGBA4:
-                return ramses_internal::ETextureFormat_RGBA4;
+                return ramses_internal::ETextureFormat::RGBA4;
             case ramses::ERenderBufferFormat_R8:
-                return ramses_internal::ETextureFormat_R8;
+                return ramses_internal::ETextureFormat::R8;
             case ramses::ERenderBufferFormat_RG8:
-                return ramses_internal::ETextureFormat_RG8;
+                return ramses_internal::ETextureFormat::RG8;
             case ramses::ERenderBufferFormat_RGB8:
-                return ramses_internal::ETextureFormat_RGB8;
+                return ramses_internal::ETextureFormat::RGB8;
             case ramses::ERenderBufferFormat_RGBA8:
-                return ramses_internal::ETextureFormat_RGBA8;
+                return ramses_internal::ETextureFormat::RGBA8;
             case ramses::ERenderBufferFormat_R16F:
-                return ramses_internal::ETextureFormat_R16F;
+                return ramses_internal::ETextureFormat::R16F;
             case ramses::ERenderBufferFormat_R32F:
-                return ramses_internal::ETextureFormat_R32F;
+                return ramses_internal::ETextureFormat::R32F;
             case ramses::ERenderBufferFormat_RG16F:
-                return ramses_internal::ETextureFormat_RG16F;
+                return ramses_internal::ETextureFormat::RG16F;
             case ramses::ERenderBufferFormat_RG32F:
-                return ramses_internal::ETextureFormat_RG32F;
+                return ramses_internal::ETextureFormat::RG32F;
             case ramses::ERenderBufferFormat_RGB16F:
-                return ramses_internal::ETextureFormat_RGB16F;
+                return ramses_internal::ETextureFormat::RGB16F;
             case ramses::ERenderBufferFormat_RGB32F:
-                return ramses_internal::ETextureFormat_RGB32F;
+                return ramses_internal::ETextureFormat::RGB32F;
             case ramses::ERenderBufferFormat_RGBA16F:
-                return ramses_internal::ETextureFormat_RGBA16F;
+                return ramses_internal::ETextureFormat::RGBA16F;
             case ramses::ERenderBufferFormat_RGBA32F:
-                return ramses_internal::ETextureFormat_RGBA32F;
+                return ramses_internal::ETextureFormat::RGBA32F;
             case ramses::ERenderBufferFormat_Depth24:
-                return ramses_internal::ETextureFormat_Depth24;
+                return ramses_internal::ETextureFormat::Depth24;
             case ramses::ERenderBufferFormat_Depth24_Stencil8:
-                return ramses_internal::ETextureFormat_Depth24_Stencil8;
+                return ramses_internal::ETextureFormat::Depth24_Stencil8;
             default:
                 assert(false);
-                return ramses_internal::ETextureFormat_Invalid;
+                return ramses_internal::ETextureFormat::Invalid;
             }
         }
 
@@ -580,36 +591,36 @@ namespace ramses
         {
             switch (bufferFormat)
             {
-            case ramses_internal::ETextureFormat_RGBA4:
+            case ramses_internal::ETextureFormat::RGBA4:
                 return ERenderBufferFormat_RGBA4;
-            case ramses_internal::ETextureFormat_R8:
+            case ramses_internal::ETextureFormat::R8:
                 return ERenderBufferFormat_R8;
-            case ramses_internal::ETextureFormat_RG8:
+            case ramses_internal::ETextureFormat::RG8:
                 return ERenderBufferFormat_RG8;
-            case ramses_internal::ETextureFormat_RGB8:
+            case ramses_internal::ETextureFormat::RGB8:
                 return ERenderBufferFormat_RGB8;
-            case ramses_internal::ETextureFormat_RGBA8:
+            case ramses_internal::ETextureFormat::RGBA8:
                 return ERenderBufferFormat_RGBA8;
-            case ramses_internal::ETextureFormat_R16F:
+            case ramses_internal::ETextureFormat::R16F:
                 return ERenderBufferFormat_R16F;
-            case ramses_internal::ETextureFormat_R32F:
+            case ramses_internal::ETextureFormat::R32F:
                 return ERenderBufferFormat_R32F;
-            case ramses_internal::ETextureFormat_RG16F:
+            case ramses_internal::ETextureFormat::RG16F:
                 return ERenderBufferFormat_RG16F;
-            case ramses_internal::ETextureFormat_RG32F:
+            case ramses_internal::ETextureFormat::RG32F:
                 return ERenderBufferFormat_RG32F;
-            case ramses_internal::ETextureFormat_RGB16F:
+            case ramses_internal::ETextureFormat::RGB16F:
                 return ERenderBufferFormat_RGB16F;
-            case ramses_internal::ETextureFormat_RGB32F:
+            case ramses_internal::ETextureFormat::RGB32F:
                 return ERenderBufferFormat_RGB32F;
-            case ramses_internal::ETextureFormat_RGBA16F:
+            case ramses_internal::ETextureFormat::RGBA16F:
                 return ERenderBufferFormat_RGBA16F;
-            case ramses_internal::ETextureFormat_RGBA32F:
+            case ramses_internal::ETextureFormat::RGBA32F:
                 return ERenderBufferFormat_RGBA32F;
 
-            case ramses_internal::ETextureFormat_Depth24:
+            case ramses_internal::ETextureFormat::Depth24:
                 return ERenderBufferFormat_Depth24;
-            case ramses_internal::ETextureFormat_Depth24_Stencil8:
+            case ramses_internal::ETextureFormat::Depth24_Stencil8:
                 return ERenderBufferFormat_Depth24_Stencil8;
             default:
                 assert(false);

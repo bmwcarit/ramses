@@ -24,7 +24,7 @@ namespace ramses_internal
         {
         }
 
-        MOCK_METHOD(void, handleSceneActions, (SceneId sceneId, SceneActionCollection&& actionsForScene), (override));
+        MOCK_METHOD(void, handleSceneActions, (SceneId sceneId, SceneUpdate&& update), (override));
         MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, Vector2 coords), (override));
     };
 
@@ -36,11 +36,12 @@ namespace ramses_internal
         {
         }
 
-        virtual void handleSceneActions(SceneId sceneId, SceneActionCollection&& actionsForScene) override
+        virtual void handleSceneActions(SceneId sceneId, SceneUpdate&& update) override
         {
-            SceneActionCollection copyOfActionsForScene(actionsForScene.copy());
-            RendererSceneUpdaterMock::handleSceneActions(sceneId, std::move(copyOfActionsForScene));
-            RendererSceneUpdater::handleSceneActions(sceneId, std::move(actionsForScene)); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater
+            SceneUpdate copyOfActionsForScene;
+            copyOfActionsForScene.actions = update.actions.copy();
+            RendererSceneUpdaterMock::handleSceneActions(sceneId, std::move(update));
+            RendererSceneUpdater::handleSceneActions(sceneId, std::move(copyOfActionsForScene)); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater
         }
     };
 }

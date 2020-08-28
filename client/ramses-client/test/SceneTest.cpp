@@ -20,12 +20,13 @@
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/EDataType.h"
-#include "ramses-client-api/IndexDataBuffer.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
+#include "ramses-utils.h"
+
 #include "DataObjectImpl.h"
 #include "RenderGroupImpl.h"
 #include "RenderPassImpl.h"
-#include "VertexDataBufferImpl.h"
+#include "ArrayBufferImpl.h"
 #include "BlitPassImpl.h"
 #include "TextureSamplerImpl.h"
 #include "Texture2DImpl.h"
@@ -43,7 +44,12 @@ namespace ramses
         AScene()
             : LocalTestClientWithScene()
         {
+            effectDescriptionEmpty.setVertexShader("void main(void) {gl_Position=vec4(0);}");
+            effectDescriptionEmpty.setFragmentShader("void main(void) {gl_FragColor=vec4(0);}");
         }
+
+    protected:
+        ramses::EffectDescription effectDescriptionEmpty;
     };
 
     class ASceneWithContent : public SimpleSceneTopology
@@ -143,14 +149,10 @@ namespace ramses
         EXPECT_TRUE(group2->impl.getAllMeshes().empty());
     }
 
-    TEST_F(AScene, failsToCreateAppearanceWhenEffectIsFromAnotherClient)
+    TEST_F(AScene, failsToCreateAppearanceWhenEffectIsFromAnotherScene)
     {
-        EffectDescription effectDescriptionEmpty;
-        effectDescriptionEmpty.setVertexShader("void main(void) {gl_Position=vec4(0);}");
-        effectDescriptionEmpty.setFragmentShader("void main(void) {gl_FragColor=vec4(0);}");
-
-        RamsesClient& anotherClient(*framework.createClient("anotherClient"));
-        Effect* effect = anotherClient.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "emptyEffect");
+        Scene& anotherScene(*client.createScene(sceneId_t{ 0xf00 }));
+        Effect* effect = anotherScene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "emptyEffect");
         ASSERT_TRUE(nullptr != effect);
 
         Appearance* appearance = m_scene.createAppearance(*effect, "appearance");
@@ -159,25 +161,21 @@ namespace ramses
 
     TEST_F(AScene, failsToCreateGeometryBindingWhenEffectIsFromAnotherClient)
     {
-        EffectDescription effectDescriptionEmpty;
-        effectDescriptionEmpty.setVertexShader("void main(void) {gl_Position=vec4(0);}");
-        effectDescriptionEmpty.setFragmentShader("void main(void) {gl_FragColor=vec4(0);}");
-
-        RamsesClient& anotherClient(*framework.createClient("anotherClient"));
-        Effect* effect = anotherClient.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "emptyEffect");
+        Scene& anotherScene(*client.createScene(sceneId_t{ 0xf00 }));
+        Effect* effect = anotherScene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "emptyEffect");
         ASSERT_TRUE(nullptr != effect);
 
         GeometryBinding* geometryBinding = m_scene.createGeometryBinding(*effect, "geometryBinding");
         EXPECT_TRUE(nullptr == geometryBinding);
     }
 
-    TEST_F(AScene, failsToCreateTextureSamplerWhenTextureIsFromAnotherClient)
+    TEST_F(AScene, failsToCreateTextureSamplerWhenTextureIsFromAnotherScene)
     {
-        RamsesClient& anotherClient(*framework.createClient("anotherClient"));
+        Scene& anotherScene(*client.createScene(sceneId_t{ 0xf00 }));
         {
             const uint8_t data[] = { 1, 2, 3 };
             const MipLevelData mipData(3u, data);
-            Texture2D* texture = anotherClient.createTexture2D(1u, 1u, ETextureFormat_RGB8, 1u, &mipData, false);
+            Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::RGB8, 1u, 1u, 1u, &mipData, false);
             ASSERT_TRUE(texture != nullptr);
 
             TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
@@ -186,7 +184,7 @@ namespace ramses
         {
             const uint8_t data[1 * 2 * 2 * 4] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
             MipLevelData mipLevelData(sizeof(data), data);
-            Texture3D* texture = anotherClient.createTexture3D(2, 1, 2, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, nullptr);
+            Texture3D* texture = anotherScene.createTexture3D(ETextureFormat::RGBA8, 2, 1, 2, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, nullptr);
             ASSERT_TRUE(nullptr != texture);
 
             TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
@@ -195,7 +193,7 @@ namespace ramses
         {
             const uint8_t data[4 * 10 * 10] = {};
             CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-            TextureCube* texture = anotherClient.createTextureCube(10, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false);
+            TextureCube* texture = anotherScene.createTextureCube(ETextureFormat::RGBA8, 10, 1, &mipLevelData, false);
             ASSERT_TRUE(nullptr != texture);
 
             TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
@@ -218,8 +216,11 @@ namespace ramses
     TEST_F(AScene, failsToCreateTextureSamplerWhenStreamTextureIsFromAnotherScene)
     {
         Scene& anotherScene = *client.createScene(sceneId_t(12u));
-        const Texture2D& fallbackTexture = createObject<Texture2D>("fallbackTexture");
-        StreamTexture* streamTexture = anotherScene.createStreamTexture(fallbackTexture, streamSource_t(1), "testStreamTexture");
+        uint8_t data[4] = { 0u };
+        MipLevelData mipLevelData(sizeof(data), data);
+        const Texture2D& fallbackTexture = *anotherScene.createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "");
+
+        StreamTexture* streamTexture = anotherScene.createStreamTexture(fallbackTexture, waylandIviSurfaceId_t(1), "testStreamTexture");
         ASSERT_TRUE(nullptr != streamTexture);
 
         TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *streamTexture);
@@ -777,13 +778,13 @@ namespace ramses
         EXPECT_NE(StatusOK, m_scene.createDataProvider(*dataObject1, dataProviderId_t(2u)));
     }
 
-    TEST_F(AScene, reportsErrorWhenCreateTextureProviderWithTextureFromAnotherClient)
+    TEST_F(AScene, reportsErrorWhenCreateTextureProviderWithTextureFromAnotherScene)
     {
         RamsesFramework anotherFramework;
-        RamsesClient& anotherClient(*framework.createClient(""));
+        Scene& anotherScene(*client.createScene(sceneId_t{ 0xf00 }));
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
-        const Texture2D* texture = anotherClient.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
+        const Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         EXPECT_NE(StatusOK, m_scene.createTextureProvider(*texture, dataProviderId_t{1u}));
@@ -794,7 +795,7 @@ namespace ramses
         Scene& anotherScene = *client.createScene(sceneId_t(12u));
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
-        Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
+        Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         const TextureSampler* sampler = anotherScene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
@@ -811,7 +812,7 @@ namespace ramses
 
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
-        Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture, dataProviderId_t{666u}));
@@ -830,12 +831,12 @@ namespace ramses
 
         uint8_t data1 = 0u;
         MipLevelData mipData1(1u, &data1);
-        Texture2D* texture1 = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData1, false);
+        Texture2D* texture1 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData1, false);
         ASSERT_TRUE(nullptr != texture1);
 
         uint8_t data2 = 1u;
         MipLevelData mipData2(1u, &data2);
-        Texture2D* texture2 = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData2, false);
+        Texture2D* texture2 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData2, false);
         ASSERT_TRUE(nullptr != texture2);
 
         EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture1, dataProviderId_t{666u}));
@@ -855,7 +856,7 @@ namespace ramses
 
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
-        Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         const TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
@@ -877,7 +878,7 @@ namespace ramses
 
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
-        Texture3D* texture = client.createTexture3D(1u, 1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
+        Texture3D* texture = m_scene.createTexture3D(ETextureFormat::R8, 1u, 1u, 1u, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         const TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
@@ -890,7 +891,7 @@ namespace ramses
     {
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
-        Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
@@ -911,7 +912,7 @@ namespace ramses
     {
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
-        Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
@@ -925,7 +926,7 @@ namespace ramses
     {
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
-        Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         EXPECT_EQ(StatusOK, m_scene.createTextureProvider(*texture, dataProviderId_t{666u}));
@@ -936,9 +937,9 @@ namespace ramses
     {
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
-        Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
-        Texture2D* texture2 = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
+        Texture2D* texture2 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture2);
 
         TextureSampler* sampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
@@ -959,7 +960,7 @@ namespace ramses
     {
         uint8_t data = 0u;
         MipLevelData mipData(1u, &data);
-        Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_R8, 1u, &mipData, false);
+        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, 1u, &mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
         EXPECT_NE(StatusOK, m_scene.updateTextureProvider(*texture, dataProviderId_t(1u)));
@@ -968,7 +969,7 @@ namespace ramses
     TEST_F(AScene, canCreateStreamTextureWithFallbackTextureAndStreamSource)
     {
         const Texture2D& texture2D = createObject<Texture2D>("testTexture2D");
-        const streamSource_t source(1);
+        const waylandIviSurfaceId_t source(1);
         StreamTexture* streamTexture = this->m_scene.createStreamTexture(texture2D, source, "testStreamTexture");
 
         ASSERT_NE(static_cast<StreamTexture*>(nullptr), streamTexture);
@@ -976,18 +977,17 @@ namespace ramses
         EXPECT_EQ(texture2D.impl.getLowlevelResourceHash(), streamTexture->impl.getFallbackTextureHash());
     }
 
-
-    TEST_F(AScene, cannotCreateStreamTextureWithFallbackTextureFromDifferentClient)
+    TEST_F(AScene, cannotCreateStreamTextureWithFallbackTextureFromDifferentScene)
     {
         const uint8_t data[4 * 10 * 12] = {};
         MipLevelData mipLevelData(sizeof(data), data);
 
-        RamsesClient& anotherClient(*framework.createClient("anotherLocalTestClient"));
+        Scene& anotherScene(*client.createScene(sceneId_t{ 0xf00 }));
 
-        Texture2D* anotherTexture = anotherClient.createTexture2D(10, 12, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* anotherTexture = anotherScene.createTexture2D(ramses::ETextureFormat::RGBA8, 10, 12, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != anotherTexture);
 
-        StreamTexture* streamTexture = this->m_scene.createStreamTexture(*anotherTexture, streamSource_t(0), "StreamTexture");
+        StreamTexture* streamTexture = this->m_scene.createStreamTexture(*anotherTexture, waylandIviSurfaceId_t(0), "StreamTexture");
         EXPECT_TRUE(nullptr == streamTexture);
     }
 
@@ -1146,7 +1146,7 @@ namespace ramses
 
     TEST_F(AScene, canCreatePickableObject)
     {
-        const VertexDataBuffer* geometryBuffer = m_scene.createVertexDataBuffer(36, ramses::EDataType_Vector3F);
+        const ArrayBuffer* geometryBuffer = m_scene.createArrayBuffer(ramses::EDataType::Vector3F, 3);
         ASSERT_TRUE(nullptr != geometryBuffer);
 
         const PickableObject* pickableObject = m_scene.createPickableObject(*geometryBuffer, pickableObjectId_t(1u));
@@ -1156,7 +1156,7 @@ namespace ramses
     TEST_F(AScene, cannotCreatePickableObjectWithGeometryBufferOfAnotherScene)
     {
         Scene* anotherScene = client.createScene(sceneId_t(111u));
-        const VertexDataBuffer* geometryBufferFromOtherScene = anotherScene->createVertexDataBuffer(36, ramses::EDataType_Vector3F);
+        const ArrayBuffer* geometryBufferFromOtherScene = anotherScene->createArrayBuffer(ramses::EDataType::Vector3F, 3);
 
         const PickableObject* pickableObject = m_scene.createPickableObject(*geometryBufferFromOtherScene, pickableObjectId_t(1u));
         EXPECT_EQ(nullptr, pickableObject);
@@ -1164,7 +1164,7 @@ namespace ramses
 
     TEST_F(AScene, cannotCreatePickableObjectWithWrongGeometryBufferSize)
     {
-        const VertexDataBuffer* geometryBuffer = m_scene.createVertexDataBuffer(23, ramses::EDataType_Vector3F);
+        const ArrayBuffer* geometryBuffer = m_scene.createArrayBuffer(ramses::EDataType::Vector3F, 2u);
         ASSERT_TRUE(nullptr != geometryBuffer);
 
         const PickableObject* pickableObject = m_scene.createPickableObject(*geometryBuffer, pickableObjectId_t(1u));
@@ -1173,43 +1173,35 @@ namespace ramses
 
     TEST_F(AScene, cannotCreatePickableObjectWithWrongGeometryBuffer)
     {
-        const VertexDataBuffer* geometryBuffer1 = m_scene.createVertexDataBuffer(36, ramses::EDataType_Float);
-        const VertexDataBuffer* geometryBuffer2 = m_scene.createVertexDataBuffer(36, ramses::EDataType_Vector2F);
-        const VertexDataBuffer* geometryBuffer3 = m_scene.createVertexDataBuffer(36, ramses::EDataType_Vector4F);
+        const ArrayBuffer* geometryBuffer1 = m_scene.createArrayBuffer(ramses::EDataType::Float, 3u);
+        const ArrayBuffer* geometryBuffer2 = m_scene.createArrayBuffer(ramses::EDataType::Vector2F, 3u);
+        const ArrayBuffer* geometryBuffer3 = m_scene.createArrayBuffer(ramses::EDataType::Vector4F, 3u);
 
         EXPECT_EQ(nullptr, m_scene.createPickableObject(*geometryBuffer1, pickableObjectId_t(1u)));
         EXPECT_EQ(nullptr, m_scene.createPickableObject(*geometryBuffer2, pickableObjectId_t(2u)));
         EXPECT_EQ(nullptr, m_scene.createPickableObject(*geometryBuffer3, pickableObjectId_t(3u)));
     }
 
-    TEST_F(AScene, canCreateIndexDataBufferWithIntegralTypes)
+    TEST_F(AScene, canCreateDataBufferWithIntegralTypesForUsageAsIndexBuffer)
     {
-        IndexDataBuffer* const indexDataBuffer16 = m_scene.createIndexDataBuffer(4, ramses::EDataType_UInt16);
+        ArrayBuffer* const indexDataBuffer16 = m_scene.createArrayBuffer(ramses::EDataType::UInt16, 4u);
         ASSERT_NE(nullptr, indexDataBuffer16);
-        IndexDataBuffer* const indexDataBuffer32 = m_scene.createIndexDataBuffer(4, ramses::EDataType_UInt32);
+        ArrayBuffer* const indexDataBuffer32 = m_scene.createArrayBuffer(ramses::EDataType::UInt32, 4u);
         ASSERT_NE(nullptr, indexDataBuffer32);
 
         m_scene.destroy(*indexDataBuffer16);
         m_scene.destroy(*indexDataBuffer32);
     }
 
-    TEST_F(AScene, cannotCreateIndexDataBufferWithNonIntegralType)
+    TEST_F(AScene, canCreateDataBufferWithFloatTypesForUseAsVertexBuffer)
     {
-        EXPECT_EQ(nullptr, m_scene.createIndexDataBuffer(4, ramses::EDataType_Float));
-        EXPECT_EQ(nullptr, m_scene.createIndexDataBuffer(4, ramses::EDataType_Vector2F));
-        EXPECT_EQ(nullptr, m_scene.createIndexDataBuffer(4, ramses::EDataType_Vector3F));
-        EXPECT_EQ(nullptr, m_scene.createIndexDataBuffer(4, ramses::EDataType_Vector4F));
-    }
-
-    TEST_F(AScene, canCreateVertexDataBufferWithFloatTypes)
-    {
-        VertexDataBuffer* const vertexDataBufferFloat = m_scene.createVertexDataBuffer(4, ramses::EDataType_Float);
+        ArrayBuffer* const vertexDataBufferFloat = m_scene.createArrayBuffer(ramses::EDataType::Float, 4u);
         ASSERT_NE(nullptr, vertexDataBufferFloat);
-        VertexDataBuffer* const vertexDataBufferVec2 = m_scene.createVertexDataBuffer(4, ramses::EDataType_Vector2F);
+        ArrayBuffer* const vertexDataBufferVec2 = m_scene.createArrayBuffer(ramses::EDataType::Vector2F, 4u);
         ASSERT_NE(nullptr, vertexDataBufferVec2);
-        VertexDataBuffer* const vertexDataBufferVec3 = m_scene.createVertexDataBuffer(4, ramses::EDataType_Vector3F);
+        ArrayBuffer* const vertexDataBufferVec3 = m_scene.createArrayBuffer(ramses::EDataType::Vector3F, 4u);
         ASSERT_NE(nullptr, vertexDataBufferVec3);
-        VertexDataBuffer* const vertexDataBufferVec4 = m_scene.createVertexDataBuffer(4, ramses::EDataType_Vector4F);
+        ArrayBuffer* const vertexDataBufferVec4 = m_scene.createArrayBuffer(ramses::EDataType::Vector4F, 4u);
         ASSERT_NE(nullptr, vertexDataBufferVec4);
 
         m_scene.destroy(*vertexDataBufferFloat);
@@ -1218,16 +1210,191 @@ namespace ramses
         m_scene.destroy(*vertexDataBufferVec4);
     }
 
-    TEST_F(AScene, cannotCreateVertexDataBufferWithNonFloatType)
-    {
-        EXPECT_EQ(nullptr, m_scene.createVertexDataBuffer(4, ramses::EDataType_UInt16));
-        EXPECT_EQ(nullptr, m_scene.createVertexDataBuffer(4, ramses::EDataType_UInt32));
-    }
-
     TEST_F(AScene, flushIncreasesStatisticCounter)
     {
         EXPECT_EQ(0u, m_scene.impl.getStatisticCollection().statFlushesTriggered.getCounterValue());
         m_scene.flush();
         EXPECT_EQ(1u, m_scene.impl.getStatisticCollection().statFlushesTriggered.getCounterValue());
     }
+
+    TEST_F(AScene, canGetResourceByID)
+    {
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr != effectFixture);
+
+        const resourceId_t resourceID = effectFixture->getResourceId();
+        ramses::Resource* resource = m_scene.getResource(resourceID);
+        ASSERT_TRUE(nullptr != resource);
+
+        const ramses::Effect* effectFound = RamsesUtils::TryConvert<ramses::Effect>(*resource);
+        ASSERT_TRUE(nullptr != effectFound);
+
+        ASSERT_TRUE(effectFound == effectFixture);
+
+        const resourceId_t nonExistEffectId = { 0, 0 };
+        ASSERT_TRUE(nullptr == m_scene.getResource(nonExistEffectId));
+    }
+
+    TEST_F(AScene, returnsNULLWhenResourceWithIDCannotBeFound)
+    {
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr != effectFixture);
+
+        const resourceId_t nonExistEffectId = { 0, 0 };
+        ASSERT_TRUE(nullptr == m_scene.getResource(nonExistEffectId));
+    }
+
+    TEST_F(AScene, returnsNULLWhenTryingToFindDeletedResource)
+    {
+        auto effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr != effectFixture);
+
+        const resourceId_t resourceID = effectFixture->getResourceId();
+        ramses::Resource* resource = m_scene.getResource(resourceID);
+        ASSERT_TRUE(nullptr != resource);
+
+        m_scene.destroy(*effectFixture);
+
+        ramses::Resource* resourceFound = m_scene.getResource(resourceID);
+        ASSERT_TRUE(nullptr == resourceFound);
+    }
+
+    // effect from string: valid uses
+    TEST_F(AScene, createEffectFromGLSLString_withName)
+    {
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr != effectFixture);
+    }
+
+    TEST_F(AScene, createEffectFromGLSLString_withDefines)
+    {
+        effectDescriptionEmpty.addCompilerDefine("float dummy;");
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr != effectFixture);
+    }
+
+    // effect from string: invalid uses
+    TEST_F(AScene, createEffectFromGLSLString_invalidVertexShader)
+    {
+        effectDescriptionEmpty.setVertexShader("void main(void) {dsadsadasd}");
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr == effectFixture);
+    }
+
+    TEST_F(AScene, createEffectFromGLSLString_emptyVertexShader)
+    {
+        effectDescriptionEmpty.setVertexShader("");
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr == effectFixture);
+    }
+
+    TEST_F(AScene, createEffectFromGLSLString_invalidFragmentShader)
+    {
+        effectDescriptionEmpty.setFragmentShader("void main(void) {dsadsadasd}");
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr == effectFixture);
+    }
+
+    TEST_F(AScene, createEffectFromGLSLString_emptyFragmentShader)
+    {
+        effectDescriptionEmpty.setFragmentShader("");
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr == effectFixture);
+    }
+
+    TEST_F(AScene, createEffectFromGLSLString_invalidDefines)
+    {
+        effectDescriptionEmpty.addCompilerDefine("thisisinvalidstuff\n8fd7f9ds");
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr == effectFixture);
+    }
+
+    TEST_F(AScene, createEffectFromGLSLString_withInputSemantics)
+    {
+        effectDescriptionEmpty.setVertexShader(
+            "uniform mat4 someMatrix;"
+            "void main(void)"
+            "{"
+            "gl_Position = someMatrix * vec4(1.0);"
+            "}");
+        effectDescriptionEmpty.setUniformSemantic("someMatrix", ramses::EEffectUniformSemantic_ProjectionMatrix);
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr != effectFixture);
+    }
+
+    TEST_F(AScene, createEffectFromGLSLString_withInputSemanticsOfWrongType)
+    {
+        effectDescriptionEmpty.setVertexShader(
+            "uniform mat2 someMatrix;"
+            "void main(void)"
+            "{"
+            "gl_Position = someMatrix * vec4(1.0);"
+            "}");
+        effectDescriptionEmpty.setUniformSemantic("someMatrix", ramses::EEffectUniformSemantic_ProjectionMatrix);
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_FALSE(nullptr != effectFixture);
+    }
+
+    // effect from file: valid uses
+    TEST_F(AScene, createEffectFromGLSL_withName)
+    {
+        ramses::EffectDescription effectDesc;
+        effectDesc.setVertexShaderFromFile("res/ramses-client-test_minimalShader.vert");
+        effectDesc.setFragmentShaderFromFile("res/ramses-client-test_minimalShader.frag");
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr != effectFixture);
+    }
+
+
+    // effect from file: invalid uses
+    TEST_F(AScene, createEffectFromGLSL_nonExistantVertexShader)
+    {
+        ramses::EffectDescription effectDesc;
+        effectDesc.setVertexShaderFromFile("res/this_file_should_not_exist_fdsfdsjf84w9wufw.vert");
+        effectDesc.setFragmentShaderFromFile("res/ramses-client-test_minimalShader.frag");
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr == effectFixture);
+    }
+
+    TEST_F(AScene, createEffectFromGLSL_nonExistantFragmentShader)
+    {
+        ramses::EffectDescription effectDesc;
+        effectDesc.setVertexShaderFromFile("res/ramses-client-test_minimalShader.frag");
+        effectDesc.setFragmentShaderFromFile("res/this_file_should_not_exist_fdsfdsjf84w9wufw.vert");
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr == effectFixture);
+    }
+
+    TEST_F(AScene, createEffectFromGLSL_NULLVertexShader)
+    {
+        ramses::EffectDescription effectDesc;
+        effectDesc.setVertexShaderFromFile("");
+        effectDesc.setFragmentShaderFromFile("res/this_file_should_not_exist_fdsfdsjf84w9wufw.vert");
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr == effectFixture);
+    }
+
+    TEST_F(AScene, createEffectFromGLSL_NULLFragmentShader)
+    {
+        ramses::EffectDescription effectDesc;
+        effectDesc.setVertexShaderFromFile("res/this_file_should_not_exist_fdsfdsjf84w9wufw.vert");
+        effectDesc.setFragmentShaderFromFile("");
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr == effectFixture);
+    }
+
+    TEST_F(AScene, verifyHLAPILogCanHandleNullPtrReturnWhenEnabled)
+    {
+        ramses_internal::ELogLevel oldLogLevel = ramses_internal::CONTEXT_HLAPI_CLIENT.getLogLevel();
+        ramses_internal::CONTEXT_HLAPI_CLIENT.setLogLevel(ramses_internal::ELogLevel::Trace);
+
+        ramses::EffectDescription effectDesc;
+        effectDesc.setVertexShaderFromFile("res/this_file_should_not_exist_fdsfdsjf84w9wufw.vert");
+        effectDesc.setFragmentShaderFromFile("");
+        const ramses::Effect* effectFixture = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "name");
+        EXPECT_TRUE(nullptr == effectFixture);
+
+        ramses_internal::CONTEXT_HLAPI_CLIENT.setLogLevel(oldLogLevel);
+    }
+
 }

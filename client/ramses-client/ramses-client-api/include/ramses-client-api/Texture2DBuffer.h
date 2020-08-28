@@ -15,7 +15,7 @@
 namespace ramses
 {
     /**
-    * @brief The Texture2DBuffer is a mutable scene resource used to hold texture data with the possibility
+    * @brief The Texture2DBuffer is a mutable texture buffer used to hold texture data with the possibility
     * to perform partial updates. This object _must_ be initialized with data, otherwise the contents of it
     * are not specified (garbage data or black, depending on driver behavior).
     * The number of mipmap levels is user given value and the size of the mipchain is computed
@@ -32,18 +32,18 @@ namespace ramses
         * subregion of the texture face. Returns error if the specified subregion exceeds the size of the
         * target mipmap level.
         *
-        * @param data               Pointer in memory to the data provided for update. The function makes
-        *                           a copy of the data into Texture2DBuffer data structures. Texture2DBuffer
-        *                           object does not take ownership of the memory data passed to it.
         * @param mipLevel           The level of the mipMap level which will receive the data. First mipMap is 0, second is 1 and so on
         * @param offsetX            The horizontal texel offset into the texture data
         * @param offsetY            The vertical texel offset into the texture data
         * @param width              The horizontal subregion size in texels
         * @param height             The vertical subregion size in texels
+        * @param data               Pointer in memory to the data provided for update. The function makes
+        *                           a copy of the data into Texture2DBuffer data structures. Texture2DBuffer
+        *                           object does not take ownership of the memory data passed to it.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setData(const char* data, uint32_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height);
+        status_t updateData(uint32_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height, const void* data);
 
         /**
         * @brief Returns the number of mipmap levels created for the Texture2DBuffer (same as provided in
@@ -90,7 +90,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t getMipLevelData(uint32_t mipLevel, char* buffer, uint32_t bufferSize) const;
+        status_t getMipLevelData(uint32_t mipLevel, void* buffer, uint32_t bufferSize) const;
 
         /**
         * Stores internal data for implementation specifics of Texture2DBuffer.

@@ -23,8 +23,9 @@ namespace ramses
     {
     public:
         Texture3DImpl(ramses_internal::ResourceHashUsage resource,
-            RamsesClientImpl& client,
+            SceneImpl& scene,
             const char* name);
+
         virtual ~Texture3DImpl();
 
         void initializeFromFrameworkData(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat textureFormat);

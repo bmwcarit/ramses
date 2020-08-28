@@ -13,13 +13,13 @@
 #include <thread>
 #include <atomic>
 #include <memory>
-#include "ramses-renderer-api/IRendererSceneControlEventHandler_legacy.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 
 namespace ramses
 {
     class RamsesFramework;
     class RamsesRenderer;
-    class RendererSceneControl_legacy;
+    class RendererSceneControl;
 }
 
 struct ANativeWindow;
@@ -35,17 +35,15 @@ public:
     virtual void run();
     ANativeWindow* getNativeWindow();
 
-    class SceneStateAutoShowEventHandler : public ramses::RendererSceneControlEventHandlerEmpty_legacy
+    class SceneStateAutoShowEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
     {
     public:
         SceneStateAutoShowEventHandler(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId);
 
         virtual void scenePublished(ramses::sceneId_t sceneId) override;
-        virtual void sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override;
-        virtual void sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result) override;
 
     private:
-        ramses::RendererSceneControl_legacy& m_sceneControlAPI;
+        ramses::RendererSceneControl& m_sceneControlAPI;
         ramses::displayId_t m_displayId;
     };
 

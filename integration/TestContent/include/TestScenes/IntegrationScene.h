@@ -31,7 +31,7 @@ namespace ramses_internal
     class IntegrationScene
     {
     public:
-        IntegrationScene(ramses::RamsesClient& client, ramses::Scene& scene, const Vector3& cameraPosition);
+        IntegrationScene(ramses::Scene& scene, const Vector3& cameraPosition);
         virtual ~IntegrationScene();
 
         static const UInt32 DefaultDisplayWidth;
@@ -45,7 +45,6 @@ namespace ramses_internal
         ramses::Node&          getDefaultCameraTranslationNode();
         ramses::Camera&        getDefaultCamera();
 
-        ramses::RamsesClient&  m_client;
         ramses::Scene&         m_scene;
 
     private:

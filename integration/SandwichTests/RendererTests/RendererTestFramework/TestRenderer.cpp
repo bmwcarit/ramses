@@ -113,7 +113,7 @@ namespace ramses_internal
         return true;
     }
 
-    bool TestRenderer::waitForStreamSurfaceAvailabilityChange(ramses::streamSource_t streamSource, bool available)
+    bool TestRenderer::waitForStreamSurfaceAvailabilityChange(ramses::waylandIviSurfaceId_t streamSource, bool available)
     {
         ramses::RendererAndSceneTestEventHandler eventHandler(*m_renderer);
         return eventHandler.waitForStreamSurfaceAvailabilityChange(streamSource, available);

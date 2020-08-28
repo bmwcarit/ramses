@@ -11,6 +11,7 @@
 
 #include <cstdio>
 #include <thread>
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 
 /**
  * @example ramses-example-basic-compositing/src/main.cpp
@@ -24,8 +25,8 @@ int main(int argc, char* argv[])
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-compositing"));
     framework.connect();
 
-    const uint32_t streamId = 1u;
-    printf("using stream-texture id: %u", streamId);
+    const ramses::waylandIviSurfaceId_t surfaceId(1u);
+    printf("using stream-texture id: %u", surfaceId.getValue());
 
     // create a scene for distributing content
     ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u));
@@ -41,13 +42,13 @@ int main(int argc, char* argv[])
 
     // prepare triangle geometry: vertex position array and index array
     float vertexPositionsArray[] = {-1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.f};
-    const ramses::Vector3fArray* vertexPositions = ramses.createConstVector3fArray(4, vertexPositionsArray);
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
 
     float textureCoordsArray[] = {0.f, 1.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f};
-    const ramses::Vector2fArray* textureCoords = ramses.createConstVector2fArray(4, textureCoordsArray);
+    ramses::ArrayResource* textureCoords = scene->createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
 
     uint16_t indicesArray[] = {0, 1, 2, 2, 1, 3};
-    const ramses::UInt16Array* indices = ramses.createConstUInt16Array(6, indicesArray);
+    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
     /// [Basic Compositing Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
@@ -55,10 +56,10 @@ int main(int argc, char* argv[])
 
     // texture
     ramses::Texture2D* texture =
-        ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-basic-compositing-texture.png", ramses);
+        ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-basic-compositing-texture.png", *scene);
 
     // use Texture2D as fallback for StreamTexture
-    ramses::StreamTexture* streamTexture = scene->createStreamTexture(*texture, static_cast<ramses::streamSource_t>(streamId), "streamTexture");
+    ramses::StreamTexture* streamTexture = scene->createStreamTexture(*texture, surfaceId, "streamTexture");
 
     /// [Basic Compositing Example]
 
@@ -69,7 +70,7 @@ int main(int argc, char* argv[])
     effectDesc.setVertexShaderFromFile("res/ramses-example-basic-compositing.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-compositing.frag");
 
-    const ramses::Effect* effectTex = ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = scene->createAppearance(*effectTex, "triangle appearance");
 
     // set vertex positions directly in geometry
@@ -104,10 +105,10 @@ int main(int argc, char* argv[])
 
     // shutdown: stop distribution, free resources, unregister
     scene->unpublish();
+    scene->destroy(*vertexPositions);
+    scene->destroy(*textureCoords);
+    scene->destroy(*indices);
     ramses.destroy(*scene);
-    ramses.destroy(*vertexPositions);
-    ramses.destroy(*textureCoords);
-    ramses.destroy(*indices);
     framework.disconnect();
 
     return 0;

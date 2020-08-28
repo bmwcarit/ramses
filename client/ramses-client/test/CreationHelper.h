@@ -64,12 +64,7 @@ namespace ramses
     class Texture2D;
     class Texture3D;
     class TextureCube;
-    class UInt16Array;
-    class UInt32Array;
-    class FloatArray;
-    class Vector2fArray;
-    class Vector3fArray;
-    class Vector4fArray;
+    class ArrayResource;
     class RenderGroup;
     class RenderPass;
     class BlitPass;
@@ -77,8 +72,7 @@ namespace ramses
     class RenderBuffer;
     class RenderTarget;
     class RenderGroup;
-    class IndexDataBuffer;
-    class VertexDataBuffer;
+    class ArrayBuffer;
     class Texture2DBuffer;
     class GeometryBinding;
     class DataFloat;
@@ -172,12 +166,7 @@ namespace ramses
     template <> Texture2D*                 CreationHelper::createObjectOfType<Texture2D                >(const char* name);
     template <> Texture3D*                 CreationHelper::createObjectOfType<Texture3D                >(const char* name);
     template <> TextureCube*               CreationHelper::createObjectOfType<TextureCube              >(const char* name);
-    template <> UInt16Array*               CreationHelper::createObjectOfType<UInt16Array              >(const char* name);
-    template <> UInt32Array*               CreationHelper::createObjectOfType<UInt32Array              >(const char* name);
-    template <> FloatArray*                CreationHelper::createObjectOfType<FloatArray               >(const char* name);
-    template <> Vector2fArray*             CreationHelper::createObjectOfType<Vector2fArray            >(const char* name);
-    template <> Vector3fArray*             CreationHelper::createObjectOfType<Vector3fArray            >(const char* name);
-    template <> Vector4fArray*             CreationHelper::createObjectOfType<Vector4fArray            >(const char* name);
+    template <> ArrayResource*             CreationHelper::createObjectOfType<ArrayResource            >(const char* name);
     template <> RenderGroup*               CreationHelper::createObjectOfType<RenderGroup              >(const char* name);
     template <> RenderPass*                CreationHelper::createObjectOfType<RenderPass               >(const char* name);
     template <> BlitPass*                  CreationHelper::createObjectOfType<BlitPass                 >(const char* name);
@@ -197,8 +186,7 @@ namespace ramses
     template <> DataVector3i*              CreationHelper::createObjectOfType<DataVector3i             >(const char* name);
     template <> DataVector4i*              CreationHelper::createObjectOfType<DataVector4i             >(const char* name);
     template <> StreamTexture*             CreationHelper::createObjectOfType<StreamTexture            >(const char* name);
-    template <> IndexDataBuffer*           CreationHelper::createObjectOfType<IndexDataBuffer          >(const char* name);
-    template <> VertexDataBuffer*          CreationHelper::createObjectOfType<VertexDataBuffer         >(const char* name);
+    template <> ArrayBuffer*               CreationHelper::createObjectOfType<ArrayBuffer              >(const char* name);
     template <> Texture2DBuffer*           CreationHelper::createObjectOfType<Texture2DBuffer          >(const char* name);
     template <> PickableObject*            CreationHelper::createObjectOfType<PickableObject           >(const char* name);
     template <> SceneReference*            CreationHelper::createObjectOfType<SceneReference           >(const char* name);

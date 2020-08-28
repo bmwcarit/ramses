@@ -13,178 +13,179 @@
 #include "SceneImpl.h"
 #include "ramses-utils.h"
 #include "Scene/ClientScene.h"
-#include "ramses-client-api/IndexDataBuffer.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/AttributeInput.h"
-#include "IndexDataBufferImpl.h"
-#include "VertexDataBufferImpl.h"
+#include "ArrayBufferImpl.h"
 #include "RamsesObjectTypeUtils.h"
+#include "ArrayResourceUtils.h"
+#include "ArrayResourceUtils.h"
 
 using namespace testing;
 using namespace ramses_internal;
 
 namespace ramses
 {
-    template<typename DataBufferT>
-    class ADataBuffer : public LocalTestClientWithScene, public testing::Test
+    class ADataBuffer : public LocalTestClientWithScene, public ::testing::TestWithParam<EDataType>
     {
     protected:
         ADataBuffer()
             : LocalTestClientWithScene()
-            , dataBuffer(*m_creationHelper.createObjectOfType<DataBufferT>("data buffer"))
+            , elementSizeInBytes(EnumToSize(ArrayResourceUtils::ConvertDataTypeForResourceToInternal(GetParam())))
+            , dataBuffer(*m_scene.createArrayBuffer(GetParam(), 13, "data buffer"))
             , dataBufferHandle(dataBuffer.impl.getDataBufferHandle())
+            , singleElementData(elementSizeInBytes)
         {
+            std::iota(singleElementData.begin(), singleElementData.end(), static_cast<Byte>(1));
         }
 
-        EDataType getCreationDataType();
+        EDataType getCreationDataType() { return GetParam(); }
 
-        DataBufferT& dataBuffer;
+        const uint32_t elementSizeInBytes;
+        ArrayBuffer& dataBuffer;
         const ramses_internal::DataBufferHandle dataBufferHandle;
+        std::vector<Byte> singleElementData;
     };
 
-    template<>
-    EDataType ADataBuffer<IndexDataBuffer>::getCreationDataType()
-    {
-        return EDataType_UInt32;
-    }
-
-    template<>
-    EDataType ADataBuffer<VertexDataBuffer>::getCreationDataType()
-    {
-        return EDataType_Float;
-    }
-
-    typedef ::testing::Types<IndexDataBuffer, VertexDataBuffer> DataBufferTestTypes;
-    TYPED_TEST_SUITE(ADataBuffer, DataBufferTestTypes);
-
-    TYPED_TEST(ADataBuffer, IsAllocatedOnInternalSceneAfterCreation)
+    TEST_P(ADataBuffer, IsAllocatedOnInternalSceneAfterCreation)
     {
         EXPECT_TRUE(this->dataBufferHandle.isValid());
         EXPECT_TRUE(this->m_scene.impl.getIScene().isDataBufferAllocated(this->dataBufferHandle));
     }
 
-    TYPED_TEST(ADataBuffer, PropagatesDataChangesToInternalScene)
+    TEST_P(ADataBuffer, PropagatesDataChangesToInternalScene)
     {
-        EXPECT_EQ(StatusOK, this->dataBuffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 3>{ {12, 23 ,34} }.data()), 3 * sizeof(uint32_t)));
+        EXPECT_EQ(StatusOK, this->dataBuffer.updateData(0u, 1u, singleElementData.data()));
 
-        const uint32_t* dataBufferData = reinterpret_cast<const uint32_t*>(this->m_scene.impl.getIScene().getDataBuffer(this->dataBufferHandle).data.data());
+        const Byte* dataBufferData = this->m_scene.impl.getIScene().getDataBuffer(this->dataBufferHandle).data.data();
+        EXPECT_EQ(0, std::memcmp(singleElementData.data(), dataBufferData, singleElementData.size()));
 
-        EXPECT_EQ(12u, dataBufferData[0]);
-        EXPECT_EQ(23u, dataBufferData[1]);
-        EXPECT_EQ(34u, dataBufferData[2]);
+        std::vector<Byte> twoElementsDataBuffer(elementSizeInBytes*2);
+        std::iota(twoElementsDataBuffer.begin(), twoElementsDataBuffer.end(), static_cast<Byte>(20));
+        EXPECT_EQ(StatusOK, this->dataBuffer.updateData(1u, 2u, twoElementsDataBuffer.data()));
 
-        EXPECT_EQ(StatusOK, this->dataBuffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 2>{ {6, 7} }.data()), 2 * sizeof(uint32_t), 1 * sizeof(uint32_t)));
-
-        EXPECT_EQ(12u, dataBufferData[0]);
-        EXPECT_EQ(6u, dataBufferData[1]);
-        EXPECT_EQ(7u, dataBufferData[2]);
+        std::vector<Byte> expectedThreeeElements = singleElementData;
+        expectedThreeeElements.insert(expectedThreeeElements.end(), twoElementsDataBuffer.begin(), twoElementsDataBuffer.end());
+        ASSERT_EQ(dataBufferData, this->m_scene.impl.getIScene().getDataBuffer(this->dataBufferHandle).data.data());
+        EXPECT_EQ(0, std::memcmp(expectedThreeeElements.data(), dataBufferData, expectedThreeeElements.size()));
     }
 
-    TYPED_TEST(ADataBuffer, CanNotBeUpdatedWhenDataSizeBiggerThanMaximumSize)
+    TEST_P(ADataBuffer, CanNotBeUpdatedWhenDataSizeBiggerThanMaximumSize)
     {
-        EXPECT_NE(StatusOK, this->dataBuffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 14>().data()), 14 * sizeof(uint32_t)));
+        std::vector<Byte> data(elementSizeInBytes*14);
+        EXPECT_NE(StatusOK, this->dataBuffer.updateData(0u, 14u, data.data()));
     }
 
-    TYPED_TEST(ADataBuffer, CanNotBeUpdatdWhenDataSizeAndOffsetBiggerThanMaximumSize)
+    TEST_P(ADataBuffer, CanNotBeUpdatdWhenDataSizeAndOffsetBiggerThanMaximumSize)
     {
-        EXPECT_NE(StatusOK, this->dataBuffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 4>().data()), 4 * sizeof(uint32_t), 10 * sizeof(uint32_t)));
+        std::vector<Byte> data(elementSizeInBytes*4);
+        EXPECT_NE(StatusOK, this->dataBuffer.updateData(10u, 4u, data.data()));
     }
 
-    TYPED_TEST(ADataBuffer, CanBeValidated)
+    TEST_P(ADataBuffer, CanBeValidated)
     {
-        const auto effect = TestEffects::CreateTestEffectWithAttribute(this->client);
+        const auto effect = TestEffects::CreateTestEffectWithAttribute(this->m_scene);
         GeometryBinding& geom = this->createValidGeometry(effect);
-        if (this->dataBuffer.getType() == ERamsesObjectType_IndexDataBuffer)
-            geom.setIndices(RamsesObjectTypeUtils::ConvertTo<IndexDataBuffer>(this->dataBuffer));
+        if (ArrayResourceUtils::IsValidIndicesType(this->dataBuffer.getDataType()))
+            EXPECT_EQ(StatusOK, geom.setIndices(RamsesObjectTypeUtils::ConvertTo<ArrayBuffer>(this->dataBuffer)));
         else
         {
+            const char* validInputName = nullptr;
+            switch (GetParam())
+            {
+            case EDataType::Float:
+                validInputName = "a_position";
+                break;
+            case EDataType::Vector2F:
+                validInputName = "a_vec2";
+                break;
+            case EDataType::Vector3F:
+                validInputName = "a_vec3";
+                break;
+            case EDataType::Vector4F:
+                validInputName = "a_vec4";
+                break;
+            default: assert(false);
+            }
             AttributeInput attrInput;
-            effect->findAttributeInput("a_position", attrInput);
-            geom.setInputBuffer(attrInput, RamsesObjectTypeUtils::ConvertTo<VertexDataBuffer>(this->dataBuffer));
+            effect->findAttributeInput(validInputName, attrInput);
+            EXPECT_EQ(StatusOK, geom.setInputBuffer(attrInput, RamsesObjectTypeUtils::ConvertTo<ArrayBuffer>(this->dataBuffer)));
         }
-        const char data[] = { 0 };
-        EXPECT_EQ(StatusOK, this->dataBuffer.setData(data, 1u));
+        EXPECT_EQ(StatusOK, this->dataBuffer.updateData(0u, 1u, singleElementData.data()));
         EXPECT_EQ(StatusOK, this->dataBuffer.validate());
     }
 
-    TYPED_TEST(ADataBuffer, IsValidIfNotUsedByAnyMeshButUsedByPickableObject)
+    TEST_P(ADataBuffer, IsValidIfNotUsedByAnyMeshButUsedByPickableObject)
     {
-        VertexDataBuffer* geometryBuffer = this->m_scene.createVertexDataBuffer(36, EDataType_Vector3F, "geometryBuffer");
-        const char data[] = { 0 };
-        geometryBuffer->setData(data, 1u);
+        ArrayBuffer* geometryBuffer = this->m_scene.createArrayBuffer(EDataType::Vector3F, 3, "geometryBuffer");
+        const float data[] = { 0.f, 0.f, 0.f };
+        geometryBuffer->updateData(0u, 1u, data);
         const pickableObjectId_t id(2);
         this->m_scene.createPickableObject(*geometryBuffer, id, "PickableObject");
 
         EXPECT_EQ(StatusOK, geometryBuffer->validate());
     }
 
-    TYPED_TEST(ADataBuffer, ReportsWarningIfNotUsedInGeometry)
+    TEST_P(ADataBuffer, ReportsWarningIfNotUsedInGeometry)
     {
-        const char data[] = { 0 };
-        EXPECT_EQ(StatusOK, this->dataBuffer.setData(data, 1u));
+        EXPECT_EQ(StatusOK, this->dataBuffer.updateData(0u, 1u, singleElementData.data()));
         EXPECT_NE(StatusOK, this->dataBuffer.validate());
     }
 
-    TYPED_TEST(ADataBuffer, ReportsWarningIfUsedInGeometryButNotInitialized)
+    TEST_P(ADataBuffer, ReportsWarningIfUsedInGeometryButNotInitialized)
     {
-        const auto effect = TestEffects::CreateTestEffectWithAttribute(this->client);
+        const auto effect = TestEffects::CreateTestEffectWithAttribute(this->m_scene);
         GeometryBinding& geom = this->createValidGeometry(effect);
-        if (this->dataBuffer.getType() == ERamsesObjectType_IndexDataBuffer)
-            geom.setIndices(RamsesObjectTypeUtils::ConvertTo<IndexDataBuffer>(this->dataBuffer));
+        if (ArrayResourceUtils::IsValidIndicesType(this->dataBuffer.getDataType()))
+            geom.setIndices(RamsesObjectTypeUtils::ConvertTo<ArrayBuffer>(this->dataBuffer));
         else
         {
             AttributeInput attrInput;
             effect->findAttributeInput("a_position", attrInput);
-            geom.setInputBuffer(attrInput, RamsesObjectTypeUtils::ConvertTo<VertexDataBuffer>(this->dataBuffer));
+            geom.setInputBuffer(attrInput, RamsesObjectTypeUtils::ConvertTo<ArrayBuffer>(this->dataBuffer));
         }
         EXPECT_NE(StatusOK, this->dataBuffer.validate());
     }
 
-    TYPED_TEST(ADataBuffer, CanGetDataType)
+    TEST_P(ADataBuffer, CanGetDataType)
     {
         EXPECT_EQ(this->getCreationDataType(), this->dataBuffer.getDataType());
     }
 
-    TYPED_TEST(ADataBuffer, CanGetMaximumSize)
+    TEST_P(ADataBuffer, CanGetMaximumSize)
     {
-        EXPECT_EQ(13 * sizeof(uint32_t), this->dataBuffer.getMaximumSizeInBytes());
+        EXPECT_EQ(13u, this->dataBuffer.getMaximumNumberOfElements());
         EXPECT_EQ(13u, this->dataBuffer.impl.getElementCount());
     }
 
-    TYPED_TEST(ADataBuffer, CanGetUsedSize)
+    TEST_P(ADataBuffer, CanGetUsedSize)
     {
-        EXPECT_EQ(StatusOK, this->dataBuffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 3>{ {12, 23, 34} }.data()), 3 * sizeof(uint32_t)));
-        EXPECT_EQ(13 * sizeof(uint32_t), this->dataBuffer.getMaximumSizeInBytes());
+        EXPECT_EQ(StatusOK, this->dataBuffer.updateData(0u, 1u, singleElementData.data()));
+        EXPECT_EQ(13u, this->dataBuffer.getMaximumNumberOfElements());
         EXPECT_EQ(13u, this->dataBuffer.impl.getElementCount());
-        EXPECT_EQ(3 * sizeof(uint32_t), this->dataBuffer.getUsedSizeInBytes());
-        EXPECT_EQ(3u, this->dataBuffer.impl.getUsedElementCount());
+        EXPECT_EQ(1u, this->dataBuffer.getUsedNumberOfElements());
+        EXPECT_EQ(1u, this->dataBuffer.impl.getUsedElementCount());
     }
 
-    TYPED_TEST(ADataBuffer, CanGetData)
+    TEST_P(ADataBuffer, CanGetData)
     {
-        EXPECT_EQ(StatusOK, this->dataBuffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 3>{ {12, 23, 34} }.data()), 3 * sizeof(uint32_t)));
+        EXPECT_EQ(StatusOK, this->dataBuffer.updateData(0u, 1u, singleElementData.data()));
 
-        std::array<uint32_t, 13> dataBufferOut;
-        EXPECT_EQ(StatusOK, this->dataBuffer.getData(reinterpret_cast<char*>(dataBufferOut.data()), static_cast<uint32_t>(dataBufferOut.size() * sizeof(uint32_t))));
+        std::vector<Byte> dataBufferOut(singleElementData);
+        EXPECT_EQ(StatusOK, this->dataBuffer.getData(dataBufferOut.data(), 1));
+        EXPECT_EQ(singleElementData, dataBufferOut);
 
-        EXPECT_EQ(12u, dataBufferOut[0]);
-        EXPECT_EQ(23u, dataBufferOut[1]);
-        EXPECT_EQ(34u, dataBufferOut[2]);
+        std::vector<Byte> twoElementsDataBuffer(elementSizeInBytes*2);
+        std::iota(twoElementsDataBuffer.begin(), twoElementsDataBuffer.end(), static_cast<Byte>(20));
+        EXPECT_EQ(StatusOK, this->dataBuffer.updateData(1u, 2u, twoElementsDataBuffer.data()));
 
-        EXPECT_EQ(StatusOK, this->dataBuffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 2>{ {6, 7} }.data()), 2 * sizeof(uint32_t), 1 * sizeof(uint32_t)));
+        std::vector<Byte> threeElementsDataBufferOut(elementSizeInBytes*3);
+        EXPECT_EQ(StatusOK, this->dataBuffer.getData(threeElementsDataBufferOut.data(), 3u));
 
-        EXPECT_EQ(StatusOK, this->dataBuffer.getData(reinterpret_cast<char*>(dataBufferOut.data()), static_cast<uint32_t>(dataBufferOut.size() * sizeof(uint32_t))));
-        EXPECT_EQ(12u, dataBufferOut[0]);
-        EXPECT_EQ(6u,  dataBufferOut[1]);
-        EXPECT_EQ(7u,  dataBufferOut[2]);
+        std::vector<Byte> expectedThreeeElements = singleElementData;
+        expectedThreeeElements.insert(expectedThreeeElements.end(), twoElementsDataBuffer.begin(), twoElementsDataBuffer.end());
+        EXPECT_EQ(expectedThreeeElements,  threeElementsDataBufferOut);
     }
 
-    TYPED_TEST(ADataBuffer, CanGetPartialData)
-    {
-        EXPECT_EQ(StatusOK, this->dataBuffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 3>{ {12, 23, 34} }.data()), 3 * sizeof(uint32_t)));
-
-        uint32_t dataBufferOut;
-        EXPECT_EQ(StatusOK, this->dataBuffer.getData(reinterpret_cast<char*>(&dataBufferOut), sizeof(uint32_t)));
-        EXPECT_EQ(12u, dataBufferOut);
-    }
+    INSTANTIATE_TEST_SUITE_P(ADataBufferTest, ADataBuffer,
+        ::testing::Values(EDataType::UInt16, EDataType::UInt32, EDataType::Float, EDataType::Vector2F, EDataType::Vector3F, EDataType::Vector4F));
 }

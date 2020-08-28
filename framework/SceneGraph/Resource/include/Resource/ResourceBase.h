@@ -127,7 +127,7 @@ namespace ramses_internal
         mutable ResourceBlob m_data;
         mutable CompressedResouceBlob m_compressedData;
         mutable ResourceContentHash m_hash;
-        uint32_t m_uncompressedSize;
+        uint32_t m_uncompressedSize = 0;
         ResourceCacheFlag m_cacheFlag;
         String m_name;
     };

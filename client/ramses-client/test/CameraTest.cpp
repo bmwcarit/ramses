@@ -12,7 +12,10 @@
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/DataVector2i.h"
+#include "ramses-client-api/DataVector2f.h"
+#include "ramses-client-api/DataVector4f.h"
 #include "Math3d/CameraMatrixHelper.h"
+#include "ramses-utils.h"
 
 namespace ramses
 {
@@ -46,6 +49,15 @@ namespace ramses
         EXPECT_EQ(1.0f, this->camera->getTopPlane());
         EXPECT_EQ(0.1f, this->camera->getNearPlane());
         EXPECT_EQ(1.0f, this->camera->getFarPlane());
+        EXPECT_EQ(0, this->camera->getViewportX());
+        EXPECT_EQ(0, this->camera->getViewportY());
+        EXPECT_EQ(16u, this->camera->getViewportWidth());
+        EXPECT_EQ(16u, this->camera->getViewportHeight());
+    }
+
+    TYPED_TEST(ACamera, canDestroyCamera)
+    {
+        EXPECT_EQ(StatusOK, this->m_scene.destroy(*this->camera));
     }
 
     TYPED_TEST(ACamera, reportsErrorWhenValidatingInitialState)
@@ -123,10 +135,11 @@ namespace ramses
         }
     }
 
-    TYPED_TEST(ACamera, viewportDataNotBoundInitially)
+    TYPED_TEST(ACamera, cameraDataNotBoundInitially)
     {
         EXPECT_FALSE(this->camera->isViewportOffsetBound());
         EXPECT_FALSE(this->camera->isViewportSizeBound());
+        EXPECT_FALSE(this->camera->isFrustumPlanesBound());
     }
 
     TYPED_TEST(ACamera, canBindViewportData)
@@ -139,6 +152,37 @@ namespace ramses
 
         EXPECT_TRUE(this->camera->isViewportOffsetBound());
         EXPECT_TRUE(this->camera->isViewportSizeBound());
+    }
+
+    TYPED_TEST(ACamera, canBindFrustumPlanesData)
+    {
+        const auto do1 = this->m_scene.createDataVector4f();
+        const auto do2 = this->m_scene.createDataVector2f();
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
+        EXPECT_TRUE(this->camera->isFrustumPlanesBound());
+    }
+
+    TYPED_TEST(ACamera, failsToBindViewportDataIfDataObjectFromDifferentScene)
+    {
+        auto otherScene = this->client.createScene(sceneId_t{ this->m_scene.getSceneId().getValue() + 1 });
+        const auto do1 = otherScene->createDataVector2i();
+        const auto do2 = otherScene->createDataVector2i();
+
+        EXPECT_NE(StatusOK, this->camera->bindViewportOffset(*do1));
+        EXPECT_NE(StatusOK, this->camera->bindViewportSize(*do2));
+
+        EXPECT_FALSE(this->camera->isViewportOffsetBound());
+        EXPECT_FALSE(this->camera->isViewportSizeBound());
+    }
+
+    TYPED_TEST(ACamera, failsToBindFrustumDataIfDataObjectFromDifferentScene)
+    {
+        auto otherScene = this->client.createScene(sceneId_t{ this->m_scene.getSceneId().getValue() + 1 });
+        const auto do1 = otherScene->createDataVector4f();
+        const auto do2 = otherScene->createDataVector2f();
+
+        EXPECT_NE(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
+        EXPECT_FALSE(this->camera->isFrustumPlanesBound());
     }
 
     TYPED_TEST(ACamera, canUnbindViewportData)
@@ -159,6 +203,18 @@ namespace ramses
         EXPECT_FALSE(this->camera->isViewportSizeBound());
     }
 
+    TYPED_TEST(ACamera, canUnbindFrustumPlanesData)
+    {
+        const auto do1 = this->m_scene.createDataVector4f();
+        const auto do2 = this->m_scene.createDataVector2f();
+
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
+        EXPECT_TRUE(this->camera->isFrustumPlanesBound());
+
+        EXPECT_EQ(StatusOK, this->camera->unbindFrustumPlanes());
+        EXPECT_FALSE(this->camera->isFrustumPlanesBound());
+    }
+
     TYPED_TEST(ACamera, getsReferencedViewportValuesWhenBound)
     {
         const auto do1 = this->m_scene.createDataVector2i();
@@ -177,6 +233,26 @@ namespace ramses
         EXPECT_EQ(2, this->camera->getViewportY());
         EXPECT_EQ(3u, this->camera->getViewportWidth());
         EXPECT_EQ(4u, this->camera->getViewportHeight());
+    }
+
+    TYPED_TEST(ACamera, getsReferencedFrustumPlanesValuesWhenBound)
+    {
+        const auto do1 = this->m_scene.createDataVector4f();
+        const auto do2 = this->m_scene.createDataVector2f();
+        do1->setValue(1, 2, 3, 4);
+        do2->setValue(5, 6);
+
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
+
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
+        EXPECT_TRUE(this->camera->isFrustumPlanesBound());
+
+        EXPECT_EQ(1.f, this->camera->getLeftPlane());
+        EXPECT_EQ(2.f, this->camera->getRightPlane());
+        EXPECT_EQ(3.f, this->camera->getBottomPlane());
+        EXPECT_EQ(4.f, this->camera->getTopPlane());
+        EXPECT_EQ(5.f, this->camera->getNearPlane());
+        EXPECT_EQ(6.f, this->camera->getFarPlane());
     }
 
     TYPED_TEST(ACamera, getsCorrectViewportValuesWhenBoundFromOneDataObjectToAnother)
@@ -209,6 +285,34 @@ namespace ramses
         EXPECT_EQ(2u, this->camera->getViewportHeight());
     }
 
+    TYPED_TEST(ACamera, getsCorrectFrustumValuesWhenBoundFromOneDataObjectToAnother)
+    {
+        const auto do1 = this->m_scene.createDataVector4f();
+        const auto do2 = this->m_scene.createDataVector2f();
+        do1->setValue(1, 2, 3, 4);
+        do2->setValue(5, 6);
+
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
+
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
+        EXPECT_TRUE(this->camera->isFrustumPlanesBound());
+
+        const auto do3 = this->m_scene.createDataVector4f();
+        const auto do4 = this->m_scene.createDataVector2f();
+        do3->setValue(-1, -2, -3, -4);
+        do4->setValue(-5, -6);
+
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do3, *do4));
+        EXPECT_TRUE(this->camera->isFrustumPlanesBound());
+
+        EXPECT_EQ(-1.f, this->camera->getLeftPlane());
+        EXPECT_EQ(-2.f, this->camera->getRightPlane());
+        EXPECT_EQ(-3.f, this->camera->getBottomPlane());
+        EXPECT_EQ(-4.f, this->camera->getTopPlane());
+        EXPECT_EQ(-5.f, this->camera->getNearPlane());
+        EXPECT_EQ(-6.f, this->camera->getFarPlane());
+    }
+
     TYPED_TEST(ACamera, getsReferencedViewportValuesWhenBound_alsoWhenChangedInDataObject)
     {
         const auto do1 = this->m_scene.createDataVector2i();
@@ -235,6 +339,29 @@ namespace ramses
         EXPECT_EQ(22, this->camera->getViewportY());
         EXPECT_EQ(33u, this->camera->getViewportWidth());
         EXPECT_EQ(44u, this->camera->getViewportHeight());
+    }
+
+    TYPED_TEST(ACamera, getsReferencedFrustumValuesWhenBound_alsoWhenChangedInDataObject)
+    {
+        const auto do1 = this->m_scene.createDataVector4f();
+        const auto do2 = this->m_scene.createDataVector2f();
+        do1->setValue(1, 2, 3, 4);
+        do2->setValue(5, 6);
+
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
+
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
+        EXPECT_TRUE(this->camera->isFrustumPlanesBound());
+
+        do1->setValue(-1, -2, -3, -4);
+        do2->setValue(-5, -6);
+
+        EXPECT_EQ(-1.f, this->camera->getLeftPlane());
+        EXPECT_EQ(-2.f, this->camera->getRightPlane());
+        EXPECT_EQ(-3.f, this->camera->getBottomPlane());
+        EXPECT_EQ(-4.f, this->camera->getTopPlane());
+        EXPECT_EQ(-5.f, this->camera->getNearPlane());
+        EXPECT_EQ(-6.f, this->camera->getFarPlane());
     }
 
     TYPED_TEST(ACamera, canBindDataToTwoCamerasViewports)
@@ -273,6 +400,51 @@ namespace ramses
         EXPECT_EQ(22u, camera2->getViewportHeight());
     }
 
+    TYPED_TEST(ACamera, canBindDataToTwoCamerasFrustum)
+    {
+        const auto do1 = this->m_scene.createDataVector4f();
+        const auto do2 = this->m_scene.createDataVector2f();
+        do1->setValue(1, 2, 3, 4);
+        do2->setValue(5, 6);
+
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
+        auto camera2 = &this->template createObject<TypeParam>("camera");
+        EXPECT_EQ(StatusOK, camera2->setFrustum(-10.f, 10.f, -10.f, 10.f, 0.01f, 10.f));
+
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
+        EXPECT_EQ(StatusOK, camera2->bindFrustumPlanes(*do1, *do2));
+        EXPECT_TRUE(this->camera->isFrustumPlanesBound());
+        EXPECT_TRUE(camera2->isFrustumPlanesBound());
+
+        EXPECT_EQ(1.f, this->camera->getLeftPlane());
+        EXPECT_EQ(2.f, this->camera->getRightPlane());
+        EXPECT_EQ(3.f, this->camera->getBottomPlane());
+        EXPECT_EQ(4.f, this->camera->getTopPlane());
+        EXPECT_EQ(5.f, this->camera->getNearPlane());
+        EXPECT_EQ(6.f, this->camera->getFarPlane());
+        EXPECT_EQ(1.f, camera2->getLeftPlane());
+        EXPECT_EQ(2.f, camera2->getRightPlane());
+        EXPECT_EQ(3.f, camera2->getBottomPlane());
+        EXPECT_EQ(4.f, camera2->getTopPlane());
+        EXPECT_EQ(5.f, camera2->getNearPlane());
+        EXPECT_EQ(6.f, camera2->getFarPlane());
+
+        do1->setValue(-1, -2, -3, -4);
+        do2->setValue(-5, -6);
+        EXPECT_EQ(-1.f, this->camera->getLeftPlane());
+        EXPECT_EQ(-2.f, this->camera->getRightPlane());
+        EXPECT_EQ(-3.f, this->camera->getBottomPlane());
+        EXPECT_EQ(-4.f, this->camera->getTopPlane());
+        EXPECT_EQ(-5.f, this->camera->getNearPlane());
+        EXPECT_EQ(-6.f, this->camera->getFarPlane());
+        EXPECT_EQ(-1.f, camera2->getLeftPlane());
+        EXPECT_EQ(-2.f, camera2->getRightPlane());
+        EXPECT_EQ(-3.f, camera2->getBottomPlane());
+        EXPECT_EQ(-4.f, camera2->getTopPlane());
+        EXPECT_EQ(-5.f, camera2->getNearPlane());
+        EXPECT_EQ(-6.f, camera2->getFarPlane());
+    }
+
     TYPED_TEST(ACamera, getsOriginalViewportValuesWhenUnbound)
     {
         const auto do1 = this->m_scene.createDataVector2i();
@@ -299,6 +471,28 @@ namespace ramses
         EXPECT_EQ(-2, this->camera->getViewportY());
         EXPECT_EQ(16u, this->camera->getViewportWidth());
         EXPECT_EQ(32u, this->camera->getViewportHeight());
+    }
+
+    TYPED_TEST(ACamera, getsOriginalFrustumValuesWhenUnbound)
+    {
+        const auto do1 = this->m_scene.createDataVector4f();
+        const auto do2 = this->m_scene.createDataVector2f();
+        do1->setValue(1, 2, 3, 4);
+        do2->setValue(5, 6);
+
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
+
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
+        EXPECT_TRUE(this->camera->isFrustumPlanesBound());
+
+        EXPECT_EQ(StatusOK, this->camera->unbindFrustumPlanes());
+
+        EXPECT_EQ(-1.f, this->camera->getLeftPlane());
+        EXPECT_EQ(1.f, this->camera->getRightPlane());
+        EXPECT_EQ(-1.f, this->camera->getBottomPlane());
+        EXPECT_EQ(1.f, this->camera->getTopPlane());
+        EXPECT_EQ(0.1f, this->camera->getNearPlane());
+        EXPECT_EQ(1.f, this->camera->getFarPlane());
     }
 
     TYPED_TEST(ACamera, viewportValueSetIfBoundOnlyAffectsOriginalValueThatBecomesActiveAfterUnbound)
@@ -330,6 +524,39 @@ namespace ramses
         EXPECT_EQ(-22, this->camera->getViewportY());
         EXPECT_EQ(166u, this->camera->getViewportWidth());
         EXPECT_EQ(322u, this->camera->getViewportHeight());
+    }
+
+    TYPED_TEST(ACamera, frustumValueSetIfBoundOnlyAffectOriginalValuesThatBecomeActiveAfterUnbound)
+    {
+        const auto do1 = this->m_scene.createDataVector4f();
+        const auto do2 = this->m_scene.createDataVector2f();
+        do1->setValue(1, 2, 3, 4);
+        do2->setValue(5, 6);
+
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
+
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
+        EXPECT_TRUE(this->camera->isFrustumPlanesBound());
+
+        // frustum planes currently bound so these values have no effect (yet)
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(-10.f, 10.f, -10.f, 10.f, 0.01f, 10.f));
+
+        EXPECT_EQ(1.f, this->camera->getLeftPlane());
+        EXPECT_EQ(2.f, this->camera->getRightPlane());
+        EXPECT_EQ(3.f, this->camera->getBottomPlane());
+        EXPECT_EQ(4.f, this->camera->getTopPlane());
+        EXPECT_EQ(5.f, this->camera->getNearPlane());
+        EXPECT_EQ(6.f, this->camera->getFarPlane());
+
+        EXPECT_EQ(StatusOK, this->camera->unbindFrustumPlanes());
+
+        // only now when unbounded values fall back to last directly set values
+        EXPECT_EQ(-10.f, this->camera->getLeftPlane());
+        EXPECT_EQ(10.f, this->camera->getRightPlane());
+        EXPECT_EQ(-10.f, this->camera->getBottomPlane());
+        EXPECT_EQ(10.f, this->camera->getTopPlane());
+        EXPECT_EQ(0.01f, this->camera->getNearPlane());
+        EXPECT_EQ(10.f, this->camera->getFarPlane());
     }
 
     TYPED_TEST(ACamera, doesNotReportValidationErrorWhenViewportNotInitializedButBoundToValidData)
@@ -366,6 +593,24 @@ namespace ramses
         EXPECT_NE(StatusOK, this->camera->validate());
     }
 
+    TYPED_TEST(ACamera, reportsValidationErrorWhenFrustumNotInitializedAndBoundToValidDataButUnboundAfterwards)
+    {
+        // make viewport valid - not testing viewport validity here
+        EXPECT_EQ(StatusOK, this->camera->setViewport(0, 0, 16, 16));
+
+        const auto do1 = this->m_scene.createDataVector4f();
+        const auto do2 = this->m_scene.createDataVector2f();
+        do1->setValue(-1, 1, -1, 1);
+        do2->setValue(1, 10);
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
+        // bound values valid
+        EXPECT_EQ(StatusOK, this->camera->validate());
+
+        EXPECT_EQ(StatusOK, this->camera->unbindFrustumPlanes());
+        // no valid original values
+        EXPECT_NE(StatusOK, this->camera->validate());
+    }
+
     TYPED_TEST(ACamera, reportsValidationErrorWhenViewportNotInitializedAndBoundToInvalidData)
     {
         // make frustum valid - not testing frustum validity here
@@ -377,6 +622,50 @@ namespace ramses
         do2->setValue(0, 4);
         EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
         EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
+        EXPECT_NE(StatusOK, this->camera->validate());
+    }
+
+    TYPED_TEST(ACamera, reportsValidationErrorWhenFrustumNotInitializedAndBoundToInvalidData)
+    {
+        // make viewport valid - not testing viewport validity here
+        EXPECT_EQ(StatusOK, this->camera->setViewport(0, 0, 16, 16));
+
+        const auto do1 = this->m_scene.createDataVector4f();
+        const auto do2 = this->m_scene.createDataVector2f();
+        do1->setValue(1, -1, 1, -1);
+        do2->setValue(1, 10);
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
+        EXPECT_NE(StatusOK, this->camera->validate());
+    }
+
+    TYPED_TEST(ACamera, reportsValidationErrorWhenViewportInitializedButBoundToInvalidData)
+    {
+        // make frustum valid - not testing frustum validity here
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(-1, 1, -1, 1, 0.1f, 0.2f));
+
+        EXPECT_EQ(StatusOK, this->camera->setViewport(0, 0, 16, 16));
+
+        const auto do1 = this->m_scene.createDataVector2i();
+        const auto do2 = this->m_scene.createDataVector2i();
+        do1->setValue(1, 2);
+        do2->setValue(0, 4);
+        EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
+        EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
+        EXPECT_NE(StatusOK, this->camera->validate());
+    }
+
+    TYPED_TEST(ACamera, reportsValidationErrorWhenFrustumInitializedButBoundToInvalidData)
+    {
+        // make viewport valid - not testing viewport validity here
+        EXPECT_EQ(StatusOK, this->camera->setViewport(0, 0, 16, 16));
+
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(-1, 1, -1, 1, 0.1f, 0.2f));
+
+        const auto do1 = this->m_scene.createDataVector4f();
+        const auto do2 = this->m_scene.createDataVector2f();
+        do1->setValue(1, -1, 1, -1);
+        do2->setValue(1, 10);
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
         EXPECT_NE(StatusOK, this->camera->validate());
     }
 
@@ -419,5 +708,29 @@ namespace ramses
         EXPECT_NE(StatusOK, camera->setFrustum(fov, -1.f, nearPlane, farPlane));
         EXPECT_NE(StatusOK, camera->setFrustum(fov, aspectRatio, 0.f, farPlane));
         EXPECT_NE(StatusOK, camera->setFrustum(fov, aspectRatio, nearPlane, nearPlane));
+    }
+
+    TEST_F(APerspectiveCamera, canBindFrustumAndGetOriginalValuesWhenUnbound)
+    {
+        const auto do1 = this->m_scene.createDataVector4f();
+        const auto do2 = this->m_scene.createDataVector2f();
+        EXPECT_TRUE(RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(45.f, 2.3f, 2.f, 20.f, *do1, *do2));
+
+        EXPECT_EQ(StatusOK, this->camera->setFrustum(19.f, 1.33f, 0.1f, 1.f));
+
+        EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
+        EXPECT_TRUE(this->camera->isFrustumPlanesBound());
+
+        EXPECT_FLOAT_EQ(45.f, this->camera->getVerticalFieldOfView());
+        EXPECT_FLOAT_EQ(2.3f, this->camera->getAspectRatio());
+        EXPECT_EQ(2.f, this->camera->getNearPlane());
+        EXPECT_EQ(20.f, this->camera->getFarPlane());
+
+        EXPECT_EQ(StatusOK, this->camera->unbindFrustumPlanes());
+
+        EXPECT_FLOAT_EQ(19.f, this->camera->getVerticalFieldOfView());
+        EXPECT_FLOAT_EQ(1.33f, this->camera->getAspectRatio());
+        EXPECT_EQ(0.1f, this->camera->getNearPlane());
+        EXPECT_EQ(1.f, this->camera->getFarPlane());
     }
 }

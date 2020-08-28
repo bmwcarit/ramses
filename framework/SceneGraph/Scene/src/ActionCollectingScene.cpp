@@ -192,10 +192,10 @@ namespace ramses_internal
         return handleActual;
     }
 
-    CameraHandle ActionCollectingScene::allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle)
+    CameraHandle ActionCollectingScene::allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle dataInstance, CameraHandle handle)
     {
-        CameraHandle handleActual = ResourceChangeCollectingScene::allocateCamera(type, nodeHandle, viewportDataInstance, handle);
-        m_creator.allocateCamera(type, nodeHandle, viewportDataInstance, handleActual);
+        CameraHandle handleActual = ResourceChangeCollectingScene::allocateCamera(type, nodeHandle, dataInstance, handle);
+        m_creator.allocateCamera(type, nodeHandle, dataInstance, handleActual);
 
         return handleActual;
     }
@@ -204,12 +204,6 @@ namespace ramses_internal
     {
         ResourceChangeCollectingScene::releaseCamera(cameraHandle);
         m_creator.releaseCamera(cameraHandle);
-    }
-
-    void ActionCollectingScene::setCameraFrustum(CameraHandle cameraHandle, const Frustum& frustum)
-    {
-        ResourceChangeCollectingScene::setCameraFrustum(cameraHandle, frustum);
-        m_creator.setCameraFrustum(cameraHandle, frustum);
     }
 
     void ActionCollectingScene::setRenderStateStencilOps(RenderStateHandle stateHandle, EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass)
@@ -264,6 +258,12 @@ namespace ramses_internal
     {
         ResourceChangeCollectingScene::setRenderStateBlendOperations(stateHandle, operationColor, operationAlpha);
         m_creator.setRenderStateBlendOperations(stateHandle, operationColor, operationAlpha);
+    }
+
+    void ActionCollectingScene::setRenderStateBlendColor(RenderStateHandle stateHandle, const Vector4& color)
+    {
+        ResourceChangeCollectingScene::setRenderStateBlendColor(stateHandle, color);
+        m_creator.setRenderStateBlendColor(stateHandle, color);
     }
 
     void ActionCollectingScene::setRenderStateBlendFactors(RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha)

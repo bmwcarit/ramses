@@ -18,9 +18,7 @@ namespace ramses
 {
     class TextureSampler;
     class GeometryBinding;
-    class UInt16Array;
-    class Vector3fArray;
-    class Vector2fArray;
+    class ArrayResource;
 }
 
 namespace ramses_internal
@@ -29,7 +27,7 @@ namespace ramses_internal
     class Texture2DGenerateMipMapScene : public IntegrationScene
     {
     public:
-        Texture2DGenerateMipMapScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition);
+        Texture2DGenerateMipMapScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition);
 
         enum EState
         {
@@ -43,9 +41,9 @@ namespace ramses_internal
         void createGeometry();
         ramses::TextureSampler* createTexture2DSampler(UInt32 width = 2u, UInt32 height = 2u, UInt8 transparency = 0u);
 
-        const ramses::UInt16Array* m_indexArray;
-        const ramses::Vector3fArray* m_vertexPositions;
-        const ramses::Vector2fArray* m_textureCoords;
+        const ramses::ArrayResource* m_indexArray;
+        const ramses::ArrayResource* m_vertexPositions;
+        const ramses::ArrayResource* m_textureCoords;
     };
 }
 

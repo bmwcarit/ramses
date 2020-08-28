@@ -55,6 +55,8 @@ namespace ramses_internal
     Image Image::createDiffTo(const Image& other) const
     {
         assert(m_width == other.m_width && m_height == other.m_height);
+        //make sure theoretical maximum error would not overflow
+        assert(std::log2(256) + std::ceil(std::log2(m_width)) + std::ceil(std::log2(m_height)) <= (sizeof(Vector4i::x) * 8 - 1));
 
         std::vector<UInt8> resultData(m_width * m_height * 4u);
         std::transform(m_data.cbegin(), m_data.cend(), other.m_data.cbegin(), resultData.begin(), [](UInt8 c1, UInt8 c2)
@@ -64,6 +66,33 @@ namespace ramses_internal
         });
 
         return Image(m_width, m_height, std::move(resultData));
+    }
+
+    std::pair<Image, Image> Image::createSeparateColorAndAlphaImages() const
+    {
+        std::vector<UInt8> resultRGBData;
+        std::vector<UInt8> resultAlphaData;
+        resultRGBData.reserve(m_width * m_height * 4u);
+        resultAlphaData.reserve(m_width * m_height * 4u);
+
+        for (size_t px = 0; px < m_data.size() / 4; ++px)
+        {
+            const UInt8* pxData = &m_data[4 * px];
+            resultRGBData.push_back(pxData[0]);
+            resultRGBData.push_back(pxData[1]);
+            resultRGBData.push_back(pxData[2]);
+            resultRGBData.push_back(255u);
+
+            resultAlphaData.push_back(pxData[3]);
+            resultAlphaData.push_back(pxData[3]);
+            resultAlphaData.push_back(pxData[3]);
+            resultAlphaData.push_back(255u);
+        }
+
+        Image rgbImage(m_width, m_height, std::move(resultRGBData));
+        Image alphaImage(m_width, m_height, std::move(resultAlphaData));
+
+        return { std::move(rgbImage), std::move(alphaImage) };
     }
 
     Image Image::createEnlarged(UInt32 width, UInt32 height, std::array<UInt8, 4> fillValue) const
@@ -117,9 +146,19 @@ namespace ramses_internal
         return m_width * m_height;
     }
 
-    UInt64 Image::getSumOfPixelValues() const
+    Vector4i Image::getSumOfPixelValues() const
     {
-        return std::accumulate(m_data.cbegin(), m_data.cend(), static_cast<UInt64>(0)); // explicit cast to make sure the accum value is of large enough type
+        Vector4i result{0};
+        for (size_t px = 0; px < m_data.size() / 4; ++px)
+        {
+            const UInt8* pxData = &m_data[4 * px];
+            result.x += pxData[0];
+            result.y += pxData[1];
+            result.z += pxData[2];
+            result.w += pxData[3];
+        }
+
+        return result;
     }
 
     UInt32 Image::getNumberOfNonBlackPixels(UInt8 maxDiffPerColorChannel) const

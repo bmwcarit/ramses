@@ -10,7 +10,7 @@
 #include "TestScenes/TransformationLinkScene.h"
 #include "TestScenes/MultiTransformationLinkScene.h"
 #include "TestScenes/DataLinkScene.h"
-#include "TestScenes/ViewportLinkScene.h"
+#include "TestScenes/CameraDataLinkScene.h"
 #include "TestScenes/TextureLinkScene.h"
 #include "TestScenes/MultiTypeLinkScene.h"
 #include "TestScenes/MultipleTrianglesScene.h"
@@ -40,14 +40,16 @@ void DataLinkingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(DataLinkTest_ProviderRemoved, *this, "DataLinkTest_ProviderRemoved");
     testFramework.createTestCaseWithDefaultDisplay(DataLinkTest_ConsumerRemoved, *this, "DataLinkTest_ConsumerRemoved");
 
-    testFramework.createTestCaseWithDefaultDisplay(ViewportLinkTest_NoLinks, *this, "ViewportLinkTest_NoLinks");
-    testFramework.createTestCaseWithDefaultDisplay(ViewportLinkTest_Linked, *this, "ViewportLinkTest_Linked");
+    testFramework.createTestCaseWithDefaultDisplay(CameraDataLinkTest_NoLinks, *this, "CameraDataLinkTest_NoLinks");
+    testFramework.createTestCaseWithDefaultDisplay(CameraDataLinkTest_ViewportLinked, *this, "CameraDataLinkTest_ViewportLinked");
+    testFramework.createTestCaseWithDefaultDisplay(CameraDataLinkTest_FrustumLinked, *this, "CameraDataLinkTest_FrustumLinked");
 
     testFramework.createTestCaseWithDefaultDisplay(TextureLinkTest_NoLinks, *this, "TextureLinkTest_NoLinks");
     testFramework.createTestCaseWithDefaultDisplay(TextureLinkTest_Linked, *this, "TextureLinkTest_Linked");
     testFramework.createTestCaseWithDefaultDisplay(TextureLinkTest_LinksRemoved, *this, "TextureLinkTest_LinksRemoved");
     testFramework.createTestCaseWithDefaultDisplay(TextureLinkTest_ProviderSceneUnmapped, *this, "TextureLinkTest_ProviderSceneUnmapped");
-    testFramework.createTestCaseWithDefaultDisplay(TextureLinkTest_ProvidedTextureChanges, *this, "TextureLinkTest_ProvidedTextureChanges");
+    // TODO(Carsten): Find a solution for this test with Vaclav
+    //testFramework.createTestCaseWithDefaultDisplay(TextureLinkTest_ProvidedTextureChanges, *this, "TextureLinkTest_ProvidedTextureChanges");
 
     testFramework.createTestCaseWithDefaultDisplay(MultiTypeLinkTest_NoLinks, *this, "MultiTypeLinkTest_NoLinks");
     testFramework.createTestCaseWithDefaultDisplay(MultiTypeLinkTest_Linked, *this, "MultiTypeLinkTest_Linked");
@@ -277,19 +279,28 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
     }
         break;
 
-    case ViewportLinkTest_NoLinks:
-        testFramework.createAndShowScene<ViewportLinkScene>(ViewportLinkScene::VIEWPORT_CONSUMER, m_cameraMid);
-        expectedImageName = "ViewportLinkTest_NoLinks";
+    case CameraDataLinkTest_NoLinks:
+        testFramework.createAndShowScene<CameraDataLinkScene>(CameraDataLinkScene::CAMERADATA_CONSUMER, m_cameraMid);
+        expectedImageName = "CameraData_NoLinks";
         break;
-    case ViewportLinkTest_Linked:
+    case CameraDataLinkTest_ViewportLinked:
     {
-        const auto providerSceneId = testFramework.createAndShowScene<ViewportLinkScene>(ViewportLinkScene::VIEWPORT_PROVIDER, m_cameraMid);
-        const auto consumerSceneId = testFramework.createAndShowScene<ViewportLinkScene>(ViewportLinkScene::VIEWPORT_CONSUMER, m_cameraMid);
-        testFramework.createDataLink(providerSceneId, ViewportLinkScene::ViewportOffsetProviderId, consumerSceneId, ViewportLinkScene::ViewportOffsetConsumerId);
-        testFramework.createDataLink(providerSceneId, ViewportLinkScene::ViewportSizeProviderId, consumerSceneId, ViewportLinkScene::ViewportSizeConsumerId);
-        expectedImageName = "ViewportLinkTest_Linked";
+        const auto providerSceneId = testFramework.createAndShowScene<CameraDataLinkScene>(CameraDataLinkScene::CAMERADATA_PROVIDER, m_cameraMid);
+        const auto consumerSceneId = testFramework.createAndShowScene<CameraDataLinkScene>(CameraDataLinkScene::CAMERADATA_CONSUMER, m_cameraMid);
+        testFramework.createDataLink(providerSceneId, CameraDataLinkScene::ViewportOffsetProviderId, consumerSceneId, CameraDataLinkScene::ViewportOffsetConsumerId);
+        testFramework.createDataLink(providerSceneId, CameraDataLinkScene::ViewportSizeProviderId, consumerSceneId, CameraDataLinkScene::ViewportSizeConsumerId);
+        expectedImageName = "CameraData_ViewportLinked";
     }
         break;
+    case CameraDataLinkTest_FrustumLinked:
+    {
+        const auto providerSceneId = testFramework.createAndShowScene<CameraDataLinkScene>(CameraDataLinkScene::CAMERADATA_PROVIDER, m_cameraMid);
+        const auto consumerSceneId = testFramework.createAndShowScene<CameraDataLinkScene>(CameraDataLinkScene::CAMERADATA_CONSUMER, m_cameraMid);
+        testFramework.createDataLink(providerSceneId, CameraDataLinkScene::FrustumPlanesProviderId, consumerSceneId, CameraDataLinkScene::FrustumPlanesConsumerId);
+        testFramework.createDataLink(providerSceneId, CameraDataLinkScene::FrustumPlanesNearFarProviderId, consumerSceneId, CameraDataLinkScene::FrustumPlanesNearFarConsumerId);
+        expectedImageName = "CameraData_FrustumLinked";
+    }
+    break;
 
     case TextureLinkTest_NoLinks:
         createAndShowDataLinkScenes<TextureLinkScene>(testFramework);
@@ -340,7 +351,8 @@ bool DataLinkingTests::run(RendererTestsFramework& testFramework, const Renderin
         }
 
         {
-            const ramses::Texture2D& otherTexture = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Texture2D>(*testFramework.getClient().findObjectByName("ConsumerProviderTexture"));
+            ramses::Scene& providerConsumerScene = testFramework.getScenesRegistry().getScene(m_sceneIdProviderConsumer);
+            const ramses::Texture2D& otherTexture = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Texture2D>(*providerConsumerScene.findObjectByName("ConsumerProviderTexture"));
             ramses::Scene& providerScene = testFramework.getScenesRegistry().getScene(m_sceneIdProvider);
             providerScene.updateTextureProvider(otherTexture, TextureLinkScene::DataProviderId);
             providerScene.flush();

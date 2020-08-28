@@ -20,12 +20,14 @@ namespace ramses_internal
             : shaderProgramHandle(InvalidGLHandle)
             , vertexShaderHandle(InvalidGLHandle)
             , fragmentShaderHandle(InvalidGLHandle)
+            , geometryShaderHandle(InvalidGLHandle)
         {
         }
 
         GLHandle shaderProgramHandle;
         GLHandle vertexShaderHandle;
         GLHandle fragmentShaderHandle;
+        GLHandle geometryShaderHandle;
     };
 }
 

@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "TestScenes/RenderPassOnceScene.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/RemoteCamera.h"
@@ -15,8 +14,7 @@
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/UniformInput.h"
@@ -27,8 +25,8 @@
 
 namespace ramses_internal
 {
-    RenderPassOnceScene::RenderPassOnceScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    RenderPassOnceScene::RenderPassOnceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
         , m_camera(*scene.createOrthographicCamera())
         , m_renderPass(*m_scene.createRenderPass())
         , m_renderBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
@@ -66,7 +64,7 @@ namespace ramses_internal
     void RenderPassOnceScene::initInputRenderPass()
     {
         ramses::MeshNode* meshNode = m_scene.createMeshNode();
-        ramses::Triangle blueTriangle(m_client, m_scene, *getTestEffect("ramses-test-client-basic"), ramses::TriangleAppearance::EColor_Blue);
+        ramses::Triangle blueTriangle(m_scene, *getTestEffect("ramses-test-client-basic"), ramses::TriangleAppearance::EColor_Blue);
         meshNode->setAppearance(blueTriangle.GetAppearance());
         meshNode->setGeometryBinding(blueTriangle.GetGeometry());
 
@@ -91,17 +89,17 @@ namespace ramses_internal
         ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
 
         const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::UInt16Array* indices = m_client.createConstUInt16Array(6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
         const float vertexPositionsArray[] = {
             -0.5f, -0.5f, 0.f,
             0.5f, -0.5f, 0.f,
             -0.5f, 0.5f, 0.f,
             0.5f, 0.5f, 0.f };
-        const ramses::Vector3fArray* vertexPositions = m_client.createConstVector3fArray(4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
 
         const float textureCoordsArray[] = { 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 1.f };
-        const ramses::Vector2fArray* textureCoords = m_client.createConstVector2fArray(4, textureCoordsArray);
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
 
         ramses::Appearance* appearance = m_scene.createAppearance(*effect, "appearance");
 

@@ -24,7 +24,7 @@ public:
         , scene(rendererScenes.createScene(SceneInfo(SceneId(3u))))
         , sceneAllocator(scene)
     {
-        const DataLayoutHandle layout = sceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Int32) }, ResourceContentHash::Invalid());
+        const DataLayoutHandle layout = sceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType::Int32) }, ResourceContentHash::Invalid());
         dataRef = sceneAllocator.allocateDataInstance(layout);
 
         dataSlot = sceneAllocator.allocateDataSlot({ EDataSlotType_DataConsumer, DataSlotId(1u), NodeHandle(), dataRef, ResourceContentHash::Invalid(), TextureSamplerHandle() });

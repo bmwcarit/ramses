@@ -234,7 +234,7 @@ namespace ramses_internal
     IOutputStream&
     operator<<(IOutputStream& outputStream, const Vector3& vector)
     {
-        return outputStream.write(reinterpret_cast<const Char*>(vector.data), sizeof(vector.data));
+        return outputStream.write(vector.data, sizeof(vector.data));
     }
 
     inline

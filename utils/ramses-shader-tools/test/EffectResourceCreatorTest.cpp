@@ -14,7 +14,6 @@
 
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/RamsesClient.h"
-#include "ramses-client-api/ResourceFileDescription.h"
 #include "ramses-framework-api/RamsesFramework.h"
 
 #include "EffectImpl.h"
@@ -22,6 +21,8 @@
 #include "RamsesClientImpl.h"
 #include "RamsesObjectTypeUtils.h"
 #include "Utils/GtestHelper.h"
+#include "ramses-hmi-utils.h"
+#include "ResourceDataPoolImpl.h"
 
 namespace
 {
@@ -36,6 +37,7 @@ protected:
     AnEffectResourceCreator()
     : framework()
     , ramsesClient(*framework.createClient("ramses client"))
+    , scene(*ramsesClient.createScene( ramses::sceneId_t{ 0xf00 }))
     {
         cleanupOutputFile();
     }
@@ -47,21 +49,24 @@ protected:
 
     void loadEffectFromFile(const char* filePath, ramses::Effect*& effectRead)
     {
-        ramses::ResourceFileDescription resourceFileDesc(filePath);
-        ASSERT_TRUE(ramses::StatusOK == ramsesClient.loadResources(resourceFileDesc));
+        ramses::RamsesHMIUtils::GetResourceDataPoolForClient(ramsesClient).addResourceDataFile(filePath);
+        std::vector<ramses::resourceId_t> resourceIDs;
+        ramsesClient.impl.getResourceDataPool().impl.getAllResourceDataFileResourceIds(resourceIDs);
+        ASSERT_EQ(1u, resourceIDs.size());
 
-        const ramses::RamsesObjectVector resources = ramsesClient.impl.getListOfResourceObjects();
-        ASSERT_EQ(1u, resources.size());
+        ramses::RamsesObjectVector resourceObjects;
+        for (auto const& id : resourceIDs)
+        {
+            if (auto res = ramses::RamsesHMIUtils::GetResourceDataPoolForClient(ramsesClient).createResourceForScene(scene, id))
+                effectRead = &ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Effect>(*res);
+        }
 
-        ramses::RamsesObject* ramsesObject = resources[0];
-        ASSERT_TRUE(nullptr != ramsesObject);
-
-        effectRead = &ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Effect>(*ramsesObject);
         ASSERT_TRUE(nullptr != effectRead);
     }
 
     ramses::RamsesFramework framework;
     ramses::RamsesClient& ramsesClient;
+    ramses::Scene& scene;
 
 private:
     void cleanupOutputFile()
@@ -146,12 +151,8 @@ TEST_F(AnEffectResourceCreator, canWriteEffectIdWithHighLevelResourceHash)
     ramses_internal::String hashFileContent;
     FileUtils::ReadFileContentsToString(OUTPUT_EFFECT_ID_NAME, hashFileContent);
 
-    ramses_internal::StringOutputStream hlHashStream;
     const auto effectId = effectRead->impl.getResourceId();
-    const ramses_internal::ResourceContentHash effectIdAsResourceHash = { effectId.lowPart, effectId.highPart };
-    hlHashStream << effectIdAsResourceHash << "\n";
-
-    EXPECT_EQ(ramses_internal::String(hlHashStream.c_str()), hashFileContent);
+    EXPECT_EQ(fmt::format("0x{:016X}{:016X}\n", effectId.highPart, effectId.lowPart), hashFileContent.stdRef());
 }
 
 TEST_F(AnEffectResourceCreator, canWriteEffectIdWithLowLevelResourceHash)
@@ -171,8 +172,6 @@ TEST_F(AnEffectResourceCreator, canWriteEffectIdWithLowLevelResourceHash)
     ramses_internal::String hashFileContent;
     FileUtils::ReadFileContentsToString(OUTPUT_EFFECT_ID_NAME, hashFileContent);
 
-    ramses_internal::StringOutputStream llHashStream;
-    llHashStream << effectRead->impl.getLowlevelResourceHash() << "\n";
-
-    EXPECT_EQ(ramses_internal::String(llHashStream.c_str()), hashFileContent);
+    ramses_internal::ResourceContentHash llHash = effectRead->impl.getLowlevelResourceHash();
+    EXPECT_EQ(fmt::format("0x{:016X}{:016X}\n", llHash.highPart, llHash.lowPart), hashFileContent.stdRef());
 }

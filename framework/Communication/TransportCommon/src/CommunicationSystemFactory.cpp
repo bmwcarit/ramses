@@ -55,29 +55,38 @@ namespace ramses_internal
 #endif
     }
 
-    IDiscoveryDaemon* CommunicationSystemFactory::ConstructDiscoveryDaemon(const ramses::RamsesFrameworkConfigImpl& config, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection, Ramsh* optionalRamsh)
+    std::unique_ptr<IDiscoveryDaemon> CommunicationSystemFactory::ConstructDiscoveryDaemon(const ramses::RamsesFrameworkConfigImpl& config, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection, Ramsh* optionalRamsh)
     {
         UNUSED(config);
         UNUSED(frameworkLock);
         UNUSED(statisticCollection);
         UNUSED(optionalRamsh);
 
-        IDiscoveryDaemon* constructedDaemon = nullptr;
+        std::unique_ptr<IDiscoveryDaemon> constructedDaemon;
         switch(config.getUsedProtocol())
         {
+            case EConnectionProtocol::SomeIP_HU:
+            {
+                break;
+            }
+            case EConnectionProtocol::SomeIP_IC:
+            {
+            }
+                break;
+
             case EConnectionProtocol::TCP:
             {
 #if defined(HAS_TCP_COMM)
-                constructedDaemon = new TcpDiscoveryDaemon(config, frameworkLock, statisticCollection, optionalRamsh);
+                constructedDaemon = std::make_unique<TcpDiscoveryDaemon>(config, frameworkLock, statisticCollection, optionalRamsh);
                 break;
 #endif
             }
 
             case EConnectionProtocol::Fake:
-                constructedDaemon = new FakeDiscoveryDaemon();
+                constructedDaemon = std::make_unique<FakeDiscoveryDaemon>();
                 break;
 
-            default:
+        case EConnectionProtocol::Invalid:
                 break;
         }
         return constructedDaemon;

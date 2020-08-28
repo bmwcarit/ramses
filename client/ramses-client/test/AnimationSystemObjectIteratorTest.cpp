@@ -11,7 +11,6 @@
 #include "RamsesClientImpl.h"
 #include "Utils/File.h"
 #include "ramses-client-api/RamsesClient.h"
-#include "gtest/gtest-typed-test.h"
 #include "RamsesObjectTestTypes.h"
 #include "RamsesObjectTestTypes.h"
 #include "ClientTestUtils.h"

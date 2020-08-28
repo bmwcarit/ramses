@@ -42,6 +42,20 @@ namespace ramses
         return status;
     }
 
+    status_t DcsmProvider::offerContent(ContentID contentID, Category category, waylandIviSurfaceId_t surfaceId, EDcsmOfferingMode mode)
+    {
+        auto status = impl.offerContent(contentID, category, surfaceId, mode);
+        LOG_HL_CLIENT_API4(status, contentID, category, surfaceId, static_cast<int>(mode));
+        return status;
+    }
+
+    status_t DcsmProvider::offerContentWithMetadata(ContentID contentID, Category category, waylandIviSurfaceId_t surfaceId, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata)
+    {
+        const auto status = impl.offerContentWithMetadata(contentID, category, surfaceId, mode, metadata);
+        LOG_HL_CLIENT_API5(status, contentID, category, surfaceId, static_cast<int>(mode), LOG_API_GENERIC_OBJECT_STRING(metadata));
+        return status;
+    }
+
     status_t DcsmProvider::updateContentMetadata(ContentID contentID, const DcsmMetadataCreator& metadata)
     {
         const auto status = impl.updateContentMetadata(contentID, metadata);

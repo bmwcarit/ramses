@@ -138,8 +138,8 @@ namespace ramses_internal
         ManagedResource createTestResource(UInt32 metadataSize, UInt32 blobSize)
         {
             assert(metadataSize >= fixedMetadataSize);
-            ManagedResource res(*new TestResource(metadataSize - fixedMetadataSize, blobSize, seed++), deleter);
-            assert(ResourceSerializationHelper::ResourceMetadataSize(*res.getResourceObject()) == metadataSize);
+            ManagedResource res{ new TestResource(metadataSize - fixedMetadataSize, blobSize, seed++), deleter };
+            assert(ResourceSerializationHelper::ResourceMetadataSize(*res.get()) == metadataSize);
             return res;
         }
 
@@ -164,9 +164,9 @@ namespace ramses_internal
             for (UInt i = 0; i < before.size(); ++i)
             {
                 SCOPED_TRACE(i);
-                ASSERT_TRUE(before[i].getResourceObject() != nullptr);
+                ASSERT_TRUE(before[i]);
                 ASSERT_TRUE(after[i] != nullptr);
-                const IResource& beforeRes = *before[i].getResourceObject();
+                const IResource& beforeRes = *before[i];
                 const IResource& afterRes = *after[i];
                 CompareResourceValues(*beforeRes.convertTo<TestResource>(), *afterRes.convertTo<TestResource>());
             }
@@ -194,7 +194,7 @@ namespace ramses_internal
     TEST_F(AResourceStreamSerialization, packetWithSingleResourceHasExpectedSize)
     {
         ManagedResource res = createTestResource(40, 50);
-        const UInt32 expectedSize = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res.getResourceObject());
+        const UInt32 expectedSize = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res.get());
 
         EXPECT_CALL(serializer, preparePacket_cb(expectedSize)).WillOnce(Return(expectedSize));
         EXPECT_CALL(serializer, finishedPacket_cb(expectedSize));
@@ -222,9 +222,9 @@ namespace ramses_internal
         ManagedResource res3 = createTestResource(40, 52);
 
         const UInt32 expectedSize = sizeof(UInt32) + 3 * TestResourceStreamSerializer::FrameSize +
-            SingleResourceSerialization::SizeOfSerializedResource(*res1.getResourceObject()) +
-            SingleResourceSerialization::SizeOfSerializedResource(*res2.getResourceObject()) +
-            SingleResourceSerialization::SizeOfSerializedResource(*res3.getResourceObject());
+            SingleResourceSerialization::SizeOfSerializedResource(*res1.get()) +
+            SingleResourceSerialization::SizeOfSerializedResource(*res2.get()) +
+            SingleResourceSerialization::SizeOfSerializedResource(*res3.get());
 
         EXPECT_CALL(serializer, preparePacket_cb(expectedSize)).WillOnce(Return(expectedSize));
         EXPECT_CALL(serializer, finishedPacket_cb(expectedSize));
@@ -284,7 +284,7 @@ namespace ramses_internal
     TEST_F(AResourceStreamSerialization, canSerializeSingleResourceIntoExactlyFittingPacket)
     {
         ManagedResource res = createTestResource(40, 50);
-        const UInt32 expectedSize = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res.getResourceObject());
+        const UInt32 expectedSize = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res.get());
         EXPECT_CALL(serializer, preparePacket_cb(expectedSize)).WillOnce(Return(expectedSize));
         EXPECT_CALL(serializer, finishedPacket_cb(expectedSize));
         ManagedResourceVector inRes = { res };
@@ -297,7 +297,7 @@ namespace ramses_internal
     TEST_F(AResourceStreamSerialization, onlyUsesSizeReallyNeededForResourceEvenIfPacketIsLarger)
     {
         ManagedResource res = createTestResource(40, 50);
-        const UInt32 expectedSize = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res.getResourceObject());
+        const UInt32 expectedSize = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res.get());
         EXPECT_CALL(serializer, preparePacket_cb(expectedSize)).WillOnce(Return(expectedSize+10));
         EXPECT_CALL(serializer, finishedPacket_cb(expectedSize));
         ManagedResourceVector inRes = { res };
@@ -310,7 +310,7 @@ namespace ramses_internal
     TEST_F(AResourceStreamSerialization, usesSecondPacketIfResourceNeedsOneByteMoreThanAvailable)
     {
         ManagedResource res = createTestResource(40, 50);
-        const UInt32 expectedSize = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res.getResourceObject());
+        const UInt32 expectedSize = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res.get());
         const UInt32 sizeOfSecondPacket = sizeof(UInt32) + 1;
 
         InSequence seq;
@@ -330,8 +330,8 @@ namespace ramses_internal
     {
         ManagedResource res1 = createTestResource(41, 50);
         ManagedResource res2 = createTestResource(40, 1);
-        const UInt32 sizeWithoutRes2 = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res1.getResourceObject());
-        const UInt32 sizeRes2 = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res2.getResourceObject());
+        const UInt32 sizeWithoutRes2 = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res1.get());
+        const UInt32 sizeRes2 = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res2.get());
 
         EXPECT_CALL(serializer, preparePacket_cb(_)).WillOnce(Return(sizeWithoutRes2 + 4)).WillOnce(Return(100));
         EXPECT_CALL(serializer, finishedPacket_cb(sizeWithoutRes2));
@@ -348,8 +348,8 @@ namespace ramses_internal
     {
         ManagedResource res1 = createTestResource(41, 50);
         ManagedResource res2 = createTestResource(40, 1);
-        const UInt32 sizeRes1AndFrameOfRes2 = sizeof(UInt32) + 2*TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res1.getResourceObject());
-        const UInt32 sizeRestOfRes2 = sizeof(UInt32) + SingleResourceSerialization::SizeOfSerializedResource(*res2.getResourceObject());
+        const UInt32 sizeRes1AndFrameOfRes2 = sizeof(UInt32) + 2*TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res1.get());
+        const UInt32 sizeRestOfRes2 = sizeof(UInt32) + SingleResourceSerialization::SizeOfSerializedResource(*res2.get());
 
         EXPECT_CALL(serializer, preparePacket_cb(_)).WillOnce(Return(sizeRes1AndFrameOfRes2)).WillOnce(Return(100));
         EXPECT_CALL(serializer, finishedPacket_cb(sizeRes1AndFrameOfRes2));
@@ -365,7 +365,7 @@ namespace ramses_internal
     TEST_F(AResourceStreamSerialization, splitSerializeInResourceMetadata)
     {
         ManagedResource res = createTestResource(41, 1);
-        const UInt32 resSize = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res.getResourceObject());
+        const UInt32 resSize = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + SingleResourceSerialization::SizeOfSerializedResource(*res.get());
 
         EXPECT_CALL(serializer, preparePacket_cb(_)).WillOnce(Return(resSize - 10)).WillOnce(Return(100));
         EXPECT_CALL(serializer, finishedPacket_cb(_)).Times(2);
@@ -380,7 +380,7 @@ namespace ramses_internal
     TEST_F(AResourceStreamSerialization, splitSerializeExactlyAfterResourceMetadata)
     {
         ManagedResource res = createTestResource(41, 10);
-        const UInt32 resSizeWithoutData = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + ResourceSerializationHelper::ResourceMetadataSize(*res.getResourceObject());
+        const UInt32 resSizeWithoutData = sizeof(UInt32) + TestResourceStreamSerializer::FrameSize + ResourceSerializationHelper::ResourceMetadataSize(*res.get());
         const UInt32 resSizeDataOnly = sizeof(UInt32) + 10;
 
         EXPECT_CALL(serializer, preparePacket_cb(_)).WillOnce(Return(resSizeWithoutData)).WillOnce(Return(100));
@@ -496,7 +496,7 @@ namespace ramses_internal
             vec.reserve(num);
             for (UInt32 i = 0; i < num; ++i)
             {
-                vec.push_back(ManagedResource(*ResourceSerializationTestHelper::CreateTestResource<T>(size), deleter));
+                vec.push_back(ManagedResource{ ResourceSerializationTestHelper::CreateTestResource<T>(size), deleter });
             }
             return vec;
         }
@@ -506,7 +506,7 @@ namespace ramses_internal
             ASSERT_EQ(before.size(), after.size());
             for (UInt i = 0; i < before.size(); ++i)
             {
-                const IResource* beforeRes = before[i].getResourceObject();
+                const IResource* beforeRes = before[i].get();
                 const IResource* afterRes = after[i].get();
                 ASSERT_TRUE(beforeRes != nullptr);
                 ASSERT_TRUE(afterRes != nullptr);
@@ -532,8 +532,8 @@ namespace ramses_internal
         ManagedResourceVector inRes = this->createTypedResources(20, 3000); // must be large enough to trigger compression
         for (const auto& res : inRes)
         {
-            res.getResourceObject()->compress(IResource::CompressionLevel::REALTIME);
-            EXPECT_TRUE(res.getResourceObject()->isCompressedAvailable());
+            res->compress(IResource::CompressionLevel::REALTIME);
+            EXPECT_TRUE(res->isCompressedAvailable());
         }
 
         this->serializer.serialize(inRes);

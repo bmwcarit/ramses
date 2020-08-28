@@ -214,21 +214,51 @@ namespace ramses
         */
         virtual void contentFlushed(ContentID contentID, sceneVersionTag_t version) = 0;
 
-        /** @brief This method will be called if a content's scene which has an expiration timestamp set (#ramses::Scene::setExpirationTimestamp)
-        *          is on renderer (not necessarily rendered) at a state that expired, i.e. current time is after the expiration timestamp.
-        * @details This callback is called only once when the scene expires even if scene stays expired in subsequent frames.
-        *          When the content's scene is updated again with a new not anymore expired timestamp, #contentRecoveredFromExpiration is called.
-        *          If the expired scene is associated with multiple contents (at the time of receiving this event)
-        *          this callback will be triggered for all those contents.
+        /**
+        * @brief This method will be called whenever a content's scene which was not previously monitored for expiration has requested expiration
+        *        monitoring by sending a scene flush with valid expiration timestamp (#ramses::Scene::setExpirationTimestamp)
+        *        and that flush was applied on renderer side.
+        *        From this point on, the content's scene will be monitored, can expire and recover (#contentExpired, #contentRecoveredFromExpiration)
+        *        until monitoring disabled again (#contentExpirationMonitoringDisabled).
+        *        If the scene is associated with multiple contents (at the time of receiving this event)
+        *        this callback will be triggered for all those contents.
+        * @param contentID ID of content that has associated the scene, which will be monitored for expiration
+        */
+        virtual void contentExpirationMonitoringEnabled(ContentID contentID) = 0;
+
+        /**
+        * @brief This method will be called whenever a content's scene which was previously monitored for expiration has requested
+        *        to stop being monitored by sending a scene flush with invalid expiration timestamp (#ramses::Scene::setExpirationTimestamp)
+        *        and that flush was applied on renderer side.
+        *        From this point on, the content's scene will not be monitored anymore, regardless if it previously expired or not,
+        *        i.e. there will be no expiration events (#contentExpired, #contentRecoveredFromExpiration) until monitoring
+        *        enabled again (#contentExpirationMonitoringEnabled).
+        *        If the scene is associated with multiple contents (at the time of receiving this event)
+        *        this callback will be triggered for all those contents.
+        * @param contentID ID of content that has associated the scene, which will not be monitored for expiration anymore
+        */
+        virtual void contentExpirationMonitoringDisabled(ContentID contentID) = 0;
+
+        /**
+        * @brief This method will be called if a content's scene which is enabled for expiration monitoring (#contentExpirationMonitoringEnabled)
+        *        is on renderer (not necessarily rendered) at a state that expired, i.e. current time is after the expiration timestamp
+        *        set via #ramses::Scene::setExpirationTimestamp.
+        *        This callback is called only once when the content's scene expires even if the scene stays expired in subsequent frames.
+        *        When the scene is updated again with a new not anymore expired timestamp, #contentRecoveredFromExpiration is called.
+        *        If the scene is associated with multiple contents (at the time of receiving this event)
+        *        this callback will be triggered for all those contents.
         * @param contentID ID of content that has the expired scene associated.
         */
         virtual void contentExpired(ContentID contentID) = 0;
 
-        /** @brief This method will be called if a content's scene which previously expired (#contentExpired)
-        *          was updated with a new expiration timestamp that is not expired anymore.
-        * @details This callback is called only once when the scene switches state from expired to not expired.
-        *          If the expired scene is associated with multiple contents (at the time of receiving this event)
-        *          this callback will be triggered for all those contents.
+        /**
+        * @brief This method will be called if a content's scene which previously expired (#ramses::Scene::setExpirationTimestamp and #contentExpired)
+        *        was updated with a new expiration timestamp that is not expired anymore.
+        *        This callback is called only once when the content's scene switches state from expired to not expired.
+        *        This callback is not called when monitoring becomes disabled (#contentExpirationMonitoringDisabled) while content's scene
+        *        is expired (#contentExpired).
+        *        If the scene is associated with multiple contents (at the time of receiving this event)
+        *        this callback will be triggered for all those contents.
         * @param contentID ID of content that has the recovered scene associated.
         */
         virtual void contentRecoveredFromExpiration(ContentID contentID) = 0;
@@ -247,7 +277,7 @@ namespace ramses
         * @param streamId The IVI stream id
         * @param available True if the stream became available, and false if it disappeared
         */
-        virtual void streamAvailabilityChanged(streamSource_t streamId, bool available) = 0;
+        virtual void streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available) = 0;
     };
 
     /**
@@ -374,6 +404,18 @@ namespace ramses
             (void)version;
         }
 
+        /// @copydoc ramses::IDcsmContentControlEventHandler::contentExpirationMonitoringEnabled
+        virtual void contentExpirationMonitoringEnabled(ContentID contentID) override
+        {
+            (void)contentID;
+        }
+
+        /// @copydoc ramses::IDcsmContentControlEventHandler::contentExpirationMonitoringDisabled
+        virtual void contentExpirationMonitoringDisabled(ContentID contentID) override
+        {
+            (void)contentID;
+        }
+
         /// @copydoc ramses::IDcsmContentControlEventHandler::contentExpired
         virtual void contentExpired(ContentID contentID) override
         {
@@ -387,7 +429,7 @@ namespace ramses
         }
 
         /// @copydoc ramses::IDcsmContentControlEventHandler::streamAvailabilityChanged
-        virtual void streamAvailabilityChanged(streamSource_t streamId, bool available) override
+        virtual void streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available) override
         {
             (void)streamId;
             (void)available;

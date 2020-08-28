@@ -9,6 +9,7 @@
 // internal
 #include "ResourceImpl.h"
 #include "RamsesClientImpl.h"
+#include "RamsesFrameworkTypesImpl.h"
 
 // framework
 #include "ClientApplicationLogic.h"
@@ -23,19 +24,21 @@ namespace ramses
 {
     ResourceImpl::ResourceImpl(ERamsesObjectType type,
         ramses_internal::ResourceHashUsage hashUsage,
-        RamsesClientImpl& client,
-        const char* node)
-        : ClientObjectImpl(client, type, node)
+        SceneImpl& scene,
+        const char* name)
+        : SceneObjectImpl(scene, type, name)
         , m_hashUsage(std::move(hashUsage))
     {
         if (m_hashUsage.isValid())
         {
             updateResourceHash();
         }
+        getSceneImpl().getStatisticCollection().statResourceObjectsCreated.incCounter(1);
     }
 
     ResourceImpl::~ResourceImpl()
     {
+        getSceneImpl().getStatisticCollection().statResourceObjectsDestroyed.incCounter(1);
     }
 
     resourceId_t ResourceImpl::getResourceId() const
@@ -44,15 +47,23 @@ namespace ramses
         return m_resourceId;
     }
 
+    resourceId_t ResourceImpl::CreateResourceHash(ramses_internal::ResourceContentHash llhash, ramses_internal::String const& name, ERamsesObjectType type)
+    {
+        resourceId_t hash;
+
+        ramses_internal::BinaryOutputStream metaDataStream(1024);
+        metaDataStream << llhash;
+        metaDataStream << name;
+        metaDataStream << static_cast<uint32_t>(type);
+        const cityhash::uint128 cityHashMetadataAndBlob = cityhash::CityHash128(reinterpret_cast<const char*>(metaDataStream.getData()), metaDataStream.getSize());
+        hash.highPart = cityhash::Uint128High64(cityHashMetadataAndBlob);
+        hash.lowPart = cityhash::Uint128Low64(cityHashMetadataAndBlob);
+        return hash;
+    }
+
     void ResourceImpl::updateResourceHash()
     {
-        ramses_internal::BinaryOutputStream metaDataStream(1024);
-        metaDataStream << getLowlevelResourceHash();
-        metaDataStream << getName();
-        metaDataStream << static_cast<uint32_t>(getType());
-        const cityhash::uint128 cityHashMetadataAndBlob = cityhash::CityHash128(metaDataStream.getData(), metaDataStream.getSize());
-        m_resourceId.highPart = cityhash::Uint128High64(cityHashMetadataAndBlob);
-        m_resourceId.lowPart = cityhash::Uint128Low64(cityHashMetadataAndBlob);
+        m_resourceId = CreateResourceHash(getLowlevelResourceHash(), getName(), getType());
     }
 
     void ResourceImpl::deinitializeFrameworkData()
@@ -61,7 +72,7 @@ namespace ramses
 
     ramses::status_t ResourceImpl::serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const
     {
-        CHECK_RETURN_ERR(ClientObjectImpl::serialize(outStream, serializationContext));
+        CHECK_RETURN_ERR(SceneObjectImpl::serialize(outStream, serializationContext));
 
         outStream << getLowlevelResourceHash();
         outStream << m_resourceId.highPart;
@@ -72,7 +83,7 @@ namespace ramses
 
     status_t ResourceImpl::deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext)
     {
-        CHECK_RETURN_ERR(ClientObjectImpl::deserialize(inStream, serializationContext));
+        CHECK_RETURN_ERR(SceneObjectImpl::deserialize(inStream, serializationContext));
 
         ramses_internal::ResourceContentHash llhash;
         inStream >> llhash;
@@ -91,18 +102,20 @@ namespace ramses
 
     status_t ResourceImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        const status_t status = ClientObjectImpl::validate(indent, visitedObjects);
+        const status_t status = SceneObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
         ramses_internal::StringOutputStream stringStream;
-        stringStream << "Resource ID: " << ramses_internal::ResourceContentHash({ m_resourceId.lowPart, m_resourceId.highPart });
+        stringStream << "Resource ID: " << m_resourceId;
         stringStream << "  Resource Hash: " << m_hashUsage.getHash();
+        stringStream << "  Resource Type: " << getType();
+        stringStream << "  Name: " << getName();
         addValidationMessage(EValidationSeverity_Info, indent, stringStream.c_str());
         return status;
     }
 
     status_t ResourceImpl::setName(RamsesObject& object, const char* name)
     {
-        const status_t status = ClientObjectImpl::setName(object, name);
+        const status_t status = SceneObjectImpl::setName(object, name);
 
         // name is also included in resource hash
         updateResourceHash();

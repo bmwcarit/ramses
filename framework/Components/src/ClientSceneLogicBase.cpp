@@ -16,11 +16,14 @@
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"
+#include "Components/IResourceProviderComponent.h"
+#include "Components/SceneUpdate.h"
 
 namespace ramses_internal
 {
-    ClientSceneLogicBase::ClientSceneLogicBase(ISceneGraphSender& scenegraphProviderComponent, ClientScene& scene, const Guid& clientAddress)
+    ClientSceneLogicBase::ClientSceneLogicBase(ISceneGraphSender& scenegraphProviderComponent, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress)
         : m_scenegraphSender(scenegraphProviderComponent)
+        , m_resourceComponent(res)
         , m_myID(clientAddress)
         , m_sceneId(scene.getSceneId())
         , m_scene(scene)
@@ -68,11 +71,11 @@ namespace ramses_internal
     {
         if (contains_c(m_subscribersActive, newSubscriber) || contains_c(m_subscribersWaitingForScene, newSubscriber))
         {
-            LOG_WARN(CONTEXT_CLIENT, "ClientSceneLogic::addSubscriber: already has " << newSubscriber << " for scene " << m_sceneId.getValue());
+            LOG_WARN(CONTEXT_CLIENT, "ClientSceneLogic::addSubscriber: already has " << newSubscriber << " for scene " << m_sceneId);
             return;
         }
 
-        LOG_INFO(CONTEXT_CLIENT, "ClientSceneLogic::addSubscriber: add " << newSubscriber << " for scene " << m_sceneId.getValue() << ", flushCounter " << m_flushCounter);
+        LOG_INFO(CONTEXT_CLIENT, "ClientSceneLogic::addSubscriber: add " << newSubscriber << " for scene " << m_sceneId << ", flushCounter " << m_flushCounter);
         m_subscribersWaitingForScene.push_back(newSubscriber);
         postAddSubscriber();
     }
@@ -83,7 +86,7 @@ namespace ramses_internal
         if (it != m_subscribersActive.end())
         {
             m_subscribersActive.erase(it);
-            LOG_INFO(CONTEXT_CLIENT, "ClientSceneLogic::removeSubscriber: remove active subscriber " << subscriber << " from scene " << m_sceneId.getValue() << ", numRemaining " << m_subscribersActive.size());
+            LOG_INFO(CONTEXT_CLIENT, "ClientSceneLogic::removeSubscriber: remove active subscriber " << subscriber << " from scene " << m_sceneId << ", numRemaining " << m_subscribersActive.size());
         }
         else
         {
@@ -91,7 +94,7 @@ namespace ramses_internal
             if (waitingForSceneIter != m_subscribersWaitingForScene.end())
             {
                 m_subscribersWaitingForScene.erase(waitingForSceneIter);
-                LOG_INFO(CONTEXT_CLIENT, "ClientSceneLogic::removeSubscriber: remove waiting subscriber " << subscriber << " from scene " << m_sceneId.getValue() << ", numRemaining " << m_subscribersWaitingForScene.size());
+                LOG_INFO(CONTEXT_CLIENT, "ClientSceneLogic::removeSubscriber: remove waiting subscriber " << subscriber << " from scene " << m_sceneId << ", numRemaining " << m_subscribersWaitingForScene.size());
             }
         }
     }
@@ -107,12 +110,12 @@ namespace ramses_internal
     {
         if (m_subscribersWaitingForScene.empty())
         {
-            LOG_DEBUG(CONTEXT_CLIENT, "ClientSceneLogicBase::sendSceneToWaitingSubscribers: No subscribers waiting for scene " << m_sceneId.getValue());
+            LOG_DEBUG(CONTEXT_CLIENT, "ClientSceneLogicBase::sendSceneToWaitingSubscribers: No subscribers waiting for scene " << m_sceneId);
             return;
         }
 
-        SceneActionCollection collection;
-        SceneActionCollectionCreator creator(collection);
+        SceneUpdate sceneUpdate;
+        SceneActionCollectionCreator creator(sceneUpdate.actions);
         SceneDescriber::describeScene<IScene>(scene, creator);
 
         m_resourceChanges.clear();
@@ -130,18 +133,20 @@ namespace ramses_internal
             {}, // scene reference actions are transient, not sent to new subscribers
             flushTimeInfo,
             versionTag);
+        // TODO vaclav re-enable sending resources after renderer side can use them
+        //sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChanges.m_addedClientResourceRefs);
 
         LOG_INFO(CONTEXT_CLIENT, "Sending scene " << scene.getSceneId() << " to " << m_subscribersWaitingForScene.size() << " subscribers, " <<
-            collection.numberOfActions() << " scene actions (" << collection.collectionData().size() << " bytes)" <<
+            sceneUpdate.actions.numberOfActions() << " scene actions (" << sceneUpdate.actions.collectionData().size() << " bytes)" <<
             m_resourceChanges.m_addedClientResourceRefs.size() << " client resources, " <<
             m_resourceChanges.m_sceneResourceActions.size() << " scene resource actions (" << sceneResourcesSize << " bytes in total used by scene resources)");
 
         for(const auto& subscriber : m_subscribersWaitingForScene)
         {
-            m_scenegraphSender.sendCreateScene(subscriber, SceneInfo(m_sceneId, scene.getName()), m_scenePublicationMode);
+            m_scenegraphSender.sendCreateScene(subscriber, m_sceneId, m_scenePublicationMode);
         }
-        m_scene.getStatisticCollection().statSceneActionsSent.incCounter(collection.numberOfActions()*static_cast<UInt32>(m_subscribersWaitingForScene.size()));
-        m_scenegraphSender.sendSceneActionList(m_subscribersWaitingForScene, std::move(collection), m_sceneId, m_scenePublicationMode);
+        m_scene.getStatisticCollection().statSceneActionsSent.incCounter(sceneUpdate.actions.numberOfActions()*static_cast<UInt32>(m_subscribersWaitingForScene.size()));
+        m_scenegraphSender.sendSceneUpdate(m_subscribersWaitingForScene, std::move(sceneUpdate), m_sceneId, m_scenePublicationMode);
 
         m_subscribersActive.insert(m_subscribersActive.end(), m_subscribersWaitingForScene.begin(), m_subscribersWaitingForScene.end());
         m_subscribersWaitingForScene.clear();
@@ -149,7 +154,7 @@ namespace ramses_internal
 
     void ClientSceneLogicBase::printFlushInfo(StringOutputStream& sos, const char* name, const SceneActionCollection& collection) const
     {
-        sos << name << ": SceneID " << m_sceneId.getValue() << ", flushIdx " << m_flushCounter
+        sos << name << ": SceneID " << m_sceneId << ", flushIdx " << m_flushCounter
             << ", numActions " << collection.numberOfActions() << ", sizeActions " << collection.collectionData().size() << "; ActionCountPerType:\n";
 
         struct ActionInfo {
@@ -157,15 +162,15 @@ namespace ramses_internal
             UInt32 count;
             UInt32 size;
         };
-        std::vector<ActionInfo> sceneActionCountPerType(ESceneActionId_NUMBER_OF_TYPES);
+        std::vector<ActionInfo> sceneActionCountPerType(NumOfSceneActionTypes);
         for (const auto& action : collection)
         {
-            ActionInfo& info = sceneActionCountPerType[action.type()];
+            ActionInfo& info = sceneActionCountPerType[static_cast<uint32_t>(action.type())];
             ++info.count;
             info.size += action.size();
         }
 
-        for (UInt actionType = 0; actionType < ESceneActionId_NUMBER_OF_TYPES; ++actionType)
+        for (UInt actionType = 0; actionType < NumOfSceneActionTypes; ++actionType)
         {
             const ActionInfo& info = sceneActionCountPerType[actionType];
             if (info.count > 0)

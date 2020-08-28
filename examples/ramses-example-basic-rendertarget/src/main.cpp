@@ -23,38 +23,38 @@ int main(int argc, char* argv[])
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-rendertarget"));
     framework.connect();
 
+    // create a scene
+    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic rendertarget scene");
+
     // prepare triangle geometry: vertex position array and index array
     float vertexPositionsQuadArray[] = { -1.5f, -0.75f, -1.f, 1.5f, -0.75f, -1.f, -1.5f, 0.75f, -1.f, 1.5f, 0.75f, -1.f };
-    const ramses::Vector3fArray* vertexPositionsQuad = ramses.createConstVector3fArray(4, vertexPositionsQuadArray);
+    ramses::ArrayResource* vertexPositionsQuad = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsQuadArray);
 
     float vertexPositionsTriangleArray[] = { -0.5f, -0.5f, -1.f, 0.5f, -0.5f, -1.f, -0.5f, 0.5f, -1.f };
-    const ramses::Vector3fArray* vertexPositionsTriangle = ramses.createConstVector3fArray(3, vertexPositionsTriangleArray);
+    ramses::ArrayResource* vertexPositionsTriangle = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsTriangleArray);
 
     float textureCoordsArray[] = { -1.f, 0.f, 1.0f, 0.f, -1.f, 1.f, 1.0f, 1.f};
-    const ramses::Vector2fArray* textureCoords = ramses.createConstVector2fArray(4, textureCoordsArray);
+    ramses::ArrayResource* textureCoords = scene->createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
 
     uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    const ramses::UInt16Array* indicesQuad = ramses.createConstUInt16Array(6, indicesArray);
-    const ramses::UInt16Array* indicesTriangle = ramses.createConstUInt16Array(3, indicesArray);
+    ramses::ArrayResource* indicesQuad = scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+    ramses::ArrayResource* indicesTriangle = scene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
 
     ramses::EffectDescription triangleEffectDesc;
     triangleEffectDesc.setVertexShaderFromFile("res/ramses-example-basic-rendertarget-simple-color.vert");
     triangleEffectDesc.setFragmentShaderFromFile("res/ramses-example-basic-rendertarget-simple-color.frag");
     triangleEffectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
-    const ramses::Effect* triangleEffect = ramses.createEffect(triangleEffectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    const ramses::Effect* triangleEffect = scene->createEffect(triangleEffectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
 
     ramses::EffectDescription quadEffectDesc;
     quadEffectDesc.setVertexShaderFromFile("res/ramses-example-basic-rendertarget-texturing.vert");
     quadEffectDesc.setFragmentShaderFromFile("res/ramses-example-basic-rendertarget-texturing.frag");
     quadEffectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
-    const ramses::Effect* quadEffect = ramses.createEffect(quadEffectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    const ramses::Effect* quadEffect = scene->createEffect(quadEffectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
 
     /// [Basic Rendertarget Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
     //                 This should not be the case for real applications.
-
-    // create a scene using explicit render passes
-    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic rendertarget scene");
 
     // every render pass needs a camera to define rendering parameters
     // usage of a custom perspective camera for the render pass assigned to the render target
@@ -167,12 +167,12 @@ int main(int argc, char* argv[])
 
     // shutdown: stop distribution, free resources, unregister
     scene->unpublish();
+    scene->destroy(*vertexPositionsTriangle);
+    scene->destroy(*vertexPositionsQuad);
+    scene->destroy(*textureCoords);
+    scene->destroy(*indicesQuad);
+    scene->destroy(*indicesTriangle);
     ramses.destroy(*scene);
-    ramses.destroy(*vertexPositionsTriangle);
-    ramses.destroy(*vertexPositionsQuad);
-    ramses.destroy(*textureCoords);
-    ramses.destroy(*indicesQuad);
-    ramses.destroy(*indicesTriangle);
     framework.disconnect();
 
     return 0;

@@ -14,11 +14,10 @@
 namespace ramses
 {
     /**
-    * @brief The PerspectiveCamera is a local camera which defines a perspective view into
-    * the scene. Frustum planes can be set explicitly via setFrustum of base class LocalCamera.
-    * Alternatively a symmetric frustum can be set using field of view and aspect ratio.
-    * The top and bottom planes are defined by the "vertical field of view" parameter, which specifies the angle
-    * between top and bottom plane.
+    * @brief   The #PerspectiveCamera is a local camera which defines a perspective view into the scene.
+    * @details A valid camera for rendering must have viewport and frustum set.
+    *          Frustum planes can be set using #ramses::LocalCamera::setFrustum or #ramses::PerspectiveCamera::setFrustum,
+    *          depending if input is concrete frustum planes or field of view and aspect ratio.
     */
     class RAMSES_API PerspectiveCamera : public LocalCamera
     {
@@ -29,29 +28,42 @@ namespace ramses
         using LocalCamera::setFrustum;
 
         /**
-        * @brief An alternative API (@see LocalCamera::setFrustum) to set the projective view frustum
-        *        of the camera by providing opening angle and aspect ratio.
+        * @brief   An alternative method (see #ramses::LocalCamera::setFrustum) to set the perspective view frustum
+        *          of the camera by providing opening angle and aspect ratio.
+        * @details When using this method the field of view and aspect ratio are internally converted to six frustum planes,
+        *          therefore this is just a convenience wrapper for #ramses::LocalCamera::setFrustum.
         *
-        * @param[in] fov The vertical field of view to be set.
-        *                This is the full vertical opening angle.
-        * @param[in] aspectRatio Ratio between frustum width and height.
-        *                        This value is independent from the viewport's width and height
-        * @param[in] nearPlane Near plane of the camera frustum.
-        * @param[in] farPlane Far plane of the camera frustum.
+        *          Important note: if frustum planes data is bound (see #ramses::LocalCamera::bindFrustumPlanes)
+        *          the values set here will not be effective until unbound again, bound values are always overridden by values
+        *          from bound data object. Bound values can only be modified via the #ramses::DataObject bound to them.
+        *          See #ramses::RamsesUtils::SetPerspectiveCameraFrustumToDataObjects providing way to conveniently
+        *          set perspective frustum on data objects also with basic validity checking.
+        *
+        * @param[in] fov The vertical field of view to be set, must be > 0.
+        *                This is the full vertical opening angle in degrees.
+        * @param[in] aspectRatio Ratio between frustum width and height, must be > 0.
+        *                        This value is generally independent from the viewport width and height
+        *                        but typically matches the viewport aspect ratio.
+        * @param[in] nearPlane Near plane of the camera frustum, must be > 0.
+        * @param[in] farPlane Far plane of the camera frustum, must be > nearPlane.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
         status_t setFrustum(float fov, float aspectRatio, float nearPlane, float farPlane);
 
         /**
-        * @brief Gets the vertical field of view.
+        * @brief Gets the vertical field of view opening angle in degrees.
+        * @details If frustum planes data is bound (#ramses::LocalCamera::bindFrustumPlanes) the value returned here represents
+        *          the effective value used, i.e. the one from bound #ramses::DataObject, not the one set via #setFrustum.
         *
         * @return Vertical field of view of this camera.
         */
         float getVerticalFieldOfView() const;
 
         /**
-        * @brief Gets the aspect ratio between camera frustum width and heigth.
+        * @brief Gets the aspect ratio between camera frustum width and height (set via #setFrustum, not viewport).
+        * @details If frustum planes data is bound (#ramses::LocalCamera::bindFrustumPlanes) the value returned here represents
+        *          the effective value used, i.e. the one from bound #ramses::DataObject, not the one set via #setFrustum.
         *
         * @return Aspect ratio of this camera.
         */

@@ -22,25 +22,25 @@ int main(int argc, char* argv[])
     ramses::RamsesClient& ramses(*framework.createClient("ramses-example-basic-renderpasses"));
     framework.connect();
 
+    // create a scene
+    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic renderpasses scene");
+
     // prepare triangle geometry: vertex position array and index array
     float vertexPositionsArray[] = { -0.5f, 0.f, -1.f, 0.5f, 0.f, -1.f, -0.5f, 1.f, -1.f, 0.5f, 1.f, -1.f };
-    const ramses::Vector3fArray* vertexPositions = ramses.createConstVector3fArray(4, vertexPositionsArray);
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
 
     uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-    const ramses::UInt16Array* indices = ramses.createConstUInt16Array(6, indicesArray);
+    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-basic-renderpasses.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-renderpasses.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
-    const ramses::Effect* effectTex = ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
 
     /// [Basic Renderpasses Example]
     // IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.
     //                 This should not be the case for real applications.
-
-    // create a scene using explicit render passes
-    ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic renderpasses scene");
 
     // every render pass needs a camera to define rendering parameters
     // create camera with perspective projection
@@ -123,9 +123,9 @@ int main(int argc, char* argv[])
 
     // shutdown: stop distribution, free resources, unregister
     scene->unpublish();
+    scene->destroy(*vertexPositions);
+    scene->destroy(*indices);
     ramses.destroy(*scene);
-    ramses.destroy(*vertexPositions);
-    ramses.destroy(*indices);
     framework.disconnect();
 
     return 0;

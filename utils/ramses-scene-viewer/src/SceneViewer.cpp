@@ -81,7 +81,6 @@ namespace ramses_internal
         : m_parser(argc, argv)
         , m_helpArgument(m_parser, "help", "help", "Print this help")
         , m_scenePathAndFileArgument(m_parser, "s", "scene", String(), "Scene path+file")
-        , m_optionalResFileArgument(m_parser, "r", "res", String(), "Resource file")
         , m_validationUnrequiredObjectsDirectoryArgument(m_parser, "vd", "validation-output-directory", String(), "Directory Path were validation output should be saved")
         , m_screenshotFile(m_parser, "x", "screenshot-file", {}, "Screenshot filename. Setting to non-empty enables screenshot capturing after the scene is shown")
     {
@@ -89,7 +88,6 @@ namespace ramses_internal
 
         const bool   helpRequested    = m_helpArgument;
         const String scenePathAndFile = m_scenePathAndFileArgument;
-        const String optionalResFile  = m_optionalResFileArgument;
         m_sceneName = ramses_internal::File(scenePathAndFile).getFileName().stdRef();
 
         if (helpRequested)
@@ -101,12 +99,7 @@ namespace ramses_internal
             if (scenePathAndFile != "")
             {
                 const String& sceneFile = scenePathAndFile + ".ramses";
-                String        resFile   = optionalResFile;
-                if (resFile.empty())
-                {
-                    resFile = scenePathAndFile + ".ramres";
-                }
-                loadAndRenderScene(argc, argv, sceneFile, resFile);
+                loadAndRenderScene(argc, argv, sceneFile);
             }
             else
             {
@@ -119,7 +112,7 @@ namespace ramses_internal
 
     void SceneViewer::printUsage() const
     {
-        const String argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_optionalResFileArgument.getHelpString() + m_validationUnrequiredObjectsDirectoryArgument.getHelpString() + m_screenshotFile.getHelpString();
+        const String argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_validationUnrequiredObjectsDirectoryArgument.getHelpString() + m_screenshotFile.getHelpString();
         const String& programName = m_parser.getProgramName();
         LOG_INFO(CONTEXT_CLIENT,
                 "\nUsage: " << programName << " [options] -s <sceneFileName>\n"
@@ -129,7 +122,7 @@ namespace ramses_internal
         ramses_internal::RendererConfigUtils::PrintCommandLineOptions();
     }
 
-    void SceneViewer::loadAndRenderScene(int argc, char* argv[], const String& sceneFile, const String& resFile)
+    void SceneViewer::loadAndRenderScene(int argc, char* argv[], const String& sceneFile)
     {
         ramses::RamsesFrameworkConfig frameworkConfig(argc, argv);
         frameworkConfig.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
@@ -149,10 +142,15 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_CLIENT, "Creation of renderer failed");
             return;
         }
+        renderer->startThread();
+
+        const ramses::DisplayConfig displayConfig(argc, argv);
+        const ramses::displayId_t displayId = renderer->createDisplay(displayConfig);
+        renderer->flush();
 
         framework.connect();
 
-        auto loadedScene = loadSceneWithResources(*client, sceneFile, resFile);
+        auto loadedScene = loadScene(*client, sceneFile);
         if (loadedScene == nullptr)
         {
             LOG_ERROR(CONTEXT_CLIENT, "Loading scene failed!");
@@ -173,12 +171,6 @@ namespace ramses_internal
             ramses::RamsesHMIUtils::DumpUnrequiredSceneObjectsToFile(*loadedScene, unrequObjsOfstream);
         }
         ramses::RamsesHMIUtils::DumpUnrequiredSceneObjects(*loadedScene);
-
-        const ramses::DisplayConfig displayConfig(argc, argv);
-        const ramses::displayId_t displayId = renderer->createDisplay(displayConfig);
-        renderer->flush();
-
-        renderer->startThread();
 
         ramses::RendererMate rendererMate(renderer->impl, framework.impl);
         // allow camera free move
@@ -220,12 +212,10 @@ namespace ramses_internal
         }
     }
 
-    ramses::Scene* SceneViewer::loadSceneWithResources(ramses::RamsesClient& client, const String& sceneFile, const String& resFile)
+    ramses::Scene* SceneViewer::loadScene(ramses::RamsesClient& client, const String& sceneFile)
     {
-        LOG_INFO(CONTEXT_CLIENT, "Load files: scene:" << sceneFile << ", resources:" << resFile);
-        ramses::ResourceFileDescriptionSet resourceFileInformation;
-        resourceFileInformation.add(ramses::ResourceFileDescription(resFile.c_str()));
-        return client.loadSceneFromFile(sceneFile.c_str(), resourceFileInformation);
+        LOG_INFO(CONTEXT_CLIENT, "Load files: scene:" << sceneFile);
+        return client.loadSceneFromFile(sceneFile.c_str());
     }
 
     void SceneViewer::validateContent(const ramses::RamsesClient& client, const ramses::Scene& scene) const

@@ -154,17 +154,6 @@ namespace ramses
     using nodeId_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), nodeIdTag>;
 
     /**
-    * @brief Struct used as unique id for the strongly typed stream Id.
-    */
-    struct streamIdTag {};
-
-    /**
-    * @brief The "ivi ID" of a stream source attached to a stream texture
-    * The value refers to a surface ID in Wayland (extended by IVI extensions)
-    */
-    using streamSource_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), streamIdTag>;
-
-    /**
     * @brief Type of Ramses Shell
     */
     enum ERamsesShellType
@@ -197,6 +186,34 @@ namespace ramses
 
     /// Binary shader format identifier used in ramses::IBinaryShaderCache
     using binaryShaderFormatId_t = StronglyTypedValue<uint32_t, 0, struct binaryShaderFormatIdTag>;
+
+    /// Dummy struct to uniquely define ramses::sceneObjectId_t
+    struct sceneObjectTag {};
+
+    /// ID that is automatically given to ramses::SceneObject on creation
+    using sceneObjectId_t = StronglyTypedValue<uint64_t, 0, sceneObjectTag>;
+
+    /**
+    * @brief Struct used as unique id for the strongly typed Wayland IVI Surface Id.
+    */
+    struct waylandIviSurfaceIdTag {};
+
+    /**
+    * @brief Id assigned to Surface in Wayland with IVI extension
+    * Also known as "ivi id"
+    */
+    using waylandIviSurfaceId_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), waylandIviSurfaceIdTag>;
+
+
+    /**
+    * @brief Struct used as unique id for the strongly typed Wayland IVI Layer Id.
+    */
+    struct waylandIviLayerIdTag {};
+
+    /**
+    * @brief Id assigned to Layer in Wayland with IVI extension
+    */
+    using waylandIviLayerId_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), waylandIviLayerIdTag>;
 }
 
 #endif

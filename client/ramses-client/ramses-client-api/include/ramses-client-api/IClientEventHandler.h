@@ -27,19 +27,6 @@ namespace ramses
     {
     public:
         /**
-        * @brief This method will be called when asynchronous loading of a resource file failed.
-        * @param filename The filename of the resource file that failed to load
-        */
-        virtual void resourceFileLoadFailed(const char* filename) = 0;
-
-        /**
-        * @brief This method will be called when asynchronous loading of a resource file
-        *        successfully finished.
-        * @param filename The filename of the resource file that finished loading.
-        */
-        virtual void resourceFileLoadSucceeded(const char* filename) = 0;
-
-        /**
         * @brief This method will be called when asynchronous loading of a scene or one
         *        of its associated resource files failed.
         *        There will also be events generated for the resource files provided to

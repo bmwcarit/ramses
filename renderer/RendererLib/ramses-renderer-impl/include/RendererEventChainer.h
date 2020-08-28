@@ -175,6 +175,18 @@ namespace ramses
             m_handler2.sceneFlushed(sceneId, sceneVersionTag);
         }
 
+        virtual void sceneExpirationMonitoringEnabled(sceneId_t sceneId) override
+        {
+            m_handler1.sceneExpirationMonitoringEnabled(sceneId);
+            m_handler2.sceneExpirationMonitoringEnabled(sceneId);
+        }
+
+        virtual void sceneExpirationMonitoringDisabled(sceneId_t sceneId) override
+        {
+            m_handler1.sceneExpirationMonitoringDisabled(sceneId);
+            m_handler2.sceneExpirationMonitoringDisabled(sceneId);
+        }
+
         virtual void sceneExpired(sceneId_t sceneId) override
         {
             m_handler1.sceneExpired(sceneId);
@@ -187,7 +199,7 @@ namespace ramses
             m_handler2.sceneRecoveredFromExpiration(sceneId);
         }
 
-        virtual void streamAvailabilityChanged(streamSource_t streamId, bool available) override
+        virtual void streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available) override
         {
             m_handler1.streamAvailabilityChanged(streamId, available);
             m_handler2.streamAvailabilityChanged(streamId, available);

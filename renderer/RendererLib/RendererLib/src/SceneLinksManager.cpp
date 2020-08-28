@@ -27,7 +27,7 @@ namespace ramses_internal
     {
         if (!m_rendererScenes.hasScene(providerSceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: provider scene " << providerSceneId.getValue() << " is not known to the renderer!");
+            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: provider scene " << providerSceneId << " is not known to the renderer!");
             m_rendererEventCollector.addDataLinkEvent(ERendererEventType_SceneDataLinkFailed, providerSceneId, consumerSceneId, providerId, consumerId);
             return;
         }
@@ -44,7 +44,7 @@ namespace ramses_internal
 
         if (!providerSlotHandle.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: provider data id " << providerId << " is invalid! (Provider scene: " << providerSceneId.getValue() << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: provider data id " << providerId << " is invalid! (Provider scene: " << providerSceneId << ")");
             m_rendererEventCollector.addDataLinkEvent(ERendererEventType_SceneDataLinkFailed, providerSceneId, consumerSceneId, providerId, consumerId);
             return;
         }
@@ -77,7 +77,7 @@ namespace ramses_internal
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: data slot type mismatch, provider and consumer slot types must match! (Provider scene: " << providerSceneId.getValue() << ", consumer scene: " << consumerSceneId << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: data slot type mismatch, provider and consumer slot types must match! (Provider scene: " << providerSceneId << ", consumer scene: " << consumerSceneId << ")");
         }
 
         m_rendererEventCollector.addDataLinkEvent((linkSuccess ? ERendererEventType_SceneDataLinked : ERendererEventType_SceneDataLinkFailed), providerSceneId, consumerSceneId, providerId, consumerId);

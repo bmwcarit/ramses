@@ -58,14 +58,14 @@ int main(int argc, const char* argv[])
         // host scene contains provider nodes
         const ramses::sceneId_t hostSceneId(12u);
         ramses::Scene* hostScene = client.createScene(hostSceneId);
-        ramses_internal::TransformationLinkScene transformationProviderScene(client, *hostScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_PROVIDER_WITHOUT_CONTENT, ramses_internal::Vector3(0.0f));
+        ramses_internal::TransformationLinkScene transformationProviderScene(*hostScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_PROVIDER_WITHOUT_CONTENT, ramses_internal::Vector3(0.0f));
         hostScene->flush();
         hostScene->publish(ramses::EScenePublicationMode_LocalOnly);
 
         //client scene
         const ramses::sceneId_t localSceneId(42u);
         ramses::Scene* clientScene = client.createScene(localSceneId);
-        ramses_internal::TransformationLinkScene redTriangleScene(client, *clientScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER, ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+        ramses_internal::TransformationLinkScene redTriangleScene(*clientScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER, ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
         clientScene->flush();
         clientScene->publish(ramses::EScenePublicationMode_LocalOnly);
 
@@ -78,7 +78,7 @@ int main(int argc, const char* argv[])
 
             // scene to distribute only
             ramses::Scene* remoteScene = client.createScene(remoteSceneId);
-            ramses_internal::TransformationLinkScene blueTriangleScene(client, *remoteScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER_OVERRIDEN, ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            ramses_internal::TransformationLinkScene blueTriangleScene(*remoteScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER_OVERRIDEN, ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
             remoteScene->flush();
             remoteScene->publish();
         }
@@ -124,7 +124,6 @@ int main(int argc, const char* argv[])
                 ramses::Scene&          clientScene = *client.createScene(sceneId);
 
                 ramses_internal::TransformationLinkScene redTriangleScene(
-                    client,
                     clientScene,
                     ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER,
                     ramses_internal::Vector3(0.0f, 0.0f, 4.0f));

@@ -50,21 +50,13 @@
 #include "ramses-client-api/AttributeInput.h"
 
 // Resources
-#include "ramses-client-api/UInt16Array.h"
-#include "ramses-client-api/UInt32Array.h"
-#include "ramses-client-api/FloatArray.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
-#include "ramses-client-api/Vector4fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/TextureCube.h"
-#include "ramses-client-api/ResourceFileDescription.h"
-#include "ramses-client-api/ResourceFileDescriptionSet.h"
 
 // Data Buffers
-#include "ramses-client-api/VertexDataBuffer.h"
-#include "ramses-client-api/IndexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 
 // Animation
@@ -100,7 +92,6 @@
 #include "ramses-client-api/SplineStepVector4i.h"
 
 // Iterators
-#include "ramses-client-api/ResourceIterator.h"
 #include "ramses-client-api/SceneIterator.h"
 #include "ramses-client-api/AnimationSystemObjectIterator.h"
 #include "ramses-client-api/RenderPassGroupIterator.h"

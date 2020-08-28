@@ -18,7 +18,7 @@ namespace ramses_internal
     struct GeometryDataBuffer
     {
         EDataBufferType bufferType = EDataBufferType::Invalid;
-        EDataType       dataType = EDataType_Invalid;
+        EDataType       dataType = EDataType::Invalid;
         UInt32          usedSize = 0u;
         std::vector<Byte>    data;
     };

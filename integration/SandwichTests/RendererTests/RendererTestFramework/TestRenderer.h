@@ -51,7 +51,7 @@ namespace ramses_internal
         void waitForFlush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersionTag);
         bool checkScenesExpired(std::initializer_list<ramses::sceneId_t> sceneIds);
         bool checkScenesNotExpired(std::initializer_list<ramses::sceneId_t> sceneIds);
-        bool waitForStreamSurfaceAvailabilityChange(ramses::streamSource_t streamSource, bool available);
+        bool waitForStreamSurfaceAvailabilityChange(ramses::waylandIviSurfaceId_t streamSource, bool available);
 
         void dispatchEvents(ramses::IRendererEventHandler& eventHandler, ramses::IRendererSceneControlEventHandler& sceneControlEventHandler);
 

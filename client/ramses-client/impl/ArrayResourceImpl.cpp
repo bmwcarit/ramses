@@ -10,10 +10,10 @@
 
 namespace ramses
 {
-    ArrayResourceImpl::ArrayResourceImpl(ramses_internal::ResourceHashUsage arrayHash, ERamsesObjectType type, RamsesClientImpl& client, const char* name)
-        : ResourceImpl(type, std::move(arrayHash), client, name)
+    ArrayResourceImpl::ArrayResourceImpl(ramses_internal::ResourceHashUsage arrayHash, SceneImpl& scene, const char* name)
+        : ResourceImpl(ERamsesObjectType_ArrayResource, std::move(arrayHash), scene, name)
         , m_elementCount(0)
-        , m_elementType(ramses_internal::EDataType_Invalid) // initialize as invalid
+        , m_elementType(EDataType::UInt16)
     {
     }
 
@@ -21,7 +21,7 @@ namespace ramses
     {
     }
 
-    void ArrayResourceImpl::initializeFromFrameworkData(uint32_t elementCount, ramses_internal::EDataType elementType)
+    void ArrayResourceImpl::initializeFromFrameworkData(uint32_t elementCount, EDataType elementType)
     {
         m_elementCount = elementCount;
         m_elementType = elementType;
@@ -44,7 +44,7 @@ namespace ramses
         inStream >> m_elementCount;
         uint32_t enumInt = 0u;
         inStream >> enumInt;
-        m_elementType = static_cast<ramses_internal::EDataType>(enumInt);
+        m_elementType = static_cast<EDataType>(enumInt);
 
         return StatusOK;
     }
@@ -54,7 +54,7 @@ namespace ramses
         return m_elementCount;
     }
 
-    ramses_internal::EDataType ArrayResourceImpl::getElementType() const
+    EDataType ArrayResourceImpl::getElementType() const
     {
         return m_elementType;
     }

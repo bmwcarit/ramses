@@ -133,6 +133,12 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
+    void ActionTestScene::setRenderStateBlendColor(RenderStateHandle stateHandle, const Vector4& color)
+    {
+        m_actionCollector.setRenderStateBlendColor(stateHandle, color);
+        flushPendingSceneActions();
+    }
+
     void ActionTestScene::setRenderStateCullMode(RenderStateHandle stateHandle, ECullMode cullMode)
     {
         m_actionCollector.setRenderStateCullMode(stateHandle, cullMode);
@@ -191,9 +197,9 @@ namespace ramses_internal
         return m_scene.getCameraCount();
     }
 
-    CameraHandle ActionTestScene::allocateCamera(ECameraProjectionType projType, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle /*= CameraHandle::Invalid()*/)
+    CameraHandle ActionTestScene::allocateCamera(ECameraProjectionType projType, NodeHandle nodeHandle, DataInstanceHandle dataInstance, CameraHandle handle /*= CameraHandle::Invalid()*/)
     {
-        const CameraHandle actualHandle = m_actionCollector.allocateCamera(projType, nodeHandle, viewportDataInstance, handle);
+        const CameraHandle actualHandle = m_actionCollector.allocateCamera(projType, nodeHandle, dataInstance, handle);
         flushPendingSceneActions();
         return actualHandle;
     }
@@ -207,12 +213,6 @@ namespace ramses_internal
     const Camera& ActionTestScene::getCamera(CameraHandle cameraHandle) const
     {
         return m_scene.getCamera(cameraHandle);
-    }
-
-    void ActionTestScene::setCameraFrustum(CameraHandle cameraHandle, const Frustum& frustum)
-    {
-        m_actionCollector.setCameraFrustum(cameraHandle, frustum);
-        flushPendingSceneActions();
     }
 
     UInt32 ActionTestScene::getNodeCount() const

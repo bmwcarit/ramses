@@ -179,35 +179,18 @@ namespace ramses_internal
         InternalSceneStateEvents internalSceneEvents;
         m_rendererEventCollector.dispatchInternalSceneStateEvents(internalSceneEvents);
 
-        // pass only un/published events while inactive
-        // if it ever becomes active then it will already know all the published scenes
-        // if it does not become active then it will not interfere with legacy scene control
-        if (!m_sceneControlLogicActive)
-        {
-            const auto it = std::remove_if(internalSceneEvents.begin(), internalSceneEvents.end(), [](const InternalSceneStateEvent& e)
-            {
-                return e.type != ERendererEventType_ScenePublished && e.type != ERendererEventType_SceneUnpublished;
-            });
-            internalSceneEvents.erase(it, internalSceneEvents.end());
-
-            // Scene referencing cannot work properly with legacy control API.
-            // If there is any active scene reference but not m_sceneControlLogicActive, it means legacy API was used
-            if (m_sceneReferenceLogic.hasAnyReferencedScenes())
-                LOG_ERROR(CONTEXT_RENDERER, "Scene referencing is used by some scene but deprecated API is used to control scene states - use RendererSceneControl instead of RendererSceneControl_legacy!");
-        }
-
         for (const auto& evt : internalSceneEvents)
             m_sceneControlLogic.processInternalEvent(evt);
 
         RendererSceneControlLogic::Events outSceneEvents;
         m_sceneControlLogic.consumeEvents(outSceneEvents);
+
         for (const auto& evt : outSceneEvents)
         {
             switch (evt.type)
             {
             case RendererSceneControlLogic::Event::Type::ScenePublished:
-                // TODO vaclav published is the only 'shared' event, it is already in general queue for legacy scene control, remove when legacy support gone
-                //m_rendererEventCollector.addSceneEvent(ERendererEventType_ScenePublished, evt.sceneId, RendererSceneState::Unavailable);
+                m_rendererEventCollector.addSceneEvent(ERendererEventType_ScenePublished, evt.sceneId, RendererSceneState::Unavailable);
                 break;
             case RendererSceneControlLogic::Event::Type::SceneStateChanged:
                 m_rendererEventCollector.addSceneEvent(ERendererEventType_SceneStateChanged, evt.sceneId, evt.state);

@@ -107,6 +107,13 @@ namespace ramses_internal
         CompressedResouceBlob compressedBlob;
     };
 
+    TEST_F(AResource, hasZeroSizesByDefault)
+    {
+        TestResource emptyRes(EResourceType_Invalid, ResourceCacheFlag(0), String());
+        EXPECT_EQ(0u, emptyRes.getDecompressedDataSize());
+        EXPECT_EQ(0u, emptyRes.getCompressedDataSize());
+    }
+
     TEST_F(AResource, noCompressionForCompressionLevelNone)
     {
         for (UInt32 dataSize = 1; dataSize < 2000; ++dataSize)

@@ -11,6 +11,7 @@
 
 // internal
 #include "DisplayConfigImpl.h"
+#include "RamsesFrameworkTypesImpl.h"
 
 namespace ramses
 {
@@ -130,26 +131,26 @@ namespace ramses
         return status;
     }
 
-    status_t DisplayConfig::setWaylandIviLayerID(uint32_t waylandIviLayerID)
+    status_t DisplayConfig::setWaylandIviLayerID(waylandIviLayerId_t waylandIviLayerID)
     {
         const status_t status = impl.setWaylandIviLayerID(waylandIviLayerID);
         LOG_HL_RENDERER_API1(status, waylandIviLayerID);
         return status;
     }
 
-    uint32_t DisplayConfig::getWaylandIviLayerID() const
+    waylandIviLayerId_t DisplayConfig::getWaylandIviLayerID() const
     {
         return impl.getWaylandIviLayerID();
     }
 
-    status_t DisplayConfig::setWaylandIviSurfaceID(uint32_t waylandIviSurfaceID)
+    status_t DisplayConfig::setWaylandIviSurfaceID(waylandIviSurfaceId_t waylandIviSurfaceID)
     {
         const status_t status = impl.setWaylandIviSurfaceID(waylandIviSurfaceID);
-        LOG_HL_RENDERER_API1(status, waylandIviSurfaceID);
+        LOG_HL_RENDERER_API1(status, waylandIviSurfaceID.getValue());
         return status;
     }
 
-    uint32_t DisplayConfig::getWaylandIviSurfaceID() const
+    waylandIviSurfaceId_t DisplayConfig::getWaylandIviSurfaceID() const
     {
         return impl.getWaylandIviSurfaceID();
     }

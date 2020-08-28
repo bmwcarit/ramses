@@ -7,9 +7,8 @@
 //  -------------------------------------------------------------------------
 
 #include "TestScenes/IndexArray32BitScene.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
@@ -19,8 +18,8 @@
 
 namespace ramses_internal
 {
-    IndexArray32BitScene::IndexArray32BitScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    IndexArray32BitScene::IndexArray32BitScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
         ramses::Appearance* appearance = m_scene.createAppearance(*effect);
@@ -52,7 +51,7 @@ namespace ramses_internal
             10000, 10001, 10002, 10000, 10001, 10002, 10003
         };
 
-        const ramses::UInt16Array* indicesTri  = m_client.createConstUInt16Array(7u, indicesData);
+        const ramses::ArrayResource* indicesTri  = m_scene.createArrayResource(ramses::EDataType::UInt16, 7u, indicesData);
 
         geometry->setIndices(*indicesTri);
     }
@@ -64,7 +63,7 @@ namespace ramses_internal
             65536, 65537, 65538, 65536, 65537, 65538, 65539
         };
 
-        const ramses::UInt32Array* indicesTri  = m_client.createConstUInt32Array(7u, indicesData);
+        const ramses::ArrayResource* indicesTri  = m_scene.createArrayResource(ramses::EDataType::UInt32, 7u, indicesData);
 
         geometry->setIndices(*indicesTri);
     }
@@ -88,7 +87,7 @@ namespace ramses_internal
             vertexPositionsArray[10000 * 3 + i] = triangleVertices[i];
         }
 
-        const ramses::Vector3fArray* verticesTri  = m_client.createConstVector3fArray(65540u, vertexPositionsArray);
+        const ramses::ArrayResource* verticesTri  = m_scene.createArrayResource(ramses::EDataType::Vector3F, 65540u, vertexPositionsArray);
 
         ramses::AttributeInput positionsInput;
         effect.findAttributeInput("a_position", positionsInput);

@@ -34,12 +34,13 @@ namespace ramses_internal
     MemoryInfoVector GetMemoryInfoFromScene(const ramses::SceneImpl& scene)
     {
         MemoryInfoVector memoryInfos;
-        ramses::RamsesObjectVector resources = scene.getClientImpl().getListOfResourceObjects(ramses::ERamsesObjectType_Resource);
+        ramses::RamsesObjectVector resources;
+        scene.getObjectRegistry().getObjectsOfType(resources, ramses::ERamsesObjectType_Resource);
 
         for (const auto it : resources)
         {
             const ramses::Resource& resource = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Resource>(*it);
-            const IResource* resourceObject  = scene.getClientImpl().getResource(resource.impl.getLowlevelResourceHash()).getResourceObject();
+            const IResource* resourceObject  = scene.getClientImpl().getResource(resource.impl.getLowlevelResourceHash()).get();
 
             if (nullptr != resourceObject)
             {

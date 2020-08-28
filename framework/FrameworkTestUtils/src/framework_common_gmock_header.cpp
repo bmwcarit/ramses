@@ -12,7 +12,6 @@
 #include "Math3d/Matrix44f.h"
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneId.h"
-#include "gtest/internal/gtest-internal.h"
 #include "Scene/SceneActionCollection.h"
 #include "Ramsh/RamshInput.h"
 

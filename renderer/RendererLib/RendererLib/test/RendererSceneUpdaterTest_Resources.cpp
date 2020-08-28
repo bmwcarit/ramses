@@ -2336,11 +2336,11 @@ TEST_F(ARendererSceneUpdater, confidenceTest_forcePendingFlushWithNewResourcesBe
     {
         renderable++;
 
-        std::unique_ptr<EffectResource> effectRes{ new EffectResource{std::to_string(i).c_str(), std::to_string(i).c_str(), EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache} };
+        std::unique_ptr<EffectResource> effectRes{ new EffectResource{std::to_string(i).c_str(), std::to_string(i).c_str(), "", EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache} };
         const ResourceContentHash effectHash(effectRes->getHash());
 
         // add effect to scene as new resource
-        const auto dataInstanceGeom = scene.allocateDataInstance(scene.allocateDataLayout({ DataFieldInfo{ EDataType_Indices, 1u, EFixedSemantics_Indices } }, effectHash));
+        const auto dataInstanceGeom = scene.allocateDataInstance(scene.allocateDataLayout({ DataFieldInfo{ EDataType::Indices, 1u, EFixedSemantics_Indices } }, effectHash));
         scene.setDataResource(dataInstanceGeom, DataFieldHandle(0u), ResourceProviderMock::FakeIndexArrayHash, {}, 0);
         const auto dataInstanceUniforms = scene.allocateDataInstance(scene.allocateDataLayout({}, effectHash));
 
@@ -2368,7 +2368,7 @@ TEST_F(ARendererSceneUpdater, confidenceTest_forcePendingFlushWithNewResourcesBe
         // simulate previously requested resource arriving and randomly fail to upload
         if (prevRequestedResource)
         {
-            EXPECT_CALL(resourceProvider1, popArrivedResources(_)).WillOnce([&](const ResourceRequesterID&) { return ManagedResourceVector{ ManagedResource{*prevRequestedResource, resDeleter} }; });
+            EXPECT_CALL(resourceProvider1, popArrivedResources(_)).WillOnce([&](const ResourceRequesterID&) { return ManagedResourceVector{ ManagedResource{prevRequestedResource.get(), resDeleter} }; });
             expectContextEnable();
             if (TestRandom::Get(0, 3) == 0)
                 EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadShader(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
@@ -2396,6 +2396,159 @@ TEST_F(ARendererSceneUpdater, confidenceTest_forcePendingFlushWithNewResourcesBe
     expectRenderableResourcesDeleted(DisplayHandle1, false);
     unmapScene();
 
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, UploadsAndUnloadsResourceNeededAndUnneeded)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+    showScene();
+
+    createRenderable();
+
+    // Resource manager does not unload unneeded resources right away,
+    // it unloads any unneeded resource 1 update cycle after it was unreferenced
+    // and only if there is anything else to upload.
+    // This test cycles through exclusively using 3 different resources so that
+    // there is always 1 unneeded resource and 1 to upload.
+
+    // res1 used
+    {
+        setRenderableResources();
+        expectResourceRequest();
+        expectContextEnable();
+        expectRenderableResourcesUploaded();
+        update();
+    }
+    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
+
+    // res2 used, res1 unneeded
+    {
+        setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash2);
+        expectResourceRequest();
+        expectContextEnable();
+        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+        update();
+    }
+    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
+
+    // res3 used, res2 unneeded, res1 unloaded
+    {
+        EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_));
+
+        setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash3);
+        expectResourceRequest();
+        expectContextEnable();
+        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+        update();
+    }
+    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
+
+    // res1 used, res3 unneeded, res2 unloaded
+    {
+        EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_));
+
+        setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash);
+        expectResourceRequest();
+        expectContextEnable();
+        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+        update();
+    }
+    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
+
+    // res1 and res3 remain to unload on deinit
+    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_)).Times(2);
+
+    hideScene();
+    expectContextEnable();
+    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, UploadsAndUnloadsResourceNeededAndUnneeded_sharedByTwoRenderables)
+{
+    createDisplayAndExpectSuccess();
+
+    const auto s1 = createPublishAndSubscribeScene();
+    const auto s2 = createPublishAndSubscribeScene();
+    mapScene(s1);
+    mapScene(s2);
+
+    createRenderable(s1);
+    createRenderable(s2);
+
+    // Resource manager does not unload unneeded resources right away,
+    // it unloads any unneeded resource 1 update cycle after it was unreferenced
+    // and only if there is anything else to upload.
+    // This test cycles through exclusively using 3 different resources so that
+    // there is always 1 unneeded resource and 1 to upload.
+
+    // res1 used
+    {
+        setRenderableResources(s1);
+        setRenderableResources(s2);
+        expectResourceRequest(DisplayHandle1, s1);
+        expectResourceRequest(DisplayHandle1, s2);
+        expectContextEnable();
+        expectRenderableResourcesUploaded();
+        update();
+    }
+    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
+    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_displayController);
+
+    // res2 used, res1 unneeded
+    {
+        setRenderableResources(s1, ResourceProviderMock::FakeIndexArrayHash2);
+        setRenderableResources(s2, ResourceProviderMock::FakeIndexArrayHash2);
+        expectResourceRequest(DisplayHandle1, s1);
+        expectResourceRequest(DisplayHandle1, s2);
+        expectContextEnable();
+        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+        update();
+    }
+    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
+    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_displayController);
+
+    // res3 used, res2 unneeded, res1 unloaded
+    {
+        EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_));
+
+        setRenderableResources(s1, ResourceProviderMock::FakeIndexArrayHash3);
+        setRenderableResources(s2, ResourceProviderMock::FakeIndexArrayHash3);
+        expectResourceRequest(DisplayHandle1, s1);
+        expectResourceRequest(DisplayHandle1, s2);
+        expectContextEnable();
+        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+        update();
+    }
+    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
+    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_displayController);
+
+    // res1 used, res3 unneeded, res2 unloaded
+    {
+        EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_));
+
+        setRenderableResources(s1, ResourceProviderMock::FakeIndexArrayHash);
+        setRenderableResources(s2, ResourceProviderMock::FakeIndexArrayHash);
+        expectResourceRequest(DisplayHandle1, s1);
+        expectResourceRequest(DisplayHandle1, s2);
+        expectContextEnable();
+        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+        update();
+    }
+    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
+    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_displayController);
+
+    // res1 and res3 remain to unload on deinit
+    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_)).Times(2);
+
+    expectContextEnable(DisplayHandle1, 2u);
+    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
+    unmapScene(s1);
+    unmapScene(s2);
     destroyDisplay();
 }
 

@@ -225,4 +225,28 @@ namespace ramses
 
         dispatch();
     }
+
+    TEST_F(ADcsmSystem, canDoAFullContentLifecycleWithWaylandIviSurfaceIdContent)
+    {
+        EXPECT_CALL(consHandler, contentOffered(id, Category(123)));
+        EXPECT_EQ(provider.offerContent(id, Category(123), waylandIviSurfaceId_t(5432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
+        dispatch();
+
+        EXPECT_CALL(provHandler, contentSizeChange(id, _, _)).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
+            ramses::CategoryInfoUpdate update;
+            update.setCategorySize(size.getCategorySize());
+            EXPECT_EQ(update, infoupdate);
+        });
+        EXPECT_CALL(consHandler, contentDescription(id, ETechnicalContentType::WaylandIviSurfaceID, TechnicalContentDescriptor{5432}));
+        EXPECT_EQ(consumer.assignContentToConsumer(id, size), StatusOK);
+        dispatch();
+
+        requestAndMarkReady(id);
+
+        showContent(id, AnimationInformation{200, 300});
+        hideContent(id, AnimationInformation{200, 300});
+        showContent(id, AnimationInformation{200, 300});
+
+        stopOfferByProvider(id, AnimationInformation{200, 300});
+    }
 }

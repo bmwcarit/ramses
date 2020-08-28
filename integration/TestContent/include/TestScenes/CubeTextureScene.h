@@ -25,7 +25,7 @@ namespace ramses_internal
     class CubeTextureScene : public IntegrationScene
     {
     public:
-        CubeTextureScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        CubeTextureScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum EState
         {

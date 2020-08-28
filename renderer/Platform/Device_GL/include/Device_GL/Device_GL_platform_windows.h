@@ -93,6 +93,7 @@
 #define glBlendEquation(...)            glBlendEquationNative(__VA_ARGS__)
 #define glBlendEquationSeparate(...)    glBlendEquationSeparateNative(__VA_ARGS__)
 #define glBlendFuncSeparate(...)        glBlendFuncSeparateNative(__VA_ARGS__)
+#define glBlendColor(...)               glBlendColorNative(__VA_ARGS__)
 #define glGenerateMipmap(...)           glGenerateMipmapNative(__VA_ARGS__)
 #define glCompressedTexImage2D(...)     glCompressedTexImage2DNative(__VA_ARGS__)
 #define glGenSamplers(...)              glGenSamplersNative(__VA_ARGS__)
@@ -176,6 +177,7 @@ DECLARE_API_PROC(PFNGLACTIVETEXTUREPROC, glActiveTexture);                      
 DECLARE_API_PROC(PFNGLBLENDEQUATIONPROC, glBlendEquation);                                      \
 DECLARE_API_PROC(PFNGLBLENDEQUATIONSEPARATEPROC, glBlendEquationSeparate);                      \
 DECLARE_API_PROC(PFNGLBLENDFUNCSEPARATEPROC, glBlendFuncSeparate);                              \
+DECLARE_API_PROC(PFNGLBLENDCOLORPROC, glBlendColor);                              \
 DECLARE_API_PROC(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap);                                    \
 DECLARE_API_PROC(PFNGLCLEARDEPTHFPROC, glClearDepthf);                                          \
 DECLARE_API_PROC(PFNGLCOMPRESSEDTEXIMAGE2DPROC, glCompressedTexImage2D);                        \
@@ -258,6 +260,7 @@ LOAD_API_PROC(CONTEXT, PFNGLDELETERENDERBUFFERSPROC, glDeleteRenderbuffers);    
 LOAD_API_PROC(CONTEXT, PFNGLACTIVETEXTUREPROC, glActiveTexture);                                  \
 LOAD_API_PROC(CONTEXT, PFNGLBLENDEQUATIONPROC, glBlendEquation);                                  \
 LOAD_API_PROC(CONTEXT, PFNGLBLENDEQUATIONSEPARATEPROC, glBlendEquationSeparate);                  \
+LOAD_API_PROC(CONTEXT, PFNGLBLENDCOLORPROC, glBlendColor);                                        \
 LOAD_API_PROC(CONTEXT, PFNGLBLENDFUNCSEPARATEPROC, glBlendFuncSeparate);                          \
 LOAD_API_PROC(CONTEXT, PFNGLGENERATEMIPMAPPROC, glGenerateMipmap);                                \
 LOAD_API_PROC(CONTEXT, PFNGLCLEARDEPTHFPROC, glClearDepthf);                                      \
@@ -342,6 +345,7 @@ DEFINE_API_PROC(PFNGLDELETERENDERBUFFERSPROC, glDeleteRenderbuffers);           
 DEFINE_API_PROC(PFNGLACTIVETEXTUREPROC, glActiveTexture);                                      \
 DEFINE_API_PROC(PFNGLBLENDEQUATIONPROC, glBlendEquation);                                      \
 DEFINE_API_PROC(PFNGLBLENDEQUATIONSEPARATEPROC, glBlendEquationSeparate);                      \
+DEFINE_API_PROC(PFNGLBLENDCOLORPROC, glBlendColor);                                            \
 DEFINE_API_PROC(PFNGLBLENDFUNCSEPARATEPROC, glBlendFuncSeparate);                              \
 DEFINE_API_PROC(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap);                                    \
 DEFINE_API_PROC(PFNGLCLEARDEPTHFPROC, glClearDepthf);                                          \

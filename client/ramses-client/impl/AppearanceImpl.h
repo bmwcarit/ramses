@@ -55,6 +55,8 @@ namespace ramses
         status_t getBlendingFactors(EBlendFactor& srcColor, EBlendFactor& destColor, EBlendFactor& srcAlpha, EBlendFactor& destAlpha) const;
         status_t setBlendingOperations(EBlendOperation operationColor, EBlendOperation operationAlpha);
         status_t getBlendingOperations(EBlendOperation& operationColor, EBlendOperation& operationAlpha) const;
+        status_t setBlendingColor(float red, float green, float blue, float alpha);
+        status_t getBlendingColor(float& red, float& green, float& blue, float& alpha) const;
         status_t setDepthFunction(EDepthFunc func);
         status_t getDepthFunction(EDepthFunc& func) const;
         status_t setDepthWrite(EDepthWrite flag);
@@ -97,7 +99,7 @@ namespace ramses
     private:
         void createUniformDataInstance(const EffectImpl& effect);
 
-        status_t checkEffectInputValidityAndValueCompatibility(const EffectInputImpl& input, uint32_t valueElementCount, ramses_internal::EDataType valueDataType) const;
+        status_t checkEffectInputValidityAndValueCompatibility(const EffectInputImpl& input, uint32_t valueElementCount, std::initializer_list<ramses_internal::EDataType> valueDataType) const;
         ramses_internal::DataInstanceHandle getDataReference(ramses_internal::DataFieldHandle dataField, ramses_internal::EDataType expectedDataType) const;
 
         template <typename T>
@@ -108,9 +110,6 @@ namespace ramses
         status_t setInputTextureInternal(const EffectInputImpl& input, const TextureSamplerImpl& textureSampler);
         status_t bindInputInternal(const EffectInputImpl& input, const DataObjectImpl& dataObject);
         status_t unbindInputInternal(const EffectInputImpl& input);
-
-        status_t serializeInternal(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const;
-        status_t deserializeInternal(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext);
 
         status_t validateEffect(uint32_t indent, StatusObjectSet& visitedObjects) const;
         status_t validateUniforms(uint32_t indent, StatusObjectSet& visitedObjects) const;

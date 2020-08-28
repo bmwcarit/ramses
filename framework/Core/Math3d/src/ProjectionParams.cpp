@@ -82,4 +82,12 @@ namespace ramses_internal
     {
         return m_projectionType;
     }
+
+    bool ProjectionParams::isValid() const
+    {
+        return leftPlane < rightPlane
+            && bottomPlane < topPlane
+            && nearPlane < farPlane
+            && nearPlane > std::numeric_limits<float>::epsilon();
+    }
 }

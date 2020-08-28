@@ -10,6 +10,7 @@
 #include "Resource/EffectResource.h"
 #include "glslEffectBlock/GlslToEffectConverter.h"
 #include "GlslLimits.h"
+#include "absl/algorithm/container.h"
 #include <memory>
 
 namespace ramses_internal
@@ -40,17 +41,18 @@ namespace ramses_internal
 
     GlslEffect::GlslEffect(const String& vertexShader,
         const String& fragmentShader,
+        const String& geometryShader,
         const std::vector<String>& compilerDefines,
         const HashMap<String, EFixedSemantics>& semanticInputs,
         const String& name)
         : m_vertexShader(vertexShader)
         , m_fragmentShader(fragmentShader)
+        , m_geometryShader(geometryShader)
         , m_compilerDefines(compilerDefines)
         , m_semanticInputs(semanticInputs)
         , m_name(name)
         , m_effectResource(nullptr)
-        , m_vertexShaderVersion(0)
-        , m_fragmentShaderVersion(0)
+        , m_shadingLanguageVersion(0)
     {
     }
 
@@ -69,11 +71,16 @@ namespace ramses_internal
 
         ShaderParts vertexShaderParts;
         ShaderParts fragmentShaderParts;
+        ShaderParts geometryShaderParts;
         std::unique_ptr<glslang::TShader> glslVertexShader(new glslang::TShader(EShLangVertex));
         std::unique_ptr<glslang::TShader> glslFragmentShader(new glslang::TShader(EShLangFragment));
 
+        const bool hasGeometryShader = !m_geometryShader.empty();
+        std::unique_ptr<glslang::TShader> glslGeometryShader(hasGeometryShader ? new glslang::TShader(EShLangGeometry) : nullptr);
+
         if (!createShaderParts(vertexShaderParts, defineString, m_vertexShader) ||
-            !createShaderParts(fragmentShaderParts, defineString, m_fragmentShader))
+            !createShaderParts(fragmentShaderParts, defineString, m_fragmentShader) ||
+            (hasGeometryShader && !createShaderParts(geometryShaderParts, defineString, m_geometryShader)))
         {
             return nullptr;
         }
@@ -82,14 +89,16 @@ namespace ramses_internal
         // Use the GLSL version to determine the resource limits in the shader. The version used in vertex
         // and fragment shader must be the same (checked later), so we just pass one of them for now.
         GlslLimits::InitCompilationResources(glslCompilationResources, vertexShaderParts.version);
-
         if (!parseShader(*glslVertexShader, glslCompilationResources, vertexShaderParts, "vertex shader") ||
-            !parseShader(*glslFragmentShader, glslCompilationResources, fragmentShaderParts, "fragment shader"))
+            !parseShader(*glslFragmentShader, glslCompilationResources, fragmentShaderParts, "fragment shader") ||
+            (hasGeometryShader && !parseShader(*glslGeometryShader, glslCompilationResources, geometryShaderParts, "geometry shader")))
         {
             return nullptr;
         }
 
-        std::unique_ptr<glslang::TProgram> program(linkProgram(glslVertexShader.get(), glslFragmentShader.get()));
+        std::unique_ptr<glslang::TProgram> program(linkProgram(glslVertexShader.get(),
+                                                                glslFragmentShader.get(),
+                                                                hasGeometryShader ? glslGeometryShader.get() : nullptr));
         if (!program)
         {
             return nullptr;
@@ -115,7 +124,7 @@ namespace ramses_internal
         const EffectInputInformationVector& uniformInputs = glslToEffectConverter.getUniformInputs();
         const EffectInputInformationVector& attributeInputs = glslToEffectConverter.getAttributeInputs();
 
-        m_effectResource = new EffectResource(mergeShaderParts(vertexShaderParts), mergeShaderParts(fragmentShaderParts), uniformInputs, attributeInputs, m_name, cacheFlag);
+        m_effectResource = new EffectResource(mergeShaderParts(vertexShaderParts), mergeShaderParts(fragmentShaderParts), mergeShaderParts(geometryShaderParts), uniformInputs, attributeInputs, m_name, cacheFlag);
         return m_effectResource;
     }
 
@@ -175,11 +184,13 @@ namespace ramses_internal
         return true;
     }
 
-    glslang::TProgram* GlslEffect::linkProgram(glslang::TShader* vertexShader, glslang::TShader* fragmentShader) const
+    glslang::TProgram* GlslEffect::linkProgram(glslang::TShader* vertexShader, glslang::TShader* fragmentShader, glslang::TShader* geometryShader) const
     {
         std::unique_ptr<glslang::TProgram> program(new glslang::TProgram());
         program->addShader(vertexShader);
         program->addShader(fragmentShader);
+        if (geometryShader)
+            program->addShader(geometryShader);
 
         if (!program->link(EShMsgDefault))
         {
@@ -198,34 +209,40 @@ namespace ramses_internal
     bool GlslEffect::extractAndCheckShaderVersions(const glslang::TProgram* program)
     {
         // profile check
-        EProfile vertexShaderProfile = program->getIntermediate(EShLangVertex)->getProfile();
-        EProfile fragmentShaderProfile = program->getIntermediate(EShLangFragment)->getProfile();
+        const EProfile vertexShaderProfile = program->getIntermediate(EShLangVertex)->getProfile();
+        const EProfile fragmentShaderProfile = program->getIntermediate(EShLangFragment)->getProfile();
+        const auto geometryShaderIntermediate = program->getIntermediate(EShLangGeometry);
+        const bool hasGeometryShader = (nullptr != geometryShaderIntermediate);
+        const EProfile geometryShaderProfile = hasGeometryShader ? geometryShaderIntermediate->getProfile() : ENoProfile;
 
-        if (vertexShaderProfile != EEsProfile || fragmentShaderProfile != EEsProfile)
+        if (vertexShaderProfile != EEsProfile || fragmentShaderProfile != EEsProfile || (hasGeometryShader && geometryShaderProfile != EEsProfile))
         {
             m_errorMessages << "[GLSL Compiler] " << m_name << " unsupported profile (supported profile: es)\n";
             return false;
         }
 
-        // version check: must be GLSL ES 2.0 (100) or GLSL ES 3.0 (300)
-        UInt32 vertexShaderVersion = program->getIntermediate(EShLangVertex)->getVersion();
-        UInt32 fragmentShaderVersion = program->getIntermediate(EShLangFragment)->getVersion();
+        const UInt32 vertexShaderVersion = program->getIntermediate(EShLangVertex)->getVersion();
+        const UInt32 fragmentShaderVersion = program->getIntermediate(EShLangFragment)->getVersion();
+        const UInt32 geometryShaderVersion = hasGeometryShader ? geometryShaderIntermediate->getVersion() : 0u;
 
-        if ((vertexShaderVersion != 100 && vertexShaderVersion != 300) ||
-            (fragmentShaderVersion != 100 && fragmentShaderVersion != 300))
+        const uint32_t maximumSupportedVersion = 320u;
+
+        if (vertexShaderVersion > maximumSupportedVersion ||
+            fragmentShaderVersion > maximumSupportedVersion ||
+            (hasGeometryShader && geometryShaderVersion > maximumSupportedVersion))
         {
-            m_errorMessages << "[GLSL Compiler] " << m_name << " unsupported version (supported version strings: 100, 300 es)\n";
+            m_errorMessages << "[GLSL Compiler] " << m_name << " unsupported version (maximum supported version: 320 es)\n";
             return false;
         }
 
-        if (vertexShaderVersion != fragmentShaderVersion)
+        if (vertexShaderVersion != fragmentShaderVersion ||
+            (hasGeometryShader && vertexShaderVersion != geometryShaderVersion))
         {
-            m_errorMessages << "[GLSL Compiler] " << m_name << " version of vertex and fragment shader must be same\n";
+            m_errorMessages << "[GLSL Compiler] " << m_name << " version of vertex, fragment and geometry shaders must be same\n";
             return false;
         }
 
-        m_vertexShaderVersion = vertexShaderVersion;
-        m_fragmentShaderVersion = fragmentShaderVersion;
+        m_shadingLanguageVersion = vertexShaderVersion;
         return true;
     }
 
@@ -257,16 +274,10 @@ namespace ramses_internal
         return success;
     }
 
-    UInt32 GlslEffect::getVertexShaderVersion() const
+    UInt32 GlslEffect::getShadingLanguageVersion() const
     {
         assert(m_effectResource);
-        return m_vertexShaderVersion;
-    }
-
-    UInt32 GlslEffect::getFragmentShaderVersion() const
-    {
-        assert(m_effectResource);
-        return m_fragmentShaderVersion;
+        return m_shadingLanguageVersion;
     }
 
     ramses_internal::String GlslEffect::getEffectErrorMessages() const

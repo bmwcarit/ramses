@@ -47,7 +47,6 @@ namespace ramses_internal
         statRequestResourceMessagesReceived.reset();
         statResourcesCreated.reset();
         statResourcesDestroyed.reset();
-        statResourcesSentSize.reset();
         statResourcesNumber.reset();
         statResourcesSentNumber.reset();
         statResourcesSentSize.reset();
@@ -66,7 +65,6 @@ namespace ramses_internal
         statRequestResourceMessagesReceived.getSummary().reset();
         statResourcesCreated.getSummary().reset();
         statResourcesDestroyed.getSummary().reset();
-        statResourcesSentSize.getSummary().reset();
         statResourcesNumber.getSummary().reset();
         statResourcesSentNumber.getSummary().reset();
         statResourcesSentSize.getSummary().reset();
@@ -85,7 +83,6 @@ namespace ramses_internal
         statRequestResourceMessagesReceived.updateSummaryAndResetCounter();
         const UInt32 resourcesCreated = statResourcesCreated.updateSummaryAndResetCounter();
         const UInt32 resourcesDestroyed = statResourcesDestroyed.updateSummaryAndResetCounter();
-        statResourcesSentSize.updateSummaryAndResetCounter();
         statResourcesSentNumber.updateSummaryAndResetCounter();
         statResourcesSentSize.updateSummaryAndResetCounter();
         statResourcesReceivedNumber.updateSummaryAndResetCounter();
@@ -105,6 +102,9 @@ namespace ramses_internal
         statObjectsCreated.reset();
         statObjectsDestroyed.reset();
         statObjectsNumber.reset();
+        statResourceObjectsCreated.reset();
+        statResourceObjectsDestroyed.reset();
+        statResourceObjectsNumber.reset();
         statSceneActionsSent.reset();
         statSceneActionsSentSkipped.reset();
         statSceneActionsGenerated.reset();
@@ -119,6 +119,9 @@ namespace ramses_internal
         statObjectsCreated.getSummary().reset();
         statObjectsDestroyed.getSummary().reset();
         statObjectsNumber.getSummary().reset();
+        statResourceObjectsCreated.getSummary().reset();
+        statResourceObjectsDestroyed.getSummary().reset();
+        statResourceObjectsNumber.getSummary().reset();
         statSceneActionsSent.getSummary().reset();
         statSceneActionsSentSkipped.getSummary().reset();
         statSceneActionsGenerated.getSummary().reset();
@@ -132,6 +135,9 @@ namespace ramses_internal
         statFlushesTriggered.updateSummaryAndResetCounter();
         const UInt32 objectsCreated = statObjectsCreated.updateSummaryAndResetCounter();
         const UInt32 objectsDestroyed = statObjectsDestroyed.updateSummaryAndResetCounter();
+        const UInt32 resourcesCreated = statResourceObjectsCreated.updateSummaryAndResetCounter();
+        const UInt32 resourcesDestroyed = statResourceObjectsDestroyed.updateSummaryAndResetCounter();
+
         statSceneActionsSent.updateSummaryAndResetCounter();
         statSceneActionsSentSkipped.updateSummaryAndResetCounter();
         statSceneActionsGenerated.updateSummaryAndResetCounter();
@@ -140,5 +146,8 @@ namespace ramses_internal
         statObjectsNumber.incCounter(objectsCreated);
         statObjectsNumber.decCounter(objectsDestroyed);
         statObjectsNumber.updateSummary();
+        statResourceObjectsNumber.incCounter(resourcesCreated);
+        statResourceObjectsNumber.decCounter(resourcesDestroyed);
+        statResourceObjectsNumber.updateSummary();
     }
 }

@@ -20,12 +20,12 @@ namespace ramses_internal
     constexpr const ramses::dataProviderId_t DataLinkScene::DataProviderId;
     constexpr const ramses::dataConsumerId_t DataLinkScene::DataConsumerId;
 
-    DataLinkScene::DataLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    DataLinkScene::DataLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
-        ramses::Triangle triangle1(ramsesClient, scene, *effect, ramses::TriangleAppearance::EColor_Red);
-        ramses::Triangle triangle2(ramsesClient, scene, *effect, ramses::TriangleAppearance::EColor_Green);
+        ramses::Triangle triangle1(scene, *effect, ramses::TriangleAppearance::EColor_Red);
+        ramses::Triangle triangle2(scene, *effect, ramses::TriangleAppearance::EColor_Green);
 
         ramses::DataVector4f* colorData = scene.createDataVector4f("dataLinkColorData");
 

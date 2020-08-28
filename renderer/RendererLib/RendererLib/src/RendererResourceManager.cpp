@@ -90,16 +90,14 @@ namespace ramses_internal
 
     void RendererResourceManager::groupResourcesBySceneId(const ResourceContentHashVector& resources, ResourcesPerSceneMap& resourcesPerScene) const
     {
-        for(const auto& resHash : resources)
+        for (const auto& resHash : resources)
         {
             const ResourceDescriptor& resDesc = m_clientResourceRegistry.getResourceDescriptor(resHash);
             for(const auto& sceneUsage : resDesc.sceneUsage)
             {
-                if (!resourcesPerScene.contains(sceneUsage))
-                {
-                    resourcesPerScene.put(sceneUsage, ResourceContentHashVector());
-                }
-                resourcesPerScene.get(sceneUsage)->push_back(resHash);
+                auto& resList = resourcesPerScene[sceneUsage];
+                if (!contains_c(resList, resHash))
+                    resList.push_back(resHash);
             }
         }
     }
@@ -145,7 +143,7 @@ namespace ramses_internal
             {
                 ManagedResource newResource = RendererResourceManagerUtils::TryLoadResource(res, resourceSize, cache);
 
-                if (newResource.getResourceObject() == nullptr)
+                if (!newResource)
                 {
                     assert(false);
                     LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::getRequestedResourcesAlreadyInCache. Failed to deserialize data from cache: #" << res);
@@ -154,7 +152,7 @@ namespace ramses_internal
 
                 // Mimic the same state changes as if the resource had been requested and received over network
                 m_clientResourceRegistry.setResourceStatus(res, EResourceStatus_Requested);
-                m_clientResourceRegistry.setResourceData(res, newResource, DeviceResourceHandle::Invalid(), newResource.getResourceObject()->getTypeID());
+                m_clientResourceRegistry.setResourceData(res, newResource, DeviceResourceHandle::Invalid(), newResource->getTypeID());
                 m_clientResourceRegistry.setResourceStatus(res, EResourceStatus_Provided);
             }
         }
@@ -270,10 +268,8 @@ namespace ramses_internal
     {
         for (const auto& resDesc : m_clientResourceRegistry.getAllResourceDescriptors())
         {
-            if (contains_c(resDesc.value.sceneUsage, sceneId))
-            {
+            while (contains_c(resDesc.value.sceneUsage, sceneId))
                 m_clientResourceRegistry.removeResourceRef(resDesc.key, sceneId);
-            }
         }
     }
 
@@ -285,7 +281,7 @@ namespace ramses_internal
         const ManagedResourceVector arrivedResources = m_resourceProvider.popArrivedResources(m_id);
         for (const ManagedResource& current : arrivedResources)
         {
-            const IResource* resourceObject = current.getResourceObject();
+            const IResource* resourceObject = current.get();
             const ResourceContentHash resHash = resourceObject->getHash();
 
             if (m_clientResourceRegistry.containsResource(resHash))
@@ -486,9 +482,9 @@ namespace ramses_internal
         m_offscreenBuffers.allocate(bufferHandle);
         OffscreenBufferDescriptor& offscreenBufferDesc = *m_offscreenBuffers.getMemory(bufferHandle);
 
-        offscreenBufferDesc.m_colorBufferHandle[0] = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u));
-        offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_DepthStencilBuffer, ETextureFormat_Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 0u));
-        offscreenBufferDesc.m_estimatedVRAMUsage = width * height * ((isDoubleBuffered ? 2u : 1u) * GetTexelSizeFromFormat(ETextureFormat_RGBA8) + GetTexelSizeFromFormat(ETextureFormat_Depth24_Stencil8));
+        offscreenBufferDesc.m_colorBufferHandle[0] = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u));
+        offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 0u));
+        offscreenBufferDesc.m_estimatedVRAMUsage = width * height * ((isDoubleBuffered ? 2u : 1u) * GetTexelSizeFromFormat(ETextureFormat::RGBA8) + GetTexelSizeFromFormat(ETextureFormat::Depth24_Stencil8));
 
         DeviceHandleVector bufferDeviceHandles;
         bufferDeviceHandles.push_back(offscreenBufferDesc.m_colorBufferHandle[0]);
@@ -497,7 +493,7 @@ namespace ramses_internal
 
         if (isDoubleBuffered)
         {
-            offscreenBufferDesc.m_colorBufferHandle[1] = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u));
+            offscreenBufferDesc.m_colorBufferHandle[1] = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u));
 
             DeviceHandleVector bufferDeviceHandles2;
             bufferDeviceHandles2.push_back(offscreenBufferDesc.m_colorBufferHandle[1]);
@@ -607,7 +603,7 @@ namespace ramses_internal
     void RendererResourceManager::uploadDataBuffer(DataBufferHandle dataBufferHandle, EDataBufferType dataBufferType, EDataType dataType, UInt32 dataSizeInBytes, SceneId sceneId)
     {
         assert(dataBufferHandle.isValid());
-        assert(EDataType_Invalid != dataType);
+        assert(EDataType::Invalid != dataType);
 
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
 
@@ -693,7 +689,7 @@ namespace ramses_internal
     void RendererResourceManager::uploadTextureBuffer(TextureBufferHandle textureBufferHandle, UInt32 width, UInt32 height, ETextureFormat textureFormat, UInt32 mipLevelCount, SceneId sceneId)
     {
         assert(textureBufferHandle.isValid());
-        assert(ETextureFormat_Invalid != textureFormat);
+        assert(ETextureFormat::Invalid != textureFormat);
         assert(!IsFormatCompressed(textureFormat)); //can not be a compressed format
 
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);

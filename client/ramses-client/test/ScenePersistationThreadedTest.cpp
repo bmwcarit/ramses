@@ -12,18 +12,17 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/TextureSampler.h"
-#include "ramses-client-api/ResourceFileDescription.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/EffectDescription.h"
-#include "ramses-client-api/UInt16Array.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/ResourceFileDescriptionSet.h"
 #include "ramses-utils.h"
+#include "ramses-hmi-utils.h"
 
 #include "ClientEventHandlerMock.h"
 #include "TestEffects.h"
@@ -39,22 +38,31 @@ namespace ramses
         class RamsesFileCreator
         {
         public:
-            static void SaveSceneToFile(sceneId_t sceneId, const ramses_internal::String& sceneFilename, const ramses_internal::String& resourceFilename)
+            static void SaveSceneToFile(sceneId_t sceneId, const ramses_internal::String& sceneFilename)
             {
                 RamsesFramework framework;
                 RamsesClient& client(*framework.createClient("RamsesFileCreator"));
 
-                ResourceFileDescription resources(resourceFilename.c_str());
-                Scene* scene = CreateScene(client, resources, sceneId);
+                Scene* scene = CreateScene(client, sceneId);
                 ASSERT_TRUE(scene != nullptr);
 
-                ResourceFileDescriptionSet    resourceVector;
-                resourceVector.add(resources);
-                ASSERT_EQ(StatusOK, client.saveSceneToFile(*scene, sceneFilename.c_str(), resourceVector, false));
+                ASSERT_EQ(StatusOK, scene->saveToFile(sceneFilename.c_str(), false));
+            }
+
+            static void SaveResourcesOfSceneToFile(sceneId_t sceneId, const ramses_internal::String& resourceFilename)
+            {
+                RamsesFramework framework;
+                RamsesClient& client(*framework.createClient("RamsesFileCreator"));
+
+                Scene* scene = CreateScene(client, sceneId);
+
+                ASSERT_TRUE(scene != nullptr);
+
+                ASSERT_TRUE(RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(*scene, resourceFilename.c_str(), false));
             }
 
         private:
-            static Scene* CreateScene(RamsesClient& client, ResourceFileDescription& resourcesDescription, sceneId_t sceneId)
+            static Scene* CreateScene(RamsesClient& client, sceneId_t sceneId)
             {
                 Scene* scene = client.createScene(sceneId, SceneConfig());
 
@@ -68,19 +76,16 @@ namespace ramses
                 // stream texture
                 uint8_t data[4] = { 0u };
                 MipLevelData mipLevelData(sizeof(data), data);
-                Texture2D* fallbackTexture = client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "fallbackTexture");
-                scene->createStreamTexture(*fallbackTexture, streamSource_t(3), "resourceName");
-                resourcesDescription.add(fallbackTexture);
+                Texture2D* fallbackTexture = scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "fallbackTexture");
+                scene->createStreamTexture(*fallbackTexture, waylandIviSurfaceId_t(3), "resourceName");
 
                 //appearance
-                Effect* effect = TestEffects::CreateTestEffect(client);
-                resourcesDescription.add(effect);
+                Effect* effect = TestEffects::CreateTestEffect(*scene);
                 scene->createAppearance(*effect, "appearance");
 
                 // geometry binding
                 static const uint16_t inds[3] = { 0, 1, 2 };
-                const UInt16Array* const indices = client.createConstUInt16Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
-                resourcesDescription.add(indices);
+                ArrayResource* const indices = scene->createArrayResource(EDataType::UInt16, 3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
 
                 GeometryBinding* geometry = scene->createGeometryBinding(*effect, "geometry");
                 assert(geometry != nullptr);
@@ -96,11 +101,11 @@ namespace ramses
 
     static const char* sceneFile = "ARamsesFileLoadedInSeveralThread_1.ramscene";
     static const char* otherSceneFile = "ARamsesFileLoadedInSeveralThread_2.ramscene";
-    static const char* nonexistingSceneFile = "this_file_should_really_not_exist.ramscene";
+//    static const char* nonexistingSceneFile = "this_file_should_really_not_exist.ramscene";
 
     static const char* resFile = "ARamsesFileLoadedInSeveralThread_1.ramres";
     static const char* otherResFile = "ARamsesFileLoadedInSeveralThread_2.ramres";
-    static const char* nonexistingResFile = "this_file_should_really_not_exist.ramres";
+    //static const char* nonexistingResFile = "this_file_should_really_not_exist.ramres";
 
     class ARamsesFileLoadedInSeveralThread : public ::testing::Test
     {
@@ -111,8 +116,6 @@ namespace ramses
             , numClientEvents(0)
             , loadedScene(nullptr)
         {
-            ON_CALL(eventHandler, resourceFileLoadSucceeded(_)).WillByDefault(InvokeWithoutArgs(this, &ARamsesFileLoadedInSeveralThread::incNumClientEvents));
-            ON_CALL(eventHandler, resourceFileLoadFailed(_)).WillByDefault(InvokeWithoutArgs(this, &ARamsesFileLoadedInSeveralThread::incNumClientEvents));
             ON_CALL(eventHandler, sceneFileLoadSucceeded(_, _)).WillByDefault(DoAll(SaveArg<1>(&loadedScene), InvokeWithoutArgs(this, &ARamsesFileLoadedInSeveralThread::incNumClientEvents)));
             ON_CALL(eventHandler, sceneFileLoadFailed(_)).WillByDefault(InvokeWithoutArgs(this, &ARamsesFileLoadedInSeveralThread::incNumClientEvents));
         }
@@ -145,8 +148,9 @@ namespace ramses
 
         static void SetUpTestCase()
         {
-            RamsesFileCreator::SaveSceneToFile(sceneId_t(123u), sceneFile, resFile);
-            RamsesFileCreator::SaveSceneToFile(sceneId_t(124u), otherSceneFile, otherResFile);
+            RamsesFileCreator::SaveSceneToFile(sceneId_t(123u), sceneFile);
+            RamsesFileCreator::SaveSceneToFile(sceneId_t(124u), otherSceneFile);
+            RamsesFileCreator::SaveResourcesOfSceneToFile(sceneId_t(125u), resFile);
         }
 
         static void TearDownTestCase()
@@ -158,79 +162,11 @@ namespace ramses
         }
     };
 
-    TEST_F(ARamsesFileLoadedInSeveralThread, loadingANonExistingResourceFileAsyncTriggersLoadFailedEvent)
-    {
-        EXPECT_CALL(eventHandler, resourceFileLoadFailed(StrEq(nonexistingResFile)));
-        EXPECT_EQ(StatusOK, client.loadResourcesAsync(ResourceFileDescription(nonexistingResFile)));
-        EXPECT_TRUE(waitForNumClientEvents(1));
-    }
-
-    TEST_F(ARamsesFileLoadedInSeveralThread, canAsyncLoadResourceFile)
-    {
-        EXPECT_CALL(eventHandler, resourceFileLoadSucceeded(StrEq(resFile)));
-        EXPECT_EQ(StatusOK, client.loadResourcesAsync(ResourceFileDescription(resFile)));
-        EXPECT_TRUE(waitForNumClientEvents(1));
-    }
-
-    TEST_F(ARamsesFileLoadedInSeveralThread, canAsyncLoadMultipleResourceFiles)
-    {
-        EXPECT_CALL(eventHandler, resourceFileLoadSucceeded(StrEq(resFile)));
-        EXPECT_CALL(eventHandler, resourceFileLoadSucceeded(StrEq(otherResFile)));
-
-        ResourceFileDescriptionSet resources;
-        resources.add(ResourceFileDescription(resFile));
-        resources.add(ResourceFileDescription(otherResFile));
-
-        EXPECT_EQ(StatusOK, client.loadResourcesAsync(resources));
-
-        EXPECT_TRUE(waitForNumClientEvents(2));
-    }
-
-    TEST_F(ARamsesFileLoadedInSeveralThread, canAsyncLoadResourcesParallelToSynchronousResourceLoad)
-    {
-        EXPECT_CALL(eventHandler, resourceFileLoadSucceeded(StrEq(resFile)));
-        EXPECT_EQ(StatusOK, client.loadResourcesAsync(ResourceFileDescription(resFile)));
-        EXPECT_EQ(StatusOK, client.loadResources(ResourceFileDescription(otherResFile)));
-
-        EXPECT_TRUE(waitForNumClientEvents(1));
-    }
-
-    TEST_F(ARamsesFileLoadedInSeveralThread, loadingANonExistingSceneFileAsyncTriggersLoadFailedEvent)
-    {
-        ResourceFileDescriptionSet resources;
-        resources.add(ResourceFileDescription(resFile));
-
-        InSequence seq;
-        EXPECT_CALL(eventHandler, resourceFileLoadSucceeded(StrEq(resFile)));
-        EXPECT_CALL(eventHandler, sceneFileLoadFailed(StrEq(nonexistingSceneFile)));
-        EXPECT_EQ(StatusOK, client.loadSceneFromFileAsync(nonexistingSceneFile, resources));
-        EXPECT_TRUE(waitForNumClientEvents(2));
-    }
-
-    TEST_F(ARamsesFileLoadedInSeveralThread, loadingASceneFileWithNonExistingResourceFileAsyncTriggersLoadFailedEvent)
-    {
-        ResourceFileDescriptionSet resources;
-        resources.add(ResourceFileDescription(resFile));
-        resources.add(ResourceFileDescription(nonexistingResFile));
-
-        InSequence seq;
-        EXPECT_CALL(eventHandler, resourceFileLoadSucceeded(StrEq(resFile)));
-        EXPECT_CALL(eventHandler, resourceFileLoadFailed(StrEq(nonexistingResFile)));
-        EXPECT_CALL(eventHandler, sceneFileLoadFailed(StrEq(sceneFile)));
-        EXPECT_EQ(StatusOK, client.loadSceneFromFileAsync(sceneFile, resources));
-        EXPECT_TRUE(waitForNumClientEvents(3));
-    }
-
     TEST_F(ARamsesFileLoadedInSeveralThread, canAsyncLoadSceneFile)
     {
-        ResourceFileDescriptionSet resources;
-        resources.add(ResourceFileDescription(resFile));
-
-        InSequence seq;
-        EXPECT_CALL(eventHandler, resourceFileLoadSucceeded(StrEq(resFile)));
         EXPECT_CALL(eventHandler, sceneFileLoadSucceeded(StrEq(sceneFile), _));
-        EXPECT_EQ(StatusOK, client.loadSceneFromFileAsync(sceneFile, resources));
-        ASSERT_TRUE(waitForNumClientEvents(2));
+        EXPECT_EQ(StatusOK, client.loadSceneFromFileAsync(sceneFile));
+        ASSERT_TRUE(waitForNumClientEvents(1));
 
         ASSERT_TRUE(loadedScene != nullptr);
         EXPECT_EQ(sceneId_t(123u), loadedScene->getSceneId());
@@ -238,40 +174,11 @@ namespace ramses
 
     TEST_F(ARamsesFileLoadedInSeveralThread, canAsyncLoadSceneParallelToSynchronousResourceLoad)
     {
-        ResourceFileDescriptionSet resources;
-        resources.add(ResourceFileDescription(resFile));
-
-        InSequence seq;
-        EXPECT_CALL(eventHandler, resourceFileLoadSucceeded(StrEq(resFile)));
         EXPECT_CALL(eventHandler, sceneFileLoadSucceeded(StrEq(sceneFile), _));
-        EXPECT_EQ(StatusOK, client.loadSceneFromFileAsync(sceneFile, resources));
-        EXPECT_EQ(StatusOK, client.loadResources(ResourceFileDescription(otherResFile)));
+        EXPECT_EQ(StatusOK, client.loadSceneFromFileAsync(sceneFile));
+        EXPECT_TRUE(RamsesHMIUtils::GetResourceDataPoolForClient(client).addResourceDataFile(resFile));
 
-        ASSERT_TRUE(waitForNumClientEvents(2));
-
-        ASSERT_TRUE(loadedScene != nullptr);
-        EXPECT_EQ(sceneId_t(123u), loadedScene->getSceneId());
-    }
-
-
-    TEST_F(ARamsesFileLoadedInSeveralThread, canAsyncLoadSceneParallelToSynchronousSceneLoad)
-    {
-        ResourceFileDescriptionSet resourcesForAsync;
-        resourcesForAsync.add(ResourceFileDescription(resFile));
-
-        ResourceFileDescriptionSet resourcesForSync;
-        resourcesForSync.add(ResourceFileDescription(otherResFile));
-
-        InSequence seq;
-        EXPECT_CALL(eventHandler, resourceFileLoadSucceeded(StrEq(resFile)));
-        EXPECT_CALL(eventHandler, sceneFileLoadSucceeded(StrEq(sceneFile), _));
-        EXPECT_EQ(StatusOK, client.loadSceneFromFileAsync(sceneFile, resourcesForAsync));
-
-        Scene* syncScene = client.loadSceneFromFile(otherSceneFile, resourcesForSync);
-        ASSERT_TRUE(syncScene != nullptr);
-        EXPECT_EQ(sceneId_t(124u), syncScene->getSceneId());
-
-        ASSERT_TRUE(waitForNumClientEvents(2));
+        ASSERT_TRUE(waitForNumClientEvents(1));
 
         ASSERT_TRUE(loadedScene != nullptr);
         EXPECT_EQ(sceneId_t(123u), loadedScene->getSceneId());
@@ -279,10 +186,7 @@ namespace ramses
 
     TEST_F(ARamsesFileLoadedInSeveralThread, asyncLoadSceneFileWithoutEverCallingDispatchDoesNotLeakMemory)
     {
-        ResourceFileDescriptionSet resources;
-        resources.add(ResourceFileDescription(resFile));
-
-        EXPECT_EQ(StatusOK, client.loadSceneFromFileAsync(sceneFile, resources));
+        EXPECT_EQ(StatusOK, client.loadSceneFromFileAsync(sceneFile));
         // do nothing, scene load will finish before RamsesClient is destructed
     }
 }

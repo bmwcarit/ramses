@@ -96,7 +96,7 @@ namespace ramses
         void addBrokenMeshToRenderGroup(RenderGroup& renderGroupParam)
         {
             MeshNode* mesh = m_scene.createMeshNode();
-            Appearance* appearance = m_scene.createAppearance(*TestEffects::CreateTestEffect(client), "appearance");
+            Appearance* appearance = m_scene.createAppearance(*TestEffects::CreateTestEffect(m_scene), "appearance");
             mesh->setAppearance(*appearance);
             // missing geometry binding
             EXPECT_EQ(StatusOK, renderGroupParam.addMeshNode(*mesh, 3));

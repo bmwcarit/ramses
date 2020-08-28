@@ -37,7 +37,7 @@ namespace ramses_internal
         {
             VoidOutputStream stream;
             SerializeResourceMetadata(stream, resource);
-            return stream.getSize();
+            return static_cast<uint32_t>(stream.getSize());
         }
 
         DeserializedResourceHeader ResourceFromMetadataStream(IInputStream& input)

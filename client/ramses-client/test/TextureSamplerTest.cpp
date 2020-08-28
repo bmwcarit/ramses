@@ -159,34 +159,34 @@ namespace ramses
 
     TEST_F(TextureSamplerTest, reportsErrorWhenValidatedWithInvalidTexture2D)
     {
-        const Texture2D& texture2D = createObject<Texture2D>("testTexture2D");
+        Texture2D& texture2D = createObject<Texture2D>("testTexture2D");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, texture2D, 1u, "testSampler2D");
         ASSERT_TRUE(nullptr != sampler);
         EXPECT_EQ(StatusOK, sampler->validate());
 
-        EXPECT_EQ(StatusOK, client.destroy(texture2D));
+        EXPECT_EQ(StatusOK, m_scene.destroy(texture2D));
         EXPECT_NE(StatusOK, sampler->validate());
     }
 
     TEST_F(TextureSamplerTest, reportsErrorWhenValidatedWithInvalidTexture3D)
     {
-        const Texture3D& texture3D = createObject<Texture3D>("testTexture3D");
+        Texture3D& texture3D = createObject<Texture3D>("testTexture3D");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureAddressMode_Mirror, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, texture3D, "testSampler3D");
         ASSERT_TRUE(nullptr != sampler);
         EXPECT_EQ(StatusOK, sampler->validate());
 
-        EXPECT_EQ(StatusOK, client.destroy(texture3D));
+        EXPECT_EQ(StatusOK, m_scene.destroy(texture3D));
         EXPECT_NE(StatusOK, sampler->validate());
     }
 
     TEST_F(TextureSamplerTest, reportsErrorWhenValidatedWithInvalidTextureCube)
     {
-        const TextureCube& textureCube = createObject<TextureCube>("testTextureCube");
+        TextureCube& textureCube = createObject<TextureCube>("testTextureCube");
         const TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, textureCube, 1u, "testSamplerCube");
         ASSERT_TRUE(nullptr != sampler);
         EXPECT_EQ(StatusOK, sampler->validate());
 
-        EXPECT_EQ(StatusOK, client.destroy(textureCube));
+        EXPECT_EQ(StatusOK, m_scene.destroy(textureCube));
         EXPECT_NE(StatusOK, sampler->validate());
     }
 

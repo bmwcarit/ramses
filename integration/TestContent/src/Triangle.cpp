@@ -12,9 +12,8 @@
 
 #include "TestScenes/Triangle.h"
 
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/AttributeInput.h"
@@ -23,9 +22,9 @@
 
 namespace ramses
 {
-    Triangle::Triangle(RamsesClient& client, Scene& scene, const Effect& effect, enum TriangleAppearance::EColor color, float alpha, TriangleGeometry::EVerticesOrder vertOrder)
+    Triangle::Triangle(Scene& scene, const Effect& effect, enum TriangleAppearance::EColor color, float alpha, TriangleGeometry::EVerticesOrder vertOrder)
         : m_appearance(scene, effect, color, alpha)
-        , m_geometry(client, scene, effect, vertOrder)
+        , m_geometry(scene, effect, vertOrder)
     {
     }
 

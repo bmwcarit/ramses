@@ -65,7 +65,11 @@ namespace ramses
 
         static ObjectIDType GetObjectIDNull();
 
+        void serializeSceneObjectIds(bool flag);
+        bool getSerializeSceneObjectIds() const;
+
     private:
+        bool         m_serializeSceneObjectIds = true;
         IdMap        m_ids;
         ObjectIDType m_lastID;
     };

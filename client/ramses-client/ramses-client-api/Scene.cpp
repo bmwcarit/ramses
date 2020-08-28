@@ -43,9 +43,9 @@
 #include "ramses-client-api/DataMatrix33f.h"
 #include "ramses-client-api/DataMatrix44f.h"
 #include "ramses-client-api/DataInt32.h"
-#include "ramses-client-api/IndexDataBuffer.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
+#include "ramses-client-api/ArrayResource.h"
 
 // internal
 #include "SceneImpl.h"
@@ -53,6 +53,7 @@
 #include "TextureSamplerImpl.h"
 #include "Utils/StringUtils.h"
 #include "RamsesFrameworkTypesImpl.h"
+#include "RamsesClientTypesImpl.h"
 
 namespace ramses
 {
@@ -101,7 +102,7 @@ namespace ramses
         return geomBinding;
     }
 
-    StreamTexture* Scene::createStreamTexture(const Texture2D& fallbackTexture, streamSource_t source, const char* name)
+    StreamTexture* Scene::createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t source, const char* name)
     {
         StreamTexture* tex = impl.createStreamTexture(fallbackTexture, source, name);
         LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(tex), LOG_API_RAMSESOBJECT_STRING(fallbackTexture), source, name);
@@ -146,6 +147,13 @@ namespace ramses
         return impl.getSceneId();
     }
 
+    status_t Scene::saveToFile(const char* fileName, bool compress) const
+    {
+        const auto status = impl.saveToFile(fileName, compress);
+        LOG_HL_CLIENT_API2(status, fileName, compress);
+        return status;
+    }
+
     status_t Scene::destroy(SceneObject& object)
     {
         const status_t status = impl.destroy(object);
@@ -181,24 +189,17 @@ namespace ramses
         return animationSystemRealtime;
     }
 
-    IndexDataBuffer* Scene::createIndexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name /*= 0*/)
+    ArrayBuffer* Scene::createArrayBuffer(EDataType dataType, uint32_t maxNumElements, const char* name /*= nullptr*/)
     {
-        IndexDataBuffer* indexDataBuffer = impl.createIndexDataBuffer(maximumSizeInBytes, dataType, name);
-        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(indexDataBuffer), maximumSizeInBytes, dataType, name);
-        return indexDataBuffer;
+        auto dataBufferObject = impl.createArrayBuffer(dataType, maxNumElements, name);
+        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(dataBufferObject), maxNumElements, dataType, name);
+        return dataBufferObject;
     }
 
-    VertexDataBuffer* Scene::createVertexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name /*= 0*/)
-    {
-        VertexDataBuffer* vertexDataBuffer = impl.createVertexDataBuffer(maximumSizeInBytes, dataType, name);
-        LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(vertexDataBuffer), maximumSizeInBytes, dataType, name);
-        return vertexDataBuffer;
-    }
-
-    Texture2DBuffer* Scene::createTexture2DBuffer(uint32_t mipLevelCount, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name /*= 0*/)
+    Texture2DBuffer* Scene::createTexture2DBuffer(ETextureFormat textureFormat, uint32_t width, uint32_t height, uint32_t mipLevelCount, const char* name /*= 0*/)
     {
         Texture2DBuffer* texture2DBuffer = impl.createTexture2DBuffer(mipLevelCount, width, height, textureFormat, name);
-        LOG_HL_CLIENT_API5(LOG_API_RAMSESOBJECT_PTR_STRING(texture2DBuffer), mipLevelCount, width, height, textureFormat, name);
+        LOG_HL_CLIENT_API5(LOG_API_RAMSESOBJECT_PTR_STRING(texture2DBuffer), mipLevelCount, width, height, getTextureFormatString(textureFormat), name);
         return texture2DBuffer;
     }
 
@@ -233,6 +234,16 @@ namespace ramses
         return impl.findObjectByName(name);
     }
 
+    const SceneObject* Scene::findObjectById(sceneObjectId_t id) const
+    {
+        return impl.findObjectById(id);
+    }
+
+    SceneObject* Scene::findObjectById(sceneObjectId_t id)
+    {
+        return impl.findObjectById(id);
+    }
+
     RenderGroup* Scene::createRenderGroup(const char* name)
     {
         RenderGroup* renderGroup = impl.createRenderGroup(name);
@@ -254,7 +265,7 @@ namespace ramses
         return blitPass;
     }
 
-    PickableObject* Scene::createPickableObject(const VertexDataBuffer& geometryBuffer, const pickableObjectId_t id, const char* name /* = nullptr */)
+    PickableObject* Scene::createPickableObject(const ArrayBuffer& geometryBuffer, const pickableObjectId_t id, const char* name /* = nullptr */)
     {
         PickableObject* pickableObject = impl.createPickableObject(geometryBuffer, id, name);
         LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(pickableObject), LOG_API_RAMSESOBJECT_STRING(geometryBuffer), id, name);
@@ -487,5 +498,55 @@ namespace ramses
     RamsesClient& Scene::getRamsesClient()
     {
         return impl.getHlRamsesClient();
+    }
+
+    ArrayResource* Scene::createArrayResource(EDataType type, uint32_t numElements, const void* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
+    {
+        auto arr = impl.createArrayResource(type, numElements, arrayData, cacheFlag, name);
+        LOG_HL_CLIENT_API5(LOG_API_RESOURCE_PTR_STRING(arr), numElements, type, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag, name);
+        return arr;
+    }
+
+    Texture2D* Scene::createTexture2D(ETextureFormat format, uint32_t width, uint32_t height, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
+    {
+        Texture2D* tex = impl.createTexture2D(width, height, format, mipMapCount, mipLevelData, generateMipChain, swizzle, cacheFlag, name);
+        LOG_HL_CLIENT_API9(LOG_API_RESOURCE_PTR_STRING(tex), width, height, getTextureFormatString(format), mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, swizzle, cacheFlag, name);
+        return tex;
+    }
+
+    Texture3D* Scene::createTexture3D(ETextureFormat format, uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
+    {
+        Texture3D* tex = impl.createTexture3D(width, height, depth, format, mipMapCount, mipLevelData, generateMipChain, cacheFlag, name);
+        LOG_HL_CLIENT_API9(LOG_API_RESOURCE_PTR_STRING(tex), width, height, depth, getTextureFormatString(format), mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag, name);
+        return tex;
+    }
+
+    TextureCube* Scene::createTextureCube(ETextureFormat format, uint32_t size, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name /* = 0 */)
+    {
+        TextureCube* tex = impl.createTextureCube(size, format, mipMapCount, mipLevelData, generateMipChain, swizzle, cacheFlag, name);
+        LOG_HL_CLIENT_API8(LOG_API_RESOURCE_PTR_STRING(tex), size, getTextureFormatString(format), mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, swizzle, cacheFlag, name);
+        return tex;
+    }
+
+    Effect* Scene::createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name)
+    {
+        Effect* effect = impl.createEffect(effectDesc, cacheFlag, name);
+        LOG_HL_CLIENT_API3(LOG_API_RESOURCE_PTR_STRING(effect), LOG_API_GENERIC_OBJECT_STRING(effectDesc), cacheFlag, name);
+        return effect;
+    }
+
+    std::string Scene::getLastEffectErrorMessages() const
+    {
+        return impl.getLastEffectErrorMessages();
+    }
+
+    const Resource* Scene::getResource(resourceId_t id) const
+    {
+        return impl.getResource(id);
+    }
+
+    Resource* Scene::getResource(resourceId_t id)
+    {
+        return impl.getResource(id);
     }
 }

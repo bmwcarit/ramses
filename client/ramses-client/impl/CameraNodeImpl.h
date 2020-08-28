@@ -20,11 +20,13 @@
 namespace ramses
 {
     class DataVector2i;
+    class DataVector2f;
+    class DataVector4f;
 
     class CameraNodeImpl final : public NodeImpl
     {
     public:
-        CameraNodeImpl(SceneImpl& scene, const char* cameraName, ERamsesObjectType cameraType);
+        CameraNodeImpl(SceneImpl& scene, ERamsesObjectType cameraType, const char* cameraName);
         virtual ~CameraNodeImpl();
 
         // Common for all camera types
@@ -60,24 +62,37 @@ namespace ramses
 
         status_t bindViewportOffset(const DataVector2i& offsetData);
         status_t bindViewportSize(const DataVector2i& sizeData);
+        status_t bindFrustumPlanes(const DataVector4f& frustumPlanesData, const DataVector2f& nearFarData);
         status_t unbindViewportOffset();
         status_t unbindViewportSize();
+        status_t unbindFrustumPlanes();
         bool isViewportOffsetBound() const;
         bool isViewportSizeBound() const;
+        bool isFrustumPlanesBound() const;
 
     private:
         ramses_internal::ProjectionParams getProjectionParams() const;
         void                              updateProjectionParamsOnScene(const ramses_internal::ProjectionParams& params);
 
         ramses_internal::CameraHandle m_cameraHandle;
-        ramses_internal::DataLayoutHandle m_viewportDataLayout;
-        ramses_internal::DataInstanceHandle m_viewportDataInstance;
+        // Data layout/instance for data references to VP offset, VP size, frustum planes, frustum near/far planes.
+        // By default each reference points to a data instance with values settable/gettable via API (declared below),
+        // each can be however bound to external data reference (data object on HL).
+        ramses_internal::DataLayoutHandle m_dataLayout;
+        ramses_internal::DataInstanceHandle m_dataInstance;
+        // VP offset and size data instances holding values
         ramses_internal::DataLayoutHandle m_viewportDataReferenceLayout;
         ramses_internal::DataInstanceHandle m_viewportOffsetDataReference;
         ramses_internal::DataInstanceHandle m_viewportSizeDataReference;
+        // Frustum planes data instance holding values (left, right, bottom, top)
+        ramses_internal::DataLayoutHandle m_frustumPlanesDataReferenceLayout;
+        ramses_internal::DataInstanceHandle m_frustumPlanesDataReference;
+        // Frustum near/far planes data instance holding values (near, far)
+        ramses_internal::DataLayoutHandle m_frustumNearFarDataReferenceLayout;
+        ramses_internal::DataInstanceHandle m_frustumNearFarDataReference;
 
-        bool m_frustumInitialized;
-        bool m_viewportInitialized;
+        bool m_frustumInitialized = false;
+        bool m_viewportInitialized = false;
     };
 }
 

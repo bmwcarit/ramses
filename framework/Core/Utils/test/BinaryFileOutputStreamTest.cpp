@@ -46,7 +46,7 @@ namespace ramses_internal
         {
             UInt    numBytes = 0;
             int32_t inValue  = 0;
-            EXPECT_EQ(EStatus::Ok, m_file.read(reinterpret_cast<char*>(&inValue), sizeof(int32_t), numBytes));
+            EXPECT_EQ(EStatus::Ok, m_file.read(&inValue, sizeof(int32_t), numBytes));
             ASSERT_EQ(sizeof(int32_t), numBytes);
             EXPECT_EQ(10, inValue);
         }
@@ -54,7 +54,7 @@ namespace ramses_internal
         {
             UInt  numBytes = 0;
             float inValue  = 0.f;
-            EXPECT_EQ(EStatus::Ok, m_file.read(reinterpret_cast<char*>(&inValue), sizeof(float), numBytes));
+            EXPECT_EQ(EStatus::Ok, m_file.read(&inValue, sizeof(float), numBytes));
             EXPECT_EQ(sizeof(float), numBytes);
         }
 
@@ -78,33 +78,5 @@ namespace ramses_internal
         int size = 1;
 
         outputStream.write(&data, size);
-    }
-
-    TEST_F(BinaryFileOutputStreamTest, Matrix44f)
-    {
-        {
-            ramses_internal::File f("testFile.ram");
-            BinaryFileOutputStream s(f);
-
-            Matrix44f m(1.0f, 5.0f, 9.0f, 13.0f, 2.0f, 6.0f, 10.0f, 14.0f, 3.0f, 7.0f, 11.0f, 15.0f, 4.0f, 8.0f, 12.0f,
-                        16.0f);
-
-            s << m;
-        }
-
-        {
-            ramses_internal::File f("testFile.ram");
-            EXPECT_TRUE(f.open(File::Mode::ReadOnlyBinary));
-
-            Float data[16] = {0};
-            UInt num;
-            EXPECT_EQ(EStatus::Ok, f.read(reinterpret_cast<Char*>(&data[0]), sizeof(Float) * 16, num));
-            for (UInt32 i = 0; i < 16; i++)
-            {
-                EXPECT_EQ(Float(i + 1), data[i]);
-            }
-
-            f.remove();
-        }
     }
 }

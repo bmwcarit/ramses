@@ -18,9 +18,7 @@ namespace ramses
 {
     class TextureSampler;
     class GeometryBinding;
-    class UInt16Array;
-    class Vector3fArray;
-    class Vector2fArray;
+    class ArrayResource;
 }
 
 namespace ramses_internal
@@ -29,7 +27,7 @@ namespace ramses_internal
     class Texture2DSamplingScene : public IntegrationScene
     {
     public:
-        Texture2DSamplingScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition);
+        Texture2DSamplingScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition);
 
         enum EState
         {
@@ -59,9 +57,9 @@ namespace ramses_internal
         ramses::ETextureSamplingMethod getMinSamplingMethod(EState state) const;
         ramses::ETextureSamplingMethod getMagSamplingMethod(EState state) const;
 
-        const ramses::UInt16Array* m_indexArray;
-        const ramses::Vector3fArray* m_vertexPositions;
-        const ramses::Vector2fArray* m_textureCoords;
+        const ramses::ArrayResource* m_indexArray;
+        const ramses::ArrayResource* m_vertexPositions;
+        const ramses::ArrayResource* m_textureCoords;
     };
 }
 

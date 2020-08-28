@@ -35,46 +35,48 @@ namespace ramses_internal
 
         switch (dataType)
         {
-        case ramses_internal::EDataType_Float:
+        case ramses_internal::EDataType::Float:
             copyInstanceFieldData<Float>(srcScene, srcDataInstance, srcDataField, dstScene, dstDataInstance, dstDataField, elementCount);
             break;
-        case ramses_internal::EDataType_Vector2F:
+        case ramses_internal::EDataType::Vector2F:
             copyInstanceFieldData<Vector2>(srcScene, srcDataInstance, srcDataField, dstScene, dstDataInstance, dstDataField, elementCount);
             break;
-        case ramses_internal::EDataType_Vector3F:
+        case ramses_internal::EDataType::Vector3F:
             copyInstanceFieldData<Vector3>(srcScene, srcDataInstance, srcDataField, dstScene, dstDataInstance, dstDataField, elementCount);
             break;
-        case ramses_internal::EDataType_Vector4F:
+        case ramses_internal::EDataType::Vector4F:
             copyInstanceFieldData<Vector4>(srcScene, srcDataInstance, srcDataField, dstScene, dstDataInstance, dstDataField, elementCount);
             break;
-        case ramses_internal::EDataType_Int32:
+        case ramses_internal::EDataType::Int32:
             copyInstanceFieldData<Int32>(srcScene, srcDataInstance, srcDataField, dstScene, dstDataInstance, dstDataField, elementCount);
             break;
-        case ramses_internal::EDataType_Vector2I:
+        case ramses_internal::EDataType::Vector2I:
             copyInstanceFieldData<Vector2i>(srcScene, srcDataInstance, srcDataField, dstScene, dstDataInstance, dstDataField, elementCount);
             break;
-        case ramses_internal::EDataType_Vector3I:
+        case ramses_internal::EDataType::Vector3I:
             copyInstanceFieldData<Vector3i>(srcScene, srcDataInstance, srcDataField, dstScene, dstDataInstance, dstDataField, elementCount);
             break;
-        case ramses_internal::EDataType_Vector4I:
+        case ramses_internal::EDataType::Vector4I:
             copyInstanceFieldData<Vector4i>(srcScene, srcDataInstance, srcDataField, dstScene, dstDataInstance, dstDataField, elementCount);
             break;
-        case ramses_internal::EDataType_Matrix22F:
+        case ramses_internal::EDataType::Matrix22F:
             copyInstanceFieldData<Matrix22f>(srcScene, srcDataInstance, srcDataField, dstScene, dstDataInstance, dstDataField, elementCount);
             break;
-        case ramses_internal::EDataType_Matrix33F:
+        case ramses_internal::EDataType::Matrix33F:
             copyInstanceFieldData<Matrix33f>(srcScene, srcDataInstance, srcDataField, dstScene, dstDataInstance, dstDataField, elementCount);
             break;
-        case ramses_internal::EDataType_Matrix44F:
+        case ramses_internal::EDataType::Matrix44F:
             copyInstanceFieldData<Matrix44f>(srcScene, srcDataInstance, srcDataField, dstScene, dstDataInstance, dstDataField, elementCount);
             break;
-        case ramses_internal::EDataType_TextureSampler:
+        case ramses_internal::EDataType::TextureSampler2D:
+        case ramses_internal::EDataType::TextureSampler3D:
+        case ramses_internal::EDataType::TextureSamplerCube:
         {
             const ramses_internal::TextureSamplerHandle samplerHandle = srcScene.getDataTextureSamplerHandle(srcDataInstance, srcDataField);
             dstScene.setDataTextureSamplerHandle(dstDataInstance, dstDataField, samplerHandle);
             break;
         }
-        case ramses_internal::EDataType_DataReference:
+        case ramses_internal::EDataType::DataReference:
         {
             // must be handled separately
             break;
@@ -101,37 +103,37 @@ namespace ramses_internal
 
         switch (dataType)
         {
-        case ramses_internal::EDataType_Float:
+        case ramses_internal::EDataType::Float:
             getAndStoreInstanceFieldData<Float>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Vector2F:
+        case ramses_internal::EDataType::Vector2F:
             getAndStoreInstanceFieldData<Vector2>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Vector3F:
+        case ramses_internal::EDataType::Vector3F:
             getAndStoreInstanceFieldData<Vector3>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Vector4F:
+        case ramses_internal::EDataType::Vector4F:
             getAndStoreInstanceFieldData<Vector4>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Int32:
+        case ramses_internal::EDataType::Int32:
             getAndStoreInstanceFieldData<Int32>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Vector2I:
+        case ramses_internal::EDataType::Vector2I:
             getAndStoreInstanceFieldData<Vector2i>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Vector3I:
+        case ramses_internal::EDataType::Vector3I:
             getAndStoreInstanceFieldData<Vector3i>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Vector4I:
+        case ramses_internal::EDataType::Vector4I:
             getAndStoreInstanceFieldData<Vector4i>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Matrix22F:
+        case ramses_internal::EDataType::Matrix22F:
             getAndStoreInstanceFieldData<Matrix22f>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Matrix33F:
+        case ramses_internal::EDataType::Matrix33F:
             getAndStoreInstanceFieldData<Matrix33f>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Matrix44F:
+        case ramses_internal::EDataType::Matrix44F:
             getAndStoreInstanceFieldData<Matrix44f>(scene, dataInstance, dataField, value);
             break;
         default:
@@ -156,37 +158,37 @@ namespace ramses_internal
 
         switch (dataType)
         {
-        case ramses_internal::EDataType_Float:
+        case ramses_internal::EDataType::Float:
             setInstanceFieldData<Float>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Vector2F:
+        case ramses_internal::EDataType::Vector2F:
             setInstanceFieldData<Vector2>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Vector3F:
+        case ramses_internal::EDataType::Vector3F:
             setInstanceFieldData<Vector3>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Vector4F:
+        case ramses_internal::EDataType::Vector4F:
             setInstanceFieldData<Vector4>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Int32:
+        case ramses_internal::EDataType::Int32:
             setInstanceFieldData<Int32>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Vector2I:
+        case ramses_internal::EDataType::Vector2I:
             setInstanceFieldData<Vector2i>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Vector3I:
+        case ramses_internal::EDataType::Vector3I:
             setInstanceFieldData<Vector3i>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Vector4I:
+        case ramses_internal::EDataType::Vector4I:
             setInstanceFieldData<Vector4i>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Matrix22F:
+        case ramses_internal::EDataType::Matrix22F:
             setInstanceFieldData<Matrix22f>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Matrix33F:
+        case ramses_internal::EDataType::Matrix33F:
             setInstanceFieldData<Matrix33f>(scene, dataInstance, dataField, value);
             break;
-        case ramses_internal::EDataType_Matrix44F:
+        case ramses_internal::EDataType::Matrix44F:
             setInstanceFieldData<Matrix44f>(scene, dataInstance, dataField, value);
             break;
         default:

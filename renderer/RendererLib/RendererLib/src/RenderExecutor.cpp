@@ -154,6 +154,7 @@ namespace ramses_internal
             const BlendState& blendState = m_state.blendState.getState();
             device.blendOperations(blendState.m_blendOperationColor, blendState.m_blendOperationAlpha);
             device.blendFactors(blendState.m_blendFactorSrcColor, blendState.m_blendFactorDstColor, blendState.m_blendFactorSrcAlpha, blendState.m_blendFactorDstAlpha);
+            device.blendColor(blendState.m_blendColor);
             const ColorWriteMask colorMask = blendState.m_colorWriteMask;
             const Bool writeR = (colorMask & EColorWriteFlag_Red) != 0u;
             const Bool writeG = (colorMask & EColorWriteFlag_Green) != 0u;
@@ -202,7 +203,7 @@ namespace ramses_internal
         for (DataFieldHandle constantField(0u); constantField < uniformsCount; ++constantField)
         {
             const DataFieldInfo& field = dataLayout.getField(constantField);
-            if (field.dataType == EDataType_DataReference)
+            if (field.dataType == EDataType::DataReference)
             {
                 DataInstanceHandle dataRef = renderScene.getDataReference(uniformData, constantField);
                 const DataLayoutHandle dataRefLayout = renderScene.getLayoutOfDataInstance(dataRef);
@@ -223,88 +224,90 @@ namespace ramses_internal
 
         switch (dataType)
         {
-        case EDataType_Float:
+        case EDataType::Float:
         {
             const Float* value = renderScene.getDataFloatArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
-        case EDataType_Vector2F:
+        case EDataType::Vector2F:
         {
             const Vector2* value = renderScene.getDataVector2fArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
-        case EDataType_Vector3F:
+        case EDataType::Vector3F:
         {
             const Vector3* value = renderScene.getDataVector3fArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
-        case EDataType_Vector4F:
+        case EDataType::Vector4F:
         {
             const Vector4* value = renderScene.getDataVector4fArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
-        case EDataType_Matrix22F:
+        case EDataType::Matrix22F:
         {
             const Matrix22f* value = renderScene.getDataMatrix22fArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
-        case EDataType_Matrix33F:
+        case EDataType::Matrix33F:
         {
             const Matrix33f* value = renderScene.getDataMatrix33fArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
-        case EDataType_Matrix44F:
+        case EDataType::Matrix44F:
         {
             const Matrix44f* value = renderScene.getDataMatrix44fArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
-        case EDataType_Int32:
+        case EDataType::Int32:
         {
             const Int32* value = renderScene.getDataIntegerArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
-        case EDataType_Vector2I:
+        case EDataType::Vector2I:
         {
             const Vector2i* value = renderScene.getDataVector2iArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
-        case EDataType_Vector3I:
+        case EDataType::Vector3I:
         {
             const Vector3i* value = renderScene.getDataVector3iArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
-        case EDataType_Vector4I:
+        case EDataType::Vector4I:
         {
             const Vector4i* value = renderScene.getDataVector4iArray(dataInstance, dataInstancefield);
             device.setConstant(uniformInputField, elementCount, value);
             break;
         }
 
-        case EDataType_DataReference:
+        case EDataType::DataReference:
             assert(false && "Multiple level data referencing not supported");
             break;
 
-        case EDataType_TextureSampler:
+        case EDataType::TextureSampler2D:
+        case EDataType::TextureSampler3D:
+        case EDataType::TextureSamplerCube:
         {
             const TextureSamplerHandle samplerHandle = renderScene.getDataTextureSamplerHandle(dataInstance, dataInstancefield);
             assert(samplerHandle.isValid());
@@ -397,6 +400,7 @@ namespace ramses_internal
         blendState.m_blendFactorDstAlpha = renderState.blendFactorDstAlpha;
         blendState.m_blendOperationColor = renderState.blendOperationColor;
         blendState.m_blendOperationAlpha = renderState.blendOperationAlpha;
+        blendState.m_blendColor = renderState.blendColor;
         blendState.m_colorWriteMask      = renderState.colorWriteMask;
         m_state.blendState.setState(blendState);
 

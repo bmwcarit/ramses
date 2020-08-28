@@ -55,8 +55,6 @@ namespace ramses_internal
     class TestClientEventHandler : public ramses::IClientEventHandler
     {
     public:
-        virtual void resourceFileLoadFailed(const char*) override {}
-        virtual void resourceFileLoadSucceeded(const char*) override {}
         virtual void sceneFileLoadFailed(const char*) override {}
         virtual void sceneFileLoadSucceeded(const char*, ramses::Scene*) override {}
         virtual void sceneReferenceFlushed(ramses::SceneReference&, ramses::sceneVersionTag_t) override {}

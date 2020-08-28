@@ -61,11 +61,13 @@ TEST_F(ARendererSceneUpdater, lastAppliedFlushVersionTagIsTracked)
     SceneVersionTag version{ 15u };
     performFlush(0u, version);
     update();
+    expectSceneEvent(ERendererEventType_SceneFlushed);
     EXPECT_EQ(version, rendererScenes.getStagingInfo(getSceneId()).lastAppliedVersionTag);
 
     version = SceneVersionTag{ 1111u };
     performFlush(0u, version);
     update();
+    expectSceneEvent(ERendererEventType_SceneFlushed);
     EXPECT_EQ(version, rendererScenes.getStagingInfo(getSceneId()).lastAppliedVersionTag);
 
     // invalid version tag is also tracked
@@ -76,6 +78,7 @@ TEST_F(ARendererSceneUpdater, lastAppliedFlushVersionTagIsTracked)
     version = SceneVersionTag{ 2222u };
     performFlush(0u, version);
     update();
+    expectSceneEvent(ERendererEventType_SceneFlushed);
     EXPECT_EQ(version, rendererScenes.getStagingInfo(getSceneId()).lastAppliedVersionTag);
 }
 
@@ -317,7 +320,7 @@ TEST_F(ARendererSceneUpdater, renderOncePassesAreRetriggeredWhenSceneMapped)
 
     auto& stageScene = *stagingScene[0];
     const RenderPassHandle pass = stageScene.allocateRenderPass();
-    const auto dataLayout = stageScene.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I}, DataFieldInfo{EDataType_Vector2I} }, ResourceContentHash::Invalid());
+    const auto dataLayout = stageScene.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I}, DataFieldInfo{EDataType::Vector2I} }, ResourceContentHash::Invalid());
     const CameraHandle camera = stageScene.allocateCamera(ECameraProjectionType_Orthographic, stageScene.allocateNode(), stageScene.allocateDataInstance(dataLayout));
     stageScene.setRenderPassCamera(pass, camera);
     stageScene.setRenderPassRenderOnce(pass, true);
@@ -3689,9 +3692,12 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
 TEST_F(ARendererSceneUpdater, reportsExpirationForSubscribedSceneButWithNoFurtherFlushes)
 {
     const UInt32 scene = createPublishAndSubscribeScene(false);
-    // initial flush to init monitoring
+    // initial flush and enable monitoring
     performFlushWithExpiration(scene, 1000u + 1u);
     expectInternalSceneStateEvent(ERendererEventType_SceneSubscribed);
+
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     // no further flush, no expiration updates
     for (UInt32 i = 0u; i < 10u; ++i)
@@ -3706,7 +3712,10 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSubscribedSceneButWithNoFurthe
 TEST_F(ARendererSceneUpdater, doesNotReportExpirationForNotShownSceneBeingFlushedRegularly)
 {
     const UInt32 scene = createPublishAndSubscribeScene();
+    // enable monitoring
+    performFlushWithExpiration(scene, 2000);
     update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3720,10 +3729,11 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForNotShownSceneBeingFlushe
 TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneNotBeingFlushed)
 {
     const UInt32 scene = createPublishAndSubscribeScene();
-    update();
-
     // flush once only to set limit
     performFlushWithExpiration(scene, 1000u + 2u);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3737,10 +3747,10 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneNotBeingFlushed)
 TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiredForNotShownScene)
 {
     const UInt32 scene = createPublishAndSubscribeScene();
-    update();
-
     // flush once only to set limit
     performFlushWithExpiration(scene, 1000u + 2u);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3767,6 +3777,11 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedAndRend
     mapScene();
     showScene();
 
+    // enable monitoring
+    performFlushWithExpiration(scene, 2000);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+
     for (UInt32 i = 0u; i < 10u; ++i)
     {
         performFlushWithExpiration(scene, 1000u + i + 2u);
@@ -3792,6 +3807,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneBeingFlushedButNotRendere
     // scene must be rendered at least once with valid expiration, only then it can expire
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     const NodeHandle nodeHandle(3u);
     const TransformHandle transform(2u);
@@ -3825,6 +3841,7 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedButNotR
     // scene must be rendered at least once with valid expiration, only then it can expire
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     hideScene();
 
@@ -3852,10 +3869,10 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedButNotR
 TEST_F(ARendererSceneUpdater, reportsExpirationForSceneNotBeingFlushedOnlyRendered)
 {
     const UInt32 scene = createPublishAndSubscribeScene();
-    update();
-
     // flush once only to set limit
     performFlushWithExpiration(scene, 1000u + 2u);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3877,6 +3894,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
     // scene must be rendered at least once with valid expiration, only then it can expire
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     const NodeHandle nodeHandle(3u);
     const TransformHandle transform(2u);
@@ -3919,6 +3937,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
     // scene must be rendered at least once with valid expiration, only then it can expire
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     const NodeHandle nodeHandle(3u);
     const TransformHandle transform(2u);
@@ -3959,6 +3978,11 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedRegular
     mapScene();
     showScene();
 
+    // enable monitoring
+    performFlushWithExpiration(scene, 2000);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+
     for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
         performFlushWithExpiration(scene, 1000u + i + 2u);
@@ -3982,6 +4006,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneBeingFlushedButBl
     // flush with expiration info to initiate monitoring
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     createRenderable(scene);
     setRenderableResources(scene, InvalidResource1);
@@ -4014,6 +4039,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationSceneBeingFlushedAndRenderedButBl
     // flush with expiration info to initiate monitoring
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     createRenderable(scene);
     setRenderableResources(scene, InvalidResource1);
@@ -4045,36 +4071,42 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
     mapScene();
     showScene();
 
-    // flush with expiration info to initiate monitoring
-    performFlushWithExpiration(scene, 1000u + 2u);
-    update();
+    uint32_t expTS = 1000u + 2u;
 
-    createRenderable(scene);
-    setRenderableResources(scene, InvalidResource1);
+    // flush with expiration info to initiate monitoring
+    performFlushWithExpiration(scene, expTS);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+
+    createRenderableNoFlush(scene);
+    setRenderableResourcesNoFlush(scene, InvalidResource1);
     expectResourceRequest();
     expectContextEnable();
     expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    performFlushWithExpiration(scene, expTS);
     update();
 
     for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
-        performFlushWithExpiration(scene, 1000u + i + 2u); // blocked due to missing resource
+        performFlushWithExpiration(scene, expTS++); // blocked due to missing resource
         update();
         expirationMonitor.onRendered(getSceneId());
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
     expectSceneEvent(ERendererEventType_SceneExpired);
 
-    setRenderableResources(); // simulate upload
+    // simulate upload
+    setRenderableResourcesNoFlush(scene);
     expectResourceRequest();
     expectContextEnable();
     expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+    performFlushWithExpiration(scene, expTS); // not blocked anymore
     update();
     expectResourceRequestCancel(InvalidResource1);
 
     for (UInt32 i = ForceApplyFlushesLimit / 2u; i < ForceApplyFlushesLimit; ++i)
     {
-        performFlushWithExpiration(scene, 1000u + i + 2u); // not blocked anymore
+        performFlushWithExpiration(scene, expTS++); // not blocked anymore
         update();
         expirationMonitor.onRendered(getSceneId());
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
@@ -4096,6 +4128,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush)
     // flush once only to set limit
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4106,6 +4140,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush)
 
     // disable expiration
     performFlushWithExpiration(scene, 0u);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4125,6 +4161,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush)
     // flush once only to set limit
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4139,6 +4177,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush)
     SceneAllocateHelper sceneAllocator(iscene);
     sceneAllocator.allocateNode(0u, nodeHandle);
     performFlushWithExpiration(scene, 0u);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4163,6 +4203,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_render
     // flush once only to set limit
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4174,6 +4216,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_render
 
     // disable expiration
     performFlushWithExpiration(scene, 0u);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4204,6 +4248,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_ren
     // flush once only to set limit
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4219,6 +4265,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_ren
     SceneAllocateHelper sceneAllocator(iscene);
     sceneAllocator.allocateNode(0u, nodeHandle);
     performFlushWithExpiration(scene, 0u);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4249,6 +4297,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_hidden
     // flush once only to set limit
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4262,6 +4312,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_hidden
 
     // disable expiration
     performFlushWithExpiration(scene, 0u);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4291,6 +4343,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_hid
     // flush once only to set limit
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4308,6 +4362,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_hid
     SceneAllocateHelper sceneAllocator(iscene);
     sceneAllocator.allocateNode(0u, nodeHandle);
     performFlushWithExpiration(scene, 0u);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4337,6 +4393,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whileModifyingScene_c
     // flush once only to set limit
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4361,6 +4419,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whileModifyingScene_c
     SceneAllocateHelper sceneAllocator(iscene);
     sceneAllocator.allocateNode(0u, nodeHandle);
     performFlushWithExpiration(scene, 0u);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 10u; i < 20u; ++i)
     {
@@ -4390,6 +4450,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenFl
     // flush once only to set limit
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4412,6 +4474,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenFl
 
     // disable expiration
     performFlushWithExpiration(scene, 0u);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 10u; i < 20u; ++i)
     {
@@ -4441,6 +4505,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenEm
     // flush once only to set limit
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4462,6 +4528,8 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenEm
     SceneAllocateHelper sceneAllocator(iscene);
     sceneAllocator.allocateNode(0u, nodeHandle);
     performFlushWithExpiration(scene, 0u);
+    update();
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 10u; i < 20u; ++i)
     {
@@ -4478,7 +4546,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenEm
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiration_byDisablingExpiration)
+TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired)
 {
     const UInt32 scene = createPublishAndSubscribeScene();
 
@@ -4488,7 +4556,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiration_byDisablingExpirati
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvents({ ERendererEventType_SceneExpirationMonitoringEnabled, ERendererEventType_SceneExpired });
 
     // disable expiration
     performFlushWithExpiration(scene, 0u);
@@ -4498,10 +4566,10 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiration_byDisablingExpirati
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 }
 
-TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_byDisablingExpiration)
+TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_rendered)
 {
     createDisplayAndExpectSuccess();
     const UInt32 scene = createPublishAndSubscribeScene();
@@ -4514,7 +4582,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_by
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvents({ ERendererEventType_SceneExpirationMonitoringEnabled, ERendererEventType_SceneExpired });
 
     // disable expiration
     performFlushWithExpiration(scene, 0u);
@@ -4524,7 +4592,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_by
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     hideScene(scene);
     expectContextEnable();
@@ -4532,7 +4600,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_by
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiration_byDisablingExpirationWithNonEmptyFlush)
+TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_nonEmptyFlush)
 {
     const UInt32 scene = createPublishAndSubscribeScene();
 
@@ -4542,7 +4610,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiration_byDisablingExpirati
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvents({ ERendererEventType_SceneExpirationMonitoringEnabled, ERendererEventType_SceneExpired });
 
     // disable expiration together with some scene changes
     const NodeHandle nodeHandle(10u);
@@ -4556,10 +4624,10 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiration_byDisablingExpirati
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 }
 
-TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_byDisablingExpirationWithNonEmptyFlush)
+TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_rendered_nonEmptyFlush)
 {
     createDisplayAndExpectSuccess();
     const UInt32 scene = createPublishAndSubscribeScene();
@@ -4573,7 +4641,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_by
         doRenderLoop();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvents({ ERendererEventType_SceneExpirationMonitoringEnabled, ERendererEventType_SceneExpired });
 
     // disable expiration together with some scene changes
     const NodeHandle nodeHandle(10u);
@@ -4588,7 +4656,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationOfRenderedContent_by
         doRenderLoop();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     hideScene(scene);
     expectContextEnable();
@@ -4625,23 +4693,30 @@ TEST_F(ARendererSceneUpdater, reportsPickedObjects)
     const NodeHandle nodeHandle(0u);
     sceneAllocator.allocateNode(0u, nodeHandle);
     const std::array<float, 9> geomData{ -1.f, 0.f, -0.5f, 0.f, 1.f, -0.5f, 0.f, 0.f, -0.5f };
-    const auto geomHandle = sceneAllocator.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType_Vector3F, UInt32(geomData.size() * sizeof(float)));
+    const auto geomHandle = sceneAllocator.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType::Vector3F, UInt32(geomData.size() * sizeof(float)));
     iscene.updateDataBuffer(geomHandle, 0, UInt32(geomData.size() * sizeof(float)), reinterpret_cast<const Byte*>(geomData.data()));
 
-    const auto viewportDataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_DataReference}, DataFieldInfo{EDataType_DataReference} }, ResourceContentHash::Invalid());
-    const auto viewportDataInstance = sceneAllocator.allocateDataInstance(viewportDataLayout);
-    const auto viewportDataReferenceLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I} }, ResourceContentHash::Invalid());
-    const auto viewportOffsetDataReference = sceneAllocator.allocateDataInstance(viewportDataReferenceLayout);
-    const auto viewportSizeDataReference = sceneAllocator.allocateDataInstance(viewportDataReferenceLayout);
-    const auto cameraHandle = sceneAllocator.allocateCamera(ECameraProjectionType_Orthographic, nodeHandle, viewportDataInstance);
+    const auto dataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference} }, {});
+    const auto dataInstance = sceneAllocator.allocateDataInstance(dataLayout);
+    const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I} }, {});
+    const auto vpOffsetInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
+    const auto vpSizeInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
+    const auto frustumPlanesLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector4F} }, {});
+    const auto frustumPlanes = sceneAllocator.allocateDataInstance(frustumPlanesLayout);
+    const auto frustumNearFarLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2F} }, {});
+    const auto frustumNearFar = sceneAllocator.allocateDataInstance(frustumNearFarLayout);
+    iscene.setDataReference(dataInstance, Camera::ViewportOffsetField, vpOffsetInstance);
+    iscene.setDataReference(dataInstance, Camera::ViewportSizeField, vpSizeInstance);
+    iscene.setDataReference(dataInstance, Camera::FrustumPlanesField, frustumPlanes);
+    iscene.setDataReference(dataInstance, Camera::FrustumNearFarPlanesField, frustumNearFar);
+    const auto cameraHandle = sceneAllocator.allocateCamera(ECameraProjectionType_Orthographic, nodeHandle, dataInstance);
 
-    iscene.setDataReference(viewportDataInstance, Camera::ViewportOffsetField, viewportOffsetDataReference);
-    iscene.setDataReference(viewportDataInstance, Camera::ViewportSizeField, viewportSizeDataReference);
-    iscene.setDataSingleVector2i(viewportOffsetDataReference, ramses_internal::DataFieldHandle{ 0 }, { 0, 0 });
-    iscene.setDataSingleVector2i(viewportSizeDataReference, ramses_internal::DataFieldHandle{ 0 }, { 1280, 480 });
+    iscene.setDataSingleVector2i(vpOffsetInstance, ramses_internal::DataFieldHandle{ 0 }, { 0, 0 });
+    iscene.setDataSingleVector2i(vpSizeInstance, ramses_internal::DataFieldHandle{ 0 }, { 1280, 480 });
+    const ProjectionParams params = ramses_internal::ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
+    iscene.setDataSingleVector4f(frustumPlanes, DataFieldHandle{ 0 }, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane });
+    iscene.setDataSingleVector2f(frustumNearFar, DataFieldHandle{ 0 }, { params.nearPlane, params.farPlane });
 
-    Frustum frustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 100.f );
-    iscene.setCameraFrustum(cameraHandle, frustum);
     const PickableObjectId id1{ 666u };
     const PickableObjectId id2{ 667u };
     const auto pickableHandle1 = sceneAllocator.allocatePickableObject(geomHandle, nodeHandle, id1);

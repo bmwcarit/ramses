@@ -21,13 +21,18 @@
 #include "MockConnectionStatusUpdateNotifier.h"
 #include "CommunicationSystemMock.h"
 #include "TaskFramework/ThreadedTaskExecutor.h"
-#include "ResourceSerializationTestHelper.h"
 #include "Components/SingleResourceSerialization.h"
+#include "Components/ResourceDeleterCallingCallback.h"
+#include "Components/SceneUpdate.h"
+#include "SceneUpdateSerializerTestHelper.h"
+#include "TransportCommon/SceneUpdateSerializer.h"
+#include "TransportCommon/SceneUpdateStreamDeserializer.h"
 
-using namespace testing;
 
 namespace ramses_internal
 {
+    using namespace testing;
+
     class DelayedSingleTaskExecutor : public ITaskQueue
     {
     public:
@@ -100,7 +105,7 @@ namespace ramses_internal
             };
             vertexData.resize(vertexData.size() + extraSize*3);
 
-            ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3 + static_cast<uint32_t>(extraSize), EDataType_Vector3F, reinterpret_cast<const Byte*>(vertexData.data()), ResourceCacheFlag(0u), String("resName"));
+            ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3 + static_cast<uint32_t>(extraSize), EDataType::Vector3F, vertexData.data(), ResourceCacheFlag(0u), String("resName"));
             return resource;
         }
 
@@ -108,9 +113,7 @@ namespace ramses_internal
         {
             ResourceContentHashVector hashes;
             for (const auto& res : vec)
-            {
-                hashes.push_back(res.getResourceObject()->getHash());
-            }
+                hashes.push_back(res->getHash());
             return hashes;
         }
 
@@ -126,7 +129,7 @@ namespace ramses_internal
                 IResource* resource = CreateTestResource(i*1.0f, extraSize);
                 ManagedResource managedResource = localResourceComponent.manageResource(*resource, true);
                 managedResourceVec.push_back(managedResource);
-                hashes.push_back(managedResource.getResourceObject()->getHash());
+                hashes.push_back(managedResource->getHash());
             }
 
             {
@@ -163,6 +166,21 @@ namespace ramses_internal
             EXPECT_CALL(*resource, getDecompressedDataSize()).Times(AnyNumber());
         }
 
+        static std::vector<std::vector<Byte>> SerializeResources(const ManagedResourceVector& resVec, uint32_t chunkSize = 100000)
+        {
+            SceneUpdate update{SceneActionCollection(), resVec};
+            return TestSerializeSceneUpdateToVectorChunked(SceneUpdateSerializer(update), chunkSize);
+        }
+
+        void expectSendResourcesToNetwork(StrictMock<CommunicationSystemMock>& mock, Guid requesterId, ManagedResourceVector& resources)
+        {
+            EXPECT_CALL(mock, sendResources(requesterId, _)).WillOnce([&](auto, auto& serializer) {
+                // grab resources directly out of serializer
+                resources = static_cast<const SceneUpdateSerializer&>(serializer).getUpdate().resources;
+                return true;
+            });
+        }
+
     protected:
         Guid m_myID;
         PlatformLock frameworkLock;
@@ -192,11 +210,11 @@ namespace ramses_internal
 
         TestResourceData CreateTestResourceData()
         {
-            const ManagedResourceVector resVec = { ManagedResource(*CreateTestResource(), deleter) };
-            const IResource* res = resVec.front().getResourceObject();
+            const ManagedResourceVector resVec{ ManagedResource{ CreateTestResource(), deleter } };
+            const IResource* res = resVec.front().get();
             const ResourceContentHash hash = res->getHash();
 
-            const auto dataVec = ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(resVec, std::numeric_limits<UInt32>::max());
+            const auto dataVec = SerializeResources(resVec);
             assert(1u == dataVec.size());
 
             return{ dataVec[0], hash };
@@ -218,13 +236,13 @@ namespace ramses_internal
         {
         }
 
-        MOCK_METHOD(bool, safe_sendResources, (const Guid& to, const ManagedResourceVector& resources));
+        MOCK_METHOD(bool, safe_sendResources, (const Guid& to, const ISceneUpdateSerializer& serializer));
 
     private:
-        bool sendResources(const Guid& to, const ManagedResourceVector& resources) override
+        bool sendResources(const Guid& to, const ISceneUpdateSerializer& serializer) override
         {
             ramses_internal::PlatformGuard g(m_lock);
-            return safe_sendResources(to, resources);
+            return safe_sendResources(to, serializer);
         }
 
         ramses_internal::PlatformLock& m_lock;
@@ -273,8 +291,8 @@ namespace ramses_internal
         ManagedResource dummyManagedResource = localResourceComponent.manageResource(*dummyResource);
 
         ManagedResource fetchedResource = localResourceComponent.getResource(dummyResourceHash);
-        EXPECT_EQ(dummyResourceHash, fetchedResource.getResourceObject()->getHash());
-        EXPECT_EQ(dummyResource, fetchedResource.getResourceObject());
+        EXPECT_EQ(dummyResourceHash, fetchedResource->getHash());
+        EXPECT_EQ(dummyResource, fetchedResource.get());
     }
 
     TEST_F(AResourceComponentTest, ResolveResources_RequestResourceFromProviderIfNotAvailableLocaly)
@@ -309,7 +327,7 @@ namespace ramses_internal
 
         // make sure managed resource created in writeTestResourceFile() was freed,
         // so resolveResources() has to trigger loading it from file
-        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
+        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).get());
 
         ResourceRequesterID requesterID(1);
         Guid providerID(222);
@@ -321,10 +339,10 @@ namespace ramses_internal
         ManagedResourceVector poppedResources = localResourceComponent.popArrivedResources(requesterID);
         ASSERT_TRUE(poppedResources.size() > 0);
         ManagedResource resource = poppedResources.back();
-        ASSERT_EQ(resourceHash, resource.getResourceObject()->getHash());
+        ASSERT_EQ(resourceHash, resource->getHash());
 
         EXPECT_EQ(1u, statistics.statResourcesLoadedFromFileNumber.getCounterValue());
-        EXPECT_EQ(SingleResourceSerialization::SizeOfSerializedResource(*resource.getResourceObject()), statistics.statResourcesLoadedFromFileSize.getCounterValue());
+        EXPECT_EQ(SingleResourceSerialization::SizeOfSerializedResource(*resource.get()), statistics.statResourcesLoadedFromFileSize.getCounterValue());
     }
 
     TEST_F(AResourceComponentTest, RequestHashMultipleTimesAsyncBeforeLoadingThreadExecutes)
@@ -335,7 +353,7 @@ namespace ramses_internal
 
         // make sure managed resource created in writeTestResourceFile() was freed,
         // so resolveResources() has to trigger loading it from file
-        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
+        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).get());
 
         ResourceRequesterID requesterID(1);
         Guid        providerID(222);
@@ -350,7 +368,7 @@ namespace ramses_internal
         ManagedResourceVector poppedResources = localResourceComponent.popArrivedResources(requesterID);
         ASSERT_TRUE(poppedResources.size() > 0);
         ManagedResource resource = poppedResources.back();
-        ASSERT_EQ(resourceHash, resource.getResourceObject()->getHash());
+        ASSERT_EQ(resourceHash, resource->getHash());
     }
 
     TEST_F(AResourceComponentTest, HandleRequestHashMultipleTimesBeforeLoadingThreadExecutes)
@@ -361,11 +379,11 @@ namespace ramses_internal
 
         // make sure managed resource created in writeTestResourceFile() was freed,
         // so resolveResources() has to trigger loading it from file
-        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
+        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).get());
 
         Guid        providerID(222);
-        localResourceComponent.handleRequestResources(requestedResourceHashes, 0, providerID);
-        localResourceComponent.handleRequestResources(requestedResourceHashes, 0, providerID);
+        localResourceComponent.handleRequestResources(requestedResourceHashes, providerID);
+        localResourceComponent.handleRequestResources(requestedResourceHashes, providerID);
 
         // execute enqueued resource loading task
         // resource will be loaded twice. This is not necessary but should
@@ -390,7 +408,7 @@ namespace ramses_internal
         {
             // make sure managed resource created in writeTestResourceFile() was freed,
             // so resolveResources() has to trigger loading it from file
-            EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
+            EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).get());
 
             ResourceRequesterID requesterID(1);
             Guid        providerID(222);
@@ -403,7 +421,7 @@ namespace ramses_internal
             ASSERT_TRUE(poppedResources.size() > 0);
             ManagedResource resource = poppedResources.back();
             poppedResources.pop_back();
-            ASSERT_EQ(resourceHash, resource.getResourceObject()->getHash());
+            ASSERT_EQ(resourceHash, resource->getHash());
             resource = ManagedResource();
 
             ASSERT_EQ(0u, localResourceComponent.getResources().size());
@@ -422,7 +440,7 @@ namespace ramses_internal
         {
             // make sure managed resource created in writeTestResourceFile() was freed,
             // so resolveResources() has to trigger loading it from file
-            EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
+            EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).get());
 
             ResourceRequesterID requesterID(1);
             Guid        providerID(222);
@@ -436,7 +454,7 @@ namespace ramses_internal
             ASSERT_TRUE(poppedResources.size() > 0);
             ManagedResource resource = poppedResources.back();
             poppedResources.pop_back();
-            ASSERT_EQ(resourceHash, resource.getResourceObject()->getHash());
+            ASSERT_EQ(resourceHash, resource->getHash());
             resource = ManagedResource();
 
             ASSERT_EQ(0u, localResourceComponent.getResources().size());
@@ -448,7 +466,7 @@ namespace ramses_internal
         ResourceContentHashVector requestedResourceHashes;
         {
             ManagedResource managedResource = localResourceComponent.manageResource(*CreateTestResource());
-            requestedResourceHashes.push_back(managedResource.getResourceObject()->getHash());
+            requestedResourceHashes.push_back(managedResource->getHash());
         }
 
         // make sure managed resource created before was freed,
@@ -684,9 +702,9 @@ namespace ramses_internal
 
     TEST_F(AResourceComponentTest, CanHandleResourceReceivedFromSource)
     {
-        const ManagedResourceVector resVec = { ManagedResource(*CreateTestResource(), deleter) };
-        const ResourceContentHash hash = resVec[0].getResourceObject()->getHash();
-        const auto dataVec = ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(resVec, std::numeric_limits<UInt32>::max());
+        const ManagedResourceVector resVec{ ManagedResource{ CreateTestResource(), deleter } };
+        const ResourceContentHash hash = resVec[0]->getHash();
+        const auto dataVec = SerializeResources(resVec);
         ASSERT_EQ(1u, dataVec.size());
 
         const auto resourceData = dataVec[0];
@@ -705,14 +723,14 @@ namespace ramses_internal
 
         ManagedResourceVector poppedResources = localResourceComponent.popArrivedResources(requesterID);
         ManagedResource managedResource = poppedResources.back();
-        ASSERT_EQ(hash, managedResource.getResourceObject()->getHash());
+        ASSERT_EQ(hash, managedResource->getHash());
     }
 
     TEST_F(AResourceComponentTest, PartiallyReceivedResourcesAreNotPassedToArrivedResources)
     {
-        const ManagedResourceVector resVec = { ManagedResource(*CreateTestResource(), deleter) };
-        const ResourceContentHash hash = resVec[0].getResourceObject()->getHash();
-        const auto dataVec = ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(resVec, 50);
+        const ManagedResourceVector resVec{ ManagedResource{ CreateTestResource(), deleter } };
+        const ResourceContentHash hash = resVec[0]->getHash();
+        const auto dataVec = SerializeResources(resVec, 50);
         ASSERT_GT(dataVec.size(), 1u);
 
         const auto resourceData = dataVec[0];
@@ -735,11 +753,11 @@ namespace ramses_internal
 
     TEST_F(AResourceComponentTest, ResourcesArePassedToArrivedResourcesWhenAllFragmentsAreReceived)
     {
-        const ManagedResourceVector resVec = { ManagedResource(*CreateTestResource(), deleter) };
-        const ResourceContentHash hash = resVec[0].getResourceObject()->getHash();
+        const ManagedResourceVector resVec{ ManagedResource{ CreateTestResource(), deleter } };
+        const ResourceContentHash hash = resVec[0]->getHash();
 
-        const IResource* testResource = resVec[0].getResourceObject();
-        const auto dataVec = ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(resVec, 50);
+        const IResource* testResource = resVec[0].get();
+        const auto dataVec = SerializeResources(resVec, 50);
         ASSERT_GT(dataVec.size(), 1u);
 
         const Guid dummyGuid(222);
@@ -769,18 +787,18 @@ namespace ramses_internal
         ASSERT_EQ(1u, poppedResources.size());
 
         ManagedResource managedResource = poppedResources.back();
-        EXPECT_EQ(hash, managedResource.getResourceObject()->getHash());
-        ASSERT_EQ(testResource->getDecompressedDataSize(), managedResource.getResourceObject()->getDecompressedDataSize());
+        EXPECT_EQ(hash, managedResource->getHash());
+        ASSERT_EQ(testResource->getDecompressedDataSize(), managedResource->getDecompressedDataSize());
 
-        const UInt8* resourceDataBlob = managedResource.getResourceObject()->getResourceData().data();
+        const UInt8* resourceDataBlob = managedResource->getResourceData().data();
         EXPECT_TRUE(0 == PlatformMemory::Compare(testResource->getResourceData().data(), resourceDataBlob, testResource->getDecompressedDataSize()));
     }
 
     TEST_F(AResourceComponentTest, ResourceFragmentsFromOtherParticipantsAreIgnored)
     {
-        const ManagedResourceVector resVec = { ManagedResource(*CreateTestResource(), deleter) };
-        const IResource* testResource = resVec[0].getResourceObject();
-        const auto dataVec = ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(resVec, 50);
+        const ManagedResourceVector resVec = { ManagedResource{ CreateTestResource(), deleter } };
+        const IResource* testResource = resVec[0].get();
+        const auto dataVec = SerializeResources(resVec, 50);
         ASSERT_GT(dataVec.size(), 1u);
 
         const auto resourceData = dataVec[0];
@@ -823,11 +841,11 @@ namespace ramses_internal
 
     TEST_F(AResourceComponentTest, DropReceivedResourceFragmentsWhenProvidingParticipantDisconnects)
     {
-        const ManagedResourceVector resVec = { ManagedResource(*CreateTestResource(), deleter) };
-        const auto dataVec = ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(resVec, 50);
+        const ManagedResourceVector resVec{ ManagedResource { CreateTestResource(), deleter } };
+        const auto dataVec = SerializeResources(resVec, 50);
         ASSERT_GT(dataVec.size(), 1u);
 
-        ResourceInfo availableResource(EResourceType_VertexArray, resVec[0].getResourceObject()->getHash(), resVec[0].getResourceObject()->getDecompressedDataSize(), 0u);
+        ResourceInfo availableResource(EResourceType_VertexArray, resVec[0]->getHash(), resVec[0]->getDecompressedDataSize(), 0u);
 
         const Guid dummyGuid(222);
         ResourceContentHashVector requestedResourceHashes;
@@ -840,10 +858,10 @@ namespace ramses_internal
         localResourceComponent.requestResourceAsynchronouslyFromFramework(requestedResourceHashes, requesterID, dummyGuid);
         absl::Span<const Byte> view(dataVec[0].data(), static_cast<UInt32>(dataVec[0].size()));
         localResourceComponent.handleSendResource(view, m_myID);
-        EXPECT_TRUE(localResourceComponent.isReceivingFromParticipant(m_myID));
+        EXPECT_TRUE(localResourceComponent.hasDeserializerForParticipant(m_myID));
 
         localResourceComponent.participantHasDisconnected(m_myID);
-        EXPECT_FALSE(localResourceComponent.isReceivingFromParticipant(m_myID));
+        EXPECT_FALSE(localResourceComponent.hasDeserializerForParticipant(m_myID));
     }
 
     TEST_F(AResourceComponentTest, CanDeleteResourcesLoadedFromFile)
@@ -878,11 +896,11 @@ namespace ramses_internal
         ManagedResource managedResource = localResourceComponent.manageResource(*CreateTestResource());
 
         ResourceContentHashVector requestedResourceHashes;
-        requestedResourceHashes.push_back(managedResource.getResourceObject()->getHash());
+        requestedResourceHashes.push_back(managedResource->getHash());
         Guid requesterId(222);
 
         EXPECT_CALL(communicationSystem, sendResources(requesterId, _));
-        localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requesterId);
+        localResourceComponent.handleRequestResources(requestedResourceHashes, requesterId);
     }
 
     TEST_F(AResourceComponentTest, HandleResourceRequest_SendsMultipleExistingResourcesAtOnce)
@@ -894,13 +912,14 @@ namespace ramses_internal
         ResourceContentHashVector requestedResourceHashes;
         for (const auto& res : managedResources)
         {
-            requestedResourceHashes.push_back(res.getResourceObject()->getHash());
+            requestedResourceHashes.push_back(res->getHash());
         }
 
         Guid requesterId(222);
         ManagedResourceVector sentResources;
-        EXPECT_CALL(communicationSystem, sendResources(requesterId, _)).WillOnce(DoAll(SaveArg<1>(&sentResources), Return(true)));
-        localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requesterId);
+        expectSendResourcesToNetwork(communicationSystem, requesterId, sentResources);
+        localResourceComponent.handleRequestResources(requestedResourceHashes, requesterId);
+
         EXPECT_EQ(managedResources, sentResources);
     }
 
@@ -912,10 +931,10 @@ namespace ramses_internal
 
         // make sure managed resource created in writeTestResourceFile() was freed,
         // so handleResourceRequest has to load it from file before sending
-        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
+        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).get());
 
         Guid requester(222);
-        localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requester);
+        localResourceComponent.handleRequestResources(requestedResourceHashes, requester);
 
         // execute enqueued resource loading task
         EXPECT_CALL(communicationSystem, sendResources(requester, _));
@@ -927,11 +946,11 @@ namespace ramses_internal
         ResourceContentHashVector requestedResourceHashes = writeMultipleTestResourceFile(4);
 
         Guid requester(222);
-        localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requester);
+        localResourceComponent.handleRequestResources(requestedResourceHashes, requester);
 
         // execute enqueued resource loading task
         ManagedResourceVector sentResources;
-        EXPECT_CALL(communicationSystem, sendResources(requester, _)).WillOnce(DoAll(SaveArg<1>(&sentResources), Return(true)));
+        expectSendResourcesToNetwork(communicationSystem, requester, sentResources);
         executor.execute();
         EXPECT_EQ(requestedResourceHashes, HashesFromManagedResources(sentResources));
         EXPECT_EQ(4u, statistics.statResourcesLoadedFromFileNumber.getCounterValue());
@@ -943,22 +962,22 @@ namespace ramses_internal
         ManagedResourceVector localRes = { localResourceComponent.manageResource(*CreateTestResource(10.f)),
             localResourceComponent.manageResource(*CreateTestResource(11.f)),
             localResourceComponent.manageResource(*CreateTestResource(12.f)) };
-        ResourceContentHashVector requestedResourceHashes = { localRes[0].getResourceObject()->getHash(),
+        ResourceContentHashVector requestedResourceHashes = { localRes[0]->getHash(),
             fileResHashes[0],
-            localRes[1].getResourceObject()->getHash(),
+            localRes[1]->getHash(),
             fileResHashes[1],
-            localRes[2].getResourceObject()->getHash() };
+            localRes[2]->getHash() };
 
         Guid requester(222);
 
         ManagedResourceVector sentLocalResources;
-        EXPECT_CALL(communicationSystem, sendResources(requester, _)).WillOnce(DoAll(SaveArg<1>(&sentLocalResources), Return(true)));
-        localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requester);
+        expectSendResourcesToNetwork(communicationSystem, requester, sentLocalResources);
+        localResourceComponent.handleRequestResources(requestedResourceHashes, requester);
         Mock::VerifyAndClearExpectations(&communicationSystem);
         EXPECT_EQ(localRes, sentLocalResources);
 
         ManagedResourceVector sentFileResources;
-        EXPECT_CALL(communicationSystem, sendResources(requester, _)).WillOnce(DoAll(SaveArg<1>(&sentFileResources), Return(true)));
+        expectSendResourcesToNetwork(communicationSystem, requester, sentFileResources);
         executor.execute();
         EXPECT_EQ(fileResHashes, HashesFromManagedResources(sentFileResources));
     }
@@ -969,7 +988,7 @@ namespace ramses_internal
 
         {
             ManagedResource managedResource = localResourceComponent.manageResource(*CreateTestResource());
-            requestedResourceHashes.push_back(managedResource.getResourceObject()->getHash());
+            requestedResourceHashes.push_back(managedResource->getHash());
         }
 
         // make sure managed resource created before was freed,
@@ -978,7 +997,7 @@ namespace ramses_internal
 
         Guid requesterId(222);
         EXPECT_CALL(communicationSystem, sendResourcesNotAvailable(requesterId, requestedResourceHashes));
-        localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requesterId);
+        localResourceComponent.handleRequestResources(requestedResourceHashes, requesterId);
     }
 
     TEST_F(AResourceComponentTest, HandleResourceRequest_sendNotAvailableForUnknownResources)
@@ -988,7 +1007,7 @@ namespace ramses_internal
         ManagedResource managedResource = localResourceComponent.manageResource(*CreateTestResource());
 
         ResourceContentHashVector requestedResourceHashes;
-        requestedResourceHashes.push_back(managedResource.getResourceObject()->getHash());
+        requestedResourceHashes.push_back(managedResource->getHash());
         requestedResourceHashes.push_back(hash1);
         requestedResourceHashes.push_back(hash2);
 
@@ -999,7 +1018,7 @@ namespace ramses_internal
         Guid requesterId(222);
         EXPECT_CALL(communicationSystem, sendResources(requesterId, _));
         EXPECT_CALL(communicationSystem, sendResourcesNotAvailable(requesterId, unknownResources));
-        localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requesterId);
+        localResourceComponent.handleRequestResources(requestedResourceHashes, requesterId);
     }
 
 
@@ -1074,7 +1093,7 @@ namespace ramses_internal
     {
         const NiceMock<ResourceMock>* const lowLevelResourceMock = new NiceMock<ResourceMock>(ResourceContentHash(42, 0), EResourceType_Effect);
         ResourceDeleterCallingCallback deleterMock(DefaultManagedResourceDeleterCallback::GetInstance());
-        ManagedResource resource(*lowLevelResourceMock, deleterMock);
+        ManagedResource resource{ lowLevelResourceMock, deleterMock };
         const ResourceRequesterID requesterID(1);
         const Guid providerID(222);
 
@@ -1096,12 +1115,12 @@ namespace ramses_internal
         ResourceDeleterCallingCallback deleterMock(deleterCallbackMock);
 
         ResourceMock lowLevelResourceMock(hash1, EResourceType_Effect);
-        ManagedResource resource(lowLevelResourceMock, deleterMock);
+        ManagedResource resource{ &lowLevelResourceMock, deleterMock };
         ResourceContentHashVector hashesToRequest;
         hashesToRequest.push_back(hash1);
 
         ResourceMock lowLevelResourceMock2(hash2, EResourceType_Effect);
-        ManagedResource resource2(lowLevelResourceMock2, deleterMock);
+        ManagedResource resource2{ &lowLevelResourceMock2, deleterMock };
         ResourceContentHashVector hashesToRequest2;
         hashesToRequest2.push_back(hash2);
 
@@ -1115,8 +1134,8 @@ namespace ramses_internal
         ManagedResourceVector arrivedForA = localResourceComponent.popArrivedResources(requesterIDA);
         ManagedResourceVector arrivedForB = localResourceComponent.popArrivedResources(requesterIDB);
 
-        EXPECT_EQ(hash1, arrivedForA[0].getResourceObject()->getHash());
-        EXPECT_EQ(hash2, arrivedForB[0].getResourceObject()->getHash());
+        EXPECT_EQ(hash1, arrivedForA[0]->getHash());
+        EXPECT_EQ(hash2, arrivedForB[0]->getHash());
     }
 
     TEST_F(AResourceComponentTest, popsArrivedResources)
@@ -1126,10 +1145,10 @@ namespace ramses_internal
         NiceMock<ManagedResourceDeleterCallbackMock> deleterCallbackMock;
         ResourceDeleterCallingCallback deleterMock(deleterCallbackMock);
         ResourceMock lowLevelResourceMock(hash1, EResourceType_Effect);
-        ManagedResource resource1(lowLevelResourceMock, deleterMock);
+        ManagedResource resource1{ &lowLevelResourceMock, deleterMock };
 
         ResourceMock lowLevelResourceMock2(hash2, EResourceType_Effect);
-        ManagedResource resource2(lowLevelResourceMock2, deleterMock);
+        ManagedResource resource2{ &lowLevelResourceMock2, deleterMock };
 
         ResourceContentHashVector hashesToRequest;
         hashesToRequest.push_back(hash1);
@@ -1148,7 +1167,7 @@ namespace ramses_internal
         EXPECT_EQ(0u, localResourceComponent.popArrivedResources(requesterID).size());
     }
 
-    TEST_F(AResourceComponentTest, canRemoveResourceFile)
+    ResourceContentHash setupTest(String const& resourceFileName, ResourceComponent& localResourceComponent)
     {
         // setup test
         const Float vertexData[] = {
@@ -1156,7 +1175,7 @@ namespace ramses_internal
             1.0f, 0.0f, 0.0f,
             1.0f, 1.0f, 0.0f
         };
-        ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3, EDataType_Vector3F, reinterpret_cast<const Byte*>(vertexData), ResourceCacheFlag(0u), String("resName"));
+        ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3, EDataType::Vector3F, vertexData, ResourceCacheFlag(0u), String("resName"));
         ResourceContentHash hash = resource->getHash();
         {
             File resourceFile(resourceFileName);
@@ -1164,7 +1183,7 @@ namespace ramses_internal
 
             NiceMock<ManagedResourceDeleterCallbackMock> deleterCallbackMock;
             ResourceDeleterCallingCallback deleterMock(deleterCallbackMock);
-            ManagedResource resource1(*resource, deleterMock);
+            ManagedResource resource1{ resource, deleterMock };
 
             ManagedResourceVector resources;
             resources.push_back(resource1);
@@ -1182,20 +1201,150 @@ namespace ramses_internal
             localResourceComponent.addResourceFile(resourceInputStream, resourceFileToc);
         }
 
+        return hash;
+    }
 
-        // test
+    TEST_F(AResourceComponentTest, canRemoveResourceFile)
+    {
+        auto hash = setupTest(resourceFileName, localResourceComponent);
+
         const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
         ManagedResource fromfile = localResourceComponent.forceLoadResource(hash);
-        EXPECT_TRUE(fromfile.getResourceObject() != nullptr);
+        EXPECT_TRUE(fromfile);
         EXPECT_TRUE(localResourceComponent.hasResourceFile(resourceFileName));
         EXPECT_EQ(1u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
 
         localResourceComponent.removeResourceFile(resourceFileName);
         EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
 
-        EXPECT_TRUE(fromfile.getResourceObject() != nullptr);
+        EXPECT_TRUE(fromfile);
         fromfile = ManagedResource();
-        EXPECT_TRUE(fromfile.getResourceObject() == nullptr);
+        EXPECT_FALSE(fromfile);
+    }
+
+    TEST_F(AResourceComponentTest, removingFileWillMakeUnloadedResourceUnusable)
+    {
+        auto hash = setupTest(resourceFileName, localResourceComponent);
+
+        auto fakeUsage = localResourceComponent.getResourceHashUsage(hash);
+        const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
+
+        localResourceComponent.removeResourceFile(resourceFileName);
+        EXPECT_EQ(0u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
+
+        EXPECT_FALSE(localResourceComponent.getResource(hash));
+        EXPECT_FALSE(localResourceComponent.forceLoadResource(hash));
+    }
+
+    TEST_F(AResourceComponentTest, canForceLoadResourceBecauseOfHashUsage)
+    {
+        auto hash = setupTest(resourceFileName, localResourceComponent);
+
+        auto fakeUsage = localResourceComponent.getResourceHashUsage(hash);
+        const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
+
+        localResourceComponent.forceLoadFromResourceFile(resourceFileName);
+        EXPECT_EQ(1u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
+        EXPECT_TRUE(localResourceComponent.hasResourceFile(resourceFileName));
+        EXPECT_TRUE(localResourceComponent.getResource(hash));
+    }
+
+    TEST_F(AResourceComponentTest, canForceLoadResourceBecauseOfHashUsageAndRemoveFile)
+    {
+        auto hash = setupTest(resourceFileName, localResourceComponent);
+
+        auto fakeUsage = localResourceComponent.getResourceHashUsage(hash);
+        const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
+
+        localResourceComponent.forceLoadFromResourceFile(resourceFileName);
+        localResourceComponent.removeResourceFile(resourceFileName);
+        EXPECT_EQ(1u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
+
+        EXPECT_TRUE(localResourceComponent.getResource(hash));
+        EXPECT_FALSE(localResourceComponent.forceLoadResource(hash));
+    }
+
+    TEST_F(AResourceComponentTest, canRemoveResourceFileAndKeepsResourceBecauseOfResourceUsage)
+    {
+        auto hash = setupTest(resourceFileName, localResourceComponent);
+
+        ManagedResource fromfile = localResourceComponent.forceLoadResource(hash);
+        const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
+
+        localResourceComponent.removeResourceFile(resourceFileName);
+        EXPECT_EQ(0u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
+
+        EXPECT_TRUE(localResourceComponent.getResource(hash));
+        EXPECT_FALSE(localResourceComponent.forceLoadResource(hash));
+    }
+
+    TEST_F(AResourceComponentTest, canForceLoadResourceFileAndKeepsResourceBecauseOfResourceUsage)
+    {
+        auto hash = setupTest(resourceFileName, localResourceComponent);
+
+        ManagedResource fromfile = localResourceComponent.forceLoadResource(hash);
+        const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
+
+        localResourceComponent.forceLoadFromResourceFile(resourceFileName);
+        EXPECT_EQ(0u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
+        EXPECT_TRUE(localResourceComponent.hasResourceFile(resourceFileName));
+
+        EXPECT_TRUE(localResourceComponent.getResource(hash));
+        EXPECT_TRUE(localResourceComponent.forceLoadResource(hash));
+    }
+
+    TEST_F(AResourceComponentTest, canForceLoadAndRemoveAndKeepsResourceBecauseOfResourceUsage)
+    {
+        auto hash = setupTest(resourceFileName, localResourceComponent);
+
+        ManagedResource fromfile = localResourceComponent.forceLoadResource(hash);
+        const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
+
+        localResourceComponent.forceLoadFromResourceFile(resourceFileName);
+        localResourceComponent.removeResourceFile(resourceFileName);
+        EXPECT_EQ(0u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
+
+        EXPECT_TRUE(localResourceComponent.getResource(hash));
+        EXPECT_FALSE(localResourceComponent.forceLoadResource(hash));
+    }
+
+    TEST_F(AResourceComponentTest, canRemoveResourceFileAndDeletesResourceBecauseNoUsage)
+    {
+        auto hash = setupTest(resourceFileName, localResourceComponent);
+
+        const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
+
+        localResourceComponent.removeResourceFile(resourceFileName);
+        EXPECT_EQ(0u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
+
+        EXPECT_FALSE(localResourceComponent.getResource(hash));
+        EXPECT_FALSE(localResourceComponent.forceLoadResource(hash));
+    }
+
+    TEST_F(AResourceComponentTest, canRemoveResourceFileAndKeepsResourceBecauseAvailableInOtherFile)
+    {
+        auto hash = setupTest(resourceFileName, localResourceComponent);
+        auto hash2 = setupTest("test2.resource", localResourceComponent);
+        EXPECT_EQ(hash, hash2);
+
+        const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
+
+        localResourceComponent.removeResourceFile(resourceFileName);
+        EXPECT_EQ(0u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
+        EXPECT_TRUE(localResourceComponent.hasResourceFile("test2.resource"));
+
+        EXPECT_FALSE(localResourceComponent.getResource(hash));
+        auto res = localResourceComponent.forceLoadResource(hash);
+        EXPECT_TRUE(res);
+        EXPECT_TRUE(localResourceComponent.getResource(hash));
+        res = {};
+        EXPECT_FALSE(localResourceComponent.getResource(hash));
     }
 
     TEST_F(AResourceComponentTest, uncompressesLocallyRequestedResources)
@@ -1210,10 +1359,10 @@ namespace ramses_internal
 
         ManagedResourceVector poppedResources = localResourceComponent.popArrivedResources(requesterID);
         ASSERT_EQ(2u, poppedResources.size());
-        EXPECT_TRUE(poppedResources[0].getResourceObject()->isCompressedAvailable());
-        EXPECT_TRUE(poppedResources[0].getResourceObject()->isDeCompressedAvailable());
-        EXPECT_TRUE(poppedResources[1].getResourceObject()->isCompressedAvailable());
-        EXPECT_TRUE(poppedResources[1].getResourceObject()->isDeCompressedAvailable());
+        EXPECT_TRUE(poppedResources[0]->isCompressedAvailable());
+        EXPECT_TRUE(poppedResources[0]->isDeCompressedAvailable());
+        EXPECT_TRUE(poppedResources[1]->isCompressedAvailable());
+        EXPECT_TRUE(poppedResources[1]->isDeCompressedAvailable());
     }
 
     TEST_F(AResourceComponentTest, doesNotUncompressRemoteRequestedResources)
@@ -1221,17 +1370,39 @@ namespace ramses_internal
         ResourceContentHashVector hashes = writeMultipleTestResourceFile(2, 2000, true);
         Guid requester(123);
 
-        localResourceComponent.handleRequestResources(hashes, 0u, requester);
+        localResourceComponent.handleRequestResources(hashes, requester);
 
-        EXPECT_CALL(communicationSystem, sendResources(requester, _)).WillOnce([&](auto, const auto& sentRes) -> bool {
-            EXPECT_EQ(2u, sentRes.size());
-            EXPECT_TRUE(sentRes[0].getResourceObject()->isCompressedAvailable());
-            EXPECT_FALSE(sentRes[0].getResourceObject()->isDeCompressedAvailable());
-            EXPECT_TRUE(sentRes[1].getResourceObject()->isCompressedAvailable());
-            EXPECT_FALSE(sentRes[1].getResourceObject()->isDeCompressedAvailable());
-            return true;
-        });
+        ManagedResourceVector sentRes;
+        expectSendResourcesToNetwork(communicationSystem, requester, sentRes);
         executor.execute();
+
+        ASSERT_EQ(2u, sentRes.size());
+        EXPECT_TRUE(sentRes[0]->isCompressedAvailable());
+        EXPECT_FALSE(sentRes[0]->isDeCompressedAvailable());
+        EXPECT_TRUE(sentRes[1]->isCompressedAvailable());
+        EXPECT_FALSE(sentRes[1]->isDeCompressedAvailable());
+    }
+
+    TEST_F(AResourceComponentTest, canResolveLocalResource)
+    {
+        IResource* resource = CreateTestResource();
+        ManagedResource managedRes = localResourceComponent.manageResource(*resource);
+        ResourceContentHashVector hashes {resource->getHash()};
+        ManagedResourceVector resolved = localResourceComponent.resolveResources(hashes);
+
+        ASSERT_EQ(1u, resolved.size());
+        EXPECT_TRUE(resolved[0]->getHash() == hashes[0]);
+    }
+
+    TEST_F(AResourceComponentTest, canResolveResourcesFromFile)
+    {
+        ResourceContentHashVector hashes = writeMultipleTestResourceFile(2, 2000, true);
+
+        ManagedResourceVector resolved = localResourceComponent.resolveResources(hashes);
+
+        ASSERT_EQ(2u, resolved.size());
+        EXPECT_TRUE(resolved[0]->getHash() == hashes[0]);
+        EXPECT_TRUE(resolved[1]->getHash() == hashes[1]);
     }
 
     TEST_F(AResourceComponentWithThreadedTaskExecutorTest, HandleResourceRequest_AsynchronousLoadingResourceFromFileAndSendsIt)
@@ -1242,7 +1413,7 @@ namespace ramses_internal
 
         // make sure managed resource created in writeTestResourceFile() was freed,
         // so handleResourceRequest has to load it from file before sending
-        EXPECT_EQ(nullptr, localResourceComponent.getResource(resourceHash).getResourceObject());
+        EXPECT_FALSE(localResourceComponent.getResource(resourceHash));
 
         Guid requester(222);
         ramses_internal::PlatformEvent syncWaiter;
@@ -1254,7 +1425,7 @@ namespace ramses_internal
                 return true;
             }));
         }
-        localResourceComponent.handleRequestResources(requestedResourceHashes, 0u, requester);
+        localResourceComponent.handleRequestResources(requestedResourceHashes, requester);
 
         EXPECT_TRUE(syncWaiter.wait(60000));
     }
@@ -1322,11 +1493,11 @@ namespace ramses_internal
         ResourceContentHashVector resourceHashes = writeMultipleTestResourceFile(2);
 
         Guid requesterID(222);
-        localResourceComponent.handleRequestResources(resourceHashes, 0, requesterID);
+        localResourceComponent.handleRequestResources(resourceHashes, requesterID);
 
         // execute enqueued resource loading task
         ManagedResourceVector loadedResources;
-        EXPECT_CALL(communicationSystem, sendResources(requesterID, _)).WillOnce(DoAll(SaveArg<1>(&loadedResources), Return(true)));
+        expectSendResourcesToNetwork(communicationSystem, requesterID, loadedResources);
         executor.execute();
         Mock::VerifyAndClearExpectations(&communicationSystem);
 
@@ -1336,7 +1507,7 @@ namespace ramses_internal
 
         // clear and allow loading next one
         loadedResources.clear();
-        EXPECT_CALL(communicationSystem, sendResources(requesterID, _)).WillOnce(DoAll(SaveArg<1>(&loadedResources), Return(true)));
+        expectSendResourcesToNetwork(communicationSystem, requesterID, loadedResources);
         executor.execute();
         Mock::VerifyAndClearExpectations(&communicationSystem);
         EXPECT_EQ(1u, loadedResources.size());

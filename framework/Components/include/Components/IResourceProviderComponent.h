@@ -32,9 +32,12 @@ namespace ramses_internal
         virtual ResourceHashUsage getResourceHashUsage(const ResourceContentHash& hash) = 0;
         virtual void addResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ResourceTableOfContents& toc) = 0;
         virtual bool hasResourceFile(const String& resourceFileName) const = 0;
+        virtual void forceLoadFromResourceFile(const String& resourceFileName) = 0;
         virtual void removeResourceFile(const String& resourceFileName) = 0;
 
         virtual void reserveResourceCount(uint32_t totalCount) = 0;
+
+        virtual ManagedResourceVector resolveResources(ResourceContentHashVector& vec) = 0;
 
     };
 }

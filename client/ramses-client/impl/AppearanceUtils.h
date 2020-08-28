@@ -77,6 +77,24 @@ namespace ramses
                 return ramses_internal::EBlendFactor::DstAlpha;
             case EBlendFactor_OneMinusDstAlpha:
                 return ramses_internal::EBlendFactor::OneMinusDstAlpha;
+            case EBlendFactor_SrcColor:
+                return ramses_internal::EBlendFactor::SrcColor;
+            case EBlendFactor_OneMinusSrcColor:
+                return ramses_internal::EBlendFactor::OneMinusSrcColor;
+            case EBlendFactor_DstColor:
+                return ramses_internal::EBlendFactor::DstColor;
+            case EBlendFactor_OneMinusDstColor:
+                return ramses_internal::EBlendFactor::OneMinusDstColor;
+            case EBlendFactor_ConstColor:
+                return ramses_internal::EBlendFactor::ConstColor;
+            case EBlendFactor_OneMinusConstColor:
+                return ramses_internal::EBlendFactor::OneMinusConstColor;
+            case EBlendFactor_ConstAlpha:
+                return ramses_internal::EBlendFactor::ConstAlpha;
+            case EBlendFactor_OneMinusConstAlpha:
+                return ramses_internal::EBlendFactor::OneMinusConstAlpha;
+            case EBlendFactor_AlphaSaturate:
+                return ramses_internal::EBlendFactor::AlphaSaturate;
             default:
                 assert(false);
                 return ramses_internal::EBlendFactor::One;
@@ -99,6 +117,25 @@ namespace ramses
                 return EBlendFactor_DstAlpha;
             case ramses_internal::EBlendFactor::OneMinusDstAlpha:
                 return EBlendFactor_OneMinusDstAlpha;
+
+            case ramses_internal::EBlendFactor::SrcColor:
+                return EBlendFactor_SrcColor;
+            case ramses_internal::EBlendFactor::OneMinusSrcColor:
+                return EBlendFactor_OneMinusSrcColor;
+            case ramses_internal::EBlendFactor::DstColor:
+                return EBlendFactor_DstColor;
+            case ramses_internal::EBlendFactor::OneMinusDstColor:
+                return EBlendFactor_OneMinusDstColor;
+            case ramses_internal::EBlendFactor::ConstColor:
+                return EBlendFactor_ConstColor;
+            case ramses_internal::EBlendFactor::OneMinusConstColor:
+                return EBlendFactor_OneMinusConstColor;
+            case ramses_internal::EBlendFactor::ConstAlpha:
+                return EBlendFactor_ConstAlpha;
+            case ramses_internal::EBlendFactor::OneMinusConstAlpha:
+                return EBlendFactor_OneMinusConstAlpha;
+            case ramses_internal::EBlendFactor::AlphaSaturate:
+                return EBlendFactor_AlphaSaturate;
             default:
                 assert(false);
                 return EBlendFactor_One;

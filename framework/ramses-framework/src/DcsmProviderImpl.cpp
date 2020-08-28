@@ -34,20 +34,40 @@ namespace ramses
     {
         LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::offerContent: contentID " << contentID
             << ", category " << category << ", scene " << scene << ", mode " << static_cast<int>(mode));
-        return commonOfferContent("offerContent", contentID, category, scene, mode);
+        return commonOfferContent("offerContent", contentID, category, ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(scene.getValue()), mode);
     }
 
     status_t DcsmProviderImpl::offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata)
     {
-        const ramses_internal::DcsmMetadata riMetadata = metadata.impl.getMetadata();
         LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::offerContentWithMetadata: contentID " << contentID
-                 << ", category " << category << ", scene " << scene << ", mode " << static_cast<int>(mode) << ", metadata " << riMetadata);
+                 << ", category " << category << ", scene " << scene << ", mode " << static_cast<int>(mode) << ", metadata " << metadata.impl.getMetadata());
+        return commonOfferContentWithMetadata(contentID, category, ramses_internal::ETechnicalContentType::RamsesSceneID, ramses_internal::TechnicalContentDescriptor(scene.getValue()), mode, metadata);
+    }
 
-        auto res = commonOfferContent("offerContentWithMetadata", contentID, category, scene, mode);
+    status_t DcsmProviderImpl::offerContent(ContentID contentID, Category category, waylandIviSurfaceId_t surfaceId, EDcsmOfferingMode mode)
+    {
+        LOG_INFO(ramses_internal::CONTEXT_DCSM,
+                 "DcsmProvider::offerContent: contentID " << contentID << ", category " << category << ", surface id " << surfaceId << ", mode " << static_cast<int>(mode));
+        return commonOfferContent(
+            "offerContent", contentID, category, ramses_internal::ETechnicalContentType::WaylandIviSurfaceID, ramses_internal::TechnicalContentDescriptor(surfaceId.getValue()), mode);
+    }
+
+    status_t DcsmProviderImpl::offerContentWithMetadata(ContentID contentID, Category category, waylandIviSurfaceId_t surfaceId, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata)
+    {
+        LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::offerContentWithMetadata: contentID " << contentID
+            << ", category " << category << ", surface id " << surfaceId << ", mode " << static_cast<int>(mode) << ", metadata " << metadata.impl.getMetadata());
+        return commonOfferContentWithMetadata(
+            contentID, category, ramses_internal::ETechnicalContentType::WaylandIviSurfaceID, ramses_internal::TechnicalContentDescriptor(surfaceId.getValue()), mode, metadata);
+    }
+
+    status_t DcsmProviderImpl::commonOfferContentWithMetadata(ContentID contentID, Category category, ramses_internal::ETechnicalContentType contentType,
+        ramses_internal::TechnicalContentDescriptor contentDescriptor, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata)
+    {
+        auto res = commonOfferContent("offerContentWithMetadata", contentID, category, contentType, contentDescriptor, mode);
         if (res != StatusOK)
             return res;
 
-        if (!m_dcsm.sendUpdateContentMetadata(ramses_internal::ContentID(contentID.getValue()), std::move(riMetadata)))
+        if (!m_dcsm.sendUpdateContentMetadata(ramses_internal::ContentID(contentID.getValue()), std::move(metadata.impl.getMetadata())))
         {
             m_dcsm.sendRequestStopOfferContent(ramses_internal::ContentID(contentID.getValue()));
             return addErrorEntry("DcsmProvider::offerContentWithMetadata failed, failure to send sendUpdateContentMetadata message.");
@@ -56,7 +76,8 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DcsmProviderImpl::commonOfferContent(const char* callerMethod, ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode)
+    status_t DcsmProviderImpl::commonOfferContent(const char* callerMethod, ContentID contentID, Category category, ramses_internal::ETechnicalContentType contentType,
+        ramses_internal::TechnicalContentDescriptor contentDescriptor, EDcsmOfferingMode mode)
     {
         if (!category.isValid())
             return addErrorEntry((ramses_internal::StringOutputStream() << "DcsmProvider::" << callerMethod << " failed, category is invalid.").c_str());
@@ -65,12 +86,10 @@ namespace ramses
         if (contentIt != m_contents.end() && contentIt->second.status != ramses_internal::EDcsmState::AcceptStopOffer)
             return addErrorEntry((ramses_internal::StringOutputStream() << "DcsmProvider::" << callerMethod << " failed, ContentID is already registered.").c_str());
 
-        m_contents[contentID] = { scene, category };
-        if (!m_dcsm.sendOfferContent(ramses_internal::ContentID(contentID.getValue()), ramses_internal::Category(category.getValue()), mode == EDcsmOfferingMode::LocalOnly))
+        m_contents[contentID] = {category};
+        if (!m_dcsm.sendOfferContent(ramses_internal::ContentID(contentID.getValue()), ramses_internal::Category(category.getValue()), "", mode == EDcsmOfferingMode::LocalOnly))
             return addErrorEntry((ramses_internal::StringOutputStream() << "DcsmProvider::" << callerMethod << " failed, failure to send sendOfferContent message.").c_str());
-        else if (!m_dcsm.sendContentDescription(ramses_internal::ContentID(contentID.getValue()),
-                                                ramses_internal::ETechnicalContentType::RamsesSceneID, // SceneID is the TechnicalContentDescriptor when using type RamsesSceneID
-                                                ramses_internal::TechnicalContentDescriptor(scene.getValue())))
+        else if (!m_dcsm.sendContentDescription(ramses_internal::ContentID(contentID.getValue()), contentType, contentDescriptor))
         {
             m_dcsm.sendRequestStopOfferContent(ramses_internal::ContentID(contentID.getValue()));
             return addErrorEntry((ramses_internal::StringOutputStream() << "DcsmProvider::" << callerMethod << " failed, failure to send sendContentDescription message.").c_str());

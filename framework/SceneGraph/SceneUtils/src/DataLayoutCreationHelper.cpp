@@ -24,7 +24,7 @@ namespace ramses_internal
             const EffectInputInformation& inputInformation = uniformsInputInfo[i];
             if (IsBindableInput(inputInformation))
             {
-                dataFields.push_back(DataFieldInfo(EDataType_DataReference));
+                dataFields.push_back(DataFieldInfo(EDataType::DataReference));
                 referencedInputs.push_back(i);
             }
             else
@@ -51,7 +51,7 @@ namespace ramses_internal
     {
         // Only inputs with plain data type, non-array, with no semantics can be bound to data reference
         return (inputInfo.semantics == EFixedSemantics_Invalid)
-            && (inputInfo.dataType != EDataType_TextureSampler)
+            && !IsTextureSamplerType(inputInfo.dataType)
             && !IsBufferDataType(inputInfo.dataType)
             && (inputInfo.elementCount == 1u);
     }

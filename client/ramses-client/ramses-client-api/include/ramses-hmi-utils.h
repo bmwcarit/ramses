@@ -15,6 +15,8 @@
 
 namespace ramses
 {
+    class ResourceDataPool;
+
     /**
     * @brief Utility functions especially created for functions not yet designated for direct API integration.
     **/
@@ -51,6 +53,27 @@ namespace ramses
          * @param[out] out stream to write to
          */
         static void DumpUnrequiredSceneObjectsToFile(const Scene& scene, std::ostream& out);
+
+        /**
+         * @brief Returns the ResourceDataPool for this client.
+         * @deprecated This function and the returned class are deprecated. See #ramses::ResourceDataPool for details.
+         *
+         * @param[in] client The client to get the ResourceDataPool from.
+         * return The reference to the ResourceDataPool.
+         */
+        static ResourceDataPool& GetResourceDataPoolForClient(RamsesClient& client);
+
+        /**
+         * @brief Saves all resources of a scene to a resource file, which can be opened in a ResourceDataPool.
+         * @deprecated This functionality is deprecated. See #ramses::ResourceDataPool for details.
+         *
+         * @param[in] scene The scene to save resource of.
+         * @param[in] filename The file path to write the resource file to.
+         * @param[in] compress if set to true, resources might be compressed before saving
+         *                     otherwise, uncompressed data will be saved
+         * return True if operation succeeded.
+         */
+        static bool SaveResourcesOfSceneToResourceFile(Scene const& scene, std::string const& filename, bool compress);
     };
 }
 

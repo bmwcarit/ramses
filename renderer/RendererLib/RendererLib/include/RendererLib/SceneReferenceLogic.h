@@ -48,16 +48,28 @@ namespace ramses_internal
         void cleanupDestroyedMasterScenes();
         void cleanupReleasedReferences();
         void executePendingActions();
+        void consolidateExpirationState(SceneId masterSceneId, RendererEventVector& events);
 
         SceneId findMasterSceneForReferencedScene(SceneId sceneId) const;
+
+        enum class ExpirationState
+        {
+            MonitoringDisabled,
+            MonitoringEnabled,
+            Expired
+        };
 
         struct MasterSceneInfo
         {
             std::unordered_map<SceneId, SceneReferenceHandle> sceneReferences;
             SceneReferenceActionVector pendingActions;
             std::unordered_set<SceneId> sceneReferencesWithFlushNotification;
-            std::unordered_set<SceneId> expiredSceneReferences;
-            bool reportedAsExpired = false;
+
+            // this set contains either references or master itself
+            std::unordered_map<SceneId, ExpirationState> expirationStates;
+            // last reported consolidated state of master
+            ExpirationState consolidatedExpirationState = ExpirationState::MonitoringDisabled;
+
             bool destroyed = false;
         };
         std::unordered_map<SceneId, MasterSceneInfo> m_masterScenes;

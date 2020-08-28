@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "PickableObjectImpl.h"
-#include "VertexDataBufferImpl.h"
+#include "ArrayBufferImpl.h"
 #include "CameraNodeImpl.h"
 #include "SceneAPI/PickableObject.h"
 #include "SceneAPI/SceneTypes.h"
@@ -16,7 +16,7 @@
 #include "SerializationContext.h"
 #include "RamsesObjectTypeUtils.h"
 #include "Scene/Scene.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 
 namespace ramses
 {
@@ -26,7 +26,7 @@ namespace ramses
     {
     }
 
-    void PickableObjectImpl::initializeFrameworkData(const VertexDataBufferImpl& geometryBuffer, pickableObjectId_t id)
+    void PickableObjectImpl::initializeFrameworkData(const ArrayBufferImpl& geometryBuffer, pickableObjectId_t id)
     {
         NodeImpl::initializeFrameworkData();
 
@@ -112,10 +112,10 @@ namespace ramses
         return status;
     }
 
-    const VertexDataBuffer& PickableObjectImpl::getGeometryBuffer() const
+    const ArrayBuffer& PickableObjectImpl::getGeometryBuffer() const
     {
         assert(nullptr != m_geometryBufferImpl);
-        return RamsesObjectTypeUtils::ConvertTo<VertexDataBuffer>(m_geometryBufferImpl->getRamsesObject());
+        return RamsesObjectTypeUtils::ConvertTo<ArrayBuffer>(m_geometryBufferImpl->getRamsesObject());
     }
 
     status_t PickableObjectImpl::setCamera(const CameraNodeImpl& cameraImpl)

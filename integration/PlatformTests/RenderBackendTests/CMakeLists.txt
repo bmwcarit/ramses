@@ -30,7 +30,7 @@ IF (ramses-sdk_BUILD_TESTS)
                 -lid 3
             )
             # These tests don't work specifically on the build slaves, because binary shaders are not supported there
-            SET(GATE_FILTER "-ADeviceSupportingBinaryShaders*")
+            SET(GATE_FILTER "-ADeviceSupportingBinaryShaders*:ADeviceSupportingGeometryShaders*")
 
             LIST(FIND GATE_PLATFORMS ${TEST_PLATFORM} _INDEX)
             IF(NOT ${_INDEX} LESS 0)

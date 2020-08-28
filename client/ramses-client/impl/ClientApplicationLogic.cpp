@@ -123,6 +123,12 @@ namespace ramses_internal
         m_resourceComponent->removeResourceFile(resourceFileName);
     }
 
+    void ClientApplicationLogic::forceLoadFromResourceFile(const String& resourceFileName)
+    {
+        PlatformGuard guard(m_frameworkLock);
+        m_resourceComponent->forceLoadFromResourceFile(resourceFileName);
+    }
+
     bool ClientApplicationLogic::hasResourceFile(const String& resourceFileName) const
     {
         PlatformGuard guard(m_frameworkLock);
@@ -140,6 +146,11 @@ namespace ramses_internal
         std::vector<ramses_internal::SceneReferenceEvent> ret;
         m_sceneReferenceEventVec.swap(ret);
         return ret;
+    }
+
+    void ClientApplicationLogic::handleResourceAvailabilityEvent(ResourceAvailabilityEvent const& /*event*/, const Guid& /*rendererId*/)
+    {
+        LOG_WARN(CONTEXT_FRAMEWORK, "ClientApplicationLogic::handleResourceAvailabilityEvent: is not implemented yet.");
     }
 
     ManagedResource ClientApplicationLogic::forceLoadResource(const ResourceContentHash& hash) const

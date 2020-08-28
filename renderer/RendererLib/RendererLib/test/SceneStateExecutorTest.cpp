@@ -46,16 +46,6 @@ namespace ramses_internal
 
         void expectRendererEvents(const std::vector<ERendererEventType>& expectedEvents, SceneId sId = sceneId)
         {
-            RendererEventVector events;
-            RendererEventVector dummy;
-            rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
-            ASSERT_EQ(expectedEvents.size(), events.size());
-            for (size_t i = 0; i < events.size(); ++i)
-            {
-                EXPECT_EQ(expectedEvents[i], events[i].eventType) << "scene control event #" << i;
-                EXPECT_EQ(sId, events[i].sceneId) << "scene control event #" << i;
-            }
-
             InternalSceneStateEvents sceneEvts;
             rendererEventCollector.dispatchInternalSceneStateEvents(sceneEvts);
             ASSERT_EQ(expectedEvents.size(), sceneEvts.size());

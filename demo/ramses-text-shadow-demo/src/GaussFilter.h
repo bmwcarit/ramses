@@ -22,7 +22,6 @@ public:
     };
     GaussFilter(ramses::RenderBuffer& inputBuffer,
                 EDirection            direction,
-                ramses::RamsesClient& client,
                 ramses::Scene&        scene,
                 int32_t               renderOrder);
     void setVariance(float variance);

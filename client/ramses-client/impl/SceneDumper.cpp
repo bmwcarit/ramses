@@ -9,8 +9,7 @@
 #include "SceneDumper.h"
 
 #include "ramses-client-api/RamsesObjectTypes.h"
-#include "ramses-client-api/VertexDataBuffer.h"
-#include "ramses-client-api/IndexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/TextureSampler.h"
@@ -29,8 +28,9 @@
 
 #include "Texture2DBufferImpl.h"
 #include "GeometryBindingImpl.h"
-#include "StreamTextureImpl.h"
 #include "Texture2DBufferImpl.h"
+#include "ObjectIteratorImpl.h"
+#include "StreamTextureImpl.h"
 #include "RamsesClientImpl.h"
 #include "RenderBufferImpl.h"
 #include "RenderTargetImpl.h"
@@ -137,12 +137,14 @@ namespace ramses
     void SceneDumper::setupResourceMap()
     {
         m_resourceContentHashToObjectMap.clear();
-        RamsesObjectVector resources = m_client.getListOfResourceObjects(ERamsesObjectType_Resource);
 
-        for (const auto& resourceAsObject : resources)
+        ObjectIteratorImpl iter(m_objectRegistry, ERamsesObjectType_Resource);
+        auto resourceAsObject = iter.getNext();
+        while (resourceAsObject)
         {
             const ResourceImpl* resource = &RamsesObjectTypeUtils::ConvertTo<Resource>(*resourceAsObject).impl;
             m_resourceContentHashToObjectMap.put(resource->getLowlevelResourceHash(), resource);
+            resourceAsObject = iter.getNext();
         }
     }
 
@@ -345,8 +347,8 @@ namespace ramses
             for (uint32_t field = 0; field < fieldCount; field++)
             {
                 ramses_internal::DataFieldHandle fieldHandle(field);
-                if (scene.getDataLayout(layoutHandle).getField(fieldHandle).dataType ==
-                    ramses_internal::EDataType::EDataType_TextureSampler)
+                const auto fieldDataType = scene.getDataLayout(layoutHandle).getField(fieldHandle).dataType;
+                if (IsTextureSamplerType(fieldDataType))
                 {
                     ramses_internal::TextureSamplerHandle textureSamplerHandle =
                         scene.getDataTextureSamplerHandle(uniformHandle, fieldHandle);
@@ -634,12 +636,6 @@ namespace ramses
         for (auto sceneObject : sceneObjects)
         {
             objects.put(sceneObject);
-        }
-
-        RamsesObjectVector clientObjects = m_client.getListOfResourceObjects();
-        for (auto clientObject : clientObjects)
-        {
-            objects.put(clientObject);
         }
 
         return objects;

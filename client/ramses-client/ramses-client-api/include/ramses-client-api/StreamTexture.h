@@ -52,7 +52,7 @@ namespace ramses
         *
         * @return Stream source id
         */
-        streamSource_t getStreamSourceId() const;
+        waylandIviSurfaceId_t getStreamSourceId() const;
 
     protected:
         /**

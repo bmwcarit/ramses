@@ -107,12 +107,12 @@ The only type available for RAMSES clients to facilitate embedded compositing is
 - objects of this type can be used the same way and in the same places the
   normal Texture2D is used
 - only the platform (pre)defined surface IDs can be used as its source (see type
-  \ref ramses::streamSource_t)
+  \ref ramses::waylandIviSurfaceId_t)
 - if the surface is not available or the platform doesn't support embedded
   compositing the default fallback texture is used.
 
 To create the StreamTexture object one needs to call
-\ref ramses::Scene::createStreamTexture(const Texture2D& fallbackTexture, streamSource_t
+\ref ramses::Scene::createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t
 source, const char* name). The `source` is an ID of a surface which will be used
 for nested compositing. In case that surface is not available or the platform
 doesn't support embedded compositing the default texture (ie. `fallbackTexture`)

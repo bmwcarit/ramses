@@ -41,7 +41,7 @@ namespace ramses_internal
         const EDataType consumerDataType = DataLinkUtils::GetSlotDataReferenceType(consumerSceneId, consumerSlotHandle, m_scenes);
         if (providerDataType != consumerDataType)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: data types of provider (Scene:" << providerSceneId.getValue() << ") and consumer (Scene: " << consumerSceneId.getValue() << ") do not match!");
+            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: data types of provider (Scene:" << providerSceneId << ") and consumer (Scene: " << consumerSceneId << ") do not match!");
             return false;
         }
 

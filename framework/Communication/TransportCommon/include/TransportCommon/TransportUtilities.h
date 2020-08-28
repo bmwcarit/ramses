@@ -9,23 +9,14 @@
 #ifndef RAMSES_TRANSPORTUTILITIES_H
 #define RAMSES_TRANSPORTUTILITIES_H
 
-#include "PlatformAbstraction/PlatformTypes.h"
-#include "Collections/Pair.h"
-#include "Utils/Warnings.h"
 #include <functional>
+#include <cstdint>
 
 namespace ramses_internal
 {
-    class IResource;
-    class SceneActionCollection;
-    class String;
-    struct CommunicationSendDataSizes;
-
     namespace TransportUtilities
     {
-        void SplitToChunks(UInt32 maxNumberOfItemsPerMessage, UInt32 totalNumberOfItems, const std::function<void(UInt32, UInt32)>& sendChunkFun);
-        void SplitSceneActionsToChunks(const SceneActionCollection& actions, UInt32 maxNumSceneActions, UInt32 maxSizeSceneActions,
-                                       const std::function<void(std::pair<UInt32, UInt32>, std::pair<const Byte*, const Byte*>, bool)>& sendFunc);
+        bool SplitToChunks(uint32_t maxNumberOfItemsPerMessage, uint32_t totalNumberOfItems, const std::function<bool(uint32_t, uint32_t)>& sendChunkFun);
     }
 }
 

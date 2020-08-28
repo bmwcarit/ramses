@@ -34,7 +34,7 @@ namespace ramses_internal
             serializeResourceMetadataToStream(metaDataStream);
             metaDataStream << cityhash::Uint128Low64(cityHashBlob);
             metaDataStream << cityhash::Uint128High64(cityHashBlob);
-            const cityhash::uint128 cityHashMetadataAndBlob = cityhash::CityHash128(metaDataStream.getData(), metaDataStream.getSize());
+            const cityhash::uint128 cityHashMetadataAndBlob = cityhash::CityHash128(reinterpret_cast<const char*>(metaDataStream.getData()), metaDataStream.getSize());
 
             // store resource type in resource hash highest nibble. assume enough bits left for hash and useful in case of error
             static_assert(EResourceType_NUMBER_OF_ELEMENTS <= 0xF, "Too many resource types");

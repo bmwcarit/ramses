@@ -39,7 +39,7 @@ namespace ramses_internal
         void operator()(const SceneCommandLogResourceMemoryUsage& cmd) const;
 
     private:
-        static void SendSceneAndResourceFilesViaDLT(const String& sceneDumpFileName, const ramses::ResourceFileDescriptionSet& resourceFileDescriptionSet);
+        static void SendSceneViaDLT(const String& sceneDumpFileName);
 
         ramses::SceneImpl& m_scene;
     };

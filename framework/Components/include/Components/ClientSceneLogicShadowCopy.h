@@ -17,7 +17,7 @@ namespace ramses_internal
     class ClientSceneLogicShadowCopy final : public ClientSceneLogicBase
     {
     public:
-        ClientSceneLogicShadowCopy(ISceneGraphSender& sceneGraphSender, ClientScene& scene, const Guid& clientAddress);
+        ClientSceneLogicShadowCopy(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress);
 
         virtual void flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
 

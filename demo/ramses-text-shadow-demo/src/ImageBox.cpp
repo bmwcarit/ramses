@@ -12,7 +12,6 @@ ImageBox::ImageBox(ramses::TextureSampler& textureSampler,
                    uint32_t                width,
                    uint32_t                height,
                    bool                    blend,
-                   ramses::RamsesClient&   client,
                    ramses::Scene&          scene,
                    ramses::RenderGroup*    renderGroup,
                    int32_t                 renderOrder)
@@ -23,7 +22,7 @@ ImageBox::ImageBox(ramses::TextureSampler& textureSampler,
     effectDesc.setFragmentShaderFromFile("res/ramses-text-shadow-demo-rgba-texturing.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    const ramses::Effect& effect     = *client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
+    const ramses::Effect& effect     = *scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
     ramses::Appearance&   appearance = *scene.createAppearance(effect);
 
     if (blend)
@@ -35,7 +34,7 @@ ImageBox::ImageBox(ramses::TextureSampler& textureSampler,
         appearance.setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
     }
 
-    createGeometry(textureSampler, width, height, client, scene, renderGroup, appearance, renderOrder);
+    createGeometry(textureSampler, width, height, scene, renderGroup, appearance, renderOrder);
 }
 
 ImageBox::ImageBox(ramses::TextureSampler& textureSampler,
@@ -45,7 +44,6 @@ ImageBox::ImageBox(ramses::TextureSampler& textureSampler,
                    uint32_t                width,
                    uint32_t                height,
                    bool                    blend,
-                   ramses::RamsesClient&   client,
                    ramses::Scene&          scene,
                    ramses::RenderGroup*    renderGroup,
                    int32_t                 renderOrder)
@@ -56,7 +54,7 @@ ImageBox::ImageBox(ramses::TextureSampler& textureSampler,
     effectDesc.setFragmentShaderFromFile("res/ramses-text-shadow-demo-a-texturing.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    const ramses::Effect& effect     = *client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
+    const ramses::Effect& effect     = *scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
     ramses::Appearance&   appearance = *scene.createAppearance(effect);
 
     if (blend)
@@ -72,13 +70,12 @@ ImageBox::ImageBox(ramses::TextureSampler& textureSampler,
     effect.findUniformInput("u_color", colorInput);
     appearance.setInputValueVector3f(colorInput, r, g, b);
 
-    createGeometry(textureSampler, width, height, client, scene, renderGroup, appearance, renderOrder);
+    createGeometry(textureSampler, width, height, scene, renderGroup, appearance, renderOrder);
 }
 
 void ImageBox::createGeometry(ramses::TextureSampler& textureSampler,
                               uint32_t                width,
                               uint32_t                height,
-                              ramses::RamsesClient&   client,
                               ramses::Scene&          scene,
                               ramses::RenderGroup*    renderGroup,
                               ramses::Appearance&     appearance,
@@ -93,11 +90,11 @@ void ImageBox::createGeometry(ramses::TextureSampler& textureSampler,
                                     static_cast<float>(width),
                                     static_cast<float>(height)};
 
-    const ramses::Vector2fArray& vertexPositions      = *client.createConstVector2fArray(4, vertexPositionsArray);
+    const ramses::ArrayResource& vertexPositions      = *scene.createArrayResource(ramses::EDataType::Vector2F, 4, vertexPositionsArray);
     float                        textureCoordsArray[] = {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f};
-    const ramses::Vector2fArray& textureCoords        = *client.createConstVector2fArray(4, textureCoordsArray);
+    const ramses::ArrayResource& textureCoords        = *scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
     uint16_t                     indicesArray[]       = {0, 1, 2, 2, 1, 3};
-    const ramses::UInt16Array&   indices              = *client.createConstUInt16Array(6, indicesArray);
+    const ramses::ArrayResource& indices              = *scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
     const ramses::Effect&    effect   = appearance.getEffect();
     ramses::GeometryBinding& geometry = *scene.createGeometryBinding(effect);

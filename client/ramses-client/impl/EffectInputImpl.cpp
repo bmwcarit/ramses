@@ -16,7 +16,7 @@ namespace ramses
     EffectInputImpl::EffectInputImpl()
         : StatusObjectImpl()
         , m_effectHash(ramses_internal::ResourceContentHash::Invalid())
-        , m_dataType(ramses_internal::EDataType_Invalid)
+        , m_dataType(ramses_internal::EDataType::Invalid)
         , m_semantics(ramses_internal::EFixedSemantics_Invalid)
         , m_elementCount(0u)
         , m_inputIndex(static_cast<uint32_t>(-1))

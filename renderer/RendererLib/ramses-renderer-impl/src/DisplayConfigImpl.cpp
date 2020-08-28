@@ -163,26 +163,26 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DisplayConfigImpl::setWaylandIviLayerID(uint32_t waylandIviLayerID)
+    status_t DisplayConfigImpl::setWaylandIviLayerID(waylandIviLayerId_t waylandIviLayerID)
     {
-        m_internalConfig.setWaylandIviLayerID(ramses_internal::WaylandIviLayerId(waylandIviLayerID));
+        m_internalConfig.setWaylandIviLayerID(ramses_internal::WaylandIviLayerId(waylandIviLayerID.getValue()));
         return StatusOK;
     }
 
-    uint32_t DisplayConfigImpl::getWaylandIviLayerID() const
+    waylandIviLayerId_t DisplayConfigImpl::getWaylandIviLayerID() const
     {
-        return m_internalConfig.getWaylandIviLayerID().getValue();
+        return waylandIviLayerId_t(m_internalConfig.getWaylandIviLayerID().getValue());
     }
 
-    status_t DisplayConfigImpl::setWaylandIviSurfaceID(uint32_t waylandIviSurfaceID)
+    status_t DisplayConfigImpl::setWaylandIviSurfaceID(waylandIviSurfaceId_t waylandIviSurfaceID)
     {
-        m_internalConfig.setWaylandIviSurfaceID(ramses_internal::WaylandIviSurfaceId(waylandIviSurfaceID));
+        m_internalConfig.setWaylandIviSurfaceID(ramses_internal::WaylandIviSurfaceId(waylandIviSurfaceID.getValue()));
         return StatusOK;
     }
 
-    uint32_t DisplayConfigImpl::getWaylandIviSurfaceID() const
+    waylandIviSurfaceId_t DisplayConfigImpl::getWaylandIviSurfaceID() const
     {
-        return m_internalConfig.getWaylandIviSurfaceID().getValue();
+        return waylandIviSurfaceId_t(m_internalConfig.getWaylandIviSurfaceID().getValue());
     }
 
     status_t DisplayConfigImpl::setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit)

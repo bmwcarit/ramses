@@ -78,7 +78,7 @@ namespace ramses
                 m_offscreenBuffers[offscreenBufferId] = true;
         }
 
-        virtual void streamAvailabilityChanged(streamSource_t streamId, bool available) override
+        virtual void streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available) override
         {
             if (available)
                 m_availableStreams.insert(streamId);
@@ -133,7 +133,7 @@ namespace ramses
             m_renderer.getSceneControlAPI()->dispatchEvents(*this);
         }
 
-        bool waitForStreamSurfaceAvailabilityChange(streamSource_t streamSource, bool available)
+        bool waitForStreamSurfaceAvailabilityChange(waylandIviSurfaceId_t streamSource, bool available)
         {
             return waitUntilOrTimeout([&] { return (m_availableStreams.count(streamSource) > 0) == available; });
         }
@@ -159,7 +159,7 @@ namespace ramses
         }
 
         std::unordered_set<displayId_t> m_displays;
-        std::unordered_set<streamSource_t> m_availableStreams;
+        std::unordered_set<waylandIviSurfaceId_t> m_availableStreams;
         std::unordered_map<displayBufferId_t, bool> m_offscreenBuffers; // with linked flag
 
         struct SceneInfo

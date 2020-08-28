@@ -120,7 +120,7 @@ namespace ramses
             if (!TextureUtils::IsTextureSizeSupportedByFormat(mipWidth, mipHeight, format))
             {
                 LOG_WARN(ramses_internal::CONTEXT_CLIENT, "Provided texture mip " << i << " might fail to be uploaded due to its size "
-                    << mipWidth << "x" << mipHeight << " not supported by used format " << format);
+                    << mipWidth << "x" << mipHeight << " not supported by used format " << getTextureFormatString(format));
             }
         }
 
@@ -173,7 +173,7 @@ namespace ramses
             if (!TextureUtils::IsTextureSizeSupportedByFormat(mipSize, mipSize, format))
             {
                 LOG_WARN(ramses_internal::CONTEXT_CLIENT, "Provided texture mip " << i << " might fail to be uploaded due to its size "
-                    << mipSize << "x" << mipSize << " not supported by used format " << format);
+                    << mipSize << "x" << mipSize << " not supported by used format " << getTextureFormatString(format));
             }
         }
 

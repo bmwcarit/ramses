@@ -15,8 +15,6 @@ namespace ramses
 {
     class Appearance;
     class GeometryBinding;
-    class UInt16Array;
-    class Vector3fArray;
     class Effect;
 
     /**

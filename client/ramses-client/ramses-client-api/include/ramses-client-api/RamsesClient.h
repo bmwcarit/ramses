@@ -10,12 +10,8 @@
 #define RAMSES_RAMSESCLIENT_H
 
 #include "ramses-client-api/RamsesObject.h"
-#include "ramses-client-api/TextureEnums.h"
 #include "ramses-client-api/SceneConfig.h"
-#include "ramses-client-api/MipLevelData.h"
-#include "ramses-client-api/TextureSwizzle.h"
 #include "ramses-framework-api/RamsesFramework.h"
-#include <string>
 
 /**
 * ramses namespace
@@ -27,21 +23,7 @@
 namespace ramses
 {
     class Scene;
-    class EffectDescription;
-    class ResourceFileDescription;
-    class ResourceFileDescriptionSet;
     class IClientEventHandler;
-    class Resource;
-    class FloatArray;
-    class Vector2fArray;
-    class Vector3fArray;
-    class Vector4fArray;
-    class UInt16Array;
-    class UInt32Array;
-    class Texture2D;
-    class Texture3D;
-    class TextureCube;
-    class Effect;
 
     /**
     * @brief Entry point of RAMSES client API.
@@ -62,95 +44,18 @@ namespace ramses
         Scene* createScene(sceneId_t sceneId, const SceneConfig& sceneConfig = SceneConfig(), const char* name = nullptr);
 
         /**
-        * @brief Create a new FloatArray
-        *
-        * @param[in] numberOfFloats The number of float values in the FloatArray
-        * @param[in] arrayData Pointer to the float data to be used to create the array from.
-        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
-        * @param[in] name The optional name of the FloatArray.
-        * @return A pointer to the created FloatArray, null on failure
-        */
-        const FloatArray* createConstFloatArray(uint32_t numberOfFloats, const float* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
-
-        /**
-        * @brief Create a new Vector2fArray
-        *
-        * @param[in] numberOfVectors The number of vectors in the Vector2fArray.
-        * @param[in] arrayData Pointer to the float data to be used to create the array from.
-        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
-        * @param[in] name The optional name of the Vector2fArray.
-        * @return A pointer to the created Vector2fArray, null on failure
-        */
-        const Vector2fArray* createConstVector2fArray(uint32_t numberOfVectors, const float* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
-
-        /**
-        * @brief Create a new Vector3fArray
-        *
-        * @param[in] numberOfVectors The number of vectors in the Vector3fArray.
-        * @param[in] arrayData Pointer to the float data to be used to create the array from.
-        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
-        * @param[in] name The optional name of the Vector3fArray.
-        * @return A pointer to the created Vector3fArray, null on failure
-        */
-        const Vector3fArray* createConstVector3fArray(uint32_t numberOfVectors, const float* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
-
-        /**
-        * @brief Create a new Vector4fArray
-        *
-        * @param[in] numberOfVectors The number of vectors in the Vector4fArray.
-        * @param[in] arrayData Pointer to the float data to be used to create the array from.
-        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
-        * @param[in] name The optional name of the Vector4fArray.
-        * @return A pointer to the created Vector4fArray, null on failure
-        */
-        const Vector4fArray* createConstVector4fArray(uint32_t numberOfVectors, const float* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
-
-        /**
-        * @brief Create a new UInt16Array
-        *
-        * @param[in] numberOfIndices The number of indices in the UInt16Array
-        * @param[in] arrayData Pointer to the uint16_t data to be used to create the array from.
-        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
-        * @param[in] name The optional name of the UInt16Array
-        * @return A pointer to the created UInt16Array, null on failure
-        */
-        const UInt16Array* createConstUInt16Array(uint32_t numberOfIndices, const uint16_t* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
-
-        /**
-        * @brief Create a new UInt32Array
-        *
-        * @param[in] numberOfIndices The number of indices in the UInt32Array
-        * @param[in] arrayData Pointer to the uint32_t data to be used to create the array from.
-        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
-        * @param[in] name The optional name of the UInt32Array
-        * @return A pointer to the created UInt32Array, null on failure
-        */
-        const UInt32Array* createConstUInt32Array(uint32_t numberOfIndices, const uint32_t* arrayData, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
-
-        /**
-        * @brief Saves all scene contents (including all client resources) to a file.
-        *
-        * @param[in] scene Scene to save to a file.
-        * @param[in] fileName File name to save the scene to.
-        * @param[in] resourceFileInformation The distribution of resources among resource files to use
-        * @param[in] compress if set to true, resources might be compressed before saving
-        *                     otherwise, uncompressed data will be saved
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t saveSceneToFile(const Scene& scene, const char* fileName, const ResourceFileDescriptionSet& resourceFileInformation, bool compress) const;
-
-        /**
         * @brief Loads scene contents and resources from a file.
         *        The file format has to match current Ramses SDK version in major and minor version number.
         *        This method is not back compatible and will fail
         *        if trying to load scene files saved using older Ramses SDK version.
         *
         * @param[in] fileName File name to load the scene from.
-        * @param[in] resourceFileInformation Description of resource files to be used for loading
+        * @param[in] localOnly Marks the scene to be loaded as valid for local only
+        *                      optimization. This has the same effect as calling
+        *                      SceneConfig::setPublicationMode(EScenePublicationMode_LocalOnly) before saving.
         * @return New instance of scene with contents loaded from a file.
         */
-        Scene* loadSceneFromFile(const char* fileName, const ResourceFileDescriptionSet& resourceFileInformation);
+        Scene* loadSceneFromFile(const char* fileName, bool localOnly = false);
 
         /**
         * @brief Loads scene contents and resources asynchronously from a file.
@@ -164,24 +69,13 @@ namespace ramses
         *        event for the scene file.
         *
         * @param[in] fileName File name to load the scene from.
-        * @param[in] resourceFileInformation Description of resource files to be used for loading
+        * @param[in] localOnly Marks the scene to be loaded as valid for local only
+        *                      optimization. This has the same effect as calling
+        *                      SceneConfig::setPublicationMode(EScenePublicationMode_LocalOnly) before saving.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t loadSceneFromFileAsync(const char* fileName, const ResourceFileDescriptionSet& resourceFileInformation);
-
-        /**
-        * @brief Marks the scene with sceneId as valid for local only
-        *        optimization. This has the same effect as calling
-        *        SceneConfig::setPublicationMode(EScenePublicationMode_LocalOnly) before saving.
-        *
-        *        Important: This function must be called before loading the file to be effective.
-        *
-        * @param[in] sceneId The scene that should be marked for local only optimization
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage() on client.
-        */
-        status_t markSceneIdForLoadingAsLocalOnly(sceneId_t sceneId);
+        status_t loadSceneFromFileAsync(const char* fileName, bool localOnly = false);
 
         /**
         * @brief Destroys the given Scene. The reference of Scene is invalid after this call
@@ -193,252 +87,30 @@ namespace ramses
         status_t destroy(Scene& scene);
 
         /**
-        * @brief Destroys the given Resource.The reference of Resource is invalid after this call
+        * @brief Find a scene from the client by name.
         *
-        * @param[in] resource The Resource to destroy
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
+        * @param[in] name The name of the scene to find.
+        * @return Pointer to the scene if found, nullptr otherwise.
         */
-        status_t destroy(const Resource& resource);
+        const Scene* findSceneByName(const char* name) const;
 
         /**
-        *  @brief Saves selected resources to a file.
-        *
-        *  @param fileDescription Contains the information about the filename and the
-        *                         resources, which should be saved.
-        *  @param compress if set to true, resources might be compressed before saving
-        *                  otherwise, uncompressed data will be saved
-        *  @return StatusOK for success, otherwise the returned status can be used
-        *          to resolve error message using getStatusMessage().
-        */
-        status_t saveResources(const ResourceFileDescription& fileDescription, bool compress) const;
-
-        /**
-        *  @brief Saves selected resources to multiple files.
-        *
-        *  @param fileDescriptions A vector containing several ResourceFileDescriptions. Each of
-        *                          them containing the information about the filename and the
-        *                          resources, which should be saved.
-        *  @param compress if set to true, resources might be compressed before saving
-        *                  otherwise, uncompressed data will be saved
-        *  @return StatusOK for success, otherwise the returned status can be used
-        *          to resolve error message using getStatusMessage().
-        */
-        status_t saveResources(const ResourceFileDescriptionSet& fileDescriptions, bool compress) const;
-
-        /**
-        *  @brief Loads resources from a file.
-        *         The file format has to match current Ramses SDK version in major and minor version number.
-        *         This method is not back compatible and will fail
-        *         if trying to load files saved using older Ramses SDK version.
-        *
-        *  @param fileDescription Contains the filename of the resources file.
-        *  @return StatusOK for success, otherwise the returned status can be used
-        *          to resolve error message using getStatusMessage().
-        */
-        status_t loadResources(const ResourceFileDescription& fileDescription) const;
-
-        /**
-        *  @brief Loads resources from multiple files.
-        *          The file format has to match current Ramses SDK version in major and minor version number.
-        *          This method is not back compatible and will fail
-        *          if trying to load files saved using older Ramses SDK version.
-        *
-        *  @param fileDescriptions A vector containing several ResourceFileDescriptions. Each of
-        *                          them containing the filename.
-        *  @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t loadResources(const ResourceFileDescriptionSet& fileDescriptions) const;
-
-        /**
-        *  @brief Loads resources asynchronously from a file.
-        *         The file format has to match current Ramses SDK version in major and minor version number.
-        *         This method is not backwards compatible and will fail
-        *         if trying to load files saved using older Ramses SDK version.
-        *
-        *         This method returns directly without waiting for the resources to load.
-        *         To get the information when the loading of this resource file is finished
-        *         dispatchEvents() can be called.
-        *         There will be one event generated by this method call.
-        *
-        *  @param fileDescription Contains the filename of the resources file.
-        *  @return StatusOK for success, otherwise the returned status can be used
-        *          to resolve error message using getStatusMessage().
-        */
-        status_t loadResourcesAsync(const ResourceFileDescription& fileDescription);
-
-        /**
-        *  @brief Loads resources asynchronously from multiple files.
-        *          The file format has to match current Ramses SDK version in major and minor version number.
-        *          This method is not backwards compatible and will fail
-        *          if trying to load files saved using older Ramses SDK version.
-        *
-        *         This method returns directly without waiting for the resources to load.
-        *         To get the information when the loading of each of the resource files
-        *         is finished dispatchEvents() can be called.
-        *         There will be an event for each file in the set generated by this
-        *         method call.
-        *
-        *  @param fileDescriptions A vector containing several ResourceFileDescriptions. Each of
-        *                          them containing the filename.
-        *  @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t loadResourcesAsync(const ResourceFileDescriptionSet& fileDescriptions);
-
-        /**
-        *  @brief Forces ramses to close given resource file.
-        *         The file must have been loaded previously and its *NOT*
-        *         guaranteed that the file is closed immediately or before return of the function.
-        *         The user is responsible that no resources are needed to be loaded after closing the file
-        *
-        *  @param fileDescription Contains the filename of the resources file to close.
-        *  @return StatusOK for success, otherwise the returned status can be used
-        *          to resolve error message using getStatusMessage().
-        */
-        status_t forceCloseResourceFileAsync(const ResourceFileDescription& fileDescription) const;
-
-        /**
-        *  @brief Forces ramses to close given resource files.
-        *         The file must have been loaded previously and its *NOT*
-        *         guaranteed that the file is closed immediately or before return of the function.
-        *         The user is responsible that no resources are needed to be loaded after closing the file
-        *
-        *  @param fileDescriptions Contains the filenames of the resources files to close.
-        *  @return StatusOK for success, otherwise the returned status can be used
-        *          to resolve error message using getStatusMessage().
-        */
-        status_t forceCloseResourceFilesAsync(const ResourceFileDescriptionSet& fileDescriptions) const;
-
-        /**
-        * @brief Create a new Texture2D
-        *
-        * @param[in] width Width of the texture (mipmap level 0).
-        * @param[in] height Height of the texture (mipmap level 0).
-        * @param[in] format Pixel format of the Texture2D data.
-        * @param[in] mipMapCount Number of mipmap levels contained in mipLevelData array.
-        * @param[in] mipLevelData Array of MipLevelData structs defining mipmap levels
-        *                         to use. Amount and sizes of supplied mipmap levels have to
-        *                         conform to GL specification. Order is lowest level (biggest
-        *                         resolution) to highest level (smallest resolution).
-        * @param[in] swizzle Describes how RGBA channels of the texture are swizzled,
-        *          where each member of the struct represents one destination channel that the source channel should get sampled from.
-        * @param[in] generateMipChain Auto generate mipmap levels. Cannot be used if custom data for lower mipmap levels provided.
-        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
-        * @param[in] name The name of the Texture2D.
-        * @return A pointer to the created Texture2D, null on failure. Will fail with data == nullptr and/or width/height == 0.
-        */
-        Texture2D* createTexture2D(
-            uint32_t width,
-            uint32_t height,
-            ETextureFormat format,
-            uint32_t mipMapCount,
-            const MipLevelData mipLevelData[],
-            bool generateMipChain = false,
-            const TextureSwizzle& swizzle = {},
-            resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
-            const char* name = nullptr);
-
-        /**
-        * @brief Create a new Texture3D
-        *
-        * @param[in] width Width of the texture (mipmap level 0).
-        * @param[in] height Height of the texture (mipmap level 0).
-        * @param[in] depth Depth of the texture.
-        * @param[in] format Pixel format of the Texture3D data.
-        * @param[in] mipMapCount Number of mipmap levels contained in mipLevelData array.
-        * @param[in] mipLevelData Array of MipLevelData structs defining mipmap levels
-        *                         to use. Amount and sizes of supplied mipmap levels have to
-        *                         conform to GL specification. Order is lowest level (biggest
-        *                         resolution) to highest level (smallest resolution).
-        * @param[in] generateMipChain Auto generate mipmap levels. Cannot be used if custom data for lower mipmap levels provided.
-        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
-        * @param[in] name The name of the Texture3D.
-        * @return A pointer to the created Texture3D, null on failure. Will fail with data == nullptr and/or width/height/depth == 0.
-        */
-        Texture3D* createTexture3D(
-            uint32_t width,
-            uint32_t height,
-            uint32_t depth,
-            ETextureFormat format,
-            uint32_t mipMapCount,
-            const MipLevelData mipLevelData[],
-            bool generateMipChain = false,
-            resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
-            const char* name = nullptr);
-
-        /**
-        * @brief Create a new Cube Texture. All texel values are initially initialized to 0.
-        *
-        * @param[in] size edge length of one quadratic cube face, belonging to the texture.
-        * @param[in] format Pixel format of the Cube Texture data.
-        * @param[in] mipMapCount Number of mipmaps contained in mipLevelData array.
-        * @param[in] mipLevelData Array of MipLevelData structs defining mipmap levels
-        *                         to use. Amount and sizes of supplied mipmap levels have to
-        *                         conform to GL specification. Order ist lowest level (biggest
-        *                         resolution) to highest level (smallest resolution).
-        * @param[in] generateMipChain Auto generate mipmap levels. Cannot be used if custom data for lower mipmap levels provided.
-        * @param[in] swizzle Describes how RGBA channels of the texture are swizzled,
-        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
-        * @param[in] name The name of the Cube Texture.
-        * @return A pointer to the created Cube Texture, null on failure. Will fail with any face-data == nullptr and/or size == 0.
-        */
-        TextureCube* createTextureCube(
-            uint32_t size,
-            ETextureFormat format,
-            uint32_t mipMapCount,
-            const CubeMipLevelData mipLevelData[],
-            bool generateMipChain = false,
-            const TextureSwizzle& swizzle = {},
-            resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
-            const char* name = nullptr);
-
-        /**
-        * @brief Create a new Effect by parsing a GLSL shader described by an EffectDescription instance.
-        *        Refer to RamsesClient::getLastEffectErrorMessages in case of parsing error.
-        *
-        * @param[in] effectDesc Effect description.
-        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
-        * @param[in] name The name of the created Effect.
-        * @return A pointer to the created Effect, null on failure
-        */
-        Effect* createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
-
-        /**
-         * @brief Get the GLSL error messages that were produced at the creation of the last Effect
-         *
-         * @return A string containing the GLSL error messages of the last effect
-         */
-        std::string getLastEffectErrorMessages() const;
-
-
-        /**
-        * @brief Get an object from the client by name.
-        *        Only resource and scene names are searched.
-        *
-        * @param[in] name The name of the object to get.
-        * @return Pointer to the object if found, nullptr otherwise.
-        */
-        const RamsesObject* findObjectByName(const char* name) const;
-
-        /**
-        * @copydoc findObjectByName(const char*) const
+        * @copydoc findSceneByName(const char*) const
         **/
-        RamsesObject* findObjectByName(const char* name);
+        Scene* findSceneByName(const char* name);
 
         /**
-        * @brief Get a resource from the client by id
+        * @brief Get a scene from the client by scene id.
         *
-        * @param[in] id The resource id of the resource to get.
-        * @return Pointer to the resource if found, nullptr otherwise.
+        * @param[in] sceneId The id of the scene to get.
+        * @return Pointer to the scene if found, nullptr otherwise.
         */
-        const Resource* findResourceById(resourceId_t id) const;
+        const Scene* getScene(sceneId_t sceneId) const;
 
         /**
-        * @copydoc findResourceById(resourceId_t id) const
+        * @copydoc getScene(sceneId_t) const
         **/
-        Resource* findResourceById(resourceId_t id);
+        Scene* getScene(sceneId_t sceneId);
 
         /**
         * @brief Some methods on the client provide asynchronous results. These can be synchronously

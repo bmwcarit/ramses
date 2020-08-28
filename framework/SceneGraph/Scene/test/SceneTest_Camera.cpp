@@ -17,7 +17,7 @@ namespace ramses_internal
 
     static DataInstanceHandle AllocDummyDataInstance(IScene& scene)
     {
-        const auto dataLayout = scene.allocateDataLayout({ DataFieldInfo{ramses_internal::EDataType_Vector2I}, DataFieldInfo{ramses_internal::EDataType_Vector2I} }, ResourceContentHash(123u, 0u));
+        const auto dataLayout = scene.allocateDataLayout({ DataFieldInfo{ramses_internal::EDataType::Vector2I}, DataFieldInfo{ramses_internal::EDataType::Vector2I} }, ResourceContentHash(123u, 0u));
         return scene.allocateDataInstance(dataLayout);
     }
 
@@ -60,7 +60,7 @@ namespace ramses_internal
     {
         const auto dataInst = AllocDummyDataInstance(this->m_scene);
         const CameraHandle camera = this->m_scene.allocateCamera(ECameraProjectionType_Renderer, this->m_scene.allocateNode(), dataInst);
-        EXPECT_EQ(dataInst, this->m_scene.getCamera(camera).viewportDataInstance);
+        EXPECT_EQ(dataInst, this->m_scene.getCamera(camera).dataInstance);
     }
 
     TYPED_TEST(AScene, CreatesARendererTypeCameraByDefault)
@@ -74,37 +74,5 @@ namespace ramses_internal
         const CameraHandle camera = AllocCamera(ECameraProjectionType_Renderer, this->m_scene);
         this->m_scene.releaseCamera(camera);
         EXPECT_FALSE(this->m_scene.isCameraAllocated(camera));
-    }
-
-    TYPED_TEST(AScene, SetsOrthoCameraPlanes)
-    {
-        const CameraHandle camera = this->m_scene.allocateCamera(ECameraProjectionType_Orthographic, this->m_scene.allocateNode(), this->m_scene.allocateDataInstance(this->m_scene.allocateDataLayout({}, ResourceContentHash(123u, 0u))));
-        EXPECT_EQ(ECameraProjectionType_Orthographic, this->m_scene.getCamera(camera).projectionType);
-
-        this->m_scene.setCameraFrustum(camera, { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f });
-
-        const Camera& camData = this->m_scene.getCamera(camera);
-        EXPECT_FLOAT_EQ(0.1f, camData.frustum.leftPlane);
-        EXPECT_FLOAT_EQ(0.2f, camData.frustum.rightPlane);
-        EXPECT_FLOAT_EQ(0.3f, camData.frustum.bottomPlane);
-        EXPECT_FLOAT_EQ(0.4f, camData.frustum.topPlane);
-        EXPECT_FLOAT_EQ(0.5f, camData.frustum.nearPlane);
-        EXPECT_FLOAT_EQ(0.6f, camData.frustum.farPlane);
-    }
-
-    TYPED_TEST(AScene, SetsPerspectiveCameraPlanes)
-    {
-        const CameraHandle camera = this->m_scene.allocateCamera(ECameraProjectionType_Perspective, this->m_scene.allocateNode(), this->m_scene.allocateDataInstance(this->m_scene.allocateDataLayout({}, ResourceContentHash(123u, 0u))));
-        EXPECT_EQ(ECameraProjectionType_Perspective, this->m_scene.getCamera(camera).projectionType);
-
-        this->m_scene.setCameraFrustum(camera, { 1.1f, 1.2f, 1.3f, 1.4f, 1.5f, 10.f });
-
-        const Camera& camData = this->m_scene.getCamera(camera);
-        EXPECT_FLOAT_EQ(1.1f,  camData.frustum.leftPlane);
-        EXPECT_FLOAT_EQ(1.2f,  camData.frustum.rightPlane);
-        EXPECT_FLOAT_EQ(1.3f,  camData.frustum.bottomPlane);
-        EXPECT_FLOAT_EQ(1.4f,  camData.frustum.topPlane);
-        EXPECT_FLOAT_EQ(1.5f,  camData.frustum.nearPlane);
-        EXPECT_FLOAT_EQ(10.0f, camData.frustum.farPlane);
     }
 }

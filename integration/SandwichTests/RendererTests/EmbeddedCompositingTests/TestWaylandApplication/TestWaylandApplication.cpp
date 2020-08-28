@@ -502,13 +502,13 @@ namespace ramses_internal
         displayConfig1.setWindowRectangle(0, 0, windowWidth, windowHeight);
         displayConfig1.setPerspectiveProjection(19.f, static_cast<float>(windowWidth) / windowHeight, 0.1f, 1500.f);
         displayConfig1.impl.setWaylandDisplay(systemCompositorDisplay);
-        displayConfig1.setWaylandIviLayerID(waylandIviLayerId.getValue());
+        displayConfig1.setWaylandIviLayerID(ramses::waylandIviLayerId_t(waylandIviLayerId.getValue()));
 
         ramses::DisplayConfig displayConfig2 = RendererTestUtils::CreateTestDisplayConfig(iviSurfaceIdOffset + 1);
         displayConfig2.setWindowRectangle(windowWidth, 0, windowWidth, windowHeight);
         displayConfig2.setPerspectiveProjection(19.f, static_cast<float>(windowWidth) / windowHeight, 0.1f, 1500.f);
         displayConfig2.impl.setWaylandDisplay(systemCompositorDisplay);
-        displayConfig2.setWaylandIviLayerID(waylandIviLayerId.getValue());
+        displayConfig2.setWaylandIviLayerID(ramses::waylandIviLayerId_t(waylandIviLayerId.getValue()));
 
         const auto displayHandle1 = testRenderer.createDisplay(displayConfig1);
         const auto displayHandle2 = testRenderer.createDisplay(displayConfig2);

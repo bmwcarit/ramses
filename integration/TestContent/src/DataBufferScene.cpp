@@ -16,17 +16,15 @@
 #include "ramses-client-api/Effect.h"
 #include "Math3d/Vector4.h"
 #include "SceneAPI/EDataType.h"
-#include "ramses-client-api/IndexDataBuffer.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/AttributeInput.h"
-#include "ramses-client-api/RamsesClient.h"
 
 namespace ramses_internal
 {
 
-    DataBufferScene::DataBufferScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    DataBufferScene::DataBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
         , m_effect(*createEffect(state))
     {
         ramses::Appearance* appearance = m_scene.createAppearance(m_effect);
@@ -51,7 +49,7 @@ namespace ramses_internal
                 3, 0
             };
 
-            m_indexDataBufferUInt32->setData(reinterpret_cast<const char*>(updatedIndicesData), sizeof(updatedIndicesData));
+            m_indexDataBufferUInt32->updateData(0u, 2u, updatedIndicesData);
             m_scene.flush();
             break;
         }
@@ -65,7 +63,7 @@ namespace ramses_internal
                 0.f,  0.f,  0.f, 1.0f,
                 3.f, -3.f,  0.f, 1.0f,
             };
-            m_vertexDataBufferVec4->setData(reinterpret_cast<const char*>(updatedVertices), sizeof(updatedVertices));
+            m_vertexDataBufferVec4->updateData(0u, 3u, updatedVertices);
             m_scene.flush();
             break;
         }
@@ -160,8 +158,8 @@ namespace ramses_internal
             0, 1, 2
         };
 
-        ramses::IndexDataBuffer* dataBuffer = m_scene.createIndexDataBuffer(sizeof(indicesData), ramses::EDataType_UInt16);
-        dataBuffer->setData(reinterpret_cast<const char*>(indicesData), sizeof(indicesData));
+        ramses::ArrayBuffer* dataBuffer = m_scene.createArrayBuffer(ramses::EDataType::UInt16, 3u);
+        dataBuffer->updateData(0u, 3u, indicesData);
         m_geometry->setIndices(*dataBuffer);
     }
 
@@ -172,8 +170,8 @@ namespace ramses_internal
             0, 1, 2
         };
 
-        ramses::IndexDataBuffer* dataBuffer = m_scene.createIndexDataBuffer(sizeof(indicesData), ramses::EDataType_UInt32);
-        dataBuffer->setData(reinterpret_cast<const char*>(indicesData), sizeof(indicesData));
+        ramses::ArrayBuffer* dataBuffer = m_scene.createArrayBuffer(ramses::EDataType::UInt32, 3u);
+        dataBuffer->updateData(0u, 3u, indicesData);
         m_geometry->setIndices(*dataBuffer);
 
         m_indexDataBufferUInt32 = dataBuffer;
@@ -197,10 +195,10 @@ namespace ramses_internal
             0.f
         };
 
-        ramses::VertexDataBuffer* dataBufferX = m_scene.createVertexDataBuffer(sizeof(verticesX), ramses::EDataType_Float);
-        dataBufferX->setData(reinterpret_cast<const char*>(verticesX), sizeof(verticesX));
-        ramses::VertexDataBuffer* dataBufferY = m_scene.createVertexDataBuffer(sizeof(verticesY), ramses::EDataType_Float);
-        dataBufferY->setData(reinterpret_cast<const char*>(verticesY), sizeof(verticesY));
+        ramses::ArrayBuffer* dataBufferX = m_scene.createArrayBuffer(ramses::EDataType::Float, 4u);
+        dataBufferX->updateData(0u, 4u, verticesX);
+        ramses::ArrayBuffer* dataBufferY = m_scene.createArrayBuffer(ramses::EDataType::Float, 4u);
+        dataBufferY->updateData(0u, 4u, verticesY);
 
         ramses::AttributeInput inputX;
         m_effect.findAttributeInput("a_positionX", inputX);
@@ -221,8 +219,8 @@ namespace ramses_internal
             3.f,  0.f
         };
 
-        ramses::VertexDataBuffer* dataBuffer = m_scene.createVertexDataBuffer(sizeof(vertices), ramses::EDataType_Vector2F);
-        dataBuffer->setData(reinterpret_cast<const char*>(vertices), sizeof(vertices));
+        ramses::ArrayBuffer* dataBuffer = m_scene.createArrayBuffer(ramses::EDataType::Vector2F, 8u);
+        dataBuffer->updateData(0u, 4u, vertices);
 
         ramses::AttributeInput input;
         m_effect.findAttributeInput("a_position", input);
@@ -239,8 +237,8 @@ namespace ramses_internal
             3.f,  0.f,  0.f
         };
 
-        ramses::VertexDataBuffer* dataBuffer = m_scene.createVertexDataBuffer(sizeof(vertices), ramses::EDataType_Vector3F);
-        dataBuffer->setData(reinterpret_cast<const char*>(vertices), sizeof(vertices));
+        ramses::ArrayBuffer* dataBuffer = m_scene.createArrayBuffer(ramses::EDataType::Vector3F, 12u);
+        dataBuffer->updateData(0u, 4u, vertices);
 
         ramses::AttributeInput input;
         m_effect.findAttributeInput("a_position", input);
@@ -257,8 +255,8 @@ namespace ramses_internal
             3.f,  0.f,  0.f, 1.0f
         };
 
-        ramses::VertexDataBuffer* dataBuffer = m_scene.createVertexDataBuffer(sizeof(vertices), ramses::EDataType_Vector4F);
-        dataBuffer->setData(reinterpret_cast<const char*>(vertices), sizeof(vertices));
+        ramses::ArrayBuffer* dataBuffer = m_scene.createArrayBuffer(ramses::EDataType::Vector4F, 16u);
+        dataBuffer->updateData(0u, 4u, vertices);
 
         ramses::AttributeInput input;
         m_effect.findAttributeInput("a_position", input);
@@ -276,7 +274,7 @@ namespace ramses_internal
             1.5f, -3.f,  0.f, 1.0f
         };
 
-        const ramses::Vector4fArray* arrayBuffer = m_client.createConstVector4fArray(3u, vertices);
+        const ramses::ArrayResource* arrayBuffer = m_scene.createArrayResource(ramses::EDataType::Vector4F, 3u, vertices);
 
         ramses::AttributeInput input;
         m_effect.findAttributeInput("a_position", input);

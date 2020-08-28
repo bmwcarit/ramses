@@ -14,10 +14,9 @@
 
 namespace ramses_internal
 {
-    ResourceStorage::ResourceStorage(PlatformLock& lockToUse)
+    ResourceStorage::ResourceStorage(PlatformLock& lockToUse, StatisticCollectionFramework& statistics)
         : m_resourceMapLock(lockToUse)
-        , m_listener(nullptr)
-        , m_bytesCurrentlyUsedByResourcesInMemory(0)
+        , m_statistics(statistics)
     {
     }
 
@@ -74,7 +73,7 @@ namespace ramses_internal
     ManagedResource ResourceStorage::createManagedResource(const IResource* resource)
     {
         ResourceDeleterCallingCallback deleter(*this);
-        ManagedResource managedRes(*resource, deleter);
+        ManagedResource managedRes{ resource, deleter };
         referenceResource(resource->getHash());
         return managedRes;
     }
@@ -163,10 +162,11 @@ namespace ramses_internal
                 entry->resource = &resource;
                 entry->resourceInfo = ResourceInfo(&resource);
                 m_bytesCurrentlyUsedByResourcesInMemory += resource.getDecompressedDataSize();
+                m_statistics.statResourcesCreated.incCounter(1);
             }
             else
             {
-                // resource hash already exists, don't keep deplicate copy
+                // resource hash already exists, don't keep duplicate copy
                 delete &resource;
             }
 
@@ -190,13 +190,13 @@ namespace ramses_internal
             resourceToReturn = &resource;
             m_resourceMap.put(hash, newEntry);
             m_bytesCurrentlyUsedByResourcesInMemory += resourceToReturn->getDecompressedDataSize();
+            m_statistics.statResourcesCreated.incCounter(1);
         }
 
         assert(resourceToReturn->getDecompressedDataSize() > 0);
         m_resourceMapLock.unlock();
 
-        ManagedResource managedRes(*resourceToReturn, deleter);
-        return managedRes;
+        return ManagedResource{ resourceToReturn, deleter };
     }
 
     void ResourceStorage::resourceHashUsageZero(const ResourceContentHash& hash)
@@ -253,9 +253,11 @@ namespace ramses_internal
                         LOG_ERROR(CONTEXT_FRAMEWORK, "ResourceStorage::checkForDeletion:: prevented underflow of m_bytesCurrentlyUsedByResourcesInMemory (" << m_bytesCurrentlyUsedByResourcesInMemory << " bytes) from releasing resource: " << internalResource->getHash() << " (" << decompressedSize << " bytes)");
                         m_bytesCurrentlyUsedByResourcesInMemory = 0;
                     }
+
+                    delete internalResource;
+                    entry.resource = nullptr;
+                    m_statistics.statResourcesDestroyed.incCounter(1);
                 }
-                delete internalResource;
-                entry.resource = nullptr;
 
                 if (entry.hashUsages == 0)
                 {
@@ -277,6 +279,26 @@ namespace ramses_internal
         m_resourceMapLock.lock();
         m_resourceMap.reserve(totalCount);
         m_resourceMapLock.unlock();
+    }
+
+    void ResourceStorage::markDeletionDisallowed(const ResourceContentHash& hash)
+    {
+        m_resourceMapLock.lock();
+        RefCntResource* entry = m_resourceMap.get(hash);
+        if (entry)
+            entry->deletionAllowed = false;
+
+
+        m_resourceMapLock.unlock();
+    }
+
+    bool ResourceStorage::isFileResourceInUseAnywhereElse(const ResourceContentHash& hash)
+    {
+        PlatformGuard lock(m_resourceMapLock);
+        RefCntResource* entry = m_resourceMap.get(hash);
+        // we expect entry to exist as well as one hash usage being taken by resource file
+        assert(entry);
+        return entry->hashUsages > 1 || entry->refCount;
     }
 
 }

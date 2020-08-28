@@ -20,7 +20,6 @@ namespace ramses
     class IRendererEventHandler;
     class WarpingMeshData;
     class RendererSceneControl;
-    class RendererSceneControl_legacy;
     class DcsmContentControl;
     class DcsmContentControlConfig;
 
@@ -329,8 +328,8 @@ namespace ramses
         *          Scene control API has its own independent flush and event dispatching,
         *          see #ramses::RendererSceneControl for details.
         *
-        *          Obtaining the #ramses::RendererSceneControl will disallow usage of any other type of scene control
-        *          (#ramses::RendererSceneControl_legacy or #ramses::DcsmContentControl).
+        *          Obtaining the #ramses::RendererSceneControl will disallow usage of different type of scene control
+        *          (#ramses::DcsmContentControl).
         *          #RamsesRenderer is owner of the #ramses::RendererSceneControl API and the pointer
         *          stays valid as long as this #RamsesRenderer instance is alive. It cannot be destroyed
         *          without destroying the #RamsesRenderer.
@@ -338,34 +337,6 @@ namespace ramses
         * @return Pointer to scene control API, or nullptr on error
         */
         RendererSceneControl* getSceneControlAPI();
-
-        /**
-        * @deprecated [Use RendererSceneControl via RamsesRenderer::getSceneControlAPI instead]
-        * @brief Get scene control API
-        * @details Typical application using Ramses has different components controlling the renderer
-        *          (display management, frame limits and looping control, etc.) and controlling the states
-        *          of content to be rendered (show/hide scene, data link, assign to display buffer, etc.).
-        *          The scene control part can be obtained using this method, calling this method
-        *          multiple times is allowed and will always return the same pointer, i.e. there is only
-        *          a single instance per RamsesRenderer.
-        *          This method will return nullptr in case an internal policy disallows controlling of scenes
-        *          through this API - this could mean that there is another, incompatible scene control
-        *          mechanism in use.
-        *          Scene control API has its own independent flush and event dispatching,
-        *          see #ramses::RendererSceneControl_legacy for details.
-        *
-        *          Obtaining the #ramses::RendererSceneControl_legacy will disallow usage of any other type of scene control
-        *          (#ramses::RendererSceneControl or #ramses::DcsmContentControl).
-        *          #RamsesRenderer is owner of the #ramses::RendererSceneControl_legacy API and the pointer
-        *          stays valid as long as this #RamsesRenderer instance is alive. It cannot be destroyed
-        *          without destroying the #RamsesRenderer.
-        *
-        *          Using of #ramses::RendererSceneControl_legacy will fail in undefined ways if any of the scenes
-        *          contains a #ramses::SceneReference.
-        *
-        * @return Pointer to scene control API, or nullptr on error
-        */
-        RendererSceneControl_legacy* getSceneControlAPI_legacy();
 
         /**
         * @brief Create #ramses::DcsmContentControl to control content states
@@ -380,8 +351,8 @@ namespace ramses
         *          #ramses::DcsmContentControl has its own event dispatching mechanism,
         *          see #ramses::DcsmContentControl for details.
         *
-        *          Obtaining the #ramses::DcsmContentControl will disallow usage of any other type of scene control
-        *          (#ramses::RendererSceneControl or #ramses::RendererSceneControl_legacy).
+        *          Obtaining the #ramses::DcsmContentControl will disallow usage of different type of scene control
+        *          (#ramses::RendererSceneControl).
         *          #RamsesRenderer is owner of the #ramses::DcsmContentControl API and the pointer
         *          stays valid as long as this #RamsesRenderer instance is alive. It cannot be destroyed
         *          without destroying the #RamsesRenderer.

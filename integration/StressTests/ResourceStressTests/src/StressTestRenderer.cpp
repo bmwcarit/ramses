@@ -30,10 +30,10 @@ namespace ramses_internal
         displayConfig.setWindowRectangle(offsetX + 50, 50, width, height);
 
         const auto iviSurfaceId = displayConfig.getWaylandIviSurfaceID();
-        displayConfig.setWaylandIviSurfaceID((WaylandIviSurfaceId(iviSurfaceId).isValid() ? iviSurfaceId : 10000) + displayIndex);
+        displayConfig.setWaylandIviSurfaceID(ramses::waylandIviSurfaceId_t((iviSurfaceId.isValid() ? iviSurfaceId.getValue() : 10000) + displayIndex));
 
-        if(!WaylandIviLayerId(displayConfig.getWaylandIviLayerID()).isValid())
-            displayConfig.setWaylandIviLayerID(2);
+        if(!displayConfig.getWaylandIviLayerID().isValid())
+            displayConfig.setWaylandIviLayerID(ramses::waylandIviLayerId_t(2));
 
         ramses::displayId_t displayId = m_renderer.createDisplay(displayConfig);
         m_renderer.flush();

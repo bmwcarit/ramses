@@ -92,14 +92,42 @@ namespace ramses_internal
         ResourceContentHash zero_hash(0, 0);
         ResourceContentHash small_hash(6342u, 0);
         ResourceContentHash big_hash(0x0123456789abcdef, 0xfedcba9876543210);
+        ResourceContentHash texture2d_hash(0x0123456789abcdef, 0x3edcba9876543210);
+        ResourceContentHash effect_hash(0x0123456789abcdef, 0x6edcba9876543210);
+        ResourceContentHash vertex_array_hash(0x0123456789abcdef, 0x1edcba9876543210);
 
-        EXPECT_EQ("0x00000000000000000000000000000000", StringOutputStream::ToString(zero_hash));
-        EXPECT_EQ("0x000000000000000000000000000018C6", StringOutputStream::ToString(small_hash));
-        EXPECT_EQ("0xFEDCBA98765432100123456789ABCDEF", StringOutputStream::ToString(big_hash));
+        EXPECT_EQ("inv_00000000000000000000000000000000", StringOutputStream::ToString(zero_hash));
+        EXPECT_EQ("inv_000000000000000000000000000018C6", StringOutputStream::ToString(small_hash));
+        EXPECT_EQ("inv_FEDCBA98765432100123456789ABCDEF", StringOutputStream::ToString(big_hash));
+        EXPECT_EQ("tx2_3EDCBA98765432100123456789ABCDEF", StringOutputStream::ToString(texture2d_hash));
+        EXPECT_EQ("eff_6EDCBA98765432100123456789ABCDEF", StringOutputStream::ToString(effect_hash));
+        EXPECT_EQ("vtx_1EDCBA98765432100123456789ABCDEF", StringOutputStream::ToString(vertex_array_hash));
 
-        EXPECT_EQ("0x00000000000000000000000000000000", fmt::to_string(zero_hash));
-        EXPECT_EQ("0x000000000000000000000000000018C6", fmt::to_string(small_hash));
-        EXPECT_EQ("0xFEDCBA98765432100123456789ABCDEF", fmt::to_string(big_hash));
+        EXPECT_EQ("inv_00000000000000000000000000000000", fmt::to_string(zero_hash));
+        EXPECT_EQ("inv_000000000000000000000000000018C6", fmt::to_string(small_hash));
+        EXPECT_EQ("inv_FEDCBA98765432100123456789ABCDEF", fmt::to_string(big_hash));
+        EXPECT_EQ("tx2_3EDCBA98765432100123456789ABCDEF", fmt::to_string(texture2d_hash));
+        EXPECT_EQ("eff_6EDCBA98765432100123456789ABCDEF", fmt::to_string(effect_hash));
+        EXPECT_EQ("vtx_1EDCBA98765432100123456789ABCDEF", fmt::to_string(vertex_array_hash));
+    }
+
+    TEST(AResourceContentHash, canPrintAllResourceTypes)
+    {
+        ResourceContentHash res_invalid(0x0123456789abcdef, 0x0123456789abcdef);
+        ResourceContentHash res_vertexArray(0x0123456789abcdef, 0x1123456789abcdef);
+        ResourceContentHash res_indexArray(0x0123456789abcdef, 0x2123456789abcdef);
+        ResourceContentHash res_texture2D(0x0123456789abcdef, 0x3123456789abcdef);
+        ResourceContentHash res_texture3D(0x0123456789abcdef, 0x4123456789abcdef);
+        ResourceContentHash res_textureCube(0x0123456789abcdef, 0x5123456789abcdef);
+        ResourceContentHash res_effect(0x0123456789abcdef, 0x6123456789abcdef);
+
+        EXPECT_EQ("inv_0123456789ABCDEF0123456789ABCDEF", fmt::to_string(res_invalid));
+        EXPECT_EQ("vtx_1123456789ABCDEF0123456789ABCDEF", fmt::to_string(res_vertexArray));
+        EXPECT_EQ("idx_2123456789ABCDEF0123456789ABCDEF", fmt::to_string(res_indexArray));
+        EXPECT_EQ("tx2_3123456789ABCDEF0123456789ABCDEF", fmt::to_string(res_texture2D));
+        EXPECT_EQ("tx3_4123456789ABCDEF0123456789ABCDEF", fmt::to_string(res_texture3D));
+        EXPECT_EQ("txc_5123456789ABCDEF0123456789ABCDEF", fmt::to_string(res_textureCube));
+        EXPECT_EQ("eff_6123456789ABCDEF0123456789ABCDEF", fmt::to_string(res_effect));
     }
 
     TEST(AResourceContentHash, canBeUsedInHashContainers)

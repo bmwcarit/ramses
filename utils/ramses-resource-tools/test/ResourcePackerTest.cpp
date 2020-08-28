@@ -14,11 +14,9 @@
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/RamsesClient.h"
-#include "ramses-client-api/ResourceFileDescription.h"
-#include "ramses-client-api/ResourceFileDescriptionSet.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/Texture2D.h"
-#include "ramses-client-api/UInt16Array.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "Texture2DImpl.h"
 #include "EffectImpl.h"
 #include "ArrayResourceImpl.h"
@@ -27,6 +25,7 @@
 #include "FileUtils.h"
 #include "RamsesObjectTypeUtils.h"
 #include "ramses-client-api/EffectDescription.h"
+#include "ramses-hmi-utils.h"
 
 
 namespace ramses
@@ -38,10 +37,10 @@ namespace ramses
         ~AResourcePacker();
 
     protected:
-        void createResourceFiles();
+        void createResourceFiles(std::vector<resourceId_t>& resources);
         void checkEffect(const Effect& loadedEffect);
         void checkTexture(const Texture2D& loadedTexture);
-        void checkIndices(const UInt16Array& loadedIndices);
+        void checkIndices(const ArrayResource& loadedIndices);
 
     private:
         void        cleanupOutputFiles();
@@ -57,12 +56,11 @@ namespace ramses
         const ramses_internal::String m_outputResourceFile3 = "res/ramses-resource-tools-resourcepacker3.res";
         const ramses_internal::String m_outputSceneFile     = "res/ramses-resource-tools-resourcepacker.ramses";
 
-
-        RamsesClient&      m_client;
-        Scene&             m_scene;
-        Effect*            m_effect;
-        Texture2D*         m_texture;
-        const UInt16Array* m_indices;
+        RamsesClient& m_client;
+        Scene& m_scene;
+        Effect* m_effect;
+        Texture2D* m_texture;
+        ArrayResource* m_indices;
     };
 
     AResourcePacker::AResourcePacker()
@@ -76,11 +74,9 @@ namespace ramses
         m_client.destroy(m_scene);
     }
 
-    void AResourcePacker::createResourceFiles()
+    void AResourcePacker::createResourceFiles(std::vector<resourceId_t>& resources)
     {
         cleanupOutputFiles();
-
-        ResourceFileDescriptionSet resourceFileDescriptionSet;
 
         // Create a Effect resource
         {
@@ -115,34 +111,39 @@ namespace ramses
             effectDesc.setUniformSemantic("u_texture", EEffectUniformSemantic_TextTexture);
             effectDesc.setUniformSemantic("mvpMatrix", EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-            m_effect = m_client.createEffect(effectDesc);
+            m_effect = m_scene.createEffect(effectDesc);
 
-            ResourceFileDescription resourceFileDescription(m_outputResourceFile1.c_str());
-            resourceFileDescription.add(m_effect);
-            resourceFileDescriptionSet.add(resourceFileDescription);
+            Scene& tempScene(*m_client.createScene(sceneId_t{ 0xf00 }));
+            auto effect = tempScene.createEffect(effectDesc);
+            resources.push_back(effect->getResourceId());
+            EXPECT_TRUE(RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(tempScene, m_outputResourceFile1.c_str(), false));
+            m_client.destroy(tempScene);
         }
 
         // Create a Texture resource
         {
             uint8_t      data[4] = {0u};
             MipLevelData mipLevelData(sizeof(data), data);
-            m_texture = m_client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "texture");
-            ResourceFileDescription resourceFileDescription(m_outputResourceFile2.c_str());
-            resourceFileDescription.add(m_texture);
-            resourceFileDescriptionSet.add(resourceFileDescription);
+            m_texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "texture");
+
+            Scene& tempScene(*m_client.createScene(sceneId_t{ 0xf00 }));
+            auto texture = tempScene.createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "texture");
+            resources.push_back(texture->getResourceId());
+            EXPECT_TRUE(RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(tempScene, m_outputResourceFile2.c_str(), false));
+            m_client.destroy(tempScene);
         }
 
-        // Create a UInt16Array resource
+        // Create an array resource
         {
-            static const uint16_t indices[3] = {0, 1, 2};
-            m_indices                        = m_client.createConstUInt16Array(3u, indices, ramses::ResourceCacheFlag_DoNotCache, "indices");
-            ResourceFileDescription resourceFileDescription(m_outputResourceFile3.c_str());
-            resourceFileDescription.add(m_indices);
-            resourceFileDescriptionSet.add(resourceFileDescription);
-        }
+            static const uint16_t indicesRaw[3] = {0, 1, 2};
+            m_indices                        = m_scene.createArrayResource(ramses::EDataType::UInt16, 3u, indicesRaw, ramses::ResourceCacheFlag_DoNotCache, "indices");
 
-        const status_t status = m_client.saveSceneToFile(m_scene, m_outputSceneFile.c_str(), resourceFileDescriptionSet, false);
-        EXPECT_EQ(StatusOK, status);
+            Scene& tempScene(*m_client.createScene(sceneId_t{ 0xf00 }));
+            auto indices = tempScene.createArrayResource(ramses::EDataType::UInt16, 3u, indicesRaw, ramses::ResourceCacheFlag_DoNotCache, "indices");
+            resources.push_back(indices->getResourceId());
+            EXPECT_TRUE(RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(tempScene, m_outputResourceFile3.c_str(), false));
+            m_client.destroy(tempScene);
+        }
     }
 
     void AResourcePacker::RemoveFile(const ramses_internal::String& fileName)
@@ -186,16 +187,17 @@ namespace ramses
         EXPECT_EQ(m_texture->impl.getLowlevelResourceHash(), loadedTexture.impl.getLowlevelResourceHash());
     }
 
-    void AResourcePacker::checkIndices(const UInt16Array& loadedIndices)
+    void AResourcePacker::checkIndices(const ArrayResource& loadedIndices)
     {
         EXPECT_EQ(loadedIndices.impl.getElementCount(), 3u);
-        EXPECT_EQ(loadedIndices.impl.getElementType(), ramses_internal::EDataType_UInt16);
+        EXPECT_EQ(loadedIndices.impl.getElementType(), ramses::EDataType::UInt16);
         EXPECT_EQ(m_indices->impl.getLowlevelResourceHash(), loadedIndices.impl.getLowlevelResourceHash());
     }
 
     TEST_F(AResourcePacker, canPackMultipleResourceFilesCorrectly)
     {
-        createResourceFiles();
+        std::vector<resourceId_t> vec;
+        createResourceFiles(vec);
 
         const char* argv[] = {"program.exe", "-ir", "res/ramses-resource-tools-resourcepackerinput.filepathesconfig", "-or", m_outputResourceFile.c_str(), nullptr};
         int         argc   = sizeof(argv) / sizeof(char*) - 1;
@@ -205,20 +207,22 @@ namespace ramses
         ASSERT_TRUE(ResourcePacker::Pack(arguments));
 
         RamsesClient& loadedClient(*m_framework.createClient("ramses client"));
+        Scene& scene(*loadedClient.createScene(sceneId_t{ 0xf00 }));
 
-        ResourceFileDescription resourceFileDesc(m_outputResourceFile.c_str());
-        ASSERT_TRUE(StatusOK == loadedClient.loadResources(resourceFileDesc));
+        ASSERT_TRUE(RamsesHMIUtils::GetResourceDataPoolForClient(loadedClient).addResourceDataFile(m_outputResourceFile.c_str()));
 
-        const RamsesObjectVector loadedResources = loadedClient.impl.getListOfResourceObjects();
-        ASSERT_EQ(3u, loadedResources.size());
+        ASSERT_EQ(vec.size(), 3u);
+        ASSERT_TRUE(RamsesHMIUtils::GetResourceDataPoolForClient(loadedClient).createResourceForScene(scene, vec[0]));
+        ASSERT_TRUE(RamsesHMIUtils::GetResourceDataPoolForClient(loadedClient).createResourceForScene(scene, vec[1]));
+        ASSERT_TRUE(RamsesHMIUtils::GetResourceDataPoolForClient(loadedClient).createResourceForScene(scene, vec[2]));
 
-        const Effect& loadedEffect = RamsesObjectTypeUtils::ConvertTo<Effect>(*loadedResources[0]);
+        const Effect& loadedEffect = RamsesObjectTypeUtils::ConvertTo<Effect>(*scene.getResource(vec[0]));
         checkEffect(loadedEffect);
 
-        const Texture2D& loadedTexture = RamsesObjectTypeUtils::ConvertTo<Texture2D>(*loadedResources[1]);
+        const Texture2D& loadedTexture = RamsesObjectTypeUtils::ConvertTo<Texture2D>(*scene.getResource(vec[1]));
         checkTexture(loadedTexture);
 
-        const UInt16Array& loadedIndices = RamsesObjectTypeUtils::ConvertTo<UInt16Array>(*loadedResources[2]);
+        const ArrayResource& loadedIndices = RamsesObjectTypeUtils::ConvertTo<ArrayResource>(*scene.getResource(vec[2]));
         checkIndices(loadedIndices);
     }
 }

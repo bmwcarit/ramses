@@ -22,7 +22,7 @@ namespace ramses
         explicit TestEffectCreator(bool withSemantics = false)
             : LocalTestClientWithScene()
         {
-            effect = createEffect(client, withSemantics);
+            effect = createEffect(m_scene, withSemantics);
             EXPECT_TRUE(effect != nullptr);
             appearance = this->m_scene.createAppearance(*effect);
             EXPECT_TRUE(appearance != nullptr);
@@ -33,9 +33,10 @@ namespace ramses
             EXPECT_EQ(StatusOK, this->m_scene.destroy(*appearance));
         }
 
-        static Effect* createEffect(RamsesClient& client, bool withSemantics)
+        static Effect* createEffect(Scene& scene, bool withSemantics)
         {
             ramses_internal::String VertexShader(
+                "#version 300 es\n"
                 "uniform lowp float floatInput;\n"
                 "uniform lowp float floatInputArray[3];\n"
 
@@ -63,10 +64,10 @@ namespace ramses
                 "uniform ivec4 vec4iInput;\n"
                 "uniform ivec4 vec4iInputArray[3];\n"
 
-                "attribute float floatArrayInput;\n"
-                "attribute vec2 vec2fArrayInput;\n"
-                "attribute vec3 vec3fArrayInput;\n"
-                "attribute vec4 vec4fArrayInput;\n"
+                "in float floatArrayInput;\n"
+                "in vec2 vec2fArrayInput;\n"
+                "in vec3 vec3fArrayInput;\n"
+                "in vec4 vec4fArrayInput;\n"
 
                 "void main(void)\n"
                 "{\n"
@@ -84,11 +85,15 @@ namespace ramses
                 "}\n");
 
             ramses_internal::String FragmentShader(
+                "#version 300 es\n"
+                "precision mediump float;\n"
                 "uniform sampler2D texture2dInput;\n"
+                "uniform lowp sampler3D texture3dInput;\n"
                 "uniform samplerCube textureCubeInput;\n"
+                "out vec4 FragColor;"
                 "void main(void)\n"
                 "{\n"
-                "    gl_FragColor = vec4(1.0) + texture2D(texture2dInput, vec2(0,0)) + textureCube(textureCubeInput, vec3(0,0,0));\n"
+                "    FragColor = vec4(1.0) + texture(texture2dInput, vec2(0,0)) + texture(texture3dInput, vec3(0, 0, 0)) + texture(textureCubeInput, vec3(0,0,0));\n"
                 "}\n");
 
             ramses::EffectDescription effectDesc;
@@ -102,7 +107,7 @@ namespace ramses
                 effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
             }
 
-            return client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "input test effect");
+            return scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "input test effect");
         }
 
         Effect*     effect;

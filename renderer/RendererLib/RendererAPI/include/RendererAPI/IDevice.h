@@ -66,6 +66,7 @@ namespace ramses_internal
         virtual void clearStencil        (Int32 s) = 0;
         virtual void blendFactors        (EBlendFactor sourceColor, EBlendFactor destinationColor, EBlendFactor sourceAlpha, EBlendFactor destinationAlpha) = 0;
         virtual void blendOperations     (EBlendOperation operationColor, EBlendOperation operationAlpha) = 0;
+        virtual void blendColor          (const Vector4& color) = 0;
         virtual void cullMode            (ECullMode mode) = 0;
         virtual void depthFunc           (EDepthFunc func) = 0;
         virtual void depthWrite          (EDepthWrite flag) = 0;

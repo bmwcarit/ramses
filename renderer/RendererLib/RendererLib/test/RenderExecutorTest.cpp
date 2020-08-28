@@ -80,26 +80,26 @@ class FakeEffectInputs
 public:
     FakeEffectInputs()
     {
-        uniformInputs.push_back(EffectInputInformation("dataRefField1", 1, EDataType_Float, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
+        uniformInputs.push_back(EffectInputInformation("dataRefField1", 1, EDataType::Float, EFixedSemantics_Invalid));
         dataRefField1 = DataFieldHandle(0);
-        uniformInputs.push_back(EffectInputInformation("fieldModelMatrix", 1, EDataType_Matrix44F, EFixedSemantics_ModelMatrix, EEffectInputTextureType_Invalid));
+        uniformInputs.push_back(EffectInputInformation("fieldModelMatrix", 1, EDataType::Matrix44F, EFixedSemantics_ModelMatrix));
         fieldModelMatrix = DataFieldHandle(1);
-        uniformInputs.push_back(EffectInputInformation("fieldRendererViewMatrix", 1, EDataType_Matrix44F, EFixedSemantics_RendererViewMatrix, EEffectInputTextureType_Invalid));
+        uniformInputs.push_back(EffectInputInformation("fieldRendererViewMatrix", 1, EDataType::Matrix44F, EFixedSemantics_RendererViewMatrix));
         fieldRendererViewMatrix  = DataFieldHandle(2);
-        uniformInputs.push_back(EffectInputInformation("fieldCameraViewMatrix", 1, EDataType_Matrix44F, EFixedSemantics_CameraViewMatrix, EEffectInputTextureType_Invalid));
+        uniformInputs.push_back(EffectInputInformation("fieldCameraViewMatrix", 1, EDataType::Matrix44F, EFixedSemantics_CameraViewMatrix));
         fieldCameraViewMatrix  = DataFieldHandle(3);
-        uniformInputs.push_back(EffectInputInformation("fieldProjMatrix", 1, EDataType_Matrix44F, EFixedSemantics_ProjectionMatrix, EEffectInputTextureType_Invalid));
+        uniformInputs.push_back(EffectInputInformation("fieldProjMatrix", 1, EDataType::Matrix44F, EFixedSemantics_ProjectionMatrix));
         fieldProjMatrix  = DataFieldHandle(4);
-        uniformInputs.push_back(EffectInputInformation("textureField", 1, EDataType_TextureSampler, EFixedSemantics_Invalid, EEffectInputTextureType_Texture2D));
+        uniformInputs.push_back(EffectInputInformation("textureField", 1, EDataType::TextureSampler2D, EFixedSemantics_Invalid));
         textureField  = DataFieldHandle(5);
-        uniformInputs.push_back(EffectInputInformation("dataRefField2", 1, EDataType_Float, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
+        uniformInputs.push_back(EffectInputInformation("dataRefField2", 1, EDataType::Float, EFixedSemantics_Invalid));
         dataRefField2  = DataFieldHandle(6);
-        uniformInputs.push_back(EffectInputInformation("dataRefFieldMatrix22f", 1, EDataType_Matrix22F, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
+        uniformInputs.push_back(EffectInputInformation("dataRefFieldMatrix22f", 1, EDataType::Matrix22F, EFixedSemantics_Invalid));
         dataRefFieldMatrix22f  = DataFieldHandle(7);
 
-        attributeInputs.push_back(EffectInputInformation("vertPosField", 1, EDataType_Vector3Buffer, EFixedSemantics_VertexPositionAttribute, EEffectInputTextureType_Invalid));
+        attributeInputs.push_back(EffectInputInformation("vertPosField", 1, EDataType::Vector3Buffer, EFixedSemantics_VertexPositionAttribute));
         vertPosField = DataFieldHandle(0);
-        attributeInputs.push_back(EffectInputInformation("vertTexcoordField", 1, EDataType_Vector2Buffer, EFixedSemantics_VertexTexCoordAttribute, EEffectInputTextureType_Invalid));
+        attributeInputs.push_back(EffectInputInformation("vertTexcoordField", 1, EDataType::Vector2Buffer, EFixedSemantics_VertexTexCoordAttribute));
         vertTexcoordField = DataFieldHandle(1);
     }
 
@@ -142,9 +142,9 @@ public:
         uniformLayout = DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(scene, fakeEffectInputs.uniformInputs, referencedInputs, ResourceProviderMock::FakeEffectHash, DataLayoutHandle(0u));
 
         DataFieldInfoVector dataFields(3u);
-        dataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType_Indices, 1u, EFixedSemantics_Indices);
-        dataFields[vertPosField.asMemoryHandle()] = DataFieldInfo(EDataType_Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
-        dataFields[vertTexcoordField.asMemoryHandle()] = DataFieldInfo(EDataType_Vector2Buffer, 1u, EFixedSemantics_VertexTexCoordAttribute);
+        dataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType::Indices, 1u, EFixedSemantics_Indices);
+        dataFields[vertPosField.asMemoryHandle()] = DataFieldInfo(EDataType::Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
+        dataFields[vertTexcoordField.asMemoryHandle()] = DataFieldInfo(EDataType::Vector2Buffer, 1u, EFixedSemantics_VertexTexCoordAttribute);
         geometryLayout = sceneAllocator.allocateDataLayout(dataFields, ResourceProviderMock::FakeEffectHash, DataLayoutHandle(2u));
     }
 
@@ -182,24 +182,26 @@ protected:
     {
         const RenderPassHandle pass = sceneAllocator.allocateRenderPass();
         const NodeHandle cameraNode = sceneAllocator.allocateNode();
-        const auto vpDataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_DataReference}, DataFieldInfo{EDataType_DataReference} }, ResourceProviderMock::FakeEffectHash);
-        const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I} }, ResourceProviderMock::FakeEffectHash);
-        const auto vpDataInstance = sceneAllocator.allocateDataInstance(vpDataLayout);
+        const auto dataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference} }, {});
+        const auto dataInstance = sceneAllocator.allocateDataInstance(dataLayout);
+        const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I} }, {});
         const auto vpOffsetInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
         const auto vpSizeInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
-        scene.setDataReference(vpDataInstance, Camera::ViewportOffsetField, vpOffsetInstance);
-        scene.setDataReference(vpDataInstance, Camera::ViewportSizeField, vpSizeInstance);
-        const CameraHandle camera = sceneAllocator.allocateCamera(cameraProjType, cameraNode, vpDataInstance);
+        const auto frustumPlanesLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector4F} }, {});
+        const auto frustumPlanes = sceneAllocator.allocateDataInstance(frustumPlanesLayout);
+        const auto frustumNearFarLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2F} }, {});
+        const auto frustumNearFar = sceneAllocator.allocateDataInstance(frustumNearFarLayout);
+        scene.setDataReference(dataInstance, Camera::ViewportOffsetField, vpOffsetInstance);
+        scene.setDataReference(dataInstance, Camera::ViewportSizeField, vpSizeInstance);
+        scene.setDataReference(dataInstance, Camera::FrustumPlanesField, frustumPlanes);
+        scene.setDataReference(dataInstance, Camera::FrustumNearFarPlanesField, frustumNearFar);
+        const CameraHandle camera = sceneAllocator.allocateCamera(cameraProjType, cameraNode, dataInstance);
 
-        if (ECameraProjectionType_Perspective == cameraProjType)
-        {
-            const ramses_internal::ProjectionParams params = ramses_internal::ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane);
-            scene.setCameraFrustum(camera, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane, params.nearPlane, params.farPlane });
-        }
-        else if (ECameraProjectionType_Orthographic == cameraProjType)
-        {
-            scene.setCameraFrustum(camera, { -1.f, 1.f, -10.f, 10.f, 1.f, 10.f });
-        }
+        ProjectionParams params = ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, -10.f, 10.f, 1.f, 10.f);
+        if (cameraProjType == ECameraProjectionType_Perspective)
+            params = ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane);
+        scene.setDataSingleVector4f(frustumPlanes, DataFieldHandle{ 0 }, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane });
+        scene.setDataSingleVector2f(frustumNearFar, DataFieldHandle{ 0 }, { params.nearPlane, params.farPlane });
 
         if (ECameraProjectionType_Renderer != cameraProjType)
         {
@@ -241,9 +243,9 @@ protected:
         // we cannot use scene allocation helper
         MemoryHandle nextHandle = std::max(scene.getDataInstanceCount(), scene.getDataLayoutCount());
         scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, nextHandle + 3u, nextHandle + 3u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
-        dataRef1 = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefField1, EDataType_Float, DataLayoutHandle(nextHandle), DataInstanceHandle(nextHandle));
-        dataRef2 = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefField2, EDataType_Float, DataLayoutHandle(nextHandle + 1u), DataInstanceHandle(nextHandle + 1u));
-        dataRefMatrix22f = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefFieldMatrix22f, EDataType_Matrix22F, DataLayoutHandle(nextHandle + 2u), DataInstanceHandle(nextHandle + 2u));
+        dataRef1 = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefField1, EDataType::Float, DataLayoutHandle(nextHandle), DataInstanceHandle(nextHandle));
+        dataRef2 = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefField2, EDataType::Float, DataLayoutHandle(nextHandle + 1u), DataInstanceHandle(nextHandle + 1u));
+        dataRefMatrix22f = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dataInstances.first, fakeEffectInputs.dataRefFieldMatrix22f, EDataType::Matrix22F, DataLayoutHandle(nextHandle + 2u), DataInstanceHandle(nextHandle + 2u));
         scene.setDataSingleFloat(dataRef1, DataFieldHandle(0u), 0.1f);
         scene.setDataSingleFloat(dataRef2, DataFieldHandle(0u), -666.f);
         scene.setDataSingleMatrix22f(dataRefMatrix22f, DataFieldHandle(0u), Matrix22f(1, 2, 3, 4));
@@ -308,7 +310,7 @@ protected:
     RenderTargetHandle createRenderTarget(UInt32 width = 800u, UInt32 height = 600u)
     {
         const RenderTargetHandle targetHandle = sceneAllocator.allocateRenderTarget();
-        const RenderBufferHandle bufferHandle = sceneAllocator.allocateRenderBuffer({ width, height, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u });
+        const RenderBufferHandle bufferHandle = sceneAllocator.allocateRenderBuffer({ width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u });
         scene.addRenderTargetRenderBuffer(targetHandle, bufferHandle);
 
         return targetHandle;
@@ -316,7 +318,7 @@ protected:
 
     RenderBufferHandle createRenderbuffer()
     {
-        const RenderBufferHandle bufferHandle = sceneAllocator.allocateRenderBuffer({ 10u, 20u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u });
+        const RenderBufferHandle bufferHandle = sceneAllocator.allocateRenderBuffer({ 10u, 20u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u });
 
         return bufferHandle;
     }
@@ -370,6 +372,7 @@ protected:
             EXPECT_CALL(device, stencilOp(_,_,_))                                                                                                 .RetiresOnSaturation();
             EXPECT_CALL(device, blendOperations(_, _))                                                                                            .RetiresOnSaturation();
             EXPECT_CALL(device, blendFactors(_, _, _, _))                                                                                         .RetiresOnSaturation();
+            EXPECT_CALL(device, blendColor(_))                                                                                           .RetiresOnSaturation();
             EXPECT_CALL(device, colorMask(_, _, _, _))                                                                                            .RetiresOnSaturation();
             EXPECT_CALL(device, cullMode(_))                                                                                                      .RetiresOnSaturation();
             EXPECT_CALL(device, drawMode(_))                                                                                                      .RetiresOnSaturation();

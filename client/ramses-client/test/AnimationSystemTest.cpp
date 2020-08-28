@@ -365,7 +365,7 @@ namespace ramses
 
     TEST_F(AnimationSystemTestClientSideProcessing, canAnimatePropertyUniformInput)
     {
-        Effect* effect = TestEffectCreator::createEffect(this->client, false);
+        Effect* effect = TestEffectCreator::createEffect(this->m_scene, false);
         ASSERT_TRUE(effect != nullptr);
         UniformInput uniformInput;
         EXPECT_EQ(StatusOK, effect->findUniformInput("vec3fInput", uniformInput));

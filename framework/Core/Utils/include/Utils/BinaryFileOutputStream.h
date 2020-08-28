@@ -23,9 +23,9 @@ namespace ramses_internal
         BinaryFileOutputStream(const BinaryFileOutputStream&) = delete;
         BinaryFileOutputStream& operator=(const BinaryFileOutputStream&) = delete;
 
-        IOutputStream& write(const void* data, const UInt32 size) override;
+        IOutputStream& write(const void* data, size_t size) override;
 
-        EStatus getPos(UInt& position);
+        EStatus getPos(size_t& position);
         EStatus getState() const;
 
     private:
@@ -49,17 +49,17 @@ namespace ramses_internal
 
     inline
     IOutputStream&
-    BinaryFileOutputStream::write(const void* data, const UInt32 size)
+    BinaryFileOutputStream::write(const void* data, size_t size)
     {
         if (EStatus::Ok == m_state)
         {
-            m_state = m_file.write(reinterpret_cast<const char*>(data), size) ? EStatus::Ok : EStatus::Error;
+            m_state = m_file.write(data, size) ? EStatus::Ok : EStatus::Error;
         }
         return *this;
     }
 
     inline
-    ramses_internal::EStatus BinaryFileOutputStream::getPos(UInt& position)
+    ramses_internal::EStatus BinaryFileOutputStream::getPos(size_t& position)
     {
         m_state = m_file.getPos(position) ? EStatus::Ok : EStatus::Error;
         return m_state;

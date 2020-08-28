@@ -17,10 +17,12 @@
 #include "Utils/LogMacros.h"
 #include <thread>
 #include "Components/CategoryInfo.h"
+#include "TransportCommon/ISceneUpdateSerializer.h"
 
 namespace ramses_internal
 {
     static const constexpr uint32_t ResourceDataSize = 300000;
+    static const constexpr uint32_t SceneActionDataSize = 300000;
 
     TCPConnectionSystem::TCPConnectionSystem(const NetworkParticipantAddress& participantAddress,
                                                      uint32_t protocolVersion,
@@ -43,10 +45,6 @@ namespace ramses_internal
                             : EParticipantType::Client)
         , m_aliveInterval(aliveInterval)
         , m_aliveIntervalTimeout(aliveTimeout)
-        , m_sendDataSizes(CommunicationSendDataSizes {
-            std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(),
-            ResourceDataSize, std::numeric_limits<uint32_t>::max(),
-            std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max() })
         , m_frameworkLock(frameworkLock)
         , m_thread("R_TCP_ConnSys")
         , m_statisticCollection(statisticCollection)
@@ -136,16 +134,6 @@ namespace ramses_internal
     IConnectionStatusUpdateNotifier& TCPConnectionSystem::getDcsmConnectionStatusUpdateNotifier()
     {
         return m_dcsmConnectionStatusUpdateNotifier;
-    }
-
-    CommunicationSendDataSizes TCPConnectionSystem::getSendDataSizes() const
-    {
-        return m_sendDataSizes;
-    }
-
-    void TCPConnectionSystem::setSendDataSizes(const CommunicationSendDataSizes& sizes)
-    {
-        m_sendDataSizes = sizes;
     }
 
     void TCPConnectionSystem::setResourceProviderServiceHandler(IResourceProviderServiceHandler* handler)
@@ -330,7 +318,8 @@ namespace ramses_internal
 
         // Set send buffer to resource chunk size to allow maximum one resource chunk to use up send buffer. This
         // is needed to allow high prio data to be sent as fast as possible.
-        pp->socket.set_option(asio::socket_base::send_buffer_size{static_cast<int>(m_sendDataSizes.resourceDataArray)});
+        pp->socket.set_option(asio::socket_base::send_buffer_size{static_cast<int>(ResourceDataSize)});
+
         // Disable nagle
         pp->socket.set_option(asio::ip::tcp::no_delay{true});
         pp->state = EParticipantState::WaitingForHello;
@@ -338,7 +327,6 @@ namespace ramses_internal
 
         doReadHeader(pp);
         sendConnectionDescriptionOnNewConnection(pp);
-
     }
 
     void TCPConnectionSystem::sendMessageToParticipant(const ParticipantPtr& pp, OutMessage msg)
@@ -663,11 +651,8 @@ namespace ramses_internal
         case EMessageId_UnsubscribeScene:
             handleUnsubscribeScene(pp, stream);
             break;
-        case EMessageId_SceneNotAvailable:
-            handleSceneNotAvailable(pp, stream);
-            break;
-        case EMessageId_SendSceneActionList:
-            handleSceneActionList(pp, stream);
+        case EMessageId_SendSceneUpdate:
+            handleSceneUpdate(pp, stream);
             break;
         case EMessageId_TransferResources:
             handleTransferResources(pp, stream);
@@ -685,7 +670,7 @@ namespace ramses_internal
             handleRendererEvent(pp, stream);
             break;
         case EMessageId_DcsmRegisterContent:
-            handleDcsmRegisterContent(pp, stream);
+            handleDcsmRegisterContent(pp, stream, pp->receiveBuffer.size());
             break;
         case EMessageId_DcsmCanvasSizeChange:
             handleDcsmCanvasSizeChange(pp, stream);
@@ -962,12 +947,11 @@ namespace ramses_internal
     }
 
     // --
-    bool TCPConnectionSystem::sendInitializeScene(const Guid& to, const SceneInfo& sceneInfo)
+    bool TCPConnectionSystem::sendInitializeScene(const Guid& to, const SceneId& sceneId)
     {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendInitializeScene: to " << to << ", sceneId " << sceneInfo.sceneID << ", name " << sceneInfo.friendlyName);
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendInitializeScene: to " << to << ", sceneId " << sceneId);
         OutMessage msg(to, EMessageId_CreateScene);
-        msg.stream << sceneInfo.sceneID.getValue()
-                   << sceneInfo.friendlyName;
+        msg.stream << sceneId.getValue();
         return postMessageForSending(std::move(msg), true);
     }
 
@@ -975,89 +959,53 @@ namespace ramses_internal
     {
         if (m_sceneRendererHandler)
         {
-            SceneInfo sceneInfo;
-            stream >> sceneInfo.sceneID.getReference()
-                   >> sceneInfo.friendlyName;
+            SceneId sceneId;
+            stream >> sceneId.getReference();
 
             LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleCreateScene: from " << pp->address.getParticipantId() <<
-                      ", sceneId " << sceneInfo.sceneID << ", name " << sceneInfo.friendlyName);
+                      ", sceneId " << sceneId);
             PlatformGuard guard(m_frameworkLock);
-            m_sceneRendererHandler->handleInitializeScene(sceneInfo, pp->address.getParticipantId());
+            m_sceneRendererHandler->handleInitializeScene(sceneId, pp->address.getParticipantId());
         }
     }
 
     // --
-    uint64_t TCPConnectionSystem::sendSceneActionList(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& counterStart)
+    bool TCPConnectionSystem::sendSceneUpdate(const Guid& to, const SceneId& sceneId, const ISceneUpdateSerializer& serializer)
     {
-        uint64_t numberOfChunks = 0u;
+        LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendSceneActionList: to " << to);
 
-        auto sendChunk =
-            [&](std::pair<uint32_t, uint32_t> actionRange, std::pair<const Byte*, const Byte*> dataRange, bool isIncomplete)
-        {
-            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem::sendSceneActionList: to " << to <<
-                ", sceneId " << sceneId.getValue() << ", actions [" << actionRange.first << ", " << actionRange.second <<
-                ") from " << actions.numberOfActions());
+        static_assert(SceneActionDataSize < 1000000, "SceneActionDataSize too big");
 
+        std::vector<Byte> buffer(SceneActionDataSize);
+        return serializer.writeToPackets({buffer.data(), buffer.size()}, [&](size_t size) {
 
-            OutMessage msg(to, EMessageId_SendSceneActionList);
-            msg.stream << static_cast<uint32_t>(actionRange.second - actionRange.first)
-                       << static_cast<uint32_t>(dataRange.second - dataRange.first)
-                       << sceneId.getValue();
+            const uint32_t usedSize = static_cast<uint32_t>(size);
+            OutMessage msg(to, EMessageId_SendSceneUpdate);
+            msg.stream << sceneId.getValue()
+                       << usedSize;
+            msg.stream.write(buffer.data(), usedSize);
 
-            const uint32_t actionOffsetBase = actions[actionRange.first].offsetInCollection();
-            for (uint32_t idx = actionRange.first; idx < actionRange.second; ++idx)
-            {
-                const SceneActionCollection::SceneActionReader reader(actions[idx]);
-                ESceneActionId type = (idx == actionRange.second - 1 && isIncomplete) ? ESceneActionId_Incomplete : reader.type();
-                msg.stream << static_cast<uint32_t>(type);
-                msg.stream << reader.offsetInCollection() - actionOffsetBase;
-            }
-            msg.stream.write(dataRange.first, static_cast<uint32_t>(dataRange.second - dataRange.first));
-
-            msg.stream << (counterStart + numberOfChunks);
-            numberOfChunks++;
-
-            return postMessageForSending(std::move(msg), true);
-        };
-
-        TransportUtilities::SplitSceneActionsToChunks(actions, m_sendDataSizes.sceneActionNumber, m_sendDataSizes.sceneActionDataArray, sendChunk);
-        return numberOfChunks;
+            return postMessageForSending(std::move(msg), false);
+        });
     }
 
-    void TCPConnectionSystem::handleSceneActionList(const ParticipantPtr& pp, BinaryInputStream& stream)
+
+    void TCPConnectionSystem::handleSceneUpdate(const ParticipantPtr& pp, BinaryInputStream& stream)
     {
         if (m_sceneRendererHandler)
         {
-            uint32_t numActions = 0;
-            stream >> numActions;
-            uint32_t actionDataSize = 0;
-            stream >> actionDataSize;
-
             SceneId sceneId;
             stream >> sceneId.getReference();
+            uint32_t dataSize = 0;
+            stream >> dataSize;
 
-            SceneActionCollection actions(actionDataSize, numActions);
-            for (uint32_t i = 0; i < numActions; ++i)
-            {
-                uint32_t type = 0;
-                uint32_t offset = 0;
-                stream >> type;
-                stream >> offset;
-                actions.addRawSceneActionInformation(static_cast<ESceneActionId>(type), offset);
-            }
+            std::vector<Byte> data(dataSize);
+            stream.read(data.data(), dataSize);
 
-            std::vector<Byte>& rawActionData = actions.getRawDataForDirectWriting();
-            rawActionData.resize(actionDataSize);
-            stream.read(rawActionData.data(), actionDataSize);
-
-            uint64_t sceneactionListCounter = 0;
-            stream >> sceneactionListCounter;
-
-            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleSceneActionList: from " << pp->address.getParticipantId() <<
-                      " numActions " << numActions << ", size " << actionDataSize << ", sceneactionCounter " << sceneactionListCounter);
+            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleSceneActionList: from " << pp->address.getParticipantId());
 
             PlatformGuard guard(m_frameworkLock);
-            m_sceneRendererHandler->handleSceneActionList(sceneId, std::move(actions), sceneactionListCounter, pp->address.getParticipantId());
+            m_sceneRendererHandler->handleSceneUpdate(sceneId, std::move(data), pp->address.getParticipantId());
         }
     }
 
@@ -1126,7 +1074,7 @@ namespace ramses_internal
                                                 }));
 
             PlatformGuard guard(m_frameworkLock);
-            m_sceneRendererHandler->handleNewScenesAvailable(newScenes, pp->address.getParticipantId(), EScenePublicationMode_LocalAndRemote);
+            m_sceneRendererHandler->handleNewScenesAvailable(newScenes, pp->address.getParticipantId());
         }
     }
 
@@ -1181,28 +1129,6 @@ namespace ramses_internal
     }
 
     // --
-    bool TCPConnectionSystem::sendSceneNotAvailable(const Guid& to, const SceneId& sceneId)
-    {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendSceneNotAvailable: to " << to << ", sceneId " << sceneId);
-        OutMessage msg(to, EMessageId_SceneNotAvailable);
-        msg.stream << sceneId.getValue();
-        return postMessageForSending(std::move(msg), true);
-    }
-
-    void TCPConnectionSystem::handleSceneNotAvailable(const ParticipantPtr& pp, BinaryInputStream& stream)
-    {
-        if (m_sceneRendererHandler)
-        {
-            SceneId sceneId;
-            stream >> sceneId.getReference();
-
-            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleSceneNotAvailable: from " << pp->address.getParticipantId() << ", sceneId " << sceneId);
-            PlatformGuard guard(m_frameworkLock);
-            m_sceneRendererHandler->handleSceneNotAvailable(sceneId, pp->address.getParticipantId());
-        }
-    }
-
-    // --
     bool TCPConnectionSystem::sendRequestResources(const Guid& to, const ResourceContentHashVector& resources)
     {
         LOG_DEBUG_F(CONTEXT_COMMUNICATION, ([&](ramses_internal::StringOutputStream& sos) {
@@ -1240,57 +1166,28 @@ namespace ramses_internal
                                                 }));
 
             PlatformGuard guard(m_frameworkLock);
-            m_resourceProviderHandler->handleRequestResources(resources, 0u, pp->address.getParticipantId());
+            m_resourceProviderHandler->handleRequestResources(resources, pp->address.getParticipantId());
         }
     }
 
     // --
-    bool TCPConnectionSystem::sendResources(const Guid& to, const ManagedResourceVector& managedResources)
+    bool TCPConnectionSystem::sendResources(const Guid& to, const ISceneUpdateSerializer& serializer)
     {
-        LOG_TRACE_F(CONTEXT_COMMUNICATION, ([&](ramses_internal::StringOutputStream& sos) {
-                                                sos << "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendResources: to " << to << " [";
-                                                for (const auto& mr : managedResources)
-                                                {
-                                                    const IResource* r = mr.getResourceObject();
-                                                    sos << r->getHash() << "/" << r->getName() << "; ";
-                                                }
-                                                sos << "]";
-                                            }));
+        LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendResources: to " << to);
 
-        if (!m_runState)
-            return false;
+        static_assert(ResourceDataSize < 1000000, "ResourceDataSize too big");
 
-        // try to compress for network sending
-        for (const auto& managedResource : managedResources)
-        {
-            const IResource* resource = managedResource.getResourceObject();
-            assert(resource != nullptr);
-            resource->compress(IResource::CompressionLevel::REALTIME);
-        }
+        std::vector<Byte> buffer(ResourceDataSize);
+        return serializer.writeToPackets({buffer.data(), buffer.size()}, [&](size_t size) {
 
-        std::vector<Byte> buffer;
-        bool result = true;
-
-        auto preparePacketFun = [&](UInt32 neededSize) -> std::pair<Byte*, UInt32> {
-            buffer.resize(std::min(m_sendDataSizes.resourceDataArray, neededSize));
-            return std::make_pair(buffer.data(), static_cast<UInt32>(buffer.size()));
-        };
-
-        auto finishedPacketFun = [&](UInt32 usedSize) {
-            assert(usedSize <= buffer.size());
-
+            const uint32_t usedSize = static_cast<uint32_t>(size);
             OutMessage msg(to, EMessageId_TransferResources);
             msg.stream << usedSize;
             msg.stream.write(buffer.data(), usedSize);
-            result &= postMessageForSending(std::move(msg), false);
 
             m_statisticCollection.statResourcesSentSize.incCounter(usedSize);
-        };
-
-        ResourceStreamSerializer serializer;
-        serializer.serialize(preparePacketFun, finishedPacketFun, managedResources);
-
-        return result;
+            return postMessageForSending(std::move(msg), false);
+        });
     }
 
     void TCPConnectionSystem::handleTransferResources(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -1300,7 +1197,7 @@ namespace ramses_internal
             uint32_t dataSize;
             stream >> dataSize;
 
-            const char* receiveBufferEnd = pp->receiveBuffer.data() + pp->receiveBuffer.size();
+            const Byte* receiveBufferEnd = pp->receiveBuffer.data() + pp->receiveBuffer.size();
             absl::Span<const Byte> resourceData(reinterpret_cast<const Byte*>(stream.readPosition()), static_cast<uint32_t>(receiveBufferEnd - stream.readPosition()));
 
             LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleTransferResources: from " << pp->address.getParticipantId() << ", dataSize " << dataSize);
@@ -1416,7 +1313,7 @@ namespace ramses_internal
             uint64_t blobSize = 0;
             stream >> blobSize;
 
-            CategoryInfo categoryInfo({stream.readPositionUchar(), static_cast<size_t>(blobSize)});
+            CategoryInfo categoryInfo({stream.readPosition(), static_cast<size_t>(blobSize)});
             stream.skip(blobSize);
 
             PlatformGuard guard(m_frameworkLock);
@@ -1456,7 +1353,7 @@ namespace ramses_internal
             uint64_t blobSize = 0;
             stream >> blobSize;
 
-            CategoryInfo categoryInfo({stream.readPositionUchar(), static_cast<size_t>(blobSize)});
+            CategoryInfo categoryInfo({stream.readPosition(), static_cast<size_t>(blobSize)});
             stream.skip(blobSize);
 
             PlatformGuard guard(m_frameworkLock);
@@ -1465,23 +1362,25 @@ namespace ramses_internal
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmBroadcastOfferContent(ContentID contentID, Category category)
+    bool TCPConnectionSystem::sendDcsmBroadcastOfferContent(ContentID contentID, Category category, const std::string& friendlyName)
     {
         OutMessage msg(Guid(), EMessageId_DcsmRegisterContent);
         msg.stream << contentID.getValue()
-                   << category.getValue();
+                   << category.getValue()
+                   << friendlyName;
         return postMessageForSending(std::move(msg), true);
     }
 
-    bool TCPConnectionSystem::sendDcsmOfferContent(const Guid& to, ContentID contentID, Category category)
+    bool TCPConnectionSystem::sendDcsmOfferContent(const Guid& to, ContentID contentID, Category category, const std::string& friendlyName)
     {
         OutMessage msg(Guid(to), EMessageId_DcsmRegisterContent);
         msg.stream << contentID.getValue()
-                   << category.getValue();
+                   << category.getValue()
+                   << friendlyName;
         return postMessageForSending(std::move(msg), true);
     }
 
-    void TCPConnectionSystem::handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream)
+    void TCPConnectionSystem::handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream, size_t size)
     {
         if (m_dcsmConsumerHandler)
         {
@@ -1491,8 +1390,14 @@ namespace ramses_internal
             Category category;
             stream >> category.getReference();
 
+            std::string name;
+            if (size > stream.getCurrentReadBytes()) //TODO(Bernhard): Temporary workaround to send name backwards compatible in Ramses 26. Can be removed with next major version
+            {
+                stream >> name;
+            }
+
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmConsumerHandler->handleOfferContent(contentID, category, pp->address.getParticipantId());
+            m_dcsmConsumerHandler->handleOfferContent(contentID, category, name, pp->address.getParticipantId());
         }
     }
 
@@ -1654,7 +1559,7 @@ namespace ramses_internal
             uint64_t blobSize = 0;
             stream >> blobSize;
 
-            DcsmMetadata metadata({stream.readPositionUchar(), static_cast<size_t>(blobSize)});
+            DcsmMetadata metadata({stream.readPosition(), static_cast<size_t>(blobSize)});
             stream.skip(blobSize);
 
             PlatformGuard guard(m_frameworkLock);

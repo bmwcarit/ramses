@@ -18,7 +18,7 @@ namespace ramses
     class TestEffects
     {
     public:
-        static Effect* CreateTestEffect(RamsesClient& client, const char* name = nullptr, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
+        static Effect* CreateTestEffect(Scene& scene, const char* name = nullptr, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
         {
             EffectDescription effectDesc;
             effectDesc.setVertexShader(
@@ -34,12 +34,12 @@ namespace ramses
                 "{\n"
                 "  gl_FragColor = vec4(u_FragColorR, u_FragColorG, 0.0, 0.0); \n"
                 "}\n");
-            Effect* effect = client.impl.createEffect(effectDesc, cacheFlag, name);
+            Effect* effect = scene.createEffect(effectDesc, cacheFlag, name);
             assert(effect != nullptr);
             return effect;
         }
 
-        static Effect* CreateDifferentTestEffect(RamsesClient& client, const char* name = nullptr, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
+        static Effect* CreateDifferentTestEffect(Scene& scene, const char* name = nullptr, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
         {
             EffectDescription effectDesc;
             effectDesc.setVertexShader(
@@ -52,16 +52,19 @@ namespace ramses
                 "{\n"
                 "  gl_FragColor = vec4(1.0); \n"
                 "}\n");
-            Effect* effect = client.impl.createEffect(effectDesc, cacheFlag, name);
+            Effect* effect = scene.createEffect(effectDesc, cacheFlag, name);
             assert(effect != nullptr);
             return effect;
         }
 
-        static Effect* CreateTestEffectWithAttribute(RamsesClient& client, const char* name = nullptr, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
+        static Effect* CreateTestEffectWithAttribute(Scene& scene, const char* name = nullptr, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache)
         {
             EffectDescription effectDesc;
             effectDesc.setVertexShader(
                 "attribute float a_position;\n"
+                "attribute vec2  a_vec2;\n"
+                "attribute vec3  a_vec3;\n"
+                "attribute vec4  a_vec4;\n"
                 "void main()\n"
                 "{\n"
                 "  gl_Position = vec4(a_position, 0.0, 0.0, 1.0); \n"
@@ -71,7 +74,7 @@ namespace ramses
                 "{\n"
                 "  gl_FragColor = vec4(0.0); \n"
                 "}\n");
-            Effect* effect = client.impl.createEffect(effectDesc, cacheFlag, name);
+            Effect* effect = scene.createEffect(effectDesc, cacheFlag, name);
             assert(effect != nullptr);
             return effect;
         }

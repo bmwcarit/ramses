@@ -168,24 +168,24 @@ TEST_F(ARendererCommands, createsCommandForSceneActions)
     const NodeHandle parent(1u);
     const NodeHandle child(2u);
 
-    SceneActionCollection actions;
-    SceneActionCollectionCreator creator(actions);
+    SceneUpdate sceneUpdate;
+    SceneActionCollectionCreator creator(sceneUpdate.actions);
     creator.allocateNode(0u, parent);
     creator.allocateNode(0u, child);
     creator.addChildToNode(parent, child);
 
-    queue.enqueueActionsForScene(sceneId, std::move(actions));
+    queue.enqueueActionsForScene(sceneId, std::move(sceneUpdate));
 
     EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
-    EXPECT_EQ(ERendererCommand_SceneActions, queue.getCommands().getCommandType(0u));
+    EXPECT_EQ(ERendererCommand_SceneUpdate, queue.getCommands().getCommandType(0u));
 
-    const SceneActionsCommand& command = queue.getCommands().getCommandData<SceneActionsCommand>(0u);
+    const SceneUpdateCommand& command = queue.getCommands().getCommandData<SceneUpdateCommand>(0u);
     EXPECT_EQ(sceneId, command.sceneId);
-    const SceneActionCollection& actionsInCommand = command.sceneActions;
+    const SceneActionCollection& actionsInCommand = command.sceneUpdate.actions;
     ASSERT_EQ(3u, actionsInCommand.numberOfActions());
-    EXPECT_EQ(ESceneActionId_AllocateNode, actionsInCommand[0].type());
-    EXPECT_EQ(ESceneActionId_AllocateNode, actionsInCommand[1].type());
-    EXPECT_EQ(ESceneActionId_AddChildToNode, actionsInCommand[2].type());
+    EXPECT_EQ(ESceneActionId::AllocateNode, actionsInCommand[0].type());
+    EXPECT_EQ(ESceneActionId::AllocateNode, actionsInCommand[1].type());
+    EXPECT_EQ(ESceneActionId::AddChildToNode, actionsInCommand[2].type());
 }
 
 TEST_F(ARendererCommands, createsCommandForCreatingDisplay)

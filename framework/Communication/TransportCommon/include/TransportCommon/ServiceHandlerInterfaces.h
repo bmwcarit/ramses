@@ -28,7 +28,7 @@ namespace ramses_internal
     public:
         virtual ~IResourceConsumerServiceHandler() {}
 
-        virtual void handleSendResource(const absl::Span<const Byte>& data, const Guid& providerID) = 0;
+        virtual void handleSendResource(absl::Span<const Byte> data, const Guid& providerID) = 0;
         virtual void handleResourcesNotAvailable(const ResourceContentHashVector& resources, const Guid& providerID) = 0;
     };
 
@@ -37,7 +37,7 @@ namespace ramses_internal
     public:
         virtual ~IResourceProviderServiceHandler() {}
 
-        virtual void handleRequestResources(const ResourceContentHashVector& resources, UInt32 chunkSize, const Guid& requesterId) = 0;
+        virtual void handleRequestResources(const ResourceContentHashVector& resources, const Guid& requesterId) = 0;
     };
 
     class ISceneProviderServiceHandler
@@ -47,7 +47,7 @@ namespace ramses_internal
 
         virtual void handleSubscribeScene(const SceneId& sceneId, const Guid& consumerID) = 0;
         virtual void handleUnsubscribeScene(const SceneId& sceneId, const Guid& consumerID) = 0;
-        virtual void handleRendererEvent(const SceneId& sceneId, std::vector<Byte> data, const Guid& rendererId) = 0;
+        virtual void handleRendererEvent(const SceneId& sceneId, const std::vector<Byte>& data, const Guid& rendererId) = 0;
     };
 
     class ISceneRendererServiceHandler
@@ -55,13 +55,13 @@ namespace ramses_internal
     public:
         virtual ~ISceneRendererServiceHandler() {}
 
-        virtual void handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID, EScenePublicationMode mode) = 0;
+        virtual void handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID) = 0;
         virtual void handleScenesBecameUnavailable(const SceneInfoVector& unavailableScenes, const Guid& providerID) = 0;
 
         virtual void handleSceneNotAvailable(const SceneId& sceneId, const Guid& providerID) = 0;
 
-        virtual void handleInitializeScene(const SceneInfo& sceneInfo, const Guid& providerID) = 0;
-        virtual void handleSceneActionList(const SceneId& sceneId, SceneActionCollection&& actions, const uint64_t& counter, const Guid& providerID) = 0;
+        virtual void handleInitializeScene(const SceneId& sceneId, const Guid& providerID) = 0;
+        virtual void handleSceneUpdate(const SceneId& sceneId, absl::Span<const Byte> actionData, const Guid& providerID) = 0;
     };
 
     class IDcsmProviderServiceHandler
@@ -76,7 +76,7 @@ namespace ramses_internal
     {
     public:
         virtual ~IDcsmConsumerServiceHandler() {};
-        virtual void handleOfferContent(ContentID contentID, Category, const Guid& providerID) = 0;
+        virtual void handleOfferContent(ContentID contentID, Category, const std::string& friendlyName, const Guid& providerID) = 0;
         virtual void handleContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) = 0;
         virtual void handleContentReady(ContentID contentID, const Guid& providerID) = 0;
         virtual void handleContentEnableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID) = 0;

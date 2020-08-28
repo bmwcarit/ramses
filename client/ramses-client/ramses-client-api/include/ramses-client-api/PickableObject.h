@@ -13,7 +13,7 @@
 
 namespace ramses
 {
-    class VertexDataBuffer;
+    class ArrayBuffer;
     class LocalCamera;
 
     /**
@@ -49,7 +49,7 @@ namespace ramses
         * @return The geometry buffer.
         *
         **/
-        const VertexDataBuffer& getGeometryBuffer() const;
+        const ArrayBuffer& getGeometryBuffer() const;
 
         /**
         *

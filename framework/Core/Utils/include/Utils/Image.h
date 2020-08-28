@@ -11,6 +11,7 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/Macros.h"
+#include "Math3d/Vector4i.h"
 #include <vector>
 #include <array>
 #include <assert.h>
@@ -39,10 +40,11 @@ namespace ramses_internal
         UInt32 getWidth() const;
         UInt32 getHeight() const;
         UInt32 getNumberOfPixels() const;
-        UInt64 getSumOfPixelValues() const;
+        Vector4i getSumOfPixelValues() const;
         UInt32 getNumberOfNonBlackPixels(UInt8 maxDiffPerColorChannel = 1) const;
 
         Image createDiffTo(const Image& other) const;
+        std::pair<Image, Image> createSeparateColorAndAlphaImages() const;
         Image createEnlarged(UInt32 width, UInt32 height, std::array<UInt8, 4> fillValue = {0x0, 0x0, 0x0, 0xff}) const;
 
         const std::vector<UInt8>& getData() const;

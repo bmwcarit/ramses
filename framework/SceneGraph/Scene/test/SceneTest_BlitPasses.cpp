@@ -40,8 +40,8 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, BlitPassCanGetSourceAndDestinationRenderBuffers)
     {
-        const RenderBufferHandle sourceRenderBuffer = this->m_scene.allocateRenderBuffer({ 1u, 2u, ERenderBufferType_DepthBuffer, ETextureFormat_Depth16, ERenderBufferAccessMode_ReadWrite, 0u });
-        const RenderBufferHandle destinationRenderBuffer = this->m_scene.allocateRenderBuffer({ 1u, 2u, ERenderBufferType_DepthBuffer, ETextureFormat_Depth16, ERenderBufferAccessMode_ReadWrite, 0u });
+        const RenderBufferHandle sourceRenderBuffer = this->m_scene.allocateRenderBuffer({ 1u, 2u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth16, ERenderBufferAccessMode_ReadWrite, 0u });
+        const RenderBufferHandle destinationRenderBuffer = this->m_scene.allocateRenderBuffer({ 1u, 2u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth16, ERenderBufferAccessMode_ReadWrite, 0u });
 
         BlitPassHandle pass = this->m_scene.allocateBlitPass(sourceRenderBuffer, destinationRenderBuffer);
         EXPECT_EQ(sourceRenderBuffer, this->m_scene.getBlitPass(pass).sourceRenderBuffer);

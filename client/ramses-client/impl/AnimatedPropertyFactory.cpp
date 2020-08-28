@@ -101,7 +101,7 @@ namespace ramses
         const ramses_internal::DataLayoutHandle dataLayout = m_animationSystem.getIScene().getLayoutOfDataInstance(appearance.getUniformDataInstance());
         const ramses_internal::DataFieldHandle dataField(propertyOwner.getInputIndex());
         const ramses_internal::EDataType dataType = m_animationSystem.getIScene().getDataLayout(dataLayout).getField(dataField).dataType;
-        if (dataType == ramses_internal::EDataType_DataReference)
+        if (dataType == ramses_internal::EDataType::DataReference)
         {
             const ramses_internal::DataInstanceHandle dataRef = m_animationSystem.getIScene().getDataReference(appearance.getUniformDataInstance(), dataField);
             handle1 = dataRef.asMemoryHandle();

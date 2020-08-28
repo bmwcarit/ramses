@@ -13,7 +13,6 @@
 #include "framework_common_gmock_header.h"
 #include "CommunicationSystemTestWrapper.h"
 #include "Common/TypedMemoryHandle.h"
-#include "CommunicationSystemTestFactory.h"
 
 namespace ramses_internal
 {
@@ -23,10 +22,10 @@ namespace ramses_internal
     {
     public:
         explicit AbstractSenderAndReceiverTest(EServiceType serviceType)
-            : m_state(CommunicationSystemTestFactory::ConstructTestState(GetParam(), serviceType))
-            , m_daemon(CommunicationSystemTestFactory::ConstructDiscoveryDaemonTestWrapper(*m_state))
-            , m_senderTestWrapper(CommunicationSystemTestFactory::ConstructTestWrapper(*m_state, "sender"))
-            , m_receiverTestWrapper(CommunicationSystemTestFactory::ConstructTestWrapper(*m_state, "receiver"))
+            : m_state(std::make_unique<CommunicationSystemTestState>(GetParam(), serviceType))
+            , m_daemon(std::make_unique<ConnectionSystemTestDaemon>())
+            , m_senderTestWrapper(std::make_unique<CommunicationSystemTestWrapper>(*m_state, "sender"))
+            , m_receiverTestWrapper(std::make_unique<CommunicationSystemTestWrapper>(*m_state, "receiver"))
             , sender(*m_senderTestWrapper->commSystem)
             , receiver(*m_receiverTestWrapper->commSystem)
             , senderId(m_senderTestWrapper->id)
@@ -83,7 +82,7 @@ namespace ramses_internal
         }
 
         std::unique_ptr<CommunicationSystemTestState> m_state;
-        std::unique_ptr<CommunicationSystemDiscoveryDaemonTestWrapper> m_daemon;
+        std::unique_ptr<ConnectionSystemTestDaemon> m_daemon;
 
     protected:
         std::unique_ptr<CommunicationSystemTestWrapper> m_senderTestWrapper;

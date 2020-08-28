@@ -39,6 +39,7 @@ namespace ramses_internal
         }
     }
 
+
     Bool ShaderUploader_GL::UploadShaderProgramFromSource(const EffectResource& effect, ShaderProgramInfo& programShaderInfoOut, String& debugErrorLog)
     {
         LOG_DEBUG(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  compiling shaders for effect " << effect.getName());
@@ -60,6 +61,21 @@ namespace ramses_internal
             return false;
         }
 
+        const bool hasGeometryShader = (std::strcmp(effect.getGeometryShader(), "") != 0);
+        GLHandle geometryShaderHandle = InvalidGLHandle;
+        if (hasGeometryShader)
+        {
+            geometryShaderHandle = CompileShaderStage(effect.getGeometryShader(), GL_GEOMETRY_SHADER_EXT, debugErrorLog);
+
+            if (InvalidGLHandle == geometryShaderHandle)
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  geometry shader failed to compile " << debugErrorLog.c_str());
+                glDeleteShader(vertexShaderHandle);
+                glDeleteShader(fragmentShaderHandle);
+                return false;
+            }
+        }
+
         LOG_TRACE(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  linking shader program");
 
         const GLHandle shaderProgramHandle = glCreateProgram();
@@ -71,11 +87,15 @@ namespace ramses_internal
             debugErrorLog = "Unable to create shader program";
             glDeleteShader(vertexShaderHandle);
             glDeleteShader(fragmentShaderHandle);
+            if (hasGeometryShader)
+                glDeleteShader(geometryShaderHandle);
             return false;
         }
 
         glAttachShader(shaderProgramHandle, fragmentShaderHandle);
         glAttachShader(shaderProgramHandle, vertexShaderHandle);
+        if (hasGeometryShader)
+            glAttachShader(shaderProgramHandle, geometryShaderHandle);
         glLinkProgram(shaderProgramHandle);
 
         GLint linkStatus;
@@ -86,6 +106,7 @@ namespace ramses_internal
             programShaderInfoOut.vertexShaderHandle = vertexShaderHandle;
             programShaderInfoOut.fragmentShaderHandle = fragmentShaderHandle;
             programShaderInfoOut.shaderProgramHandle = shaderProgramHandle;
+            programShaderInfoOut.geometryShaderHandle = geometryShaderHandle;
             return true;
         }
         else
@@ -94,6 +115,8 @@ namespace ramses_internal
             glDeleteProgram(shaderProgramHandle);
             glDeleteShader(vertexShaderHandle);
             glDeleteShader(fragmentShaderHandle);
+            if (hasGeometryShader)
+                glDeleteShader(geometryShaderHandle);
             return false;
         }
     }

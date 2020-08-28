@@ -25,7 +25,7 @@ namespace ramses_internal
     class TextureLinkScene : public IntegrationScene
     {
     public:
-        TextureLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        TextureLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {

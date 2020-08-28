@@ -17,8 +17,8 @@
 
 namespace ramses_internal
 {
-    MultipleTrianglesScene::MultipleTrianglesScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    MultipleTrianglesScene::MultipleTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
         , m_Effect(getTestEffect("ramses-test-client-basic"))
         , m_meshNode1(nullptr)
         , m_meshNode2(nullptr)
@@ -27,23 +27,24 @@ namespace ramses_internal
         , m_meshNode5(nullptr)
         , m_meshNode6(nullptr)
         , m_meshNode7(nullptr)
-        , m_redTriangle(ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Red)
-        , m_greenTriangle(ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Green)
-        , m_blueTriangle(ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Blue)
-        , m_yellowLine(ramsesClient, scene, *m_Effect, ramses::Line::EColor_Yellow, ramses::EDrawMode_Lines)
-        , m_whiteQuad(ramsesClient, scene, *m_Effect, ramses::MultiTriangleGeometry::EColor_White)
-        , m_triangleFan(ramsesClient, scene, *m_Effect, ramses::MultiTriangleGeometry::EColor_Red, 1.f, ramses::MultiTriangleGeometry::EGeometryType_TriangleFan)
-        , m_lineStrip               (ramsesClient, scene, *m_Effect, ramses::Line::EColor_Red, ramses::EDrawMode_LineStrip)
-        , m_linePoints              (ramsesClient, scene, *m_Effect, ramses::Line::EColor_White, ramses::EDrawMode_Points)
-        , m_redTransparentTriangle  (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Red, 0.6f)
-        , m_greenTransparentTriangle(ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Green, 0.6f)
-        , m_blueTransparentTriangle (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_Blue, 0.6f)
-        , m_colorMaskRedTriangle    (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_White)
-        , m_colorMaskGreenTriangle  (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_White)
-        , m_colorMaskBlueTriangle   (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_White)
-        , m_CCWTriangle             (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_White, 1.f, ramses::TriangleGeometry::EVerticesOrder_CCW)
-        , m_CWTriangle              (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_White, 1.f, ramses::TriangleGeometry::EVerticesOrder_CW)
-        , m_CWTriangleCCWIndices    (ramsesClient, scene, *m_Effect, ramses::TriangleAppearance::EColor_White, 1.f, ramses::TriangleGeometry::EVerticesOrder_CW)
+        , m_whiteTriangle(scene, *m_Effect, ramses::TriangleAppearance::EColor_White)
+        , m_redTriangle(scene, *m_Effect, ramses::TriangleAppearance::EColor_Red)
+        , m_greenTriangle(scene, *m_Effect, ramses::TriangleAppearance::EColor_Green)
+        , m_blueTriangle(scene, *m_Effect, ramses::TriangleAppearance::EColor_Blue)
+        , m_yellowLine(scene, *m_Effect, ramses::Line::EColor_Yellow, ramses::EDrawMode_Lines)
+        , m_whiteQuad(scene, *m_Effect, ramses::MultiTriangleGeometry::EColor_White)
+        , m_triangleFan(scene, *m_Effect, ramses::MultiTriangleGeometry::EColor_Red, 1.f, ramses::MultiTriangleGeometry::EGeometryType_TriangleFan)
+        , m_lineStrip               (scene, *m_Effect, ramses::Line::EColor_Red, ramses::EDrawMode_LineStrip)
+        , m_linePoints              (scene, *m_Effect, ramses::Line::EColor_White, ramses::EDrawMode_Points)
+        , m_redTransparentTriangle  (scene, *m_Effect, ramses::TriangleAppearance::EColor_Red, 0.6f)
+        , m_greenTransparentTriangle(scene, *m_Effect, ramses::TriangleAppearance::EColor_Green, 0.6f)
+        , m_blueTransparentTriangle (scene, *m_Effect, ramses::TriangleAppearance::EColor_Blue, 0.6f)
+        , m_colorMaskRedTriangle    (scene, *m_Effect, ramses::TriangleAppearance::EColor_White)
+        , m_colorMaskGreenTriangle  (scene, *m_Effect, ramses::TriangleAppearance::EColor_White)
+        , m_colorMaskBlueTriangle   (scene, *m_Effect, ramses::TriangleAppearance::EColor_White)
+        , m_CCWTriangle             (scene, *m_Effect, ramses::TriangleAppearance::EColor_White, 1.f, ramses::TriangleGeometry::EVerticesOrder_CCW)
+        , m_CWTriangle              (scene, *m_Effect, ramses::TriangleAppearance::EColor_White, 1.f, ramses::TriangleGeometry::EVerticesOrder_CW)
+        , m_CWTriangleCCWIndices    (scene, *m_Effect, ramses::TriangleAppearance::EColor_White, 1.f, ramses::TriangleGeometry::EVerticesOrder_CW)
     {
         m_colorMaskRedTriangle.GetAppearance().setColorWriteMask(false, true, true, true);
         m_colorMaskGreenTriangle.GetAppearance().setColorWriteMask(true, false, true, true);
@@ -168,6 +169,32 @@ namespace ramses_internal
             addMeshNodeToDefaultRenderGroup(*m_meshNode2, 1);
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 2);
             break;
+        case BLENDING_CONSTANT:
+            m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
+
+            m_whiteTriangle.GetAppearance().setBlendingColor(.5f, .5f, 0.f, .7f);
+            m_whiteTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_ConstColor, ramses::EBlendFactor_ConstAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_Zero);
+            m_whiteTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
+            m_meshNode2->setAppearance(m_whiteTriangle.GetAppearance());
+            m_meshNode2->setGeometryBinding(m_whiteTriangle.GetGeometry());
+            addMeshNodeToDefaultRenderGroup(*m_meshNode2, 1);
+            break;
+        case BLENDING_DST_COLOR_AND_ALPHA:
+            m_meshNode1->setAppearance(m_greenTransparentTriangle.GetAppearance());
+
+            m_whiteTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_DstColor, ramses::EBlendFactor_Zero, ramses::EBlendFactor_One, ramses::EBlendFactor_Zero);
+            m_whiteTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
+            m_blueTriangle.GetAppearance().setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
+            m_blueTriangle.GetAppearance().setBlendingFactors(ramses::EBlendFactor_One, ramses::EBlendFactor_Zero, ramses::EBlendFactor_DstAlpha, ramses::EBlendFactor_Zero);
+            m_meshNode2->setAppearance(m_whiteTriangle.GetAppearance());
+            m_meshNode2->setGeometryBinding(m_whiteTriangle.GetGeometry());
+            m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
+            m_meshNode3->setGeometryBinding(m_blueTriangle.GetGeometry());
+            m_meshNode3->translate(0.f, -1.f, 0.f);
+            addMeshNodeToDefaultRenderGroup(*m_meshNode2, 1);
+            addMeshNodeToDefaultRenderGroup(*m_meshNode3, 2);
+            break;
+
         case COLOR_MASK:
             m_meshNode1->setAppearance(m_colorMaskRedTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_colorMaskGreenTriangle.GetAppearance());

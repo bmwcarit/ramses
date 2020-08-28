@@ -8,7 +8,6 @@
 
 #include "TestScenes/CustomShaderTestScene.h"
 #include "ramses-utils.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/GeometryBinding.h"
@@ -20,8 +19,8 @@
 
 namespace ramses_internal
 {
-    CustomShaderTestScene::CustomShaderTestScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    CustomShaderTestScene::CustomShaderTestScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
         , m_effect(*getTestEffect(getEffectNameFromState(state)))
         , m_appearance(*scene.createAppearance(m_effect))
         , m_geometryBinding(*scene.createGeometryBinding(m_effect))
@@ -59,7 +58,7 @@ namespace ramses_internal
     void CustomShaderTestScene::createGeometry()
     {
         const uint16_t indiceData_ccw[] = { 0, 1, 2, 3 };
-        const ramses::UInt16Array& indices = *m_client.createConstUInt16Array(4u, indiceData_ccw);
+        const ramses::ArrayResource& indices = *m_scene.createArrayResource(ramses::EDataType::UInt16, 4u, indiceData_ccw);
         m_geometryBinding.setIndices(indices);
 
         const float vertexPositionsData[] =
@@ -69,7 +68,7 @@ namespace ramses_internal
             1.f, 1.f, -1.f,
             1.f, -1.f, -1.f
         };
-        const ramses::Vector3fArray& vertexPositions = *m_client.createConstVector3fArray(4u, vertexPositionsData);
+        const ramses::ArrayResource& vertexPositions = *m_scene.createArrayResource(ramses::EDataType::Vector3F, 4u, vertexPositionsData);
 
         ramses::AttributeInput positionsInput;
         m_effect.findAttributeInput("a_position", positionsInput);
@@ -82,7 +81,7 @@ namespace ramses_internal
             1.f, 0.f,
             1.f, 1.f
         };
-        const ramses::Vector2fArray& texCoords = *m_client.createConstVector2fArray(4u, texCoordsData);
+        const ramses::ArrayResource& texCoords = *m_scene.createArrayResource(ramses::EDataType::Vector2F, 4u, texCoordsData);
 
         ramses::AttributeInput texCoordInput;
         m_effect.findAttributeInput("a_texcoord", texCoordInput);
@@ -91,7 +90,7 @@ namespace ramses_internal
 
     void CustomShaderTestScene::initInputs()
     {
-        ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-cube-px.png", m_client);
+        ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-cube-px.png", m_scene);
         assert(texture != nullptr);
 
         ramses::TextureSampler& texSampler = *m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, *texture);

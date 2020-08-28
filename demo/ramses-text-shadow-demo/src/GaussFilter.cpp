@@ -14,7 +14,6 @@
 
 GaussFilter::GaussFilter(ramses::RenderBuffer& inputBuffer,
                          EDirection            direction,
-                         ramses::RamsesClient& client,
                          ramses::Scene&        scene,
                          int32_t renderOrder)
     : GraphicalItem(scene)
@@ -48,9 +47,9 @@ GaussFilter::GaussFilter(ramses::RenderBuffer& inputBuffer,
                                     static_cast<float>(width),
                                     static_cast<float>(height)};
 
-    const ramses::Vector2fArray& vertexPositions = *client.createConstVector2fArray(4, vertexPositionsArray);
+    const ramses::ArrayResource& vertexPositions = *m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, vertexPositionsArray);
     uint16_t                     indicesArray[]  = {0, 1, 2, 2, 1, 3};
-    const ramses::UInt16Array&   indices         = *client.createConstUInt16Array(6, indicesArray);
+    const ramses::ArrayResource& indices         = *m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
     ramses::EffectDescription effectDesc;
     if (direction == EDirection_Horizontal)
@@ -65,7 +64,7 @@ GaussFilter::GaussFilter(ramses::RenderBuffer& inputBuffer,
     }
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    m_effect     = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
+    m_effect     = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
     m_appearance = scene.createAppearance(*m_effect);
 
     ramses::GeometryBinding& geometry = *scene.createGeometryBinding(*m_effect);

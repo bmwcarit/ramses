@@ -128,8 +128,30 @@ namespace ramses
         virtual void sceneFlushed(sceneId_t sceneId, sceneVersionTag_t sceneVersionTag) = 0;
 
         /**
-        * @brief This method will be called if a scene which has an expiration timestamp set (#ramses::Scene::setExpirationTimestamp)
-        *        is on renderer (not necessarily rendered) at a state that expired, i.e. current time is after the expiration timestamp.
+        * @brief This method will be called whenever a scene which was not previously monitored for expiration has requested expiration
+        *        monitoring by sending a scene flush with valid expiration timestamp (#ramses::Scene::setExpirationTimestamp)
+        *        and that flush was applied on renderer side.
+        *        From this point on, the scene will be monitored, can expire and recover (#sceneExpired, #sceneRecoveredFromExpiration)
+        *        until monitoring disabled again (#sceneExpirationMonitoringDisabled).
+        * @param sceneId The scene id of the scene that will be monitored for expiration
+        */
+        virtual void sceneExpirationMonitoringEnabled(sceneId_t sceneId) = 0;
+
+        /**
+        * @brief This method will be called whenever a scene which was previously monitored for expiration has requested
+        *        to stop being monitored by sending a scene flush with invalid expiration timestamp (#ramses::Scene::setExpirationTimestamp)
+        *        and that flush was applied on renderer side.
+        *        From this point on, the scene will not be monitored anymore, regardless if it previously expired or not,
+        *        i.e. there will be no expiration events (#sceneExpired, #sceneRecoveredFromExpiration) until monitoring
+        *        enabled again (#sceneExpirationMonitoringEnabled).
+        * @param sceneId The scene id of the scene that will not be monitored for expiration anymore
+        */
+        virtual void sceneExpirationMonitoringDisabled(sceneId_t sceneId) = 0;
+
+        /**
+        * @brief This method will be called if a scene which is enabled for expiration monitoring (#sceneExpirationMonitoringEnabled)
+        *        is on renderer (not necessarily rendered) at a state that expired, i.e. current time is after the expiration timestamp
+        *        set via #ramses::Scene::setExpirationTimestamp.
         *        This callback is called only once when the scene expires even if scene stays expired in subsequent frames.
         *        When the scene is updated again with a new not anymore expired timestamp, #sceneRecoveredFromExpiration is called.
         * @param sceneId The scene id of the scene on which the event occurred
@@ -140,6 +162,8 @@ namespace ramses
         * @brief This method will be called if a scene which previously expired (#ramses::Scene::setExpirationTimestamp and #sceneExpired)
         *        was updated with a new expiration timestamp that is not expired anymore.
         *        This callback is called only once when the scene switches state from expired to not expired.
+        *        This callback is not called when monitoring becomes disabled (#sceneExpirationMonitoringDisabled) while scene
+        *        is expired (#sceneExpired).
         * @param sceneId The scene id of the scene on which the event occurred
         */
         virtual void sceneRecoveredFromExpiration(sceneId_t sceneId) = 0;
@@ -159,7 +183,7 @@ namespace ramses
         * @param streamId The IVI stream id
         * @param available True if the stream became available, and false if it disappeared
         */
-        virtual void streamAvailabilityChanged(streamSource_t streamId, bool available) = 0;
+        virtual void streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available) = 0;
 
         /**
         * @brief This method will be called when there were scene objects picked.
@@ -280,6 +304,22 @@ namespace ramses
         }
 
         /**
+        * @copydoc ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringEnabled
+        */
+        virtual void sceneExpirationMonitoringEnabled(sceneId_t sceneId) override
+        {
+            (void)sceneId;
+        }
+
+        /**
+        * @copydoc ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringDisabled
+        */
+        virtual void sceneExpirationMonitoringDisabled(sceneId_t sceneId) override
+        {
+            (void)sceneId;
+        }
+
+        /**
         * @copydoc ramses::IRendererSceneControlEventHandler::sceneExpired
         */
         virtual void sceneExpired(sceneId_t sceneId) override
@@ -298,7 +338,7 @@ namespace ramses
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::streamAvailabilityChanged
         */
-        virtual void streamAvailabilityChanged(streamSource_t streamId, bool available) override
+        virtual void streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available) override
         {
             (void)streamId;
             (void)available;

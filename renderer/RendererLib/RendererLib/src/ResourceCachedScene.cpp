@@ -273,7 +273,7 @@ namespace ramses_internal
         const UInt32 totalVertexArrayCount = layout.getFieldCount();
         for (DataFieldHandle dataField(0u); dataField < totalVertexArrayCount; ++dataField)
         {
-            if (EDataType_TextureSampler == layout.getField(dataField).dataType)
+            if (IsTextureSamplerType(layout.getField(dataField).dataType))
             {
                 const TextureSamplerHandle sampler = getDataTextureSamplerHandle(dataInstance, dataField);
                 if (!sampler.isValid() || !isTextureSamplerAllocated(sampler) ||
@@ -304,7 +304,7 @@ namespace ramses_internal
         // there has to be always at least indices field in geometry data layout
         static const DataFieldHandle indicesDataField(0u);
         assert(EFixedSemantics_Indices == geometryLayout.getField(indicesDataField).semantics);
-        assert(EDataType_Indices == geometryLayout.getField(indicesDataField).dataType);
+        assert(EDataType::Indices == geometryLayout.getField(indicesDataField).dataType);
 
         const UInt32 numberOfGeometryFields = geometryLayout.getFieldCount();
         assert(numberOfGeometryFields >= 1u);
@@ -586,7 +586,7 @@ namespace ramses_internal
         // TODO vaclav mark data layout explicitly if used for geometry or uniforms when network protocol can change
         // For now we check if indices field is contained to determine geometry data instance - this field exists even if no indices are actually used
         assert(layout.getFieldCount() > 0u);
-        return layout.getField(DataFieldHandle(0u)).dataType == EDataType_Indices;
+        return layout.getField(DataFieldHandle(0u)).dataType == EDataType::Indices;
     }
 
     void ResourceCachedScene::setRenderableResourcesDirtyByTextureSampler(TextureSamplerHandle textureSamplerHandle) const
@@ -622,7 +622,7 @@ namespace ramses_internal
             for (DataFieldHandle dataField(0u); dataField < totalFieldCount; ++dataField)
             {
                 const EDataType dataType = dataLayout.getField(dataField).dataType;
-                if (EDataType_TextureSampler == dataType)
+                if (IsTextureSamplerType(dataType))
                 {
                     const TextureSamplerHandle textureSamplerHandle = getDataTextureSamplerHandle(handle, dataField);
                     if (textureSamplerHandle.isValid() && isTextureSamplerDirty(textureSamplerHandle))

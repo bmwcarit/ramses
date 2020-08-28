@@ -87,7 +87,7 @@ namespace ramses_internal
         for (size_t i = 0; i < resourcesToUpload.size(); ++i)
         {
             const ResourceDescriptor& rd = m_clientResources.getResourceDescriptor(resourcesToUpload[i]);
-            const UInt32 resourceSize = rd.resource.getResourceObject()->getDecompressedDataSize();
+            const UInt32 resourceSize = rd.resource->getDecompressedDataSize();
             uploadClientResource(rd);
             m_stats.clientResourceUploaded(resourceSize);
             sizeUploaded += resourceSize;
@@ -117,11 +117,11 @@ namespace ramses_internal
 
     void ClientResourceUploadingManager::uploadClientResource(const ResourceDescriptor& rd)
     {
-        assert(rd.resource.getResourceObject() != nullptr);
+        assert(rd.resource);
         assert(!rd.deviceHandle.isValid());
         LOG_TRACE(CONTEXT_PROFILING, "        ResourceUploadingManager::uploadResource upload resource of type " << EnumToString(rd.type));
 
-        const IResource* pResource = rd.resource.getResourceObject();
+        const IResource* pResource = rd.resource.get();
         assert(pResource->isDeCompressedAvailable());
 
         const UInt32 resourceSize = pResource->getDecompressedDataSize();
@@ -203,8 +203,8 @@ namespace ramses_internal
         {
             const ResourceDescriptor& rd = m_clientResources.getResourceDescriptor(resource);
             assert(rd.status == EResourceStatus_Provided);
-            assert(rd.resource.getResourceObject() != nullptr);
-            const IResource* resourceObj = rd.resource.getResourceObject();
+            assert(rd.resource);
+            const IResource* resourceObj = rd.resource.get();
             resourceObj->decompress();
             totalSize += resourceObj->getDecompressedDataSize();
 

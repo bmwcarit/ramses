@@ -39,6 +39,7 @@ namespace ramses_internal
         virtual void clearColor(const Vector4& clearColor) override;
         virtual void blendOperations(EBlendOperation colorOperation, EBlendOperation alphaOperation) override;
         virtual void blendFactors(EBlendFactor sourceColor, EBlendFactor destinationColor, EBlendFactor sourceAlpha, EBlendFactor destinationAlpha) override;
+        virtual void blendColor(const Vector4& color) override;
         virtual void cullMode(ECullMode mode) override;
         virtual void depthFunc(EDepthFunc func) override;
         virtual void depthWrite(EDepthWrite flag) override;

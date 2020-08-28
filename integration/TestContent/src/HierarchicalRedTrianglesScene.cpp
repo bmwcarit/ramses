@@ -14,8 +14,8 @@
 
 namespace ramses_internal
 {
-    HierarchicalRedTrianglesScene::HierarchicalRedTrianglesScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    HierarchicalRedTrianglesScene::HierarchicalRedTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
         , m_groupNode(nullptr)
         , m_subGroup1Node(nullptr)
         , m_subGroup2Node(nullptr)
@@ -26,7 +26,7 @@ namespace ramses_internal
         , m_scaleNode2(*m_scene.createNode())
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
-        ramses::Triangle redTriangle(m_client, m_scene, *effect, ramses::TriangleAppearance::EColor_Red);
+        ramses::Triangle redTriangle(m_scene, *effect, ramses::TriangleAppearance::EColor_Red);
 
         m_groupNode = m_scene.createNode();
         ramses::Node* subGroups[3];
@@ -88,8 +88,11 @@ namespace ramses_internal
             m_subGroup1Node->setVisibility(ramses::EVisibilityMode::Invisible);
             m_subGroup2Node->setVisibility(ramses::EVisibilityMode::Invisible);
             break;
-        case NO_VISIBILITY:
+        case INVISIBLE:
             m_groupNode->setVisibility(ramses::EVisibilityMode::Invisible);
+            break;
+        case VISIBILITY_OFF:
+            m_groupNode->setVisibility(ramses::EVisibilityMode::Off);
             break;
         case ROTATE_AND_SCALE:
             m_scaleNode1.setScaling(0.3f, 1.f, 1.f);

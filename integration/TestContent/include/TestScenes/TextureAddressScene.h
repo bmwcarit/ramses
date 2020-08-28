@@ -14,10 +14,8 @@
 
 namespace ramses
 {
-    class UInt16Array;
+    class ArrayResource;
     class Effect;
-    class Vector3fArray;
-    class Vector2fArray;
     class Texture2D;
 }
 
@@ -26,7 +24,7 @@ namespace ramses_internal
     class TextureAddressScene : public IntegrationScene
     {
     public:
-        TextureAddressScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        TextureAddressScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {
@@ -41,10 +39,10 @@ namespace ramses_internal
             ramses::ETextureAddressMode addressMethodV);
 
         ramses::Node* m_groupNode;
-        const ramses::UInt16Array* m_indices;
+        const ramses::ArrayResource* m_indices;
         ramses::Effect* m_effect;
-        const ramses::Vector3fArray* m_vertexPositions;
-        const ramses::Vector2fArray* m_textureCoords;
+        const ramses::ArrayResource* m_vertexPositions;
+        const ramses::ArrayResource* m_textureCoords;
         ramses::Texture2D* m_texture;
     };
 }

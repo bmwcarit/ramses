@@ -31,12 +31,9 @@ namespace ramses
     {
     public:
         /**
-        * @brief Constructor of RamsesFramework using command line parameters
-        *
-        * @param[in] argc Number of strings in argv array
-        * @param[in] argv Command line parameters as array of string
+        * @brief Default constructor
         */
-        explicit RamsesFramework(int32_t argc = 0, const char * argv[] = nullptr);
+        RamsesFramework();
 
         /**
         * @brief Constructor of RamsesFramework using command line parameters
@@ -44,7 +41,7 @@ namespace ramses
         * @param[in] argc Number of strings in argv array
         * @param[in] argv Command line parameters as array of string
         */
-        RamsesFramework(int32_t argc, char * argv[]);
+        RamsesFramework(int32_t argc, char const* const* argv);
 
         /**
         * @brief Constructor of RamsesFramework using RamsesFrameworkConfig object

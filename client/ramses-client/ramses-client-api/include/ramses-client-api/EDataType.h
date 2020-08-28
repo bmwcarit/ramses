@@ -14,14 +14,14 @@ namespace ramses
     /**
      * Specifies the data type used for creating data buffers
     */
-    enum EDataType
+    enum class EDataType
     {
-        EDataType_UInt16 = 0,
-        EDataType_UInt32,
-        EDataType_Float,
-        EDataType_Vector2F,
-        EDataType_Vector3F,
-        EDataType_Vector4F
+        UInt16 = 0,
+        UInt32,
+        Float,
+        Vector2F,
+        Vector3F,
+        Vector4F
     };
 }
 

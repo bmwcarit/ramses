@@ -40,7 +40,7 @@ namespace ramses_internal
 
         if (0 == strcmp(interface, "wl_shell"))
         {
-            m_shellRegistry = reinterpret_cast<wl_shell*>(wl_registry_bind(wl_registry, name, &wl_shell_interface, 1));
+            m_shellRegistry = static_cast<wl_shell*>(wl_registry_bind(wl_registry, name, &wl_shell_interface, 1));
             LOG_DEBUG(CONTEXT_RENDERER, "Window_Wayland::registryGlobalCreated Bound wl_shell");
         }
     }

@@ -181,7 +181,7 @@ TEST_F(ARendererSceneResourceRegistry, canAddAndRemoveTextureBuffers)
 {
     const TextureBufferHandle tb(13u);
     const DeviceResourceHandle deviceHandle(123u);
-    registry.addTextureBuffer(tb, deviceHandle, ETextureFormat_RG8, 0u);
+    registry.addTextureBuffer(tb, deviceHandle, ETextureFormat::RG8, 0u);
 
     TextureBufferHandleVector tbs;
     registry.getAllTextureBuffers(tbs);
@@ -198,10 +198,10 @@ TEST_F(ARendererSceneResourceRegistry, canGetTextureBufferAttributes)
 {
     const TextureBufferHandle tb(13u);
     const DeviceResourceHandle deviceHandle(123u);
-    registry.addTextureBuffer(tb, deviceHandle, ETextureFormat_RG8, 0u);
+    registry.addTextureBuffer(tb, deviceHandle, ETextureFormat::RG8, 0u);
 
     EXPECT_EQ(deviceHandle, registry.getTextureBufferDeviceHandle(tb));
-    EXPECT_EQ(ETextureFormat_RG8, registry.getTextureBufferFormat(tb));
+    EXPECT_EQ(ETextureFormat::RG8, registry.getTextureBufferFormat(tb));
     registry.removeTextureBuffer(tb);
 }
 

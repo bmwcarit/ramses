@@ -22,13 +22,14 @@ namespace ramses_internal
     class HierarchicalRedTrianglesScene : public IntegrationScene
     {
     public:
-        HierarchicalRedTrianglesScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& position);
+        HierarchicalRedTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& position);
 
         enum
         {
             THREE_ROWS_TRIANGLES = 0,
             PARTIAL_VISIBILITY,
-            NO_VISIBILITY,
+            INVISIBLE,
+            VISIBILITY_OFF,
             REENABLED_FULL_VISIBILITY,
             ROTATE_AND_SCALE,
             DELETE_MESHNODE

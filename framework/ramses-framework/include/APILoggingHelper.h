@@ -16,7 +16,7 @@ namespace ramses_internal
     class APILoggingHelper
     {
     public:
-        static String MakeLoggingString(int32_t argc, const char* argv[])
+        static String MakeLoggingString(int32_t argc, char const* const* argv)
         {
             StringOutputStream argumentsStream;
             argumentsStream << argc << " arguments: [ ";

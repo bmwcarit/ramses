@@ -26,7 +26,7 @@ namespace ramses_internal
     class TextureBufferScene : public IntegrationScene
     {
     public:
-        TextureBufferScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        TextureBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum EState
         {

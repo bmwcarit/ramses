@@ -28,9 +28,9 @@ namespace ramses_internal
         SystemCompositorController_Wayland_IVI waylandSystemCompositorController;
 
         ASSERT_TRUE(waylandSystemCompositorController.init());
-        waylandSystemCompositorController.addSurfaceToLayer(WaylandIviSurfaceId(m_config.getWaylandIviSurfaceID()),
-                                                            WaylandIviLayerId(m_config.getWaylandIviLayerID()));
-        waylandSystemCompositorController.setSurfaceVisibility(WaylandIviSurfaceId(m_config.getWaylandIviSurfaceID()), true);
+        waylandSystemCompositorController.addSurfaceToLayer(WaylandIviSurfaceId(m_config.getWaylandIviSurfaceID().getValue()),
+                                                            WaylandIviLayerId(m_config.getWaylandIviLayerID().getValue()));
+        waylandSystemCompositorController.setSurfaceVisibility(WaylandIviSurfaceId(m_config.getWaylandIviSurfaceID().getValue()), true);
         waylandSystemCompositorController.update();
     }
 

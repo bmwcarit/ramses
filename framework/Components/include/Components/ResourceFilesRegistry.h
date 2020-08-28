@@ -17,6 +17,9 @@
 #include "Utils/File.h"
 #include "Collections/Pair.h"
 
+#include <algorithm>
+#include <unordered_map>
+
 namespace ramses_internal
 {
     struct ResourceRegistryEntry
@@ -33,7 +36,7 @@ namespace ramses_internal
         {}
     };
     typedef HashMap<ResourceContentHash, ResourceRegistryEntry> FileContentsMap;
-    typedef HashMap<ResourceFileInputStreamSPtr, FileContentsMap> ResourceFileInputStreamToFileContentMap;
+    typedef std::unordered_map<ResourceFileInputStreamSPtr, FileContentsMap> ResourceFileInputStreamToFileContentMap;
 
     class ResourceFilesRegistry
     {
@@ -42,8 +45,7 @@ namespace ramses_internal
         void unregisterResourceFile(const ResourceFileInputStreamSPtr& resourceFileInputStream);
         void unregisterResourceFile(const String& filename);
         bool hasResourceFile(const String& resourceFileName) const;
-
-        bool canLoadResource(const ResourceContentHash& hash) const;
+        const FileContentsMap* getContentsOfResourceFile(const String& filename) const;
         EStatus getEntry(const ResourceContentHash& hash, BinaryFileInputStream*& resourceStream, ResourceFileEntry& fileEntry) const;
     private:
         ResourceFileInputStreamToFileContentMap m_resourceFiles;
@@ -60,7 +62,7 @@ namespace ramses_internal
             ResourceRegistryEntry entry(iter.value, resourceStorage.getResourceHashUsage(iter.key));
             fileContentsMap.put(iter.key, entry);
         }
-        m_resourceFiles.put(resourceFileInputStream, fileContentsMap);
+        m_resourceFiles.insert({ resourceFileInputStream, fileContentsMap });
     }
 
     inline
@@ -68,18 +70,27 @@ namespace ramses_internal
     {
         for (auto iter = m_resourceFiles.begin(); iter != m_resourceFiles.end(); iter++)
         {
-            if (iter->key->getResourceFileName() == filename)
+            if (iter->first->getResourceFileName() == filename)
             {
-                m_resourceFiles.remove(iter);
+                m_resourceFiles.erase(iter);
                 break;
             }
         }
     }
 
     inline
+    const FileContentsMap* ResourceFilesRegistry::getContentsOfResourceFile(const String& filename) const
+    {
+        auto it = std::find_if(m_resourceFiles.begin(), m_resourceFiles.end(), [&filename](auto const& entry) {
+            return entry.first->getResourceFileName() == filename;
+        });
+        return it == m_resourceFiles.end() ? nullptr : &it->second;
+    }
+
+    inline
     void ResourceFilesRegistry::unregisterResourceFile(const ResourceFileInputStreamSPtr& resourceFileInputStream)
     {
-        m_resourceFiles.remove(resourceFileInputStream);
+        m_resourceFiles.erase(resourceFileInputStream);
     }
 
     inline
@@ -87,7 +98,7 @@ namespace ramses_internal
     {
         for (const auto& iter : m_resourceFiles)
         {
-            if (iter.key->getResourceFileName() == resourceFileName)
+            if (iter.first->getResourceFileName() == resourceFileName)
             {
                 return true;
             }
@@ -100,11 +111,11 @@ namespace ramses_internal
     {
         for (const auto& iter : m_resourceFiles)
         {
-            const FileContentsMap& fileContents = iter.value;
+            const FileContentsMap& fileContents = iter.second;
             ResourceRegistryEntry* entry = fileContents.get(hash);
             if (entry != nullptr)
             {
-                resourceStream = &iter.key->resourceStream;
+                resourceStream = &iter.first->resourceStream;
                 fileEntry = entry->fileEntry;
                 return EStatus::Ok;
             }

@@ -37,6 +37,7 @@ namespace ramses_internal
         MOCK_METHOD(RenderStateHandle, allocateRenderState, (RenderStateHandle), (override));
         MOCK_METHOD(void , setRenderStateBlendFactors, (RenderStateHandle, EBlendFactor, EBlendFactor, EBlendFactor, EBlendFactor), (override));
         MOCK_METHOD(void , setRenderStateBlendOperations, (RenderStateHandle, EBlendOperation, EBlendOperation), (override));
+        MOCK_METHOD(void , setRenderStateBlendColor, (RenderStateHandle, const Vector4&), (override));
         MOCK_METHOD(void , setRenderStateCullMode, (RenderStateHandle, ECullMode), (override));
         MOCK_METHOD(void , setRenderStateDrawMode, (RenderStateHandle, EDrawMode), (override));
         MOCK_METHOD(void , setRenderStateDepthWrite, (RenderStateHandle, EDepthWrite), (override));
@@ -180,6 +181,7 @@ namespace ramses_internal
         rs.blendFactorDstAlpha = EBlendFactor::SrcAlpha;
         rs.blendOperationColor = EBlendOperation::Subtract;
         rs.blendOperationAlpha = EBlendOperation::Max;
+        rs.blendColor = { .1f, .2f, .3f, .4f };
         rs.cullMode = ECullMode::BackFacing;
         rs.drawMode = EDrawMode::Lines;
         rs.depthWrite = EDepthWrite::Enabled;
@@ -194,15 +196,15 @@ namespace ramses_internal
         rs.stencilOpDepthPass = EStencilOp::Zero;
         rs.colorWriteMask = 0x80;
 
-        const UInt32 sizeOfActionData(sizeof(RenderState) + sizeof(RenderStateHandle));
-
         creator.compoundState(state, rs);
 
-        ASSERT_EQ(sizeOfActionData, collection.collectionData().size());
+        const size_t expectedSize{ sizeof(RenderState) - sizeof(RenderState::padding) + sizeof(RenderStateHandle) };
+        ASSERT_EQ(expectedSize, collection.collectionData().size());
 
         EXPECT_CALL(scene, allocateRenderState(state)).WillOnce(Return(state));
         EXPECT_CALL(scene, setRenderStateBlendFactors(state, rs.blendFactorSrcColor, rs.blendFactorDstColor, rs.blendFactorSrcAlpha, rs.blendFactorDstAlpha));
         EXPECT_CALL(scene, setRenderStateBlendOperations(state, rs.blendOperationColor, rs.blendOperationAlpha));
+        EXPECT_CALL(scene, setRenderStateBlendColor(state, Vector4(0.1f, 0.2f, 0.3f, 0.4f)));
         EXPECT_CALL(scene, setRenderStateCullMode(state, rs.cullMode));
         EXPECT_CALL(scene, setRenderStateDrawMode(state, rs.drawMode));
         EXPECT_CALL(scene, setRenderStateDepthWrite(state, rs.depthWrite));

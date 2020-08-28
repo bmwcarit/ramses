@@ -42,9 +42,11 @@ public:
     MOCK_METHOD(void, dataConsumerCreated, (ContentID, dataConsumerId_t), (override));
     MOCK_METHOD(void, dataConsumerDestroyed, (ContentID, dataConsumerId_t), (override));
     MOCK_METHOD(void, contentFlushed, (ContentID, sceneVersionTag_t), (override));
+    MOCK_METHOD(void, contentExpirationMonitoringEnabled, (ContentID), (override));
+    MOCK_METHOD(void, contentExpirationMonitoringDisabled, (ContentID), (override));
     MOCK_METHOD(void, contentExpired, (ContentID), (override));
     MOCK_METHOD(void, contentRecoveredFromExpiration, (ContentID), (override));
-    MOCK_METHOD(void, streamAvailabilityChanged, (streamSource_t, bool), (override));
+    MOCK_METHOD(void, streamAvailabilityChanged, (waylandIviSurfaceId_t, bool), (override));
     MOCK_METHOD(void, contentEnableFocusRequest, (ContentID, int32_t), (override));
     MOCK_METHOD(void, contentDisableFocusRequest, (ContentID, int32_t), (override));
 };
@@ -2027,6 +2029,46 @@ TEST_F(ADcsmContentControl, reportsContentFlushed_SceneAssociatedWithMultipleCon
     update();
 }
 
+TEST_F(ADcsmContentControl, reportsContentExpirationMonitoringEnabledDisabled)
+{
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    makeDcsmContentReady(m_contentID2, m_categoryID1, SceneId2);
+    update();
+
+    EXPECT_CALL(m_eventHandlerMock, contentExpirationMonitoringEnabled(m_contentID1));
+    m_sceneControlHandler.sceneExpirationMonitoringEnabled(SceneId1);
+
+    EXPECT_CALL(m_eventHandlerMock, contentExpirationMonitoringEnabled(m_contentID2));
+    m_sceneControlHandler.sceneExpirationMonitoringEnabled(SceneId2);
+
+    update();
+
+    EXPECT_CALL(m_eventHandlerMock, contentExpirationMonitoringDisabled(m_contentID1));
+    m_sceneControlHandler.sceneExpirationMonitoringDisabled(SceneId1);
+
+    EXPECT_CALL(m_eventHandlerMock, contentExpirationMonitoringDisabled(m_contentID2));
+    m_sceneControlHandler.sceneExpirationMonitoringDisabled(SceneId2);
+
+    update();
+}
+
+TEST_F(ADcsmContentControl, reportsContentExpirationMonitoringEnabledDisabled_SceneAssociatedWithMultipleContents)
+{
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    makeDcsmContentReady(m_contentID2, m_categoryID1, SceneId1, true);
+    update();
+
+    EXPECT_CALL(m_eventHandlerMock, contentExpirationMonitoringEnabled(m_contentID1));
+    EXPECT_CALL(m_eventHandlerMock, contentExpirationMonitoringEnabled(m_contentID2));
+    m_sceneControlHandler.sceneExpirationMonitoringEnabled(SceneId1);
+    update();
+
+    EXPECT_CALL(m_eventHandlerMock, contentExpirationMonitoringDisabled(m_contentID1));
+    EXPECT_CALL(m_eventHandlerMock, contentExpirationMonitoringDisabled(m_contentID2));
+    m_sceneControlHandler.sceneExpirationMonitoringDisabled(SceneId1);
+    update();
+}
+
 TEST_F(ADcsmContentControl, reportsContentExpired)
 {
     makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
@@ -2093,8 +2135,8 @@ TEST_F(ADcsmContentControl, reportsContentRecoveredFromExpiration_SceneAssociate
 
 TEST_F(ADcsmContentControl, reportsStreamAvailabilityChange)
 {
-    constexpr streamSource_t streamId1{ 123 };
-    constexpr streamSource_t streamId2{ 124 };
+    constexpr waylandIviSurfaceId_t streamId1{ 123 };
+    constexpr waylandIviSurfaceId_t streamId2{ 124 };
 
     EXPECT_CALL(m_eventHandlerMock, streamAvailabilityChanged(streamId1, true));
     m_sceneControlHandler.streamAvailabilityChanged(streamId1, true);
@@ -2164,5 +2206,31 @@ TEST_F(ADcsmContentControl, reportsDataSlotEvent_SceneAssociatedWithMultipleCont
     EXPECT_CALL(m_eventHandlerMock, dataConsumerDestroyed(m_contentID2, dataConsumerId));
     m_sceneControlHandler.dataConsumerDestroyed(SceneId1, dataConsumerId);
 
+    update();
+}
+
+TEST_F(ADcsmContentControl, noSupportForWaylandIviSurfaceIdContentButOfferAndRequestsHandledGracefully)
+{
+    // offered
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+    });
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    update();
+
+    //content description with type WaylandIviSurfaceID does not cause contentAvailable call to the user (m_eventHandlerMock is StrictMock)
+    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::WaylandIviSurfaceID, TechnicalContentDescriptor{543});
+
+    // cannot request ready
+    EXPECT_NE(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+    update();
+
+    // cannot request show
+    EXPECT_NE(StatusOK, m_dcsmContentControl.showContent(m_contentID1, AnimationInformation{}));
+    update();
+
+    // cannot request hide
+    EXPECT_NE(StatusOK, m_dcsmContentControl.hideContent(m_contentID1, AnimationInformation{}));
     update();
 }

@@ -8,7 +8,6 @@
 
 #include "TestScenes/CommonRenderBufferTestScene.h"
 #include "TestScenes/Triangle.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/RemoteCamera.h"
@@ -24,8 +23,8 @@
 
 namespace ramses_internal
 {
-    CommonRenderBufferTestScene::CommonRenderBufferTestScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    CommonRenderBufferTestScene::CommonRenderBufferTestScene(ramses::Scene& scene, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
     }
 
@@ -54,7 +53,7 @@ namespace ramses_internal
         const ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
 
         const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::UInt16Array* indices = m_client.createConstUInt16Array(6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
         const float vertexPositionsArray[] =
         {
@@ -63,10 +62,10 @@ namespace ramses_internal
             -1.f, 1.f, 0.f,
             1.f, 1.f, 0.f
         };
-        const ramses::Vector3fArray* vertexPositions = m_client.createConstVector3fArray(4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
 
         const float textureCoordsArray[] = { 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 1.f };
-        const ramses::Vector2fArray* textureCoords = m_client.createConstVector2fArray(4, textureCoordsArray);
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
 
         ramses::Appearance* appearance = m_scene.createAppearance(*effect, "appearance");
 
@@ -105,7 +104,7 @@ namespace ramses_internal
 
     ramses::MeshNode& CommonRenderBufferTestScene::createMesh(const ramses::Effect& effect, ramses::TriangleAppearance::EColor color)
     {
-        ramses::Triangle triangle(m_client, m_scene, effect, color);
+        ramses::Triangle triangle(m_scene, effect, color);
 
         ramses::MeshNode& meshNode = *m_scene.createMeshNode();
         meshNode.setAppearance(triangle.GetAppearance());

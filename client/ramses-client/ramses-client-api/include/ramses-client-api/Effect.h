@@ -106,9 +106,9 @@ namespace ramses
 
     protected:
         /**
-        * @brief RamsesClient is the convenience library for application developers
+        * @brief Scene is the convenience library for application developers
         */
-        friend class RamsesClientImpl;
+        friend class SceneImpl;
 
         /**
         * @brief Constructor of Effect

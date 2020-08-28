@@ -40,7 +40,7 @@ namespace ramses_internal
 
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(handler, handleRequestResources(_, 0u, senderId)).WillOnce([&](const auto& ids, auto, auto)
+            EXPECT_CALL(handler, handleRequestResources(_, senderId)).WillOnce([&](const auto& ids, auto)
             {
                 ASSERT_EQ(3u, ids.size());
                 EXPECT_EQ(hash1, ids[0]);

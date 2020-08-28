@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "TestScenes/TextScene.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Appearance.h"
@@ -20,8 +19,8 @@
 
 namespace ramses_internal
 {
-    TextScene::TextScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : TextScene_Base(ramsesClient, scene, cameraPosition)
+    TextScene::TextScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : TextScene_Base(scene, cameraPosition)
     {
         const ramses::FontId font = m_fontRegistry.createFreetype2Font("res/ramses-test-client-Roboto-Bold.ttf");
         const ramses::FontId chineseFont = m_fontRegistry.createFreetype2Font("res/ramses-test-client-WenQuanYiMicroHei.ttf");
@@ -46,7 +45,7 @@ namespace ramses_internal
         effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic_TextTexture);
         effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-        ramses::Effect* textEffect = m_client.createEffect(effectDesc);
+        ramses::Effect* textEffect = m_scene.createEffect(effectDesc);
         ramses::UniformInput colorInput;
         textEffect->findUniformInput("u_color", colorInput);
 

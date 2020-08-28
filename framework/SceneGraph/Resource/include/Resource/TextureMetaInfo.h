@@ -24,7 +24,7 @@ namespace ramses_internal
 
     struct TextureMetaInfo
     {
-        explicit TextureMetaInfo(UInt32 width = 0u, UInt32 height = 0u, UInt32 depth = 0u, ETextureFormat format = ETextureFormat_Invalid, bool generateMipChain = false, const TextureSwizzleArray swizzle = {}, const MipDataSizeVector& mipDataSizes = {})
+        explicit TextureMetaInfo(UInt32 width = 0u, UInt32 height = 0u, UInt32 depth = 0u, ETextureFormat format = ETextureFormat::Invalid, bool generateMipChain = false, const TextureSwizzleArray swizzle = {}, const MipDataSizeVector& mipDataSizes = {})
             : m_width(width)
             , m_height(height)
             , m_depth(depth)

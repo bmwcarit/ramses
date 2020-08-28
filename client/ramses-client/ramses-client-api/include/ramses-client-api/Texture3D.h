@@ -56,9 +56,9 @@ namespace ramses
 
     protected:
         /**
-        * @brief RamsesClient is the factory for creating Texture instances.
+        * @brief Scene is the factory for creating Texture instances.
         */
-        friend class RamsesClientImpl;
+        friend class SceneImpl;
 
         /**
         * @brief Constructor of Texture

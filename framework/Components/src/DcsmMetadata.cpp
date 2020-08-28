@@ -55,7 +55,7 @@ namespace ramses_internal
 
     std::vector<Byte> DcsmMetadata::toBinary() const
     {
-        BinaryOutputStreamT<Byte> os;
+        BinaryOutputStream os;
         const uint32_t numEntries =
             (m_hasPreviewImagePng ? 1 : 0) +
             (m_hasPreviewDescription ? 1 : 0) +
@@ -257,7 +257,7 @@ namespace ramses_internal
             }
         }
 
-        assert(is.readPositionUchar() == &*data.end());
+        assert(is.readPosition() == &*data.end());
     }
 
     void DcsmMetadata::updateFromOther(const DcsmMetadata& other)

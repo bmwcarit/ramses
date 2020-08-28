@@ -251,7 +251,7 @@ namespace ramses_internal
         {
             const String& sceneName = updater.m_rendererScenes.getScene(sceneInfo.sceneId).getName();
             const Bool shown = ( updater.m_sceneStateExecutor.getSceneState(sceneInfo.sceneId) == ESceneState::Rendered );
-            context << "[ SceneId: " << sceneInfo.sceneId.getValue() << "; order: " << sceneInfo.globalSceneOrder << "; shown: " << shown << "; name: \"" << sceneName << "\" ]" << RendererLogContext::NewLine;
+            context << "[ SceneId: " << sceneInfo.sceneId << "; order: " << sceneInfo.globalSceneOrder << "; shown: " << shown << "; name: \"" << sceneName << "\" ]" << RendererLogContext::NewLine;
         }
         context.unindent();
 
@@ -333,7 +333,7 @@ namespace ramses_internal
                             context << "scene usage: (";
                             for (const auto sceneId : resourceDescriptor.sceneUsage)
                             {
-                                context << sceneId.getValue() << ", ";
+                                context << sceneId << ", ";
                             }
                             context << "); ";
                             context << "status: " << EnumToString(resourceDescriptor.status) << "; ";
@@ -743,7 +743,7 @@ namespace ramses_internal
             {
                 RendererCachedScene& scene = updater.m_rendererScenes.getScene(sceneId);
 
-                context << "Scene [id: " << scene.getSceneId().getValue() << "; Name: " << scene.getName() << "]" << RendererLogContext::NewLine << RendererLogContext::NewLine;
+                context << "Scene [id: " << scene.getSceneId() << "; Name: " << scene.getName() << "]" << RendererLogContext::NewLine << RendererLogContext::NewLine;
                 context.indent();
 
                 const UInt32 numberOfStreamTextures = scene.getStreamTextureCount();
@@ -872,7 +872,7 @@ namespace ramses_internal
             const SceneId sceneId = sceneIt.key;
             const UInt32 sceneSlotCount = scene.getDataSlotCount();
 
-            context << "Scene [id: " << sceneId.getValue() << "]" << RendererLogContext::NewLine << RendererLogContext::NewLine;
+            context << "Scene [id: " << sceneId << "]" << RendererLogContext::NewLine << RendererLogContext::NewLine;
             context.indent();
             context << "Provider(s)" << RendererLogContext::NewLine;
             context.indent();
@@ -933,7 +933,7 @@ namespace ramses_internal
         context << "[";
         if (asLinked)
         {
-            context << "sceneId: " << scene.getSceneId().getValue() << "; ";
+            context << "sceneId: " << scene.getSceneId() << "; ";
         }
         context << "providerId: " << providerId.getValue() << "; ";
         LogSpecialSlotInfo(context, scene, slotHandle);
@@ -970,7 +970,7 @@ namespace ramses_internal
         context << "[";
         if (asLinked)
         {
-            context << "sceneId: " << consumerSceneId.getValue() << "; ";
+            context << "sceneId: " << consumerSceneId << "; ";
         }
         context << "consumerId: " << consumerId.getValue() << "; ";
         LogSpecialSlotInfo(context, scene, slotHandle);
@@ -1150,7 +1150,7 @@ namespace ramses_internal
                             sos << ",";
                         }
                         const ESceneState sceneState = updater.m_sceneStateExecutor.getSceneState(sceneId);
-                        sos << " " << sceneId.getValue() << " " << EnumToString(sceneState);
+                        sos << " " << sceneId << " " << EnumToString(sceneState);
                         if (updater.m_rendererScenes.hasScene(sceneId))
                         {
                             const auto& stagingInfo = updater.m_rendererScenes.getStagingInfo(sceneId);

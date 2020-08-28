@@ -147,7 +147,7 @@ namespace ramses
         {
             const ramses_internal::IScene& iscene = this->m_scene.impl.getIScene();
             ramses_internal::SceneInfo info(iscene.getSceneId(), iscene.getName());
-            EXPECT_CALL(this->sceneActionsCollector, handleNewScenesAvailable(ramses_internal::SceneInfoVector(1, info), _, _));
+            EXPECT_CALL(this->sceneActionsCollector, handleNewSceneAvailable(info, _));
             EXPECT_CALL(this->sceneActionsCollector, handleInitializeScene(info, _));
             EXPECT_EQ(StatusOK, m_scene.publish(EScenePublicationMode_LocalOnly));
 
@@ -156,8 +156,7 @@ namespace ramses
 
         virtual void TearDown()
         {
-            EXPECT_CALL(this->sceneActionsCollector, handleScenesBecameUnavailable(
-                        ramses_internal::SceneInfoVector(1, ramses_internal::SceneInfo(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()))), _));
+            EXPECT_CALL(this->sceneActionsCollector, handleSceneBecameUnavailable(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _));
             EXPECT_EQ(StatusOK, m_scene.unpublish());
         }
 
@@ -169,7 +168,7 @@ namespace ramses
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setTranslateWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {
         ramses_internal::Vector3 translationVector(1.2f, 2.3f, 4.5f);
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _, _));
+        EXPECT_CALL(this->sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _));
         EXPECT_EQ(StatusOK, this->m_node->setTranslation(translationVector.x, translationVector.y, translationVector.z));
         this->m_scene.flush();
         EXPECT_LE(1u, this->sceneActionsCollector.getNumberOfActions());
@@ -185,7 +184,7 @@ namespace ramses
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setRotationWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {
         ramses_internal::Vector3 rotationVector(1.2f, 2.3f, 4.5f);
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _, _));
+        EXPECT_CALL(this->sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _));
         EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationVector.x, rotationVector.y, rotationVector.z));
         this->m_scene.flush();
         EXPECT_LE(1u, this->sceneActionsCollector.getNumberOfActions());
@@ -201,7 +200,7 @@ namespace ramses
     TYPED_TEST(NodeTransformationTestWithPublishedScene, setScalingWithValuesEqualToCurrentValuesDoesNotCreateSceneActions)
     {
         ramses_internal::Vector3 scalingVector(1.2f, 2.3f, 4.5f);
-        EXPECT_CALL(this->sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _, _));
+        EXPECT_CALL(this->sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _, _));
         EXPECT_EQ(StatusOK, this->m_node->setScaling(scalingVector.x, scalingVector.y, scalingVector.z));
         this->m_scene.flush();
         EXPECT_LE(1u, this->sceneActionsCollector.getNumberOfActions());

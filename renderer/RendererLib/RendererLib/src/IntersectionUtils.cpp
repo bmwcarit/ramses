@@ -166,18 +166,15 @@ namespace ramses_internal
                 const Camera& pickableCamera = scene.getCamera(pickableObject.cameraHandle);
 
                 // get viewport data here and pass to next function
-
-                const auto vpOffsetRef = scene.getDataReference(pickableCamera.viewportDataInstance, Camera::ViewportOffsetField);
-                const auto vpSizeRef = scene.getDataReference(pickableCamera.viewportDataInstance, Camera::ViewportSizeField);
-                const auto vpOffset = scene.getDataSingleVector2i(vpOffsetRef, DataFieldHandle{ 0 });
-                const auto vpSize = scene.getDataSingleVector2i(vpSizeRef, DataFieldHandle{ 0 });
+                const auto vpOffsetRef = scene.getDataReference(pickableCamera.dataInstance, Camera::ViewportOffsetField);
+                const auto vpSizeRef = scene.getDataReference(pickableCamera.dataInstance, Camera::ViewportSizeField);
+                const auto& vpOffset = scene.getDataSingleVector2i(vpOffsetRef, DataFieldHandle{ 0 });
+                const auto& vpSize = scene.getDataSingleVector2i(vpSizeRef, DataFieldHandle{ 0 });
 
                 const Vector2i coordsInViewportSpace = coordsInBufferSpace - vpOffset;
                 //if pick event happened outside of viewport: ignore it
                 if (coordsInViewportSpace.x < 0 || coordsInViewportSpace.y < 0 || coordsInViewportSpace.x > vpSize.x || coordsInViewportSpace.y > vpSize.y)
-                {
                     continue;
-                }
 
                 const Vector2 coordsNDS = { 2.f * coordsInViewportSpace.x / vpSize.x - 1.f, 2.f * coordsInViewportSpace.y / vpSize.y - 1.f };
 
@@ -185,19 +182,19 @@ namespace ramses_internal
                     ETransformationMatrixType_Object, pickableCamera.node);
                 const Matrix44f modelMatrix = scene.updateMatrixCacheWithLinks(
                     ETransformationMatrixType_World, pickableObject.nodeHandle);
+
+                const auto frustumPlanesRef = scene.getDataReference(pickableCamera.dataInstance, Camera::FrustumPlanesField);
+                const auto frustumNearFarRef = scene.getDataReference(pickableCamera.dataInstance, Camera::FrustumNearFarPlanesField);
+                const auto& frustumPlanes = scene.getDataSingleVector4f(frustumPlanesRef, DataFieldHandle{ 0 });
+                const auto& frustumNearFar = scene.getDataSingleVector2f(frustumNearFarRef, DataFieldHandle{ 0 });
+
                 const Matrix44f projectionMatrix = CameraMatrixHelper::ProjectionMatrix(
-                    ProjectionParams::Frustum(pickableCamera.projectionType,
-                                                pickableCamera.frustum.leftPlane,
-                                                pickableCamera.frustum.rightPlane,
-                                                pickableCamera.frustum.bottomPlane,
-                                                pickableCamera.frustum.topPlane,
-                                                pickableCamera.frustum.nearPlane,
-                                                pickableCamera.frustum.farPlane));
+                    ProjectionParams::Frustum(pickableCamera.projectionType, frustumPlanes.x, frustumPlanes.y, frustumPlanes.z, frustumPlanes.w, frustumNearFar.x, frustumNearFar.y));
 
                 const GeometryDataBuffer& geometryBuffer =
                     scene.getDataBuffer(pickableObject.geometryHandle);
                 assert(geometryBuffer.bufferType == EDataBufferType::VertexBuffer);
-                assert(geometryBuffer.dataType == EDataType::EDataType_Vector3F);
+                assert(geometryBuffer.dataType == EDataType::Vector3F);
                 const float*  geometryBufferFloat =
                     reinterpret_cast<const float*>(geometryBuffer.data.data());
                 const UInt32 geometrySize = geometryBuffer.usedSize / sizeof(float);

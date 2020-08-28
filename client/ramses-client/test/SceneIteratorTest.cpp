@@ -10,7 +10,6 @@
 #include <gtest/gtest.h>
 #include "RamsesClientImpl.h"
 #include "Utils/File.h"
-#include "gtest/gtest-typed-test.h"
 #include "ramses-client-api/SceneIterator.h"
 #include "ClientTestUtils.h"
 

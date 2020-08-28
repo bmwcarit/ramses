@@ -131,11 +131,11 @@ namespace ramses_internal
         for (UInt32 i = 0; i < globalInputCount; ++i)
         {
             const EffectInputInformation& input = uniformInputs[i];
-            if (EDataType_TextureSampler == input.dataType)
+            if (IsTextureSamplerType(input.dataType))
             {
                 TextureSlotInfo bufferSlot;
                 bufferSlot.slot = slotCounter++;
-                bufferSlot.textureType = input.textureType;
+                bufferSlot.textureType = GetTextureTypeFromDataType(input.dataType);
                 m_bufferSlots.put(DataFieldHandle(i), bufferSlot);
             }
 

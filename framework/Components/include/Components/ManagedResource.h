@@ -10,42 +10,13 @@
 #define RAMSES_MANAGEDRESOURCE_H
 
 #include "Resource/IResource.h"
-#include "Components/ResourceDeleterCallingCallback.h"
 #include "Collections/Vector.h"
 #include <memory>
 
 namespace ramses_internal
 {
-    class ManagedResource
-    {
-    public:
-        ManagedResource()
-        {}
-        ManagedResource(const IResource& resource, ResourceDeleterCallingCallback& deleter)
-            : m_resource(&resource, deleter)
-        {
-        }
-
-        const IResource* getResourceObject() const
-        {
-            return m_resource.get();
-        }
-
-        bool operator==(const ManagedResource& managedResource) const
-        {
-            return m_resource == managedResource.m_resource;
-        }
-
-        bool operator!=(const ManagedResource& other) const
-        {
-            return !(*this == other);
-        }
-
-    private:
-        std::shared_ptr<const IResource> m_resource;
-    };
-
-    typedef std::vector<ManagedResource> ManagedResourceVector;
+    using ManagedResource = std::shared_ptr<const IResource>;
+    using ManagedResourceVector = std::vector<ManagedResource>;
 }
 
 #endif

@@ -181,4 +181,26 @@ namespace ramses_internal
         params.topPlane *= 0.5f;
         EXPECT_FLOAT_EQ(2.0f, ProjectionParams::GetAspectRatio(params));
     }
+
+    TEST(AProjectionParams, ValidatesParams)
+    {
+        const ProjectionParams params(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
+        EXPECT_TRUE(params.isValid());
+
+        // L > R
+        const ProjectionParams params1(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, 1.f, -1.f, -1.f, 1.f, 0.1f, 1.f));
+        EXPECT_FALSE(params1.isValid());
+
+        // B > T
+        const ProjectionParams params2(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, 1.f, -1.f, 0.1f, 1.f));
+        EXPECT_FALSE(params2.isValid());
+
+        // N > F
+        const ProjectionParams params3(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, -1.f, 1.f, 1.f, 0.1f));
+        EXPECT_FALSE(params3.isValid());
+
+        // N = 0
+        const ProjectionParams params4(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, -1.f, 1.f, 0.f, 1.f));
+        EXPECT_FALSE(params4.isValid());
+    }
 }

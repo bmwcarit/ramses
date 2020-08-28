@@ -21,8 +21,8 @@ namespace ramses_internal
     constexpr const ramses::dataProviderId_t TransformationLinkScene::transformProviderDataId_Right;
     constexpr const ramses::dataConsumerId_t TransformationLinkScene::transformConsumerDataId;
 
-    TransformationLinkScene::TransformationLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    TransformationLinkScene::TransformationLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
 
         ramses::Node* centerProviderNode = m_scene.createNode("transform provider");
@@ -111,7 +111,7 @@ namespace ramses_internal
         ramses::MeshNode* mesh = m_scene.createMeshNode();
         addMeshNodeToDefaultRenderGroup(*mesh);
 
-        ramses::Triangle triangle(m_client, m_scene, *effect, color);
+        ramses::Triangle triangle(m_scene, *effect, color);
         mesh->setGeometryBinding(triangle.GetGeometry());
         mesh->setAppearance(triangle.GetAppearance());
         return mesh;

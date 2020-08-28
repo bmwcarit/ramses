@@ -7,9 +7,8 @@
 //  -------------------------------------------------------------------------
 
 #include "TestScenes/GeometryInstanceScene.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
@@ -20,8 +19,8 @@
 
 namespace ramses_internal
 {
-    GeometryInstanceScene::GeometryInstanceScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    GeometryInstanceScene::GeometryInstanceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = nullptr;
         switch (state)
@@ -53,7 +52,7 @@ namespace ramses_internal
             }
             else
             {
-                setInstancedAttributes(m_client, *effect, geometry, 1);
+                setInstancedAttributes(*effect, geometry, 1);
             }
             meshNode->setGeometryBinding(*geometry);
         }
@@ -73,7 +72,7 @@ namespace ramses_internal
             notInstancedMeshNode->setParent(*translateNode);
 
             ramses::GeometryBinding* notInstancedGeometry = createGeometry(*effect);
-            setInstancedAttributes(m_client, *effect, notInstancedGeometry, 0);
+            setInstancedAttributes(*effect, notInstancedGeometry, 0);
             notInstancedMeshNode->setGeometryBinding(*notInstancedGeometry);
         }
     }
@@ -106,7 +105,7 @@ namespace ramses_internal
         appearance.setInputValueVector4f(colorInput, NumInstances, color);
     }
 
-    void GeometryInstanceScene::setInstancedAttributes(ramses::RamsesClient& ramsesClient, const ramses::Effect& effect, ramses::GeometryBinding* geometry, UInt32 instancingDivisor)
+    void GeometryInstanceScene::setInstancedAttributes(const ramses::Effect& effect, ramses::GeometryBinding* geometry, UInt32 instancingDivisor)
     {
         ramses::AttributeInput translationInput;
         effect.findAttributeInput("translation", translationInput);
@@ -128,9 +127,9 @@ namespace ramses_internal
             0.1f, 1.0f, 0.1f, 1.0f
         };
 
-        const ramses::Vector3fArray* translationsArray = ramsesClient.createConstVector3fArray(3, translation);
+        const ramses::ArrayResource* translationsArray = m_scene.createArrayResource(ramses::EDataType::Vector3F, 3, translation);
         geometry->setInputBuffer(translationInput, *translationsArray, instancingDivisor);
-        const ramses::Vector4fArray* colorArray = ramsesClient.createConstVector4fArray(3, color);
+        const ramses::ArrayResource* colorArray = m_scene.createArrayResource(ramses::EDataType::Vector4F, 3, color);
         geometry->setInputBuffer(colorInput, *colorArray, instancingDivisor);
     }
 
@@ -148,9 +147,9 @@ namespace ramses_internal
             0, 1, 2
         };
 
-        const ramses::UInt16Array* indices  = m_client.createConstUInt16Array(NumInstances, indicesData);
+        const ramses::ArrayResource* indices  = m_scene.createArrayResource(ramses::EDataType::UInt16, NumInstances, indicesData);
 
-        const ramses::Vector3fArray* vertices  = m_client.createConstVector3fArray(NumInstances, verticesData);
+        const ramses::ArrayResource* vertices  = m_scene.createArrayResource(ramses::EDataType::Vector3F, NumInstances, verticesData);
 
         ramses::AttributeInput positionsInput;
         effect.findAttributeInput("a_position", positionsInput);

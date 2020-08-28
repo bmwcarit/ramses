@@ -12,6 +12,7 @@
 namespace ramses_internal
 {
     struct SceneReferenceEvent;
+    struct ResourceAvailabilityEvent;
     class Guid;
 
     class ISceneProviderEventConsumer
@@ -20,6 +21,7 @@ namespace ramses_internal
         virtual ~ISceneProviderEventConsumer() = default;
 
         virtual void handleSceneReferenceEvent(SceneReferenceEvent const& event, const Guid& rendererId) = 0;
+        virtual void handleResourceAvailabilityEvent(ResourceAvailabilityEvent const& event, const Guid& rendererId) = 0;
     };
 }
 

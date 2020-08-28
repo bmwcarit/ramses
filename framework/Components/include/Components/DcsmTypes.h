@@ -27,6 +27,8 @@ namespace ramses_internal
     enum class ETechnicalContentType : uint32_t
     {
         RamsesSceneID,
+        WaylandIviSurfaceID,
+        Invalid
     };
 
     inline const char* EnumToString(ETechnicalContentType val)
@@ -34,6 +36,8 @@ namespace ramses_internal
         switch (val)
         {
         case ETechnicalContentType::RamsesSceneID: return "ETechnicalContentType::RamsesSceneID";
+        case ETechnicalContentType::WaylandIviSurfaceID: return "ETechnicalContentType::WaylandIviSurfaceID";
+        case ETechnicalContentType::Invalid: return "ETechnicalContentType::Invalid";
         }
         return "ETechnicalContentType::<UNKNOWN>";
     }

@@ -25,6 +25,9 @@ class IntegrationTest(unittest.TestCase):
         return self.__module__+'.'+self.__class__.__name__
 
     def validateScreenshotOnTarget(self, renderer, imageName, target, displayNumber = 0, useSystemCompositorForScreenshot = False, compareForEquality = True):
+        if useSystemCompositorForScreenshot:
+            self.assertTrue(self.target.systemCompositorScreenshotSupported, msg="Cannot take system compositor screenshot when not supported on target")
+
         target.take_screenshot_and_compare(renderer, imageName, self.fullClassName(), self.name_test_run(),
             displayNumber, self.screenshotNumber, self.percentageOfWrongPixelsAllowed,
             self.percentageOfRGBDifferenceAllowedPerPixel, self.numberOfRequiredUnequalPixels,

@@ -29,7 +29,8 @@ bool ShaderConverter::Convert(const RamsesShaderFromGLSLShaderArguments& argumen
     ramses::EffectDescription effectDesc;
     SetEffectDescription(arguments, effectDesc);
 
-    ramses::Effect* effect = ramsesClient->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, arguments.getOutEffectName().c_str());
+    ramses::Scene* scene = ramsesClient->createScene(ramses::sceneId_t{ 0xf00 });
+    ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, arguments.getOutEffectName().c_str());
     if (!effect)
     {
         PRINT_ERROR("ramses can not create effect from given files.\n");

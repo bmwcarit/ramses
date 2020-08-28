@@ -16,6 +16,7 @@
 #include "SceneAPI/RendererSceneState.h"
 
 #include <vector>
+#include "Components/ERendererToClientEventType.h"
 
 namespace ramses_internal
 {
@@ -45,6 +46,7 @@ namespace ramses_internal
         bool status = false;
 
         constexpr static size_t serializedSize =
+            sizeof(ERendererToClientEventType) +
             sizeof(SceneReferenceEventType) +
             sizeof(SceneId) +
             sizeof(SceneId) +

@@ -44,8 +44,7 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/Texture2D.h"
-#include "ramses-client-api/UInt16Array.h"
-#include "ramses-client-api/UInt32Array.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/EffectInputSemantic.h"
@@ -66,8 +65,7 @@
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/LocalCamera.h"
-#include "ramses-client-api/IndexDataBuffer.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 
 namespace ramses
@@ -184,7 +182,7 @@ namespace ramses
         EffectDescription effectDescription;
         effectDescription.setVertexShader("void main(void) {gl_Position=vec4(0);}");
         effectDescription.setFragmentShader("void main(void) {gl_FragColor=vec4(1);}");
-        return m_ramsesClient->createEffect(effectDescription, ResourceCacheFlag_DoNotCache, name);
+        return m_scene->createEffect(effectDescription, ResourceCacheFlag_DoNotCache, name);
     }
     template <> AnimatedProperty* CreationHelper::createObjectOfType<AnimatedProperty>(const char* name)
     {
@@ -208,7 +206,7 @@ namespace ramses
     }
     template <> Appearance* CreationHelper::createObjectOfType<Appearance>(const char* name)
     {
-        return m_scene->createAppearance(*TestEffects::CreateTestEffect(*m_ramsesClient), name);
+        return m_scene->createAppearance(*TestEffects::CreateTestEffect(*m_scene), name);
     }
     template <> SplineStepBool* CreationHelper::createObjectOfType<SplineStepBool      >(const char* name)
     {
@@ -314,49 +312,24 @@ namespace ramses
     {
         uint8_t data[4] = { 0u };
         MipLevelData mipLevelData(sizeof(data), data);
-        return m_ramsesClient->createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, name);
+        return m_scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, name);
     }
     template <> Texture3D* CreationHelper::createObjectOfType<Texture3D>(const char* name)
     {
         uint8_t data[32] = { 0u };
         MipLevelData mipLevelData(sizeof(data), data);
-        return m_ramsesClient->createTexture3D(1u, 2u, 4u, ETextureFormat_RGBA8, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache, name);
+        return m_scene->createTexture3D(ETextureFormat::RGBA8, 1u, 2u, 4u, 1, &mipLevelData, false, ResourceCacheFlag_DoNotCache, name);
     }
     template <> TextureCube* CreationHelper::createObjectOfType<TextureCube>(const char* name)
     {
         uint8_t data[4] = { 0u };
         CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-        return m_ramsesClient->createTextureCube(1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, name);
+        return m_scene->createTextureCube(ETextureFormat::RGBA8, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, name);
     }
-    template <> UInt16Array* CreationHelper::createObjectOfType<UInt16Array>(const char* name)
+    template <> ArrayResource* CreationHelper::createObjectOfType<ArrayResource>(const char* name)
     {
         const uint16_t data = 0u;
-        return const_cast<UInt16Array*>(m_ramsesClient->createConstUInt16Array(1u, &data, ResourceCacheFlag_DoNotCache, name));
-    }
-    template <> UInt32Array* CreationHelper::createObjectOfType<UInt32Array>(const char* name)
-    {
-        const uint32_t data[5] = {0u, 3u, 6u, 9u, 12u };
-        return const_cast<UInt32Array*>(m_ramsesClient->createConstUInt32Array(5u, &data[0], ResourceCacheFlag_DoNotCache, name));
-    }
-    template <> FloatArray* CreationHelper::createObjectOfType<FloatArray>(const char* name)
-    {
-        const float data[1] = { 0.f };
-        return const_cast<FloatArray*>(m_ramsesClient->createConstFloatArray(1u, data, ResourceCacheFlag_DoNotCache, name));
-    }
-    template <> Vector2fArray* CreationHelper::createObjectOfType<Vector2fArray>(const char* name)
-    {
-        const float data[2] = { 0.f };
-        return const_cast<Vector2fArray*>(m_ramsesClient->createConstVector2fArray(1u, data, ResourceCacheFlag_DoNotCache, name));
-    }
-    template <> Vector3fArray* CreationHelper::createObjectOfType<Vector3fArray>(const char* name)
-    {
-        const float data[3] = { 0.f };
-        return const_cast<Vector3fArray*>(m_ramsesClient->createConstVector3fArray(1u, data, ResourceCacheFlag_DoNotCache, name));
-    }
-    template <> Vector4fArray* CreationHelper::createObjectOfType<Vector4fArray>(const char* name)
-    {
-        const float data[4] = { 0.f };
-        return const_cast<Vector4fArray*>(m_ramsesClient->createConstVector4fArray(1u, data, ResourceCacheFlag_DoNotCache, name));
+        return m_scene->createArrayResource(EDataType::UInt16, 1u, &data, ResourceCacheFlag_DoNotCache, name);
     }
 
     template <> RenderGroup* CreationHelper::createObjectOfType<RenderGroup>(const char* name)
@@ -379,7 +352,7 @@ namespace ramses
     {
         uint8_t data[4] = { 0u };
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = m_ramsesClient->createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "texture");
+        Texture2D* texture = m_scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "texture");
         return m_scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Mirror, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Nearest, *texture, 1u, name);
     }
     template <> RenderBuffer* CreationHelper::createObjectOfType<RenderBuffer>(const char* name)
@@ -393,7 +366,7 @@ namespace ramses
         return m_scene->createRenderTarget(rtDesc, name);
     }
 
-    Effect* createFakeEffectWithPositions(RamsesClient& client)
+    Effect* createFakeEffectWithPositions(Scene& scene)
     {
         EffectDescription effectDesc;
         effectDesc.setVertexShader(
@@ -407,7 +380,7 @@ namespace ramses
             "{\n"
             "  gl_FragColor = vec4(0.0); \n"
             "}\n");
-        return client.impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, "effect");
+        return scene.impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, "effect");
     }
 
     template <> GeometryBinding* CreationHelper::createObjectOfType<GeometryBinding>(const char* name)
@@ -472,28 +445,24 @@ namespace ramses
     {
         uint8_t data[4] = { 0u };
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* fallback = m_ramsesClient->createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "fallbackTex");
-        StreamTexture* streamTexture = m_scene->createStreamTexture(*fallback, streamSource_t(0), name);
+        Texture2D* fallback = m_scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "fallbackTex");
+        StreamTexture* streamTexture = m_scene->createStreamTexture(*fallback, waylandIviSurfaceId_t(0), name);
         return streamTexture;
     }
 
-    template <> IndexDataBuffer* CreationHelper::createObjectOfType<IndexDataBuffer>(const char* name)
+    template <> ArrayBuffer* CreationHelper::createObjectOfType<ArrayBuffer>(const char* name)
     {
-        return m_scene->createIndexDataBuffer(13 * sizeof(uint32_t), EDataType_UInt32, name);
+        return m_scene->createArrayBuffer(EDataType::UInt32, 13u, name);
 
-    }
-    template <> VertexDataBuffer* CreationHelper::createObjectOfType<VertexDataBuffer>(const char* name)
-    {
-        return m_scene->createVertexDataBuffer(13 * sizeof(uint32_t), EDataType_Float, name);
     }
     template <> Texture2DBuffer* CreationHelper::createObjectOfType<Texture2DBuffer>(const char* name)
     {
-        return m_scene->createTexture2DBuffer(2, 3, 4, ETextureFormat_RGBA8, name);
+        return m_scene->createTexture2DBuffer(ETextureFormat::RGBA8, 3, 4, 2, name);
     }
 
     template <> PickableObject* CreationHelper::createObjectOfType<PickableObject>(const char* name)
     {
-        const auto vb = m_scene->createVertexDataBuffer(3 * sizeof(DataVector3f), EDataType_Vector3F, "vb");
+        const auto vb = m_scene->createArrayBuffer(EDataType::Vector3F, 3u, "vb");
         m_additionalAllocatedSceneObjects.push_back(vb);
         PerspectiveCamera* camera =  m_scene->createPerspectiveCamera("pickableCamera");
         m_additionalAllocatedSceneObjects.push_back(camera);

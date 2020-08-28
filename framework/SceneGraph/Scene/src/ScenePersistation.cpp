@@ -135,7 +135,7 @@ namespace ramses_internal
         rawActionData.resize(sizeOfAllSceneActions);
         inStream.read(reinterpret_cast<char*>(rawActionData.data()), static_cast<UInt32>(rawActionData.size()));
 
-        std::array<uint32_t, ESceneActionId_NUMBER_OF_TYPES> objectCounts = {};
+        std::array<uint32_t, NumOfSceneActionTypes> objectCounts = {};
 
         // read types and offsets
         for (UInt32 i = 0; i < numberOfSceneActionsToRead; ++i)
@@ -149,8 +149,8 @@ namespace ramses_internal
         }
 
         LOG_DEBUG_F(ramses_internal::CONTEXT_PROFILING, ([&](ramses_internal::StringOutputStream& sos) {
-                    sos << "ScenePersistation::ReadSceneFromStream: SceneAction type counts for SceneID " << scene.getSceneId().getValue() << " (total: " << numberOfSceneActionsToRead << ")\n";
-                    for (uint32_t i = 0; i < ESceneActionId_NUMBER_OF_TYPES; i++)
+                    sos << "ScenePersistation::ReadSceneFromStream: SceneAction type counts for SceneID " << scene.getSceneId() << " (total: " << numberOfSceneActionsToRead << ")\n";
+                    for (uint32_t i = 0; i < NumOfSceneActionTypes; i++)
                     {
                         if (objectCounts[i] > 0)
                         {

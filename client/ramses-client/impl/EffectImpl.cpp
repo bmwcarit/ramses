@@ -19,8 +19,8 @@
 
 namespace ramses
 {
-    EffectImpl::EffectImpl(ramses_internal::ResourceHashUsage hashUsage, RamsesClientImpl& client, const char* effectname)
-        : ResourceImpl(ERamsesObjectType_Effect, std::move(hashUsage), client, effectname)
+    EffectImpl::EffectImpl(ramses_internal::ResourceHashUsage hashUsage, SceneImpl& scene, const char* effectname)
+        : ResourceImpl(ERamsesObjectType_Effect, std::move(hashUsage), scene, effectname)
     {
     }
 
@@ -45,7 +45,6 @@ namespace ramses
             outStream << static_cast<uint32_t>(input.dataType);
             outStream << input.elementCount;
             outStream << static_cast<uint32_t>(input.semantics);
-            outStream << static_cast<uint32_t>(input.textureType);
         }
 
         outStream << static_cast<uint32_t>(m_effectAttributeInputs.size());
@@ -76,13 +75,10 @@ namespace ramses
             inStream >> elementCount;
             uint32_t semanticAsUInt = 0;
             inStream >> semanticAsUInt;
-            uint32_t textureTypeAsUInt = 0;
-            inStream >> textureTypeAsUInt;
 
             m_effectUniformInputs[i].dataType = static_cast<ramses_internal::EDataType>(dataTypeAsUInt);
             m_effectUniformInputs[i].elementCount = elementCount;
             m_effectUniformInputs[i].semantics = static_cast<ramses_internal::EFixedSemantics>(semanticAsUInt);
-            m_effectUniformInputs[i].textureType = static_cast<ramses_internal::EEffectInputTextureType>(textureTypeAsUInt);
         }
 
         inStream >> count;
@@ -99,7 +95,6 @@ namespace ramses
             m_effectAttributeInputs[i].dataType = static_cast<ramses_internal::EDataType>(dataTypeAsUInt);
             m_effectAttributeInputs[i].elementCount = 1u;
             m_effectAttributeInputs[i].semantics = static_cast<ramses_internal::EFixedSemantics>(semanticAsUInt);
-            m_effectAttributeInputs[i].textureType = ramses_internal::EEffectInputTextureType_Invalid;
         }
 
         return StatusOK;

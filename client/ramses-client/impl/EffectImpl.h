@@ -26,7 +26,7 @@ namespace ramses
     class EffectImpl final : public ResourceImpl
     {
     public:
-        EffectImpl(ramses_internal::ResourceHashUsage hashUsage, RamsesClientImpl& client, const char* effectname);
+        EffectImpl(ramses_internal::ResourceHashUsage hashUsage, SceneImpl& scene, const char* effectname);
         virtual ~EffectImpl();
 
         void initializeFromFrameworkData(const ramses_internal::EffectInputInformationVector& uniformInputs, const ramses_internal::EffectInputInformationVector& attributeInputs);

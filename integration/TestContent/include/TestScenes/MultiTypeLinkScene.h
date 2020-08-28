@@ -26,7 +26,7 @@ namespace ramses_internal
     class MultiTypeLinkScene : public IntegrationScene
     {
     public:
-        MultiTypeLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        MultiTypeLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {

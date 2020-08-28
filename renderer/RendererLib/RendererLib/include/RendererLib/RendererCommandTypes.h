@@ -14,7 +14,6 @@
 #include "RendererLib/WarpingMeshData.h"
 #include "RendererLib/DisplayConfig.h"
 #include "CommandT.h"
-#include "Scene/SceneActionCollection.h"
 #include "Math3d/Vector3.h"
 #include "Math3d/Vector2i.h"
 #include "RendererLogger.h"
@@ -22,13 +21,14 @@
 #include "EKeyEventType.h"
 #include "EMouseEventType.h"
 #include "Utils/LoggingUtils.h"
+#include "Components/SceneUpdate.h"
 
 namespace ramses_internal
 {
     enum ERendererCommandType
     {
         ERendererCommandType_Scene = 0,
-        ERendererCommandType_SceneActions,
+        ERendererCommandType_SceneUpdate,
         ERendererCommandType_Display,
         ERendererCommandType_SceneMapping,
         ERendererCommandType_SceneRendering,
@@ -70,7 +70,7 @@ namespace ramses_internal
         ERendererCommand_UpdateWarpingData,
         ERendererCommand_ReadPixels,
         ERendererCommand_SetClearColor,
-        ERendererCommand_SceneActions,
+        ERendererCommand_SceneUpdate,
         ERendererCommand_SetSceneState,
         ERendererCommand_SetSceneMapping,
         ERendererCommand_SetSceneDisplayBufferAssignment,
@@ -125,12 +125,12 @@ namespace ramses_internal
         Bool indirect = false;
     };
 
-    struct SceneActionsCommand : public RendererCommand
+    struct SceneUpdateCommand : public RendererCommand
     {
-        DEFINE_COMMAND_TYPE(SceneActionsCommand, ERendererCommandType_SceneActions);
+        DEFINE_COMMAND_TYPE(SceneUpdateCommand, ERendererCommandType_SceneUpdate);
 
         SceneId sceneId;
-        SceneActionCollection sceneActions;
+        SceneUpdate sceneUpdate;
     };
 
     struct DisplayCommand : public RendererCommand
@@ -312,7 +312,7 @@ namespace ramses_internal
         "ERendererCommand_UpdateWarpingData",
         "ERendererCommand_ReadPixels",
         "ERendererCommand_SetClearColor",
-        "ERendererCommand_SceneActions",
+        "ERendererCommand_SceneUpdate",
         "ERendererCommand_SetSceneState",
         "ERendererCommand_SetSceneMapping",
         "ERendererCommand_SetSceneDisplayBufferAssignment",
@@ -337,12 +337,12 @@ namespace ramses_internal
         "ERendererCommand_SetLimits_FlushesForceApply",
         "ERendererCommand_SetLimits_FlushesForceUnsubscribe",
         "ERendererCommand_SetSkippingOfUnmodifiedBuffers",
+        "ERendererCommand_PickEvent",
         "ERendererCommand_ConfirmationEcho",
         "ERendererCommand_FrameProfiler_Toggle",
         "ERendererCommand_FrameProfiler_TimingGraphHeight",
         "ERendererCommand_FrameProfiler_CounterGraphHeight",
         "ERendererCommand_FrameProfiler_RegionFilterFlags",
-        "ERendererCommand_Picking"
     };
 
     ENUM_TO_STRING(ERendererCommand, RendererCommandNames, ERendererCommand_COUNT);

@@ -13,13 +13,12 @@
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-framework-api/RamsesFramework.h"
-#include "ramses-client-api/ResourceFileDescription.h"
 
 #include "RamsesClientImpl.h"
-#include "ResourceFileDescriptionImpl.h"
 #include "ramses-client-api/Effect.h"
 #include "EffectImpl.h"
 #include "FileUtils.h"
+#include "ramses-hmi-utils.h"
 
 bool EffectResourceCreator::Create(const RamsesEffectFromGLSLShaderArguments& arguments)
 {
@@ -35,18 +34,15 @@ bool EffectResourceCreator::Create(const RamsesEffectFromGLSLShaderArguments& ar
     SetEffectDescription(arguments, effectDesc);
 
     const ramses_internal::String& effectName = arguments.getOutEffectName();
-    ramses::Effect* effect = ramsesClient->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, effectName.c_str());
+    ramses::Scene* scene = ramsesClient->createScene(ramses::sceneId_t{ 0xf00 });
+    ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, effectName.c_str());
     if (!effect)
     {
         PRINT_ERROR("ramses can not create effect from given files.\n");
         return false;
     }
 
-    ramses::ResourceFileDescription resourceFileDesc(arguments.getOutResourceFile().c_str());
-    resourceFileDesc.impl->m_resources.push_back(effect);
-
-    ramses::status_t status = ramsesClient->impl.saveResources(resourceFileDesc, arguments.getUseCompression());
-    if (ramses::StatusOK != status)
+    if (!ramses::RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(*scene, arguments.getOutResourceFile().c_str(), arguments.getUseCompression()))
     {
         PRINT_ERROR("ramses fails to save effect to resource file.\n");
         return false;

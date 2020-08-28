@@ -11,13 +11,22 @@
 
 #include "ramses-renderer-api/RendererSceneControl.h"
 #include "StatusObjectImpl.h"
-#include "RendererSceneControlLogic.h"
 #include "RendererLib/RendererCommands.h"
 #include "RendererLib/RendererEvent.h"
 #include "Math3d/Vector4.h"
+#include <unordered_map>
 
 namespace ramses
 {
+    static const char* RendererSceneStateNames[] =
+    {
+        "Unavailable",
+        "Available",
+        "Ready",
+        "Rendered"
+    };
+    ENUM_TO_STRING(ramses::RendererSceneState, RendererSceneStateNames, 4);
+
     class RamsesRendererImpl;
 
     class IRendererSceneControl

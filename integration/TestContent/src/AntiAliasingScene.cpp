@@ -8,10 +8,9 @@
 
 #include "TestScenes/AntiAliasingScene.h"
 #include "ramses-utils.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
@@ -22,8 +21,8 @@
 
 namespace ramses_internal
 {
-    AntiAliasingScene::AntiAliasingScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    AntiAliasingScene::AntiAliasingScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         std::vector<Float> pos;
         std::vector<uint16_t> id;
@@ -79,9 +78,9 @@ namespace ramses_internal
             }
         }
 
-        const ramses::Vector3fArray* vertexPositions = m_client.createConstVector3fArray(uint32_t(pos.size() / 3), &pos[0]);
-        const ramses::UInt16Array* indices = m_client.createConstUInt16Array(uint32_t(id.size()), &id[0]);
-        const ramses::Vector3fArray* vertexColors = m_client.createConstVector3fArray(uint32_t(colors.size() / 3), &colors[0]);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, uint32_t(pos.size() / 3), &pos[0]);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, uint32_t(id.size()), &id[0]);
+        const ramses::ArrayResource* vertexColors = m_scene.createArrayResource(ramses::EDataType::Vector3F, uint32_t(colors.size() / 3), &colors[0]);
 
         ramses::Effect* effectTex = getTestEffect("ramses-test-client-simple-color");
         ramses::Appearance* appearance = m_scene.createAppearance(*effectTex, "disk appearance");

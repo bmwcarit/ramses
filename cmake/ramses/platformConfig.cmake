@@ -61,7 +61,7 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQ
 
     target_compile_options(ramses-build-options-base INTERFACE
         -Wall -Wextra -Wcast-align -Wshadow -Wformat -Wformat-security -Wvla -Wmissing-include-dirs
-        -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast)
+        -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast -Wunused)
 
     if (ramses-sdk_WARNINGS_AS_ERRORS)
         target_compile_options(ramses-build-options-base INTERFACE -Werror)
@@ -81,15 +81,11 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     endif()
 
     # gcc specific warnings
-    target_compile_options(ramses-build-options-base INTERFACE -Wformat-signedness)
+    target_compile_options(ramses-build-options-base INTERFACE
+        -Wformat-signedness -Wformat-overflow -Wfree-nonheap-object)
 
-    IF(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
-        # disable unfixed warnings from gcc 7
-        target_compile_options(ramses-build-options-base INTERFACE -Wno-stringop-overflow -Wno-implicit-fallthrough)
-
-        # enable more warnings on newer gcc
-        target_compile_options(ramses-build-options-base INTERFACE -Wformat-overflow -Wfree-nonheap-object)
-    ENDIF()
+    # disable unfixed warnings from gcc 7
+    target_compile_options(ramses-build-options-base INTERFACE -Wno-implicit-fallthrough)
 
     # disable unfixed warnings from gcc 8
     IF(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
@@ -106,13 +102,11 @@ ENDIF()
 
 # clang specific
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    target_compile_options(ramses-build-options-base INTERFACE
+        -Winconsistent-missing-override -Wmove)
+
     #  do not optimize debug build at all (-Og is wrong on clang)
     ADD_FLAGS(RAMSES_DEBUG_FLAGS "-O0")
-
-    IF(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 3.5)
-        # suppress missing override keyword warning
-        target_compile_options(ramses-build-options-base INTERFACE -Winconsistent-missing-override -Wmove)
-    ENDIF()
 
     # handle enable coverage
     if (ramses-sdk_ENABLE_COVERAGE)
@@ -143,7 +137,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
     ADD_FLAGS(RAMSES_C_CXX_FLAGS "/MP /DNOMINMAX")
     ADD_FLAGS(RAMSES_CXX_FLAGS "/std:c++14 /bigobj")
-    target_compile_options(ramses-build-options-base INTERFACE /W4 /wd4503 /wd4265 /wd4201 /wd4127 /wd4996)
+    target_compile_options(ramses-build-options-base INTERFACE /W4 /wd4503 /wd4265 /wd4201 /wd4127 /wd4996 /wd4702)
     ADD_FLAGS(RAMSES_RELEASE_FLAGS "/MD /O2 /Ob2 /DNDEBUG")
     ADD_FLAGS(RAMSES_DEBUG_FLAGS "/MDd /Zi /Od /D_DEBUG")
     target_compile_options(ramses-build-options-base INTERFACE $<$<CONFIG:Debug>:/RTC1>)

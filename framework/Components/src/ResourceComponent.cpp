@@ -16,9 +16,11 @@
 #include "Utils/BinaryInputStream.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
 #include "TransportCommon/ICommunicationSystem.h"
-#include "Components/ResourceStreamSerialization.h"
-#include <algorithm>
 #include "PlatformAbstraction/PlatformTime.h"
+#include "TransportCommon/SceneUpdateStreamDeserializer.h"
+#include "TransportCommon/SceneUpdateSerializer.h"
+#include "Components/SceneUpdate.h"
+#include <algorithm>
 
 namespace ramses_internal
 {
@@ -26,7 +28,7 @@ namespace ramses_internal
         StatisticCollectionFramework& statistics, PlatformLock& frameworkLock, uint32_t maximumTotalBytesForAsynResourceLoading)
         : m_frameworkLock(frameworkLock)
         , m_connectionStatusUpdateNotifier(connectionStatusUpdateNotifier)
-        , m_resourceStorage(frameworkLock)
+        , m_resourceStorage(frameworkLock, statistics)
         , m_taskQueueForResourceLoading(queue)
         , m_maximumBytesAllowedForResourceLoading(maximumTotalBytesForAsynResourceLoading)
         , m_bytesScheduledForLoading(0)
@@ -48,11 +50,6 @@ namespace ramses_internal
 
         m_connectionStatusUpdateNotifier.unregisterForConnectionUpdates(this);
         m_taskQueueForResourceLoading.disableAcceptingTasksAfterExecutingCurrentQueue();
-
-        for (auto& p : m_resourceDeserializers)
-        {
-            delete p.value;
-        }
     }
 
     ramses_internal::ManagedResource ResourceComponent::getResource(ResourceContentHash hash)
@@ -85,10 +82,8 @@ namespace ramses_internal
         return m_resourceStorage.getResourceInfo(hash);
     }
 
-    void ResourceComponent::handleRequestResources(const ResourceContentHashVector& ids, UInt32 chunkSize, const Guid& requesterId)
+    void ResourceComponent::handleRequestResources(const ResourceContentHashVector& ids, const Guid& requesterId)
     {
-        UNUSED(chunkSize);
-
         ManagedResourceVector resourceToSendViaNetwork;
         ResourceContentHashVector unavailableResources;
         ResourceContentHashVector resourcesToBeLoaded;
@@ -97,9 +92,9 @@ namespace ramses_internal
         {
             LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::handleResourceRequest: " << id << " from " << requesterId);
             const ManagedResource& resource = m_resourceStorage.getResource(id);
-            if (resource.getResourceObject())
+            if (resource)
             {
-                LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::handleResourceRequest: sendResource" << id << " name: " << resource.getResourceObject()->getName());
+                LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::handleResourceRequest: sendResource" << id << " name: " << resource->getName());
                 resourceToSendViaNetwork.push_back(resource);
             }
             else
@@ -124,7 +119,10 @@ namespace ramses_internal
         if (!resourceToSendViaNetwork.empty())
         {
             m_statistics.statResourcesSentNumber.incCounter(static_cast<UInt32>(resourceToSendViaNetwork.size()));
-            m_communicationSystem.sendResources(requesterId, resourceToSendViaNetwork);
+            for (auto& res : resourceToSendViaNetwork)
+                res->compress(IResource::CompressionLevel::REALTIME);
+            SceneUpdate update{SceneActionCollection(), resourceToSendViaNetwork};
+            m_communicationSystem.sendResources(requesterId, SceneUpdateSerializer(update));
         }
 
         if (unavailableResources.size() > 0)
@@ -139,7 +137,7 @@ namespace ramses_internal
             {
                 sos << "send " << resourceToSendViaNetwork.size() << " locally available ";
                 for (const auto& res : resourceToSendViaNetwork)
-                    sos << res.getResourceObject()->getHash() << " ";
+                    sos << res->getHash() << " ";
                 sos << "; ";
             }
             if (!resourcesToBeLoaded.empty())
@@ -171,7 +169,7 @@ namespace ramses_internal
             LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::requestResourceAsynchronouslyFromFramework:" << hash);
             ManagedResource managedResource = m_resourceStorage.getResource(hash);
 
-            if (managedResource.getResourceObject() != nullptr)
+            if (managedResource)
             {
                 // already available
                 resourcesLocallyAvailable.push_back(hash);
@@ -297,7 +295,7 @@ namespace ramses_internal
         auto& arrivedForRequester = m_arrivedResources[requesterID];
         for (auto it = arrivedForRequester.begin(); it != arrivedForRequester.end(); ++it)
         {
-            if (it->getResourceObject()->getHash() == resourceHash)
+            if ((*it)->getHash() == resourceHash)
             {
                 arrivedForRequester.erase(it);
                 removedFromArrived = true;
@@ -353,30 +351,68 @@ namespace ramses_internal
         return m_resourceFiles.hasResourceFile(resourceFileName);
     }
 
+    void ResourceComponent::forceLoadFromResourceFile(const String& resourceFileName)
+    {
+        // If a resources of a file are force loaded, check if they are in use by any scene object (=hashusage) or as a resource
+        // a) If they are in use, we need to load them from file, also remove the deletion allowed flag from
+        // them, because they is not supposed to be loadable anymore.
+        // b) If a resource is unused, nothing is to be done since there wouldn't be any entry in the resource storage for it
+        const FileContentsMap* content = m_resourceFiles.getContentsOfResourceFile(resourceFileName);
+        if (!content)
+        {
+            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::forceLoadFromResourceFile: " << resourceFileName << " unknown, can't force load");
+            return;
+        }
+
+        for (auto const& entry : *content)
+        {
+            auto const& id = entry.key;
+            if (m_resourceStorage.isFileResourceInUseAnywhereElse(id))
+            {
+                ManagedResource res;
+                if (!m_resourceStorage.getResource(id))
+                    res = forceLoadResource(id);
+
+                m_resourceStorage.markDeletionDisallowed(id);
+            }
+        }
+    }
+
     void ResourceComponent::removeResourceFile(const String& resourceFileName)
     {
         m_resourceFiles.unregisterResourceFile(resourceFileName);
     }
 
-    void ResourceComponent::handleSendResource(const absl::Span<const Byte>& receivedResourceData, const Guid& providerID)
+    void ResourceComponent::handleSendResource(absl::Span<const Byte> receivedResourceData, const Guid& providerID)
     {
         PlatformGuard guard(m_frameworkLock);
-
-        if (!m_resourceDeserializers.contains(providerID))
+        auto it = m_resourceDeserializers.find(providerID);
+        if (it == m_resourceDeserializers.end())
         {
             LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::handleSendResource: from unknown provider " << providerID);
             return;
         }
-        ResourceStreamDeserializer* deserializer = *m_resourceDeserializers.get(providerID);
-        assert(deserializer != nullptr);
+        SceneUpdateStreamDeserializer* deserializer = it->second.get();
+        assert(deserializer);
 
-        const std::vector<IResource*> resources = deserializer->processData(receivedResourceData);
-        if (resources.empty())
-            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::handleSendResource: no resources deserialized from " << providerID << ", size " << receivedResourceData.size());
-        for (const auto& res : resources)
+        auto result = deserializer->processData(receivedResourceData);
+        switch (result.result)
         {
-            handleArrivedResource(m_resourceStorage.manageResource(*res, false));
+        case SceneUpdateStreamDeserializer::ResultType::Empty:
+            break;
+        case SceneUpdateStreamDeserializer::ResultType::Failed:
+            LOG_ERROR(CONTEXT_RENDERER, "ResourceComponent::handleSendResource: deserialization failed from provider:" << providerID);
+            // TODO(tobias) handle properly by disconnect participant
+            break;
+        case SceneUpdateStreamDeserializer::ResultType::HasData:
+            {
+                if (result.resources.empty())
+                    LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::handleSendResource: no resources deserialized from " << providerID << ", size " << receivedResourceData.size());
+                for (auto& res : result.resources)
+                    handleArrivedResource(m_resourceStorage.manageResource(*res.release(), false));
+            }
         }
+
         if (!m_unrequestedResources.empty())
         {
             LOG_INFO_F(CONTEXT_FRAMEWORK, ([this](ramses_internal::StringOutputStream& sos) {
@@ -390,7 +426,7 @@ namespace ramses_internal
 
     void ResourceComponent::handleArrivedResource(const ManagedResource& resource)
     {
-        const ResourceContentHash hash = resource.getResourceObject()->getHash();
+        const ResourceContentHash hash = resource->getHash();
 
         LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceComponent::handleArrivedResource: resource available " << hash);
 
@@ -429,7 +465,11 @@ namespace ramses_internal
             managedResources.push_back(m_resourceStorage.manageResource(*loadedResource, true));
         }
         m_bytesScheduledForLoading -= bytesLoaded;
-        m_communicationSystem.sendResources(requesterId, managedResources);
+
+        for (auto& res : managedResources)
+            res->compress(IResource::CompressionLevel::REALTIME);
+        SceneUpdate update{SceneActionCollection(), managedResources};
+        m_communicationSystem.sendResources(requesterId, SceneUpdateSerializer(update));
     }
 
     void ResourceComponent::LoadResourcesFromFileTask::execute()
@@ -503,24 +543,13 @@ namespace ramses_internal
     void ResourceComponent::newParticipantHasConnected(const Guid& guid)
     {
         PlatformGuard guard(m_frameworkLock);
-        m_resourceDeserializers.put(guid, new ResourceStreamDeserializer);
+        m_resourceDeserializers[guid] = std::make_unique<SceneUpdateStreamDeserializer>();
     }
 
     void ResourceComponent::participantHasDisconnected(const Guid& guid)
     {
         PlatformGuard guard(m_frameworkLock);
-        // remove resource deserializer
-        auto it = m_resourceDeserializers.find(guid);
-        if (it != m_resourceDeserializers.end())
-        {
-            if (!it->value->processingFinished())
-            {
-                LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::participantHasDisconnected: Drop partially received resources from " << guid);
-            }
-
-            delete it->value;
-            m_resourceDeserializers.remove(it);
-        }
+        m_resourceDeserializers.erase(guid);
     }
 
     ManagedResource ResourceComponent::forceLoadResource(const ResourceContentHash& hash)
@@ -543,10 +572,9 @@ namespace ramses_internal
         }
     }
 
-    bool ResourceComponent::isReceivingFromParticipant(const Guid& participant) const
+    bool ResourceComponent::hasDeserializerForParticipant(const Guid& participant) const
     {
-        ResourceStreamDeserializer** deser = m_resourceDeserializers.get(participant);
-        return deser && !(*deser)->processingFinished();
+        return m_resourceDeserializers.find(participant) != m_resourceDeserializers.end();
     }
 
     bool ResourceComponent::hasRequestForResource(ResourceContentHash hash, ResourceRequesterID requester) const
@@ -558,6 +586,20 @@ namespace ramses_internal
     void ResourceComponent::reserveResourceCount(uint32_t totalCount)
     {
         m_resourceStorage.reserveResourceCount(totalCount);
+    }
+
+    ramses_internal::ManagedResourceVector ResourceComponent::resolveResources(ResourceContentHashVector& hashes)
+    {
+        ManagedResourceVector result;
+        for (auto& ressourcehash : hashes)
+        {
+            ManagedResource mr = getResource(ressourcehash);
+            if (!mr)
+                mr = forceLoadResource(ressourcehash);
+            assert(mr);
+            result.push_back(mr);
+        }
+        return result;
     }
 
     void ResourceComponent::handleResourcesNotAvailable(const ResourceContentHashVector& resources, const Guid& providerID)

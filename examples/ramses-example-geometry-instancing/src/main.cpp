@@ -41,9 +41,9 @@ int main(int argc, char* argv[])
 
     // prepare triangle geometry: vertex position array and index array
     float vertexPositionsArray[] = { -1.f, 0.f, -1.f, 1.f, 0.f, -1.f, 0.f, 1.f, -1.f };
-    const ramses::Vector3fArray* vertexPositions = ramses.createConstVector3fArray(3, vertexPositionsArray);
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
     uint16_t indicesArray[] = { 0, 1, 2 };
-    const ramses::UInt16Array* indices = ramses.createConstUInt16Array(3, indicesArray);
+    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
 
     // ------- Instancing with uniforms --------
     // create an appearance for red triangles
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
     effectDescUniform.setFragmentShaderFromFile("res/ramses-example-geometry-instancing-uniform.frag");
     effectDescUniform.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    const ramses::Effect* uniformEffect = ramses.createEffect(effectDescUniform, ramses::ResourceCacheFlag_DoNotCache, "uniform-instancing");
+    const ramses::Effect* uniformEffect = scene->createEffect(effectDescUniform, ramses::ResourceCacheFlag_DoNotCache, "uniform-instancing");
     ramses::Appearance* uniformAppearance = scene->createAppearance(*uniformEffect, "triangle_uniforms");
 
     // get input data of appearance and bind required data
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     effectDescVertex.setFragmentShaderFromFile("res/ramses-example-geometry-instancing-vertex.frag");
     effectDescVertex.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    const ramses::Effect* vertexEffect = ramses.createEffect(effectDescVertex, ramses::ResourceCacheFlag_DoNotCache, "vertex-instancing");
+    const ramses::Effect* vertexEffect = scene->createEffect(effectDescVertex, ramses::ResourceCacheFlag_DoNotCache, "vertex-instancing");
     ramses::Appearance* vertexAppearance = scene->createAppearance(*vertexEffect, "triangle_uniforms");
 
     // set vertex positions directly in geometry
@@ -110,8 +110,8 @@ int main(int argc, char* argv[])
         0.0f, 0.0f, 1.0f, 1.0f,
         1.0f, 1.0f, 1.0f, 1.0f
     };
-    const ramses::Vector3fArray* vertexTranslations = ramses.createConstVector3fArray(4, vertexInstanceTranslationArray);
-    const ramses::Vector4fArray* vertexColors = ramses.createConstVector4fArray(4, vertexInstanceColorArray);
+    const ramses::ArrayResource* vertexTranslations = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexInstanceTranslationArray);
+    const ramses::ArrayResource* vertexColors = scene->createArrayResource(ramses::EDataType::Vector4F, 4, vertexInstanceColorArray);
 
     ramses::AttributeInput vertexTranslationInput;
     vertexEffect->findAttributeInput("translation", vertexTranslationInput);
@@ -163,9 +163,9 @@ int main(int argc, char* argv[])
 
     // shutdown: stop distribution, free resources, unregister
     scene->unpublish();
+    scene->destroy(*vertexPositions);
+    scene->destroy(*indices);
     ramses.destroy(*scene);
-    ramses.destroy(*vertexPositions);
-    ramses.destroy(*indices);
     framework.disconnect();
 
     return 0;

@@ -20,6 +20,7 @@ namespace ramses_internal
     class IInputStream;
     class String;
 
+    // TODO(tobias) must add standalone tests for these functions
     namespace ResourceSerializationHelper
     {
         struct DeserializedResourceHeader

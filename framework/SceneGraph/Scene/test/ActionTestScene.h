@@ -51,6 +51,7 @@ namespace ramses_internal
         virtual UInt32                      getRenderStateCount             () const override;
         virtual void                        setRenderStateBlendFactors            (RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha) override;
         virtual void                        setRenderStateBlendOperations         (RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha) override;
+        virtual void                        setRenderStateBlendColor              (RenderStateHandle stateHandle, const Vector4& color) override;
         virtual void                        setRenderStateCullMode                (RenderStateHandle stateHandle, ECullMode cullMode) override;
         virtual void                        setRenderStateDrawMode                (RenderStateHandle stateHandle, EDrawMode drawMode) override;
         virtual void                        setRenderStateDepthFunc               (RenderStateHandle stateHandle, EDepthFunc func) override;
@@ -62,12 +63,10 @@ namespace ramses_internal
         virtual const RenderState&          getRenderState                        (RenderStateHandle stateHandle) const override;
 
         // Camera
-        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle = CameraHandle::Invalid()) override;
+        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle dataInstance, CameraHandle handle = CameraHandle::Invalid()) override;
         virtual void                        releaseCamera                   (CameraHandle cameraHandle) override;
         virtual bool                        isCameraAllocated               (CameraHandle handle) const override;
         virtual UInt32                      getCameraCount                  () const override;
-        // Camera Viewport
-        virtual void                        setCameraFrustum                (CameraHandle cameraHandle, const Frustum& frustum) override;
         virtual const Camera&               getCamera                       (CameraHandle cameraHandle) const override;
 
         // Creation/Deletion

@@ -23,9 +23,7 @@
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/AttributeInput.h"
-#include "ramses-client-api/UInt16Array.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/RenderTargetDescription.h"
@@ -34,8 +32,8 @@
 
 namespace ramses_internal
 {
-    DynamicQuad_OffscreenRenderTarget::DynamicQuad_OffscreenRenderTarget(ramses::RamsesClient& client, ramses::Scene& scene, ramses::RenderPass& offscreenRenderPass, const ScreenspaceQuad& screenspaceQuad)
-        : DynamicQuad_Base(client, scene, screenspaceQuad)
+    DynamicQuad_OffscreenRenderTarget::DynamicQuad_OffscreenRenderTarget(ramses::Scene& scene, ramses::RenderPass& offscreenRenderPass, const ScreenspaceQuad& screenspaceQuad)
+        : DynamicQuad_Base(scene, screenspaceQuad)
         , m_offscreenRenderPass(offscreenRenderPass)
     {
         m_renderGroup.addMeshNode(m_meshNode);
@@ -74,6 +72,9 @@ namespace ramses_internal
         m_renderTargetSceneObjects.renderBuffer = nullptr;
         m_renderTargetSceneObjects.renderTarget = nullptr;
         m_renderTargetSceneObjects.textureSampler = nullptr;
+        m_quadResources.indices = nullptr;
+        m_quadResources.texCoords = nullptr;
+        m_quadResources.vertexPos = nullptr;
     }
 
     RenderTargetResources DynamicQuad_OffscreenRenderTarget::createRenderTarget()

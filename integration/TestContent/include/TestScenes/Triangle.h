@@ -17,12 +17,11 @@
 
 namespace ramses
 {
-    class RamsesClient;
     class Scene;
     class Appearance;
     class GeometryBinding;
-    class UInt16Array;
-    class Vector3fArrayInput;
+    class ArrayResource;
+    class ArrayResourceInput;
     class Effect;
     class UniformInput;
     class DataVector4f;
@@ -30,7 +29,7 @@ namespace ramses
     class Triangle
     {
     public:
-        Triangle(RamsesClient& client, Scene& scene, const Effect& effect, enum TriangleAppearance::EColor color, float alpha = 1.f, TriangleGeometry::EVerticesOrder vertOrder = TriangleGeometry::EVerticesOrder_CCW);
+        Triangle(Scene& scene, const Effect& effect, enum TriangleAppearance::EColor color, float alpha = 1.f, TriangleGeometry::EVerticesOrder vertOrder = TriangleGeometry::EVerticesOrder_CCW);
 
         Appearance& GetAppearance()
         {

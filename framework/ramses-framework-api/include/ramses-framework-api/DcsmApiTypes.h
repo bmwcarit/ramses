@@ -36,6 +36,7 @@ namespace ramses
     enum class ETechnicalContentType
     {
         RamsesSceneID,
+        WaylandIviSurfaceID,
     };
 
     /// Unique type tag for TechnicalContentDescriptor

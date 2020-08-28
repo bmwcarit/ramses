@@ -18,7 +18,7 @@ namespace ramses_internal
     class IndexArray32BitScene : public IntegrationScene
     {
     public:
-        IndexArray32BitScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        IndexArray32BitScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         void create16BitIndexArray(ramses::GeometryBinding* geometry);
         void create32BitIndexArray(ramses::GeometryBinding* geometry);

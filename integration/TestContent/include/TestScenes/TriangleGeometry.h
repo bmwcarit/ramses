@@ -14,11 +14,10 @@
 
 namespace ramses
 {
-    class RamsesClient;
     class Scene;
     class GeometryBinding;
-    class UInt16Array;
-    class Vector3fArrayInput;
+    class ArrayResource;
+    class ArrayResourceInput;
     class Effect;
     class UniformInput;
     class DataVector4f;
@@ -32,7 +31,7 @@ namespace ramses
             EVerticesOrder_CCW
         };
 
-        TriangleGeometry(RamsesClient& client, Scene& scene, const Effect& effect, EVerticesOrder vertOrder = EVerticesOrder_CCW);
+        TriangleGeometry(Scene& scene, const Effect& effect, EVerticesOrder vertOrder = EVerticesOrder_CCW);
 
         GeometryBinding& GetGeometry()
         {
@@ -40,10 +39,10 @@ namespace ramses
         }
 
     private:
-        static GeometryBinding&   createGeometry(RamsesClient& client, Scene& scene, const Effect& effect, const UInt16Array& indices);
-        static const UInt16Array& createIndices(RamsesClient& client, EVerticesOrder vertOrder);
+        static GeometryBinding&   createGeometry(Scene& scene, const Effect& effect, const ArrayResource& indices);
+        static const ArrayResource& createIndices(Scene& scene, EVerticesOrder vertOrder);
 
-        const UInt16Array& m_indices;
+        const ArrayResource& m_indices;
         GeometryBinding&   m_geometry;
     };
 }

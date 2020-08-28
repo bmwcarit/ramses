@@ -15,7 +15,7 @@
 namespace ramses
 {
     Resource::Resource(ResourceImpl& pimpl)
-        : ClientObject(pimpl)
+        : SceneObject(pimpl)
         , impl(pimpl)
     {
     }

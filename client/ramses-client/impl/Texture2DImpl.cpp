@@ -15,13 +15,13 @@
 namespace ramses
 {
     Texture2DImpl::Texture2DImpl(ramses_internal::ResourceHashUsage resource,
-        RamsesClientImpl& client,
+        SceneImpl& scene,
         const char* name,
         ERamsesObjectType overrideType /* = ERamsesObjectType_Texture2D*/)
-        : ResourceImpl(overrideType, std::move(resource), client, name)
+        : ResourceImpl(overrideType, std::move(resource), scene, name)
         , m_width(0)
         , m_height(0)
-        , m_textureFormat(ETextureFormat_NUMBER_OF_ELEMENTS)
+        , m_textureFormat(ETextureFormat::NUMBER_OF_ELEMENTS)
     {
     }
 

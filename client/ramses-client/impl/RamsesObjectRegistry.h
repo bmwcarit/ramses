@@ -23,6 +23,7 @@ namespace ramses
 {
     class RamsesObject;
     class RamsesObjectImpl;
+    class SceneObject;
 
     class RamsesObjectRegistry final : public IRamsesObjectRegistry
     {
@@ -43,6 +44,10 @@ namespace ramses
         const RamsesObject* findObjectByName(const char* name) const;
         RamsesObject*       findObjectByName(const char* name);
 
+        const SceneObject* findObjectById(sceneObjectId_t id) const;
+        SceneObject* findObjectById(sceneObjectId_t id);
+
+
         void setNodeDirty(NodeImpl& node, bool dirty);
         bool isNodeDirty(const NodeImpl& node) const;
 
@@ -51,9 +56,13 @@ namespace ramses
 
     private:
         bool containsObject(const RamsesObject& object) const;
+        void trackSceneObjectById(RamsesObject& object);
 
         typedef ramses_internal::HashMap<ramses_internal::String, RamsesObject*> ObjectNameMap;
         ObjectNameMap m_objectsByName;
+
+        typedef ramses_internal::HashMap<sceneObjectId_t, SceneObject*> ObjectIdMap;
+        ObjectIdMap m_objectsById;
 
         typedef ramses_internal::MemoryPool < RamsesObject*, RamsesObjectHandle > RamsesObjectsPool;
         RamsesObjectsPool m_objects[ERamsesObjectType_NUMBER_OF_TYPES];

@@ -25,11 +25,11 @@ public:
         , allocateHelper(scene)
     {
         allocateHelper.allocateRenderTarget(renderTargetHandle);
-        allocateHelper.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u }, renderBufferHandle);
+        allocateHelper.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u }, renderBufferHandle);
         allocateHelper.allocateStreamTexture(0, ResourceContentHash(1u, 2u), streamTextureHandle);
         allocateHelper.allocateBlitPass(RenderBufferHandle(81u), RenderBufferHandle(82u), blitPassHandle);
-        allocateHelper.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType_UInt32, 10u, dataBufferHandle);
-        allocateHelper.allocateTextureBuffer(ETextureFormat_R8, { { 4, 4 },{ 2, 2 },{ 1, 1 } }, textureBufferHandle);
+        allocateHelper.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType::UInt32, 10u, dataBufferHandle);
+        allocateHelper.allocateTextureBuffer(ETextureFormat::R8, { { 4, 4 },{ 2, 2 },{ 1, 1 } }, textureBufferHandle);
     }
 
 protected:

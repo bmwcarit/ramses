@@ -98,11 +98,6 @@ namespace ramses
         return impl.getSceneControlAPI();
     }
 
-    RendererSceneControl_legacy* RamsesRenderer::getSceneControlAPI_legacy()
-    {
-        return impl.getSceneControlAPI_legacy();
-    }
-
     DcsmContentControl* RamsesRenderer::createDcsmContentControl(const DcsmContentControlConfig& config)
     {
         auto ret = impl.createDcsmContentControl(config);

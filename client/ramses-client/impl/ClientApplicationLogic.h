@@ -54,6 +54,7 @@ namespace ramses_internal
         void removeScene(SceneId sceneId);
 
         virtual void handleSceneReferenceEvent(SceneReferenceEvent const& event, const Guid& rendererId) override;
+        virtual void handleResourceAvailabilityEvent(ResourceAvailabilityEvent const& event, const Guid& rendererId) override;
 
         // Resource handling
         ManagedResource         addResource(const IResource* resource);
@@ -63,6 +64,7 @@ namespace ramses_internal
         ManagedResourceVector   getResources() const;
         void                    addResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ResourceTableOfContents& toc);
         void                    removeResourceFile(const String& resourceFileName);
+        void                    forceLoadFromResourceFile(const String& resourceFileName);
         bool                    hasResourceFile(const String& resourceFileName) const;
         void                    reserveResourceCount(uint32_t totalCount);
 

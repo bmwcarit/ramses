@@ -61,6 +61,8 @@ namespace ramses_internal
 
         ECameraProjectionType getProjectionType() const;
 
+        bool isValid() const;
+
         // frustum planes
         Float leftPlane;
         Float rightPlane;

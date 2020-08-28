@@ -142,7 +142,7 @@ namespace ramses_internal
         return m_path;
     }
 
-    EStatus File::read(char* buffer, size_t length, size_t& numBytes)
+    EStatus File::read(void* buffer, size_t length, size_t& numBytes)
     {
         if (buffer == nullptr)
             return EStatus::Error;
@@ -166,7 +166,7 @@ namespace ramses_internal
         return EStatus::Error;
     }
 
-    bool File::write(const char* buffer, size_t length)
+    bool File::write(const void* buffer, size_t length)
     {
         if (buffer == nullptr)
             return false;

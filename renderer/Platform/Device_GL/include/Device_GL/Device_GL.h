@@ -45,6 +45,7 @@ namespace ramses_internal
         virtual void depthWrite            (EDepthWrite flag) override;
         virtual void scissorTest           (EScissorTest state, const RenderState::ScissorRegion& region) override;
         virtual void blendFactors          (EBlendFactor sourceColor, EBlendFactor destinationColor, EBlendFactor sourceAlpha, EBlendFactor destinationAlpha) override;
+        virtual void blendColor            (const Vector4& color) override;
         virtual void blendOperations       (EBlendOperation operationColor, EBlendOperation operationAlpha) override;
         virtual void cullMode              (ECullMode mode) override;
         virtual void stencilFunc           (EStencilFunc func, UInt8 ref, UInt8 mask) override;

@@ -50,12 +50,12 @@ namespace ramses
         return getIScene().getStreamTexture(m_streamTextureHandle).forceFallbackTexture;
     }
 
-    streamSource_t StreamTextureImpl::getStreamSource() const
+    waylandIviSurfaceId_t StreamTextureImpl::getStreamSource() const
     {
-        return streamSource_t(getIScene().getStreamTexture(m_streamTextureHandle).source);
+        return waylandIviSurfaceId_t(getIScene().getStreamTexture(m_streamTextureHandle).source);
     }
 
-    void StreamTextureImpl::initializeFrameworkData(streamSource_t source, const Texture2DImpl& fallbackTexture)
+    void StreamTextureImpl::initializeFrameworkData(waylandIviSurfaceId_t source, const Texture2DImpl& fallbackTexture)
     {
         assert(!m_streamTextureHandle.isValid());
         m_streamTextureHandle = getIScene().allocateStreamTexture(source.getValue(), fallbackTexture.getLowlevelResourceHash());
@@ -85,7 +85,7 @@ namespace ramses
         indent += IndentationStep;
 
         const ramses_internal::ResourceContentHash fallbackTextureHash = getFallbackTextureHash();
-        const Resource* resource = getClientImpl().scanForResourceWithHash(fallbackTextureHash);
+        const Resource* resource = getSceneImpl().scanForResourceWithHash(fallbackTextureHash);
         if (!resource)
         {
             addValidationMessage(EValidationSeverity_Error, indent, "StreamTexture is using a fallback texture which does not exist");

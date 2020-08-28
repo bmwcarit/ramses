@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "gmock/gmock.h"
+#include "RendererSceneControlImpl.h"
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
@@ -15,7 +16,6 @@
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
-#include "RendererSceneControlLogic.h"
 #include "Utils/LogMacros.h"
 #include <memory>
 

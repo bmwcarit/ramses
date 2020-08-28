@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
     effectDesc.setVertexShaderFromFile("res/ramses-example-text-languages-effect.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-text-languages-effect.frag");
-    const ramses::Effect* textEffect = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "simpleTextShader");
+    const ramses::Effect* textEffect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "simpleTextShader");
 
     // create font instances
     const ramses::FontId hebrewFont   = fontRegistry.createFreetype2Font("res/ramses-example-text-languages-Arimo-Regular.ttf");

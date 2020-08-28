@@ -23,12 +23,11 @@ namespace ramses_internal
         EMessageId_UnpublishScene,
         EMessageId_SubscribeScene,
         EMessageId_UnsubscribeScene,
-        EMessageId_SceneNotAvailable,
 
         EMessageId_ConnectionDescriptionMessage,
         EMessageId_ConnectorAddressExchange,
         EMessageId_InputEvent,
-        EMessageId_SendSceneActionList,
+        EMessageId_SendSceneUpdate,
 
         EMessageId_RendererEvent,
 
@@ -68,12 +67,11 @@ case ENUMVALUE: return #ENUMVALUE
                 CreateNameForEnumID(EMessageId_UnpublishScene);
                 CreateNameForEnumID(EMessageId_SubscribeScene);
                 CreateNameForEnumID(EMessageId_UnsubscribeScene);
-                CreateNameForEnumID(EMessageId_SceneNotAvailable);
 
                 CreateNameForEnumID(EMessageId_ConnectionDescriptionMessage);
                 CreateNameForEnumID(EMessageId_ConnectorAddressExchange);
                 CreateNameForEnumID(EMessageId_InputEvent);
-                CreateNameForEnumID(EMessageId_SendSceneActionList);
+                CreateNameForEnumID(EMessageId_SendSceneUpdate);
 
                 CreateNameForEnumID(EMessageId_Alive);
 

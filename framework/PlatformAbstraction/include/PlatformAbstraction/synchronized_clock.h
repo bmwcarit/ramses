@@ -13,6 +13,11 @@
 
 namespace ramses_internal
 {
+    enum class synchronized_clock_type
+    {
+        SystemTime = 0, // for development, or if system time is synchronized (hypervisor, container etc)
+        PTP = 1, // precision time protocol - network wide synchronized time
+    };
     struct synchronized_clock
     {
         using duration =  std::chrono::nanoseconds;
@@ -23,6 +28,7 @@ namespace ramses_internal
 
         static time_point now();
         static const char* source();
+        static synchronized_clock_type getClockType();
     };
 
     inline uint64_t asMilliseconds(synchronized_clock::time_point tp)
@@ -49,6 +55,12 @@ namespace ramses_internal
     inline synchronized_clock::time_point synchronized_clock::now()
     {
         return time_point(std::chrono::nanoseconds(0));
+    }
+
+    inline synchronized_clock_type synchronized_clock::getClockType()
+    {
+        // todo change once ptp is supported here
+        return synchronized_clock_type::SystemTime;
     }
 }
 
@@ -79,6 +91,11 @@ namespace ramses_internal
         clock_gettime(clockId, &ts);
         return time_point(std::chrono::seconds(ts.tv_sec) + std::chrono::nanoseconds(ts.tv_nsec));
     }
+
+    inline synchronized_clock_type synchronized_clock::getClockType()
+    {
+        return synchronized_clock_type::PTP;
+    }
 }
 
 #else
@@ -92,6 +109,11 @@ namespace ramses_internal
     inline synchronized_clock::time_point synchronized_clock::now()
     {
         return time_point(std::chrono::system_clock::now().time_since_epoch());
+    }
+
+    inline synchronized_clock_type synchronized_clock::getClockType()
+    {
+        return synchronized_clock_type::SystemTime;
     }
 }
 #endif

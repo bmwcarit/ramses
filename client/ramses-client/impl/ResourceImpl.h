@@ -10,7 +10,7 @@
 #define RAMSES_RESOURCEIMPL_H
 
 // internal
-#include "ClientObjectImpl.h"
+#include "SceneImpl.h"
 
 // ramses framework
 #include "SceneAPI/ResourceContentHash.h"
@@ -21,17 +21,16 @@
 namespace ramses_internal
 {
     class ClientApplicationLogic;
-    class ManagedResource;
 }
 
 namespace ramses
 {
-    class ResourceImpl : public ClientObjectImpl
+    class ResourceImpl : public SceneObjectImpl
     {
     public:
         ResourceImpl(ERamsesObjectType type,
             ramses_internal::ResourceHashUsage hashUsage,
-            RamsesClientImpl& client,
+            SceneImpl& scene,
             const char* name);
         virtual ~ResourceImpl();
 
@@ -44,6 +43,8 @@ namespace ramses
 
         virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
         virtual status_t setName(RamsesObject& object, const char* name) override;
+
+        static resourceId_t CreateResourceHash(ramses_internal::ResourceContentHash llhash, ramses_internal::String const& name, ERamsesObjectType type);
 
     private:
         void updateResourceHash();

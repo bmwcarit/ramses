@@ -39,7 +39,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, PickableObjectCanGetPropertiesGivenAtAllocationTime)
     {
-        const DataBufferHandle geometryBuffer = this->m_scene.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType_UInt32, 10u);
+        const DataBufferHandle geometryBuffer = this->m_scene.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType::UInt32, 10u);
         const NodeHandle nodeHandle = this->m_scene.allocateNode();
         const PickableObjectId id{ 3u };
 

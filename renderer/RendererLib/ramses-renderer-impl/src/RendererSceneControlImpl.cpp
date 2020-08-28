@@ -177,6 +177,12 @@ namespace ramses
             case ramses_internal::ERendererEventType_SceneFlushed:
                 eventHandler.sceneFlushed(sceneId_t(event.sceneId.getValue()), event.sceneVersionTag.getValue());
                 break;
+            case ramses_internal::ERendererEventType_SceneExpirationMonitoringEnabled:
+                eventHandler.sceneExpirationMonitoringEnabled(sceneId_t(event.sceneId.getValue()));
+                break;
+            case ramses_internal::ERendererEventType_SceneExpirationMonitoringDisabled:
+                eventHandler.sceneExpirationMonitoringDisabled(sceneId_t(event.sceneId.getValue()));
+                break;
             case ramses_internal::ERendererEventType_SceneExpired:
                 eventHandler.sceneExpired(sceneId_t(event.sceneId.getValue()));
                 break;
@@ -184,10 +190,10 @@ namespace ramses
                 eventHandler.sceneRecoveredFromExpiration(sceneId_t(event.sceneId.getValue()));
                 break;
             case ramses_internal::ERendererEventType_StreamSurfaceAvailable:
-                eventHandler.streamAvailabilityChanged(ramses::streamSource_t(event.streamSourceId.getValue()), true);
+                eventHandler.streamAvailabilityChanged(ramses::waylandIviSurfaceId_t(event.streamSourceId.getValue()), true);
                 break;
             case ramses_internal::ERendererEventType_StreamSurfaceUnavailable:
-                eventHandler.streamAvailabilityChanged(ramses::streamSource_t(event.streamSourceId.getValue()), false);
+                eventHandler.streamAvailabilityChanged(ramses::waylandIviSurfaceId_t(event.streamSourceId.getValue()), false);
                 break;
 
             case ramses_internal::ERendererEventType_SceneUnpublished:

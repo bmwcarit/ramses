@@ -52,7 +52,7 @@ namespace ramses_internal
             return true;
         }
 
-        virtual bool sendResources(const Guid& /*to*/, const ManagedResourceVector& /*resource*/) override
+        virtual bool sendResources(const Guid& /*to*/, const ISceneUpdateSerializer& /*serializer*/) override
         {
             return true;
         }
@@ -82,19 +82,14 @@ namespace ramses_internal
             return true;
         }
 
-        virtual bool sendSceneNotAvailable(const Guid& /*to*/, const SceneId& /*sceneId*/) override
+        virtual bool sendInitializeScene(const Guid& /*to*/, const SceneId& /*sceneId*/) override
         {
             return true;
         }
 
-        virtual bool sendInitializeScene(const Guid& /*to*/, const SceneInfo& /*sceneInfo*/) override
+        virtual bool sendSceneUpdate(const Guid& /*to*/, const SceneId& /*sceneId*/, const ISceneUpdateSerializer& /*serializer*/) override
         {
             return true;
-        }
-
-        virtual uint64_t sendSceneActionList(const Guid& /*to*/, const SceneId& /*sceneId*/, const SceneActionCollection& /*actions*/, const uint64_t& ) override
-        {
-            return 0u;
         }
 
         virtual bool sendRendererEvent(const Guid& /*to*/, const SceneId& /*sceneId*/, const std::vector<Byte>& /*data*/) override
@@ -102,12 +97,12 @@ namespace ramses_internal
             return true;
         }
 
-        virtual bool sendDcsmBroadcastOfferContent(ContentID /*contentID*/, Category) override
+        virtual bool sendDcsmBroadcastOfferContent(ContentID /*contentID*/, Category, const std::string&) override
         {
             return true;
         }
 
-        virtual bool sendDcsmOfferContent(const Guid& /*to*/, ContentID /*contentID*/, Category) override
+        virtual bool sendDcsmOfferContent(const Guid& /*to*/, ContentID /*contentID*/, Category, const std::string&) override
         {
             return true;
         }
@@ -178,16 +173,6 @@ namespace ramses_internal
         }
 
         virtual void setDcsmConsumerServiceHandler(IDcsmConsumerServiceHandler* /*handler*/) override
-        {
-        }
-
-        virtual CommunicationSendDataSizes getSendDataSizes() const override
-        {
-            return CommunicationSendDataSizes{ std::numeric_limits<UInt32>::max() , std::numeric_limits<UInt32>::max() , std::numeric_limits<UInt32>::max(),
-                std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max() };
-        }
-
-        virtual void setSendDataSizes(const CommunicationSendDataSizes& /*sizes*/) override
         {
         }
 

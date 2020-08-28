@@ -26,8 +26,7 @@ namespace ramses
     class MeshNode;
     class AnimationSystem;
     class AnimationSystemRealTime;
-    class IndexDataBuffer;
-    class VertexDataBuffer;
+    class ArrayBuffer;
     class Texture2DBuffer;
     class GeometryBinding;
     class RenderGroup;
@@ -82,12 +81,7 @@ namespace ramses
     class SplineBezierVector4i;
     class PickableObject;
     class SceneReference;
-    class UInt16Array;
-    class UInt32Array;
-    class FloatArray;
-    class Vector2fArray;
-    class Vector3fArray;
-    class Vector4fArray;
+    class ArrayResource;
 
     // Objects derived from Node class
     typedef ::testing::Types
@@ -103,15 +97,10 @@ namespace ramses
     // Objects derived from Resource class
     typedef ::testing::Types
         <
-        FloatArray,
-        Vector2fArray,
-        Vector3fArray,
-        Vector4fArray,
+        ArrayResource,
         Texture2D,
         Texture3D,
         TextureCube,
-        UInt16Array,
-        UInt32Array,
         Effect
         > ResourceTypes;
 
@@ -145,11 +134,15 @@ namespace ramses
         DataVector3i,
         DataVector4i,
         StreamTexture,
-        IndexDataBuffer,
-        VertexDataBuffer,
+        ArrayBuffer,
         Texture2DBuffer,
         PickableObject,
-        SceneReference
+        SceneReference,
+        Texture2D,
+        Texture3D,
+        TextureCube,
+        ArrayResource,
+        Effect
         > SceneObjectTypes;
 
     // Objects owned by AnimationSystem
@@ -188,15 +181,7 @@ namespace ramses
     // Objects owned by client
     typedef ::testing::Types
         <
-        Scene,
-        Texture2D,
-        Texture3D,
-        TextureCube,
-        UInt16Array,
-        FloatArray,
-        Vector2fArray,
-        Vector3fArray,
-        Vector4fArray
+        Scene
         > ClientObjectTypes;
 
     // All Ramses objects - set #1
@@ -249,20 +234,14 @@ namespace ramses
     // All Ramses objects - set #2
     typedef ::testing::Types
         <
-        UInt16Array,
-        UInt32Array,
-        FloatArray,
-        Vector2fArray,
-        Vector3fArray,
-        Vector4fArray,
+        ArrayResource,
         RenderGroup,
         RenderPass,
         BlitPass,
         TextureSampler,
         RenderBuffer,
         RenderTarget,
-        IndexDataBuffer,
-        VertexDataBuffer,
+        ArrayBuffer,
         Texture2DBuffer,
         GeometryBinding,
         DataFloat,

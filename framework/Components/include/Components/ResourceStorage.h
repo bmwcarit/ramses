@@ -11,11 +11,13 @@
 
 #include "PlatformAbstraction/PlatformLock.h"
 #include "Components/ManagedResource.h"
-#include "IResourceHashUsageCallback.h"
+#include "Components/IManagedResourceDeleterCallback.h"
 #include "Components/ResourceHashUsage.h"
+#include "Components/IResourceHashUsageCallback.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "Collections/HashMap.h"
 #include "Resource/ResourceInfo.h"
+#include "Utils/StatisticCollection.h"
 
 namespace ramses_internal
 {
@@ -33,7 +35,7 @@ namespace ramses_internal
             bool deletionAllowed;
         };
     public:
-        explicit ResourceStorage(PlatformLock& lockToUse);
+        explicit ResourceStorage(PlatformLock& lockToUse, StatisticCollectionFramework& statistics);
         virtual ~ResourceStorage();
 
         void setListener(IResourceStorageChangeListener& listener);
@@ -49,17 +51,22 @@ namespace ramses_internal
         virtual void resourceHashUsageZero(const ResourceContentHash& hash) override;
         uint64_t getBytesUsedByResourcesInMemory() const;
         void reserveResourceCount(uint32_t totalCount);
+
+        void markDeletionDisallowed(const ResourceContentHash& hash);
+        bool isFileResourceInUseAnywhereElse(const ResourceContentHash& hash);
+
     private:
         ManagedResource createManagedResource(const IResource* resource);
         void referenceResource(const ResourceContentHash& hash);
         void checkForDeletion(RefCntResource& entry, const ResourceContentHash& hash);
 
         PlatformLock& m_resourceMapLock;
+        StatisticCollectionFramework& m_statistics;
 
         typedef HashMap<ResourceContentHash, RefCntResource> ResourceMap;
         ResourceMap m_resourceMap;
-        IResourceStorageChangeListener* m_listener;
-        uint64_t m_bytesCurrentlyUsedByResourcesInMemory;
+        IResourceStorageChangeListener* m_listener = nullptr;
+        uint64_t m_bytesCurrentlyUsedByResourcesInMemory = 0;
     };
 }
 

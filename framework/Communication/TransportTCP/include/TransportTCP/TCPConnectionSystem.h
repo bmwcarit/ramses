@@ -42,14 +42,10 @@ namespace ramses_internal
         virtual IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() override;
         virtual IConnectionStatusUpdateNotifier& getDcsmConnectionStatusUpdateNotifier() override;
 
-        // message limits configuration
-        virtual CommunicationSendDataSizes getSendDataSizes() const override;
-        virtual void setSendDataSizes(const CommunicationSendDataSizes& sizes) override;
-
         // resource
         virtual bool sendRequestResources(const Guid& to, const ResourceContentHashVector& resources) override;
         virtual bool sendResourcesNotAvailable(const Guid& to, const ResourceContentHashVector& resources) override;
-        virtual bool sendResources(const Guid& to, const ManagedResourceVector& managedResources) override;
+        virtual bool sendResources(const Guid& to, const ISceneUpdateSerializer& serializer) override;
 
         // scene
         virtual bool broadcastNewScenesAvailable(const SceneInfoVector& newScenes) override;
@@ -58,16 +54,15 @@ namespace ramses_internal
 
         virtual bool sendSubscribeScene(const Guid& to, const SceneId& sceneId) override;
         virtual bool sendUnsubscribeScene(const Guid& to, const SceneId& sceneId) override;
-        virtual bool sendSceneNotAvailable(const Guid& to, const SceneId& sceneId) override;
 
-        virtual bool sendInitializeScene(const Guid& to, const SceneInfo& sceneInfo) override;
-        virtual uint64_t sendSceneActionList(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter) override;
+        virtual bool sendInitializeScene(const Guid& to, const SceneId& sceneId) override;
+        virtual bool sendSceneUpdate(const Guid& to, const SceneId& sceneId, const ISceneUpdateSerializer& serializer) override;
 
         virtual bool sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data) override;
 
         // dcsm client -> renderer
-        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category) override;
-        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category) override;
+        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category, const std::string& friendlyName) override;
+        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category, const std::string& friendlyName) override;
         virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
         virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID) override;
         virtual bool sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
@@ -145,10 +140,10 @@ namespace ramses_internal
 
             std::deque<OutMessage> outQueueNormal;
             std::deque<OutMessage> outQueuePrio;
-            std::vector<char> currentOutBuffer;
+            std::vector<Byte> currentOutBuffer;
 
             uint32_t lengthReceiveBuffer;
-            std::vector<char> receiveBuffer;
+            std::vector<Byte> receiveBuffer;
 
             std::chrono::steady_clock::time_point lastSent;
             asio::steady_timer sendAliveTimer;
@@ -196,7 +191,7 @@ namespace ramses_internal
         void handleSubscribeScene(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleUnsubscribeScene(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleCreateScene(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleSceneActionList(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleSceneUpdate(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handlePublishScene(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleUnpublishScene(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleSceneNotAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
@@ -207,7 +202,7 @@ namespace ramses_internal
 
         void handleDcsmCanvasSizeChange(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmContentStatusChange(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream, size_t size);
         void handleDcsmContentDescription(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream, size_t size);
@@ -226,8 +221,6 @@ namespace ramses_internal
         const EParticipantType m_participantType;
         const std::chrono::milliseconds m_aliveInterval;
         const std::chrono::milliseconds m_aliveIntervalTimeout;
-
-        CommunicationSendDataSizes m_sendDataSizes;
 
         PlatformLock& m_frameworkLock;
         PlatformThread m_thread;

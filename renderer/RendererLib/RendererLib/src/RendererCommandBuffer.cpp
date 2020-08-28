@@ -10,6 +10,7 @@
 #include "Utils/LogMacros.h"
 #include "RendererLib/EMouseEventType.h"
 #include "Scene/EScenePublicationMode.h"
+#include "Components/SceneUpdate.h"
 
 namespace ramses_internal
 {
@@ -61,10 +62,10 @@ namespace ramses_internal
         m_commands.unsubscribeScene(sceneId, indirect);
     }
 
-    void RendererCommandBuffer::enqueueActionsForScene(SceneId sceneId, SceneActionCollection&& newActions)
+    void RendererCommandBuffer::enqueueActionsForScene(SceneId sceneId, SceneUpdate&& sceneUpdate)
     {
         PlatformGuard guard(m_lock);
-        m_commands.enqueueActionsForScene(sceneId, std::move(newActions));
+        m_commands.enqueueActionsForScene(sceneId, std::move(sceneUpdate));
     }
 
     void RendererCommandBuffer::createDisplay(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle)

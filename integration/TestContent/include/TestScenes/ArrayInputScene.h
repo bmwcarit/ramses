@@ -22,7 +22,7 @@ namespace ramses_internal
     class ArrayInputScene : public IntegrationScene
     {
     public:
-        ArrayInputScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        ArrayInputScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {

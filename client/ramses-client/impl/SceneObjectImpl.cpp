@@ -9,11 +9,14 @@
 #include "SceneObjectImpl.h"
 #include "SceneImpl.h"
 
+#include "SerializationContext.h"
+
 namespace ramses
 {
     SceneObjectImpl::SceneObjectImpl(SceneImpl& scene, ERamsesObjectType type, const char* name)
         : ClientObjectImpl(scene.getClientImpl(), type, name)
         , m_scene(scene)
+        , m_sceneObjectId(scene.getNextSceneObjectId())
     {
         m_scene.getStatisticCollection().statObjectsCreated.incCounter(1);
     }
@@ -46,5 +49,31 @@ namespace ramses
     bool SceneObjectImpl::isFromTheSameSceneAs(const SceneObjectImpl& otherObject) const
     {
         return &getIScene() == &(otherObject.getIScene());
+    }
+
+    status_t SceneObjectImpl::serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const
+    {
+        CHECK_RETURN_ERR(RamsesObjectImpl::serialize(outStream, serializationContext));
+        assert(m_sceneObjectId.isValid());
+        outStream << (serializationContext.getSerializeSceneObjectIds() ? m_sceneObjectId.getValue() : sceneObjectId_t::Invalid().getValue());
+
+        return StatusOK;
+    }
+
+    status_t SceneObjectImpl::deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext)
+    {
+        CHECK_RETURN_ERR(RamsesObjectImpl::deserialize(inStream, serializationContext));
+        sceneObjectId_t id;
+        inStream >> id.getReference();
+
+        if (id.isValid())
+            m_sceneObjectId = std::move(id);
+
+        return StatusOK;
+    }
+
+    sceneObjectId_t SceneObjectImpl::getSceneObjectId() const
+    {
+        return m_sceneObjectId;
     }
 }

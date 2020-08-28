@@ -22,7 +22,7 @@ namespace ramses_internal
     class RenderTargetScene : public IntegrationScene
     {
     public:
-        RenderTargetScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        RenderTargetScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {

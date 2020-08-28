@@ -13,6 +13,7 @@
 #include "Watchdog/PlatformWatchdog.h"
 #include "TransportCommon/EConnectionProtocol.h"
 #include "TransportCommon/RamsesTransportProtocolVersion.h"
+#include "TransportCommon/SomeIPAdapter.h"
 
 namespace ramses
 {
@@ -26,9 +27,11 @@ namespace ramses
 
     RamsesFrameworkConfigImpl::RamsesFrameworkConfigImpl(int32_t argc, char const* const* argv)
         : StatusObjectImpl()
+        , m_enableSomeIPHUSafeLocalMode(false)
         , m_shellType(ERamsesShellType_Default)
         , m_periodicLogsEnabled(true)
         , m_usedProtocol(EConnectionProtocol::Invalid)
+        , m_someipCommunicationUserID(SomeIPAdapter::GetInvalidCommunicationUser())
         , m_parser(argc, argv)
         , m_dltAppID("RAMS")
         , m_dltAppDescription("RAMS-DESC")
@@ -70,6 +73,11 @@ namespace ramses
         return m_usedProtocol;
     }
 
+    uint32_t RamsesFrameworkConfigImpl::getSomeipCommunicationUserID() const
+    {
+        return m_someipCommunicationUserID;
+    }
+
     uint32_t RamsesFrameworkConfigImpl::getWatchdogNotificationInterval(ERamsesThreadIdentifier thread) const
     {
         return m_watchdogConfig.getWatchdogNotificationInterval(thread);
@@ -78,6 +86,34 @@ namespace ramses
     IThreadWatchdogNotification* RamsesFrameworkConfigImpl::getWatchdogNotificationCallback() const
     {
         return m_watchdogConfig.getCallBack();
+    }
+
+    status_t RamsesFrameworkConfigImpl::enableSomeIPCommunication(uint32_t ramsesCommunicationUserID)
+    {
+        m_someipCommunicationUserID = ramsesCommunicationUserID;
+        m_usedProtocol = SomeIPAdapter::GetUsedSomeIPStack(ramsesCommunicationUserID);
+
+        if (m_usedProtocol != EConnectionProtocol::Invalid)
+        {
+            if (SomeIPAdapter::IsSomeIPStackCompiled(m_usedProtocol))
+            {
+                return StatusOK;
+            }
+            else
+            {
+                StringOutputStream error;
+                error << "Specified to use " << m_usedProtocol << " but was compiled without";
+                LOG_FATAL(CONTEXT_COMMUNICATION, error.c_str());
+                return addErrorEntry(error.c_str());
+            }
+        }
+        else
+        {
+            StringOutputStream error;
+            error << "No SomeIP stack is configured for communication user ID " << ramsesCommunicationUserID;
+            LOG_FATAL(CONTEXT_COMMUNICATION, error.c_str());
+            return addErrorEntry(error.c_str());
+        }
     }
 
     status_t RamsesFrameworkConfigImpl::setRequestedRamsesShellType(ERamsesShellType shellType)
@@ -111,6 +147,7 @@ namespace ramses
 
     void RamsesFrameworkConfigImpl::parseCommandLine()
     {
+        const ArgumentUInt32 someipCommunicationUserID(m_parser, "someip", "enableSomeIPWithID", 0);
         const ArgumentBool useFakeConnection( m_parser, "fakeConnection", "fakeConnection");
         const ArgumentBool isRamshEnabled(m_parser, "ramsh", "ramsh");
         const ArgumentBool enableOffsetPlatformProtocolVersion(m_parser, "pvo", "protocolVersionOffset");
@@ -131,7 +168,22 @@ namespace ramses
             m_periodicLogsEnabled = false;
         }
 
-        if (useFakeConnection || !gHasTCPComm)
+        if (someipCommunicationUserID)
+        {
+            const ArgumentBool someipHuLocalMode(m_parser, "shl", "someip-hu-local");
+            m_enableSomeIPHUSafeLocalMode = someipHuLocalMode;
+
+            enableSomeIPCommunication(someipCommunicationUserID);
+
+            if (SomeIPAdapter::GetUsedSomeIPStack(someipCommunicationUserID) == EConnectionProtocol::SomeIP_IC)
+            {
+                m_someipICConfig.setIPAddress(ArgumentString(m_parser, "myip", "myipaddress", m_someipICConfig.getIPAddress()));
+            }
+
+            someipKeepAliveInterval = std::chrono::milliseconds(ArgumentUInt32(m_parser, "someipAlive", "someipAlive", static_cast<uint32_t>(someipKeepAliveInterval.count())));
+            someipKeepAliveTimeout = std::chrono::milliseconds(ArgumentUInt32(m_parser, "someipAliveTimeout", "someipAliveTimeout", static_cast<uint32_t>(someipKeepAliveTimeout.count())));
+        }
+        else if( useFakeConnection || !gHasTCPComm )
         {
             m_usedProtocol = EConnectionProtocol::Fake;
         }

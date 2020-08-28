@@ -8,11 +8,9 @@
 
 #include "TestScenes/Texture2DAnisotropicTextureFilteringScene.h"
 #include "ramses-utils.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
@@ -36,8 +34,8 @@
 
 namespace ramses_internal
 {
-    Texture2DAnisotropicTextureFilteringScene::Texture2DAnisotropicTextureFilteringScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    Texture2DAnisotropicTextureFilteringScene::Texture2DAnisotropicTextureFilteringScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         createOrthoCamera();
 
@@ -66,7 +64,7 @@ namespace ramses_internal
         ramses::Effect* effect(getTestEffect("ramses-test-client-textured"));
 
         uint16_t indicesArray[] = { 0, 1, 2, 0, 2, 3 };
-        const ramses::UInt16Array* indices = m_client.createConstUInt16Array(6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
         const float x = 0.0f;
         const float y = 0.0f;
@@ -80,7 +78,7 @@ namespace ramses_internal
             x + w, y + h, z,
             x, y + h, z,
         };
-        const ramses::Vector3fArray* vertexPositions = m_client.createConstVector3fArray(4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
 
         const float s = w / 4.0f * 2.0f;
         const float t = h / 4.0f;
@@ -91,11 +89,11 @@ namespace ramses_internal
             s, t,
             0.0f, t,
         };
-        const ramses::Vector2fArray* textureCoords = m_client.createConstVector2fArray(4, textureCoordsArray);
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
 
-        ramses::Texture2D* texture = m_client.createTexture2D(
+        ramses::Texture2D* texture = m_scene.createTexture2D(
+            ramses::ETextureFormat::RGB8,
             4, 4,
-            ramses::ETextureFormat_RGB8,
             3,
             mipLevelData,
             false);
@@ -133,9 +131,9 @@ namespace ramses_internal
 
     ramses::Appearance* Texture2DAnisotropicTextureFilteringScene::createQuad(
         ramses::Effect* effect,
-        const ramses::Vector3fArray* vertexPositions,
-        const ramses::Vector2fArray* textureCoords,
-        const ramses::UInt16Array* indices,
+        const ramses::ArrayResource* vertexPositions,
+        const ramses::ArrayResource* textureCoords,
+        const ramses::ArrayResource* indices,
         float x,
         float y)
     {

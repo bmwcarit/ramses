@@ -12,6 +12,7 @@
 #include "NodeImpl.h"
 #include "ramses-client-api/Node.h"
 #include "ClientTestUtils.h"
+#include <unordered_set>
 
 namespace ramses
 {
@@ -64,6 +65,7 @@ namespace ramses
         m_dummyObject.setName("name");
         m_registry.addObject(m_dummyObject);
         EXPECT_EQ(&m_dummyObject, m_registry.findObjectByName("name"));
+        EXPECT_EQ(&m_dummyObject, m_registry.findObjectById(sceneObjectId_t{1u}));
         EXPECT_EQ(&m_dummyObject, &m_dummyObject.impl.getRamsesObject());
         EXPECT_EQ(1u, m_registry.getNumberOfObjects(ERamsesObjectType_Node));
         EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_RenderBuffer));
@@ -73,12 +75,33 @@ namespace ramses
         EXPECT_EQ(&m_dummyObject, objects[0]);
     }
 
+    TEST_F(ARamsesObjectRegistry, sceneObjectsGetUniqueIds)
+    {
+        const std::unique_ptr<DummyObject> dummy1(createDummyObject());
+        const std::unique_ptr<DummyObject> dummy2(createDummyObject());
+        const std::unique_ptr<DummyObject> dummy3(createDummyObject());
+        const std::unique_ptr<DummyObject> dummy4(createDummyObject());
+        const std::unique_ptr<DummyObject> dummy5(createDummyObject());
+
+        const std::unordered_set<sceneObjectId_t> sceneObjectIds
+        {
+            dummy1->getSceneObjectId(),
+            dummy2->getSceneObjectId(),
+            dummy3->getSceneObjectId(),
+            dummy4->getSceneObjectId(),
+            dummy5->getSceneObjectId()
+        };
+
+        EXPECT_EQ(sceneObjectIds.size(), 5u);
+    }
+
     TEST_F(ARamsesObjectRegistry, canRemoveObject)
     {
         m_dummyObject.setName("name");
         m_registry.addObject(m_dummyObject);
         m_registry.removeObject(m_dummyObject);
         EXPECT_TRUE(nullptr == m_registry.findObjectByName("name"));
+        EXPECT_TRUE(nullptr == m_registry.findObjectById(sceneObjectId_t{1u}));
         EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_Node));
         EXPECT_EQ(0u, m_registry.getNumberOfObjects(ERamsesObjectType_RenderBuffer));
         RamsesObjectVector objects;
@@ -86,11 +109,13 @@ namespace ramses
         EXPECT_TRUE(objects.empty());
     }
 
+
     TEST_F(ARamsesObjectRegistry, canAddAndRetrieveObjectInfo)
     {
         m_dummyObject.setName("name");
         m_registry.addObject(m_dummyObject);
         EXPECT_EQ(&m_dummyObject, m_registry.findObjectByName("name"));
+        EXPECT_EQ(&m_dummyObject, m_registry.findObjectById(sceneObjectId_t{1u}));
     }
 
     TEST_F(ARamsesObjectRegistry, cannotRetrieveObjectInfoAfterObjectDeleted)
@@ -99,6 +124,7 @@ namespace ramses
         m_registry.addObject(m_dummyObject);
         m_registry.removeObject(m_dummyObject);
         EXPECT_TRUE(nullptr == m_registry.findObjectByName("name"));
+        EXPECT_TRUE(nullptr == m_registry.findObjectById(sceneObjectId_t{1u}));
     }
 
     TEST_F(ARamsesObjectRegistry, cannotFindObjectByOldNameWhenNameUpdatedAfterAdding)

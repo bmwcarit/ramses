@@ -15,11 +15,11 @@
 
 namespace ramses_internal
 {
-    RenderPassScene::RenderPassScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    RenderPassScene::RenderPassScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
         , m_effect(*getTestEffect("ramses-test-client-basic"))
-        , m_blueTriangle(ramsesClient, scene, m_effect, ramses::TriangleAppearance::EColor_Blue)
-        , m_whiteTriangle(ramsesClient, scene, m_effect, ramses::TriangleAppearance::EColor_White)
+        , m_blueTriangle(scene, m_effect, ramses::TriangleAppearance::EColor_Blue)
+        , m_whiteTriangle(scene, m_effect, ramses::TriangleAppearance::EColor_White)
     {
         ramses::MeshNode* meshNode1 = m_scene.createMeshNode();
         ramses::MeshNode* meshNode2 = m_scene.createMeshNode();

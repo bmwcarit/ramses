@@ -8,10 +8,9 @@
 
 #include "TestScenes/Texture3DScene.h"
 #include "ramses-utils.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/AttributeInput.h"
@@ -20,13 +19,13 @@
 
 namespace ramses_internal
 {
-    Texture3DScene::Texture3DScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    Texture3DScene::Texture3DScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
         , m_effect(getTestEffect("ramses-test-client-3d-textured"))
     {
 
         uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        m_indices = m_client.createConstUInt16Array(6, indicesArray);
+        m_indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
         m_groupNode = m_scene.createNode();
 
@@ -35,7 +34,7 @@ namespace ramses_internal
             1.0f, -1.0f, 0.0f,
             -1.0f, 1.0f, 0.0f,
             1.0f, 1.0f, 0.0f };
-        m_vertexPositions = m_client.createConstVector3fArray(4, vertexPositionsArray);
+        m_vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
 
         const uint8_t rgb8Data_0[] = {
             0xff, 0x00, 0x00,
@@ -70,9 +69,9 @@ namespace ramses_internal
             ramses::MipLevelData(sizeof(rgb8Data_2), rgb8Data_2)
         };
 
-        m_texture = m_client.createTexture3D(
+        m_texture = m_scene.createTexture3D(
+            ramses::ETextureFormat::RGB8,
             2, 2, 4,
-            ramses::ETextureFormat_RGB8,
             3,
             mipLevelData,
             false);
@@ -92,7 +91,7 @@ namespace ramses_internal
             2.f * texCoordMagnifier, 0.f * texCoordMagnifier, depth * texCoordMagnifier,
             0.f * texCoordMagnifier, 2.f * texCoordMagnifier, depth * texCoordMagnifier,
             2.f * texCoordMagnifier, 2.f * texCoordMagnifier, depth * texCoordMagnifier };
-        const ramses::Vector3fArray* textureCoords = m_client.createConstVector3fArray(4, textureCoordsArray);
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, textureCoordsArray);
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;

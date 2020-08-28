@@ -58,9 +58,9 @@ namespace ramses
 
     protected:
         /**
-        * @brief RamsesClient is the factory for creating Texture instances.
+        * @brief Scene is the factory for creating Texture instances.
         */
-        friend class RamsesClientImpl;
+        friend class SceneImpl;
 
         /**
         * @brief Constructor of Texture
@@ -76,9 +76,9 @@ namespace ramses
 
     private:
         /**
-        * @brief Copy constructor of UInt16Array
+        * @brief Copy constructor of Texture2D
         *
-        * @param[in] other Other instance of UInt16Array class
+        * @param[in] other Other instance of Texture2D class
         */
         Texture2D(const Texture2D& other);
 

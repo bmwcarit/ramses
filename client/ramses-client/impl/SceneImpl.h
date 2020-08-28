@@ -14,6 +14,9 @@
 #include "ramses-client-api/EDataType.h"
 #include "ramses-client-api/TextureEnums.h"
 #include "ramses-client-api/SceneReference.h"
+#include "ramses-client-api/MipLevelData.h"
+#include "ramses-client-api/TextureSwizzle.h"
+
 
 // internal
 #include "ClientObjectImpl.h"
@@ -29,6 +32,8 @@
 #include "SceneAPI/EDataSlotType.h"
 #include "SceneAPI/TextureSampler.h"
 #include "AnimationAPI/IAnimationSystem.h"
+#include "Resource/ResourceTypes.h"
+#include "Components/ManagedResource.h"
 
 #include "Collections/Pair.h"
 #include "Utils/StatisticCollection.h"
@@ -36,8 +41,10 @@
 
 namespace ramses_internal
 {
+    class TextureResource;
     class IScene;
     class ClientScene;
+    class EffectResource;
 }
 
 namespace ramses
@@ -82,13 +89,18 @@ namespace ramses
     class Texture2D;
     class Texture3D;
     class TextureCube;
-    class IndexDataBuffer;
-    class IndexDataBufferImpl;
-    class VertexDataBuffer;
-    class VertexDataBufferImpl;
+    class ArrayBuffer;
+    class ArrayBufferImpl;
     class Texture2DBuffer;
     class Texture2DBufferImpl;
     class RamsesClient;
+    class ArrayResource;
+    class Texture2D;
+    class Texture3D;
+    class TextureCube;
+    class Effect;
+    class EffectDescription;
+    class Resource;
 
     class SceneImpl final : public ClientObjectImpl
     {
@@ -108,6 +120,9 @@ namespace ramses
         sceneId_t           getSceneId() const;
         EScenePublicationMode getPublicationModeSetFromSceneConfig() const;
 
+        status_t saveToFile(const char* fileName, bool compress) const;
+        bool saveResources(std::string const& fileName, bool compress) const;
+
         RemoteCamera*       createRemoteCamera(const char* name);
         PerspectiveCamera*  createPerspectiveCamera(const char* name);
         OrthographicCamera* createOrthographicCamera(const char* name);
@@ -115,7 +130,7 @@ namespace ramses
         Appearance*         createAppearance(const Effect& effect, const char* name);
         AppearanceImpl*     createAppearanceImpl(const char* name);
 
-        StreamTexture*      createStreamTexture(const Texture2D& fallbackTexture, streamSource_t source, const char* name);
+        StreamTexture*      createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t source, const char* name);
         GeometryBinding*    createGeometryBinding(const Effect& effect, const char* name);
 
         Node*               createNode(const char* name);
@@ -125,7 +140,7 @@ namespace ramses
         ramses::RenderPass*   createRenderPass(const char* name);
         ramses::BlitPass*     createBlitPass(const RenderBuffer& sourceRenderBuffer, const RenderBuffer& destinationRenderBuffer, const char* name);
 
-        ramses::PickableObject* createPickableObject(const VertexDataBuffer& geometryBuffer, const pickableObjectId_t id, const char* name);
+        ramses::PickableObject* createPickableObject(const ArrayBuffer& geometryBuffer, const pickableObjectId_t id, const char* name);
 
         ramses::RenderBuffer* createRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount, const char* name);
         ramses::RenderTarget* createRenderTarget(const RenderTargetDescriptionImpl& rtDesc, const char* name);
@@ -206,14 +221,11 @@ namespace ramses
         AnimationSystem*         createAnimationSystem(uint32_t flags, const char* name);
         AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags, const char* name);
 
-        IndexDataBuffer*        createIndexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name);
-        IndexDataBufferImpl*    createIndexDataBufferImpl(uint32_t maximumSizeInBytes, EDataType dataType, const char* name);
+        ArrayBuffer*             createArrayBuffer(EDataType dataType, uint32_t maxNumElements, const char* name);
+        ArrayBufferImpl*         createArrayBufferImpl(EDataType dataType, uint32_t numElements, const char* name);
 
-        VertexDataBuffer*       createVertexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name);
-        VertexDataBufferImpl*   createVertexDataBufferImpl(uint32_t maximumSizeInBytes, EDataType dataType, const char* name);
-
-        Texture2DBuffer*        createTexture2DBuffer (uint32_t mipLevels, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name);
-        Texture2DBufferImpl*    createTexture2DBufferImpl (uint32_t mipLevels, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name);
+        Texture2DBuffer*         createTexture2DBuffer (uint32_t mipLevels, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name);
+        Texture2DBufferImpl*     createTexture2DBufferImpl (uint32_t mipLevels, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name);
 
         SceneReference* createSceneReference(sceneId_t referencedScene, const char* name);
         status_t linkData(SceneReference* providerReference, dataProviderId_t providerId, SceneReference* consumerReference, dataConsumerId_t consumerId);
@@ -225,17 +237,36 @@ namespace ramses
 
         status_t flush(sceneVersionTag_t sceneVersion);
 
+        ArrayResource* createArrayResource(EDataType type, uint32_t numElements, const void* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
+        Texture2D* createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
+        Texture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name);
+        TextureCube* createTextureCube(uint32_t size, ETextureFormat format, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
+        Effect* createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name);
+        std::string getLastEffectErrorMessages() const;
+
+        ArrayResource* createHLArrayResource(ramses_internal::ManagedResource const& resource, const char* name);
+        Texture2D* createHLTexture2D(ramses_internal::ManagedResource const& resource, const char* name);
+        Texture3D* createHLTexture3D(ramses_internal::ManagedResource const& resource, const char* name);
+        TextureCube* createHLTextureCube(ramses_internal::ManagedResource const& resource, const char* name);
+        Effect* createHLEffect(ramses_internal::ManagedResource const& resource, const char* name);
+
         const ramses_internal::ClientScene& getIScene() const;
         ramses_internal::ClientScene& getIScene();
 
         bool                containsSceneObject(const SceneObjectImpl& object) const;
         const RamsesObject* findObjectByName(const char* name) const;
         RamsesObject*       findObjectByName(const char* name);
+        Resource* getResource(resourceId_t rid) const;
+
+        const SceneObject* findObjectById(sceneObjectId_t id) const;
+        SceneObject* findObjectById(sceneObjectId_t id);
 
         RamsesObjectRegistry&       getObjectRegistry();
         const RamsesObjectRegistry& getObjectRegistry() const;
 
         void setSceneVersionForNextFlush(sceneVersionTag_t sceneVersion);
+
+        sceneObjectId_t getNextSceneObjectId();
 
         ramses_internal::StatisticCollectionScene& getStatisticCollection();
         SceneReference* getSceneReference(sceneId_t referencedSceneId);
@@ -244,6 +275,13 @@ namespace ramses
 
         template <typename T>
         void enqueueSceneCommand(T commands);
+
+        Resource* scanForResourceWithHash(ramses_internal::ResourceContentHash hash) const;
+
+        template <typename ObjectType, typename ObjectImplType>
+        status_t createAndDeserializeObjectImpls(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext, uint32_t count);
+
+        void setSceneFileName(std::string const& sceneFilename);
 
     private:
         ramses::TextureSampler* createTextureSamplerImpl(
@@ -261,9 +299,8 @@ namespace ramses
 
         RenderPass* createRenderPassInternal(const char* name);
         void registerCreatedObject(SceneObject& object);
+        void registerCreatedResourceObject(Resource& resource);
         AnimationSystemImpl& createAnimationSystemImpl(uint32_t flags, ERamsesObjectType type, const char* name);
-        template <typename ObjectType, typename ObjectImplType>
-        status_t createAndDeserializeObjectImpls(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext, uint32_t count);
 
         void removeAllDataSlotsForNode(const Node& node);
 
@@ -282,6 +319,7 @@ namespace ramses
         status_t destroyNode(Node& node);
         status_t destroyDataObject(DataObject& dataObject);
         status_t destroyTextureSampler(TextureSampler& sampler);
+        status_t destroyResource(Resource& resource);
         status_t destroyObject(SceneObject& object);
 
         typedef std::pair<NodeImpl*, EVisibilityMode> NodeVisibilityPair;
@@ -290,11 +328,17 @@ namespace ramses
         void applyVisibilityToSubtree(NodeImpl& node, EVisibilityMode visibilityToApply);
         void prepareListOfDirtyNodesForHierarchicalVisibility(NodeVisibilityInfoVector& nodesToProcess);
         void applyHierarchicalVisibility();
+
+        status_t writeSceneObjectsToStream(ramses_internal::IOutputStream& outputStream) const;
+
         ramses_internal::ClientScene&           m_scene;
         ramses_internal::SceneCommandBuffer     m_commandBuffer;
         sceneVersionTag_t                       m_nextSceneVersion;
+        sceneObjectId_t                         m_lastSceneObjectId;
 
         RamsesObjectRegistry m_objectRegistry;
+        typedef ramses_internal::HashMap<resourceId_t, Resource*> HLResourceHashMap;
+        HLResourceHashMap    m_resourcesById;
 
         // This is essentially a local variable only used in the "applyVisibilityToSubtree" method.
         // This is for performance reasons, so we can re-use the same vector each time the method is called.
@@ -306,6 +350,10 @@ namespace ramses
         ramses_internal::HashMap<sceneId_t, SceneReference*> m_sceneReferences;
 
         RamsesClient& m_hlClient;
+
+        std::string m_effectErrorMessages;
+
+        std::string m_sceneFilename;
     };
 
     // define here to allow inlining

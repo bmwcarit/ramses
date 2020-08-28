@@ -23,9 +23,7 @@
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/AttributeInput.h"
-#include "ramses-client-api/UInt16Array.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/RenderTargetDescription.h"
@@ -41,9 +39,9 @@ namespace ramses_internal
         , m_camera(screenspaceQuad.createOrthoCamera(m_scene))
         , m_offscreenRenderPass(CreateRenderPass(m_scene, m_camera))
         , m_finalRenderPass(CreateRenderPass(m_scene, m_camera))
-        , m_quadWithClientResources              (m_client, m_scene                       , screenspaceQuad.createSubQuad({0.1f, 0.1f, 0.4f, 0.4f}))
-        , m_quadWithSceneResources               (m_client, m_scene                       , screenspaceQuad.createSubQuad({0.1f, 0.5f, 0.4f, 0.8f}))
-        , m_quadWithRenderTarget                 (m_client, m_scene, m_offscreenRenderPass, screenspaceQuad.createSubQuad({0.6f, 0.1f, 0.9f, 0.4f}))
+        , m_quadWithClientResources              (m_scene                       , screenspaceQuad.createSubQuad({0.1f, 0.1f, 0.4f, 0.4f}))
+        , m_quadWithSceneResources               (m_scene                       , screenspaceQuad.createSubQuad({0.1f, 0.5f, 0.4f, 0.8f}))
+        , m_quadWithRenderTarget                 (m_scene, m_offscreenRenderPass, screenspaceQuad.createSubQuad({0.6f, 0.1f, 0.9f, 0.4f}))
         , m_quadsWithTextureConsumerLinks(texConsumerDataIds.size())
     {
         const ScreenspaceQuad quadForAllTextureConsumers = screenspaceQuad.createSubQuad({ 0.6f, 0.5f, 0.9f, 0.8f });
@@ -57,7 +55,7 @@ namespace ramses_internal
 
         for (size_t i = 0; i < texConsumerDataIds.size(); ++i)
         {
-            m_quadsWithTextureConsumerLinks[i].reset(new DynamicQuad_ClientResources(m_client, m_scene, subQuadsForTextureConsumers[i]));
+            m_quadsWithTextureConsumerLinks[i].reset(new DynamicQuad_ClientResources(m_scene, subQuadsForTextureConsumers[i]));
             m_quadsWithTextureConsumerLinks[i]->createTextureDataConsumer(texConsumerDataIds[i]);
         }
 
@@ -83,13 +81,13 @@ namespace ramses_internal
 
     ResourceStressTestScene::~ResourceStressTestScene()
     {
-        m_client.destroy(m_scene);
-
         m_quadWithClientResources.markSceneObjectsDestroyed();
-        for(auto& linkedQuad : m_quadsWithTextureConsumerLinks)
+        for (auto& linkedQuad : m_quadsWithTextureConsumerLinks)
             linkedQuad->markSceneObjectsDestroyed();
         m_quadWithSceneResources.markSceneObjectsDestroyed();
         m_quadWithRenderTarget.markSceneObjectsDestroyed();
+
+        m_client.destroy(m_scene);
     }
 
     void ResourceStressTestScene::recreateResources(bool recreateClientResources, bool recreateSceneResources, bool recreateSceneRenderTargets)

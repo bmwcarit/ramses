@@ -9,6 +9,8 @@
 // API
 #include "ramses-client-api/LocalCamera.h"
 #include "ramses-client-api/DataVector2i.h"
+#include "ramses-client-api/DataVector2f.h"
+#include "ramses-client-api/DataVector4f.h"
 
 // internal
 #include "CameraNodeImpl.h"
@@ -107,6 +109,13 @@ namespace ramses
         return status;
     }
 
+    status_t LocalCamera::bindFrustumPlanes(const DataVector4f& frustumPlanesData, const DataVector2f& nearFarPlanesData)
+    {
+        const status_t status = impl.bindFrustumPlanes(frustumPlanesData, nearFarPlanesData);
+        LOG_HL_CLIENT_API2(status, LOG_API_RAMSESOBJECT_STRING(frustumPlanesData), LOG_API_RAMSESOBJECT_STRING(nearFarPlanesData));
+        return status;
+    }
+
     status_t LocalCamera::unbindViewportOffset()
     {
         const status_t status = impl.unbindViewportOffset();
@@ -121,6 +130,13 @@ namespace ramses
         return status;
     }
 
+    status_t LocalCamera::unbindFrustumPlanes()
+    {
+        const status_t status = impl.unbindFrustumPlanes();
+        LOG_HL_CLIENT_API_NOARG(status);
+        return status;
+    }
+
     bool LocalCamera::isViewportOffsetBound() const
     {
         return impl.isViewportOffsetBound();
@@ -129,5 +145,10 @@ namespace ramses
     bool LocalCamera::isViewportSizeBound() const
     {
         return impl.isViewportSizeBound();
+    }
+
+    bool LocalCamera::isFrustumPlanesBound() const
+    {
+        return impl.isFrustumPlanesBound();
     }
 }

@@ -87,6 +87,7 @@ def compareUnequal(image1, image2, numberOfRequiredUnequalPixels, percentageOfRG
 
 def create_diff_images(image1, image2, originalFilePath, scaleFactor):
     diff = ImageChops.difference(image1, image2)
+    diff = diff.convert(mode='RGBA')  # following ops cannot work with mode '1' or 'L' that might result from diffing
     diffScaled = ImageEnhance.Contrast(diff).enhance(scaleFactor)
     (root, ext) = os.path.splitext(originalFilePath)
     diff.save(root+"_DIFF"+ext)

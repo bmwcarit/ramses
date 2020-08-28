@@ -33,15 +33,14 @@ namespace ramses
         {
             const ramses_internal::IScene& iscene = m_scene.impl.getIScene();
             ramses_internal::SceneInfo info(iscene.getSceneId(), iscene.getName());
-            EXPECT_CALL(sceneActionsCollector, handleNewScenesAvailable(ramses_internal::SceneInfoVector(1, info), _, _));
+            EXPECT_CALL(sceneActionsCollector, handleNewSceneAvailable(info, _));
             EXPECT_CALL(sceneActionsCollector, handleInitializeScene(info, _));
             EXPECT_EQ(StatusOK, m_scene.publish());
         }
 
         void unpublishScene()
         {
-            EXPECT_CALL(sceneActionsCollector, handleScenesBecameUnavailable(
-                ramses_internal::SceneInfoVector(1, ramses_internal::SceneInfo(ramses_internal::SceneId(m_scene.impl.getSceneId().getValue()))), _));
+            EXPECT_CALL(sceneActionsCollector, handleSceneBecameUnavailable(ramses_internal::SceneId(m_scene.impl.getSceneId().getValue()), _));
             EXPECT_EQ(StatusOK, m_scene.unpublish());
         }
 
@@ -69,13 +68,12 @@ namespace ramses
 
         void expectSceneOperationsSent()
         {
-            EXPECT_CALL(sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(m_scene.impl.getSceneId().getValue()), _, _, _));
+            EXPECT_CALL(sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(m_scene.impl.getSceneId().getValue()), _, _));
         }
 
         void expectSceneUnpublication()
         {
-            EXPECT_CALL(sceneActionsCollector, handleScenesBecameUnavailable(
-                ramses_internal::SceneInfoVector(1, ramses_internal::SceneInfo(ramses_internal::SceneId(m_scene.impl.getSceneId().getValue()))), _));
+            EXPECT_CALL(sceneActionsCollector, handleSceneBecameUnavailable(ramses_internal::SceneId(m_scene.impl.getSceneId().getValue()), _));
         }
 
     protected:
@@ -144,10 +142,10 @@ namespace ramses
         const ramses_internal::IScene& otherIScene = otherScene->impl.getIScene();
 
         ramses_internal::SceneInfo sceneInfo(sceneId, otherIScene.getName());
-        EXPECT_CALL(sceneActionsCollector, handleNewScenesAvailable(ramses_internal::SceneInfoVector(1, sceneInfo), _, _));
+        EXPECT_CALL(sceneActionsCollector, handleNewSceneAvailable(sceneInfo, _));
         EXPECT_EQ(StatusOK, otherScene->publish());
 
-        EXPECT_CALL(sceneActionsCollector, handleScenesBecameUnavailable(ramses_internal::SceneInfoVector(1, ramses_internal::SceneInfo(sceneId)), _));
+        EXPECT_CALL(sceneActionsCollector, handleSceneBecameUnavailable(sceneId, _));
         client.destroy(*otherScene);
     }
 

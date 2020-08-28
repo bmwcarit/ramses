@@ -19,7 +19,7 @@ using namespace ramses_internal;
 
 static DataBufferHandle prepareGeometryBuffer(TransformationLinkCachedScene& scene, SceneAllocateHelper& sceneAllocator, const float vertexPositionsTriangle[], const UInt32 bufferSize)
 {
-    DataBufferHandle geometryBuffer = sceneAllocator.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType_Vector3F, bufferSize);
+    DataBufferHandle geometryBuffer = sceneAllocator.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType::Vector3F, bufferSize);
     const Byte* data = reinterpret_cast<const Byte*>(vertexPositionsTriangle);
     scene.updateDataBuffer(geometryBuffer, 0, bufferSize, data);
     return geometryBuffer;
@@ -28,19 +28,26 @@ static DataBufferHandle prepareGeometryBuffer(TransformationLinkCachedScene& sce
 static CameraHandle preparePickableCamera(TransformationLinkCachedScene& scene, SceneAllocateHelper& sceneAllocator, const Vector2i viewportOffset, const Vector2i viewportSize, const Vector3 translation, const Vector3 rotation, const Vector3 scale)
 {
     NodeHandle cameraNodeHandle = sceneAllocator.allocateNode();
-    const auto vpDataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_DataReference}, DataFieldInfo{EDataType_DataReference} }, ResourceContentHash::Invalid());
-    const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I} }, ResourceContentHash::Invalid());
-    const auto vpDataInstance = sceneAllocator.allocateDataInstance(vpDataLayout);
+    const auto dataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference} }, {});
+    const auto dataInstance = sceneAllocator.allocateDataInstance(dataLayout);
+    const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I} }, {});
     const auto vpOffsetInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
     const auto vpSizeInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
-    scene.setDataReference(vpDataInstance, Camera::ViewportOffsetField, vpOffsetInstance);
-    scene.setDataReference(vpDataInstance, Camera::ViewportSizeField, vpSizeInstance);
-    const CameraHandle cameraHandle = sceneAllocator.allocateCamera(ECameraProjectionType_Perspective, cameraNodeHandle, vpDataInstance);
-    const ProjectionParams params = ramses_internal::ProjectionParams::Perspective(19.f, static_cast<float>(viewportSize.x) / static_cast<float>(viewportSize.y), 0.1f, 100.f);
-    const Frustum frustum(params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane, params.nearPlane, params.farPlane);
-    scene.setCameraFrustum(cameraHandle, frustum);
+    const auto frustumPlanesLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector4F} }, {});
+    const auto frustumPlanes = sceneAllocator.allocateDataInstance(frustumPlanesLayout);
+    const auto frustumNearFarLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2F} }, {});
+    const auto frustumNearFar = sceneAllocator.allocateDataInstance(frustumNearFarLayout);
+    scene.setDataReference(dataInstance, Camera::ViewportOffsetField, vpOffsetInstance);
+    scene.setDataReference(dataInstance, Camera::ViewportSizeField, vpSizeInstance);
+    scene.setDataReference(dataInstance, Camera::FrustumPlanesField, frustumPlanes);
+    scene.setDataReference(dataInstance, Camera::FrustumNearFarPlanesField, frustumNearFar);
+    const CameraHandle cameraHandle = sceneAllocator.allocateCamera(ECameraProjectionType_Perspective, cameraNodeHandle, dataInstance);
     scene.setDataSingleVector2i(vpOffsetInstance, DataFieldHandle{ 0 }, viewportOffset);
     scene.setDataSingleVector2i(vpSizeInstance, DataFieldHandle{ 0 }, viewportSize);
+    const ProjectionParams params = ramses_internal::ProjectionParams::Perspective(19.f, static_cast<float>(viewportSize.x) / static_cast<float>(viewportSize.y), 0.1f, 100.f);
+    scene.setDataSingleVector4f(frustumPlanes, DataFieldHandle{ 0 }, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane });
+    scene.setDataSingleVector2f(frustumNearFar, DataFieldHandle{ 0 }, { params.nearPlane, params.farPlane });
+
     TransformHandle cameraTransformation = sceneAllocator.allocateTransform(cameraNodeHandle);
     scene.setTranslation(cameraTransformation, translation);
     scene.setRotation(cameraTransformation, rotation);

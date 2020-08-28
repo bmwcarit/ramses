@@ -10,6 +10,7 @@
 #define RAMSES_IMANAGEDRESOURCEDELETERCALLBACK_H
 
 #include "SceneAPI/ResourceContentHash.h"
+#include "Resource/IResource.h"
 
 namespace ramses_internal
 {

@@ -16,7 +16,7 @@ namespace ramses_internal
     class MsaaRenderBufferScene : public CommonRenderBufferTestScene
     {
     public:
-        MsaaRenderBufferScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        MsaaRenderBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {

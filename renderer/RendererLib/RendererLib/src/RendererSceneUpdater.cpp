@@ -33,10 +33,12 @@
 #include "RendererLib/SceneReferenceLogic.h"
 #include "RendererEventCollector.h"
 #include "Components/FlushTimeInformation.h"
+#include "Components/SceneUpdate.h"
 #include "Utils/LogMacros.h"
 #include "Utils/Image.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "PlatformAbstraction/Macros.h"
+#include "absl/algorithm/container.h"
 
 namespace ramses_internal
 {
@@ -75,7 +77,7 @@ namespace ramses_internal
         }
     }
 
-    void RendererSceneUpdater::handleSceneActions(SceneId sceneId, SceneActionCollection&& actionsForScene)
+    void RendererSceneUpdater::handleSceneActions(SceneId sceneId, SceneUpdate&& sceneUpdate)
     {
         ESceneState sceneState = m_sceneStateExecutor.getSceneState(sceneId);
 
@@ -91,9 +93,9 @@ namespace ramses_internal
         }
 
         if (SceneStateIsAtLeast(sceneState, ESceneState::Subscribed))
-            consolidatePendingSceneActions(sceneId, std::move(actionsForScene));
+            consolidatePendingSceneActions(sceneId, std::move(sceneUpdate));
         else
-            LOG_ERROR(CONTEXT_RENDERER, "    RendererSceneUpdater::handleSceneActions could not apply scene actions because scene " << sceneId.getValue() << " is neither subscribed nor mapped");
+            LOG_ERROR(CONTEXT_RENDERER, "    RendererSceneUpdater::handleSceneActions could not apply scene actions because scene " << sceneId << " is neither subscribed nor mapped");
     }
 
     void RendererSceneUpdater::createDisplayContext(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle)
@@ -256,14 +258,14 @@ namespace ramses_internal
 
     void RendererSceneUpdater::logTooManyFlushesAndUnsubscribeIfRemoteScene(SceneId sceneId, std::size_t numPendingFlushes)
     {
-        LOG_ERROR(CONTEXT_RENDERER, "Scene " << sceneId.getValue() << " has " << numPendingFlushes << " pending flushes,"
+        LOG_ERROR(CONTEXT_RENDERER, "Scene " << sceneId << " has " << numPendingFlushes << " pending flushes,"
             << " force applying pending flushes seems to have been interrupted too often and the renderer has no way to catch up without potentially blocking other scenes."
             << " Possible causes: too many flushes queued and couldn't be applied (even force-applied); or renderer thread was stopped or stalled,"
             << " e.g. because of taking screenshots, and couldn't process the flushes.");
 
         if (m_sceneStateExecutor.getScenePublicationMode(sceneId) != EScenePublicationMode_LocalOnly)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Force unsubscribing scene " << sceneId.getValue() << " to avoid risk of running out of memory!"
+            LOG_ERROR(CONTEXT_RENDERER, "Force unsubscribing scene " << sceneId << " to avoid risk of running out of memory!"
                 << " Any incoming data for the scene will be ignored till the scene is re-subscribed.");
             // Unsubscribe scene as 'indirect' because it is not triggered by user
             handleSceneUnsubscriptionRequest(sceneId, true);
@@ -273,11 +275,11 @@ namespace ramses_internal
             // Don't force-ubsubscribe local scenes
             // Local client is responsible for his own scene - should not spam the renderer with flushes, or if he does
             // and renderer goes out of memory -> it is possible to fix on client side in the local case
-            LOG_ERROR(CONTEXT_RENDERER, "Because scene " << sceneId.getValue() << " is a local scene, it will not be forcefully ubsubscribed. Beware of possible out-of-memory errors!");
+            LOG_ERROR(CONTEXT_RENDERER, "Because scene " << sceneId << " is a local scene, it will not be forcefully ubsubscribed. Beware of possible out-of-memory errors!");
         }
     }
 
-    void RendererSceneUpdater::consolidatePendingSceneActions(SceneId sceneID, SceneActionCollection&& actionsForScene)
+    void RendererSceneUpdater::consolidatePendingSceneActions(SceneId sceneID, SceneUpdate&& sceneUpdate)
     {
         StagingInfo& stagingInfo = m_rendererScenes.getStagingInfo(sceneID);
         auto& pendingData = stagingInfo.pendingData;
@@ -285,11 +287,11 @@ namespace ramses_internal
         pendingFlushes.emplace_back();
         PendingFlush& flushInfo = pendingFlushes.back();
 
-        const UInt32 numActions = actionsForScene.numberOfActions();
+        const UInt32 numActions = sceneUpdate.actions.numberOfActions();
         assert(numActions > 0);
         Bool hasSizeInfo = false;
         SceneResourceChanges resourceChanges;
-        SceneActionApplier::ReadParameterForFlushAction(actionsForScene.back(), flushInfo.flushIndex, hasSizeInfo, stagingInfo.sizeInformation, resourceChanges, pendingData.sceneReferenceActions, flushInfo.timeInfo, flushInfo.versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(sceneUpdate.actions.back(), flushInfo.flushIndex, hasSizeInfo, stagingInfo.sizeInformation, resourceChanges, pendingData.sceneReferenceActions, flushInfo.timeInfo, flushInfo.versionTag);
 
         // get ptp synchronized time and check current and receive times for validity
         const auto flushConsolidateTs = FlushTime::Clock::now();
@@ -302,8 +304,8 @@ namespace ramses_internal
         }
 
         LOG_TRACE_F(CONTEXT_RENDERER, ([&](StringOutputStream& logStream) {
-            logStream << "Flush " << flushInfo.flushIndex << " for scene " << sceneID.getValue() << " arrived ";
-            logStream << "[actions:" << numActions << "(" << actionsForScene.collectionData().size() << " bytes)]";
+            logStream << "Flush " << flushInfo.flushIndex << " for scene " << sceneID << " arrived ";
+            logStream << "[actions:" << numActions << "(" << sceneUpdate.actions.collectionData().size() << " bytes)]";
             logStream << "[addRefs res (" << resourceChanges.m_addedClientResourceRefs.size() << "):";
             for (const auto& hash : resourceChanges.m_addedClientResourceRefs)
                 logStream << " " << hash;
@@ -323,6 +325,14 @@ namespace ramses_internal
             LOG_TRACE(CONTEXT_RENDERER, resourceChanges.asString());
         }
 
+        // TODO vaclav store and use pushed resources
+        assert(sceneUpdate.resources.empty());
+        //for (const auto& addedRes : resourceChanges.m_addedClientResourceRefs)
+        //{
+        //    assert(absl::c_find_if(sceneUpdate.resources, [&addedRes](const ManagedResource& mr) {return mr.getResourceObject()->getHash() == addedRes; }) != sceneUpdate.resources.cend());
+        //    UNUSED(addedRes);
+        //}
+
         ResourceContentHashVector newlyNeededClientResources;
         consolidateResourceChanges(stagingInfo.pendingData, resourceChanges, newlyNeededClientResources);
 
@@ -337,7 +347,7 @@ namespace ramses_internal
             }
         }
 
-        flushInfo.sceneActions = std::move(actionsForScene);
+        flushInfo.sceneActions = std::move(sceneUpdate.actions);
 
         if (pendingFlushes.size() > m_maximumPendingFlushesToKillScene)
             logTooManyFlushesAndUnsubscribeIfRemoteScene(sceneID, stagingInfo.pendingData.pendingFlushes.size());
@@ -440,7 +450,7 @@ namespace ramses_internal
         const PendingFlushes& pendingFlushes = stagingInfo.pendingData.pendingFlushes;
         if (!canApplyFlushes && sceneIsMapped && pendingFlushes.size() > m_maximumPendingFlushes)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Force applying pending flushes! Scene " << sceneID.getValue() << " has " << pendingFlushes.size() << " pending flushes, renderer cannot catch up with resource updates.");
+            LOG_ERROR(CONTEXT_RENDERER, "Force applying pending flushes! Scene " << sceneID << " has " << pendingFlushes.size() << " pending flushes, renderer cannot catch up with resource updates.");
             logMissingResources(stagingInfo.pendingData.clientResourcesNeeded, sceneID);
 
             canApplyFlushes = true;
@@ -484,7 +494,7 @@ namespace ramses_internal
             m_renderer.getStatistics().flushApplied(sceneID);
 
             // mark scene as modified only if it received scene actions other than those below
-            static const std::vector<ESceneActionId> SceneActionsIgnoredForMarkingAsModified = { ESceneActionId_Flush, ESceneActionId_SetAckFlushState };
+            static const std::vector<ESceneActionId> SceneActionsIgnoredForMarkingAsModified = { ESceneActionId::Flush, ESceneActionId::SetAckFlushState };
             const bool isFlushWithChanges = std::any_of(pendingFlush.sceneActions.begin(), pendingFlush.sceneActions.end(),
                 [](const SceneActionCollection::SceneActionReader& a) { return !contains_c(SceneActionsIgnoredForMarkingAsModified, a.type()); });
             if (isFlushWithChanges)
@@ -661,7 +671,7 @@ namespace ramses_internal
 
                 if (!canBeMapped && stagingInfo.pendingData.pendingFlushes.size() > m_maximumPendingFlushes)
                 {
-                    LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene " << sceneId.getValue() << " due to " << stagingInfo.pendingData.pendingFlushes.size() << " pending flushes, renderer cannot catch up with resource updates.");
+                    LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene " << sceneId << " due to " << stagingInfo.pendingData.pendingFlushes.size() << " pending flushes, renderer cannot catch up with resource updates.");
                     logMissingResources(stagingInfo.clientResourcesInUse, sceneId);
 
                     canBeMapped = true;
@@ -693,7 +703,7 @@ namespace ramses_internal
             const auto& pendingFlushes = m_rendererScenes.getStagingInfo(sceneId).pendingData.pendingFlushes;
             if (!pendingFlushes.empty())
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Scene " << sceneId.getValue() << " - expected no pending flushes at this point");
+                LOG_ERROR(CONTEXT_RENDERER, "Scene " << sceneId << " - expected no pending flushes at this point");
                 assert(pendingFlushes.size() > m_maximumPendingFlushes);
             }
         }
@@ -754,12 +764,12 @@ namespace ramses_internal
     {
         const SceneActionCollection& actionsForScene = flushInfo.sceneActions;
         const UInt32 numActions = actionsForScene.numberOfActions();
-        LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions start applying scene actions [count:" << numActions << "] for scene with id " << scene.getSceneId().getValue());
+        LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions start applying scene actions [count:" << numActions << "] for scene with id " << scene.getSceneId());
 
         SceneActionApplier::ResourceVector possiblePushResources;
         SceneActionApplier::ApplyActionsOnScene(scene, actionsForScene, &m_animationSystemFactory, &possiblePushResources);
 
-        LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions finished applying scene actions for scene with id " << scene.getSceneId().getValue());
+        LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions finished applying scene actions for scene with id " << scene.getSceneId());
     }
 
     void RendererSceneUpdater::destroyScene(SceneId sceneID)
@@ -793,7 +803,7 @@ namespace ramses_internal
             m_scenesToBeMapped.remove(sceneID);
         }
 
-        m_expirationMonitor.stopMonitoringScene(sceneID);
+        m_expirationMonitor.onDestroyed(sceneID);
     }
 
     void RendererSceneUpdater::unloadSceneResourcesAndUnrefSceneResources(SceneId sceneId)
@@ -1115,7 +1125,7 @@ namespace ramses_internal
         const DisplayHandle display = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
         if (!display.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest cannot assign scene " << sceneId.getValue() << " to an offscreen buffer; It must be mapped to a display first!");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest cannot assign scene " << sceneId << " to an offscreen buffer; It must be mapped to a display first!");
             return false;
         }
 

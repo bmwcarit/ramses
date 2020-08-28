@@ -11,7 +11,6 @@
 
 #include "ramses-renderer-api/Types.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
-#include "ramses-renderer-api/RendererSceneControl_legacy.h"
 #include "ramses-renderer-api/DcsmContentControl.h"
 #include "StatusObjectImpl.h"
 #include "RendererLoopThreadController.h"
@@ -58,7 +57,6 @@ namespace ramses
         ramses_internal::WindowedRenderer& getRenderer();
 
         RendererSceneControl* getSceneControlAPI();
-        RendererSceneControl_legacy* getSceneControlAPI_legacy();
         DcsmContentControl* createDcsmContentControl(const DcsmContentControlConfig& config);
 
         displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, bool interruptible);
@@ -135,7 +133,6 @@ namespace ramses
         // use custom deleter to achieve that with unique ptr
         template <typename T> using UniquePtrWithDeleter = std::unique_ptr<T, std::function<void(T*)>>;
         UniquePtrWithDeleter<RendererSceneControl> m_sceneControlAPI;
-        UniquePtrWithDeleter<RendererSceneControl_legacy> m_sceneControlAPI_legacy;
         UniquePtrWithDeleter<DcsmContentControl> m_dcsmContentControl;
 
         // keep allocated containers which are used to swap internal data

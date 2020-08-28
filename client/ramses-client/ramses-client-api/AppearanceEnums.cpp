@@ -60,6 +60,15 @@ namespace ramses
         "OneMinusSrcAlpha",
         "DstAlpha",
         "OneMinustDstAlpha",
+        "SrcColor",
+        "OneMinusSrcColor",
+        "DstColor",
+        "OneMinusDstColor",
+        "ConstColor",
+        "OneMinusConstColor",
+        "ConstAlpha",
+        "OneMinusConstAlpha",
+        "AlphaSaturate",
     };
 
     const char* CullModeNames[] =

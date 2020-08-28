@@ -10,9 +10,8 @@
 #ifndef RAMSES_SCENEACTIONUTILSTEST_H
 #define RAMSES_SCENEACTIONUTILSTEST_H
 
+#include "SceneActionUtils.h"
 #include "gtest/gtest.h"
-#include "Scene/SceneActionUtils.h"
-#include "Collections/Vector.h"
 
 namespace ramses_internal
 {
@@ -22,52 +21,52 @@ namespace ramses_internal
         SceneActionVectorUtilsTest()
         : actionsWithOneTestAction(createSceneActionVector(
             {
-                ESceneActionId_AllocateNode,
-                ESceneActionId_AllocateCamera,
-                ESceneActionId_TestAction,
-                ESceneActionId_AllocateBlitPass
+                ESceneActionId::AllocateNode,
+                ESceneActionId::AllocateCamera,
+                ESceneActionId::TestAction,
+                ESceneActionId::AllocateBlitPass
             }
             ))
 
         , actionsWithThreeTestAction(createSceneActionVector(
             {
-                ESceneActionId_AllocateNode,
-                ESceneActionId_TestAction,
-                ESceneActionId_AllocateCamera,
-                ESceneActionId_TestAction,
-                ESceneActionId_TestAction,
-                ESceneActionId_AllocateBlitPass
+                ESceneActionId::AllocateNode,
+                ESceneActionId::TestAction,
+                ESceneActionId::AllocateCamera,
+                ESceneActionId::TestAction,
+                ESceneActionId::TestAction,
+                ESceneActionId::AllocateBlitPass
             }
             ))
 
         , actionsWithNoTestAction(createSceneActionVector(
             {
-                ESceneActionId_AllocateNode,
-                ESceneActionId_AllocateBlitPass,
-                ESceneActionId_AllocateBlitPass
+                ESceneActionId::AllocateNode,
+                ESceneActionId::AllocateBlitPass,
+                ESceneActionId::AllocateBlitPass
             }
             ))
 
         , actionsWithMultipleAction(createSceneActionVector(
             {
-                ESceneActionId_SetStateStencilFunc,
-                ESceneActionId_AllocateCamera,
-                ESceneActionId_TestAction,
-                ESceneActionId_AllocateCamera,
-                ESceneActionId_ReleaseDataLayout,
-                ESceneActionId_AllocateCamera,
-                ESceneActionId_AllocateRenderable,
-                ESceneActionId_AllocateCamera,
-                ESceneActionId_TestAction,
-                ESceneActionId_TestAction,
-                ESceneActionId_AllocateBlitPass
+                ESceneActionId::SetStateStencilFunc,
+                ESceneActionId::AllocateCamera,
+                ESceneActionId::TestAction,
+                ESceneActionId::AllocateCamera,
+                ESceneActionId::ReleaseDataLayout,
+                ESceneActionId::AllocateCamera,
+                ESceneActionId::AllocateRenderable,
+                ESceneActionId::AllocateCamera,
+                ESceneActionId::TestAction,
+                ESceneActionId::TestAction,
+                ESceneActionId::AllocateBlitPass
             }
             ))
         {
-            singleType.push_back(ESceneActionId_TestAction);
+            singleType.push_back(ESceneActionId::TestAction);
 
-            multiType.push_back(ESceneActionId_TestAction);
-            multiType.push_back(ESceneActionId_AllocateCamera);
+            multiType.push_back(ESceneActionId::TestAction);
+            multiType.push_back(ESceneActionId::AllocateCamera);
         }
 
         static SceneActionCollection createSceneActionVector(const std::vector<ramses_internal::ESceneActionId>& types)
@@ -92,22 +91,22 @@ namespace ramses_internal
 
     TEST_F(SceneActionVectorUtilsTest, CountSingleTypeWithSingleOccurence)
     {
-        EXPECT_EQ(1u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actionsWithOneTestAction, ESceneActionId_TestAction));
+        EXPECT_EQ(1u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actionsWithOneTestAction, ESceneActionId::TestAction));
     }
 
     TEST_F(SceneActionVectorUtilsTest, CountSingleTypeWithMultipleOccurence)
     {
-        EXPECT_EQ(3u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actionsWithThreeTestAction, ESceneActionId_TestAction));
+        EXPECT_EQ(3u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actionsWithThreeTestAction, ESceneActionId::TestAction));
     }
 
     TEST_F(SceneActionVectorUtilsTest, CountSingleTypeWithNoOccurence)
     {
-        EXPECT_EQ(0u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actionsWithNoTestAction, ESceneActionId_TestAction));
+        EXPECT_EQ(0u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actionsWithNoTestAction, ESceneActionId::TestAction));
     }
 
     TEST_F(SceneActionVectorUtilsTest, CountSingleTypeWithEmptyVector)
     {
-        EXPECT_EQ(0u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actionsEmpty, ESceneActionId_TestAction));
+        EXPECT_EQ(0u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actionsEmpty, ESceneActionId::TestAction));
     }
 
     TEST_F(SceneActionVectorUtilsTest, CountVectorTypeWithSingleOccurence)

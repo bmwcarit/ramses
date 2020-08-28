@@ -9,14 +9,14 @@
 #ifndef RAMSES_RESOURCE_H
 #define RAMSES_RESOURCE_H
 
-#include "ramses-client-api/ClientObject.h"
+#include "ramses-client-api/SceneObject.h"
 
 namespace ramses
 {
     /**
      * @brief The Resource is the base class of all resources, such as arrays and textures.
      */
-    class RAMSES_API Resource : public ClientObject
+    class RAMSES_API Resource : public SceneObject
     {
     public:
         /**

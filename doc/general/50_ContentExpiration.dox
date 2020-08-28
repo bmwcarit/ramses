@@ -37,9 +37,13 @@ Renderer receives, processes and displays the content provided by client, theref
 renderer can check the expiration time stamps. It is impossible to define a general rule
 for reacting on expiration and therefore it is the responsibility of the application logic
 running the renderer to decide what to do with an expired scene content. RAMSES provides
-corresponding renderer events for that. An expiration event is generated once for every scene that
-has an expired content, another event will be generated when the scene content recovers
-from expiration and is up-to-date again.
+corresponding renderer events for that. First of all there will be an event when a scene
+uses expiration timestamp for the first time, notifying the application logic on renderer
+side that expiration monitoring is now active for that scene. An expiration event is then
+generated when the scene has an expired content, another event will be generated if the scene
+content recovers from expiration and is up-to-date again. Client can decide to stop monitoring
+the scene for expiration by setting no expiration timestamp, this will again result in
+an event on renderer side that the scene is not being monitored anymore.
 
 ## Time stamps
 When talking about time and delays, one has to be careful to how the time is measured
@@ -53,9 +57,12 @@ Client sets an 'expiration time' (see documentation of \ref ramses::Scene::setEx
 of a scene, this expiration time is commited with the next scene flush together with other changes made to it.
 What it means is that the flushed state of scene will expire at the set point in time.
 
-The renderer has an asynchroneous event callback which reports whenever
-the scene's expiration time is passed (see IRendererEventHandler::sceneExpired)
-and also when it catches up and recovers from expiration (see \ref ramses::IRendererSceneControlEventHandler::sceneRecoveredFromExpiration()).
+The renderer has an asynchroneous event callback which reports when scene is enabled
+for expiration monitoring (#ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringEnabled),
+when the scene's expiration time is passed (#ramses::IRendererSceneControlEventHandler::sceneExpired),
+when it catches up and recovers from expiration (#ramses::IRendererSceneControlEventHandler::sceneRecoveredFromExpiration)
+and when scene disables monitoring by setting expiration timestamp to zero
+(#ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringDisabled).
 
 ## Example
 A simple example how to use the latency/expiration API of RAMSES is to define

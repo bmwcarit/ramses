@@ -76,12 +76,12 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_UnsubscribeScene, cmd);
     }
 
-    void RendererCommands::enqueueActionsForScene(SceneId sceneId, SceneActionCollection&& newActions)
+    void RendererCommands::enqueueActionsForScene(SceneId sceneId, SceneUpdate&& sceneUpdate)
     {
-        SceneActionsCommand cmd;
+        SceneUpdateCommand cmd;
         cmd.sceneId = sceneId;
-        cmd.sceneActions = std::move(newActions);
-        m_commands.addCommand(ERendererCommand_SceneActions, std::move(cmd));
+        cmd.sceneUpdate = std::move(sceneUpdate);
+        m_commands.addCommand(ERendererCommand_SceneUpdate, std::move(cmd));
     }
 
     void RendererCommands::createDisplay(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle)

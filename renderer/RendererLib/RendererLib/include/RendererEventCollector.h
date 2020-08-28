@@ -67,11 +67,6 @@ namespace ramses_internal
         void addInternalSceneEvent(ERendererEventType eventType, SceneId sceneId)
         {
             pushToInternalSceneStateEventQueue({ eventType, sceneId });
-
-            // keep pushing event into general queue as well for now while supporting legacy scene control
-            RendererEvent event(eventType);
-            event.sceneId = sceneId;
-            pushToSceneControlEventQueue(std::move(event));
         }
 
         void addSceneEvent(ERendererEventType eventType, SceneId sceneId, RendererSceneState state)
@@ -84,7 +79,7 @@ namespace ramses_internal
 
         void addSceneExpirationEvent(ERendererEventType eventType, SceneId sceneId)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " sceneId=" << sceneId.getValue());
+            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " sceneId=" << sceneId);
 
             RendererEvent event(eventType);
             event.sceneId = sceneId;
@@ -93,7 +88,7 @@ namespace ramses_internal
 
         void addDataLinkEvent(ERendererEventType eventType, SceneId providerSceneId, SceneId consumerSceneId, DataSlotId providerdataId, DataSlotId consumerdataId)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " providerSceneId=" << providerSceneId.getValue() << " providerDataId=" << providerdataId.getValue() << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue());
+            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " providerSceneId=" << providerSceneId << " providerDataId=" << providerdataId.getValue() << " consumerSceneId=" << consumerSceneId << " consumerDataId=" << consumerdataId.getValue());
 
             RendererEvent event(eventType);
             event.providerSceneId = providerSceneId;

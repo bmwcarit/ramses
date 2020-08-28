@@ -8,15 +8,12 @@
 
 #version 100
 
-uniform sampler2D textureSampler;
-
 varying lowp vec2 v_texcoord;
 precision highp float;
 
 void main(void)
 {
     const float  offset = 1.0 / 128.0;
-    vec4  col = texture2D(textureSampler, v_texcoord);
     if ( (v_texcoord.x < offset )|| (v_texcoord.x > 1.0-offset))
     {
         if ((mod (gl_FragCoord.y,5.0) < 3.0))

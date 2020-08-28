@@ -24,8 +24,8 @@ class AClientResourceUploadingManager : public ::testing::Test
 {
 public:
     explicit AClientResourceUploadingManager(bool keepEffects = false, UInt64 clientResourceCacheSize = 0u)
-        : dummyResource(EResourceType_IndexArray, 5, EDataType_UInt16, reinterpret_cast<const Byte*>(m_dummyData), ResourceCacheFlag_DoNotCache, String())
-        , dummyEffectResource("", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache)
+        : dummyResource(EResourceType_IndexArray, 5, EDataType::UInt16, reinterpret_cast<const Byte*>(m_dummyData), ResourceCacheFlag_DoNotCache, String())
+        , dummyEffectResource("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache)
         , dummyManagedResourceCallback(managedResourceDeleter)
         , sceneId(66u)
         , frameTimer()
@@ -42,12 +42,12 @@ public:
 
         if (effectResource)
         {
-            ManagedResource managedRes(dummyEffectResource, dummyManagedResourceCallback);
+            ManagedResource managedRes{ &dummyEffectResource, dummyManagedResourceCallback };
             resourceRegistry.setResourceData(hash, managedRes, DeviceResourceHandle::Invalid(), EResourceType_Effect);
         }
         else
         {
-            ManagedResource managedRes((nullptr != resource? *resource : dummyResource) , dummyManagedResourceCallback);
+            ManagedResource managedRes{ (resource ? resource : &dummyResource), dummyManagedResourceCallback };
             resourceRegistry.setResourceData(hash, managedRes, DeviceResourceHandle::Invalid(), EResourceType_IndexArray);
         }
 
@@ -76,7 +76,7 @@ public:
         const ResourceDescriptor& rd = resourceRegistry.getResourceDescriptor(hash);
         EXPECT_EQ(EResourceStatus_Uploaded, rd.status);
         EXPECT_EQ(ResourceUploaderMock::FakeResourceDeviceHandle, rd.deviceHandle);
-        EXPECT_TRUE(rd.resource.getResourceObject() == nullptr);
+        EXPECT_FALSE(rd.resource);
     }
 
     void expectResourceUploadFailed(ResourceContentHash hash)
@@ -85,7 +85,7 @@ public:
         const ResourceDescriptor& rd = resourceRegistry.getResourceDescriptor(hash);
         EXPECT_EQ(EResourceStatus_Broken, rd.status);
         EXPECT_FALSE(rd.deviceHandle.isValid());
-        EXPECT_TRUE(rd.resource.getResourceObject() == nullptr);
+        EXPECT_FALSE(rd.resource);
     }
 
     void expectResourceStatus(ResourceContentHash hash, EResourceStatus status)
@@ -351,7 +351,7 @@ TEST_F(AClientResourceUploadingManager, checksTimeBudgetForEachLargeResourceWhen
     const ResourceContentHash res3(1236u, 0u);
 
     const std::vector<UInt32> dummyData(ClientResourceUploadingManager::LargeResourceByteSizeThreshold / 4 + 1, 0u);
-    const ArrayResource largeResource(EResourceType_IndexArray, static_cast<UInt32>(dummyData.size()), EDataType_UInt32, reinterpret_cast<const Byte*>(dummyData.data()), ResourceCacheFlag_DoNotCache, "");
+    const ArrayResource largeResource(EResourceType_IndexArray, static_cast<UInt32>(dummyData.size()), EDataType::UInt32, dummyData.data(), ResourceCacheFlag_DoNotCache, "");
 
     registerAndProvideResource(res1, false, &largeResource);
     registerAndProvideResource(res2, false, &largeResource);

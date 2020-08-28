@@ -160,7 +160,7 @@ namespace ramses_internal
     {
         // register a new texture (with dummy description and no data) to device and put entry in hashmap
         // actual data is uploaded later when source content available
-        const DeviceResourceHandle compositedTextureDeviceHandle = m_device.uploadStreamTexture2D(DeviceResourceHandle::Invalid(), 1u, 1u, ETextureFormat_RGBA8, nullptr, {ETextureChannelColor::Blue, ETextureChannelColor::Green, ETextureChannelColor::Red, ETextureChannelColor::Alpha});
+        const DeviceResourceHandle compositedTextureDeviceHandle = m_device.uploadStreamTexture2D(DeviceResourceHandle::Invalid(), 1u, 1u, ETextureFormat::RGBA8, nullptr, {ETextureChannelColor::Blue, ETextureChannelColor::Green, ETextureChannelColor::Red, ETextureChannelColor::Alpha});
 
         StreamTextureSourceInfo streamTextureSourceInfo;
         streamTextureSourceInfo.compositedTextureHandle = compositedTextureDeviceHandle;

@@ -10,7 +10,7 @@
 #include "gmock/gmock.h"
 #include "Scene/SceneDescriber.h"
 #include "Scene/ClientScene.h"
-#include "Scene/SceneActionUtils.h"
+#include "SceneActionUtils.h"
 #include "Scene/SceneActionCollectionCreator.h"
 #include "Scene/SceneActionApplierHelper.h"
 #include "TestEqualHelper.h"
@@ -33,7 +33,7 @@ namespace ramses_internal
 
         void expectAllocateNodeAction(SceneActionCollection::SceneActionReader action, NodeHandle handle, UInt32 expectedChildrenCount)
         {
-            EXPECT_EQ(ESceneActionId_AllocateNode, action.type());
+            EXPECT_EQ(ESceneActionId::AllocateNode, action.type());
             NodeHandle actualHandle;
             UInt32 actualChidlrenCount = 0;
             action.read(actualChidlrenCount);
@@ -44,7 +44,7 @@ namespace ramses_internal
 
         void expectAddChildToNodeAction(SceneActionCollection::SceneActionReader action, NodeHandle parent, NodeHandle child)
         {
-            EXPECT_EQ(ESceneActionId_AddChildToNode, action.type());
+            EXPECT_EQ(ESceneActionId::AddChildToNode, action.type());
             NodeHandle actualParent;
             NodeHandle actualChild;
             action.read(actualParent);
@@ -101,6 +101,7 @@ namespace ramses_internal
             , bfDstAlpha(EBlendFactor::SrcAlpha)
             , boColor(EBlendOperation::Subtract)
             , boAlpha(EBlendOperation::Max)
+            , blendColor(0.1f, 0.2f, 0.3f, 0.4f)
             , cullMode(ECullMode::BackFacing)
             , drawMode(EDrawMode::Lines)
             , depthWrite(EDepthWrite::Enabled)
@@ -124,6 +125,7 @@ namespace ramses_internal
             EBlendFactor    bfDstAlpha;
             EBlendOperation boColor;
             EBlendOperation boAlpha;
+            Vector4         blendColor;
             ECullMode       cullMode;
             EDrawMode       drawMode;
             EDepthWrite     depthWrite;
@@ -144,6 +146,7 @@ namespace ramses_internal
             const RenderStateHandle state = m_scene.allocateRenderState();
             m_scene.setRenderStateBlendFactors(   state, data.bfSrcColor, data.bfDstColor, data.bfSrcAlpha, data.bfDstAlpha);
             m_scene.setRenderStateBlendOperations(state, data.boColor, data.boAlpha);
+            m_scene.setRenderStateBlendColor(     state, data.blendColor);
             m_scene.setRenderStateCullMode(       state, data.cullMode);
             m_scene.setRenderStateDrawMode(       state, data.drawMode);
             m_scene.setRenderStateDepthWrite(     state, data.depthWrite);
@@ -190,17 +193,17 @@ namespace ramses_internal
         const UInt32 dataFieldElementCount = 3u;
         const DataFieldInfoVector dataFieldInfos =
         {
-            DataFieldInfo{ EDataType_Int32,     dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType_Float,     dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType_Vector2F,  dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType_Vector3F,  dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType_Vector4F,  dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType_Vector2I,  dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType_Vector3I,  dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType_Vector4I,  dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType_Matrix22F, dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType_Matrix33F, dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType_Matrix44F, dataFieldElementCount, EFixedSemantics_Invalid }
+            DataFieldInfo{ EDataType::Int32,     dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType::Float,     dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType::Vector2F,  dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType::Vector3F,  dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType::Vector4F,  dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType::Vector2I,  dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType::Vector3I,  dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType::Vector4I,  dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType::Matrix22F, dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType::Matrix33F, dataFieldElementCount, EFixedSemantics_Invalid },
+            DataFieldInfo{ EDataType::Matrix44F, dataFieldElementCount, EFixedSemantics_Invalid }
         };
 
         const DataLayoutHandle dataLayout = m_scene.allocateDataLayout(dataFieldInfos, ResourceContentHash::Invalid());
@@ -210,8 +213,8 @@ namespace ramses_internal
 
         ASSERT_EQ(2u, actions.numberOfActions());
         uint32_t actionIdx = 0u;
-        EXPECT_EQ(ESceneActionId_AllocateDataLayout, actions[actionIdx++].type());
-        EXPECT_EQ(ESceneActionId_AllocateDataInstance, actions[actionIdx++].type());
+        EXPECT_EQ(ESceneActionId::AllocateDataLayout, actions[actionIdx++].type());
+        EXPECT_EQ(ESceneActionId::AllocateDataInstance, actions[actionIdx++].type());
         // no actions for setting the zeroed data types
 
         Scene newScene;
@@ -238,7 +241,7 @@ namespace ramses_internal
         SceneDescriber::describeScene<IScene>(m_scene, creator);
 
         ASSERT_EQ(2u, actions.numberOfActions());
-        EXPECT_EQ(1u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actions, ESceneActionId_CompoundRenderable));
+        EXPECT_EQ(1u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actions, ESceneActionId::CompoundRenderable));
     }
 
     TEST_F(SceneDescriberTest, checksDescriptionActionsForSceneWithStateAndCompoundAction)
@@ -247,14 +250,14 @@ namespace ramses_internal
         SceneDescriber::describeScene<IScene>(m_scene, creator);
 
         ASSERT_EQ(1u, actions.numberOfActions());
-        EXPECT_EQ(1u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actions, ESceneActionId_CompoundState));
+        EXPECT_EQ(1u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actions, ESceneActionId::CompoundState));
     }
 
     TEST_F(SceneDescriberTest, sameAmountOfDataLayoutsCreatedIsSerializedToSceneActions_withoutCompacting)
     {
-        const DataLayoutHandle dataLayout1 = m_scene.allocateDataLayout({ DataFieldInfo{ EDataType_Float }, DataFieldInfo{ EDataType_Float } }, ResourceContentHash(123u, 0u));
-        const DataLayoutHandle dataLayout2 = m_scene.allocateDataLayout({ DataFieldInfo{ EDataType_Float }, DataFieldInfo{ EDataType_Float } }, ResourceContentHash(123u, 0u));
-        const DataLayoutHandle dataLayout3 = m_scene.allocateDataLayout({ DataFieldInfo{ EDataType_Float }, DataFieldInfo{ EDataType_Float } }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout1 = m_scene.allocateDataLayout({ DataFieldInfo{ EDataType::Float }, DataFieldInfo{ EDataType::Float } }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout2 = m_scene.allocateDataLayout({ DataFieldInfo{ EDataType::Float }, DataFieldInfo{ EDataType::Float } }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout3 = m_scene.allocateDataLayout({ DataFieldInfo{ EDataType::Float }, DataFieldInfo{ EDataType::Float } }, ResourceContentHash(123u, 0u));
 
         // the test itself does not need to test that the compacting happened or not
         // but it is actually the main purpose to check that the describer properly expands the actions if compacted
@@ -265,15 +268,15 @@ namespace ramses_internal
         SceneDescriber::describeScene<IScene>(m_scene, creator);
 
         ASSERT_EQ(3u, actions.numberOfActions());
-        EXPECT_EQ(3u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actions, ESceneActionId_AllocateDataLayout));
+        EXPECT_EQ(3u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actions, ESceneActionId::AllocateDataLayout));
     }
 
     TEST_F(SceneDescriberTest, sameAmountOfDataLayoutsCreatedIsSerializedToSceneActions_compactingUsed)
     {
         ClientScene scene;
-        const DataLayoutHandle dataLayout1 = scene.allocateDataLayout({ DataFieldInfo{ EDataType_Float }, DataFieldInfo{ EDataType_Float } }, ResourceContentHash(123u, 0u));
-        const DataLayoutHandle dataLayout2 = scene.allocateDataLayout({ DataFieldInfo{ EDataType_Float }, DataFieldInfo{ EDataType_Float } }, ResourceContentHash(123u, 0u));
-        const DataLayoutHandle dataLayout3 = scene.allocateDataLayout({ DataFieldInfo{ EDataType_Float }, DataFieldInfo{ EDataType_Float } }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout1 = scene.allocateDataLayout({ DataFieldInfo{ EDataType::Float }, DataFieldInfo{ EDataType::Float } }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout2 = scene.allocateDataLayout({ DataFieldInfo{ EDataType::Float }, DataFieldInfo{ EDataType::Float } }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout3 = scene.allocateDataLayout({ DataFieldInfo{ EDataType::Float }, DataFieldInfo{ EDataType::Float } }, ResourceContentHash(123u, 0u));
 
         // the test itself does not need to test that the compacting happened or not
         // but it is actually the main purpose to check that the describer properly expands the actions if compacted
@@ -285,6 +288,6 @@ namespace ramses_internal
         SceneDescriber::describeScene<ClientScene>(scene, creator);
 
         ASSERT_EQ(3u, actions.numberOfActions());
-        EXPECT_EQ(3u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actions, ESceneActionId_AllocateDataLayout));
+        EXPECT_EQ(3u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actions, ESceneActionId::AllocateDataLayout));
     }
 }

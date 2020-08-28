@@ -19,9 +19,7 @@ namespace ramses
 {
     class Appearance;
     class Effect;
-    class UInt16Array;
-    class Vector2fArray;
-    class Vector3fArray;
+    class ArrayResource;
 }
 
 namespace ramses_internal
@@ -29,7 +27,7 @@ namespace ramses_internal
     class TextureCubeAnisotropicTextureFilteringScene : public IntegrationScene
     {
     public:
-        TextureCubeAnisotropicTextureFilteringScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        TextureCubeAnisotropicTextureFilteringScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum EState
         {
@@ -41,9 +39,9 @@ namespace ramses_internal
 
         ramses::Appearance* createQuad(
             ramses::Effect* effect,
-            const ramses::Vector3fArray* vertexPositions,
-            const ramses::Vector3fArray* normals,
-            const ramses::UInt16Array* indices,
+            const ramses::ArrayResource* vertexPositions,
+            const ramses::ArrayResource* normals,
+            const ramses::ArrayResource* indices,
             float x,
             float y);
 

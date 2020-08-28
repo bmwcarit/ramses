@@ -273,7 +273,7 @@ namespace ramses_internal
             setCurrentSceneState(sceneId, ESceneStateInternal::Subscribed);
             break;
         case EventResult::Failed:
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic::sceneSubscribed: Could not subscribe scene with id: " << sceneId);
+            LOG_ERROR_P(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic::sceneSubscribed failed for scene {}, will retry.", sceneId);
             break;
         case EventResult::Indirect:
         default:
@@ -306,7 +306,7 @@ namespace ramses_internal
             setCurrentSceneState(sceneId, ESceneStateInternal::Published);
             break;
         case EventResult::Failed:
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic::sceneUnsubscribed: Could not unsubscribe scene with id: " << sceneId);
+            LOG_ERROR_P(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic::sceneUnsubscribed failed for scene {}, will retry.", sceneId);
             goToTargetState(sceneId);
             break;
         default:
@@ -330,7 +330,7 @@ namespace ramses_internal
             setCurrentSceneState(sceneId, ESceneStateInternal::Mapped);
             break;
         case EventResult::Failed:
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic::sceneMapped: Could not map scene with id: " << sceneId);
+            LOG_ERROR_P(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic::sceneMapped failed for scene {}, will retry.", sceneId);
             break;
         case EventResult::Indirect:
         default:
@@ -363,7 +363,7 @@ namespace ramses_internal
             setCurrentSceneState(sceneId, ESceneStateInternal::Subscribed);
             break;
         case EventResult::Failed:
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic::sceneUnmapped: Could not unmap scene with id: " << sceneId);
+            LOG_ERROR_P(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic::sceneUnmapped failed for scene {}, will retry.", sceneId);
             goToTargetState(sceneId);
             break;
         default:
@@ -387,7 +387,7 @@ namespace ramses_internal
             setCurrentSceneState(sceneId, ESceneStateInternal::Rendered);
             break;
         case EventResult::Failed:
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic::sceneShown: Could not show scene with id: " << sceneId);
+            LOG_ERROR_P(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic::sceneShown failed for scene {}, will retry.", sceneId);
             break;
         case EventResult::Indirect:
         default:
@@ -420,7 +420,7 @@ namespace ramses_internal
             setCurrentSceneState(sceneId, ESceneStateInternal::MappedAndAssigned);
             break;
         case EventResult::Failed:
-            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic::sceneHidden: Could not hide scene with id: " << sceneId);
+            LOG_ERROR_P(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic::sceneHidden failed for scene {}, will retry.", sceneId);
             goToTargetState(sceneId);
             break;
         default:

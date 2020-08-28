@@ -48,6 +48,7 @@ namespace ramses
     {
         EXPECT_STREQ("", effectDesc.getVertexShader());
         EXPECT_STREQ("", effectDesc.getFragmentShader());
+        EXPECT_STREQ("", effectDesc.getGeometryShader());
         EXPECT_EQ(0u, effectDesc.getNumberOfCompilerDefines());
         EXPECT_EQ(0u, effectDesc.impl.getSemanticsMap().size());
     }
@@ -58,6 +59,8 @@ namespace ramses
         EXPECT_STREQ("", effectDesc.getVertexShader());
         EXPECT_EQ(StatusOK, effectDesc.setFragmentShader(nullptr));
         EXPECT_STREQ("", effectDesc.getFragmentShader());
+        EXPECT_EQ(StatusOK, effectDesc.setGeometryShader(nullptr));
+        EXPECT_STREQ("", effectDesc.getGeometryShader());
     }
 
     TEST_F(EffectDescriptionTest, retrievesSetVertexShader)
@@ -80,6 +83,17 @@ namespace ramses
         const char* src2 = "bad code";
         EXPECT_EQ(StatusOK, effectDesc.setFragmentShader(src2));
         EXPECT_STREQ(src2, effectDesc.getFragmentShader());
+    }
+
+    TEST_F(EffectDescriptionTest, retrievesSetGeometryShader)
+    {
+        const char* src = "code";
+        EXPECT_EQ(StatusOK, effectDesc.setGeometryShader(src));
+        EXPECT_STREQ(src, effectDesc.getGeometryShader());
+
+        const char* src2 = "bad code";
+        EXPECT_EQ(StatusOK, effectDesc.setGeometryShader(src2));
+        EXPECT_STREQ(src2, effectDesc.getGeometryShader());
     }
 
     TEST_F(EffectDescriptionTest, addDefineAsNULLReportsError)
@@ -153,12 +167,20 @@ namespace ramses
         EXPECT_EQ(StatusOK, effectDesc.setFragmentShaderFromFile(fileName));
     }
 
+    TEST_F(EffectDescriptionTest, setGeometryShaderFromFile)
+    {
+        const char* fileName = "res/ramses-client-test_minimalShader.geom";
+        EXPECT_EQ(StatusOK, effectDesc.setGeometryShaderFromFile(fileName));
+    }
+
     TEST_F(EffectDescriptionTest, reportsErrorWhenLoadingNonexistingFile)
     {
         const char* fileName = "nofile%&";
         EXPECT_NE(StatusOK, effectDesc.setVertexShaderFromFile(fileName));
         EXPECT_NE(StatusOK, effectDesc.setFragmentShaderFromFile(fileName));
+        EXPECT_NE(StatusOK, effectDesc.setFragmentShaderFromFile(fileName));
         EXPECT_NE(StatusOK, effectDesc.setVertexShaderFromFile(nullptr));
+        EXPECT_NE(StatusOK, effectDesc.setFragmentShaderFromFile(nullptr));
         EXPECT_NE(StatusOK, effectDesc.setFragmentShaderFromFile(nullptr));
     }
 }

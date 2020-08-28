@@ -21,6 +21,7 @@ namespace ramses
         , m_rendererSceneControl(*renderer.getSceneControlAPI())
         , m_exitCommand{ std::make_unique<ramses_internal::RamshCommandExit>() }
     {
+        framework.getRamsh().add(*m_exitCommand);
         m_ramshCommands.push_back(std::make_unique<ramses_internal::ShowSceneOnDisplay>(*this));
         m_ramshCommands.push_back(std::make_unique<ramses_internal::HideScene>(*this));
         m_ramshCommands.push_back(std::make_unique<ramses_internal::UnmapScene>(*this));

@@ -100,15 +100,15 @@ public:
         ramses::RenderGroup* renderGroup = m_scene->createRenderGroup();
         renderPass->addRenderGroup(*renderGroup);
         const float vertexPositionsArray[] = { 0.0f, 0.0f, -1.f, 735.0f, 0.0f, -1.f, 0.0f, 50.0f, -1.f, 735.0f, 50.0f, -1.f };
-        const ramses::Vector3fArray* vertexPositions = m_ramses.createConstVector3fArray(4, vertexPositionsArray);
+        const auto vertexPositions = m_scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
 
         const float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f };
-        const ramses::Vector2fArray* textureCoords = m_ramses.createConstVector2fArray(4, textureCoordsArray);
+        const auto textureCoords = m_scene->createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
 
         const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::UInt16Array* indices = m_ramses.createConstUInt16Array(6, indicesArray);
+        const auto indices = m_scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
-        ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-dcsm-list-line.png", m_ramses);
+        ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-dcsm-list-line.png", *m_scene);
         ramses::TextureSampler* sampler = m_scene->createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
@@ -121,7 +121,7 @@ public:
         effectDesc.setFragmentShaderFromFile("res/ramses-dcsm-list.frag");
         effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-        const ramses::Effect* effectTex = m_ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+        const ramses::Effect* effectTex = m_scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
         m_appearance = m_scene->createAppearance(*effectTex, "triangle appearance");
 
         // set vertex positions directly in geometry

@@ -14,8 +14,7 @@
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/VertexDataBuffer.h"
-#include "ramses-client-api/IndexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-utils.h"
 #include "gtest/gtest.h"
@@ -58,7 +57,7 @@ namespace ramses
 
     protected:
 
-        Effect* createTestEffect(RamsesClient& client)
+        Effect* createTestEffect(Scene& scene)
         {
             EffectDescription effectDesc;
             effectDesc.setVertexShader(
@@ -88,7 +87,7 @@ namespace ramses
             effectDesc.setAttributeSemantic("a_texcoord", EEffectAttributeSemantic_TextTextureCoordinates);
             effectDesc.setUniformSemantic("u_texture", EEffectUniformSemantic_TextTexture);
 
-            Effect* effect = client.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, "");
+            Effect* effect = scene.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, "");
             return effect;
         }
 
@@ -372,7 +371,7 @@ namespace ramses
         const std::u32string str = U" test ";
         const auto positionedGlyphs = m_textCache.getPositionedGlyphs(str, LatinFontInstance12);
 
-        Effect* textEffect = createTestEffect(m_client);
+        Effect* textEffect = createTestEffect(m_scene);
         ASSERT_TRUE(textEffect != nullptr);
 
         const TextLineId textLineId = m_textCache.createTextLine(positionedGlyphs, *textEffect);
@@ -388,11 +387,11 @@ namespace ramses
         EXPECT_EQ(24u, meshNode->getIndexCount());
         EXPECT_NE(std::numeric_limits<decltype(textLine->atlasPage)>::max(), textLine->atlasPage);
         ASSERT_TRUE(textLine->indices != nullptr);
-        EXPECT_EQ(48u, textLine->indices->getUsedSizeInBytes());
+        EXPECT_EQ(24u, textLine->indices->getUsedNumberOfElements());
         ASSERT_TRUE(textLine->positions != nullptr);
-        EXPECT_EQ(128u, textLine->positions->getUsedSizeInBytes());
+        EXPECT_EQ(16u, textLine->positions->getUsedNumberOfElements());
         ASSERT_TRUE(textLine->textureCoordinates != nullptr);
-        EXPECT_EQ(128u, textLine->textureCoordinates->getUsedSizeInBytes());
+        EXPECT_EQ(16u, textLine->textureCoordinates->getUsedNumberOfElements());
     }
 
     TEST_F(ATextCache, createsMultipleTextLines)
@@ -400,7 +399,7 @@ namespace ramses
         const auto positionedGlyphs1 = m_textCache.getPositionedGlyphs(U" test ", LatinFontInstance12);
         const auto positionedGlyphs2 = m_textCache.getPositionedGlyphs(U"123abc", LatinFontInstance20);
 
-        Effect* textEffect = createTestEffect(m_client);
+        Effect* textEffect = createTestEffect(m_scene);
         ASSERT_TRUE(textEffect != nullptr);
 
         const TextLineId textLineId1 = m_textCache.createTextLine(positionedGlyphs1, *textEffect);
@@ -428,23 +427,23 @@ namespace ramses
         EXPECT_NE(std::numeric_limits<decltype(textLine2->atlasPage)>::max(), textLine2->atlasPage);
         ASSERT_TRUE(textLine1->indices != nullptr);
         ASSERT_TRUE(textLine2->indices != nullptr);
-        EXPECT_EQ(48u, textLine1->indices->getUsedSizeInBytes());
-        EXPECT_EQ(72u, textLine2->indices->getUsedSizeInBytes());
+        EXPECT_EQ(24u, textLine1->indices->getUsedNumberOfElements());
+        EXPECT_EQ(36u, textLine2->indices->getUsedNumberOfElements());
         ASSERT_TRUE(textLine1->positions != nullptr);
         ASSERT_TRUE(textLine2->positions != nullptr);
-        EXPECT_EQ(128u, textLine1->positions->getUsedSizeInBytes());
-        EXPECT_EQ(192u, textLine2->positions->getUsedSizeInBytes());
+        EXPECT_EQ(16u, textLine1->positions->getUsedNumberOfElements());
+        EXPECT_EQ(24u, textLine2->positions->getUsedNumberOfElements());
         ASSERT_TRUE(textLine1->textureCoordinates != nullptr);
         ASSERT_TRUE(textLine2->textureCoordinates != nullptr);
-        EXPECT_EQ(128u, textLine1->textureCoordinates->getUsedSizeInBytes());
-        EXPECT_EQ(192u, textLine2->textureCoordinates->getUsedSizeInBytes());
+        EXPECT_EQ(16u, textLine1->textureCoordinates->getUsedNumberOfElements());
+        EXPECT_EQ(24u, textLine2->textureCoordinates->getUsedNumberOfElements());
     }
 
     TEST_F(ATextCache, deletesTextLine)
     {
         const auto positionedGlyphs1 = m_textCache.getPositionedGlyphs(U" test ", LatinFontInstance12);
 
-        Effect* textEffect = createTestEffect(m_client);
+        Effect* textEffect = createTestEffect(m_scene);
         ASSERT_TRUE(textEffect != nullptr);
 
         const TextLineId textLineId1 = m_textCache.createTextLine(positionedGlyphs1, *textEffect);
@@ -455,7 +454,7 @@ namespace ramses
     {
         const auto positionedGlyphs1 = m_textCache.getPositionedGlyphs(U" test ", LatinFontInstance12);
 
-        Effect* textEffect = createTestEffect(m_client);
+        Effect* textEffect = createTestEffect(m_scene);
         ASSERT_TRUE(textEffect != nullptr);
 
         const TextLineId textLineId1 = m_textCache.createTextLine(positionedGlyphs1, *textEffect);
@@ -468,7 +467,7 @@ namespace ramses
         const auto positionedGlyphs1 = m_textCache.getPositionedGlyphs(U" test ", LatinFontInstance12);
         const auto positionedGlyphs2 = m_textCache.getPositionedGlyphs(U"123abc", LatinFontInstance20);
 
-        Effect* textEffect = createTestEffect(m_client);
+        Effect* textEffect = createTestEffect(m_scene);
         ASSERT_TRUE(textEffect != nullptr);
 
         const TextLineId textLineId1 = m_textCache.createTextLine(positionedGlyphs1, *textEffect);
@@ -485,7 +484,7 @@ namespace ramses
 
     TEST_F(ATextCache, failsToCreateTextLineFromEmptyString)
     {
-        Effect* textEffect = createTestEffect(m_client);
+        Effect* textEffect = createTestEffect(m_scene);
         ASSERT_TRUE(textEffect != nullptr);
 
         EXPECT_FALSE(m_textCache.createTextLine({}, *textEffect).isValid());
@@ -498,7 +497,7 @@ namespace ramses
         EffectDescription effectDesc;
         effectDesc.setVertexShader("void main() { gl_Position = vec4(1.0, 0.0, 0.0, 1.0); }\n");
         effectDesc.setFragmentShader("void main() { gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); }\n");
-        Effect* effect = m_client.createEffect(effectDesc);
+        Effect* effect = m_scene.createEffect(effectDesc);
         ASSERT_TRUE(effect != nullptr);
 
         EXPECT_FALSE(m_textCache.createTextLine(positionedGlyphs, *effect).isValid());
@@ -509,7 +508,7 @@ namespace ramses
         const std::u32string str = U" test ";
         auto positionedGlyphs = m_textCache.getPositionedGlyphs(str, LatinFontInstance12);
 
-        Effect* textEffect = createTestEffect(m_client);
+        Effect* textEffect = createTestEffect(m_scene);
         ASSERT_TRUE(textEffect != nullptr);
 
         positionedGlyphs.back().key.fontInstanceId = FontInstanceId(999u);
@@ -521,19 +520,19 @@ namespace ramses
         const std::u32string str = U"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         const auto positionedGlyphs = m_textCache.getPositionedGlyphs(str, LatinFontInstance20);
 
-        Effect* textEffect = createTestEffect(m_client);
+        Effect* textEffect = createTestEffect(m_scene);
         ASSERT_TRUE(textEffect != nullptr);
 
         EXPECT_FALSE(m_textCache.createTextLine(positionedGlyphs, *textEffect).isValid());
     }
 
-    TEST_F(ATextCache, failsToCreateTextLineIfEffectComesFromAnotherClient)
+    TEST_F(ATextCache, failsToCreateTextLineIfEffectComesFromAnotherScene)
     {
         const auto positionedGlyphs = m_textCache.getPositionedGlyphs(U"x", LatinFontInstance20);
 
-        RamsesClient& otherClient(*m_framework.createClient("other"));
+        Scene& otherScene(*m_client.createScene(sceneId_t{ 111 }));
 
-        Effect* textEffect = createTestEffect(otherClient);
+        Effect* textEffect = createTestEffect(otherScene);
         ASSERT_TRUE(textEffect != nullptr);
 
         EXPECT_FALSE(m_textCache.createTextLine(positionedGlyphs, *textEffect).isValid());

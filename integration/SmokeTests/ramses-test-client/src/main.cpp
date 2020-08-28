@@ -13,16 +13,13 @@
 #include "TestScenes/HierarchicalRedTrianglesScene.h"
 #include "TestScenes/MultipleTrianglesScene.h"
 #include "TestScenes/AnimatedTrianglesScene.h"
-#include "TestScenes/CubeTextureScene.h"
 #include "TestScenes/TextScene.h"
 #include "TestScenes/StreamTextureScene.h"
 #include "TestScenes/MultiLanguageTextScene.h"
-#include "TestScenes/DistributedScene.h"
 #include "TestScenes/FileLoadingScene.h"
-#include "TestScenes/TransformationLinkScene.h"
 #include "TestScenes/MultiTypeLinkScene.h"
-#include "TestScenes/MultiTextureConsumerScene.h"
 #include "TestScenes/MultipleRenderTargetScene.h"
+#include "TestScenes/SceneFromPath.h"
 #include "ramses-framework-api/RamsesFramework.h"
 #include "RamsesFrameworkImpl.h"
 #include "Ramsh/RamshCommandExit.h"
@@ -76,7 +73,7 @@ IntegrationScenePtr createSceneAndSetState(
     )
 {
     ramses::Scene& scene = addAndReturnScene(ramses, scenes, sceneId);
-    IntegrationScenePtr integrationScene(new INTEGRATIONSCENE(ramses, scene, testState, cameraPosition));
+    IntegrationScenePtr integrationScene(new INTEGRATIONSCENE(scene, testState, cameraPosition));
     scene.flush();
 
     return integrationScene;
@@ -118,12 +115,6 @@ int main(int argc, const char* argv[])
 
     switch (testNr)
     {
-    case 1:
-    {
-        auto integrationScene = createSceneAndSetState<ramses_internal::DistributedScene>(*ramses, scenes, testState, ramses::sceneId_t(20u), cameraPosParam);
-        integrationScenes.push_back(std::move(integrationScene));
-        break;
-    }
     case 2:
     {
         auto integrationScene1 = createSceneAndSetState<ramses_internal::MultipleTrianglesScene>(*ramses, scenes, ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES, ramses::sceneId_t(21u),
@@ -191,12 +182,6 @@ int main(int argc, const char* argv[])
         integrationScenes.push_back(std::move(integrationScene5));
         break;
     }
-    case 8:
-    {
-        auto integrationScene = createSceneAndSetState<ramses_internal::CubeTextureScene>(*ramses, scenes, testState, ramses::sceneId_t(33u), cameraPosParam);
-        integrationScenes.push_back(std::move(integrationScene));
-        break;
-    }
     case 10:
     {
         auto integrationScene = createSceneAndSetState<ramses_internal::StreamTextureScene>(*ramses, scenes, testState, ramses::sceneId_t(34u), cameraPosParam);
@@ -216,12 +201,6 @@ int main(int argc, const char* argv[])
         scenes.push_back(fileLoadingScene.getCreatedScene());
         break;
     }
-    case 14:
-    {
-        auto integrationScene = createSceneAndSetState<ramses_internal::TransformationLinkScene>(*ramses, scenes, testState, ramses::sceneId_t(38u), cameraPosParam);
-        integrationScenes.push_back(std::move(integrationScene));
-        break;
-    }
     case 15:
     {
         auto integrationScene1 = createSceneAndSetState<ramses_internal::MultiTypeLinkScene>(*ramses, scenes, ramses_internal::MultiTypeLinkScene::TRANSFORMATION_CONSUMER_DATA_AND_TEXTURE_PROVIDER, ramses::sceneId_t(39u), cameraPosParam + ramses_internal::Vector3(1.f, -2.f, 0.f));
@@ -236,16 +215,18 @@ int main(int argc, const char* argv[])
         integrationScenes.push_back(std::move(integrationScene));
         break;
     }
-    case 17:
-    {
-        auto integrationScene = createSceneAndSetState<ramses_internal::MultiTextureConsumerScene>(*ramses, scenes, ramses_internal::MultiTextureConsumerScene::THREE_CONSUMERS, ramses::sceneId_t(42u), cameraPosParam);
-        integrationScenes.push_back(std::move(integrationScene));
-        break;
-    }
     case 18:
     {
         auto integrationScene = createSceneAndSetState<ramses_internal::TextScene>(*ramses, scenes, testState, ramses::sceneId_t(43u), cameraPosParam);
         integrationScenes.push_back(std::move(integrationScene));
+        break;
+    }
+    case 19:
+    {
+        ramses_internal::ArgumentString folderArgument(parser, "folder", "folder", ".");
+        ramses_internal::ArgumentString fileNameArgument(parser, "fileName", "fileName", ".");
+        ramses_internal::SceneFromPath sceneFromPath(*ramses, folderArgument, fileNameArgument);
+        scenes.push_back(sceneFromPath.getCreatedScene());
         break;
     }
     }
@@ -254,22 +235,6 @@ int main(int argc, const char* argv[])
     if (framework.isConnected())
     {
         publishAllScenes(scenes);
-    }
-
-    switch (testNr)
-    {
-    case 1:
-    {
-        assert(framework.isConnected());
-        ramses::Scene* scene = scenes.front();
-        while (testStepCommand.getCurrentTestStep() != 1 && !commandExit.exitRequested())
-        {
-            testStepCommand.waitForTestStepSetEvent(100);
-        }
-        scene->unpublish();
-
-        break;
-    }
     }
 
     while(!commandExit.exitRequested())

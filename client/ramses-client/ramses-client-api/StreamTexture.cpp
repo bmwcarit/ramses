@@ -33,7 +33,7 @@ namespace ramses
     {
     }
 
-    streamSource_t StreamTexture::getStreamSourceId() const
+    waylandIviSurfaceId_t StreamTexture::getStreamSourceId() const
     {
         return impl.getStreamSource();
     }

@@ -13,6 +13,7 @@
 #include "ResourceMock.h"
 #include "Components/IResourceStorageChangeListener.h"
 #include "DummyResource.h"
+#include "Utils/StatisticCollection.h"
 
 using namespace testing;
 
@@ -29,7 +30,8 @@ namespace ramses_internal
     public:
         AResourceStorage()
             : lock()
-            , storage(lock)
+            , stats()
+            , storage(lock, stats)
         {
         }
 
@@ -41,6 +43,7 @@ namespace ramses_internal
 
     protected:
         PlatformLock lock;
+        StatisticCollectionFramework stats;
         ResourceStorage storage;
     };
 
@@ -179,8 +182,8 @@ namespace ramses_internal
         Mock::VerifyAndClearExpectations(resource2);
 
         // both point to same resource 1
-        EXPECT_TRUE(managedDel.getResourceObject() == resource1);
-        EXPECT_TRUE(managedDel.getResourceObject() == managedNoDel.getResourceObject());
+        EXPECT_TRUE(managedDel.get() == resource1);
+        EXPECT_TRUE(managedDel.get() == managedNoDel.get());
 
         managedDel = ManagedResource();
 
@@ -209,8 +212,8 @@ namespace ramses_internal
         Mock::VerifyAndClearExpectations(resource2);
 
         // both point to same resource 1
-        EXPECT_TRUE(managedDel.getResourceObject() == resource1);
-        EXPECT_TRUE(managedDel.getResourceObject() == managedNoDel.getResourceObject());
+        EXPECT_TRUE(managedDel.get() == resource1);
+        EXPECT_TRUE(managedDel.get() == managedNoDel.get());
 
         managedDel = ManagedResource();
 
@@ -283,7 +286,7 @@ namespace ramses_internal
         expectResourceSizeCalls(resource);
         ManagedResource managedRes = storage.manageResource(*resource);
         ManagedResource obtainedRes = storage.getResource(hash);
-        EXPECT_EQ(resource, obtainedRes.getResourceObject());
+        EXPECT_EQ(resource, obtainedRes.get());
     }
 
     TEST_F(AResourceStorage, CanReturnAHashUsageForAPreviouslyUnknownHash)
@@ -300,14 +303,14 @@ namespace ramses_internal
         EXPECT_EQ(hash, hashUsage.getHash());
 
         ManagedResource obtainedRes = storage.getResource(hash);
-        EXPECT_EQ(nullptr, obtainedRes.getResourceObject());
+        EXPECT_EQ(nullptr, obtainedRes.get());
     }
 
     TEST_F(AResourceStorage, ReturnsEmptyWhenAskesForUnavailableResourceHash)
     {
 
         ManagedResource obtainedRes = storage.getResource(ResourceContentHash(123456, 0));
-        EXPECT_EQ(nullptr, obtainedRes.getResourceObject());
+        EXPECT_EQ(nullptr, obtainedRes.get());
     }
 
     TEST_F(AResourceStorage, ReturnsAllManagedResources)

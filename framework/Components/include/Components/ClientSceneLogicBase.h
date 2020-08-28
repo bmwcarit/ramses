@@ -19,11 +19,12 @@ namespace ramses_internal
     class ISceneGraphSender;
     class StatisticCollectionScene;
     struct FlushTimeInformation;
+    class IResourceProviderComponent;
 
     class ClientSceneLogicBase
     {
     public:
-        ClientSceneLogicBase(ISceneGraphSender& sceneGraphSender, ClientScene& scene, const Guid& clientAddress);
+        ClientSceneLogicBase(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress);
         virtual ~ClientSceneLogicBase();
 
         void publish(EScenePublicationMode publicationMode);
@@ -45,6 +46,7 @@ namespace ramses_internal
         void updateResourceChanges(bool hasNewActions);
 
         ISceneGraphSender&     m_scenegraphSender;
+        IResourceProviderComponent& m_resourceComponent;
         const Guid             m_myID;
         const SceneId          m_sceneId;
         ClientScene&           m_scene;

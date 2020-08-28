@@ -51,7 +51,7 @@ namespace ramses_internal
         WaylandHandler                          m_waylandHandler2;
         ETriangleColor                          m_triangleColor;
 
-        std::vector<Char>                       m_readingBuffer;
+        std::vector<Byte>                       m_readingBuffer;
     };
 }
 #endif

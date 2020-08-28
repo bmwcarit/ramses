@@ -13,13 +13,13 @@
 
 namespace ramses_internal
 {
-    MultiTransformationLinkScene::MultiTransformationLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    MultiTransformationLinkScene::MultiTransformationLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
         , m_scaleFactor(10.f / NumRows)
         , m_dummyEffect(*getTestEffect("ramses-test-client-basic"))
-        , m_redTriangle(m_client, m_scene, m_dummyEffect, ramses::TriangleAppearance::EColor_Red)
-        , m_greenTriangle(m_client, m_scene, m_dummyEffect, ramses::TriangleAppearance::EColor_Green)
-        , m_blueTriangle(m_client, m_scene, m_dummyEffect, ramses::TriangleAppearance::EColor_Blue)
+        , m_redTriangle(m_scene, m_dummyEffect, ramses::TriangleAppearance::EColor_Red)
+        , m_greenTriangle(m_scene, m_dummyEffect, ramses::TriangleAppearance::EColor_Green)
+        , m_blueTriangle(m_scene, m_dummyEffect, ramses::TriangleAppearance::EColor_Blue)
     {
         switch (state)
         {

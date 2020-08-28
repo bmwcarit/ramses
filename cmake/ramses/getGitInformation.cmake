@@ -7,8 +7,8 @@
 #  -------------------------------------------------------------------------
 
 # use predefined values in dependant repositories
-IF (EXISTS "${ramses-sdk_ROOT_CMAKE_PATH}/originalGitInformation.txt")
-    FILE(READ "${ramses-sdk_ROOT_CMAKE_PATH}/originalGitInformation.txt" GIT_INFO_FILE_CONTENT)
+IF (EXISTS "${PROJECT_SOURCE_DIR}/originalGitInformation.txt")
+    FILE(READ "${PROJECT_SOURCE_DIR}/originalGitInformation.txt" GIT_INFO_FILE_CONTENT)
     STRING(REGEX REPLACE "\n" ";" GIT_INFO_FILE_CONTENT "${GIT_INFO_FILE_CONTENT}")
     LIST(GET GIT_INFO_FILE_CONTENT 0 GIT_COMMIT_COUNT)
     LIST(GET GIT_INFO_FILE_CONTENT 1 GIT_COMMIT_HASH)
@@ -19,17 +19,17 @@ ELSE()
 
     IF(GIT_FOUND)
         # try get hash and commit count
-        EXEC_PROGRAM(${GIT_EXECUTABLE} ${ramses-sdk_ROOT_CMAKE_PATH}
+        EXEC_PROGRAM(${GIT_EXECUTABLE} ${PROJECT_SOURCE_DIR}
             ARGS rev-list HEAD --count
             OUTPUT_VARIABLE GIT_COMMIT_COUNT_TMP
             RETURN_VALUE GIT_COUNT_RETURN_VALUE)
-        EXEC_PROGRAM(${GIT_EXECUTABLE} ${ramses-sdk_ROOT_CMAKE_PATH}
+        EXEC_PROGRAM(${GIT_EXECUTABLE} ${PROJECT_SOURCE_DIR}
             ARGS rev-parse --short HEAD
             OUTPUT_VARIABLE GIT_COMMIT_HASH_TMP
             RETURN_VALUE GIT_HASH_RETURN_VALUE)
 
         # optionally get branch
-        EXEC_PROGRAM(${GIT_EXECUTABLE} ${ramses-sdk_ROOT_CMAKE_PATH}
+        EXEC_PROGRAM(${GIT_EXECUTABLE} ${PROJECT_SOURCE_DIR}
             ARGS rev-parse --abbrev-ref HEAD
             OUTPUT_VARIABLE GIT_COMMIT_BRANCH_TMP
             RETURN_VALUE GIT_BRANCH_RETURN_VALUE)

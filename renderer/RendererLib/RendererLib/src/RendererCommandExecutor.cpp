@@ -42,10 +42,10 @@ namespace ramses_internal
         LOG_TRACE(CONTEXT_PROFILING, "  RendererCommandExecutor::executePendingCommands start executing commands");
         const auto numCommands = m_executedCommands.getTotalCommandCount();
 
-        // log commands only if there are other than 'scene actions' commands to minimize log spam
+        // log commands only if there are other than 'scene update' commands to minimize log spam
         UInt32 numUnloggedCmds = 0u;
         for (UInt32 i = 0; i < numCommands; ++i)
-            numUnloggedCmds += (m_executedCommands.getCommandType(i) == ERendererCommand_SceneActions ||
+            numUnloggedCmds += (m_executedCommands.getCommandType(i) == ERendererCommand_SceneUpdate ||
                                 m_executedCommands.getCommandType(i) == ERendererCommand_LogRendererInfo) ?
                 1 : 0;
         if (numCommands > numUnloggedCmds)
@@ -419,12 +419,12 @@ namespace ramses_internal
                 m_renderer.getProfilerStatistics().setFilteredRegionFlags(command.newRegionFilterFlags);
                 break;
             }
-            case ERendererCommand_SceneActions:
+            case ERendererCommand_SceneUpdate:
             {
-                SceneActionsCommand& command = m_executedCommands.getCommandData<SceneActionsCommand>(i);
+                SceneUpdateCommand& command = m_executedCommands.getCommandData<SceneUpdateCommand>(i);
                 const SceneId sceneId = command.sceneId;
-                SceneActionCollection& actionsForScene = command.sceneActions;
-                m_rendererSceneUpdater.handleSceneActions(sceneId, std::move(actionsForScene));
+                SceneUpdate& sceneUpdate = command.sceneUpdate;
+                m_rendererSceneUpdater.handleSceneActions(sceneId, std::move(sceneUpdate));
                 break;
             }
             case ERendererCommand_SetFrameTimerLimits:

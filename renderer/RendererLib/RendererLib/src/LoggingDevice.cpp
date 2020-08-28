@@ -112,6 +112,14 @@ namespace ramses_internal
         }
     }
 
+    void LoggingDevice::blendColor(const Vector4& color)
+    {
+        if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
+        {
+            m_logContext << "set blend color to [" << color.r << "; " << color.g << "; " << color.b << "; " << color.a << " ]" << RendererLogContext::NewLine;
+        }
+    }
+
     void LoggingDevice::cullMode(ECullMode mode)
     {
         if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))

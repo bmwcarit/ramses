@@ -51,9 +51,8 @@ bool FileUtils::WriteHashToFile(ramses_internal::ResourceContentHash hash, const
     if (!file.open(ramses_internal::File::Mode::WriteNew))
         return false;
 
-    ramses_internal::StringOutputStream stringStream;
-    stringStream << hash << "\n";
-    if (!file.write(stringStream.c_str(), stringStream.size()))
+    const std::string content = fmt::format("0x{:016X}{:016X}\n", hash.highPart, hash.lowPart);
+    if (!file.write(content.c_str(), content.size()))
         return false;
     file.flush();
     file.close();

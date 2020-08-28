@@ -25,72 +25,63 @@ namespace ramses_internal {
 class ResourceProviderMock : public IResourceProvider
 {
 public:
-    static const ResourceContentHash FakeVertArrayHash;
-    static const ResourceContentHash FakeVertArrayHash2;
-    static const ResourceContentHash FakeIndexArrayHash;
-    static const ResourceContentHash FakeIndexArrayHash2;
-    static const ResourceContentHash FakeTextureHash;
-    static const ResourceContentHash FakeTextureHash2;
-    static const ResourceContentHash FakeEffectHash;
+    static constexpr ResourceContentHash FakeEffectHash{ 120u, 0u };
+    static constexpr ResourceContentHash FakeVertArrayHash{ 123u, 0u };
+    static constexpr ResourceContentHash FakeVertArrayHash2{ 124u, 0u };
+    static constexpr ResourceContentHash FakeIndexArrayHash{ 125u, 0u };
+    static constexpr ResourceContentHash FakeIndexArrayHash2{ 126u, 0u };
+    static constexpr ResourceContentHash FakeIndexArrayHash3{ 127u, 0u };
+    static constexpr ResourceContentHash FakeTextureHash{ 128u, 0u };
+    static constexpr ResourceContentHash FakeTextureHash2{ 129u, 0u };
 
     ResourceProviderMock();
-
     virtual ~ResourceProviderMock();
 
     MOCK_METHOD(void, cancelResourceRequest, (const ResourceContentHash& hash, const ResourceRequesterID& requesterID), (override));
     MOCK_METHOD(void, requestResourceAsyncronouslyFromFramework, (const ResourceContentHashVector& ids, const ResourceRequesterID& /*requesterID*/, const SceneId& /*providerID*/), (override));
     MOCK_METHOD(ManagedResourceVector, popArrivedResources, (const ResourceRequesterID& /*requesterID*/), (override));
 
-    virtual ManagedResourceVector fakePopArrivedResources(const ResourceRequesterID& /*requesterID*/)
+    ManagedResourceVector fakePopArrivedResources(const ResourceRequesterID& /*requesterID*/)
     {
         ResourceContentHashVector arrivedResourceHashes;
         ManagedResourceVector arrivedResources;
-        for(auto resource : requestedResources)
+        for (const auto& resource : requestedResources)
         {
-            if (resource == FakeVertArrayHash)
+            if ((resource == FakeIndexArrayHash || resource == FakeIndexArrayHash2 || resource == FakeIndexArrayHash3) && !indexArrayIsAvailable)
+                continue;
+
+            const auto mr = GetFakeManagedResource(resource);
+            if (mr)
             {
-                arrivedResources.push_back(ManagedResource(vertArrayResource, deleterMock));
-                arrivedResourceHashes.push_back(resource);
-            }
-            if (resource == FakeVertArrayHash2)
-            {
-                arrivedResources.push_back(ManagedResource(vertArrayResource2, deleterMock));
-                arrivedResourceHashes.push_back(resource);
-            }
-            if (resource == FakeEffectHash)
-            {
-                arrivedResources.push_back(ManagedResource(dummyEffectResource, deleterMock));
-                arrivedResourceHashes.push_back(resource);
-            }
-            if (resource == FakeTextureHash)
-            {
-                arrivedResources.push_back(ManagedResource(textureResource, deleterMock));
-                arrivedResourceHashes.push_back(resource);
-            }
-            if (resource == FakeTextureHash2)
-            {
-                arrivedResources.push_back(ManagedResource(textureResource2, deleterMock));
-                arrivedResourceHashes.push_back(resource);
-            }
-            if (resource == FakeIndexArrayHash && indexArrayIsAvailable)
-            {
-                arrivedResources.push_back(ManagedResource(indexArrayResource, deleterMock));
-                arrivedResourceHashes.push_back(resource);
-            }
-            if (resource == FakeIndexArrayHash2 && indexArrayIsAvailable)
-            {
-                arrivedResources.push_back(ManagedResource(indexArrayResource2, deleterMock));
+                arrivedResources.push_back(mr);
                 arrivedResourceHashes.push_back(resource);
             }
         }
 
-        for (const auto hash : arrivedResourceHashes)
-        {
-            auto it = find_c(requestedResources, hash);
-            requestedResources.erase(it);
-        }
+        for (const auto& hash : arrivedResourceHashes)
+            requestedResources.erase(find_c(requestedResources, hash));
 
         return arrivedResources;
+    }
+
+    static ManagedResource GetFakeManagedResource(const ResourceContentHash& hash)
+    {
+        std::unique_ptr<ResourceBase> res;
+        if (hash == FakeEffectHash)
+            res.reset(new EffectResource("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache));
+        else if (hash == FakeVertArrayHash || hash == FakeVertArrayHash2)
+            res.reset(new ArrayResource(EResourceType_VertexArray, 0, EDataType::Float, nullptr, ResourceCacheFlag_DoNotCache, String()));
+        else if (hash == FakeIndexArrayHash || hash == FakeIndexArrayHash2 || hash == FakeIndexArrayHash3)
+            res.reset(new ArrayResource(EResourceType_IndexArray, 0, EDataType::UInt16, nullptr, ResourceCacheFlag_DoNotCache, String()));
+        else if (hash == FakeTextureHash)
+            res.reset(new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String()));
+        else if (hash == FakeTextureHash2)
+            res.reset(new TextureResource(EResourceType_Texture2D, TextureMetaInfo(2u, 2u, 1u, ETextureFormat::R8, true, {}, { 4u }), ResourceCacheFlag_DoNotCache, String()));
+
+        if (res)
+            res->setResourceData(ResourceBlob{ 1 }, hash);
+
+        return ManagedResource{ res.release() };
     }
 
     void setIndexArrayAvailability(ramses_internal::Bool available)
@@ -99,19 +90,7 @@ public:
     }
 
 private:
-    ArrayResource vertArrayResource;
-    ArrayResource vertArrayResource2;
-    ArrayResource indexArrayResource;
-    ArrayResource indexArrayResource2;
-    TextureResource textureResource;
-    TextureResource textureResource2;
-    static const EffectResource dummyEffectResource;
-
-    ramses_internal::Bool indexArrayIsAvailable;
-
-    NiceMock<ManagedResourceDeleterCallbackMock> mock;
-    ResourceDeleterCallingCallback deleterMock;
-
+    bool indexArrayIsAvailable = true;
     ResourceContentHashVector requestedResources;
 };
 

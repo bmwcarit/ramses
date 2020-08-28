@@ -35,18 +35,18 @@ namespace ramses_internal
         const UInt32 vertexCount = static_cast<UInt32>(warpingMeshData.getVertexPositions().size());
         assert(warpingMeshData.getTextureCoordinates().size() == vertexCount);
 
-        const ArrayResource vertexArrayRes(EResourceType_VertexArray, vertexCount, EDataType_Vector3F, reinterpret_cast<const Byte*>(&warpingMeshData.getVertexPositions()[0]), ResourceCacheFlag_DoNotCache, String());
+        const ArrayResource vertexArrayRes(EResourceType_VertexArray, vertexCount, EDataType::Vector3F, warpingMeshData.getVertexPositions().data(), ResourceCacheFlag_DoNotCache, String());
         m_vertexBufferResource = m_device.allocateVertexBuffer(vertexArrayRes.getElementType(), vertexArrayRes.getDecompressedDataSize());
         assert(m_vertexBufferResource.isValid());
         m_device.uploadVertexBufferData(m_vertexBufferResource, vertexArrayRes.getResourceData().data(), vertexArrayRes.getDecompressedDataSize());
 
-        const ArrayResource texcoordArrayRes(EResourceType_VertexArray, vertexCount, EDataType_Vector2F, reinterpret_cast<const Byte*>(&warpingMeshData.getTextureCoordinates()[0]), ResourceCacheFlag_DoNotCache, String());
+        const ArrayResource texcoordArrayRes(EResourceType_VertexArray, vertexCount, EDataType::Vector2F, warpingMeshData.getTextureCoordinates().data(), ResourceCacheFlag_DoNotCache, String());
         m_texcoordBufferResource = m_device.allocateVertexBuffer(texcoordArrayRes.getElementType(), texcoordArrayRes.getDecompressedDataSize());
         assert(m_texcoordBufferResource.isValid());
         m_device.uploadVertexBufferData(m_texcoordBufferResource, texcoordArrayRes.getResourceData().data(), texcoordArrayRes.getDecompressedDataSize());
 
         assert(0 != m_indexCount);
-        const ArrayResource indexArrayRes(EResourceType_IndexArray, m_indexCount, EDataType_UInt16, reinterpret_cast<const Byte*>(&warpingMeshData.getIndices()[0]), ResourceCacheFlag_DoNotCache, String());
+        const ArrayResource indexArrayRes(EResourceType_IndexArray, m_indexCount, EDataType::UInt16, warpingMeshData.getIndices().data(), ResourceCacheFlag_DoNotCache, String());
         m_indexBufferResource = m_device.allocateIndexBuffer(indexArrayRes.getElementType(), indexArrayRes.getDecompressedDataSize());
         assert(m_indexBufferResource.isValid());
         m_device.uploadIndexBufferData(m_indexBufferResource, indexArrayRes.getResourceData().data(), indexArrayRes.getDecompressedDataSize());
@@ -82,12 +82,12 @@ namespace ramses_internal
         // construct effect
         EffectInputInformation a_position;
         a_position.inputName = "a_position";
-        a_position.dataType = EDataType_Vector3Buffer;
+        a_position.dataType = EDataType::Vector3Buffer;
         a_position.semantics = EFixedSemantics_VertexPositionAttribute;
 
         EffectInputInformation a_texcoord;
         a_texcoord.inputName = "a_texcoord";
-        a_texcoord.dataType = EDataType_Vector2Buffer;
+        a_texcoord.dataType = EDataType::Vector2Buffer;
         a_texcoord.semantics = EFixedSemantics_Invalid;
 
         EffectInputInformationVector attributeInputs;
@@ -96,14 +96,13 @@ namespace ramses_internal
 
         EffectInputInformation u_texture;
         u_texture.inputName = "u_texture";
-        u_texture.dataType = EDataType_TextureSampler;
+        u_texture.dataType = EDataType::TextureSampler2D;
         u_texture.semantics = EFixedSemantics_Invalid;
-        u_texture.textureType = EEffectInputTextureType_Texture2D;
 
         EffectInputInformationVector uniformInputs;
         uniformInputs.push_back(u_texture);
 
-        EffectResource effect(vertexShader, fragmentShader, uniformInputs, attributeInputs, "WarpingEffect", ResourceCacheFlag_DoNotCache);
+        EffectResource effect(vertexShader, fragmentShader, "", uniformInputs, attributeInputs, "WarpingEffect", ResourceCacheFlag_DoNotCache);
 
         // store field handles
         m_vertexPositionField = effect.getAttributeDataFieldHandleByName("a_position");

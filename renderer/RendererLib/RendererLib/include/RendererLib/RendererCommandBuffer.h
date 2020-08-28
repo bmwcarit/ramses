@@ -39,7 +39,7 @@ namespace ramses_internal
         void showScene(SceneId sceneId);
         void hideScene(SceneId sceneId);
 
-        void enqueueActionsForScene(SceneId sceneId, SceneActionCollection&& newActions);
+        void enqueueActionsForScene(SceneId sceneId, SceneUpdate&& sceneUpdate);
 
         void createDisplay(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle);
         void destroyDisplay(DisplayHandle handle);
@@ -92,7 +92,7 @@ namespace ramses_internal
         void swapCommandContainer(RendererCommandContainer& commandContainer);
 
     private:
-        mutable PlatformLock m_lock;
+        PlatformLock m_lock;
         RendererCommands m_commands;
     };
 }

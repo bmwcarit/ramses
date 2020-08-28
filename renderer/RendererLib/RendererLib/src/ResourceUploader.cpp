@@ -31,7 +31,7 @@ namespace ramses_internal
     DeviceResourceHandle ResourceUploader::uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& rd, UInt32& outVRAMSize)
     {
         ManagedResource res = rd.resource;
-        const IResource& resourceObject = *res.getResourceObject();
+        const IResource& resourceObject = *res.get();
         IDevice& device = renderBackend.getDevice();
         outVRAMSize = resourceObject.getDecompressedDataSize();
 
@@ -119,7 +119,7 @@ namespace ramses_internal
         assert(textureDeviceHandle.isValid());
 
         // upload texture data
-        const Byte* pData = reinterpret_cast<const Byte*>(texture.getData());
+        const Byte* pData = texture.getResourceData().data();
         switch (texture.getTypeID())
         {
         case EResourceType_Texture2D:

@@ -245,7 +245,6 @@ namespace ramses
         class RendererSceneControlImpl& impl;
 
     private:
-        /// RendererSceneControl_legacy can only be instantiated through RamsesRenderer
         friend class RamsesRendererImpl;
 
         /// Constructor

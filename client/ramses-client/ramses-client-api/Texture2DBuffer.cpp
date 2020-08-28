@@ -24,7 +24,7 @@ namespace ramses
     {
     }
 
-    status_t Texture2DBuffer::setData(const char* data, uint32_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height)
+    status_t Texture2DBuffer::updateData(uint32_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height, const void* data)
     {
         const status_t status = impl.setData(reinterpret_cast<const ramses_internal::Byte*>(data), mipLevel, offsetX, offsetY, width, height);
         LOG_HL_CLIENT_API6(status, LOG_API_GENERIC_PTR_STRING(data), mipLevel, offsetX, offsetY, width, height);
@@ -51,9 +51,9 @@ namespace ramses
         return impl.getTexelFormat();
     }
 
-    status_t Texture2DBuffer::getMipLevelData(uint32_t mipLevel, char* buffer, uint32_t bufferSize) const
+    status_t Texture2DBuffer::getMipLevelData(uint32_t mipLevel, void* buffer, uint32_t bufferSize) const
     {
-        return impl.getMipLevelData(mipLevel, buffer, bufferSize);
+        return impl.getMipLevelData(mipLevel, static_cast<char *>(buffer), bufferSize);
     }
 
 }

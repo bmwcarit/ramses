@@ -19,8 +19,8 @@
 namespace ramses_internal
 {
 
-    ArrayInputScene::ArrayInputScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    ArrayInputScene::ArrayInputScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         ramses::UniformInput caseNumber;
         ramses::UniformInput colorVec4Array;
@@ -33,7 +33,7 @@ namespace ramses_internal
         effect->findUniformInput("colorIntArray", colorIntArray);
         effect->findUniformInput("index", index);
 
-        ramses::TriangleGeometry triangleGeometry(m_client, m_scene, *effect);
+        ramses::TriangleGeometry triangleGeometry(m_scene, *effect);
         ramses::Appearance& appearance = *scene.createAppearance(*effect, "appearance");
 
         ramses::Node* trafoNode = m_scene.createNode("transformation node");

@@ -35,6 +35,7 @@ FUNCTION(RENDERER_MODULE_PER_CONFIG MODULE_PREFIX_NAME RENDERER_SPECIFIC_DEPENDE
             # build acme module for this configuration
             ACME_MODULE(NAME             ${MYMODULE_NAME}
                         DEPENDENCIES     ${RENDERER_SPECIFIC_DEPENDENCIES}
+                                         ramses-build-options-base
                         ${ADDITIONAL_MODULE_SETTINGS})
 
             IF("${ACME_TYPE}" STREQUAL "SHARED_LIBRARY" AND TARGET ${MYMODULE_NAME})
@@ -73,8 +74,9 @@ FUNCTION(MODULE_WITH_SHARED_LIBRARY)
         SET(RAMSES_PLATFORM_SHLIB_NAME ramses-shared-lib-${PLATFORM_NAME})
         IF (TARGET ${RAMSES_PLATFORM_SHLIB_NAME})
             ACME_MODULE(
-            DEPENDENCIES               ${RAMSES_PLATFORM_SHLIB_NAME}
-            ${ARGN})
+                DEPENDENCIES               ${RAMSES_PLATFORM_SHLIB_NAME}
+                                           ramses-build-options-base
+                ${ARGN})
             BREAK()
         ENDIF()
     ENDFOREACH()

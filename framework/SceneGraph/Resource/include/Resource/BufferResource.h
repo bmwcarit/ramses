@@ -16,22 +16,13 @@ namespace ramses_internal
     class BufferResource : public ResourceBase
     {
     public:
-        BufferResource(EResourceType typeID, UInt32 dataSize, const Byte* data, ResourceCacheFlag cacheFlag, const String& name)
+        BufferResource(EResourceType typeID, UInt32 dataSize, const void* data, ResourceCacheFlag cacheFlag, const String& name)
             : ResourceBase(typeID, cacheFlag, name)
         {
             // TODO(tobias) this might create an empty resource blob that will be thrown away later.
             // needs more refactoring to solve properly
             if (dataSize)
-                setResourceData(ResourceBlob(dataSize, data));
-        }
-
-        virtual ~BufferResource()
-        {
-        }
-
-        const void* getData() const
-        {
-            return getResourceData().data();
+                setResourceData(ResourceBlob(dataSize, static_cast<const Byte*>(data)));
         }
     };
 }

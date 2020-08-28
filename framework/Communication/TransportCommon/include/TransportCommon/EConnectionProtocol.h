@@ -15,6 +15,8 @@ namespace ramses_internal
 {
     enum class EConnectionProtocol
     {
+        SomeIP_HU = 0,
+        SomeIP_IC,
         TCP,
         Fake,
         Invalid, // must be last
@@ -22,6 +24,8 @@ namespace ramses_internal
 
     static const char* ConectionProtocolNames[] =
     {
+        "SomeIP_HU",
+        "SomeIP_IC",
         "TCP",
         "Fake",
         "Invalid"

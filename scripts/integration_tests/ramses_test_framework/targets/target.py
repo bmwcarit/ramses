@@ -41,6 +41,7 @@ class Target:
         self.powerOutletNr = targetInfo.powerOutletNr
         self.password = targetInfo.password
         self.sshPort = targetInfo.sshPort
+        self.someIPTestsInterfaceIp = targetInfo.someIPTestsInterfaceIp
         self.tcpTestsInterfaceIp = targetInfo.tcpTestsInterfaceIp
         self.tcpAliveIntervalMs = None
         self.tcpAliveTimeoutMs = None
@@ -58,6 +59,7 @@ class Target:
         self.dltSupported = False
         self.embeddedCompositingSupported = False
         self.systemCompositorControllerSupported = False
+        self.systemCompositorScreenshotSupported = False
         self.binaryShaderCompilerSupported = False
         self.externalSomeIPHUDaemon = False
         self.baseWorkingDirectory = self.ramsesInstallDir + "/bin"

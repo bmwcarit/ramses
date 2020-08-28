@@ -92,13 +92,6 @@ namespace ramses_internal
         EXPECT_EQ( expectedSize,  stream.getSize());
     }
 
-    TEST_F(VoidOutputStreamTest, InsertMatrix44f)
-    {
-        const Matrix44f value;
-        stream << value;
-        EXPECT_EQ( 16 * sizeof(float),  stream.getSize());
-    }
-
     TEST_F(VoidOutputStreamTest, InsertResourceContextHash)
     {
         const ResourceContentHash value;

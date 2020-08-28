@@ -10,11 +10,11 @@
 #include "ClientTestUtils.h"
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/PerspectiveCamera.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 
 #include "PickableObjectImpl.h"
 #include "CameraNodeImpl.h"
-#include "VertexDataBufferImpl.h"
+#include "ArrayBufferImpl.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -40,19 +40,19 @@ namespace ramses
             pickableObject.setCamera(*pickableCamera);
         }
 
-        VertexDataBuffer* createGeometryBuffer()
+        ArrayBuffer* createGeometryBuffer()
         {
-            return m_scene.createVertexDataBuffer(36u, EDataType_Vector3F);
+            return m_scene.createArrayBuffer(EDataType::Vector3F, 3u);
         }
 
         void setGeometryBufferData()
         {
-            const char data[] = { 0 };
-            geometryBuffer.setData(data, 1u);
+            const float data[] = { 0.f, 0.f, 0.f };
+            geometryBuffer.updateData(0u, 1u, data);
         }
 
         PerspectiveCamera* pickableCamera = nullptr;
-        VertexDataBuffer& geometryBuffer;
+        ArrayBuffer& geometryBuffer;
         PickableObject& pickableObject;
         const ramses_internal::PickableObjectHandle pickableObjectHandle;
     };
@@ -87,7 +87,7 @@ namespace ramses
 
     TEST_F(APickableObject, CanGetGeometryBufferOfPickableObject)
     {
-        const VertexDataBuffer& geoBuffer = pickableObject.getGeometryBuffer();
+        const ArrayBuffer& geoBuffer = pickableObject.getGeometryBuffer();
         EXPECT_EQ(&geoBuffer, &geometryBuffer);
         EXPECT_EQ(geoBuffer.impl.getDataBufferHandle(), geometryBuffer.impl.getDataBufferHandle());
     }

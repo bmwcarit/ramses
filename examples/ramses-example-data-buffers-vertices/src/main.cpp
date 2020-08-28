@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     effectDesc.setFragmentShaderFromFile("res/ramses-example-data-buffers-vertices.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    ramses::Effect* effect = ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = scene->createAppearance(*effect, "triangle appearance data buffer");
     ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect, "triangle geometry data buffer");
 
@@ -80,16 +80,16 @@ int main(int argc, char* argv[])
 
     // Create the DataBuffers
     // The data buffers need more information about size
-    const uint32_t SizeOfVerticesInBytes = 16 * 3 * sizeof(float);
-    const uint32_t SizeOfIndicesInBytes  = 42 * sizeof(uint16_t);
+    const uint32_t SizeOfVertices = 16u;
+    const uint32_t SizeOfIndices  = 42u;
 
     // then create the buffers via the _scene_
-    ramses::VertexDataBuffer* vertices = scene->createVertexDataBuffer( SizeOfVerticesInBytes, ramses::EDataType_Vector3F, "some varying vertices");
-    ramses::IndexDataBuffer*  indices  = scene->createIndexDataBuffer(  SizeOfIndicesInBytes,  ramses::EDataType_UInt16,   "some varying indices");
+    ramses::ArrayBuffer* vertices = scene->createArrayBuffer( ramses::EDataType::Vector3F, SizeOfVertices, "some varying vertices");
+    ramses::ArrayBuffer*  indices  = scene->createArrayBuffer( ramses::EDataType::UInt16, SizeOfIndices, "some varying indices");
 
     // finally set/update the data
-    vertices->setData(reinterpret_cast<const char*>(vertexPositions), SizeOfVerticesInBytes);
-    indices->setData( reinterpret_cast<const char*>(indexData), SizeOfIndicesInBytes);
+    vertices->updateData(0u, SizeOfVertices, vertexPositions);
+    indices->updateData( 0u, SizeOfIndices, indexData);
 
     /// [Data Buffer Example Setup]
 
@@ -135,21 +135,21 @@ int main(int argc, char* argv[])
         for(auto i: ridges)
         {
             float updatedValues[2];
-            const uint32_t updatedValuesLength = 2 * sizeof(float);
-            const uint32_t offsetInDataBuffer  = i * 3u * sizeof(float);
+            const uint32_t updatedValuesLength = 2;
+            const uint32_t offsetInDataBuffer  = i * 3u;
 
             translateVertex(updatedValues, i, timeStamp, 0.25f);
-            vertices->setData(reinterpret_cast<const char*>(updatedValues), updatedValuesLength, offsetInDataBuffer);
+            vertices->updateData(offsetInDataBuffer, updatedValuesLength, updatedValues);
         }
 
         for(auto i: notches)
         {
             float updatedValues[2];
-            const uint32_t updatedValuesLength = 2 * sizeof(float);
-            const uint32_t offsetInDataBuffer  = i * 3u * sizeof(float);
+            const uint32_t updatedValuesLength = 2;
+            const uint32_t offsetInDataBuffer  = i * 3u;
 
             translateVertex(updatedValues, i, timeStamp, -0.4f);
-            vertices->setData(reinterpret_cast<const char*>(updatedValues), updatedValuesLength, offsetInDataBuffer);
+            vertices->updateData(offsetInDataBuffer, updatedValuesLength, updatedValues);
         }
 
         // signal the scene it is in a state that can be rendered

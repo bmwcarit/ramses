@@ -41,8 +41,8 @@ namespace ramses_internal
         DataInstanceHandle createUniformDataInstanceWithSampler(RenderableHandle renderable, ResourceContentHash texHash = ResourceContentHash::Invalid(), ResourceContentHash const& effectHash = ResourceContentHash::Invalid())
         {
             DataFieldInfoVector uniformDataFields(2u);
-            uniformDataFields[dataField.asMemoryHandle()] = DataFieldInfo(EDataType_Float);
-            uniformDataFields[samplerField.asMemoryHandle()] = DataFieldInfo(EDataType_TextureSampler);
+            uniformDataFields[dataField.asMemoryHandle()] = DataFieldInfo(EDataType::Float);
+            uniformDataFields[samplerField.asMemoryHandle()] = DataFieldInfo(EDataType::TextureSampler2D);
             scene.allocateDataLayout(uniformDataFields, effectHash, testUniformLayout);
 
             const DataInstanceHandle uniformData = scene.allocateDataInstance(testUniformLayout);
@@ -59,8 +59,8 @@ namespace ramses_internal
         DataInstanceHandle createVertexDataInstance(RenderableHandle renderable, ResourceContentHash const& effectHash = ResourceContentHash::Invalid())
         {
             DataFieldInfoVector geometryDataFields(2u);
-            geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType_Indices, 1u, EFixedSemantics_Indices);
-            geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType_Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
+            geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType::Indices, 1u, EFixedSemantics_Indices);
+            geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType::Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
             scene.allocateDataLayout(geometryDataFields, effectHash, testGeometryLayout);
 
             const DataInstanceHandle geometryData = scene.allocateDataInstance(testGeometryLayout);
@@ -141,8 +141,8 @@ namespace ramses_internal
     TEST_F(ASceneResourceUtils, doesNotAddEffectHashOfDataLayoutIfNotConnectedToRenderable)
     {
         DataFieldInfoVector geometryDataFields(2u);
-        geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType_Indices, 1u, EFixedSemantics_Indices);
-        geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType_Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
+        geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType::Indices, 1u, EFixedSemantics_Indices);
+        geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType::Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
         scene.allocateDataLayout(geometryDataFields, hash1, testGeometryLayout);
 
         expectResources({});
@@ -216,8 +216,8 @@ namespace ramses_internal
         expectResources({});
 
         DataFieldInfoVector uniformDataFields(2u);
-        uniformDataFields[dataField.asMemoryHandle()] = DataFieldInfo(EDataType_Float);
-        uniformDataFields[samplerField.asMemoryHandle()] = DataFieldInfo(EDataType_TextureSampler);
+        uniformDataFields[dataField.asMemoryHandle()] = DataFieldInfo(EDataType::Float);
+        uniformDataFields[samplerField.asMemoryHandle()] = DataFieldInfo(EDataType::TextureSampler2D);
         scene.allocateDataLayout(uniformDataFields, ResourceContentHash::Invalid(), testUniformLayout);
 
         const DataInstanceHandle uniformData = scene.allocateDataInstance(testUniformLayout);

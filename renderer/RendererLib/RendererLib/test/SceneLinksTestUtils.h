@@ -57,7 +57,7 @@ inline void createDataSlot<TransformationLinkManager>(SceneAllocateHelper& scene
 template <>
 inline void createDataSlot<DataReferenceLinkManager>(SceneAllocateHelper& scene, DataSlotHandle slot, DataSlotId slotId, bool providerType)
 {
-    const DataLayoutHandle layout = scene.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
+    const DataLayoutHandle layout = scene.allocateDataLayout({ DataFieldInfo(EDataType::Float) }, ResourceContentHash::Invalid());
     const DataInstanceHandle dataRef = scene.allocateDataInstance(layout);
 
     scene.allocateDataSlot({ (providerType ? EDataSlotType_DataProvider : EDataSlotType_DataConsumer), slotId, NodeHandle(), dataRef, ResourceContentHash::Invalid(), TextureSamplerHandle() }, slot);

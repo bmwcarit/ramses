@@ -14,6 +14,7 @@
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
 #include "PlatformAbstraction/FmtBase.h"
+#include "Resource/ResourceTypes.h"
 #include <cinttypes>
 #include <functional>
 #include <vector>
@@ -82,7 +83,32 @@ struct fmt::formatter<ramses_internal::ResourceContentHash> : public ramses_inte
     template<typename FormatContext>
     auto format(const ramses_internal::ResourceContentHash& res, FormatContext& ctx)
     {
-        return fmt::format_to(ctx.out(), "0x{:016X}{:016X}", res.highPart, res.lowPart);
+        const char* typeShortString;
+        const uint32_t type = (res.highPart >> 60LU) & 0xF;
+        switch (type)
+        {
+        case static_cast<uint32_t>(ramses_internal::EResourceType_VertexArray):
+            typeShortString = "vtx";
+            break;
+        case static_cast<uint32_t>(ramses_internal::EResourceType_IndexArray):
+            typeShortString = "idx";
+            break;
+        case static_cast<uint32_t>(ramses_internal::EResourceType_Texture2D):
+            typeShortString = "tx2";
+            break;
+        case static_cast<uint32_t>(ramses_internal::EResourceType_Texture3D):
+            typeShortString = "tx3";
+            break;
+        case static_cast<uint32_t>(ramses_internal::EResourceType_TextureCube):
+            typeShortString = "txc";
+            break;
+        case static_cast<uint32_t>(ramses_internal::EResourceType_Effect):
+            typeShortString = "eff";
+            break;
+        default:
+            typeShortString = "inv";
+        }
+        return fmt::format_to(ctx.out(), "{}_{:016X}{:016X}", typeShortString, res.highPart, res.lowPart);
     }
 };
 

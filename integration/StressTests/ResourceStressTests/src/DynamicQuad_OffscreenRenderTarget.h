@@ -29,7 +29,7 @@ namespace ramses_internal
     class DynamicQuad_OffscreenRenderTarget : public DynamicQuad_Base
     {
     public:
-        DynamicQuad_OffscreenRenderTarget(ramses::RamsesClient& client, ramses::Scene& scene, ramses::RenderPass& offscreenRenderPass, const ScreenspaceQuad& screenspaceQuad);
+        DynamicQuad_OffscreenRenderTarget(ramses::Scene& scene, ramses::RenderPass& offscreenRenderPass, const ScreenspaceQuad& screenspaceQuad);
         ~DynamicQuad_OffscreenRenderTarget();
 
         virtual void recreate() override final;

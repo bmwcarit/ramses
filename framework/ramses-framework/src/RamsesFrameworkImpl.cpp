@@ -13,6 +13,7 @@
 #include "ramses-sdk-build-config.h"
 #include "TransportCommon/CommunicationSystemFactory.h"
 #include "TransportCommon/ICommunicationSystem.h"
+#include "TransportCommon/SomeIPAdapter.h"
 #include "Utils/RamsesLogger.h"
 #include "RamsesFrameworkConfigImpl.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
@@ -44,7 +45,7 @@ namespace ramses
         , m_threadedTaskExecutor(3, config.m_watchdogConfig)
         , m_resourceComponent(m_threadedTaskExecutor, m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(),
             m_statisticCollection, m_frameworkLock, config.getMaximumTotalBytesForAsyncResourceLoading())
-        , m_scenegraphComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(), m_frameworkLock)
+        , m_scenegraphComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(), m_resourceComponent, m_frameworkLock)
         , m_dcsmComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getDcsmConnectionStatusUpdateNotifier(), m_frameworkLock)
         , m_ramshCommandLogConnectionInformation(*m_communicationSystem)
         , m_ramshCommandLogDcsmInformation(m_dcsmComponent)
@@ -63,13 +64,12 @@ namespace ramses
         LOG_INFO(CONTEXT_CLIENT, "RamsesFramework::~RamsesFramework: guid " << m_participantAddress.getParticipantId() << ", wasConnected " << m_connected
             << ", has Renderer " << !!m_ramsesRenderer << ", number of Clients " << m_ramsesClients.size());
 
+        if (m_connected)
+            disconnect();
+
         m_ramsesClients.clear();
         m_ramsesRenderer.reset();
 
-        if (m_connected)
-        {
-            disconnect();
-        }
         m_periodicLogger.removePeriodicLogSupplier(m_communicationSystem.get());
         m_periodicLogger.removePeriodicLogSupplier(&m_dcsmComponent);
     }
@@ -315,7 +315,7 @@ namespace ramses
         return StatusOK;
     }
 
-    RamsesFrameworkImpl& RamsesFrameworkImpl::createImpl(int32_t argc, const char * argv[])
+    RamsesFrameworkImpl& RamsesFrameworkImpl::createImpl(int32_t argc, char const* const* argv)
     {
         RamsesFrameworkConfig config(argc, argv);
         return createImpl(config);
@@ -329,10 +329,17 @@ namespace ramses
         const ramses_internal::String& participantName = GetParticipantName(config);
 
         ramses_internal::Guid myGuid;
+        myGuid = SomeIPAdapter::GetGuidForCommunicationUser(config.impl.getSomeipCommunicationUserID());
         if (!myGuid.isValid())
         {
             // check if user provided one
             myGuid = config.impl.getUserProvidedGuid();
+
+            // generate from someip communication user when set
+            if (!myGuid.isValid() && config.impl.getSomeipCommunicationUserID() != SomeIPAdapter::GetInvalidCommunicationUser())
+            {
+                myGuid = Guid(0x10000 + config.impl.getSomeipCommunicationUserID());
+            }
 
             // generate randomly when invalid or overlappping with reserved values (make sure generated ids do not collide with explicit guids)
             if (myGuid.isInvalid() || myGuid.get() <= 0xFF)
@@ -404,7 +411,12 @@ namespace ramses
         // use communication user
         participantName += "_";
 
-        if (config.impl.getUsedProtocol() == EConnectionProtocol::TCP)
+        String someipStr;
+        if (SomeIPAdapter::GetCommunicationUserAsString(config.impl.getSomeipCommunicationUserID(), someipStr))
+        {
+            participantName += someipStr;
+        }
+        else if (config.impl.getUsedProtocol() == EConnectionProtocol::TCP)
         {
             participantName += "TCP";
         }
@@ -431,6 +443,10 @@ namespace ramses
         // Create log function outside to work around broken MSVC macro in macro behavior
         auto fun = [](ramses_internal::StringOutputStream& sos) {
                        sos << "Available communication stacks:";
+                       if (SomeIPAdapter::IsSomeIPStackCompiled(EConnectionProtocol::SomeIP_HU))
+                           sos << " SomeIP-HU";
+                       if (SomeIPAdapter::IsSomeIPStackCompiled(EConnectionProtocol::SomeIP_IC))
+                           sos << " SomeIP-IC";
 #if defined(HAS_TCP_COMM)
                        sos << " TCP";
 #endif

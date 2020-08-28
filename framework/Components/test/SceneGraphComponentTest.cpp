@@ -12,6 +12,11 @@
 #include "MockConnectionStatusUpdateNotifier.h"
 #include "ServiceHandlerMocks.h"
 #include "Components/FlushTimeInformation.h"
+#include "SceneRendererHandlerMock.h"
+#include "TransportCommon/SceneUpdateSerializer.h"
+#include "Components/SceneUpdate.h"
+#include "SceneUpdateSerializerTestHelper.h"
+
 
 using namespace ramses_internal;
 
@@ -21,9 +26,12 @@ public:
     ASceneGraphComponent()
         : localParticipantID(11)
         , remoteParticipantID(12)
-        , sceneGraphComponent(localParticipantID, communicationSystem, connectionStatusUpdateNotifier, frameworkLock)
+        , sceneGraphComponent(localParticipantID, communicationSystem, connectionStatusUpdateNotifier, resourceComponent, frameworkLock)
     {
-        localSceneIdInfoVector.push_back(SceneInfo(localSceneId, "sceneName"));
+        localSceneIdInfo = SceneInfo(localSceneId, "sceneName", EScenePublicationMode_LocalOnly);
+        localSceneIdInfoVector.push_back(localSceneIdInfo);
+        localAndRemoteSceneIdInfo = SceneInfo(localSceneId, "sceneName", EScenePublicationMode_LocalAndRemote);
+        localAndRemoteSceneIdInfoVector.push_back(localAndRemoteSceneIdInfo);
     }
 
     SceneActionCollection createFakeSceneActionCollectionFromTypes(const std::vector<ESceneActionId>& types)
@@ -36,72 +44,91 @@ public:
         return collection;
     }
 
+    std::vector<std::vector<Byte>> actionsToChunks(const SceneActionCollection& actions, uint32_t chunkSize = 100000)
+    {
+        SceneUpdate update{actions.copy(), {}};
+        return TestSerializeSceneUpdateToVectorChunked(SceneUpdateSerializer(update), chunkSize);
+    }
+
+    void expectSendSceneActionsToNetwork(Guid remote, SceneId sceneId, const SceneActionCollection& expectedActions)
+    {
+        EXPECT_CALL(communicationSystem, sendSceneUpdate(remote, sceneId, _)).WillOnce([&](auto, auto, auto& serializer) {
+            // grab actions directly out of serializer
+            const auto actions = static_cast<const SceneUpdateSerializer&>(serializer).getUpdate().actions.copy();
+            EXPECT_EQ(expectedActions, actions);
+            return true;
+        });
+    }
+
     void publishScene(UInt32 sceneId, const String& name, EScenePublicationMode pubMode)
     {
-        SceneInfoVector sceneInfoVec{ SceneInfo(SceneId(sceneId), name) };
-        EXPECT_CALL(consumer, handleNewScenesAvailable(sceneInfoVec, _, pubMode));
+        SceneInfo info(SceneId(sceneId), name, pubMode);
+        EXPECT_CALL(consumer, handleNewSceneAvailable(info, _));
         if (pubMode != EScenePublicationMode_LocalOnly)
-            EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(sceneInfoVec));
+            EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(SceneInfoVector{info}));
         sceneGraphComponent.sendPublishScene(SceneId(sceneId), pubMode, name);
     }
 
 protected:
     PlatformLock frameworkLock;
     SceneId localSceneId;
+    SceneInfo localSceneIdInfo;
     SceneInfoVector localSceneIdInfoVector;
+    SceneInfo localAndRemoteSceneIdInfo;
+    SceneInfoVector localAndRemoteSceneIdInfoVector;
     SceneId remoteSceneId;
     Guid localParticipantID;
     Guid remoteParticipantID;
     StrictMock<CommunicationSystemMock> communicationSystem;
     NiceMock<MockConnectionStatusUpdateNotifier> connectionStatusUpdateNotifier;
+    NiceMock<ResourceProviderComponentMock> resourceComponent;
     SceneGraphComponent sceneGraphComponent;
-    SceneRendererServiceHandlerMock consumer;
+    StrictMock<SceneRendererHandlerMock> consumer;
     StrictMock<SceneProviderEventConsumerMock> eventConsumer;
 };
 
 
 TEST_F(ASceneGraphComponent, sendsSceneToLocalConsumer)
 {
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
 
     EXPECT_CALL(consumer, handleInitializeScene(_, _)).Times(1);
-    sceneGraphComponent.sendCreateScene(localParticipantID, SceneInfo(SceneId(666u), "test scene"), EScenePublicationMode_LocalAndRemote);
+    sceneGraphComponent.sendCreateScene(localParticipantID, SceneId(666u), EScenePublicationMode_LocalAndRemote);
 }
 
 TEST_F(ASceneGraphComponent, doesntSendSceneIfLocalConsumerIsntSet)
 {
     EXPECT_CALL(consumer, handleInitializeScene(_, localParticipantID)).Times(0);
 
-    sceneGraphComponent.sendCreateScene(localParticipantID, SceneInfo(SceneId(666u), "test scene"), EScenePublicationMode_LocalAndRemote);
+    sceneGraphComponent.sendCreateScene(localParticipantID, SceneId(666u), EScenePublicationMode_LocalAndRemote);
 }
 
 TEST_F(ASceneGraphComponent, sendsSceneToRemoteProvider)
 {
-    SceneInfo sceneInfo(SceneId(666u), "test scene");
-    EXPECT_CALL(communicationSystem, sendInitializeScene(remoteParticipantID, sceneInfo));
-    sceneGraphComponent.sendCreateScene(remoteParticipantID, sceneInfo, EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(communicationSystem, sendInitializeScene(remoteParticipantID, SceneId(666u)));
+    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneId(666u), EScenePublicationMode_LocalAndRemote);
 }
 
 TEST_F(ASceneGraphComponent, publishesSceneAtLocalConsumerInLocalAndRemoteMode)
 {
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
 
-    EXPECT_CALL(consumer, handleNewScenesAvailable(localSceneIdInfoVector, _, EScenePublicationMode_LocalAndRemote)).Times(1);
-    EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(localSceneIdInfoVector));
+    EXPECT_CALL(consumer, handleNewSceneAvailable(localAndRemoteSceneIdInfo, _));
+    EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(localAndRemoteSceneIdInfoVector));
     sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode_LocalAndRemote, "sceneName");
 }
 
 TEST_F(ASceneGraphComponent, publishesSceneAtLocalConsumerInLocalOnlyMode)
 {
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
 
-    EXPECT_CALL(consumer, handleNewScenesAvailable(_, _, EScenePublicationMode_LocalOnly)).Times(1);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(localSceneIdInfo, _));
     sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode_LocalOnly, "sceneName");
 }
 
 TEST_F(ASceneGraphComponent, doesntPublishSceneIfLocalConsumerIsntSet)
 {
-    EXPECT_CALL(consumer, handleNewScenesAvailable(_, _, EScenePublicationMode_LocalAndRemote)).Times(0);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(localAndRemoteSceneIdInfo, _)).Times(0);
     EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(localSceneIdInfoVector));
     sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode_LocalAndRemote, "sceneName");
 }
@@ -125,27 +152,26 @@ TEST_F(ASceneGraphComponent, alreadyPublishedSceneGetsRepublishedWhenLocalConsum
 {
     sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode_LocalOnly, "sceneName");
 
-    EXPECT_CALL(consumer, handleNewScenesAvailable(localSceneIdInfoVector, _, EScenePublicationMode_LocalOnly));
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(localSceneIdInfo, _));
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
 }
 
 TEST_F(ASceneGraphComponent, unpublishesSceneAtLocalConsumer)
 {
-    const SceneId sceneId(1ull << 63);
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    const SceneId sceneId(999);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
 
     SceneInfoVector newScenes(1, SceneInfo(sceneId, "sceneName"));
-    EXPECT_CALL(consumer, handleNewScenesAvailable(newScenes, _, EScenePublicationMode_LocalOnly));
+    EXPECT_CALL(consumer, handleNewSceneAvailable(SceneInfo(sceneId, "sceneName", EScenePublicationMode_LocalOnly), _));
     sceneGraphComponent.sendPublishScene(sceneId, EScenePublicationMode_LocalOnly, "sceneName");
 
-    SceneInfoVector unavailableScenes(1, SceneInfo(sceneId, "sceneName"));
-    EXPECT_CALL(consumer, handleScenesBecameUnavailable(unavailableScenes, _));
+    EXPECT_CALL(consumer, handleSceneBecameUnavailable(sceneId, _));
     sceneGraphComponent.sendUnpublishScene(sceneId, EScenePublicationMode_LocalOnly);
 }
 
 TEST_F(ASceneGraphComponent, doesntUnpublishSceneIfLocalConsumerIsntSet)
 {
-    EXPECT_CALL(consumer, handleScenesBecameUnavailable(_, _)).Times(0);
+    EXPECT_CALL(consumer, handleSceneBecameUnavailable(_, _)).Times(0);
 
     const SceneId sceneId(1ull << 63);
     sceneGraphComponent.sendPublishScene(sceneId, EScenePublicationMode_LocalOnly, "sceneName");
@@ -197,7 +223,7 @@ TEST_F(ASceneGraphComponent, doesNotSendAvailableSceneToNewParticipantIfLocalOnl
 
 TEST_F(ASceneGraphComponent, subscribeSceneAtRemoteConsumer)
 {
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
     SceneId sceneId;
     EXPECT_CALL(communicationSystem, sendSubscribeScene(remoteParticipantID, sceneId));
     sceneGraphComponent.subscribeScene(remoteParticipantID, sceneId);
@@ -206,7 +232,7 @@ TEST_F(ASceneGraphComponent, subscribeSceneAtRemoteConsumer)
 TEST_F(ASceneGraphComponent, unsubscribesSceneAtRemoteConsumer)
 {
     const SceneId sceneId(1ull << 63);
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
     EXPECT_CALL(communicationSystem, sendSubscribeScene(_, _));
     sceneGraphComponent.subscribeScene(remoteParticipantID, sceneId);
     EXPECT_CALL(communicationSystem, sendUnsubscribeScene(remoteParticipantID, sceneId));
@@ -215,181 +241,135 @@ TEST_F(ASceneGraphComponent, unsubscribesSceneAtRemoteConsumer)
 
 TEST_F(ASceneGraphComponent, sendsSceneActionToLocalConsumer)
 {
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
 
-    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId_TestAction }));
-    EXPECT_CALL(consumer, handleSceneActionList_rvr(_, _, _, _)).Times(1);
-    sceneGraphComponent.sendSceneActionList({ localParticipantID }, std::move(list), SceneId(666u), EScenePublicationMode_LocalOnly);
+    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction }));
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(666u), _, localParticipantID)).WillOnce([&](auto, const auto& update, auto) {
+        EXPECT_EQ(list, update.actions);
+    });
+    SceneUpdate update;
+    update.actions = list.copy();
+    sceneGraphComponent.sendSceneUpdate({ localParticipantID }, std::move(update), SceneId(666u), EScenePublicationMode_LocalOnly);
 }
 
 TEST_F(ASceneGraphComponent, doesntSendSceneActionIfLocalConsumerIsntSet)
 {
-    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId_TestAction }));
-    EXPECT_CALL(consumer, handleSceneActionList_rvr(_, _, _, _)).Times(0);
-    sceneGraphComponent.sendSceneActionList({ localParticipantID }, std::move(list), SceneId(666u), EScenePublicationMode_LocalOnly);
+    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction }));
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(_, _, _)).Times(0);
+    SceneUpdate update;
+    update.actions = list.copy();
+    sceneGraphComponent.sendSceneUpdate({ localParticipantID }, std::move(update), SceneId(666u), EScenePublicationMode_LocalOnly);
 }
 
 TEST_F(ASceneGraphComponent, sendsSceneActionToRemoteProvider)
 {
     SceneId sceneId;
     EXPECT_CALL(communicationSystem, sendInitializeScene(_, _)).Times(1);
-    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneInfo{ sceneId }, EScenePublicationMode_LocalAndRemote);
+    sceneGraphComponent.sendCreateScene(remoteParticipantID, sceneId, EScenePublicationMode_LocalAndRemote);
 
-    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId_TestAction }));
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, sceneId, _, _));
-    sceneGraphComponent.sendSceneActionList({ remoteParticipantID }, std::move(list), sceneId, EScenePublicationMode_LocalAndRemote);
+    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction }));
+    expectSendSceneActionsToNetwork(remoteParticipantID, sceneId, list);
+    SceneUpdate update;
+    update.actions = list.copy();
+    sceneGraphComponent.sendSceneUpdate({ remoteParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalAndRemote);
 }
 
 TEST_F(ASceneGraphComponent, sendsAllSceneActionsAtOnceToRemoteProvider)
 {
-    SceneId sceneId;
+    SceneId sceneId(1);
     EXPECT_CALL(communicationSystem, sendInitializeScene(_, _)).Times(1);
-    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneInfo{ sceneId }, EScenePublicationMode_LocalAndRemote);
+    sceneGraphComponent.sendCreateScene(remoteParticipantID, sceneId, EScenePublicationMode_LocalAndRemote);
 
-    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId_TestAction, ESceneActionId_SetDataVector2fArray, ESceneActionId_AllocateNode }));
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, sceneId, _, _)).Times(1);
-    sceneGraphComponent.sendSceneActionList({ remoteParticipantID }, std::move(list), sceneId, EScenePublicationMode_LocalAndRemote);
+    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction, ESceneActionId::SetDataVector2fArray, ESceneActionId::AllocateNode }));
+    expectSendSceneActionsToNetwork(remoteParticipantID, sceneId, list);
+    SceneUpdate update;
+    update.actions = list.copy();
+    sceneGraphComponent.sendSceneUpdate({ remoteParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalAndRemote);
 }
 
-TEST_F(ASceneGraphComponent, doesNotsendSceneActionListToRemoteIfSceneWasPublishedLocalOnly)
+TEST_F(ASceneGraphComponent, doesNotsendSceneUpdateToRemoteIfSceneWasPublishedLocalOnly)
 {
-    const SceneId sceneId(1ull << 63);
+    const SceneId sceneId(111);
     sceneGraphComponent.sendPublishScene(sceneId, EScenePublicationMode_LocalOnly, "sceneName");
-    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId_TestAction }));
+    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction }));
 
-    sceneGraphComponent.sendSceneActionList({ localParticipantID }, std::move(list), sceneId, EScenePublicationMode_LocalOnly);
+    SceneUpdate update;
+    update.actions = list.copy();
+    sceneGraphComponent.sendSceneUpdate({ localParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalOnly);
 
     // expect noting for remote, check by strict mock
 }
 
+TEST_F(ASceneGraphComponent, canSendSceneActionsToLocalAndRemote)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+
+    const SceneId sceneId(456);
+    EXPECT_CALL(communicationSystem, sendInitializeScene(_, _)).Times(1);
+    sceneGraphComponent.sendCreateScene(remoteParticipantID, sceneId, EScenePublicationMode_LocalAndRemote);
+
+    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction }));
+    InSequence seq;
+    expectSendSceneActionsToNetwork(remoteParticipantID, sceneId, list);
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(sceneId, _, localParticipantID)).WillOnce([&](auto, const auto& update, auto) {
+        EXPECT_EQ(list, update.actions);
+    });
+    SceneUpdate update;
+    update.actions = list.copy();
+    sceneGraphComponent.sendSceneUpdate({ remoteParticipantID, localParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalAndRemote);
+}
+
 TEST_F(ASceneGraphComponent, canRepublishALocalOnlySceneToBeDistributedRemotely)
 {
-    const SceneId sceneId(1ull << 63);
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(33));
 
     // publish LocalOnly
-    EXPECT_CALL(consumer, handleNewScenesAvailable(_, _, EScenePublicationMode_LocalOnly));
-    sceneGraphComponent.sendPublishScene(sceneId, EScenePublicationMode_LocalOnly, "sceneName");
+    EXPECT_CALL(consumer, handleNewSceneAvailable(localSceneIdInfo, _));
+    sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode_LocalOnly, "sceneName");
     Mock::VerifyAndClearExpectations(&communicationSystem);
 
     // unpublish
-    EXPECT_CALL(consumer, handleScenesBecameUnavailable(_, _));
-    sceneGraphComponent.sendUnpublishScene(sceneId, EScenePublicationMode_LocalOnly);
+    EXPECT_CALL(consumer, handleSceneBecameUnavailable(_, _));
+    sceneGraphComponent.sendUnpublishScene(localSceneId, EScenePublicationMode_LocalOnly);
     Mock::VerifyAndClearExpectations(&communicationSystem);
     Mock::VerifyAndClearExpectations(&consumer);
 
     // publish LocalAndRemote
-    SceneInfoVector newScenes(1, SceneInfo(sceneId, "sceneName"));
-    EXPECT_CALL(consumer, handleNewScenesAvailable(newScenes, localParticipantID, EScenePublicationMode_LocalAndRemote));
+    SceneInfoVector newScenes(1, SceneInfo(localSceneId, "sceneName"));
+    EXPECT_CALL(consumer, handleNewSceneAvailable(localAndRemoteSceneIdInfo, localParticipantID));
     EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(newScenes));
-    sceneGraphComponent.sendPublishScene(sceneId, EScenePublicationMode_LocalAndRemote, "sceneName");
+    sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode_LocalAndRemote, "sceneName");
 }
 
 TEST_F(ASceneGraphComponent, canRepublishARemoteSceneToBeLocalOnly)
 {
-    const SceneId sceneId(1ull << 63);
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(33));
 
     // publish LocalAndRemote
-    SceneInfoVector knownScenes(1, SceneInfo(sceneId, "sceneName"));
-    EXPECT_CALL(consumer, handleNewScenesAvailable(knownScenes, localParticipantID, _));
-    EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(knownScenes));
-    sceneGraphComponent.sendPublishScene(sceneId, EScenePublicationMode_LocalAndRemote, "sceneName");
+    EXPECT_CALL(consumer, handleNewSceneAvailable(localAndRemoteSceneIdInfo, localParticipantID));
+    EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(localAndRemoteSceneIdInfoVector));
+    sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode_LocalAndRemote, "sceneName");
     Mock::VerifyAndClearExpectations(&communicationSystem);
     Mock::VerifyAndClearExpectations(&consumer);
 
     // unpublish
-    EXPECT_CALL(consumer, handleScenesBecameUnavailable(knownScenes, localParticipantID));
-    EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(knownScenes));
-    sceneGraphComponent.sendUnpublishScene(sceneId, EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleSceneBecameUnavailable(localSceneId, localParticipantID));
+    EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(localAndRemoteSceneIdInfoVector));
+    sceneGraphComponent.sendUnpublishScene(localSceneId, EScenePublicationMode_LocalAndRemote);
     Mock::VerifyAndClearExpectations(&communicationSystem);
     Mock::VerifyAndClearExpectations(&consumer);
 
     // publish LocalOnly
-    EXPECT_CALL(consumer, handleNewScenesAvailable(_, _, _));
-    sceneGraphComponent.sendPublishScene(sceneId, EScenePublicationMode_LocalOnly, "sceneName");
+    EXPECT_CALL(consumer, handleNewSceneAvailable(_, _));
+    sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode_LocalOnly, "sceneName");
     Mock::VerifyAndClearExpectations(&communicationSystem);
-}
-
-TEST_F(ASceneGraphComponent, sceneactionCounterIsAlwaysZeroWithLocalScenes)
-{
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
-
-    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId_TestAction }));
-    EXPECT_CALL(consumer, handleSceneActionList_rvr(_, _, 0u, _)).Times(5);
-    sceneGraphComponent.sendSceneActionList({ localParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalOnly);
-    sceneGraphComponent.sendSceneActionList({ localParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalOnly);
-    sceneGraphComponent.sendSceneActionList({ localParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalOnly);
-    sceneGraphComponent.sendSceneActionList({ localParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalOnly);
-    sceneGraphComponent.sendSceneActionList({ localParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalOnly);
-}
-
-TEST_F(ASceneGraphComponent, sceneactionCounterIsCountingUpForNOnLocalScenes)
-{
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
-    EXPECT_CALL(communicationSystem, sendInitializeScene(_, _)).Times(1);
-    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneInfo{SceneId(666u)}, EScenePublicationMode_LocalAndRemote);
-
-    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId_TestAction }));
-    testing::InSequence sequence;
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(666u), _, 1u)).WillOnce(Return (1u));
-    sceneGraphComponent.sendSceneActionList({ remoteParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalAndRemote);
-
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(666u), _, 2u)).WillOnce(Return(1u));
-    sceneGraphComponent.sendSceneActionList({ remoteParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalAndRemote);
-
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(666u), _, 3u)).WillOnce(Return(1u));
-    sceneGraphComponent.sendSceneActionList({ remoteParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalAndRemote);
-}
-
-TEST_F(ASceneGraphComponent, sceneactionCounterIsCountingAccordingToNumberOfSentChunks)
-{
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
-    EXPECT_CALL(communicationSystem, sendInitializeScene(_, _)).Times(1);
-    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneInfo{ SceneId(666u) }, EScenePublicationMode_LocalAndRemote);
-
-    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId_TestAction }));
-    testing::InSequence sequence;
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(666u), _, 1u)).WillOnce(Return(5u));
-    sceneGraphComponent.sendSceneActionList({ remoteParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalAndRemote);
-
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(666u), _, 6u)).WillOnce(Return(99u));
-    sceneGraphComponent.sendSceneActionList({ remoteParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalAndRemote);
-
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(666u), _, 105u));
-    sceneGraphComponent.sendSceneActionList({ remoteParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalAndRemote);
-}
-
-TEST_F(ASceneGraphComponent, sceneactionCounterIsWrappedAround)
-{
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
-    EXPECT_CALL(communicationSystem, sendInitializeScene(_, _)).Times(1);
-    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneInfo{ SceneId(666u) }, EScenePublicationMode_LocalAndRemote);
-
-    SceneActionCollection list(createFakeSceneActionCollectionFromTypes({ ESceneActionId_TestAction }));
-
-    testing::InSequence sequence;
-    // expected times to call 1...(wrap-1), so wrap-1 times
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(666u), _, _)).Times(SceneActionList_CounterWrapAround - 1).WillRepeatedly(Return(1u));
-    for (uint32_t i = 1; i < (SceneActionList_CounterWrapAround); ++i)
-    {
-        sceneGraphComponent.sendSceneActionList({ remoteParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalAndRemote);
-    }
-
-    // wrap around starts again at '1'
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(666u), _, 1u)).WillOnce(Return(1u));
-    sceneGraphComponent.sendSceneActionList({ remoteParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalAndRemote);
-
-    // normal counting again
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(666u), _, 2u)).WillOnce(Return(1u));
-    sceneGraphComponent.sendSceneActionList({ remoteParticipantID }, list.copy(), SceneId(666u), EScenePublicationMode_LocalAndRemote);
 }
 
 TEST_F(ASceneGraphComponent, disconnectFromNetworkBroadcastsScenesUnavailableOnNetworkOnly)
 {
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
     publishScene(1, "name", EScenePublicationMode_LocalAndRemote);
     EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(SceneInfoVector{ SceneInfo(SceneId(1), "name") }));
     sceneGraphComponent.disconnectFromNetwork();
@@ -397,7 +377,7 @@ TEST_F(ASceneGraphComponent, disconnectFromNetworkBroadcastsScenesUnavailableOnN
 
 TEST_F(ASceneGraphComponent, disconnectFromNetworkBroadcastsScenesUnavailableOnNetworkForAllRemoteScenes)
 {
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
     publishScene(1, "name1", EScenePublicationMode_LocalAndRemote);
     publishScene(5, "name2", EScenePublicationMode_LocalOnly);
     publishScene(3, "name3", EScenePublicationMode_LocalAndRemote);
@@ -413,7 +393,7 @@ TEST_F(ASceneGraphComponent, disconnectFromNetworkBroadcastsScenesUnavailableOnN
 
 TEST_F(ASceneGraphComponent, sendsPublishForNewParticipantsAfterDisconnect)
 {
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
     publishScene(1, "name", EScenePublicationMode_LocalAndRemote);
     EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(SceneInfoVector{ SceneInfo(SceneId(1), "name") }));
     sceneGraphComponent.disconnectFromNetwork();
@@ -422,16 +402,16 @@ TEST_F(ASceneGraphComponent, sendsPublishForNewParticipantsAfterDisconnect)
     sceneGraphComponent.newParticipantHasConnected(remoteParticipantID);
 }
 
-TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublishesAndResetsCountersForRemoteScenes)
+TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublishesRemoteScenes)
 {
     SceneInfo sceneInfo(SceneInfo(SceneId(1), "foo"));
     ClientScene scene(sceneInfo);
 
-    sceneGraphComponent.setSceneRendererServiceHandler(&consumer);
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.handleCreateScene(scene, false, eventConsumer);
 
     // subscribe local and remote
-    EXPECT_CALL(consumer, handleNewScenesAvailable(SceneInfoVector{ sceneInfo }, _, _));
+    EXPECT_CALL(consumer, handleNewSceneAvailable(sceneInfo, _));
     EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(SceneInfoVector{ sceneInfo }));
     sceneGraphComponent.handlePublishScene(SceneId(1), EScenePublicationMode_LocalAndRemote);
 
@@ -442,12 +422,12 @@ TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublish
     sceneGraphComponent.handleSubscribeScene(SceneId(1), localParticipantID);
 
     EXPECT_CALL(communicationSystem, sendInitializeScene(_, _));
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(1), _, 1));
+    EXPECT_CALL(communicationSystem, sendSceneUpdate(remoteParticipantID, SceneId(1), _));
 
     EXPECT_CALL(consumer, handleInitializeScene(sceneInfo, _));
-    EXPECT_CALL(consumer, handleSceneActionList_rvr(SceneId(1), _, 0, _));
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(1), _,  _));
 
-    const FlushTimeInformation flushTimesWithExpirationToPreventFlushOptimizazion {FlushTime::Clock::time_point {std::chrono::milliseconds{1}}, FlushTime::Clock::time_point {}};
+    const FlushTimeInformation flushTimesWithExpirationToPreventFlushOptimizazion {FlushTime::Clock::time_point {std::chrono::milliseconds{1}}, FlushTime::Clock::time_point {}, FlushTime::Clock::getClockType() };
     sceneGraphComponent.handleFlush(SceneId(1), flushTimesWithExpirationToPreventFlushOptimizazion, {});
 
     // disconnect
@@ -455,7 +435,7 @@ TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublish
     sceneGraphComponent.disconnectFromNetwork();
 
     // local flushing unaffected, nothing sent to network
-    EXPECT_CALL(consumer, handleSceneActionList_rvr(SceneId(1), _, 0, _));
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(1), _, _));
     sceneGraphComponent.handleFlush(SceneId(1), flushTimesWithExpirationToPreventFlushOptimizazion, {});
 
     // reconnect remote participant
@@ -463,27 +443,59 @@ TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublish
     sceneGraphComponent.newParticipantHasConnected(remoteParticipantID);
 
     EXPECT_CALL(communicationSystem, sendInitializeScene(_, _));
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(1), _, 1)).WillOnce(Return(1));
+    EXPECT_CALL(communicationSystem, sendSceneUpdate(remoteParticipantID, SceneId(1), _)).WillOnce(Return(1));
     sceneGraphComponent.handleSubscribeScene(SceneId(1), remoteParticipantID);
 
-    // flush again, remote now at flushCounter 2, local always 0
-    EXPECT_CALL(communicationSystem, sendSceneActionList(remoteParticipantID, SceneId(1), _, 2)).WillOnce(Return(1));
-    EXPECT_CALL(consumer, handleSceneActionList_rvr(SceneId(1), _, 0, _));
+    // flush again
+    EXPECT_CALL(communicationSystem, sendSceneUpdate(remoteParticipantID, SceneId(1), _)).WillOnce(Return(1));
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(1), _, _));
     sceneGraphComponent.handleFlush(SceneId(1), flushTimesWithExpirationToPreventFlushOptimizazion, {});
 
     // cleanup
     EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(SceneInfoVector{ sceneInfo }));
-    EXPECT_CALL(consumer, handleScenesBecameUnavailable(SceneInfoVector{ sceneInfo }, _));
+    EXPECT_CALL(consumer, handleSceneBecameUnavailable(sceneInfo.sceneID, _));
     sceneGraphComponent.handleRemoveScene(SceneId(1));
 }
 
+
+    TEST_F(ASceneGraphComponent, forwardsResourceAvailabilityEventsToCorrectHandler)
+    {
+        StrictMock<SceneProviderEventConsumerMock> scene2Consumer;
+
+        ResourceAvailabilityEvent event1;
+        event1.sceneid = SceneId{ 123 };
+        ResourceAvailabilityEvent event2;
+        event2.sceneid = SceneId{ 10000 };
+        SceneInfo sceneInfo1(SceneInfo(SceneId{ 123 }, "foo"));
+        ClientScene scene1(sceneInfo1);
+        sceneGraphComponent.handleCreateScene(scene1, false, eventConsumer);
+        SceneInfo sceneInfo2(SceneInfo(SceneId{ 10000 }, "bar"));
+        ClientScene scene2(sceneInfo2);
+        sceneGraphComponent.handleCreateScene(scene2, false, scene2Consumer);
+
+        InSequence seq;
+        EXPECT_CALL(eventConsumer, handleResourceAvailabilityEvent(_, _)).Times(1);
+        sceneGraphComponent.sendResourceAvailabilityEvent(localParticipantID, event1);
+        EXPECT_CALL(scene2Consumer, handleResourceAvailabilityEvent(_, _)).Times(1);
+        sceneGraphComponent.sendResourceAvailabilityEvent(localParticipantID, event2);
+
+        EXPECT_CALL(eventConsumer, handleResourceAvailabilityEvent(_, _)).Times(1);
+        std::vector<Byte> data1;
+        event1.writeToBlob(data1);
+        sceneGraphComponent.handleRendererEvent(event1.sceneid, data1, remoteParticipantID);
+
+        EXPECT_CALL(scene2Consumer, handleResourceAvailabilityEvent(_, _)).Times(1);
+        std::vector<Byte> data2;
+        event2.writeToBlob(data2);
+        sceneGraphComponent.handleRendererEvent(event2.sceneid, data2, remoteParticipantID);
+    }
 TEST_F(ASceneGraphComponent, sendSceneReferenceEventViaCommSystemForRemoteParticipant)
 {
     SceneReferenceEvent event(SceneId{ 123 });
     event.type = SceneReferenceEventType::SceneFlushed;
     event.referencedScene = SceneId{ 456 };
     event.tag = SceneVersionTag{ 1000 };
-    EXPECT_CALL(communicationSystem, sendRendererEvent(remoteParticipantID, SceneId{ 123 }, _)).WillOnce([&event](const Guid&, const SceneId& sceneId, const std::vector<Byte>& data) -> bool
+    EXPECT_CALL(communicationSystem, sendRendererEvent(remoteParticipantID, SceneId{ 123 }, _)).WillOnce([&event](const Guid&, const SceneId& sceneId , const std::vector<Byte>& data) -> bool
     {
         SceneReferenceEvent e{ sceneId };
         e.readFromBlob(data);
@@ -495,6 +507,22 @@ TEST_F(ASceneGraphComponent, sendSceneReferenceEventViaCommSystemForRemotePartic
         return true;
     });
     sceneGraphComponent.sendSceneReferenceEvent(remoteParticipantID, event);
+}
+
+TEST_F(ASceneGraphComponent, sendResourceAvailabilityEventViaCommSystemForRemoteParticipant)
+{
+    ResourceAvailabilityEvent event;
+    event.sceneid = SceneId { 123 };
+    EXPECT_CALL(communicationSystem, sendRendererEvent(remoteParticipantID, SceneId{ 123 },_)).WillOnce([&event](const Guid&, const SceneId& sceneId, const std::vector<Byte>& data) -> bool
+    {
+        ResourceAvailabilityEvent e;
+        e.readFromBlob(data);
+        EXPECT_EQ(e.sceneid, event.sceneid);
+        EXPECT_EQ(e.sceneid, sceneId);
+
+        return true;
+    });
+    sceneGraphComponent.sendResourceAvailabilityEvent(remoteParticipantID, event);
 }
 
 TEST_F(ASceneGraphComponent, sendSceneReferenceEventForLocalParticipantCallsHandlerDirectly)
@@ -516,9 +544,34 @@ TEST_F(ASceneGraphComponent, sendSceneReferenceEventForLocalParticipantCallsHand
     sceneGraphComponent.sendSceneReferenceEvent(localParticipantID, event);
 }
 
+TEST_F(ASceneGraphComponent, sendResourceAvailabilityEventForLocalParticipantCallsHandlerDirectly)
+{
+    SceneReferenceEvent event(SceneId { 123 });
+    SceneInfo sceneInfo(SceneInfo(SceneId{ 123 }, "foo"));
+    ClientScene scene(sceneInfo);
+    sceneGraphComponent.handleCreateScene(scene, false, eventConsumer);
+    event.type = SceneReferenceEventType::SceneFlushed;
+    event.referencedScene = SceneId{ 456 };
+    event.tag = SceneVersionTag{ 1000 };
+    EXPECT_CALL(eventConsumer, handleSceneReferenceEvent(_, localParticipantID)).WillOnce([&event](SceneReferenceEvent const& e, const Guid&)
+    {
+        EXPECT_EQ(e.masterSceneId, event.masterSceneId);
+        EXPECT_EQ(e.type, event.type);
+        EXPECT_EQ(e.referencedScene, event.referencedScene);
+        EXPECT_EQ(e.tag, event.tag);
+    });
+    sceneGraphComponent.sendSceneReferenceEvent(localParticipantID, event);
+}
+
 TEST_F(ASceneGraphComponent, doesNotSendSceneReferenceEventForLocalParticipantCallsHandlerDirectlyIfSceneUnknown)
 {
     SceneReferenceEvent event(SceneId{ 123 });
+    sceneGraphComponent.sendSceneReferenceEvent(localParticipantID, event);
+}
+
+TEST_F(ASceneGraphComponent, doesNotSendResourceAvailabilityEventForLocalParticipantCallsHandlerDirectlyIfSceneUnknown)
+{
+    SceneReferenceEvent event(SceneId { 123 });
     sceneGraphComponent.sendSceneReferenceEvent(localParticipantID, event);
 }
 
@@ -543,12 +596,39 @@ TEST_F(ASceneGraphComponent, unpacksRendererEventToSceneReferenceEventAndForward
     sceneGraphComponent.handleRendererEvent(event.masterSceneId, data, remoteParticipantID);
 }
 
+TEST_F(ASceneGraphComponent, unpacksRendererEventToResourceAvailabilityEventAndForwardsToHandler)
+{
+    ResourceAvailabilityEvent event;
+    event.sceneid = SceneId { 123 };
+    SceneInfo sceneInfo(SceneInfo(SceneId{ 123 }, "foo"));
+    ClientScene scene(sceneInfo);
+    sceneGraphComponent.handleCreateScene(scene, false, eventConsumer);
+    event.availableResources.push_back(ResourceContentHash(1,2));
+    EXPECT_CALL(eventConsumer, handleResourceAvailabilityEvent(_, localParticipantID)).WillOnce([&event](ResourceAvailabilityEvent const& e, const Guid&)
+    {
+        EXPECT_EQ(e.sceneid, event.sceneid);
+        EXPECT_EQ(e.availableResources, event.availableResources);
+    });
+    std::vector<Byte> data;
+    event.writeToBlob(data);
+    sceneGraphComponent.handleRendererEvent(event.sceneid, data, remoteParticipantID);
+}
+
 TEST_F(ASceneGraphComponent, doesNotForwardRendererEventIfSceneUnknown)
 {
     SceneReferenceEvent event(SceneId{ 123 });
     std::vector<Byte> data;
     event.writeToBlob(data);
     sceneGraphComponent.handleRendererEvent(event.masterSceneId, data, remoteParticipantID);
+}
+
+TEST_F(ASceneGraphComponent, doesNotForwardResourceAvailabilityRendererEventIfSceneUnknown)
+{
+    ResourceAvailabilityEvent event;
+    event.sceneid = SceneId { 123 };
+    std::vector<Byte> data;
+    event.writeToBlob(data);
+    sceneGraphComponent.handleRendererEvent(event.sceneid, data, remoteParticipantID);
 }
 
 TEST_F(ASceneGraphComponent, forwardsEventsToCorrectHandler)
@@ -579,4 +659,300 @@ TEST_F(ASceneGraphComponent, forwardsEventsToCorrectHandler)
     std::vector<Byte> data2;
     event1.writeToBlob(data2);
     sceneGraphComponent.handleRendererEvent(event2.masterSceneId, data2, remoteParticipantID);
+}
+
+TEST(AERendererToClientEventType, canBePrinted)
+{
+    EXPECT_EQ("ERendererToClientEventType::SceneReferencingEvent", StringOutputStream::ToString(ERendererToClientEventType::SceneReferencingEvent));
+    EXPECT_EQ("ERendererToClientEventType::ResourcesAvailableAtRendererEvent", StringOutputStream::ToString(ERendererToClientEventType::ResourcesAvailableAtRendererEvent));
+}
+
+TEST_F(ASceneGraphComponent, forwardsPublishFromRemoteToConsumer)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(33));
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_33(SceneId(1), "", EScenePublicationMode_LocalAndRemote);
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_33, Guid(33)));
+    sceneGraphComponent.handleNewScenesAvailable({info_33}, Guid(33));
+
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, forwardsUnpublishFromRemoteToConsumer)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(33));
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_33(SceneId(1), "", EScenePublicationMode_LocalAndRemote);
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_33, Guid(33)));
+    sceneGraphComponent.handleNewScenesAvailable({info_33}, Guid(33));
+
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    EXPECT_CALL(consumer, handleSceneBecameUnavailable(info_22.sceneID, Guid(22)));
+    sceneGraphComponent.handleScenesBecameUnavailable({info_22}, Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, unpublishesRemoteScenesToConsumerOnParticipantDisconnect)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(33));
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_33(SceneId(1), "", EScenePublicationMode_LocalAndRemote);
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_33, _));
+    sceneGraphComponent.handleNewScenesAvailable({info_33}, Guid(33));
+
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, _));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    EXPECT_CALL(consumer, handleSceneBecameUnavailable(info_22.sceneID, Guid(22)));
+    sceneGraphComponent.participantHasDisconnected(Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, ignoresDuplicatePublishFromOtherRemote)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+    sceneGraphComponent.newParticipantHasConnected(Guid(33));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(33));
+}
+
+TEST_F(ASceneGraphComponent, unpublishesFirstOnDuplicatePublishFromSameRemote)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    EXPECT_CALL(consumer, handleSceneBecameUnavailable(info_22.sceneID, Guid(22)));
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, ignoresDuplcateUnpublishFromRemote)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    EXPECT_CALL(consumer, handleSceneBecameUnavailable(info_22.sceneID, Guid(22)));
+    sceneGraphComponent.handleScenesBecameUnavailable({info_22}, Guid(22));
+    sceneGraphComponent.handleScenesBecameUnavailable({info_22}, Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, forwardsInitializeSceneToConsumer)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    EXPECT_CALL(consumer, handleInitializeScene(info_22, Guid(22)));
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, ignoresInitializeSceneForUnknownScene)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, ignoresInitializeSceneFromWrongProvider)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+    sceneGraphComponent.newParticipantHasConnected(Guid(33));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(33));
+}
+
+TEST_F(ASceneGraphComponent, forwardsSceneActionListFromRemote)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    EXPECT_CALL(consumer, handleInitializeScene(info_22, Guid(22)));
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(22));
+
+    SceneActionCollection actions_1(createFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction, ESceneActionId::Flush }));
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(2), _, Guid(22))).WillOnce([&](const auto&, const auto& update, const auto&) {
+        EXPECT_EQ(actions_1, update.actions);
+    });
+    const auto actionBlobs_1 = actionsToChunks(actions_1);
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), actionBlobs_1[0], Guid(22));
+
+    SceneActionCollection actions_2(createFakeSceneActionCollectionFromTypes({ ESceneActionId::CompoundRenderable, ESceneActionId::Flush }));
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(2), _, Guid(22))).WillOnce([&](const auto&, const auto& update, const auto&) {
+        EXPECT_EQ(actions_2, update.actions);
+    });
+    const auto actionBlobs_2 = actionsToChunks(actions_2);
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), actionBlobs_2[0], Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, ignoreSceneActionsFromRemoteForUnpublishedScene)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneActionCollection actions_1(createFakeSceneActionCollectionFromTypes({ ESceneActionId::Flush }));
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), actionsToChunks(actions_1)[0], Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, ignoreSceneActionsFromRemoteWithoutInitializeScene)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    SceneActionCollection actions_1(createFakeSceneActionCollectionFromTypes({ ESceneActionId::Flush }));
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), actionsToChunks(actions_1)[0], Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, ignoreSceneActionsFromRemoteFromWrongProvider)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+    sceneGraphComponent.newParticipantHasConnected(Guid(33));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    EXPECT_CALL(consumer, handleInitializeScene(info_22, Guid(22)));
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(22));
+
+    SceneActionCollection actions_1(createFakeSceneActionCollectionFromTypes({ ESceneActionId::Flush }));
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), actionsToChunks(actions_1)[0], Guid(33));
+}
+
+TEST_F(ASceneGraphComponent, ignoreSceneActionsFromRemoteWithEmptyData)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    EXPECT_CALL(consumer, handleInitializeScene(info_22, Guid(22)));
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(22));
+
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), {}, Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, stopsDeserilizationFromRemotAfterInvalidPacket)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    EXPECT_CALL(consumer, handleInitializeScene(info_22, Guid(22)));
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(22));
+
+    SceneActionCollection actions_1(createFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction, ESceneActionId::Flush }));
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(2), _, Guid(22))).WillOnce([&](const auto&, const auto& update, const auto&) {
+        EXPECT_EQ(actions_1, update.actions);
+    });
+    const auto actionBlobs_1 = actionsToChunks(actions_1);
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), actionBlobs_1[0], Guid(22));
+
+    // break it
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), {0}, Guid(22));
+
+    // expect nothing
+    SceneActionCollection actions_2(createFakeSceneActionCollectionFromTypes({ ESceneActionId::Flush }));
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), actionsToChunks(actions_2)[0], Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, brokenActionDeserilizeFromRemoteIsClearOnNextInitialize)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    EXPECT_CALL(consumer, handleInitializeScene(info_22, Guid(22)));
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(22));
+
+    // break it
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), {0}, Guid(22));
+
+    EXPECT_CALL(consumer, handleInitializeScene(info_22, Guid(22)));
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(22));
+
+    SceneActionCollection actions_1(createFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction, ESceneActionId::Flush }));
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(2), _, Guid(22))).WillOnce([&](const auto&, const auto& update, const auto&) {
+        EXPECT_EQ(actions_1, update.actions);
+    });
+    const auto actionBlobs_1 = actionsToChunks(actions_1);
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), actionBlobs_1[0], Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, canHandleSceneActionFromRemoteSplitInMultipleChunks)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22));
+
+    EXPECT_CALL(consumer, handleInitializeScene(info_22, Guid(22)));
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(22));
+
+    SceneActionCollection actions;
+    actions.getRawDataForDirectWriting().resize(100);
+    actions.beginWriteSceneAction(ESceneActionId::Flush);
+
+    const auto actionBlobs = actionsToChunks(actions, 80);
+    EXPECT_EQ(2u, actionBlobs.size());
+
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(2), _, Guid(22))).WillOnce([&](const auto&, const auto& update, const auto&) {
+        EXPECT_EQ(actions, update.actions);
+    });
+    for (const auto& b : actionBlobs)
+        sceneGraphComponent.handleSceneUpdate(SceneId(2), b, Guid(22));
 }

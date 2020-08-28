@@ -12,7 +12,7 @@ from ramses_test_framework.ramses_test_extensions import with_ramses_process_che
 from ramses_test_framework.targets.target import DEFAULT_TEST_SURFACE
 
 
-class TestClass(test_classes.OnAllDefaultTargetsTest):
+class TestRendererWithDstRect(test_classes.OnSelectedTargetsTest):
 
     @with_ramses_process_check
     def impl_setUp(self):

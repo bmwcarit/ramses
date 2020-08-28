@@ -44,7 +44,7 @@ namespace ramses_internal
         UInt32                  width = 0u;
         UInt32                  height = 0u;
         ERenderBufferType       type = ERenderBufferType_InvalidBuffer;
-        ETextureFormat          format = ETextureFormat_Invalid;
+        ETextureFormat          format = ETextureFormat::Invalid;
         ERenderBufferAccessMode accessMode = ERenderBufferAccessMode_Invalid;
         UInt32                  sampleCount = 0u;
     };

@@ -7,18 +7,19 @@
 //  -------------------------------------------------------------------------
 
 #include "SceneReferencing/SceneReferenceEvent.h"
+#include "Components/ERendererToClientEventType.h"
 
 namespace ramses_internal
 {
     template<class T>
-    void write(std::vector<Byte>::iterator& where, T const& value)
+    inline void write(std::vector<Byte>::iterator& where, T const& value)
     {
         std::memcpy(&(*where), &value, sizeof(T));
         where += sizeof(T);
     }
 
     template<class T>
-    void read(std::vector<Byte>::const_iterator& where, T& value)
+    inline void read(std::vector<Byte>::const_iterator& where, T& value)
     {
         std::memcpy(&value, &(*where), sizeof(T));
         where += sizeof(T);
@@ -29,6 +30,9 @@ namespace ramses_internal
         assert(blob.size() == serializedSize);
 
         auto it = blob.cbegin();
+        ERendererToClientEventType eventType;
+        read(it, eventType);
+        assert(eventType == ERendererToClientEventType::SceneReferencingEvent);
 
         read(it, type);
         read(it, referencedScene);
@@ -49,7 +53,7 @@ namespace ramses_internal
 
         blob.resize(serializedSize);
         auto it = blob.begin();
-
+        write(it, ERendererToClientEventType::SceneReferencingEvent);
         write(it, type);
         write(it, referencedScene);
         write(it, consumerScene);

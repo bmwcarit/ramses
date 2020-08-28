@@ -25,6 +25,8 @@ namespace ramses_internal
     {
         CHECK_RETURN_ERR(parseLinkerObjectsForStage(program->getIntermediate(EShLangVertex)->getTreeRoot(), EShaderStage::Vertex)); // Parse data for vertex stage
         CHECK_RETURN_ERR(parseLinkerObjectsForStage(program->getIntermediate(EShLangFragment)->getTreeRoot(), EShaderStage::Fragment)); // Parse data for fragment stage
+        if(program->getIntermediate(EShLangGeometry))
+            CHECK_RETURN_ERR(parseLinkerObjectsForStage(program->getIntermediate(EShLangGeometry)->getTreeRoot(), EShaderStage::Geometry)); // Parse data for geometry stage
         CHECK_RETURN_ERR(replaceVertexAttributeWithBufferVariant()); // Post-process vertex attributes
         CHECK_RETURN_ERR(makeUniformsUnique()); // Post-process uniforms which are present in both stages
         return true;
@@ -224,20 +226,20 @@ namespace ramses_internal
         {
             switch (input.dataType)
             {
-            case EDataType_UInt16:
-                input.dataType = EDataType_UInt16Buffer;
+            case EDataType::UInt16:
+                input.dataType = EDataType::UInt16Buffer;
                 continue;
-            case EDataType_Float:
-                input.dataType = EDataType_FloatBuffer;
+            case EDataType::Float:
+                input.dataType = EDataType::FloatBuffer;
                 continue;
-            case EDataType_Vector2F:
-                input.dataType = EDataType_Vector2Buffer;
+            case EDataType::Vector2F:
+                input.dataType = EDataType::Vector2Buffer;
                 continue;
-            case EDataType_Vector3F:
-                input.dataType = EDataType_Vector3Buffer;
+            case EDataType::Vector3F:
+                input.dataType = EDataType::Vector3Buffer;
                 continue;
-            case EDataType_Vector4F:
-                input.dataType = EDataType_Vector4Buffer;
+            case EDataType::Vector4F:
+                input.dataType = EDataType::Vector4Buffer;
                 continue;
             default:
                 m_message << input.inputName << ": unknown base type for attribute buffer type " << EnumToString(input.dataType);
@@ -257,17 +259,16 @@ namespace ramses_internal
 
         if (basicType == glslang::EbtSampler)
         {
-            input.dataType = EDataType_TextureSampler;
             switch (type.getSampler().dim)
             {
             case glslang::Esd2D:
-                input.textureType = EEffectInputTextureType_Texture2D;
+                input.dataType = EDataType::TextureSampler2D;
                 return true;
             case glslang::Esd3D:
-                input.textureType = EEffectInputTextureType_Texture3D;
+                input.dataType = EDataType::TextureSampler3D;
                 return true;
             case glslang::EsdCube:
-                input.textureType = EEffectInputTextureType_TextureCube;
+                input.dataType = EDataType::TextureSamplerCube;
                 return true;
             default:
                 m_message << input.inputName << ": unknown sampler dimension " << type.getSampler().getString().c_str();
@@ -284,13 +285,13 @@ namespace ramses_internal
                 switch (vectorSize)
                 {
                 case 2:
-                    input.dataType = EDataType_Vector2F;
+                    input.dataType = EDataType::Vector2F;
                     return true;
                 case 3:
-                    input.dataType = EDataType_Vector3F;
+                    input.dataType = EDataType::Vector3F;
                     return true;
                 case 4:
-                    input.dataType = EDataType_Vector4F;
+                    input.dataType = EDataType::Vector4F;
                     return true;
                 }
                 break;
@@ -298,13 +299,13 @@ namespace ramses_internal
                 switch (vectorSize)
                 {
                 case 2:
-                    input.dataType = EDataType_Vector2I;
+                    input.dataType = EDataType::Vector2I;
                     return true;
                 case 3:
-                    input.dataType = EDataType_Vector3I;
+                    input.dataType = EDataType::Vector3I;
                     return true;
                 case 4:
-                    input.dataType = EDataType_Vector4I;
+                    input.dataType = EDataType::Vector4I;
                     return true;
                 }
                 break;
@@ -323,13 +324,13 @@ namespace ramses_internal
                 switch (rows)
                 {
                 case 2:
-                    input.dataType = EDataType_Matrix22F;
+                    input.dataType = EDataType::Matrix22F;
                     return true;
                 case 3:
-                    input.dataType = EDataType_Matrix33F;
+                    input.dataType = EDataType::Matrix33F;
                     return true;
                 case 4:
-                    input.dataType = EDataType_Matrix44F;
+                    input.dataType = EDataType::Matrix44F;
                     return true;
                 default:
                     assert(false);
@@ -349,13 +350,13 @@ namespace ramses_internal
             {
             case glslang::EbtFloat:
             case glslang::EbtDouble:
-                input.dataType = EDataType_Float;
+                input.dataType = EDataType::Float;
                 return true;
             case glslang::EbtInt:
-                input.dataType = EDataType_Int32;
+                input.dataType = EDataType::Int32;
                 return true;
             case glslang::EbtUint:
-                input.dataType = EDataType_UInt32;
+                input.dataType = EDataType::UInt32;
                 return true;
             default:
                 m_message << input.inputName << ": unknown scalar base type " << type.getBasicTypeString().c_str();
@@ -368,7 +369,7 @@ namespace ramses_internal
     bool GlslToEffectConverter::setSemanticsOnInput(EffectInputInformation& input) const
     {
         assert(input.inputName.size() != 0);
-        assert(input.dataType != EDataType_NUMBER_OF_ELEMENTS);
+        assert(input.dataType != EDataType::NUMBER_OF_ELEMENTS);
         if (const EFixedSemantics* semantic = m_semanticInputs.get(input.inputName))
         {
             if (!IsSemanticCompatibleWithDataType(*semantic, input.dataType))

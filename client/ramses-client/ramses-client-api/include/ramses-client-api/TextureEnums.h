@@ -36,71 +36,71 @@ namespace ramses
     };
 
     /// Texture data format
-    enum ETextureFormat
+    enum class ETextureFormat
     {
-        ETextureFormat_Invalid = 0,
+        Invalid = 0,
 
-        ETextureFormat_R8,
+        R8,
 
-        ETextureFormat_RG8,
+        RG8,
 
-        ETextureFormat_RGB8,
-        ETextureFormat_RGB565,
+        RGB8,
+        RGB565,
 
-        ETextureFormat_RGBA8,
-        ETextureFormat_RGBA4,
-        ETextureFormat_RGBA5551,
+        RGBA8,
+        RGBA4,
+        RGBA5551,
 
-        ETextureFormat_ETC2RGB,
-        ETextureFormat_ETC2RGBA,
+        ETC2RGB,
+        ETC2RGBA,
 
-        ETextureFormat_R16F,
-        ETextureFormat_R32F,
-        ETextureFormat_RG16F,
-        ETextureFormat_RG32F,
-        ETextureFormat_RGB16F,
-        ETextureFormat_RGB32F,
-        ETextureFormat_RGBA16F,
-        ETextureFormat_RGBA32F,
+        R16F,
+        R32F,
+        RG16F,
+        RG32F,
+        RGB16F,
+        RGB32F,
+        RGBA16F,
+        RGBA32F,
 
-        ETextureFormat_SRGB8,
-        ETextureFormat_SRGB8_ALPHA8,
+        SRGB8,
+        SRGB8_ALPHA8,
 
         // ASTC compressed texture formats - USE WITH CAUTION!
         // ASTC depends on GL ES 3.0 extensions "GL_KHR_texture_compression_astc_hdr" and "GL_KHR_texture_compression_astc_ldr"
         // If the drivers don't support these extensions, expect asserts in the renderer (or black screen in release build)
         // Important note: the "RGBA" in the name only distinguishes between RGBA and sRGBA. The channel count and format are
         // defined internally by the compression algorithm. Refer to the documentation of ASTC extension from above for more details
-        ETextureFormat_ASTC_RGBA_4x4,
-        ETextureFormat_ASTC_RGBA_5x4,
-        ETextureFormat_ASTC_RGBA_5x5,
-        ETextureFormat_ASTC_RGBA_6x5,
-        ETextureFormat_ASTC_RGBA_6x6,
-        ETextureFormat_ASTC_RGBA_8x5,
-        ETextureFormat_ASTC_RGBA_8x6,
-        ETextureFormat_ASTC_RGBA_8x8,
-        ETextureFormat_ASTC_RGBA_10x5,
-        ETextureFormat_ASTC_RGBA_10x6,
-        ETextureFormat_ASTC_RGBA_10x8,
-        ETextureFormat_ASTC_RGBA_10x10,
-        ETextureFormat_ASTC_RGBA_12x10,
-        ETextureFormat_ASTC_RGBA_12x12,
-        ETextureFormat_ASTC_SRGBA_4x4,
-        ETextureFormat_ASTC_SRGBA_5x4,
-        ETextureFormat_ASTC_SRGBA_5x5,
-        ETextureFormat_ASTC_SRGBA_6x5,
-        ETextureFormat_ASTC_SRGBA_6x6,
-        ETextureFormat_ASTC_SRGBA_8x5,
-        ETextureFormat_ASTC_SRGBA_8x6,
-        ETextureFormat_ASTC_SRGBA_8x8,
-        ETextureFormat_ASTC_SRGBA_10x5,
-        ETextureFormat_ASTC_SRGBA_10x6,
-        ETextureFormat_ASTC_SRGBA_10x8,
-        ETextureFormat_ASTC_SRGBA_10x10,
-        ETextureFormat_ASTC_SRGBA_12x10,
-        ETextureFormat_ASTC_SRGBA_12x12,
+        ASTC_RGBA_4x4,
+        ASTC_RGBA_5x4,
+        ASTC_RGBA_5x5,
+        ASTC_RGBA_6x5,
+        ASTC_RGBA_6x6,
+        ASTC_RGBA_8x5,
+        ASTC_RGBA_8x6,
+        ASTC_RGBA_8x8,
+        ASTC_RGBA_10x5,
+        ASTC_RGBA_10x6,
+        ASTC_RGBA_10x8,
+        ASTC_RGBA_10x10,
+        ASTC_RGBA_12x10,
+        ASTC_RGBA_12x12,
+        ASTC_SRGBA_4x4,
+        ASTC_SRGBA_5x4,
+        ASTC_SRGBA_5x5,
+        ASTC_SRGBA_6x5,
+        ASTC_SRGBA_6x6,
+        ASTC_SRGBA_8x5,
+        ASTC_SRGBA_8x6,
+        ASTC_SRGBA_8x8,
+        ASTC_SRGBA_10x5,
+        ASTC_SRGBA_10x6,
+        ASTC_SRGBA_10x8,
+        ASTC_SRGBA_10x10,
+        ASTC_SRGBA_12x10,
+        ASTC_SRGBA_12x12,
 
-        ETextureFormat_NUMBER_OF_ELEMENTS
+        NUMBER_OF_ELEMENTS
     };
 
     /// Cube texture face identifier
@@ -217,36 +217,36 @@ namespace ramses
     {
         switch (format)
         {
-        case ETextureFormat_ETC2RGB:
-        case ETextureFormat_ETC2RGBA:
-        case ETextureFormat_ASTC_RGBA_4x4:
-        case ETextureFormat_ASTC_RGBA_5x4:
-        case ETextureFormat_ASTC_RGBA_5x5:
-        case ETextureFormat_ASTC_RGBA_6x5:
-        case ETextureFormat_ASTC_RGBA_6x6:
-        case ETextureFormat_ASTC_RGBA_8x5:
-        case ETextureFormat_ASTC_RGBA_8x6:
-        case ETextureFormat_ASTC_RGBA_8x8:
-        case ETextureFormat_ASTC_RGBA_10x5:
-        case ETextureFormat_ASTC_RGBA_10x6:
-        case ETextureFormat_ASTC_RGBA_10x8:
-        case ETextureFormat_ASTC_RGBA_10x10:
-        case ETextureFormat_ASTC_RGBA_12x10:
-        case ETextureFormat_ASTC_RGBA_12x12:
-        case ETextureFormat_ASTC_SRGBA_4x4:
-        case ETextureFormat_ASTC_SRGBA_5x4:
-        case ETextureFormat_ASTC_SRGBA_5x5:
-        case ETextureFormat_ASTC_SRGBA_6x5:
-        case ETextureFormat_ASTC_SRGBA_6x6:
-        case ETextureFormat_ASTC_SRGBA_8x5:
-        case ETextureFormat_ASTC_SRGBA_8x6:
-        case ETextureFormat_ASTC_SRGBA_8x8:
-        case ETextureFormat_ASTC_SRGBA_10x5:
-        case ETextureFormat_ASTC_SRGBA_10x6:
-        case ETextureFormat_ASTC_SRGBA_10x8:
-        case ETextureFormat_ASTC_SRGBA_10x10:
-        case ETextureFormat_ASTC_SRGBA_12x10:
-        case ETextureFormat_ASTC_SRGBA_12x12:
+        case ETextureFormat::ETC2RGB:
+        case ETextureFormat::ETC2RGBA:
+        case ETextureFormat::ASTC_RGBA_4x4:
+        case ETextureFormat::ASTC_RGBA_5x4:
+        case ETextureFormat::ASTC_RGBA_5x5:
+        case ETextureFormat::ASTC_RGBA_6x5:
+        case ETextureFormat::ASTC_RGBA_6x6:
+        case ETextureFormat::ASTC_RGBA_8x5:
+        case ETextureFormat::ASTC_RGBA_8x6:
+        case ETextureFormat::ASTC_RGBA_8x8:
+        case ETextureFormat::ASTC_RGBA_10x5:
+        case ETextureFormat::ASTC_RGBA_10x6:
+        case ETextureFormat::ASTC_RGBA_10x8:
+        case ETextureFormat::ASTC_RGBA_10x10:
+        case ETextureFormat::ASTC_RGBA_12x10:
+        case ETextureFormat::ASTC_RGBA_12x12:
+        case ETextureFormat::ASTC_SRGBA_4x4:
+        case ETextureFormat::ASTC_SRGBA_5x4:
+        case ETextureFormat::ASTC_SRGBA_5x5:
+        case ETextureFormat::ASTC_SRGBA_6x5:
+        case ETextureFormat::ASTC_SRGBA_6x6:
+        case ETextureFormat::ASTC_SRGBA_8x5:
+        case ETextureFormat::ASTC_SRGBA_8x6:
+        case ETextureFormat::ASTC_SRGBA_8x8:
+        case ETextureFormat::ASTC_SRGBA_10x5:
+        case ETextureFormat::ASTC_SRGBA_10x6:
+        case ETextureFormat::ASTC_SRGBA_10x8:
+        case ETextureFormat::ASTC_SRGBA_10x10:
+        case ETextureFormat::ASTC_SRGBA_12x10:
+        case ETextureFormat::ASTC_SRGBA_12x12:
             return false;
         default:
             return true;

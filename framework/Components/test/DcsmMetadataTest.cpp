@@ -120,7 +120,7 @@ namespace ramses_internal
         EXPECT_TRUE(f.getSizeInBytes(fileSize));
         std::vector<unsigned char> img(fileSize);
         UInt readBytes = 0;
-        EXPECT_EQ(EStatus::Ok, f.read(reinterpret_cast<char*>(img.data()), fileSize, readBytes));
+        EXPECT_EQ(EStatus::Ok, f.read(img.data(), fileSize, readBytes));
 
         DcsmMetadata dm;
         EXPECT_TRUE(dm.setPreviewImagePng(img.data(), img.size()));
@@ -526,7 +526,7 @@ namespace ramses_internal
 
     TEST_F(ADcsmMetadata, canSkipDeserializeUnknownTypes)
     {
-        BinaryOutputStreamT<Byte> os;
+        BinaryOutputStream os;
         os << static_cast<uint32_t>(1) // version
            << static_cast<uint32_t>(2) // entries
 
@@ -549,7 +549,7 @@ namespace ramses_internal
 
     TEST_F(ADcsmMetadata, ignoresUnexpectedMetadataVersion)
     {
-        BinaryOutputStreamT<Byte> os;
+        BinaryOutputStream os;
         os << static_cast<uint32_t>(100) // unsupported version
            << static_cast<uint32_t>(1) // entries
 

@@ -10,7 +10,7 @@
 
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/UInt16Array.h"
+#include "ramses-client-api/ArrayResource.h"
 
 #include "ClientTestUtils.h"
 #include "GeometryBindingImpl.h"
@@ -81,7 +81,7 @@ namespace ramses
 
         void setAnAppearanceForTesting()
         {
-            Appearance* appearance = m_scene.createAppearance(*TestEffects::CreateTestEffect(client), "appearance");
+            Appearance* appearance = m_scene.createAppearance(*TestEffects::CreateTestEffect(m_scene), "appearance");
             m_meshNode->setAppearance(*appearance);
         }
 
@@ -155,7 +155,7 @@ namespace ramses
 
     TEST_F(MeshNodeTest, setsAndGetsSameAppearance)
     {
-        Appearance* appearance = m_scene.createAppearance(*TestEffects::CreateTestEffect(client), "appearance");
+        Appearance* appearance = m_scene.createAppearance(*TestEffects::CreateTestEffect(m_scene), "appearance");
 
         EXPECT_EQ(StatusOK, m_meshNode->setAppearance(*appearance));
 
@@ -166,7 +166,7 @@ namespace ramses
     {
         Scene& anotherScene = *client.createScene(sceneId_t(12u));
 
-        Appearance* appearance = anotherScene.createAppearance(*TestEffects::CreateTestEffect(client), "appearance");
+        Appearance* appearance = anotherScene.createAppearance(*TestEffects::CreateTestEffect(anotherScene), "appearance");
         ASSERT_TRUE(appearance != nullptr);
 
         EXPECT_NE(StatusOK, m_meshNode->setAppearance(*appearance));
@@ -176,7 +176,7 @@ namespace ramses
     TEST_F(MeshNodeTest, setsAndGetsSameGeometry)
     {
         GeometryBinding& geometry = createValidGeometry();
-        const UInt16Array& indexArray = createValidIndexArray();
+        ArrayResource& indexArray = createValidIndexArray();
         EXPECT_EQ(StatusOK, geometry.setIndices(indexArray));
 
         EXPECT_EQ(StatusOK, m_meshNode->setGeometryBinding(geometry));
@@ -188,10 +188,11 @@ namespace ramses
     {
         Scene& anotherScene = *client.createScene(sceneId_t(12u));
 
-        GeometryBinding* geometry = anotherScene.createGeometryBinding(*TestEffects::CreateTestEffect(client), "geometry");
+        GeometryBinding* geometry = anotherScene.createGeometryBinding(*TestEffects::CreateTestEffect(anotherScene), "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
-        const UInt16Array& indexArray = createValidIndexArray();
+        const uint16_t indices = 0;
+        ArrayResource& indexArray = *anotherScene.createArrayResource(EDataType::UInt16, 1, &indices);
         EXPECT_EQ(StatusOK, geometry->setIndices(indexArray));
 
         EXPECT_NE(StatusOK, m_meshNode->setGeometryBinding(*geometry));
@@ -201,7 +202,7 @@ namespace ramses
     TEST_F(MeshNodeTest, settingGeometryWithIndicesSetsIndicesCount)
     {
         GeometryBinding& geometry = createValidGeometry();
-        const UInt16Array& indexArray = createValidIndexArray();
+        ArrayResource& indexArray = createValidIndexArray();
         EXPECT_EQ(StatusOK, geometry.setIndices(indexArray));
         EXPECT_EQ(StatusOK, m_meshNode->setGeometryBinding(geometry));
         EXPECT_EQ(indexArray.impl.getElementCount(), m_meshNode->getIndexCount());
@@ -209,25 +210,25 @@ namespace ramses
 
     TEST_F(MeshNodeTest, settingGeometryHavingDifferentEffectFromAppearanceReportsError)
     {
-        Effect* effect1 = TestEffects::CreateTestEffect(client);
-        Effect* effect2 = TestEffects::CreateDifferentTestEffect(client);
+        Effect* effect1 = TestEffects::CreateTestEffect(m_scene);
+        Effect* effect2 = TestEffects::CreateDifferentTestEffect(m_scene);
 
         Appearance* appearance = m_scene.createAppearance(*effect1, "appearance");
         EXPECT_EQ(StatusOK, m_meshNode->setAppearance(*appearance));
 
         GeometryBinding& geometry = *m_scene.createGeometryBinding(*effect2);
-        const UInt16Array& indexArray = createValidIndexArray();
+        ArrayResource& indexArray = createValidIndexArray();
         EXPECT_EQ(StatusOK, geometry.setIndices(indexArray));
         EXPECT_NE(StatusOK, m_meshNode->setGeometryBinding(geometry));
     }
 
     TEST_F(MeshNodeTest, settingAppearanceHavingDifferentEffectFromGeometryReportsError)
     {
-        Effect* effect1 = TestEffects::CreateTestEffect(client);
-        Effect* effect2 = TestEffects::CreateDifferentTestEffect(client);
+        Effect* effect1 = TestEffects::CreateTestEffect(m_scene);
+        Effect* effect2 = TestEffects::CreateDifferentTestEffect(m_scene);
 
         GeometryBinding& geometry = *m_scene.createGeometryBinding(*effect2);
-        const UInt16Array& indexArray = createValidIndexArray();
+        ArrayResource& indexArray = createValidIndexArray();
         EXPECT_EQ(StatusOK, geometry.setIndices(indexArray));
         EXPECT_EQ(StatusOK, m_meshNode->setGeometryBinding(geometry));
 
@@ -237,14 +238,14 @@ namespace ramses
 
     TEST_F(MeshNodeTest, setsAppearanceMultipleTimesAndChecksInScene)
     {
-        GeometryBinding& geometry = createValidGeometry(TestEffects::CreateTestEffect(client));
-        const UInt16Array& indexArray = createValidIndexArray();
+        GeometryBinding& geometry = createValidGeometry(TestEffects::CreateTestEffect(m_scene));
+        ArrayResource& indexArray = createValidIndexArray();
         EXPECT_EQ(StatusOK, geometry.setIndices(indexArray));
         EXPECT_EQ(StatusOK, m_meshNode->setGeometryBinding(geometry));
 
         for (int i = 0; i < 3; i++)
         {
-            Appearance* appearance = m_scene.createAppearance(*TestEffects::CreateTestEffect(client), "appearance");
+            Appearance* appearance = m_scene.createAppearance(*TestEffects::CreateTestEffect(m_scene), "appearance");
             EXPECT_EQ(StatusOK, m_meshNode->setAppearance(*appearance));
             EXPECT_EQ(appearance, m_meshNode->getAppearance());
             EXPECT_TRUE(meshNodeUniformAndAttributesIsSetInScene(*appearance, geometry));
@@ -253,13 +254,13 @@ namespace ramses
 
     TEST_F(MeshNodeTest, setsGeometryMultipleTimesAndChecksInScene)
     {
-        Appearance* appearance = m_scene.createAppearance(*TestEffects::CreateTestEffect(client), "appearance");
+        Appearance* appearance = m_scene.createAppearance(*TestEffects::CreateTestEffect(m_scene), "appearance");
         EXPECT_EQ(StatusOK, m_meshNode->setAppearance(*appearance));
 
         for (int i = 0; i < 3; i++)
         {
-            GeometryBinding& geometry = createValidGeometry(TestEffects::CreateTestEffect(client));
-            const UInt16Array& indexArray = createValidIndexArray();
+            GeometryBinding& geometry = createValidGeometry(TestEffects::CreateTestEffect(m_scene));
+            ArrayResource& indexArray = createValidIndexArray();
             EXPECT_EQ(StatusOK, geometry.setIndices(indexArray));
             EXPECT_EQ(StatusOK, m_meshNode->setGeometryBinding(geometry));
             EXPECT_EQ(appearance, m_meshNode->getAppearance());
@@ -269,10 +270,10 @@ namespace ramses
 
     TEST_F(MeshNodeTest, removeAppearanceAndGeometryRemovesTheseFromMeshNode)
     {
-        Appearance* appearance = this->m_scene.createAppearance(*TestEffects::CreateTestEffect(client), "appearance");
+        Appearance* appearance = this->m_scene.createAppearance(*TestEffects::CreateTestEffect(m_scene), "appearance");
         EXPECT_EQ(StatusOK, m_meshNode->setAppearance(*appearance));
-        GeometryBinding& geometry = createValidGeometry(TestEffects::CreateTestEffect(client));
-        const UInt16Array& indexArray = createValidIndexArray();
+        GeometryBinding& geometry = createValidGeometry(TestEffects::CreateTestEffect(m_scene));
+        ArrayResource& indexArray = createValidIndexArray();
         EXPECT_EQ(StatusOK, geometry.setIndices(indexArray));
         EXPECT_EQ(StatusOK, m_meshNode->setGeometryBinding(geometry));
 
@@ -290,9 +291,9 @@ namespace ramses
     TEST_F(MeshNodeTest, canSetNewAppearanceAndGeometryWhichAreIncompatibleWithThePrevious)
     {
         // first set of appearance/geometry
-        Effect* effect1 = TestEffects::CreateTestEffect(client);
+        Effect* effect1 = TestEffects::CreateTestEffect(m_scene);
         GeometryBinding& geometry1 = createValidGeometry(effect1);
-        const UInt16Array& indexArray = createValidIndexArray();
+        ArrayResource& indexArray = createValidIndexArray();
         EXPECT_EQ(StatusOK, geometry1.setIndices(indexArray));
         EXPECT_EQ(StatusOK, m_meshNode->setGeometryBinding(geometry1));
         Appearance* appearance1 = this->m_scene.createAppearance(*effect1, "appearance");
@@ -302,7 +303,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, m_meshNode->removeAppearanceAndGeometry());
 
         // second set of appearance/geometry not compatible with the previous ones
-        Effect* effect2 = TestEffects::CreateDifferentTestEffect(client);
+        Effect* effect2 = TestEffects::CreateDifferentTestEffect(m_scene);
         GeometryBinding& geometry2 = createValidGeometry(effect2);
         EXPECT_EQ(StatusOK, geometry2.setIndices(indexArray));
         EXPECT_EQ(StatusOK, m_meshNode->setGeometryBinding(geometry2));

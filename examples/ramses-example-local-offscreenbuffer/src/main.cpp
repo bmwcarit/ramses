@@ -151,11 +151,11 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
 
     // prepare triangle geometry: vertex position array and index array
     const float vertexPositionsArray[] = { -1.f, 0.f, -6.f, 1.f, 0.f, -6.f, 0.f, 1.f, -6.f };
-    const ramses::Vector3fArray* vertexPositions = client.createConstVector3fArray(3, vertexPositionsArray);
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
     const uint16_t indicesArray[] = { 0, 1, 2 };
-    const ramses::UInt16Array* indices = client.createConstUInt16Array(3, indicesArray);
+    ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
     const float texCoordsArray[] = { 2.0f, 2.0f, 0.0f, 2.0f, 0.0f, 0.0f, 2.0f, 0.0f };
-    const ramses::Vector2fArray* texCoords = client.createConstVector2fArray(4, texCoordsArray);
+    ramses::ArrayResource* texCoords = clientScene->createArrayResource(ramses::EDataType::Vector2F, 4, texCoordsArray);
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -163,7 +163,7 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     effectDesc.setFragmentShaderFromFile("res/ramses-example-offscreenbuffer_texture.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    const ramses::Effect* effect = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = clientScene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "triangle appearance");
     ramses::GeometryBinding* geometry = clientScene->createGeometryBinding(*effect, "triangle geometry");
 
@@ -209,7 +209,7 @@ ramses::Scene* createScene1(ramses::RamsesClient& client, ramses::sceneId_t scen
     ramses::UniformInput textureUnif;
     effect->findUniformInput ( "textureSampler", textureUnif );
 
-    ramses::Texture2D* fallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng ( "res/ramses-example-offscreenbuffer.png", client );
+    ramses::Texture2D* fallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng ( "res/ramses-example-offscreenbuffer.png", *clientScene );
     ramses::TextureSampler* textureSampler = clientScene->createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Linear, ramses::ETextureSamplingMethod_Linear, *fallbackTexture, 1u, "textureSamplerConsumer");
     appearance->setInputTexture(textureUnif, *textureSampler);
 
@@ -236,9 +236,9 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
 
     // prepare triangle geometry: vertex position array and index array
     const float vertexPositionsArray[] = { -1.1f, 0.f, -6.1f, 1.1f, 0.f, -6.1f, 0.f, 1.1f, -6.1f };
-    const ramses::Vector3fArray* vertexPositions = client.createConstVector3fArray(3, vertexPositionsArray);
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
     const uint16_t indicesArray[] = { 2, 0, 1 };
-    const ramses::UInt16Array* indices = client.createConstUInt16Array(3, indicesArray);
+    ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -246,7 +246,7 @@ ramses::Scene* createScene2(ramses::RamsesClient& client, ramses::sceneId_t scen
     effectDesc.setFragmentShaderFromFile("res/ramses-example-offscreenbuffer.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    const ramses::Effect* effect = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = clientScene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "triangle appearance");
     ramses::GeometryBinding* geometry = clientScene->createGeometryBinding(*effect, "triangle geometry");
 

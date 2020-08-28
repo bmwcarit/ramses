@@ -21,8 +21,6 @@ namespace ramses
         ClientEventHandlerMock();
         virtual ~ClientEventHandlerMock();
 
-        MOCK_METHOD(void, resourceFileLoadFailed, (const char* filename), (override));
-        MOCK_METHOD(void, resourceFileLoadSucceeded, (const char* filename), (override));
         MOCK_METHOD(void, sceneFileLoadFailed, (const char* filename), (override));
         MOCK_METHOD(void, sceneFileLoadSucceeded, (const char* filename, Scene* loadedScene), (override));
         MOCK_METHOD(void, sceneReferenceStateChanged, (SceneReference& sceneRef, RendererSceneState state), (override));

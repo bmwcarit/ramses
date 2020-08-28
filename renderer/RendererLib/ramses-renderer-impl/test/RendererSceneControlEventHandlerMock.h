@@ -31,9 +31,11 @@ namespace ramses
         MOCK_METHOD(void, dataConsumerCreated, (sceneId_t, dataConsumerId_t), (override));
         MOCK_METHOD(void, dataConsumerDestroyed, (sceneId_t, dataConsumerId_t), (override));
         MOCK_METHOD(void, sceneFlushed, (sceneId_t, sceneVersionTag_t), (override));
+        MOCK_METHOD(void, sceneExpirationMonitoringEnabled, (sceneId_t), (override));
+        MOCK_METHOD(void, sceneExpirationMonitoringDisabled, (sceneId_t), (override));
         MOCK_METHOD(void, sceneExpired, (sceneId_t), (override));
         MOCK_METHOD(void, sceneRecoveredFromExpiration, (sceneId_t), (override));
-        MOCK_METHOD(void, streamAvailabilityChanged, (streamSource_t, bool), (override));
+        MOCK_METHOD(void, streamAvailabilityChanged, (waylandIviSurfaceId_t, bool), (override));
     };
 }
 

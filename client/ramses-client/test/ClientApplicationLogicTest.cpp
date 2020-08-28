@@ -160,3 +160,12 @@ TEST_F(AClientApplicationLogic, gathersSceneReferenceEventsInAContainer)
     logic.handleSceneReferenceEvent(event, Guid{});
     EXPECT_EQ(logic.popSceneReferenceEvents().size(), 4u);
 }
+
+
+TEST_F(AClientApplicationLogic, incomingResourceAvailabilityEventDoesNoHarm)
+{
+    ResourceAvailabilityEvent event;
+    event.sceneid = SceneId { 123 };
+
+    logic.handleResourceAvailabilityEvent(event, Guid {});
+}

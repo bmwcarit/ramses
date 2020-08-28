@@ -18,27 +18,34 @@ class AGlslEffect : public ::testing::Test
 {
 public:
     AGlslEffect()
-        : basicVertexShader("void main(void)\n"
-            "{\n"
-            "    gl_Position = vec4(0.0);\n"
-            "}\n")
-        , basicFragmentShader("void main(void)\n"
-            "{\n"
-            "    gl_FragColor = vec4(0.0);\n"
-            "}\n")
-        , insertedVersionString("#version 100\n")
-        , basicVertexShaderOut(insertedVersionString + basicVertexShader)
-        , basicFragmentShaderOut(insertedVersionString + basicFragmentShader)
     {
     }
 
-    const String basicVertexShader;
-    const String basicFragmentShader;
+    const String basicVertexShader = R"SHADER(
+            #version 320 es
+            void main(void)
+            {
+                gl_Position = vec4(0.0);
+            }
+            )SHADER";
+    const String basicFragmentShader = R"SHADER(
+            #version 320 es
+            out lowp vec4 colorOut;
+            void main(void)
+            {
+                colorOut = vec4(0.0);
+            })SHADER";
+    const String basicGeometryShader = R"SHADER(
+            #version 320 es
+            layout(points) in;
+            layout(points, max_vertices = 1) out;
+            void main() {
+                gl_Position = vec4(0.0);
+                EmitVertex();
+            }
+            )SHADER";
     const std::vector<String> emptyCompilerDefines;
     const HashMap<String, EFixedSemantics> emptySemanticInputs;
-    const String insertedVersionString;
-    const String basicVertexShaderOut;
-    const String basicFragmentShaderOut;
 
 protected:
     static void VerifyUniformInputExists(const EffectResource& effect, const char* uniformName)
@@ -50,12 +57,21 @@ protected:
 
 TEST_F(AGlslEffect, canParseBasicShaders)
 {
-    GlslEffect ge(basicVertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(basicVertexShader, basicFragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 
-    EXPECT_STREQ(basicVertexShaderOut.c_str(), res->getVertexShader());
-    EXPECT_STREQ(basicFragmentShaderOut.c_str(), res->getFragmentShader());
+    EXPECT_EQ(0u, res->getUniformInputs().size());
+    EXPECT_EQ(0u, res->getAttributeInputs().size());
+    EXPECT_EQ(String(), res->getName());
+}
+
+TEST_F(AGlslEffect, canParseBasicShaders_WithGeometryShader)
+{
+    GlslEffect ge(basicVertexShader, basicFragmentShader, basicGeometryShader, emptyCompilerDefines, emptySemanticInputs, "");
+    std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
+    ASSERT_TRUE(res);
+
     EXPECT_EQ(0u, res->getUniformInputs().size());
     EXPECT_EQ(0u, res->getAttributeInputs().size());
     EXPECT_EQ(String(), res->getName());
@@ -63,7 +79,7 @@ TEST_F(AGlslEffect, canParseBasicShaders)
 
 TEST_F(AGlslEffect, usesPassedName)
 {
-    GlslEffect ge(basicVertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "someName");
+    GlslEffect ge(basicVertexShader, basicFragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "someName");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 
@@ -72,28 +88,42 @@ TEST_F(AGlslEffect, usesPassedName)
 
 TEST_F(AGlslEffect, rejectsEmptyVertexShader)
 {
-    GlslEffect ge("", basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge("", basicFragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     EXPECT_FALSE(res);
 }
 
 TEST_F(AGlslEffect, rejectsBrokenVertexShader)
 {
-    GlslEffect ge("foo", basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge("foo", basicFragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     EXPECT_FALSE(res);
 }
 
 TEST_F(AGlslEffect, rejectsEmptyFragmentShader)
 {
-    GlslEffect ge(basicVertexShader, "", emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(basicVertexShader, "", "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     EXPECT_FALSE(res);
 }
 
 TEST_F(AGlslEffect, rejectsBrokenFragmentShader)
 {
-    GlslEffect ge(basicVertexShader, "bar", emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(basicVertexShader, "bar", "", emptyCompilerDefines, emptySemanticInputs, "");
+    std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
+    EXPECT_FALSE(res);
+}
+
+TEST_F(AGlslEffect, acceptsEmptyGeometryShader)
+{
+    GlslEffect ge(basicVertexShader, basicFragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
+    std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
+    EXPECT_TRUE(res);
+}
+
+TEST_F(AGlslEffect, rejectsBrokenGeometryShader)
+{
+    GlslEffect ge(basicVertexShader, basicFragmentShader, "bar", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     EXPECT_FALSE(res);
 }
@@ -113,7 +143,7 @@ TEST_F(AGlslEffect, usesProvidedDefines)
     std::vector<String> compilerDefines;
     compilerDefines.push_back("DEFINE_ZERO vec4(0.0)");
     compilerDefines.push_back("DEFINE_ONE vec4(1.0)");
-    GlslEffect ge(vertexShader, fragmentShader, compilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", compilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 
@@ -139,7 +169,7 @@ TEST_F(AGlslEffect, generatedShaderWithDefaultVersionAndDefinesEmbedded)
     std::vector<String> compilerDefines;
     compilerDefines.push_back("FIRST_DEFINE foo");
     compilerDefines.push_back("OTHER_DEFINE bar");
-    GlslEffect ge(vertexShader, fragmentShader, compilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", compilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 
@@ -164,27 +194,90 @@ TEST_F(AGlslEffect, generatedShaderWithDefaultVersionAndDefinesEmbedded)
     EXPECT_STREQ(expectedFragmentShader, res->getFragmentShader());
 }
 
-TEST_F(AGlslEffect, acceptsGLSLES30Shaders)
+TEST_F(AGlslEffect, acceptsGLSLESShaders_Version300es)
 {
-    const char* vertexShader =
-        "#version 300 es\n"
-        "in lowp vec3 a_position;\n"
-        "out lowp vec3 v_position;\n"
-        "void main(void)\n"
-        "{\n"
-        "    v_position = a_position;\n"
-        "    gl_Position = vec4(a_position, 1.0);\n"
-        "}\n";
-    const char* fragmentShader =
-        "#version 300 es\n"
-        "in lowp vec3 v_position;\n"
-        "out lowp vec4 color;\n"
-        "void main(void)\n"
-        "{\n"
-        "    color = vec4(v_position, 1.0);\n"
-        "}\n";
+    const char* vertexShader = R"SHADER(
+            #version 300 es
+            in lowp vec3 a_position;
+            out lowp vec3 v_position;
+            void main(void)
+            {
+                v_position = a_position;
+                gl_Position = vec4(a_position, 1.0);
+            })SHADER";
+    const char* fragmentShader = R"SHADER(
+            #version 300 es
+            in lowp vec3 v_position;
+            out lowp vec4 color;
+            void main(void)
+            {
+                color = vec4(v_position, 1.0);
+            })SHADER";
 
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
+    std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
+
+    EXPECT_TRUE(res);
+}
+
+TEST_F(AGlslEffect, acceptsGLSLESShaders_Version310es)
+{
+    const char* vertexShader = R"SHADER(
+            #version 310 es
+            in lowp vec3 a_position;
+            out lowp vec3 v_position;
+            void main(void)
+            {
+                v_position = a_position;
+                gl_Position = vec4(a_position, 1.0);
+            })SHADER";
+    const char* fragmentShader = R"SHADER(
+            #version 310 es
+            in lowp vec3 v_position;
+            out lowp vec4 color;
+            void main(void)
+            {
+                color = vec4(v_position, 1.0);
+            })SHADER";
+
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
+    std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
+
+    EXPECT_TRUE(res);
+}
+
+TEST_F(AGlslEffect, acceptsGLSLESShaders_Version310esWithGeometryShaderExtension)
+{
+    const char* vertexShader = R"SHADER(
+            #version 310 es
+            in lowp vec3 a_position;
+            out lowp vec3 v_position;
+            void main(void)
+            {
+                v_position = a_position;
+                gl_Position = vec4(a_position, 1.0);
+            })SHADER";
+    const char* fragmentShader = R"SHADER(
+            #version 310 es
+            in lowp vec3 v_position;
+            out lowp vec4 color;
+            void main(void)
+            {
+                color = vec4(v_position, 1.0);
+            })SHADER";
+
+    const String geometryShader = R"SHADER(
+            #version 310 es
+            #extension GL_EXT_geometry_shader : enable
+            layout(points) in;
+            layout(points, max_vertices = 1) out;
+            void main() {
+                gl_Position = vec4(0.0);
+                EmitVertex();
+            }
+            )SHADER";
+
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
     EXPECT_TRUE(res);
@@ -210,7 +303,7 @@ TEST_F(AGlslEffect, doesNotAcceptMixedES2VertexAndES3FragmentShaders)
         "    color = vec4(v_position, 1.0);\n"
         "}\n";
 
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
     EXPECT_FALSE(res);
@@ -235,32 +328,7 @@ TEST_F(AGlslEffect, doesNotAcceptMixedES3VertexAndES2FragmentShaders)
         "    gl_FragColor = vec4(v_position, 1.0);\n"
         "}\n";
 
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
-    std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-
-    EXPECT_FALSE(res);
-}
-
-TEST_F(AGlslEffect, doesNotAcceptOtherGLSLVersionsThan100And300)
-{
-    const char* vertexShader =
-        "#version 310 es\n"
-        "in lowp vec3 a_position;\n"
-        "out lowp vec3 v_position;\n"
-        "void main(void)\n"
-        "{\n"
-        "    v_position = a_position;\n"
-        "    gl_Position = vec4(a_position, 1.0);\n"
-        "}\n";
-    const char* fragmentShader =
-        "#version 100\n"
-        "varying lowp vec3 v_position;\n"
-        "void main(void)\n"
-        "{\n"
-        "    gl_FragColor = vec4(v_position, 1.0);\n"
-        "}\n";
-
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
     EXPECT_FALSE(res);
@@ -268,47 +336,68 @@ TEST_F(AGlslEffect, doesNotAcceptOtherGLSLVersionsThan100And300)
 
 TEST_F(AGlslEffect, canParseShaderInputs)
 {
-    const char* vertexShader =
-        "precision highp float;\n"
-        "uniform mat4 uniformWithSemantic;\n"
-        "uniform mat3 matrix3x3;\n"
-        "uniform mat2 matrix2x2;\n"
-        "attribute vec3 attributeWithSemantic;\n"
-        "attribute float attributeFloat;\n"
-        "void main(void)\n"
-        "{\n"
-        "    gl_Position = vec4(0.0);\n"
-        "}\n";
-    const char* fragmentShader =
-        "precision highp float;\n"
-        "uniform sampler2D uniformSampler;\n"
-        "uniform vec4 uniformVec;\n"
-        "void main(void)\n"
-        "{\n"
-        "    gl_FragColor = vec4(0.0);\n"
-        "}\n";
+    const char* vertexShader = R"SHADER(
+            #version 320 es
+            precision highp float;
+            uniform mat4 uniformWithSemantic;
+            uniform mat3 matrix3x3;
+            uniform mat2 matrix2x2;
+            in vec3 attributeWithSemantic;
+            in float attributeFloat;
+            void main(void)
+            {
+                gl_Position = vec4(0.0);
+            })SHADER";
+    const char* fragmentShader = R"SHADER(
+            #version 320 es
+            precision highp float;
+            uniform sampler2D uniformSampler;
+            uniform vec4 uniformVec;
+            out vec4 colorOut;
+            void main(void)
+            {
+                colorOut = vec4(0.0);
+            })SHADER";
+    const String geometryShader = R"SHADER(
+            #version 320 es
+            precision highp float;
+            layout(points) in;
+            layout(points, max_vertices = 1) out;
+            out vec4 g_colorOut;
+            uniform float uniformGeomFloat;
+            uniform vec4 uniformGeomVec;
+            uniform sampler2D uniformGeomSampler;
+            void main() {
+                gl_Position = uniformGeomVec + vec4(uniformGeomFloat);
+                g_colorOut = texture(uniformGeomSampler, vec2(0.0));
+                EmitVertex();
+            }
+            )SHADER";
 
     HashMap<String, EFixedSemantics> semantics;
     semantics.put("uniformWithSemantic", EFixedSemantics_ModelViewProjectionMatrix);
     semantics.put("attributeWithSemantic", EFixedSemantics_CameraWorldPosition);
 
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, semantics, "");
+    GlslEffect ge(vertexShader, fragmentShader, geometryShader, emptyCompilerDefines, semantics, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 
     const EffectInputInformationVector& uniforms = res->getUniformInputs();
     const EffectInputInformationVector& attributes = res->getAttributeInputs();
 
-    ASSERT_EQ(5u, uniforms.size());
-    EXPECT_EQ(EffectInputInformation("uniformWithSemantic", 1, EDataType_Matrix44F, EFixedSemantics_ModelViewProjectionMatrix, EEffectInputTextureType_Invalid), uniforms[0]);
-    EXPECT_EQ(EffectInputInformation("matrix3x3", 1, EDataType_Matrix33F, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid), uniforms[1]);
-    EXPECT_EQ(EffectInputInformation("matrix2x2", 1, EDataType_Matrix22F, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid), uniforms[2]);
-    EXPECT_EQ(EffectInputInformation("uniformSampler", 1, EDataType_TextureSampler, EFixedSemantics_Invalid, EEffectInputTextureType_Texture2D), uniforms[3]);
-    EXPECT_EQ(EffectInputInformation("uniformVec", 1, EDataType_Vector4F, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid), uniforms[4]);
+    ASSERT_EQ(8u, uniforms.size());
+    EXPECT_EQ(EffectInputInformation("uniformWithSemantic", 1, EDataType::Matrix44F, EFixedSemantics_ModelViewProjectionMatrix), uniforms[0]);
+    EXPECT_EQ(EffectInputInformation("matrix3x3", 1, EDataType::Matrix33F, EFixedSemantics_Invalid), uniforms[1]);
+    EXPECT_EQ(EffectInputInformation("matrix2x2", 1, EDataType::Matrix22F, EFixedSemantics_Invalid), uniforms[2]);
+    EXPECT_EQ(EffectInputInformation("uniformSampler", 1, EDataType::TextureSampler2D, EFixedSemantics_Invalid), uniforms[3]);
+    EXPECT_EQ(EffectInputInformation("uniformVec", 1, EDataType::Vector4F, EFixedSemantics_Invalid), uniforms[4]);
+    EXPECT_EQ(EffectInputInformation("uniformGeomFloat", 1, EDataType::Float, EFixedSemantics_Invalid), uniforms[5]);
+    EXPECT_EQ(EffectInputInformation("uniformGeomVec", 1, EDataType::Vector4F, EFixedSemantics_Invalid), uniforms[6]);
+    EXPECT_EQ(EffectInputInformation("uniformGeomSampler", 1, EDataType::TextureSampler2D, EFixedSemantics_Invalid), uniforms[7]);
 
     ASSERT_EQ(2u, attributes.size());
-    EXPECT_EQ(EffectInputInformation("attributeWithSemantic", 1, EDataType_Vector3Buffer, EFixedSemantics_CameraWorldPosition, EEffectInputTextureType_Invalid), attributes[0]);
-    EXPECT_EQ(EffectInputInformation("attributeFloat", 1, EDataType_FloatBuffer, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid), attributes[1]);
+    EXPECT_EQ(EffectInputInformation("attributeWithSemantic", 1, EDataType::Vector3Buffer, EFixedSemantics_CameraWorldPosition), attributes[0]);
+    EXPECT_EQ(EffectInputInformation("attributeFloat", 1, EDataType::FloatBuffer, EFixedSemantics_Invalid), attributes[1]);
 }
 
 TEST_F(AGlslEffect, canParseSamplerInputsGLSLES2)
@@ -326,7 +415,7 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES2)
         "{\n"
         "    gl_FragColor = vec4(0.0);\n"
         "}\n";
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
     ASSERT_TRUE(res);
@@ -336,8 +425,8 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES2)
     const EffectInputInformationVector& uniforms = res->getUniformInputs();
 
     ASSERT_EQ(2u, uniforms.size());
-    EXPECT_EQ(EffectInputInformation("s2d", 1, EDataType_TextureSampler, EFixedSemantics_Invalid, EEffectInputTextureType_Texture2D), uniforms[0]);
-    EXPECT_EQ(EffectInputInformation("sc", 1, EDataType_TextureSampler, EFixedSemantics_Invalid, EEffectInputTextureType_TextureCube), uniforms[1]);
+    EXPECT_EQ(EffectInputInformation("s2d", 1, EDataType::TextureSampler2D, EFixedSemantics_Invalid), uniforms[0]);
+    EXPECT_EQ(EffectInputInformation("sc", 1, EDataType::TextureSamplerCube, EFixedSemantics_Invalid), uniforms[1]);
 }
 
 TEST_F(AGlslEffect, canParseSamplerInputsGLSLES3)
@@ -360,7 +449,7 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES3)
         "{\n"
         "    color = vec4(0.0);\n"
         "}\n";
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
     ASSERT_TRUE(res);
@@ -370,9 +459,9 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES3)
     const EffectInputInformationVector& uniforms = res->getUniformInputs();
 
     ASSERT_EQ(3u, uniforms.size());
-    EXPECT_EQ(EffectInputInformation("s2d", 1, EDataType_TextureSampler, EFixedSemantics_Invalid, EEffectInputTextureType_Texture2D), uniforms[0]);
-    EXPECT_EQ(EffectInputInformation("s3d", 1, EDataType_TextureSampler, EFixedSemantics_Invalid, EEffectInputTextureType_Texture3D), uniforms[1]);
-    EXPECT_EQ(EffectInputInformation("sc", 1, EDataType_TextureSampler, EFixedSemantics_Invalid, EEffectInputTextureType_TextureCube), uniforms[2]);
+    EXPECT_EQ(EffectInputInformation("s2d", 1, EDataType::TextureSampler2D, EFixedSemantics_Invalid), uniforms[0]);
+    EXPECT_EQ(EffectInputInformation("s3d", 1, EDataType::TextureSampler3D, EFixedSemantics_Invalid), uniforms[1]);
+    EXPECT_EQ(EffectInputInformation("sc", 1, EDataType::TextureSamplerCube, EFixedSemantics_Invalid), uniforms[2]);
 }
 
 TEST_F(AGlslEffect, canParseArrayInputs)
@@ -391,7 +480,7 @@ TEST_F(AGlslEffect, canParseArrayInputs)
         "{\n"
         "    gl_FragColor = vec4(0.0);\n"
         "}\n";
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
     ASSERT_TRUE(res);
@@ -401,9 +490,9 @@ TEST_F(AGlslEffect, canParseArrayInputs)
     const EffectInputInformationVector& uniforms = res->getUniformInputs();
 
     ASSERT_EQ(3u, uniforms.size());
-    EXPECT_EQ(EffectInputInformation("v", 4, EDataType_Vector3F, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid), uniforms[0]);
-    EXPECT_EQ(EffectInputInformation("m", 2, EDataType_Matrix44F, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid), uniforms[1]);
-    EXPECT_EQ(EffectInputInformation("i", 2, EDataType_Int32, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid), uniforms[2]);
+    EXPECT_EQ(EffectInputInformation("v", 4, EDataType::Vector3F, EFixedSemantics_Invalid), uniforms[0]);
+    EXPECT_EQ(EffectInputInformation("m", 2, EDataType::Matrix44F, EFixedSemantics_Invalid), uniforms[1]);
+    EXPECT_EQ(EffectInputInformation("i", 2, EDataType::Int32, EFixedSemantics_Invalid), uniforms[2]);
 }
 
 TEST_F(AGlslEffect, failsWithWrongSemanticForType)
@@ -424,7 +513,7 @@ TEST_F(AGlslEffect, failsWithWrongSemanticForType)
     HashMap<String, EFixedSemantics> semantics;
     semantics.put("uniformWithWrongSemantic", EFixedSemantics_ModelViewProjectionMatrix);
 
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, semantics, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, semantics, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     EXPECT_FALSE(res);
 }
@@ -448,7 +537,7 @@ TEST_F(AGlslEffect, ignoresNormalGlobalsAndVaryings)
         "{\n"
         "    gl_FragColor = vec4(0.0);\n"
         "}\n";
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 
@@ -474,7 +563,7 @@ TEST_F(AGlslEffect, canParseStructUniform)
         "{\n"
         "    gl_FragColor = vec4(0.0);\n"
         "}\n";
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 
@@ -501,7 +590,7 @@ TEST_F(AGlslEffect, canParseArrayOfStructUniform)
         "{\n"
         "    gl_FragColor = vec4(0.0);\n"
         "}\n";
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 
@@ -541,7 +630,7 @@ TEST_F(AGlslEffect, canParseNestedStructUniform)
         "{\n"
         "    gl_FragColor = vec4(0.0);\n"
         "}\n";
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 
@@ -575,7 +664,7 @@ TEST_F(AGlslEffect, canParseArrayOfNestedStructUniforms)
         "{\n"
         "    gl_FragColor = vec4(0.0);\n"
         "}\n";
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 
@@ -622,7 +711,7 @@ public:
         const char* v = "void main(){gl_Position=vec4(0);}";
         const char* f = "void main(){gl_FragColor=vec4(0);}";
 
-        GlslEffect eff(v, f, defs, sems, "myname");
+        GlslEffect eff(v, f, "", defs, sems, "myname");
         std::unique_ptr<EffectResource> resource(eff.createEffectResource(ResourceCacheFlag(0u)));
         createdSuccessfully = static_cast<bool>(resource);
     }
@@ -648,95 +737,69 @@ TEST_F(AGlslEffect, UseGlslEffectFromMainThread)
 
 TEST_F(AGlslEffect, hasDefaultShaderVersion100)
 {
-    GlslEffect ge(basicVertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    const String basicVertexShader_v100 = R"SHADER(
+            void main(void)
+            {
+                gl_Position = vec4(0.0);
+            }
+            )SHADER";
+    const String basicFragmentShader_v100 = R"SHADER(
+            void main(void)
+            {
+                gl_FragColor = vec4(0.0);
+            })SHADER";
+
+    GlslEffect ge(basicVertexShader_v100, basicFragmentShader_v100, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
-    EXPECT_EQ(100u, ge.getVertexShaderVersion());
-    EXPECT_EQ(100u, ge.getFragmentShaderVersion());
+    EXPECT_EQ(100u, ge.getShadingLanguageVersion());
 }
 
 TEST_F(AGlslEffect, isAbleToParseShadersWithVersionString)
 {
-    String vertexShader = String("#version 100\n") + basicVertexShader;
-    String fragmentShader = String("#version 100\n") + basicFragmentShader;
-
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(basicVertexShader, basicFragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 }
 
-TEST_F(AGlslEffect, rejectsShadersWithVersionStringWithoutNewline)
-{
-    String vertexShader = String("#version 100") + basicVertexShader;
-    String fragmentShader = String("#version 100") + basicFragmentShader;
-
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
-    std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_FALSE(res);
-}
-
-TEST_F(AGlslEffect, rejectsShadersWithUnsupportedVersions)
-{
-    const char* vertexShader =
-        "#version 310 es\n"
-        "in lowp vec3 a_position;\n"
-        "out lowp vec3 v_position;\n"
-        "void main(void)\n"
-        "{\n"
-        "    v_position = a_position;\n"
-        "    gl_Position = vec4(a_position, 1.0);\n"
-        "}\n";
-
-    const char* fragmentShader =
-        "#version 310 es\n"
-        "in lowp vec3 v_position;\n"
-        "out lowp vec4 color;\n"
-        "void main(void)\n"
-        "{\n"
-        "    color = vec4(v_position, 1.0);\n"
-        "}\n";
-
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
-    std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
-    ASSERT_FALSE(res);
-}
-
 TEST_F(AGlslEffect, acceptsReturnStatementsEveryWhere)
 {
-    const char* vertexShader =
-        "precision highp float;\n"
-        "attribute float attr;\n"
-        "void fun() {\n"
-        "   if (attr < 1.0) return;\n"
-        "    return;\n"
-        "}\n"
-        "void main(void)\n"
-        "{\n"
-        "    if (attr > 1.0) return;\n"
-        "    gl_Position = vec4(0.0);\n"
-        "    return;\n"
-        "}\n";
+    const char* vertexShader = R"SHADER(
+        #version 320 es
+        precision highp float;
+        out float attr;
+        void fun() {
+            if (attr < 1.0) return;
+            return;
+        }
+        void main(void)
+        {
+            if (attr > 1.0) return;
+            gl_Position = vec4(0.0);
+            return;
+        })SHADER";
 
-    GlslEffect ge(vertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, basicFragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     EXPECT_TRUE(res);
 }
 
 TEST_F(AGlslEffect, acceptsLoopsInShaders)
 {
-    const char* vertexShader =
-        "precision highp float;\n"
-        "uniform int value;\n"
-        "void main(void)\n"
-        "{\n"
-        "    int i = 0;\n"
-        "    for (i = 0; i < value; ++i) continue;\n"
-        "    while (value < 10) --i;\n"
-        "    do { break; } while (false);"
-        "    gl_Position = vec4(0.0);\n"
-        "}\n";
+    const char* vertexShader = R"SHADER(
+        #version 320 es
+        precision highp float;
+        uniform int value;
+        void main(void)
+        {
+            int i = 0;
+            for (i = 0; i < value; ++i) continue;
+            while (value < 10) --i;
+            do { break; } while (false);
+            gl_Position = vec4(0.0);
+        })SHADER";
 
-    GlslEffect ge(vertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, basicFragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     EXPECT_TRUE(res);
 }
@@ -764,7 +827,7 @@ TEST_F(AGlslEffect, doesNotSupportExternalTextureExtension)
         "    gl_FragColor = texture2D(tex, texCoord);\n"
         "}\n";
 
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     EXPECT_FALSE(res);
 }
@@ -793,7 +856,7 @@ TEST_F(AGlslEffect, doesNotSupportFloatTextureExtension)
         "    gl_FragColor = vec4(vec3(color*255), 1.0);\n"
         "}\n";
 
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     EXPECT_FALSE(res);
 }
@@ -821,7 +884,7 @@ TEST_F(AGlslEffect, doesNotSupport3DTextureExtension)
         "    gl_FragColor = texture3D(tex, texCoord);\n"
         "}\n";
 
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     EXPECT_FALSE(res);
 }
@@ -841,7 +904,7 @@ TEST_F(AGlslEffect, treatsUniformDeclaredInBothStagesWithSameNameAsSingleUniform
         "    gl_FragColor = dummy;\n"
         "}\n";
 
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     const std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 
@@ -863,34 +926,40 @@ TEST_F(AGlslEffect, rejectsEffectWithUniformDeclaredInBothStagesWithSameNameButD
         "    gl_FragColor = vec4(0.0, 0.0, 0.0, dummy);\n"
         "}\n";
 
-    GlslEffect ge(vertexShader, fragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     const std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     EXPECT_FALSE(res);
 }
 
 TEST_F(AGlslEffect, DISABLED_acceptsActiveAsKeyword)
 {
-    const char* vertexShader =
-        "#version 100\n"
-        "attribute float active;\n"
-        "void main(void)\n"
-        "{\n"
-        "    gl_Position = vec4(0.0);\n"
-        "}\n";
-    GlslEffect ge(vertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    const String basicVertexShader_v100 = R"SHADER(
+            attribute float active;
+            void main(void)
+            {
+                gl_Position = vec4(0.0);
+            }
+            )SHADER";
+    const String basicFragmentShader_v100 = R"SHADER(
+            void main(void)
+            {
+                gl_FragColor = vec4(0.0);
+            })SHADER";
+    GlslEffect ge(basicVertexShader_v100, basicFragmentShader_v100, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     EXPECT_TRUE(res);
 }
 
 TEST_F(AGlslEffect, canRetrieveGLSLErrorMessage)
 {
-    const char* vertexShader = "#version 100\n"
-                                "attribute float inp;\n"
-                                "void main(void)\n"
-                                "{\n"
-                                "    gl_Position = vec4(0.0)\n"
-                                "}\n";
-    GlslEffect ge(vertexShader, basicFragmentShader, emptyCompilerDefines, emptySemanticInputs, "");
+    const char* vertexShader = R"SHADER(
+                                #version 320 es
+                                out float inp;
+                                void main(void)
+                                {
+                                    gl_Position = vec4(0.0)
+                                })SHADER";
+    GlslEffect ge(vertexShader, basicFragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_FALSE(res);
     using namespace ::testing;

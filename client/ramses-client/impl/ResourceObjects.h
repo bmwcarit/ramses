@@ -14,7 +14,7 @@
 namespace ramses
 {
     class Resource;
-    typedef std::vector<const Resource*> ResourceObjects;
+    typedef std::vector<Resource*> ResourceObjects;
 }
 
 #endif

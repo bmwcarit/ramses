@@ -19,7 +19,7 @@ namespace ramses_internal
     class TransformationLinkScene : public IntegrationScene
     {
     public:
-        TransformationLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        TransformationLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {

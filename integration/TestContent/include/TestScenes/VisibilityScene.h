@@ -16,15 +16,16 @@ namespace ramses_internal
     class VisibilityScene : public IntegrationScene
     {
     public:
-        VisibilityScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& position);
+        VisibilityScene(ramses::Scene& scene, UInt32 state, const Vector3& position);
 
         void setState(UInt32 state);
 
         enum
         {
-            VISIBILITY_OFF = 0,
-            VISIBILITY_PARTIAL_ON,
-            VISIBILITY_ON,
+            VISIBILITY_ALL_OFF = 0,
+            VISIBILITY_OFF_AND_INVISIBLE,
+            VISIBILITY_OFF_AND_VISIBLE,
+            VISIBILITY_ALL_VISIBLE
         };
     };
 }

@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "TestScenes/MultiTypeLinkScene.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/DataVector4f.h"
@@ -32,13 +31,13 @@ namespace ramses_internal
     constexpr const ramses::dataProviderId_t MultiTypeLinkScene::TextureProviderId;
     constexpr const ramses::dataConsumerId_t MultiTypeLinkScene::TextureConsumerId;
 
-    MultiTypeLinkScene::MultiTypeLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    MultiTypeLinkScene::MultiTypeLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
         ramses::Effect* effectTex = getTestEffect("ramses-test-client-textured");
-        ramses::Triangle triangle1(ramsesClient, scene, *effect, ramses::TriangleAppearance::EColor_Blue);
-        ramses::Triangle triangle2(ramsesClient, scene, *effectTex, ramses::TriangleAppearance::EColor_Green);
+        ramses::Triangle triangle1(scene, *effect, ramses::TriangleAppearance::EColor_Blue);
+        ramses::Triangle triangle2(scene, *effectTex, ramses::TriangleAppearance::EColor_Green);
 
         ramses::DataVector4f* colorData = scene.createDataVector4f();
 
@@ -73,7 +72,7 @@ namespace ramses_internal
         translate2->setTranslation(1.5f, 0.f, -15.f);
 
         const float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f };
-        const ramses::Vector2fArray* textureCoords = ramsesClient.createConstVector2fArray(3u, textureCoordsArray);
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 3u, textureCoordsArray);
 
         ramses::AttributeInput texCoordsInput;
         effectTex->findAttributeInput("a_texcoord", texCoordsInput);
@@ -91,7 +90,7 @@ namespace ramses_internal
 
             const std::array<uint8_t, 4> pxData{ {0xff, 0x0, 0x0, 0xff} };
             const ramses::MipLevelData mipLevelData(4, pxData.data());
-            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache);
+            const ramses::Texture2D& texture = *m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache);
             const ramses::TextureSampler& sampler = createSampler(texture);
             setSampler(appearance2, sampler);
 
@@ -110,7 +109,7 @@ namespace ramses_internal
 
             const std::array<uint8_t, 4> pxData{ { 0x0, 0xff, 0x0, 0xff } };
             const ramses::MipLevelData mipLevelData(4, pxData.data());
-            const ramses::Texture2D& texture = *m_client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache);
+            const ramses::Texture2D& texture = *m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache);
             const ramses::TextureSampler& sampler = createSampler(texture);
             setSampler(appearance2, sampler);
 

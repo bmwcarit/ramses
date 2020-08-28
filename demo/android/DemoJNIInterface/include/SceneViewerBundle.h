@@ -22,8 +22,7 @@ namespace ramses
 
 class SceneViewerBundle : public RendererBundle {
 public:
-    SceneViewerBundle(ANativeWindow* nativeWindow, int width, int height,
-                                 const char *sceneFile, const char *resFile);
+    SceneViewerBundle(ANativeWindow* nativeWindow, int width, int height, const char *sceneFile);
 
     virtual ~SceneViewerBundle();
 

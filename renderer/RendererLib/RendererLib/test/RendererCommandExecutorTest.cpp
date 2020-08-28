@@ -127,21 +127,15 @@ public:
         m_commandBuffer.receiveScene(SceneInfo(sceneId));
 
         //receive initial flush
-        SceneActionCollection sceneActions;
-        SceneActionCollectionCreator creator(sceneActions);
+        SceneUpdate sceneUpdate;
+        SceneActionCollectionCreator creator(sceneUpdate.actions);
         creator.flush(1u, false);
-        m_commandBuffer.enqueueActionsForScene(sceneId, sceneActions.copy());
+        SceneActionCollection sceneActionCopy = sceneUpdate.actions.copy();
+        m_commandBuffer.enqueueActionsForScene(sceneId, std::move(sceneUpdate));
 
         EXPECT_CALL(m_sceneEventSender, sendSubscribeScene(sceneId));
-        EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneId, Eq(ByRef(sceneActions))));
+        EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneId, Field(&SceneUpdate::actions, Eq(ByRef(sceneActionCopy)))));
         doCommandExecutorLoop();
-
-        const RendererEventVector events = consumeSceneControlEvents();
-        ASSERT_EQ(2u, events.size());
-        EXPECT_EQ(ERendererEventType_ScenePublished, events[0].eventType);
-        EXPECT_EQ(sceneId, events[0].sceneId);
-        EXPECT_EQ(ERendererEventType_SceneSubscribed, events[1].eventType);
-        EXPECT_EQ(sceneId, events[1].sceneId);
     }
 
     void updateScenes()
@@ -157,11 +151,6 @@ public:
         doCommandExecutorLoop();
         updateScenes();
         updateScenes();
-
-        const RendererEventVector events = consumeSceneControlEvents();
-        ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneMapped, events[0].eventType);
-        EXPECT_EQ(sceneId, events[0].sceneId);
     }
 
     void showScene(SceneId sceneId)
@@ -233,11 +222,6 @@ public:
     {
         m_commandBuffer.unmapScene(sceneId);
         doCommandExecutorLoop();
-
-        const RendererEventVector events = consumeSceneControlEvents();
-        ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneUnmapped, events[0].eventType);
-        EXPECT_EQ(sceneId, events[0].sceneId);
     }
 
     StrictMock<DisplayControllerMock>& getDisplayControllerMock(DisplayHandle handle = DisplayHandle(0u))
@@ -679,8 +663,8 @@ TEST_P(ARendererCommandExecutor, linksTransformDataSlots)
     createScene(sceneProviderId);
     createScene(sceneConsumerId);
 
-    SceneActionCollection providerSceneActions;
-    SceneActionCollectionCreator providerCreator(providerSceneActions);
+    SceneUpdate providerSceneActions;
+    SceneActionCollectionCreator providerCreator(providerSceneActions.actions);
     const NodeHandle providerNode(1u);
     const DataSlotId providerSlotId(2u);
     const DataSlotHandle providerSlot(3u);
@@ -689,8 +673,8 @@ TEST_P(ARendererCommandExecutor, linksTransformDataSlots)
     providerCreator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     m_commandBuffer.enqueueActionsForScene(sceneProviderId, std::move(providerSceneActions));
 
-    SceneActionCollection consumerSceneActions;
-    SceneActionCollectionCreator consumerCreator(consumerSceneActions);
+    SceneUpdate consumerSceneActions;
+    SceneActionCollectionCreator consumerCreator(consumerSceneActions.actions);
     const NodeHandle consumerNode(1u);
     const DataSlotId consumerSlotId(2u);
     const DataSlotHandle consumerSlot(3u);
@@ -728,8 +712,8 @@ TEST_P(ARendererCommandExecutor, unlinksTransformDataSlots)
     createScene(sceneProviderId);
     createScene(sceneConsumerId);
 
-    SceneActionCollection providerSceneActions;
-    SceneActionCollectionCreator providerCreator(providerSceneActions);
+    SceneUpdate providerSceneActions;
+    SceneActionCollectionCreator providerCreator(providerSceneActions.actions);
     const NodeHandle providerNode(1u);
     const DataSlotId providerSlotId(2u);
     const DataSlotHandle providerSlot(3u);
@@ -738,8 +722,8 @@ TEST_P(ARendererCommandExecutor, unlinksTransformDataSlots)
     providerCreator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     m_commandBuffer.enqueueActionsForScene(sceneProviderId, std::move(providerSceneActions));
 
-    SceneActionCollection consumerSceneActions;
-    SceneActionCollectionCreator consumerCreator(consumerSceneActions);
+    SceneUpdate consumerSceneActions;
+    SceneActionCollectionCreator consumerCreator(consumerSceneActions.actions);
     const NodeHandle consumerNode(1u);
     const DataSlotId consumerSlotId(2u);
     const DataSlotHandle consumerSlot(3u);
@@ -776,8 +760,8 @@ TEST_P(ARendererCommandExecutor, processesSceneActions)
 
     createScene(sceneId);
 
-    SceneActionCollection actions;
-    SceneActionCollectionCreator creator(actions);
+    SceneUpdate actions;
+    SceneActionCollectionCreator creator(actions.actions);
     creator.allocateNode(0u, node);
     creator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     creator.flush(1u, false);
@@ -800,11 +784,13 @@ TEST_P(ARendererCommandExecutor, executionClearsSceneActionsRegardlessOfStateOfT
     doCommandExecutorLoop();
 
     // add actions for both scenes
-    SceneActionCollection actions;
-    SceneActionCollectionCreator creator(actions);
+    SceneUpdate actions;
+    SceneActionCollectionCreator creator(actions.actions);
+    SceneUpdate copy;
     creator.allocateNode(0u, NodeHandle(1u));
     creator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
-    m_commandBuffer.enqueueActionsForScene(sceneSubscribedId, actions.copy());
+    copy.actions = actions.actions.copy();
+    m_commandBuffer.enqueueActionsForScene(sceneSubscribedId, std::move(copy));
     m_commandBuffer.enqueueActionsForScene(sceneNotSubscribedId, std::move(actions));
 
     EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneSubscribedId, _));

@@ -106,15 +106,15 @@ public:
         ramses::RenderGroup* renderGroup = m_scene->createRenderGroup();
         renderPass->addRenderGroup(*renderGroup);
         const float vertexPositionsArray[] = { -1.0f, -1.0f, -1.f, 1.0f, -1.0f, -1.f, -1.0f, 1.0f, -1.f, 1.0f, 1.0f, -1.f };
-        const ramses::Vector3fArray* vertexPositions = m_ramses.createConstVector3fArray(4, vertexPositionsArray);
+        ramses::ArrayResource* vertexPositions = m_scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
 
         const float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f };
-        const ramses::Vector2fArray* textureCoords = m_ramses.createConstVector2fArray(4, textureCoordsArray);
+        ramses::ArrayResource* textureCoords = m_scene->createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
 
         const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::UInt16Array* indices = m_ramses.createConstUInt16Array(6, indicesArray);
+        ramses::ArrayResource* indices = m_scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
-        const ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-dcsm-provider-texture.png", m_ramses);
+        const ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-dcsm-provider-texture.png", *m_scene);
         const ramses::TextureSampler* sampler = m_scene->createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
             ramses::ETextureAddressMode_Repeat,
@@ -131,9 +131,9 @@ public:
         effectDescOutline.setFragmentShaderFromFile("res/ramses-example-dcsm-provider-outline.frag");
         effectDescOutline.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-        const ramses::Effect* effectTex = m_ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+        const ramses::Effect* effectTex = m_scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
         m_appearance = m_scene->createAppearance(*effectTex, "triangle appearance");
-        const ramses::Effect* effectOutline = m_ramses.createEffect(effectDescOutline, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+        const ramses::Effect* effectOutline = m_scene->createEffect(effectDescOutline, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
         ramses::Appearance* appearanceOutline = m_scene->createAppearance(*effectOutline, "outline appearance");
 
         ramses::GeometryBinding* geometry = m_scene->createGeometryBinding(*effectTex, "triangle geometry");
@@ -161,9 +161,6 @@ public:
         m_appearance->setInputValueFloat(m_alphaInput, 1.0f);
         m_appearance->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_One, ramses::EBlendFactor_One);
         m_appearance->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
-
-        effectOutline->findUniformInput("textureSampler", textureInput);
-        appearanceOutline->setInputTexture(textureInput, *sampler);
 
         ramses::MeshNode* meshNode = m_scene->createMeshNode("textured triangle mesh node");
         ramses::MeshNode* meshSizeOutline = m_scene->createMeshNode("size outline");

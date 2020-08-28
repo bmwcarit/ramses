@@ -20,7 +20,7 @@ namespace ramses_internal
     public:
         virtual ~IInputStream() = default;
 
-        virtual IInputStream& read(Char* data, UInt32 size) = 0;
+        virtual IInputStream& read(void* data, size_t size) = 0;
         virtual EStatus getState() const = 0;
     };
 

@@ -133,19 +133,19 @@ namespace ramses_internal
         case EFixedSemantics_ModelViewMatrix:
         case EFixedSemantics_ModelViewProjectionMatrix:
         case EFixedSemantics_NormalMatrix:
-            return dataType == EDataType_Matrix44F;
+            return dataType == EDataType::Matrix44F;
         case EFixedSemantics_ModelViewMatrix33:
-            return dataType == EDataType_Matrix33F;
+            return dataType == EDataType::Matrix33F;
         case EFixedSemantics_RendererScreenResX:
         case EFixedSemantics_RendererScreenResY:
-            return dataType == EDataType_Float;
+            return dataType == EDataType::Float;
         case EFixedSemantics_Indices:
-            return dataType == EDataType_UInt16
-                || dataType == EDataType_UInt32;
+            return dataType == EDataType::UInt16
+                || dataType == EDataType::UInt32;
         case EFixedSemantics_TextPositionsAttribute:
-            return dataType == EDataType_Vector2F;
+            return dataType == EDataType::Vector2F;
         case EFixedSemantics_TextTextureCoordinatesAttribute:
-            return dataType == EDataType_Vector2F;
+            return dataType == EDataType::Vector2F;
         case EFixedSemantics_VertexPositionAttribute:
         case EFixedSemantics_VertexNormalAttribute:
         case EFixedSemantics_VertexTexCoordAttribute:
@@ -153,19 +153,19 @@ namespace ramses_internal
         case EFixedSemantics_VertexTangentAttribute:
         case EFixedSemantics_VertexColorAttribute:
         case EFixedSemantics_VertexCustomAttribute:
-            return dataType == EDataType_Float
-                || dataType == EDataType_Vector2F
-                || dataType == EDataType_Vector3F
-                || dataType == EDataType_Vector4F;
+            return dataType == EDataType::Float
+                || dataType == EDataType::Vector2F
+                || dataType == EDataType::Vector3F
+                || dataType == EDataType::Vector4F;
         case EFixedSemantics_VertexPositionOutput:
         case EFixedSemantics_FragmentPositionInput:
-            return dataType == EDataType_Vector4F;
+            return dataType == EDataType::Vector4F;
         case EFixedSemantics_CameraWorldPosition:
-            return dataType == EDataType_Vector3F;
+            return dataType == EDataType::Vector3F;
         case EFixedSemantics_RendererScreenResolution:
-            return dataType == EDataType_Vector2F;
+            return dataType == EDataType::Vector2F;
         case EFixedSemantics_TextTextureUniform:
-            return dataType == EDataType_TextureSampler;
+            return dataType == EDataType::TextureSampler2D;
         case EFixedSemantics_Invalid:
             return false;
         default:

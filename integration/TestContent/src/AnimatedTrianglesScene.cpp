@@ -28,13 +28,13 @@ namespace ramses_internal
 {
     const UInt64 AnimatedTrianglesScene::StopTime[NUM_STATES] = { 2000u, 3000u, 4000u, 5000u, 6000u, 60000u };
 
-    AnimatedTrianglesScene::AnimatedTrianglesScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    AnimatedTrianglesScene::AnimatedTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         state = state % NUM_STATES;
 
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
-        ramses::Triangle redTriangle(m_client, m_scene, *effect, ramses::TriangleAppearance::EColor_Red);
+        ramses::Triangle redTriangle(m_scene, *effect, ramses::TriangleAppearance::EColor_Red);
         ramses::Appearance& appearance = redTriangle.GetAppearance();
         ramses::GeometryBinding& geometry = redTriangle.GetGeometry();
 

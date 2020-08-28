@@ -9,7 +9,7 @@
 #ifndef RAMSES_SCENEACTIONCOLLECTION_H
 #define RAMSES_SCENEACTIONCOLLECTION_H
 
-#include "TransportCommon/ESceneActionId.h"
+#include "Scene/ESceneActionId.h"
 #include "Common/TypedMemoryHandle.h"
 #include "Common/StronglyTypedValue.h"
 #include "SceneAPI/ResourceContentHash.h"
@@ -75,7 +75,7 @@ namespace ramses_internal
         template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
         void write(const T* data, UInt32 numElements);
 
-        static const UInt32 MaxStringLength = 255;
+        static const UInt8 MaxStringLength = std::numeric_limits<UInt8>::max();
 
         // blob write access
         void appendRawData(const Byte* data, UInt dataSize);
@@ -239,7 +239,7 @@ namespace ramses_internal
     {
         const bool hasIncomplete = !m_actionInfo.empty() &&
             !other.m_actionInfo.empty() &&
-            m_actionInfo.back().type == ESceneActionId_Incomplete;
+            m_actionInfo.back().type == ESceneActionId::Incomplete;
 
         if (hasIncomplete)
         {
@@ -300,10 +300,10 @@ namespace ramses_internal
     inline void SceneActionCollection::write(const String& str)
     {
         // check for MaxStringLength
-        const UInt32 truncatedLength = std::min(MaxStringLength, static_cast<UInt32>(str.size()));
+        const UInt8 truncatedLength = static_cast<UInt8>(std::min(static_cast<UInt>(MaxStringLength), str.size()));
 
-        reserveAdditionalDataCapacity(sizeof(UInt32) + truncatedLength);
-        writeAsByteBlob(static_cast<UInt32>(truncatedLength));
+        reserveAdditionalDataCapacity(sizeof(UInt8) + truncatedLength);
+        writeAsByteBlob(truncatedLength);
         writeAsByteBlob(str.c_str(), truncatedLength);
     }
 
@@ -460,7 +460,7 @@ namespace ramses_internal
     inline void SceneActionCollection::SceneActionReader::read(String& str)
     {
         // read string length
-        UInt32 length = 0;
+        UInt8 length = 0;
         readFromByteBlob(length);
 
         if (length > 0)

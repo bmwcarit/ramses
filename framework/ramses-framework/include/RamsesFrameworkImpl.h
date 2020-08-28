@@ -48,7 +48,7 @@ namespace ramses
         ~RamsesFrameworkImpl();
 
         static RamsesFrameworkImpl& createImpl(const RamsesFrameworkConfig& config);
-        static RamsesFrameworkImpl& createImpl(int32_t argc, const char * argv[]);
+        static RamsesFrameworkImpl& createImpl(int32_t argc, char const* const* argv);
 
         RamsesRenderer* createRenderer(const RendererConfig& config);
         RamsesClient* createClient(const char* applicationName);
@@ -59,6 +59,7 @@ namespace ramses
         status_t connect();
         bool isConnected() const;
         status_t disconnect();
+        status_t setSomeIPICServerAndClientManager(SomeIP::ServerManager* serverManager, SomeIP::ClientManager* clientManager);
         DcsmConsumer* createDcsmConsumer();
         status_t destroyDcsmConsumer(const DcsmConsumer&);
         DcsmProvider* createDcsmProvider();

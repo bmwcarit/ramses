@@ -8,11 +8,9 @@
 
 #include "TestScenes/Texture2DGenerateMipMapScene.h"
 #include "ramses-utils.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
@@ -27,8 +25,8 @@
 namespace ramses_internal
 {
 
-    Texture2DGenerateMipMapScene::Texture2DGenerateMipMapScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    Texture2DGenerateMipMapScene::Texture2DGenerateMipMapScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         createOrthoCamera();
 
@@ -145,9 +143,9 @@ namespace ramses_internal
             0.0f, t2
         };
 
-        m_indexArray = m_client.createConstUInt16Array(12, indicesArray);
-        m_vertexPositions = m_client.createConstVector3fArray(8, vertexPositionsArray);
-        m_textureCoords = m_client.createConstVector2fArray(8, textureCoordsArray);
+        m_indexArray = m_scene.createArrayResource(ramses::EDataType::UInt16, 12, indicesArray);
+        m_vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 8, vertexPositionsArray);
+        m_textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 8, textureCoordsArray);
     }
 
     ramses::TextureSampler* Texture2DGenerateMipMapScene::createTexture2DSampler(UInt32 width, UInt32 height, UInt8 transparency)
@@ -198,9 +196,9 @@ namespace ramses_internal
             ramses::MipLevelData(width*height*4u*sizeof(UInt8), rgba8_level0)
         };
 
-        ramses::Texture2D* texture = m_client.createTexture2D(
+        ramses::Texture2D* texture = m_scene.createTexture2D(
+            ramses::ETextureFormat::RGBA8,
             width, height,
-            ramses::ETextureFormat_RGBA8,
             1,
             mipLevelData,
             true);

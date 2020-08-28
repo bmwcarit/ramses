@@ -82,35 +82,35 @@ namespace ramses_internal
         m_debugOutput.enable(context);
 #endif
 
-        m_limits.addTextureFormat(ETextureFormat_Depth16);
-        m_limits.addTextureFormat(ETextureFormat_Depth24);
-        m_limits.addTextureFormat(ETextureFormat_Depth24_Stencil8);
+        m_limits.addTextureFormat(ETextureFormat::Depth16);
+        m_limits.addTextureFormat(ETextureFormat::Depth24);
+        m_limits.addTextureFormat(ETextureFormat::Depth24_Stencil8);
 
-        m_limits.addTextureFormat(ETextureFormat_RGBA8);
-        m_limits.addTextureFormat(ETextureFormat_RGB8);
-        m_limits.addTextureFormat(ETextureFormat_RGBA5551);
-        m_limits.addTextureFormat(ETextureFormat_RGBA4);
-        m_limits.addTextureFormat(ETextureFormat_RGB565);
+        m_limits.addTextureFormat(ETextureFormat::RGBA8);
+        m_limits.addTextureFormat(ETextureFormat::RGB8);
+        m_limits.addTextureFormat(ETextureFormat::RGBA5551);
+        m_limits.addTextureFormat(ETextureFormat::RGBA4);
+        m_limits.addTextureFormat(ETextureFormat::RGB565);
 
-        m_limits.addTextureFormat(ETextureFormat_R8);
-        m_limits.addTextureFormat(ETextureFormat_R16);
-        m_limits.addTextureFormat(ETextureFormat_RG8);
-        m_limits.addTextureFormat(ETextureFormat_RG16);
-        m_limits.addTextureFormat(ETextureFormat_RGB16);
-        m_limits.addTextureFormat(ETextureFormat_RGBA16);
+        m_limits.addTextureFormat(ETextureFormat::R8);
+        m_limits.addTextureFormat(ETextureFormat::R16);
+        m_limits.addTextureFormat(ETextureFormat::RG8);
+        m_limits.addTextureFormat(ETextureFormat::RG16);
+        m_limits.addTextureFormat(ETextureFormat::RGB16);
+        m_limits.addTextureFormat(ETextureFormat::RGBA16);
 
-        m_limits.addTextureFormat(ETextureFormat_R16F);
-        m_limits.addTextureFormat(ETextureFormat_R32F);
-        m_limits.addTextureFormat(ETextureFormat_RG16F);
-        m_limits.addTextureFormat(ETextureFormat_RG32F);
-        m_limits.addTextureFormat(ETextureFormat_RGB16F);
-        m_limits.addTextureFormat(ETextureFormat_RGB32F);
-        m_limits.addTextureFormat(ETextureFormat_RGBA16F);
-        m_limits.addTextureFormat(ETextureFormat_RGBA32F);
+        m_limits.addTextureFormat(ETextureFormat::R16F);
+        m_limits.addTextureFormat(ETextureFormat::R32F);
+        m_limits.addTextureFormat(ETextureFormat::RG16F);
+        m_limits.addTextureFormat(ETextureFormat::RG32F);
+        m_limits.addTextureFormat(ETextureFormat::RGB16F);
+        m_limits.addTextureFormat(ETextureFormat::RGB32F);
+        m_limits.addTextureFormat(ETextureFormat::RGBA16F);
+        m_limits.addTextureFormat(ETextureFormat::RGBA32F);
 
-        m_limits.addTextureFormat(ETextureFormat_SRGB8);
-        m_limits.addTextureFormat(ETextureFormat_SRGB8_ALPHA8);
-        m_limits.addTextureFormat(ETextureFormat_DXT3RGBA);
+        m_limits.addTextureFormat(ETextureFormat::SRGB8);
+        m_limits.addTextureFormat(ETextureFormat::SRGB8_ALPHA8);
+        m_limits.addTextureFormat(ETextureFormat::DXT3RGBA);
     }
 
     Device_GL::~Device_GL()
@@ -303,6 +303,11 @@ namespace ramses_internal
         }
     }
 
+    void Device_GL::blendColor(const Vector4& color)
+    {
+        glBlendColor(color.r, color.g, color.b, color.a);
+    }
+
     void Device_GL::cullMode(ECullMode mode)
     {
         if (mode == ECullMode::Disabled)
@@ -373,13 +378,13 @@ namespace ramses_internal
         GLenum internalFormat(0);
         switch (format)
         {
-        case ETextureFormat_Depth24:
+        case ETextureFormat::Depth24:
             internalFormat = GL_DEPTH_COMPONENT24;
             break;
-        case ETextureFormat_Depth24_Stencil8:
+        case ETextureFormat::Depth24_Stencil8:
             internalFormat = GL_DEPTH24_STENCIL8;
             break;
-        case ETextureFormat_RGBA8:
+        case ETextureFormat::RGBA8:
             internalFormat = GL_RGBA8;
             break;
         default:
@@ -1051,7 +1056,7 @@ namespace ramses_internal
             const VertexBufferGPUResource& arrayResource = m_resourceMapper.getResourceAs<VertexBufferGPUResource>(handle);
 
             const auto numComponents = arrayResource.getNumComponentsPerElement();
-            const UInt offsetInBytes = offset * numComponents * EnumToSize(EDataType_Float);
+            const UInt offsetInBytes = offset * numComponents * EnumToSize(EDataType::Float);
             const void* offsetAsPointer = reinterpret_cast<const void*>(offsetInBytes);
 
             glBindBuffer(GL_ARRAY_BUFFER, arrayResource.getGPUAddress());
@@ -1068,9 +1073,9 @@ namespace ramses_internal
         GLHandle glAddress = InvalidGLHandle;
         glGenBuffers(1, &glAddress);
         assert(glAddress != InvalidGLHandle);
-        assert(dataType == EDataType_UInt16 || dataType == EDataType_UInt32);
+        assert(dataType == EDataType::UInt16 || dataType == EDataType::UInt32);
 
-        return m_resourceMapper.registerResource(*new IndexBufferGPUResource(glAddress, sizeInBytes, dataType == EDataType_UInt16 ? 2 : 4));
+        return m_resourceMapper.registerResource(*new IndexBufferGPUResource(glAddress, sizeInBytes, dataType == EDataType::UInt16 ? 2 : 4));
     }
 
     void Device_GL::uploadIndexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize)
@@ -1287,7 +1292,7 @@ namespace ramses_internal
             for (GLint compressedGLTextureFormat : compressedTextureFormats)
             {
                 const ETextureFormat textureFormat = TypesConversion_GL::GetTextureFormatFromCompressedGLTextureFormat(compressedGLTextureFormat);
-                if (ETextureFormat_Invalid != textureFormat)
+                if (ETextureFormat::Invalid != textureFormat)
                 {
                     m_limits.addTextureFormat(textureFormat);
                 }

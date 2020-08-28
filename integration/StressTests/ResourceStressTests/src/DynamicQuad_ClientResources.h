@@ -21,14 +21,14 @@ namespace ramses_internal
 {
     struct TextureResources
     {
-        const ramses::Texture2D* texture = nullptr;
+        ramses::Texture2D* texture = nullptr;
         ramses::TextureSampler* textureSampler = nullptr;
     };
 
     class DynamicQuad_ClientResources : public DynamicQuad_Base
     {
     public:
-        DynamicQuad_ClientResources(ramses::RamsesClient& client, ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad);
+        DynamicQuad_ClientResources(ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad);
         ~DynamicQuad_ClientResources();
 
         virtual void recreate() override final;

@@ -12,6 +12,7 @@
 #include "Utils/File.h"
 #include "FileUtils.h"
 #include "ramses-client-api/RamsesClient.h"
+#include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/AttributeInput.h"
@@ -31,6 +32,7 @@ protected:
     AShaderConverter()
         : framework()
         , ramsesClient(*framework.createClient("shader-tool-test client"))
+        , scene(*ramsesClient.createScene(ramses::sceneId_t{ 0xf00 }))
     {
         cleanupOutputFiles();
     }
@@ -52,7 +54,7 @@ protected:
         ramses::EffectDescription effectDesc;
         effectDesc.setVertexShaderFromFile(OUTPUT_VERTEX_SHADER);
         effectDesc.setFragmentShaderFromFile(OUTPUT_FRAGMENT_SHADER);
-        return ramsesClient.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "shadertool from output effect");
+        return scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "shadertool from output effect");
     }
 
     void cleanupOutputFiles()
@@ -71,6 +73,7 @@ protected:
 
     ramses::RamsesFramework framework;
     ramses::RamsesClient& ramsesClient;
+    ramses::Scene& scene;
 };
 
 TEST_F(AShaderConverter, canConvertShaderFromGlslShaderWithCompilerDefines)
@@ -170,13 +173,11 @@ TEST_F(AShaderConverter, generateHashFileWithLowLevelHash)
     effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic_ModelViewMatrix);
     effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
     effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic_TextPositions);
-    ramses::Effect* fromOutputEffect = ramsesClient.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* fromOutputEffect = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ASSERT_TRUE(fromOutputEffect != nullptr);
 
-    ramses_internal::StringOutputStream llHashStream;
-    llHashStream << fromOutputEffect->impl.getLowlevelResourceHash() << "\n";
-
-    EXPECT_EQ(ramses_internal::String(llHashStream.c_str()), hashFileContent);
+    ramses_internal::ResourceContentHash llHash = fromOutputEffect->impl.getLowlevelResourceHash();
+    EXPECT_EQ(fmt::format("0x{:016X}{:016X}\n", llHash.highPart, llHash.lowPart), hashFileContent.stdRef());
 }
 
 TEST_F(AShaderConverter, generateHashFileWithHighLevelHash)
@@ -206,15 +207,11 @@ TEST_F(AShaderConverter, generateHashFileWithHighLevelHash)
     effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic_ModelViewMatrix);
     effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
     effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic_TextPositions);
-    ramses::Effect* fromOutputEffect = ramsesClient.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* fromOutputEffect = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ASSERT_TRUE(fromOutputEffect != nullptr);
 
-    ramses_internal::StringOutputStream hlHashStream;
     const auto effectId = fromOutputEffect->impl.getResourceId();
-    const ramses_internal::ResourceContentHash effectIdAsResourceHash = { effectId.lowPart, effectId.highPart };
-    hlHashStream << effectIdAsResourceHash << "\n";
-
-    EXPECT_EQ(ramses_internal::String(hlHashStream.c_str()), hashFileContent);
+    EXPECT_EQ(fmt::format("0x{:016X}{:016X}\n", effectId.highPart, effectId.lowPart), hashFileContent.stdRef());
 }
 
 TEST_F(AShaderConverter, generateHashFileWithHighLevelHashWithCorrectEffectName)
@@ -245,13 +242,9 @@ TEST_F(AShaderConverter, generateHashFileWithHighLevelHashWithCorrectEffectName)
     effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic_ModelViewMatrix);
     effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
     effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic_TextPositions);
-    ramses::Effect* fromOutputEffect = ramsesClient.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "otherName");
+    ramses::Effect* fromOutputEffect = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "otherName");
     ASSERT_TRUE(fromOutputEffect != nullptr);
 
-    ramses_internal::StringOutputStream hlHashStream;
     const auto effectId = fromOutputEffect->impl.getResourceId();
-    const ramses_internal::ResourceContentHash effectIdAsResourceHash = { effectId.lowPart, effectId.highPart };
-    hlHashStream << effectIdAsResourceHash << "\n";
-
-    EXPECT_EQ(ramses_internal::String(hlHashStream.c_str()), hashFileContent);
+    EXPECT_EQ(fmt::format("0x{:016X}{:016X}\n", effectId.highPart, effectId.lowPart), hashFileContent.stdRef());
 }

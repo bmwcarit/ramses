@@ -47,7 +47,7 @@ public:
         for (const auto& dispIt : createdDisplays)
             renderer.destroyDisplayContext(dispIt.first);
         for (const auto& sceneIt : rendererScenes)
-            expirationMonitor.stopMonitoringScene(sceneIt.key);
+            expirationMonitor.onDestroyed(sceneIt.key);
     }
 
     DisplayHandle addDisplayController()
@@ -1276,7 +1276,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
 
     auto& scene = rendererScenes.getScene(sceneId);
     TestSceneHelper sceneHelper(scene);
-    const auto dataLayout = sceneHelper.m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I}, DataFieldInfo{EDataType_Vector2I} }, ResourceContentHash::Invalid());
+    const auto dataLayout = sceneHelper.m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I}, DataFieldInfo{EDataType::Vector2I} }, ResourceContentHash::Invalid());
     const CameraHandle camera = sceneHelper.m_sceneAllocator.allocateCamera(ECameraProjectionType_Orthographic, sceneHelper.m_sceneAllocator.allocateNode(), sceneHelper.m_sceneAllocator.allocateDataInstance(dataLayout));
     const RenderPassHandle pass = sceneHelper.m_sceneAllocator.allocateRenderPass();
     scene.setRenderPassCamera(pass, camera);
@@ -3374,9 +3374,9 @@ TEST_P(ARenderer, doesNotReportSceneIfNotRenderedToExpirationMonitor)
     unassignScene(sceneIdFB);
     unassignScene(sceneIdOB);
     unassignScene(sceneIdOBint);
-    expirationMonitor.stopMonitoringScene(sceneIdFB);
-    expirationMonitor.stopMonitoringScene(sceneIdOB);
-    expirationMonitor.stopMonitoringScene(sceneIdOBint);
+    expirationMonitor.onDestroyed(sceneIdFB);
+    expirationMonitor.onDestroyed(sceneIdOB);
+    expirationMonitor.onDestroyed(sceneIdOBint);
 }
 
 TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitor)
@@ -3421,9 +3421,9 @@ TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitor)
     unassignScene(sceneIdFB);
     unassignScene(sceneIdOB);
     unassignScene(sceneIdOBint);
-    expirationMonitor.stopMonitoringScene(sceneIdFB);
-    expirationMonitor.stopMonitoringScene(sceneIdOB);
-    expirationMonitor.stopMonitoringScene(sceneIdOBint);
+    expirationMonitor.onDestroyed(sceneIdFB);
+    expirationMonitor.onDestroyed(sceneIdOB);
+    expirationMonitor.onDestroyed(sceneIdOBint);
 }
 
 TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitorOnlyAfterFullyRenderedAndNotDuringInterruption)
@@ -3467,6 +3467,6 @@ TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitorOnlyAfterFullyRendere
     hideScene(sceneIdOBint);
     unassignScene(sceneIdFB);
     unassignScene(sceneIdOBint);
-    expirationMonitor.stopMonitoringScene(sceneIdFB);
-    expirationMonitor.stopMonitoringScene(sceneIdOBint);
+    expirationMonitor.onDestroyed(sceneIdFB);
+    expirationMonitor.onDestroyed(sceneIdOBint);
 }

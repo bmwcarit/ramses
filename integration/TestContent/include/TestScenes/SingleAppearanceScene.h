@@ -22,7 +22,7 @@ namespace ramses_internal
     class SingleAppearanceScene : public IntegrationScene
     {
     public:
-        SingleAppearanceScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        SingleAppearanceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {

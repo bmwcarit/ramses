@@ -82,6 +82,18 @@ namespace ramses_internal
         EXPECT_EQ(EBlendOperation::Subtract, rs.blendOperationAlpha);
     }
 
+    TYPED_TEST(AScene, SetsStateBlendColor)
+    {
+        const RenderStateHandle state = this->m_scene.allocateRenderState();
+        this->m_scene.setRenderStateBlendColor(state, { 0.1f, 0.2f, 0.3f, 0.4f });
+
+        const RenderState& rs = this->m_scene.getRenderState(state);
+        EXPECT_EQ(0.1f, rs.blendColor.r);
+        EXPECT_EQ(0.2f, rs.blendColor.g);
+        EXPECT_EQ(0.3f, rs.blendColor.b);
+        EXPECT_EQ(0.4f, rs.blendColor.a);
+    }
+
     TYPED_TEST(AScene, SetsStateCullMode)
     {
         const RenderStateHandle state = this->m_scene.allocateRenderState();

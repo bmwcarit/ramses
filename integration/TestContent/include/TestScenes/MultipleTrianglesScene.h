@@ -21,7 +21,7 @@ namespace ramses_internal
     class MultipleTrianglesScene : public IntegrationScene
     {
     public:
-        MultipleTrianglesScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        MultipleTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         void setState(UInt32 state);
 
@@ -32,6 +32,8 @@ namespace ramses_internal
             ADDITIVE_BLENDING,
             SUBTRACTIVE_BLENDING,
             ALPHA_BLENDING,
+            BLENDING_CONSTANT,
+            BLENDING_DST_COLOR_AND_ALPHA,
             COLOR_MASK,
             CAMERA_TRANSFORMATION,
             FACE_CULLING,
@@ -60,6 +62,7 @@ namespace ramses_internal
         ramses::MeshNode* m_meshNode6;
         ramses::MeshNode* m_meshNode7;
 
+        ramses::Triangle m_whiteTriangle;
         ramses::Triangle m_redTriangle;
         ramses::Triangle m_greenTriangle;
         ramses::Triangle m_blueTriangle;

@@ -14,8 +14,9 @@
 namespace ramses
 {
     /**
-    * @brief The OrthographicCamera is a local camera which defines an orthographic view into
-    * the scene.
+    * @brief   The OrthographicCamera is a local camera which defines an orthographic view into the scene.
+    * @details A valid camera for rendering must have viewport and frustum set, see #ramses::LocalCamera
+    *          for ways to set these parameters.
     */
     class RAMSES_API OrthographicCamera : public LocalCamera
     {

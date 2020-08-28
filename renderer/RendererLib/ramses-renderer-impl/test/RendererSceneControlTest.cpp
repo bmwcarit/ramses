@@ -456,18 +456,24 @@ namespace ramses
         constexpr sceneId_t scene{ 3 };
 
         InSequence seq;
+        EXPECT_CALL(m_eventHandler, sceneExpirationMonitoringEnabled(scene));
+        m_eventsFromRenderer.addSceneExpirationEvent(ramses_internal::ERendererEventType_SceneExpirationMonitoringEnabled, ramses_internal::SceneId{ scene.getValue() });
+
         EXPECT_CALL(m_eventHandler, sceneExpired(scene));
         m_eventsFromRenderer.addSceneExpirationEvent(ramses_internal::ERendererEventType_SceneExpired, ramses_internal::SceneId{ scene.getValue() });
 
         EXPECT_CALL(m_eventHandler, sceneRecoveredFromExpiration(scene));
         m_eventsFromRenderer.addSceneExpirationEvent(ramses_internal::ERendererEventType_SceneRecoveredFromExpiration, ramses_internal::SceneId{ scene.getValue() });
 
+        EXPECT_CALL(m_eventHandler, sceneExpirationMonitoringDisabled(scene));
+        m_eventsFromRenderer.addSceneExpirationEvent(ramses_internal::ERendererEventType_SceneExpirationMonitoringDisabled, ramses_internal::SceneId{ scene.getValue() });
+
         dispatchSceneControlEvents();
     }
 
     TEST_F(ARendererSceneControl, dispatchesStreamAvailabilityEventFromRenderer)
     {
-        constexpr streamSource_t stream{ 3 };
+        constexpr waylandIviSurfaceId_t stream{ 3 };
 
         InSequence seq;
         EXPECT_CALL(m_eventHandler, streamAvailabilityChanged(stream, true));

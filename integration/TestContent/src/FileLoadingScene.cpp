@@ -20,14 +20,10 @@
 #include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Appearance.h"
-#include "ramses-client-api/ResourceFileDescription.h"
-#include "ramses-client-api/ResourceFileDescriptionSet.h"
 #include "ramses-client-api/AnimationSystem.h"
 #include "ramses-client-api/AnimationSequence.h"
 #include "ramses-client-api/SplineLinearFloat.h"
-#include "ramses-client-api/Vector3fArray.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/UInt16Array.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/UniformInput.h"
 #include "RamsesObjectTypeUtils.h"
@@ -77,25 +73,16 @@ namespace ramses_internal
         ramses::RenderGroup* renderGroup = scene->createRenderGroup("render group");
         renderPass->addRenderGroup(*renderGroup);
 
-        ramses::ResourceFileDescriptionSet resourceFileInformation;
-        ramses::ResourceFileDescription textureAssets((folder + String("/texture.ramres")).c_str());
-        ramses::ResourceFileDescription triangleAssets((folder + String("/triangle.ramres")).c_str());
-
         float vertexPositionsArray[] = { -0.5f, -0.5f, -1.f, 0.5f, -0.5f, -1.f, -0.5f, 0.5f, -1.f, 0.5f, 0.5f, -1.f };
-        const ramses::Vector3fArray* vertexPositions = client.createConstVector3fArray(4, vertexPositionsArray);
-        textureAssets.add(vertexPositions);
+        ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
 
         float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f };
-        const ramses::Vector2fArray* textureCoords = client.createConstVector2fArray(4, textureCoordsArray);
-        textureAssets.add(textureCoords);
+        ramses::ArrayResource* textureCoords = scene->createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
 
         uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::UInt16Array* indices = client.createConstUInt16Array(6, indicesArray);
-        ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-file-loading-texture.png", client);
+        ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+        ramses::Texture2D* texture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-file-loading-texture.png", *scene);
         assert(texture != nullptr);
-
-        textureAssets.add(indices);
-        textureAssets.add(texture);
 
         ramses::TextureSampler* sampler = scene->createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
@@ -109,8 +96,7 @@ namespace ramses_internal
         effectDesc.setFragmentShaderFromFile("res/ramses-test-client-file-loading-texturing.frag");
         effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-        const ramses::Effect* effectTex = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
-        textureAssets.add(effectTex);
+        ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
 
         ramses::Appearance* appearance = scene->createAppearance(*effectTex, "triangle appearance");
         ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effectTex, "triangle geometry");
@@ -136,35 +122,21 @@ namespace ramses_internal
 
         scaleNode->addChild(*meshNode);
 
-        initializeAnimationContent(client, *scene, triangleAssets, *renderGroup);
+        initializeAnimationContent(*scene, *renderGroup);
 
-        resourceFileInformation.add(textureAssets);
-        resourceFileInformation.add(triangleAssets);
-        client.saveSceneToFile(*scene, (folder + String("/tempfile.ramses")).c_str(), resourceFileInformation, false);
+        scene->saveToFile((folder + String("/tempfile.ramses")).c_str(), false);
 
         client.destroy(*scene);
-
-        for (uint32_t i = 0; i < resourceFileInformation.getNumberOfDescriptions(); ++i)
-        {
-            const ramses::ResourceFileDescription& resDesc = resourceFileInformation.getDescription(i);
-
-            for (uint32_t j = 0; j < resDesc.getNumberOfResources(); ++j)
-            {
-                const ramses::Resource& resource = resDesc.getResource(j);
-                client.destroy(resource);
-            }
-        }
     }
 
-    void FileLoadingScene::initializeAnimationContent(ramses::RamsesClient& ramses, ramses::Scene& scene, ramses::ResourceFileDescription& resources, ramses::RenderGroup& renderGroup)
+    void FileLoadingScene::initializeAnimationContent(ramses::Scene& scene, ramses::RenderGroup& renderGroup)
     {
         // prepare triangle geometry: vertex position array and index array
         float vertexPositionsData[] = { -0.3f, 0.f, -0.3f, 0.3f, 0.f, -0.3f, 0.f, 0.3f, -0.3f };
-        const ramses::Vector3fArray* vertexPositions = ramses.createConstVector3fArray(3, vertexPositionsData);
-        resources.add(vertexPositions);
+        ramses::ArrayResource* vertexPositions = scene.createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
+
         uint16_t indexData[] = { 0, 1, 2 };
-        const ramses::UInt16Array* indices = ramses.createConstUInt16Array(3, indexData);
-        resources.add(indices);
+        ramses::ArrayResource* indices = scene.createArrayResource(ramses::EDataType::UInt16, 3, indexData);
 
         // create an appearance for red triangle
         ramses::EffectDescription effectDesc;
@@ -172,8 +144,7 @@ namespace ramses_internal
         effectDesc.setFragmentShaderFromFile("res/ramses-test-client-file-loading-red.frag");
         effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-        const ramses::Effect* effect = ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader anim");
-        resources.add(effect);
+        ramses::Effect* effect = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader anim");
         ramses::Appearance* appearance = scene.createAppearance(*effect, "triangle appearance anim");
 
         // set vertex positions directly in geometry
@@ -254,11 +225,7 @@ namespace ramses_internal
 
     void FileLoadingScene::loadFromFiles(ramses::RamsesClient& ramses, const String& folder)
     {
-        ramses::ResourceFileDescriptionSet resourceFileInformation;
-        resourceFileInformation.add(ramses::ResourceFileDescription((folder + String("/texture.ramres")).c_str()));
-        resourceFileInformation.add(ramses::ResourceFileDescription((folder + String("/triangle.ramres")).c_str()));
-
-        ramses::Scene* loadedScene = ramses.loadSceneFromFile((folder + String("/tempfile.ramses")).c_str(), resourceFileInformation);
+        ramses::Scene* loadedScene = ramses.loadSceneFromFile((folder + String("/tempfile.ramses")).c_str());
 
         // make changes to loaded scene
         ramses::Node& loadedScaleNode = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Node>(*loadedScene->findObjectByName("scale node"));

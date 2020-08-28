@@ -72,6 +72,7 @@ namespace ramses_internal
         // Render state setters
         void setRenderStateBlendFactors(RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha);
         void setRenderStateBlendOperations(RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha);
+        void setRenderStateBlendColor(RenderStateHandle stateHandle, const Vector4& color);
         void setRenderStateCullMode(RenderStateHandle stateHandle, ECullMode cullMode);
         void setRenderStateDrawMode(RenderStateHandle stateHandle, EDrawMode drawMode);
         void setRenderStateDepthFunc(RenderStateHandle stateHandle, EDepthFunc func);
@@ -82,10 +83,8 @@ namespace ramses_internal
         void setRenderStateColorWriteMask(RenderStateHandle stateHandle, ColorWriteMask colorMask);
 
         // Camera
-        void allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle);
+        void allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle dataInstance, CameraHandle handle);
         void releaseCamera(CameraHandle cameraHandle);
-        void setCameraViewport(CameraHandle cameraHandle, const Viewport& vp);
-        void setCameraFrustum(CameraHandle cameraHandle, const Frustum& frustum);
 
         // Creation/Deletion
         void allocateNode(UInt32 childrenCount, NodeHandle handle);

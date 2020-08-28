@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 
     // prepare triangle geometry: vertex position array and index array
     float vertexPositionsArray[] = { -1.f, 0.f, -1.f, 1.f, 0.f, -1.f, 0.f, 1.f, -1.f };
-    const ramses::Vector3fArray* vertexPositions = ramses.createConstVector3fArray(3, vertexPositionsArray);
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
     effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-geometry.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    const ramses::Effect* effect = ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    const ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = scene->createAppearance(*effect, "triangle appearance");
 
     // set vertex positions directly in geometry
@@ -83,8 +83,8 @@ int main(int argc, char* argv[])
 
     // shutdown: stop distribution, free resources, unregister
     scene->unpublish();
+    scene->destroy(*vertexPositions);
     ramses.destroy(*scene);
-    ramses.destroy(*vertexPositions);
     framework.disconnect();
 
     return 0;

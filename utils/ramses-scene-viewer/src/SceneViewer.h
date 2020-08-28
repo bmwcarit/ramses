@@ -33,15 +33,14 @@ namespace ramses_internal
 
     protected:
         void printUsage() const;
-        void loadAndRenderScene(int argc, char* argv[], const String& sceneFile, const String& resFile);
-        ramses::Scene* loadSceneWithResources(ramses::RamsesClient& client, const String& sceneFile, const String& resFile);
+        void loadAndRenderScene(int argc, char* argv[], const String& sceneFile);
+        ramses::Scene* loadScene(ramses::RamsesClient& client, const String& sceneFile);
         void validateContent(const ramses::RamsesClient& client, const ramses::Scene& scene) const;
 
         std::string m_sceneName;
         CommandLineParser m_parser;
         ArgumentBool   m_helpArgument;
         ArgumentString m_scenePathAndFileArgument;
-        ArgumentString m_optionalResFileArgument;
         ArgumentString m_validationUnrequiredObjectsDirectoryArgument;
         ArgumentString m_screenshotFile;
     };

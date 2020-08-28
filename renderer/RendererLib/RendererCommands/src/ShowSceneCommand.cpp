@@ -77,7 +77,7 @@ namespace ramses_internal
             sceneState=waitForSceneState(sceneId,ESceneState::Subscribed);
             if (sceneState!=ESceneState::Subscribed)
             {
-                LOG_ERROR(CONTEXT_RAMSH, "Subscribing scene request" << sceneId.getValue() << " is timed out!");
+                LOG_ERROR(CONTEXT_RAMSH, "Subscribing scene request" << sceneId << " is timed out!");
                 return false;
             }
         }
@@ -88,7 +88,7 @@ namespace ramses_internal
             sceneState=waitForSceneState(sceneId,ESceneState::Mapped);
             if (sceneState!=ESceneState::Mapped)
             {
-                LOG_ERROR(CONTEXT_RAMSH, "Mapping scene request" << sceneId.getValue() << " is timed out!");
+                LOG_ERROR(CONTEXT_RAMSH, "Mapping scene request" << sceneId << " is timed out!");
                 return false;
             }
         }
@@ -99,7 +99,7 @@ namespace ramses_internal
             sceneState=waitForSceneState(sceneId,ESceneState::Rendered);
             if (sceneState!=ESceneState::Rendered)
             {
-                LOG_ERROR(CONTEXT_RAMSH, "Rendering scene request" << sceneId.getValue() << " is timed out!");
+                LOG_ERROR(CONTEXT_RAMSH, "Rendering scene request" << sceneId << " is timed out!");
                 return false;
             }
         }

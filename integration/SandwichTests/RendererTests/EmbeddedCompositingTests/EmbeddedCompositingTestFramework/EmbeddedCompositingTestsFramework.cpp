@@ -221,7 +221,7 @@ namespace ramses_internal
 
     bool EmbeddedCompositingTestsFramework::waitForStreamSurfaceAvailabilityChange(StreamTextureSourceId streamSource, bool available)
     {
-        return getTestRenderer().waitForStreamSurfaceAvailabilityChange(ramses::streamSource_t(streamSource.getValue()), available);
+        return getTestRenderer().waitForStreamSurfaceAvailabilityChange(ramses::waylandIviSurfaceId_t(streamSource.getValue()), available);
     }
 
     void EmbeddedCompositingTestsFramework::sendStopToTestApplication()
@@ -395,11 +395,11 @@ namespace ramses_internal
     {
         const auto& displays = getDisplays();
 
-        const UInt32 waylandIviLayerId = displays[0].config.getWaylandIviLayerID();
+        const ramses::waylandIviLayerId_t waylandIviLayerId = displays[0].config.getWaylandIviLayerID();
         const UInt32 iviSurfaceOffset = 10u;
 
         BinaryOutputStream bos;
-        bos << ETestWaylandApplicationMessage::StartRamsesRendererAndRunRenderingTest << waylandIviLayerId << iviSurfaceOffset;
+        bos << ETestWaylandApplicationMessage::StartRamsesRendererAndRunRenderingTest << waylandIviLayerId.getValue() << iviSurfaceOffset;
         m_testForkingController.sendMessageToTestApplication(bos);
 
         bool testSucessResult = false;

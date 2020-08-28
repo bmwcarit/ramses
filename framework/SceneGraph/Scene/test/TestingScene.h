@@ -55,6 +55,7 @@ namespace ramses_internal
             scene.allocateRenderState(renderState);
             scene.setRenderStateBlendFactors(renderState, EBlendFactor::One, EBlendFactor::SrcAlpha, EBlendFactor::OneMinusSrcAlpha, EBlendFactor::DstAlpha);
             scene.setRenderStateBlendOperations(renderState, EBlendOperation::Add, EBlendOperation::Subtract);
+            scene.setRenderStateBlendColor(renderState, { 0.1f, 0.2f, 0.3f, 0.4f });
             scene.setRenderStateCullMode(renderState, ECullMode::FrontFacing);
             scene.setRenderStateDrawMode(renderState, EDrawMode::Triangles);
             scene.setRenderStateDepthWrite(renderState, EDepthWrite::Disabled);
@@ -76,25 +77,25 @@ namespace ramses_internal
             scene.allocateRenderable(child, renderable2);
 
             DataFieldInfoVector uniformLayoutDataFields{
-                DataFieldInfo(EDataType_Float),
-                DataFieldInfo(EDataType_Vector4F, 2u),
-                DataFieldInfo(EDataType_Matrix33F, 1u, EFixedSemantics_ModelViewMatrix33),
-                DataFieldInfo(EDataType_Matrix44F),
-                DataFieldInfo(EDataType_TextureSampler),
-                DataFieldInfo(EDataType_DataReference)
+                DataFieldInfo(EDataType::Float),
+                DataFieldInfo(EDataType::Vector4F, 2u),
+                DataFieldInfo(EDataType::Matrix33F, 1u, EFixedSemantics_ModelViewMatrix33),
+                DataFieldInfo(EDataType::Matrix44F),
+                DataFieldInfo(EDataType::TextureSampler2D),
+                DataFieldInfo(EDataType::DataReference)
             };
             scene.allocateDataLayout(uniformLayoutDataFields, effectHash, uniformLayout);
 
             DataFieldInfoVector geometryLayoutDataFields{
-                DataFieldInfo(EDataType_Indices),
-                DataFieldInfo(EDataType_Vector4Buffer),
-                DataFieldInfo(EDataType_FloatBuffer),
-                DataFieldInfo(EDataType_Vector2Buffer) //unused
+                DataFieldInfo(EDataType::Indices),
+                DataFieldInfo(EDataType::Vector4Buffer),
+                DataFieldInfo(EDataType::FloatBuffer),
+                DataFieldInfo(EDataType::Vector2Buffer) //unused
             };
             scene.allocateDataLayout(geometryLayoutDataFields, effectHash, vertexLayout);
 
-            scene.allocateDataInstance(scene.allocateDataLayout({ ramses_internal::DataFieldInfo{ramses_internal::EDataType_Vector2I}, ramses_internal::DataFieldInfo{ramses_internal::EDataType_Vector2I} },
-                                                                ResourceContentHash::Invalid()), cameraVPDataInstance);
+            scene.allocateDataInstance(scene.allocateDataLayout({ ramses_internal::DataFieldInfo{ramses_internal::EDataType::Vector2I}, ramses_internal::DataFieldInfo{ramses_internal::EDataType::Vector2I} },
+                                                                ResourceContentHash::Invalid()), cameraDataInstance);
 
             scene.allocateStreamTexture(87u, ResourceContentHash(234, 0), streamTexture);
             scene.setForceFallbackImage(streamTexture, true);
@@ -122,16 +123,12 @@ namespace ramses_internal
             scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, uniformData);
             scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Geometry, geometryData);
 
-            scene.allocateCamera(ECameraProjectionType_Renderer, cameraNode, cameraVPDataInstance, camera);
-
-            scene.allocateCamera(ECameraProjectionType_Perspective,cameraNode, cameraVPDataInstance, perspectiveCamera);
-            scene.setCameraFrustum(perspectiveCamera, { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f });
-
-            scene.allocateCamera(ECameraProjectionType_Orthographic, cameraNode, cameraVPDataInstance, orthographicCamera);
-            scene.setCameraFrustum(orthographicCamera, { 1.1f, 1.2f, 1.3f, 1.4f, 1.5f, 1.6f });
+            scene.allocateCamera(ECameraProjectionType_Renderer, cameraNode, cameraDataInstance, camera);
+            scene.allocateCamera(ECameraProjectionType_Perspective,cameraNode, cameraDataInstance, perspectiveCamera);
+            scene.allocateCamera(ECameraProjectionType_Orthographic, cameraNode, cameraDataInstance, orthographicCamera);
 
             scene.allocateRenderTarget(renderTarget);
-            scene.allocateRenderBuffer({ 23u, 42u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 3u }, renderBuffer);
+            scene.allocateRenderBuffer({ 23u, 42u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 3u }, renderBuffer);
             scene.addRenderTargetRenderBuffer(renderTarget, renderBuffer);
 
             scene.allocateRenderGroup(0u, 0u, renderGroup);
@@ -166,10 +163,10 @@ namespace ramses_internal
 
             scene.allocateDataSlot({ EDataSlotType_TransformationConsumer, dataSlotId, parent, dataRef, textureHash, samplerWithTextureResource }, transformDataSlot);
 
-            scene.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType_UInt32, 1024, indexDataBuffer);
+            scene.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType::UInt32, 1024, indexDataBuffer);
             scene.updateDataBuffer(indexDataBuffer, 1u, 2u, std::array<Byte, 2>{{0x77, 0xAB }}.data());
 
-            scene.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType_Float, 32, vertexDataBuffer);
+            scene.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType::Float, 32, vertexDataBuffer);
             scene.updateDataBuffer(vertexDataBuffer, 0u, 3u, std::array<Byte, 3>{{0x0A, 0x1B, 0x2C}}.data());
 
             scene.allocatePickableObject(vertexDataBuffer, child, PickableObjectId{ 0u }, pickableHandle);
@@ -177,7 +174,7 @@ namespace ramses_internal
             scene.setPickableObjectCamera(pickableHandle, camera);
             scene.setPickableObjectEnabled(pickableHandle, false);
 
-            scene.allocateTextureBuffer(ETextureFormat_R8, { {8u, 8u}, {4u, 4u}, {2u, 2u} }, texture2DBuffer);
+            scene.allocateTextureBuffer(ETextureFormat::R8, { {8u, 8u}, {4u, 4u}, {2u, 2u} }, texture2DBuffer);
             scene.updateTextureBuffer(texture2DBuffer, 0u, 3u, 4u, 1u, 3u, std::array<Byte, 3>{ {34u, 35u, 36u}}.data()); //partial update level 0
             scene.updateTextureBuffer(texture2DBuffer, 0u, 3u, 4u, 1u, 2u, std::array<Byte, 2>{ {134u, 135u}}.data()); //override partial update level 0
             scene.updateTextureBuffer(texture2DBuffer, 2u, 0u, 0u, 2u, 2u, std::array<Byte, 4>{ {00u, 10u, 01u, 11u}}.data()); //full update level 2
@@ -283,6 +280,10 @@ namespace ramses_internal
             EXPECT_EQ(EBlendFactor::DstAlpha             , rs.blendFactorDstAlpha);
             EXPECT_EQ(EBlendOperation::Add               , rs.blendOperationColor);
             EXPECT_EQ(EBlendOperation::Subtract          , rs.blendOperationAlpha);
+            EXPECT_EQ(0.1f                               , rs.blendColor.r);
+            EXPECT_EQ(0.2f                               , rs.blendColor.g);
+            EXPECT_EQ(0.3f                               , rs.blendColor.b);
+            EXPECT_EQ(0.4f                               , rs.blendColor.a);
             EXPECT_EQ(ECullMode::FrontFacing             , rs.cullMode);
             EXPECT_EQ(EDrawMode::Triangles               , rs.drawMode);
             EXPECT_EQ(EDepthFunc::GreaterEqual           , rs.depthFunc);
@@ -307,17 +308,17 @@ namespace ramses_internal
             EXPECT_EQ(6u, otherScene.getDataLayout(uniformLayout).getFieldCount());
             EXPECT_EQ(4u, otherScene.getDataLayout(vertexLayout).getFieldCount());
             // check types
-            EXPECT_EQ(EDataType_Float, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(0)).dataType);
-            EXPECT_EQ(EDataType_Vector4F, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(1)).dataType);
-            EXPECT_EQ(EDataType_Matrix33F, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(2)).dataType);
-            EXPECT_EQ(EDataType_Matrix44F, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(3)).dataType);
-            EXPECT_EQ(EDataType_TextureSampler, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(4)).dataType);
-            EXPECT_EQ(EDataType_DataReference, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(5)).dataType);
+            EXPECT_EQ(EDataType::Float, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(0)).dataType);
+            EXPECT_EQ(EDataType::Vector4F, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(1)).dataType);
+            EXPECT_EQ(EDataType::Matrix33F, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(2)).dataType);
+            EXPECT_EQ(EDataType::Matrix44F, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(3)).dataType);
+            EXPECT_EQ(EDataType::TextureSampler2D, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(4)).dataType);
+            EXPECT_EQ(EDataType::DataReference, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(5)).dataType);
             EXPECT_EQ(effectHash, otherScene.getDataLayout(uniformLayout).getEffectHash());
-            EXPECT_EQ(EDataType_Indices, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(0)).dataType);
-            EXPECT_EQ(EDataType_Vector4Buffer, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(1)).dataType);
-            EXPECT_EQ(EDataType_FloatBuffer, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(2)).dataType);
-            EXPECT_EQ(EDataType_Vector2Buffer, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(3)).dataType);
+            EXPECT_EQ(EDataType::Indices, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(0)).dataType);
+            EXPECT_EQ(EDataType::Vector4Buffer, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(1)).dataType);
+            EXPECT_EQ(EDataType::FloatBuffer, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(2)).dataType);
+            EXPECT_EQ(EDataType::Vector2Buffer, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(3)).dataType);
             EXPECT_EQ(effectHash, otherScene.getDataLayout(vertexLayout).getEffectHash());
             // check element counts
             EXPECT_EQ(1u, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(0)).elementCount);
@@ -410,29 +411,15 @@ namespace ramses_internal
             const Camera& camData = otherScene.getCamera(camera);
             EXPECT_EQ(ECameraProjectionType_Renderer, camData.projectionType);
             EXPECT_EQ(cameraNode, camData.node);
-            EXPECT_EQ(cameraVPDataInstance, camData.viewportDataInstance);
+            EXPECT_EQ(cameraDataInstance, camData.dataInstance);
 
             const Camera& perspCamData = otherScene.getCamera(perspectiveCamera);
             EXPECT_EQ(ECameraProjectionType_Perspective, perspCamData.projectionType);
             EXPECT_EQ(cameraNode, perspCamData.node);
-            EXPECT_EQ(cameraVPDataInstance, perspCamData.viewportDataInstance);
-            EXPECT_FLOAT_EQ(0.1f, perspCamData.frustum.leftPlane);
-            EXPECT_FLOAT_EQ(0.2f, perspCamData.frustum.rightPlane);
-            EXPECT_FLOAT_EQ(0.3f, perspCamData.frustum.bottomPlane);
-            EXPECT_FLOAT_EQ(0.4f, perspCamData.frustum.topPlane);
-            EXPECT_FLOAT_EQ(0.5f, perspCamData.frustum.nearPlane);
-            EXPECT_FLOAT_EQ(0.6f, perspCamData.frustum.farPlane);
 
             const Camera& orthoCamData = otherScene.getCamera(orthographicCamera);
             EXPECT_EQ(ECameraProjectionType_Orthographic, orthoCamData.projectionType);
             EXPECT_EQ(cameraNode, orthoCamData.node);
-            EXPECT_EQ(cameraVPDataInstance, orthoCamData.viewportDataInstance);
-            EXPECT_FLOAT_EQ(1.1f, orthoCamData.frustum.leftPlane);
-            EXPECT_FLOAT_EQ(1.2f, orthoCamData.frustum.rightPlane);
-            EXPECT_FLOAT_EQ(1.3f, orthoCamData.frustum.bottomPlane);
-            EXPECT_FLOAT_EQ(1.4f, orthoCamData.frustum.topPlane);
-            EXPECT_FLOAT_EQ(1.5f, orthoCamData.frustum.nearPlane);
-            EXPECT_FLOAT_EQ(1.6f, orthoCamData.frustum.farPlane);
         }
 
         template <typename OTHERSCENE>
@@ -509,7 +496,7 @@ namespace ramses_internal
             EXPECT_EQ(23u, renderBufferData.width);
             EXPECT_EQ(42u, renderBufferData.height);
             EXPECT_EQ(ERenderBufferType_ColorBuffer, renderBufferData.type);
-            EXPECT_EQ(ETextureFormat_RGBA8, renderBufferData.format);
+            EXPECT_EQ(ETextureFormat::RGBA8, renderBufferData.format);
             EXPECT_EQ(ERenderBufferAccessMode_ReadWrite, renderBufferData.accessMode);
             EXPECT_EQ(3u, renderBufferData.sampleCount);
 
@@ -537,14 +524,14 @@ namespace ramses_internal
             EXPECT_EQ(1024u, indexData.data.size());
             EXPECT_EQ(3u, indexData.usedSize);
             EXPECT_EQ(EDataBufferType::IndexBuffer, indexData.bufferType);
-            EXPECT_EQ(EDataType_UInt32, indexData.dataType);
+            EXPECT_EQ(EDataType::UInt32, indexData.dataType);
             EXPECT_EQ(0x77, indexData.data[1]);
             EXPECT_EQ(0xAB, indexData.data[2]);
 
             EXPECT_EQ(32u, vertexData.data.size());
             EXPECT_EQ(3u, vertexData.usedSize);
             EXPECT_EQ(EDataBufferType::VertexBuffer, vertexData.bufferType);
-            EXPECT_EQ(EDataType_Float, vertexData.dataType);
+            EXPECT_EQ(EDataType::Float, vertexData.dataType);
             EXPECT_EQ(0x0A, vertexData.data[0]);
             EXPECT_EQ(0x1B, vertexData.data[1]);
             EXPECT_EQ(0x2C, vertexData.data[2]);
@@ -555,7 +542,7 @@ namespace ramses_internal
         {
             ASSERT_TRUE(otherScene.isTextureBufferAllocated(texture2DBuffer));
             const TextureBuffer& texBuffer = otherScene.getTextureBuffer(texture2DBuffer);
-            EXPECT_EQ(ETextureFormat_R8, texBuffer.textureFormat);
+            EXPECT_EQ(ETextureFormat::R8, texBuffer.textureFormat);
 
             ASSERT_EQ(3u, texBuffer.mipMaps.size());
             EXPECT_EQ(8u, texBuffer.mipMaps[0].width);
@@ -650,7 +637,7 @@ namespace ramses_internal
         const NodeHandle             childChild1                    {12u};
         const NodeHandle             childChild2                    {21u};
         const NodeHandle             cameraNode                     {23u};
-        const DataInstanceHandle     cameraVPDataInstance           {23u};
+        const DataInstanceHandle     cameraDataInstance             {23u};
         const TransformHandle        t1                             {35u};
         const TransformHandle        t2                             {39u};
         const RenderableHandle       renderable                     {43u};

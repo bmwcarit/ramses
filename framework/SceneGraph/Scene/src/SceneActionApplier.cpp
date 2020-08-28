@@ -48,16 +48,22 @@ namespace ramses_internal
     {
         switch (action.type())
         {
-        case ESceneActionId_AllocateNode:
+        case ESceneActionId::AllocateNode:
         {
             UInt32 childrenCount = 0u;
             NodeHandle nodeHandle;
+            String objectName;
+            UInt64 objectId;
             action.read(childrenCount);
             action.read(nodeHandle);
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateNode(childrenCount, nodeHandle), nodeHandle);
             break;
         }
-        case ESceneActionId_AddChildToNode:
+        case ESceneActionId::AddChildToNode:
         {
             NodeHandle node;
             NodeHandle child;
@@ -66,7 +72,7 @@ namespace ramses_internal
             scene.addChildToNode(node, child);
             break;
         }
-        case ESceneActionId_AllocateTransform:
+        case ESceneActionId::AllocateTransform:
         {
             NodeHandle nodeHandle;
             TransformHandle transformHandle;
@@ -75,7 +81,7 @@ namespace ramses_internal
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateTransform(nodeHandle, transformHandle), transformHandle);
             break;
         }
-        case ESceneActionId_SetTransformComponent:
+        case ESceneActionId::SetTransformComponent:
         {
             TransformHandle transform;
             UInt32 component = 0;
@@ -103,16 +109,22 @@ namespace ramses_internal
             };
             break;
         }
-        case ESceneActionId_AllocateDataInstance:
+        case ESceneActionId::AllocateDataInstance:
         {
             DataLayoutHandle dataLayout;
             DataInstanceHandle diHandle;
+            String objectName;
+            UInt64 objectId;
             action.read(dataLayout);
             action.read(diHandle);
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateDataInstance(dataLayout, diHandle), diHandle);
             break;
         }
-        case ESceneActionId_SetDataFloatArray:
+        case ESceneActionId::SetDataFloatArray:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -124,7 +136,7 @@ namespace ramses_internal
             scene.setDataFloatArray(handle, field, elementCount, array);
             break;
         }
-        case ESceneActionId_SetDataVector2fArray:
+        case ESceneActionId::SetDataVector2fArray:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -138,7 +150,7 @@ namespace ramses_internal
             scene.setDataVector2fArray(handle, field, elementCount, array);
             break;
         }
-        case ESceneActionId_SetDataVector3fArray:
+        case ESceneActionId::SetDataVector3fArray:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -152,7 +164,7 @@ namespace ramses_internal
             scene.setDataVector3fArray(handle, field, elementCount, array);
             break;
         }
-        case ESceneActionId_SetDataVector4fArray:
+        case ESceneActionId::SetDataVector4fArray:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -166,7 +178,7 @@ namespace ramses_internal
             scene.setDataVector4fArray(handle, field, elementCount, array);
             break;
         }
-        case ESceneActionId_SetDataMatrix22fArray:
+        case ESceneActionId::SetDataMatrix22fArray:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -180,7 +192,7 @@ namespace ramses_internal
             scene.setDataMatrix22fArray(handle, field, elementCount, array);
             break;
         }
-        case ESceneActionId_SetDataMatrix33fArray:
+        case ESceneActionId::SetDataMatrix33fArray:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -194,7 +206,7 @@ namespace ramses_internal
             scene.setDataMatrix33fArray(handle, field, elementCount, array);
             break;
         }
-        case ESceneActionId_SetDataMatrix44fArray:
+        case ESceneActionId::SetDataMatrix44fArray:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -208,7 +220,7 @@ namespace ramses_internal
             scene.setDataMatrix44fArray(handle, field, elementCount, array);
             break;
         }
-        case ESceneActionId_SetDataIntegerArray:
+        case ESceneActionId::SetDataIntegerArray:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -220,7 +232,7 @@ namespace ramses_internal
             scene.setDataIntegerArray(handle, field, elementCount, array);
             break;
         }
-        case ESceneActionId_SetDataVector2iArray:
+        case ESceneActionId::SetDataVector2iArray:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -234,7 +246,7 @@ namespace ramses_internal
             scene.setDataVector2iArray(handle, field, elementCount, array);
             break;
         }
-        case ESceneActionId_SetDataVector3iArray:
+        case ESceneActionId::SetDataVector3iArray:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -248,7 +260,7 @@ namespace ramses_internal
             scene.setDataVector3iArray(handle, field, elementCount, array);
             break;
         }
-        case ESceneActionId_SetDataVector4iArray:
+        case ESceneActionId::SetDataVector4iArray:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -262,7 +274,7 @@ namespace ramses_internal
             scene.setDataVector4iArray(handle, field, elementCount, array);
             break;
         }
-        case ESceneActionId_SetDataResource:
+        case ESceneActionId::SetDataResource:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -277,7 +289,7 @@ namespace ramses_internal
             scene.setDataResource(handle, field, hash, dataBuffer, instancingDivisor);
             break;
         }
-        case ESceneActionId_SetDataTextureSamplerHandle:
+        case ESceneActionId::SetDataTextureSamplerHandle:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -288,7 +300,7 @@ namespace ramses_internal
             scene.setDataTextureSamplerHandle(handle, field, samplerHandle);
             break;
         }
-        case ESceneActionId_SetDataReference:
+        case ESceneActionId::SetDataReference:
         {
             DataInstanceHandle handle;
             DataFieldHandle field;
@@ -299,7 +311,7 @@ namespace ramses_internal
             scene.setDataReference(handle, field, dataRef);
             break;
         }
-        case ESceneActionId_AllocateRenderable:
+        case ESceneActionId::AllocateRenderable:
         {
             NodeHandle node;
             RenderableHandle handle;
@@ -308,7 +320,7 @@ namespace ramses_internal
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateRenderable(node, handle), handle);
             break;
         }
-        case ESceneActionId_RemoveChildFromNode:
+        case ESceneActionId::RemoveChildFromNode:
         {
             NodeHandle parent;
             NodeHandle child;
@@ -317,7 +329,7 @@ namespace ramses_internal
             scene.removeChildFromNode(parent, child);
             break;
         }
-        case ESceneActionId_AllocateDataLayout:
+        case ESceneActionId::AllocateDataLayout:
         {
             DataLayoutHandle layoutHandle;
             action.read(layoutHandle);
@@ -339,21 +351,21 @@ namespace ramses_internal
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateDataLayout(dataFields, effectHash, layoutHandle), layoutHandle);
             break;
         }
-        case ESceneActionId_ReleaseDataLayout:
+        case ESceneActionId::ReleaseDataLayout:
         {
             DataLayoutHandle layout;
             action.read(layout);
             scene.releaseDataLayout(layout);
             break;
         }
-        case ESceneActionId_ReleaseDataInstance:
+        case ESceneActionId::ReleaseDataInstance:
         {
             DataInstanceHandle instance;
             action.read(instance);
             scene.releaseDataInstance(instance);
             break;
         }
-        case ESceneActionId_SetRenderableStartIndex:
+        case ESceneActionId::SetRenderableStartIndex:
         {
             RenderableHandle renderable;
             UInt32 startIndex = 0;
@@ -362,7 +374,7 @@ namespace ramses_internal
             scene.setRenderableStartIndex(renderable, startIndex);
             break;
         }
-        case ESceneActionId_SetRenderableIndexCount:
+        case ESceneActionId::SetRenderableIndexCount:
         {
             RenderableHandle renderable;
             UInt32 count = 0;
@@ -371,7 +383,7 @@ namespace ramses_internal
             scene.setRenderableIndexCount(renderable, count);
             break;
         }
-        case ESceneActionId_SetRenderableVisibility:
+        case ESceneActionId::SetRenderableVisibility:
         {
             RenderableHandle renderable;
             EVisibilityMode visibility = EVisibilityMode::Visible;
@@ -380,7 +392,7 @@ namespace ramses_internal
             scene.setRenderableVisibility(renderable, visibility);
             break;
         }
-        case ESceneActionId_SetRenderableDataInstance:
+        case ESceneActionId::SetRenderableDataInstance:
         {
             RenderableHandle renderable;
             UInt32 slot;
@@ -391,7 +403,7 @@ namespace ramses_internal
             scene.setRenderableDataInstance(renderable, static_cast<ERenderableDataSlotType>(slot), diHandle);
             break;
         }
-        case ESceneActionId_SetRenderableInstanceCount:
+        case ESceneActionId::SetRenderableInstanceCount:
         {
             RenderableHandle renderable;
             UInt32 numInstances = 1;
@@ -400,7 +412,7 @@ namespace ramses_internal
             scene.setRenderableInstanceCount(renderable, numInstances);
             break;
         }
-        case ESceneActionId_SetRenderableStartVertex:
+        case ESceneActionId::SetRenderableStartVertex:
         {
             RenderableHandle renderable;
             UInt32 startVertex = 0;
@@ -409,25 +421,31 @@ namespace ramses_internal
             scene.setRenderableStartVertex(renderable, startVertex);
             break;
         }
-        case ESceneActionId_AllocateRenderGroup:
+        case ESceneActionId::AllocateRenderGroup:
         {
             UInt32 renderableCount = 0u;
             UInt32 nestedGroupCount = 0u;
+            String objectName;
+            UInt64 objectId;
             RenderGroupHandle renderGroup;
             action.read(renderableCount);
             action.read(nestedGroupCount);
             action.read(renderGroup);
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateRenderGroup(renderableCount, nestedGroupCount, renderGroup), renderGroup);
             break;
         }
-        case ESceneActionId_ReleaseRenderGroup:
+        case ESceneActionId::ReleaseRenderGroup:
         {
             RenderGroupHandle renderGroup;
             action.read(renderGroup);
             scene.releaseRenderGroup(renderGroup);
             break;
         }
-        case ESceneActionId_AddRenderableToRenderGroup:
+        case ESceneActionId::AddRenderableToRenderGroup:
         {
             RenderGroupHandle renderGroup;
             RenderableHandle renderable;
@@ -438,7 +456,7 @@ namespace ramses_internal
             scene.addRenderableToRenderGroup(renderGroup, renderable, order);
             break;
         }
-        case ESceneActionId_RemoveRenderableFromRenderGroup:
+        case ESceneActionId::RemoveRenderableFromRenderGroup:
         {
             RenderGroupHandle renderGroup;
             RenderableHandle renderable;
@@ -447,7 +465,7 @@ namespace ramses_internal
             scene.removeRenderableFromRenderGroup(renderGroup, renderable);
             break;
         }
-        case ESceneActionId_AddRenderGroupToRenderGroup:
+        case ESceneActionId::AddRenderGroupToRenderGroup:
         {
             RenderGroupHandle renderGroupParent;
             RenderGroupHandle renderGroupChild;
@@ -458,7 +476,7 @@ namespace ramses_internal
             scene.addRenderGroupToRenderGroup(renderGroupParent, renderGroupChild, order);
             break;
         }
-        case ESceneActionId_RemoveRenderGroupFromRenderGroup:
+        case ESceneActionId::RemoveRenderGroupFromRenderGroup:
         {
             RenderGroupHandle renderGroupParent;
             RenderGroupHandle renderGroupChild;
@@ -467,46 +485,52 @@ namespace ramses_internal
             scene.removeRenderGroupFromRenderGroup(renderGroupParent, renderGroupChild);
             break;
         }
-        case ESceneActionId_ReleaseRenderable:
+        case ESceneActionId::ReleaseRenderable:
         {
             RenderableHandle renderable;
             action.read(renderable);
             scene.releaseRenderable(renderable);
             break;
         }
-        case ESceneActionId_ReleaseTransform:
+        case ESceneActionId::ReleaseTransform:
         {
             TransformHandle transformHandle;
             action.read(transformHandle);
             scene.releaseTransform(transformHandle);
             break;
         }
-        case ESceneActionId_ReleaseNode:
+        case ESceneActionId::ReleaseNode:
         {
             NodeHandle nodeHandle;
             action.read(nodeHandle);
             scene.releaseNode(nodeHandle);
             break;
         }
-        case ESceneActionId_AllocateStreamTexture:
+        case ESceneActionId::AllocateStreamTexture:
         {
             StreamTextureHandle handle;
             uint32_t streamSource;
             ResourceContentHash fallbackTextureHash;
+            String objectName;
+            UInt64 objectId;
             action.read(handle);
             action.read(streamSource);
             action.read(fallbackTextureHash);
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateStreamTexture(streamSource, fallbackTextureHash, handle), handle);
             break;
         }
-        case ESceneActionId_ReleaseStreamTexture:
+        case ESceneActionId::ReleaseStreamTexture:
         {
             StreamTextureHandle handle;
             action.read(handle);
             scene.releaseStreamTexture(handle);
             break;
         }
-        case ESceneActionId_SetForceFallback:
+        case ESceneActionId::SetForceFallback:
         {
             StreamTextureHandle handle;
             bool forceFallback;
@@ -515,21 +539,21 @@ namespace ramses_internal
             scene.setForceFallbackImage(handle, forceFallback);
             break;
         }
-        case ESceneActionId_AllocateRenderState:
+        case ESceneActionId::AllocateRenderState:
         {
             RenderStateHandle stateHandle;
             action.read(stateHandle);
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateRenderState(stateHandle), stateHandle);
             break;
         }
-        case ESceneActionId_ReleaseState:
+        case ESceneActionId::ReleaseState:
         {
             RenderStateHandle stateHandle;
             action.read(stateHandle);
             scene.releaseRenderState(stateHandle);
             break;
         }
-        case ESceneActionId_SetRenderableState:
+        case ESceneActionId::SetRenderableState:
         {
             RenderableHandle renderable;
             RenderStateHandle stateHandle;
@@ -538,7 +562,7 @@ namespace ramses_internal
             scene.setRenderableRenderState(renderable, stateHandle);
             break;
         }
-        case ESceneActionId_SetStateStencilOps:
+        case ESceneActionId::SetStateStencilOps:
         {
             RenderStateHandle stateHandle;
             EStencilOp sfail = EStencilOp::NUMBER_OF_ELEMENTS;
@@ -551,7 +575,7 @@ namespace ramses_internal
             scene.setRenderStateStencilOps(stateHandle, sfail, dpfail, dppass);
             break;
         }
-        case ESceneActionId_SetStateStencilFunc:
+        case ESceneActionId::SetStateStencilFunc:
         {
             RenderStateHandle stateHandle;
             EStencilFunc func = EStencilFunc::NUMBER_OF_ELEMENTS;
@@ -564,7 +588,7 @@ namespace ramses_internal
             scene.setRenderStateStencilFunc(stateHandle, func, ref, mask);
             break;
         }
-        case ESceneActionId_SetStateDepthWrite:
+        case ESceneActionId::SetStateDepthWrite:
         {
             RenderStateHandle stateHandle;
             EDepthWrite flag = EDepthWrite::NUMBER_OF_ELEMENTS;
@@ -573,7 +597,7 @@ namespace ramses_internal
             scene.setRenderStateDepthWrite(stateHandle, flag);
             break;
         }
-        case ESceneActionId_SetStateScissorTest:
+        case ESceneActionId::SetStateScissorTest:
         {
             RenderStateHandle stateHandle;
             EScissorTest flag = EScissorTest::NUMBER_OF_ELEMENTS;
@@ -587,7 +611,7 @@ namespace ramses_internal
             scene.setRenderStateScissorTest(stateHandle, flag, region);
             break;
         }
-        case ESceneActionId_SetStateDepthFunc:
+        case ESceneActionId::SetStateDepthFunc:
         {
             RenderStateHandle stateHandle;
             EDepthFunc func = EDepthFunc::NUMBER_OF_ELEMENTS;
@@ -596,7 +620,7 @@ namespace ramses_internal
             scene.setRenderStateDepthFunc(stateHandle, func);
             break;
         }
-        case ESceneActionId_SetStateCullMode:
+        case ESceneActionId::SetStateCullMode:
         {
             RenderStateHandle stateHandle;
             ECullMode mode = ECullMode::NUMBER_OF_ELEMENTS;
@@ -605,7 +629,7 @@ namespace ramses_internal
             scene.setRenderStateCullMode(stateHandle, mode);
             break;
         }
-        case ESceneActionId_SetStateDrawMode:
+        case ESceneActionId::SetStateDrawMode:
         {
             RenderStateHandle stateHandle;
             EDrawMode mode = EDrawMode::NUMBER_OF_ELEMENTS;
@@ -614,7 +638,7 @@ namespace ramses_internal
             scene.setRenderStateDrawMode(stateHandle, mode);
             break;
         }
-        case ESceneActionId_SetStateBlendOperations:
+        case ESceneActionId::SetStateBlendOperations:
         {
             RenderStateHandle stateHandle;
             EBlendOperation opColor = EBlendOperation::NUMBER_OF_ELEMENTS;
@@ -625,7 +649,7 @@ namespace ramses_internal
             scene.setRenderStateBlendOperations(stateHandle, opColor, opAlpha);
             break;
         }
-        case ESceneActionId_SetStateBlendFactors:
+        case ESceneActionId::SetStateBlendFactors:
         {
             RenderStateHandle stateHandle;
             EBlendFactor srcColor = EBlendFactor::NUMBER_OF_ELEMENTS;
@@ -640,7 +664,19 @@ namespace ramses_internal
             scene.setRenderStateBlendFactors(stateHandle, srcColor, destColor, srcAlpha, destAlpha);
             break;
         }
-        case ESceneActionId_SetStateColorWriteMask:
+        case ESceneActionId::SetStateBlendColor:
+        {
+            RenderStateHandle stateHandle;
+            Vector4 color{ 0.f, 0.f, 0.f, 0.f };
+            action.read(stateHandle);
+            action.read(color.r);
+            action.read(color.g);
+            action.read(color.b);
+            action.read(color.a);
+            scene.setRenderStateBlendColor(stateHandle, color);
+            break;
+        }
+        case ESceneActionId::SetStateColorWriteMask:
         {
             RenderStateHandle stateHandle;
             ColorWriteMask colorMask;
@@ -649,7 +685,7 @@ namespace ramses_internal
             scene.setRenderStateColorWriteMask(stateHandle, colorMask);
             break;
         }
-        case ESceneActionId_AllocateCamera:
+        case ESceneActionId::AllocateCamera:
         {
             UInt32 projType;
             NodeHandle nodeHandle;
@@ -662,45 +698,36 @@ namespace ramses_internal
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateCamera(static_cast<ECameraProjectionType>(projType), nodeHandle, dataInstHandle, cameraHandle), cameraHandle);
             break;
         }
-        case ESceneActionId_ReleaseCamera:
+        case ESceneActionId::ReleaseCamera:
         {
             CameraHandle cameraHandle;
             action.read(cameraHandle);
             scene.releaseCamera(cameraHandle);
             break;
         }
-        case ESceneActionId_SetCameraFrustum:
-        {
-            CameraHandle cameraHandle;
-            Frustum frustum;
-
-            action.read(cameraHandle);
-            action.read(frustum.leftPlane);
-            action.read(frustum.rightPlane);
-            action.read(frustum.bottomPlane);
-            action.read(frustum.topPlane);
-            action.read(frustum.nearPlane);
-            action.read(frustum.farPlane);
-            scene.setCameraFrustum(cameraHandle, frustum);
-            break;
-        }
-        case ESceneActionId_AllocateRenderPass:
+        case ESceneActionId::AllocateRenderPass:
         {
             UInt32 renderGroupCount = 0u;
             RenderPassHandle passHandle;
+            String objectName;
+            UInt64 objectId;
             action.read(renderGroupCount);
             action.read(passHandle);
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateRenderPass(renderGroupCount, passHandle), passHandle);
             break;
         }
-        case ESceneActionId_ReleaseRenderPass:
+        case ESceneActionId::ReleaseRenderPass:
         {
             RenderPassHandle passHandle;
             action.read(passHandle);
             scene.releaseRenderPass(passHandle);
             break;
         }
-        case ESceneActionId_SetRenderPassCamera:
+        case ESceneActionId::SetRenderPassCamera:
         {
             RenderPassHandle passHandle;
             CameraHandle cameraHandle;
@@ -709,7 +736,7 @@ namespace ramses_internal
             scene.setRenderPassCamera(passHandle, cameraHandle);
             break;
         }
-        case ESceneActionId_SetRenderPassRenderTarget:
+        case ESceneActionId::SetRenderPassRenderTarget:
         {
             RenderPassHandle passHandle;
             RenderTargetHandle targetHandle;
@@ -718,7 +745,7 @@ namespace ramses_internal
             scene.setRenderPassRenderTarget(passHandle, targetHandle);
             break;
         }
-        case ESceneActionId_SetRenderPassRenderOrder:
+        case ESceneActionId::SetRenderPassRenderOrder:
         {
             RenderPassHandle passHandle;
             Int32 renderOrder;
@@ -727,7 +754,7 @@ namespace ramses_internal
             scene.setRenderPassRenderOrder(passHandle, renderOrder);
             break;
         }
-        case ESceneActionId_SetRenderPassEnabled:
+        case ESceneActionId::SetRenderPassEnabled:
         {
             RenderPassHandle passHandle;
             bool isEnabled;
@@ -736,7 +763,7 @@ namespace ramses_internal
             scene.setRenderPassEnabled(passHandle, isEnabled);
             break;
         }
-        case ESceneActionId_SetRenderPassRenderOnce:
+        case ESceneActionId::SetRenderPassRenderOnce:
         {
             RenderPassHandle passHandle;
             bool enabled;
@@ -745,14 +772,14 @@ namespace ramses_internal
             scene.setRenderPassRenderOnce(passHandle, enabled);
             break;
         }
-        case ESceneActionId_RetriggerRenderPassRenderOnce:
+        case ESceneActionId::RetriggerRenderPassRenderOnce:
         {
             RenderPassHandle passHandle;
             action.read(passHandle);
             scene.retriggerRenderPassRenderOnce(passHandle);
             break;
         }
-        case ESceneActionId_AddRenderGroupToRenderPass:
+        case ESceneActionId::AddRenderGroupToRenderPass:
         {
             RenderPassHandle passHandle;
             RenderGroupHandle groupHandle;
@@ -763,7 +790,7 @@ namespace ramses_internal
             scene.addRenderGroupToRenderPass(passHandle, groupHandle, order);
             break;
         }
-        case ESceneActionId_RemoveRenderGroupFromRenderPass:
+        case ESceneActionId::RemoveRenderGroupFromRenderPass:
         {
             RenderPassHandle passHandle;
             RenderGroupHandle groupHandle;
@@ -772,7 +799,7 @@ namespace ramses_internal
             scene.removeRenderGroupFromRenderPass(passHandle, groupHandle);
             break;
         }
-        case ESceneActionId_AllocatePickableObject:
+        case ESceneActionId::AllocatePickableObject:
         {
             DataBufferHandle geometryHandle;
             NodeHandle nodeHandle;
@@ -785,14 +812,14 @@ namespace ramses_internal
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocatePickableObject(geometryHandle, nodeHandle, id, pickableHandle), pickableHandle);
             break;
         }
-        case ESceneActionId_ReleasePickableObject:
+        case ESceneActionId::ReleasePickableObject:
         {
             PickableObjectHandle pickableHandle;
             action.read(pickableHandle);
             scene.releasePickableObject(pickableHandle);
             break;
         }
-        case ESceneActionId_SetPickableObjectId:
+        case ESceneActionId::SetPickableObjectId:
         {
             PickableObjectHandle pickableHandle;
             PickableObjectId id;
@@ -801,7 +828,7 @@ namespace ramses_internal
             scene.setPickableObjectId(pickableHandle, id);
             break;
         }
-        case ESceneActionId_SetPickableObjectCamera:
+        case ESceneActionId::SetPickableObjectCamera:
         {
             PickableObjectHandle pickableHandle;
             CameraHandle cameraHandle;
@@ -810,7 +837,7 @@ namespace ramses_internal
             scene.setPickableObjectCamera(pickableHandle, cameraHandle);
             break;
         }
-        case ESceneActionId_SetPickableObjectEnabled:
+        case ESceneActionId::SetPickableObjectEnabled:
         {
             PickableObjectHandle pickableHandle;
             bool           isEnabled;
@@ -819,25 +846,31 @@ namespace ramses_internal
             scene.setPickableObjectEnabled(pickableHandle, isEnabled);
             break;
         }
-        case ESceneActionId_AllocateBlitPass:
+        case ESceneActionId::AllocateBlitPass:
         {
             BlitPassHandle passHandle;
             RenderBufferHandle sourceRenderbufferHandle;
             RenderBufferHandle destinationRenderbufferHandle;
+            String objectName;
+            UInt64 objectId;
             action.read(sourceRenderbufferHandle);
             action.read(destinationRenderbufferHandle);
             action.read(passHandle);
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateBlitPass(sourceRenderbufferHandle, destinationRenderbufferHandle, passHandle), passHandle);
             break;
         }
-        case ESceneActionId_ReleaseBlitPass:
+        case ESceneActionId::ReleaseBlitPass:
         {
             BlitPassHandle passHandle;
             action.read(passHandle);
             scene.releaseBlitPass(passHandle);
             break;
         }
-        case ESceneActionId_SetBlitPassRenderOrder:
+        case ESceneActionId::SetBlitPassRenderOrder:
         {
             BlitPassHandle passHandle;
             Int32 renderOrder;
@@ -846,7 +879,7 @@ namespace ramses_internal
             scene.setBlitPassRenderOrder(passHandle, renderOrder);
             break;
         }
-        case ESceneActionId_SetBlitPassEnabled:
+        case ESceneActionId::SetBlitPassEnabled:
         {
             BlitPassHandle passHandle;
             bool isEnabled;
@@ -855,7 +888,7 @@ namespace ramses_internal
             scene.setBlitPassEnabled(passHandle, isEnabled);
             break;
         }
-        case ESceneActionId_SetBlitPassRegions:
+        case ESceneActionId::SetBlitPassRegions:
         {
             BlitPassHandle passHandle;
             PixelRectangle sourceRectangle;
@@ -872,10 +905,12 @@ namespace ramses_internal
             scene.setBlitPassRegions(passHandle, sourceRectangle, destinationRectangle);
             break;
         }
-        case ESceneActionId_AllocateTextureSampler:
+        case ESceneActionId::AllocateTextureSampler:
         {
             TextureSamplerHandle samplerHandle;
             TextureSampler sampler;
+            String objectName;
+            UInt64 objectId;
 
             action.read(samplerHandle);
             action.read(sampler.states.m_addressModeU);
@@ -891,31 +926,42 @@ namespace ramses_internal
             else
                 action.read(sampler.contentHandle);
 
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
+
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateTextureSampler(sampler, samplerHandle), samplerHandle);
             break;
         }
-        case ESceneActionId_ReleaseTextureSampler:
+        case ESceneActionId::ReleaseTextureSampler:
         {
             TextureSamplerHandle samplerHandle;
             action.read(samplerHandle);
             scene.releaseTextureSampler(samplerHandle);
             break;
         }
-        case ESceneActionId_AllocateRenderTarget:
+        case ESceneActionId::AllocateRenderTarget:
         {
             RenderTargetHandle renderTargetHandle;
+            String objectName;
+            UInt64 objectId;
             action.read(renderTargetHandle);
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateRenderTarget(renderTargetHandle), renderTargetHandle);
             break;
         }
-        case ESceneActionId_ReleaseRenderTarget:
+        case ESceneActionId::ReleaseRenderTarget:
         {
             RenderTargetHandle renderTargetHandle;
             action.read(renderTargetHandle);
             scene.releaseRenderTarget(renderTargetHandle);
             break;
         }
-        case ESceneActionId_AddRenderTargetRenderBuffer:
+        case ESceneActionId::AddRenderTargetRenderBuffer:
         {
             RenderTargetHandle renderTargetHandle;
             RenderBufferHandle renderBufferHandle;
@@ -924,11 +970,13 @@ namespace ramses_internal
             scene.addRenderTargetRenderBuffer(renderTargetHandle, renderBufferHandle);
             break;
         }
-        case ESceneActionId_AllocateRenderBuffer:
+        case ESceneActionId::AllocateRenderBuffer:
         {
             RenderBufferHandle handle;
             RenderBuffer renderBuffer;
             UInt32 enumInt;
+            String objectName;
+            UInt64 objectId;
 
             action.read(renderBuffer.width);
             action.read(renderBuffer.height);
@@ -940,17 +988,21 @@ namespace ramses_internal
             action.read(enumInt);
             renderBuffer.accessMode = static_cast<ERenderBufferAccessMode>(enumInt);
             action.read(renderBuffer.sampleCount);
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateRenderBuffer(renderBuffer, handle), handle);
             break;
         }
-        case ESceneActionId_ReleaseRenderBuffer:
+        case ESceneActionId::ReleaseRenderBuffer:
         {
             RenderBufferHandle handle;
             action.read(handle);
             scene.releaseRenderBuffer(handle);
             break;
         }
-        case ESceneActionId_AllocateDataSlot:
+        case ESceneActionId::AllocateDataSlot:
         {
             DataSlotHandle dataSlotHandle;
             UInt32 type = 0;
@@ -967,7 +1019,7 @@ namespace ramses_internal
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateDataSlot(dataSlot, dataSlotHandle), dataSlotHandle);
             break;
         }
-        case ESceneActionId_SetDataSlotTexture:
+        case ESceneActionId::SetDataSlotTexture:
         {
             DataSlotHandle dataSlotHandle(0);
             ResourceContentHash texture = ResourceContentHash::Invalid();
@@ -977,14 +1029,14 @@ namespace ramses_internal
             scene.setDataSlotTexture(dataSlotHandle, texture);
             break;
         }
-        case ESceneActionId_ReleaseDataSlot:
+        case ESceneActionId::ReleaseDataSlot:
         {
             DataSlotHandle dataSlotHandle(0);
             action.read(dataSlotHandle);
             scene.releaseDataSlot(dataSlotHandle);
             break;
         }
-        case ESceneActionId_SetRenderPassClearColor:
+        case ESceneActionId::SetRenderPassClearColor:
         {
             Vector4 clearColor;
             RenderPassHandle renderPassHandle;
@@ -993,7 +1045,7 @@ namespace ramses_internal
             scene.setRenderPassClearColor(renderPassHandle, clearColor);
             break;
         }
-        case ESceneActionId_SetRenderPassClearFlag:
+        case ESceneActionId::SetRenderPassClearFlag:
         {
             UInt32 clearFlag;
             RenderPassHandle renderPassHandle;
@@ -1002,27 +1054,33 @@ namespace ramses_internal
             scene.setRenderPassClearFlag(renderPassHandle, clearFlag);
             break;
         }
-        case ESceneActionId_AllocateDataBuffer:
+        case ESceneActionId::AllocateDataBuffer:
         {
             UInt32 dataBufferType;
             UInt32 dataType;
             UInt32 maximumSizeInBytes;
             DataBufferHandle handle;
+            String objectName;
+            UInt64 objectId;
             action.read(dataBufferType);
             action.read(dataType);
             action.read(maximumSizeInBytes);
             action.read(handle.asMemoryHandleReference());
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateDataBuffer(static_cast<EDataBufferType>(dataBufferType), static_cast<EDataType>(dataType), maximumSizeInBytes, handle), handle);
             break;
         }
-        case ESceneActionId_ReleaseDataBuffer:
+        case ESceneActionId::ReleaseDataBuffer:
         {
             DataBufferHandle handle;
             action.read(handle.asMemoryHandleReference());
             scene.releaseDataBuffer(handle);
             break;
         }
-        case ESceneActionId_UpdateDataBuffer:
+        case ESceneActionId::UpdateDataBuffer:
         {
             DataBufferHandle handle;
             UInt32 offsetInBytes;
@@ -1035,12 +1093,14 @@ namespace ramses_internal
             scene.updateDataBuffer(handle, offsetInBytes, dataSizeInBytes, data);
             break;
         }
-        case ESceneActionId_AllocateTextureBuffer:
+        case ESceneActionId::AllocateTextureBuffer:
         {
             UInt32 textureFormat;
             UInt32 mipLevelCount;
             MipMapDimensions mipMapDimensions;
             TextureBufferHandle handle;
+            String objectName;
+            UInt64 objectId;
 
             action.read(textureFormat);
             action.read(mipLevelCount);
@@ -1054,11 +1114,15 @@ namespace ramses_internal
                 mipMapDimensions.push_back({ width, height });
             }
             action.read(handle);
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
 
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateTextureBuffer(static_cast<ETextureFormat>(textureFormat), mipMapDimensions, handle), handle);
             break;
         }
-        case ESceneActionId_ReleaseTextureBuffer:
+        case ESceneActionId::ReleaseTextureBuffer:
         {
             TextureBufferHandle handle;
             action.read(handle);
@@ -1066,7 +1130,7 @@ namespace ramses_internal
             scene.releaseTextureBuffer(handle);
             break;
         }
-        case ESceneActionId_UpdateTextureBuffer:
+        case ESceneActionId::UpdateTextureBuffer:
         {
             TextureBufferHandle handle;
             UInt32 mipLevel;
@@ -1088,23 +1152,29 @@ namespace ramses_internal
             scene.updateTextureBuffer(handle, mipLevel, x, y, width, height, data);
             break;
         }
-        case ESceneActionId_AllocateSceneReference:
+        case ESceneActionId::AllocateSceneReference:
         {
             SceneReferenceHandle handle;
             SceneId sceneId;
+            String objectName;
+            UInt64 objectId;
             action.read(handle);
             action.read(sceneId);
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
             ALLOCATE_AND_ASSERT_HANDLE(scene.allocateSceneReference(sceneId, handle), handle);
             break;
         }
-        case ESceneActionId_ReleaseSceneReference:
+        case ESceneActionId::ReleaseSceneReference:
         {
             SceneReferenceHandle handle;
             action.read(handle);
             scene.releaseSceneReference(handle);
             break;
         }
-        case ESceneActionId_RequestSceneReferenceState:
+        case ESceneActionId::RequestSceneReferenceState:
         {
             SceneReferenceHandle handle;
             RendererSceneState state;
@@ -1113,7 +1183,7 @@ namespace ramses_internal
             scene.requestSceneReferenceState(handle, state);
             break;
         }
-        case ESceneActionId_SetSceneReferenceRenderOrder:
+        case ESceneActionId::SetSceneReferenceRenderOrder:
         {
             SceneReferenceHandle handle;
             int32_t renderOrder;
@@ -1122,7 +1192,7 @@ namespace ramses_internal
             scene.setSceneReferenceRenderOrder(handle, renderOrder);
             break;
         }
-        case ESceneActionId_RequestSceneReferenceFlushNotifications:
+        case ESceneActionId::RequestSceneReferenceFlushNotifications:
         {
             SceneReferenceHandle handle;
             bool enable;
@@ -1131,7 +1201,7 @@ namespace ramses_internal
             scene.requestSceneReferenceFlushNotifications(handle, enable);
             break;
         }
-        case ESceneActionId_AddAnimationSystem:
+        case ESceneActionId::AddAnimationSystem:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1153,14 +1223,14 @@ namespace ramses_internal
 
             break;
         }
-        case ESceneActionId_RemoveAnimationSystem:
+        case ESceneActionId::RemoveAnimationSystem:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
             scene.removeAnimationSystem(animSystemHandle);
             break;
         }
-        case ESceneActionId_AnimationSystemSetTime:
+        case ESceneActionId::AnimationSystemSetTime:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1175,7 +1245,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemAllocateSpline:
+        case ESceneActionId::AnimationSystemAllocateSpline:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1194,7 +1264,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemAllocateDataBinding:
+        case ESceneActionId::AnimationSystemAllocateDataBinding:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1214,7 +1284,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemAllocateAnimationInstance:
+        case ESceneActionId::AnimationSystemAllocateAnimationInstance:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1236,14 +1306,20 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemAllocateAnimation:
+        case ESceneActionId::AnimationSystemAllocateAnimation:
         {
+            String objectName;
+            UInt64 objectId;
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
             AnimationInstanceHandle animInstHandle;
             action.read(animInstHandle);
             AnimationHandle handle;
             action.read(handle);
+            action.read(objectName);
+            action.read(objectId);
+            UNUSED(objectName);
+            UNUSED(objectId);
 
             IAnimationSystem* animSystem = scene.getAnimationSystem(animSystemHandle);
             if (animSystem != nullptr)
@@ -1252,7 +1328,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemAddDataBindingToAnimationInstance:
+        case ESceneActionId::AnimationSystemAddDataBindingToAnimationInstance:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1268,7 +1344,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyBasicBool:
+        case ESceneActionId::AnimationSystemSetSplineKeyBasicBool:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1286,7 +1362,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyBasicInt32:
+        case ESceneActionId::AnimationSystemSetSplineKeyBasicInt32:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1304,7 +1380,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyBasicFloat:
+        case ESceneActionId::AnimationSystemSetSplineKeyBasicFloat:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1322,7 +1398,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyBasicVector2f:
+        case ESceneActionId::AnimationSystemSetSplineKeyBasicVector2f:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1340,7 +1416,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyBasicVector3f:
+        case ESceneActionId::AnimationSystemSetSplineKeyBasicVector3f:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1358,7 +1434,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyBasicVector4f:
+        case ESceneActionId::AnimationSystemSetSplineKeyBasicVector4f:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1376,7 +1452,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyBasicVector2i:
+        case ESceneActionId::AnimationSystemSetSplineKeyBasicVector2i:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1394,7 +1470,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyBasicVector3i:
+        case ESceneActionId::AnimationSystemSetSplineKeyBasicVector3i:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1412,7 +1488,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyBasicVector4i:
+        case ESceneActionId::AnimationSystemSetSplineKeyBasicVector4i:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1430,7 +1506,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyTangentsInt32:
+        case ESceneActionId::AnimationSystemSetSplineKeyTangentsInt32:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1452,7 +1528,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyTangentsFloat:
+        case ESceneActionId::AnimationSystemSetSplineKeyTangentsFloat:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1474,7 +1550,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyTangentsVector2f:
+        case ESceneActionId::AnimationSystemSetSplineKeyTangentsVector2f:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1496,7 +1572,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyTangentsVector3f:
+        case ESceneActionId::AnimationSystemSetSplineKeyTangentsVector3f:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1518,7 +1594,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyTangentsVector4f:
+        case ESceneActionId::AnimationSystemSetSplineKeyTangentsVector4f:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1540,7 +1616,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyTangentsVector2i:
+        case ESceneActionId::AnimationSystemSetSplineKeyTangentsVector2i:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1562,7 +1638,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyTangentsVector3i:
+        case ESceneActionId::AnimationSystemSetSplineKeyTangentsVector3i:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1584,7 +1660,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetSplineKeyTangentsVector4i:
+        case ESceneActionId::AnimationSystemSetSplineKeyTangentsVector4i:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1606,7 +1682,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemRemoveSplineKey:
+        case ESceneActionId::AnimationSystemRemoveSplineKey:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1622,7 +1698,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetAnimationStartTime:
+        case ESceneActionId::AnimationSystemSetAnimationStartTime:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1639,7 +1715,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetAnimationStopTime:
+        case ESceneActionId::AnimationSystemSetAnimationStopTime:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1656,7 +1732,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemSetAnimationProperties:
+        case ESceneActionId::AnimationSystemSetAnimationProperties:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1679,7 +1755,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemStopAnimationAndRollback:
+        case ESceneActionId::AnimationSystemStopAnimationAndRollback:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1693,7 +1769,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemRemoveSpline:
+        case ESceneActionId::AnimationSystemRemoveSpline:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1707,7 +1783,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemRemoveDataBinding:
+        case ESceneActionId::AnimationSystemRemoveDataBinding:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1721,7 +1797,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemRemoveAnimationInstance:
+        case ESceneActionId::AnimationSystemRemoveAnimationInstance:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1735,7 +1811,7 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_AnimationSystemRemoveAnimation:
+        case ESceneActionId::AnimationSystemRemoveAnimation:
         {
             AnimationSystemHandle animSystemHandle;
             action.read(animSystemHandle);
@@ -1749,29 +1825,29 @@ namespace ramses_internal
             }
             break;
         }
-        case ESceneActionId_PreallocateSceneSize:
+        case ESceneActionId::PreallocateSceneSize:
         {
             SceneSizeInformation sizeInfos;
             GetSceneSizeInformation(action, sizeInfos);
             scene.preallocateSceneSize(sizeInfos);
             break;
         }
-        case ESceneActionId_SetAckFlushState:
+        case ESceneActionId::SetAckFlushState:
         {
             bool state;
             action.read(state);
             scene.setAckFlushState(state);
             break;
         }
-        case ESceneActionId_Flush:
+        case ESceneActionId::Flush:
         {
             break;
         }
-        case ESceneActionId_TestAction:
+        case ESceneActionId::TestAction:
         {
             break;
         }
-        case ESceneActionId_CompoundRenderableEffectData:
+        case ESceneActionId::CompoundRenderableEffectData:
         {
             RenderableHandle renderable;
             RenderStateHandle stateHandle;
@@ -1786,7 +1862,7 @@ namespace ramses_internal
 
             break;
         }
-        case ESceneActionId_CompoundRenderable:
+        case ESceneActionId::CompoundRenderable:
         {
             // due to no setter in scene, leaving out
             // renderOrder
@@ -1838,14 +1914,14 @@ namespace ramses_internal
             }
 
             static_assert(ERenderableDataSlotType_MAX_SLOTS==2u
-                , "Expected ERenderableDataSlotType containing 2 elements, adjust ESceneActionId_CompoundRenderable SceneAction handling");
+                , "Expected ERenderableDataSlotType containing 2 elements, adjust ESceneActionId::CompoundRenderable SceneAction handling");
 
             scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Geometry, geoInstanceHandle);
             scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, uniformInstanceHandle);
 
             break;
         }
-        case ESceneActionId_CompoundState:
+        case ESceneActionId::CompoundState:
         {
             RenderStateHandle stateHandle;
             RenderState::ScissorRegion scissorRegion;
@@ -1855,6 +1931,7 @@ namespace ramses_internal
             EBlendFactor bfDstAlpha;
             EBlendOperation boColor;
             EBlendOperation boAlpha;
+            Vector4 blendColor;
             ECullMode cullMode;
             EDrawMode drawMode;
             EDepthWrite depthWrite;
@@ -1879,6 +1956,10 @@ namespace ramses_internal
             action.read(bfDstAlpha);
             action.read(boColor);
             action.read(boAlpha);
+            action.read(blendColor.r);
+            action.read(blendColor.g);
+            action.read(blendColor.b);
+            action.read(blendColor.a);
             action.read(cullMode);
             action.read(drawMode);
             action.read(depthWrite);
@@ -1898,6 +1979,7 @@ namespace ramses_internal
 
             scene.setRenderStateBlendFactors(   stateHandle, bfSrcColor, bfDstColor, bfSrcAlpha, bfDstAlpha);
             scene.setRenderStateBlendOperations(stateHandle, boColor, boAlpha);
+            scene.setRenderStateBlendColor(     stateHandle, blendColor);
             scene.setRenderStateCullMode(       stateHandle, cullMode);
             scene.setRenderStateDrawMode(       stateHandle, drawMode);
             scene.setRenderStateDepthWrite(     stateHandle, depthWrite);
@@ -1910,7 +1992,7 @@ namespace ramses_internal
             break;
         }
 
-        case ESceneActionId_PushResource:
+        case ESceneActionId::PushResource:
         {
             ResourceContentHash hash;
             UInt32 resourceSize;
@@ -1939,7 +2021,7 @@ namespace ramses_internal
 
         // check that action was fully consumed
         // (flush is never read, all others should be fully read)
-        if (action.type() != ESceneActionId_Flush)
+        if (action.type() != ESceneActionId::Flush)
         {
             assert(action.isFullyRead());
         }
@@ -1963,7 +2045,7 @@ namespace ramses_internal
         FlushTimeInformation& flushTimeInfo,
         SceneVersionTag& versionTag)
     {
-        assert(action.type() == ESceneActionId_Flush);
+        assert(action.type() == ESceneActionId::Flush);
         action.read(flushIndex);
         uint8_t flushFlags = 0u;
         action.read(flushFlags);
@@ -1979,6 +2061,9 @@ namespace ramses_internal
         flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(tsVal));
         action.read(tsVal);
         flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(tsVal));
+        uint32_t clockTypeAsUInt = 0;
+        action.read(clockTypeAsUInt);
+        flushTimeInfo.clock_type = static_cast<synchronized_clock_type>(clockTypeAsUInt);
 
         action.read(versionTag);
 

@@ -16,11 +16,14 @@
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"
 #include "Components/FlushTimeInformation.h"
+#include "Components/SceneUpdate.h"
+#include "Components/ClientSceneLogicBase.h"
+#include "Components/IResourceProviderComponent.h"
 
 namespace ramses_internal
 {
-    ClientSceneLogicDirect::ClientSceneLogicDirect(ISceneGraphSender& sceneGraphSender, ClientScene& scene, const Guid& clientAddress)
-        : ClientSceneLogicBase(sceneGraphSender, scene, clientAddress)
+    ClientSceneLogicDirect::ClientSceneLogicDirect(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress)
+        : ClientSceneLogicBase(sceneGraphSender, scene, res, clientAddress)
         , m_previousSceneSizes(m_scene.getSceneSizeInformation())
     {
     }
@@ -30,16 +33,16 @@ namespace ramses_internal
         const SceneSizeInformation sceneSizes(m_scene.getSceneSizeInformation());
 
         // swap out of ClientScene and reserve new memory there
-        SceneActionCollection collection;
-        collection.swap(m_scene.getSceneActionCollection());
+        SceneUpdate sceneUpdate;
+        sceneUpdate.actions.swap(m_scene.getSceneActionCollection());
 
-        const bool hasNewActions = !collection.empty();
+        const bool hasNewActions = !sceneUpdate.actions.empty();
 
         if (m_flushCounter == 0)
         {
             LOG_INFO_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) {
                             sos << "ClientSceneLogicShadowCopy::flushSceneActions: first flush, sceneId " << m_sceneId
-                                << ", numActions " << collection.numberOfActions() << ", published " << isPublished()
+                                << ", numActions " << sceneUpdate.actions.numberOfActions() << ", published " << isPublished()
                                 << ", subsActive [";
                             for (const auto& sub : m_subscribersActive)
                                 sos << sub << " ";
@@ -56,7 +59,7 @@ namespace ramses_internal
 
         if (isPublished())
         {
-            SceneActionCollectionCreator creator(collection);
+            SceneActionCollectionCreator creator(sceneUpdate.actions);
             creator.flush(
                 m_flushCounter,
                 sceneSizes > m_previousSceneSizes,
@@ -67,23 +70,25 @@ namespace ramses_internal
                 versionTag);
 
             m_previousSceneSizes = sceneSizes;
+            // TODO vaclav re-enable sending resources after renderer side can use them
+            //sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChanges.m_addedClientResourceRefs);
         }
 
         // reserve memory in ClientScene after flush because flush might add a lot of data
-        m_scene.getSceneActionCollection().reserveAdditionalCapacity(collection.collectionData().size(), collection.numberOfActions());
+        m_scene.getSceneActionCollection().reserveAdditionalCapacity(sceneUpdate.actions.collectionData().size(), sceneUpdate.actions.numberOfActions());
 
         if (hasNewActions)
         {
-            m_scene.getStatisticCollection().statSceneActionsGenerated.incCounter(collection.numberOfActions());
-            m_scene.getStatisticCollection().statSceneActionsGeneratedSize.incCounter(static_cast<UInt32>(collection.collectionData().size()));
+            m_scene.getStatisticCollection().statSceneActionsGenerated.incCounter(sceneUpdate.actions.numberOfActions());
+            m_scene.getStatisticCollection().statSceneActionsGeneratedSize.incCounter(static_cast<UInt32>(sceneUpdate.actions.collectionData().size()));
         }
 
-        LOG_DEBUG_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) { printFlushInfo(sos, "ClientSceneLogicDirect::flushSceneActions", collection); }));
+        LOG_DEBUG_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) { printFlushInfo(sos, "ClientSceneLogicDirect::flushSceneActions", sceneUpdate.actions); }));
 
         if (isPublished() && !m_subscribersActive.empty())
         {
-            m_scene.getStatisticCollection().statSceneActionsSent.incCounter(collection.numberOfActions()*static_cast<UInt32>(m_subscribersActive.size()));
-            m_scenegraphSender.sendSceneActionList(m_subscribersActive, std::move(collection), m_sceneId, m_scenePublicationMode);
+            m_scene.getStatisticCollection().statSceneActionsSent.incCounter(sceneUpdate.actions.numberOfActions()*static_cast<UInt32>(m_subscribersActive.size()));
+            m_scenegraphSender.sendSceneUpdate(m_subscribersActive, std::move(sceneUpdate), m_sceneId, m_scenePublicationMode);
         }
 
         m_scene.resetResourceChanges();

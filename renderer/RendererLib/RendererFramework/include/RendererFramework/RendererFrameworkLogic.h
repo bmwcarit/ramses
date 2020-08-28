@@ -12,14 +12,12 @@
 #include "RendererFramework/IResourceProvider.h"
 #include "RendererFramework/IRendererSceneEventSender.h"
 #include "Scene/SceneActionCollection.h"
-#include "TransportCommon/IConnectionStatusListener.h"
 #include "Collections/HashMap.h"
 #include "Collections/Pair.h"
 #include "PlatformAbstraction/PlatformLock.h"
-#include "TransportCommon/ServiceHandlerInterfaces.h"
 #include "Utils/Warnings.h"
+#include "Components/ISceneRendererHandler.h"
 #include <unordered_map>
-#include "Scene/EScenePublicationMode.h"
 
 namespace ramses_internal
 {
@@ -29,35 +27,28 @@ namespace ramses_internal
     class IConnectionStatusUpdateNotifier;
 
     class RendererFrameworkLogic
-        : public ISceneRendererServiceHandler
+        : public ISceneRendererHandler
         , public IResourceProvider
         , public IRendererSceneEventSender
-        , private IConnectionStatusListener
     {
     public:
         RendererFrameworkLogic(
-            IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier,
             IResourceConsumerComponent& res,
             ISceneGraphConsumerComponent& sgc,
             RendererCommandBuffer& rendererCommandBuffer,
             PlatformLock& frameworkLock);
         virtual ~RendererFrameworkLogic();
 
-        // ISceneRendererServiceHandler
+        // ISceneRendererHandler
         virtual void handleInitializeScene(const SceneInfo& sceneInfo, const Guid& providerID) override;
-        virtual void handleSceneNotAvailable(const SceneId& sceneId, const Guid& providerID) override;
-        virtual void handleSceneActionList(const SceneId& sceneId, SceneActionCollection&& actions, const uint64_t& counter, const Guid& providerID) override;
-        virtual void handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID, EScenePublicationMode mode) override;
-        virtual void handleScenesBecameUnavailable(const SceneInfoVector& unavailableScenes, const Guid& providerID) override;
+        virtual void handleSceneUpdate(const SceneId& sceneId, SceneUpdate&& sceneUpdate, const Guid& providerID) override;
+        virtual void handleNewSceneAvailable(const SceneInfo& newScene, const Guid& providerID) override;
+        virtual void handleSceneBecameUnavailable(const SceneId& unavailableScene, const Guid& providerID) override;
 
         // IResourceProviderServiceHandler
         virtual void requestResourceAsyncronouslyFromFramework(const ResourceContentHashVector& ids, const ResourceRequesterID& requesterID, const SceneId& sceneId) override;
         virtual void cancelResourceRequest(const ResourceContentHash& resourceHash, const ResourceRequesterID& requesterID) override;
         virtual ManagedResourceVector popArrivedResources(const ResourceRequesterID& requesterID) override;
-
-        // IConnectionStatusListener
-        virtual void newParticipantHasConnected(const Guid& guid) override;
-        virtual void participantHasDisconnected(const Guid& guid) override;
 
         // IRendererSceneEventSender
         virtual void sendSubscribeScene(SceneId sceneId) override;
@@ -68,18 +59,12 @@ namespace ramses_internal
         virtual void sendDataUnlinked(SceneId masterScene, SceneId consumerScene, DataSlotId consumer, bool success) override;
 
     private:
-        void doHandleSceneBecameUnavailable(const SceneId& scenId, const Guid& providerID);
-        bool isSceneActionListCounterValid(const SceneId& sceneId, const uint64_t& counter);
-
         PlatformLock&                 m_frameworkLock;
-        IConnectionStatusUpdateNotifier& m_connectionStatusUpdateNotifier;
         ISceneGraphConsumerComponent& m_sceneGraphConsumerComponent;
         IResourceConsumerComponent&   m_resourceComponent;
         RendererCommandBuffer&        m_rendererCommands;
 
         HashMap<SceneId, std::pair<Guid, String> > m_sceneClients;
-        std::unordered_map<SceneId, SceneActionCollection>   m_bufferedSceneActionsPerScene;
-        std::unordered_map<SceneId, uint64_t>   m_lastReceivedListCounter;
     };
 }
 

@@ -13,15 +13,9 @@
 
 namespace ramses
 {
-    class UInt16Array;
-    class UInt32Array;
-    class IndexDataBuffer;
-    class VertexDataBuffer;
+    class ArrayBuffer;
     class AttributeInput;
-    class FloatArray;
-    class Vector2fArray;
-    class Vector3fArray;
-    class Vector4fArray;
+    class ArrayResource;
     class Effect;
 
     /**
@@ -32,60 +26,48 @@ namespace ramses
     public:
 
         /**
-        * @brief Assign indices resource (using 16 bit indices) to be used when accessing vertex data.
+        * @brief Assign a data array with data type UInt16 or UInt32 to be used when accessing vertex data.
         *
         * Indices are optional, when not provided rendering uses sequential attribute elements.
         *
-        * @param[in] indicesResource Indices resource.
+        * @param[in] indicesResource An array resource carrying indices data.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setIndices(const UInt16Array& indicesResource);
+        status_t setIndices(const ArrayResource& indicesResource);
 
         /**
-        * @brief Assign indices resource (using 32 bit indices) to be used when accessing vertex data.
+        * @brief Assign indices (using index data buffer) to be used when accessing vertex data.
         *
         * Indices are optional, when not provided rendering uses sequential attribute elements.
         *
-        * @param[in] indicesResource Indices resource.
+        * @param[in] arrayBuffer Indices data buffer.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setIndices(const UInt32Array& indicesResource);
+        status_t setIndices(const ArrayBuffer& arrayBuffer);
 
         /**
-        * @brief Assign indices resource (using index data buffer) to be used when accessing vertex data.
+        * @brief Assign a data array with data type Float or VectorxF to a given effect attribute input.
         *
-        * Indices are optional, when not provided rendering uses sequential attribute elements.
-        *
-        * @param[in] dataBuffer Indices data buffer.
+        * @param[in] attributeInput The effect attribute input to set the buffer to
+        * @param[in] arrayResource An array resource carrying vertex data.
+        * @param[in] instancingDivisor The vertex attribute divisor used during instanced rendering. Default is 0, which means no instancing.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setIndices(const IndexDataBuffer& dataBuffer);
+        status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayResource& arrayResource, uint32_t instancingDivisor = 0);
 
         /**
         * @brief Assign a vertex attribute buffer to a given effect attribute input.
         *
         * @param[in] attributeInput The effect attribute input to set the buffer to
-        * @param[in] bufferResource Vertex attribute buffer resource.
+        * @param[in] arrayBuffer The vertex attribute buffer.
         * @param[in] instancingDivisor The vertex attribute divisor used during instanced rendering. Default is 0, which means no instancing.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setInputBuffer(const AttributeInput& attributeInput, const FloatArray& bufferResource, uint32_t instancingDivisor = 0);
-
-        /** @copydoc setInputBuffer(const AttributeInput&, const FloatArray&, uint32_t instancingDivisor) */
-        status_t setInputBuffer(const AttributeInput& attributeInput, const Vector2fArray& bufferResource, uint32_t instancingDivisor = 0);
-
-        /** @copydoc setInputBuffer(const AttributeInput&, const FloatArray&, uint32_t instancingDivisor) */
-        status_t setInputBuffer(const AttributeInput& attributeInput, const Vector3fArray& bufferResource, uint32_t instancingDivisor = 0);
-
-        /** @copydoc setInputBuffer(const AttributeInput&, const FloatArray&, uint32_t instancingDivisor) */
-        status_t setInputBuffer(const AttributeInput& attributeInput, const Vector4fArray& bufferResource, uint32_t instancingDivisor = 0);
-
-        /** @copydoc setInputBuffer(const AttributeInput&, const FloatArray&, uint32_t instancingDivisor) */
-        status_t setInputBuffer(const AttributeInput& attributeInput, const VertexDataBuffer& bufferResource, uint32_t instancingDivisor = 0);
+        status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayBuffer& arrayBuffer, uint32_t instancingDivisor = 0);
 
         /**
         * @brief Gets the effect used to create this geometry binding

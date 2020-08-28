@@ -11,6 +11,7 @@
 
 #include "ramses-renderer-api/Types.h"
 #include "ramses-framework-api/StatusObject.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 
 namespace ramses
 {
@@ -226,14 +227,14 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWaylandIviLayerID(uint32_t waylandIviLayerID);
+        status_t setWaylandIviLayerID(waylandIviLayerId_t waylandIviLayerID);
 
         /**
         * @brief Get the ID of the Wayland IVI layer to which the IVI surface used by the display is attached.
         *
-        * @return the current setting of wayland IVI layer ID, returns 0xFFFFFFFF if no value has been set yet
+        * @return the current setting of wayland IVI layer ID, returns waylandIviLayerId_t::Invalid() if no value has been set yet
         */
-        uint32_t getWaylandIviLayerID() const;
+        waylandIviLayerId_t getWaylandIviLayerID() const;
 
 
         /**
@@ -247,14 +248,14 @@ namespace ramses
         * @return StatusOK on success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setWaylandIviSurfaceID(uint32_t waylandIviSurfaceID);
+        status_t setWaylandIviSurfaceID(waylandIviSurfaceId_t waylandIviSurfaceID);
 
         /**
         * @brief Get the current setting of IVI surface ID
         *
-        * @return the current setting of IVI surface ID, returns 0xFFFFFFFF if no value has been set yet
+        * @return the current setting of IVI surface ID, returns waylandIviSurfaceId_t::Invalid() if no value has been set yet
         */
-        uint32_t getWaylandIviSurfaceID() const;
+        waylandIviSurfaceId_t getWaylandIviSurfaceID() const;
 
         /**
         * @brief [Mandatory on Integrity] Set device unit number to use when creating the display window on Integrity using RGL Window Manager API.

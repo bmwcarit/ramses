@@ -22,37 +22,55 @@ namespace ramses_internal
 
     SceneExpirationMonitor::~SceneExpirationMonitor()
     {
-        assert(m_sceneTimestamps.size() == 0u);
+        assert(m_monitoredScenes.empty());
     }
 
     void SceneExpirationMonitor::onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp, SceneVersionTag versionTag, UInt64 flushIndex)
     {
-        TimeStampTag& ts = m_sceneTimestamps[sceneId].expirationTSOfLastAppliedFlush;
-        ts.ts = expirationTimestamp;
-        ts.tag = versionTag;
-        ts.internalIndex = flushIndex;
+        if (expirationTimestamp != FlushTime::InvalidTimestamp)
+        {
+            if (m_monitoredScenes.count(sceneId) == 0)
+            {
+                LOG_INFO_P(CONTEXT_RENDERER, "SceneExpirationMonitor: expiration monitoring for scene {} enabled", sceneId);
+                m_eventCollector.addSceneExpirationEvent(ERendererEventType_SceneExpirationMonitoringEnabled, sceneId);
+            }
+
+            TimeStampTag& ts = m_monitoredScenes[sceneId].expirationTSOfLastAppliedFlush;
+            ts.ts = expirationTimestamp;
+            ts.tag = versionTag;
+            ts.internalIndex = flushIndex;
+        }
+        else if (m_monitoredScenes.count(sceneId) != 0)
+        {
+            LOG_INFO_P(CONTEXT_RENDERER, "SceneExpirationMonitor: expiration monitoring for scene {} disabled, last state expired={}", sceneId, m_monitoredScenes[sceneId].inExpiredState);
+            m_eventCollector.addSceneExpirationEvent(ERendererEventType_SceneExpirationMonitoringDisabled, sceneId);
+            m_monitoredScenes.erase(sceneId);
+        }
     }
 
     void SceneExpirationMonitor::onRendered(SceneId sceneId)
     {
-        auto& timestamps = m_sceneTimestamps[sceneId];
-        timestamps.expirationTSOfRenderedScene = timestamps.expirationTSOfLastAppliedFlush;
+        auto it = m_monitoredScenes.find(sceneId);
+        if (it != m_monitoredScenes.end())
+            it->second.expirationTSOfRenderedScene = it->second.expirationTSOfLastAppliedFlush;
     }
 
     void SceneExpirationMonitor::onHidden(SceneId sceneId)
     {
-        m_sceneTimestamps[sceneId].expirationTSOfRenderedScene = {};
+        auto it = m_monitoredScenes.find(sceneId);
+        if (it != m_monitoredScenes.end())
+            it->second.expirationTSOfRenderedScene = {};
     }
 
     void SceneExpirationMonitor::checkExpiredScenes(FlushTime::Clock::time_point currentTime)
     {
         const auto isTSExpired = [currentTime](FlushTime::Clock::time_point ts)  { return ts != FlushTime::InvalidTimestamp && currentTime > ts; };
 
-        for (const auto& sceneIt : m_scenes)
+        for (auto& it : m_monitoredScenes)
         {
-            const SceneId sceneId = sceneIt.key;
+            const SceneId sceneId = it.first;
             bool expired = false;
-            auto& timestamps = m_sceneTimestamps[sceneId];
+            auto& timestamps = it.second;
 
             if (isTSExpired(timestamps.expirationTSOfRenderedScene.ts))
             {
@@ -75,9 +93,9 @@ namespace ramses_internal
                 expired = true;
             }
 
-            if (!sceneIt.value.stagingInfo->pendingData.pendingFlushes.empty()) // early out if no pending flushes
+            const auto& pendingFlushes = m_scenes.getStagingInfo(sceneId).pendingData.pendingFlushes;
+            if (!pendingFlushes.empty()) // early out if no pending flushes
             {
-                const auto& pendingFlushes = sceneIt.value.stagingInfo->pendingData.pendingFlushes;
                 const auto& lastPendingFlush = pendingFlushes.back();
                 const auto& lastPendingTimeInfo = lastPendingFlush.timeInfo;
 
@@ -124,14 +142,14 @@ namespace ramses_internal
         }
     }
 
-    void SceneExpirationMonitor::stopMonitoringScene(SceneId sceneId)
+    void SceneExpirationMonitor::onDestroyed(SceneId sceneId)
     {
-        m_sceneTimestamps.remove(sceneId);
+        m_monitoredScenes.erase(sceneId);
     }
 
     FlushTime::Clock::time_point SceneExpirationMonitor::getExpirationTimestampOfRenderedScene(SceneId sceneId) const
     {
-        auto it = m_sceneTimestamps.find(sceneId);
-        return it != m_sceneTimestamps.end() ? it->value.expirationTSOfRenderedScene.ts : FlushTime::InvalidTimestamp;
+        const auto it = m_monitoredScenes.find(sceneId);
+        return it != m_monitoredScenes.cend() ? it->second.expirationTSOfRenderedScene.ts : FlushTime::InvalidTimestamp;
     }
 }

@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
     const ramses::FontInstanceId fontInstance20 = fontRegistry.createFreetype2FontInstance(font, 20);
 
     ramses::Texture2D& backgroundTexture =
-        *ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-text-shadow-demo-background.png", client);
+        *ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-text-shadow-demo-background.png", scene);
     ramses::TextureSampler& backgroundTextureSampler =
         *scene.createTextureSampler(ramses::ETextureAddressMode_Repeat,
                                     ramses::ETextureAddressMode_Repeat,
@@ -65,9 +65,9 @@ int main(int argc, char* argv[])
                                     ramses::ETextureSamplingMethod_Linear,
                                     backgroundTexture);
 
-    ImageBox backgroundImageBox(backgroundTextureSampler, displayWidth, displayHeight, false, client, scene, &renderGroup, 0);
+    ImageBox backgroundImageBox(backgroundTextureSampler, displayWidth, displayHeight, false, scene, &renderGroup, 0);
 
-    TextBoxWithShadow textBoxAnimated(std::u32string(U"RAMSES text with soft shadow demonstration"), textCache, fontInstance56, 56, client, scene, &renderGroup, 1);
+    TextBoxWithShadow textBoxAnimated(std::u32string(U"RAMSES text with soft shadow demonstration"), textCache, fontInstance56, 56, scene, &renderGroup, 1);
 
     const std::u32string stringContent =
         U"The soft text shadows in this demonstration are achieved by first rendering the text to\n"
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
         "The filtering is done in the GPU, by rendering a quad to another renderbuffer.\n"
         "The shadows can be made more or less sharp by choosing the variance for the blur filter.";
 
-    TextBoxWithShadow textBox(stringContent, textCache, fontInstance20, 20, client, scene, &renderGroup, 1);
+    TextBoxWithShadow textBox(stringContent, textCache, fontInstance20, 20, scene, &renderGroup, 1);
     textBox.setPosition(20, 350, 2, -2);
     textBox.setShadowSharpness(2.0);
 
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     for (uint32_t i = 0; i < 6; i++)
     {
         const float sharpness = i * 1.0f + 0.5f;
-        TextBoxWithShadow* textBoxVariance = new TextBoxWithShadow(sharpnessStrings[i], textCache, fontInstance56, 56, client, scene, &renderGroup, 1);
+        TextBoxWithShadow* textBoxVariance = new TextBoxWithShadow(sharpnessStrings[i], textCache, fontInstance56, 56, scene, &renderGroup, 1);
         textBoxVariance->setPosition(20 + (i % 2) * 400, 200 - (i / 2) * 56, 4, -4);
         textBoxVariance->setShadowSharpness(sharpness);
     }

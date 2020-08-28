@@ -25,7 +25,7 @@ namespace ramses_internal
         ResourceConsumerServiceHandlerMock();
         virtual ~ResourceConsumerServiceHandlerMock() override;
 
-        MOCK_METHOD(void, handleSendResource, (const absl::Span<const Byte>& data, const Guid& providerID), (override));
+        MOCK_METHOD(void, handleSendResource, (absl::Span<const Byte> data, const Guid& providerID), (override));
         MOCK_METHOD(void, handleResourcesNotAvailable, (const ResourceContentHashVector& resources, const Guid& providerID), (override));
     };
 
@@ -35,7 +35,7 @@ namespace ramses_internal
         ResourceProviderServiceHandlerMock();
         virtual ~ResourceProviderServiceHandlerMock() override;
 
-        MOCK_METHOD(void, handleRequestResources, (const ResourceContentHashVector& resources, UInt32 chunkSize, const Guid& requesterId), (override));
+        MOCK_METHOD(void, handleRequestResources, (const ResourceContentHashVector& resources, const Guid& requesterId), (override));
     };
 
     class SceneProviderServiceHandlerMock : public ISceneProviderServiceHandler
@@ -46,7 +46,7 @@ namespace ramses_internal
 
         MOCK_METHOD(void, handleSubscribeScene, (const SceneId& sceneId, const Guid& consumerID), (override));
         MOCK_METHOD(void, handleUnsubscribeScene, (const SceneId& sceneId, const Guid& consumerID), (override));
-        MOCK_METHOD(void, handleRendererEvent, (const SceneId& sceneId, std::vector<Byte> data, const Guid& rendererID), (override));
+        MOCK_METHOD(void, handleRendererEvent, (const SceneId& sceneId, const std::vector<Byte>& data, const Guid& rendererID), (override));
     };
 
     class SceneRendererServiceHandlerMock : public ISceneRendererServiceHandler
@@ -55,17 +55,13 @@ namespace ramses_internal
         SceneRendererServiceHandlerMock();
         virtual ~SceneRendererServiceHandlerMock() override;
 
-        MOCK_METHOD(void, handleNewScenesAvailable, (const SceneInfoVector& newScenes, const Guid& providerID, EScenePublicationMode publicationMode), (override));
+        MOCK_METHOD(void, handleNewScenesAvailable, (const SceneInfoVector& newScenes, const Guid& providerID), (override));
         MOCK_METHOD(void, handleScenesBecameUnavailable, (const SceneInfoVector& unavailableScenes, const Guid& providerID), (override));
 
         MOCK_METHOD(void, handleSceneNotAvailable, (const SceneId& sceneId, const Guid& providerID), (override));
 
-        MOCK_METHOD(void, handleInitializeScene, (const SceneInfo& sceneInfo, const Guid& providerID), (override));
-        MOCK_METHOD(void, handleSceneActionList_rvr, (const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& counter, const Guid& providerID));
-        virtual void handleSceneActionList(const SceneId& sceneId, SceneActionCollection&& actions, const uint64_t& counter, const Guid& providerID) override
-        {
-            handleSceneActionList_rvr(sceneId, actions, counter, providerID);
-        }
+        MOCK_METHOD(void, handleInitializeScene, (const SceneId& sceneId, const Guid& providerID), (override));
+        MOCK_METHOD(void, handleSceneUpdate, (const SceneId& sceneId, absl::Span<const Byte> actionData, const Guid& providerID), (override));
     };
 
     class DcsmProviderServiceHandlerMock : public IDcsmProviderServiceHandler
@@ -84,7 +80,7 @@ namespace ramses_internal
         DcsmConsumerServiceHandlerMock();
         virtual ~DcsmConsumerServiceHandlerMock() override;
 
-        MOCK_METHOD(void, handleOfferContent, (ContentID contentID, Category, const Guid& providerID), (override));
+        MOCK_METHOD(void, handleOfferContent, (ContentID contentID, Category, const std::string& friendlyName, const Guid& providerID), (override));
         MOCK_METHOD(void, handleContentDescription, (ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID), (override));
         MOCK_METHOD(void, handleContentReady, (ContentID contentID, const Guid& providerID), (override));
         MOCK_METHOD(void, handleContentEnableFocusRequest, (ContentID contentID, int32_t focusRequest, const Guid& providerID), (override));

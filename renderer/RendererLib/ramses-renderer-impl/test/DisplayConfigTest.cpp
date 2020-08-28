@@ -78,6 +78,9 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
     EXPECT_EQ(defaultDisplayConfig.getClearColor(), displayConfig.getClearColor());
 
     EXPECT_TRUE(defaultDisplayConfig.getWaylandDisplay().empty());
+
+    EXPECT_FALSE(defaultDisplayConfig.getWaylandIviSurfaceID().isValid());
+    EXPECT_FALSE(defaultDisplayConfig.getWaylandIviLayerID().isValid());
 }
 
 TEST_F(ADisplayConfig, setsFullscreenState)
@@ -207,6 +210,20 @@ TEST_F(ADisplayConfig, setsAndGetsWaylandDisplay)
     EXPECT_EQ(ramses::StatusOK, config.setWaylandDisplay("xxx"));
     EXPECT_STREQ("xxx", config.getWaylandDisplay());
     EXPECT_STREQ("xxx", config.impl.getInternalDisplayConfig().getWaylandDisplay().c_str());
+}
+
+TEST_F(ADisplayConfig, setsAndGetsWaylandIviSurfaceId)
+{
+    EXPECT_EQ(ramses::StatusOK, config.setWaylandIviSurfaceID(ramses::waylandIviSurfaceId_t(25)));
+    EXPECT_EQ(ramses::waylandIviSurfaceId_t(25), config.getWaylandIviSurfaceID());
+    EXPECT_EQ(ramses_internal::WaylandIviSurfaceId(25), config.impl.getInternalDisplayConfig().getWaylandIviSurfaceID());
+}
+
+TEST_F(ADisplayConfig, setsAndGetsWaylandIviLayerId)
+{
+    EXPECT_EQ(ramses::StatusOK, config.setWaylandIviLayerID(ramses::waylandIviLayerId_t(36)));
+    EXPECT_EQ(ramses::waylandIviLayerId_t(36), config.getWaylandIviLayerID());
+    EXPECT_EQ(ramses_internal::WaylandIviLayerId(36), config.impl.getInternalDisplayConfig().getWaylandIviLayerID());
 }
 
 TEST_F(ADisplayConfig, setsPerspectiveProjection)

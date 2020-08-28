@@ -99,6 +99,7 @@ namespace ramses_internal
         virtual UInt32                      getRenderStateCount             () const = 0;
         virtual void                        setRenderStateBlendFactors      (RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha) = 0;
         virtual void                        setRenderStateBlendOperations   (RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha) = 0;
+        virtual void                        setRenderStateBlendColor        (RenderStateHandle stateHandle, const Vector4& color) = 0;
         virtual void                        setRenderStateCullMode          (RenderStateHandle stateHandle, ECullMode cullMode) = 0;
         virtual void                        setRenderStateDrawMode          (RenderStateHandle stateHandle, EDrawMode drawMode) = 0;
         virtual void                        setRenderStateDepthFunc         (RenderStateHandle stateHandle, EDepthFunc func) = 0;
@@ -110,11 +111,10 @@ namespace ramses_internal
         virtual const RenderState&          getRenderState                  (RenderStateHandle stateHandle) const = 0;
 
         // Camera
-        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle = CameraHandle::Invalid()) = 0;
+        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle dataInstance, CameraHandle handle = CameraHandle::Invalid()) = 0;
         virtual void                        releaseCamera                   (CameraHandle cameraHandle) = 0;
         virtual bool                        isCameraAllocated               (CameraHandle handle) const = 0;
         virtual UInt32                      getCameraCount                  () const = 0;
-        virtual void                        setCameraFrustum                (CameraHandle cameraHandle, const Frustum& frustum) = 0;
         virtual const Camera&               getCamera                       (CameraHandle cameraHandle) const = 0;
 
         // Nodes

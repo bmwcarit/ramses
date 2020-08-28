@@ -37,7 +37,7 @@ namespace ramses_internal
             EState_SMOKE_TEST
         };
 
-        TextScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        TextScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         void setState(UInt32 state);
 

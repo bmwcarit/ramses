@@ -54,7 +54,7 @@ class TestRendererTwoDisplays(test_classes.OnAllDefaultTargetsTest):
         self.validateScreenshot(self.renderer, "testClient_twoScenes_displ0.png", displayNumber=1)
         self.validateScreenshot(self.renderer, "testClient_twoScenes_displ1.png", displayNumber=2)
 
-        if self.target.systemCompositorControllerSupported:
+        if self.target.systemCompositorScreenshotSupported:
             #dummy display covers whole screen
             self.renderer.send_ramsh_command("screct {0} 000 0 1900 800".format(self.displaysIviSurfaceIds[0]), waitForRendererConfirmation=True)
             #test displays are next to each other

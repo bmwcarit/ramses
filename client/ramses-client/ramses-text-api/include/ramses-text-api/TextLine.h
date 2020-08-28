@@ -25,8 +25,7 @@ namespace ramses
     using TextLineId = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), TextLineIdTag>;
 
     class MeshNode;
-    class VertexDataBuffer;
-    class IndexDataBuffer;
+    class ArrayBuffer;
 
     /**
     * @brief Groups the scene objects needed to render a text line
@@ -40,11 +39,11 @@ namespace ramses
         /// Glyph metrics of the original string characters
         GlyphMetricsVector       glyphs;
         /// Stores vertex data for the text line quads
-        VertexDataBuffer*        positions = nullptr;
+        ArrayBuffer*        positions = nullptr;
         /// Stores texture coordinate data for the text line quads
-        VertexDataBuffer*        textureCoordinates = nullptr;
+        ArrayBuffer*        textureCoordinates = nullptr;
         /// Stores index data for the text line quads
-        IndexDataBuffer*         indices = nullptr;
+        ArrayBuffer*         indices = nullptr;
     };
 
     static_assert(std::is_nothrow_move_constructible<TextLine>::value, "TextLine must be movable");

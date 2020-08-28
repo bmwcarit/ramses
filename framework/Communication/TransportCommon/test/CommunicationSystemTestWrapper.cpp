@@ -10,10 +10,9 @@
 #include "TransportCommon/CommunicationSystemFactory.h"
 #include "Common/ParticipantIdentifier.h"
 #include "Utils/CommandLineParser.h"
-#include "Utils/File.h"
-#include "TransportCommon/IDiscoveryDaemon.h"
 #include "TransportCommon/IConnectionStatusUpdateNotifier.h"
-#include "PlatformAbstraction/PlatformEnvironmentVariables.h"
+#include "TestRandom.h"
+#include "RamsesFrameworkConfigImpl.h"
 #include <array>
 
 namespace ramses_internal
@@ -24,58 +23,20 @@ namespace ramses_internal
     {
         switch (type)
         {
-        case ECommunicationSystemType_Tcp:
-            *os << type << " (ECommunicationSystemType_Tcp)";
-            break;
-        default:
-            *os << type << " (INVALID ECommunicationSystemType)";
-        }
-    }
-
-    AsyncEventCounter::AsyncEventCounter(UInt32 waitTimeMs)
-        : m_eventCounter(0)
-        , m_waitTimeMs(waitTimeMs)
-    {
-    }
-
-    void AsyncEventCounter::signal()
-    {
-        std::lock_guard<std::mutex> g(lock);
-        ++m_eventCounter;
-        cond.notify_one();
-    }
-
-    testing::AssertionResult AsyncEventCounter::waitForEvents(UInt32 numberEventsToWaitFor, UInt32 waitTimeMsOverride)
-    {
-        std::unique_lock<std::mutex> l(lock);
-        if (cond.wait_for(l,
-                          std::chrono::milliseconds{(waitTimeMsOverride > 0 ? waitTimeMsOverride : m_waitTimeMs)},
-                          [&]() { return m_eventCounter >= numberEventsToWaitFor; }))
-        {
-            // only consume requested number of events
-            m_eventCounter -= numberEventsToWaitFor;
-            return testing::AssertionSuccess();
-        }
-        else
-        {
-            // clear all events on timeout
-            const auto currentEventCounter = m_eventCounter;
-            m_eventCounter = 0;
-            return testing::AssertionFailure() << "Timeout while waiting for SyncEvents (waitForEvents): Expected " << numberEventsToWaitFor << ", got " << currentEventCounter;
-        }
+        case ECommunicationSystemType::Tcp:
+            *os << "ECommunicationSystemType::Tcp";
+            return;
+        case ECommunicationSystemType::GenericSomeIP:
+            *os << "ECommunicationSystemType::GenericSomeIP";
+            return;
+        };
+        *os << static_cast<int>(type) << " (INVALID ECommunicationSystemType)";
     }
 
     CommunicationSystemTestState::CommunicationSystemTestState(ECommunicationSystemType type, EServiceType serviceType_)
         : communicationSystemType(type)
         , serviceType(serviceType_)
     {
-        static bool initializedLogger = false;
-        if (!initializedLogger)
-        {
-            initializedLogger = true;
-            std::array<const char *const, 3> args{"", "-l", "warn"};
-            GetRamsesLogger().initialize(CommandLineParser{static_cast<Int>(args.size()), args.data()}, "TEST", "TEST", true, true);
-        }
     }
 
     void CommunicationSystemTestState::sendEvent()
@@ -95,8 +56,6 @@ namespace ramses_internal
             assert(comSystem != nullptr);
             EXPECT_TRUE(comSystem->commSystem->connectServices());
         }
-
-        startUpHook();
     }
 
     void CommunicationSystemTestState::disconnectAll()
@@ -106,8 +65,6 @@ namespace ramses_internal
             assert(comSystem != nullptr);
             comSystem->commSystem->disconnectServices();
         }
-
-        shutdownHook();
     }
 
     testing::AssertionResult CommunicationSystemTestState::blockOnAllConnected(UInt32 waitTimeMsOverride)
@@ -141,28 +98,21 @@ namespace ramses_internal
         return result;
     }
 
-    std::vector<ECommunicationSystemType> CommunicationSystemTestState::GetAvailableCommunicationSystemTypes(uint32_t mask)
+    std::vector<ECommunicationSystemType> CommunicationSystemTestState::GetAvailableCommunicationSystemTypes()
     {
-        UNUSED(mask);
-
         std::vector<ECommunicationSystemType> ret;
 #if defined(HAS_TCP_COMM)
-        if (mask & ECommunicationSystemType_Tcp)
-        {
-            ret.push_back(ECommunicationSystemType_Tcp);
-        }
+        ret.push_back(ECommunicationSystemType::Tcp);
 #endif
         return ret;
     }
 
-    CommunicationSystemTestWrapper::CommunicationSystemTestWrapper(CommunicationSystemTestState& state_, const String& name, const Guid& id_,
-        ECommunicationSystemTestConfiguration commSysConfig_)
-        : id(id_)
+    CommunicationSystemTestWrapper::CommunicationSystemTestWrapper(CommunicationSystemTestState& state_, const String& name, const Guid& id_)
+        : id(id_.isValid() ? id_ : Guid(TestRandom::Get(255, std::numeric_limits<size_t>::max())))
         , state(state_)
     {
         ramses::RamsesFrameworkConfigImpl config(0, nullptr);
         config.enableProtocolVersionOffset();
-        state.applyConfigurationForSelectedConnectionSystemType(config, false, commSysConfig_);
 
         commSystem = CommunicationSystemFactory::ConstructCommunicationSystem(config, ParticipantIdentifier(id, name), frameworkLock, statisticCollection);
         state.knownCommunicationSystems.push_back(this);
@@ -170,13 +120,6 @@ namespace ramses_internal
         // trigger event on mock call
         ON_CALL(statusUpdateListener, newParticipantHasConnected(_)).WillByDefault(InvokeWithoutArgs([&]() { state.sendEvent(); }));
         ON_CALL(statusUpdateListener, participantHasDisconnected(_)).WillByDefault(InvokeWithoutArgs([&]() { state.sendEvent(); }));
-
-        // set dummy dcsm handler when testing ramses
-        if (state.serviceType == EServiceType::Ramses)
-        {
-            commSystem->setDcsmProviderServiceHandler(&dcsmProviderMock);
-            commSystem->setDcsmConsumerServiceHandler(&dcsmConsumerMock);
-        }
     }
 
     CommunicationSystemTestWrapper::~CommunicationSystemTestWrapper()
@@ -210,30 +153,5 @@ namespace ramses_internal
             commSystem->getDcsmConnectionStatusUpdateNotifier().unregisterForConnectionUpdates(&statusUpdateListener);
             break;
         }
-    }
-
-    CommunicationSystemDiscoveryDaemonTestWrapper::CommunicationSystemDiscoveryDaemonTestWrapper(CommunicationSystemTestState& state_)
-    {
-        ramses::RamsesFrameworkConfigImpl config(0, nullptr);
-        config.enableProtocolVersionOffset();
-        state_.applyConfigurationForSelectedConnectionSystemType(config, true, ECommunicationSystemTestConfiguration_Default);
-
-        daemon.reset(CommunicationSystemFactory::ConstructDiscoveryDaemon(config, frameworkLock, statisticCollection));
-    }
-
-    CommunicationSystemDiscoveryDaemonTestWrapper::~CommunicationSystemDiscoveryDaemonTestWrapper()
-    {
-    }
-
-    bool CommunicationSystemDiscoveryDaemonTestWrapper::start()
-    {
-        assert(daemon.get());
-        return daemon->start();
-    }
-
-    bool CommunicationSystemDiscoveryDaemonTestWrapper::stop()
-    {
-        assert(daemon.get());
-        return daemon->stop();
     }
 }

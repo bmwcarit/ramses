@@ -10,7 +10,6 @@
 #define RAMSES_SCENEPERSISTATIONTEST_H
 
 #include "gtest/gtest.h"
-#include "ramses-client-api/ResourceFileDescriptionSet.h"
 #include "ramses-utils.h"
 #include "ClientTestUtils.h"
 #include "SceneImpl.h"
@@ -27,9 +26,8 @@ namespace ramses
             , m_clientForLoading(*m_frameworkForLoader.createClient("client"))
             , m_sceneLoaded(nullptr)
             , m_animationSystemLoaded(nullptr)
-            , m_resources("someTemporaryResources.ramres")
         {
-            m_frameworkForLoader.impl.getScenegraphComponent().setSceneRendererServiceHandler(&sceneActionsCollector);
+            m_frameworkForLoader.impl.getScenegraphComponent().setSceneRendererHandler(&sceneActionsCollector);
         }
 
         ~ASceneAndAnimationSystemLoadedFromFile()
@@ -62,11 +60,6 @@ namespace ramses
             RamsesObjectVector objects;
             scene.impl.getObjectRegistry().getObjectsOfType(objects, ERamsesObjectType_SceneObject);
             fillObjectTypeHistorgramFromObjectVector( counter, objects );
-        }
-
-        void fillObjectTypeHistogramFromClient( ObjectTypeHistogram& counter, const ramses::RamsesClient& cl )
-        {
-            fillObjectTypeHistorgramFromObjectVector( counter, cl.impl.getListOfResourceObjects() );
         }
 
         ::testing::AssertionResult AssertHistogramEqual( const char* m_expr, const char* n_expr, const ObjectTypeHistogram& m, const ObjectTypeHistogram& n )
@@ -122,21 +115,10 @@ namespace ramses
 
         void doWriteReadCycle(bool expectSameSceneSizeInfo = true, bool expectSameTypeHistogram = true)
         {
-            doWriteReadCycle(m_resources, expectSameSceneSizeInfo, expectSameTypeHistogram);
-        }
-
-        void doWriteReadCycle(const ResourceFileDescription& resources, bool expectSameSceneSizeInfo, bool expectSameTypeHistogram)
-        {
-            m_resourceVector.add(resources);
-            doWriteReadCycle(m_resourceVector, expectSameSceneSizeInfo, expectSameTypeHistogram);
-        }
-
-        void doWriteReadCycle(const ResourceFileDescriptionSet& resourceVector, bool expectSameSceneSizeInfo, bool expectSameTypeHistogram)
-        {
-            const status_t status = client.saveSceneToFile(m_scene, "someTemporaryFile.ram", resourceVector, false);
+            const status_t status = m_scene.saveToFile("someTemporaryFile.ram", false);
             EXPECT_EQ(StatusOK, status);
 
-            m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", resourceVector);
+            m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram");
             ASSERT_TRUE(nullptr != m_sceneLoaded);
 
             if (expectSameTypeHistogram)
@@ -144,10 +126,7 @@ namespace ramses
                 ObjectTypeHistogram origSceneNumbers;
                 ObjectTypeHistogram loadedSceneNumbers;
                 fillObjectTypeHistogramFromScene(origSceneNumbers, m_scene);
-                fillObjectTypeHistogramFromClient(origSceneNumbers, client);
-
                 fillObjectTypeHistogramFromScene(loadedSceneNumbers, *m_sceneLoaded);
-                fillObjectTypeHistogramFromClient(loadedSceneNumbers, this->m_clientForLoading);
                 EXPECT_PRED_FORMAT2(AssertHistogramEqual, origSceneNumbers, loadedSceneNumbers);
             }
 
@@ -196,8 +175,6 @@ namespace ramses
         ramses::RamsesClient& m_clientForLoading;
         ramses::Scene* m_sceneLoaded;
         ramses::AnimationSystem* m_animationSystemLoaded;
-        ramses::ResourceFileDescription m_resources;
-        ramses::ResourceFileDescriptionSet m_resourceVector;
     };
 
     class ASceneAndAnimationSystemLoadedFromFileWithDefaultRenderPass : public ASceneAndAnimationSystemLoadedFromFile

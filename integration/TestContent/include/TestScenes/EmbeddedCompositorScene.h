@@ -16,7 +16,7 @@
 namespace ramses
 {
     class Appearance;
-    class Vector2fArray;
+    class ArrayResource;
 }
 
 namespace ramses_internal
@@ -24,7 +24,7 @@ namespace ramses_internal
     class EmbeddedCompositorScene : public IntegrationScene
     {
     public:
-        EmbeddedCompositorScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        EmbeddedCompositorScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {
@@ -45,14 +45,14 @@ namespace ramses_internal
 
     private:
         void createQuad(float x, float y, float w, float h, ramses::Appearance& appearance);
-        ramses::Appearance& createAppearanceWithStreamTexture(ramses::Scene& scene, ramses::streamSource_t sourceId, const ramses::Texture2D& fallbackTexture);
+        ramses::Appearance& createAppearanceWithStreamTexture(ramses::Scene& scene, ramses::waylandIviSurfaceId_t sourceId, const ramses::Texture2D& fallbackTexture);
         const ramses::Effect& createTestEffect(UInt32 state);
-        const ramses::Vector2fArray& createTextureCoordinates(UInt32 state);
-        void createQuadWithStreamTexture(float xPos, float yPos, float width, float height, ramses::streamSource_t sourceId, const ramses::Texture2D& fallbackTexture);
+        const ramses::ArrayResource& createTextureCoordinates(UInt32 state);
+        void createQuadWithStreamTexture(float xPos, float yPos, float width, float height, ramses::waylandIviSurfaceId_t sourceId, const ramses::Texture2D& fallbackTexture);
 
         static const StreamTextureSourceId EmbeddedSurfaceStreamTextureSourceId;
         const ramses::Effect& m_effect;
-        const ramses::Vector2fArray& m_textureCoords;
+        const ramses::ArrayResource& m_textureCoords;
     };
 }
 

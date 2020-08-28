@@ -8,16 +8,14 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
-SET(RAMSES_VERSION_MAJOR 25)
+SET(RAMSES_VERSION_MAJOR 26)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 6)
+SET(RAMSES_VERSION_PATCH 2)
 SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
 PROJECT(ramses-sdk VERSION ${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH})
 
-
-SET(ramses-sdk_ROOT_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
 # TODO(tobias) must be here because used inside platformConfig, rework order of all options to solve properly
 OPTION(ramses-sdk_WARNINGS_AS_ERRORS "Enable warnings as errors during build" OFF)
@@ -61,6 +59,7 @@ OPTION(ramses-sdk_ALLOW_CUSTOM_FREETYPE "Allow usage of custom freetype and harf
 
 # build options
 OPTION(ramses-sdk_BUILD_EXAMPLES "Build Example targets: ON, OFF" ON)
+OPTION(ramses-sdk_BUILD_TOOLS "Build tools: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_SMOKE_TESTS "Build smoke test targets: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_DEMOS "Build demo targets: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB "Build client only shared library" OFF)

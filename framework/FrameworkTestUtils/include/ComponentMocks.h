@@ -23,6 +23,7 @@
 #include "Components/IResourceConsumerComponent.h"
 #include "Components/ISceneProviderEventConsumer.h"
 #include "SceneReferencing/SceneReferenceEvent.h"
+#include "Components/ResourceAvailabilityEvent.h"
 
 namespace ramses_internal
 {
@@ -42,7 +43,10 @@ namespace ramses_internal
         MOCK_METHOD(void, addResourceFile, (ResourceFileInputStreamSPtr resourceFileStream, const ResourceTableOfContents& toc), (override));
         MOCK_METHOD(bool, hasResourceFile, (const String&), (const, override));
         MOCK_METHOD(void, removeResourceFile, (const String& resourceFileName), (override));
+        MOCK_METHOD(void, forceLoadFromResourceFile, (const String& resourceFileName), (override));
         virtual void reserveResourceCount(uint32_t) override {};
+        MOCK_METHOD(ManagedResourceVector, resolveResources, (ResourceContentHashVector& vec), (override));
+
     };
 
     class ResourceConsumerComponentMock : public IResourceConsumerComponent
@@ -78,8 +82,9 @@ namespace ramses_internal
         MOCK_METHOD(void, subscribeScene, (const Guid& to, SceneId sceneId), (override));
         MOCK_METHOD(void, unsubscribeScene, (const Guid& to, SceneId sceneId), (override));
         MOCK_METHOD(void, sendSceneReferenceEvent, (const Guid& to, SceneReferenceEvent const& event), (override));
+        MOCK_METHOD(void, sendResourceAvailabilityEvent,(const Guid& to, ResourceAvailabilityEvent const& event), (override));
 
-        virtual void setSceneRendererServiceHandler(ISceneRendererServiceHandler*) override
+        virtual void setSceneRendererHandler(ISceneRendererHandler*) override
         {
         }
     };
@@ -91,6 +96,7 @@ namespace ramses_internal
         virtual ~SceneProviderEventConsumerMock() override;
 
         MOCK_METHOD(void, handleSceneReferenceEvent, (SceneReferenceEvent const& event, const Guid& rendererId), (override));
+        MOCK_METHOD(void, handleResourceAvailabilityEvent, (ResourceAvailabilityEvent const& event, const Guid& rendererId), (override));
     };
 }
 

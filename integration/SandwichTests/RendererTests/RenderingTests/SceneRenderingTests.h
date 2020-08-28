@@ -48,13 +48,16 @@ private:
         BlendingTest_AlphaBlending,
         BlendingTest_SubtractiveBlending,
         BlendingTest_AdditiveBlending,
+        BlendingTest_BlendingConstant,
+        BlendingTest_BlendingDstColorAndAlpha,
 
         CameraTest_Perspective,
         CameraTest_Orthographic,
         CameraTest_Viewport,
 
         SceneModificationTest_DeleteMeshNode,
-        SceneModificationTest_NoVisibility,
+        SceneModificationTest_Invisible,
+        SceneModificationTest_VisibilityOff,
         SceneModificationTest_PartialVisibility,
         SceneModificationTest_RotateAndScale,
         SceneModificationTest_CameraTransformation,
@@ -122,6 +125,17 @@ private:
         DataBuffer_SwitchFromDataBufferToClientArrayResource,
 
         Display_SetClearColor,
+
+        GeometryShaderGlslV320_PointsInTriangleStripOut,
+        GeometryShaderGlslV320_PointsInLineStripOut,
+        GeometryShaderGlslV320_PointsInPointsOut,
+        GeometryShaderGlslV320_TrianglesInTriangleStripOut,
+        GeometryShaderGlslV320_TrianglesInPointsOut,
+        GeometryShaderGlslV310Extension_PointsInTriangleStripOut,
+        GeometryShaderGlslV310Extension_PointsInLineStripOut,
+        GeometryShaderGlslV310Extension_PointsInPointsOut,
+        GeometryShaderGlslV310Extension_TrianglesInTriangleStripOut,
+        GeometryShaderGlslV310Extension_TrianglesInPointsOut,
 
         FrameProfiler_Show
     };

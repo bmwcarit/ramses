@@ -90,7 +90,7 @@ namespace ramses
 
     ENUM_TO_STRING(ETextureSamplingMethod, TextureSamplingMethodNames, ETextureSamplingMethod_NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(ETextureAddressMode, TextureAddressModeNames, ETextureAddressMode_NUMBER_OF_ELEMENTS);
-    ENUM_TO_STRING(ETextureFormat, TextureFormatNames, ETextureFormat_NUMBER_OF_ELEMENTS);
+    ENUM_TO_STRING(ETextureFormat, TextureFormatNames, ETextureFormat::NUMBER_OF_ELEMENTS);
     ENUM_TO_STRING(ETextureCubeFace, TextureCubeFaceNames, ETextureCubeFace_NUMBER_OF_ELEMENTS);
 
     const char* getTextureSamplingMethodString(ETextureSamplingMethod samplingMethod)

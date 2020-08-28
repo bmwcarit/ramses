@@ -185,6 +185,12 @@ namespace ramses_internal
                             logStatisticSummaryEntry(output, entry.value->statObjectsDestroyed.getSummary(), numberTimeIntervals);
                             output << " objNr ";
                             logStatisticSummaryEntry(output, entry.value->statObjectsNumber.getSummary(), numberTimeIntervals);
+                            output << " robj+ ";
+                            logStatisticSummaryEntry(output, entry.value->statResourceObjectsCreated.getSummary(), numberTimeIntervals);
+                            output << " robj- ";
+                            logStatisticSummaryEntry(output, entry.value->statResourceObjectsDestroyed.getSummary(), numberTimeIntervals);
+                            output << " robjNr ";
+                            logStatisticSummaryEntry(output, entry.value->statResourceObjectsNumber.getSummary(), numberTimeIntervals);
                             output << " actG ";
                             logStatisticSummaryEntry(output, entry.value->statSceneActionsGenerated.getSummary(), numberTimeIntervals);
                             output << " actGS ";

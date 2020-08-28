@@ -17,7 +17,7 @@ namespace ramses_internal
     class ShaderTestScene : public IntegrationScene
     {
     public:
-        ShaderTestScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        ShaderTestScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {

@@ -12,6 +12,7 @@
 #include "RendererLib/IRendererSceneControl.h"
 #include "RendererFramework/IRendererSceneEventSender.h"
 #include "Utils/LogMacros.h"
+#include "absl/algorithm/container.h"
 
 namespace ramses_internal
 {
@@ -52,7 +53,7 @@ namespace ramses_internal
                     m_eventSender.sendSceneStateChanged(masterSceneId, evt.sceneId, evt.state);
                     if (evt.state == RendererSceneState::Unavailable)
                     {
-                        m_masterScenes[masterSceneId].expiredSceneReferences.erase(evt.sceneId);
+                        m_masterScenes[masterSceneId].expirationStates.erase(evt.sceneId);
                         m_masterScenesWithChangedExpirationState.push_back(masterSceneId);
                     }
                 }
@@ -100,21 +101,45 @@ namespace ramses_internal
                 }
                 return masterSceneId.isValid();
             }
+            case ERendererEventType_SceneExpirationMonitoringEnabled:
+            case ERendererEventType_SceneExpirationMonitoringDisabled:
             case ERendererEventType_SceneExpired:
             case ERendererEventType_SceneRecoveredFromExpiration:
             {
-                const auto masterSceneId = findMasterSceneForReferencedScene(evt.sceneId);
+                auto logExpirationMsg = [](SceneId master, SceneId evtScene, const char* msg)
+                {
+                    if (master != evtScene)
+                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: received event scene reference (master {} / ref {}) {}", master, evtScene, msg);
+                    else
+                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: received event master scene {} {}", master, msg);
+                };
+                auto masterSceneId = findMasterSceneForReferencedScene(evt.sceneId);
+                // check if scene from event is master itself
+                if (!masterSceneId.isValid() && m_masterScenes.count(evt.sceneId))
+                    masterSceneId = evt.sceneId;
                 if (masterSceneId.isValid())
                 {
-                    if (evt.eventType == ERendererEventType_SceneExpired)
+                    switch (evt.eventType)
                     {
-                        m_masterScenes[masterSceneId].expiredSceneReferences.insert(evt.sceneId);
-                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: received event scene reference (master {} / ref {}) expired", masterSceneId, evt.sceneId);
-                    }
-                    else
-                    {
-                        m_masterScenes[masterSceneId].expiredSceneReferences.erase(evt.sceneId);
-                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: received event scene reference (master {} / ref {}) recovered from expiration", masterSceneId, evt.sceneId);
+                    case ERendererEventType_SceneExpirationMonitoringEnabled:
+                        m_masterScenes[masterSceneId].expirationStates[evt.sceneId] = ExpirationState::MonitoringEnabled;
+                        logExpirationMsg(masterSceneId, evt.sceneId, "enabled for expiration monitoring");
+                        break;
+                    case ERendererEventType_SceneExpirationMonitoringDisabled:
+                        m_masterScenes[masterSceneId].expirationStates[evt.sceneId] = ExpirationState::MonitoringDisabled;
+                        logExpirationMsg(masterSceneId, evt.sceneId, "disabled for expiration monitoring");
+                        break;
+                    case ERendererEventType_SceneExpired:
+                        m_masterScenes[masterSceneId].expirationStates[evt.sceneId] = ExpirationState::Expired;
+                        logExpirationMsg(masterSceneId, evt.sceneId, "expired");
+                        break;
+                    case ERendererEventType_SceneRecoveredFromExpiration:
+                        m_masterScenes[masterSceneId].expirationStates[evt.sceneId] = ExpirationState::MonitoringEnabled;
+                        logExpirationMsg(masterSceneId, evt.sceneId, "recovered from expiration");
+                        break;
+                    default:
+                        assert(false);
+                        break;
                     }
                     m_masterScenesWithChangedExpirationState.push_back(masterSceneId);
                 }
@@ -140,21 +165,7 @@ namespace ramses_internal
         events.erase(it, events.end());
 
         for (const auto masterSceneId : m_masterScenesWithChangedExpirationState)
-        {
-            auto& masterInfo = m_masterScenes[masterSceneId];
-            if (!masterInfo.reportedAsExpired && !masterInfo.expiredSceneReferences.empty())
-            {
-                events.push_back({ ERendererEventType_SceneExpired, masterSceneId });
-                masterInfo.reportedAsExpired = true;
-                LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reporting master scene {} as expired", masterSceneId);
-            }
-            else if (masterInfo.reportedAsExpired && masterInfo.expiredSceneReferences.empty())
-            {
-                events.push_back({ ERendererEventType_SceneRecoveredFromExpiration, masterSceneId });
-                masterInfo.reportedAsExpired = false;
-                LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reporting master scene {} as recovered from expiration", masterSceneId);
-            }
-        }
+            consolidateExpirationState(masterSceneId, events);
         m_masterScenesWithChangedExpirationState.clear();
     }
 
@@ -271,8 +282,8 @@ namespace ramses_internal
                 }
                 masterInfo.pendingActions.clear();
                 masterInfo.sceneReferencesWithFlushNotification.clear();
-                masterInfo.expiredSceneReferences.clear();
-                masterInfo.reportedAsExpired = false;
+                masterInfo.expirationStates.clear();
+                masterInfo.consolidatedExpirationState = ExpirationState::MonitoringDisabled;
                 masterInfo.destroyed = true;
             }
         }
@@ -303,7 +314,7 @@ namespace ramses_internal
                         // remove from master info lists
                         masterInfo.sceneReferences.erase(sceneRefId);
                         masterInfo.sceneReferencesWithFlushNotification.erase(sceneRefId);
-                        masterInfo.expiredSceneReferences.erase(sceneRefId);
+                        masterInfo.expirationStates.erase(sceneRefId);
 
                         // remove actions for released reference
                         const auto it = std::remove_if(masterInfo.pendingActions.begin(), masterInfo.pendingActions.end(), [&, refHandle = releasedRef.second](const auto& action)
@@ -357,6 +368,51 @@ namespace ramses_internal
                 }
             }
             masterSceneIt.second.pendingActions.clear();
+        }
+    }
+
+    void SceneReferenceLogic::consolidateExpirationState(SceneId masterSceneId, RendererEventVector& events)
+    {
+        auto& masterInfo = m_masterScenes[masterSceneId];
+
+        // resolve enable/disable first:
+        // - enable must precede any expire/recover event
+        // - disable must not be followed by any expire/recover event
+
+        // #1 check disabled -> enabled
+        if (masterInfo.consolidatedExpirationState == ExpirationState::MonitoringDisabled
+            && !absl::c_all_of(masterInfo.expirationStates, [](const auto& s) { return s.second == ExpirationState::MonitoringDisabled; }))
+        {
+            events.push_back({ ERendererEventType_SceneExpirationMonitoringEnabled, masterSceneId });
+            masterInfo.consolidatedExpirationState = ExpirationState::MonitoringEnabled;
+            LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reporting master scene {} as enabled for expiration monitoring", masterSceneId);
+        }
+
+        // #2 check enabled/expired -> disabled
+        if (masterInfo.consolidatedExpirationState != ExpirationState::MonitoringDisabled
+            && absl::c_all_of(masterInfo.expirationStates, [](const auto& s) { return s.second == ExpirationState::MonitoringDisabled; }))
+        {
+            events.push_back({ ERendererEventType_SceneExpirationMonitoringDisabled, masterSceneId });
+            masterInfo.consolidatedExpirationState = ExpirationState::MonitoringDisabled;
+            LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reporting master scene {} as disabled for expiration monitoring", masterSceneId);
+        }
+
+        // #3 check enabled -> expired
+        if (masterInfo.consolidatedExpirationState == ExpirationState::MonitoringEnabled
+            && absl::c_any_of(masterInfo.expirationStates, [](const auto& s) { return s.second == ExpirationState::Expired; }))
+        {
+            events.push_back({ ERendererEventType_SceneExpired, masterSceneId });
+            masterInfo.consolidatedExpirationState = ExpirationState::Expired;
+            LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reporting master scene {} as expired", masterSceneId);
+        }
+
+        // #4 check expired -> recovered
+        if (masterInfo.consolidatedExpirationState == ExpirationState::Expired
+            && absl::c_none_of(masterInfo.expirationStates, [](const auto& s) { return s.second == ExpirationState::Expired; }))
+        {
+            events.push_back({ ERendererEventType_SceneRecoveredFromExpiration, masterSceneId });
+            masterInfo.consolidatedExpirationState = ExpirationState::MonitoringEnabled;
+            LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reporting master scene {} as recovered from expiration", masterSceneId);
         }
     }
 

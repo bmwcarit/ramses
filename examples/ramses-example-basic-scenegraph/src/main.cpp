@@ -15,10 +15,7 @@
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/EffectDescription.h"
-#include "ramses-client-api/UInt16Array.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
-#include "ramses-client-api/Vector4fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/SceneGraphIterator.h"
 #include "ramses-client-api/SceneObjectIterator.h"
 #include "ramses-client-api/UniformInput.h"
@@ -54,9 +51,9 @@ int main(int argc, char* argv[])
 
     // prepare triangle geometry: vertex position array and index array
     float vertexPositionsData[] = { -0.1f, 0.f, -0.1f, 0.1f, 0.f, -0.1f, 0.f, 0.1f, -0.1f };
-    const ramses::Vector3fArray* vertexPositions = ramses.createConstVector3fArray(3, vertexPositionsData);
+    ramses::ArrayResource* vertexPositions = scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
     uint16_t indexData[] = { 0, 1, 2 };
-    const ramses::UInt16Array* indices = ramses.createConstUInt16Array(3, indexData);
+    ramses::ArrayResource* indices = scene->createArrayResource(ramses::EDataType::UInt16, 3, indexData);
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -64,7 +61,7 @@ int main(int argc, char* argv[])
     effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-scenegraph.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    ramses::Effect* effect = ramses.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = scene->createAppearance(*effect, "triangle appearance");
     ramses::GeometryBinding* geometry = scene->createGeometryBinding(*effect, "triangle geometry");
 
@@ -130,9 +127,9 @@ int main(int argc, char* argv[])
 
     // shutdown: stop distribution, free resources, unregister
     scene->unpublish();
+    scene->destroy(*vertexPositions);
+    scene->destroy(*indices);
     ramses.destroy(*scene);
-    ramses.destroy(*vertexPositions);
-    ramses.destroy(*indices);
     framework.disconnect();
 
     return 0;

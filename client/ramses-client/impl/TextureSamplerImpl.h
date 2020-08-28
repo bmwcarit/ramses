@@ -18,6 +18,7 @@
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/ResourceContentHash.h"
 #include "SceneAPI/TextureSampler.h"
+#include "SceneAPI/EDataType.h"
 
 namespace ramses
 {
@@ -61,6 +62,7 @@ namespace ramses
         status_t setTextureData(const StreamTexture& texture);
 
         ramses_internal::TextureSamplerHandle getTextureSamplerHandle() const;
+        ramses_internal::EDataType getTextureDataType() const;
         ERamsesObjectType getTextureType() const;
 
     private:

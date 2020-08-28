@@ -9,7 +9,6 @@
 // API
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Appearance.h"
-#include "ramses-client-api/UInt16Array.h"
 #include "ramses-client-api/GeometryBinding.h"
 
 // internal

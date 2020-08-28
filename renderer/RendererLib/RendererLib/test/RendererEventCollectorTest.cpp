@@ -304,16 +304,6 @@ namespace ramses_internal
         EXPECT_EQ(ERendererEventType_ScenePublished, sceneEvts[0].type);
         EXPECT_EQ(ERendererEventType_SceneMapFailed, sceneEvts[1].type);
         EXPECT_EQ(ERendererEventType_SceneShown, sceneEvts[2].type);
-
-        // for now scene events are pushed to both internal event queue and scene control event queue
-        const RendererEventVector resultEvents = consumeSceneControlEvents();
-        ASSERT_EQ(3u, resultEvents.size());
-        EXPECT_EQ(sceneId1, resultEvents[0].sceneId);
-        EXPECT_EQ(sceneId2, resultEvents[1].sceneId);
-        EXPECT_EQ(sceneId3, resultEvents[2].sceneId);
-        EXPECT_EQ(ERendererEventType_ScenePublished, resultEvents[0].eventType);
-        EXPECT_EQ(ERendererEventType_SceneMapFailed, resultEvents[1].eventType);
-        EXPECT_EQ(ERendererEventType_SceneShown, resultEvents[2].eventType);
     }
 
     TEST_F(ARendererEventCollector, QueuesUpSceneEvents)

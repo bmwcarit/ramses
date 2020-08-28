@@ -87,11 +87,7 @@ namespace ramses_internal
             if (source.isCameraAllocated(c))
             {
                 const Camera& camera = source.getCamera(c);
-                collector.allocateCamera(camera.projectionType, camera.node, camera.viewportDataInstance, c);
-                if (camera.projectionType != ECameraProjectionType_Renderer)
-                {
-                    collector.setCameraFrustum(c, camera.frustum);
-                }
+                collector.allocateCamera(camera.projectionType, camera.node, camera.dataInstance, c);
             }
         }
     }
@@ -210,7 +206,7 @@ namespace ramses_internal
 
                     switch (field.dataType)
                     {
-                    case EDataType_Float:
+                    case EDataType::Float:
                     {
                         const Float* value = source.getDataFloatArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
@@ -219,7 +215,7 @@ namespace ramses_internal
                         }
                         break;
                     }
-                    case EDataType_Vector2F:
+                    case EDataType::Vector2F:
                     {
                         const Vector2* value = source.getDataVector2fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
@@ -228,7 +224,7 @@ namespace ramses_internal
                         }
                         break;
                     }
-                    case EDataType_Vector3F:
+                    case EDataType::Vector3F:
                     {
                         const Vector3* value = source.getDataVector3fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
@@ -237,7 +233,7 @@ namespace ramses_internal
                         }
                         break;
                     }
-                    case EDataType_Vector4F:
+                    case EDataType::Vector4F:
                     {
                         const Vector4* value = source.getDataVector4fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
@@ -246,7 +242,7 @@ namespace ramses_internal
                         }
                         break;
                     }
-                    case EDataType_Matrix22F:
+                    case EDataType::Matrix22F:
                     {
                         const Matrix22f* value = source.getDataMatrix22fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
@@ -255,7 +251,7 @@ namespace ramses_internal
                         }
                         break;
                     }
-                    case EDataType_Matrix33F:
+                    case EDataType::Matrix33F:
                     {
                         const Matrix33f* value = source.getDataMatrix33fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
@@ -264,7 +260,7 @@ namespace ramses_internal
                         }
                         break;
                     }
-                    case EDataType_Matrix44F:
+                    case EDataType::Matrix44F:
                     {
                         const Matrix44f* value = source.getDataMatrix44fArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
@@ -273,7 +269,7 @@ namespace ramses_internal
                         }
                         break;
                     }
-                    case EDataType_Int32:
+                    case EDataType::Int32:
                     {
                         const Int32* value = source.getDataIntegerArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
@@ -282,7 +278,7 @@ namespace ramses_internal
                         }
                         break;
                     }
-                    case EDataType_Vector2I:
+                    case EDataType::Vector2I:
                     {
                         const Vector2i* value = source.getDataVector2iArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
@@ -291,7 +287,7 @@ namespace ramses_internal
                         }
                         break;
                     }
-                    case EDataType_Vector3I:
+                    case EDataType::Vector3I:
                     {
                         const Vector3i* value = source.getDataVector3iArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
@@ -300,7 +296,7 @@ namespace ramses_internal
                         }
                         break;
                     }
-                    case EDataType_Vector4I:
+                    case EDataType::Vector4I:
                     {
                         const Vector4i* value = source.getDataVector4iArray(i, f);
                         if (!MemoryUtils::AreAllBytesZero(value, elementCount))
@@ -309,24 +305,26 @@ namespace ramses_internal
                         }
                         break;
                     }
-                    case EDataType_TextureSampler:
+                    case EDataType::TextureSampler2D:
+                    case EDataType::TextureSampler3D:
+                    case EDataType::TextureSamplerCube:
                     {
                         TextureSamplerHandle samplerHandle = source.getDataTextureSamplerHandle(i, f);
                         collector.setDataTextureSamplerHandle(i, f, samplerHandle);
                         break;
                     }
-                    case EDataType_DataReference:
+                    case EDataType::DataReference:
                     {
                         DataInstanceHandle dataRef = source.getDataReference(i, f);
                         collector.setDataReference(i, f, dataRef);
                         break;
                     }
-                    case EDataType_Indices:
-                    case EDataType_UInt16Buffer:
-                    case EDataType_FloatBuffer:
-                    case EDataType_Vector2Buffer:
-                    case EDataType_Vector3Buffer:
-                    case EDataType_Vector4Buffer:
+                    case EDataType::Indices:
+                    case EDataType::UInt16Buffer:
+                    case EDataType::FloatBuffer:
+                    case EDataType::Vector2Buffer:
+                    case EDataType::Vector3Buffer:
+                    case EDataType::Vector4Buffer:
                     {
                         const ResourceField& dataResource = source.getDataResource(i, f);
                         if (dataResource.hash.isValid() || dataResource.dataBuffer.isValid())

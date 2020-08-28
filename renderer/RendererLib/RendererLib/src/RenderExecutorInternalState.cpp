@@ -118,20 +118,18 @@ namespace ramses_internal
             }
             else
             {
-                const auto vpOffsetRef = m_scene->getDataReference(cameraData.viewportDataInstance, Camera::ViewportOffsetField);
-                const auto vpSizeRef = m_scene->getDataReference(cameraData.viewportDataInstance, Camera::ViewportSizeField);
-                const auto vpOffset = m_scene->getDataSingleVector2i(vpOffsetRef, DataFieldHandle{ 0 });
-                const auto vpSize = m_scene->getDataSingleVector2i(vpSizeRef, DataFieldHandle{ 0 });
+                const auto vpOffsetRef = m_scene->getDataReference(cameraData.dataInstance, Camera::ViewportOffsetField);
+                const auto vpSizeRef = m_scene->getDataReference(cameraData.dataInstance, Camera::ViewportSizeField);
+                const auto& vpOffset = m_scene->getDataSingleVector2i(vpOffsetRef, DataFieldHandle{ 0 });
+                const auto& vpSize = m_scene->getDataSingleVector2i(vpSizeRef, DataFieldHandle{ 0 });
                 newViewport = Viewport{ vpOffset.x, vpOffset.y, UInt32(vpSize.x), UInt32(vpSize.y) };
+
+                const auto frustumPlanesRef = m_scene->getDataReference(cameraData.dataInstance, Camera::FrustumPlanesField);
+                const auto frustumNearFarRef = m_scene->getDataReference(cameraData.dataInstance, Camera::FrustumNearFarPlanesField);
+                const auto& frustumPlanes = m_scene->getDataSingleVector4f(frustumPlanesRef, DataFieldHandle{ 0 });
+                const auto& frustumNearFar = m_scene->getDataSingleVector2f(frustumNearFarRef, DataFieldHandle{ 0 });
                 m_projectionMatrix = CameraMatrixHelper::ProjectionMatrix(
-                    ProjectionParams::Frustum(
-                        cameraData.projectionType,
-                        cameraData.frustum.leftPlane,
-                        cameraData.frustum.rightPlane,
-                        cameraData.frustum.bottomPlane,
-                        cameraData.frustum.topPlane,
-                        cameraData.frustum.nearPlane,
-                        cameraData.frustum.farPlane));
+                    ProjectionParams::Frustum(cameraData.projectionType, frustumPlanes.x, frustumPlanes.y, frustumPlanes.z, frustumPlanes.w, frustumNearFar.x, frustumNearFar.y));
             }
 
             viewportState.setState(newViewport);

@@ -20,12 +20,13 @@ namespace ramses_internal
     class EffectResource : public ResourceBase
     {
     public:
-        EffectResource(const String& vertexShader, const String& fragmentShader,
+        EffectResource(const String& vertexShader, const String& fragmentShader, const String& geometryShader,
             const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs,
             const String& name, ResourceCacheFlag cacheFlag);
 
         const char* getVertexShader() const;
         const char* getFragmentShader() const;
+        const char* getGeometryShader() const;
 
         const EffectInputInformationVector& getUniformInputs() const;
         const EffectInputInformationVector& getAttributeInputs() const;
@@ -38,7 +39,7 @@ namespace ramses_internal
 
     private:
         EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs,
-            const String& name, UInt32 fragmentShaderOffset, ResourceCacheFlag cacheFlag);
+            const String& name, UInt32 fragmentShaderOffset, UInt32 geometryShaderOffset, ResourceCacheFlag cacheFlag);
 
         static void WriteInputVector(IOutputStream& stream, const EffectInputInformationVector& inputVector);
         static void ReadInputVector(IInputStream& stream, EffectInputInformationVector& inputVector);
@@ -47,6 +48,7 @@ namespace ramses_internal
         const EffectInputInformationVector m_attributeInputs;
         const String m_name;
         const UInt32 m_fragmentShaderOffset;
+        const UInt32 m_geometryShaderOffset;
     };
 }
 

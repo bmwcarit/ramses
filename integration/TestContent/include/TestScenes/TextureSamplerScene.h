@@ -21,7 +21,7 @@ namespace ramses_internal
     class TextureSamplerScene : public IntegrationScene
     {
     public:
-        TextureSamplerScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition);
+        TextureSamplerScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition);
 
         void setState(UInt32 state);
 

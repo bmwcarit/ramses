@@ -28,26 +28,26 @@ namespace ramses
     TEST_F(StreamTextureTest, createStreamTexture)
     {
         const Texture2D& fallbackTexture = createObject<Texture2D>("fallbackTexture");
-        StreamTexture* streamTexture = this->m_scene.createStreamTexture(fallbackTexture, streamSource_t(0), "testStreamTexture");
+        StreamTexture* streamTexture = this->m_scene.createStreamTexture(fallbackTexture, waylandIviSurfaceId_t(0), "testStreamTexture");
 
         ASSERT_NE(static_cast<StreamTexture*>(nullptr), streamTexture);
     }
 
     TEST_F(StreamTextureTest, reportsErrorWhenValidatedWithInvalidFallbackTexture)
     {
-        const Texture2D& fallbackTexture = createObject<Texture2D>("fallbackTexture");
-        StreamTexture* streamTexture = this->m_scene.createStreamTexture(fallbackTexture, streamSource_t(0), "testStreamTexture");
+        Texture2D& fallbackTexture = createObject<Texture2D>("fallbackTexture");
+        StreamTexture* streamTexture = this->m_scene.createStreamTexture(fallbackTexture, waylandIviSurfaceId_t(0), "testStreamTexture");
         ASSERT_TRUE(nullptr != streamTexture);
         EXPECT_EQ(StatusOK, streamTexture->validate());
 
-        EXPECT_EQ(StatusOK, client.destroy(fallbackTexture));
+        EXPECT_EQ(StatusOK, m_scene.destroy(fallbackTexture));
         EXPECT_NE(StatusOK, streamTexture->validate());
     }
 
     TEST_F(StreamTextureTest, canToggleForceFallbackImage)
     {
         const Texture2D& fallbackTexture = createObject<Texture2D>("fallbackTexture");
-        StreamTexture* streamTexture = this->m_scene.createStreamTexture(fallbackTexture, streamSource_t(0), "testStreamTexture");
+        StreamTexture* streamTexture = this->m_scene.createStreamTexture(fallbackTexture, waylandIviSurfaceId_t(0), "testStreamTexture");
 
         ASSERT_NE(static_cast<StreamTexture*>(nullptr), streamTexture);
 
@@ -63,8 +63,8 @@ namespace ramses
     TEST_F(StreamTextureTest, canGetStreamSourceId)
     {
         const Texture2D& fallbackTexture = createObject<Texture2D>("fallbackTexture");
-        StreamTexture* streamTexture = this->m_scene.createStreamTexture(fallbackTexture, streamSource_t(123u), "testStreamTexture");
+        StreamTexture* streamTexture = this->m_scene.createStreamTexture(fallbackTexture, waylandIviSurfaceId_t(123u), "testStreamTexture");
 
-        EXPECT_EQ(streamSource_t(123u), streamTexture->getStreamSourceId());
+        EXPECT_EQ(waylandIviSurfaceId_t(123u), streamTexture->getStreamSourceId());
     }
 }

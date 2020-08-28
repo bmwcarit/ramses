@@ -75,6 +75,31 @@ namespace ramses
         status_t getBlendingOperations(EBlendOperation& operationColor, EBlendOperation& operationAlpha) const;
 
         /**
+        * @brief Sets blending color that can be used as blending color constant for some blending factors.
+        *        The default value is (0,0,0,0)
+        *
+        * @param[in] red Red channel in blending color
+        * @param[in] green Green channel in blending color
+        * @param[in] blue Blue channel in blending color
+        * @param[in] alpha Alpha channel in blending color
+        * @return status == 0 for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setBlendingColor(float red, float green, float blue, float alpha);
+
+        /**
+        * @brief Gets blending color set via setBlendingColor
+        *
+        * @param[out] red Red channel in blending color
+        * @param[out] green Green channel in blending color
+        * @param[out] blue Blue channel in blending color
+        * @param[out] alpha Alpha channel in blending color
+        * @return status == 0 for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t getBlendingColor(float& red, float& green, float& blue, float& alpha) const;
+
+        /**
         * @brief Enables or disables writing to depth buffer.
         *
         * @param[in] mode Flag denoting enabling or disabling depth writes.

@@ -19,7 +19,7 @@ namespace ramses_internal
     {
         EXPECT_EQ(0u, this->m_scene.getTextureBufferCount());
 
-        const TextureBufferHandle textureBuffer = this->m_scene.allocateTextureBuffer(ETextureFormat_R16F, { {1, 1} });
+        const TextureBufferHandle textureBuffer = this->m_scene.allocateTextureBuffer(ETextureFormat::R16F, { {1, 1} });
 
         EXPECT_EQ(1u, this->m_scene.getTextureBufferCount());
         EXPECT_TRUE(this->m_scene.isTextureBufferAllocated(textureBuffer));
@@ -27,7 +27,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, ReleasesTextureBuffer)
     {
-        const TextureBufferHandle textureBuffer = this->m_scene.allocateTextureBuffer(ETextureFormat_R16F, { { 1, 1 } });
+        const TextureBufferHandle textureBuffer = this->m_scene.allocateTextureBuffer(ETextureFormat::R16F, { { 1, 1 } });
         this->m_scene.releaseTextureBuffer(textureBuffer);
 
         EXPECT_FALSE(this->m_scene.isTextureBufferAllocated(textureBuffer));
@@ -40,9 +40,9 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, StoresTextureBufferProperties)
     {
-        const TextureBufferHandle handle = this->m_scene.allocateTextureBuffer(ETextureFormat_R16F, { {2, 2}, { 1, 1 } });
+        const TextureBufferHandle handle = this->m_scene.allocateTextureBuffer(ETextureFormat::R16F, { {2, 2}, { 1, 1 } });
         const TextureBuffer& texBuffer = this->m_scene.getTextureBuffer(handle);
-        EXPECT_EQ(ETextureFormat_R16F, texBuffer.textureFormat);
+        EXPECT_EQ(ETextureFormat::R16F, texBuffer.textureFormat);
         ASSERT_EQ(2u, texBuffer.mipMaps.size());
         EXPECT_EQ(2u, texBuffer.mipMaps[0].width);
         EXPECT_EQ(2u, texBuffer.mipMaps[0].height);
@@ -52,7 +52,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, UpdatesTextureBufferDataPartially)
     {
-        const TextureBufferHandle textureBuffer = this->m_scene.allocateTextureBuffer(ETextureFormat_R8, { { 4, 4} });
+        const TextureBufferHandle textureBuffer = this->m_scene.allocateTextureBuffer(ETextureFormat::R8, { { 4, 4} });
         const Byte data[] = {1u, 2u, 3u, 4u};
         this->m_scene.updateTextureBuffer(textureBuffer, 0u, 0u, 0u, 2u, 2u, data);
         const TextureBuffer& texBuffer = this->m_scene.getTextureBuffer(textureBuffer);
@@ -76,7 +76,7 @@ namespace ramses_internal
     {
         EXPECT_EQ(0u, this->m_scene.getTextureBufferCount());
 
-        const TextureBufferHandle textureBuffer = this->m_scene.allocateTextureBuffer(ETextureFormat_R16F, { {2, 2}, {1, 1} });
+        const TextureBufferHandle textureBuffer = this->m_scene.allocateTextureBuffer(ETextureFormat::R16F, { {2, 2}, {1, 1} });
         const TextureBuffer& texBuffer = this->m_scene.getTextureBuffer(textureBuffer);
 
         ASSERT_EQ(2u, texBuffer.mipMaps.size());
@@ -86,7 +86,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, UpdatesUsedRegionsWhenTextureBufferDataGetsUpdated)
     {
-        const TextureBufferHandle textureBuffer = this->m_scene.allocateTextureBuffer(ETextureFormat_R8, { { 4, 4}, {2, 2} });
+        const TextureBufferHandle textureBuffer = this->m_scene.allocateTextureBuffer(ETextureFormat::R8, { { 4, 4}, {2, 2} });
         const Byte data[16] = { 0u };
 
         const TextureBuffer& texBuffer = this->m_scene.getTextureBuffer(textureBuffer);

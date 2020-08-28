@@ -6,12 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client-api/FloatArray.h"
-#include "ramses-client-api/UInt16Array.h"
-#include "ramses-client-api/UInt32Array.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
-#include "ramses-client-api/Vector4fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
@@ -31,8 +26,7 @@
 #include "ramses-client-api/DataVector2i.h"
 #include "ramses-client-api/DataVector3i.h"
 #include "ramses-client-api/DataVector4i.h"
-#include "ramses-client-api/IndexDataBuffer.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/SceneReference.h"

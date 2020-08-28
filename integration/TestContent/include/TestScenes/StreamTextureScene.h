@@ -23,7 +23,7 @@ namespace ramses_internal
     class StreamTextureScene : public IntegrationScene
     {
     public:
-        StreamTextureScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        StreamTextureScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {
@@ -35,7 +35,7 @@ namespace ramses_internal
         };
 
     private:
-        void addPngQuad(const char* pngFilePath, const float* vertexPositionsArray, ramses::streamSource_t surfaceId, ramses::Node* parentNode = nullptr, const char* streamTextureName = "streamTexture", bool forcefallback = false);
+        void addPngQuad(const char* pngFilePath, const float* vertexPositionsArray, ramses::waylandIviSurfaceId_t surfaceId, ramses::Node* parentNode = nullptr, const char* streamTextureName = "streamTexture", bool forcefallback = false);
 
         const ramses::Effect* m_effect;
         ramses::Node* m_root;

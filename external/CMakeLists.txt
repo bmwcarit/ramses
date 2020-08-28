@@ -307,14 +307,16 @@ else()
 endif()
 
 
-ACME_MODULE(
-    NAME                    imgui
-    TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          OFF
+if(ramses-sdk_BUILD_TOOLS)
+    ACME_MODULE(
+        NAME                    imgui
+        TYPE                    STATIC_LIBRARY
+        ENABLE_INSTALL          OFF
 
-    INCLUDE_BASE            imgui
-    FILES_PRIVATE_HEADER    imgui/*.h
-                            imgui/misc/cpp/*.h
-    FILES_SOURCE            imgui/*.cpp
-                            imgui/misc/cpp/*.cpp
-    )
+        INCLUDE_BASE            imgui
+        FILES_PRIVATE_HEADER    imgui/*.h
+                                imgui/misc/cpp/*.h
+        FILES_SOURCE            imgui/*.cpp
+                                imgui/misc/cpp/*.cpp
+        )
+endif()

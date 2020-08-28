@@ -14,7 +14,6 @@
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "ramses-client-api/RenderTarget.h"
-#include "ramses-client-api/ResourceFileDescription.h"
 #include "ramses-client-api/SplineStepBool.h"
 #include "ramses-client-api/SplineStepFloat.h"
 #include "ramses-client-api/AnimatedProperty.h"
@@ -28,8 +27,6 @@
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/EffectDescription.h"
-#include "ramses-client-api/Vector3fArray.h"
-#include "ramses-client-api/UInt16Array.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/DataFloat.h"
 #include "ramses-client-api/DataVector2f.h"
@@ -44,10 +41,10 @@
 #include "ramses-client-api/DataVector4i.h"
 #include "ramses-client-api/StreamTexture.h"
 #include "ramses-client-api/Texture2D.h"
-#include "ramses-client-api/IndexDataBuffer.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/PickableObject.h"
+#include "ramses-client-api/ArrayResource.h"
 
 #include "ScenePersistationTest.h"
 #include "CameraNodeImpl.h"
@@ -80,14 +77,14 @@
 #include "Utils/File.h"
 #include "ramses-utils.h"
 
-#include "IndexDataBufferImpl.h"
+#include "ArrayBufferImpl.h"
 #include "Texture2DBufferImpl.h"
-#include "VertexDataBufferImpl.h"
 #include "RamsesObjectTestTypes.h"
 #include "ramses-client-api/UniformInput.h"
-#include "TransportCommon/ESceneActionId.h"
+#include "Scene/ESceneActionId.h"
 #include "Scene/SceneResourceChanges.h"
 #include "Scene/SceneActionApplier.h"
+#include "ramses-hmi-utils.h"
 
 namespace ramses
 {
@@ -95,7 +92,7 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAScene)
     {
-        const status_t status = client.saveSceneToFile(m_scene, "someTemporaryFile.ram", {}, false);
+        const status_t status = m_scene.saveToFile("someTemporaryFile.ram", false);
         EXPECT_EQ(StatusOK, status);
 
         m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", {});
@@ -104,10 +101,7 @@ namespace ramses
         ObjectTypeHistogram origSceneNumbers;
         ObjectTypeHistogram loadedSceneNumbers;
         fillObjectTypeHistogramFromScene(origSceneNumbers, m_scene);
-        fillObjectTypeHistogramFromClient(origSceneNumbers, client);
-
         fillObjectTypeHistogramFromScene(loadedSceneNumbers, *m_sceneLoaded);
-        fillObjectTypeHistogramFromClient(loadedSceneNumbers, this->m_clientForLoading);
         EXPECT_PRED_FORMAT2(AssertHistogramEqual, origSceneNumbers, loadedSceneNumbers);
 
         ramses_internal::SceneSizeInformation origSceneSizeInfo = m_scene.impl.getIScene().getSceneSizeInformation();
@@ -136,7 +130,7 @@ namespace ramses
 
         doWriteReadCycle();
 
-        const PerspectiveCamera* loadedCamera = this->getObjectForTesting<PerspectiveCamera>("my cam");
+        PerspectiveCamera* loadedCamera = this->getObjectForTesting<PerspectiveCamera>("my cam");
         EXPECT_EQ(camera->impl.getCameraHandle(), loadedCamera->impl.getCameraHandle());
         EXPECT_EQ(0.1f, loadedCamera->getLeftPlane());
         EXPECT_EQ(0.2f, loadedCamera->getRightPlane());
@@ -149,17 +143,18 @@ namespace ramses
         EXPECT_EQ(-2, loadedCamera->getViewportY());
         EXPECT_EQ(3u, loadedCamera->getViewportWidth());
         EXPECT_EQ(4u, loadedCamera->getViewportHeight());
+
+        m_sceneLoaded->destroy(*loadedCamera);
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteStreamTexture)
     {
         uint8_t data[4] = { 0u };
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* fallbackTexture = this->client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "fallbackTexture");
-        m_resources.add(fallbackTexture);
+        Texture2D* fallbackTexture = this->m_scene.createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "fallbackTexture");
 
-        StreamTexture* streamTexture                   = this->m_scene.createStreamTexture(*fallbackTexture, streamSource_t(3), "resourceName");
-        StreamTexture* streamTextureWithForcedFallback = this->m_scene.createStreamTexture(*fallbackTexture, streamSource_t(4), "resourceName2");
+        StreamTexture* streamTexture                   = this->m_scene.createStreamTexture(*fallbackTexture, waylandIviSurfaceId_t(3), "resourceName");
+        StreamTexture* streamTextureWithForcedFallback = this->m_scene.createStreamTexture(*fallbackTexture, waylandIviSurfaceId_t(4), "resourceName2");
         streamTextureWithForcedFallback->forceFallbackImage(true);
 
         this->doWriteReadCycle();
@@ -182,7 +177,7 @@ namespace ramses
 
         doWriteReadCycle();
 
-        const OrthographicCamera* loadedCamera = this->getObjectForTesting<OrthographicCamera>("my cam");
+        OrthographicCamera* loadedCamera = this->getObjectForTesting<OrthographicCamera>("my cam");
 
         EXPECT_EQ(camera->impl.getCameraHandle(), loadedCamera->impl.getCameraHandle());
 
@@ -197,14 +192,15 @@ namespace ramses
         EXPECT_EQ(-2, loadedCamera->getViewportY());
         EXPECT_EQ(3u, loadedCamera->getViewportWidth());
         EXPECT_EQ(4u, loadedCamera->getViewportHeight());
+
+        m_sceneLoaded->destroy(*loadedCamera);
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAnAppearance)
     {
-        Effect* effect = TestEffects::CreateTestEffect(client);
+        Effect* effect = TestEffects::CreateTestEffect(this->m_scene);
         Appearance* appearance = this->m_scene.createAppearance(*effect, "appearance");
 
-        m_resources.add(effect);
         doWriteReadCycle();
 
         Appearance* loadedAppearance = this->getObjectForTesting<Appearance>("appearance");
@@ -215,9 +211,33 @@ namespace ramses
         EXPECT_EQ(appearance->impl.getIScene().getSceneId(), loadedAppearance->impl.getIScene().getSceneId());
     }
 
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, keepingTrackOfsceneObjectIdsAndFindObjectByIdWork)
+    {
+        Effect* effect = TestEffects::CreateTestEffect(this->m_scene);
+
+        const Appearance* appearance = this->m_scene.createAppearance(*effect, "appearance");
+        const GeometryBinding* geometry = this->m_scene.createGeometryBinding(*effect, "geometry");
+
+        const sceneObjectId_t appearanceIdBeforeSaveAndLoad = appearance->getSceneObjectId();
+        const sceneObjectId_t geometryIdBeforeSaveAndLoad = geometry->getSceneObjectId();
+        EXPECT_NE(appearanceIdBeforeSaveAndLoad, geometryIdBeforeSaveAndLoad);
+
+        doWriteReadCycle();
+
+        const Appearance& appearanceLoaded = RamsesObjectTypeUtils::ConvertTo<Appearance>(*this->m_scene.findObjectById(appearanceIdBeforeSaveAndLoad));
+        EXPECT_EQ(appearanceIdBeforeSaveAndLoad, appearanceLoaded.getSceneObjectId());
+
+        const GeometryBinding& geometryLoaded = RamsesObjectTypeUtils::ConvertTo<GeometryBinding>(*this->m_scene.findObjectById(geometryIdBeforeSaveAndLoad));
+        EXPECT_EQ(geometryIdBeforeSaveAndLoad, geometryLoaded.getSceneObjectId());
+
+        const Camera* camera = this->m_scene.createRemoteCamera("camera");
+        EXPECT_NE(appearanceIdBeforeSaveAndLoad, camera->getSceneObjectId());
+        EXPECT_NE(geometryIdBeforeSaveAndLoad, camera->getSceneObjectId());
+    }
+
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAnAppearanceWithUniformValuesSetOrBound)
     {
-        Effect* effect = TestEffects::CreateTestEffect(client);
+        Effect* effect = TestEffects::CreateTestEffect(this->m_scene);
         Appearance* appearance = this->m_scene.createAppearance(*effect, "appearance");
 
         UniformInput fragColorR;
@@ -231,7 +251,6 @@ namespace ramses
         appearance->setInputValueFloat(fragColorR, 567.f);
         appearance->bindInput(fragColorG, *fragColorDataObject);
 
-        m_resources.add(effect);
         doWriteReadCycle();
 
         Appearance* loadedAppearance = this->getObjectForTesting<Appearance>("appearance");
@@ -255,7 +274,7 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, multipleAppearancesSharingSameEffectAreCorrectlyWrittenAndLoaded)
     {
-        Effect* effect = TestEffects::CreateTestEffect(client);
+        Effect* effect = TestEffects::CreateTestEffect(this->m_scene);
         const Appearance* appearance1 = m_scene.createAppearance(*effect, "appearance1");
         const Appearance* appearance2 = m_scene.createAppearance(*effect, "appearance2");
 
@@ -264,7 +283,6 @@ namespace ramses
         const uint32_t numReferences = m_scene.impl.getIScene().getNumDataLayoutReferences(appearance1->impl.getUniformDataLayout());
         EXPECT_EQ(2u, numReferences);
 
-        m_resources.add(effect);
         doWriteReadCycle();
 
         Appearance* loadedAppearance1 = this->getObjectForTesting<Appearance>("appearance1");
@@ -282,12 +300,9 @@ namespace ramses
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteGeometryBinding)
     {
         static const uint16_t inds[3] = { 0, 1, 2 };
-        const UInt16Array* const indices = this->client.createConstUInt16Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
+        ArrayResource* const indices = this->m_scene.createArrayResource(EDataType::UInt16, 3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
 
-        Effect* effect = TestEffects::CreateTestEffectWithAttribute(client);
-
-        m_resources.add(indices);
-        m_resources.add(effect);
+        Effect* effect = TestEffects::CreateTestEffectWithAttribute(this->m_scene);
 
         GeometryBinding* geometry = this->m_scene.createGeometryBinding(*effect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
@@ -306,7 +321,7 @@ namespace ramses
         EXPECT_EQ(effect->getResourceId(), loadedEffect.getResourceId());
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), loadedEffect.impl.getLowlevelResourceHash());
         EXPECT_EQ(effect->impl.getObjectRegistryHandle(), loadedEffect.impl.getObjectRegistryHandle());
-        EXPECT_EQ(1u, loadedEffect.getAttributeInputCount());
+        EXPECT_EQ(4u, loadedEffect.getAttributeInputCount());
         AttributeInput attributeInputOut;
         EXPECT_EQ(StatusOK, loadedEffect.findAttributeInput("a_position", attributeInputOut));
     }
@@ -366,16 +381,13 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAMeshNode_withValues)
     {
-        Effect* effect = TestEffects::CreateTestEffect(client);
+        Effect* effect = TestEffects::CreateTestEffect(this->m_scene);
         Appearance* appearance = this->m_scene.createAppearance(*effect, "appearance");
-        m_resources.add(effect);
 
         GeometryBinding* geometry = this->m_scene.createGeometryBinding(*effect, "geometry");
         const uint16_t data = 0u;
-        const UInt16Array* indices = this->client.createConstUInt16Array(1u, &data, ramses::ResourceCacheFlag_DoNotCache, "indices");
+        ArrayResource* indices = this->m_scene.createArrayResource(EDataType::UInt16, 1u, &data, ramses::ResourceCacheFlag_DoNotCache, "indices");
         geometry->setIndices(*indices);
-
-        m_resources.add(indices);
 
         MeshNode* meshNode = this->m_scene.createMeshNode("a meshnode");
 
@@ -390,7 +402,10 @@ namespace ramses
         MeshNode* loadedMeshNode = this->getObjectForTesting<MeshNode>("a meshnode");
 
         EXPECT_STREQ(meshNode->getAppearance()->getName(), loadedMeshNode->getAppearance()->getName());
+        EXPECT_EQ(meshNode->getAppearance()->getSceneObjectId(), loadedMeshNode->getAppearance()->getSceneObjectId());
         EXPECT_STREQ(meshNode->getGeometryBinding()->getName(), loadedMeshNode->getGeometryBinding()->getName());
+        EXPECT_EQ(meshNode->getGeometryBinding()->getSceneObjectId(), loadedMeshNode->getGeometryBinding()->getSceneObjectId());
+        EXPECT_EQ(meshNode->getSceneObjectId(), loadedMeshNode->getSceneObjectId());
         EXPECT_EQ(456u, loadedMeshNode->getStartIndex());
         EXPECT_EQ(678u, loadedMeshNode->getIndexCount());
         EXPECT_EQ(loadedMeshNode->impl.getFlattenedVisibility(), EVisibilityMode::Off);
@@ -426,6 +441,7 @@ namespace ramses
         const MeshNode* loadedMeshB = this->getObjectForTesting<MeshNode>("meshB");
 
         EXPECT_STREQ(renderGroup->getName(), loadedRenderGroup->getName());
+        EXPECT_EQ(renderGroup->getSceneObjectId(), loadedRenderGroup->getSceneObjectId());
 
         EXPECT_EQ(2u, loadedRenderGroup->impl.getAllMeshes().size());
         EXPECT_EQ(&loadedMeshA->impl, loadedRenderGroup->impl.getAllMeshes()[0]);
@@ -458,6 +474,7 @@ namespace ramses
         const MeshNode* loadedMeshB = this->getObjectForTesting<MeshNode>("meshB");
 
         EXPECT_STREQ(nestedRenderGroup->getName(), loadedNestedRenderGroup->getName());
+        EXPECT_EQ(nestedRenderGroup->getSceneObjectId(), loadedNestedRenderGroup->getSceneObjectId());
 
         EXPECT_EQ(1u, loadedRenderGroup->impl.getAllMeshes().size());
         EXPECT_EQ(1u, loadedRenderGroup->impl.getAllRenderGroups().size());
@@ -494,6 +511,7 @@ namespace ramses
         RenderPass* loadedRenderPass = this->getObjectForTesting<RenderPass>("a renderpass");
 
         EXPECT_STREQ(renderPass->getName(), loadedRenderPass->getName());
+        EXPECT_EQ(renderPass->getSceneObjectId(), loadedRenderPass->getSceneObjectId());
         EXPECT_EQ(renderOrder, loadedRenderPass->getRenderOrder());
         EXPECT_FALSE(loadedRenderPass->isEnabled());
         EXPECT_TRUE(loadedRenderPass->isRenderOnce());
@@ -512,6 +530,7 @@ namespace ramses
         const Camera* loadedCamera = this->getObjectForTesting<Camera>("camera");
 
         EXPECT_STREQ(renderPass->getName(), loadedRenderPass->getName());
+        EXPECT_EQ(renderPass->getSceneObjectId(), loadedRenderPass->getSceneObjectId());
         EXPECT_EQ(loadedCamera, loadedRenderPass->getCamera());
     }
 
@@ -530,6 +549,7 @@ namespace ramses
         const RenderGroup* loadedMeshB = this->getObjectForTesting<RenderGroup>("groupB");
 
         EXPECT_STREQ(renderPass->getName(), loadedRenderPass->getName());
+        EXPECT_EQ(renderPass->getSceneObjectId(), loadedRenderPass->getSceneObjectId());
         EXPECT_EQ(2u, loadedRenderPass->impl.getAllRenderGroups().size());
         EXPECT_EQ(&loadedMeshA->impl, loadedRenderPass->impl.getAllRenderGroups()[0]);
         EXPECT_EQ(&loadedMeshB->impl, loadedRenderPass->impl.getAllRenderGroups()[1]);
@@ -558,6 +578,7 @@ namespace ramses
         const BlitPass* loadedBlitPass = this->getObjectForTesting<BlitPass>("a blitpass");
 
         EXPECT_STREQ(blitPass->getName(), loadedBlitPass->getName());
+        EXPECT_EQ(blitPass->getSceneObjectId(), loadedBlitPass->getSceneObjectId());
         EXPECT_EQ(renderOrder, loadedBlitPass->getRenderOrder());
         EXPECT_FALSE(loadedBlitPass->isEnabled());
 
@@ -607,9 +628,8 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWritePickableObject)
     {
-        const uint32_t geometryBufferSize = 36;
-        const EDataType geometryBufferDataType = EDataType_Vector3F;
-        const VertexDataBuffer* geometryBuffer = this->m_scene.createVertexDataBuffer(geometryBufferSize, geometryBufferDataType, "geometryBuffer");
+        const EDataType geometryBufferDataType = EDataType::Vector3F;
+        const ArrayBuffer* geometryBuffer = this->m_scene.createArrayBuffer(geometryBufferDataType, 3u, "geometryBuffer");
 
         const int32_t viewPort_x = 1;
         const int32_t viewPort_y = 2;
@@ -629,10 +649,11 @@ namespace ramses
         const PickableObject* loadedPickableObject = this->getObjectForTesting<PickableObject>("PickableObject");
 
         EXPECT_STREQ(pickableObject->getName(), loadedPickableObject->getName());
+        EXPECT_EQ(pickableObject->getSceneObjectId(), loadedPickableObject->getSceneObjectId());
         EXPECT_EQ(id, loadedPickableObject->getPickableObjectId());
         EXPECT_FALSE(loadedPickableObject->isEnabled());
         EXPECT_EQ(this->getObjectForTesting<PerspectiveCamera>("pickableCamera"), loadedPickableObject->getCamera());
-        EXPECT_EQ(this->getObjectForTesting<VertexDataBuffer>("geometryBuffer"), &loadedPickableObject->getGeometryBuffer());
+        EXPECT_EQ(this->getObjectForTesting<ArrayBuffer>("geometryBuffer"), &loadedPickableObject->getGeometryBuffer());
 
         const ramses_internal::PickableObjectHandle loadedPickableObjectPassHandle = loadedPickableObject->impl.getPickableObjectHandle();
         const ramses_internal::PickableObject& pickableObjectInternal = m_sceneLoaded->impl.getIScene().getPickableObject(loadedPickableObjectPassHandle);
@@ -657,6 +678,7 @@ namespace ramses
         RenderBuffer* loadedRenderBuffer = this->getObjectForTesting<RenderBuffer>("a renderTarget");
 
         EXPECT_STREQ(renderBuffer->getName(), loadedRenderBuffer->getName());
+        EXPECT_EQ(renderBuffer->getSceneObjectId(), loadedRenderBuffer->getSceneObjectId());
         EXPECT_EQ(renderBuffer->getWidth(), loadedRenderBuffer->getWidth());
         EXPECT_EQ(renderBuffer->getHeight(), loadedRenderBuffer->getHeight());
         EXPECT_EQ(renderBuffer->getBufferType(), loadedRenderBuffer->getBufferType());
@@ -707,6 +729,7 @@ namespace ramses
         RenderTarget* loadedRenderTarget = this->getObjectForTesting<RenderTarget>("a renderTarget");
 
         EXPECT_STREQ(renderTarget->getName(), loadedRenderTarget->getName());
+        EXPECT_EQ(renderTarget->getSceneObjectId(), loadedRenderTarget->getSceneObjectId());
         EXPECT_EQ(renderTarget->getWidth(), loadedRenderTarget->getWidth());
         EXPECT_EQ(renderTarget->getHeight(), loadedRenderTarget->getHeight());
 
@@ -715,12 +738,12 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteIndexDataBuffer)
     {
-        IndexDataBuffer& buffer = *m_scene.createIndexDataBuffer(6 * sizeof(uint32_t), EDataType_UInt32, "indexDB");
-        buffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 2>{ {6, 7} }.data()), 2 * sizeof(uint32_t), 3 * sizeof(uint32_t));
+        ArrayBuffer& buffer = *m_scene.createArrayBuffer(EDataType::UInt32, 6u, "indexDB");
+        buffer.updateData(3u, 2u, std::array<uint32_t, 2>{ {6, 7} }.data());
 
         doWriteReadCycle();
 
-        const IndexDataBuffer* loadedBuffer = this->getObjectForTesting<IndexDataBuffer>("indexDB");
+        const ArrayBuffer* loadedBuffer = this->getObjectForTesting<ArrayBuffer>("indexDB");
 
         EXPECT_STREQ(buffer.getName(), loadedBuffer->getName());
         EXPECT_EQ(buffer.impl.getDataBufferHandle(), loadedBuffer->impl.getDataBufferHandle());
@@ -731,26 +754,27 @@ namespace ramses
         EXPECT_EQ(6u, loadedDataBufferData[3]);
         EXPECT_EQ(7u, loadedDataBufferData[4]);
 
-        EXPECT_EQ(6 * sizeof(uint32_t), loadedBuffer->getMaximumSizeInBytes());
-        EXPECT_EQ(5 * sizeof(uint32_t), loadedBuffer->getUsedSizeInBytes());
-        EXPECT_EQ(EDataType_UInt32, loadedBuffer->getDataType());
+        EXPECT_EQ(6u, loadedBuffer->getMaximumNumberOfElements());
+        EXPECT_EQ(5u, loadedBuffer->getUsedNumberOfElements());
+        EXPECT_EQ(EDataType::UInt32, loadedBuffer->getDataType());
         std::array<uint32_t, 6> bufferDataOut;
-        EXPECT_EQ(StatusOK, loadedBuffer->getData(reinterpret_cast<char*>(bufferDataOut.data()), static_cast<uint32_t>(bufferDataOut.size() * sizeof(uint32_t))));
+        EXPECT_EQ(StatusOK, loadedBuffer->getData(bufferDataOut.data(), static_cast<uint32_t>(bufferDataOut.size() * sizeof(uint32_t))));
         EXPECT_EQ(6u, bufferDataOut[3]);
         EXPECT_EQ(7u, bufferDataOut[4]);
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteTexture2DBuffer)
     {
-        Texture2DBuffer& buffer = *m_scene.createTexture2DBuffer(2, 3, 4, ETextureFormat_RGBA8, "textureBuffer");
-        buffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()), 0, 0, 0, 2, 2);
-        buffer.setData(reinterpret_cast<const char*>(std::array<uint32_t, 1>{ {78} }.data()), 1, 0, 0, 1, 1);
+        Texture2DBuffer& buffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 3, 4, 2, "textureBuffer");
+        buffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data());
+        buffer.updateData(1, 0, 0, 1, 1, std::array<uint32_t, 1>{ {78} }.data());
 
         doWriteReadCycle();
 
         const Texture2DBuffer* loadedBuffer = this->getObjectForTesting<Texture2DBuffer>("textureBuffer");
 
         EXPECT_STREQ(buffer.getName(), loadedBuffer->getName());
+        EXPECT_EQ(buffer.getSceneObjectId(), loadedBuffer->getSceneObjectId());
         EXPECT_EQ(buffer.impl.getTextureBufferHandle(), loadedBuffer->impl.getTextureBufferHandle());
 
         //iscene
@@ -761,7 +785,7 @@ namespace ramses
         EXPECT_EQ(1u, loadedInternalBuffer.mipMaps[1].width);
         EXPECT_EQ(2u, loadedInternalBuffer.mipMaps[1].height);
         EXPECT_EQ(56u, ramses_internal::TextureBuffer::GetMipMapDataSizeInBytes(loadedInternalBuffer));
-        EXPECT_EQ(ramses_internal::ETextureFormat_RGBA8, loadedInternalBuffer.textureFormat);
+        EXPECT_EQ(ramses_internal::ETextureFormat::RGBA8, loadedInternalBuffer.textureFormat);
 
         const uint32_t* loadedBufferDataMip0 = reinterpret_cast<const uint32_t*>(loadedInternalBuffer.mipMaps[0].data.data());
         const uint32_t* loadedBufferDataMip1 = reinterpret_cast<const uint32_t*>(loadedInternalBuffer.mipMaps[1].data.data());
@@ -782,7 +806,7 @@ namespace ramses
         EXPECT_EQ(1u, mipLevelWidthOut);
         EXPECT_EQ(2u, mipLevelHeightOut);
 
-        EXPECT_EQ(ETextureFormat_RGBA8, loadedBuffer->getTexelFormat());
+        EXPECT_EQ(ETextureFormat::RGBA8, loadedBuffer->getTexelFormat());
         std::array<uint32_t, 12> bufferForMip0;
         std::array<uint32_t, 2> bufferForMip1;
         EXPECT_EQ(StatusOK, loadedBuffer->getMipLevelData(0u, reinterpret_cast<char*>(bufferForMip0.data()), static_cast<uint32_t>(bufferForMip0.size() * sizeof(uint32_t))));
@@ -958,8 +982,7 @@ namespace ramses
         const ETextureSamplingMethod magSamplingMethod = ETextureSamplingMethod_Linear;
         const uint8_t data[4] = { 0u };
         const MipLevelData mipLevelData(sizeof(data), data);
-        const Texture2D* texture = this->client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "texture");
-        m_resources.add(texture);
+        Texture2D* texture = this->m_scene.createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "texture");
 
         TextureSampler* sampler = this->m_scene.createTextureSampler(wrapUMode, wrapVMode, minSamplingMethod, magSamplingMethod, *texture, 8u, "sampler");
         ASSERT_TRUE(nullptr != sampler);
@@ -983,10 +1006,10 @@ namespace ramses
         const sceneId_t sceneId = ramses::sceneId_t(1ULL << 63);
         ramses::Scene& mScene(*client.createScene(sceneId));
 
-        const status_t status = client.saveSceneToFile(mScene, "someTempararyFile.ram", ResourceFileDescriptionSet(), false);
+        const status_t status = mScene.saveToFile("someTempararyFile.ram", false);
         EXPECT_EQ(StatusOK, status);
 
-        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram", ResourceFileDescriptionSet());
+        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram");
         ASSERT_TRUE(nullptr != m_sceneLoaded);
 
         EXPECT_EQ(sceneId, m_sceneLoaded->getSceneId());
@@ -995,9 +1018,9 @@ namespace ramses
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, defaultsToLocalAndRemotePublicationMode)
     {
         const sceneId_t sceneId(81);
-        EXPECT_EQ(StatusOK, client.saveSceneToFile(*client.createScene(sceneId), "someTempararyFile.ram", ResourceFileDescriptionSet(), false));
+        EXPECT_EQ(StatusOK, client.createScene(sceneId)->saveToFile("someTempararyFile.ram", false));
 
-        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram", ResourceFileDescriptionSet());
+        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram");
         ASSERT_TRUE(nullptr != m_sceneLoaded);
         EXPECT_EQ(EScenePublicationMode_LocalAndRemote, m_sceneLoaded->impl.getPublicationModeSetFromSceneConfig());
     }
@@ -1008,9 +1031,9 @@ namespace ramses
         const sceneId_t sceneId(81);
         SceneConfig config;
         config.setPublicationMode(ramses::EScenePublicationMode_LocalOnly);
-        EXPECT_EQ(StatusOK, client.saveSceneToFile(*client.createScene(sceneId, config), "someTempararyFile.ram", ResourceFileDescriptionSet(), false));
+        EXPECT_EQ(StatusOK, client.createScene(sceneId, config)->saveToFile("someTempararyFile.ram", false));
 
-        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram", ResourceFileDescriptionSet());
+        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram");
         ASSERT_TRUE(nullptr != m_sceneLoaded);
         EXPECT_EQ(EScenePublicationMode_LocalOnly, m_sceneLoaded->impl.getPublicationModeSetFromSceneConfig());
     }
@@ -1018,57 +1041,22 @@ namespace ramses
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canOverwritePublicationModeForLoadedFiles)
     {
         const sceneId_t sceneId(80);
-        EXPECT_EQ(StatusOK, client.saveSceneToFile(*client.createScene(sceneId), "someTempararyFile.ram", ResourceFileDescriptionSet(), false));
+        EXPECT_EQ(StatusOK, client.createScene(sceneId)->saveToFile("someTempararyFile.ram", false));
 
-        m_clientForLoading.markSceneIdForLoadingAsLocalOnly(sceneId);
-        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram", ResourceFileDescriptionSet());
+        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram", true);
         ASSERT_TRUE(nullptr != m_sceneLoaded);
         EXPECT_EQ(EScenePublicationMode_LocalOnly, m_sceneLoaded->impl.getPublicationModeSetFromSceneConfig());
     }
 
-    TEST_F(ASceneAndAnimationSystemLoadedFromFile, overwritingPublicationModeOnlyAffectsScenesWithGivenSceneIds)
-    {
-        const sceneId_t sceneId1(80);
-        const sceneId_t sceneId2(81);
-        const sceneId_t sceneId3(82);
-        SceneConfig config1;
-        config1.setPublicationMode(ramses::EScenePublicationMode_LocalOnly);
-        EXPECT_EQ(StatusOK, client.saveSceneToFile(*client.createScene(sceneId1, config1), "someTempararyFile1.ram", ResourceFileDescriptionSet(), false));
-        EXPECT_EQ(StatusOK, client.saveSceneToFile(*client.createScene(sceneId2), "someTempararyFile2.ram", ResourceFileDescriptionSet(), false));
-        EXPECT_EQ(StatusOK, client.saveSceneToFile(*client.createScene(sceneId3), "someTempararyFile3.ram", ResourceFileDescriptionSet(), false));
-
-        m_clientForLoading.markSceneIdForLoadingAsLocalOnly(sceneId1);
-        m_clientForLoading.markSceneIdForLoadingAsLocalOnly(sceneId3);
-        m_clientForLoading.markSceneIdForLoadingAsLocalOnly(sceneId_t(83));
-        ramses::Scene* sceneLoaded1 = m_clientForLoading.loadSceneFromFile("someTempararyFile1.ram", ResourceFileDescriptionSet());
-        ASSERT_TRUE(nullptr != sceneLoaded1);
-        ramses::Scene* sceneLoaded2 = m_clientForLoading.loadSceneFromFile("someTempararyFile2.ram", ResourceFileDescriptionSet());
-        ASSERT_TRUE(nullptr != sceneLoaded2);
-        ramses::Scene* sceneLoaded3 = m_clientForLoading.loadSceneFromFile("someTempararyFile3.ram", ResourceFileDescriptionSet());
-        ASSERT_TRUE(nullptr != sceneLoaded3);
-
-        EXPECT_EQ(EScenePublicationMode_LocalOnly, sceneLoaded1->impl.getPublicationModeSetFromSceneConfig());
-        EXPECT_EQ(EScenePublicationMode_LocalAndRemote, sceneLoaded2->impl.getPublicationModeSetFromSceneConfig());
-        EXPECT_EQ(EScenePublicationMode_LocalOnly, sceneLoaded3->impl.getPublicationModeSetFromSceneConfig());
-    }
-
-    TEST_F(ASceneAndAnimationSystemLoadedFromFile, reportsErrorWhenSavingASceneIfItDoesNotBelongToTheClient)
-    {
-        // m_clientForLoading is not the client which was used to create the scene
-        ramses::status_t status = m_clientForLoading.saveSceneToFile(m_scene, "dummyFile", ResourceFileDescriptionSet(), false);
-        EXPECT_NE(ramses::StatusOK, status);
-        EXPECT_FALSE(ramses_internal::File("dummyFile").exists());
-    }
-
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, reportsErrorWhenSavingSceneToFileWithInvalidFileName)
     {
-        ramses::status_t status = client.saveSceneToFile(m_scene, "?XYZ:/dummyFile", ResourceFileDescriptionSet(), false);
+        ramses::status_t status = m_scene.saveToFile("?XYZ:/dummyFile", false);
         EXPECT_NE(ramses::StatusOK, status);
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, reportsErrorWhenSavingSceneToFileWithNoFileName)
     {
-        ramses::status_t status = client.saveSceneToFile(m_scene, nullptr, ResourceFileDescriptionSet(), false);
+        ramses::status_t status = m_scene.saveToFile(nullptr, false);
         EXPECT_NE(ramses::StatusOK, status);
     }
 
@@ -1079,7 +1067,7 @@ namespace ramses
             existingFile.createFile();
         }
 
-        ramses::status_t status = client.saveSceneToFile(m_scene, "dummyFile.dat", ResourceFileDescriptionSet(), false);
+        ramses::status_t status = m_scene.saveToFile("dummyFile.dat", false);
         EXPECT_EQ(ramses::StatusOK, status);
 
         {
@@ -1095,19 +1083,19 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, doesNotLoadSceneFromFileWithInvalidFileName)
     {
-        ramses::Scene* scene = client.loadSceneFromFile("?XYZ:/dummyFile", ResourceFileDescriptionSet());
+        ramses::Scene* scene = client.loadSceneFromFile("?XYZ:/dummyFile");
         EXPECT_TRUE(nullptr == scene);
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, doesNotLoadSceneFromFileWithoutFileName)
     {
-        ramses::Scene* scene = client.loadSceneFromFile(nullptr, ResourceFileDescriptionSet());
+        ramses::Scene* scene = client.loadSceneFromFile(nullptr);
         EXPECT_TRUE(nullptr == scene);
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, doesNotLoadSceneFromUnexistingFile)
     {
-        ramses::Scene* scene = client.loadSceneFromFile("ZEGETWTWAGTGSDGEg_thisfilename_in_this_directory_should_not_exist_DSAFDSFSTEZHDXHB", ResourceFileDescriptionSet());
+        ramses::Scene* scene = client.loadSceneFromFile("ZEGETWTWAGTGSDGEg_thisfilename_in_this_directory_should_not_exist_DSAFDSFSTEZHDXHB");
         EXPECT_TRUE(nullptr == scene);
     }
 
@@ -1122,7 +1110,7 @@ namespace ramses
             file.close();
         }
 
-        ramses::Scene* scene = client.loadSceneFromFile(filename, ResourceFileDescriptionSet());
+        ramses::Scene* scene = client.loadSceneFromFile(filename);
         EXPECT_TRUE(scene == nullptr);
     }
 
@@ -1137,9 +1125,7 @@ namespace ramses
             file.close();
         }
 
-        ResourceFileDescription resources(filename);
-        status_t status = client.loadResources(resources);
-        EXPECT_NE(StatusOK, status);
+        EXPECT_FALSE(RamsesHMIUtils::GetResourceDataPoolForClient(m_clientForLoading).addResourceDataFile(filename));
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteSpline)
@@ -1221,69 +1207,6 @@ namespace ramses
         EXPECT_EQ(seq->isAnimationRelative(*anim), seqLoaded->isAnimationRelative(*anim));
         EXPECT_EQ(25u, seq->getAnimationStartTimeInSequence(*anim));
         EXPECT_EQ(50u, seq->getAnimationStopTimeInSequence(*anim));
-    }
-
-    TEST_F(ASceneAndAnimationSystemLoadedFromFile, confidenceTestCanReadWriteSceneWithSharedResources)
-    {
-        EffectDescription effectDesc;
-        EXPECT_EQ(StatusOK, effectDesc.setVertexShaderFromFile("res/ramses-client-test_shader.vert"));
-        EXPECT_EQ(StatusOK, effectDesc.setFragmentShaderFromFile("res/ramses-client-test_minimalShader.frag"));
-
-        Effect* const effect = this->client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "effect");
-        ASSERT_TRUE(effect != nullptr);
-        m_resources.add(effect);
-
-        Appearance* const appearance = this->m_scene.createAppearance(*effect, "appearance");
-        ASSERT_TRUE(appearance != nullptr);
-
-        static const float verts[9] = { 0.f };
-        const Vector3fArray* const vertices = this->client.createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
-        static const uint16_t inds[3] = { 0, 1, 2 };
-        const UInt16Array* const indices = this->client.createConstUInt16Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
-        m_resources.add(vertices);
-        m_resources.add(indices);
-
-        AttributeInput positionsInput;
-        effect->findAttributeInput("a_position", positionsInput);
-
-        GeometryBinding* const geometry = this->m_scene.createGeometryBinding(*effect, "geometry");
-        ASSERT_TRUE(geometry != nullptr);
-        EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
-        EXPECT_EQ(StatusOK, geometry->setInputBuffer(positionsInput, *vertices));
-
-        MeshNode* const meshNode1 = this->m_scene.createMeshNode("mesh1");
-        MeshNode* const meshNode2 = this->m_scene.createMeshNode("mesh2");
-        MeshNode* const meshNode3 = this->m_scene.createMeshNode("mesh3");
-        ASSERT_TRUE(meshNode1 != nullptr);
-        ASSERT_TRUE(meshNode2 != nullptr);
-        ASSERT_TRUE(meshNode3 != nullptr);
-        EXPECT_EQ(StatusOK, meshNode1->setAppearance(*appearance));
-        EXPECT_EQ(StatusOK, meshNode2->setAppearance(*appearance));
-        EXPECT_EQ(StatusOK, meshNode3->setAppearance(*appearance));
-        EXPECT_EQ(StatusOK, meshNode1->setGeometryBinding(*geometry));
-        EXPECT_EQ(StatusOK, meshNode2->setGeometryBinding(*geometry));
-        EXPECT_EQ(StatusOK, meshNode3->setGeometryBinding(*geometry));
-
-        doWriteReadCycle();
-
-        const RamsesObject* const effectLoaded = this->m_clientForLoading.findObjectByName("effect");
-        EXPECT_TRUE(effectLoaded != nullptr && effectLoaded->isOfType(ERamsesObjectType_Effect));
-        const RamsesObject* const verticesLoaded = this->m_clientForLoading.findObjectByName("vertices");
-        EXPECT_TRUE(verticesLoaded != nullptr && verticesLoaded->isOfType(ERamsesObjectType_Vector3fArray));
-        const RamsesObject* const indicesLoaded = this->m_clientForLoading.findObjectByName("indices");
-        EXPECT_TRUE(indicesLoaded != nullptr && indicesLoaded->isOfType(ERamsesObjectType_UInt16Array));
-
-        const Appearance* const appearanceLoaded = getObjectForTesting<Appearance>("appearance");
-        const GeometryBinding* const geometryLoaded = getObjectForTesting<GeometryBinding>("geometry");
-        const MeshNode* const mesh1Loaded = getObjectForTesting<MeshNode>("mesh1");
-        const MeshNode* const mesh2Loaded = getObjectForTesting<MeshNode>("mesh2");
-        const MeshNode* const mesh3Loaded = getObjectForTesting<MeshNode>("mesh3");
-        EXPECT_EQ(appearanceLoaded, mesh1Loaded->getAppearance());
-        EXPECT_EQ(appearanceLoaded, mesh2Loaded->getAppearance());
-        EXPECT_EQ(appearanceLoaded, mesh3Loaded->getAppearance());
-        EXPECT_EQ(geometryLoaded, mesh1Loaded->getGeometryBinding());
-        EXPECT_EQ(geometryLoaded, mesh2Loaded->getGeometryBinding());
-        EXPECT_EQ(geometryLoaded, mesh3Loaded->getGeometryBinding());
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteTransformDataSlot)
@@ -1541,7 +1464,7 @@ namespace ramses
     template <typename T>
     struct TestHelper
     {
-        static T* create(ASceneAndAnimationSystemLoadedFromFileTemplated<T>* fixture, ramses::RamsesClient&, ramses::Scene&, ramses::ResourceFileDescription&)
+        static T* create(ASceneAndAnimationSystemLoadedFromFileTemplated<T>* fixture, ramses::RamsesClient&, ramses::Scene&)
         {
             return &fixture->template createObject<T>("a node");
         }
@@ -1550,7 +1473,7 @@ namespace ramses
     TYPED_TEST_SUITE(ASceneAndAnimationSystemLoadedFromFileTemplated, NodeTypes);
     TYPED_TEST(ASceneAndAnimationSystemLoadedFromFileTemplated, canReadWriteAllNodes)
     {
-        auto node = TestHelper<TypeParam>::create(this, this->client, this->m_scene, this->m_resources);
+        auto node = TestHelper<TypeParam>::create(this, this->client, this->m_scene);
 
         node->setVisibility(EVisibilityMode::Invisible);
 
@@ -1596,4 +1519,66 @@ namespace ramses
 
         EXPECT_EQ(loadedSuperNode->getVisibility(), EVisibilityMode::Invisible);
     }
+
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, compressedFileIsSmallerThanUncompressedWhenUsingSaveSceneToFile)
+    {
+        Scene* scene = client.createScene(sceneId_t(1));
+        const std::vector<uint16_t> data(1000u, 0u);
+        EXPECT_TRUE(scene->createArrayResource(EDataType::UInt16, static_cast<uint32_t>(data.size()), data.data()));
+
+        EXPECT_EQ(StatusOK, scene->saveToFile("testscene.ramscene", false));
+
+        ramses_internal::File file("testscene.ramscene");
+        EXPECT_TRUE(file.exists());
+        ramses_internal::UInt uncompressedFileSize = 0;
+        EXPECT_TRUE(file.getSizeInBytes(uncompressedFileSize));
+
+        EXPECT_EQ(StatusOK, scene->saveToFile("testscene.ramscene", true));
+
+        ramses_internal::File file2("testscene.ramscene");
+        EXPECT_TRUE(file2.exists());
+        ramses_internal::UInt compressedFileSize = 0;
+        EXPECT_TRUE(file2.getSizeInBytes(compressedFileSize));
+
+        EXPECT_GT(uncompressedFileSize, compressedFileSize);
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, savedFilesAreConsistent)
+    {
+        for (ramses_internal::String name : { "ts1.ramscene", "ts2.ramscene", "ts3.ramscene", "ts4.ramscene", "ts5.ramscene", "ts6.ramscene" })
+        {
+            EXPECT_EQ(StatusOK, this->m_scene.saveToFile(name.c_str(), false));
+        }
+
+        for (ramses_internal::String name : { "ts2.ramscene", "ts3.ramscene", "ts4.ramscene", "ts5.ramscene", "ts6.ramscene" })
+        {
+            EXPECT_TRUE(ClientTestUtils::CompareBinaryFiles("ts1.ramscene", name.c_str()));
+        }
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, closesSceneFileAndLowLevelResourceWhenDestroyed)
+    {
+        const status_t status = m_scene.saveToFile("someTemporaryFile.ram", false);
+        EXPECT_EQ(StatusOK, status);
+
+        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", {});
+        ASSERT_TRUE(nullptr != m_sceneLoaded);
+
+        EXPECT_TRUE(m_clientForLoading.impl.getClientApplication().hasResourceFile("someTemporaryFile.ram"));
+        m_clientForLoading.destroy(*m_sceneLoaded);
+
+        // scene gets destroyed asynchronously, so we can't just test after the destroy
+        // unfortunately there is no callback, but I don't want to skip the test
+        // => wait for it to happen in finite time, we don't test for performance here
+        uint32_t ticks = 60000u;
+        for (; ticks > 0; --ticks)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            if (!m_clientForLoading.impl.getClientApplication().hasResourceFile("someTemporaryFile.ram"))
+                break;
+        }
+        EXPECT_GT(ticks, 0u);
+    }
+
 }

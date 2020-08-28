@@ -61,38 +61,38 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteStringAndCheckBufferSize)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(str);
 
-        const UInt32 expectedSize =
-            sizeof(UInt32) + static_cast<UInt32>(str.size());
+        const size_t expectedSize =
+            sizeof(UInt8) + str.size();
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
     }
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteEmptyStringAndCheckBufferSize)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(strEmpty);
 
-        const UInt32 expectedSize = sizeof(UInt32);
+        const size_t expectedSize = sizeof(UInt8);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
     }
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteLongStringAndCheckBufferSize)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(strLong);
 
-        const UInt32 expectedSize = sizeof(UInt32) + SceneActionCollection::MaxStringLength;
+        const size_t expectedSize = sizeof(UInt8) + SceneActionCollection::MaxStringLength;
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
     }
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteArrayAndCheckBufferSize)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(buffer.data(), bufferSize);
 
         const UInt32 expectedSize = sizeof(UInt32) + bufferSize;
@@ -102,7 +102,7 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteEmptyArrayAndCheckBufferSize)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(buffer.data(), 0u);
 
         const UInt32 expectedSize = sizeof(UInt32);
@@ -112,7 +112,7 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteGuidAndCheckBufferSize)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(guid);
 
         const UInt32 expectedSize = sizeof(Guid::value_type);
@@ -122,7 +122,7 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetString)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(str);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
@@ -130,7 +130,7 @@ namespace ramses_internal
         reader.read(readString);
         EXPECT_TRUE(reader.isFullyRead());
 
-        const UInt32 expectedSize = static_cast<UInt32>(str.size()) + sizeof(UInt32);
+        const size_t expectedSize = str.size() + sizeof(UInt8);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
@@ -140,7 +140,7 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetEmptyString)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(strEmpty);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
@@ -148,7 +148,7 @@ namespace ramses_internal
         reader.read(readString);
         EXPECT_TRUE(reader.isFullyRead());
 
-        const UInt32 expectedSize = sizeof(UInt32);
+        const size_t expectedSize = sizeof(UInt8);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
@@ -158,7 +158,7 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetLongString)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(strLong);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
@@ -166,7 +166,7 @@ namespace ramses_internal
         reader.read(readString);
         EXPECT_TRUE(reader.isFullyRead());
 
-        const UInt32 expectedSize = SceneActionCollection::MaxStringLength + sizeof(UInt32);
+        const size_t expectedSize = SceneActionCollection::MaxStringLength + sizeof(UInt8);
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
@@ -176,7 +176,7 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetStaticArray)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(staticBuffer);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
@@ -193,7 +193,7 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetArray)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(buffer.data(), bufferSize);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
@@ -212,7 +212,7 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetEmptyArray)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(buffer.data(), 0u);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
@@ -230,7 +230,7 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetGuid)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(guid);
 
         SceneActionCollection::SceneActionReader reader(collection[0]);
@@ -247,7 +247,7 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetMixtureOfTypes)
     {
-        collection.beginWriteSceneAction(ESceneActionId_TestAction);
+        collection.beginWriteSceneAction(ESceneActionId::TestAction);
         collection.write(fval);
         collection.write(str);
         collection.write(buffer.data(), bufferSize);

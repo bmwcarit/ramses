@@ -63,11 +63,11 @@ ENDMACRO()
 function(ACME_CURRENT_FOLDER_PATH OUT)
     # extract and set folder name from path
     # first get path relative to ramses root dir
-    string(REGEX REPLACE "${ramses-sdk_ROOT_CMAKE_PATH}/" "" ACME_relative_path "${CMAKE_CURRENT_SOURCE_DIR}")
+    string(REGEX REPLACE "${PROJECT_SOURCE_DIR}/" "" ACME_relative_path "${CMAKE_CURRENT_SOURCE_DIR}")
     string(REGEX REPLACE "/[^/]*$" "" ACME_folder_path "${ACME_relative_path}")
-    if (NOT CMAKE_SOURCE_DIR STREQUAL ramses-sdk_ROOT_CMAKE_PATH)
+    if (NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
         # optionally adjust path for ramses used as subdirectory
-        string(REGEX REPLACE "${CMAKE_SOURCE_DIR}/" "" ACME_folder_prefix_path "${ramses-sdk_ROOT_CMAKE_PATH}")
+        string(REGEX REPLACE "${CMAKE_SOURCE_DIR}/" "" ACME_folder_prefix_path "${PROJECT_SOURCE_DIR}")
         set(ACME_folder_path "${ACME_folder_prefix_path}/${ACME_folder_path}")
     endif()
     set(${OUT} ${ACME_folder_path} PARENT_SCOPE)

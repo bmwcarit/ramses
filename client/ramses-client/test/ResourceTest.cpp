@@ -6,17 +6,13 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "ramses-client-api/FloatArray.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
-#include "ramses-client-api/Vector4fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/TextureCube.h"
-#include "ramses-client-api/UInt16Array.h"
-#include "ramses-client-api/UInt32Array.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/TextureSwizzle.h"
+#include "ramses-hmi-utils.h"
 #include "ramses-utils.h"
 
 #include "Texture2DImpl.h"
@@ -30,7 +26,6 @@
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "Components/ManagedResource.h"
 #include "RamsesClientImpl.h"
-#include "ramses-client-api/ResourceFileDescription.h"
 
 #include <thread>
 
@@ -38,13 +33,14 @@ namespace ramses
 {
     using namespace testing;
 
-    class AResourceTestClient : public LocalTestClient, public ::testing::Test
+    class AResourceTestClient : public LocalTestClientWithScene, public ::testing::Test
     {
     public:
         AResourceTestClient()
         {
             m_oldLogLevel = ramses_internal::CONTEXT_HLAPI_CLIENT.getLogLevel();
             ramses_internal::CONTEXT_HLAPI_CLIENT.setLogLevel(ramses_internal::ELogLevel::Trace);
+            client.impl.setClientResourceCacheTimeout(std::chrono::milliseconds(0));
         }
         ~AResourceTestClient() {
             ramses_internal::CONTEXT_HLAPI_CLIENT.setLogLevel(m_oldLogLevel);
@@ -64,9 +60,9 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 12] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = client.createTexture2D(10, 12, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 10, 12, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
-        EXPECT_EQ(StatusOK, client.destroy(*texture));
+        EXPECT_EQ(StatusOK, m_scene.destroy(*texture));
     }
 
     TEST_F(AResourceTestClient, createTextureWithMipMaps)
@@ -75,7 +71,7 @@ namespace ramses
         std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(2 * 2 * 4, data));
         mipLevelData.push_back(MipLevelData(1 * 1 * 4, data));
-        Texture2D* texture = client.createTexture2D(2, 2, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 2, 2, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
     }
 
@@ -83,7 +79,7 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 12] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = client.createTexture2D(10, 12, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 10, 12, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(10u, texture->getWidth());
         EXPECT_EQ(12u, texture->getHeight());
@@ -93,9 +89,9 @@ namespace ramses
     {
         const uint8_t data[3 * 10 * 12] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = client.createTexture2D(10, 12, ramses::ETextureFormat_RGB8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 10, 12, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
-        EXPECT_EQ(ETextureFormat_RGB8, texture->getTextureFormat());
+        EXPECT_EQ(ETextureFormat::RGB8, texture->getTextureFormat());
     }
 
     TEST_F(AResourceTestClient, createsTextureWithDefaultSwizzle)
@@ -103,7 +99,7 @@ namespace ramses
         const uint8_t data[3 * 10 * 12] = {};
         MipLevelData mipLevelData(sizeof(data), data);
         TextureSwizzle swizzle;
-        Texture2D* texture = client.createTexture2D(10, 12, ramses::ETextureFormat_RGB8, 1, &mipLevelData, false, swizzle, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 10, 12, 1, &mipLevelData, false, swizzle, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(ETextureChannelColor::Red, swizzle.channelRed);
         EXPECT_EQ(ETextureChannelColor::Green, swizzle.channelGreen);
@@ -116,7 +112,7 @@ namespace ramses
         TextureSwizzle swizzle = { ETextureChannelColor::Blue, ETextureChannelColor::Alpha, ETextureChannelColor::Red, ETextureChannelColor::Green };
         const uint8_t data[3 * 10 * 12] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = client.createTexture2D(10, 12, ramses::ETextureFormat_RGB8, 1, &mipLevelData, false, swizzle, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 10, 12, 1, &mipLevelData, false, swizzle, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(swizzle.channelRed, texture->getTextureSwizzle().channelRed);
         EXPECT_EQ(swizzle.channelGreen, texture->getTextureSwizzle().channelGreen);
@@ -132,7 +128,7 @@ namespace ramses
         mipLevelData.push_back(MipLevelData(sizeof(data), data));
         mipLevelData.push_back(MipLevelData(2 * 2 * 4, data));
 
-        Texture2D* texture = client.createTexture2D(4u, 4u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 4u, 4u, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
     }
 
@@ -144,7 +140,7 @@ namespace ramses
         mipLevelData.push_back(MipLevelData(sizeof(data), data));
         mipLevelData.push_back(MipLevelData(sizeof(data), data));
 
-        Texture2D* texture = client.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 1u, 1u, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -155,7 +151,7 @@ namespace ramses
         std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(sizeof(data), nullptr));
 
-        Texture2D* texture = client.createTexture2D(4u, 4u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 4u, 4u, 1, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -166,7 +162,7 @@ namespace ramses
         std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(0u, data));
 
-        Texture2D* texture = client.createTexture2D(4u, 4u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 4u, 4u, 1, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -177,14 +173,14 @@ namespace ramses
             std::vector<MipLevelData> mipLevelData;
             mipLevelData.push_back(MipLevelData(sizeof(data), data));
             mipLevelData.push_back(MipLevelData(0u, data));
-            Texture2D* texture = client.createTexture2D(2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+            Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 2u, 2u, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
             EXPECT_EQ(nullptr, texture);
         }
         {
             std::vector<MipLevelData> mipLevelData;
             mipLevelData.push_back(MipLevelData(sizeof(data), data));
             mipLevelData.push_back(MipLevelData(sizeof(data), nullptr));
-            Texture2D* texture = client.createTexture2D(2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+            Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 2u, 2u, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
             EXPECT_EQ(nullptr, texture);
         }
     }
@@ -195,7 +191,7 @@ namespace ramses
         std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(2 * 2 * 4, data));
         mipLevelData.push_back(MipLevelData(1 * 1 * 2, data));
-        Texture2D* texture = client.createTexture2D(2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 2u, 2u, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -203,13 +199,13 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 12] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = client.createTexture2D(0, 0, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 0, 0, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
     TEST_F(AResourceTestClient, createTextureWithNoMipData)
     {
-        Texture2D* texture = client.createTexture2D(1, 1, ramses::ETextureFormat_RGBA8, 1, nullptr, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 1, 1, 1, nullptr, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -217,7 +213,7 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 12] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = client.createTexture2D(10, 12, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, nullptr);
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 10, 12, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, nullptr);
         ASSERT_TRUE(nullptr != texture);
         EXPECT_STREQ("", texture->getName());
     }
@@ -226,7 +222,7 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 12] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = client.createTexture2D(10, 12, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 10, 12, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
 
         const ramses_internal::ResourceContentHash hash = texture->impl.getLowlevelResourceHash();
@@ -238,14 +234,14 @@ namespace ramses
         uint8_t data[4 * 10 * 12] = {};
         data[20] = 48;
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = client.createTexture2D(10, 12, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 10, 12, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
 
         const ramses_internal::ResourceContentHash hash = texture->impl.getLowlevelResourceHash();
         uint8_t data2[4 * 10 * 12] = {};
         data[20] = 42;
         MipLevelData mipLevelData2(sizeof(data2), data2);
-        Texture2D* texture2 = client.createTexture2D(10, 12, ramses::ETextureFormat_RGBA8, 1, &mipLevelData2, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture2D* texture2 = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 10, 12, 1, &mipLevelData2, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture2);
 
         const ramses_internal::ResourceContentHash hash2 = texture2->impl.getLowlevelResourceHash();
@@ -256,25 +252,25 @@ namespace ramses
     {
         const uint8_t data[1 * 2 * 4] = { 1, 2, 3, 4, 5, 6, 7, 8 };
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = client.createTexture2D(2, 1, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, nullptr);
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 2, 1, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, nullptr);
         ASSERT_TRUE(nullptr != texture);
         ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
-        ASSERT_EQ(sizeof(data), res.getResourceObject()->getDecompressedDataSize());
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, res.getResourceObject()->getResourceData().data(), sizeof(data)));
+        ASSERT_EQ(sizeof(data), res->getDecompressedDataSize());
+        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, res->getResourceData().data(), sizeof(data)));
     }
 
     TEST_F(AResourceTestClient, createTextureRGB_AndCheckTexels)
     {
         const uint8_t data[1 * 2 * 3] = { 1, 2, 3, 4, 5, 6 };
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture2D* texture = client.createTexture2D(2, 1, ramses::ETextureFormat_RGB8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, nullptr);
+        Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 2, 1, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, nullptr);
         ASSERT_TRUE(nullptr != texture);
 
         ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
-        ASSERT_EQ(sizeof(data), res.getResourceObject()->getDecompressedDataSize());
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, res.getResourceObject()->getResourceData().data(), sizeof(data)));
+        ASSERT_EQ(sizeof(data), res->getDecompressedDataSize());
+        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, res->getResourceData().data(), sizeof(data)));
     }
 
     TEST_F(AResourceTestClient, createTextureRGBWithMips_AndCheckTexels)
@@ -282,14 +278,14 @@ namespace ramses
         const uint8_t data0[2 * 2 * 3] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
         const uint8_t data1[1 * 1 * 3] = { 13, 14, 15 };
         const MipLevelData mipLevelData[2] = { { sizeof(data0), data0 },{ sizeof(data1), data1 } };
-        const Texture2D* texture = client.createTexture2D(2, 2, ramses::ETextureFormat_RGB8, 2, mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, nullptr);
+        const Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 2, 2, 2, mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, nullptr);
         ASSERT_TRUE(nullptr != texture);
 
         const ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
-        ASSERT_EQ(sizeof(data0) + sizeof(data1), res.getResourceObject()->getDecompressedDataSize());
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0, res.getResourceObject()->getResourceData().data(), sizeof(data0)));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1, res.getResourceObject()->getResourceData().data() + sizeof(data0), sizeof(data1)));
+        ASSERT_EQ(sizeof(data0) + sizeof(data1), res->getDecompressedDataSize());
+        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0, res->getResourceData().data(), sizeof(data0)));
+        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1, res->getResourceData().data() + sizeof(data0), sizeof(data1)));
     }
 
     //##############################################################
@@ -300,9 +296,9 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 10] = {};
         CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-        TextureCube* texture = client.createTextureCube(10, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false);
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 10, 1, &mipLevelData, false);
         ASSERT_TRUE(nullptr != texture);
-        EXPECT_EQ(StatusOK, client.destroy(*texture));
+        EXPECT_EQ(StatusOK, m_scene.destroy(*texture));
     }
 
     TEST_F(AResourceTestClient, createCubeTextureWithMipMaps)
@@ -311,7 +307,7 @@ namespace ramses
         std::vector<CubeMipLevelData> mipLevelData;
         mipLevelData.push_back(CubeMipLevelData(2 * 2 * 4, data, data, data, data, data, data));
         mipLevelData.push_back(CubeMipLevelData(1 * 1 * 4, data, data, data, data, data, data));
-        TextureCube* texture = client.createTextureCube(2, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 2, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
     }
 
@@ -319,7 +315,7 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 10] = {};
         CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-        TextureCube* texture = client.createTextureCube(10, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 10, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(10u, texture->getSize());
     }
@@ -328,9 +324,9 @@ namespace ramses
     {
         const uint8_t data[3 * 10 * 10] = {};
         CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-        TextureCube* texture = client.createTextureCube(10, ramses::ETextureFormat_RGB8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGB8, 10, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
-        EXPECT_EQ(ETextureFormat_RGB8, texture->getTextureFormat());
+        EXPECT_EQ(ETextureFormat::RGB8, texture->getTextureFormat());
     }
 
     TEST_F(AResourceTestClient, createsCubeTextureWithDefaultSwizzle)
@@ -338,7 +334,7 @@ namespace ramses
         TextureSwizzle swizzle;
         const uint8_t data[4 * 10 * 10] = {};
         const CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-        TextureCube* texture = client.createTextureCube(10, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, swizzle, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 10, 1, &mipLevelData, false, swizzle, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(ETextureChannelColor::Red, swizzle.channelRed);
         EXPECT_EQ(ETextureChannelColor::Green, swizzle.channelGreen);
@@ -351,7 +347,7 @@ namespace ramses
         TextureSwizzle swizzle = { ETextureChannelColor::Blue, ETextureChannelColor::Alpha, ETextureChannelColor::Red, ETextureChannelColor::Green };
         const uint8_t data[4 * 10 * 10] = {};
         const CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-        TextureCube* texture = client.createTextureCube(10, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, swizzle, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 10, 1, &mipLevelData, false, swizzle, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(swizzle.channelRed, texture->getTextureSwizzle().channelRed);
         EXPECT_EQ(swizzle.channelGreen, texture->getTextureSwizzle().channelGreen);
@@ -363,7 +359,7 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 10] = {};
         CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-        TextureCube* texture = client.createTextureCube(0, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 0, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -371,13 +367,13 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 10] = {};
         CubeMipLevelData mipLevelData(0, data, data, data, data, data, data);
-        TextureCube* texture = client.createTextureCube(10, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 10, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
     TEST_F(AResourceTestClient, createCubeTextureWithNoMipData)
     {
-        TextureCube* texture = client.createTextureCube(10, ramses::ETextureFormat_RGBA8, 1, nullptr, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 10, 1, nullptr, false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -385,7 +381,7 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 10] = {};
         CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-        TextureCube* texture = client.createTextureCube(10, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, nullptr);
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 10, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, nullptr);
         ASSERT_TRUE(nullptr != texture);
         EXPECT_STREQ("", texture->getName());
     }
@@ -394,12 +390,12 @@ namespace ramses
     {
         const uint8_t data[2 * 2 * 4] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
         CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-        TextureCube* texture = client.createTextureCube(2, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false);
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 2, 1, &mipLevelData, false);
         ASSERT_TRUE(nullptr != texture);
         ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
-        ASSERT_EQ(sizeof(data) * 6u, res.getResourceObject()->getDecompressedDataSize());
-        auto resData = res.getResourceObject()->getResourceData().data();
+        ASSERT_EQ(sizeof(data) * 6u, res->getDecompressedDataSize());
+        auto resData = res->getResourceData().data();
         for (uint32_t i = 0u; i < 6u; ++i)
         {
             EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, resData, sizeof(data)));
@@ -411,12 +407,12 @@ namespace ramses
     {
         const uint8_t data[2 * 2 * 3] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
         CubeMipLevelData mipLevelData(sizeof(data), data, data, data, data, data, data);
-        TextureCube* texture = client.createTextureCube(2, ramses::ETextureFormat_RGB8, 1, &mipLevelData, false);
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGB8, 2, 1, &mipLevelData, false);
         ASSERT_TRUE(nullptr != texture);
         ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
-        ASSERT_EQ(sizeof(data) * 6u, res.getResourceObject()->getDecompressedDataSize());
-        auto resData = res.getResourceObject()->getResourceData().data();
+        ASSERT_EQ(sizeof(data) * 6u, res->getDecompressedDataSize());
+        auto resData = res->getResourceData().data();
         for (uint32_t i = 0u; i < 6u; ++i)
         {
             EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, resData, sizeof(data)));
@@ -444,16 +440,16 @@ namespace ramses
             { sizeof(data0px), data0px, data0nx, data0py, data0ny, data0pz, data0nz },
             { sizeof(data1px), data1px, data1nx, data1py, data1ny, data1pz, data1nz }
         };
-        const TextureCube* texture = client.createTextureCube(2u, ramses::ETextureFormat_RGB8, 2, mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, nullptr);
+        const TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGB8, 2u, 2, mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, nullptr);
         ASSERT_TRUE(nullptr != texture);
 
         const ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
-        ASSERT_EQ(6u * (sizeof(data0px) + sizeof(data1px)), res.getResourceObject()->getDecompressedDataSize());
+        ASSERT_EQ(6u * (sizeof(data0px) + sizeof(data1px)), res->getDecompressedDataSize());
 
         // mips are bundled together per face:
         // - facePX mip0, facePX mip1 .. face PX mipN, face NX mips, face PY .. face NZ
-        auto resData = res.getResourceObject()->getResourceData().data();
+        auto resData = res->getResourceData().data();
         EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0px, resData, sizeof(data0px)));
         resData += sizeof(data0px);
         EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1px, resData, sizeof(data1px)));
@@ -492,7 +488,7 @@ namespace ramses
         mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, data, data, data, data));
         mipLevelData.push_back(CubeMipLevelData(2 * 2 * 4, data, data, data, data, data, data));
 
-        TextureCube* texture = client.createTextureCube(4u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 4u, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_NE(nullptr, texture);
     }
 
@@ -504,7 +500,7 @@ namespace ramses
         mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, data, data, data, data));
         mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, data, data, data, data));
 
-        TextureCube* texture = client.createTextureCube(1u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 1u, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -515,7 +511,7 @@ namespace ramses
         std::vector<CubeMipLevelData> mipLevelData;
         mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, nullptr, data, data, data));
 
-        TextureCube* texture = client.createTextureCube(4u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 4u, 1, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -526,7 +522,7 @@ namespace ramses
         std::vector<CubeMipLevelData> mipLevelData;
         mipLevelData.push_back(CubeMipLevelData(0u, data, data, data, data, data, data));
 
-        TextureCube* texture = client.createTextureCube(4u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 4u, 1, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -537,14 +533,14 @@ namespace ramses
             std::vector<CubeMipLevelData> mipLevelData;
             mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, data, data, data, data));
             mipLevelData.push_back(CubeMipLevelData(0u, data, data, data, data, data, data));
-            TextureCube* texture = client.createTextureCube(2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+            TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 2u, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
             EXPECT_EQ(nullptr, texture);
         }
         {
             std::vector<CubeMipLevelData> mipLevelData;
             mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, data, data, data, data));
             mipLevelData.push_back(CubeMipLevelData(sizeof(data), data, data, data, data, nullptr, data));
-            TextureCube* texture = client.createTextureCube(2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+            TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 2u, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
             EXPECT_EQ(nullptr, texture);
         }
     }
@@ -555,7 +551,7 @@ namespace ramses
         std::vector<CubeMipLevelData> mipLevelData;
         mipLevelData.push_back(CubeMipLevelData(2 * 2 * 4, data, data, data, data, data, data));
         mipLevelData.push_back(CubeMipLevelData(1 * 1 * 2, data, data, data, data, data, data));
-        TextureCube* texture = client.createTextureCube(2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
+        TextureCube* texture = m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, 2u, 2, &mipLevelData[0], false, {}, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -567,9 +563,9 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 12 * 14] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture3D* texture = client.createTexture3D(10, 12, 14, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 10, 12, 14, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
-        EXPECT_EQ(StatusOK, client.destroy(*texture));
+        EXPECT_EQ(StatusOK, m_scene.destroy(*texture));
     }
 
     TEST_F(AResourceTestClient, create3DTextureWithMipMaps)
@@ -578,7 +574,7 @@ namespace ramses
         std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(2 * 2 * 2 * 4, data));
         mipLevelData.push_back(MipLevelData(1 * 1 * 1 * 4, data));
-        Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 2u, 2u, 2u, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
     }
 
@@ -586,7 +582,7 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 12 * 14] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture3D* texture = client.createTexture3D(10, 12, 14, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 10, 12, 14, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(10u, texture->getWidth());
         EXPECT_EQ(12u, texture->getHeight());
@@ -597,22 +593,22 @@ namespace ramses
     {
         const uint8_t data[3 * 10 * 12 * 14] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture3D* texture = client.createTexture3D(10, 12, 14, ramses::ETextureFormat_RGB8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGB8, 10, 12, 14, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
-        EXPECT_EQ(ETextureFormat_RGB8, texture->getTextureFormat());
+        EXPECT_EQ(ETextureFormat::RGB8, texture->getTextureFormat());
     }
 
     TEST_F(AResourceTestClient, create3DTextureOfZeroSize)
     {
         const uint8_t data[4 * 10 * 12 * 14] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture3D* texture = client.createTexture3D(0, 0, 0, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 0, 0, 0, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
     TEST_F(AResourceTestClient, create3DTextureWithNoMipData)
     {
-        Texture3D* texture = client.createTexture3D(1, 1, 1, ramses::ETextureFormat_RGBA8, 1, nullptr, false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 1, 1, 1, 1, nullptr, false, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -620,7 +616,7 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 12 * 14] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture3D* texture = client.createTexture3D(10, 12, 14, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, nullptr);
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 10, 12, 14, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, nullptr);
         ASSERT_TRUE(nullptr != texture);
         EXPECT_STREQ("", texture->getName());
     }
@@ -629,7 +625,7 @@ namespace ramses
     {
         const uint8_t data[4 * 10 * 12 * 14] = {};
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture3D* texture = client.createTexture3D(10, 12, 14, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 10, 12, 14, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
 
         const ramses_internal::ResourceContentHash hash = texture->impl.getLowlevelResourceHash();
@@ -641,14 +637,14 @@ namespace ramses
         uint8_t data[4 * 10 * 12 * 14] = {};
         data[20] = 48;
         MipLevelData mipLevelData1(sizeof(data), data);
-        Texture3D* texture = client.createTexture3D(10, 12, 14, ramses::ETextureFormat_RGBA8, 1, &mipLevelData1, false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 10, 12, 14, 1, &mipLevelData1, false, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture);
 
         const ramses_internal::ResourceContentHash hash = texture->impl.getLowlevelResourceHash();
         uint8_t data2[4 * 10 * 12 * 14] = {};
         data[20] = 42;
         MipLevelData mipLevelData2(sizeof(data2), data2);
-        Texture3D* texture2 = client.createTexture3D(10, 12, 14, ramses::ETextureFormat_RGBA8, 1, &mipLevelData2, false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture2 = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 10, 12, 14, 1, &mipLevelData2, false, ramses::ResourceCacheFlag_DoNotCache, "name");
         ASSERT_TRUE(nullptr != texture2);
 
         const ramses_internal::ResourceContentHash hash2 = texture2->impl.getLowlevelResourceHash();
@@ -659,26 +655,26 @@ namespace ramses
     {
         const uint8_t data[1 * 2 * 2 * 4] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture3D* texture = client.createTexture3D(2, 1, 2, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, nullptr);
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 2, 1, 2, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, nullptr);
 
         ASSERT_TRUE(nullptr != texture);
         ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
-        ASSERT_EQ(sizeof(data), res.getResourceObject()->getDecompressedDataSize());
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, res.getResourceObject()->getResourceData().data(), sizeof(data)));
+        ASSERT_EQ(sizeof(data), res->getDecompressedDataSize());
+        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, res->getResourceData().data(), sizeof(data)));
     }
 
     TEST_F(AResourceTestClient, create3DTextureRGB_AndCheckTexels)
     {
         const uint8_t data[1 * 2 * 2 * 3] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
         MipLevelData mipLevelData(sizeof(data), data);
-        Texture3D* texture = client.createTexture3D(2, 1, 2, ramses::ETextureFormat_RGB8, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, nullptr);
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGB8, 2, 1, 2, 1, &mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, nullptr);
 
         ASSERT_TRUE(nullptr != texture);
         ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
-        ASSERT_EQ(sizeof(data), res.getResourceObject()->getDecompressedDataSize());
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, res.getResourceObject()->getResourceData().data(), sizeof(data)));
+        ASSERT_EQ(sizeof(data), res->getDecompressedDataSize());
+        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, res->getResourceData().data(), sizeof(data)));
     }
 
     TEST_F(AResourceTestClient, create3DTextureRGBWithMips_AndCheckTexels)
@@ -686,14 +682,14 @@ namespace ramses
         const uint8_t data0[2 * 2 * 2 * 3] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120 };
         const uint8_t data1[1 * 1 * 3] = { 13, 14, 15 };
         const MipLevelData mipLevelData[2] = { { sizeof(data0), data0 },{ sizeof(data1), data1 } };
-        const Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGB8, 2, mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, nullptr);
+        const Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGB8, 2u, 2u, 2u, 2, mipLevelData, false, ramses::ResourceCacheFlag_DoNotCache, nullptr);
         ASSERT_TRUE(nullptr != texture);
 
         const ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
-        ASSERT_EQ(sizeof(data0) + sizeof(data1), res.getResourceObject()->getDecompressedDataSize());
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0, res.getResourceObject()->getResourceData().data(), sizeof(data0)));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1, res.getResourceObject()->getResourceData().data() + sizeof(data0), sizeof(data1)));
+        ASSERT_EQ(sizeof(data0) + sizeof(data1), res->getDecompressedDataSize());
+        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0, res->getResourceData().data(), sizeof(data0)));
+        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1, res->getResourceData().data() + sizeof(data0), sizeof(data1)));
     }
 
     TEST_F(AResourceTestClient, createTexture3DWithProvidedMipsButNotFullChain)
@@ -704,7 +700,7 @@ namespace ramses
         mipLevelData.push_back(MipLevelData(sizeof(data), data));
         mipLevelData.push_back(MipLevelData(2 * 2 * 2 * 4, data));
 
-        Texture3D* texture = client.createTexture3D(4u, 4u, 4u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 4u, 4u, 4u, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_NE(nullptr, texture);
     }
 
@@ -716,7 +712,7 @@ namespace ramses
         mipLevelData.push_back(MipLevelData(sizeof(data), data));
         mipLevelData.push_back(MipLevelData(sizeof(data), data));
 
-        Texture3D* texture = client.createTexture3D(1u, 1u, 1u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 1u, 1u, 1u, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -727,7 +723,7 @@ namespace ramses
         std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(sizeof(data), nullptr));
 
-        Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 2u, 2u, 2u, 1, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -738,7 +734,7 @@ namespace ramses
         std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(0, data));
 
-        Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 2u, 2u, 2u, 1, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -749,14 +745,14 @@ namespace ramses
             std::vector<MipLevelData> mipLevelData;
             mipLevelData.push_back(MipLevelData(sizeof(data), data));
             mipLevelData.push_back(MipLevelData(0u, data));
-            Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
+            Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 2u, 2u, 2u, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
             EXPECT_EQ(nullptr, texture);
         }
         {
             std::vector<MipLevelData> mipLevelData;
             mipLevelData.push_back(MipLevelData(sizeof(data), data));
             mipLevelData.push_back(MipLevelData(sizeof(data), nullptr));
-            Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
+            Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 2u, 2u, 2u, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
             EXPECT_EQ(nullptr, texture);
         }
     }
@@ -767,7 +763,7 @@ namespace ramses
         std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(2 * 2 * 2 * 4, data));
         mipLevelData.push_back(MipLevelData(1 * 1 * 1 * 2, data));
-        Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_RGBA8, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::RGBA8, 2u, 2u, 2u, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -777,7 +773,7 @@ namespace ramses
         std::vector<MipLevelData> mipLevelData;
         mipLevelData.push_back(MipLevelData(1, data));
         mipLevelData.push_back(MipLevelData(1, data));
-        Texture3D* texture = client.createTexture3D(2u, 2u, 2u, ramses::ETextureFormat_ASTC_RGBA_4x4, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
+        Texture3D* texture = m_scene.createTexture3D(ramses::ETextureFormat::ASTC_RGBA_4x4, 2u, 2u, 2u, 2, &mipLevelData[0], false, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_TRUE(nullptr != texture);
     }
 
@@ -788,8 +784,8 @@ namespace ramses
     TEST_F(AResourceTestClient, creatingResourcesWithSameDataInternallyRefersToSameResourceHash)
     {
         const float data[2 * 2] = {1,2,3,4};
-        const Vector2fArray *a = client.createConstVector2fArray(2, data);
-        const Vector2fArray *b = client.createConstVector2fArray(2, data);
+        auto a = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
+        auto b = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
 
         ASSERT_EQ(a->impl.getLowlevelResourceHash(), b->impl.getLowlevelResourceHash());
     }
@@ -797,48 +793,91 @@ namespace ramses
     TEST_F(AResourceTestClient, creatingResourcesWithSameDataInternallySharesData)
     {
         const float data[2 * 2] = { 1,2,3,4 };
-        const Vector2fArray *a = client.createConstVector2fArray(2, data);
-        const Vector2fArray *b = client.createConstVector2fArray(2, data);
+        auto a = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
+        auto b = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
         ramses_internal::ManagedResource resourceA = client.impl.getResource(a->impl.getLowlevelResourceHash());
         ramses_internal::ManagedResource resourceB = client.impl.getResource(b->impl.getLowlevelResourceHash());
-        ASSERT_EQ(resourceA.getResourceObject(), resourceB.getResourceObject());
+        ASSERT_EQ(resourceA, resourceB);
     }
 
     TEST_F(AResourceTestClient, creatingResourcesWithSameDataContentInternallySharesData)
     {
         const float data[2 * 2] = { 1,2,3,4 };
         const float data2[2 * 2] = { 1,2,3,4 };
-        const Vector2fArray *a = client.createConstVector2fArray(2, data);
-        const Vector2fArray *b = client.createConstVector2fArray(2, data2);
+        auto a = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
+        auto b = m_scene.createArrayResource(EDataType::Vector2F, 2, data2);
         ramses_internal::ManagedResource resourceA = client.impl.getResource(a->impl.getLowlevelResourceHash());
         ramses_internal::ManagedResource resourceB = client.impl.getResource(b->impl.getLowlevelResourceHash());
-        ASSERT_EQ(resourceA.getResourceObject(), resourceB.getResourceObject());
+        ASSERT_EQ(resourceA, resourceB);
     }
 
     TEST_F(AResourceTestClient, destroyingDuplicateResourceDoesNotDeleteData)
     {
         const float data[2 * 2] = { 1, 2, 3, 4 };
         const float data2[2 * 2] = { 1, 2, 3, 4 };
-        const Vector2fArray *a = client.createConstVector2fArray(2, data);
-        const Vector2fArray *b = client.createConstVector2fArray(2, data2);
+        auto a = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
+        auto b = m_scene.createArrayResource(EDataType::Vector2F, 2, data2);
 
-        client.destroy(*b);
+        m_scene.destroy(*b);
         ramses_internal::ManagedResource aRes = client.impl.getResource(a->impl.getLowlevelResourceHash());
-        const uint8_t* rawResourceData = aRes.getResourceObject()->getResourceData().data();
+        const uint8_t* rawResourceData = aRes->getResourceData().data();
         ASSERT_EQ(0, ramses_internal::PlatformMemory::Compare(data, rawResourceData, sizeof(float)* 4));
+    }
+
+    TEST_F(AResourceTestClient, createFloatArray)
+    {
+        const float data[2] = {};
+        const auto a = m_scene.createArrayResource(EDataType::Float, 2, data);
+        ASSERT_TRUE(nullptr != a);
+        EXPECT_EQ(a->getNumberOfElements(), 2u);
+        EXPECT_EQ(a->getDataType(), EDataType::Float);
+    }
+
+    TEST_F(AResourceTestClient, createFloatArrayHashIsValid)
+    {
+        const float data[2] = {};
+        auto a = m_scene.createArrayResource(EDataType::Float, 2, data);
+        ASSERT_TRUE(nullptr != a);
+
+        const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
+        EXPECT_TRUE(hash.isValid());
+    }
+
+    TEST_F(AResourceTestClient, createFloatArrayHashIsUnique)
+    {
+        float data[2] = {};
+        data[0] = 4;
+        auto a = m_scene.createArrayResource(EDataType::Float, 2, data);
+
+        const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
+
+        float data2[2] = {};
+        data2[0] = 42.0f;
+        auto a2 = m_scene.createArrayResource(EDataType::Float, 2, data2);
+
+        const ramses_internal::ResourceContentHash hash2 = a2->impl.getLowlevelResourceHash();
+        EXPECT_TRUE(hash != hash2);
+    }
+
+    TEST_F(AResourceTestClient, createEmptyFloatArrayFails)
+    {
+        auto a = m_scene.createArrayResource(EDataType::Float, 0, nullptr);
+        EXPECT_TRUE(nullptr == a);
     }
 
     TEST_F(AResourceTestClient, createVector2fArray)
     {
         const float data[2 * 2] = {};
-        const Vector2fArray *a = client.createConstVector2fArray(2, data);
+        const auto a = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
         ASSERT_TRUE(nullptr != a);
+        EXPECT_EQ(a->getNumberOfElements(), 2u);
+        EXPECT_EQ(a->getDataType(), EDataType::Vector2F);
     }
 
     TEST_F(AResourceTestClient, createVector2fArrayHashIsValid)
     {
         const float data[2 * 2] = {};
-        const Vector2fArray *a = client.createConstVector2fArray(2, data);
+        auto a = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
         ASSERT_TRUE(nullptr != a);
 
         const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
@@ -849,13 +888,13 @@ namespace ramses
     {
         float data[2 * 2] = {};
         data[0] = 4;
-        const Vector2fArray *a = client.createConstVector2fArray(2, data);
+        auto a = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
 
         const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
 
         float data2[2 * 2] = {};
         data2[0] = 42.0f;
-        const Vector2fArray *a2 = client.createConstVector2fArray(2, data2);
+        auto a2 = m_scene.createArrayResource(EDataType::Vector2F, 2, data2);
 
         const ramses_internal::ResourceContentHash hash2 = a2->impl.getLowlevelResourceHash();
         EXPECT_TRUE(hash != hash2);
@@ -863,21 +902,23 @@ namespace ramses
 
     TEST_F(AResourceTestClient, createEmptyVector2fArrayFails)
     {
-        const Vector2fArray *a = client.createConstVector2fArray(0, nullptr);
+        auto a = m_scene.createArrayResource(EDataType::Vector2F, 0, nullptr);
         EXPECT_TRUE(nullptr == a);
     }
 
     TEST_F(AResourceTestClient, createVector3fArray)
     {
         const float data[2 * 3] = {};
-        const Vector3fArray *a = client.createConstVector3fArray(2, data);
+        auto a = m_scene.createArrayResource(EDataType::Vector3F, 2, data);
         ASSERT_TRUE(nullptr != a);
+        EXPECT_EQ(a->getNumberOfElements(), 2u);
+        EXPECT_EQ(a->getDataType(), EDataType::Vector3F);
     }
 
     TEST_F(AResourceTestClient, createVector3fArrayHashIsValid)
     {
         const float data[2 * 3] = {};
-        const Vector3fArray *a = client.createConstVector3fArray(2, data);
+        auto a = m_scene.createArrayResource(EDataType::Vector3F, 2, data);
         ASSERT_TRUE(nullptr != a);
 
         const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
@@ -888,13 +929,13 @@ namespace ramses
     {
         float data[2 * 3] = {};
         data[0] = 4.0f;
-        const Vector3fArray *a = client.createConstVector3fArray(2, data);
+        auto a = m_scene.createArrayResource(EDataType::Vector3F, 2, data);
 
         const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
 
         float data2[2 * 3] = {};
         data2[0] = 44.0f;
-        const Vector3fArray *a2 = client.createConstVector3fArray(2, data2);
+        auto a2 = m_scene.createArrayResource(EDataType::Vector3F, 2, data2);
 
         const ramses_internal::ResourceContentHash hash2 = a2->impl.getLowlevelResourceHash();
         EXPECT_TRUE(hash != hash2);
@@ -902,21 +943,23 @@ namespace ramses
 
     TEST_F(AResourceTestClient, createEmptyVector3fArrayFails)
     {
-        const Vector3fArray *a = client.createConstVector3fArray(0, nullptr);
+        auto a = m_scene.createArrayResource(EDataType::Vector3F, 0, nullptr);
         EXPECT_TRUE(nullptr == a);
     }
 
     TEST_F(AResourceTestClient, createVector4fArray)
     {
         const float data[2 * 4] = {};
-        const Vector4fArray *a = client.createConstVector4fArray(2, data);
+        auto a = m_scene.createArrayResource(EDataType::Vector4F, 2, data);
         ASSERT_TRUE(nullptr != a);
+        EXPECT_EQ(a->getNumberOfElements(), 2u);
+        EXPECT_EQ(a->getDataType(), EDataType::Vector4F);
     }
 
     TEST_F(AResourceTestClient, createVector4fArrayHashIsValid)
     {
         const float data[2 * 4] = {};
-        const Vector4fArray *a = client.createConstVector4fArray(2, data);
+        auto a = m_scene.createArrayResource(EDataType::Vector4F, 2, data);
         ASSERT_TRUE(nullptr != a);
 
         const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
@@ -927,13 +970,13 @@ namespace ramses
     {
         float data[2 * 4] = {};
         data[0] = 4.0f;
-        const Vector4fArray *a = client.createConstVector4fArray(2, data);
+        auto a = m_scene.createArrayResource(EDataType::Vector4F, 2, data);
 
         const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
 
         float data2[2 * 4] = {};
         data2[0] = 42.0f;
-        const Vector4fArray *a2 = client.createConstVector4fArray(2, data2);
+        auto a2 = m_scene.createArrayResource(EDataType::Vector4F, 2, data2);
 
         const ramses_internal::ResourceContentHash hash2 = a2->impl.getLowlevelResourceHash();
         EXPECT_TRUE(hash != hash2);
@@ -941,21 +984,23 @@ namespace ramses
 
     TEST_F(AResourceTestClient, createEmptyVector4fArrayFails)
     {
-        const Vector4fArray *a = client.createConstVector4fArray(0, nullptr);
+        auto a = m_scene.createArrayResource(EDataType::Vector4F, 0, nullptr);
         EXPECT_TRUE(nullptr == a);
     }
 
-    TEST_F(AResourceTestClient, createUInt16Array)
+    TEST_F(AResourceTestClient, createUInt16ArrayResource)
     {
         const uint16_t data[2] = {};
-        const UInt16Array *a = client.createConstUInt16Array(2, data);
+        const ArrayResource *a = m_scene.createArrayResource(EDataType::UInt16, 2, data);
         ASSERT_TRUE(nullptr != a);
+        EXPECT_EQ(a->getNumberOfElements(), 2u);
+        EXPECT_EQ(a->getDataType(), EDataType::UInt16);
     }
 
-    TEST_F(AResourceTestClient, createUInt16ArrayHashIsValid)
+    TEST_F(AResourceTestClient, createUInt16ArrayResourceHashIsValid)
     {
         const uint16_t data[2] = {};
-        const UInt16Array *a = client.createConstUInt16Array(2, data);
+        const ArrayResource* a = m_scene.createArrayResource(EDataType::UInt16, 2, data);
         ASSERT_TRUE(nullptr != a);
 
         const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
@@ -966,13 +1011,13 @@ namespace ramses
     {
         uint16_t data[2] = {};
         data[0] = 4;
-        const UInt16Array *a = client.createConstUInt16Array(2, data);
+        auto a = m_scene.createArrayResource(EDataType::UInt16, 2, data);
 
         const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
 
         uint16_t data2[2] = {};
         data2[0] = 42;
-        const UInt16Array *a2 = client.createConstUInt16Array(2, data2);
+        auto a2 = m_scene.createArrayResource(EDataType::UInt16, 2, data2);
 
         const ramses_internal::ResourceContentHash hash2 = a2->impl.getLowlevelResourceHash();
         EXPECT_TRUE(hash != hash2);
@@ -980,21 +1025,23 @@ namespace ramses
 
     TEST_F(AResourceTestClient, createEmptyUInt16ArrayFails)
     {
-        const UInt16Array *a = client.createConstUInt16Array(0, nullptr);
+        auto a = m_scene.createArrayResource(EDataType::UInt16, 2, nullptr);
         EXPECT_TRUE(nullptr == a);
     }
 
     TEST_F(AResourceTestClient, createUInt32Array)
     {
         const uint32_t data[2] = {};
-        const UInt32Array *a = client.createConstUInt32Array(2, data);
+        auto a = m_scene.createArrayResource(EDataType::UInt32, 2, data);
         ASSERT_TRUE(nullptr != a);
+        EXPECT_EQ(a->getNumberOfElements(), 2u);
+        EXPECT_EQ(a->getDataType(), EDataType::UInt32);
     }
 
     TEST_F(AResourceTestClient, createUInt32ArrayHashIsValid)
     {
         const uint32_t data[2] = {};
-        const UInt32Array *a = client.createConstUInt32Array(2, data);
+        auto a = m_scene.createArrayResource(EDataType::UInt32, 2, data);
         ASSERT_TRUE(nullptr != a);
 
         const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
@@ -1005,13 +1052,13 @@ namespace ramses
     {
         uint32_t data[2] = {};
         data[0] = 4;
-        const UInt32Array *a = client.createConstUInt32Array(2, data);
+        auto a = m_scene.createArrayResource(EDataType::UInt32, 2, data);
 
         const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
 
         uint32_t data2[2] = {};
         data2[0] = 42;
-        const UInt32Array *a2 = client.createConstUInt32Array(2, data2);
+        auto a2 = m_scene.createArrayResource(EDataType::UInt32, 2, data2);
 
         const ramses_internal::ResourceContentHash hash2 = a2->impl.getLowlevelResourceHash();
         EXPECT_TRUE(hash != hash2);
@@ -1019,13 +1066,9 @@ namespace ramses
 
     TEST_F(AResourceTestClient, createEmptyUInt32ArrayFails)
     {
-        const UInt32Array *a = client.createConstUInt32Array(0, nullptr);
+        auto a = m_scene.createArrayResource(EDataType::UInt32, 0, nullptr);
         EXPECT_TRUE(nullptr == a);
     }
-
-
-
-
 
     TEST_F(AResourceTestClient, createAndDestroyEffect)
     {
@@ -1033,7 +1076,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, effectDesc.setVertexShaderFromFile("res/ramses-client-test_shader.vert"));
         EXPECT_EQ(StatusOK, effectDesc.setFragmentShaderFromFile("res/ramses-client-test_minimalShader.frag"));
 
-        const Effect* const effect = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "effect");
+        auto effect = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "effect");
         ASSERT_TRUE(effect != nullptr);
     }
 
@@ -1043,13 +1086,13 @@ namespace ramses
         EXPECT_EQ(StatusOK, effectDesc.setVertexShaderFromFile("res/ramses-client-test_shader.vert"));
         EXPECT_EQ(StatusOK, effectDesc.setFragmentShaderFromFile("res/ramses-client-test_minimalShader.frag"));
 
-        const Effect* const effect1 = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "effect1");
+        auto effect1 = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "effect1");
         ASSERT_TRUE(effect1 != nullptr);
-        const Effect* const effect2 = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "effect2");
+        auto effect2 = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "effect2");
         ASSERT_TRUE(effect2 != nullptr);
 
-        EXPECT_EQ(StatusOK, client.destroy(*effect1));
-        EXPECT_EQ(StatusOK, client.destroy(*effect2));
+        EXPECT_EQ(StatusOK, m_scene.destroy(*effect1));
+        EXPECT_EQ(StatusOK, m_scene.destroy(*effect2));
     }
 
     TEST_F(AResourceTestClient, effectCreatedTwiceWithDifferentNameProducesSameHash)
@@ -1057,13 +1100,13 @@ namespace ramses
         EffectDescription effectDesc;
         EXPECT_EQ(StatusOK, effectDesc.setVertexShaderFromFile("res/ramses-client-test_shader.vert"));
         EXPECT_EQ(StatusOK, effectDesc.setFragmentShaderFromFile("res/ramses-client-test_minimalShader.frag"));
-        const Effect* const effect1 = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "effect1");
+        auto effect1 = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "effect1");
         ASSERT_TRUE(effect1 != nullptr);
-        const Effect* const effect2 = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "effect2");
+        auto effect2 = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "effect2");
         ASSERT_TRUE(effect2 != nullptr);
         EXPECT_EQ(effect1->impl.getLowlevelResourceHash(), effect2->impl.getLowlevelResourceHash());
-        client.destroy(*effect1);
-        client.destroy(*effect2);
+        m_scene.destroy(*effect1);
+        m_scene.destroy(*effect2);
     }
 
     template <typename ResourceType>
@@ -1093,8 +1136,8 @@ namespace ramses
         Resource* resource_A = static_cast<Resource*>(&this->createResource(name_A.c_str()));
         Resource* resource_B = static_cast<Resource*>(&this->createResource(name_B.c_str()));
 
-        RamsesObject* foundObject_A = this->getClient().findObjectByName(name_A.c_str());
-        RamsesObject* foundObject_B = this->getClient().findObjectByName(name_B.c_str());
+        RamsesObject* foundObject_A = this->getScene().findObjectByName(name_A.c_str());
+        RamsesObject* foundObject_B = this->getScene().findObjectByName(name_B.c_str());
 
         ASSERT_TRUE(resource_A);
         ASSERT_TRUE(resource_B);
@@ -1120,24 +1163,23 @@ namespace ramses
         this->getFramework().impl.getStatisticCollection().nextTimeInterval(); //statResourcesNumber is updated by nextTimeInterval()
         EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesNumber.getCounterValue());
 
-        this->getClient().destroy(*res);
+        this->client.impl.setClientResourceCacheTimeout(std::chrono::milliseconds(0));
+        this->getScene().destroy(*res);
         EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
 
         this->getFramework().impl.getStatisticCollection().nextTimeInterval();
         EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesNumber.getCounterValue());
     }
 
-    TEST_F(AResourceTestClient, statisticCounterIsUpdatedWhenLoadingFromFile)
+    TEST_F(AResourceTestClient, statisticCounterIsUpdatedWhenAddingToPoolViaFileAndCreatingForScene)
     {
         const float data[2 * 2] = { 1, 2, 3, 4 };
-        const Vector2fArray* res = client.createConstVector2fArray(2, data);
+        auto res = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
+        auto hash = res->getResourceId();
 
-        ResourceFileDescription fileDescription("testfile.ramres");
-        fileDescription.add(res);
-        status_t status = this->getClient().saveResources(fileDescription, false);
-        EXPECT_EQ(StatusOK, status);
+        EXPECT_TRUE(RamsesHMIUtils::SaveResourcesOfSceneToResourceFile(m_scene, "testfile.ramres", false));
 
-        client.destroy(*res);
+        m_scene.destroy(*res);
         EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
         EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
 
@@ -1147,30 +1189,64 @@ namespace ramses
         EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
         EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
 
+        EXPECT_TRUE(RamsesHMIUtils::GetResourceDataPoolForClient(client).addResourceDataFile("testfile.ramres"));
+        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
+        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
 
-        ResourceFileDescription fileDescription2("testfile.ramres");
-        status = client.loadResources(fileDescription2);
-        EXPECT_EQ(StatusOK, status);
+        Scene& scene(*client.createScene(sceneId_t{ 0xf00 }));
+        auto res2 = RamsesHMIUtils::GetResourceDataPoolForClient(client).createResourceForScene(scene, hash);
+        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
+        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
+        {
+            auto managedRes = client.impl.getClientApplication().forceLoadResource(res2->impl.getLowlevelResourceHash());
+            EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
+            EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
+
+            scene.destroy(*res2);
+            EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
+        }
+        EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
+
+        this->getFramework().impl.getStatisticCollection().nextTimeInterval();
+        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesNumber.getCounterValue());
+    }
+
+    TEST_F(AResourceTestClient, statisticCounterIsUpdatedWhenAddingToPoolViaDataAndCreatingForScene)
+    {
+        const float data[2 * 2] = { 1, 2, 3, 4 };
+        auto hash = RamsesHMIUtils::GetResourceDataPoolForClient(client).addArrayResourceData(EDataType::Vector2F, 2, data);
+        EXPECT_NE(hash, resourceId_t::Invalid());
         EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
         EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
 
         this->getFramework().impl.getStatisticCollection().nextTimeInterval();
-        EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesNumber.getCounterValue());
-    }
+        auto res = RamsesHMIUtils::GetResourceDataPoolForClient(client).createResourceForScene(this->getScene(), hash);
+        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
+        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
 
+        this->getScene().destroy(*res);
+        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
+        EXPECT_TRUE(RamsesHMIUtils::GetResourceDataPoolForClient(client).removeResourceData(hash));
+        EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
+
+        this->getFramework().impl.getStatisticCollection().nextTimeInterval();
+        EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesNumber.getCounterValue());
+    }
 
     TEST_F(AResourceTestClient, destroyedResourceKeptInCache)
     {
-        const float data[2 * 2] = { 1, 2, 3, 4 };
-        const Vector2fArray* res = client.createConstVector2fArray(2, data);
-        ramses_internal::ResourceContentHash resHash = res->impl.getLowlevelResourceHash(); //store hash as resource object gets destroyed
-        const ramses_internal::IResource* internalRes = client.impl.getFramework().getResourceComponent().getResource(resHash).getResourceObject();
+        client.impl.setClientResourceCacheTimeout(std::chrono::milliseconds(5000));
 
-        client.destroy(*res);
+        const float data[2 * 2] = { 1, 2, 3, 4 };
+        auto res = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
+        ramses_internal::ResourceContentHash resHash = res->impl.getLowlevelResourceHash(); //store hash as resource object gets destroyed
+        const ramses_internal::IResource* internalRes = client.impl.getFramework().getResourceComponent().getResource(resHash).get();
+
+        m_scene.destroy(*res);
         {
             //updateClientResourceCache is not called so resource still has to be alive
             ramses_internal::ManagedResource resourceFromResourceComponent = client.impl.getFramework().getResourceComponent().getResource(resHash);
-            EXPECT_EQ(resourceFromResourceComponent.getResourceObject(), internalRes);
+            EXPECT_EQ(resourceFromResourceComponent.get(), internalRes);
         }
 
         client.impl.setClientResourceCacheTimeout(std::chrono::milliseconds{ 1u });
@@ -1182,12 +1258,11 @@ namespace ramses
             std::this_thread::sleep_for(sleepDuration);
         } while (std::chrono::steady_clock::now() - timeBeforeSleep < sleepDuration);
         //trigger updateClientResourceCache by scene flush
-        Scene* dummyScene = client.createScene(sceneId_t(123));
-        dummyScene->flush();
+        m_scene.flush();
 
         {
             ramses_internal::ManagedResource resourceFromResourceComponent = client.impl.getFramework().getResourceComponent().getResource(resHash);
-            EXPECT_EQ(resourceFromResourceComponent.getResourceObject(), nullptr);
+            EXPECT_FALSE(resourceFromResourceComponent);
         }
     }
 }

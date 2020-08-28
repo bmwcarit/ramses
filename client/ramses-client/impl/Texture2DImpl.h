@@ -25,9 +25,10 @@ namespace ramses
     public:
         // overrideType is required if another texture type is reusing the impl, but needs a different type ID
         Texture2DImpl(ramses_internal::ResourceHashUsage resource,
-            RamsesClientImpl& client,
+            SceneImpl& scene,
             const char* name,
             ERamsesObjectType overrideType = ERamsesObjectType_Texture2D);
+
         virtual ~Texture2DImpl();
 
         void initializeFromFrameworkData(uint32_t width, uint32_t height, ETextureFormat textureFormat, const TextureSwizzle& swizzle);

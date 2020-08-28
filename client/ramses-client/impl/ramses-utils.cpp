@@ -8,6 +8,7 @@
 
 #include "ramses-utils.h"
 #include "ramses-client-api/RamsesClient.h"
+#include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/Node.h"
@@ -17,6 +18,8 @@
 #include "ramses-client-api/MipLevelData.h"
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/TextureSwizzle.h"
+#include "ramses-client-api/DataVector2f.h"
+#include "ramses-client-api/DataVector4f.h"
 
 #include "EffectImpl.h"
 #include "MeshNodeImpl.h"
@@ -24,6 +27,7 @@
 #include "RamsesObjectTypeUtils.h"
 #include "PickableObjectImpl.h"
 
+#include "Math3d/ProjectionParams.h"
 #include "Utils/File.h"
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformMemory.h"
@@ -54,7 +58,7 @@ namespace ramses
         return nullptr;
     }
 
-    Texture2D* RamsesUtils::CreateTextureResourceFromPng(const char* pngFilePath, RamsesClient& ramsesClient, const TextureSwizzle& swizzle, const char* name/* = 0*/)
+    Texture2D* RamsesUtils::CreateTextureResourceFromPng(const char* pngFilePath, Scene& scene, const TextureSwizzle& swizzle, const char* name/* = 0*/)
     {
         if (!pngFilePath)
         {
@@ -75,10 +79,10 @@ namespace ramses
         }
 
         MipLevelData mipLevelData(static_cast<uint32_t>(data.size()), data.data());
-        return ramsesClient.createTexture2D(width, height, ETextureFormat_RGBA8, 1, &mipLevelData, false, swizzle, ResourceCacheFlag_DoNotCache, name);
+        return scene.createTexture2D(ETextureFormat::RGBA8, width, height, 1, &mipLevelData, false, swizzle, ResourceCacheFlag_DoNotCache, name);
     }
 
-    Texture2D* RamsesUtils::CreateTextureResourceFromPngBuffer(const std::vector<unsigned char>& pngData, RamsesClient& ramsesClient, const TextureSwizzle& swizzle, const char* name)
+    Texture2D* RamsesUtils::CreateTextureResourceFromPngBuffer(const std::vector<unsigned char>& pngData, Scene& scene, const TextureSwizzle& swizzle, const char* name)
     {
         unsigned int width = 0;
         unsigned int height = 0;
@@ -92,17 +96,79 @@ namespace ramses
         }
 
         MipLevelData mipLevelData(static_cast<uint32_t>(data.size()), data.data());
-        return ramsesClient.createTexture2D(width, height, ETextureFormat_RGBA8, 1, &mipLevelData, false, swizzle, ResourceCacheFlag_DoNotCache, name);
+        return scene.createTexture2D(ETextureFormat::RGBA8, width, height, 1, &mipLevelData, false, swizzle, ResourceCacheFlag_DoNotCache, name);
     }
 
     bool RamsesUtils::SaveImageBufferToPng(const std::string& filePath, const std::vector<uint8_t>& imageData, uint32_t width, uint32_t height)
     {
+        if (width <= 0 || height <= 0)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::SaveImageBufferToPng: Given width and height cannot be 0");
+            return false;
+        }
+
+        if (width * height > 268435455u)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::SaveImageBufferToPng: Width * height cannot exceed the size of 268435455");
+            return false;
+        }
+
+        if (width * height * 4u != imageData.size())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::SaveImageBufferToPng: Width * height * 4 (rgba8) must exactly match the size of the image buffer");
+            return false;
+        }
+
         const unsigned int ret = lodepng::encode(filePath, imageData, width, height);
         if (ret != 0)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::SaveImageBufferToPng: Error while saving PNG file: " << filePath << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
             return false;
         }
+        return true;
+    }
+
+    bool RamsesUtils::SaveImageBufferToPng(const std::string& filePath, std::vector<uint8_t>& imageData, uint32_t width, uint32_t height, bool flipImageBufferVertically)
+    {
+        if (width <= 0 || height <= 0)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::SaveImageBufferToPng: Given width and height cannot be 0");
+            return false;
+        }
+
+        if (width * height > 268435455u)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::SaveImageBufferToPng: Width * height cannot exceed the size of 268435455");
+            return false;
+        }
+
+        if (width * height * 4u != imageData.size())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::SaveImageBufferToPng: Width * height * 4 (rgba8) must exactly match the size of the image buffer");
+            return false;
+        }
+
+        if (flipImageBufferVertically)
+        {
+            const size_t lineSize = width * 4u;
+            std::vector<unsigned char> lineBufferV(lineSize);
+            unsigned char* lineBuffer = lineBufferV.data();
+
+            for (size_t i = 0u; i < height / 2u; i++)
+            {
+                unsigned char* endOfImageData = imageData.data() + height * lineSize;
+                unsigned char* beginOfRowNumberI = imageData.data() + i * lineSize;
+                unsigned char* beginOfLastRowMinusIrows = endOfImageData - ((i + 1) * lineSize);
+
+                std::memcpy(lineBuffer, beginOfRowNumberI, lineSize); //1. fill line buffer
+                std::memcpy(beginOfRowNumberI, beginOfLastRowMinusIrows, lineSize); //overwrite copied line
+                std::memcpy(beginOfLastRowMinusIrows, lineBuffer, lineSize); //replace already copied part with buffer
+            }
+        }
+
+        if (!SaveImageBufferToPng(filePath, imageData, width, height))
+            return false;
+
         return true;
     }
 
@@ -276,6 +342,22 @@ namespace ramses
     {
         return nodeId_t(node.impl.getNodeHandle().asMemoryHandle());
     }
+
+    bool RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(float fov, float aspectRatio, float nearPlane, float farPlane, DataVector4f& frustumPlanesData, DataVector2f& nearFarPlanesData)
+    {
+        const auto params = ramses_internal::ProjectionParams::Perspective(fov, aspectRatio, nearPlane, farPlane);
+        if (!params.isValid())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesUtils::SetPerspectiveCameraFrustumToDataObjects failed: invalid frustum planes");
+            return false;
+        }
+
+        if (frustumPlanesData.setValue(params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane) != StatusOK ||
+            nearFarPlanesData.setValue(params.nearPlane, params.farPlane) != StatusOK)
+            return false;
+
+        return true;
+    }
 }
 
 // include all RamsesObject to instantiate conversion templates
@@ -286,7 +368,6 @@ namespace ramses
 #include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Camera.h"
-#include "ramses-client-api/FloatArray.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/LocalCamera.h"
 #include "ramses-client-api/MeshNode.h"
@@ -342,14 +423,9 @@ namespace ramses
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/TextureCube.h"
 #include "ramses-client-api/TextureSampler.h"
-#include "ramses-client-api/UInt16Array.h"
-#include "ramses-client-api/UInt32Array.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
-#include "ramses-client-api/Vector4fArray.h"
-#include "ramses-client-api/VertexDataBuffer.h"
-#include "ramses-client-api/IndexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
+#include "ramses-client-api/ArrayResource.h"
 
 #define INSTANTIATE_CONVERT_TEMPLATE(_objType) \
     template RAMSES_API const ramses::_objType* ramses::RamsesUtils::TryConvert<ramses::_objType>(const ramses::RamsesObject& obj); \
@@ -407,12 +483,7 @@ INSTANTIATE_CONVERT_TEMPLATE(Resource)
 INSTANTIATE_CONVERT_TEMPLATE(Texture2D)
 INSTANTIATE_CONVERT_TEMPLATE(Texture3D)
 INSTANTIATE_CONVERT_TEMPLATE(TextureCube)
-INSTANTIATE_CONVERT_TEMPLATE(UInt16Array)
-INSTANTIATE_CONVERT_TEMPLATE(UInt32Array)
-INSTANTIATE_CONVERT_TEMPLATE(FloatArray)
-INSTANTIATE_CONVERT_TEMPLATE(Vector2fArray)
-INSTANTIATE_CONVERT_TEMPLATE(Vector3fArray)
-INSTANTIATE_CONVERT_TEMPLATE(Vector4fArray)
+INSTANTIATE_CONVERT_TEMPLATE(ArrayResource)
 INSTANTIATE_CONVERT_TEMPLATE(RenderGroup)
 INSTANTIATE_CONVERT_TEMPLATE(RenderPass)
 INSTANTIATE_CONVERT_TEMPLATE(BlitPass)
@@ -431,8 +502,7 @@ INSTANTIATE_CONVERT_TEMPLATE(DataInt32)
 INSTANTIATE_CONVERT_TEMPLATE(DataVector2i)
 INSTANTIATE_CONVERT_TEMPLATE(DataVector3i)
 INSTANTIATE_CONVERT_TEMPLATE(DataVector4i)
-INSTANTIATE_CONVERT_TEMPLATE(IndexDataBuffer)
-INSTANTIATE_CONVERT_TEMPLATE(VertexDataBuffer)
+INSTANTIATE_CONVERT_TEMPLATE(ArrayBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(Texture2DBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(StreamTexture)
 INSTANTIATE_CONVERT_TEMPLATE(SceneReference)

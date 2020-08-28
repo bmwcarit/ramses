@@ -34,6 +34,13 @@ namespace ramses
         return status;
     }
 
+    status_t EffectDescription::setGeometryShader(const char* shaderSource)
+    {
+        const status_t status = impl.setGeometryShader(shaderSource);
+        LOG_HL_CLIENT_API1(status, shaderSource);
+        return status;
+    }
+
     status_t EffectDescription::setVertexShaderFromFile(const char* shaderSourceFileName)
     {
         const status_t status = impl.setVertexShaderFromFile(shaderSourceFileName);
@@ -44,6 +51,13 @@ namespace ramses
     status_t EffectDescription::setFragmentShaderFromFile(const char* shaderSourceFileName)
     {
         const status_t status = impl.setFragmentShaderFromFile(shaderSourceFileName);
+        LOG_HL_CLIENT_API1(status, shaderSourceFileName);
+        return status;
+    }
+
+    status_t EffectDescription::setGeometryShaderFromFile(const char* shaderSourceFileName)
+    {
+        const status_t status = impl.setGeometryShaderFromFile(shaderSourceFileName);
         LOG_HL_CLIENT_API1(status, shaderSourceFileName);
         return status;
     }
@@ -77,6 +91,11 @@ namespace ramses
     const char* EffectDescription::getFragmentShader() const
     {
         return impl.getFragmentShader();
+    }
+
+    const char* EffectDescription::getGeometryShader() const
+    {
+        return impl.getGeometryShader();
     }
 
     uint32_t EffectDescription::getNumberOfCompilerDefines() const

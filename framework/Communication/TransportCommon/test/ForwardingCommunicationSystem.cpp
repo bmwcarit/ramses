@@ -14,6 +14,7 @@
 #include "Components/ResourceStreamSerialization.h"
 #include "ResourceSerializationTestHelper.h"
 #include "Scene/SceneActionCollection.h"
+#include "SceneUpdateSerializerTestHelper.h"
 
 namespace ramses_internal
 {
@@ -74,20 +75,11 @@ namespace ramses_internal
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendSceneNotAvailable(const Guid& to, const SceneId& sceneId)
-    {
-        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_sceneRendererHandler && to == m_targetCommunicationSystem->m_id)
-        {
-            m_targetCommunicationSystem->m_sceneRendererHandler->handleSceneNotAvailable(sceneId, m_id);
-        }
-        return true;
-    }
-
     bool ForwardingCommunicationSystem::sendRequestResources(const Guid& to, const ResourceContentHashVector& resources)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_resourceProviderHandler && to == m_targetCommunicationSystem->m_id)
         {
-            m_targetCommunicationSystem->m_resourceProviderHandler->handleRequestResources(resources, 0u, m_id);
+            m_targetCommunicationSystem->m_resourceProviderHandler->handleRequestResources(resources, m_id);
         }
         return true;
     }
@@ -101,11 +93,11 @@ namespace ramses_internal
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendResources(const Guid& to, const ManagedResourceVector& resources)
+    bool ForwardingCommunicationSystem::sendResources(const Guid& to, const ISceneUpdateSerializer& serializer)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_resourceConsumerHandler && to == m_targetCommunicationSystem->m_id)
         {
-            auto resDataVec = ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(resources, getSendDataSizes().resourceDataArray);
+            auto resDataVec = TestSerializeSceneUpdateToVectorChunked(serializer);
             for (const auto& resData : resDataVec)
             {
                 absl::Span<const Byte> view(resData.data(), static_cast<UInt32>(resData.size()));
@@ -119,7 +111,7 @@ namespace ramses_internal
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_sceneRendererHandler && to == m_targetCommunicationSystem->m_id)
         {
-            m_targetCommunicationSystem->m_sceneRendererHandler->handleNewScenesAvailable(availableScenes, m_id, EScenePublicationMode_LocalAndRemote);
+            m_targetCommunicationSystem->m_sceneRendererHandler->handleNewScenesAvailable(availableScenes, m_id);
         }
         return true;
     }
@@ -139,24 +131,25 @@ namespace ramses_internal
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendInitializeScene(const Guid& to, const SceneInfo& sceneInfo)
+    bool ForwardingCommunicationSystem::sendInitializeScene(const Guid& to, const SceneId& sceneId)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_sceneRendererHandler && to == m_targetCommunicationSystem->m_id)
         {
-            m_targetCommunicationSystem->m_sceneRendererHandler->handleInitializeScene(sceneInfo, m_id);
+            m_targetCommunicationSystem->m_sceneRendererHandler->handleInitializeScene(sceneId, m_id);
         }
         return true;
     }
 
-    uint64_t ForwardingCommunicationSystem::sendSceneActionList(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter)
+    bool ForwardingCommunicationSystem::sendSceneUpdate(const Guid& to, const SceneId& sceneId, const ISceneUpdateSerializer& serializer)
     {
-        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_sceneRendererHandler && to == m_targetCommunicationSystem->m_id)
+        if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_resourceConsumerHandler && to == m_targetCommunicationSystem->m_id)
         {
-            m_targetCommunicationSystem->m_sceneRendererHandler->handleSceneActionList(sceneId, actions.copy(), actionListCounter, m_id);
+            auto resDataVec = TestSerializeSceneUpdateToVectorChunked(serializer);
+            for (const auto& resData : resDataVec)
+                m_targetCommunicationSystem->m_sceneRendererHandler->handleSceneUpdate(sceneId, resData, m_id);
         }
-        return 1u;
+        return true;
     }
-
 
     bool ForwardingCommunicationSystem::sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data)
     {
@@ -167,20 +160,20 @@ namespace ramses_internal
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendDcsmBroadcastOfferContent(ContentID contentID, Category category)
+    bool ForwardingCommunicationSystem::sendDcsmBroadcastOfferContent(ContentID contentID, Category category, const std::string& friendlyName)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler)
         {
-            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleOfferContent(contentID, category, m_id);
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleOfferContent(contentID, category, friendlyName, m_id);
         }
         return true;
     }
 
-    bool ForwardingCommunicationSystem::sendDcsmOfferContent(const Guid& to, ContentID contentID, Category category)
+    bool ForwardingCommunicationSystem::sendDcsmOfferContent(const Guid& to, ContentID contentID, Category category, const std::string& friendlyName)
     {
         if (m_targetCommunicationSystem && m_targetCommunicationSystem->m_dcsmConsumerHandler && to == m_targetCommunicationSystem->m_id)
         {
-            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleOfferContent(contentID, category, m_id);
+            m_targetCommunicationSystem->m_dcsmConsumerHandler->handleOfferContent(contentID, category, friendlyName, m_id);
         }
         return true;
     }
@@ -264,17 +257,6 @@ namespace ramses_internal
             m_targetCommunicationSystem->m_dcsmProviderHandler->handleContentStateChange(contentID, status, si, ai, m_id);
         }
         return true;
-    }
-
-    CommunicationSendDataSizes ForwardingCommunicationSystem::getSendDataSizes() const
-    {
-        return CommunicationSendDataSizes{ std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max(),
-                std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max(),
-                std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max() };
-    }
-
-    void ForwardingCommunicationSystem::setSendDataSizes(const CommunicationSendDataSizes& /*sizes*/)
-    {
     }
 
     void ForwardingCommunicationSystem::setResourceProviderServiceHandler(IResourceProviderServiceHandler* handler)

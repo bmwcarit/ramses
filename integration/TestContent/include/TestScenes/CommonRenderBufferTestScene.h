@@ -26,7 +26,7 @@ namespace ramses_internal
     class CommonRenderBufferTestScene : public IntegrationScene
     {
     public:
-        CommonRenderBufferTestScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, const Vector3& cameraPosition);
+        CommonRenderBufferTestScene(ramses::Scene& scene, const Vector3& cameraPosition);
 
     protected:
         const ramses::Effect&       getEffectRenderOneBuffer();

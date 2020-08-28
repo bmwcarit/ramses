@@ -6,8 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#ifndef RAMSES_ARRAYRESOURCE_H
-#define RAMSES_ARRAYRESOURCE_H
+#ifndef RAMSES_INTERNAL_ARRAYRESOURCE_H
+#define RAMSES_INTERNAL_ARRAYRESOURCE_H
 
 #include "BufferResource.h"
 #include "PlatformAbstraction/PlatformTypes.h"
@@ -17,7 +17,7 @@ namespace ramses_internal
     class ArrayResource : public BufferResource
     {
     public:
-        ArrayResource(EResourceType arrayType, UInt32 elementCount, EDataType elementType, const Byte* arrayData, ResourceCacheFlag cacheFlag, const String& name)
+        ArrayResource(EResourceType arrayType, UInt32 elementCount, EDataType elementType, const void* arrayData, ResourceCacheFlag cacheFlag, const String& name)
             : BufferResource(arrayType, elementCount * EnumToSize(elementType), arrayData, cacheFlag, name)
             , m_elementCount(elementCount)
             , m_elementType(elementType)

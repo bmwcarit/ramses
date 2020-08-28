@@ -36,7 +36,8 @@ class AsynchronousPipeReader(threading.Thread):
 
             line = self._pipe.readline()
             if not isinstance(line, str):
-                line = line.decode('utf-8')
+                # ignore ascii->utf-8 errors without failing
+                line = line.decode('utf-8', 'replace')  # TODO(tobias) check if some targets (VDT, others?) send valid utf-8 already
 
             if line == "":
                 if doStop:

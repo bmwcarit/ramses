@@ -15,8 +15,8 @@
 
 namespace ramses_internal
 {
-    using ResourceBlob = HeapArray<uint8_t, struct ResourceBlobTag>;
-    using CompressedResouceBlob = HeapArray<uint8_t, struct CompressedResourceBlobTag>;
+    using ResourceBlob = HeapArray<Byte, struct ResourceBlobTag>;
+    using CompressedResouceBlob = HeapArray<Byte, struct CompressedResourceBlobTag>;
 
     struct ResourceCacheFlagTag {};
     typedef StronglyTypedValue<UInt32, static_cast<UInt32>(-1), ResourceCacheFlagTag> ResourceCacheFlag;
@@ -24,7 +24,7 @@ namespace ramses_internal
 
     enum EResourceType
     {
-        EResourceType_Invalid               = 0x00000000,
+        EResourceType_Invalid = 0x00000000,
 
         EResourceType_VertexArray,
         EResourceType_IndexArray,

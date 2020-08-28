@@ -12,9 +12,8 @@
 
 #include "TestScenes/MultiTriangleGeometry.h"
 
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/AttributeInput.h"
@@ -23,10 +22,10 @@
 
 namespace ramses
 {
-    MultiTriangleGeometry::MultiTriangleGeometry(RamsesClient& client, Scene& scene, Effect& effect, enum MultiTriangleGeometry::EColor color, float alpha, EGeometryType geometryType, EVerticesOrder vertOrder)
+    MultiTriangleGeometry::MultiTriangleGeometry(Scene& scene, Effect& effect, enum MultiTriangleGeometry::EColor color, float alpha, EGeometryType geometryType, EVerticesOrder vertOrder)
         : m_appearance(createAppearance(effect, scene))
-        , m_indices(createIndices(client, vertOrder))
-        , m_geometry(createGeometry(client, scene, effect, m_indices, geometryType))
+        , m_indices(createIndices(scene, vertOrder))
+        , m_geometry(createGeometry(scene, effect, m_indices, geometryType))
     {
         if (geometryType == EGeometryType_TriangleStripQuad)
         {
@@ -48,7 +47,7 @@ namespace ramses
         return *scene.createAppearance(effect, "appearance");
     }
 
-    GeometryBinding& MultiTriangleGeometry::createGeometry(RamsesClient& client, Scene& scene, const Effect& effect, const UInt16Array& indices, EGeometryType geometryType)
+    GeometryBinding& MultiTriangleGeometry::createGeometry(Scene& scene, const Effect& effect, const ArrayResource& indices, EGeometryType geometryType)
     {
         ramses::AttributeInput positionsInput;
         effect.findAttributeInput("a_position", positionsInput);
@@ -63,18 +62,18 @@ namespace ramses
             vertexPositionsData = vertexPositionsDataTriangleStrip;
         else
             vertexPositionsData = vertexPositionsDataTriangleFan;
-        const Vector3fArray* vertexPositions = client.createConstVector3fArray(4, vertexPositionsData);
+        const ArrayResource* vertexPositions = scene.createArrayResource(EDataType::Vector3F, 4, vertexPositionsData);
         geometry->setInputBuffer(positionsInput, *vertexPositions);
 
         return *geometry;
     }
 
-    const UInt16Array& MultiTriangleGeometry::createIndices(RamsesClient& client, EVerticesOrder vertOrder)
+    const ArrayResource& MultiTriangleGeometry::createIndices(Scene& scene, EVerticesOrder vertOrder)
     {
         static const uint16_t indiceData_ccw[] = {0, 1, 2, 3};
         static const uint16_t indiceData_cw[]  = {0, 2, 1, 3};
         const uint16_t* indiceData = (vertOrder == EVerticesOrder_CCW ? indiceData_ccw : indiceData_cw);
-        return *client.createConstUInt16Array(4, indiceData);
+        return *scene.createArrayResource(EDataType::UInt16, 4, indiceData);
     }
 
     void MultiTriangleGeometry::setColor(const UniformInput& colorInput, enum EColor color, float alpha)

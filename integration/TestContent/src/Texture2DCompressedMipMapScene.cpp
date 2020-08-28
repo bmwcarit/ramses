@@ -9,11 +9,9 @@
 #include "TestScenes/Texture2DCompressedMipMapScene.h"
 
 #include "ramses-utils.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
@@ -27,11 +25,10 @@
 
 namespace ramses_internal
 {
-    Texture2DCompressedMipMapScene::Texture2DCompressedMipMapScene(ramses::RamsesClient& ramsesClient,
-                                                                   ramses::Scene&        scene,
+    Texture2DCompressedMipMapScene::Texture2DCompressedMipMapScene(ramses::Scene&        scene,
                                                                    uint32_t              state,
                                                                    const Vector3&        cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
         , m_textureWidth(8)
         , m_textureHeight(8)
     {
@@ -45,9 +42,9 @@ namespace ramses_internal
         // 4x4: red
 
         const ramses::MipLevelData mipLevelData[NumMipMaps] = { { 32u, dataLevel0 }, { 8u, dataLevel1 } };
-        const ramses::Texture2D* texture = m_client.createTexture2D(
+        const ramses::Texture2D* texture = m_scene.createTexture2D(
+            ramses::ETextureFormat::ETC2RGB,
             m_textureWidth, m_textureHeight,
-            ramses::ETextureFormat_ETC2RGB,
             NumMipMaps,
             mipLevelData,
             false);
@@ -159,8 +156,8 @@ namespace ramses_internal
             t *= 2.0;
         }
 
-        m_indexArray = m_client.createConstUInt16Array(static_cast<uint32_t>(indices.size()), &indices.front());
-        m_vertexPositions = m_client.createConstVector3fArray(static_cast<uint32_t>(vertexPositions.size()) / 3, &vertexPositions.front());
-        m_textureCoords = m_client.createConstVector2fArray(static_cast<uint32_t>(textureCoords.size()) / 2, &textureCoords.front());
+        m_indexArray = m_scene.createArrayResource(ramses::EDataType::UInt16, static_cast<uint32_t>(indices.size()), &indices.front());
+        m_vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, static_cast<uint32_t>(vertexPositions.size()) / 3, &vertexPositions.front());
+        m_textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, static_cast<uint32_t>(textureCoords.size()) / 2, &textureCoords.front());
     }
 }

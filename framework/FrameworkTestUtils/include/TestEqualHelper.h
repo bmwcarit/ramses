@@ -10,7 +10,6 @@
 #define RAMSES_TESTEQUALHELPER_H
 
 #include "gtest/gtest.h"
-#include "gtest/internal/gtest-internal.h"
 
 namespace ramses_internal
 {

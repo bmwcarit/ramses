@@ -23,6 +23,7 @@
 #include "RendererMock.h"
 #include "RendererSceneEventSenderMock.h"
 #include "ResourceProviderMock.h"
+#include "Components/SceneUpdate.h"
 
 using namespace testing;
 
@@ -72,19 +73,19 @@ namespace ramses_internal
 
         void flushScene(SceneId sceneId)
         {
-            SceneActionCollection sceneActions;
-            SceneActionCollectionCreator creator(sceneActions);
+            SceneUpdate sceneUpdate;
+            SceneActionCollectionCreator creator(sceneUpdate.actions);
             creator.flush(1u, false);
-            m_sceneUpdater.handleSceneActions(sceneId, std::move(sceneActions));
+            m_sceneUpdater.handleSceneActions(sceneId, std::move(sceneUpdate));
         }
 
         void flushSceneWithRefSceneStateRequest(SceneId sceneId, SceneReferenceHandle refSceneHandle, RendererSceneState refSceneState)
         {
-            SceneActionCollection sceneActions;
-            SceneActionCollectionCreator creator(sceneActions);
+            SceneUpdate sceneUpdate;
+            SceneActionCollectionCreator creator(sceneUpdate.actions);
             creator.requestSceneReferenceState(refSceneHandle, refSceneState);
             creator.flush(1u, false);
-            m_sceneUpdater.handleSceneActions(sceneId, std::move(sceneActions));
+            m_sceneUpdater.handleSceneActions(sceneId, std::move(sceneUpdate));
         }
 
         void processInternalEventsBySceneLogic()

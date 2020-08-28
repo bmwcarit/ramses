@@ -50,16 +50,13 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_com_bmwgroup_ramses_RamsesSceneViewer_createSceneViewerNative(JNIEnv *env, jobject /*instance*/,
                                                              jobject surface, jint width,
-                                                             jint height, jstring sceneFile_,
-                                                             jstring resFile_) {
+                                                             jint height, jstring sceneFile_) {
     const char *sceneFile = env->GetStringUTFChars(sceneFile_, 0);
-    const char *resFile = env->GetStringUTFChars(resFile_, 0);
     ANativeWindow* nativeWindowHandle = ANativeWindow_fromSurface(env, surface);
 
-    SceneViewerBundle* bundle = new SceneViewerBundle(nativeWindowHandle, width, height, sceneFile, resFile);
+    SceneViewerBundle* bundle = new SceneViewerBundle(nativeWindowHandle, width, height, sceneFile);
 
     env->ReleaseStringUTFChars(sceneFile_, sceneFile);
-    env->ReleaseStringUTFChars(resFile_, resFile);
 
     bundle->connect();
     bundle->run();

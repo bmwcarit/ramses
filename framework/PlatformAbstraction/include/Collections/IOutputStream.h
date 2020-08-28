@@ -10,6 +10,7 @@
 #define RAMSES_UTILS_IOUTPUTSTREAM_H
 
 #include <cstdint>
+#include <cstddef>
 #include <type_traits>
 
 namespace ramses_internal
@@ -18,7 +19,7 @@ namespace ramses_internal
     {
     public:
         virtual ~IOutputStream() = default;
-        virtual IOutputStream& write(const void* data, const uint32_t size) = 0;
+        virtual IOutputStream& write(const void* data, size_t size) = 0;
 
         IOutputStream& operator<<(const void*) = delete;
     };

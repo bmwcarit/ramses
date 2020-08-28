@@ -148,9 +148,9 @@ int main(int argc, char* argv[])
 
     // prepare triangle geometry: vertex position array and index array
     float vertexPositionsArray[] = { -1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f };
-    const ramses::Vector3fArray* vertexPositions = client.createConstVector3fArray(3, vertexPositionsArray);
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
     uint16_t indicesArray[] = { 0, 1, 2 };
-    const ramses::UInt16Array* indices = client.createConstUInt16Array(3, indicesArray);
+    ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
     effectDesc.setFragmentShaderFromFile("res/ramses-example-local-pick-handling.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    const ramses::Effect* effect = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = clientScene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearanceA = clientScene->createAppearance(*effect, "triangle appearance A");
     ramses::Appearance* appearanceB = clientScene->createAppearance(*effect, "triangle appearance B");
     ramses::GeometryBinding* geometry = clientScene->createGeometryBinding(*effect, "triangle geometry");
@@ -196,8 +196,8 @@ int main(int argc, char* argv[])
     /// [Pick Handling Example]
     // use triangle's vertex position array as PickableObject geometry
     // the two PickableObjects are exactly covering the two triangles
-    ramses::VertexDataBuffer* pickableGeometryBuffer = clientScene->createVertexDataBuffer(sizeof(vertexPositionsArray), ramses::EDataType_Vector3F, "geometryBuffer");
-    pickableGeometryBuffer->setData(reinterpret_cast<const char*>(vertexPositionsArray), sizeof(vertexPositionsArray));
+    ramses::ArrayBuffer* pickableGeometryBuffer = clientScene->createArrayBuffer(ramses::EDataType::Vector3F, 3u, "geometryBuffer");
+    pickableGeometryBuffer->updateData(0u, 3, vertexPositionsArray);
 
     ramses::PickableObject* pickableObject1 =  clientScene->createPickableObject(*pickableGeometryBuffer, ramses::pickableObjectId_t(1), "pickableObject");
     pickableObject1->setParent(*meshNode);

@@ -14,7 +14,12 @@
 #include "ramses-client-api/AnimationSystemEnums.h"
 #include "ramses-client-api/EScenePublicationMode.h"
 #include "ramses-client-api/EDataType.h"
+#include "ramses-client-api/MipLevelData.h"
+#include "ramses-client-api/TextureSwizzle.h"
+
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+
+#include <string>
 
 namespace ramses
 {
@@ -55,12 +60,18 @@ namespace ramses
     class Texture2D;
     class Texture3D;
     class TextureCube;
-    class IndexDataBuffer;
-    class VertexDataBuffer;
+    class ArrayBuffer;
     class Texture2DBuffer;
     class SceneReference;
     class SceneObject;
     class RamsesClient;
+    class ArrayResource;
+    class EffectDescription;
+    class Texture2D;
+    class Texture3D;
+    class TextureCube;
+    class Effect;
+    class Resource;
 
     /**
      * @brief The Scene holds a scene graph.
@@ -114,6 +125,17 @@ namespace ramses
         sceneId_t getSceneId() const;
 
         /**
+        * @brief Saves all scene contents to a file.
+        *
+        * @param[in] fileName File name to save the scene to.
+        * @param[in] compress if set to true, resources might be compressed before saving
+        *                     otherwise, uncompressed data will be saved
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t saveToFile(const char* fileName, bool compress) const;
+
+        /**
         * @brief Creates a Remote Camera in this Scene
         *
         * @param[in] name The optional name of the Remote Camera
@@ -163,7 +185,7 @@ namespace ramses
         * @param[in] name The name of the Stream Texture.
         * @return A pointer to the created Stream Texture, null on failure.
         */
-        StreamTexture* createStreamTexture(const Texture2D& fallbackTexture, streamSource_t source, const char* name = nullptr);
+        StreamTexture* createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t source, const char* name = nullptr);
 
         /**
         * @brief Creates a scene graph node.
@@ -194,6 +216,7 @@ namespace ramses
         * @brief Destroys a previously created object using this scene
         * The object must be owned by this scene in order to be destroyed.
         * The reference to the object is no longer valid after it is destroyed.
+        * SceneObjects will automatically be destroyed once the scene is destroyed.
         *
         * @param object The object of the Scene to destroy
         * @return StatusOK for success, otherwise the returned status can be used
@@ -204,13 +227,14 @@ namespace ramses
         /**
          * @brief Expiration timestamp is a point in time till which the scene is considered to be up-to-date.
          *        Logic on renderer side will check the time every frame and in case it detects the scene
-         *        to be rendered after its expiration timestamp it will generate an event (invoke \c IRendererEventHandler::sceneExpired).
+         *        to be rendered after its expiration timestamp it will generate an event (#ramses::IRendererSceneControlEventHandler::sceneExpired).
          *
          *        IMPORTANT: Expiration timestamp value is bound to current state of scene (once it is flushed) and for all subsequent flushes until changed again or disabled.
          *                   Once expiration timestamp is set to non-zero all subscribed renderers will periodically check it from that point on.
          *                   User is responsible for calling this method to keep the expiration reasonably in future.
          *
-         *        To disable the expiration checking set expiration timestamp to 0 followed by a flush.
+         *        Setting the expiration timestamp to non-zero value enables the monitoring (#ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringEnabled),
+         *        to disable the expiration monitoring set expiration timestamp to 0 followed by a flush.
          *        By default the expiration checking is disabled.
          *
          * @param[in] ptpExpirationTimestampInMilliseconds Expiration timestamp in milliseconds from synchronized clock.
@@ -247,6 +271,19 @@ namespace ramses
         * @copydoc findObjectByName(const char*) const
         **/
         RamsesObject* findObjectByName(const char* name);
+
+        /**
+        * @brief Get an object from the scene by id
+        *
+        * @param[in] id The id of the object to get.
+        * @return Pointer to the object if found, nullptr otherwise.
+        */
+        const SceneObject* findObjectById(sceneObjectId_t id) const;
+
+        /**
+        * @copydoc findObjectById(sceneObjectId_t id) const
+        **/
+        SceneObject* findObjectById(sceneObjectId_t id);
 
         /**
         * Stores internal data for implementation specifics of Scene.
@@ -301,7 +338,7 @@ namespace ramses
         * @brief Create a PickableObject.
         * @details PickableObject provides a way to specify a 'pickable' area, when this area is picked (see ramses::RamsesRenderer API)
         *          a message is sent to RamsesClient with list of picked objects, these can be dispatched and handled using ramses::IRendererEventHandler::objectsPicked.
-        *          Geometry to specify PickableObject has to be of data type ramses::EDataType::EDataType_Vector3F and every 3 elements are vertices forming a triangle.
+        *          Geometry to specify PickableObject has to be of data type ramses::EDataType::Vector3F and every 3 elements are vertices forming a triangle.
         *          Geometry will be interpreted as triangle list (no indices used) - it should be a simplified representation of the actual renderable geometry
         *          that it is assigned to, typically a bounding box.
         *          PickableObject is a ramses::Node and as such can be placed in scene transformation topology,
@@ -314,7 +351,7 @@ namespace ramses
         * @param[in] name Name of the PickableObject.
         * @return Pointer to the created PickableObject, nullptr on failure.
         **/
-        PickableObject* createPickableObject(const VertexDataBuffer& geometryBuffer, const pickableObjectId_t id, const char* name = nullptr);
+        PickableObject* createPickableObject(const ArrayBuffer& geometryBuffer, const pickableObjectId_t id, const char* name = nullptr);
 
         /**
         * @brief Create a render target providing a set of RenderBuffers.
@@ -450,6 +487,161 @@ namespace ramses
             ETextureSamplingMethod magSamplingMethod,
             const StreamTexture& streamTexture,
             const char* name = nullptr);
+
+        /**
+         * @brief Create a new ArrayResource. It is taking ownership of the given range of data of a certain type and keeps it
+         *        as a resource, an immutable data object. See #ramses::ArrayResource for more details.
+         *
+         * @param[in] type The data type of the array elements.
+         * @param[in] numElements The number of elements of the given data type to use for the resource.
+         * @param[in] arrayData Pointer to the data to be used to create the array from.
+         * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
+         * @param[in] name The optional name of the ArrayResource.
+         * @return A pointer to the created ArrayResource, null on failure
+         */
+        ArrayResource* createArrayResource(
+            EDataType type,
+            uint32_t numElements,
+            const void* arrayData,
+            resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
+            const char* name = nullptr);
+
+        /**
+        * @brief Create a new Texture2D. It is taking ownership of the given range of texture data in the specified pixel format
+        *        and keeps it as a resource, an immutable data object. See #ramses::Texture2D for more details.
+        *
+        * @param[in] format Pixel format of the Texture2D data.
+        * @param[in] width Width of the texture (mipmap level 0).
+        * @param[in] height Height of the texture (mipmap level 0).
+        * @param[in] mipMapCount Number of mipmap levels contained in mipLevelData array.
+        * @param[in] mipLevelData Array of MipLevelData structs defining mipmap levels
+        *                         to use. Amount and sizes of supplied mipmap levels have to
+        *                         conform to GL specification. Order is lowest level (biggest
+        *                         resolution) to highest level (smallest resolution).
+        * @param[in] swizzle Describes how RGBA channels of the texture are swizzled,
+        *          where each member of the struct represents one destination channel that the source channel should get sampled from.
+        * @param[in] generateMipChain Auto generate mipmap levels. Cannot be used if custom data for lower mipmap levels provided.
+        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
+        * @param[in] name The name of the Texture2D.
+        * @return A pointer to the created Texture2D, null on failure. Will fail with data == nullptr and/or width/height == 0.
+        */
+        Texture2D* createTexture2D(
+            ETextureFormat format,
+            uint32_t width,
+            uint32_t height,
+            uint32_t mipMapCount,
+            const MipLevelData mipLevelData[],
+            bool generateMipChain = false,
+            const TextureSwizzle& swizzle = {},
+            resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
+            const char* name = nullptr);
+
+        /**
+        * @brief Create a new Texture3D. It is taking ownership of the given range of texture data in the specified pixel format
+        *        and keeps it as a resource, an immutable data object. See #ramses::Texture3D for more details.
+        *
+        * @param[in] format Pixel format of the Texture3D data.
+        * @param[in] width Width of the texture (mipmap level 0).
+        * @param[in] height Height of the texture (mipmap level 0).
+        * @param[in] depth Depth of the texture.
+        * @param[in] mipMapCount Number of mipmap levels contained in mipLevelData array.
+        * @param[in] mipLevelData Array of MipLevelData structs defining mipmap levels
+        *                         to use. Amount and sizes of supplied mipmap levels have to
+        *                         conform to GL specification. Order is lowest level (biggest
+        *                         resolution) to highest level (smallest resolution).
+        * @param[in] generateMipChain Auto generate mipmap levels. Cannot be used if custom data for lower mipmap levels provided.
+        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
+        * @param[in] name The name of the Texture3D.
+        * @return A pointer to the created Texture3D, null on failure. Will fail with data == nullptr and/or width/height/depth == 0.
+        */
+        Texture3D* createTexture3D(
+            ETextureFormat format,
+            uint32_t width,
+            uint32_t height,
+            uint32_t depth,
+            uint32_t mipMapCount,
+            const MipLevelData mipLevelData[],
+            bool generateMipChain = false,
+            resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
+            const char* name = nullptr);
+
+        /**
+        * @brief Create a new Cube Texture. It is taking ownership of the given range of texture data in the specified pixel format
+        *        and keeps it as a resource, an immutable data object. All texel values are initially initialized to 0.
+        *        See #ramses::TextureCube for more details.
+        *
+        * @param[in] format Pixel format of the Cube Texture data.
+        * @param[in] size edge length of one quadratic cube face, belonging to the texture.
+        * @param[in] mipMapCount Number of mipmaps contained in mipLevelData array.
+        * @param[in] mipLevelData Array of MipLevelData structs defining mipmap levels
+        *                         to use. Amount and sizes of supplied mipmap levels have to
+        *                         conform to GL specification. Order ist lowest level (biggest
+        *                         resolution) to highest level (smallest resolution).
+        * @param[in] generateMipChain Auto generate mipmap levels. Cannot be used if custom data for lower mipmap levels provided.
+        * @param[in] swizzle Describes how RGBA channels of the texture are swizzled,
+        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
+        * @param[in] name The name of the Cube Texture.
+        * @return A pointer to the created Cube Texture, null on failure. Will fail with any face-data == nullptr and/or size == 0.
+        */
+        TextureCube* createTextureCube(
+            ETextureFormat format,
+            uint32_t size,
+            uint32_t mipMapCount,
+            const CubeMipLevelData mipLevelData[],
+            bool generateMipChain = false,
+            const TextureSwizzle& swizzle = {},
+            resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache,
+            const char* name = nullptr);
+
+        /**
+        * @brief Create a new Effect by parsing a GLSL shader described by an EffectDescription instance.
+        *        Refer to RamsesClient::getLastEffectErrorMessages in case of parsing error.
+        *        See #ramses::Effect for more details.
+        *
+        * @param[in] effectDesc Effect description.
+        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
+        * @param[in] name The name of the created Effect.
+        * @return A pointer to the created Effect, null on failure
+        */
+        Effect* createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag = ResourceCacheFlag_DoNotCache, const char* name = nullptr);
+
+        /**
+         * @brief Get the GLSL error messages that were produced at the creation of the last Effect
+         *
+         * @return A string containing the GLSL error messages of the last effect
+         */
+        std::string getLastEffectErrorMessages() const;
+
+        /**
+        * @brief Create a new ArrayBuffer. The created object is a mutable buffer object that can be used as index or
+        * as vertex buffer in GeometryBinding. The created object has mutable contents and immutable size that has
+        * to be specified at creation time. Upon creation the contents are undefined. The contents of the object
+        * can be (partially) updated, the change to the object data is transferred to renderer on next flush.
+        *
+        * @param[in] dataType Data type of the array data.
+        * @param[in] maxNumElements The maximum number of data elements this buffer can hold.
+        * @param[in] name The optional name of the created array buffer.
+        * @return A pointer to the created array buffer.
+        */
+        ArrayBuffer* createArrayBuffer(EDataType dataType, uint32_t maxNumElements, const char* name = nullptr);
+
+        /**
+        * @brief Create a new Texture2DBuffer. The created object is a mutable buffer object that can be used
+        * as a texture in TextureSampler. The created object has mutable contents and immutable size that has
+        * to be specified at creation time. Upon creation the contents are undefined. The contents of the object
+        * can be (partially) updated, the change to the object data is transferred to renderer on next flush.
+        *
+        * The sizes of mipmap levels are computed according to OpenGL specification (see documentation of glTexStorage2D).
+        * The mipLevelCount has to be consistent with the width and height, so that no mipMap will have size zero.
+        *
+        * @param[in] textureFormat texture format. Only uncompressed texture formats are supported
+        * @param[in] width width of the first and largest mipmap level.
+        * @param[in] height height of the first and largest mipmap level.
+        * @param[in] mipLevelCount Number of mipmap levels created for the Texture2DBuffer.
+        * @param[in] name The optional name of the created Texture2DBuffer.
+        * @return A pointer to the created Texture2DBuffer.
+        */
+        Texture2DBuffer* createTexture2DBuffer(ETextureFormat textureFormat, uint32_t width, uint32_t height, uint32_t mipLevelCount, const char* name = nullptr);
 
         /**
         * @brief Creates a data object within the scene, which holds a data value of type float.
@@ -639,50 +831,6 @@ namespace ramses
         AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags = EAnimationSystemFlags_Default, const char* name = nullptr);
 
         /**
-        * @brief Create a new IndexDataBuffer. The created object can be used as a mutable resource
-        * as index buffer in GeometryBinding. The created resource has mutable contents and immutable size that has to be specified
-        * at creation time. Upon creation the contents of the resource data are undefined. The contents of the resource
-        * data can be (partially) updated, where the change to the resource data is transferred to renderer on next flush.
-        *
-        * @param[in] maximumSizeInBytes Maximum size of the resource data.
-        * @param[in] dataType Data type of the resource data. Must be an integral data type.
-        * @param[in] name The optional name of the created index data buffer.
-        * @return A pointer to the created index data buffer.
-        */
-        IndexDataBuffer* createIndexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name = nullptr);
-
-        /**
-        * @brief Create a new VertexDataBuffer. The created object can be used as a mutable resource
-        * as vertex buffers in GeometryBinding. The created resource has mutable contents and immutable size that has to be specified
-        * at creation time. Upon creation the contents of the resource data are undefined. The contents of the resource
-        * data can be (partially) updated, where the change to the resource data is transferred to renderer on next flush.
-        *
-        * @param[in] maximumSizeInBytes Maximum size of the resource data.
-        * @param[in] dataType Data type of the resource data. Must be a float or float vector data type.
-        * @param[in] name The optional name of the created vertex data buffer.
-        * @return A pointer to the created vertex data buffer.
-        */
-        VertexDataBuffer* createVertexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name = nullptr);
-
-        /**
-        * @brief Create a new Texture2DBuffer. The created object can be used as a mutable resource
-        * in TextureSampler objects. The created resource has mutable contents and immutable size that has to be specified
-        * at creation time. Upon creation the contents of the resource data are undefined. The contents of the resource
-        * data can be (partially) updated, where the change to the resource data is transferred to renderer on next flush.
-        *
-        * The sizes of mipmap levels are computed according to OpenGL specification (see documentation of glTexStorage2D).
-        * The mipLevelCount has to be consistent with the width and height, so that no mipMap will have size zero.
-        *
-        * @param[in] mipLevelCount Number of mipmap levels created for the Texture2DBuffer.
-        * @param[in] width width of the first and largest mipmap level.
-        * @param[in] height height of the first and largest mipmap level.
-        * @param[in] textureFormat texture format. Only uncompressed texture formats are supported
-        * @param[in] name The optional name of the created Texture2DBuffer.
-        * @return A pointer to the created Texture2DBuffer.
-        */
-        Texture2DBuffer* createTexture2DBuffer(uint32_t mipLevelCount, uint32_t width, uint32_t height, ETextureFormat textureFormat, const char* name = nullptr);
-
-        /**
         * @brief Creates a new SceneReference object.
         * @details The SceneReference object references a scene, which might be unknown
         *          to this RamsesClient, but is or expected to be known to the RamsesRenderer subscribed to this scene.
@@ -693,6 +841,8 @@ namespace ramses
         *          different RamsesClients results in undefined behavior.
         *          #ramses::SceneReference can be destroyed and re-created but there are certain aspects to consider,
         *          see #ramses::SceneReference for details.
+        *          More than one level of referencing, i.e. a master scene being also a scene reference
+        *          for another master scene, is currently not supported.
         *
         * @param[in] referencedScene A scene id of a scene known to the RamsesRenderer.
         * @param[in] name The optional name of the created SceneReference.
@@ -752,6 +902,19 @@ namespace ramses
          * @return the parent RamsesCLient
          */
         RamsesClient& getRamsesClient();
+
+        /**
+        * @brief Get a resource which is owned by the scene by id
+        *
+        * @param[in] id The resource id of the resource to get.
+        * @return Pointer to the resource if found, nullptr otherwise.
+        */
+        const Resource* getResource(resourceId_t id) const;
+
+        /**
+        * @copydoc getResource(resourceId_t id) const
+        **/
+        Resource* getResource(resourceId_t id);
 
     protected:
         /**

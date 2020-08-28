@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "TestScenes/MultipleRenderTargetScene.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/RemoteCamera.h"
@@ -25,8 +24,8 @@
 
 namespace ramses_internal
 {
-    MultipleRenderTargetScene::MultipleRenderTargetScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : CommonRenderBufferTestScene(ramsesClient, scene, cameraPosition)
+    MultipleRenderTargetScene::MultipleRenderTargetScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : CommonRenderBufferTestScene(scene, cameraPosition)
         , m_renderBuffer1(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
         , m_renderBuffer2(initRenderBuffer(scene, state))
         , m_depthBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Depth, ramses::ERenderBufferFormat_Depth24, ramses::ERenderBufferAccessMode_ReadWrite))
@@ -104,7 +103,7 @@ namespace ramses_internal
         const ramses::Effect* effect = getTestEffect("ramses-test-client-texturedWithColor");
 
         const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::UInt16Array* indices = m_client.createConstUInt16Array(6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
         const float vertexPositionsArray[] =
         {
@@ -113,10 +112,10 @@ namespace ramses_internal
             -0.5f, 0.5f, 0.f,
             0.5f, 0.5f, 0.f
         };
-        const ramses::Vector3fArray* vertexPositions = m_client.createConstVector3fArray(4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
 
         const float textureCoordsArray[] = { 0.f, 0.f, 2.f, 0.f, 0.f, 2.f, 2.f, 2.f };
-        const ramses::Vector2fArray* textureCoords = m_client.createConstVector2fArray(4, textureCoordsArray);
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
 
         ramses::Appearance* appearance = m_scene.createAppearance(*effect, "appearance");
         ramses::UniformInput colorInput;

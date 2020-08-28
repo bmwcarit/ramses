@@ -17,8 +17,7 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/Texture2DBuffer.h"
-#include "ramses-client-api/IndexDataBuffer.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/AttributeInput.h"
@@ -28,13 +27,13 @@
 
 namespace ramses_internal
 {
-    DynamicQuad_SceneResources::DynamicQuad_SceneResources(ramses::RamsesClient& client, ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad)
-        : DynamicQuad_Base(client, scene, screenspaceQuad)
-        , m_textureBuffer   (m_scene.createTexture2DBuffer(1u, DynamicTextureWidth, DynamicTextureHeight, ramses::ETextureFormat_RGB8))
+    DynamicQuad_SceneResources::DynamicQuad_SceneResources(ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad)
+        : DynamicQuad_Base(scene, screenspaceQuad)
+        , m_textureBuffer   (m_scene.createTexture2DBuffer(ramses::ETextureFormat::RGB8, DynamicTextureWidth, DynamicTextureHeight, 1u))
         , m_textureSampler  (m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Linear_MipMapLinear, ramses::ETextureSamplingMethod_Linear, *m_textureBuffer))
-        , m_indices         (m_scene.createIndexDataBuffer(sizeof(uint16_t) * 4, ramses::EDataType_UInt16))
-        , m_texCoords       (m_scene.createVertexDataBuffer(sizeof(float) * 8, ramses::EDataType_Vector2F))
-        , m_vertexPos       (m_scene.createVertexDataBuffer(sizeof(float) * 12, ramses::EDataType_Vector3F))
+        , m_indices         (m_scene.createArrayBuffer( ramses::EDataType::UInt16, 4))
+        , m_texCoords       (m_scene.createArrayBuffer(ramses::EDataType::Vector2F, 8))
+        , m_vertexPos       (m_scene.createArrayBuffer( ramses::EDataType::Vector3F, 12))
     {
         m_renderGroup.addMeshNode(m_meshNode);
 
@@ -112,9 +111,9 @@ namespace ramses_internal
             vertexTexcoordsData[t] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
         }
 
-        m_indices->setData(reinterpret_cast<const char*>(indicesData), sizeof(indicesData), 0);
-        m_vertexPos->setData(reinterpret_cast<const char*>(&vertexPositionsData[0].x), sizeof(vertexPositionsData), 0);
-        m_texCoords->setData(reinterpret_cast<const char*>(vertexTexcoordsData), sizeof(vertexTexcoordsData), 0);
+        m_indices->updateData(0u, 4, indicesData);
+        m_vertexPos->updateData(0u, 4, &vertexPositionsData[0].x);
+        m_texCoords->updateData(0u, 4, vertexTexcoordsData);
 
         std::unique_ptr<uint8_t[]> rawData(new uint8_t[DynamicTextureWidth * DynamicTextureHeight * 3]);
 
@@ -128,6 +127,6 @@ namespace ramses_internal
             }
         }
 
-        m_textureBuffer->setData(reinterpret_cast<const char*>(rawData.get()), 0, 0, 0, DynamicTextureWidth, DynamicTextureHeight);
+        m_textureBuffer->updateData(0, 0, 0, DynamicTextureWidth, DynamicTextureHeight, rawData.get());
     }
 }

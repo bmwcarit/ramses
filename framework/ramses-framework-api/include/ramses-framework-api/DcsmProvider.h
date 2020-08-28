@@ -66,6 +66,44 @@ namespace ramses
         status_t offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata);
 
         /**
+        * @brief Assigns a Wayland IVI Surface ID to a contentID and category and offers
+        *        that content to listening consumers. Should only be called if content
+        *        could and should currently be shown.
+        *        The Wayland IVI Surface belonging to the surface ID must not exist yet.
+        *
+        *        A failing offerContent call might trigger a stopOfferAccepted event,
+        *        which can be safely ignored.
+        *
+        * @param contentID The ID of the content to be offered
+        * @param category The category the content is made for
+        * @param surfaceId The Wayland IVI Surface id containing the content.
+        * @param mode Indicates if content should be offered within same process only
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t offerContent(ContentID contentID, Category category, waylandIviSurfaceId_t surfaceId, EDcsmOfferingMode mode);
+
+        /**
+        * @brief Same behavior as offerContent() but additionally send provided
+        *        metadata to consumers that assigned content to themselves.
+        *
+        *        This method should be used to attach metadata immediately on offer to a
+        *        content but is no prerequisite for later calls to updateContentMetadata().
+        *
+        *        A failing offerContentWithMetadata call might trigger a stopOfferAccepted
+        *        event, which can be safely ignored.
+        *
+        * @param contentID The ID of the content to be offered
+        * @param category The category the content is made for
+        * @param surfaceId The Wayland IVI Surface id containing the content.
+        * @param mode Indicates if content should be offered within same process only
+        * @param metadata metadata creator filled with metadata
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t offerContentWithMetadata(ContentID contentID, Category category, waylandIviSurfaceId_t surfaceId, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata);
+
+        /**
          * @brief Send metadata updates to consumers content is assigned to. The content is earliest
          *        sent to consumer on change change offered to assigned.
          *
@@ -104,7 +142,7 @@ namespace ramses
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          *
-         * @pre Scene associated with content is set up and published.
+         * @pre Ramses scene content: Scene associated with content is set up and published.
          */
         status_t markContentReady(ContentID contentID);
 

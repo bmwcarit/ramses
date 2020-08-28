@@ -13,12 +13,11 @@
 
 namespace ramses
 {
-    class RamsesClient;
     class Scene;
     class Appearance;
     class GeometryBinding;
-    class UInt16Array;
-    class Vector3fArrayInput;
+    class ArrayResource;
+    class ArrayResourceInput;
     class Effect;
     class UniformInput;
 
@@ -45,7 +44,7 @@ namespace ramses
             EVerticesOrder_CCW
         };
 
-        MultiTriangleGeometry(RamsesClient& client, Scene& scene, Effect& effect, enum EColor color, float alpha = 1.f, EGeometryType geometryType = EGeometryType_TriangleStripQuad, EVerticesOrder vertOrder = EVerticesOrder_CCW);
+        MultiTriangleGeometry(Scene& scene, Effect& effect, enum EColor color, float alpha = 1.f, EGeometryType geometryType = EGeometryType_TriangleStripQuad, EVerticesOrder vertOrder = EVerticesOrder_CCW);
 
         Appearance& GetAppearance()
         {
@@ -58,13 +57,13 @@ namespace ramses
 
     protected:
         static Appearance&        createAppearance(Effect& effect, Scene& scene);
-        static GeometryBinding&   createGeometry(RamsesClient& client, Scene& scene, const Effect& effect, const UInt16Array& indices, EGeometryType geometryType);
-        static const UInt16Array& createIndices(RamsesClient& client, EVerticesOrder vertOrder);
+        static GeometryBinding&   createGeometry(Scene& scene, const Effect& effect, const ArrayResource& indices, EGeometryType geometryType);
+        static const ArrayResource& createIndices(Scene& scene, EVerticesOrder vertOrder);
 
         void setColor(const UniformInput& colorInput, enum EColor color, float alpha);
 
         Appearance&        m_appearance;
-        const UInt16Array& m_indices;
+        const ArrayResource& m_indices;
         GeometryBinding&   m_geometry;
     };
 }

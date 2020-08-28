@@ -12,10 +12,7 @@
 #include "SceneImpl.h"
 #include "RamsesClientImpl.h"
 #include "LogMemoryUtils.h"
-#include "ResourceFileDescriptionSetImpl.h"
 #include "ramses-client-api/StreamTexture.h"
-#include "ramses-client-api/ResourceFileDescriptionSet.h"
-#include "ramses-client-api/ResourceFileDescription.h"
 #include "Utils/LogMacros.h"
 #include <numeric>
 
@@ -68,26 +65,15 @@ namespace ramses_internal
 
     void SceneCommandVisitor::operator()(const SceneCommandDumpSceneToFile& cmd) const
     {
-        ramses::ResourceFileDescriptionSet resourceFileDescriptionSet;
-        const String resourceDumpFileWithExtension = cmd.fileName + ".ramres";
-        ramses::ResourceFileDescription resourceFileDescription(resourceDumpFileWithExtension.c_str());
-        ramses::RamsesObjectVector resources = m_scene.getClientImpl().getListOfResourceObjects(ramses::ERamsesObjectType_Resource);
-        for (const auto it : resources)
-        {
-            const ramses::Resource& resource = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Resource>(*it);
-            resourceFileDescription.add(&resource);
-        }
-        resourceFileDescriptionSet.add(resourceFileDescription);
-
         const String sceneDumpFileWithExtension = cmd.fileName + ".ramses";
-        const ramses::status_t status = m_scene.getClientImpl().saveSceneToFile(m_scene, sceneDumpFileWithExtension.c_str(), resourceFileDescriptionSet, false);
+        const ramses::status_t status = m_scene.saveToFile(sceneDumpFileWithExtension.c_str(), false);
         if (status == ramses::StatusOK)
         {
             if (cmd.sendViaDLT)
-                SceneCommandVisitor::SendSceneAndResourceFilesViaDLT(sceneDumpFileWithExtension, resourceFileDescriptionSet);
+                SceneCommandVisitor::SendSceneViaDLT(sceneDumpFileWithExtension);
         }
         else
-            LOG_WARN(CONTEXT_CLIENT, "SceneCommandVisitor::execute: failed to dump scene to file: " << m_scene.getClientImpl().getStatusMessage(status));
+            LOG_WARN(CONTEXT_CLIENT, "SceneCommandVisitor::execute: failed to dump scene to file: " << m_scene.getStatusMessage(status));
     }
 
     void SceneCommandVisitor::operator()(const SceneCommandLogResourceMemoryUsage& /*cmd*/) const
@@ -109,7 +95,7 @@ namespace ramses_internal
         }));
     }
 
-    void SceneCommandVisitor::SendSceneAndResourceFilesViaDLT(const String& sceneDumpFileName, const ramses::ResourceFileDescriptionSet& resourceFileDescriptionSet)
+    void SceneCommandVisitor::SendSceneViaDLT(const String& sceneDumpFileName)
     {
         if (GetRamsesLogger().transmitFile(sceneDumpFileName, false))
         {
@@ -118,18 +104,6 @@ namespace ramses_internal
         else
         {
             LOG_INFO(CONTEXT_RENDERER, "SceneCommandVisitor::sendSceneAndResourceFilesViaDLT: failed to send scene dump file via dlt: " << sceneDumpFileName);
-        }
-
-        for (const auto& resourceFileDescription : resourceFileDescriptionSet.impl->descriptions)
-        {
-            if (GetRamsesLogger().transmitFile(resourceFileDescription.getFilename(), false))
-            {
-                LOG_INFO(CONTEXT_CLIENT, "SceneCommandVisitor::sendSceneAndResourceFilesViaDLT: resource file successfully send via dlt: " << resourceFileDescription.getFilename());
-            }
-            else
-            {
-                LOG_INFO(CONTEXT_CLIENT, "SceneCommandVisitor::sendSceneAndResourceFilesViaDLT: failed to send resource file via dlt: " << resourceFileDescription.getFilename());
-            }
         }
     }
 }

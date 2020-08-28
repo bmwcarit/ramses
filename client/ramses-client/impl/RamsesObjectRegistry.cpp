@@ -32,6 +32,7 @@ namespace ramses
         object.impl.setObjectRegistryHandle(handle);
 
         updateName(object, object.impl.getName());
+        trackSceneObjectById(object);
     }
 
     void RamsesObjectRegistry::removeObject(RamsesObject& object)
@@ -39,11 +40,17 @@ namespace ramses
         assert(containsObject(object));
 
         if (object.isOfType(ERamsesObjectType_Node))
-        {
             setNodeDirty(RamsesObjectTypeUtils::ConvertTo<Node>(object).impl, false);
+
+        if (object.isOfType(ERamsesObjectType_SceneObject))
+        {
+            const sceneObjectId_t sceneObjectId = RamsesObjectTypeUtils::ConvertTo<SceneObject>(object).getSceneObjectId();
+            assert(m_objectsById.contains(sceneObjectId));
+            m_objectsById.remove(sceneObjectId);
         }
 
         m_objectsByName.remove(object.impl.getName());
+
         const RamsesObjectHandle handle = object.impl.getObjectRegistryHandle();
         const ERamsesObjectType type = object.impl.getType();
         m_objects[type].release(handle);
@@ -90,6 +97,17 @@ namespace ramses
         }
     }
 
+    void RamsesObjectRegistry::trackSceneObjectById(RamsesObject& object)
+    {
+        if (object.isOfType(ERamsesObjectType_SceneObject))
+        {
+            SceneObject& sceneObject = RamsesObjectTypeUtils::ConvertTo<SceneObject>(object);
+            const sceneObjectId_t sceneObjectId = RamsesObjectTypeUtils::ConvertTo<SceneObject>(object).getSceneObjectId();
+            assert(!m_objectsById.contains(sceneObjectId));
+            m_objectsById.put(sceneObjectId, &sceneObject);
+        }
+    }
+
     RamsesObject* RamsesObjectRegistry::findObjectByName(const char* name)
     {
         RamsesObject* object(nullptr);
@@ -101,6 +119,20 @@ namespace ramses
     {
         // const version of findObjectByName cast to its non-const version to avoid duplicating code
         return const_cast<RamsesObject*>((const_cast<RamsesObjectRegistry&>(*this)).findObjectByName(name));
+    }
+
+    SceneObject* RamsesObjectRegistry::findObjectById(sceneObjectId_t id)
+    {
+        SceneObject* object(nullptr);
+        m_objectsById.get(id, object);
+
+        return object;
+    }
+
+    const SceneObject* RamsesObjectRegistry::findObjectById(sceneObjectId_t id) const
+    {
+        // const version of findObjectById cast to its non-const version to avoid duplicating code
+        return const_cast<SceneObject*>((const_cast<RamsesObjectRegistry&>(*this)).findObjectById(id));
     }
 
     void RamsesObjectRegistry::getObjectsOfType(RamsesObjectVector& objects, ERamsesObjectType ofType) const

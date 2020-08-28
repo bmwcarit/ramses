@@ -55,6 +55,7 @@ namespace ramses_internal
         MOCK_METHOD(void, clearStencil, (Int32), (override));
         MOCK_METHOD(void, blendFactors, (EBlendFactor, EBlendFactor, EBlendFactor, EBlendFactor), (override));
         MOCK_METHOD(void, blendOperations, (EBlendOperation, EBlendOperation), (override));
+        MOCK_METHOD(void, blendColor, (const Vector4&), (override));
         MOCK_METHOD(void, cullMode, (ECullMode), (override));
         MOCK_METHOD(void, depthFunc, (EDepthFunc), (override));
         MOCK_METHOD(void, depthWrite, (EDepthWrite), (override));

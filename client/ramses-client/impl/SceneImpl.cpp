@@ -43,12 +43,20 @@
 #include "ramses-client-api/DataVector2i.h"
 #include "ramses-client-api/DataVector3i.h"
 #include "ramses-client-api/DataVector4i.h"
-#include "ramses-client-api/IndexDataBuffer.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/SceneReference.h"
 #include "ramses-client-api/Scene.h"
+#include "ramses-client-api/Resource.h"
+#include "ramses-client-api/ArrayResource.h"
+#include "ramses-client-api/TextureCube.h"
+#include "ramses-client-api/Texture2D.h"
+#include "ramses-client-api/Texture3D.h"
+#include "ramses-client-api/Effect.h"
+#include "ramses-client-api/EffectDescription.h"
+#include "ramses-sdk-build-config.h"
+#include "ramses-utils.h"
 
 #include "Scene/Scene.h"
 #include "CameraNodeImpl.h"
@@ -88,16 +96,23 @@
 #include "ClientCommands/SceneCommandVisitor.h"
 #include "RamsesObjectRegistryIterator.h"
 #include "SerializationHelper.h"
-#include "VertexDataBufferImpl.h"
-#include "IndexDataBufferImpl.h"
+#include "ArrayBufferImpl.h"
 #include "Texture2DBufferImpl.h"
 #include "DataSlotUtils.h"
 #include "PickableObjectImpl.h"
 #include "SceneReferenceImpl.h"
+#include "ArrayResourceUtils.h"
+#include "RamsesVersion.h"
+#include "Scene/ScenePersistation.h"
+
+#include "Resource/ArrayResource.h"
+#include "Resource/TextureResource.h"
+#include "Resource/EffectResource.h"
 
 #include "Components/FlushTimeInformation.h"
 #include "PlatformAbstraction/PlatformMath.h"
 #include "Utils/TextureMathUtils.h"
+#include "ResourceDataPoolImpl.h"
 
 #include <array>
 
@@ -126,6 +141,10 @@ namespace ramses
             delete &RamsesObjectTypeUtils::ConvertTo<SceneObject>(*it);
         }
 
+        // hl resources are gone, so close file and therefor release unneeded ll resources
+        if (!m_sceneFilename.empty())
+            getClientImpl().getClientApplication().removeResourceFile(m_sceneFilename.c_str());
+
         getClientImpl().getFramework().getPeriodicLogger().removeStatisticCollectionScene(m_scene.getSceneId());
     }
 
@@ -145,38 +164,25 @@ namespace ramses
 
         CHECK_RETURN_ERR(SerializationHelper::SerializeObjectsInRegistry<SceneObject>(outStream, serializationContext, m_objectRegistry));
 
+        outStream << m_lastSceneObjectId.getValue();
+
         return StatusOK;
     }
 
-    template <typename T>
-    T& createImplHelper(SceneImpl& sceneImpl, ERamsesObjectType)
+    template <class T, typename std::enable_if<std::is_constructible<T, SceneImpl&, const char*>::value, T>::type* = nullptr>
+    T& createImplHelper(SceneImpl& scene, ERamsesObjectType)
     {
-        return *new T(sceneImpl, "");
+        return *new T(scene, "");
     }
-    template <>
-    AnimationSystemImpl& createImplHelper<AnimationSystemImpl>(SceneImpl& sceneImpl, ERamsesObjectType type)
+    template <class T, typename std::enable_if<std::is_constructible<T, SceneImpl&, ERamsesObjectType, const char*>::value, T>::type* = nullptr>
+    T& createImplHelper(SceneImpl& scene, ERamsesObjectType type)
     {
-        return *new AnimationSystemImpl(sceneImpl, type, "");
+        return *new T(scene, type, "");
     }
-    template <>
-    CameraNodeImpl& createImplHelper<CameraNodeImpl>(SceneImpl& sceneImpl, ERamsesObjectType type)
+    template <class T, typename std::enable_if<std::is_constructible<T, ramses_internal::ResourceHashUsage, SceneImpl&, const char*>::value, T>::type* = nullptr>
+    T& createImplHelper(SceneImpl& scene, ERamsesObjectType)
     {
-        return *new CameraNodeImpl(sceneImpl, "", type);
-    }
-    template <>
-    DataObjectImpl& createImplHelper<DataObjectImpl>(SceneImpl& sceneImpl, ERamsesObjectType type)
-    {
-        return *new DataObjectImpl(sceneImpl, type, "");
-    }
-    template <>
-    NodeImpl& createImplHelper<NodeImpl>(SceneImpl& sceneImpl, ERamsesObjectType type)
-    {
-        return *new NodeImpl(sceneImpl, type, "");
-    }
-    template <>
-    MeshNodeImpl& createImplHelper<MeshNodeImpl>(SceneImpl& sceneImpl, ERamsesObjectType)
-    {
-        return *new MeshNodeImpl(sceneImpl, "");
+        return *new T({}, scene, "");
     }
 
     template <typename ObjectType, typename ObjectImplType>
@@ -185,8 +191,8 @@ namespace ramses
         for (uint32_t i = 0u; i < count; ++i)
         {
             ObjectImplType& impl = createImplHelper<ObjectImplType>(*this, TYPE_ID_OF_RAMSES_OBJECT<ObjectType>::ID);
-            ObjectIDType objectID = DeserializationContext::GetObjectIDNull();
-            const status_t status = SerializationHelper::DeserializeObjectImpl(inStream, serializationContext, impl, objectID);
+            ObjectIDType objectID = SerializationHelper::DeserializeObjectID(inStream);
+            auto status = impl.deserialize(inStream, serializationContext);
             if (status != StatusOK)
             {
                 delete &impl;
@@ -194,6 +200,10 @@ namespace ramses
             }
             ObjectType* object = new ObjectType(impl);
             m_objectRegistry.addObject(*object);
+
+            if (auto resource = RamsesUtils::TryConvert<Resource>(*object))
+                m_resourcesById[resource->getResourceId()] = resource;
+
             if (!serializationContext.registerObjectImpl(&impl, objectID))
             {
                 delete object;
@@ -318,15 +328,28 @@ namespace ramses
             case ERamsesObjectType_DataVector4i:
                 status = createAndDeserializeObjectImpls<DataVector4i, DataObjectImpl>(inStream, serializationContext, count);
                 break;
-            case ERamsesObjectType_IndexDataBuffer:
-                status = createAndDeserializeObjectImpls<IndexDataBuffer, IndexDataBufferImpl>(inStream, serializationContext, count);
-                break;
-            case ERamsesObjectType_VertexDataBuffer:
-                status = createAndDeserializeObjectImpls<VertexDataBuffer, VertexDataBufferImpl>(inStream, serializationContext, count);
+            case ERamsesObjectType_DataBufferObject:
+                status = createAndDeserializeObjectImpls<ArrayBuffer, ArrayBufferImpl>(inStream, serializationContext, count);
                 break;
             case ERamsesObjectType_Texture2DBuffer:
                 status = createAndDeserializeObjectImpls<Texture2DBuffer, Texture2DBufferImpl>(inStream, serializationContext, count);
                 break;
+            case ERamsesObjectType_ArrayResource:
+                status = createAndDeserializeObjectImpls<ArrayResource, ArrayResourceImpl>(inStream, serializationContext, count);
+                break;
+            case ERamsesObjectType_Texture2D:
+                status = createAndDeserializeObjectImpls<Texture2D, Texture2DImpl>(inStream, serializationContext, count);
+                break;
+            case ERamsesObjectType_Texture3D:
+                status = createAndDeserializeObjectImpls<Texture3D, Texture3DImpl>(inStream, serializationContext, count);
+                break;
+            case ERamsesObjectType_TextureCube:
+                status = createAndDeserializeObjectImpls<TextureCube, TextureCubeImpl>(inStream, serializationContext, count);
+                break;
+            case ERamsesObjectType_Effect:
+                status = createAndDeserializeObjectImpls<Effect, EffectImpl>(inStream, serializationContext, count);
+                break;
+
             default:
                 return addErrorEntry("Scene::deserialize failed, unexpected object type in file stream.");
             }
@@ -334,8 +357,10 @@ namespace ramses
             CHECK_RETURN_ERR(status);
         }
 
+        inStream >> m_lastSceneObjectId.getReference();
+
         LOG_DEBUG_F(ramses_internal::CONTEXT_PROFILING, ([&](ramses_internal::StringOutputStream& sos) {
-                    sos << "SceneImpl::deserialize: HL scene object counts for SceneID " << m_scene.getSceneId().getValue() << "\n";
+                    sos << "SceneImpl::deserialize: HL scene object counts for SceneID " << m_scene.getSceneId() << "\n";
                     for (uint32_t i = 0; i < ERamsesObjectType_NUMBER_OF_TYPES; i++)
                     {
                         if (objectCounts[i] > 0)
@@ -394,7 +419,7 @@ namespace ramses
 
     RemoteCamera* SceneImpl::createRemoteCamera(const char* name)
     {
-        CameraNodeImpl& pimpl = *new CameraNodeImpl(*this, name, ERamsesObjectType_RemoteCamera);
+        CameraNodeImpl& pimpl = *new CameraNodeImpl(*this, ERamsesObjectType_RemoteCamera, name);
         pimpl.initializeFrameworkData();
         RemoteCamera* newCamera = new RemoteCamera(pimpl);
         registerCreatedObject(*newCamera);
@@ -404,7 +429,7 @@ namespace ramses
 
     PerspectiveCamera* SceneImpl::createPerspectiveCamera(const char* name)
     {
-        CameraNodeImpl& pimpl = *new CameraNodeImpl(*this, name, ERamsesObjectType_PerspectiveCamera);
+        CameraNodeImpl& pimpl = *new CameraNodeImpl(*this, ERamsesObjectType_PerspectiveCamera, name);
         pimpl.initializeFrameworkData();
         PerspectiveCamera* newCamera = new PerspectiveCamera(pimpl);
         registerCreatedObject(*newCamera);
@@ -414,7 +439,7 @@ namespace ramses
 
     OrthographicCamera* SceneImpl::createOrthographicCamera(const char* name)
     {
-        CameraNodeImpl& pimpl = *new CameraNodeImpl(*this, name, ERamsesObjectType_OrthographicCamera);
+        CameraNodeImpl& pimpl = *new CameraNodeImpl(*this, ERamsesObjectType_OrthographicCamera, name);
         pimpl.initializeFrameworkData();
         OrthographicCamera* newCamera = new OrthographicCamera(pimpl);
         registerCreatedObject(*newCamera);
@@ -424,9 +449,9 @@ namespace ramses
 
     Appearance* SceneImpl::createAppearance(const Effect& effect, const char* name)
     {
-        if (!isFromTheSameClientAs(effect.impl))
+        if (this != &effect.impl.getSceneImpl())
         {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createAppearance failed, effect is not from the same client as this scene.");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createAppearance failed, effect is not from this scene.");
             return nullptr;
         }
 
@@ -443,11 +468,11 @@ namespace ramses
         return new AppearanceImpl(*this, name);
     }
 
-    StreamTexture* SceneImpl::createStreamTexture(const Texture2D& fallbackTexture, streamSource_t source, const char* name)
+    StreamTexture* SceneImpl::createStreamTexture(const Texture2D& fallbackTexture, waylandIviSurfaceId_t source, const char* name)
     {
-        if (!isFromTheSameClientAs(fallbackTexture.impl))
+        if (this != &fallbackTexture.impl.getSceneImpl())
         {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createStreamTexture failed, fallbackTexture is not from this RamsesClient.");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createStreamTexture failed, fallbackTexture is not from this scene.");
             return nullptr;
         }
 
@@ -461,9 +486,9 @@ namespace ramses
 
     GeometryBinding* SceneImpl::createGeometryBinding(const Effect& effect, const char* name)
     {
-        if (!isFromTheSameClientAs(effect.impl))
+        if (this != &effect.impl.getSceneImpl())
         {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createGeometryBinding failed, effect is not from the same client as this scene.");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createGeometryBinding failed, effect is not from this scene.");
             return nullptr;
         }
 
@@ -529,14 +554,20 @@ namespace ramses
         case ERamsesObjectType_BlitPass:
         case ERamsesObjectType_RenderBuffer:
         case ERamsesObjectType_StreamTexture:
-        case ERamsesObjectType_IndexDataBuffer:
-        case ERamsesObjectType_VertexDataBuffer:
+        case ERamsesObjectType_DataBufferObject:
         case ERamsesObjectType_Texture2DBuffer:
             returnStatus = destroyObject(object);
             break;
         case ERamsesObjectType_SceneReference:
             m_sceneReferences.remove(RamsesObjectTypeUtils::ConvertTo<SceneReference>(object).getReferencedSceneId());
             returnStatus = destroyObject(object);
+            break;
+        case ERamsesObjectType_Texture2D:
+        case ERamsesObjectType_Texture3D:
+        case ERamsesObjectType_TextureCube:
+        case ERamsesObjectType_Effect:
+        case ERamsesObjectType_ArrayResource:
+            returnStatus = destroyResource(RamsesObjectTypeUtils::ConvertTo<Resource>(object));
             break;
         default:
             assert(false);
@@ -642,6 +673,16 @@ namespace ramses
         }
 
         return destroyObject(sampler);
+    }
+
+    status_t SceneImpl::destroyResource(Resource& resource)
+    {
+        const resourceId_t resId = resource.impl.getResourceId();
+        m_resourcesById.remove(resId);
+
+        getClientImpl().onResourceDestroyed(resource);
+
+        return destroyObject(resource);
     }
 
     status_t SceneImpl::destroyObject(SceneObject& object)
@@ -779,7 +820,7 @@ namespace ramses
         return blitPass;
     }
 
-    PickableObject* SceneImpl::createPickableObject(const VertexDataBuffer& geometryBuffer, const pickableObjectId_t id, const char* name)
+    PickableObject* SceneImpl::createPickableObject(const ArrayBuffer& geometryBuffer, const pickableObjectId_t id, const char* name)
     {
         if (!containsSceneObject(geometryBuffer.impl))
         {
@@ -789,7 +830,7 @@ namespace ramses
             return nullptr;
         }
 
-        if (geometryBuffer.getDataType() != EDataType_Vector3F || 0 != (geometryBuffer.impl.getElementCount() % 3))
+        if (geometryBuffer.getDataType() != EDataType::Vector3F || 0 != (geometryBuffer.impl.getElementCount() % 3))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT,
                       "Scene(" << m_scene.getSceneId()
@@ -859,9 +900,9 @@ namespace ramses
         const Texture2D& texture,
         const char* name /*= 0*/)
     {
-        if (!isFromTheSameClientAs(texture.impl))
+        if (this != &texture.impl.getSceneImpl())
         {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, texture 2D is not from the same client as this scene.");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, texture 2D is not from this scene.");
             return nullptr;
         }
 
@@ -886,9 +927,9 @@ namespace ramses
         const Texture3D& texture,
         const char* name /*= 0*/)
     {
-        if (!isFromTheSameClientAs(texture.impl))
+        if (this != &texture.impl.getSceneImpl())
         {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, texture 3D is not from the same client as this scene.");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, texture 3D is not from this scene.");
             return nullptr;
         }
 
@@ -910,9 +951,9 @@ namespace ramses
         const TextureCube& texture,
         const char* name /*= 0*/)
     {
-        if (!isFromTheSameClientAs(texture.impl))
+        if (this != &texture.impl.getSceneImpl())
         {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, texture Cube is not from the same client as this scene.");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, texture Cube is not from this scene.");
             return nullptr;
         }
 
@@ -1248,9 +1289,9 @@ namespace ramses
 
     status_t SceneImpl::createTextureProvider(const Texture2D& texture, dataProviderId_t id)
     {
-        if (!isFromTheSameClientAs(texture.impl))
+        if (this != &texture.impl.getSceneImpl())
         {
-            return addErrorEntry("Scene::createTextureProvider failed, texture is not from same client as scene.");
+            return addErrorEntry("Scene::createTextureProvider failed, texture is not from this scene.");
         }
 
         const ramses_internal::DataSlotId internalDataSlotId(id.getValue());
@@ -1271,9 +1312,9 @@ namespace ramses
 
     status_t SceneImpl::updateTextureProvider(const Texture2D& texture, dataProviderId_t id)
     {
-        if (!isFromTheSameClientAs(texture.impl))
+        if (this != &texture.impl.getSceneImpl())
         {
-            return addErrorEntry("Scene::updateTextureProvider failed, texture is not from same client as scene.");
+            return addErrorEntry("Scene::updateTextureProvider failed, texture is not from this scene.");
         }
 
         const ramses_internal::DataSlotId internalDataSlotId(id.getValue());
@@ -1355,7 +1396,7 @@ namespace ramses
         applyHierarchicalVisibility();
 
         const auto timestampOfFlushCall = ramses_internal::FlushTime::Clock::now();
-        const ramses_internal::FlushTimeInformation flushTimeInfo { m_expirationTimestamp, timestampOfFlushCall };
+        const ramses_internal::FlushTimeInformation flushTimeInfo { m_expirationTimestamp, timestampOfFlushCall, ramses_internal::FlushTime::Clock::getClockType() };
 
         getClientImpl().getClientApplication().flush(m_scene.getSceneId(), flushTimeInfo, sceneVersionInternal);
 
@@ -1432,6 +1473,16 @@ namespace ramses
     RamsesObject* SceneImpl::findObjectByName(const char* name)
     {
         return m_objectRegistry.findObjectByName(name);
+    }
+
+    const SceneObject* SceneImpl::findObjectById(sceneObjectId_t id) const
+    {
+        return m_objectRegistry.findObjectById(id);
+    }
+
+    SceneObject* SceneImpl::findObjectById(sceneObjectId_t id)
+    {
+        return m_objectRegistry.findObjectById(id);
     }
 
     const RamsesObjectRegistry& SceneImpl::getObjectRegistry() const
@@ -1582,13 +1633,13 @@ namespace ramses
         m_nextSceneVersion = sceneVersion;
     }
 
-    IndexDataBuffer* SceneImpl::createIndexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name)
+    ArrayBuffer* SceneImpl::createArrayBuffer(EDataType dataType, uint32_t maxNumElements, const char* name)
     {
-        IndexDataBufferImpl* pimpl = createIndexDataBufferImpl(maximumSizeInBytes, dataType, name);
+        ArrayBufferImpl* pimpl = createArrayBufferImpl(dataType, maxNumElements, name);
 
         if (nullptr != pimpl)
         {
-            IndexDataBuffer* buffer = new IndexDataBuffer(*pimpl);
+            ArrayBuffer* buffer = new ArrayBuffer(*pimpl);
             registerCreatedObject(*buffer);
             return buffer;
         }
@@ -1596,48 +1647,11 @@ namespace ramses
         return nullptr;
     }
 
-    IndexDataBufferImpl* SceneImpl::createIndexDataBufferImpl(uint32_t maximumSizeInBytes, EDataType dataType, const char* name)
+    ArrayBufferImpl* SceneImpl::createArrayBufferImpl(EDataType dataType, uint32_t numElements, const char* name)
     {
-        if (EDataType_UInt16 != dataType &&
-            EDataType_UInt32 != dataType)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createIndexDataBuffer failed, index data buffer must have integral data type.");
-            return nullptr;
-        }
+        ArrayBufferImpl* pimpl = new ArrayBufferImpl(*this, name);
+        pimpl->initializeFrameworkData(dataType, numElements);
 
-        IndexDataBufferImpl* pimpl = new IndexDataBufferImpl(*this, name);
-        pimpl->initializeFrameworkData(maximumSizeInBytes, dataType);
-
-        return pimpl;
-    }
-
-    VertexDataBuffer* SceneImpl::createVertexDataBuffer(uint32_t maximumSizeInBytes, EDataType dataType, const char* name)
-    {
-        VertexDataBufferImpl* pimpl = createVertexDataBufferImpl(maximumSizeInBytes, dataType, name);
-
-        if (nullptr != pimpl)
-        {
-            VertexDataBuffer* buffer = new VertexDataBuffer(*pimpl);
-            registerCreatedObject(*buffer);
-            return buffer;
-        }
-
-        return nullptr;
-    }
-
-    VertexDataBufferImpl* SceneImpl::createVertexDataBufferImpl(uint32_t maximumSizeInBytes, EDataType dataType, const char* name)
-    {
-        if (EDataType_Float != dataType &&
-            EDataType_Vector2F != dataType &&
-            EDataType_Vector3F != dataType &&
-            EDataType_Vector4F != dataType)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createVertexDataBuffer failed, vertex data buffer must have float or float vector data type.");
-            return nullptr;
-        }
-
-        VertexDataBufferImpl* pimpl = new VertexDataBufferImpl(*this, name);
-        pimpl->initializeFrameworkData(maximumSizeInBytes, dataType);
         return pimpl;
     }
 
@@ -1766,4 +1780,252 @@ namespace ramses
     {
         return m_hlClient;
     }
+
+    sceneObjectId_t SceneImpl::getNextSceneObjectId()
+    {
+        ++m_lastSceneObjectId.getReference();
+        return sceneObjectId_t{ m_lastSceneObjectId};
+    }
+
+    ArrayResource* SceneImpl::createArrayResource(EDataType type, uint32_t numElements, const void* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
+    {
+        if (0u == numElements || nullptr == arrayData)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene::createArrayResource: Array resource must have element count > 0 and data must not be nullptr!");
+            return nullptr;
+        }
+
+        ramses_internal::ManagedResource res = getClientImpl().createManagedArrayResource(numElements, type, arrayData, cacheFlag, name);
+        if (!res)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createArrayResource: failed to create managed array resource");
+            return nullptr;
+        }
+        return createHLArrayResource(res, name);
+    }
+
+    ArrayResource* SceneImpl::createHLArrayResource(ramses_internal::ManagedResource const& resource, const char* name)
+    {
+        assert(resource->getTypeID() == ramses_internal::EResourceType_IndexArray ||
+               resource->getTypeID() == ramses_internal::EResourceType_VertexArray);
+
+        const auto arrayRes = resource->convertTo<ramses_internal::ArrayResource>();
+        ramses_internal::ResourceHashUsage usage = getClientImpl().getClientApplication().getHashUsage(arrayRes->getHash());
+
+        ArrayResourceImpl& pimpl = *new ArrayResourceImpl(usage, *this, name);
+        pimpl.initializeFromFrameworkData(arrayRes->getElementCount(), ArrayResourceUtils::ConvertDataTypeForResourceFromInternal(arrayRes->getElementType()));
+
+        ArrayResource* arrayResHL = new ArrayResource(pimpl);
+        registerCreatedResourceObject(*arrayResHL);
+        return arrayResHL;
+    }
+
+    Texture2D* SceneImpl::createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name)
+    {
+        ramses_internal::ManagedResource res = getClientImpl().createManagedTexture(ramses_internal::EResourceType_Texture2D, width, height, 1u, format, mipMapCount, mipLevelData, generateMipChain, swizzle, cacheFlag, name);
+        if (!res)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTexture2D: failed to create managed Texture2D resource");
+            return nullptr;
+        }
+        return createHLTexture2D(res, name);
+    }
+
+    Texture2D* SceneImpl::createHLTexture2D(ramses_internal::ManagedResource const& resource, const char* name)
+    {
+        assert(resource->getTypeID() == ramses_internal::EResourceType_Texture2D);
+
+        const auto texRes = resource->convertTo<ramses_internal::TextureResource>();
+        ramses_internal::ResourceHashUsage hashUsage = getClientImpl().getClientApplication().getHashUsage(resource->getHash());
+
+        Texture2DImpl& pimpl = *new Texture2DImpl(hashUsage, *this, name);
+        pimpl.initializeFromFrameworkData(texRes->getWidth(), texRes->getHeight(),
+            TextureUtils::GetTextureFormatFromInternal(texRes->getTextureFormat()),
+            TextureUtils::GetTextureSwizzleFromInternal(texRes->getTextureSwizzle()));
+
+        Texture2D* texture = new Texture2D(pimpl);
+        registerCreatedResourceObject(*texture);
+        return texture;
+    }
+
+    Texture3D* SceneImpl::createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name)
+    {
+        ramses_internal::ManagedResource res = getClientImpl().createManagedTexture(ramses_internal::EResourceType_Texture3D, width, height, depth, format, mipMapCount, mipLevelData, generateMipChain, {}, cacheFlag, name);
+        if (!res)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTexture3D: failed to create managed Texture3D resource");
+            return nullptr;
+        }
+        return createHLTexture3D(res, name);
+    }
+
+    Texture3D* SceneImpl::createHLTexture3D(ramses_internal::ManagedResource const& resource, const char* name)
+    {
+        assert(resource->getTypeID() == ramses_internal::EResourceType_Texture3D);
+        const auto texRes = resource->convertTo<ramses_internal::TextureResource>();
+        ramses_internal::ResourceHashUsage hashUsage = getClientImpl().getClientApplication().getHashUsage(resource->getHash());
+
+        Texture3DImpl& pimpl = *new Texture3DImpl(hashUsage, *this, name);
+        pimpl.initializeFromFrameworkData(texRes->getWidth(), texRes->getHeight(), texRes->getDepth(),
+            TextureUtils::GetTextureFormatFromInternal(texRes->getTextureFormat()));
+
+        Texture3D* texture = new Texture3D(pimpl);
+        registerCreatedResourceObject(*texture);
+        return texture;
+    }
+
+    TextureCube* SceneImpl::createTextureCube(uint32_t size, ETextureFormat format, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name)
+    {
+        ramses_internal::ManagedResource res = getClientImpl().createManagedTexture(ramses_internal::EResourceType_TextureCube, size, 1u, 1u, format, mipMapCount, mipLevelData, generateMipChain, swizzle, cacheFlag, name);
+        if (!res)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureCube: failed to create managed TextureCube resource");
+            return nullptr;
+        }
+        return createHLTextureCube(res, name);
+    }
+
+    TextureCube* SceneImpl::createHLTextureCube(ramses_internal::ManagedResource const& resource, const char* name)
+    {
+        assert(resource->getTypeID() == ramses_internal::EResourceType_TextureCube);
+
+        const auto texRes = resource->convertTo<ramses_internal::TextureResource>();
+        ramses_internal::ResourceHashUsage hashUsage = getClientImpl().getClientApplication().getHashUsage(resource->getHash());
+
+        TextureCubeImpl& pimpl = *new TextureCubeImpl(hashUsage, *this, name);
+        pimpl.initializeFromFrameworkData(texRes->getWidth(),
+            TextureUtils::GetTextureFormatFromInternal(texRes->getTextureFormat()),
+            TextureUtils::GetTextureSwizzleFromInternal(texRes->getTextureSwizzle()));
+
+        TextureCube* texture = new TextureCube(pimpl);
+        registerCreatedResourceObject(*texture);
+        return texture;
+    }
+
+    Effect* SceneImpl::createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name)
+    {
+        ramses_internal::ManagedResource res = getClientImpl().createManagedEffect(effectDesc, cacheFlag, name, m_effectErrorMessages);
+        if (!res)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createEffect: failed to create managed effect resource: " << m_effectErrorMessages);
+            return nullptr;
+        }
+
+        return createHLEffect(res, name);
+    }
+
+    Effect* SceneImpl::createHLEffect(ramses_internal::ManagedResource const& resource, const char* name)
+    {
+        assert(resource->getTypeID() == ramses_internal::EResourceType_Effect);
+
+        const auto effectRes = resource->convertTo<ramses_internal::EffectResource>();
+        ramses_internal::ResourceHashUsage hashUsage = getClientImpl().getClientApplication().getHashUsage(resource->getHash());
+
+        ramses::EffectImpl& pimpl = *new ramses::EffectImpl(hashUsage, *this, name);
+        pimpl.initializeFromFrameworkData(effectRes->getUniformInputs(), effectRes->getAttributeInputs());
+
+        Effect* effect = new Effect(pimpl);
+        registerCreatedResourceObject(*effect);
+        return effect;
+    }
+
+    void SceneImpl::registerCreatedResourceObject(Resource& resource)
+    {
+        registerCreatedObject(resource);
+        const resourceId_t resId = resource.getResourceId();
+        m_resourcesById.put(resId, &resource);
+    }
+
+    std::string SceneImpl::getLastEffectErrorMessages() const
+    {
+        return m_effectErrorMessages;
+    }
+
+    ramses::Resource* SceneImpl::getResource(resourceId_t rid) const
+    {
+        auto resource = m_resourcesById.get(rid);
+        return resource ? *resource : nullptr;
+    }
+
+    Resource* SceneImpl::scanForResourceWithHash(ramses_internal::ResourceContentHash hash) const
+    {
+        for (const auto& res : m_resourcesById)
+        {
+            if (hash == res.value->impl.getLowlevelResourceHash())
+                return res.value;
+        }
+
+        return nullptr;
+    }
+
+    status_t SceneImpl::writeSceneObjectsToStream(ramses_internal::IOutputStream& outputStream) const
+    {
+        ramses_internal::ScenePersistation::WriteSceneMetadataToStream(outputStream, getIScene());
+        ramses_internal::ScenePersistation::WriteSceneToStream(outputStream, getIScene());
+
+        SerializationContext serializationContext;
+        return serialize(outputStream, serializationContext);
+    }
+
+    status_t SceneImpl::saveToFile(const char* fileName, bool compress) const
+    {
+        ramses_internal::File outputFile(fileName);
+        ramses_internal::BinaryFileOutputStream outputStream(outputFile);
+        if (!outputFile.isOpen())
+            return addErrorEntry("Scene::saveToFile failed, could not open file for writing.");
+
+        ramses_internal::RamsesVersion::WriteToStream(outputStream, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH);
+
+        ramses_internal::UInt bytesForVersion = 0;
+        if (!outputFile.getPos(bytesForVersion))
+            return addErrorEntry("Scene::saveToFile failed, error getting save file position.");
+
+        // reserve space for offset to SceneObjects and LL-Objects
+        const uint64_t bytesForOffsets = sizeof(uint64_t) * 2u;
+        const uint64_t offsetSceneObjectsStart = bytesForVersion + bytesForOffsets;
+
+        if (!outputFile.seek(static_cast<ramses_internal::Int>(offsetSceneObjectsStart), ramses_internal::File::SeekOrigin::BeginningOfFile))
+            return addErrorEntry("Scene::saveToFile failed, error seeking file.");
+
+        const status_t status = writeSceneObjectsToStream(outputStream);
+
+        ramses_internal::UInt offsetLLResourcesStart = 0;
+        if (!outputFile.getPos(offsetLLResourcesStart))
+            return addErrorEntry("Scene::saveToFile failed, error getting save file position.");
+
+        ResourceObjects resources;
+        resources.reserve(m_resourcesById.size());
+        for (auto const& res : m_resourcesById)
+            resources.push_back(res.value);
+        getClientImpl().writeLowLevelResourcesToStream(resources, outputStream, compress);
+
+        if (!outputFile.seek(bytesForVersion, ramses_internal::File::SeekOrigin::BeginningOfFile))
+            return addErrorEntry("Scene::saveToFile failed, error seeking file.");
+
+        outputStream << static_cast<uint64_t>(offsetSceneObjectsStart);
+        outputStream << static_cast<uint64_t>(offsetLLResourcesStart);
+
+        if (!outputFile.close())
+            return addErrorEntry("Scene::saveToFile failed, close file failed.");
+
+        LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Scene::saveToFile:  '" << fileName << "'.");
+
+        return status;
+    }
+
+    bool SceneImpl::saveResources(std::string const& fileName, bool compress) const
+    {
+        ResourceObjects resources;
+        resources.reserve(m_resourcesById.size());
+        for (auto entry : m_resourcesById)
+            resources.push_back(entry.value);
+
+        return getClientImpl().getResourceDataPool().impl.saveResourceDataFile(fileName, resources, compress);
+    }
+
+    void SceneImpl::setSceneFileName(std::string const& sceneFilename)
+    {
+        m_sceneFilename = sceneFilename;
+    }
+
 }

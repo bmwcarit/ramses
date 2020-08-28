@@ -12,6 +12,7 @@
 #include "Utils/BinaryOutputStream.h"
 #include "Resource/IResource.h"
 #include "Components/SingleResourceSerialization.h"
+#include "Components/ResourceDeleterCallingCallback.h"
 
 namespace ramses_internal
 {
@@ -26,14 +27,7 @@ namespace ramses_internal
 
         static ResourceDeleterCallingCallback deleter = ResourceDeleterCallingCallback(DefaultManagedResourceDeleterCallback::GetInstance());
 
-        if (resourceObject)
-        {
-            return ManagedResource(*resourceObject, deleter);
-        }
-        else
-        {
-            return ManagedResource();
-        }
+        return ManagedResource{ resourceObject, deleter };
     }
 
     void RendererResourceManagerUtils::StoreResource(IRendererResourceCache* cache, const IResource* resource, SceneId sceneId)

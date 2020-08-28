@@ -8,10 +8,9 @@
 
 #include "TestScenes/CubeTextureScene.h"
 #include "TestScenes/Triangle.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/AttributeInput.h"
@@ -24,8 +23,8 @@
 
 namespace ramses_internal
 {
-    CubeTextureScene::CubeTextureScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    CubeTextureScene::CubeTextureScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
         , m_effect(getTestEffect("ramses-test-client-cubeSphere"))
         , m_sphereMesh(nullptr)
         , m_transformNode(nullptr)
@@ -106,9 +105,9 @@ namespace ramses_internal
 
         initializeUnitSphere();
 
-        const ramses::Vector3fArray* pVertexPositions = m_client.createConstVector3fArray(static_cast<uint32_t>(m_spherePositions.size()), &m_spherePositions[0].x);
-        const ramses::Vector3fArray* pVertexNormals = m_client.createConstVector3fArray(static_cast<uint32_t>(m_sphereNormals.size()), &m_sphereNormals[0].x);
-        const ramses::UInt16Array* pIndices = m_client.createConstUInt16Array(static_cast<uint32_t>(m_sphereIndices.size()), &m_sphereIndices[0]);
+        const ramses::ArrayResource* pVertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, static_cast<uint32_t>(m_spherePositions.size()), &m_spherePositions[0].x);
+        const ramses::ArrayResource* pVertexNormals = m_scene.createArrayResource(ramses::EDataType::Vector3F, static_cast<uint32_t>(m_sphereNormals.size()), &m_sphereNormals[0].x);
+        const ramses::ArrayResource* pIndices = m_scene.createArrayResource(ramses::EDataType::UInt16, static_cast<uint32_t>(m_sphereIndices.size()), &m_sphereIndices[0]);
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput normalsInput;
@@ -150,7 +149,7 @@ namespace ramses_internal
                 imagePY.getData().data(), imageNY.getData().data(),
                 imagePZ.getData().data(), imageNZ.getData().data());
 
-            return m_client.createTextureCube(imageNY.getWidth(), ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false);
+            return m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, imageNY.getWidth(), 1, &mipLevelData, false);
         }
         case EState_BGRA_Swizzled:
         {
@@ -174,7 +173,7 @@ namespace ramses_internal
                 imagePY.getData().data(), imageNY.getData().data(),
                 imagePZ.getData().data(), imageNZ.getData().data());
 
-            return m_client.createTextureCube(imageNY.getWidth(), ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, bgraSwizzle);
+            return m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, imageNY.getWidth(), 1, &mipLevelData, false, bgraSwizzle);
         }
         case EState_Float:
         {
@@ -187,7 +186,7 @@ namespace ramses_internal
             const uint8_t* texturePtr = reinterpret_cast<const uint8_t*>(texture);
             ramses::CubeMipLevelData mipLevelData(sizeof(texture), texturePtr, texturePtr, texturePtr, texturePtr, texturePtr, texturePtr);
 
-            return m_client.createTextureCube(2, ramses::ETextureFormat_RGB32F, 1, &mipLevelData, false);
+            return m_scene.createTextureCube(ramses::ETextureFormat::RGB32F, 2, 1, &mipLevelData, false);
         }
         default:
             assert(!"Invalid texture type");

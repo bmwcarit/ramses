@@ -17,7 +17,6 @@ namespace ramses
     class RenderPass;
     class RenderGroup;
     class Scene;
-    class RamsesClient;
     class Appearance;
     class GeometryBinding;
     class Effect;
@@ -30,9 +29,9 @@ namespace ramses_internal
     // Per-client resources
     struct QuadResources
     {
-        const ramses::UInt16Array* indices = nullptr;
-        const ramses::Vector2fArray* texCoords = nullptr;
-        const ramses::Vector3fArray* vertexPos = nullptr;
+        ramses::ArrayResource* indices = nullptr;
+        ramses::ArrayResource* texCoords = nullptr;
+        ramses::ArrayResource* vertexPos = nullptr;
     };
 
     class DynamicQuad_Base
@@ -43,20 +42,19 @@ namespace ramses_internal
         const ramses::MeshNode& getMeshNode() const;
 
     protected:
-        DynamicQuad_Base(ramses::RamsesClient& client, ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad);
+        DynamicQuad_Base(ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad);
         virtual ~DynamicQuad_Base()
         {
         }
 
         virtual void recreate() = 0;
 
-        static ramses::Effect&  CreateTestEffect(ramses::RamsesClient& client);
+        static ramses::Effect&  CreateTestEffect(ramses::Scene& scene);
 
         QuadResources           createRandomizedQuadResources();
         void                    destroyQuadResources(const QuadResources& quad);
         void                    setQuadResources(const QuadResources& quad, ramses::TextureSampler& textureSampler);
 
-        ramses::RamsesClient&           m_client;
         ramses::Scene&                  m_scene;
         const ScreenspaceQuad           m_screenspaceQuad;
 

@@ -25,8 +25,8 @@ namespace ramses_internal
             , sceneAllocator(scene)
             , sceneHelper(scene, indexArrayAvailable)
         {
-            sceneAllocator.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType_Vector3Buffer, sizeof(Float) * 3, verticesDataBuffer);
-            sceneAllocator.allocateTextureBuffer(ETextureFormat_R8, { { 1u, 1u } }, textureBuffer);
+            sceneAllocator.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType::Vector3Buffer, sizeof(Float) * 3, verticesDataBuffer);
+            sceneAllocator.allocateTextureBuffer(ETextureFormat::R8, { { 1u, 1u } }, textureBuffer);
 
             ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(resourceNotUploadedToDevice)).WillByDefault(Return(DeviceResourceHandle::Invalid()));
             ON_CALL(sceneHelper.resourceManager, getDataBufferDeviceHandle(verticesDataBuffer, _)).WillByDefault(Return(vertexDataBufferDeviceHandle));

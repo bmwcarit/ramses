@@ -24,7 +24,7 @@ namespace ramses_internal
     {
         setGlobalInternalStates(scene, rendererViewMatrix);
 
-        m_logContext << RendererLogContext::NewLine << "Scene [id: " << scene.getSceneId().getValue() << "]" << RendererLogContext::NewLine;
+        m_logContext << RendererLogContext::NewLine << "Scene [id: " << scene.getSceneId() << "]" << RendererLogContext::NewLine;
         m_logContext.indent();
 
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
@@ -99,7 +99,7 @@ namespace ramses_internal
 
                     m_logContext << "      Render buffer (index " << i << ")" << RendererLogContext::NewLine;
                     m_logContext << "         Type: " << RenderBufferTypeNames[rbData.type] << RendererLogContext::NewLine;
-                    m_logContext << "         Format: " << TextureFormatNames[rbData.format] << RendererLogContext::NewLine;
+                    m_logContext << "         Format: " << EnumToString(rbData.format) << RendererLogContext::NewLine;
                     m_logContext << "         [RenderBuffer handle: " << rbHandle << "]" << RendererLogContext::NewLine;
                     m_logContext << "         [Device handle: " << deviceHandle << "]" << RendererLogContext::NewLine;
                 }

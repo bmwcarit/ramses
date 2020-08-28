@@ -339,7 +339,7 @@ TEST_F(ARendererResourceManager, canUploadAndUpdateAndUnloadDataBuffer_IndexBuff
 {
     const DataBufferHandle dataBuffer(1u);
     const EDataBufferType dataBufferType = EDataBufferType::IndexBuffer;
-    const EDataType dataType = EDataType_UInt32;
+    const EDataType dataType = EDataType::UInt32;
     const UInt32 sizeInBytes = 1024u;
     EXPECT_CALL(renderer.deviceMock, allocateIndexBuffer(dataType, sizeInBytes));
     resourceManager.uploadDataBuffer(dataBuffer, dataBufferType, dataType, sizeInBytes, fakeSceneId);
@@ -358,7 +358,7 @@ TEST_F(ARendererResourceManager, canUploadAndUpdateAndUnloadDataBuffer_VertexBuf
 {
     const DataBufferHandle dataBuffer(1u);
     const EDataBufferType dataBufferType = EDataBufferType::VertexBuffer;
-    const EDataType dataType = EDataType_UInt32;
+    const EDataType dataType = EDataType::UInt32;
     const UInt32 sizeInBytes = 1024u;
     EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(dataType, sizeInBytes));
     resourceManager.uploadDataBuffer(dataBuffer, dataBufferType, dataType, sizeInBytes, fakeSceneId);
@@ -378,8 +378,8 @@ TEST_F(ARendererResourceManager, canUploadAndUpdateAndUnloadTextureBuffer_WithOn
     InSequence seq;
     const TextureBufferHandle textureBuffer(1u);
     const UInt32 expectedSize = (10u * 20u) * 4u;
-    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(10u, 20u, ETextureFormat_RGBA8, DefaultTextureSwizzleArray, 1u, expectedSize));
-    resourceManager.uploadTextureBuffer(textureBuffer, 10u, 20u, ETextureFormat_RGBA8, 1u, fakeSceneId);
+    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(10u, 20u, ETextureFormat::RGBA8, DefaultTextureSwizzleArray, 1u, expectedSize));
+    resourceManager.uploadTextureBuffer(textureBuffer, 10u, 20u, ETextureFormat::RGBA8, 1u, fakeSceneId);
 
     EXPECT_EQ(DeviceMock::FakeTextureDeviceHandle, resourceManager.getTextureBufferDeviceHandle(textureBuffer, fakeSceneId));
 
@@ -397,8 +397,8 @@ TEST_F(ARendererResourceManager, canUploadAndUpdateAndUnloadTextureBuffer_WithSe
     InSequence seq;
     const TextureBufferHandle textureBuffer(1u);
     const UInt32 expectedSize = (10u * 20u + 5u * 10u)* 4u;
-    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(10u, 20u, ETextureFormat_RGBA8, DefaultTextureSwizzleArray, 2u, expectedSize));
-    resourceManager.uploadTextureBuffer(textureBuffer, 10u, 20u, ETextureFormat_RGBA8, 2u, fakeSceneId);
+    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(10u, 20u, ETextureFormat::RGBA8, DefaultTextureSwizzleArray, 2u, expectedSize));
+    resourceManager.uploadTextureBuffer(textureBuffer, 10u, 20u, ETextureFormat::RGBA8, 2u, fakeSceneId);
 
     EXPECT_EQ(DeviceMock::FakeTextureDeviceHandle, resourceManager.getTextureBufferDeviceHandle(textureBuffer, fakeSceneId));
 
@@ -434,7 +434,7 @@ TEST_F(ARendererResourceManager, canUploadAndUnloadTextureSampler)
 TEST_F(ARendererResourceManager, canUploadAndUnloadRenderTargetBuffer)
 {
     RenderBufferHandle bufferHandle(1u);
-    const RenderBuffer colorBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
+    const RenderBuffer colorBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
 
     EXPECT_CALL(renderer.deviceMock, uploadRenderBuffer(Eq(colorBuffer)));
     resourceManager.uploadRenderTargetBuffer(bufferHandle, fakeSceneId, colorBuffer);
@@ -451,7 +451,7 @@ TEST_F(ARendererResourceManager, canUploadAndUnloadBlitPassRenderTargets)
     const RenderBufferHandle sourceRenderBufferHandle(101u);
     const RenderBufferHandle destinationRenderBufferHandle(102u);
 
-    const RenderBuffer renderBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
+    const RenderBuffer renderBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
 
     const DeviceResourceHandle sourceRenderBufferDeviceHandle(201u);
     EXPECT_CALL(renderer.deviceMock, uploadRenderBuffer(Eq(renderBuffer))).WillOnce(Return(sourceRenderBufferDeviceHandle));
@@ -494,8 +494,8 @@ TEST_F(ARendererResourceManager, canUploadAndUnloadRenderTargetWithBuffers)
     bufferHandles.push_back(RenderBufferHandle(1u));
     bufferHandles.push_back(RenderBufferHandle(5u));
 
-    const RenderBuffer colorBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
-    const RenderBuffer depthBuffer(800u, 600u, ERenderBufferType_DepthBuffer, ETextureFormat_Depth24, ERenderBufferAccessMode_ReadWrite, 0u);
+    const RenderBuffer colorBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
+    const RenderBuffer depthBuffer(800u, 600u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_ReadWrite, 0u);
 
     {
         InSequence seq;
@@ -530,8 +530,8 @@ TEST_F(ARendererResourceManager, GetsInvalidDeviceHandleForUnknownOffscreenBuffe
 TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilAttached)
 {
     const OffscreenBufferHandle bufferHandle(1u);
-    const RenderBuffer colorOffscreenBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
-    const RenderBuffer depthOffscreenBuffer(1u, 1u, ERenderBufferType_DepthStencilBuffer, ETextureFormat_Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 0u);
+    const RenderBuffer colorOffscreenBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
+    const RenderBuffer depthOffscreenBuffer(1u, 1u, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 0u);
     InSequence seq;
     EXPECT_CALL(renderer.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer)));
     EXPECT_CALL(renderer.deviceMock, uploadRenderBuffer(Eq(depthOffscreenBuffer)));
@@ -557,9 +557,9 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilA
 TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithDoubleBuffering)
 {
     const OffscreenBufferHandle bufferHandle(1u);
-    const RenderBuffer colorOffscreenBuffer1(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
-    const RenderBuffer colorOffscreenBuffer2(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
-    const RenderBuffer depthOffscreenBuffer(1u, 1u, ERenderBufferType_DepthStencilBuffer, ETextureFormat_Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 0u);
+    const RenderBuffer colorOffscreenBuffer1(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
+    const RenderBuffer colorOffscreenBuffer2(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
+    const RenderBuffer depthOffscreenBuffer(1u, 1u, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 0u);
 
     const DeviceResourceHandle colorBufferDeviceHandle1{ 7771u };
     const DeviceResourceHandle colorBufferDeviceHandle2{ 7778u };
@@ -833,8 +833,8 @@ TEST_F(ARendererResourceManager, unloadsAllSceneResources)
     RenderBufferHandleVector bufferHandles;
     bufferHandles.push_back(RenderBufferHandle(1u));
     bufferHandles.push_back(RenderBufferHandle(5u));
-    const RenderBuffer colorBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
-    const RenderBuffer depthBuffer(800u, 600u, ERenderBufferType_DepthBuffer, ETextureFormat_Depth24, ERenderBufferAccessMode_ReadWrite, 0u);
+    const RenderBuffer colorBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
+    const RenderBuffer depthBuffer(800u, 600u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_ReadWrite, 0u);
     EXPECT_CALL(renderer.deviceMock, uploadRenderBuffer(Eq(colorBuffer)));
     EXPECT_CALL(renderer.deviceMock, uploadRenderBuffer(Eq(depthBuffer)));
     resourceManager.uploadRenderTargetBuffer(bufferHandles[0], fakeSceneId, colorBuffer);
@@ -858,17 +858,17 @@ TEST_F(ARendererResourceManager, unloadsAllSceneResources)
     //upload index data buffer
     const DataBufferHandle indexDataBufferHandle(123u);
     EXPECT_CALL(renderer.deviceMock, allocateIndexBuffer(_, _));
-    resourceManager.uploadDataBuffer(indexDataBufferHandle, EDataBufferType::IndexBuffer, EDataType_Float, 10u, fakeSceneId);
+    resourceManager.uploadDataBuffer(indexDataBufferHandle, EDataBufferType::IndexBuffer, EDataType::Float, 10u, fakeSceneId);
 
     //upload vertex data buffer
     const DataBufferHandle vertexDataBufferHandle(777u);
     EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_, _));
-    resourceManager.uploadDataBuffer(vertexDataBufferHandle, EDataBufferType::VertexBuffer, EDataType_Float, 10u, fakeSceneId);
+    resourceManager.uploadDataBuffer(vertexDataBufferHandle, EDataBufferType::VertexBuffer, EDataType::Float, 10u, fakeSceneId);
 
     //upload texture buffer
     const TextureBufferHandle textureBufferHandle(666u);
     EXPECT_CALL(renderer.deviceMock, allocateTexture2D(_, _, _, _, _, _));
-    resourceManager.uploadTextureBuffer(textureBufferHandle, 1u, 2u, ETextureFormat_RGBA8, 1u, fakeSceneId);
+    resourceManager.uploadTextureBuffer(textureBufferHandle, 1u, 2u, ETextureFormat::RGBA8, 1u, fakeSceneId);
 
     // unload all scene resources
     EXPECT_CALL(renderer.deviceMock, deleteRenderBuffer(_)).Times(2);

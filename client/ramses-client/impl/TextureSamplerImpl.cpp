@@ -60,7 +60,7 @@ namespace ramses
 
     status_t TextureSamplerImpl::setTextureData(const Texture2D& texture)
     {
-        if (!isFromTheSameClientAs(texture.impl))
+        if (!isFromTheSameSceneAs(texture.impl))
             return addErrorEntry("TextureSampler::setTextureData failed, client texture is not from the same client as this sampler.");
 
         return setTextureDataInternal(ERamsesObjectType_Texture2D, ramses_internal::TextureSampler::ContentType::ClientTexture, texture.impl.getLowlevelResourceHash(), ramses_internal::InvalidMemoryHandle);
@@ -71,7 +71,7 @@ namespace ramses
         if (m_textureType != ERamsesObjectType_Texture3D)
             return addErrorEntry("TextureSampler::setTextureData failed, changing data from non 3D texture to 3D texture is not supported. Create a new TextureSampler instead.");
 
-        if (!isFromTheSameClientAs(texture.impl))
+        if (!isFromTheSameSceneAs(texture.impl))
             return addErrorEntry("TextureSampler::setTextureData failed, client texture is not from the same client as this sampler.");
 
         return setTextureDataInternal(ERamsesObjectType_Texture3D, ramses_internal::TextureSampler::ContentType::ClientTexture, texture.impl.getLowlevelResourceHash(), ramses_internal::InvalidMemoryHandle);
@@ -79,7 +79,7 @@ namespace ramses
 
     status_t TextureSamplerImpl::setTextureData(const TextureCube& texture)
     {
-        if (!isFromTheSameClientAs(texture.impl))
+        if (!isFromTheSameSceneAs(texture.impl))
             return addErrorEntry("TextureSampler::setTextureData failed, client texture is not from the same client as this sampler.");
 
         return setTextureDataInternal(ERamsesObjectType_TextureCube, ramses_internal::TextureSampler::ContentType::ClientTexture, texture.impl.getLowlevelResourceHash(), ramses_internal::InvalidMemoryHandle);
@@ -179,6 +179,21 @@ namespace ramses
         return m_textureType;
     }
 
+    ramses_internal::EDataType TextureSamplerImpl::getTextureDataType() const
+    {
+        switch (m_textureType)
+        {
+            case ERamsesObjectType_Texture2D:
+            case ERamsesObjectType_StreamTexture:
+            case ERamsesObjectType_RenderBuffer:
+            case ERamsesObjectType_Texture2DBuffer: return ramses_internal::EDataType::TextureSampler2D;
+            case ERamsesObjectType_Texture3D: return ramses_internal::EDataType::TextureSampler3D;
+            case ERamsesObjectType_TextureCube: return ramses_internal::EDataType::TextureSamplerCube;
+            default: break;
+        }
+        return ramses_internal::EDataType::Invalid;
+    }
+
     status_t TextureSamplerImpl::serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const
     {
         CHECK_RETURN_ERR(SceneObjectImpl::serialize(outStream, serializationContext));
@@ -214,7 +229,7 @@ namespace ramses
         switch (sampler.contentType)
         {
         case ramses_internal::TextureSampler::ContentType::ClientTexture:
-            resource = getClientImpl().scanForResourceWithHash(sampler.textureResource);
+            resource = getSceneImpl().scanForResourceWithHash(sampler.textureResource);
             if (resource == nullptr)
             {
                 addValidationMessage(EValidationSeverity_Error, indent, "Client texture set in TextureSampler does not exist");
@@ -373,4 +388,5 @@ namespace ramses
 
         return textureStatus;
     }
+
 }

@@ -27,8 +27,6 @@ public:
         : m_client(client)
     {}
 
-    virtual void resourceFileLoadFailed(const char*) override {}
-    virtual void resourceFileLoadSucceeded(const char*) override {}
     virtual void sceneFileLoadFailed(const char*) override {}
     virtual void sceneFileLoadSucceeded(const char*, ramses::Scene*) override {}
     virtual void sceneReferenceFlushed(ramses::SceneReference&, ramses::sceneVersionTag_t) override {}
@@ -101,9 +99,9 @@ void createContentProviderScene(ramses::RamsesClient& client, ramses::sceneId_t 
     renderPass->addRenderGroup(*renderGroup);
 
     float vertexPositionsArray[] = { -1.f, 0.f, -6.f, 1.f, 0.f, -6.f, 0.f, 1.f, -6.f };
-    const ramses::Vector3fArray* vertexPositions = client.createConstVector3fArray(3, vertexPositionsArray);
+    ramses::ArrayResource* vertexPositions = clientScene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
     uint16_t indicesArray[] = { 0, 1, 2 };
-    const ramses::UInt16Array* indices = client.createConstUInt16Array(3, indicesArray);
+    ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
 
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShader(R"glsl(#version 100
@@ -119,7 +117,7 @@ void main(void) {
 })glsl");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    const ramses::Effect* effect = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = clientScene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "triangle appearance");
     ramses::GeometryBinding* geometry = clientScene->createGeometryBinding(*effect, "triangle geometry");
 

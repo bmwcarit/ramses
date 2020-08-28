@@ -55,7 +55,7 @@ namespace ramses_internal
 
         if (m_offscreenBufferLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: consumer slot " << consumerSlotHandle << " already has an offscreen buffer link assigned! (consumer scene: " << consumerSceneId.getValue() << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: consumer slot " << consumerSlotHandle << " already has an offscreen buffer link assigned! (consumer scene: " << consumerSceneId << ")");
             return false;
         }
 
@@ -76,13 +76,13 @@ namespace ramses_internal
 
         if (getSceneLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: consumer slot already has a data link assigned! (consumer scene: " << consumerSceneId.getValue() << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: consumer slot already has a data link assigned! (consumer scene: " << consumerSceneId << ")");
             return false;
         }
 
         if (m_offscreenBufferLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: consumer slot already has a buffer link assigned! (consumer scene: " << consumerSceneId.getValue() << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: consumer slot already has a buffer link assigned! (consumer scene: " << consumerSceneId << ")");
             return false;
         }
 

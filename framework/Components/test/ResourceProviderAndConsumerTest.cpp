@@ -33,7 +33,7 @@ namespace ramses_internal
 
         ArrayResource* createArrayResource()
         {
-            return new ArrayResource(EResourceType_VertexArray, 1, EDataType_Float, reinterpret_cast<const Byte*>(gSingleFloatArray), ResourceCacheFlag(0u), "dummy1");
+            return new ArrayResource(EResourceType_VertexArray, 1, EDataType::Float, gSingleFloatArray, ResourceCacheFlag(0u), "dummy1");
         }
 
     protected:
@@ -46,7 +46,7 @@ namespace ramses_internal
     {
     public:
         VertexArrayResourceWithMockDestructor()
-            : ArrayResource(EResourceType_VertexArray, 1, EDataType_Float, reinterpret_cast<const Byte*>(gSingleFloatArray), ResourceCacheFlag(0u), "dummy1")
+            : ArrayResource(EResourceType_VertexArray, 1, EDataType::Float, gSingleFloatArray, ResourceCacheFlag(0u), "dummy1")
         {}
         ~VertexArrayResourceWithMockDestructor()
         {
@@ -72,7 +72,7 @@ namespace ramses_internal
         ManagedResourceVector popedResources = resourceConsumer.popArrivedResources(requesterID);
         ASSERT_EQ(1u, popedResources.size());
         ManagedResource resource = popedResources.back();
-        EXPECT_EQ(resourceHash, resource.getResourceObject()->getHash());
+        EXPECT_EQ(resourceHash, resource->getHash());
     }
 
     TEST_F(AResourceProviderAndConsumerTest, ConsumerResourcesIsValidEvenAfterProviderResourceDeleted)
@@ -100,7 +100,7 @@ namespace ramses_internal
         Mock::VerifyAndClearExpectations(providerResourceMock); //to make sure the dynamically allocated mock resource is destroyed (Die() is called)
         ASSERT_EQ(0u, resourceProvider.getResources().size()); //double check
 
-        const IResource* consumerResource = consumerManagedResource.getResourceObject();
+        const IResource* consumerResource = consumerManagedResource.get();
         ASSERT_TRUE(nullptr != consumerResource);
         EXPECT_EQ(EResourceType_VertexArray, consumerResource->getTypeID());
         EXPECT_EQ(resourceHash, consumerResource->getHash());

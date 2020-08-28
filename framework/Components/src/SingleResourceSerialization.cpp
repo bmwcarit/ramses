@@ -20,7 +20,7 @@ namespace ramses_internal
     {
         VoidOutputStream stream;
         SerializeResource(stream, resource);
-        return stream.getSize();
+        return static_cast<uint32_t>(stream.getSize());
     }
 
     void SingleResourceSerialization::SerializeResource(IOutputStream& output, const IResource& resource)

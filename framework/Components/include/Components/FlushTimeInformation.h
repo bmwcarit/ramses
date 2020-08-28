@@ -23,14 +23,16 @@ namespace ramses_internal
     struct FlushTimeInformation
     {
         FlushTimeInformation() = default;
-        FlushTimeInformation(FlushTime::Clock::time_point expirationTS, FlushTime::Clock::time_point internalTS)
+        FlushTimeInformation(FlushTime::Clock::time_point expirationTS, FlushTime::Clock::time_point internalTS, synchronized_clock_type clockType)
             : expirationTimestamp(expirationTS)
             , internalTimestamp(internalTS)
+            , clock_type(clockType)
         {
         }
 
         FlushTime::Clock::time_point expirationTimestamp = FlushTime::InvalidTimestamp;
         FlushTime::Clock::time_point internalTimestamp = FlushTime::InvalidTimestamp;
+        synchronized_clock_type clock_type;
     };
 
     inline bool operator==(const FlushTimeInformation& a, const FlushTimeInformation& b)

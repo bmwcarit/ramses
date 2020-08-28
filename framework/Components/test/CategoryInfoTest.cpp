@@ -171,7 +171,7 @@ namespace ramses_internal
 
     TEST_F(ACategoryInfo, canSkipDeserializeUnknownTypes)
     {
-        BinaryOutputStreamT<Byte> os;
+        BinaryOutputStream os;
         os << static_cast<uint32_t>(1) // version
             << static_cast<uint32_t>(2) // entries
 
@@ -195,7 +195,7 @@ namespace ramses_internal
 
     TEST_F(ACategoryInfo, ignoresUnexpectedCategoryInfoDataVersion)
     {
-        BinaryOutputStreamT<Byte> os;
+        BinaryOutputStream os;
         os << static_cast<uint32_t>(100) // unsupported version
             << static_cast<uint32_t>(1) // entries
 

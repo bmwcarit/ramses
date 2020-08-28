@@ -100,9 +100,9 @@ namespace ramses_internal
             if (static_cast<int>(state) >= static_cast<int>(CS::Offered))
             {
                 if (!offersLocalOnly)
-                    EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(id), Category(3)));
+                    EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(id), Category(3), "mycontent"));
 
-                EXPECT_TRUE(comp.sendOfferContent(ContentID(id), Category(3), offersLocalOnly));
+                EXPECT_TRUE(comp.sendOfferContent(ContentID(id), Category(3), "mycontent", offersLocalOnly));
                 EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(id)));
                 if (hasLocalConsumer)
                 {
@@ -181,7 +181,7 @@ namespace ramses_internal
             }
             if (static_cast<int>(state) >= static_cast<int>(CS::Offered))
             {
-                comp.handleOfferContent(ContentID(id), Category(3), usedRemote);
+                comp.handleOfferContent(ContentID(id), Category(3), "mycontent", usedRemote);
                 EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(id)));
                 if (hasLocalConsumer)
                 {
@@ -254,9 +254,9 @@ namespace ramses_internal
             }
             if (static_cast<int>(state) >= static_cast<int>(CS::Offered))
             {
-                EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(id), Category(3)));
+                EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(id), Category(3), "mycontent"));
 
-                EXPECT_TRUE(comp.sendOfferContent(ContentID(id), Category(3), false));
+                EXPECT_TRUE(comp.sendOfferContent(ContentID(id), Category(3), "mycontent", false));
                 EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(id)));
                 if (hasLocalConsumer)
                 {
@@ -358,7 +358,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         ensureNoEventsPending();
-        EXPECT_FALSE(comp.sendOfferContent(ContentID::Invalid(), Category(3), false));
+        EXPECT_FALSE(comp.sendOfferContent(ContentID::Invalid(), Category(3), "mycontent", false));
     }
 
     TEST_F(ADcsmComponent, offerFailsWithInvalidCategory)
@@ -367,13 +367,13 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         EXPECT_EQ(CS::Unknown, comp.getContentState(ContentID(2)));
         ensureNoEventsPending();
-        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category::Invalid(), false));
+        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category::Invalid(), "mycontent", false));
     }
 
     TEST_F(ADcsmComponent, lateConsumerGetsRemoteRegister)
     {
         comp.newParticipantHasConnected(remoteId);
-        comp.handleOfferContent(ContentID(1), Category(2), remoteId);
+        comp.handleOfferContent(ContentID(1), Category(2), "mycontent", remoteId);
         EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(1)));
 
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
@@ -392,7 +392,7 @@ namespace ramses_internal
     {
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         comp.newParticipantHasConnected(remoteId);
-        comp.handleOfferContent(ContentID(1), Category(2), remoteId);
+        comp.handleOfferContent(ContentID(1), Category(2), "mycontent", remoteId);
 
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(2)));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
@@ -405,7 +405,7 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, lateProviderDoesNotGetEventFromRemoteRegister)
     {
         comp.newParticipantHasConnected(remoteId);
-        comp.handleOfferContent(ContentID(1), Category(2), remoteId);
+        comp.handleOfferContent(ContentID(1), Category(2), "mycontent", remoteId);
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
         comp.participantHasDisconnected(remoteId);
@@ -415,7 +415,7 @@ namespace ramses_internal
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         comp.newParticipantHasConnected(remoteId);
-        comp.handleOfferContent(ContentID(1), Category(2), remoteId);
+        comp.handleOfferContent(ContentID(1), Category(2), "mycontent", remoteId);
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
         comp.participantHasDisconnected(remoteId);
     }
@@ -423,7 +423,7 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, connectRegisterDisconnectDoesNoEvent)
     {
         comp.newParticipantHasConnected(remoteId);
-        comp.handleOfferContent(ContentID(1), Category(2), remoteId);
+        comp.handleOfferContent(ContentID(1), Category(2), "mycontent", remoteId);
         comp.participantHasDisconnected(remoteId);
 
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
@@ -436,7 +436,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
 
         comp.newParticipantHasConnected(remoteId);
-        comp.handleOfferContent(ContentID(1), Category(2), remoteId);
+        comp.handleOfferContent(ContentID(1), Category(2), "mycontent", remoteId);
         comp.participantHasDisconnected(remoteId);
     }
 
@@ -444,7 +444,7 @@ namespace ramses_internal
     {
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         comp.newParticipantHasConnected(remoteId);
-        comp.handleOfferContent(ContentID(1), Category(2), remoteId);
+        comp.handleOfferContent(ContentID(1), Category(2), "mycontent", remoteId);
 
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(2)));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
@@ -457,8 +457,8 @@ namespace ramses_internal
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
 
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
 
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
 
@@ -476,7 +476,7 @@ namespace ramses_internal
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
 
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), true));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", true));
 
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
 
@@ -494,8 +494,8 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
 
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
 
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(4), ramses::Category(3)));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
@@ -512,7 +512,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
 
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), true));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", true));
 
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(4), ramses::Category(3)));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
@@ -526,10 +526,10 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, localRegisterLateNetworkGetsRegister)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
 
-        EXPECT_CALL(comm, sendDcsmOfferContent(remoteId, ContentID(4), Category(3)));
+        EXPECT_CALL(comm, sendDcsmOfferContent(remoteId, ContentID(4), Category(3), "mycontent"));
         comp.newParticipantHasConnected(remoteId);
 
         EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(4)));
@@ -539,7 +539,7 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, localRegisterLateNetworkGetsNoRegister_LocalOnly)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), true));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", true));
 
         comp.newParticipantHasConnected(remoteId);
 
@@ -550,8 +550,8 @@ namespace ramses_internal
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         comp.newParticipantHasConnected(remoteId);
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
 
         EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(4)));
         EXPECT_TRUE(comp.setLocalProviderAvailability(false));
@@ -561,7 +561,7 @@ namespace ramses_internal
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         comp.newParticipantHasConnected(remoteId);
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), true));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", true));
 
         EXPECT_TRUE(comp.setLocalProviderAvailability(false));
     }
@@ -569,27 +569,27 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, duplicateConnectSendRegisterAgain)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
 
-        EXPECT_CALL(comm, sendDcsmOfferContent(remoteId, ContentID(4), Category(3)));
+        EXPECT_CALL(comm, sendDcsmOfferContent(remoteId, ContentID(4), Category(3), "mycontent"));
         comp.newParticipantHasConnected(remoteId);
 
-        EXPECT_CALL(comm, sendDcsmOfferContent(remoteId, ContentID(4), Category(3)));
+        EXPECT_CALL(comm, sendDcsmOfferContent(remoteId, ContentID(4), Category(3), "mycontent"));
         comp.newParticipantHasConnected(remoteId);
     }
 
     TEST_F(ADcsmComponent, multipleConnectDisconnectGetsRegister)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
 
-        EXPECT_CALL(comm, sendDcsmOfferContent(remoteId, ContentID(4), Category(3)));
+        EXPECT_CALL(comm, sendDcsmOfferContent(remoteId, ContentID(4), Category(3), "mycontent"));
         comp.newParticipantHasConnected(remoteId);
         comp.participantHasDisconnected(remoteId);
 
-        EXPECT_CALL(comm, sendDcsmOfferContent(remoteId, ContentID(4), Category(3)));
+        EXPECT_CALL(comm, sendDcsmOfferContent(remoteId, ContentID(4), Category(3), "mycontent"));
         comp.newParticipantHasConnected(remoteId);
         comp.participantHasDisconnected(remoteId);
     }
@@ -598,18 +598,18 @@ namespace ramses_internal
     {
         comp.newParticipantHasConnected(remoteId);
         comp.newParticipantHasConnected(otherRemoteId);
-        comp.handleOfferContent(ContentID(1), Category(3), remoteId);
-        comp.handleOfferContent(ContentID(2), Category(2), otherRemoteId);
-        comp.handleOfferContent(ContentID(4), Category(9), remoteId);
+        comp.handleOfferContent(ContentID(1), Category(3), "", remoteId);
+        comp.handleOfferContent(ContentID(2), Category(2), "", otherRemoteId);
+        comp.handleOfferContent(ContentID(4), Category(9), "", remoteId);
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(10), Category(9)));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(11), Category(8)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(10), Category(9), false));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(11), Category(8), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(10), Category(9), "mycontent"));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(11), Category(8), "mycontent2"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(10), Category(9), "mycontent", false));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(11), Category(8), "mycontent2", false));
 
         Guid lateRemoteId(9000);
-        EXPECT_CALL(comm, sendDcsmOfferContent(lateRemoteId, ContentID(10), Category(9)));
-        EXPECT_CALL(comm, sendDcsmOfferContent(lateRemoteId, ContentID(11), Category(8)));
+        EXPECT_CALL(comm, sendDcsmOfferContent(lateRemoteId, ContentID(10), Category(9), "mycontent"));
+        EXPECT_CALL(comm, sendDcsmOfferContent(lateRemoteId, ContentID(11), Category(8), "mycontent2"));
         comp.newParticipantHasConnected(lateRemoteId);
 
         comp.participantHasDisconnected(remoteId);
@@ -621,14 +621,14 @@ namespace ramses_internal
     {
         comp.newParticipantHasConnected(remoteId);
         comp.newParticipantHasConnected(otherRemoteId);
-        comp.handleOfferContent(ContentID(1), Category(3), remoteId);
-        comp.handleOfferContent(ContentID(2), Category(2), otherRemoteId);
-        comp.handleOfferContent(ContentID(4), Category(9), remoteId);
+        comp.handleOfferContent(ContentID(1), Category(3), "", remoteId);
+        comp.handleOfferContent(ContentID(2), Category(2), "", otherRemoteId);
+        comp.handleOfferContent(ContentID(4), Category(9), "", remoteId);
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(10), Category(9)));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(11), Category(8)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(10), Category(9), false));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(11), Category(8), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(10), Category(9), "mycontent"));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(11), Category(8), "mycontent2"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(10), Category(9), "mycontent", false));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(11), Category(8), "mycontent2", false));
 
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(3)));
@@ -652,14 +652,14 @@ namespace ramses_internal
 
         comp.newParticipantHasConnected(remoteId);
         comp.newParticipantHasConnected(otherRemoteId);
-        comp.handleOfferContent(ContentID(1), Category(3), remoteId);
-        comp.handleOfferContent(ContentID(2), Category(2), otherRemoteId);
-        comp.handleOfferContent(ContentID(4), Category(9), remoteId);
+        comp.handleOfferContent(ContentID(1), Category(3), "", remoteId);
+        comp.handleOfferContent(ContentID(2), Category(2), "", otherRemoteId);
+        comp.handleOfferContent(ContentID(4), Category(9), "", remoteId);
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(10), Category(9)));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(11), Category(8)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(10), Category(9), false));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(11), Category(8), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(10), Category(9), "mycontent"));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(11), Category(8), "mycontent2"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(10), Category(9), "mycontent", false));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(11), Category(8), "mycontent2", false));
 
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(3)));
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(4), ramses::Category(9)));
@@ -672,8 +672,8 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, localProviderDoesNotLeaveTracesAfterRemoval)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(10), Category(9)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(10), Category(9), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(10), Category(9), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(10), Category(9), "mycontent", false));
         EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(10)));
         EXPECT_TRUE(comp.setLocalProviderAvailability(false));
         Mock::VerifyAndClearExpectations(&comm);
@@ -686,8 +686,8 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, localProviderDoesNotLeaveTracesAfterUnregister)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(10), Category(9)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(10), Category(9), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(10), Category(9), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(10), Category(9), "mycontent", false));
         EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(10)));
         EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(10)));
         EXPECT_CALL(provider, contentStateChange(ramses::ContentID(10), EDcsmState::AcceptStopOffer, _, ramses::AnimationInformation{0, 0}));
@@ -702,7 +702,7 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, remoteProviderDoesNotLeaveTracesAfterUnregister)
     {
         comp.newParticipantHasConnected(remoteId);
-        comp.handleOfferContent(ContentID(10), Category(9), remoteId);
+        comp.handleOfferContent(ContentID(10), Category(9), "mycontent", remoteId);
         comp.handleRequestStopOfferContent(ContentID(10), remoteId);
 
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
@@ -713,8 +713,8 @@ namespace ramses_internal
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(2), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(2), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", false));
         EXPECT_TRUE(comp.sendContentStateChange(ContentID(2), EDcsmState::Assigned, CategoryInfo(2, 3), AnimationInformation{1, 2}));
 
         EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(2)));
@@ -729,8 +729,8 @@ namespace ramses_internal
     {
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(7), Category(2)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(7), Category(2), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(7), Category(2), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(7), Category(2), "mycontent", false));
         EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(7)));
         EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(7)));
         EXPECT_CALL(provider, contentStateChange(ramses::ContentID(7), EDcsmState::AcceptStopOffer, _, ramses::AnimationInformation{ 0, 0 })).WillOnce([&](const auto&, const auto&, const auto& infoupdate, const auto&) {
@@ -781,8 +781,8 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
 
         EXPECT_EQ(CS::Unknown, comp.getContentState(ContentID(2)));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(2), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(2), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", false));
         EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(2)));
         EXPECT_EQ(localId, comp.getContentProviderID(ContentID(2)));
         EXPECT_EQ(Guid(), comp.getContentConsumerID(ContentID(2)));
@@ -805,7 +805,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
 
         EXPECT_EQ(CS::Unknown, comp.getContentState(ContentID(2)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), true));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", true));
         EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(2)));
         EXPECT_EQ(localId, comp.getContentProviderID(ContentID(2)));
         EXPECT_EQ(Guid(), comp.getContentConsumerID(ContentID(2)));
@@ -1204,8 +1204,8 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         getContentToState_LPLC(2, CS::StopOfferRequested);
 
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(2), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(2), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", false));
         EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(2)));
         EXPECT_EQ(localId, comp.getContentProviderID(ContentID(2)));
         EXPECT_EQ(Guid(), comp.getContentConsumerID(ContentID(2)));
@@ -1220,7 +1220,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         getContentToState_LPLC(2, CS::StopOfferRequested, true, true);
 
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), true));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", true));
         EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(2)));
         EXPECT_EQ(localId, comp.getContentProviderID(ContentID(2)));
         EXPECT_EQ(Guid(), comp.getContentConsumerID(ContentID(2)));
@@ -1260,7 +1260,7 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::Shown, CategoryInfo{}, AnimationInformation{4, 5}));
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::AcceptStopOffer, CategoryInfo{}, AnimationInformation{4, 5}));
         EXPECT_FALSE(comp.sendCanvasSizeChange(ContentID(2), CategoryInfo{1, 2}, AnimationInformation{0, 0}));
-        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3), false));
+        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", false));
         EXPECT_FALSE(comp.sendContentReady(ContentID(2)));
 
         EXPECT_TRUE(comp.sendContentEnableFocusRequest(ContentID(2), 32));
@@ -1281,7 +1281,7 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::Shown, CategoryInfo{}, AnimationInformation{4, 5}));
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::AcceptStopOffer, CategoryInfo{}, AnimationInformation{4, 5}));
         EXPECT_TRUE(comp.sendCanvasSizeChange(ContentID(2), CategoryInfo{1, 2}, AnimationInformation{5, 6}));
-        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3), false));
+        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", false));
         EXPECT_FALSE(comp.sendContentReady(ContentID(2)));
         EXPECT_TRUE(comp.sendContentEnableFocusRequest(ContentID(2), 32));
         EXPECT_TRUE(comp.sendContentDisableFocusRequest(ContentID(2), 32));
@@ -1310,7 +1310,7 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::Shown, CategoryInfo{}, AnimationInformation{4, 5}));
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::AcceptStopOffer, CategoryInfo{}, AnimationInformation{4, 5}));
         EXPECT_TRUE(comp.sendCanvasSizeChange(ContentID(2), CategoryInfo{1, 2}, AnimationInformation{5, 6}));
-        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3), false));
+        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", false));
         // EXPECT_FALSE(comp.sendContentReady(ContentID(2), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(1)));
         EXPECT_TRUE(comp.sendContentEnableFocusRequest(ContentID(2), 32));
         EXPECT_TRUE(comp.sendContentDisableFocusRequest(ContentID(2), 32));
@@ -1339,7 +1339,7 @@ namespace ramses_internal
         // EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::Shown, SizeInfo{0, 0}, AnimationInformation{4, 5}));
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::AcceptStopOffer, CategoryInfo{}, AnimationInformation{4, 5}));
         EXPECT_TRUE(comp.sendCanvasSizeChange(ContentID(2), CategoryInfo{1, 2}, AnimationInformation{5, 6}));
-        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3), false));
+        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", false));
         EXPECT_FALSE(comp.sendContentReady(ContentID(2)));
         EXPECT_TRUE(comp.sendContentEnableFocusRequest(ContentID(2), 32));
         EXPECT_TRUE(comp.sendContentDisableFocusRequest(ContentID(2), 32));
@@ -1368,7 +1368,7 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::Shown, CategoryInfo{}, AnimationInformation{4, 5}));
         EXPECT_FALSE(comp.sendContentStateChange(ContentID(2), EDcsmState::AcceptStopOffer, CategoryInfo{}, AnimationInformation{4, 5}));
         EXPECT_TRUE(comp.sendCanvasSizeChange(ContentID(2), CategoryInfo{1, 2}, AnimationInformation{5, 6}));
-        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3), false));
+        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", false));
         EXPECT_FALSE(comp.sendContentReady(ContentID(2)));
         EXPECT_TRUE(comp.sendContentEnableFocusRequest(ContentID(2), 32));
         // EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(2)));
@@ -1417,8 +1417,8 @@ namespace ramses_internal
 
         EXPECT_EQ(CS::Unknown, comp.getContentState(ContentID(2)));
 
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(2), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(2), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", false));
         EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(2)));
         EXPECT_EQ(localId, comp.getContentProviderID(ContentID(2)));
         EXPECT_EQ(Guid(), comp.getContentConsumerID(ContentID(2)));
@@ -1487,7 +1487,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         comp.newParticipantHasConnected(remoteId);
 
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), true));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", true));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
 
         EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(2)));
@@ -1502,7 +1502,7 @@ namespace ramses_internal
         comp.newParticipantHasConnected(remoteId);
 
         EXPECT_EQ(CS::Unknown, comp.getContentState(ContentID(2)));
-        comp.handleOfferContent(ContentID(2), Category(3), remoteId);
+        comp.handleOfferContent(ContentID(2), Category(3), "mycontent", remoteId);
         EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(2)));
         EXPECT_EQ(remoteId, comp.getContentProviderID(ContentID(2)));
         EXPECT_EQ(Guid(), comp.getContentConsumerID(ContentID(2)));
@@ -1738,7 +1738,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         getContentToState_RPLC(2, CS::StopOfferRequested);
 
-        comp.handleOfferContent(ContentID(2), Category(3), remoteId);
+        comp.handleOfferContent(ContentID(2), Category(3), "mycontent", remoteId);
         EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(2)));
         EXPECT_EQ(remoteId, comp.getContentProviderID(ContentID(2)));
         EXPECT_EQ(Guid(), comp.getContentConsumerID(ContentID(2)));
@@ -1752,7 +1752,7 @@ namespace ramses_internal
         comp.newParticipantHasConnected(remoteId);
         comp.handleCanvasSizeChange(ContentID(6), CategoryInfo{1, 2}, AnimationInformation{3, 4}, remoteId);
         comp.handleContentStateChange(ContentID(1), EDcsmState::Offered, CategoryInfo{}, AnimationInformation{7, 8}, remoteId);
-        comp.handleOfferContent(ContentID(2), Category(10), remoteId);
+        comp.handleOfferContent(ContentID(2), Category(10), "mycontent", remoteId);
         comp.handleContentReady(ContentID(3), remoteId);
         comp.handleContentEnableFocusRequest(ContentID(4), 32, remoteId);
         comp.handleRequestStopOfferContent(ContentID(5), remoteId);
@@ -1810,7 +1810,7 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, sendFailsWithoutActiveProvider)
     {
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
-        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3), false));
+        EXPECT_FALSE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", false));
         EXPECT_FALSE(comp.sendContentReady(ContentID(2)));
         EXPECT_FALSE(comp.sendContentEnableFocusRequest(ContentID(2), 32));
         EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(2)));
@@ -2278,13 +2278,13 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, forceStopOfferForLocalContentOnDisconnect)
     {
         comp.newParticipantHasConnected(remoteId);
-        comp.handleOfferContent(ContentID(1), Category(2), remoteId);
+        comp.handleOfferContent(ContentID(1), Category(2), "mycontent", remoteId);
 
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(5), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(5), Category(3), "mycontent2"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3), "mycontent2", false));
 
         EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(4)));
         EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(5)));
@@ -2294,11 +2294,11 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, forceStopOfferForLocalContentOnDisconnect_LocalOnly)
     {
         comp.newParticipantHasConnected(remoteId);
-        comp.handleOfferContent(ContentID(1), Category(2), remoteId);
+        comp.handleOfferContent(ContentID(1), Category(2), "mycontent", remoteId);
 
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), true));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3), true));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", true));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3), "mycontent2", true));
 
         EXPECT_TRUE(comp.disconnect());
     }
@@ -2306,8 +2306,8 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, canSendMetadataUpdateWithoutConsumer)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
         EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(4), metadata));
     }
 
@@ -2320,8 +2320,8 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, sendingSameFocusRequestFails)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
 
         EXPECT_TRUE(comp.sendContentEnableFocusRequest(ContentID(4), 17));
         EXPECT_FALSE(comp.sendContentEnableFocusRequest(ContentID(4), 17));
@@ -2331,8 +2331,8 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, sendingUnknownFocusReqeustDisableFails)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
 
         EXPECT_TRUE(comp.sendContentEnableFocusRequest(ContentID(4), 17));
         EXPECT_TRUE(comp.sendContentDisableFocusRequest(ContentID(4), 17));
@@ -2342,8 +2342,8 @@ namespace ramses_internal
     TEST_F(ADcsmComponent, sendingSameDisableFocusReqeustMultipleTimesFails)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(4), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
 
         EXPECT_TRUE(comp.sendContentEnableFocusRequest(ContentID(4), 17));
         EXPECT_TRUE(comp.sendContentDisableFocusRequest(ContentID(4), 17));
@@ -2610,7 +2610,7 @@ namespace ramses_internal
         comp.handleContentStateChange(ContentID(id), EDcsmState::Assigned, { 1, 1 }, { 5, 5 }, remoteId);
         comp.handleCanvasSizeChange(ContentID(id), { 1, 1 }, { 5, 5 }, remoteId);
 
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(id), Category(3), true));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(id), Category(3), "mycontent", true));
         EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(id)));
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(id), ramses::Category(3)));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
@@ -2909,8 +2909,8 @@ namespace ramses_internal
         EXPECT_EQ(CS::StopOfferRequested, comp.getContentState(ContentID(2)));
         ensureNoEventsPending();
 
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(2), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(2), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", false));
         comp.handleContentStateChange(ContentID(2), EDcsmState::Assigned, CategoryInfo(0u, 0u), AnimationInformation{ 1, 2 }, remoteId);
         EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Assigned, _, ramses::AnimationInformation{ 1, 2 }));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
@@ -2945,7 +2945,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.sendContentStateChange(ContentID(2), EDcsmState::AcceptStopOffer, CategoryInfo{ }, AnimationInformation{ 0, 0 }));
         ensureNoEventsPending();
 
-        comp.handleOfferContent(ContentID(2), Category(3), remoteId);
+        comp.handleOfferContent(ContentID(2), Category(3), "mycontent", remoteId);
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(2), ramses::Category(3)));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
         EXPECT_CALL(comm, sendDcsmContentStateChange(remoteId, ContentID(2), EDcsmState::Assigned, _, AnimationInformation{ 1, 2 }));
@@ -2966,7 +2966,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
 
-        comp.handleOfferContent(ContentID(2), Category(3), remoteId);
+        comp.handleOfferContent(ContentID(2), Category(3), "mycontent", remoteId);
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(2), ramses::Category(3)));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
         EXPECT_CALL(comm, sendDcsmContentStateChange(remoteId, ContentID(2), EDcsmState::Assigned, _, AnimationInformation{ 1, 2 }));
@@ -2989,7 +2989,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
         comp.newParticipantHasConnected(remoteId);
 
-        comp.handleOfferContent(ContentID(2), Category(3), remoteId);
+        comp.handleOfferContent(ContentID(2), Category(3), "mycontent", remoteId);
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(2), ramses::Category(3)));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
         EXPECT_CALL(comm, sendDcsmContentStateChange(remoteId, ContentID(2), EDcsmState::Assigned, _, AnimationInformation{ 1, 2 }));
@@ -3017,8 +3017,8 @@ namespace ramses_internal
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
         ensureNoEventsPending();
 
-        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(2), Category(3)));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), false));
+        EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(ContentID(2), Category(3), "mycontent"));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(2), Category(3), "mycontent", false));
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(2), ramses::Category(3)));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
 
@@ -3049,6 +3049,46 @@ namespace ramses_internal
         getContentToState_LPLC(2, CS::Assigned);
     }
 
+    TEST_F(ADcsmComponent, contentDescriptionCanBeSetAfterAssigned)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_LPRC(2, CS::Offered);
+
+        comp.handleContentStateChange(ContentID(2), EDcsmState::Assigned, CategoryInfo(2, 3), AnimationInformation{1, 2}, remoteId);
+        EXPECT_EQ(CS::Assigned, comp.getContentState(ContentID(2)));
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Assigned, _, ramses::AnimationInformation{1, 2}))
+            .WillOnce([&](const auto&, const auto&, const auto& infoupdate, const auto&) {
+                EXPECT_EQ(ramses::CategoryInfoUpdate({2, 3}), infoupdate);
+            });
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+        ensureNoEventsPending();
+
+        EXPECT_CALL(comm, sendDcsmContentDescription(remoteId, ContentID(2), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(5)));
+        EXPECT_TRUE(comp.sendContentDescription(ContentID(2), ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor(5)));
+        ensureNoEventsPending();
+    }
+
+    TEST_F(ADcsmComponent, acceptsWaylandSurfaceIDInDcsmContentDescription)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_LPRC(2, CS::Offered);
+
+        comp.handleContentStateChange(ContentID(2), EDcsmState::Assigned, CategoryInfo(2, 3), AnimationInformation{1, 2}, remoteId);
+        EXPECT_EQ(CS::Assigned, comp.getContentState(ContentID(2)));
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Assigned, _, ramses::AnimationInformation{1, 2}))
+            .WillOnce([&](const auto&, const auto&, const auto& infoupdate, const auto&) {
+                EXPECT_EQ(ramses::CategoryInfoUpdate({2, 3}), infoupdate);
+            });
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+        ensureNoEventsPending();
+
+        EXPECT_CALL(comm, sendDcsmContentDescription(remoteId, ContentID(2), ETechnicalContentType::WaylandIviSurfaceID, TechnicalContentDescriptor(5)));
+        EXPECT_TRUE(comp.sendContentDescription(ContentID(2), ETechnicalContentType::WaylandIviSurfaceID, TechnicalContentDescriptor(5)));
+        ensureNoEventsPending();
+    }
+
     class ADcsmComponentNotConnected : public ADcsmComponent
     {
     public:
@@ -3069,8 +3109,8 @@ namespace ramses_internal
     TEST_F(ADcsmComponentNotConnected, doesNotSendBroadcastsBeforeConnected)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3), false));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3), "mycontent2", false));
         EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(4), metadata));
         EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(4)));
         EXPECT_TRUE(comp.setLocalProviderAvailability(false));
@@ -3082,8 +3122,8 @@ namespace ramses_internal
         EXPECT_TRUE(comp.disconnect());
 
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), false));
-        EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3), false));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(4), Category(3), "mycontent", false));
+        EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3), "mycontent2", false));
         EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(4), metadata));
         EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(4)));
         EXPECT_TRUE(comp.setLocalProviderAvailability(false));

@@ -13,8 +13,8 @@
 #include "SceneAPI/SceneVersionTag.h"
 #include "RendererLib/StagingInfo.h"
 #include "Components/FlushTimeInformation.h"
-#include "Collections/HashMap.h"
 #include <chrono>
+#include <unordered_map>
 
 namespace ramses_internal
 {
@@ -32,7 +32,7 @@ namespace ramses_internal
         void onHidden(SceneId sceneId);
         void checkExpiredScenes(FlushTime::Clock::time_point currentTime);
 
-        void stopMonitoringScene(SceneId sceneId);
+        void onDestroyed(SceneId sceneId);
 
         FlushTime::Clock::time_point getExpirationTimestampOfRenderedScene(SceneId sceneId) const;
 
@@ -50,7 +50,7 @@ namespace ramses_internal
             TimeStampTag expirationTSOfRenderedScene;
             bool inExpiredState = false;
         };
-        HashMap<SceneId, SceneTimestamps> m_sceneTimestamps;
+        std::unordered_map<SceneId, SceneTimestamps> m_monitoredScenes;
 
         const RendererScenes& m_scenes;
         RendererEventCollector& m_eventCollector;

@@ -122,7 +122,7 @@ namespace ramses_internal
                         {
                             pushBackIfValid(resources, scene.getDataResource(instanceHandle, fieldHandle).hash);
                         }
-                        else if (fieldType == EDataType_TextureSampler)
+                        else if (IsTextureSamplerType(fieldType))
                         {
                             const auto samplerHandle = scene.getDataTextureSamplerHandle(instanceHandle, fieldHandle);
                             if (scene.isTextureSamplerAllocated(samplerHandle))

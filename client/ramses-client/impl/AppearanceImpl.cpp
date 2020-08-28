@@ -17,7 +17,6 @@
 #include "EffectInputImpl.h"
 #include "ObjectIteratorImpl.h"
 #include "TextureSamplerImpl.h"
-#include "ResourceIteratorImpl.h"
 #include "DataObjectImpl.h"
 #include "AppearanceUtils.h"
 #include "SerializationContext.h"
@@ -28,6 +27,9 @@
 #include "SceneUtils/ISceneDataArrayAccessor.h"
 #include "SceneUtils/DataInstanceHelper.h"
 #include "Math3d/Matrix22f.h"
+#include "SceneAPI/EDataType.h"
+#include "ObjectIteratorImpl.h"
+#include <algorithm>
 
 namespace ramses
 {
@@ -80,6 +82,23 @@ namespace ramses
         const ramses_internal::RenderState& rs = getIScene().getRenderState(m_renderStateHandle);
         operationColor = AppearanceUtils::GetBlendOperationFromInternal(rs.blendOperationColor);
         operationAlpha = AppearanceUtils::GetBlendOperationFromInternal(rs.blendOperationAlpha);
+        return StatusOK;
+    }
+
+    ramses::status_t AppearanceImpl::setBlendingColor(float red, float green, float blue, float alpha)
+    {
+        getIScene().setRenderStateBlendColor(m_renderStateHandle, { red, green, blue, alpha });
+        return StatusOK;
+    }
+
+    ramses::status_t AppearanceImpl::getBlendingColor(float& red, float& green, float& blue, float& alpha) const
+    {
+        const ramses_internal::RenderState& rs = getIScene().getRenderState(m_renderStateHandle);
+        red = rs.blendColor.r;
+        green = rs.blendColor.g;
+        blue = rs.blendColor.b;
+        alpha = rs.blendColor.a;
+
         return StatusOK;
     }
 
@@ -211,45 +230,16 @@ namespace ramses
 
     status_t AppearanceImpl::serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const
     {
-        CHECK_RETURN_ERR(serializeInternal(outStream, serializationContext));
-
-        return StatusOK;
-    }
-
-    status_t AppearanceImpl::deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext)
-    {
-        CHECK_RETURN_ERR(deserializeInternal(inStream, serializationContext));
-
-        return StatusOK;
-    }
-
-    status_t AppearanceImpl::resolveDeserializationDependencies(DeserializationContext& serializationContext)
-    {
-        CHECK_RETURN_ERR(SceneObjectImpl::resolveDeserializationDependencies(serializationContext));
-
-        for (auto& bindableInput : m_bindableInputs)
-            serializationContext.resolveDependencyIDImplAndStoreAsPointer(bindableInput.value.externallyBoundDataObject);
-
-        return StatusOK;
-    }
-
-    status_t AppearanceImpl::serializeInternal(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const
-    {
         CHECK_RETURN_ERR(SceneObjectImpl::serialize(outStream, serializationContext));
 
-        resourceId_t resID;
-        if (nullptr != m_effectImpl)
-        {
-            resID = m_effectImpl->getResourceId();
-        }
-        outStream << resID.highPart;
-        outStream << resID.lowPart;
+        outStream << (m_effectImpl ? serializationContext.getIDForObject(m_effectImpl) : serializationContext.GetObjectIDNull());
+
         outStream << m_renderStateHandle;
         outStream << m_uniformLayout;
         outStream << m_uniformInstance;
 
         outStream << static_cast<uint32_t>(m_bindableInputs.size());
-        for(const auto& bindableInput : m_bindableInputs)
+        for (const auto& bindableInput : m_bindableInputs)
         {
             outStream << bindableInput.key;
             outStream << (bindableInput.value.externallyBoundDataObject ? serializationContext.getIDForObject(bindableInput.value.externallyBoundDataObject) : serializationContext.GetObjectIDNull());
@@ -259,28 +249,13 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t AppearanceImpl::deserializeInternal(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext)
+    status_t AppearanceImpl::deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext)
     {
         CHECK_RETURN_ERR(SceneObjectImpl::deserialize(inStream, serializationContext));
 
-        resourceId_t resID;
-        inStream >> resID.highPart;
-        inStream >> resID.lowPart;
-        if (resID.isValid())
-        {
-            Resource* rImpl = getClientImpl().getHLResource_Threadsafe(resID);
-            if (rImpl)
-            {
-                m_effectImpl = static_cast<EffectImpl*>(&rImpl->impl);
-            }
-            else
-            {
-                return addErrorEntry("AppearanceImpl::deserializeInternal failed, referenced effect resource is not available");
-            }
-        }
+        serializationContext.ReadDependentPointerAndStoreAsID(inStream, m_effectImpl);
 
         inStream >> m_renderStateHandle;
-
         inStream >> m_uniformLayout;
         inStream >> m_uniformInstance;
 
@@ -302,6 +277,18 @@ namespace ramses
         }
 
         serializationContext.addForDependencyResolve(this);
+
+        return StatusOK;
+    }
+
+    status_t AppearanceImpl::resolveDeserializationDependencies(DeserializationContext& serializationContext)
+    {
+        CHECK_RETURN_ERR(SceneObjectImpl::resolveDeserializationDependencies(serializationContext));
+
+        serializationContext.resolveDependencyIDImplAndStoreAsPointer(m_effectImpl);
+
+        for (auto& bindableInput : m_bindableInputs)
+            serializationContext.resolveDependencyIDImplAndStoreAsPointer(bindableInput.value.externallyBoundDataObject);
 
         return StatusOK;
     }
@@ -328,7 +315,7 @@ namespace ramses
 
     status_t AppearanceImpl::validateEffect(uint32_t indent, StatusObjectSet& visitedObjects) const
     {
-        ResourceIteratorImpl iter(getClientImpl(), ERamsesObjectType_Effect);
+        ObjectIteratorImpl iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_Effect);
         RamsesObject* ramsesObject = iter.getNext();
         while (nullptr != ramsesObject)
         {
@@ -353,7 +340,7 @@ namespace ramses
         for (ramses_internal::DataFieldHandle fieldHandle(0u); fieldHandle < numFields; ++fieldHandle)
         {
             const ramses_internal::EDataType dataType = layout.getField(fieldHandle).dataType;
-            if (dataType != ramses_internal::EDataType_TextureSampler)
+            if (!IsTextureSamplerType(dataType))
             {
                 continue;
             }
@@ -511,14 +498,15 @@ namespace ramses
         }
     }
 
-    status_t AppearanceImpl::checkEffectInputValidityAndValueCompatibility(const EffectInputImpl& input, uint32_t valueElementCount, ramses_internal::EDataType valueDataType) const
+    status_t AppearanceImpl::checkEffectInputValidityAndValueCompatibility(const EffectInputImpl& input, uint32_t valueElementCount, std::initializer_list<ramses_internal::EDataType> valueDataType) const
     {
         if (input.getEffectHash() != m_effectImpl->getLowlevelResourceHash())
         {
             return addErrorEntry("Appearance::set failed, input is not properly initialized or cannot be used with this appearance.");
         }
 
-        if (input.getDataType() != valueDataType)
+        const auto result = std::find(valueDataType.begin(), valueDataType.end(),input.getDataType());
+        if (result == valueDataType.end())
         {
             return addErrorEntry("Appearance::set failed, value type does not match input data type");
         }
@@ -570,7 +558,7 @@ namespace ramses
         {
             return addErrorEntry("Appearance::set failed, can't access value of semantic uniform");
         }
-        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, elementCount, ramses_internal::TypeToEDataTypeTraits<T>::DataType));
+        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, elementCount, {ramses_internal::TypeToEDataTypeTraits<T>::DataType}));
 
         const BindableInput* bindableInput = m_bindableInputs.get(input.getInputIndex());
         const bool isBindable = (bindableInput != nullptr);
@@ -609,7 +597,7 @@ namespace ramses
         {
             return addErrorEntry("Appearance::set failed, can't access value of semantic uniform");
         }
-        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, elementCount, ramses_internal::TypeToEDataTypeTraits<T>::DataType));
+        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, elementCount, {ramses_internal::TypeToEDataTypeTraits<T>::DataType}));
 
         const BindableInput* bindableInput = m_bindableInputs.get(input.getInputIndex());
         const bool isBindable = (bindableInput != nullptr);
@@ -645,7 +633,8 @@ namespace ramses
     status_t AppearanceImpl::getInputTexture(const EffectInputImpl& input, const TextureSampler*& textureSampler)
     {
         textureSampler = nullptr;
-        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u, ramses_internal::EDataType_TextureSampler));
+        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u,
+            {ramses_internal::EDataType::TextureSampler2D, ramses_internal::EDataType::TextureSampler3D, ramses_internal::EDataType::TextureSamplerCube}));
 
         const ramses_internal::DataFieldHandle dataField(input.getInputIndex());
         const auto samplerHandle = getIScene().getDataTextureSamplerHandle(m_uniformInstance, dataField);
@@ -661,7 +650,6 @@ namespace ramses
                 }
             }
         }
-
         return StatusOK;
     }
 
@@ -672,7 +660,7 @@ namespace ramses
             return addErrorEntry("Appearance::bindInput failed, dataObject is not from the same scene as this appearance");
         }
 
-        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u, dataObject.getDataType()));
+        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u, {dataObject.getDataType()}));
 
         const uint32_t inputIndex = input.getInputIndex();
         BindableInput* bindableInput = m_bindableInputs.get(inputIndex);
@@ -705,7 +693,7 @@ namespace ramses
 
     status_t AppearanceImpl::setInputTextureInternal(const EffectInputImpl& input, const TextureSamplerImpl& textureSampler)
     {
-        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u, ramses_internal::EDataType_TextureSampler));
+        CHECK_RETURN_ERR(checkEffectInputValidityAndValueCompatibility(input, 1u, {textureSampler.getTextureDataType()}));
 
         const ramses_internal::DataFieldHandle dataField(input.getInputIndex());
         const ramses_internal::TextureSamplerHandle samplerHandle = textureSampler.getTextureSamplerHandle();

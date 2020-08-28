@@ -30,6 +30,8 @@ namespace ramses_internal
 {
     constexpr DataFieldHandle Camera::ViewportOffsetField;
     constexpr DataFieldHandle Camera::ViewportSizeField;
+    constexpr DataFieldHandle Camera::FrustumPlanesField;
+    constexpr DataFieldHandle Camera::FrustumNearFarPlanesField;
 
     template <template<typename, typename> class MEMORYPOOL>
     SceneT<MEMORYPOOL>::SceneT(const SceneInfo& sceneInfo)
@@ -581,6 +583,13 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::setRenderStateBlendColor(RenderStateHandle stateHandle, const Vector4& color)
+    {
+        RenderState& state = *m_states.getMemory(stateHandle);
+        state.blendColor = color;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
     void SceneT<MEMORYPOOL>::setRenderStateCullMode(RenderStateHandle stateHandle, ECullMode cullMode)
     {
         m_states.getMemory(stateHandle)->cullMode = cullMode;
@@ -797,13 +806,13 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    CameraHandle SceneT<MEMORYPOOL>::allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle)
+    CameraHandle SceneT<MEMORYPOOL>::allocateCamera(ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle dataInstance, CameraHandle handle)
     {
         const CameraHandle actualHandle = m_cameras.allocate(handle);
         Camera& camera = *m_cameras.getMemory(actualHandle);
         camera.projectionType = type;
         camera.node = nodeHandle;
-        camera.viewportDataInstance = viewportDataInstance;
+        camera.dataInstance = dataInstance;
 
         return actualHandle;
     }
@@ -818,13 +827,6 @@ namespace ramses_internal
     UInt32 SceneT<MEMORYPOOL>::getCameraCount() const
     {
         return m_cameras.getTotalCount();
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setCameraFrustum(CameraHandle cameraHandle, const Frustum& frustum)
-    {
-        assert(m_cameras.getMemory(cameraHandle)->projectionType != ECameraProjectionType_Renderer);
-        m_cameras.getMemory(cameraHandle)->frustum = frustum;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -1050,24 +1052,26 @@ namespace ramses_internal
             const EDataType fieldDataType = layout.getField(i).dataType;
             switch (fieldDataType)
             {
-            case EDataType_TextureSampler:
+            case EDataType::TextureSampler2D:
+            case EDataType::TextureSampler3D:
+            case EDataType::TextureSamplerCube:
             {
                 const TextureSamplerHandle invalid = TextureSamplerHandle::Invalid();
                 instance->setTypedData<TextureSamplerHandle>(layout.getFieldOffset(i), 1, &invalid);
                 break;
             }
-            case EDataType_DataReference:
+            case EDataType::DataReference:
             {
                 DataInstanceHandle invalid;
                 instance->setTypedData<DataInstanceHandle>(layout.getFieldOffset(i), 1, &invalid);
                 break;
             }
-            case EDataType_Indices:
-            case EDataType_UInt16Buffer:
-            case EDataType_FloatBuffer:
-            case EDataType_Vector2Buffer:
-            case EDataType_Vector3Buffer:
-            case EDataType_Vector4Buffer:
+            case EDataType::Indices:
+            case EDataType::UInt16Buffer:
+            case EDataType::FloatBuffer:
+            case EDataType::Vector2Buffer:
+            case EDataType::Vector3Buffer:
+            case EDataType::Vector4Buffer:
             {
                 const ResourceField resourceField{ ResourceContentHash::Invalid(), DataBufferHandle::Invalid(), 0u };
                 instance->setTypedData<ResourceField>(layout.getFieldOffset(i), 1, &resourceField);

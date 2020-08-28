@@ -10,5 +10,5 @@
 
 namespace ramses_internal
 {
-    const UInt32 SceneActionCollection::MaxStringLength;
+    const UInt8 SceneActionCollection::MaxStringLength;
 }

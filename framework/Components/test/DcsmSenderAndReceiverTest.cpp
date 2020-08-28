@@ -34,11 +34,12 @@ namespace ramses_internal
     {
         ContentID contentID(987);
         Category category(567);
+        std::string name("mycontent");
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleOfferContent(contentID, category, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
+            EXPECT_CALL(consumerHandler, handleOfferContent(contentID, category, name, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
-        EXPECT_TRUE(sender.sendDcsmBroadcastOfferContent(contentID, category));
+        EXPECT_TRUE(sender.sendDcsmBroadcastOfferContent(contentID, category, name));
         ASSERT_TRUE(waitForEvent());
     }
 
@@ -46,11 +47,12 @@ namespace ramses_internal
     {
         ContentID contentID(987);
         Category category(567);
+        std::string name("mycontent");
         {
             PlatformGuard g(receiverExpectCallLock);
-            EXPECT_CALL(consumerHandler, handleOfferContent(contentID, category, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
+            EXPECT_CALL(consumerHandler, handleOfferContent(contentID, category, name, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
         }
-        EXPECT_TRUE(sender.sendDcsmOfferContent(receiverId, contentID, category));
+        EXPECT_TRUE(sender.sendDcsmOfferContent(receiverId, contentID, category, name));
         ASSERT_TRUE(waitForEvent());
     }
 
@@ -62,6 +64,19 @@ namespace ramses_internal
         {
             PlatformGuard g(receiverExpectCallLock);
             EXPECT_CALL(consumerHandler, handleContentDescription(contentID, techtype, descriptor, senderId)).WillOnce(InvokeWithoutArgs([&]{ sendEvent(); }));
+        }
+        EXPECT_TRUE(sender.sendDcsmContentDescription(receiverId, contentID, techtype, descriptor));
+        ASSERT_TRUE(waitForEvent());
+    }
+
+    TEST_P(ADcsmSenderAndReceiverTest, sendContentDescriptionWithWaylandIviSurfaceID)
+    {
+        ContentID                  contentID(987);
+        ETechnicalContentType      techtype = ETechnicalContentType::WaylandIviSurfaceID;
+        TechnicalContentDescriptor descriptor(123);
+        {
+            PlatformGuard g(receiverExpectCallLock);
+            EXPECT_CALL(consumerHandler, handleContentDescription(contentID, techtype, descriptor, senderId)).WillOnce(InvokeWithoutArgs([&] { sendEvent(); }));
         }
         EXPECT_TRUE(sender.sendDcsmContentDescription(receiverId, contentID, techtype, descriptor));
         ASSERT_TRUE(waitForEvent());

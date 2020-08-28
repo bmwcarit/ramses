@@ -230,21 +230,21 @@ namespace ramses_internal
 
     void WaylandShellSurface::ResourceDestroyedCallback(wl_resource* surfaceResource)
     {
-        WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
+        WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         shellSurface->resourceDestroyed();
         delete shellSurface;
     }
 
     void WaylandShellSurface::ShellSurfacePongCallback(wl_client* client, wl_resource* surfaceResource, uint32_t serial)
     {
-        WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
+        WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
         shellSurface->shellSurfacePong(waylandClient, serial);
     }
 
     void WaylandShellSurface::ShellSurfaceMoveCallback(wl_client* client, wl_resource* surfaceResource, wl_resource* seatResource, uint32_t serial)
     {
-        WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
+        WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
         WaylandResource waylandSeatResource(seatResource, false);
         shellSurface->shellSurfaceMove(waylandClient, waylandSeatResource, serial);
@@ -252,7 +252,7 @@ namespace ramses_internal
 
     void WaylandShellSurface::ShellSurfaceResizeCallback(wl_client* client, wl_resource* surfaceResource, wl_resource* seatResource, uint32_t serial, uint32_t edges)
     {
-        WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
+        WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
         WaylandResource waylandSeatResource(seatResource, false);
         shellSurface->shellSurfaceResize(waylandClient, waylandSeatResource, serial, edges);
@@ -260,7 +260,7 @@ namespace ramses_internal
 
     void WaylandShellSurface::ShellSurfaceSetToplevelCallback(wl_client* client, wl_resource* surfaceResource)
     {
-        WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
+        WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
         shellSurface->shellSurfaceSetToplevel(waylandClient);
     }
@@ -268,7 +268,7 @@ namespace ramses_internal
     void WaylandShellSurface::ShellSurfaceSetTransientCallback(wl_client* client, wl_resource* surfaceResource, wl_resource* parentSurfaceResource, int32_t x,
                                                                int32_t y, uint32_t flags)
     {
-        WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
+        WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
         WaylandResource waylandParentSurfaceResource(parentSurfaceResource, false);
         shellSurface->shellSurfaceSetTransient(waylandClient, waylandParentSurfaceResource, x, y, flags);
@@ -277,7 +277,7 @@ namespace ramses_internal
     void WaylandShellSurface::ShellSurfaceSetFullscreenCallback(wl_client* client, wl_resource* surfaceResource, uint32_t method, uint32_t framerate,
                                                                 wl_resource* /*outputResource*/)
     {
-        WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
+        WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
 
         shellSurface->shellSurfaceSetFullscreen(waylandClient, method, framerate);
@@ -286,7 +286,7 @@ namespace ramses_internal
     void WaylandShellSurface::ShellSurfaceSetPopupCallback(wl_client* client, wl_resource* surfaceResource, wl_resource* seatResource, uint32_t serial,
                                                            wl_resource* parentSurfaceResource, int32_t x, int32_t y, uint32_t flags)
     {
-        WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
+        WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
         WaylandResource waylandSeatResource(seatResource, false);
         WaylandResource waylandParentSurfaceResource(parentSurfaceResource, false);
@@ -295,7 +295,7 @@ namespace ramses_internal
 
     void WaylandShellSurface::ShellSurfaceSetMaximizedCallback(wl_client* client, wl_resource* surfaceResource, wl_resource* /*outputResource*/)
     {
-        WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
+        WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
 
         shellSurface->shellSurfaceSetMaximized(waylandClient);
@@ -303,14 +303,14 @@ namespace ramses_internal
 
     void WaylandShellSurface::ShellSurfaceSetTitleCallback(wl_client* client, wl_resource* surfaceResource, const char* title)
     {
-        WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
+        WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
         shellSurface->shellSurfaceSetTitle(waylandClient, title);
     }
 
     void WaylandShellSurface::ShellSurfaceSetClassCallback(wl_client* client, wl_resource* surfaceResource, const char* className)
     {
-        WaylandShellSurface* shellSurface = reinterpret_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
+        WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
         shellSurface->shellSurfaceSetClass(waylandClient, className);
     }

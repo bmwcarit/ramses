@@ -23,6 +23,8 @@
 #include "Utils/IPeriodicLogSupplier.h"
 #include "ISceneProviderEventConsumer.h"
 #include "TransportCommon/ServiceHandlerInterfaces.h"
+#include <unordered_map>
+#include "ERendererToClientEventType.h"
 
 namespace ramses_internal
 {
@@ -30,26 +32,28 @@ namespace ramses_internal
     class ClientSceneLogicBase;
     class IConnectionStatusUpdateNotifier;
     class ICommunicationSystem;
-    class SceneActionCollection;
-
-    const uint64_t SceneActionList_CounterWrapAround = 10000;
+    struct SceneUpdate;
+    class ISceneRendererHandler;
+    class SceneUpdateStreamDeserializer;
+    class IResourceProviderComponent;
 
     class SceneGraphComponent final : public ISceneGraphProviderComponent,
                                       public ISceneGraphSender,
                                       public ISceneGraphConsumerComponent,
                                       public IConnectionStatusListener,
                                       public ISceneProviderServiceHandler,
+                                      public ISceneRendererServiceHandler,
                                       public IPeriodicLogSupplier
     {
     public:
-        SceneGraphComponent(const Guid& myID, ICommunicationSystem& communicationSystem, IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier, PlatformLock& frameworkLock);
+        SceneGraphComponent(const Guid& myID, ICommunicationSystem& communicationSystem, IConnectionStatusUpdateNotifier& connectionStatusUpdateNotifier, IResourceProviderComponent& res, PlatformLock& frameworkLock);
         virtual ~SceneGraphComponent() override;
 
-        virtual void setSceneRendererServiceHandler(ISceneRendererServiceHandler* sceneRendererHandler) override;
+        virtual void setSceneRendererHandler(ISceneRendererHandler* sceneRendererHandler) override;
 
         // ISceneGraphSender
-        virtual void sendCreateScene(const Guid& to, const SceneInfo& sceneInfo, EScenePublicationMode mode) override;
-        virtual void sendSceneActionList(const std::vector<Guid>& toVec, SceneActionCollection&& sceneAction, SceneId sceneId, EScenePublicationMode mode) override;
+        virtual void sendCreateScene(const Guid& to, const SceneId& sceneId, EScenePublicationMode mode) override;
+        virtual void sendSceneUpdate(const std::vector<Guid>& toVec, SceneUpdate&& sceneUpdate, SceneId sceneId, EScenePublicationMode mode) override;
         virtual void sendPublishScene(SceneId sceneId, EScenePublicationMode mode, const String& name) override;
         virtual void sendUnpublishScene(SceneId sceneId, EScenePublicationMode mode) override;
 
@@ -57,6 +61,7 @@ namespace ramses_internal
         virtual void subscribeScene(const Guid& to, SceneId sceneId) override;
         virtual void unsubscribeScene(const Guid& to, SceneId sceneId) override;
         virtual void sendSceneReferenceEvent(const Guid& to, SceneReferenceEvent const& event) override;
+        virtual void sendResourceAvailabilityEvent(const Guid& to, ResourceAvailabilityEvent const& event) override;
 
         // IConnectionStatusListener
         virtual void newParticipantHasConnected(const Guid& guid) override;
@@ -72,7 +77,14 @@ namespace ramses_internal
         // ISceneProviderServiceHandler
         virtual void handleSubscribeScene(const SceneId& sceneId, const Guid& consumerID) override;
         virtual void handleUnsubscribeScene(const SceneId& sceneId, const Guid& consumerID) override;
-        virtual void handleRendererEvent(const SceneId& sceneId, std::vector<Byte> data, const Guid& rendererID) override;
+        virtual void handleRendererEvent(const SceneId& sceneId, const std::vector<Byte>& data, const Guid& rendererID) override;
+
+        // ISceneRendererServiceHandler
+        virtual void handleInitializeScene(const SceneId& sceneId, const Guid& providerID) override;
+        virtual void handleSceneUpdate(const SceneId& sceneId, absl::Span<const Byte> actionData, const Guid& providerID) override;
+        virtual void handleNewScenesAvailable(const SceneInfoVector& newScenes, const Guid& providerID) override;
+        virtual void handleScenesBecameUnavailable(const SceneInfoVector& unavailableScenes, const Guid& providerID) override;
+        virtual void handleSceneNotAvailable(const SceneId& sceneId, const Guid& providerID) override;
 
         // IPeriodicLogSupplier
         virtual void triggerLogMessageForPeriodicLog() override;
@@ -81,30 +93,16 @@ namespace ramses_internal
 
     private:
         void forwardToSceneProviderEventConsumer(SceneReferenceEvent const& event);
+        void forwardToSceneProviderEventConsumer(ResourceAvailabilityEvent const& event);
 
-        ISceneRendererServiceHandler* m_sceneRendererHandler;
+        ISceneRendererHandler* m_sceneRendererHandler;
         Guid m_myID;
         ICommunicationSystem& m_communicationSystem;
         IConnectionStatusUpdateNotifier& m_connectionStatusUpdateNotifier;
 
         PlatformLock& m_frameworkLock;
 
-        struct PublishedSceneInfo
-        {
-            EScenePublicationMode publicationMode = EScenePublicationMode_Unpublished;
-            String name;
-
-            PublishedSceneInfo()
-            {}
-
-            PublishedSceneInfo(EScenePublicationMode publicationMode_, const String& name_)
-                : publicationMode(publicationMode_)
-                , name(name_)
-            {}
-        };
-
-        typedef HashMap<SceneId, PublishedSceneInfo> SceneIdModePublishedSceneInfoMap;
-        SceneIdModePublishedSceneInfoMap m_publishedScenes;
+        HashMap<SceneId, SceneInfo> m_locallyPublishedScenes;
 
         typedef HashMap<SceneId, ClientSceneLogicBase*> ClientSceneLogicMap;
         ClientSceneLogicMap m_clientSceneLogicMap;
@@ -112,9 +110,16 @@ namespace ramses_internal
         typedef HashMap<SceneId, ISceneProviderEventConsumer*> SceneEventConsumerMap;
         SceneEventConsumerMap m_sceneEventConsumers;
 
-        typedef std::pair<Guid, SceneId> Subscription;
-        typedef HashMap<Subscription, uint64_t > SceneActionListCountPerSubscription;
-        SceneActionListCountPerSubscription m_subscriptions;
+        IResourceProviderComponent& m_resourceComponent;
+
+        struct ReceivedScene
+        {
+            SceneInfo info;
+            Guid provider;
+            std::unique_ptr<SceneUpdateStreamDeserializer> sceneUpdateDeserializer;
+        };
+
+        std::unordered_map<SceneId, ReceivedScene> m_remoteScenes;
     };
 }
 

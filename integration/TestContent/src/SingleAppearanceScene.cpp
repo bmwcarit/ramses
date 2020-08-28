@@ -19,12 +19,12 @@
 namespace ramses_internal
 {
 
-    SingleAppearanceScene::SingleAppearanceScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    SingleAppearanceScene::SingleAppearanceScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
 
-        ramses::Triangle redTriangle(m_client, m_scene, *effect, ramses::TriangleAppearance::EColor_Red);
+        ramses::Triangle redTriangle(m_scene, *effect, ramses::TriangleAppearance::EColor_Red);
 
         const float translation[] = {
             -1.0f,  0.0f, -12.0f,
@@ -59,7 +59,7 @@ namespace ramses_internal
             break;
         case CHANGE_APPEARANCE:
             ramses::Effect* effectExt = getTestEffect("ramses-test-client-basic-extended");
-            ramses::Triangle blueTriangle(m_client, m_scene, *effectExt, ramses::TriangleAppearance::EColor_Blue);
+            ramses::Triangle blueTriangle(m_scene, *effectExt, ramses::TriangleAppearance::EColor_Blue);
             ramses::Appearance& appearance = blueTriangle.GetAppearance();
 
             ramses::UniformInput redgreenOffset;

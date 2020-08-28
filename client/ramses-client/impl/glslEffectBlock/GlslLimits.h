@@ -131,6 +131,8 @@ namespace ramses_internal
             glslCompilationResources.maxDrawBuffers = 4;
             glslCompilationResources.minProgramTexelOffset = -8;
             glslCompilationResources.maxProgramTexelOffset = 7;
+            // https://www.khronos.org/registry/OpenGL-Refpages/es3/html/glGet.xhtml
+            glslCompilationResources.maxGeometryOutputVertices = 256;
         }
 
         static void SetLimitsOpenGL_4_2(TBuiltInResource& glslCompilationResources)

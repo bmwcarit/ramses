@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <vector>
 #include "Components/CategoryInfo.h"
+#include "Components/DcsmTypes.h"
 
 namespace ramses
 {
@@ -72,9 +73,11 @@ namespace ramses
         virtual void dataConsumerCreated(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override;
         virtual void dataConsumerDestroyed(sceneId_t sceneId, dataConsumerId_t dataConsumerId) override;
         virtual void sceneFlushed(sceneId_t sceneId, sceneVersionTag_t sceneVersionTag) override;
+        virtual void sceneExpirationMonitoringEnabled(sceneId_t sceneId) override;
+        virtual void sceneExpirationMonitoringDisabled(sceneId_t sceneId) override;
         virtual void sceneExpired(sceneId_t sceneId) override;
         virtual void sceneRecoveredFromExpiration(sceneId_t sceneId) override;
-        virtual void streamAvailabilityChanged(streamSource_t streamId, bool available) override;
+        virtual void streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available) override;
 
         void executePendingCommands();
         void dispatchPendingEvents(IDcsmContentControlEventHandler& eventHandler);
@@ -106,6 +109,7 @@ namespace ramses
         struct ContentInfo
         {
             Category category;
+            ramses_internal::ETechnicalContentType contentType;
 
             bool readyRequested = false;
             bool dcsmReady = false;
@@ -160,6 +164,8 @@ namespace ramses
             DataConsumerCreated,
             DataConsumerDestroyed,
             ContentFlushed,
+            ContentExpirationMonitoringEnabled,
+            ContentExpirationMonitoringDisabled,
             ContentExpired,
             ContentRecoveredFromExpiration,
             StreamAvailable
@@ -182,7 +188,7 @@ namespace ramses
             dataConsumerId_t consumerID{};
             displayBufferId_t displayBuffer{};
             std::vector<pickableObjectId_t> pickedObjectIds{};
-            streamSource_t streamSource{};
+            waylandIviSurfaceId_t streamSource{};
             int32_t focusRequest = 0;
             bool streamAvailable{ false };
         };

@@ -15,16 +15,15 @@
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Texture2D.h"
 #include <cassert>
 
 namespace ramses_internal
 {
-    ShaderTestScene::ShaderTestScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    ShaderTestScene::ShaderTestScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
         , m_effect(*getTestEffect(getEffectNameFromState(state)))
-        , m_triangle(ramsesClient, scene, m_effect, ramses::TriangleAppearance::EColor_Red)
+        , m_triangle(scene, m_effect, ramses::TriangleAppearance::EColor_Red)
     {
         ramses::MeshNode* meshNode = m_scene.createMeshNode("red triangle mesh node");
         addMeshNodeToDefaultRenderGroup(*meshNode);
@@ -110,11 +109,11 @@ namespace ramses_internal
         }
         else if (state == TEXTURE_SIZE)
         {
-            const ramses::Texture2D& texture = *ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-file-loading-texture.png", m_client);
+            const ramses::Texture2D& texture = *ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-file-loading-texture.png", m_scene);
             ramses::TextureSampler& texSampler = *m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, texture);
 
             const Float textureCoordsArray[] = { 0.f, 1.f, 1.f, 1.f, 0.f, 0.f };
-            const ramses::Vector2fArray* textureCoords = m_client.createConstVector2fArray(3u, textureCoordsArray);
+            const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 3u, textureCoordsArray);
 
             ramses::AttributeInput texCoordsInput;
             m_effect.findAttributeInput("a_texCoords", texCoordsInput);
@@ -122,7 +121,7 @@ namespace ramses_internal
 
             // Adjust the vertices, such that the triangle texture looks less skewed
             const Float vertexPositionsData[] = { -1.f, 0.f, -1.f, 1.f, 0.f, -1.f, -1.f, 1.f, -1.f };
-            const ramses::Vector3fArray* vertexPositions = m_client.createConstVector3fArray(3, vertexPositionsData);
+            const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsData);
 
             ramses::AttributeInput positionsInput;
             m_effect.findAttributeInput("a_position", positionsInput);

@@ -147,7 +147,7 @@ namespace ramses_internal
 
     std::vector<Byte> CategoryInfo::toBinary() const
     {
-        BinaryOutputStreamT<Byte> os;
+        BinaryOutputStream os;
         const uint32_t numEntries =
             (m_categorySizeChanged ? 1 : 0)
             + (m_renderSizeChanged ? 1 : 0)
@@ -236,7 +236,7 @@ namespace ramses_internal
             }
         }
 
-        assert(is.readPositionUchar() == &*data.end());
+        assert(is.readPosition() == &*data.end());
     }
 
     bool CategoryInfo::operator==(const CategoryInfo& rhs) const

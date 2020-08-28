@@ -29,7 +29,7 @@ namespace ramses_internal
 
     struct TextureBuffer
     {
-        ETextureFormat      textureFormat = ETextureFormat_Invalid;
+        ETextureFormat      textureFormat = ETextureFormat::Invalid;
         MipMaps             mipMaps;
 
         static UInt32 GetMipMapDataSizeInBytes(const TextureBuffer& buffer)

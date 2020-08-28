@@ -22,44 +22,44 @@ namespace ramses
         {
             switch (dataType)
             {
-            case EDataType_UInt16:
-                return ramses_internal::EDataType_UInt16;
-            case EDataType_UInt32:
-                return ramses_internal::EDataType_UInt32;
-            case EDataType_Float:
-                return ramses_internal::EDataType_Float;
-            case EDataType_Vector2F:
-                return ramses_internal::EDataType_Vector2F;
-            case EDataType_Vector3F:
-                return ramses_internal::EDataType_Vector3F;
-            case EDataType_Vector4F:
-                return ramses_internal::EDataType_Vector4F;
+            case EDataType::UInt16:
+                return ramses_internal::EDataType::UInt16;
+            case EDataType::UInt32:
+                return ramses_internal::EDataType::UInt32;
+            case EDataType::Float:
+                return ramses_internal::EDataType::Float;
+            case EDataType::Vector2F:
+                return ramses_internal::EDataType::Vector2F;
+            case EDataType::Vector3F:
+                return ramses_internal::EDataType::Vector3F;
+            case EDataType::Vector4F:
+                return ramses_internal::EDataType::Vector4F;
             default:
                 assert(false);
             }
 
-            return ramses_internal::EDataType_Invalid;
+            return ramses_internal::EDataType::Invalid;
         }
 
         static EDataType GetDataTypeFromInternal(ramses_internal::EDataType dataType)
         {
             switch (dataType)
             {
-            case ramses_internal::EDataType_UInt16:
-                return EDataType_UInt16;
-            case ramses_internal::EDataType_UInt32:
-                return EDataType_UInt32;
-            case ramses_internal::EDataType_Float:
-                return EDataType_Float;
-            case ramses_internal::EDataType_Vector2F:
-                return EDataType_Vector2F;
-            case ramses_internal::EDataType_Vector3F:
-                return EDataType_Vector3F;
-            case ramses_internal::EDataType_Vector4F:
-                return EDataType_Vector4F;
+            case ramses_internal::EDataType::UInt16:
+                return EDataType::UInt16;
+            case ramses_internal::EDataType::UInt32:
+                return EDataType::UInt32;
+            case ramses_internal::EDataType::Float:
+                return EDataType::Float;
+            case ramses_internal::EDataType::Vector2F:
+                return EDataType::Vector2F;
+            case ramses_internal::EDataType::Vector3F:
+                return EDataType::Vector3F;
+            case ramses_internal::EDataType::Vector4F:
+                return EDataType::Vector4F;
             default:
                 assert(false);
-                return EDataType_Vector4F;
+                return EDataType::Vector4F;
             }
         }
     };

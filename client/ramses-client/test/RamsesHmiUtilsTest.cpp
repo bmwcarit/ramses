@@ -9,8 +9,6 @@
 #include "ramses-hmi-utils.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "RenderGroupImpl.h"
-#include "ramses-client-api/ResourceFileDescription.h"
-#include "ramses-client-api/ResourceFileDescriptionSet.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/Effect.h"
@@ -53,25 +51,25 @@ namespace ramses
     class ARamsesHmiUtils : public ::testing::Test
     {
     public:
-        static Texture2D* CreateTestTexture(RamsesClient& client, uint8_t num)
+        static Texture2D* CreateTestTexture(Scene& scene, uint8_t num)
         {
             uint8_t data[4] = { num };
             MipLevelData mipLevelData(sizeof(data), data);
-            Texture2D* texture = client.createTexture2D(1u, 1u, ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache);
+            Texture2D* texture = scene.createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache);
             EXPECT_TRUE(texture != nullptr);
             return texture;
         }
 
-        static void SaveSceneAndResourcesToFiles()
+        static void SaveSceneAndResourcesToFiles(bool createMissingResources = false)
         {
             RamsesFramework frameworkForSaving;
             RamsesClient& clientForSaving(*frameworkForSaving.createClient("clientForSaving"));
-
-            Texture2D* texture1 = CreateTestTexture(clientForSaving, 1u);
-            Texture2D* texture2 = CreateTestTexture(clientForSaving, 2u);
-            Texture2D* texture3 = CreateTestTexture(clientForSaving, 3u);
-
             Scene* scene = clientForSaving.createScene(sceneId_t(1));
+
+            Texture2D* texture1 = CreateTestTexture(*scene, 1u);
+            Texture2D* texture2 = CreateTestTexture(*scene, 2u);
+            CreateTestTexture(*scene, 3u);
+
             auto sampler1 = scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, *texture1, 1, "sampler1");
             auto sampler2 = scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, *texture2, 1, "sampler2");
 
@@ -80,7 +78,7 @@ namespace ramses
             effectDesc.setFragmentShader(fragmentShader);
             effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-            const ramses::Effect* effectTex = clientForSaving.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
+            ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
             ramses::Appearance* appearance = scene->createAppearance(*effectTex);
             ramses::UniformInput textureInput;
             effectTex->findUniformInput("textureSampler", textureInput);
@@ -92,19 +90,10 @@ namespace ramses
             ramses::MeshNode* meshNode = scene->createMeshNode();
             meshNode->setAppearance(*appearance);
 
-            ResourceFileDescription resNecessary("resNecessary.ramres");
-            resNecessary.add(effectTex);
-            ResourceFileDescription resDesc1("res1.ramres");
-            resDesc1.add(texture1);
-            ResourceFileDescription resDesc2("res2.ramres");
-            resDesc2.add(texture2);
-            resDesc2.add(texture3);
-            ResourceFileDescriptionSet resSet;
-            resSet.add(resNecessary);
-            resSet.add(resDesc1);
-            resSet.add(resDesc2);
+            if (createMissingResources)
+                scene->destroy(*texture1);
 
-            EXPECT_EQ(StatusOK, clientForSaving.saveSceneToFile(*scene, "scene.ramscene", resSet, false));
+            EXPECT_EQ(StatusOK, scene->saveToFile("scene.ramscene", false));
         }
 
         ARamsesHmiUtils()
@@ -117,102 +106,35 @@ namespace ramses
         RamsesClient& client;
     };
 
-    TEST_F(ARamsesHmiUtils, notAllResourcesKnownWhenLoadingNoResources)
+    TEST_F(ARamsesHmiUtils, allResourcesKnownWhenLoadingScene)
     {
         SaveSceneAndResourcesToFiles();
 
-        ResourceFileDescriptionSet resSet;
-        ResourceFileDescription resNess("resNecessary.ramres");
-        resSet.add(resNess);
-        Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
-        ASSERT_TRUE(scene != nullptr);
-
-        EXPECT_FALSE(RamsesHMIUtils::AllResourcesForSceneKnown(*scene));
-    }
-
-    TEST_F(ARamsesHmiUtils, notAllResourcesKnownWhenLoadingOnlySomeResources)
-    {
-        SaveSceneAndResourcesToFiles();
-
-        ResourceFileDescriptionSet resSet;
-        ResourceFileDescription resNess("resNecessary.ramres");
-        resSet.add(resNess);
-        ResourceFileDescription resDesc("res1.ramres");
-        resSet.add(resDesc);
-
-        Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
-        ASSERT_TRUE(scene != nullptr);
-
-        EXPECT_FALSE(RamsesHMIUtils::AllResourcesForSceneKnown(*scene));
-    }
-
-    TEST_F(ARamsesHmiUtils, notAllResourcesKnownWhenLoadingCorrectNumberButDifferentResources)
-    {
-        SaveSceneAndResourcesToFiles();
-
-        ResourceFileDescriptionSet resSet;
-        ResourceFileDescription resNess("resNecessary.ramres");
-        resSet.add(resNess);
-        ResourceFileDescription resDesc("res2.ramres");
-        resSet.add(resDesc);
-
-        Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
-        ASSERT_TRUE(scene != nullptr);
-
-        EXPECT_FALSE(RamsesHMIUtils::AllResourcesForSceneKnown(*scene));
-    }
-
-    TEST_F(ARamsesHmiUtils, allResourcesKnownWhenLoadingAllNeededResourcesWithScene)
-    {
-        SaveSceneAndResourcesToFiles();
-
-        ResourceFileDescriptionSet resSet;
-        ResourceFileDescription resNess("resNecessary.ramres");
-        resSet.add(resNess);
-        ResourceFileDescription resDesc1("res1.ramres");
-        resSet.add(resDesc1);
-        ResourceFileDescription resDesc2("res2.ramres");
-        resSet.add(resDesc2);
-
-        Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
+        Scene* scene = client.loadSceneFromFile("scene.ramscene");
         ASSERT_TRUE(scene != nullptr);
 
         EXPECT_TRUE(RamsesHMIUtils::AllResourcesForSceneKnown(*scene));
     }
 
-    TEST_F(ARamsesHmiUtils, allResourcesKnownWhenLoadingMissingResourcesLater)
+    TEST_F(ARamsesHmiUtils, resourcesMissingWhenLoadingSceneWhichWasMissingResource)
     {
-        SaveSceneAndResourcesToFiles();
+        SaveSceneAndResourcesToFiles(true);
 
-        ResourceFileDescriptionSet resSet;
-        ResourceFileDescription resNess("resNecessary.ramres");
-        resSet.add(resNess);
-        ResourceFileDescription resDesc("res1.ramres");
-        resSet.add(resDesc);
-
-        Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
+        Scene* scene = client.loadSceneFromFile("scene.ramscene");
         ASSERT_TRUE(scene != nullptr);
-        EXPECT_FALSE(RamsesHMIUtils::AllResourcesForSceneKnown(*scene));
 
-        EXPECT_EQ(StatusOK, client.loadResources(ResourceFileDescription("res2.ramres")));
-        EXPECT_TRUE(RamsesHMIUtils::AllResourcesForSceneKnown(*scene));
+        EXPECT_FALSE(RamsesHMIUtils::AllResourcesForSceneKnown(*scene));
     }
 
-    TEST_F(ARamsesHmiUtils, allResourcesKnownWhenCompletedWithNewlyCreatedResource)
+    TEST_F(ARamsesHmiUtils, allResourcesKnownWhenCreatingMissingResourcesLater)
     {
-        SaveSceneAndResourcesToFiles();
+        SaveSceneAndResourcesToFiles(true);
 
-        ResourceFileDescriptionSet resSet;
-        ResourceFileDescription resNess("resNecessary.ramres");
-        resSet.add(resNess);
-        ResourceFileDescription resDesc("res1.ramres");
-        resSet.add(resDesc);
-
-        Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
+        Scene* scene = client.loadSceneFromFile("scene.ramscene");
         ASSERT_TRUE(scene != nullptr);
         EXPECT_FALSE(RamsesHMIUtils::AllResourcesForSceneKnown(*scene));
 
-        EXPECT_TRUE(CreateTestTexture(client, 2u) != nullptr);
+        EXPECT_TRUE(CreateTestTexture(*scene, 1u));
         EXPECT_TRUE(RamsesHMIUtils::AllResourcesForSceneKnown(*scene));
     }
 
@@ -220,13 +142,7 @@ namespace ramses
     {
         SaveSceneAndResourcesToFiles();
 
-        ResourceFileDescriptionSet resSet;
-        ResourceFileDescription resNess("resNecessary.ramres");
-        resSet.add(resNess);
-        ResourceFileDescription resDesc("res1.ramres");
-        resSet.add(resDesc);
-
-        Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
+        Scene* scene = client.loadSceneFromFile("scene.ramscene");
         ASSERT_TRUE(scene != nullptr);
 
         // method only has side effects, only tests possible is that it does not crash
@@ -237,13 +153,7 @@ namespace ramses
     {
         SaveSceneAndResourcesToFiles();
 
-        ResourceFileDescriptionSet resSet;
-        ResourceFileDescription resNess("resNecessary.ramres");
-        resSet.add(resNess);
-        ResourceFileDescription resDesc("res1.ramres");
-        resSet.add(resDesc);
-
-        Scene* scene = client.loadSceneFromFile("scene.ramscene", resSet);
+        Scene* scene = client.loadSceneFromFile("scene.ramscene");
         ASSERT_TRUE(scene != nullptr);
 
         {
@@ -255,5 +165,18 @@ namespace ramses
         std::string   content((std::istreambuf_iterator<char>(inf)), std::istreambuf_iterator<char>());
         // cannot check whole content because order of entries not deterministic
         EXPECT_THAT(content, HasSubstr("Not required ERamsesObjectType_TextureSampler name: \"sampler2\" handle: 1"));
+    }
+
+    TEST_F(ARamsesHmiUtils, canGiveTheResourceDataPoolForAnyGivenClient)
+    {
+        RamsesClient& client1(*framework.createClient("client1"));
+        RamsesClient& client2(*framework.createClient("client2"));
+
+        auto& rdp1 = RamsesHMIUtils::GetResourceDataPoolForClient(client1);
+        auto& rdp2 = RamsesHMIUtils::GetResourceDataPoolForClient(client2);
+        auto& rdp1again = RamsesHMIUtils::GetResourceDataPoolForClient(client1);
+
+        EXPECT_EQ(&rdp1, &rdp1again);
+        EXPECT_NE(&rdp1, &rdp2);
     }
 }

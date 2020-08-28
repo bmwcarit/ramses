@@ -11,17 +11,53 @@
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-client-api/DataVector4f.h"
 #include "ramses-utils.h"
 #include <unordered_set>
 #include <cmath>
 #include <chrono>
 #include <thread>
+#include <unordered_set>
 
 /**
  * @example ramses-example-local-datalink/src/main.cpp
  * @brief Local Data Link Example
  */
+
+class SceneStateEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
+{
+public:
+    SceneStateEventHandler(ramses::RendererSceneControl& sceneControlApi, ramses::RamsesRenderer& renderer)
+        : m_sceneControlApi(sceneControlApi)
+        , m_renderer(renderer)
+    {
+    }
+
+    void dataProviderCreated(ramses::sceneId_t sceneId, ramses::dataProviderId_t) override
+    {
+        scenesWithCreatedProviderOrConsumer.insert(sceneId);
+    }
+
+    void dataConsumerCreated(ramses::sceneId_t sceneId, ramses::dataConsumerId_t) override
+    {
+        scenesWithCreatedProviderOrConsumer.insert(sceneId);
+    }
+
+    void waitForDataProviderOrConsumerCreated(ramses::sceneId_t sceneId)
+    {
+        while (scenesWithCreatedProviderOrConsumer.find(sceneId) == scenesWithCreatedProviderOrConsumer.end())
+        {
+            m_renderer.doOneLoop();
+            m_sceneControlApi.dispatchEvents(*this);
+        }
+    }
+
+private:
+    ramses::RendererSceneControl& m_sceneControlApi;
+    ramses::RamsesRenderer& m_renderer;
+    std::unordered_set<ramses::sceneId_t> scenesWithCreatedProviderOrConsumer;
+};
 
 // Helper struct for triangle scene
 struct TriangleSceneInfo
@@ -68,9 +104,9 @@ TriangleSceneInfo* createTriangleSceneContent(ramses::RamsesClient& client, rams
 
     // prepare triangle geometry: vertex position array and index array
     float vertexPositionsArray[] = { -0.25f, -0.125f, 0.f, 0.25f, -0.125f, 0.f, 0.f, 0.125f, 0.f };
-    const ramses::Vector3fArray* vertexPositions = client.createConstVector3fArray(3, vertexPositionsArray);
+    ramses::ArrayResource* vertexPositions = sceneInfo->scene->createArrayResource(ramses::EDataType::Vector3F, 3, vertexPositionsArray);
     uint16_t indicesArray[] = { 0, 1, 2 };
-    const ramses::UInt16Array* indices = client.createConstUInt16Array(3, indicesArray);
+    ramses::ArrayResource* indices = sceneInfo->scene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -78,7 +114,7 @@ TriangleSceneInfo* createTriangleSceneContent(ramses::RamsesClient& client, rams
     effectDesc.setFragmentShaderFromFile("res/ramses-example-local-datalink.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    const ramses::Effect* effect = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = sceneInfo->scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = sceneInfo->scene->createAppearance(*effect, "triangle appearance");
     appearance->setCullingMode(ramses::ECullMode_Disabled);
     appearance->setDepthFunction(ramses::EDepthFunc_Always);
@@ -113,8 +149,8 @@ TriangleSceneInfo* createTriangleSceneContent(ramses::RamsesClient& client, rams
     renderGroup->addMeshNode(*meshNode);
 
     // Create provided texture
-    sceneInfo->textures[0] = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-local-datalink-texture.png", client);
-    sceneInfo->textures[1] = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-local-datalink-texture2.png", client);
+    sceneInfo->textures[0] = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-local-datalink-texture.png", *sceneInfo->scene);
+    sceneInfo->textures[1] = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-local-datalink-texture2.png", *sceneInfo->scene);
 
     return sceneInfo;
 }
@@ -138,14 +174,14 @@ QuadSceneInfo* createQuadSceneContent(ramses::RamsesClient& client, ramses::scen
                                     0.1f, -0.1f, 0.0f,
                                     0.1f, 0.1f, 0.0f,
                                     -0.1f, 0.1f, 0.0f };
-    const ramses::Vector3fArray* vertexPositions = client.createConstVector3fArray(4, vertexPositionsArray);
+    ramses::ArrayResource* vertexPositions = sceneInfo->scene->createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
     float texCoordsArray[] = { 1.0f, 1.0f,
                                 0.0f, 1.0f,
                                 0.0f, 0.0f,
                                 1.0f, 0.0f };
-    const ramses::Vector2fArray* texCoords = client.createConstVector2fArray(4, texCoordsArray);
+    ramses::ArrayResource* texCoords = sceneInfo->scene->createArrayResource(ramses::EDataType::Vector2F, 4, texCoordsArray);
     uint16_t indicesArray[] = { 0, 1, 2, 2, 3, 0 };
-    const ramses::UInt16Array* indices = client.createConstUInt16Array(6, indicesArray);
+    ramses::ArrayResource* indices = sceneInfo->scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
@@ -153,7 +189,7 @@ QuadSceneInfo* createQuadSceneContent(ramses::RamsesClient& client, ramses::scen
     effectDesc.setFragmentShaderFromFile("res/ramses-example-local-datalink-texturing.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    const ramses::Effect* effect = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+    ramses::Effect* effect = sceneInfo->scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = sceneInfo->scene->createAppearance(*effect, "quad appearance");
     appearance->setDepthFunction(ramses::EDepthFunc_Always);
     appearance->setCullingMode(ramses::ECullMode_Disabled);
@@ -175,7 +211,7 @@ QuadSceneInfo* createQuadSceneContent(ramses::RamsesClient& client, ramses::scen
 
     ramses::UniformInput textureInput;
     effect->findUniformInput("textureSampler", textureInput);
-    ramses::Texture2D* fallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-local-datalink-texture-fallback.png", client);
+    ramses::Texture2D* fallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-example-local-datalink-texture-fallback.png", *sceneInfo->scene);
     sceneInfo->textureSampler = sceneInfo->scene->createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp,
         ramses::ETextureSamplingMethod_Linear, ramses::ETextureSamplingMethod_Linear, *fallbackTexture);
     appearance->setInputTexture(textureInput, *sceneInfo->textureSampler);
@@ -281,6 +317,13 @@ int main(int argc, char* argv[])
     sceneControlAPI.setSceneState(triangleSceneId, ramses::RendererSceneState::Rendered);
     sceneControlAPI.setSceneState(quadSceneId, ramses::RendererSceneState::Rendered);
     sceneControlAPI.setSceneState(quadSceneId2, ramses::RendererSceneState::Rendered);
+
+    sceneControlAPI.flush();
+
+    SceneStateEventHandler eventHandler(sceneControlAPI, renderer);
+    eventHandler.waitForDataProviderOrConsumerCreated(triangleSceneId);
+    eventHandler.waitForDataProviderOrConsumerCreated(quadSceneId);
+    eventHandler.waitForDataProviderOrConsumerCreated(quadSceneId2);
 
     /// [Data Linking Example Renderer]
     // link transformation

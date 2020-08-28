@@ -14,14 +14,12 @@
 #include "ramses-utils.h"
 
 
-SceneViewerBundle::SceneViewerBundle(ANativeWindow* nativeWindow, int width, int height, const char* sceneFile, const char* resFile)
+SceneViewerBundle::SceneViewerBundle(ANativeWindow* nativeWindow, int width, int height, const char* sceneFile)
 : RendererBundle(nativeWindow, width, height, "127.0.0.1", "127.0.0.1")
 {
     m_client = m_framework->createClient("client-scene-reader");
 
-    ramses::ResourceFileDescriptionSet resourceFileInformation;
-    resourceFileInformation.add(ramses::ResourceFileDescription(resFile));
-    m_loadedScene = m_client->loadSceneFromFile(sceneFile, resourceFileInformation);
+    m_loadedScene = m_client->loadSceneFromFile(sceneFile);
     if (m_loadedScene == nullptr)
     {
         __android_log_print(ANDROID_LOG_ERROR, "RamsesNativeInterface", "Loading scene failed!");

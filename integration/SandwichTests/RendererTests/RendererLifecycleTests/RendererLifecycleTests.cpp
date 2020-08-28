@@ -1703,35 +1703,45 @@ namespace ramses_internal
         const auto display = createDisplayForWindow();
         ASSERT_TRUE(ramses::displayId_t::Invalid() != display);
 
-        const auto sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::VisibilityScene>(ramses_internal::VisibilityScene::VISIBILITY_OFF, ramses_internal::Vector3(0.f, 1.0f, 5.0f));
+        const auto sceneId = testScenesAndRenderer.getScenesRegistry().createScene<ramses_internal::VisibilityScene>(ramses_internal::VisibilityScene::VISIBILITY_ALL_OFF, ramses_internal::Vector3(0.f, 1.0f, 5.0f));
         testScenesAndRenderer.publish(sceneId);
         testScenesAndRenderer.flush(sceneId);
         testRenderer.setSceneMapping(sceneId, display);
         testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
         ASSERT_TRUE(checkScreenshot(display, "ARendererDisplays_Black"));
 
-        testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::VisibilityScene>(sceneId, ramses_internal::VisibilityScene::VISIBILITY_PARTIAL_ON);
+        testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::VisibilityScene>(sceneId, ramses_internal::VisibilityScene::VISIBILITY_OFF_AND_INVISIBLE);
+        testScenesAndRenderer.flush(sceneId);
+        testRenderer.doOneLoop();
+        ASSERT_TRUE(checkScreenshot(display, "ARendererDisplays_Black"));
+
+        testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::VisibilityScene>(sceneId, ramses_internal::VisibilityScene::VISIBILITY_OFF_AND_VISIBLE);
         testScenesAndRenderer.flush(sceneId);
         testRenderer.doOneLoop();
         ASSERT_TRUE(checkScreenshot(display, "VisibilityScene_Partial"));
 
-        testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::VisibilityScene>(sceneId, ramses_internal::VisibilityScene::VISIBILITY_ON);
+        testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::VisibilityScene>(sceneId, ramses_internal::VisibilityScene::VISIBILITY_ALL_VISIBLE);
         testScenesAndRenderer.flush(sceneId);
         testRenderer.doOneLoop();
         ASSERT_TRUE(checkScreenshot(display, "VisibilityScene_On"));
 
         // another cycle of OFF to ON
-        testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::VisibilityScene>(sceneId, ramses_internal::VisibilityScene::VISIBILITY_OFF);
+        testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::VisibilityScene>(sceneId, ramses_internal::VisibilityScene::VISIBILITY_ALL_OFF);
         testScenesAndRenderer.flush(sceneId);
         testRenderer.doOneLoop();
         ASSERT_TRUE(checkScreenshot(display, "ARendererDisplays_Black"));
 
-        testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::VisibilityScene>(sceneId, ramses_internal::VisibilityScene::VISIBILITY_PARTIAL_ON);
+        testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::VisibilityScene>(sceneId, ramses_internal::VisibilityScene::VISIBILITY_OFF_AND_INVISIBLE);
+        testScenesAndRenderer.flush(sceneId);
+        testRenderer.doOneLoop();
+        ASSERT_TRUE(checkScreenshot(display, "ARendererDisplays_Black"));
+
+        testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::VisibilityScene>(sceneId, ramses_internal::VisibilityScene::VISIBILITY_OFF_AND_VISIBLE);
         testScenesAndRenderer.flush(sceneId);
         testRenderer.doOneLoop();
         ASSERT_TRUE(checkScreenshot(display, "VisibilityScene_Partial"));
 
-        testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::VisibilityScene>(sceneId, ramses_internal::VisibilityScene::VISIBILITY_ON);
+        testScenesAndRenderer.getScenesRegistry().setSceneState<ramses_internal::VisibilityScene>(sceneId, ramses_internal::VisibilityScene::VISIBILITY_ALL_VISIBLE);
         testScenesAndRenderer.flush(sceneId);
         testRenderer.doOneLoop();
         ASSERT_TRUE(checkScreenshot(display, "VisibilityScene_On"));

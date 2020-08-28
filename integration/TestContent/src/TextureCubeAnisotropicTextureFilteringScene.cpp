@@ -8,11 +8,9 @@
 
 #include "TestScenes/TextureCubeAnisotropicTextureFilteringScene.h"
 #include "ramses-utils.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
@@ -115,8 +113,8 @@ namespace ramses_internal
         }
     }
 
-    TextureCubeAnisotropicTextureFilteringScene::TextureCubeAnisotropicTextureFilteringScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    TextureCubeAnisotropicTextureFilteringScene::TextureCubeAnisotropicTextureFilteringScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         createOrthoCamera();
         /// Horizontally, 2 texel map to one pixel => DefaultDisplayWidth * 2 texels needed.
@@ -146,7 +144,7 @@ namespace ramses_internal
         ramses::Effect* effect(getTestEffect("ramses-test-client-textured-cube"));
 
         uint16_t indicesArray[] = { 0, 1, 2, 0, 2, 3 };
-        const ramses::UInt16Array* indices = m_client.createConstUInt16Array(6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
         const float x = 0.0f;
         const float y = 0.0f;
@@ -160,7 +158,7 @@ namespace ramses_internal
             x + w, y + h, z,
             x, y + h, z,
         };
-        const ramses::Vector3fArray* vertexPositions = m_client.createConstVector3fArray(4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
 
         const float s = w / static_cast<float>(textureResolution) * 4.0f; // 2 texel maps to one pixel
         const float t = h / static_cast<float>(textureResolution) * 2.0f; // 1 texel maps to one pixel
@@ -171,11 +169,11 @@ namespace ramses_internal
             -1.0f + s, -1.0f + t, 1.0f,
             -1.0f, -1.0f + t, 1.0f
         };
-        const ramses::Vector3fArray* normals = m_client.createConstVector3fArray(4, normalsArray);
+        const ramses::ArrayResource* normals = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, normalsArray);
 
-        ramses::TextureCube* texture = m_client.createTextureCube(
+        ramses::TextureCube* texture = m_scene.createTextureCube(
+            ramses::ETextureFormat::RGB8,
             textureResolution,
-            ramses::ETextureFormat_RGB8,
             numberOfMipLevels,
             mipLevelData,
             false);
@@ -229,9 +227,9 @@ namespace ramses_internal
 
     ramses::Appearance* TextureCubeAnisotropicTextureFilteringScene::createQuad(
         ramses::Effect* effect,
-        const ramses::Vector3fArray* vertexPositions,
-        const ramses::Vector3fArray* normals,
-        const ramses::UInt16Array* indices,
+        const ramses::ArrayResource* vertexPositions,
+        const ramses::ArrayResource* normals,
+        const ramses::ArrayResource* indices,
         float x,
         float y)
     {

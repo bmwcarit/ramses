@@ -38,6 +38,7 @@
 #include "RendererSceneEventSenderMock.h"
 #include <unordered_set>
 #include <memory>
+#include "Components/SceneUpdate.h"
 
 namespace ramses_internal {
 
@@ -139,7 +140,7 @@ protected:
         return sceneIndex;
     }
 
-    void expectEvents(const std::initializer_list<ERendererEventType> expectedEvents, const RendererEventVector& actualEvents)
+    void expectEventsEqual(const std::initializer_list<ERendererEventType> expectedEvents, const RendererEventVector& actualEvents)
     {
         ASSERT_EQ(expectedEvents.size(), actualEvents.size());
         auto eventIt = actualEvents.cbegin();
@@ -155,7 +156,8 @@ protected:
         RendererEventVector events;
         RendererEventVector dummy;
         rendererEventCollector.appendAndConsumePendingEvents(events, dummy);
-        expectEvents(expectedEvents, events);
+        expectEventsEqual(expectedEvents, events);
+        EXPECT_TRUE(dummy.empty()) << " expected renderer events only but there are also unchecked scene events";
     }
 
     void expectSceneEvents(const std::initializer_list<ERendererEventType> expectedEvents)
@@ -163,7 +165,8 @@ protected:
         RendererEventVector events;
         RendererEventVector dummy;
         rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
-        expectEvents(expectedEvents, events);
+        expectEventsEqual(expectedEvents, events);
+        EXPECT_TRUE(dummy.empty()) << " expected scene events only but there are also unchecked renderer events";
     }
 
     void expectInternalSceneStateEvents(const std::initializer_list<ERendererEventType> expectedEvents)
@@ -174,15 +177,16 @@ protected:
         auto expectedIt = expectedEvents.begin();
         for (size_t i = 0; i < events.size(); ++i)
             EXPECT_EQ(*expectedIt++, events[i].type) << "internal scene state event #" << i;
-
-        // for now internal scene events are queued also as scene events in order for legacy scene control to work
-        expectSceneEvents(expectedEvents);
     }
 
     void expectNoEvent()
     {
-        expectEvents({});
-        expectSceneEvents({});
+        RendererEventVector events;
+        RendererEventVector sceneEvents;
+        rendererEventCollector.appendAndConsumePendingEvents(events, sceneEvents);
+        EXPECT_TRUE(events.empty()) << " pending unchecked renderer events";
+        EXPECT_TRUE(sceneEvents.empty()) << " pending unchecked scene events";
+
         expectInternalSceneStateEvents({});
     }
 
@@ -348,9 +352,10 @@ protected:
         const SceneSizeInformation newSizeInfo = (sizeInfo ? *sizeInfo : scene.getSceneSizeInformation());
         const SceneSizeInformation currSizeInfo = rendererScenes.hasScene(scene.getSceneId()) ? rendererScenes.getScene(scene.getSceneId()).getSceneSizeInformation() : SceneSizeInformation();
 
-        SceneActionCollection sceneActions(std::move(scene.getSceneActionCollection()));
+        SceneUpdate update;
+        update.actions = (std::move(scene.getSceneActionCollection()));
 
-        SceneActionCollectionCreator creator(sceneActions);
+        SceneActionCollectionCreator creator(update.actions);
 
         ResourceContentHashVector clientResources;
         SceneResourceChanges resourceChanges;
@@ -359,14 +364,24 @@ protected:
         previousClientResources[sceneIndex].swap(clientResources);
         resourceChanges.m_sceneResourceActions = scene.getSceneResourceActions();
 
+        // TODO vaclav re-enable sending resources after renderer side can use them
+        //for (const auto& resHash : resourceChanges.m_addedClientResourceRefs)
+        //{
+        //    ResourceDeleterCallingCallback cb;
+        //    auto resource = std::make_unique<ArrayResource>(EResourceType_VertexArray, 0, EDataType::Float, nullptr, ResourceCacheFlag_DoNotCache, String());
+        //    resource->setResourceData(ResourceBlob{ 1 }, resHash);
+        //    ManagedResource mr(*resource.release(), cb);
+        //    update.resources.push_back(mr);
+        //}
+
         creator.flush(1u, newSizeInfo > currSizeInfo, newSizeInfo, resourceChanges, sceneRefActions, timeInfo, version);
         scene.resetResourceChanges();
-        rendererSceneUpdater->handleSceneActions(stagingScene[sceneIndex]->getSceneId(), std::move(sceneActions));
+        rendererSceneUpdater->handleSceneActions(stagingScene[sceneIndex]->getSceneId(), std::move(update));
     }
 
     void performFlushWithExpiration(UInt32 sceneIndex, UInt32 expirationTS)
     {
-        const FlushTimeInformation timeInfo{ FlushTime::Clock::time_point(std::chrono::milliseconds(expirationTS)), {} };
+        const FlushTimeInformation timeInfo{ FlushTime::Clock::time_point(std::chrono::milliseconds(expirationTS)), {}, FlushTime::Clock::getClockType() };
         performFlush(sceneIndex, {}, nullptr, timeInfo);
     }
 
@@ -402,6 +417,12 @@ protected:
 
     void createRenderable(UInt32 sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false)
     {
+        createRenderableNoFlush(sceneIndex, withVertexArray, withTextureSampler);
+        performFlush(sceneIndex);
+    }
+
+    void createRenderableNoFlush(UInt32 sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false)
+    {
         const NodeHandle renderableNode(1u);
         const RenderPassHandle renderPassHandle(2u);
         const RenderGroupHandle renderGroupHandle(3u);
@@ -417,7 +438,7 @@ protected:
         scene.allocateRenderGroup(0u, 0u, renderGroupHandle);
         scene.allocateNode(0u, renderableNode);
         scene.allocateRenderable(renderableNode, renderableHandle);
-        scene.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I}, DataFieldInfo{EDataType_Vector2I} }, ResourceProviderMock::FakeEffectHash, camDataLayoutHandle);
+        scene.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I}, DataFieldInfo{EDataType::Vector2I} }, ResourceProviderMock::FakeEffectHash, camDataLayoutHandle);
         scene.allocateCamera(ECameraProjectionType_Perspective, scene.allocateNode(), scene.allocateDataInstance(camDataLayoutHandle, camDataHandle), cameraHandle);
 
         scene.addRenderableToRenderGroup(renderGroupHandle, renderableHandle, 0u);
@@ -428,23 +449,21 @@ protected:
         DataFieldInfoVector uniformDataFields;
         if (withTextureSampler)
         {
-            uniformDataFields.push_back(DataFieldInfo{ EDataType_TextureSampler });
+            uniformDataFields.push_back(DataFieldInfo{ EDataType::TextureSampler2D });
         }
         scene.allocateDataLayout(uniformDataFields, ResourceProviderMock::FakeEffectHash, uniformDataLayoutHandle);
         scene.allocateDataInstance(uniformDataLayoutHandle, uniformDataInstanceHandle);
         scene.setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Uniforms, uniformDataInstanceHandle);
 
         DataFieldInfoVector geometryDataFields;
-        geometryDataFields.push_back(DataFieldInfo{ EDataType_Indices, 1u, EFixedSemantics_Indices });
+        geometryDataFields.push_back(DataFieldInfo{ EDataType::Indices, 1u, EFixedSemantics_Indices });
         if (withVertexArray)
         {
-            geometryDataFields.push_back(DataFieldInfo{ EDataType_Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute });
+            geometryDataFields.push_back(DataFieldInfo{ EDataType::Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute });
         }
         scene.allocateDataLayout(geometryDataFields, ResourceProviderMock::FakeEffectHash, geometryDataLayoutHandle);
         scene.allocateDataInstance(geometryDataLayoutHandle, geometryDataInstanceHandle);
         scene.setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Geometry, geometryDataInstanceHandle);
-
-        performFlush(sceneIndex);
     }
 
     void destroyRenderable(UInt32 sceneIndex = 0u)
@@ -459,10 +478,14 @@ protected:
 
     void setRenderableResources(UInt32 sceneIndex = 0u, ResourceContentHash indexArrayHash = ResourceProviderMock::FakeIndexArrayHash)
     {
+        setRenderableResourcesNoFlush(sceneIndex, indexArrayHash);
+        performFlush(sceneIndex);
+    }
+
+    void setRenderableResourcesNoFlush(UInt32 sceneIndex = 0u, ResourceContentHash indexArrayHash = ResourceProviderMock::FakeIndexArrayHash)
+    {
         IScene& scene = *stagingScene[sceneIndex];
         scene.setDataResource(geometryDataInstanceHandle, DataFieldHandle(0u), indexArrayHash, DataBufferHandle::Invalid(), 0u);
-
-        performFlush(sceneIndex);
     }
 
     void setRenderableVertexArray(UInt32 sceneIndex = 0u, ResourceContentHash vertexArrayHash = ResourceProviderMock::FakeVertArrayHash)
@@ -636,8 +659,8 @@ protected:
     void createRenderTargetWithBuffers(UInt32 sceneIndex = 0u, RenderTargetHandle renderTargetHandle = RenderTargetHandle{ 0u }, RenderBufferHandle bufferHandle = RenderBufferHandle{ 0u }, RenderBufferHandle depthHandle = RenderBufferHandle{ 1u })
     {
         IScene& scene = *stagingScene[sceneIndex];
-        scene.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u }, bufferHandle);
-        scene.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_DepthBuffer, ETextureFormat_Depth24, ERenderBufferAccessMode_ReadWrite, 0u }, depthHandle);
+        scene.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u }, bufferHandle);
+        scene.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_ReadWrite, 0u }, depthHandle);
         scene.allocateRenderTarget(renderTargetHandle);
         scene.addRenderTargetRenderBuffer(renderTargetHandle, bufferHandle);
         scene.addRenderTargetRenderBuffer(renderTargetHandle, depthHandle);
@@ -648,8 +671,8 @@ protected:
     {
         const BlitPassHandle blitPassHandle(0u);
         IScene& scene = *stagingScene[0];
-        const RenderBufferHandle sourceBufferHandle = scene.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u });
-        const RenderBufferHandle destinationBufferHandle = scene.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u });
+        const RenderBufferHandle sourceBufferHandle = scene.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u });
+        const RenderBufferHandle destinationBufferHandle = scene.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u });
         scene.allocateBlitPass(sourceBufferHandle, destinationBufferHandle, blitPassHandle);
         performFlush();
     }
@@ -681,8 +704,8 @@ protected:
         IScene& scene1 = *stagingScene[providerSceneIdx];
         IScene& scene2 = *stagingScene[consumerSceneIdx];
 
-        const DataLayoutHandle dataLayout1 = scene1.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
-        const DataLayoutHandle dataLayout2 = scene2.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
+        const DataLayoutHandle dataLayout1 = scene1.allocateDataLayout({ DataFieldInfo(EDataType::Float) }, ResourceContentHash::Invalid());
+        const DataLayoutHandle dataLayout2 = scene2.allocateDataLayout({ DataFieldInfo(EDataType::Float) }, ResourceContentHash::Invalid());
         dataRefProvider = scene1.allocateDataInstance(dataLayout1);
         dataRefConsumer = scene2.allocateDataInstance(dataLayout2);
         if (nullptr != dataRefProviderOut)

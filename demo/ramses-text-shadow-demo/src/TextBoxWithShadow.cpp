@@ -13,17 +13,16 @@ TextBoxWithShadow::TextBoxWithShadow(const std::u32string&  string,
                                      ramses::TextCache&     textCache,
                                      ramses::FontInstanceId fontInstance,
                                      int32_t                lineHeight,
-                                     ramses::RamsesClient&  client,
                                      ramses::Scene&         scene,
                                      ramses::RenderGroup*   renderGroup,
                                      int32_t                renderOrder)
     : GraphicalItem(scene, renderGroup)
 {
-    m_textBox = new TextBox(string, textCache, fontInstance, lineHeight, client, scene, nullptr, -3);
+    m_textBox = new TextBox(string, textCache, fontInstance, lineHeight, scene, nullptr, -3);
     ramses::RenderBuffer& textRenderBuffer = *m_textBox->getOutputBuffer();
 
-    m_gaussFilterH = new GaussFilter(textRenderBuffer, GaussFilter::EDirection_Horizontal, client, scene, -2);
-    m_gaussFilterV = new GaussFilter(*m_gaussFilterH->getOutputBuffer(), GaussFilter::EDirection_Vertical, client, scene, -1);
+    m_gaussFilterH = new GaussFilter(textRenderBuffer, GaussFilter::EDirection_Horizontal, scene, -2);
+    m_gaussFilterV = new GaussFilter(*m_gaussFilterH->getOutputBuffer(), GaussFilter::EDirection_Vertical, scene, -1);
 
     ramses::RenderBuffer& blurredTextRenderBuffer = *m_gaussFilterV->getOutputBuffer();
 
@@ -46,7 +45,6 @@ TextBoxWithShadow::TextBoxWithShadow(const std::u32string&  string,
                                     blurredTextRenderBuffer.getWidth(),
                                     blurredTextRenderBuffer.getHeight(),
                                     true,
-                                    client,
                                     m_scene,
                                     m_renderGroup,
                                     renderOrder);
@@ -55,7 +53,6 @@ TextBoxWithShadow::TextBoxWithShadow(const std::u32string&  string,
                                   textRenderBuffer.getWidth(),
                                   textRenderBuffer.getHeight(),
                                   true,
-                                  client,
                                   m_scene,
                                   m_renderGroup,
                                   renderOrder + 1);

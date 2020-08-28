@@ -18,8 +18,8 @@ namespace ramses
     class Scene;
     class Appearance;
     class GeometryBinding;
-    class UInt16Array;
-    class Vector3fArrayInput;
+    class ArrayResource;
+    class ArrayResourceInput;
     class Effect;
     class UniformInput;
     class DataVector4f;

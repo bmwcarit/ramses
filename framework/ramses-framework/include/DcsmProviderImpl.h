@@ -35,6 +35,8 @@ namespace ramses
 
         status_t offerContent(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode);
         status_t offerContentWithMetadata(ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata);
+        status_t offerContent(ContentID contentID, Category category, waylandIviSurfaceId_t surfaceId, EDcsmOfferingMode mode);
+        status_t offerContentWithMetadata(ContentID contentID, Category category, waylandIviSurfaceId_t surfaceId, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata);
         status_t requestStopOfferContent(ContentID contentID);
 
         status_t updateContentMetadata(ContentID contentID, const DcsmMetadataCreator& metadata);
@@ -53,14 +55,16 @@ namespace ramses
     private:
         struct DcsmProviderMapContent
         {
-            sceneId_t                       scene;
             Category                        category = Category(0);
             ramses_internal::EDcsmState     status = ramses_internal::EDcsmState::Offered;
             bool                            ready = false;
             bool                            contentRequested = false;
         };
 
-        status_t commonOfferContent(const char* callerMethod, ContentID contentID, Category category, sceneId_t scene, EDcsmOfferingMode mode);
+        status_t commonOfferContent(const char* callerMethod, ContentID contentID, Category category, ramses_internal::ETechnicalContentType contentType,
+            ramses_internal::TechnicalContentDescriptor contentDescriptor, EDcsmOfferingMode mode);
+        status_t commonOfferContentWithMetadata(ContentID contentID, Category category, ramses_internal::ETechnicalContentType contentType,
+            ramses_internal::TechnicalContentDescriptor contentDescriptor, EDcsmOfferingMode mode, const DcsmMetadataCreator& metadata);
 
         ramses_internal::IDcsmComponent& m_dcsm;
         ramses::IDcsmProviderEventHandler* m_handler = nullptr;

@@ -25,13 +25,14 @@ MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses::sceneId_t, ramses::sceneId_t);
 
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::TechnicalContentDescriptor);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::pickableObjectId_t);
-MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::streamSource_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::displayId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::displayBufferId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::resourceCacheFlag_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::binaryShaderFormatId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::dataProviderId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::dataConsumerId_t);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::waylandIviSurfaceId_t);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::waylandIviLayerId_t);
 
 template <>
 struct fmt::formatter<ramses::CategoryInfoUpdate> : public ramses_internal::SimpleFormatterBase
@@ -60,6 +61,16 @@ struct fmt::formatter<ramses::Rect> : public ramses_internal::SimpleFormatterBas
     auto format(const ramses::Rect& rect, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "{}/{}/{}/{}", rect.x, rect.y, rect.width, rect.height);
+    }
+};
+
+template <>
+struct fmt::formatter<ramses::resourceId_t> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses::resourceId_t& res, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(), "0x{:016X}:{:016X}", res.highPart, res.lowPart);
     }
 };
 

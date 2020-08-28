@@ -38,7 +38,7 @@ namespace ramses_internal
 
         if (0 == strcmp(interface, "ivi_application"))
         {
-            m_iviApplicationRegistry = reinterpret_cast<ivi_application*>(wl_registry_bind(wl_registry, name, &ivi_application_interface, 1));
+            m_iviApplicationRegistry = static_cast<ivi_application*>(wl_registry_bind(wl_registry, name, &ivi_application_interface, 1));
             LOG_DEBUG(CONTEXT_RENDERER, "Window_Wayland_IVI::registryGlobalCreated Bound ivi-application interface");
         }
     }

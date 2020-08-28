@@ -24,6 +24,13 @@ namespace ramses
         */
         class SceneObjectImpl& impl;
 
+        /**
+        * @brief Returns scene object id which is automatically assigned at creation time of object and is unique within scope of one scene.
+        *
+        * @return Scene object id.
+        */
+        sceneObjectId_t getSceneObjectId() const;
+
     protected:
         /**
         * @brief Constructor for SceneObject.

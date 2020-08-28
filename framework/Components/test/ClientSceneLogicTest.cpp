@@ -15,28 +15,29 @@
 #include "Scene/ClientScene.h"
 #include "Scene/EScenePublicationMode.h"
 #include "Scene/SceneActionApplier.h"
-#include "Scene/SceneActionUtils.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "Components/SceneUpdate.h"
 
 using namespace ramses_internal;
 
 namespace
 {
     // Need real matcher class to handle copying of ctor argument by calling explicit copy
-    class IsSceneActionCollectionMatcher : public MatcherInterface<const SceneActionCollection&>
+    class ContainsSceneActionCollectionMatcher : public MatcherInterface<const SceneUpdate&>
     {
     public:
-        explicit IsSceneActionCollectionMatcher(const SceneActionCollection& actions)
+        explicit ContainsSceneActionCollectionMatcher(const SceneActionCollection& actions)
             : m_actions(actions.copy())
         {
         }
 
-        virtual bool MatchAndExplain(const SceneActionCollection& arg, MatchResultListener* /*listener*/) const override
+        virtual bool MatchAndExplain(const SceneUpdate& updatearg, MatchResultListener* /*listener*/) const override
         {
+            const SceneActionCollection& arg = updatearg.actions;
             if (arg.numberOfActions() > 0 &&
                 arg.numberOfActions() == m_actions.numberOfActions() &&
-                arg.back().type() == ESceneActionId_Flush &&
-                m_actions.back().type() == ESceneActionId_Flush)
+                arg.back().type() == ESceneActionId::Flush &&
+                m_actions.back().type() == ESceneActionId::Flush)
             {
                 for (UInt32 i = 0; i < arg.numberOfActions() - 1; ++i)
                 {
@@ -85,8 +86,8 @@ namespace
         SceneActionCollection m_actions;
     };
 
-    inline Matcher<const SceneActionCollection&> IsSceneActionCollection(const SceneActionCollection& actions) {
-        return MakeMatcher(new IsSceneActionCollectionMatcher(actions));
+    inline Matcher<const SceneUpdate&> ContainsSceneActionCollection(const SceneActionCollection& actions) {
+        return MakeMatcher(new ContainsSceneActionCollectionMatcher(actions));
     }
 }
 
@@ -97,13 +98,13 @@ public:
     virtual ~SceneGraphSenderMock() {}
     MOCK_METHOD(void, sendPublishScene, (SceneId sceneId, EScenePublicationMode publicationMode, const String& name), (override));
     MOCK_METHOD(void, sendUnpublishScene, (SceneId sceneId, EScenePublicationMode publicationMode), (override));
-    MOCK_METHOD(void, sendCreateScene, (const Guid& to, const SceneInfo& sceneInfo, EScenePublicationMode publicationMode), (override));
-    MOCK_METHOD(void, sendSceneActionList_rvr, (const std::vector<Guid>& to, const SceneActionCollection & sceneAction, SceneId sceneId, EScenePublicationMode publicationMode));
+    MOCK_METHOD(void, sendCreateScene, (const Guid& to, const SceneId& sceneId, EScenePublicationMode publicationMode), (override));
+    MOCK_METHOD(void, sendSceneUpdate_rvr, (const std::vector<Guid>& to, const SceneUpdate & sceneAction, SceneId sceneId, EScenePublicationMode publicationMode));
 
-    void sendSceneActionList(const std::vector<Guid>& to, SceneActionCollection&& sceneAction, SceneId sceneId, EScenePublicationMode publicationMode) override
+    void sendSceneUpdate(const std::vector<Guid>& to, SceneUpdate&& update, SceneId sceneId, EScenePublicationMode publicationMode) override
     {
-        sendSceneActionList_rvr(to, sceneAction, sceneId, publicationMode);
-        sceneAction.clear(); // simulate moved away
+        sendSceneUpdate_rvr(to, update, sceneId, publicationMode);
+        update.actions.clear(); // simulate moved away
     }
 };
 
@@ -115,7 +116,7 @@ public:
         : m_myID(765)
         , m_sceneId(33u)
         , m_scene(SceneInfo(m_sceneId))
-        , m_sceneLogic(m_sceneGraphProviderComponent, m_scene, m_myID)
+        , m_sceneLogic(m_sceneGraphProviderComponent, m_scene, m_resourceComponent, m_myID)
         , m_rendererID(1337)
     {
     }
@@ -145,7 +146,7 @@ protected:
 
     void expectSendOnActionList(const SceneActionCollection& actions)
     {
-        EXPECT_CALL(m_sceneGraphProviderComponent, sendSceneActionList_rvr(_, IsSceneActionCollection(actions), _, _));
+        EXPECT_CALL(m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, ContainsSceneActionCollection(actions), _, _));
     }
 
     SceneActionCollection createFlushSceneActionList(bool expectSendSize = true, UInt64 flushIdx = 1)
@@ -173,8 +174,7 @@ protected:
 
     void expectSceneSend()
     {
-        const SceneInfo sceneInfo(m_sceneId, m_scene.getName());
-        EXPECT_CALL(m_sceneGraphProviderComponent, sendCreateScene(m_rendererID, sceneInfo, _));
+        EXPECT_CALL(m_sceneGraphProviderComponent, sendCreateScene(m_rendererID, m_sceneId, _));
     }
 
     void expectSceneUnpublish()
@@ -185,6 +185,7 @@ protected:
     ramses_internal::Guid m_myID;
     ramses_internal::SceneId m_sceneId;
     ramses_internal::ClientScene m_scene;
+    ResourceProviderComponentMock m_resourceComponent;
     StrictMock<SceneGraphSenderMock> m_sceneGraphProviderComponent;
     T m_sceneLogic;
     ramses_internal::Guid m_rendererID;
@@ -245,7 +246,7 @@ TYPED_TEST(AClientSceneLogic_All, keepsPendingActionIfNotFlushed)
     this->m_scene.allocateNode();
     const SceneActionCollection& actions = this->m_scene.getSceneActionCollection();
     EXPECT_EQ(1u, actions.numberOfActions());
-    EXPECT_EQ(ESceneActionId_AllocateNode, actions[0].type());
+    EXPECT_EQ(ESceneActionId::AllocateNode, actions[0].type());
     this->expectSceneUnpublish();
 }
 
@@ -257,8 +258,8 @@ TYPED_TEST(AClientSceneLogic_All, keepsPendingActionVectorIfNotFlushed)
 
     const SceneActionCollection& actions = this->m_scene.getSceneActionCollection();
     EXPECT_EQ(2u, actions.numberOfActions());
-    EXPECT_EQ(ESceneActionId_AllocateNode, actions[0].type());
-    EXPECT_EQ(ESceneActionId_AllocateTransform, actions[1].type());
+    EXPECT_EQ(ESceneActionId::AllocateNode, actions[0].type());
+    EXPECT_EQ(ESceneActionId::AllocateTransform, actions[1].type());
 
     this->expectSceneUnpublish();
 }
@@ -309,7 +310,7 @@ TYPED_TEST(AClientSceneLogic_All, flushesPendingActionsIfSceneDistributedAndHasP
 
     this->m_scene.allocateNode();
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
     this->m_sceneLogic.flushSceneActions({}, {});
 
     EXPECT_TRUE(this->m_scene.getSceneActionCollection().empty());
@@ -323,7 +324,7 @@ TEST_F(AClientSceneLogic_Direct, everyFlushGeneratesSceneActionSentToSubscriber)
 
     this->m_scene.allocateNode();
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
     this->m_sceneLogic.flushSceneActions({}, {});
     Mock::VerifyAndClearExpectations(&this->m_sceneGraphProviderComponent);
 
@@ -342,7 +343,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, unskippableEmptyFlushesGeneratesSceneAction
 
     this->m_scene.allocateNode();
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
     // flush with change
     this->m_sceneLogic.flushSceneActions({}, {});
     Mock::VerifyAndClearExpectations(&this->m_sceneGraphProviderComponent);
@@ -351,8 +352,8 @@ TEST_F(AClientSceneLogic_ShadowCopy, unskippableEmptyFlushesGeneratesSceneAction
     this->m_sceneLogic.flushSceneActions({}, {});
 
     // has expiration
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(_, _, this->m_sceneId, _));
-    this->m_sceneLogic.flushSceneActions({FlushTime::Clock::time_point{std::chrono::milliseconds{1}}, FlushTime::Clock::time_point{}}, {});
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, _, this->m_sceneId, _));
+    this->m_sceneLogic.flushSceneActions({FlushTime::Clock::time_point{std::chrono::milliseconds{1}}, FlushTime::Clock::time_point{}, {}}, {});
 
     this->expectSceneUnpublish();
 }
@@ -376,7 +377,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, skippedFlushesAreCounted)
 
     // non empty
     this->m_scene.allocateNode();
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(_, _, this->m_sceneId, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, _, this->m_sceneId, _));
     this->m_sceneLogic.flushSceneActions({}, {});
     EXPECT_EQ(initialValue+1, this->m_scene.getStatisticCollection().statSceneActionsSentSkipped.getCounterValue());
 
@@ -395,8 +396,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, doesNotClearPendingActionsIfWaitingSubscrib
     this->m_scene.allocateNode();
 
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
-    const SceneInfo sceneInfo(this->m_sceneId, this->m_scene.getName());
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, sceneInfo, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, m_sceneId, _));
 
     this->expectFlushSceneActionList();
     this->m_sceneLogic.addSubscriber(newRendererID);
@@ -413,7 +413,6 @@ TEST_F(AClientSceneLogic_Direct, doesNotClearPendingActionsIfWaitingSubscriberRe
     this->m_scene.allocateNode();
 
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
-    const SceneInfo sceneInfo(this->m_sceneId, this->m_scene.getName());
 
     this->m_sceneLogic.addSubscriber(newRendererID);
     this->m_sceneLogic.removeSubscriber(newRendererID);
@@ -427,8 +426,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, doesNotClearPendingActionsIfSubscriberRemov
     this->publishAndAddSubscriberWithoutPendingActions();
 
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
-    const SceneInfo sceneInfo(this->m_sceneId, this->m_scene.getName());
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, sceneInfo, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, m_sceneId, _));
     this->expectFlushSceneActionList();
     this->m_sceneLogic.addSubscriber(newRendererID);
 
@@ -446,7 +444,6 @@ TEST_F(AClientSceneLogic_Direct, doesNotClearPendingActionsIfSubscriberRemovedIs
     this->publishAndAddSubscriberWithoutPendingActions();
 
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
-    const SceneInfo sceneInfo(this->m_sceneId, this->m_scene.getName());
 
     this->m_sceneLogic.addSubscriber(newRendererID);
     this->m_scene.allocateNode();
@@ -687,8 +684,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, canSubscribeToSceneEvenWithPendingActions)
     this->m_scene.allocateNode();
 
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
-    const SceneInfo sceneInfo(this->m_sceneId, this->m_scene.getName());
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, sceneInfo, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, this->m_sceneId, _));
     this->expectFlushSceneActionList();
     this->m_sceneLogic.addSubscriber(newRendererID);
 
@@ -703,16 +699,15 @@ TEST_F(AClientSceneLogic_Direct, canSubscribeToSceneEvenWithPendingActions)
     const NodeHandle handle = this->m_scene.allocateNode();
 
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
-    const SceneInfo sceneInfo(this->m_sceneId, this->m_scene.getName());
 
     SceneActionCollection collection;
     SceneActionCollectionCreator creator(collection);
     creator.allocateNode(0, handle);
     creator.flush(2u, true, this->m_scene.getSceneSizeInformation());
 
-    EXPECT_CALL(m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, IsSceneActionCollection(collection), _, _));
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, sceneInfo, _));
-    EXPECT_CALL(m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ newRendererID }, IsSceneActionCollection(collection), _, _));
+    EXPECT_CALL(m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, ContainsSceneActionCollection(collection), _, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, this->m_sceneId, _));
+    EXPECT_CALL(m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ newRendererID }, ContainsSceneActionCollection(collection), _, _));
 
     this->m_sceneLogic.addSubscriber(newRendererID);
     this->flush();
@@ -728,8 +723,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, SendCleanSceneToNewSubscriber)
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
 
     // expect direct scene send to new renderer
-    const SceneInfo sceneInfo(this->m_sceneId, this->m_scene.getName());
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, sceneInfo, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, this->m_sceneId, _));
     this->expectFlushSceneActionList();
 
     this->m_sceneLogic.addSubscriber(newRendererID);
@@ -745,12 +739,11 @@ TEST_F(AClientSceneLogic_Direct, SendCleanSceneToNewSubscriber)
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
 
     // expect direct scene send to new renderer
-    const SceneInfo sceneInfo(this->m_sceneId, this->m_scene.getName());
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, sceneInfo, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, this->m_sceneId, _));
 
     this->m_sceneLogic.addSubscriber(newRendererID);
-    EXPECT_CALL(m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{this->m_rendererID}, IsSceneActionCollection(createFlushSceneActionList(false, 2)), _, _));
-    EXPECT_CALL(m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{newRendererID}, IsSceneActionCollection(createFlushSceneActionList(true, 2)), _, _));
+    EXPECT_CALL(m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{this->m_rendererID}, ContainsSceneActionCollection(createFlushSceneActionList(false, 2)), _, _));
+    EXPECT_CALL(m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{newRendererID}, ContainsSceneActionCollection(createFlushSceneActionList(true, 2)), _, _));
     this->flush();
 
     this->expectSceneUnpublish();
@@ -763,11 +756,11 @@ TYPED_TEST(AClientSceneLogic_All, doesAppendFlushActionIfOtherSceneActionsAreFlu
 
     this->m_scene.allocateNode(0u, NodeHandle(1));
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_EQ(2u, actionsFromSendScene.numberOfActions());
-        EXPECT_EQ(ESceneActionId_AllocateNode, actionsFromSendScene[0].type());
-        EXPECT_EQ(ESceneActionId_Flush, actionsFromSendScene[1].type());
+        ASSERT_EQ(2u, update.actions.numberOfActions());
+        EXPECT_EQ(ESceneActionId::AllocateNode, update.actions[0].type());
+        EXPECT_EQ(ESceneActionId::Flush, update.actions[1].type());
     });
     this->m_sceneLogic.flushSceneActions({}, {});
     this->expectSceneUnpublish();
@@ -780,16 +773,16 @@ TEST_F(AClientSceneLogic_ShadowCopy, appendsDefaultFlushInfoWhenSendingSceneToNe
 
     this->m_scene.allocateNode(0u, NodeHandle(1));
 
-    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)) };
+    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)), FlushTime::Clock::getClockType() };
     const SceneVersionTag versionTagIn{ 333 };
     this->m_sceneLogic.flushSceneActions(ftiIn, versionTagIn);
 
     this->expectSceneSend();
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& updateFromSendScene, auto, auto)
     {
-        ASSERT_EQ(2u, actionsFromSendScene.numberOfActions());
-        EXPECT_EQ(ESceneActionId_AllocateNode, actionsFromSendScene[0].type());
-        ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene[1].type());
+        ASSERT_EQ(2u, updateFromSendScene.actions.numberOfActions());
+        EXPECT_EQ(ESceneActionId::AllocateNode, updateFromSendScene.actions[0].type());
+        ASSERT_EQ(ESceneActionId::Flush, updateFromSendScene.actions[1].type());
 
         bool hasSizeInfo;
         SceneResourceChanges resourceChanges;
@@ -798,7 +791,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, appendsDefaultFlushInfoWhenSendingSceneToNe
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene[1], flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferences, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(updateFromSendScene.actions[1], flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferences, timeInfo, versionTag);
         EXPECT_TRUE(hasSizeInfo);
         EXPECT_EQ(ftiIn, timeInfo);
         EXPECT_EQ(versionTagIn, versionTag);
@@ -814,19 +807,19 @@ TEST_F(AClientSceneLogic_Direct, appendsDefaultFlushInfoWhenSendingSceneToNewSub
 
     this->m_scene.allocateNode(0u, NodeHandle(1));
 
-    const FlushTimeInformation ftiInIgnored{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)) };
+    const FlushTimeInformation ftiInIgnored{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)), FlushTime::Clock::getClockType() };
     const SceneVersionTag versionTagIn{ 333 };
     this->m_sceneLogic.flushSceneActions(ftiInIgnored, versionTagIn);
 
     this->expectSceneSend();
 
-    const FlushTimeInformation ftiInUsed{ FlushTime::Clock::time_point(std::chrono::milliseconds(5)), FlushTime::Clock::time_point(std::chrono::milliseconds(6)) };
+    const FlushTimeInformation ftiInUsed{ FlushTime::Clock::time_point(std::chrono::milliseconds(5)), FlushTime::Clock::time_point(std::chrono::milliseconds(6)), FlushTime::Clock::getClockType() };
     const SceneVersionTag versionTagUsed{ 666 };
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& updateFromSendScene, auto, auto)
     {
-        ASSERT_EQ(2u, actionsFromSendScene.numberOfActions());
-        EXPECT_EQ(ESceneActionId_AllocateNode, actionsFromSendScene[0].type());
-        ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene[1].type());
+        ASSERT_EQ(2u, updateFromSendScene.actions.numberOfActions());
+        EXPECT_EQ(ESceneActionId::AllocateNode, updateFromSendScene.actions[0].type());
+        ASSERT_EQ(ESceneActionId::Flush, updateFromSendScene.actions[1].type());
 
         bool hasSizeInfo;
         SceneResourceChanges resourceChanges;
@@ -835,7 +828,7 @@ TEST_F(AClientSceneLogic_Direct, appendsDefaultFlushInfoWhenSendingSceneToNewSub
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene[1], flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(updateFromSendScene.actions[1], flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
         EXPECT_TRUE(hasSizeInfo);
         EXPECT_EQ(ftiInUsed, timeInfo);
         EXPECT_EQ(versionTagUsed, versionTag);
@@ -850,10 +843,10 @@ TYPED_TEST(AClientSceneLogic_All, sendSceneSizesTogetherWithFlushIfSceneSizeIncr
     this->publishAndAddSubscriberWithoutPendingActions();
 
     this->m_scene.allocateNode();
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_GE(actionsFromSendScene.numberOfActions(), 1u);
-        ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
+        ASSERT_GE(update.actions.numberOfActions(), 1u);
+        ASSERT_EQ(ESceneActionId::Flush, update.actions.back().type());
         bool hasSizeInfo;
         SceneResourceChanges resourceChanges;
         SceneReferenceActionVector sceneReferencingInfo;
@@ -861,7 +854,7 @@ TYPED_TEST(AClientSceneLogic_All, sendSceneSizesTogetherWithFlushIfSceneSizeIncr
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
         EXPECT_TRUE(hasSizeInfo);
         EXPECT_EQ(this->m_scene.getSceneSizeInformation(), sizeInfo);
     });
@@ -874,10 +867,10 @@ TYPED_TEST(AClientSceneLogic_All, canUseNullptrWhenReadingFlush)
     this->publishAndAddSubscriberWithoutPendingActions();
 
     this->m_scene.allocateNode();
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_GE(actionsFromSendScene.numberOfActions(), 1u);
-        ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
+        ASSERT_GE(update.actions.numberOfActions(), 1u);
+        ASSERT_EQ(ESceneActionId::Flush, update.actions.back().type());
         bool hasSizeInfo;
         SceneResourceChanges resourceChanges;
         SceneReferenceActionVector sceneReferencingInfo;
@@ -885,7 +878,7 @@ TYPED_TEST(AClientSceneLogic_All, canUseNullptrWhenReadingFlush)
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
     });
     this->m_sceneLogic.flushSceneActions({}, {});
     this->expectSceneUnpublish();
@@ -898,15 +891,15 @@ TYPED_TEST(AClientSceneLogic_All, doesNotSendSceneSizesTogetherWithFlushIfSceneS
     // create 2 nodes
     const NodeHandle node1 = this->m_scene.allocateNode();
     const NodeHandle node2 = this->m_scene.allocateNode();
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
     this->m_sceneLogic.flushSceneActions({}, {});
 
     // set child/parent relation - no size change
     this->m_scene.addChildToNode(node1, node2);
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_GE(actionsFromSendScene.numberOfActions(), 1u);
-        ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
+        ASSERT_GE(update.actions.numberOfActions(), 1u);
+        ASSERT_EQ(ESceneActionId::Flush, update.actions.back().type());
         bool hasSizeInfo;
         SceneResourceChanges resourceChanges;
         SceneReferenceActionVector sceneReferencingInfo;
@@ -914,7 +907,7 @@ TYPED_TEST(AClientSceneLogic_All, doesNotSendSceneSizesTogetherWithFlushIfSceneS
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
         EXPECT_FALSE(hasSizeInfo);
     });
     this->m_sceneLogic.flushSceneActions({}, {});
@@ -927,20 +920,20 @@ TYPED_TEST(AClientSceneLogic_All, sendListOfNewResourcesTogetherWithFlush)
 
     this->m_scene.allocateRenderable(this->m_scene.allocateNode());
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
     this->m_sceneLogic.flushSceneActions({}, {});
 
     const ResourceContentHash dummyRes(666u, 0);
 
     const RenderTargetHandle renderTarget = this->m_scene.allocateRenderTarget();
-    const RenderBufferHandle renderBuffer = this->m_scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat_R16, ERenderBufferAccessMode_ReadWrite, 0u });
+    const RenderBufferHandle renderBuffer = this->m_scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::R16, ERenderBufferAccessMode_ReadWrite, 0u });
     const StreamTextureHandle streamTex = this->m_scene.allocateStreamTexture(0u, dummyRes);
     const BlitPassHandle blitpassHandle = this->m_scene.allocateBlitPass(RenderBufferHandle(1u), RenderBufferHandle(2u));
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_EQ(5u, actionsFromSendScene.numberOfActions());
-        ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene[4].type());
+        ASSERT_EQ(5u, update.actions.numberOfActions());
+        ASSERT_EQ(ESceneActionId::Flush, update.actions[4].type());
         bool hasSizeInfo;
         SceneResourceChanges resourceChanges;
         SceneReferenceActionVector sceneReferencingInfo;
@@ -948,7 +941,7 @@ TYPED_TEST(AClientSceneLogic_All, sendListOfNewResourcesTogetherWithFlush)
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene[4], flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(update.actions[4], flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
         EXPECT_EQ(1u, resourceChanges.m_addedClientResourceRefs.size());
         EXPECT_EQ(dummyRes, resourceChanges.m_addedClientResourceRefs[0]);
         EXPECT_EQ(0u, resourceChanges.m_removedClientResourceRefs.size());
@@ -974,11 +967,11 @@ TYPED_TEST(AClientSceneLogic_All, flushClearsListsOfChangedResources)
     this->m_scene.allocateRenderable(this->m_scene.allocateNode());
     const ResourceContentHash dummyRes(666u, 0);
     this->m_scene.allocateRenderTarget();
-    this->m_scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat_R16, ERenderBufferAccessMode_ReadWrite, 0u });
+    this->m_scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::R16, ERenderBufferAccessMode_ReadWrite, 0u });
     this->m_scene.allocateStreamTexture(0u, dummyRes);
     this->m_scene.allocateBlitPass(RenderBufferHandle(1u), RenderBufferHandle(2u));
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
         bool isDummy = false;
         SceneSizeInformation dummySizes;
@@ -987,7 +980,7 @@ TYPED_TEST(AClientSceneLogic_All, flushClearsListsOfChangedResources)
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, isDummy, dummySizes, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, isDummy, dummySizes, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
         EXPECT_EQ(1u, resourceChanges.m_addedClientResourceRefs.size());
         EXPECT_EQ(0u, resourceChanges.m_removedClientResourceRefs.size());
         EXPECT_EQ(4u, resourceChanges.m_sceneResourceActions.size());
@@ -995,7 +988,7 @@ TYPED_TEST(AClientSceneLogic_All, flushClearsListsOfChangedResources)
     this->m_sceneLogic.flushSceneActions({}, {});
 
     this->m_scene.allocateNode();
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
         bool isDummy = false;
         SceneSizeInformation dummySizes;
@@ -1004,7 +997,7 @@ TYPED_TEST(AClientSceneLogic_All, flushClearsListsOfChangedResources)
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, isDummy, dummySizes, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, isDummy, dummySizes, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
         EXPECT_EQ(0u, resourceChanges.m_addedClientResourceRefs.size());
         EXPECT_EQ(0u, resourceChanges.m_removedClientResourceRefs.size());
         EXPECT_EQ(0u, resourceChanges.m_sceneResourceActions.size());
@@ -1022,11 +1015,11 @@ TYPED_TEST(AClientSceneLogic_All, sendListOfObsoleteResourcesTogetherWithFlush)
     const ResourceContentHash dummyRes(666u, 0);
     this->m_scene.allocateDataLayout({}, ResourceContentHash(45u, 0));
     const RenderTargetHandle renderTarget = this->m_scene.allocateRenderTarget();
-    const RenderBufferHandle renderBuffer = this->m_scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat_R16, ERenderBufferAccessMode_ReadWrite, 0u });
+    const RenderBufferHandle renderBuffer = this->m_scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::R16, ERenderBufferAccessMode_ReadWrite, 0u });
     const StreamTextureHandle streamTex = this->m_scene.allocateStreamTexture(0u, dummyRes);
     const BlitPassHandle blitpassHandle = this->m_scene.allocateBlitPass(RenderBufferHandle(1u), RenderBufferHandle(2u));
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
     this->m_sceneLogic.flushSceneActions({}, {});
 
     this->m_scene.releaseRenderTarget(renderTarget);
@@ -1034,10 +1027,10 @@ TYPED_TEST(AClientSceneLogic_All, sendListOfObsoleteResourcesTogetherWithFlush)
     this->m_scene.releaseStreamTexture(streamTex);
     this->m_scene.releaseBlitPass(blitpassHandle);
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_EQ(5u, actionsFromSendScene.numberOfActions());
-        ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene[4].type());
+        ASSERT_EQ(5u, update.actions.numberOfActions());
+        ASSERT_EQ(ESceneActionId::Flush, update.actions[4].type());
 
         bool hasSizeInfo;
         SceneResourceChanges resourceChanges;
@@ -1046,7 +1039,7 @@ TYPED_TEST(AClientSceneLogic_All, sendListOfObsoleteResourcesTogetherWithFlush)
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene[4], flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(update.actions[4], flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferencingInfo, timeInfo, versionTag);
         EXPECT_EQ(0u, resourceChanges.m_addedClientResourceRefs.size());
         EXPECT_EQ(1u, resourceChanges.m_removedClientResourceRefs.size());
         EXPECT_EQ(dummyRes,  resourceChanges.m_removedClientResourceRefs[0]);
@@ -1073,7 +1066,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererAfterFlu
     const NodeHandle node = this->m_scene.allocateNode(0u, NodeHandle(1u));
 
     // expect flush to original renderer first
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
     this->m_sceneLogic.flushSceneActions({}, {});
 
     Mock::VerifyAndClearExpectations(&this->m_sceneGraphProviderComponent);
@@ -1081,25 +1074,24 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererAfterFlu
     this->m_scene.allocateRenderable(node, RenderableHandle(2));
 
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
-    const SceneInfo sceneInfo(this->m_sceneId, this->m_scene.getName());
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, sceneInfo, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, this->m_sceneId, _));
     // expect newly flushed actions to new renderer
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ newRendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ newRendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_EQ(2u, actionsFromSendScene.numberOfActions());
-        EXPECT_EQ(ESceneActionId_AllocateNode, actionsFromSendScene[0].type());
-        EXPECT_EQ(ESceneActionId_Flush, actionsFromSendScene[1].type());
+        ASSERT_EQ(2u, update.actions.numberOfActions());
+        EXPECT_EQ(ESceneActionId::AllocateNode, update.actions[0].type());
+        EXPECT_EQ(ESceneActionId::Flush, update.actions[1].type());
     });
     this->m_sceneLogic.addSubscriber(newRendererID);
 
     Mock::VerifyAndClearExpectations(&this->m_sceneGraphProviderComponent);
 
     // expect newly flushed actions to original and new renderer
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(UnorderedElementsAre(this->m_rendererID, newRendererID), _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(UnorderedElementsAre(this->m_rendererID, newRendererID), _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_EQ(2u, actionsFromSendScene.numberOfActions());
-        EXPECT_EQ(ESceneActionId_AllocateRenderable, actionsFromSendScene[0].type());
-        EXPECT_EQ(ESceneActionId_Flush, actionsFromSendScene[1].type());
+        ASSERT_EQ(2u, update.actions.numberOfActions());
+        EXPECT_EQ(ESceneActionId::AllocateRenderable, update.actions[0].type());
+        EXPECT_EQ(ESceneActionId::Flush, update.actions[1].type());
     });
     this->m_sceneLogic.flushSceneActions({}, {});
 
@@ -1122,10 +1114,10 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererWithNewR
 
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, _, _));
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ newRendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ newRendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_EQ(5u, actionsFromSendScene.numberOfActions());
-        ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
+        ASSERT_EQ(5u, update.actions.numberOfActions());
+        ASSERT_EQ(ESceneActionId::Flush, update.actions.back().type());
 
         bool hasSizeInfo;
         SceneResourceChanges resourceChanges;
@@ -1134,7 +1126,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererWithNewR
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
         ASSERT_EQ(1u, resourceChanges.m_addedClientResourceRefs.size());
         EXPECT_EQ(hash, resourceChanges.m_addedClientResourceRefs[0]);
         EXPECT_TRUE(resourceChanges.m_removedClientResourceRefs.empty());
@@ -1149,16 +1141,16 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererWithVali
     // add some active subscriber so actions are queued
     this->publish();
 
-    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)) };
+    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)), FlushTime::Clock::getClockType() };
     const SceneVersionTag versionTagIn{ 333 };
     this->m_sceneLogic.flushSceneActions(ftiIn, versionTagIn);
 
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, _, _));
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ newRendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ newRendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_EQ(1u, actionsFromSendScene.numberOfActions());
-        ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
+        ASSERT_EQ(1u, update.actions.numberOfActions());
+        ASSERT_EQ(ESceneActionId::Flush, update.actions.back().type());
 
         bool hasSizeInfo;
         SceneResourceChanges resourceChanges;
@@ -1167,7 +1159,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererWithVali
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
         EXPECT_EQ(ftiIn, timeInfo);
         EXPECT_EQ(versionTagIn, versionTag);
     });
@@ -1180,20 +1172,20 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererWithLast
     // add some active subscriber so actions are queued
     this->publish();
 
-    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)) };
+    const FlushTimeInformation ftiIn{ FlushTime::Clock::time_point(std::chrono::milliseconds(2)), FlushTime::Clock::time_point(std::chrono::milliseconds(3)), FlushTime::Clock::getClockType() };
     const SceneVersionTag versionTagIn{ 333 };
     this->m_sceneLogic.flushSceneActions(ftiIn, versionTagIn);
 
-    const FlushTimeInformation ftiIn2{ FlushTime::Clock::time_point(std::chrono::milliseconds(22)), FlushTime::Clock::time_point(std::chrono::milliseconds(33)) };
+    const FlushTimeInformation ftiIn2{ FlushTime::Clock::time_point(std::chrono::milliseconds(22)), FlushTime::Clock::time_point(std::chrono::milliseconds(33)), FlushTime::Clock::getClockType() };
     const SceneVersionTag versionTagIn2{ 123 };
     this->m_sceneLogic.flushSceneActions(ftiIn2, versionTagIn2);
 
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, _, _));
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ newRendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ newRendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_EQ(1u, actionsFromSendScene.numberOfActions());
-        ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
+        ASSERT_EQ(1u, update.actions.numberOfActions());
+        ASSERT_EQ(ESceneActionId::Flush, update.actions.back().type());
 
         bool hasSizeInfo;
         SceneResourceChanges resourceChanges;
@@ -1202,7 +1194,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, sendsSceneToNewlySubscribedRendererWithLast
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
         EXPECT_EQ(ftiIn2, timeInfo);
         EXPECT_EQ(versionTagIn2, versionTag);
     });
@@ -1227,10 +1219,10 @@ TEST_F(AClientSceneLogic_Direct, sendsSceneToNewlySubscribedRendererWithNewResou
     this->m_sceneLogic.addSubscriber(newRendererID);
 
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, _, _));
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ newRendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ newRendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_EQ(6u, actionsFromSendScene.numberOfActions());
-        ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
+        ASSERT_EQ(6u, update.actions.numberOfActions());
+        ASSERT_EQ(ESceneActionId::Flush, update.actions.back().type());
 
         bool hasSizeInfo;
         SceneResourceChanges resourceChanges;
@@ -1239,7 +1231,7 @@ TEST_F(AClientSceneLogic_Direct, sendsSceneToNewlySubscribedRendererWithNewResou
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
         ASSERT_EQ(1u, resourceChanges.m_addedClientResourceRefs.size());
         EXPECT_EQ(hash, resourceChanges.m_addedClientResourceRefs[0]);
         EXPECT_TRUE(resourceChanges.m_removedClientResourceRefs.empty());
@@ -1257,8 +1249,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, doesNotSendSceneUpdatesToNewSubscriberThatU
     this->m_scene.allocateNode();
 
     const ramses_internal::Guid newRendererID("12345678-1234-5678-0000-123456789012");
-    const SceneInfo sceneInfo(this->m_sceneId, this->m_scene.getName());
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, sceneInfo, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, this->m_sceneId, _));
     this->expectFlushSceneActionList();
     this->m_sceneLogic.addSubscriber(newRendererID);
 
@@ -1267,7 +1258,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, doesNotSendSceneUpdatesToNewSubscriberThatU
     this->m_sceneLogic.removeSubscriber(newRendererID);
 
     // expect flush to original renderer first
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
     this->m_sceneLogic.flushSceneActions({}, {});
 
     this->expectSceneUnpublish();
@@ -1288,7 +1279,7 @@ TEST_F(AClientSceneLogic_Direct, doesNotSendAnythingToNewSubscriberThatUnsubscri
     this->m_sceneLogic.removeSubscriber(newRendererID);
 
     // expect flush to original renderer first
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _));
     this->m_sceneLogic.flushSceneActions({}, {});
 
     this->expectSceneUnpublish();
@@ -1303,9 +1294,9 @@ TYPED_TEST(AClientSceneLogic_All, sceneReferenceActionsAreNotSentToNewlySubscrib
     this->m_sceneLogic.addSubscriber(newRendererID);
 
     EXPECT_CALL(this->m_sceneGraphProviderComponent, sendCreateScene(newRendererID, _, _));
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ newRendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ newRendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
         {
-            ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
+            ASSERT_EQ(ESceneActionId::Flush, update.actions.back().type());
 
             bool hasSizeInfo;
             SceneResourceChanges resourceChanges;
@@ -1314,7 +1305,7 @@ TYPED_TEST(AClientSceneLogic_All, sceneReferenceActionsAreNotSentToNewlySubscrib
             FlushTimeInformation timeInfo;
             SceneVersionTag versionTag;
             UInt64 flushIndex = 0u;
-            SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
+            SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
 
             EXPECT_TRUE(sceneReferenceActions.empty());
     });
@@ -1327,9 +1318,9 @@ TYPED_TEST(AClientSceneLogic_All, flushSendsOnlySceneReferenceActionsSinceLastFl
     this->publishAndAddSubscriberWithoutPendingActions();
 
     this->m_scene.linkData(SceneReferenceHandle{ 1 }, DataSlotId{ 2 }, SceneReferenceHandle{ 3 }, DataSlotId{ 4 });
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(_, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
         {
-            ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
+            ASSERT_EQ(ESceneActionId::Flush, update.actions.back().type());
 
             bool hasSizeInfo;
             SceneResourceChanges resourceChanges;
@@ -1338,7 +1329,7 @@ TYPED_TEST(AClientSceneLogic_All, flushSendsOnlySceneReferenceActionsSinceLastFl
             FlushTimeInformation timeInfo;
             SceneVersionTag versionTag;
             UInt64 flushIndex = 0u;
-            SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
+            SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
 
             ASSERT_EQ(1u, sceneReferenceActions.size());
             EXPECT_EQ(SceneReferenceActionType::LinkData, sceneReferenceActions[0].type);
@@ -1350,9 +1341,9 @@ TYPED_TEST(AClientSceneLogic_All, flushSendsOnlySceneReferenceActionsSinceLastFl
     this->flush();
 
     this->m_scene.unlinkData(SceneReferenceHandle{ 1 }, DataSlotId{ 2 });
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(_, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
         {
-            ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
+            ASSERT_EQ(ESceneActionId::Flush, update.actions.back().type());
 
             bool hasSizeInfo;
             SceneResourceChanges resourceChanges;
@@ -1361,7 +1352,7 @@ TYPED_TEST(AClientSceneLogic_All, flushSendsOnlySceneReferenceActionsSinceLastFl
             FlushTimeInformation timeInfo;
             SceneVersionTag versionTag;
             UInt64 flushIndex = 0u;
-            SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
+            SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
 
             ASSERT_EQ(1u, sceneReferenceActions.size());
             EXPECT_EQ(SceneReferenceActionType::UnlinkData, sceneReferenceActions[0].type);
@@ -1370,9 +1361,9 @@ TYPED_TEST(AClientSceneLogic_All, flushSendsOnlySceneReferenceActionsSinceLastFl
     });
     this->flush();
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(_, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        ASSERT_EQ(ESceneActionId_Flush, actionsFromSendScene.back().type());
+        ASSERT_EQ(ESceneActionId::Flush, update.actions.back().type());
 
         bool hasSizeInfo;
         SceneResourceChanges resourceChanges;
@@ -1381,7 +1372,7 @@ TYPED_TEST(AClientSceneLogic_All, flushSendsOnlySceneReferenceActionsSinceLastFl
         FlushTimeInformation timeInfo;
         SceneVersionTag versionTag;
         UInt64 flushIndex = 0u;
-        SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
+        SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, sceneReferenceActions, timeInfo, versionTag);
 
         EXPECT_TRUE(sceneReferenceActions.empty());
     });
@@ -1512,7 +1503,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, sceneActionsAreNotModifiedWhenLastRendererU
     EXPECT_EQ(0u, this->m_scene.getSceneActionCollection().numberOfActions());
 
     this->expectSceneSend();
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(_, _, _, _));
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, _, _, _));
     this->addSubscriber();
     EXPECT_EQ(0u, this->m_scene.getSceneActionCollection().numberOfActions());
 
@@ -1552,9 +1543,9 @@ TYPED_TEST(AClientSceneLogic_All, increasesStatisticCounterForSceneActionsSentWi
 
     UInt32 initialValue = this->m_scene.getStatisticCollection().statSceneActionsSent.getCounterValue();
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        EXPECT_EQ(initialValue + actionsFromSendScene.numberOfActions(), this->m_scene.getStatisticCollection().statSceneActionsSent.getCounterValue());
+        EXPECT_EQ(initialValue + update.actions.numberOfActions(), this->m_scene.getStatisticCollection().statSceneActionsSent.getCounterValue());
     });
     this->m_sceneLogic.flushSceneActions({}, {});
     this->expectSceneUnpublish();
@@ -1569,9 +1560,9 @@ TEST_F(AClientSceneLogic_ShadowCopy, increasesStatisticCounterForSceneActionsSen
 
     this->m_sceneLogic.flushSceneActions({}, {});
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
     {
-        EXPECT_EQ(actionsFromSendScene.numberOfActions(), this->m_scene.getStatisticCollection().statSceneActionsSent.getCounterValue());
+        EXPECT_EQ(update.actions.numberOfActions(), this->m_scene.getStatisticCollection().statSceneActionsSent.getCounterValue());
     });
     this->addSubscriber();
     this->expectSceneUnpublish();
@@ -1615,7 +1606,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, scansForClientResourcesWhenFlushingUnpublis
     this->flush();
     this->publish();
 
-    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneActionList_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& actionsFromSendScene, auto, auto)
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _)).WillOnce([&](const auto&, const auto& update, auto, auto)
         {
             bool hasSizeInfo;
             SceneResourceChanges resourceChanges;
@@ -1624,7 +1615,7 @@ TEST_F(AClientSceneLogic_ShadowCopy, scansForClientResourcesWhenFlushingUnpublis
             FlushTimeInformation timeInfo;
             SceneVersionTag versionTag;
             UInt64 flushIndex = 0u;
-            SceneActionApplier::ReadParameterForFlushAction(actionsFromSendScene.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, referenceInfo, timeInfo, versionTag);
+            SceneActionApplier::ReadParameterForFlushAction(update.actions.back(), flushIndex, hasSizeInfo, sizeInfo, resourceChanges, referenceInfo, timeInfo, versionTag);
             EXPECT_EQ(2u, resourceChanges.m_addedClientResourceRefs.size());
         });
 

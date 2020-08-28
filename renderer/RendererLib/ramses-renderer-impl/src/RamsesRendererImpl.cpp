@@ -11,7 +11,6 @@
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-renderer-api/WarpingMeshData.h"
-#include "ramses-renderer-api/RendererSceneControl_legacy.h"
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-framework-api/DcsmConsumer.h"
@@ -20,7 +19,6 @@
 #include "DisplayConfigImpl.h"
 #include "WarpingMeshDataImpl.h"
 #include "RendererSceneControlImpl.h"
-#include "RendererSceneControlImpl_legacy.h"
 #include "DcsmContentControlImpl.h"
 #include "DcsmContentControlConfigImpl.h"
 #include "DcsmConsumerImpl.h"
@@ -47,7 +45,7 @@ namespace ramses
         , m_binaryShaderCache(config.impl.getBinaryShaderCache() ? new BinaryShaderCacheProxy(*(config.impl.getBinaryShaderCache())) : nullptr)
         , m_rendererResourceCache(config.impl.getRendererResourceCache() ? new RendererResourceCacheProxy(*(config.impl.getRendererResourceCache())) : nullptr)
         , m_pendingRendererCommands()
-        , m_rendererFrameworkLogic(framework.getRamsesConnectionStatusUpdateNotifier(), framework.getResourceComponent(), framework.getScenegraphComponent(), m_rendererCommandBuffer, framework.getFrameworkLock())
+        , m_rendererFrameworkLogic(framework.getResourceComponent(), framework.getScenegraphComponent(), m_rendererCommandBuffer, framework.getFrameworkLock())
         , m_platformFactory(platformFactory != nullptr ? platformFactory : ramses_internal::PlatformFactory_Base::CreatePlatformFactory(m_internalConfig))
         , m_resourceUploader(m_rendererStatistics, m_binaryShaderCache.get())
         , m_renderer(new ramses_internal::WindowedRenderer(m_rendererCommandBuffer, m_rendererFrameworkLogic, *m_platformFactory, m_rendererStatistics, m_internalConfig.getKPIFileName()))
@@ -153,7 +151,7 @@ namespace ramses
 
     RendererSceneControl* RamsesRendererImpl::getSceneControlAPI()
     {
-        if (m_sceneControlAPI_legacy || m_dcsmContentControl)
+        if (m_dcsmContentControl)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Cannot instantiate RendererSceneControl, another scene control API is already in use, only one can be active per session.");
             return nullptr;
@@ -163,32 +161,14 @@ namespace ramses
         {
             LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesRenderer: intstantiating RendererSceneControl");
             m_sceneControlAPI = UniquePtrWithDeleter<RendererSceneControl>{ new RendererSceneControl(*new RendererSceneControlImpl(*this)), [](RendererSceneControl* api) { delete api; } };
-            m_renderer->m_sceneControlLogicActive = true;
         }
 
         return m_sceneControlAPI.get();
     }
 
-    RendererSceneControl_legacy* RamsesRendererImpl::getSceneControlAPI_legacy()
-    {
-        if (m_sceneControlAPI || m_dcsmContentControl)
-        {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Cannot instantiate RendererSceneControl_legacy, another scene control API is already in use, only one can be active per session.");
-            return nullptr;
-        }
-
-        if (!m_sceneControlAPI_legacy)
-        {
-            LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesRenderer: intstantiating RendererSceneControl_legacy");
-            m_sceneControlAPI_legacy = UniquePtrWithDeleter<RendererSceneControl_legacy>{ new RendererSceneControl_legacy(*new RendererSceneControlImpl_legacy(*this)), [](RendererSceneControl_legacy* api) { delete api; } };
-        }
-
-        return m_sceneControlAPI_legacy.get();
-    }
-
     DcsmContentControl* RamsesRendererImpl::createDcsmContentControl(const DcsmContentControlConfig& config)
     {
-        if (m_dcsmContentControl || m_sceneControlAPI || m_sceneControlAPI_legacy)
+        if (m_dcsmContentControl || m_sceneControlAPI)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Cannot instantiate DcsmContentControl, another scene control API is already in use, only one can be active per session.");
             return nullptr;

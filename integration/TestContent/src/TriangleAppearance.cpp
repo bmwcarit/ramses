@@ -12,9 +12,8 @@
 
 #include "TestScenes/TriangleAppearance.h"
 
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"

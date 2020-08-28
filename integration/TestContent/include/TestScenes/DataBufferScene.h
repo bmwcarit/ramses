@@ -17,8 +17,7 @@
 namespace ramses
 {
     class Effect;
-    class IndexDataBuffer;
-    class VertexDataBuffer;
+    class ArrayBuffer;
 }
 
 namespace ramses_internal
@@ -28,7 +27,7 @@ namespace ramses_internal
     class DataBufferScene : public IntegrationScene
     {
     public:
-        DataBufferScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        DataBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {
@@ -63,8 +62,8 @@ namespace ramses_internal
         ramses::MeshNode* m_meshNode;
         ramses::Effect& m_effect;
         ramses::GeometryBinding* m_geometry = nullptr;
-        ramses::IndexDataBuffer* m_indexDataBufferUInt32 = nullptr;
-        ramses::VertexDataBuffer* m_vertexDataBufferVec4 = nullptr;
+        ramses::ArrayBuffer* m_indexDataBufferUInt32 = nullptr;
+        ramses::ArrayBuffer* m_vertexDataBufferVec4 = nullptr;
     };
 }
 

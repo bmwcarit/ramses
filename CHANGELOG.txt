@@ -1,3 +1,50 @@
+26.0.2
+-------------------
+        Build system
+        ------------------------------------------------------------------------
+        - Add option to disable building of tools (ramses-sdk_BUILD_TOOLS). Set to OFF to reduce build time if tools not needed
+
+26.0.0
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - EEffectInputDataType now differentiates between EEffectInputDataType_TextureSampler2D, EEffectInputDataType_TextureSampler3D and EEffectInputDataType_TextureSamplerCube
+          instead of EEffectInputDataType_TextureSampler
+        - Removed deprecated RendererSceneControl API (RendererSceneControl_legacy).
+        - Added RamsesUtils::SaveImageBufferToPng with additional flag "flipImageBufferVertically".
+        - SceneObjects now have a unique (within one Scene) and persistent sceneObjectId_t.
+        - Added Scene::findObjectById which can be used to find SceneObjects within one Scene.
+        - Added support for missing blending factors supported in OpenGL ES 3.0:
+            - Added following value to enum EBlendFactor: EBlendFactor_SrcColor, EBlendFactor_OneMinusSrcColor, EBlendFactor_DstColor, EBlendFactor_OneMinusDstColor,
+              EBlendFactor_ConstColor, EBlendFactor_OneMinusConstColor, EBlendFactor_ConstAlpha, EBlendFactor_OneMinusConstAlpha, EBlendFactor_AlphaSaturate
+        - Add Appearance::setBlendingColor to support setting blending color constant
+        - Added new event callbacks informing about expiration monitoring enable/disable, see docs for details
+            - IRendererSceneControlEventHandler::sceneExpirationMonitoringEnabled, IRendererSceneControlEventHandler::sceneExpirationMonitoringDisabled
+            - IDcsmContentControlEventHandler::contentExpirationMonitoringEnabled, IDcsmContentControlEventHandler::contentExpirationMonitoringDisabled
+        - Extended DCSM to offer Wayland IVI Surface ids as new content type next to Ramses scenes
+        - All usages of Wayland IVI Surface ids on the API (incl. StreamTexture and DisplayConfig) use now the same type "waylandIviSurfaceId_t"
+        - Use strongly typed value for Wayland IVI Layer Id
+        - Add support for Geometry shaders
+            - Added EffectDescription::setGeometryShader and EffectDescription::setGeometryShaderFromFile to specify geometry shader
+        - New resource API
+            - RamsesClient based resources become SceneObjects, resource creation, destruction and ownership move to Scene
+            - New ArrayResource class, replaces UIntxxArray, FloatArray and VectorxFArray classes
+            - New ArrayBuffer class, replaces IndexBufferObject and VertexBufferObject
+            - Scene::createArrayBuffer has data type as first argument and size is given in number of elements instead of bytes!
+            - ArrayBuffer::updateData replaces old Vertex/IndexBufferData::setData, takes offset and size as element index instead of bytes!
+            - ArrayBuffer: getData and both buffer size getters all based on numbers of elements instead of number of bytes!
+            - Scene::createTexture2D/3D/Cube have texture format as first argument, this is to make resource creation APIs consistent
+            - Scene::createTexture2DBuffer has texture format as first argument and mipCount last, this is to make resource creation APIs consistent
+            - Texture2DBuffer::updateData replaces old Texture2DBuffer::setData, reordered arguments make resource APIs consistent
+            - ETextureFormat and EDataType are enum classes, no implicit conversion to/from integer possible
+            - Scene file saving moved to Scene and now saves only one scene file, which also includes resources
+            - Removed all loadResources/saveResources functions from RamsesClient and removed ResourceFileDescription classes
+            - Added ResourceDataPool to be compatible to legacy ramses behavior: scene independent resource and resource file usage (deprecated)
+            - In RamsesClient replaced findObjectByName by findSceneByName, add getScene function
+        - Data objects can be bound to camera frustum planes, this allows 1 to N data distribution and also data linking of camera frustum planes
+          (indirectly also field of view and aspect ratio), see docs for details:
+            - LocalCamera::bindFrustumPlanes, LocalCamera::unbindFrustumPlanes, LocalCamera::isFrustumPlanesBound and RamsesUtils::SetPerspectiveCameraFrustumToDataObjects
+
 25.0.6
 -------------------
         Bugfixes

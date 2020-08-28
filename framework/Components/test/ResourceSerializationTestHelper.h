@@ -64,16 +64,26 @@ namespace ramses_internal
         EXPECT_EQ(a.getCacheFlag(), b.getCacheFlag());
         EXPECT_EQ(a.getName(), b.getName());
 
-        ASSERT_TRUE(a.isDeCompressedAvailable());
-        ASSERT_TRUE(b.isDeCompressedAvailable());
-        ASSERT_TRUE(a.getResourceData().data());
-        ASSERT_TRUE(b.getResourceData().data());
-        ASSERT_EQ(a.getResourceData().size(), b.getResourceData().size());
-        EXPECT_EQ(0, PlatformMemory::Compare(a.getResourceData().data(), b.getResourceData().data(), a.getResourceData().size()));
+        ASSERT_EQ(a.isDeCompressedAvailable(), b.isDeCompressedAvailable());
+        if (a.isDeCompressedAvailable())
+        {
+            ASSERT_TRUE(a.getResourceData().data());
+        }
+        if (b.isDeCompressedAvailable())
+        {
+            ASSERT_TRUE(b.getResourceData().data());
+        }
+        if (a.isDeCompressedAvailable())
+        {
+            ASSERT_EQ(a.getResourceData().size(), b.getResourceData().size());
+            EXPECT_EQ(0, PlatformMemory::Compare(a.getResourceData().data(), b.getResourceData().data(), a.getResourceData().size()));
+        }
     }
 
     inline void ResourceSerializationTestHelper::SetResourceDataRandom(IResource& res, UInt32 blobSize)
     {
+        if (!blobSize)
+            return;
         const uint8_t seed = static_cast<UInt8>(TestRandom::Get(0, 256));
         ResourceBlob data(blobSize);
         for (size_t i = 0; i < data.size(); ++i)
@@ -87,7 +97,7 @@ namespace ramses_internal
     template <>
     inline IResource* ResourceSerializationTestHelper::CreateTestResource<TextureResource>(UInt32 blobSize)
     {
-        const TextureMetaInfo texDesc{ 16u, 17u, 1u, ETextureFormat_RGBA16, false, {}, { 18u, 19u} };
+        const TextureMetaInfo texDesc{ 16u, 17u, 1u, ETextureFormat::RGBA16, false, {}, { 18u, 19u} };
         TextureResource* resource = new TextureResource(EResourceType_Texture3D, texDesc, ResourceCacheFlag(15u), "resName");
         SetResourceDataRandom(*resource, blobSize);
         return resource;
@@ -108,7 +118,7 @@ namespace ramses_internal
     template <>
     inline IResource* ResourceSerializationTestHelper::CreateTestResource<ArrayResource>(UInt32 blobSize)
     {
-        ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 3, EDataType_Vector3F, nullptr, ResourceCacheFlag(15u), "resName");
+        ArrayResource* resource = new ArrayResource(EResourceType_VertexArray, 0, EDataType::Vector3F, nullptr, ResourceCacheFlag(15u), "resName");
         SetResourceDataRandom(*resource, blobSize);
         return resource;
     }
@@ -126,14 +136,17 @@ namespace ramses_internal
     {
         String vert;
         String frag;
-        vert.resize(blobSize / 2);
-        frag.resize(blobSize / 2);
-        for (UInt32 i = 0; i < blobSize / 2; ++i)
+        String geom;
+        vert.resize(blobSize / 3);
+        frag.resize(blobSize / 3);
+        geom.resize(blobSize / 3);
+        for (UInt32 i = 0; i < blobSize / 3; ++i)
         {
             vert[i] = 'a';
             frag[i] = 'b';
+            geom[i] = 'c';
         }
-        EffectResource* resource = new EffectResource(vert, frag, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", ResourceCacheFlag(1u));
+        EffectResource* resource = new EffectResource(vert, frag, geom, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", ResourceCacheFlag(1u));
         return resource;
     }
 
@@ -142,6 +155,7 @@ namespace ramses_internal
     {
         EXPECT_STREQ(a.getVertexShader(), b.getVertexShader());
         EXPECT_STREQ(a.getFragmentShader(), b.getFragmentShader());
+        EXPECT_STREQ(a.getGeometryShader(), b.getGeometryShader());
     }
 }
 

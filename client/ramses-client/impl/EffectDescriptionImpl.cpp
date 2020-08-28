@@ -37,6 +37,12 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t EffectDescriptionImpl::setGeometryShader(const char* shaderSource)
+    {
+        m_geometryShaderSource = shaderSource;
+        return StatusOK;
+    }
+
     status_t EffectDescriptionImpl::setVertexShaderFromFile(const char* shaderSourceFileName)
     {
         if (!ReadFileContentsToString(shaderSourceFileName, m_vertexShaderSource))
@@ -52,6 +58,16 @@ namespace ramses
         if (!ReadFileContentsToString(shaderSourceFileName, m_fragmentShaderSource))
         {
             return addErrorEntry("EffectDescription::setFragmentShaderFromFile could not read file!");
+        }
+
+        return StatusOK;
+    }
+
+    ramses::status_t EffectDescriptionImpl::setGeometryShaderFromFile(const char* shaderSourceFileName)
+    {
+        if (!ReadFileContentsToString(shaderSourceFileName, m_geometryShaderSource))
+        {
+            return addErrorEntry("EffectDescription::setGeometryShaderFromFile could not read file!");
         }
 
         return StatusOK;
@@ -101,6 +117,11 @@ namespace ramses
     const char* EffectDescriptionImpl::getFragmentShader() const
     {
         return m_fragmentShaderSource.c_str();
+    }
+
+    const char* EffectDescriptionImpl::getGeometryShader() const
+    {
+        return m_geometryShaderSource.c_str();
     }
 
     uint32_t EffectDescriptionImpl::getNumberOfCompilerDefines() const

@@ -18,7 +18,7 @@ namespace ramses_internal
     class DataLinkScene : public IntegrationScene
     {
     public:
-        DataLinkScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        DataLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
 
         enum
         {

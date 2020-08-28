@@ -15,7 +15,7 @@
 #include "Scene/SceneResourceChanges.h"
 #include "SceneReferencing/SceneReferenceAction.h"
 #include "Components/FlushTimeInformation.h"
-#include <deque>
+#include "Components/ManagedResource.h"
 
 namespace ramses_internal
 {
@@ -27,9 +27,8 @@ namespace ramses_internal
         UInt64                flushIndex = 0u;
         FlushTimeInformation  timeInfo;
         SceneVersionTag       versionTag;
-
     };
-    typedef std::deque<PendingFlush> PendingFlushes;
+    typedef std::vector<PendingFlush> PendingFlushes;
 
     struct PendingData
     {
@@ -66,6 +65,7 @@ namespace ramses_internal
         ResourceContentHashVector clientResourcesInUse;
         PendingData               pendingData;
         SceneVersionTag           lastAppliedVersionTag;
+        ManagedResourceVector     resourcesToUploadOnceMapping;
     };
 }
 

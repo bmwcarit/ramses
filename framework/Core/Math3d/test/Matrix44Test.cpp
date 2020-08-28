@@ -8,6 +8,7 @@
 
 #include "Math3d/Matrix44f.h"
 #include "framework_common_gmock_header.h"
+#include "IOStreamTester.h"
 #include "gtest/gtest.h"
 
 namespace ramses_internal
@@ -661,5 +662,12 @@ namespace ramses_internal
                   fmt::to_string(mat1));
         EXPECT_EQ("[1.0 2.0 3.0 4.0; 5.0 6.0 7.0 8.0; 9.0 10.0 11.0 12.0; 13.0 14.0 15.0 16.0]",
                   StringOutputStream::ToString(mat1));
+    }
+
+    TEST_F(Matrix44Test, CanSerializeDeserilize)
+    {
+        IOStreamTesterBase::expectSame(Matrix44f::Empty);
+        IOStreamTesterBase::expectSame(Matrix44f::Identity);
+        IOStreamTesterBase::expectSame(mat1);
     }
 }

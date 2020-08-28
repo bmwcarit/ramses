@@ -14,7 +14,6 @@ TextBox::TextBox(const std::u32string&  string,
                  ramses::TextCache&     textCache,
                  ramses::FontInstanceId fontInstance,
                  int32_t                lineHeight,
-                 ramses::RamsesClient&  client,
                  ramses::Scene&         scene,
                  ramses::RenderGroup*   renderGroup,
                  int32_t                renderOrder)
@@ -22,7 +21,7 @@ TextBox::TextBox(const std::u32string&  string,
     , m_translateNode(*scene.createNode())
 {
     ramses::LayoutUtils::StringBoundingBox boundingBox;
-    createTextNodes(string, textCache, fontInstance, lineHeight, client, m_translateNode, boundingBox);
+    createTextNodes(string, textCache, fontInstance, lineHeight, scene, m_translateNode, boundingBox);
 
     const uint32_t width  = boundingBox.width;
     const uint32_t height = boundingBox.height;
@@ -46,7 +45,7 @@ void TextBox::createTextNodes(const std::u32string&      string,
                               ramses::TextCache&         textCache,
                               ramses::FontInstanceId     fontInstance,
                               int32_t lineHeight,
-                              ramses::RamsesClient&      client,
+                              ramses::Scene&             scene,
                               ramses::Node&              node,
                               ramses::LayoutUtils::StringBoundingBox& boundingBox)
 {
@@ -59,7 +58,7 @@ void TextBox::createTextNodes(const std::u32string&      string,
     effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic_TextTexture);
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    ramses::Effect* textEffect = client.createEffect(effectDesc);
+    ramses::Effect* textEffect = scene.createEffect(effectDesc);
     ramses::UniformInput colorInput;
     textEffect->findUniformInput("u_color", colorInput);
 

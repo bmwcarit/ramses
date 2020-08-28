@@ -14,7 +14,6 @@
 #include "RamsesClientImpl.h"
 #include "SceneConfigImpl.h"
 #include "Utils/File.h"
-#include "gtest/gtest-typed-test.h"
 #include "RamsesObjectTestTypes.h"
 #include "EffectImpl.h"
 #include "ClientTestUtils.h"
@@ -101,48 +100,6 @@ namespace ramses
         EXPECT_TRUE(m_framework.isConnected());
     }
 
-    TEST_F(ALocalRamsesClient, canGetResourceByID)
-    {
-        const ramses::Effect* effectFixture = client.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr != effectFixture);
-
-        const resourceId_t resourceID = effectFixture->getResourceId();
-        ramses::Resource* resource = client.findResourceById(resourceID);
-        ASSERT_TRUE(nullptr != resource);
-
-        const ramses::Effect* effectFound = RamsesUtils::TryConvert<ramses::Effect>(*resource);
-        ASSERT_TRUE(nullptr != effectFound);
-
-        ASSERT_TRUE(effectFound == effectFixture);
-
-        const resourceId_t nonExistEffectId = { 0, 0 };
-        ASSERT_TRUE(nullptr == client.findResourceById(nonExistEffectId));
-    }
-
-    TEST_F(ALocalRamsesClient, returnsNULLWhenResourceWithIDCannotBeFound)
-    {
-        const ramses::Effect* effectFixture = client.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr != effectFixture);
-
-        const resourceId_t nonExistEffectId = { 0, 0 };
-        ASSERT_TRUE(nullptr == client.findResourceById(nonExistEffectId));
-    }
-
-    TEST_F(ALocalRamsesClient, returnsNULLWhenTryingToFindDeletedResource)
-    {
-        const ramses::Effect* effectFixture = client.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr != effectFixture);
-
-        const resourceId_t resourceID = effectFixture->getResourceId();
-        ramses::Resource* resource = client.findResourceById(resourceID);
-        ASSERT_TRUE(nullptr != resource);
-
-        client.destroy(*effectFixture);
-
-        ramses::Resource* resourceFound = client.findResourceById(resourceID);
-        ASSERT_TRUE(nullptr == resourceFound);
-    }
-
     TEST_F(ALocalRamsesClient, requestNonexistantStatusMessage)
     {
         const char* msg = client.getStatusMessage(0xFFFFFFFF);
@@ -189,6 +146,42 @@ namespace ramses
         EXPECT_EQ(sceneId, scene->getSceneId());
     }
 
+    TEST_F(ALocalRamsesClient, getsSceneWithGivenId)
+    {
+        const sceneId_t sceneId(33u);
+        const sceneId_t sceneId2(44u);
+        ramses::Scene* scene = client.createScene(sceneId);
+        ramses::Scene* scene2 = client.createScene(sceneId2);
+        ASSERT_TRUE(scene != nullptr);
+
+        EXPECT_EQ(scene2, client.getScene(sceneId2));
+        EXPECT_EQ(scene, client.getScene(sceneId));
+
+        RamsesClient const& clientRef(client);
+        EXPECT_EQ(scene, clientRef.getScene(sceneId));
+        EXPECT_EQ(scene2, clientRef.getScene(sceneId2));
+    }
+
+    TEST_F(ALocalRamsesClient, doesNotGetSceneIfNoSceneOrWrongId)
+    {
+        const sceneId_t sceneId(33u);
+        const sceneId_t sceneId2(44u);
+        EXPECT_FALSE(client.getScene(sceneId));
+        EXPECT_FALSE(client.getScene(sceneId2));
+        ramses::Scene* scene = client.createScene(sceneId);
+        ASSERT_TRUE(scene != nullptr);
+        EXPECT_FALSE(client.getScene(sceneId2));
+    }
+
+    TEST_F(ALocalRamsesClient, returnsNullptrWhenGettingDestroyedScene)
+    {
+        const sceneId_t sceneId(33u);
+        ramses::Scene* scene = client.createScene(sceneId);
+        ASSERT_TRUE(scene);
+        EXPECT_EQ(client.destroy(*scene), StatusOK);
+        EXPECT_FALSE(client.getScene(sceneId));
+    }
+
     TEST_F(ALocalRamsesClient, createdSceneHasClientReference)
     {
         ramses::Scene* scene = client.createScene(sceneId_t(1));
@@ -207,144 +200,6 @@ namespace ramses
         EXPECT_TRUE(scene != nullptr);
         ramses::Node* node = scene->createNode("node");
         EXPECT_TRUE(node != nullptr);
-    }
-
-    // effect from string: valid uses
-    TEST_F(ALocalRamsesClient, createEffectFromGLSLString_withName)
-    {
-        const ramses::Effect* effectFixture = client.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr != effectFixture);
-    }
-
-    TEST_F(ALocalRamsesClient, createEffectFromGLSLString_withDefines)
-    {
-        effectDescriptionEmpty.addCompilerDefine("float dummy;");
-        const ramses::Effect* effectFixture = client.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr != effectFixture);
-    }
-
-    // effect from string: invalid uses
-    TEST_F(ALocalRamsesClient, createEffectFromGLSLString_invalidVertexShader)
-    {
-        effectDescriptionEmpty.setVertexShader("void main(void) {dsadsadasd}");
-        const ramses::Effect* effectFixture = client.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr == effectFixture);
-    }
-
-    TEST_F(ALocalRamsesClient, createEffectFromGLSLString_emptyVertexShader)
-    {
-        effectDescriptionEmpty.setVertexShader("");
-        const ramses::Effect* effectFixture = client.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr == effectFixture);
-    }
-
-    TEST_F(ALocalRamsesClient, createEffectFromGLSLString_invalidFragmentShader)
-    {
-        effectDescriptionEmpty.setFragmentShader("void main(void) {dsadsadasd}");
-        const ramses::Effect* effectFixture = client.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr == effectFixture);
-    }
-
-    TEST_F(ALocalRamsesClient, createEffectFromGLSLString_emptyFragmentShader)
-    {
-        effectDescriptionEmpty.setFragmentShader("");
-        const ramses::Effect* effectFixture = client.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr == effectFixture);
-    }
-
-    TEST_F(ALocalRamsesClient, createEffectFromGLSLString_invalidDefines)
-    {
-        effectDescriptionEmpty.addCompilerDefine("thisisinvalidstuff\n8fd7f9ds");
-        const ramses::Effect* effectFixture = client.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr == effectFixture);
-    }
-
-    TEST_F(ALocalRamsesClient, createEffectFromGLSLString_withInputSemantics)
-    {
-        effectDescriptionEmpty.setVertexShader(
-            "uniform mat4 someMatrix;"
-            "void main(void)"
-            "{"
-            "gl_Position = someMatrix * vec4(1.0);"
-            "}");
-        effectDescriptionEmpty.setUniformSemantic("someMatrix", ramses::EEffectUniformSemantic_ProjectionMatrix);
-        const ramses::Effect* effectFixture = client.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr != effectFixture);
-    }
-
-    TEST_F(ALocalRamsesClient, createEffectFromGLSLString_withInputSemanticsOfWrongType)
-    {
-        effectDescriptionEmpty.setVertexShader(
-            "uniform mat2 someMatrix;"
-            "void main(void)"
-            "{"
-            "gl_Position = someMatrix * vec4(1.0);"
-            "}");
-        effectDescriptionEmpty.setUniformSemantic("someMatrix", ramses::EEffectUniformSemantic_ProjectionMatrix);
-        const ramses::Effect* effectFixture = client.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_FALSE(nullptr != effectFixture);
-    }
-
-    // effect from file: valid uses
-    TEST_F(ALocalRamsesClient, createEffectFromGLSL_withName)
-    {
-        ramses::EffectDescription effectDesc;
-        effectDesc.setVertexShaderFromFile("res/ramses-client-test_minimalShader.vert");
-        effectDesc.setFragmentShaderFromFile("res/ramses-client-test_minimalShader.frag");
-        const ramses::Effect* effectFixture = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr != effectFixture);
-    }
-
-
-    // effect from file: invalid uses
-    TEST_F(ALocalRamsesClient, createEffectFromGLSL_nonExistantVertexShader)
-    {
-        ramses::EffectDescription effectDesc;
-        effectDesc.setVertexShaderFromFile("res/this_file_should_not_exist_fdsfdsjf84w9wufw.vert");
-        effectDesc.setFragmentShaderFromFile("res/ramses-client-test_minimalShader.frag");
-        const ramses::Effect* effectFixture = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr == effectFixture);
-    }
-
-    TEST_F(ALocalRamsesClient, createEffectFromGLSL_nonExistantFragmentShader)
-    {
-        ramses::EffectDescription effectDesc;
-        effectDesc.setVertexShaderFromFile("res/ramses-client-test_minimalShader.frag");
-        effectDesc.setFragmentShaderFromFile("res/this_file_should_not_exist_fdsfdsjf84w9wufw.vert");
-        const ramses::Effect* effectFixture = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr == effectFixture);
-    }
-
-    TEST_F(ALocalRamsesClient, createEffectFromGLSL_NULLVertexShader)
-    {
-        ramses::EffectDescription effectDesc;
-        effectDesc.setVertexShaderFromFile("");
-        effectDesc.setFragmentShaderFromFile("res/this_file_should_not_exist_fdsfdsjf84w9wufw.vert");
-        const ramses::Effect* effectFixture = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr == effectFixture);
-    }
-
-    TEST_F(ALocalRamsesClient, createEffectFromGLSL_NULLFragmentShader)
-    {
-        ramses::EffectDescription effectDesc;
-        effectDesc.setVertexShaderFromFile("res/this_file_should_not_exist_fdsfdsjf84w9wufw.vert");
-        effectDesc.setFragmentShaderFromFile("");
-        const ramses::Effect* effectFixture = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr == effectFixture);
-    }
-
-    TEST_F(ALocalRamsesClient, verifyHLAPILogCanHandleNullPtrReturnWhenEnabled)
-    {
-        ramses_internal::ELogLevel oldLogLevel = ramses_internal::CONTEXT_HLAPI_CLIENT.getLogLevel();
-        ramses_internal::CONTEXT_HLAPI_CLIENT.setLogLevel(ramses_internal::ELogLevel::Trace);
-
-        ramses::EffectDescription effectDesc;
-        effectDesc.setVertexShaderFromFile("res/this_file_should_not_exist_fdsfdsjf84w9wufw.vert");
-        effectDesc.setFragmentShaderFromFile("");
-        const ramses::Effect* effectFixture = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "name");
-        EXPECT_TRUE(nullptr == effectFixture);
-
-        ramses_internal::CONTEXT_HLAPI_CLIENT.setLogLevel(oldLogLevel);
     }
 
     TEST_F(ALocalRamsesClient, requestValidStatusMessage)
@@ -367,10 +222,10 @@ namespace ramses
         using ramses_internal::SceneInfo;
         ramses_internal::SceneId internalSceneId(sceneId.getValue());
 
-        EXPECT_CALL(sceneActionsCollector, handleNewScenesAvailable(SceneInfoVector(1, SceneInfo(internalSceneId, ramses_internal::String(scene->getName()))), testing::_, testing::_));
-        EXPECT_CALL(sceneActionsCollector, handleInitializeScene(testing::_, testing::_));
-        EXPECT_CALL(sceneActionsCollector, handleSceneActionList_rvr(ramses_internal::SceneId(sceneId.getValue()), testing::_, testing::_, testing::_));
-        EXPECT_CALL(sceneActionsCollector, handleScenesBecameUnavailable(SceneInfoVector(1, SceneInfo(internalSceneId)), testing::_));
+        EXPECT_CALL(sceneActionsCollector, handleNewSceneAvailable(SceneInfo(internalSceneId, ramses_internal::String(scene->getName())), _));
+        EXPECT_CALL(sceneActionsCollector, handleInitializeScene(_, _));
+        EXPECT_CALL(sceneActionsCollector, handleSceneUpdate_rvr(ramses_internal::SceneId(sceneId.getValue()), _, _));
+        EXPECT_CALL(sceneActionsCollector, handleSceneBecameUnavailable(internalSceneId, _));
 
         scene->publish(ramses::EScenePublicationMode_LocalOnly);
         scene->flush();

@@ -85,30 +85,30 @@ namespace ramses
         switch (type)
         {
         case ERamsesObjectType_DataFloat:
-            return ramses_internal::EDataType_Float;
+            return ramses_internal::EDataType::Float;
         case ERamsesObjectType_DataVector2f:
-            return ramses_internal::EDataType_Vector2F;
+            return ramses_internal::EDataType::Vector2F;
         case ERamsesObjectType_DataVector3f:
-            return ramses_internal::EDataType_Vector3F;
+            return ramses_internal::EDataType::Vector3F;
         case ERamsesObjectType_DataVector4f:
-            return ramses_internal::EDataType_Vector4F;
+            return ramses_internal::EDataType::Vector4F;
         case ERamsesObjectType_DataMatrix22f:
-            return ramses_internal::EDataType_Matrix22F;
+            return ramses_internal::EDataType::Matrix22F;
         case ERamsesObjectType_DataMatrix33f:
-            return ramses_internal::EDataType_Matrix33F;
+            return ramses_internal::EDataType::Matrix33F;
         case ERamsesObjectType_DataMatrix44f:
-            return ramses_internal::EDataType_Matrix44F;
+            return ramses_internal::EDataType::Matrix44F;
         case ERamsesObjectType_DataInt32:
-            return ramses_internal::EDataType_Int32;
+            return ramses_internal::EDataType::Int32;
         case ERamsesObjectType_DataVector2i:
-            return ramses_internal::EDataType_Vector2I;
+            return ramses_internal::EDataType::Vector2I;
         case ERamsesObjectType_DataVector3i:
-            return ramses_internal::EDataType_Vector3I;
+            return ramses_internal::EDataType::Vector3I;
         case ERamsesObjectType_DataVector4i:
-            return ramses_internal::EDataType_Vector4I;
+            return ramses_internal::EDataType::Vector4I;
         default:
             assert(false);
-            return ramses_internal::EDataType_Invalid;
+            return ramses_internal::EDataType::Invalid;
         }
     }
 

@@ -52,11 +52,11 @@ namespace ramses_internal
         creator.allocateRenderState(RenderStateHandle(2u));
 
         ASSERT_EQ(5u, collection.numberOfActions());
-        EXPECT_EQ(ESceneActionId_Flush, collection[0].type());
-        EXPECT_EQ(ESceneActionId_AllocateNode, collection[1].type());
-        EXPECT_EQ(ESceneActionId_Flush, collection[2].type());
-        EXPECT_EQ(ESceneActionId_Flush, collection[3].type());
-        EXPECT_EQ(ESceneActionId_AllocateRenderState, collection[4].type());
+        EXPECT_EQ(ESceneActionId::Flush, collection[0].type());
+        EXPECT_EQ(ESceneActionId::AllocateNode, collection[1].type());
+        EXPECT_EQ(ESceneActionId::Flush, collection[2].type());
+        EXPECT_EQ(ESceneActionId::Flush, collection[3].type());
+        EXPECT_EQ(ESceneActionId::AllocateRenderState, collection[4].type());
     }
 
     TEST_F(ASceneActionCollectionCreatorAndApplier, createsAndReadsExpectedFlushIdx)
@@ -99,8 +99,8 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionCreatorAndApplier, canReadFlushTimeInfo)
     {
-        const FlushTimeInformation timeInfo0{ FlushTime::Clock::time_point(std::chrono::milliseconds(20)), FlushTime::Clock::time_point(std::chrono::milliseconds(30)) };
-        const FlushTimeInformation timeInfo1{ FlushTime::Clock::time_point(std::chrono::milliseconds(200)), FlushTime::Clock::time_point(std::chrono::milliseconds(300)) };
+        const FlushTimeInformation timeInfo0{ FlushTime::Clock::time_point(std::chrono::milliseconds(20)), FlushTime::Clock::time_point(std::chrono::milliseconds(30)), FlushTime::Clock::getClockType() };
+        const FlushTimeInformation timeInfo1{ FlushTime::Clock::time_point(std::chrono::milliseconds(200)), FlushTime::Clock::time_point(std::chrono::milliseconds(300)), FlushTime::Clock::getClockType() };
 
         creator.flush(1u, false, SceneSizeInformation(), SceneResourceChanges(), {}, timeInfo0);
         creator.flush(2u, false, SceneSizeInformation(), SceneResourceChanges(), {}, timeInfo1);
@@ -114,7 +114,7 @@ namespace ramses_internal
 
     TEST_F(ASceneActionCollectionCreatorAndApplier, canReadFlushTimeInfoIfExpirationTimestampNotSet)
     {
-        const FlushTimeInformation timeInfoIn{ FlushTime::InvalidTimestamp, FlushTime::Clock::time_point(std::chrono::milliseconds(30)) };
+        const FlushTimeInformation timeInfoIn{ FlushTime::InvalidTimestamp, FlushTime::Clock::time_point(std::chrono::milliseconds(30)), FlushTime::Clock::getClockType() };
         creator.flush(1u, false, SceneSizeInformation(), SceneResourceChanges(), {}, timeInfoIn);
 
         readFlushByIndex(0);

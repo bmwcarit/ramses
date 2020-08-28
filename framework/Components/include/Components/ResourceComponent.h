@@ -31,7 +31,7 @@ namespace ramses_internal
 {
     class IConnectionStatusUpdateNotifier;
     class ICommunicationSystem;
-    class ResourceStreamDeserializer;
+    class SceneUpdateStreamDeserializer;
 
     struct ResourceLoadInfo
     {
@@ -71,6 +71,7 @@ namespace ramses_internal
         virtual ResourceHashUsage getResourceHashUsage(const ResourceContentHash& hash) override;
         virtual void addResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ramses_internal::ResourceTableOfContents& toc) override;
         virtual bool hasResourceFile(const String& resourceFileName) const override;
+        virtual void forceLoadFromResourceFile(const String& resourceFileName) override;
         virtual void removeResourceFile(const String& resourceFileName) override;
 
         // implement IResourceConsumerComponent
@@ -79,23 +80,24 @@ namespace ramses_internal
         virtual ManagedResourceVector popArrivedResources(const ResourceRequesterID& requesterID) override;
 
         // implement ResourceProviderServiceHandler
-        virtual void handleRequestResources(const ResourceContentHashVector& ids, UInt32 chunkSize, const Guid& participantTherequestCameFrom) override;
+        virtual void handleRequestResources(const ResourceContentHashVector& ids, const Guid& participantTherequestCameFrom) override;
 
         // implement IConnectionStatusListener
         void newParticipantHasConnected(const Guid& guid) override;
         void participantHasDisconnected(const Guid& guid) override;
 
         // implement ResourceConsumerServiceHandler
-        virtual void handleSendResource(const absl::Span<const Byte>& data, const Guid& providerID) override;
+        virtual void handleSendResource(absl::Span<const Byte> data, const Guid& providerID) override;
         virtual void handleResourcesNotAvailable(const ResourceContentHashVector& resources, const Guid& providerID) override;
 
         // internal / testing
         void resourceHasBeenLoadedFromFile(IResource* loadedResource, uint32_t size);
         void handleArrivedResource(const ManagedResource& resource);
-        bool isReceivingFromParticipant(const Guid& participant) const;
+        bool hasDeserializerForParticipant(const Guid& participant) const;
         bool hasRequestForResource(ResourceContentHash hash, ResourceRequesterID requester) const;
 
         virtual void reserveResourceCount(uint32_t totalCount) override;
+        ManagedResourceVector resolveResources(ResourceContentHashVector& vec) override;
 
     private:
         class LoadResourcesFromFileTask : public ITask
@@ -138,13 +140,13 @@ namespace ramses_internal
         ICommunicationSystem& m_communicationSystem;
         Guid m_myAddress;
 
-        HashMap<Guid, ResourceStreamDeserializer*>              m_resourceDeserializers;
-        RequestsMap                                             m_requestedResources;
-        std::unordered_map<ResourceRequesterID, ManagedResourceVector>  m_arrivedResources;
-        std::unordered_map<ResourceRequesterID, bool>                   m_hasArrivedRemoteResources;
-        std::vector<ResourceContentHash>                        m_unrequestedResources;
+        std::unordered_map<Guid, std::unique_ptr<SceneUpdateStreamDeserializer>> m_resourceDeserializers;
+        RequestsMap                                                              m_requestedResources;
+        std::unordered_map<ResourceRequesterID, ManagedResourceVector>           m_arrivedResources;
+        std::unordered_map<ResourceRequesterID, bool>                            m_hasArrivedRemoteResources;
+        std::vector<ResourceContentHash>                                         m_unrequestedResources;
 
-        StatisticCollectionFramework&                           m_statistics;
+        StatisticCollectionFramework& m_statistics;
     };
 }
 

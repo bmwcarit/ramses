@@ -6,8 +6,10 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ADD_SUBDIRECTORY(ramses-utils)
-ADD_SUBDIRECTORY(ramses-resource-tools)
-ADD_SUBDIRECTORY(ramses-shader-tools)
-ADD_SUBDIRECTORY(ramses-scene-viewer)
-ADD_SUBDIRECTORY(ramses-stream-viewer)
+if(ramses-sdk_BUILD_TOOLS)
+    ADD_SUBDIRECTORY(ramses-utils)
+    ADD_SUBDIRECTORY(ramses-resource-tools)
+    ADD_SUBDIRECTORY(ramses-shader-tools)
+    ADD_SUBDIRECTORY(ramses-scene-viewer)
+    ADD_SUBDIRECTORY(ramses-stream-viewer)
+endif()

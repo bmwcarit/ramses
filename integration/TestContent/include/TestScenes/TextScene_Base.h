@@ -25,7 +25,7 @@ namespace ramses_internal
     class TextScene_Base : public IntegrationScene
     {
     public:
-        TextScene_Base(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, const Vector3& cameraPosition);
+        TextScene_Base(ramses::Scene& scene, const Vector3& cameraPosition);
 
     protected:
         ramses::FontRegistry        m_fontRegistry;

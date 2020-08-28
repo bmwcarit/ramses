@@ -57,8 +57,8 @@ namespace ramses_internal
 
         RNODISCARD bool getSizeInBytes(size_t& size) const;
 
-        RNODISCARD EStatus read(Char* buffer, size_t length, size_t& numBytes);
-        RNODISCARD bool write(const Char* buffer, size_t length);
+        RNODISCARD EStatus read(void* buffer, size_t length, size_t& numBytes);
+        RNODISCARD bool write(const void* buffer, size_t length);
         RNODISCARD bool seek(std::intptr_t numberOfBytesToSeek, SeekOrigin origin);
         RNODISCARD bool getPos(size_t& position) const;
         bool flush();

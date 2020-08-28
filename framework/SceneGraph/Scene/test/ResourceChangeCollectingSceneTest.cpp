@@ -28,13 +28,13 @@ namespace ramses_internal
             // DataLayout triggers marking its effect hash as new resource, in order not to affect all the test cases here
             // the effect hash used by these default layouts is 'invalid'
             DataFieldInfoVector geometryDataFields(2u);
-            geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType_Indices, 1u, EFixedSemantics_Indices);
-            geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType_Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
+            geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType::Indices, 1u, EFixedSemantics_Indices);
+            geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType::Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
             scene.allocateDataLayout(geometryDataFields, ResourceContentHash::Invalid(), testGeometryLayout);
 
             DataFieldInfoVector uniformDataFields(2u);
-            uniformDataFields[dataField.asMemoryHandle()] = DataFieldInfo(EDataType_Float);
-            uniformDataFields[samplerField.asMemoryHandle()] = DataFieldInfo(EDataType_TextureSampler);
+            uniformDataFields[dataField.asMemoryHandle()] = DataFieldInfo(EDataType::Float);
+            uniformDataFields[samplerField.asMemoryHandle()] = DataFieldInfo(EDataType::TextureSampler2D);
             scene.allocateDataLayout(uniformDataFields, ResourceContentHash::Invalid(), testUniformLayout);
 
             scene.resetResourceChanges();
@@ -113,7 +113,7 @@ namespace ramses_internal
 
     TEST_F(AResourceChangeCollectingScene, createdRenderBufferIsTracked)
     {
-        const RenderBufferHandle handle = scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat_R8, ERenderBufferAccessMode_ReadWrite, 0u });
+        const RenderBufferHandle handle = scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::R8, ERenderBufferAccessMode_ReadWrite, 0u });
         ASSERT_EQ(1u, sceneResourceActions.size());
         EXPECT_EQ(handle, sceneResourceActions[0].handle);
         EXPECT_EQ(ESceneResourceAction_CreateRenderBuffer, sceneResourceActions[0].action);
@@ -124,7 +124,7 @@ namespace ramses_internal
 
     TEST_F(AResourceChangeCollectingScene, destroyedRenderBufferIsTracked)
     {
-        const RenderBufferHandle bufferHandle = scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat_R8, ERenderBufferAccessMode_ReadWrite, 0u });
+        const RenderBufferHandle bufferHandle = scene.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::R8, ERenderBufferAccessMode_ReadWrite, 0u });
         scene.resetResourceChanges();
 
         scene.releaseRenderBuffer(bufferHandle);
@@ -215,7 +215,7 @@ namespace ramses_internal
 
     TEST_F(AResourceChangeCollectingScene, createdDataBufferIsTracked)
     {
-        const DataBufferHandle handle = scene.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType_UInt32, 10u);
+        const DataBufferHandle handle = scene.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType::UInt32, 10u);
         ASSERT_EQ(1u, sceneResourceActions.size());
         EXPECT_EQ(handle, sceneResourceActions[0].handle);
         EXPECT_EQ(ESceneResourceAction_CreateDataBuffer, sceneResourceActions[0].action);
@@ -226,7 +226,7 @@ namespace ramses_internal
 
     TEST_F(AResourceChangeCollectingScene, createdAndUpdatedDataBufferIsTrackedAndSameAsExtractedFromScene)
     {
-        const DataBufferHandle handle = scene.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType_UInt32, 10u);
+        const DataBufferHandle handle = scene.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType::UInt32, 10u);
         scene.updateDataBuffer(handle, 0, 0, nullptr);
         ASSERT_EQ(2u, sceneResourceActions.size());
         EXPECT_EQ(handle, sceneResourceActions[0].handle);
@@ -241,7 +241,7 @@ namespace ramses_internal
 
     TEST_F(AResourceChangeCollectingScene, destroyedDataBufferIsTracked)
     {
-        const DataBufferHandle handle = scene.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType_UInt32, 10u);
+        const DataBufferHandle handle = scene.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType::UInt32, 10u);
         scene.resetResourceChanges();
 
         scene.releaseDataBuffer(handle);
@@ -255,7 +255,7 @@ namespace ramses_internal
 
     TEST_F(AResourceChangeCollectingScene, updatedDataBufferIsTracked)
     {
-        const DataBufferHandle handle = scene.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType_UInt32, 10u);
+        const DataBufferHandle handle = scene.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType::UInt32, 10u);
         scene.resetResourceChanges();
 
         scene.updateDataBuffer(handle, 0u, 0u, nullptr);
@@ -269,7 +269,7 @@ namespace ramses_internal
 
     TEST_F(AResourceChangeCollectingScene, createdTextureBufferIsTracked)
     {
-        const TextureBufferHandle handle = scene.allocateTextureBuffer(ETextureFormat_R16F, { { 1, 1 } });
+        const TextureBufferHandle handle = scene.allocateTextureBuffer(ETextureFormat::R16F, { { 1, 1 } });
         ASSERT_EQ(1u, sceneResourceActions.size());
         EXPECT_EQ(handle, sceneResourceActions[0].handle);
         EXPECT_EQ(ESceneResourceAction_CreateTextureBuffer, sceneResourceActions[0].action);
@@ -280,7 +280,7 @@ namespace ramses_internal
 
     TEST_F(AResourceChangeCollectingScene, createdAndUpdatedTextureBufferIsTrackedAndSameAsExtractedFromScene)
     {
-        const TextureBufferHandle handle = scene.allocateTextureBuffer(ETextureFormat_R16F, { { 1, 1 } });
+        const TextureBufferHandle handle = scene.allocateTextureBuffer(ETextureFormat::R16F, { { 1, 1 } });
         scene.updateTextureBuffer(handle, 0, 0, 0, 0, 0, nullptr);
         ASSERT_EQ(2u, sceneResourceActions.size());
         EXPECT_EQ(handle, sceneResourceActions[0].handle);
@@ -295,7 +295,7 @@ namespace ramses_internal
 
     TEST_F(AResourceChangeCollectingScene, destroyedTextureBufferIsTracked)
     {
-        const TextureBufferHandle handle = scene.allocateTextureBuffer(ETextureFormat_R16F, { {1, 1} });
+        const TextureBufferHandle handle = scene.allocateTextureBuffer(ETextureFormat::R16F, { {1, 1} });
         scene.resetResourceChanges();
 
         scene.releaseTextureBuffer(handle);
@@ -309,7 +309,7 @@ namespace ramses_internal
 
     TEST_F(AResourceChangeCollectingScene, updatedTextureBufferIsTracked)
     {
-        const TextureBufferHandle handle = scene.allocateTextureBuffer(ETextureFormat_R16F, { { 1, 1 } });
+        const TextureBufferHandle handle = scene.allocateTextureBuffer(ETextureFormat::R16F, { { 1, 1 } });
         scene.resetResourceChanges();
 
         const Byte dummyData[2] = { 0 }; // width*height*sizeof(float16) bytes needed

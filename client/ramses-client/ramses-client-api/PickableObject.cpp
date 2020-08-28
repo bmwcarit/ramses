@@ -24,7 +24,7 @@ namespace ramses
 
     PickableObject::~PickableObject() = default;
 
-    const VertexDataBuffer& PickableObject::getGeometryBuffer() const
+    const ArrayBuffer& PickableObject::getGeometryBuffer() const
     {
         return impl.getGeometryBuffer();
     }

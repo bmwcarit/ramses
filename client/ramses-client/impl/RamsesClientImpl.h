@@ -17,6 +17,7 @@
 #include "ramses-client-api/IClientEventHandler.h"
 #include "ramses-client-api/TextureSwizzle.h"
 #include "ramses-client-api/Scene.h"
+#include "ramses-client-api/ResourceDataPool.h"
 
 // RAMSES framework
 #include "Utils/LogContext.h"
@@ -38,14 +39,13 @@
 #include "Collections/HashMap.h"
 #include "RamsesFrameworkTypesImpl.h"
 #include "SceneImpl.h"
+
 #include <memory>
 #include <chrono>
 
 
 namespace ramses_internal
 {
-    class EffectResource;
-    class TextureResource;
     class IInputStream;
     class PrintSceneList;
     class ForceFallbackImage;
@@ -59,14 +59,9 @@ namespace ramses
 {
     class Scene;
     class Effect;
-    class FloatArray;
-    class Vector2fArray;
-    class Vector3fArray;
-    class Vector4fArray;
     class Texture3D;
     class Texture2D;
-    class UInt16Array;
-    class UInt32Array;
+    class ArrayResource;
     class Texture;
     class TextureCube;
     class EffectDescription;
@@ -98,54 +93,25 @@ namespace ramses
         const T* getResourceData(const ramses_internal::ResourceContentHash& hash) const
         {
             ramses_internal::ManagedResource managedResource = getResource(hash);
-            const ramses_internal::IResource* untypedResource = managedResource.getResourceObject();
+            const ramses_internal::IResource* untypedResource = managedResource.get();
             return untypedResource->convertTo<T>();
         }
-        Resource* getHLResource_Threadsafe(resourceId_t rid) const;
         const ramses_internal::ClientApplicationLogic& getClientApplication() const;
         ramses_internal::ClientApplicationLogic& getClientApplication();
 
         Scene* createScene(sceneId_t sceneId, const SceneConfigImpl& sceneConfig, const char* name);
         status_t destroy(Scene& scene);
 
-        const FloatArray* createConstFloatArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
-        const Vector2fArray* createConstVector2fArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
-        const Vector3fArray* createConstVector3fArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
-        const Vector4fArray* createConstVector4fArray(uint32_t count, const float* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
-        const UInt16Array* createConstUInt16Array(uint32_t count, const uint16_t *arrayData, resourceCacheFlag_t cacheFlag, const char* name);
-        const UInt32Array* createConstUInt32Array(uint32_t count, const uint32_t *arrayData, resourceCacheFlag_t cacheFlag, const char* name);
-        Texture2D* createTexture2D(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
-        Texture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name);
-        TextureCube* createTextureCube(uint32_t, ETextureFormat format, resourceCacheFlag_t cacheFlag, const char* name, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle);
-        status_t destroy(const Resource& resource);
+        Scene* loadSceneFromFile(const char* fileName, bool localOnly);
+        status_t loadSceneFromFileAsync(const char* fileName, bool localOnly);
 
-        status_t saveSceneToFile(SceneImpl& scene, const char* fileName, const ResourceFileDescriptionSet& resourceFileInformation, bool compress) const;
-        Scene* loadSceneFromFile(const char* fileName, const ResourceFileDescriptionSet& resourceFileInformation);
-
-        status_t saveResources(const ResourceFileDescription& fileDescription, bool compress) const;
-        status_t saveResources(const ResourceFileDescriptionSet& resourceFileInformation, bool compress) const;
-        status_t loadResources(const ResourceFileDescription& fileDescription);
-        status_t loadResources(const ResourceFileDescriptionSet& resourceFileInformation);
-
-        status_t loadResourcesAsync(const ResourceFileDescription& fileDescription);
-        status_t loadResourcesAsync(const ResourceFileDescriptionSet& resourceFileInformation);
-        status_t loadSceneFromFileAsync(const char* fileName, const ResourceFileDescriptionSet& resourceFileInformation);
         status_t dispatchEvents(IClientEventHandler& clientEventHandler);
 
-        status_t markSceneIdForLoadingAsLocalOnly(sceneId_t sceneId);
-
-        status_t closeResourceFile(const ResourceFileDescription& fileDescription);
-        status_t closeResourceFiles(const ResourceFileDescriptionSet& fileDescriptions);
-
-        RamsesObjectVector getListOfResourceObjects(ERamsesObjectType objType = ERamsesObjectType_Resource) const;
         SceneVector getListOfScenes() const;
-        const RamsesObject* findObjectByName(const char* name) const;
-        RamsesObject* findObjectByName(const char* name);
-        const Resource* scanForResourceWithHash(ramses_internal::ResourceContentHash hash) const;
-
-        Effect* createEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name);
-        Effect* createEffectFromResource(const ramses_internal::EffectResource* res, const ramses_internal::String& name);
-        std::string getLastEffectErrorMessages() const;
+        const Scene* findSceneByName(const char* name) const;
+        Scene* findSceneByName(const char* name);
+        const Scene* getScene(sceneId_t sceneId) const;
+        Scene* getScene(sceneId_t sceneId);
 
         RamsesFrameworkImpl& getFramework();
         static RamsesClientImpl& createImpl(const char* name, RamsesFrameworkImpl& components);
@@ -165,33 +131,34 @@ namespace ramses
 
         SceneReference* findSceneReference(sceneId_t masterSceneId, sceneId_t referencedSceneId);
 
+        ramses_internal::ManagedResource createManagedArrayResource(uint32_t numElements, EDataType type, const void* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
+        template <typename MipDataStorageType>
+        ramses_internal::ManagedResource createManagedTexture(ramses_internal::EResourceType textureType, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipDataStorageType mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
+        ramses_internal::ManagedResource createManagedEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name, std::string& errorMessages);
+
+        void writeLowLevelResourcesToStream(const ResourceObjects& resources, ramses_internal::BinaryFileOutputStream& resourceOutputStream, bool compress) const;
+        static bool ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::BinaryFileInputStream& inputStream, const ramses_internal::String& verboseFileName);
+        static void WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream);
+
+        void onResourceDestroyed(Resource& resource);
+
+        ResourceDataPool& getResourceDataPool();
+        ResourceDataPool const& getResourceDataPool() const;
+
     private:
         friend class ClientFactory;
         RamsesClientImpl(RamsesFrameworkImpl& ramsesFramework, const char* applicationName);
 
-        ArrayResourceImpl& createArrayResourceImpl(uint32_t count, const ramses_internal::Byte* arrayData, resourceCacheFlag_t cacheFlag, const char* name, ramses_internal::EDataType elementType, ERamsesObjectType objectType, ramses_internal::EResourceType resourceType);
-
-        class LoadResourcesRunnable : public ramses_internal::ITask
-        {
-        public:
-            LoadResourcesRunnable(RamsesClientImpl& client, const std::vector<ramses_internal::String>& filenames);
-            virtual void execute() override;
-
-        private:
-            RamsesClientImpl& m_client;
-            std::vector<ramses_internal::String> m_filenames;
-        };
-
         class LoadSceneRunnable : public ramses_internal::ITask
         {
         public:
-            LoadSceneRunnable(RamsesClientImpl& client, const ramses_internal::String& sceneFilename, const std::vector<ramses_internal::String>& resourceFilenames);
+            LoadSceneRunnable(RamsesClientImpl& client, std::string const& sceneFilename, bool localOnly);
             virtual void execute() override;
 
         private:
             RamsesClientImpl& m_client;
-            ramses_internal::String m_sceneFilename;
-            std::vector<ramses_internal::String> m_resourceFilenames;
+            std::string m_sceneFilename;
+            bool m_localOnly;
         };
 
         class DeleteSceneRunnable : public ramses_internal::ITask
@@ -214,52 +181,23 @@ namespace ramses
         struct SceneLoadStatus
         {
             Scene* scene;
-            ramses_internal::String sceneFilename;
+            std::string sceneFilename;
         };
 
-        friend class LoadResourcesRunnable;
         friend class LoadSceneRunnable;
-
-        status_t writeResourcesToFile(const ResourceFileDescription& fileDescription, bool compress) const;
-        status_t closeResourceFile(const ramses_internal::String& fileName);
-
-        static void WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream);
-        static bool ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::BinaryFileInputStream& inputStream, const ramses_internal::String& verboseFileName);
-
-        status_t writeHLResourcesToStream(ramses_internal::IOutputStream& resourceOutputStream, const ResourceObjects& resources) const;
-        void writeLowLevelResourcesToStream(const ResourceObjects& resources, ramses_internal::BinaryFileOutputStream& resourceOutputStream, bool compress) const;
-
-        status_t writeSceneObjectsToStream(SceneImpl& scene, ramses_internal::IOutputStream& outputStream) const;
-
-        Scene* prepareSceneFromInputStream(const char* caller, const ramses_internal::String& filename, ramses_internal::IInputStream& inputStream);
-        template <typename ObjectType, typename ObjectImplType>
-        status_t createAndDeserializeResourceImpls(ramses_internal::IInputStream& inStream, DeserializationContext& deserializationContext, uint32_t count, ResourceVector& container);
-        status_t readResourcesFromFile(const ramses_internal::String& resourceFilename);
-        Scene* prepareSceneAndResourcesFromFiles(const char* caller, const ramses_internal::String& sceneFilename,
-            const std::vector<ramses_internal::String>& resourceFilenames, std::vector<ResourceLoadStatus>& resourceloadStatus);
-        void finalizeLoadedScene(Scene* scene);
-
-        status_t validateScenes(uint32_t indent, StatusObjectSet& visitedObjects) const;
-        status_t validateResources(uint32_t indent, StatusObjectSet& visitedObjects) const;
-        void writeResourcesInfoToValidationMessage(uint32_t indent) const;
-
-        template <typename MipDataStorageType>
-        const ramses_internal::TextureResource* createTextureResource(ramses_internal::EResourceType textureType, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipDataStorageType mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name) const;
 
         ramses_internal::ManagedResource manageResource(const ramses_internal::IResource* res);
 
-        status_t destroyResource(Resource* resource);
-        void addResourceObjectToRegistry_ThreadSafe(Resource& object);
+        Scene* prepareSceneFromInputStream(const char* caller, std::string const& filename, ramses_internal::IInputStream& inputStream, bool localOnly);
+        Scene* prepareSceneFromFile(const char* caller, std::string const& sceneFilename, bool localOnly);
+        void finalizeLoadedScene(Scene* scene);
 
-        bool validateArray(uint32_t count, const void* arrayData) const;
+        status_t validateScenes(uint32_t indent, StatusObjectSet& visitedObjects) const;
 
         RamsesClient* m_hlClient = nullptr;
         ramses_internal::ClientApplicationLogic m_appLogic;
         ramses_internal::SceneFactory     m_sceneFactory;
 
-        RamsesObjectRegistry m_resources;
-        typedef ramses_internal::HashMap<resourceId_t, Resource*> HLResourceHashMap;
-        HLResourceHashMap    m_resourcesById;
         SceneVector          m_scenes;
 
         std::unique_ptr<ramses_internal::PrintSceneList> m_cmdPrintSceneList;
@@ -275,14 +213,12 @@ namespace ramses
         ramses_internal::TaskForwardingQueue m_loadFromFileTaskQueue;
         ramses_internal::EnqueueOnlyOneAtATimeQueue m_deleteSceneQueue;
 
-        std::vector<ResourceLoadStatus> m_asyncResourceLoadStatusVec;
         std::vector<SceneLoadStatus> m_asyncSceneLoadStatusVec;
-        ramses_internal::HashSet<ramses_internal::SceneId> m_scenesMarkedForLoadAsLocalOnly;
 
         std::chrono::milliseconds m_clientResourceCacheTimeout;
-        std::string               m_effectErrorMessages;
         using ClientResourceCache = std::deque<std::pair<std::chrono::time_point<std::chrono::steady_clock>, ramses_internal::ResourceHashUsage>>;
         ClientResourceCache m_clientResourceCache;
+        ResourceDataPool m_resourceDataPool;
     };
 
     template <typename T>

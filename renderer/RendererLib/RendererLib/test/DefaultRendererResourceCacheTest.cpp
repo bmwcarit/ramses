@@ -77,14 +77,14 @@ public:
         std::vector<uint8_t> data(fileSize);
 
         UInt numReadBytes;
-        EXPECT_EQ(EStatus::Ok, file.read(reinterpret_cast<ramses_internal::Char*>(data.data()), fileSize, numReadBytes));
+        EXPECT_EQ(EStatus::Ok, file.read(data.data(), fileSize, numReadBytes));
 
         file.close();
         EXPECT_TRUE(file.open(File::Mode::WriteNewBinary));
 
         Int32 newSize = static_cast<Int32>(size < 0 ? fileSize + size : size);
 
-        EXPECT_TRUE(file.write(reinterpret_cast<ramses_internal::Char*>(data.data()), newSize));
+        EXPECT_TRUE(file.write(data.data(), newSize));
     }
 
     void corruptTestFile(uint32_t offset)

@@ -57,6 +57,7 @@ namespace ramses_internal
         EBlendFactor    m_blendFactorDstAlpha = EBlendFactor::NUMBER_OF_ELEMENTS;
         EBlendOperation m_blendOperationColor = EBlendOperation::NUMBER_OF_ELEMENTS;
         EBlendOperation m_blendOperationAlpha = EBlendOperation::NUMBER_OF_ELEMENTS;
+        Vector4         m_blendColor = { 0.f, 0.f, 0.f, 0.f };
         ColorWriteMask  m_colorWriteMask = 0;
 
         Bool operator!=(const BlendState& other) const
@@ -67,6 +68,7 @@ namespace ramses_internal
                 || m_blendFactorDstAlpha != other.m_blendFactorDstAlpha
                 || m_blendOperationColor != other.m_blendOperationColor
                 || m_blendOperationAlpha != other.m_blendOperationAlpha
+                || m_blendColor != other.m_blendColor
                 || m_colorWriteMask != other.m_colorWriteMask;
         }
     };

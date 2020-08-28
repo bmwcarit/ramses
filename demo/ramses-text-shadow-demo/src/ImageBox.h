@@ -18,7 +18,6 @@ public:
              uint32_t                width,
              uint32_t                height,
              bool                    blend,
-             ramses::RamsesClient&   client,
              ramses::Scene&          scene,
              ramses::RenderGroup*    renderGroup,
              int32_t                 renderOrder);
@@ -30,7 +29,6 @@ public:
              uint32_t                width,
              uint32_t                height,
              bool                    blend,
-             ramses::RamsesClient&   client,
              ramses::Scene&          scene,
              ramses::RenderGroup*    renderGroup,
              int32_t                 renderOrder);
@@ -41,7 +39,6 @@ private:
     void createGeometry(ramses::TextureSampler& textureSampler,
                         uint32_t                width,
                         uint32_t                height,
-                        ramses::RamsesClient&   client,
                         ramses::Scene&          scene,
                         ramses::RenderGroup*    renderGroup,
                         ramses::Appearance&     appearance,

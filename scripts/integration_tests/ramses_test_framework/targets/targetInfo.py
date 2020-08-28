@@ -11,7 +11,7 @@ import re
 class TargetInfo:
 
     def __init__(self, classname, name, hostname, username, buildJobName, powerDevice=None, powerOutletNr=None, privateKey=None, password=None,
-                 systemMonitorClassname=None, sshPort=22, tcpTestsInterfaceIp=None):
+                 systemMonitorClassname=None, sshPort=22, someIPTestsInterfaceIp=None, tcpTestsInterfaceIp=None):
         """ To use no password for the authentication (key-based) leave password to None!
             If a empty string is passed as password it will be used as password """
 
@@ -29,6 +29,10 @@ class TargetInfo:
         self.sshPort = sshPort
         self.privateKey = privateKey
 
+        if someIPTestsInterfaceIp:
+            self.someIPTestsInterfaceIp = someIPTestsInterfaceIp
+        else:
+            self.someIPTestsInterfaceIp = hostname
         if tcpTestsInterfaceIp:
             self.tcpTestsInterfaceIp = tcpTestsInterfaceIp
         else:
@@ -37,8 +41,8 @@ class TargetInfo:
 
 class BridgedTargetInfo(TargetInfo):
     def __init__(self, targetInfoBridgeTarget, classname, name, hostname, username, buildJobName, powerDevice=None, powerOutletNr=None, privateKey=None, password=None,
-                 systemMonitorClassname=None, sshPort=22, tcpTestsInterfaceIp=None):
+                 systemMonitorClassname=None, sshPort=22, someIPTestsInterfaceIp=None, tcpTestsInterfaceIp=None):
         TargetInfo.__init__(self, classname, name, hostname, username, buildJobName, powerDevice, powerOutletNr, privateKey,
-                            password, systemMonitorClassname, sshPort, tcpTestsInterfaceIp)
+                            password, systemMonitorClassname, sshPort, someIPTestsInterfaceIp, tcpTestsInterfaceIp)
         self.targetInfoBridgeTarget = targetInfoBridgeTarget
 

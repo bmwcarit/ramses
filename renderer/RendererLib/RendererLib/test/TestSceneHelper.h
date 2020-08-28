@@ -39,13 +39,13 @@ namespace ramses_internal
                 ON_CALL(resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeIndexArrayHash)).WillByDefault(Return(DeviceResourceHandle::Invalid()));
 
             DataFieldInfoVector geometryDataFields(2u);
-            geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType_Indices, 1u, EFixedSemantics_Indices);
-            geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType_Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
+            geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType::Indices, 1u, EFixedSemantics_Indices);
+            geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType::Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
             m_sceneAllocator.allocateDataLayout(geometryDataFields, ResourceProviderMock::FakeEffectHash, testGeometryLayout);
 
             DataFieldInfoVector uniformDataFields(2u);
-            uniformDataFields[dataField.asMemoryHandle()] = DataFieldInfo(EDataType_Float);
-            uniformDataFields[samplerField.asMemoryHandle()] = DataFieldInfo(EDataType_TextureSampler);
+            uniformDataFields[dataField.asMemoryHandle()] = DataFieldInfo(EDataType::Float);
+            uniformDataFields[samplerField.asMemoryHandle()] = DataFieldInfo(EDataType::TextureSampler2D);
             m_sceneAllocator.allocateDataLayout(uniformDataFields, ResourceProviderMock::FakeEffectHash, testUniformLayout);
         }
 
@@ -97,7 +97,7 @@ namespace ramses_internal
         RenderPassHandle createRenderPassWithCamera()
         {
             const RenderPassHandle pass = m_sceneAllocator.allocateRenderPass();
-            const auto dataLayout = m_sceneAllocator.allocateDataLayout({DataFieldInfo{EDataType_Vector2I}, DataFieldInfo{EDataType_Vector2I}}, ResourceContentHash::Invalid());
+            const auto dataLayout = m_sceneAllocator.allocateDataLayout({DataFieldInfo{EDataType::Vector2I}, DataFieldInfo{EDataType::Vector2I}}, ResourceContentHash::Invalid());
             const CameraHandle camera = m_sceneAllocator.allocateCamera(ECameraProjectionType_Renderer, m_sceneAllocator.allocateNode(), m_sceneAllocator.allocateDataInstance(dataLayout));
             m_scene.setRenderPassCamera(pass, camera);
             return pass;
@@ -105,8 +105,8 @@ namespace ramses_internal
 
         BlitPassHandle createBlitPassWithDummyRenderBuffers()
         {
-            const RenderBufferHandle sourceRenderBuffer = m_sceneAllocator.allocateRenderBuffer({ 16u, 12u, ERenderBufferType_ColorBuffer, ETextureFormat_R8, ERenderBufferAccessMode_ReadWrite, 0u });
-            const RenderBufferHandle destinationRenderBuffer = m_sceneAllocator.allocateRenderBuffer({ 16u, 12u, ERenderBufferType_ColorBuffer, ETextureFormat_R8, ERenderBufferAccessMode_ReadWrite, 0u });
+            const RenderBufferHandle sourceRenderBuffer = m_sceneAllocator.allocateRenderBuffer({ 16u, 12u, ERenderBufferType_ColorBuffer, ETextureFormat::R8, ERenderBufferAccessMode_ReadWrite, 0u });
+            const RenderBufferHandle destinationRenderBuffer = m_sceneAllocator.allocateRenderBuffer({ 16u, 12u, ERenderBufferType_ColorBuffer, ETextureFormat::R8, ERenderBufferAccessMode_ReadWrite, 0u });
             const BlitPassHandle pass = m_sceneAllocator.allocateBlitPass(sourceRenderBuffer, destinationRenderBuffer);
 
             return pass;
@@ -115,7 +115,7 @@ namespace ramses_internal
         void createRenderTarget()
         {
             m_sceneAllocator.allocateRenderTarget(renderTarget);
-            m_sceneAllocator.allocateRenderBuffer({ 16u, 12u, ERenderBufferType_ColorBuffer, ETextureFormat_R8, ERenderBufferAccessMode_ReadWrite, 0u }, renderTargetColorBuffer);
+            m_sceneAllocator.allocateRenderBuffer({ 16u, 12u, ERenderBufferType_ColorBuffer, ETextureFormat::R8, ERenderBufferAccessMode_ReadWrite, 0u }, renderTargetColorBuffer);
             m_scene.addRenderTargetRenderBuffer(renderTarget, renderTargetColorBuffer);
         }
 

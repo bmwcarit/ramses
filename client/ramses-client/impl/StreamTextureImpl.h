@@ -26,14 +26,14 @@ namespace ramses
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
-        void initializeFrameworkData(streamSource_t source, const Texture2DImpl& fallbackTexture);
+        void initializeFrameworkData(waylandIviSurfaceId_t source, const Texture2DImpl& fallbackTexture);
         virtual void deinitializeFrameworkData() override;
         virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
         status_t forceFallbackImage(bool forceFallbackImage);
         bool getForceFallbackImage() const;
 
-        streamSource_t getStreamSource() const;
+        waylandIviSurfaceId_t getStreamSource() const;
         ramses_internal::StreamTextureHandle getHandle() const;
         ramses_internal::ResourceContentHash getFallbackTextureHash() const;
 

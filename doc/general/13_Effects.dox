@@ -12,9 +12,9 @@
 # Overview
 
 A ramses::Effect describes how geometry is rendered to the screen. An effect
-consists mainly of an vertex and fragment shader, written in the
+consists mainly of vertex and fragment shaders and an optional geometry shader, written in the
 <a href="https://en.wikipedia.org/wiki/OpenGL_Shading_Language">OpenGL Shading Language(GLSL)</a>.
-RAMSES supports source code and binary shaders.
+RAMSES supports shaders provided as source code strings or binary shaders.
 
 # Creating Effects from GLSL Source code
 
@@ -36,6 +36,8 @@ RAMSES supports the following versions of GLSL:
 | ---------------------------------------------------------------------------------------------------------------|----------------|
 | <a href="https://www.khronos.org/registry/OpenGL/specs/es/2.0/GLSL_ES_Specification_1.00.pdf">GLSL-ES 1.00</a> | OpenGL ES 2.0  |
 | <a href="https://www.khronos.org/registry/OpenGL/specs/es/3.0/GLSL_ES_Specification_3.00.pdf">GLSL-ES 3.00</a> | OpenGL ES 3.0  |
+| <a href="https://www.khronos.org/registry/OpenGL/specs/es/3.1/GLSL_ES_Specification_3.10.pdf">GLSL-ES 3.10</a> | OpenGL ES 3.1  |
+| <a href="https://www.khronos.org/registry/OpenGL/specs/es/3.2/GLSL_ES_Specification_3.20.pdf">GLSL-ES 3.20</a> | OpenGL ES 3.2  |
 | <a href="https://www.khronos.org/registry/OpenGL/specs/gl/GLSLangSpec.4.20.pdf">GLSL 4.20</a>                  | OpenGL 4.2     |
 
 The platform dependent variables are set to the minimum values, depending on the used GLSL version.

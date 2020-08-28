@@ -16,7 +16,7 @@ namespace ramses_internal
     class ClientSceneLogicDirect final : public ClientSceneLogicBase
     {
     public:
-        ClientSceneLogicDirect(ISceneGraphSender& sceneGraphSender, ClientScene& scene, const Guid& clientAddress);
+        ClientSceneLogicDirect(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress);
 
         virtual void flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
 

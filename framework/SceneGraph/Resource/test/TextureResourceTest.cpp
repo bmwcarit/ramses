@@ -20,7 +20,7 @@ namespace ramses_internal
             m_texDesc.m_width = 1u;
             m_texDesc.m_height = 2u;
             m_texDesc.m_depth = 3u;
-            m_texDesc.m_format = ETextureFormat_RGB8;
+            m_texDesc.m_format = ETextureFormat::RGB8;
             m_texDesc.m_swizzle = {ETextureChannelColor::Green, ETextureChannelColor::Blue, ETextureChannelColor::Red, ETextureChannelColor::Alpha};
             m_texDesc.m_dataSizes = m_mipLevelSizes;
             m_texDesc.m_generateMipChain = false;

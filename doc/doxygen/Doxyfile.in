@@ -24,7 +24,7 @@ OUTPUT_DIRECTORY       = "@DOXYGEN_TARGET_DIR@"
 EXAMPLE_PATH           = "@DOXYGEN_EXAMPLE_PATH@"
 
 # hide classes in example applications or fwd declarations
-EXCLUDE_SYMBOLS        = QuadSceneInfo TriangleSceneInfo DCSMProviderExample
+EXCLUDE_SYMBOLS        = QuadSceneInfo TriangleSceneInfo SomeIP DCSMProviderExample
 
 INPUT                  = @DOXYGEN_INPUT@
 IMAGE_PATH             = @DOXYGEN_IMAGE_PATH@

@@ -462,28 +462,28 @@ namespace ramses
 
         switch (dataType)
         {
-        case ramses_internal::EDataType_Float:
+        case ramses_internal::EDataType::Float:
             bindId = ContainerTraitsClass::DataField_Float;
             break;
-        case ramses_internal::EDataType_Vector2F:
+        case ramses_internal::EDataType::Vector2F:
             bindId = ContainerTraitsClass::DataField_Vector2f;
             break;
-        case ramses_internal::EDataType_Vector3F:
+        case ramses_internal::EDataType::Vector3F:
             bindId = ContainerTraitsClass::DataField_Vector3f;
             break;
-        case ramses_internal::EDataType_Vector4F:
+        case ramses_internal::EDataType::Vector4F:
             bindId = ContainerTraitsClass::DataField_Vector4f;
             break;
-        case ramses_internal::EDataType_Int32:
+        case ramses_internal::EDataType::Int32:
             bindId = ContainerTraitsClass::DataField_Integer;
             break;
-        case ramses_internal::EDataType_Vector2I:
+        case ramses_internal::EDataType::Vector2I:
             bindId = ContainerTraitsClass::DataField_Vector2i;
             break;
-        case ramses_internal::EDataType_Vector3I:
+        case ramses_internal::EDataType::Vector3I:
             bindId = ContainerTraitsClass::DataField_Vector3i;
             break;
-        case ramses_internal::EDataType_Vector4I:
+        case ramses_internal::EDataType::Vector4I:
             bindId = ContainerTraitsClass::DataField_Vector4i;
             break;
         default:

@@ -12,14 +12,13 @@
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-utils.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/Effect.h"
 
 namespace ramses_internal
 {
-    MultiLanguageTextScene::MultiLanguageTextScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
-        : TextScene_Base(ramsesClient, scene, cameraPosition)
+    MultiLanguageTextScene::MultiLanguageTextScene(ramses::Scene& scene, UInt32 /*state*/, const Vector3& cameraPosition)
+        : TextScene_Base(scene, cameraPosition)
     {
         ramses::EffectDescription effectDesc;
         effectDesc.setVertexShaderFromFile("res/ramses-test-client-text.vert");
@@ -30,7 +29,7 @@ namespace ramses_internal
         effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic_TextTexture);
         effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-        ramses::Effect* effect = ramsesClient.createEffect(effectDesc);
+        ramses::Effect* effect = scene.createEffect(effectDesc);
         ramses::UniformInput colorInput;
         effect->findUniformInput("u_color", colorInput);
 

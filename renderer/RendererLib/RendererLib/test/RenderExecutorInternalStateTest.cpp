@@ -76,24 +76,26 @@ namespace ramses_internal
         CameraHandle createTestCamera(const Vector3& translation = Vector3(0.0f), ECameraProjectionType camProjType = ECameraProjectionType_Renderer)
         {
             const NodeHandle cameraNode = m_sceneAllocator.allocateNode();
-            const auto vpDataLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_DataReference}, DataFieldInfo{EDataType_DataReference} }, ResourceProviderMock::FakeEffectHash);
-            const auto vpDataRefLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType_Vector2I} }, ResourceProviderMock::FakeEffectHash);
-            const auto vpDataInstance = m_sceneAllocator.allocateDataInstance(vpDataLayout);
+            const auto dataLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference} }, {});
+            const auto dataInstance = m_sceneAllocator.allocateDataInstance(dataLayout);
+            const auto vpDataRefLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I} }, {});
             const auto vpOffsetInstance = m_sceneAllocator.allocateDataInstance(vpDataRefLayout);
             const auto vpSizeInstance = m_sceneAllocator.allocateDataInstance(vpDataRefLayout);
-            m_scene.setDataReference(vpDataInstance, Camera::ViewportOffsetField, vpOffsetInstance);
-            m_scene.setDataReference(vpDataInstance, Camera::ViewportSizeField, vpSizeInstance);
-            const CameraHandle camera = m_sceneAllocator.allocateCamera(camProjType, cameraNode, vpDataInstance);
+            const auto frustumPlanesLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector4F} }, {});
+            const auto frustumPlanes = m_sceneAllocator.allocateDataInstance(frustumPlanesLayout);
+            const auto frustumNearFarLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2F} }, {});
+            const auto frustumNearFar = m_sceneAllocator.allocateDataInstance(frustumNearFarLayout);
+            m_scene.setDataReference(dataInstance, Camera::ViewportOffsetField, vpOffsetInstance);
+            m_scene.setDataReference(dataInstance, Camera::ViewportSizeField, vpSizeInstance);
+            m_scene.setDataReference(dataInstance, Camera::FrustumPlanesField, frustumPlanes);
+            m_scene.setDataReference(dataInstance, Camera::FrustumNearFarPlanesField, frustumNearFar);
+            const CameraHandle camera = m_sceneAllocator.allocateCamera(camProjType, cameraNode, dataInstance);
 
-            if (ECameraProjectionType_Perspective == camProjType)
-            {
-                const ramses_internal::ProjectionParams params = ramses_internal::ProjectionParams::Perspective(FakeFoV, FakeAspectRatio, FakeNearPlane, FakeFarPlane);
-                m_scene.setCameraFrustum(camera, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane, params.nearPlane, params.farPlane });
-            }
-            else if (ECameraProjectionType_Orthographic == camProjType)
-            {
-                m_scene.setCameraFrustum(camera, { FakeLeftPlane, FakeRightPlane, FakeBottomPlane, FakeTopPlane, FakeNearPlane, FakeFarPlane });
-            }
+            ProjectionParams params = ProjectionParams::Frustum(ECameraProjectionType_Orthographic, FakeLeftPlane, FakeRightPlane, FakeBottomPlane, FakeTopPlane, FakeNearPlane, FakeFarPlane);
+            if (camProjType == ECameraProjectionType_Perspective)
+                params = ProjectionParams::Perspective(FakeFoV, FakeAspectRatio, FakeNearPlane, FakeFarPlane);
+            m_scene.setDataSingleVector4f(frustumPlanes, DataFieldHandle{ 0 }, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane });
+            m_scene.setDataSingleVector2f(frustumNearFar, DataFieldHandle{ 0 }, { params.nearPlane, params.farPlane });
 
             if (ECameraProjectionType_Renderer != camProjType)
             {
@@ -233,6 +235,16 @@ namespace ramses_internal
         EXPECT_TRUE(matrixFloatEquals(expectedProjectionMat * expectedViewMat * modelMat, m_executorState.getModelViewProjectionMatrix()));
     }
 
+    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsUnchangedIfSetToSameValue)
+    {
+        DepthStencilState depthState;
+        depthState.m_depthFunc = EDepthFunc::Disabled;
+        m_executorState.depthStencilState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+        m_executorState.depthStencilState.setState(depthState);
+        EXPECT_FALSE(m_executorState.depthStencilState.hasChanged());
+    }
+
     TEST_F(ARenderExecutorInternalState, initialSetToDepthRenderStateTriggersChange)
     {
         DepthStencilState depthState;
@@ -240,6 +252,92 @@ namespace ramses_internal
         m_executorState.depthStencilState.setState(depthState);
         EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
         EXPECT_FALSE(depthState != m_executorState.depthStencilState.getState());
+    }
+
+    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsChanged_IfDepthFunctionChanged)
+    {
+        DepthStencilState depthState;
+        depthState.m_depthFunc = EDepthFunc::Disabled;
+        m_executorState.depthStencilState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+
+        depthState.m_depthFunc = EDepthFunc::Greater;
+        m_executorState.depthStencilState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsChanged_IfDepthWriteChanged)
+    {
+        DepthStencilState depthState;
+        depthState.m_depthWrite = EDepthWrite::Disabled;
+        m_executorState.depthStencilState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+
+        depthState.m_depthWrite = EDepthWrite::Enabled;
+        m_executorState.depthStencilState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsChanged_IfStencilFunctionChanged)
+    {
+        DepthStencilState depthState;
+        depthState.m_stencilFunc = EStencilFunc::NeverPass;
+        m_executorState.depthStencilState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+
+        depthState.m_stencilFunc = EStencilFunc::AlwaysPass;
+        m_executorState.depthStencilState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsChanged_IfStencilOperationChanged)
+    {
+        auto runTest = [this](DepthStencilState& depthState, EStencilOp& stencilOp) {
+            stencilOp = EStencilOp::Increment;
+            m_executorState.depthStencilState.setState(depthState);
+            EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+
+            stencilOp = EStencilOp::Invert;
+            m_executorState.depthStencilState.setState(depthState);
+            EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+        };
+
+        {
+            DepthStencilState depthState;
+            runTest(depthState, depthState.m_stencilOpDepthFail);
+        }
+        {
+            DepthStencilState depthState;
+            runTest(depthState, depthState.m_stencilOpDepthPass);
+        }
+        {
+            DepthStencilState depthState;
+            runTest(depthState, depthState.m_stencilOpFail);
+        }
+    }
+
+    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsChanged_IfStencilMaskChanged)
+    {
+        DepthStencilState depthState;
+        depthState.m_stencilMask = 123;
+        m_executorState.depthStencilState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+
+        depthState.m_stencilMask = 124;
+        m_executorState.depthStencilState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsChanged_IfStencilRefValueChanged)
+    {
+        DepthStencilState depthState;
+        depthState.m_stencilRefValue = 123;
+        m_executorState.depthStencilState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+
+        depthState.m_stencilRefValue = 124;
+        m_executorState.depthStencilState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
     }
 
     TEST_F(ARenderExecutorInternalState, initialSetToBlendRenderStateTriggersChange)
@@ -251,6 +349,94 @@ namespace ramses_internal
         EXPECT_FALSE(blendState != m_executorState.blendState.getState());
     }
 
+    TEST_F(ARenderExecutorInternalState, blendRenderStateMarkedAsUnchangedIfSetToSameValue)
+    {
+        BlendState blendState;
+        blendState.m_blendFactorSrcColor = EBlendFactor::OneMinusConstColor;
+        m_executorState.blendState.setState(blendState);
+        EXPECT_TRUE(m_executorState.blendState.hasChanged());
+        m_executorState.blendState.setState(blendState);
+        EXPECT_FALSE(m_executorState.blendState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, blendRenderStateMarkedAsChanged_IfBlendFactorChanged)
+    {
+        auto runTest = [this](BlendState& blendState, EBlendFactor& blendFactor) {
+            blendFactor = EBlendFactor::OneMinusConstAlpha;
+            m_executorState.blendState.setState(blendState);
+            EXPECT_TRUE(m_executorState.blendState.hasChanged());
+
+            blendFactor = EBlendFactor::ConstAlpha;
+            m_executorState.blendState.setState(blendState);
+            EXPECT_TRUE(m_executorState.blendState.hasChanged());
+        };
+
+        {
+            BlendState blendState;
+            runTest(blendState, blendState.m_blendFactorSrcColor);
+        }
+        {
+            BlendState blendState;
+            runTest(blendState, blendState.m_blendFactorDstColor);
+        }
+        {
+            BlendState blendState;
+            runTest(blendState, blendState.m_blendFactorSrcAlpha);
+        }
+        {
+            BlendState blendState;
+            runTest(blendState, blendState.m_blendFactorDstAlpha);
+        }
+    }
+
+    TEST_F(ARenderExecutorInternalState, blendRenderStateMarkedAsChanged_IfBlendOperationChanged)
+    {
+        {
+            BlendState blendState;
+            blendState.m_blendOperationColor = EBlendOperation::Min;
+            m_executorState.blendState.setState(blendState);
+            EXPECT_TRUE(m_executorState.blendState.hasChanged());
+
+            blendState.m_blendOperationColor = EBlendOperation::Max;
+            m_executorState.blendState.setState(blendState);
+            EXPECT_TRUE(m_executorState.blendState.hasChanged());
+        }
+        {
+            BlendState blendState;
+            blendState.m_blendOperationAlpha = EBlendOperation::Min;
+            m_executorState.blendState.setState(blendState);
+            EXPECT_TRUE(m_executorState.blendState.hasChanged());
+
+            blendState.m_blendOperationAlpha = EBlendOperation::Max;
+            m_executorState.blendState.setState(blendState);
+            EXPECT_TRUE(m_executorState.blendState.hasChanged());
+        }
+    }
+
+    TEST_F(ARenderExecutorInternalState, blendRenderStateMarkedAsChanged_IfBlendColorChanged)
+    {
+        BlendState blendState;
+        blendState.m_blendColor = {.1f, .2f, .3f, .4f};
+        m_executorState.blendState.setState(blendState);
+        EXPECT_TRUE(m_executorState.blendState.hasChanged());
+
+        blendState.m_blendColor = { .9f, .9f, .9f, .9f };
+        m_executorState.blendState.setState(blendState);
+        EXPECT_TRUE(m_executorState.blendState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, blendRenderStateMarkedAsChanged_IfColorWriteMaskChanged)
+    {
+        BlendState blendState;
+        blendState.m_colorWriteMask = EColorWriteFlag::EColorWriteFlag_Green;
+        m_executorState.blendState.setState(blendState);
+        EXPECT_TRUE(m_executorState.blendState.hasChanged());
+
+        blendState.m_colorWriteMask = EColorWriteFlag::EColorWriteFlag_Blue;
+        m_executorState.blendState.setState(blendState);
+        EXPECT_TRUE(m_executorState.blendState.hasChanged());
+    }
+
     TEST_F(ARenderExecutorInternalState, initialSetToRasterizerRenderStateTriggersChange)
     {
         RasterizerState rasterState;
@@ -258,6 +444,40 @@ namespace ramses_internal
         m_executorState.rasterizerState.setState(rasterState);
         EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
         EXPECT_FALSE(rasterState != m_executorState.rasterizerState.getState());
+    }
+
+    TEST_F(ARenderExecutorInternalState, rasterizerRenderStateMarkedAsUnchangedIfSetToSameValue)
+    {
+        RasterizerState rasterState;
+        rasterState.m_cullMode = ECullMode::Disabled;
+        m_executorState.rasterizerState.setState(rasterState);
+        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
+        m_executorState.rasterizerState.setState(rasterState);
+        EXPECT_FALSE(m_executorState.rasterizerState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, rasterizerRenderStateMarkedAsChanged_IfCullModeChanged)
+    {
+        RasterizerState rasterState;
+        rasterState.m_cullMode = ECullMode::Disabled;
+        m_executorState.rasterizerState.setState(rasterState);
+        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
+
+        rasterState.m_cullMode = ECullMode::BackFacing;
+        m_executorState.rasterizerState.setState(rasterState);
+        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, rasterizerRenderStateMarkedAsChanged_IfDrawModeChanged)
+    {
+        RasterizerState rasterState;
+        rasterState.m_drawMode = EDrawMode::LineLoop;
+        m_executorState.rasterizerState.setState(rasterState);
+        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
+
+        rasterState.m_drawMode = EDrawMode::Points;
+        m_executorState.rasterizerState.setState(rasterState);
+        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
     }
 
     TEST_F(ARenderExecutorInternalState, initialSetToDefaultDeviceHandlesTriggersChange)
@@ -271,11 +491,55 @@ namespace ramses_internal
         EXPECT_EQ(0u, m_executorState.indexBufferDeviceHandle.getState());
     }
 
+    TEST_F(ARenderExecutorInternalState, deviceHandlesMarkedAsUnchangedIfSetToSameValue)
+    {
+        m_executorState.shaderDeviceHandle.setState(DeviceResourceHandle(123u));
+        EXPECT_TRUE(m_executorState.shaderDeviceHandle.hasChanged());
+        m_executorState.shaderDeviceHandle.setState(DeviceResourceHandle(123u));
+        EXPECT_FALSE(m_executorState.shaderDeviceHandle.hasChanged());
+
+        m_executorState.indexBufferDeviceHandle.setState(DeviceResourceHandle(123u));
+        EXPECT_TRUE(m_executorState.indexBufferDeviceHandle.hasChanged());
+        m_executorState.indexBufferDeviceHandle.setState(DeviceResourceHandle(123u));
+        EXPECT_FALSE(m_executorState.indexBufferDeviceHandle.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, deviceHandlesMarkedAsChangedIfSetToDifferentValue)
+    {
+        m_executorState.shaderDeviceHandle.setState(DeviceResourceHandle(123u));
+        EXPECT_TRUE(m_executorState.shaderDeviceHandle.hasChanged());
+        m_executorState.shaderDeviceHandle.setState(DeviceResourceHandle(567u));
+        EXPECT_TRUE(m_executorState.shaderDeviceHandle.hasChanged());
+
+        m_executorState.indexBufferDeviceHandle.setState(DeviceResourceHandle(123u));
+        EXPECT_TRUE(m_executorState.indexBufferDeviceHandle.hasChanged());
+        m_executorState.indexBufferDeviceHandle.setState(DeviceResourceHandle(567u));
+        EXPECT_TRUE(m_executorState.indexBufferDeviceHandle.hasChanged());
+    }
+
     TEST_F(ARenderExecutorInternalState, initialSetToRenderTargetTriggersChange)
     {
         m_executorState.renderTargetState.setState(RenderTargetHandle::Invalid());
         EXPECT_TRUE(m_executorState.renderTargetState.hasChanged());
         EXPECT_EQ(RenderTargetHandle::Invalid(), m_executorState.renderTargetState.getState());
+    }
+
+    TEST_F(ARenderExecutorInternalState, renderTargetMarkedAsUnchangedIfSetToSameValue)
+    {
+        m_executorState.renderTargetState.setState(RenderTargetHandle(123u));
+        EXPECT_TRUE(m_executorState.renderTargetState.hasChanged());
+
+        m_executorState.renderTargetState.setState(RenderTargetHandle(123u));
+        EXPECT_FALSE(m_executorState.renderTargetState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, renderTargetMarkedAsChangedIfSetToDifferentValue)
+    {
+        m_executorState.renderTargetState.setState(RenderTargetHandle(123u));
+        EXPECT_TRUE(m_executorState.renderTargetState.hasChanged());
+
+        m_executorState.renderTargetState.setState(RenderTargetHandle(567u));
+        EXPECT_TRUE(m_executorState.renderTargetState.hasChanged());
     }
 
     TEST_F(ARenderExecutorInternalState, initialSetToRenderPassTriggersChange)
@@ -285,11 +549,47 @@ namespace ramses_internal
         EXPECT_EQ(0u, m_executorState.renderPassState.getState());
     }
 
+    TEST_F(ARenderExecutorInternalState, renderPassMarkedAsUnchangedIfSetToSameValue)
+    {
+        m_executorState.renderPassState.setState(RenderPassHandle(10u));
+        EXPECT_TRUE(m_executorState.renderPassState.hasChanged());
+
+        m_executorState.renderPassState.setState(RenderPassHandle(10u));
+        EXPECT_FALSE(m_executorState.renderPassState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, renderPassMarkedAsChangedIfSetToDifferentValue)
+    {
+        m_executorState.renderPassState.setState(RenderPassHandle(10u));
+        EXPECT_TRUE(m_executorState.renderPassState.hasChanged());
+
+        m_executorState.renderPassState.setState(RenderPassHandle(0u));
+        EXPECT_TRUE(m_executorState.renderPassState.hasChanged());
+    }
+
     TEST_F(ARenderExecutorInternalState, initialSetToViewportTriggersChange)
     {
         m_executorState.viewportState.setState(Viewport());
         EXPECT_TRUE(m_executorState.viewportState.hasChanged());
         EXPECT_EQ(Viewport(), m_executorState.viewportState.getState());
+    }
+
+    TEST_F(ARenderExecutorInternalState, viewportMarkedAsUnchangedIfSetToSameValue)
+    {
+        m_executorState.viewportState.setState(Viewport(1, 2, 3u, 4u));
+        EXPECT_TRUE(m_executorState.viewportState.hasChanged());
+
+        m_executorState.viewportState.setState(Viewport(1, 2, 3u, 4u));
+        EXPECT_FALSE(m_executorState.viewportState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, viewportMarkedAsChangedIfSetToDifferentValue)
+    {
+        m_executorState.viewportState.setState(Viewport(1, 2, 3u, 4u));
+        EXPECT_TRUE(m_executorState.viewportState.hasChanged());
+
+        m_executorState.viewportState.setState(Viewport(100, 200, 300u, 400u));
+        EXPECT_TRUE(m_executorState.viewportState.hasChanged());
     }
 
     TEST_F(ARenderExecutorInternalState, canResetCachedStates)

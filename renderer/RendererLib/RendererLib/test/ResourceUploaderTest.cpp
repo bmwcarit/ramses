@@ -17,6 +17,7 @@
 #include "Resource/EffectResource.h"
 #include "Resource/ArrayResource.h"
 #include "RendererLib/ResourceDescriptor.h"
+#include "Components/ResourceDeleterCallingCallback.h"
 
 using namespace ramses_internal;
 
@@ -99,8 +100,8 @@ public:
 
 TEST_F(AResourceUploader, uploadsVertexArrayResource)
 {
-    const ArrayResource res(EResourceType_VertexArray, 1, EDataType_Float, nullptr, ResourceCacheFlag_DoNotCache, String());
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    const ArrayResource res(EResourceType_VertexArray, 1, EDataType::Float, nullptr, ResourceCacheFlag_DoNotCache, String());
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
@@ -113,8 +114,8 @@ TEST_F(AResourceUploader, uploadsVertexArrayResource)
 
 TEST_F(AResourceUploader, uploadsIndexArrayResource16)
 {
-    const ArrayResource res(EResourceType_IndexArray, 1, EDataType_UInt16, nullptr, ResourceCacheFlag_DoNotCache, String());
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    const ArrayResource res(EResourceType_IndexArray, 1, EDataType::UInt16, nullptr, ResourceCacheFlag_DoNotCache, String());
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
@@ -128,14 +129,14 @@ TEST_F(AResourceUploader, uploadsIndexArrayResource16)
 TEST_F(AResourceUploader, uploadsTexture2DResource)
 {
     const UInt32 mipCount = 2u;
-    const TextureMetaInfo texDesc(2u, 2u, 1u, ETextureFormat_R8, false, DefaultTextureSwizzleArray, { 4, 1 });
+    const TextureMetaInfo texDesc(2u, 2u, 1u, ETextureFormat::R8, false, DefaultTextureSwizzleArray, { 4, 1 });
     TextureResource res(EResourceType_Texture2D, texDesc, ResourceCacheFlag_DoNotCache, String());
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
-    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(2u, 2u, ETextureFormat_R8, DefaultTextureSwizzleArray, mipCount, 5u)).WillOnce(Return(DeviceResourceHandle(123)));
+    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(2u, 2u, ETextureFormat::R8, DefaultTextureSwizzleArray, mipCount, 5u)).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, 0u, 2u, 2u, 1u, _, _));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 1u, 0u, 0u, 0u, 1u, 1u, 1u, _, _));
     EXPECT_EQ(123u, uploader.uploadResource(renderer, resourceObject, vramSize));
@@ -146,14 +147,14 @@ TEST_F(AResourceUploader, uploadsTexture2DResourceWithNonDefaultTextureSwizzleAr
 {
     const UInt32 mipCount = 1u;
     const TextureSwizzleArray swizzle {ETextureChannelColor::Blue, ETextureChannelColor::Alpha, ETextureChannelColor::Green, ETextureChannelColor::Red};
-    const TextureMetaInfo texDesc(2u, 2u, 1u, ETextureFormat_R8, false, swizzle, { 4 });
+    const TextureMetaInfo texDesc(2u, 2u, 1u, ETextureFormat::R8, false, swizzle, { 4 });
     TextureResource res(EResourceType_Texture2D, texDesc, ResourceCacheFlag_DoNotCache, String());
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
-    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(2u, 2u, ETextureFormat_R8, swizzle, mipCount, 4u)).WillOnce(Return(DeviceResourceHandle(123)));
+    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(2u, 2u, ETextureFormat::R8, swizzle, mipCount, 4u)).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, 0u, 2u, 2u, 1u, _, _));
     EXPECT_EQ(123u, uploader.uploadResource(renderer, resourceObject, vramSize));
     EXPECT_EQ(2u * 2, vramSize);
@@ -161,14 +162,14 @@ TEST_F(AResourceUploader, uploadsTexture2DResourceWithNonDefaultTextureSwizzleAr
 
 TEST_F(AResourceUploader, uploadsTexture2DResourceWithMipGen)
 {
-    const TextureMetaInfo texDesc(4u, 1u, 1u, ETextureFormat_R8, true, DefaultTextureSwizzleArray, { 4 });
+    const TextureMetaInfo texDesc(4u, 1u, 1u, ETextureFormat::R8, true, DefaultTextureSwizzleArray, { 4 });
     TextureResource res(EResourceType_Texture2D, texDesc, ResourceCacheFlag_DoNotCache, String());
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
-    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(4u, 1u, ETextureFormat_R8, DefaultTextureSwizzleArray, 3u, 7u)).WillOnce(Return(DeviceResourceHandle(123)));
+    EXPECT_CALL(renderer.deviceMock, allocateTexture2D(4u, 1u, ETextureFormat::R8, DefaultTextureSwizzleArray, 3u, 7u)).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, 0u, 4u, 1u, 1u, _, _));
     EXPECT_CALL(renderer.deviceMock, generateMipmaps(DeviceResourceHandle(123)));
     EXPECT_EQ(123u, uploader.uploadResource(renderer, resourceObject, vramSize));
@@ -178,14 +179,14 @@ TEST_F(AResourceUploader, uploadsTexture2DResourceWithMipGen)
 TEST_F(AResourceUploader, uploadsTexture3DResource)
 {
     const UInt32 mipCount = 2u;
-    const TextureMetaInfo texDesc(2u, 2u, 2u, ETextureFormat_R8, false, DefaultTextureSwizzleArray, { 8, 1 });
+    const TextureMetaInfo texDesc(2u, 2u, 2u, ETextureFormat::R8, false, DefaultTextureSwizzleArray, { 8, 1 });
     TextureResource res(EResourceType_Texture3D, texDesc, ResourceCacheFlag_DoNotCache, String());
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
-    EXPECT_CALL(renderer.deviceMock, allocateTexture3D(2u, 2u, 2u, ETextureFormat_R8, mipCount, 9u)).WillOnce(Return(DeviceResourceHandle(123)));
+    EXPECT_CALL(renderer.deviceMock, allocateTexture3D(2u, 2u, 2u, ETextureFormat::R8, mipCount, 9u)).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, 0u, 2u, 2u, 2u, _, _));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 1u, 0u, 0u, 0u, 1u, 1u, 1u, _, _));
     EXPECT_EQ(123u, uploader.uploadResource(renderer, resourceObject, vramSize));
@@ -194,14 +195,14 @@ TEST_F(AResourceUploader, uploadsTexture3DResource)
 
 TEST_F(AResourceUploader, uploadsTexture3DResourceWithMipGen)
 {
-    const TextureMetaInfo texDesc(4u, 1u, 2u, ETextureFormat_R8, true, DefaultTextureSwizzleArray, { 8 });
+    const TextureMetaInfo texDesc(4u, 1u, 2u, ETextureFormat::R8, true, DefaultTextureSwizzleArray, { 8 });
     TextureResource res(EResourceType_Texture3D, texDesc, ResourceCacheFlag_DoNotCache, String());
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
-    EXPECT_CALL(renderer.deviceMock, allocateTexture3D(4u, 1u, 2u, ETextureFormat_R8, 3u, 11u)).WillOnce(Return(DeviceResourceHandle(123)));
+    EXPECT_CALL(renderer.deviceMock, allocateTexture3D(4u, 1u, 2u, ETextureFormat::R8, 3u, 11u)).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, 0u, 4u, 1u, 2u, _, _));
     EXPECT_CALL(renderer.deviceMock, generateMipmaps(DeviceResourceHandle(123)));
     EXPECT_EQ(123u, uploader.uploadResource(renderer, resourceObject, vramSize));
@@ -211,15 +212,15 @@ TEST_F(AResourceUploader, uploadsTexture3DResourceWithMipGen)
 TEST_F(AResourceUploader, uploadsTextureCubeResource)
 {
     const UInt32 mipCount = 2u;
-    const TextureMetaInfo texDesc(2u, 1u, 1u, ETextureFormat_R8, false, DefaultTextureSwizzleArray, { 4, 1 });
+    const TextureMetaInfo texDesc(2u, 1u, 1u, ETextureFormat::R8, false, DefaultTextureSwizzleArray, { 4, 1 });
     TextureResource res(EResourceType_TextureCube, texDesc, ResourceCacheFlag_DoNotCache, String());
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
     InSequence seq;
-    EXPECT_CALL(renderer.deviceMock, allocateTextureCube(2u, ETextureFormat_R8, DefaultTextureSwizzleArray, mipCount, 6 * 5)).WillOnce(Return(DeviceResourceHandle(123)));
+    EXPECT_CALL(renderer.deviceMock, allocateTextureCube(2u, ETextureFormat::R8, DefaultTextureSwizzleArray, mipCount, 6 * 5)).WillOnce(Return(DeviceResourceHandle(123)));
     for (UInt32 i = 0u; i < 6u; ++i)
     {
         EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, i, 2u, 2u, 1u, _, _));
@@ -231,15 +232,15 @@ TEST_F(AResourceUploader, uploadsTextureCubeResource)
 
 TEST_F(AResourceUploader, uploadsTextureCubeResourceWithMipGen)
 {
-    const TextureMetaInfo texDesc(4u, 1u, 1u, ETextureFormat_R8, true, DefaultTextureSwizzleArray, { 16 });
+    const TextureMetaInfo texDesc(4u, 1u, 1u, ETextureFormat::R8, true, DefaultTextureSwizzleArray, { 16 });
     TextureResource res(EResourceType_TextureCube, texDesc, ResourceCacheFlag_DoNotCache, String());
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
     InSequence seq;
-    EXPECT_CALL(renderer.deviceMock, allocateTextureCube(4u, ETextureFormat_R8, DefaultTextureSwizzleArray, 3u, 6 * (16 + 4 + 1))).WillOnce(Return(DeviceResourceHandle(123)));
+    EXPECT_CALL(renderer.deviceMock, allocateTextureCube(4u, ETextureFormat::R8, DefaultTextureSwizzleArray, 3u, 6 * (16 + 4 + 1))).WillOnce(Return(DeviceResourceHandle(123)));
     for (UInt32 i = 0u; i < 6u; ++i)
     {
         EXPECT_CALL(renderer.deviceMock, uploadTextureData(DeviceResourceHandle(123), 0u, 0u, 0u, i, 4u, 4u, 1u, _, _));
@@ -251,8 +252,8 @@ TEST_F(AResourceUploader, uploadsTextureCubeResourceWithMipGen)
 
 TEST_F(AResourceUploader, uploadsEffectResourceWithoutBinaryShaderCache)
 {
-    EffectResource res("", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
@@ -267,7 +268,7 @@ TEST_F(AResourceUploader, ifShaderShouldNotBeCachedNoDownloadWillHappen)
     BinaryShaderProviderFake binaryShaderProvider;
     ResourceUploader uploaderWithBinaryProvider(stats, &binaryShaderProvider);
 
-    EffectResource res("", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res("", "","", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
 
     EXPECT_CALL(binaryShaderProvider, deviceSupportsBinaryShaderFormats(std::vector<BinaryShaderFormatID>{ DeviceMock::FakeSupportedBinaryShaderFormat }));
@@ -278,7 +279,7 @@ TEST_F(AResourceUploader, ifShaderShouldNotBeCachedNoDownloadWillHappen)
     EXPECT_CALL(renderer.deviceMock, getBinaryShader(_, _, _)).Times(0);
     EXPECT_CALL(binaryShaderProvider, binaryShaderUploaded(_, _)).Times(0); // This should only be called when attempting to upload from cache
 
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, resourceObject, vramSize));
@@ -289,7 +290,7 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheMis
     BinaryShaderProviderFake binaryShaderProvider;
     ResourceUploader uploaderWithBinaryProvider(stats, &binaryShaderProvider);
 
-    EffectResource res("", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
 
     EXPECT_CALL(binaryShaderProvider, deviceSupportsBinaryShaderFormats(std::vector<BinaryShaderFormatID>{ DeviceMock::FakeSupportedBinaryShaderFormat }));
@@ -301,7 +302,7 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheMis
         WillOnce(DoAll(SetArgReferee<1>(std::vector<UInt8>(1)), Return(true)));
     EXPECT_CALL(binaryShaderProvider, binaryShaderUploaded(_, _)).Times(0); // This should only be called when attempting to upload from cache
 
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, resourceObject, vramSize));
@@ -309,8 +310,8 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheMis
 
 TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheHit)
 {
-    EffectResource res("", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
 
     UInt8 binaryShaderData[] = { 1u, 2u, 3u, 4u };
 
@@ -339,8 +340,8 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheHit
 
 TEST_F(AResourceUploader, uploadsEffectResourceWithBrokenBinaryShaderCache)
 {
-    EffectResource res("", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     SceneId sceneUsingResource(14);
 
     UInt8 binaryShaderData[] = { 1u, 2u, 3u, 4u };
@@ -379,8 +380,8 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBrokenBinaryShaderCache)
 
 TEST_F(AResourceUploader, doesNotTryToGetBinaryShaderFromDeviceIfEffectDidNotCompile)
 {
-    EffectResource res("", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
 
     StrictMock<BinaryShaderProviderMock> binaryShaderProvider;
 
@@ -404,7 +405,7 @@ TEST_F(AResourceUploader, providesSupportedBinaryShaderFormatsOnlyOnce)
     BinaryShaderProviderFake binaryShaderProvider;
     ResourceUploader uploaderWithBinaryProvider(stats, &binaryShaderProvider);
 
-    EffectResource res("", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(3);
 
     EXPECT_CALL(binaryShaderProvider, deviceSupportsBinaryShaderFormats(std::vector<BinaryShaderFormatID>{ DeviceMock::FakeSupportedBinaryShaderFormat })).Times(1);
@@ -414,12 +415,12 @@ TEST_F(AResourceUploader, providesSupportedBinaryShaderFormatsOnlyOnce)
     EXPECT_CALL(renderer.deviceMock, uploadShader(_)).Times(3).WillRepeatedly(Return(DeviceResourceHandle(123)));
 
     ResourceDescriptor resourceObject1;
-    resourceObject1.resource = ManagedResource{ res, dummyManagedResourceCallback };
+    resourceObject1.resource = ManagedResource{ &res, dummyManagedResourceCallback };
     resourceObject1.sceneUsage = { SceneId{1u} };
     ResourceDescriptor resourceObject2 = resourceObject1;
-    resourceObject2.resource = ManagedResource{ res, dummyManagedResourceCallback };
+    resourceObject2.resource = ManagedResource{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject3 = resourceObject1;
-    resourceObject3.resource = ManagedResource{ res, dummyManagedResourceCallback };
+    resourceObject3.resource = ManagedResource{ &res, dummyManagedResourceCallback };
 
     EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, resourceObject1, vramSize));
     EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, resourceObject2, vramSize));
@@ -472,8 +473,8 @@ TEST_F(AResourceUploader, uploadsWithMultipleRenderBackends)
 {
     StrictMock<RenderBackendStrictMock> additionalRenderer;
 
-    const ArrayResource res(EResourceType_VertexArray, 1, EDataType_Float, nullptr, ResourceCacheFlag_DoNotCache, String());
-    ManagedResource managedRes(res, dummyManagedResourceCallback);
+    const ArrayResource res(EResourceType_VertexArray, 1, EDataType::Float, nullptr, ResourceCacheFlag_DoNotCache, String());
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);

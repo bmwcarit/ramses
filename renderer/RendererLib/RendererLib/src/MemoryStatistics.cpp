@@ -63,7 +63,7 @@ namespace ramses_internal
         for (const auto& scene : memoryUsagePerScene)
         {
             const SummaryEntry<UInt64>& sceneMemorySample = scene.value;
-            str << "; Scene " << scene.key.getValue() << " (Avg:" << sceneMemorySample.sum / m_memorySamples.size() << ";Min:" << sceneMemorySample.minValue << ";Max:" << sceneMemorySample.maxValue << ")";
+            str << "; Scene " << scene.key << " (Avg:" << sceneMemorySample.sum / m_memorySamples.size() << ";Min:" << sceneMemorySample.minValue << ";Max:" << sceneMemorySample.maxValue << ")";
         }
     }
 

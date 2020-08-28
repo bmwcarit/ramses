@@ -27,7 +27,7 @@ public:
     {
         SceneData data;
         data.clientScene = m_client.createScene(sceneId, sceneConfig);
-        data.integrationScene = new INTEGRATION_SCENE(m_client, *data.clientScene, state, cameraPosition);
+        data.integrationScene = new INTEGRATION_SCENE(*data.clientScene, state, cameraPosition);
         m_scenes.put(sceneId, data);
     }
     template <typename INTEGRATION_SCENE>

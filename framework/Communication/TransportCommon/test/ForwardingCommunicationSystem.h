@@ -32,7 +32,7 @@ namespace ramses_internal
         // resource
         virtual bool sendRequestResources(const Guid& to, const ResourceContentHashVector& resources) override;
         virtual bool sendResourcesNotAvailable(const Guid& to, const ResourceContentHashVector& resources) override;
-        virtual bool sendResources(const Guid& to, const ManagedResourceVector& resources) override;
+        virtual bool sendResources(const Guid& to, const ISceneUpdateSerializer& serializer) override;
 
         // scene
         virtual bool broadcastNewScenesAvailable(const SceneInfoVector& newScenes) override;
@@ -42,15 +42,15 @@ namespace ramses_internal
         virtual bool sendSubscribeScene(const Guid& to, const SceneId& sceneId) override;
         virtual bool sendUnsubscribeScene(const Guid& to, const SceneId& sceneId) override;
 
-        virtual bool sendSceneNotAvailable(const Guid& to, const SceneId& sceneId) override;
-        virtual bool sendInitializeScene(const Guid& to, const SceneInfo& sceneInfo) override;
-        virtual uint64_t sendSceneActionList(const Guid& to, const SceneId& sceneId, const SceneActionCollection& actions, const uint64_t& actionListCounter) override;
+        virtual bool sendInitializeScene(const Guid& to, const SceneId& sceneId) override;
+        virtual bool sendSceneUpdate(const Guid& to, const SceneId& sceneId, const ISceneUpdateSerializer& serializer) override;
+
 
         virtual bool sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data) override;
 
         // dcsm client -> renderer
-        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category) override;
-        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category) override;
+        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category, const std::string&) override;
+        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category, const std::string&) override;
         virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
         virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID) override;
         virtual bool sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
@@ -62,10 +62,6 @@ namespace ramses_internal
         // dcsm renderer -> client
         virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& sizeinfo, AnimationInformation) override;
         virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo&, AnimationInformation) override;
-
-        // message limits configuration
-        virtual CommunicationSendDataSizes getSendDataSizes() const override final;
-        virtual void setSendDataSizes(const CommunicationSendDataSizes& sizes) override final;
 
         void setResourceProviderServiceHandler(IResourceProviderServiceHandler* handler) override;
         void setResourceConsumerServiceHandler(IResourceConsumerServiceHandler* handler) override;

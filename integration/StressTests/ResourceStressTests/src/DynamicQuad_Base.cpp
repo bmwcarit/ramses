@@ -15,22 +15,19 @@
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/AttributeInput.h"
-#include "ramses-client-api/UInt16Array.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 
 #include "PlatformAbstraction/PlatformMath.h"
 #include "TestRandom.h"
 
 namespace ramses_internal
 {
-    DynamicQuad_Base::DynamicQuad_Base(ramses::RamsesClient& client, ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad)
-        : m_client(client)
-        , m_scene(scene)
+    DynamicQuad_Base::DynamicQuad_Base(ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad)
+        : m_scene(scene)
         , m_screenspaceQuad(screenspaceQuad)
         , m_renderGroup(*m_scene.createRenderGroup())
         , m_meshNode(*m_scene.createMeshNode())
-        , m_effect(CreateTestEffect(m_client))
+        , m_effect(CreateTestEffect(m_scene))
         , m_appearance(*m_scene.createAppearance(m_effect))
         , m_geometryBinding(*m_scene.createGeometryBinding(m_effect))
     {
@@ -56,7 +53,7 @@ namespace ramses_internal
         QuadResources resources;
 
         static const uint16_t indiceData[] = { 0, 1, 3, 2 };
-        resources.indices = m_client.createConstUInt16Array(4, indiceData);
+        resources.indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 4, indiceData);
 
         Vector3 vertexPositionsData[] =
         {
@@ -78,17 +75,20 @@ namespace ramses_internal
             vertexTexcoordsData[t] += 0.01f * static_cast<float>(TestRandom::Get(0, 10));
         }
 
-        resources.texCoords = m_client.createConstVector2fArray(4, vertexTexcoordsData);
-        resources.vertexPos = m_client.createConstVector3fArray(4, &vertexPositionsData[0].x);
+        resources.texCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, vertexTexcoordsData);
+        resources.vertexPos = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, &vertexPositionsData[0].x);
 
         return resources;
     }
 
     void DynamicQuad_Base::destroyQuadResources(const QuadResources& quadResources)
     {
-        m_client.destroy(*quadResources.indices);
-        m_client.destroy(*quadResources.vertexPos);
-        m_client.destroy(*quadResources.texCoords);
+        if (quadResources.indices)
+            m_scene.destroy(*quadResources.indices);
+        if (quadResources.vertexPos)
+            m_scene.destroy(*quadResources.vertexPos);
+        if (quadResources.texCoords)
+            m_scene.destroy(*quadResources.texCoords);
     }
 
     void DynamicQuad_Base::setQuadResources(const QuadResources& quad, ramses::TextureSampler& textureSampler)
@@ -107,13 +107,13 @@ namespace ramses_internal
         m_appearance.setInputTexture(textureInput, textureSampler);
     }
 
-    ramses::Effect& DynamicQuad_Base::CreateTestEffect(ramses::RamsesClient& client)
+    ramses::Effect& DynamicQuad_Base::CreateTestEffect(ramses::Scene& scene)
     {
         ramses::EffectDescription effectDesc;
         effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
         effectDesc.setVertexShaderFromFile("res/ramses-test-client-textured.vert");
         effectDesc.setFragmentShaderFromFile("res/ramses-test-client-textured.frag");
-        ramses::Effect* effect = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
+        ramses::Effect* effect = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
         return *effect;
     }
 }

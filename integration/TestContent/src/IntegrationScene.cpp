@@ -8,7 +8,6 @@
 
 #include "TestScenes/IntegrationScene.h"
 #include "ramses-client-api/RemoteCamera.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/EffectDescription.h"
@@ -22,9 +21,8 @@ namespace ramses_internal
     const UInt32 IntegrationScene::DefaultDisplayWidth(200u);
     const UInt32 IntegrationScene::DefaultDisplayHeight(200u);
 
-    IntegrationScene::IntegrationScene(ramses::RamsesClient& client, ramses::Scene& scene,  const Vector3& cameraPosition)
-        : m_client(client)
-        , m_scene(scene)
+    IntegrationScene::IntegrationScene(ramses::Scene& scene,  const Vector3& cameraPosition)
+        : m_scene(scene)
         , m_defaultRenderGroup(*m_scene.createRenderGroup("defaultRenderGroup"))
         , m_defaultRenderPass(*m_scene.createRenderPass("defaultRenderPass"))
         , m_defaultCameraTranslationNode(*m_scene.createNode("defaultCameraTranslation"))
@@ -54,7 +52,7 @@ namespace ramses_internal
         effectDesc.setAttributeSemantic("a_customPosition", ramses::EEffectAttributeSemantic_TextPositions);
         effectDesc.setAttributeSemantic("a_customTexCoord", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
 
-        ramses::Effect* effect = m_client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, nameOrShaderFile.c_str());
+        ramses::Effect* effect = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, nameOrShaderFile.c_str());
         assert(nullptr != effect);
         return effect;
     }

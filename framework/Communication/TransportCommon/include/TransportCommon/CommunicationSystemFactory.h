@@ -32,8 +32,8 @@ namespace ramses_internal
         static std::unique_ptr<ICommunicationSystem> ConstructCommunicationSystem(const ramses::RamsesFrameworkConfigImpl& config,
             const ParticipantIdentifier& participantIdentifier, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection);
 
-        static IDiscoveryDaemon* ConstructDiscoveryDaemon(const ramses::RamsesFrameworkConfigImpl& config, PlatformLock& frameworkLoc,
-                                                          StatisticCollectionFramework& statisticCollectionk, Ramsh* optionalRamsh = nullptr);
+        static std::unique_ptr<IDiscoveryDaemon> ConstructDiscoveryDaemon(const ramses::RamsesFrameworkConfigImpl& config, PlatformLock& frameworkLoc,
+                                                                          StatisticCollectionFramework& statisticCollectionk, Ramsh* optionalRamsh = nullptr);
     };
 }
 

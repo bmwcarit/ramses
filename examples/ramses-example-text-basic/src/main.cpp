@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
     effectDesc.setVertexShaderFromFile("res/ramses-example-text-basic-effect.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-text-basic-effect.frag");
-    ramses::Effect* textEffect = client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "simpleTextShader");
+    ramses::Effect* textEffect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "simpleTextShader");
 
     // create font instance
     ramses::FontId font = fontRegistry.createFreetype2Font("res/ramses-example-text-basic-Roboto-Bold.ttf");

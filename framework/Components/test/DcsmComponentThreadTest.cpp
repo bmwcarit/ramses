@@ -37,8 +37,8 @@ namespace ramses_internal
 
         void SetUp() override
         {
-            EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(_, _)).Times(AnyNumber());
-            EXPECT_CALL(comm, sendDcsmOfferContent(_, _, _)).Times(AnyNumber());
+            EXPECT_CALL(comm, sendDcsmBroadcastOfferContent(_, _, _)).Times(AnyNumber());
+            EXPECT_CALL(comm, sendDcsmOfferContent(_, _, _, _)).Times(AnyNumber());
             EXPECT_CALL(comm, sendDcsmContentDescription(_, _, _, _)).Times(AnyNumber());
             EXPECT_CALL(comm, sendDcsmContentReady(_, _)).Times(AnyNumber());
             EXPECT_CALL(comm, sendDcsmContentEnableFocusRequest(_, _, _)).Times(AnyNumber());
@@ -99,9 +99,9 @@ namespace ramses_internal
                     if (rnd() < 20)
                         comp.newParticipantHasConnected(Guid(rnd()));
                     if (rnd() < 40)
-                        comp.handleOfferContent(ContentID{rnd()%5}, Category{cnt++}, localId);
+                        comp.handleOfferContent(ContentID{rnd()%5}, Category{cnt++}, "", localId);
                     if (rnd() < 10)
-                        comp.handleOfferContent(ContentID{rnd()%5}, Category{cnt++}, Guid(rnd()));
+                        comp.handleOfferContent(ContentID{rnd()%5}, Category{cnt++}, "", Guid(rnd()));
                     if (rnd() < 50)
                         comp.handleContentDescription(ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{cnt++}, localId);
                     if (rnd() < 10)
@@ -161,7 +161,7 @@ namespace ramses_internal
             while (!shouldStop)
             {
                 if (rnd() < 50)
-                    comp.sendOfferContent(ContentID{rnd()%5}, Category{1}, false);
+                    comp.sendOfferContent(ContentID{rnd()%5}, Category{1}, "mycontent", false);
                 if (rnd() < 50)
                     comp.sendContentDescription(ContentID{rnd()%5}, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{2});
                 if (rnd() < 50)

@@ -12,24 +12,8 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    CommunicationSystemMock::CommunicationSystemMock()
-        : m_sendDataSizes(CommunicationSendDataSizes{1, 512, 100, 1, 1, 1})
-    {
-    }
-
-    CommunicationSystemMock::~CommunicationSystemMock()
-    {
-    }
-
-    CommunicationSendDataSizes CommunicationSystemMock::getSendDataSizes() const
-    {
-        return m_sendDataSizes;
-    }
-
-    void CommunicationSystemMock::setSendDataSizes(const CommunicationSendDataSizes& sizes)
-    {
-        m_sendDataSizes = sizes;
-    }
+    CommunicationSystemMock::CommunicationSystemMock() = default;
+    CommunicationSystemMock::~CommunicationSystemMock() = default;
 
     void CommunicationSystemMock::setResourceProviderServiceHandler(IResourceProviderServiceHandler*)
     {

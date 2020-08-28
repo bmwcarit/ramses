@@ -12,6 +12,9 @@ import re
 from common_modules.common import *
 
 g_re_deprecated_mock_syntax = re.compile(r'MOCK_(?:CONST_)?METHOD\d+')
+g_re_unwanted_gtest_include = re.compile(r'#\s*include\s*["<]gtest/(?!gtest\.h[">])')
+g_re_unwanted_gmock_include = re.compile(r'#\s*include\s*["<]gmock/(?!gmock\.h[">])')
+g_re_unwanted_fmt_include = re.compile(r'#\s*include\s*["<]fmt/(?!(?:format|chrono)\.h[">])')
 
 def check_deprecated(filename, file_contents, clean_file_contents, file_lines, clean_file_lines):
     """ Check for usage of deprecated constructs """
@@ -20,6 +23,16 @@ def check_deprecated(filename, file_contents, clean_file_contents, file_lines, c
     for line_number, line in enumerate(clean_file_lines):
         if g_re_deprecated_mock_syntax.search(line):
             log_warning("check_deprecated", filename, line_number + 1, "usage of old googletest mock syntax", file_lines[line_number].strip(" \t\r\n"))
+
+    # check for unwanted includes includes
+    for line_number, line in enumerate(file_lines):
+        if g_re_unwanted_gtest_include.search(line):
+            log_warning("check_deprecated", filename, line_number + 1, "usage of non-standard gtest include, use '#include \"gtest/gtest.h\"' instead", file_lines[line_number].strip(" \t\r\n"))
+        if g_re_unwanted_gmock_include.search(line):
+            log_warning("check_deprecated", filename, line_number + 1, "usage of non-standard gmock include, use '#include \"gmock/gmock.h\"' instead", file_lines[line_number].strip(" \t\r\n"))
+        if g_re_unwanted_fmt_include.search(line):
+            log_warning("check_deprecated", filename, line_number + 1, "usage of unwanted fmt include, use '#include \"fmt/format.h\"' instead", file_lines[line_number].strip(" \t\r\n"))
+
 
 if __name__ == "__main__":
     targets = sys.argv[1:]

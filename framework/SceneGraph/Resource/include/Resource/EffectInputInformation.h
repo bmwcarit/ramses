@@ -24,10 +24,22 @@ namespace ramses_internal
         EEffectInputTextureType_Invalid
     };
 
+    inline EEffectInputTextureType GetTextureTypeFromDataType(EDataType dataType)
+    {
+        switch (dataType)
+        {
+            case EDataType::TextureSampler2D: return EEffectInputTextureType_Texture2D;
+            case EDataType::TextureSampler3D: return EEffectInputTextureType_Texture3D;
+            case EDataType::TextureSamplerCube: return EEffectInputTextureType_TextureCube;
+            default: break;
+        }
+        return EEffectInputTextureType_Invalid;
+    }
+
     struct EffectInputInformation
     {
         inline EffectInputInformation();
-        inline EffectInputInformation(const String& inputName_, UInt32 elementCount_, EDataType dataType_, EFixedSemantics semantics_, EEffectInputTextureType textureType_);
+        inline EffectInputInformation(const String& inputName_, UInt32 elementCount_, EDataType dataType_, EFixedSemantics semantics_);
 
         inline friend bool operator==(const EffectInputInformation& a, const EffectInputInformation& b);
         inline friend bool operator!=(const EffectInputInformation& a, const EffectInputInformation& b);
@@ -36,9 +48,6 @@ namespace ramses_internal
         UInt32 elementCount;
         EDataType dataType;
         EFixedSemantics semantics;
-        // TODO(violin/tobias) check if this can be merged into dataType
-        EEffectInputTextureType textureType;
-
     };
 
     typedef std::vector<EffectInputInformation> EffectInputInformationVector;
@@ -46,18 +55,16 @@ namespace ramses_internal
 
     EffectInputInformation::EffectInputInformation()
         : elementCount(1)
-        , dataType(EDataType_Invalid)
+        , dataType(EDataType::Invalid)
         , semantics(EFixedSemantics_Invalid)
-        , textureType(EEffectInputTextureType_Invalid)
     {
     }
 
-    EffectInputInformation::EffectInputInformation(const String& inputName_, UInt32 elementCount_, EDataType dataType_, EFixedSemantics semantics_, EEffectInputTextureType textureType_)
+    EffectInputInformation::EffectInputInformation(const String& inputName_, UInt32 elementCount_, EDataType dataType_, EFixedSemantics semantics_)
         : inputName(inputName_)
         , elementCount(elementCount_)
         , dataType(dataType_)
         , semantics(semantics_)
-        , textureType(textureType_)
     {
     }
 
@@ -66,8 +73,7 @@ namespace ramses_internal
         return a.inputName == b.inputName &&
             a.elementCount == b.elementCount &&
             a.dataType == b.dataType &&
-            a.semantics == b.semantics &&
-            a.textureType == b.textureType;
+            a.semantics == b.semantics;
     }
 
     inline bool operator!=(const EffectInputInformation& a, const EffectInputInformation& b)

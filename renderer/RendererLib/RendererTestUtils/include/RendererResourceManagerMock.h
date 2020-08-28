@@ -16,6 +16,7 @@
 #include "RendererLib/IRendererResourceManager.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/EResourceStatus.h"
+#include "Components/ManagedResource.h"
 
 namespace ramses_internal{
 
@@ -35,7 +36,6 @@ public:
     MOCK_METHOD(DeviceResourceHandle, getDataBufferDeviceHandle, (DataBufferHandle, SceneId), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getTextureBufferDeviceHandle, (TextureBufferHandle, SceneId), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getTextureSamplerDeviceHandle, (TextureSamplerHandle, SceneId), (const, override));
-
     // IRendererResourceManager
     MOCK_METHOD(EResourceStatus, getClientResourceStatus, (const ResourceContentHash& hash), (const, override));
     MOCK_METHOD(EResourceType, getClientResourceType, (const ResourceContentHash& hash), (const, override));

@@ -8,11 +8,9 @@
 
 #include "TestScenes/Texture2DSamplingScene.h"
 #include "ramses-utils.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
@@ -31,8 +29,8 @@
 namespace ramses_internal
 {
 
-    Texture2DSamplingScene::Texture2DSamplingScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    Texture2DSamplingScene::Texture2DSamplingScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         createOrthoCamera();
 
@@ -60,9 +58,9 @@ namespace ramses_internal
             ramses::MipLevelData(sizeof(rgb8_level2), rgb8_level2)
         };
 
-        ramses::Texture2D* texture = m_client.createTexture2D(
+        ramses::Texture2D* texture = m_scene.createTexture2D(
+            ramses::ETextureFormat::RGB8,
             4, 4,
-            ramses::ETextureFormat_RGB8,
             3,
             mipLevelData,
             false);
@@ -300,9 +298,9 @@ namespace ramses_internal
             0.0f, t2
         };
 
-        m_indexArray = m_client.createConstUInt16Array(12, indicesArray);
-        m_vertexPositions = m_client.createConstVector3fArray(8, vertexPositionsArray);
-        m_textureCoords = m_client.createConstVector2fArray(8, textureCoordsArray);
+        m_indexArray = m_scene.createArrayResource(ramses::EDataType::UInt16, 12, indicesArray);
+        m_vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 8, vertexPositionsArray);
+        m_textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 8, textureCoordsArray);
     }
 
     void Texture2DSamplingScene::createGeometryTrilinear()
@@ -401,8 +399,8 @@ namespace ramses_internal
             0.0f, t3
         };
 
-        m_indexArray = m_client.createConstUInt16Array(18, indicesArray);
-        m_vertexPositions = m_client.createConstVector3fArray(12, vertexPositionsArray);
-        m_textureCoords = m_client.createConstVector2fArray(12, textureCoordsArray);
+        m_indexArray = m_scene.createArrayResource(ramses::EDataType::UInt16, 18, indicesArray);
+        m_vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 12, vertexPositionsArray);
+        m_textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 12, textureCoordsArray);
     }
 }

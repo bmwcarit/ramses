@@ -41,6 +41,7 @@ namespace ramses_internal
         virtual void                        releaseRenderState              (RenderStateHandle stateHandle) override;
         virtual void                        setRenderStateBlendFactors      (RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha) override;
         virtual void                        setRenderStateBlendOperations   (RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha) override;
+        virtual void                        setRenderStateBlendColor        (RenderStateHandle stateHandle, const Vector4& color) override;
         virtual void                        setRenderStateCullMode          (RenderStateHandle stateHandle, ECullMode cullMode) override;
         virtual void                        setRenderStateDrawMode          (RenderStateHandle stateHandle, EDrawMode drawMode) override;
         virtual void                        setRenderStateDepthFunc         (RenderStateHandle stateHandle, EDepthFunc func) override;
@@ -51,9 +52,8 @@ namespace ramses_internal
         virtual void                        setRenderStateColorWriteMask    (RenderStateHandle stateHandle, ColorWriteMask colorMask) override;
 
         // Camera
-        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle viewportDataInstance, CameraHandle handle = CameraHandle::Invalid()) override;
+        virtual CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle dataInstance, CameraHandle handle = CameraHandle::Invalid()) override;
         virtual void                        releaseCamera                   (CameraHandle cameraHandle) override;
-        virtual void                        setCameraFrustum                (CameraHandle cameraHandle, const Frustum& frustum) override;
 
         // Creation/Deletion
         virtual NodeHandle                  allocateNode                    (UInt32 childrenCount = 0u, NodeHandle handle = NodeHandle::Invalid()) override;

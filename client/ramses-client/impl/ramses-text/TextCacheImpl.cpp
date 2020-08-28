@@ -15,8 +15,7 @@
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/IndexDataBuffer.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/UniformInput.h"
 #include "ramses-client-api/Effect.h"
@@ -123,18 +122,16 @@ namespace ramses
         textLine.meshNode = m_scene.createMeshNode();
 
         const uint32_t numIndices = static_cast<uint32_t>(geometry.indices.size());
-        const uint32_t indicesByteSize = numIndices * sizeof(geometry.indices[0]);
-        textLine.indices = m_scene.createIndexDataBuffer(indicesByteSize, ramses::EDataType_UInt16, "");
-        textLine.indices->setData(reinterpret_cast<const char*>(geometry.indices.data()), indicesByteSize);
+        textLine.indices = m_scene.createArrayBuffer(ramses::EDataType::UInt16, numIndices, "");
+        textLine.indices->updateData(0u, numIndices, geometry.indices.data());
 
-        const uint32_t numVertexElements = static_cast<uint32_t>(geometry.positions.size());
-        const uint32_t positionsDataSize = numVertexElements * sizeof(geometry.positions[0]);
-        textLine.positions = m_scene.createVertexDataBuffer(positionsDataSize, ramses::EDataType_Vector2F, "");
-        textLine.positions->setData(reinterpret_cast<const char*>(geometry.positions.data()), positionsDataSize);
+        assert(geometry.positions.size() % 2 == 0);  // two floats per Vector2F
+        const uint32_t numVertexElements = static_cast<uint32_t>(geometry.positions.size()) / 2;
+        textLine.positions = m_scene.createArrayBuffer(ramses::EDataType::Vector2F, numVertexElements, "");
+        textLine.positions->updateData(0u, numVertexElements, geometry.positions.data());
 
-        const uint32_t texCoordsDataSize = numVertexElements * sizeof(geometry.texcoords[0]);
-        textLine.textureCoordinates = m_scene.createVertexDataBuffer(texCoordsDataSize, ramses::EDataType_Vector2F, "");
-        textLine.textureCoordinates->setData(reinterpret_cast<const char*>(geometry.texcoords.data()), texCoordsDataSize);
+        textLine.textureCoordinates = m_scene.createArrayBuffer(ramses::EDataType::Vector2F, numVertexElements, "");
+        textLine.textureCoordinates->updateData(0u, numVertexElements, geometry.texcoords.data());
 
         textLine.meshNode->setStartIndex(0);
         textLine.meshNode->setIndexCount(numIndices);

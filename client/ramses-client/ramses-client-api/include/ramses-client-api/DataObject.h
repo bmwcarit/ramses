@@ -14,7 +14,16 @@
 namespace ramses
 {
     /**
-    * @brief The DataObject is a base class for data container for storing data in a scene.
+    * @brief   The DataObject is a base class for data container for storing data in a scene.
+    * @details A concretely typed data object (see derived classes) can be bound to some inputs
+    *          of some object types (e.g. #ramses::Appearance::bindInput or #ramses::LocalCamera::bindViewportOffset).
+    *          When a data object is bound to an input the data object value overrides whatever was previously
+    *          set to that input using its direct setter.
+    *          A single #DataObject can be bound to multiple inputs (also to other #ramses::RamsesObject types
+    *          where applicable) providing a way to distribute value across instances/inputs.
+    *          Using #DataObject also allows use of data linking across scenes between data object provider and consumer
+    *          (#ramses::Scene::createDataProvider and #ramses::Scene::createDataConsumer) see SDK examples for typical use cases.
+    *          A value set to a #DataObject is then propagated everywhere it is bound to and it is linked to.
     */
     class RAMSES_API DataObject : public SceneObject
     {

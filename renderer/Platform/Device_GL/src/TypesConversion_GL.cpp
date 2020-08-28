@@ -18,211 +18,211 @@ namespace ramses_internal
 
         switch (format)
         {
-        case ETextureFormat_RGBA4:
+        case ETextureFormat::RGBA4:
             uploadParams.sizedInternalFormat = GL_RGBA4;
             uploadParams.baseInternalFormat = GL_RGBA;
             uploadParams.type = GL_UNSIGNED_SHORT_4_4_4_4;
             uploadParams.byteAlignment = 2u;
             break;
-        case ETextureFormat_RGB8:
+        case ETextureFormat::RGB8:
             uploadParams.sizedInternalFormat = GL_RGB8;
             uploadParams.baseInternalFormat = GL_RGB;
             uploadParams.type = GL_UNSIGNED_BYTE;
             uploadParams.byteAlignment = 1u;
             break;
-        case ETextureFormat_RGBA8:
+        case ETextureFormat::RGBA8:
             uploadParams.sizedInternalFormat = GL_RGBA8;
             uploadParams.baseInternalFormat = GL_RGBA;
             uploadParams.type = GL_UNSIGNED_BYTE;
             uploadParams.byteAlignment = 4u;
             break;
-        case ETextureFormat_RGB16:
+        case ETextureFormat::RGB16:
             uploadParams.sizedInternalFormat = GL_RGB16UI;
             uploadParams.baseInternalFormat = GL_RGB;
             uploadParams.type = GL_UNSIGNED_SHORT;
             uploadParams.byteAlignment = 2u;
             break;
-        case ETextureFormat_RGBA16:
+        case ETextureFormat::RGBA16:
             uploadParams.sizedInternalFormat = GL_RGBA16UI;
             uploadParams.baseInternalFormat = GL_RGBA;
             uploadParams.type = GL_UNSIGNED_SHORT;
             uploadParams.byteAlignment = 8u;
             break;
 
-        case ETextureFormat_RGBA5551:
+        case ETextureFormat::RGBA5551:
             uploadParams.sizedInternalFormat = GL_RGB5_A1;
             uploadParams.baseInternalFormat = GL_RGBA;
             uploadParams.type = GL_UNSIGNED_SHORT_5_5_5_1;
             uploadParams.byteAlignment = 2u;
             break;
-        case ETextureFormat_RGB565:
+        case ETextureFormat::RGB565:
             uploadParams.sizedInternalFormat = GL_RGB565;
             uploadParams.baseInternalFormat = GL_RGB;
             uploadParams.type = GL_UNSIGNED_SHORT_5_6_5;
             uploadParams.byteAlignment = 2u;
             break;
-        case ETextureFormat_DXT1RGB: // GL_EXT_texture_compression_dxt1
+        case ETextureFormat::DXT1RGB: // GL_EXT_texture_compression_dxt1
             uploadParams.compressed = true;
             uploadParams.sizedInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
             uploadParams.baseInternalFormat = GL_RGB;
             uploadParams.byteAlignment = 8u;
             break;
-        case ETextureFormat_DXT3RGBA:
+        case ETextureFormat::DXT3RGBA:
             // DXT3 (extension)
             uploadParams.compressed = true;
             uploadParams.sizedInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
             uploadParams.baseInternalFormat = GL_RGBA;
             uploadParams.byteAlignment = 8u; // actually 16 bytes but glPixelStore accepts maximum 8 bytes alignment
             break;
-        case ETextureFormat_DXT5RGBA:
+        case ETextureFormat::DXT5RGBA:
             // DXT5 (extension)
             uploadParams.compressed = true;
             uploadParams.sizedInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
             uploadParams.baseInternalFormat = GL_RGBA;
             uploadParams.byteAlignment = 8u; // actually 16 bytes but glPixelStore accepts maximum 8 bytes alignment
             break;
-        case ETextureFormat_R8:
+        case ETextureFormat::R8:
             uploadParams.sizedInternalFormat = GL_R8;
             uploadParams.baseInternalFormat = GL_RED;
             uploadParams.type = GL_UNSIGNED_BYTE;
             uploadParams.byteAlignment = 1u;
             break;
-        case ETextureFormat_RG8:
+        case ETextureFormat::RG8:
             uploadParams.sizedInternalFormat = GL_RG8;
             uploadParams.baseInternalFormat = GL_RG;
             uploadParams.type = GL_UNSIGNED_BYTE;
             uploadParams.byteAlignment = 2u;
             break;
-        case ETextureFormat_R16:
+        case ETextureFormat::R16:
             uploadParams.sizedInternalFormat = GL_R16UI;
             uploadParams.baseInternalFormat = GL_RED;
             uploadParams.type = GL_UNSIGNED_SHORT;
             uploadParams.byteAlignment = 2u;
             break;
-        case ETextureFormat_RG16:
+        case ETextureFormat::RG16:
             uploadParams.sizedInternalFormat = GL_RG16UI;
             uploadParams.baseInternalFormat = GL_RG;
             uploadParams.type = GL_UNSIGNED_SHORT;
             uploadParams.byteAlignment = 4u;
             break;
-        case ETextureFormat_R16F:
+        case ETextureFormat::R16F:
             uploadParams.sizedInternalFormat = GL_R16F;
             uploadParams.baseInternalFormat = GL_RED;
             uploadParams.type = GL_HALF_FLOAT;
             uploadParams.byteAlignment = 2u;
             break;
-        case ETextureFormat_R32F:
+        case ETextureFormat::R32F:
             uploadParams.sizedInternalFormat = GL_R32F;
             uploadParams.baseInternalFormat = GL_RED;
             uploadParams.type = GL_FLOAT;
             uploadParams.byteAlignment = 4u;
             break;
-        case ETextureFormat_RG16F:
+        case ETextureFormat::RG16F:
             uploadParams.sizedInternalFormat = GL_RG16F;
             uploadParams.baseInternalFormat = GL_RG;
             uploadParams.type = GL_HALF_FLOAT;
             uploadParams.byteAlignment = 4u;
             break;
-        case ETextureFormat_RG32F:
+        case ETextureFormat::RG32F:
             uploadParams.sizedInternalFormat = GL_RG32F;
             uploadParams.baseInternalFormat = GL_RG;
             uploadParams.type = GL_FLOAT;
             uploadParams.byteAlignment = 8u;
             break;
-        case ETextureFormat_RGB16F:
+        case ETextureFormat::RGB16F:
             uploadParams.sizedInternalFormat = GL_RGB16F;
             uploadParams.baseInternalFormat = GL_RGB;
             uploadParams.type = GL_HALF_FLOAT;
             uploadParams.byteAlignment = 2u;
             break;
-        case ETextureFormat_RGB32F:
+        case ETextureFormat::RGB32F:
             uploadParams.sizedInternalFormat = GL_RGB32F;
             uploadParams.baseInternalFormat = GL_RGB;
             uploadParams.type = GL_FLOAT;
             uploadParams.byteAlignment = 4u;
             break;
-        case ETextureFormat_RGBA16F:
+        case ETextureFormat::RGBA16F:
             uploadParams.sizedInternalFormat = GL_RGBA16F;
             uploadParams.baseInternalFormat = GL_RGBA;
             uploadParams.type = GL_HALF_FLOAT;
             uploadParams.byteAlignment = 8u;
             break;
-        case ETextureFormat_RGBA32F:
+        case ETextureFormat::RGBA32F:
             uploadParams.sizedInternalFormat = GL_RGBA32F;
             uploadParams.baseInternalFormat = GL_RGBA;
             uploadParams.type = GL_FLOAT;
             uploadParams.byteAlignment = 8u; // actually 16 bytes but glPixelStore accepts maximum 8 bytes alignment
             break;
-        case ETextureFormat_SRGB8:
+        case ETextureFormat::SRGB8:
             uploadParams.sizedInternalFormat = GL_SRGB8;
             uploadParams.baseInternalFormat = GL_RGB;
             uploadParams.type = GL_UNSIGNED_BYTE;
             uploadParams.byteAlignment = 1u;
             break;
-        case ETextureFormat_SRGB8_ALPHA8:
+        case ETextureFormat::SRGB8_ALPHA8:
             uploadParams.sizedInternalFormat = GL_SRGB8_ALPHA8;
             uploadParams.baseInternalFormat = GL_RGBA;
             uploadParams.type = GL_UNSIGNED_BYTE;
             uploadParams.byteAlignment = 4u;
             break;
 
-        case ETextureFormat_ETC2RGB:
+        case ETextureFormat::ETC2RGB:
             uploadParams.compressed = true;
             uploadParams.sizedInternalFormat = GL_COMPRESSED_RGB8_ETC2;
             uploadParams.baseInternalFormat = GL_RGB;
             uploadParams.byteAlignment = 8u;
             break;
-        case ETextureFormat_ETC2RGBA:
+        case ETextureFormat::ETC2RGBA:
             uploadParams.compressed = true;
             uploadParams.sizedInternalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC;
             uploadParams.baseInternalFormat = GL_RGBA;
             uploadParams.byteAlignment = 8u;
             break;
             // TODO Violin remove redundant list of ASTC enums from this switch and below GetASTCFormat() method
-        case ETextureFormat_ASTC_RGBA_4x4:
-        case ETextureFormat_ASTC_RGBA_5x4:
-        case ETextureFormat_ASTC_RGBA_5x5:
-        case ETextureFormat_ASTC_RGBA_6x5:
-        case ETextureFormat_ASTC_RGBA_6x6:
-        case ETextureFormat_ASTC_RGBA_8x5:
-        case ETextureFormat_ASTC_RGBA_8x6:
-        case ETextureFormat_ASTC_RGBA_8x8:
-        case ETextureFormat_ASTC_RGBA_10x5:
-        case ETextureFormat_ASTC_RGBA_10x6:
-        case ETextureFormat_ASTC_RGBA_10x8:
-        case ETextureFormat_ASTC_RGBA_10x10:
-        case ETextureFormat_ASTC_RGBA_12x10:
-        case ETextureFormat_ASTC_RGBA_12x12:
-        case ETextureFormat_ASTC_SRGBA_4x4:
-        case ETextureFormat_ASTC_SRGBA_5x4:
-        case ETextureFormat_ASTC_SRGBA_5x5:
-        case ETextureFormat_ASTC_SRGBA_6x5:
-        case ETextureFormat_ASTC_SRGBA_6x6:
-        case ETextureFormat_ASTC_SRGBA_8x5:
-        case ETextureFormat_ASTC_SRGBA_8x6:
-        case ETextureFormat_ASTC_SRGBA_8x8:
-        case ETextureFormat_ASTC_SRGBA_10x5:
-        case ETextureFormat_ASTC_SRGBA_10x6:
-        case ETextureFormat_ASTC_SRGBA_10x8:
-        case ETextureFormat_ASTC_SRGBA_10x10:
-        case ETextureFormat_ASTC_SRGBA_12x10:
-        case ETextureFormat_ASTC_SRGBA_12x12:
+        case ETextureFormat::ASTC_RGBA_4x4:
+        case ETextureFormat::ASTC_RGBA_5x4:
+        case ETextureFormat::ASTC_RGBA_5x5:
+        case ETextureFormat::ASTC_RGBA_6x5:
+        case ETextureFormat::ASTC_RGBA_6x6:
+        case ETextureFormat::ASTC_RGBA_8x5:
+        case ETextureFormat::ASTC_RGBA_8x6:
+        case ETextureFormat::ASTC_RGBA_8x8:
+        case ETextureFormat::ASTC_RGBA_10x5:
+        case ETextureFormat::ASTC_RGBA_10x6:
+        case ETextureFormat::ASTC_RGBA_10x8:
+        case ETextureFormat::ASTC_RGBA_10x10:
+        case ETextureFormat::ASTC_RGBA_12x10:
+        case ETextureFormat::ASTC_RGBA_12x12:
+        case ETextureFormat::ASTC_SRGBA_4x4:
+        case ETextureFormat::ASTC_SRGBA_5x4:
+        case ETextureFormat::ASTC_SRGBA_5x5:
+        case ETextureFormat::ASTC_SRGBA_6x5:
+        case ETextureFormat::ASTC_SRGBA_6x6:
+        case ETextureFormat::ASTC_SRGBA_8x5:
+        case ETextureFormat::ASTC_SRGBA_8x6:
+        case ETextureFormat::ASTC_SRGBA_8x8:
+        case ETextureFormat::ASTC_SRGBA_10x5:
+        case ETextureFormat::ASTC_SRGBA_10x6:
+        case ETextureFormat::ASTC_SRGBA_10x8:
+        case ETextureFormat::ASTC_SRGBA_10x10:
+        case ETextureFormat::ASTC_SRGBA_12x10:
+        case ETextureFormat::ASTC_SRGBA_12x12:
             uploadParams.compressed = true;
             uploadParams.sizedInternalFormat = GetASTCFormat(format);
             uploadParams.baseInternalFormat = GL_RGBA; // not used, but to be consistent with the other formats
             uploadParams.byteAlignment = 8u; // actually 16 bytes but glPixelStore accepts maximum 8 bytes alignment
             break;
-        case ETextureFormat_Depth16:
+        case ETextureFormat::Depth16:
             uploadParams.sizedInternalFormat = GL_DEPTH_COMPONENT16;
             uploadParams.baseInternalFormat = GL_DEPTH_COMPONENT;
             uploadParams.byteAlignment = 2u;
             break;
-        case ETextureFormat_Depth24:
+        case ETextureFormat::Depth24:
             uploadParams.sizedInternalFormat = GL_DEPTH_COMPONENT24;
             uploadParams.baseInternalFormat = GL_DEPTH_COMPONENT;
             uploadParams.byteAlignment = 1u;
             break;
-        case ETextureFormat_Depth24_Stencil8:
+        case ETextureFormat::Depth24_Stencil8:
             uploadParams.sizedInternalFormat = GL_DEPTH24_STENCIL8;
             uploadParams.baseInternalFormat = GL_DEPTH_STENCIL;
             uploadParams.byteAlignment = 4u;
@@ -307,6 +307,25 @@ namespace ramses_internal
             return GL_DST_ALPHA;
         case EBlendFactor::OneMinusDstAlpha:
             return GL_ONE_MINUS_DST_ALPHA;
+        case EBlendFactor::SrcColor:
+            return GL_SRC_COLOR;
+        case EBlendFactor::OneMinusSrcColor:
+            return GL_ONE_MINUS_SRC_COLOR;
+        case EBlendFactor::DstColor:
+            return GL_DST_COLOR;
+        case EBlendFactor::OneMinusDstColor:
+            return GL_ONE_MINUS_DST_COLOR;
+        case EBlendFactor::ConstColor:
+            return GL_CONSTANT_COLOR;
+        case EBlendFactor::OneMinusConstColor:
+            return GL_ONE_MINUS_CONSTANT_COLOR;
+        case EBlendFactor::ConstAlpha:
+            return GL_CONSTANT_ALPHA;
+        case EBlendFactor::OneMinusConstAlpha:
+            return GL_ONE_MINUS_CONSTANT_ALPHA;
+        case EBlendFactor::AlphaSaturate:
+            return GL_SRC_ALPHA_SATURATE;
+
         default:
             assert(false && "Invalid blend factor");
             return GL_ZERO;
@@ -462,61 +481,61 @@ namespace ramses_internal
     {
         switch (ramsesEnum)
         {
-        case ETextureFormat_ASTC_RGBA_4x4:
+        case ETextureFormat::ASTC_RGBA_4x4:
             return GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
-        case ETextureFormat_ASTC_RGBA_5x4:
+        case ETextureFormat::ASTC_RGBA_5x4:
             return GL_COMPRESSED_RGBA_ASTC_5x4_KHR;
-        case ETextureFormat_ASTC_RGBA_5x5:
+        case ETextureFormat::ASTC_RGBA_5x5:
             return GL_COMPRESSED_RGBA_ASTC_5x5_KHR;
-        case ETextureFormat_ASTC_RGBA_6x5:
+        case ETextureFormat::ASTC_RGBA_6x5:
             return GL_COMPRESSED_RGBA_ASTC_6x5_KHR;
-        case ETextureFormat_ASTC_RGBA_6x6:
+        case ETextureFormat::ASTC_RGBA_6x6:
             return GL_COMPRESSED_RGBA_ASTC_6x6_KHR;
-        case ETextureFormat_ASTC_RGBA_8x5:
+        case ETextureFormat::ASTC_RGBA_8x5:
             return GL_COMPRESSED_RGBA_ASTC_8x5_KHR;
-        case ETextureFormat_ASTC_RGBA_8x6:
+        case ETextureFormat::ASTC_RGBA_8x6:
             return GL_COMPRESSED_RGBA_ASTC_8x6_KHR;
-        case ETextureFormat_ASTC_RGBA_8x8:
+        case ETextureFormat::ASTC_RGBA_8x8:
             return GL_COMPRESSED_RGBA_ASTC_8x8_KHR;
-        case ETextureFormat_ASTC_RGBA_10x5:
+        case ETextureFormat::ASTC_RGBA_10x5:
             return GL_COMPRESSED_RGBA_ASTC_10x5_KHR;
-        case ETextureFormat_ASTC_RGBA_10x6:
+        case ETextureFormat::ASTC_RGBA_10x6:
             return GL_COMPRESSED_RGBA_ASTC_10x6_KHR;
-        case ETextureFormat_ASTC_RGBA_10x8:
+        case ETextureFormat::ASTC_RGBA_10x8:
             return GL_COMPRESSED_RGBA_ASTC_10x8_KHR;
-        case ETextureFormat_ASTC_RGBA_10x10:
+        case ETextureFormat::ASTC_RGBA_10x10:
             return GL_COMPRESSED_RGBA_ASTC_10x10_KHR;
-        case ETextureFormat_ASTC_RGBA_12x10:
+        case ETextureFormat::ASTC_RGBA_12x10:
             return GL_COMPRESSED_RGBA_ASTC_12x10_KHR;
-        case ETextureFormat_ASTC_RGBA_12x12:
+        case ETextureFormat::ASTC_RGBA_12x12:
             return GL_COMPRESSED_RGBA_ASTC_12x12_KHR;
-        case ETextureFormat_ASTC_SRGBA_4x4:
+        case ETextureFormat::ASTC_SRGBA_4x4:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
-        case ETextureFormat_ASTC_SRGBA_5x4:
+        case ETextureFormat::ASTC_SRGBA_5x4:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR;
-        case ETextureFormat_ASTC_SRGBA_5x5:
+        case ETextureFormat::ASTC_SRGBA_5x5:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR;
-        case ETextureFormat_ASTC_SRGBA_6x5:
+        case ETextureFormat::ASTC_SRGBA_6x5:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR;
-        case ETextureFormat_ASTC_SRGBA_6x6:
+        case ETextureFormat::ASTC_SRGBA_6x6:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR;
-        case ETextureFormat_ASTC_SRGBA_8x5:
+        case ETextureFormat::ASTC_SRGBA_8x5:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR;
-        case ETextureFormat_ASTC_SRGBA_8x6:
+        case ETextureFormat::ASTC_SRGBA_8x6:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR;
-        case ETextureFormat_ASTC_SRGBA_8x8:
+        case ETextureFormat::ASTC_SRGBA_8x8:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR;
-        case ETextureFormat_ASTC_SRGBA_10x5:
+        case ETextureFormat::ASTC_SRGBA_10x5:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR;
-        case ETextureFormat_ASTC_SRGBA_10x6:
+        case ETextureFormat::ASTC_SRGBA_10x6:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR;
-        case ETextureFormat_ASTC_SRGBA_10x8:
+        case ETextureFormat::ASTC_SRGBA_10x8:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR;
-        case ETextureFormat_ASTC_SRGBA_10x10:
+        case ETextureFormat::ASTC_SRGBA_10x10:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR;
-        case ETextureFormat_ASTC_SRGBA_12x10:
+        case ETextureFormat::ASTC_SRGBA_12x10:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR;
-        case ETextureFormat_ASTC_SRGBA_12x12:
+        case ETextureFormat::ASTC_SRGBA_12x12:
             return GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR;
         default:
             assert(false && "Using unsupported enum in GetASTCFormat()");
@@ -529,73 +548,73 @@ namespace ramses_internal
         switch (compressedGLTextureFormat)
         {
         case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-            return ETextureFormat_DXT1RGB;
+            return ETextureFormat::DXT1RGB;
         case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-            return ETextureFormat_DXT3RGBA;
+            return ETextureFormat::DXT3RGBA;
         case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-            return ETextureFormat_DXT5RGBA;
+            return ETextureFormat::DXT5RGBA;
         case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
-            return ETextureFormat_ASTC_RGBA_4x4;
+            return ETextureFormat::ASTC_RGBA_4x4;
         case GL_COMPRESSED_RGBA_ASTC_5x4_KHR:
-            return ETextureFormat_ASTC_RGBA_5x4;
+            return ETextureFormat::ASTC_RGBA_5x4;
         case GL_COMPRESSED_RGBA_ASTC_5x5_KHR:
-            return ETextureFormat_ASTC_RGBA_5x5;
+            return ETextureFormat::ASTC_RGBA_5x5;
         case GL_COMPRESSED_RGBA_ASTC_6x5_KHR:
-            return ETextureFormat_ASTC_RGBA_6x5;
+            return ETextureFormat::ASTC_RGBA_6x5;
         case GL_COMPRESSED_RGBA_ASTC_6x6_KHR:
-            return ETextureFormat_ASTC_RGBA_6x6;
+            return ETextureFormat::ASTC_RGBA_6x6;
         case GL_COMPRESSED_RGBA_ASTC_8x5_KHR:
-            return ETextureFormat_ASTC_RGBA_8x5;
+            return ETextureFormat::ASTC_RGBA_8x5;
         case GL_COMPRESSED_RGBA_ASTC_8x6_KHR:
-            return ETextureFormat_ASTC_RGBA_8x6;
+            return ETextureFormat::ASTC_RGBA_8x6;
         case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:
-            return ETextureFormat_ASTC_RGBA_8x8;
+            return ETextureFormat::ASTC_RGBA_8x8;
         case GL_COMPRESSED_RGBA_ASTC_10x5_KHR:
-            return ETextureFormat_ASTC_RGBA_10x5;
+            return ETextureFormat::ASTC_RGBA_10x5;
         case GL_COMPRESSED_RGBA_ASTC_10x6_KHR:
-            return ETextureFormat_ASTC_RGBA_10x6;
+            return ETextureFormat::ASTC_RGBA_10x6;
         case GL_COMPRESSED_RGBA_ASTC_10x8_KHR:
-            return ETextureFormat_ASTC_RGBA_10x8;
+            return ETextureFormat::ASTC_RGBA_10x8;
         case GL_COMPRESSED_RGBA_ASTC_10x10_KHR:
-            return ETextureFormat_ASTC_RGBA_10x10;
+            return ETextureFormat::ASTC_RGBA_10x10;
         case GL_COMPRESSED_RGBA_ASTC_12x10_KHR:
-            return ETextureFormat_ASTC_RGBA_12x10;
+            return ETextureFormat::ASTC_RGBA_12x10;
         case GL_COMPRESSED_RGBA_ASTC_12x12_KHR:
-            return ETextureFormat_ASTC_RGBA_12x12;
+            return ETextureFormat::ASTC_RGBA_12x12;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
-            return ETextureFormat_ASTC_SRGBA_4x4;
+            return ETextureFormat::ASTC_SRGBA_4x4;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR:
-            return ETextureFormat_ASTC_SRGBA_5x4;
+            return ETextureFormat::ASTC_SRGBA_5x4;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR:
-            return ETextureFormat_ASTC_SRGBA_5x5;
+            return ETextureFormat::ASTC_SRGBA_5x5;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR:
-            return ETextureFormat_ASTC_SRGBA_6x5;
+            return ETextureFormat::ASTC_SRGBA_6x5;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
-            return ETextureFormat_ASTC_SRGBA_6x6;
+            return ETextureFormat::ASTC_SRGBA_6x6;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR:
-            return ETextureFormat_ASTC_SRGBA_8x5;
+            return ETextureFormat::ASTC_SRGBA_8x5;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR:
-            return ETextureFormat_ASTC_SRGBA_8x6;
+            return ETextureFormat::ASTC_SRGBA_8x6;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
-            return ETextureFormat_ASTC_SRGBA_8x8;
+            return ETextureFormat::ASTC_SRGBA_8x8;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR:
-            return ETextureFormat_ASTC_SRGBA_10x5;
+            return ETextureFormat::ASTC_SRGBA_10x5;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR:
-            return ETextureFormat_ASTC_SRGBA_10x6;
+            return ETextureFormat::ASTC_SRGBA_10x6;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR:
-            return ETextureFormat_ASTC_SRGBA_10x8;
+            return ETextureFormat::ASTC_SRGBA_10x8;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR:
-            return ETextureFormat_ASTC_SRGBA_10x10;
+            return ETextureFormat::ASTC_SRGBA_10x10;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR:
-            return ETextureFormat_ASTC_SRGBA_12x10;
+            return ETextureFormat::ASTC_SRGBA_12x10;
         case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR:
-            return ETextureFormat_ASTC_SRGBA_12x12;
+            return ETextureFormat::ASTC_SRGBA_12x12;
         case GL_COMPRESSED_RGB8_ETC2:
-            return ETextureFormat_ETC2RGB;
+            return ETextureFormat::ETC2RGB;
         case GL_COMPRESSED_RGBA8_ETC2_EAC:
-            return ETextureFormat_ETC2RGBA;
+            return ETextureFormat::ETC2RGBA;
         default:
-            return ETextureFormat_Invalid;
+            return ETextureFormat::Invalid;
         }
     }
 

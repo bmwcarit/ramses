@@ -10,6 +10,7 @@
 #define RAMSES_RAMSESFRAMEWORKCONFIGIMPL_H
 
 #include "StatusObjectImpl.h"
+#include "SOMEIPICConfig.h"
 #include "TCPConfig.h"
 #include "Utils/CommandLineParser.h"
 #include "ramses-framework-api/IThreadWatchdogNotification.h"
@@ -40,6 +41,7 @@ namespace ramses
         uint32_t getProtocolVersion() const;
         void enableProtocolVersionOffset();
 
+        status_t enableSomeIPCommunication(uint32_t ramsesCommunicationUserID);
         status_t setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier thread, uint32_t interval);
         status_t setWatchdogNotificationCallBack(IThreadWatchdogNotification* callback);
 
@@ -48,16 +50,21 @@ namespace ramses
         void setMaximumTotalBytesAllowedForAsyncResourceLoading(uint32_t maximumTotalBytesForAsynResourceLoading);
         uint32_t getMaximumTotalBytesForAsyncResourceLoading() const;
         ramses_internal::EConnectionProtocol getUsedProtocol() const;
+        uint32_t getSomeipCommunicationUserID() const;
         uint32_t getWatchdogNotificationInterval(ERamsesThreadIdentifier thread) const;
         IThreadWatchdogNotification* getWatchdogNotificationCallback() const;
 
         void setPeriodicLogsEnabled(bool enabled);
         ramses_internal::Guid getUserProvidedGuid() const;
 
+        SOMEIPICConfig   m_someipICConfig;
+        bool             m_enableSomeIPHUSafeLocalMode;
         TCPConfig        m_tcpConfig;
         ERamsesShellType m_shellType;
         ramses_internal::ThreadWatchdogConfig m_watchdogConfig;
         bool m_periodicLogsEnabled;
+        std::chrono::milliseconds someipKeepAliveInterval{500};
+        std::chrono::milliseconds someipKeepAliveTimeout{2500};
 
     private:
         RamsesFrameworkConfigImpl();
@@ -65,6 +72,7 @@ namespace ramses
         void parseCommandLine();
 
         ramses_internal::EConnectionProtocol m_usedProtocol;
+        uint32_t m_someipCommunicationUserID;
         ramses_internal::CommandLineParser m_parser;
         bool m_enableDltApplicationRegistration = true;
         ramses_internal::String m_dltAppID;

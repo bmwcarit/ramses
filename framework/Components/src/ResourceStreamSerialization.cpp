@@ -29,7 +29,7 @@ namespace ramses_internal
         stream << static_cast<UInt32>(info.metadata.size());
         stream << info.blobSize;
         stream << info.hash;
-        pi.writeIdx += stream.getBytesWritten();
+        pi.writeIdx += static_cast<uint32_t>(stream.getBytesWritten());
     }
 
     UInt32 ResourceStreamSerializer::WriteBlobPartial(PacketInfo& pi, const Byte* in, UInt32 inSize)
@@ -50,7 +50,7 @@ namespace ramses_internal
 
         RawBinaryOutputStream stream(pi.writePos(), pi.sizeRemaining());
         stream << packetNum;
-        pi.writeIdx += stream.getBytesWritten();
+        pi.writeIdx += static_cast<uint32_t>(stream.getBytesWritten());
 
         return pi;
     }
@@ -89,7 +89,7 @@ namespace ramses_internal
 
         for (const auto& mResource : managedResources)
         {
-            const IResource& resource = *mResource.getResourceObject();
+            const IResource& resource = *mResource;
             if (resource.isCompressedAvailable())
             {
                 const CompressedResouceBlob& compressedData = resource.getCompressedResourceData();

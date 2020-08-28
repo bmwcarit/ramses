@@ -12,7 +12,7 @@
 #include <android/log.h>
 
 #include "ramses-renderer-api/RamsesRenderer.h"
-#include "ramses-renderer-api/RendererSceneControl_legacy.h"
+#include "ramses-renderer-api/RendererSceneControl.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-framework-api/RamsesFramework.h"
 
@@ -62,40 +62,23 @@ void RendererBundle::run()
     {
         while (m_cancelDispatchLoop == false)
         {
-            m_renderer->getSceneControlAPI_legacy()->dispatchEvents(*m_autoShowHandler);
+            m_renderer->getSceneControlAPI()->dispatchEvents(*m_autoShowHandler);
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }));
 }
 
 RendererBundle::SceneStateAutoShowEventHandler::SceneStateAutoShowEventHandler(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId)
-    : m_sceneControlAPI(*renderer.getSceneControlAPI_legacy())
+    : m_sceneControlAPI(*renderer.getSceneControlAPI())
     , m_displayId(displayId)
 {
 }
 
 void RendererBundle::SceneStateAutoShowEventHandler::scenePublished(ramses::sceneId_t sceneId)
 {
-    m_sceneControlAPI.subscribeScene(sceneId);
+    m_sceneControlAPI.setSceneMapping(sceneId, m_displayId);
+    m_sceneControlAPI.setSceneState(sceneId, ramses::RendererSceneState::Rendered);
     m_sceneControlAPI.flush();
-}
-
-void RendererBundle::SceneStateAutoShowEventHandler::sceneSubscribed(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
-{
-    if (ramses::ERendererEventResult_OK == result)
-    {
-        m_sceneControlAPI.mapScene(m_displayId, sceneId);
-        m_sceneControlAPI.flush();
-    }
-}
-
-void RendererBundle::SceneStateAutoShowEventHandler::sceneMapped(ramses::sceneId_t sceneId, ramses::ERendererEventResult result)
-{
-    if (ramses::ERendererEventResult_OK == result)
-    {
-        m_sceneControlAPI.showScene(sceneId);
-        m_sceneControlAPI.flush();
-    }
 }
 
 ANativeWindow* RendererBundle::getNativeWindow()

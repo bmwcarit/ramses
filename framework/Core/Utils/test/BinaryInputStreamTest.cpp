@@ -15,7 +15,7 @@ namespace ramses_internal
 {
     TEST(BinaryInputStreamTest, ReadInt32Value)
     {
-        char buffer[4];
+        Byte buffer[4];
         int32_t value = 5;
         PlatformMemory::Copy(buffer, &value, sizeof(int32_t));
 
@@ -28,7 +28,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, ReadUInt32Value)
     {
-        char buffer[4];
+        Byte buffer[4];
         uint32_t value = 5;
         PlatformMemory::Copy(buffer, &value, sizeof(uint32_t));
 
@@ -41,7 +41,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, ReadInt64Value)
     {
-        char buffer[8];
+        Byte buffer[8];
         int64_t value = 5;
         PlatformMemory::Copy(buffer, &value, sizeof(int64_t));
 
@@ -54,7 +54,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, ReadUInt64Value)
     {
-        char buffer[8];
+        Byte buffer[8];
 
         uint64_t value = 5;
         PlatformMemory::Copy(buffer, &value, sizeof(uint64_t));
@@ -68,7 +68,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, ReadUInt16Value)
     {
-        char buffer[2];
+        Byte buffer[2];
         uint16_t value = 5;
         PlatformMemory::Copy(buffer, &value, sizeof(uint16_t));
 
@@ -81,7 +81,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, ReadStringValue)
     {
-        char buffer[16];
+        Byte buffer[16];
         String value = "Hello World";
         uint32_t strlen = static_cast<uint32_t>(value.size());
 
@@ -97,7 +97,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, ReadEmptyStringValue)
     {
-        char buffer[16];
+        Byte buffer[16];
         String value = "";
         uint32_t strlen = static_cast<uint32_t>(value.size());
 
@@ -113,7 +113,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, ReadBoolValue)
     {
-        char buffer[4];
+        Byte buffer[4];
         bool value = true;
         PlatformMemory::Copy(buffer, &value, sizeof(bool));
 
@@ -126,7 +126,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, ReadFloatValue)
     {
-        char buffer[4];
+        Byte buffer[4];
         float value = 0.002f;
         PlatformMemory::Copy(buffer, &value, sizeof(float));
 
@@ -139,7 +139,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, ReadMultipleData)
     {
-        char buffer[1024];
+        Byte buffer[1024];
         int32_t intVal = 5;
         float floatVal = 4.3f;
         String stringVal = "Hello World";
@@ -168,23 +168,6 @@ namespace ramses_internal
         EXPECT_EQ(true, boolVal);
     }
 
-    TEST(BinaryInputStreamTest, Matrix44f)
-    {
-        Float data[16] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f,
-        14.0f, 15.0f, 16.0f};
-
-        BinaryInputStream s(reinterpret_cast<Char*>(data));
-
-        Matrix44f m;
-
-        s >> m;
-
-        for (UInt32 i = 0; i < 16; i++)
-        {
-            EXPECT_EQ(Float(i + 1), m.data[i]);
-        }
-    }
-
     TEST(BinaryInputStreamTest, ReadStronglyTypedEnum)
     {
         enum class TestEnum16 : uint16_t
@@ -200,7 +183,7 @@ namespace ramses_internal
         };
 
 
-        char buffer[sizeof(uint16_t) + sizeof(uint32_t)];
+        Byte buffer[sizeof(uint16_t) + sizeof(uint32_t)];
         TestEnum16 value16 = TestEnum16::TestEnumValue;
         TestEnum32 value32 = TestEnum32::TestEnumValue;
 
@@ -221,7 +204,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, GetReadPosition)
     {
-        const char buffer[10] = {0};
+        const Byte buffer[10] = {0};
         BinaryInputStream inStream(buffer);
 
         char readBuffer[10] = {0};
@@ -234,7 +217,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, CanSkipForward)
     {
-        const char buffer[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        const Byte buffer[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         BinaryInputStream inStream(buffer);
         uint8_t in = 0;
         inStream.skip(3);
@@ -250,7 +233,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, CanSkipBackward)
     {
-        const char buffer[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        const Byte buffer[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         BinaryInputStream inStream(buffer);
         uint8_t in = 0;
         inStream >> in;
@@ -266,7 +249,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, currentReadBytesStartsWithZero)
     {
-        const char buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        const Byte buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         BinaryInputStream inStream(buffer);
 
         EXPECT_EQ(0u, inStream.getCurrentReadBytes());
@@ -274,7 +257,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, currentReadBytesIsIncrementedByReading)
     {
-        const char buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        const Byte buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         BinaryInputStream inStream(buffer);
 
         uint8_t in = 0;
@@ -287,7 +270,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, currentReadBytesIsIncrementedBySkip)
     {
-        const char buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        const Byte buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         BinaryInputStream inStream(buffer);
 
         inStream.skip(1234);
@@ -298,7 +281,7 @@ namespace ramses_internal
 
     TEST(BinaryInputStreamTest, currentReadBytesIsDecrementedBySkippingBackwards)
     {
-        const char buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        const Byte buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         BinaryInputStream inStream(buffer);
 
         inStream.skip(5555);

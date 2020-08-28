@@ -13,26 +13,29 @@
 
 namespace ramses_internal
 {
-    EffectResource::EffectResource(const String& vertexShader, const String& fragmentShader,
+    EffectResource::EffectResource(const String& vertexShader, const String& fragmentShader, const String& geometryShader,
         const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs,
         const String& name, ResourceCacheFlag cacheFlag)
         : ResourceBase(EResourceType_Effect, cacheFlag, name)
         , m_uniformInputs(uniformInputs)
         , m_attributeInputs(attributeInputs)
         , m_fragmentShaderOffset(static_cast<UInt32>(vertexShader.size() + 1))
+        , m_geometryShaderOffset(m_fragmentShaderOffset+static_cast<UInt32>(fragmentShader.size() + 1))
     {
-        const UInt32 dataLength = static_cast<UInt32>(vertexShader.size() + 1 + fragmentShader.size() + 1); // including 2x terminating '0'
+        const UInt32 dataLength = static_cast<UInt32>(vertexShader.size() + 1 + fragmentShader.size() + 1 + geometryShader.size() + 1); // including 3x terminating '0'
         ResourceBlob blob(dataLength);
         std::memcpy(blob.data(), vertexShader.c_str(), vertexShader.size() + 1);
         std::memcpy(blob.data() + m_fragmentShaderOffset, fragmentShader.c_str(), fragmentShader.size() + 1);
+        std::memcpy(blob.data() + m_geometryShaderOffset, geometryShader.c_str(), geometryShader.size() + 1);
         setResourceData(std::move(blob));
     }
 
-    EffectResource::EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs, const String& name, UInt32 fragmentShaderOffset, ResourceCacheFlag cacheFlag)
+    EffectResource::EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs, const String& name, UInt32 fragmentShaderOffset, UInt32 geometryShaderOffset, ResourceCacheFlag cacheFlag)
         : ResourceBase(EResourceType_Effect, cacheFlag, name)
         , m_uniformInputs(uniformInputs)
         , m_attributeInputs(attributeInputs)
         , m_fragmentShaderOffset(fragmentShaderOffset)
+        , m_geometryShaderOffset(geometryShaderOffset)
     {
     }
 
@@ -46,6 +49,12 @@ namespace ramses_internal
     {
         const char* data = reinterpret_cast<const char*>(getResourceData().data());
         return data + m_fragmentShaderOffset;
+    }
+
+    const char* EffectResource::getGeometryShader() const
+    {
+        const char* data = reinterpret_cast<const char*>(getResourceData().data());
+        return data + m_geometryShaderOffset;
     }
 
     const EffectInputInformationVector& EffectResource::getUniformInputs() const
@@ -87,6 +96,7 @@ namespace ramses_internal
         WriteInputVector(output, m_uniformInputs);
         WriteInputVector(output, m_attributeInputs);
         output << m_fragmentShaderOffset;
+        output << m_geometryShaderOffset;
     }
 
     IResource* EffectResource::CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, const String& name)
@@ -98,8 +108,10 @@ namespace ramses_internal
 
         UInt32 fragementShaderOffset = 0;
         input >> fragementShaderOffset;
+        UInt32 geometryShaderOffset = 0;
+        input >> geometryShaderOffset;
 
-        return new EffectResource(uniformInputs, attributeInputs, name, fragementShaderOffset, cacheFlag);
+        return new EffectResource(uniformInputs, attributeInputs, name, fragementShaderOffset, geometryShaderOffset, cacheFlag);
     }
 
     void EffectResource::WriteInputVector(IOutputStream& stream, const EffectInputInformationVector& inputVector)
@@ -109,7 +121,7 @@ namespace ramses_internal
         for (UInt32 i = 0; i < length; ++i)
         {
             const EffectInputInformation& input = inputVector[i];
-            stream << input.inputName << input.elementCount << static_cast<UInt32>(input.dataType) << static_cast<UInt32>(input.textureType) << static_cast<UInt32>(input.semantics);
+            stream << input.inputName << input.elementCount << static_cast<UInt32>(input.dataType) << static_cast<UInt32>(input.semantics);
         }
     }
 
@@ -122,11 +134,9 @@ namespace ramses_internal
         {
             EffectInputInformation input;
             UInt32 typeTmp;
-            UInt32 textureType;
             UInt32 semanticTmp;
-            stream >> input.inputName >> input.elementCount >> typeTmp >> textureType >> semanticTmp;
+            stream >> input.inputName >> input.elementCount >> typeTmp >> semanticTmp;
             input.dataType = static_cast<EDataType>(typeTmp);
-            input.textureType = static_cast<EEffectInputTextureType>(textureType);
             input.semantics = static_cast<EFixedSemantics>(semanticTmp);
             inputVector.push_back(input);
         }

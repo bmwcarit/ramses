@@ -21,7 +21,7 @@ namespace ramses_internal
             EState_INITIAL = 0
         };
 
-        MultiLanguageTextScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        MultiLanguageTextScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
     };
 }
 

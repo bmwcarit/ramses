@@ -58,7 +58,7 @@ namespace ramses_internal
 
     void RendererClientResourceRegistry::addResourceRef(const ResourceContentHash& hash, SceneId sceneId)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef for scene (" << sceneId.getValue() << ") resource #" << hash);
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef for scene (" << sceneId << ") resource #" << hash);
         if (!m_resources.contains(hash))
         {
             LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef Resource not registered! #" << hash);
@@ -66,21 +66,13 @@ namespace ramses_internal
             return;
         }
 
-        ResourceDescriptor& rd = *m_resources.get(hash);
-        if (contains_c(rd.sceneUsage, sceneId))
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef Resource already referenced by scene (" << sceneId.getValue() << ")! #" << hash << " (" << EnumToString(rd.type) << " : " << EnumToString(rd.status) << ")");
-            assert(false);
-            return;
-        }
-        rd.sceneUsage.push_back(sceneId);
-
+        m_resources.get(hash)->sceneUsage.push_back(sceneId);
         updateListOfResourcesNotInUseByScenes(hash);
     }
 
     void RendererClientResourceRegistry::removeResourceRef(const ResourceContentHash& hash, SceneId sceneId)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef for scene (" << sceneId.getValue() << ") resource #" << hash);
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef for scene (" << sceneId << ") resource #" << hash);
         if (!m_resources.contains(hash))
         {
             LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef Resource not registered! #" << hash);
@@ -91,7 +83,7 @@ namespace ramses_internal
         ResourceDescriptor& rd = *m_resources.get(hash);
         if (!contains_c(rd.sceneUsage, sceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef Resource not referenced by scene (" << sceneId.getValue() << ")! #" << hash);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef Resource not referenced by scene (" << sceneId << ")! #" << hash);
             assert(false);
             return;
         }

@@ -25,6 +25,7 @@
 #include "TestScenes/RenderTargetScene.h"
 #include "RamsesRendererImpl.h"
 #include "TestScenes/DataBufferScene.h"
+#include "TestScenes/GeometryShaderScene.h"
 
 using namespace ramses_internal;
 
@@ -49,13 +50,16 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(BlendingTest_AlphaBlending, *this, "BlendingTest_AlphaBlending");
     testFramework.createTestCaseWithDefaultDisplay(BlendingTest_SubtractiveBlending, *this, "BlendingTest_SubtractiveBlending");
     testFramework.createTestCaseWithDefaultDisplay(BlendingTest_AdditiveBlending, *this, "BlendingTest_AdditiveBlending");
+    testFramework.createTestCaseWithDefaultDisplay(BlendingTest_BlendingConstant, *this, "BlendingTest_BlendingConstant");
+    testFramework.createTestCaseWithDefaultDisplay(BlendingTest_BlendingDstColorAndAlpha, *this, "BlendingTest_BlendingDstColorAndAlpha");
 
     testFramework.createTestCaseWithDefaultDisplay(CameraTest_Perspective, *this, "CameraTest_Perspective");
     testFramework.createTestCaseWithDefaultDisplay(CameraTest_Orthographic, *this, "CameraTest_Orthographic");
     testFramework.createTestCaseWithDefaultDisplay(CameraTest_Viewport, *this, "CameraTest_Viewport");
 
     testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_DeleteMeshNode, *this, "SceneModificationTest_DeleteMeshNode");
-    testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_NoVisibility, *this, "SceneModificationTest_NoVisibility");
+    testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_Invisible, *this, "SceneModificationTest_NoVisibility");
+    testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_VisibilityOff, *this, "SceneModificationTest_VisibilityOff");
     testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_PartialVisibility, *this, "SceneModificationTest_PartialVisibility");
     testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_RotateAndScale, *this, "SceneModificationTest_RotateAndScale");
     testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_CameraTransformation, *this, "SceneModificationTest_CameraTransformation");
@@ -120,6 +124,17 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(DataBuffer_SwitchFromClientArrayResourceToDataBuffer, *this, "DataBuffer_SwitchFromClientArrayResourceToDataBuffer");
     testFramework.createTestCaseWithDefaultDisplay(DataBuffer_SwitchFromDataBufferToClientArrayResource, *this, "DataBuffer_SwitchFromDataBufferToClientArrayResource");
 
+    testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV320_PointsInTriangleStripOut, *this, "GeometryShaderGlslV320_PointsInTriangleStripOut");
+    testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV320_PointsInLineStripOut, *this, "GeometryShaderGlslV320_PointsInLineStripOut");
+    testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV320_PointsInPointsOut, *this, "GeometryShaderGlslV320_PointsInPointsOut");
+    testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV320_TrianglesInTriangleStripOut, *this, "GeometryShaderGlslV320_TrianglesInTriangleStripOut");
+    testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV320_TrianglesInPointsOut, *this, "GeometryShaderGlslV320_TrianglesInPointsOut");
+    testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV310Extension_PointsInTriangleStripOut, *this, "GeometryShaderGlslV310Extension_PointsInTriangleStripOut");
+    testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV310Extension_PointsInLineStripOut, *this, "GeometryShaderGlslV310Extension_PointsInLineStripOut");
+    testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV310Extension_PointsInPointsOut, *this, "GeometryShaderGlslV310Extension_PointsInPointsOut");
+    testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV310Extension_TrianglesInTriangleStripOut, *this, "GeometryShaderGlslV310Extension_TrianglesInTriangleStripOut");
+    testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV310Extension_TrianglesInPointsOut, *this, "GeometryShaderGlslV310Extension_TrianglesInPointsOut");
+
     testFramework.createTestCaseWithDefaultDisplay(Display_SetClearColor, *this, "Display_SetClearColor").m_displayConfigs.front().setClearColor(0.5f, 0.25f, 0.75f, 1.f);
 
     testFramework.createTestCaseWithDefaultDisplay(FrameProfiler_Show, *this, "RendererTest_FrameProfiler");
@@ -167,6 +182,10 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
         return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::SUBTRACTIVE_BLENDING, "MultipleTrianglesScene_SubtractiveBlending");
     case BlendingTest_AdditiveBlending:
         return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::ADDITIVE_BLENDING, "MultipleTrianglesScene_AdditiveBlending");
+    case BlendingTest_BlendingConstant:
+        return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::BLENDING_CONSTANT, "MultipleTrianglesScene_BlendingConstant");
+    case BlendingTest_BlendingDstColorAndAlpha:
+        return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::BLENDING_DST_COLOR_AND_ALPHA, "MultipleTrianglesScene_BlendingDstColorAndAlpha");
 
     case CameraTest_Perspective:
         return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::PERSPECTIVE_CAMERA, "MultipleTrianglesScene_PerspectiveCamera");
@@ -177,8 +196,10 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
 
     case SceneModificationTest_DeleteMeshNode:
         return runBasicTest<HierarchicalRedTrianglesScene>(testFramework, HierarchicalRedTrianglesScene::DELETE_MESHNODE, "HierarchicalRedTrianglesScene_DeleteMeshNode");
-    case SceneModificationTest_NoVisibility:
-        return runBasicTest<HierarchicalRedTrianglesScene>(testFramework, HierarchicalRedTrianglesScene::NO_VISIBILITY, "HierarchicalRedTrianglesScene_AllTrianglesInvisible");
+    case SceneModificationTest_Invisible:
+        return runBasicTest<HierarchicalRedTrianglesScene>(testFramework, HierarchicalRedTrianglesScene::INVISIBLE, "HierarchicalRedTrianglesScene_AllTrianglesInvisible");
+    case SceneModificationTest_VisibilityOff:
+        return runBasicTest<HierarchicalRedTrianglesScene>(testFramework, HierarchicalRedTrianglesScene::VISIBILITY_OFF, "HierarchicalRedTrianglesScene_AllTrianglesInvisible");
     case SceneModificationTest_PartialVisibility:
         return runBasicTest<HierarchicalRedTrianglesScene>(testFramework, HierarchicalRedTrianglesScene::PARTIAL_VISIBILITY, "HierarchicalRedTrianglesScene_SomeTrianglesInvisible");
     case SceneModificationTest_RotateAndScale:
@@ -328,6 +349,27 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
         bool profilerIsInvisible = runBasicTest<SingleAppearanceScene>(testFramework, SingleAppearanceScene::RED_TRIANGLES, "SingleAppearanceScene_RedTriangles");
         return profilerIsInvisible && profilerIsVisible;
     }
+    case GeometryShaderGlslV320_PointsInTriangleStripOut:
+        return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL320_POINTS_IN_TRIANGLE_STRIP_OUT, "GeometryShaderScene_PointsInTriangleStripOut", 0.f);
+    case GeometryShaderGlslV320_PointsInLineStripOut:
+        return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL320_POINTS_IN_LINE_STRIP_OUT, "GeometryShaderScene_PointsInLineStripOut", 0.f);
+    case GeometryShaderGlslV320_PointsInPointsOut:
+        return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL320_POINTS_IN_POINTS_OUT, "GeometryShaderScene_PointsInPointsOut", .1f);
+    case GeometryShaderGlslV320_TrianglesInTriangleStripOut:
+        return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL320_TRIANGLES_IN_TRIANGLE_STRIP_OUT, "GeometryShaderScene_TrianglesInTriangleStripOut", 0.f);
+    case GeometryShaderGlslV320_TrianglesInPointsOut:
+        return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL320_TRIANGLES_IN_POINTS_OUT, "GeometryShaderScene_TrianglesInPointsOut", .1f);
+
+    case GeometryShaderGlslV310Extension_PointsInTriangleStripOut:
+        return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL310_POINTS_IN_TRIANGLE_STRIP_OUT, "GeometryShaderScene_PointsInTriangleStripOut", 0.f);
+    case GeometryShaderGlslV310Extension_PointsInLineStripOut:
+        return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL310_POINTS_IN_LINE_STRIP_OUT, "GeometryShaderScene_PointsInLineStripOut", 0.f);
+    case GeometryShaderGlslV310Extension_PointsInPointsOut:
+        return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL310_POINTS_IN_POINTS_OUT, "GeometryShaderScene_PointsInPointsOut", .1f);
+    case GeometryShaderGlslV310Extension_TrianglesInTriangleStripOut:
+        return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL310_TRIANGLES_IN_TRIANGLE_STRIP_OUT, "GeometryShaderScene_TrianglesInTriangleStripOut", 0.f);
+    case GeometryShaderGlslV310Extension_TrianglesInPointsOut:
+        return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL310_TRIANGLES_IN_POINTS_OUT, "GeometryShaderScene_TrianglesInPointsOut", .1f);
 
     default:
         assert(!"Invalid renderer test ID!");

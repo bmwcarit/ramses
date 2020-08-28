@@ -15,8 +15,7 @@ namespace ramses
 {
     class Texture2DBuffer;
     class TextureSampler;
-    class IndexDataBuffer;
-    class VertexDataBuffer;
+    class ArrayBuffer;
 }
 
 namespace ramses_internal
@@ -24,7 +23,7 @@ namespace ramses_internal
     class DynamicQuad_SceneResources : public DynamicQuad_Base
     {
     public:
-        DynamicQuad_SceneResources(ramses::RamsesClient& client, ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad);
+        DynamicQuad_SceneResources(ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad);
         ~DynamicQuad_SceneResources();
 
         virtual void recreate() override final;
@@ -36,9 +35,9 @@ namespace ramses_internal
 
         ramses::Texture2DBuffer* m_textureBuffer = nullptr;
         ramses::TextureSampler* m_textureSampler = nullptr;
-        ramses::IndexDataBuffer* m_indices = nullptr;
-        ramses::VertexDataBuffer* m_texCoords = nullptr;
-        ramses::VertexDataBuffer* m_vertexPos = nullptr;
+        ramses::ArrayBuffer* m_indices = nullptr;
+        ramses::ArrayBuffer* m_texCoords = nullptr;
+        ramses::ArrayBuffer* m_vertexPos = nullptr;
 
         static const uint32_t DynamicTextureWidth = 64u;
         static const uint32_t DynamicTextureHeight = 32u;

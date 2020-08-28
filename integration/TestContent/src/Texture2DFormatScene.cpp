@@ -8,11 +8,9 @@
 
 #include "TestScenes/Texture2DFormatScene.h"
 #include "ramses-utils.h"
-#include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Effect.h"
@@ -228,22 +226,22 @@ const ramses::MipLevelData mipLevelData_null;
 
 namespace ramses_internal
 {
-    Texture2DFormatScene::Texture2DFormatScene(ramses::RamsesClient& ramsesClient, ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition)
-        : IntegrationScene(ramsesClient, scene, cameraPosition)
+    Texture2DFormatScene::Texture2DFormatScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition)
+        : IntegrationScene(scene, cameraPosition)
     {
         createOrthoCamera();
 
-        ramses::ETextureFormat format(ramses::ETextureFormat_R8);
+        ramses::ETextureFormat format(ramses::ETextureFormat::R8);
         uint32_t width = 0u;
         uint32_t height = 0u;
 
         ramses::TextureSwizzle swizzle = {};
         const ramses::MipLevelData& mipLevelData = getTextureFormatAndData(static_cast<EState>(state), format, width, height, swizzle);
 
-        ramses::Texture2D* texture = m_client.createTexture2D(
+        ramses::Texture2D* texture = m_scene.createTexture2D(
+            format,
             width,
             height,
-            format,
             1,
             &mipLevelData,
             false,
@@ -270,7 +268,7 @@ namespace ramses_internal
     void Texture2DFormatScene::createQuad(const ramses::TextureSampler& sampler)
     {
         uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
-        const ramses::UInt16Array* indices = m_client.createConstUInt16Array(6, indicesArray);
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
         float vertexPositionsArray[] = {
             -1.0f, -1.0f, -1.0f,
@@ -279,7 +277,7 @@ namespace ramses_internal
             1.0f, 1.0f, -1.0f
         };
 
-        const ramses::Vector3fArray* vertexPositions = m_client.createConstVector3fArray(4, vertexPositionsArray);
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
 
         float textureCoordsArray[] = { 0.0f, 1.0f,
             1.0f, 1.0f,
@@ -287,7 +285,7 @@ namespace ramses_internal
             1.0f, 0.0f
         };
 
-        const ramses::Vector2fArray* textureCoords = m_client.createConstVector2fArray(4, textureCoordsArray);
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
 
         ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
         assert(effect != nullptr);
@@ -323,88 +321,88 @@ namespace ramses_internal
         switch (state)
         {
         case EState_R8:
-            format = ramses::ETextureFormat_R8;
+            format = ramses::ETextureFormat::R8;
             return mipLevelData_r8;
         case EState_RG8:
-            format = ramses::ETextureFormat_RG8;
+            format = ramses::ETextureFormat::RG8;
             return mipLevelData_rg8;
         case EState_Swizzled_Luminance_Alpha:
             swizzle = { ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Green };
-            format = ramses::ETextureFormat_RG8;
+            format = ramses::ETextureFormat::RG8;
             return mipLevelData_rg8;
         case EState_RGB8:
-            format = ramses::ETextureFormat_RGB8;
+            format = ramses::ETextureFormat::RGB8;
             return mipLevelData_rgb8;
         case EState_RGB565:
-            format = ramses::ETextureFormat_RGB565;
+            format = ramses::ETextureFormat::RGB565;
             return mipLevelData_rgba565;
         case EState_RGBA8:
-            format = ramses::ETextureFormat_RGBA8;
+            format = ramses::ETextureFormat::RGBA8;
             return mipLevelData_rgba8;
         case EState_RGBA4:
-            format = ramses::ETextureFormat_RGBA4;
+            format = ramses::ETextureFormat::RGBA4;
             return mipLevelData_rgba4;
         case EState_RGBA5551:
-            format = ramses::ETextureFormat_RGBA5551;
+            format = ramses::ETextureFormat::RGBA5551;
             return mipLevelData_rgba5551;
         case EState_Swizzled_BGR8:
             swizzle = { ramses::ETextureChannelColor::Blue, ramses::ETextureChannelColor::Green, ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Alpha };
-            format = ramses::ETextureFormat_RGB8;
+            format = ramses::ETextureFormat::RGB8;
             return mipLevelData_bgr8;
         case EState_Swizzled_BGRA8:
             swizzle = { ramses::ETextureChannelColor::Blue, ramses::ETextureChannelColor::Green, ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Alpha };
-            format = ramses::ETextureFormat_RGBA8;
+            format = ramses::ETextureFormat::RGBA8;
             return mipLevelData_bgra8;
         case EState_ETC2RGB:
-            format = ramses::ETextureFormat_ETC2RGB;
+            format = ramses::ETextureFormat::ETC2RGB;
             width = 4u;
             height = 4u;
             return mipLevelData_etc2rgb;
         case EState_ETC2RGBA:
-            format = ramses::ETextureFormat_ETC2RGBA;
+            format = ramses::ETextureFormat::ETC2RGBA;
             width = 4u;
             height = 4u;
             return mipLevelData_etc2rgba;
 
         case EState_R16F:
-            format = ramses::ETextureFormat_R16F;
+            format = ramses::ETextureFormat::R16F;
             return mipLevelData_r16fData;
         case EState_R32F:
-            format = ramses::ETextureFormat_R32F;
+            format = ramses::ETextureFormat::R32F;
             return mipLevelData_r32fData;
         case EState_RG16F:
-            format = ramses::ETextureFormat_RG16F;
+            format = ramses::ETextureFormat::RG16F;
             return mipLevelData_rg16fData;
         case EState_RG32F:
-            format = ramses::ETextureFormat_RG32F;
+            format = ramses::ETextureFormat::RG32F;
             return mipLevelData_rg32fData;
         case EState_RGB16F:
-            format = ramses::ETextureFormat_RGB16F;
+            format = ramses::ETextureFormat::RGB16F;
             return mipLevelData_rgb16fData;
         case EState_RGB32F:
-            format = ramses::ETextureFormat_RGB32F;
+            format = ramses::ETextureFormat::RGB32F;
             return mipLevelData_rgb32fData;
         case EState_RGBA16F:
-            format = ramses::ETextureFormat_RGBA16F;
+            format = ramses::ETextureFormat::RGBA16F;
             return mipLevelData_rgba16fData;
         case EState_RGBA32F:
-            format = ramses::ETextureFormat_RGBA32F;
+            format = ramses::ETextureFormat::RGBA32F;
             return mipLevelData_rgba32fData;
 
         case EState_SRGB8:
-            format = ramses::ETextureFormat_SRGB8;
+            format = ramses::ETextureFormat::SRGB8;
             return mipLevelData_srgb8Data;
         case EState_SRGB8_ALPHA8:
-            format = ramses::ETextureFormat_SRGB8_ALPHA8;
+            format = ramses::ETextureFormat::SRGB8_ALPHA8;
             return mipLevelData_srgb8a8Data;
 
         case EState_ASTC_RGBA_4x4:
-            format = ramses::ETextureFormat_ASTC_RGBA_4x4;
+            format = ramses::ETextureFormat::ASTC_RGBA_4x4;
             width = 4u;
             height = 4u;
             return mipLevelData_astcRGBA4x4Data;
         case EState_ASTC_SRGB_ALPHA_4x4:
-            format = ramses::ETextureFormat_ASTC_SRGBA_4x4;
+            format = ramses::ETextureFormat::ASTC_SRGBA_4x4;
             width = 4u;
             height = 4u;
             return mipLevelData_astcSRGB_Alpha_4x4Data;

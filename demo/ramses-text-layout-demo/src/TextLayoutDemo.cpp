@@ -30,8 +30,8 @@ TextLayoutDemo::TextLayoutDemo(int argc, char* argv[])
     , m_colorQuadEffect(createColorQuadEffect())
     , m_renderPass(*m_scene.createRenderPass())
     , m_renderGroup(*m_scene.createRenderGroup())
-    , m_quadIndices(*m_client.createConstUInt16Array(6, QuadIndices))
-    , m_quadVertices(*m_client.createConstVector3fArray(4, QuadVertices))
+    , m_quadIndices(*m_scene.createArrayResource(ramses::EDataType::UInt16, 6, QuadIndices))
+    , m_quadVertices(*m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, QuadVertices))
     , m_windowWidth(1280)
     , m_windowHeight(480)
 {
@@ -196,7 +196,7 @@ ramses::Effect& TextLayoutDemo::createTextEffect()
     effectDesc.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
     effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic_TextTexture);
 
-    return *m_client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "text effect");
+    return *m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "text effect");
 }
 
 ramses::Effect& TextLayoutDemo::createColorQuadEffect()
@@ -206,7 +206,7 @@ ramses::Effect& TextLayoutDemo::createColorQuadEffect()
     effectDesc.setFragmentShaderFromFile("res/ramses-layout-demo-colored-quad.frag");
     effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
 
-    return *m_client.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "quad effect");
+    return *m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "quad effect");
 }
 
 ramses::Camera* TextLayoutDemo::createOrthographicCamera()

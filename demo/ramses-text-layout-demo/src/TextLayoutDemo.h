@@ -52,8 +52,8 @@ private:
     ramses::RenderPass&     m_renderPass;
     ramses::RenderGroup&    m_renderGroup;
 
-    const ramses::UInt16Array& m_quadIndices;
-    const ramses::Vector3fArray& m_quadVertices;
+    ramses::ArrayResource& m_quadIndices;
+    ramses::ArrayResource& m_quadVertices;
 
     const uint32_t m_windowWidth;
     const uint32_t m_windowHeight;

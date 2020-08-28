@@ -23,8 +23,8 @@
 
 namespace ramses_internal
 {
-    DynamicQuad_ClientResources::DynamicQuad_ClientResources(ramses::RamsesClient& client, ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad)
-        : DynamicQuad_Base(client, scene, screenspaceQuad)
+    DynamicQuad_ClientResources::DynamicQuad_ClientResources(ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad)
+        : DynamicQuad_Base(scene, screenspaceQuad)
     {
         m_renderGroup.addMeshNode(m_meshNode);
 
@@ -48,6 +48,10 @@ namespace ramses_internal
     void DynamicQuad_ClientResources::markSceneObjectsDestroyed()
     {
         m_textureResources.textureSampler = nullptr;
+        m_textureResources.texture = nullptr;
+        m_quadResources.indices = nullptr;
+        m_quadResources.texCoords = nullptr;
+        m_quadResources.vertexPos = nullptr;
     }
 
     void DynamicQuad_ClientResources::createTextureDataConsumer(ramses::dataConsumerId_t textureSlotId)
@@ -87,7 +91,7 @@ namespace ramses_internal
         }
 
         ramses::MipLevelData textureData(textureWidth * textureHeight * 3, rawData.get());
-        resources.texture = m_client.createTexture2D(textureWidth, textureHeight, ramses::ETextureFormat_RGB8, 1, &textureData, false, {}, ramses::ResourceCacheFlag_DoNotCache);
+        resources.texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, textureWidth, textureHeight, 1, &textureData, false, {}, ramses::ResourceCacheFlag_DoNotCache);
 
         resources.textureSampler = m_scene.createTextureSampler(
             ramses::ETextureAddressMode_Repeat,
@@ -101,11 +105,10 @@ namespace ramses_internal
 
     void DynamicQuad_ClientResources::destroyTexture(const TextureResources& textureResources)
     {
-        m_client.destroy(*textureResources.texture);
+        if (textureResources.texture)
+            m_scene.destroy(*textureResources.texture);
 
-        if (nullptr != textureResources.textureSampler)
-        {
+        if (textureResources.textureSampler)
             m_scene.destroy(*textureResources.textureSampler);
-        }
     }
 }

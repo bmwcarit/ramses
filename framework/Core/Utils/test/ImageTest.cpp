@@ -55,8 +55,44 @@ TEST(AnImage, ReportsTheSumOfAllItsPixels)
 
     Image bitmap(10, 10, data, data + sizeof(data));
 
-    const UInt64 expectedSumOfPixelData = (1u + 2u + 3u + 4u) * 100u;
+    const Vector4i expectedSumOfPixelData{ 100u, 200u, 300u, 400u };
     EXPECT_EQ(expectedSumOfPixelData, bitmap.getSumOfPixelValues());
+}
+
+TEST(AnImage, CanGenerateSeparateColorAndAlphaImages)
+{
+    std::vector<uint8_t> data;
+    std::vector<uint8_t> expectedColorData;
+    std::vector<uint8_t> expectedAlphaData;
+    data.reserve(400u);
+    expectedColorData.reserve(400u);
+    expectedAlphaData.reserve(400u);
+
+    for (UInt8 i = 0; i < 100; ++i)
+    {
+        data.push_back(1);
+        data.push_back(2);
+        data.push_back(3);
+        data.push_back(4);
+
+        expectedColorData.push_back(1);
+        expectedColorData.push_back(2);
+        expectedColorData.push_back(3);
+        expectedColorData.push_back(255);
+
+        expectedAlphaData.push_back(4);
+        expectedAlphaData.push_back(4);
+        expectedAlphaData.push_back(4);
+        expectedAlphaData.push_back(255);
+    }
+
+    const Image bitmap(10, 10, std::move(data));
+    const Image expectedColorBitmap(10, 10, std::move(expectedColorData));
+    const Image expectedAlphaBitmap(10, 10, std::move(expectedAlphaData));
+
+    const auto resultBitmaps = bitmap.createSeparateColorAndAlphaImages();
+    EXPECT_EQ(expectedColorBitmap, resultBitmaps.first);
+    EXPECT_EQ(expectedAlphaBitmap, resultBitmaps.second);
 }
 
 TEST(AnImage, CanBeSubtractedFromOtherBitmapWithSameSize)
@@ -88,8 +124,8 @@ TEST(AnImage, CanBeSubtractedFromOtherBitmapWithSameSize)
     const Image bitmapDiff1 = bitmap1.createDiffTo(bitmap2);
     const Image bitmapDiff2 = bitmap2.createDiffTo(bitmap1);
 
-    // W*H pixels, times 4 components (r, g, b, a), times a difference of 2 (because of shifted mosaic pattern)
-    const UInt64 expectedDiff = 2u * 4u * Width * Height;
+    // W*H pixels, times a difference of 2 (because of shifted mosaic pattern)
+    const Vector4i expectedDiff(2u * Width * Height);
 
     EXPECT_EQ(expectedDiff, bitmapDiff1.getSumOfPixelValues());
     EXPECT_EQ(expectedDiff, bitmapDiff2.getSumOfPixelValues());
@@ -114,7 +150,7 @@ TEST(AnImage, YieldsBlackImageWhenSubtractedFromItself)
     const Image bitmap(Width, Height, data, data + sizeof(data));
     const Image bitmapDiff = bitmap.createDiffTo(bitmap);
 
-    EXPECT_EQ(0u, bitmapDiff.getSumOfPixelValues());
+    EXPECT_EQ(Vector4i(0u), bitmapDiff.getSumOfPixelValues());
 }
 
 TEST(AnImage, GivesEmptyImageIfEnlargingToSmallerSize)

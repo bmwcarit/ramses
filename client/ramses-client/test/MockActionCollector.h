@@ -12,12 +12,13 @@
 #include "gmock/gmock.h"
 #include "Components/ISceneGraphConsumerComponent.h"
 #include "SceneAPI/SceneId.h"
-#include "ServiceHandlerMocks.h"
 #include "Scene/SceneActionCollection.h"
+#include "SceneRendererHandlerMock.h"
+#include "Components/SceneUpdate.h"
 
 namespace ramses
 {
-    class MockActionCollector : public ramses_internal::SceneRendererServiceHandlerMock
+    class MockActionCollector : public ramses_internal::SceneRendererHandlerMock
     {
     public:
         MockActionCollector()
@@ -60,31 +61,28 @@ namespace ramses
 
         virtual void handleInitializeScene(const ramses_internal::SceneInfo& sceneInfo, const ramses_internal::Guid& providerID) override
         {
-            ramses_internal::SceneRendererServiceHandlerMock::handleInitializeScene(sceneInfo, providerID);
+            ramses_internal::SceneRendererHandlerMock::handleInitializeScene(sceneInfo, providerID);
         }
 
-        virtual void handleSceneActionList(const ramses_internal::SceneId& sceneId, ramses_internal::SceneActionCollection&& actions, const uint64_t& counter, const ramses_internal::Guid& providerID) override
+        virtual void handleSceneUpdate(const ramses_internal::SceneId& sceneId, ramses_internal::SceneUpdate&& sceneUpdate, const ramses_internal::Guid& providerID) override
         {
-            ramses_internal::SceneRendererServiceHandlerMock::handleSceneActionList(sceneId, actions.copy(), counter, providerID);
-            m_collectedActions.append(actions);
+            m_collectedActions.append(sceneUpdate.actions);
+            ramses_internal::SceneRendererHandlerMock::handleSceneUpdate(sceneId, std::move(sceneUpdate), providerID);
             ++m_numReceivedActionLists;
         }
 
-        virtual void handleNewScenesAvailable(const ramses_internal::SceneInfoVector& newScenes, const ramses_internal::Guid& providerID, ramses_internal::EScenePublicationMode publicationMode) override
+        virtual void handleNewSceneAvailable(const ramses_internal::SceneInfo& newScene, const ramses_internal::Guid& providerID) override
         {
-            ramses_internal::SceneRendererServiceHandlerMock::handleNewScenesAvailable(newScenes, providerID, publicationMode);
+            ramses_internal::SceneRendererHandlerMock::handleNewSceneAvailable(newScene, providerID);
             if (m_sceneGraphConsumer != nullptr)
             {
-                for(const auto& newScene : newScenes)
-                {
-                    m_sceneGraphConsumer->subscribeScene(providerID, newScene.sceneID);
-                }
+                m_sceneGraphConsumer->subscribeScene(providerID, newScene.sceneID);
             }
         }
 
-        virtual void handleScenesBecameUnavailable(const ramses_internal::SceneInfoVector& unavailableScenes, const ramses_internal::Guid& providerID) override
+        virtual void handleSceneBecameUnavailable(const ramses_internal::SceneId& unavailableScene, const ramses_internal::Guid& providerID) override
         {
-            ramses_internal::SceneRendererServiceHandlerMock::handleScenesBecameUnavailable(unavailableScenes, providerID);
+            ramses_internal::SceneRendererHandlerMock::handleSceneBecameUnavailable(unavailableScene, providerID);
         }
     };
 }

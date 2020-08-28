@@ -225,7 +225,7 @@ namespace ramses_internal
         if (nullptr != sharedMemoryBufferData)
         {
             const TextureSwizzleArray swizzle = {ETextureChannelColor::Blue, ETextureChannelColor::Green, ETextureChannelColor::Red, ETextureChannelColor::Alpha};
-            textureUploadingAdapter.uploadTexture2D(textureHandle, waylandBufferResource.bufferGetSharedMemoryWidth(), waylandBufferResource.bufferGetSharedMemoryHeight(), ETextureFormat_RGBA8, sharedMemoryBufferData, swizzle);
+            textureUploadingAdapter.uploadTexture2D(textureHandle, waylandBufferResource.bufferGetSharedMemoryWidth(), waylandBufferResource.bufferGetSharedMemoryHeight(), ETextureFormat::RGBA8, sharedMemoryBufferData, swizzle);
         }
         else if (nullptr != linuxDmabufBuffer)
         {

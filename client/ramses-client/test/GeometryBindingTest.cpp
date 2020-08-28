@@ -11,22 +11,15 @@
 #include "TestEffectCreator.h"
 
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/FloatArray.h"
-#include "ramses-client-api/UInt16Array.h"
-#include "ramses-client-api/UInt32Array.h"
-#include "ramses-client-api/Vector2fArray.h"
-#include "ramses-client-api/Vector3fArray.h"
-#include "ramses-client-api/Vector4fArray.h"
+#include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/AttributeInput.h"
-#include "ramses-client-api/IndexDataBuffer.h"
-#include "ramses-client-api/VertexDataBuffer.h"
+#include "ramses-client-api/ArrayBuffer.h"
 
 #include "ResourceImpl.h"
 #include "EffectImpl.h"
 #include "ArrayResourceImpl.h"
 #include "GeometryBindingImpl.h"
-#include "IndexDataBufferImpl.h"
-#include "VertexDataBufferImpl.h"
+#include "ArrayBufferImpl.h"
 #include "Resource/EffectResource.h"
 #include "ramses-client-api/EDataType.h"
 #include "SceneAPI/EDataType.h"
@@ -70,7 +63,7 @@ namespace ramses
             EXPECT_EQ(ramses_internal::ResourceContentHash::Invalid(), actualDataResource.hash);
         }
 
-        void checkDataBufferSetToInternalScene(const GeometryBinding& geometryBinding, ramses_internal::DataFieldHandle field, const DataBufferImpl& dataBuffer, ramses_internal::UInt32 expectedInstancingDivisor) const
+        void checkDataBufferSetToInternalScene(const GeometryBinding& geometryBinding, ramses_internal::DataFieldHandle field, const ArrayBufferImpl& dataBuffer, ramses_internal::UInt32 expectedInstancingDivisor) const
         {
             const ramses_internal::DataBufferHandle dataBufferHandle = dataBuffer.getDataBufferHandle();
             const ramses_internal::ResourceField& actualDataResource = sharedTestState->getInternalScene().getDataResource(geometryBinding.impl.getAttributeDataInstance(), field);
@@ -87,10 +80,10 @@ namespace ramses
             EXPECT_EQ(ramses_internal::DataBufferHandle::Invalid(), actualDataResource.dataBuffer);
         }
 
-        const Vector3fArray* setVec3fArrayInput(GeometryBinding& geometry)
+        ArrayResource* setVec3fArrayInput(GeometryBinding& geometry)
         {
             float verts[9] = { 0.f };
-            const Vector3fArray* vertices = sharedTestState->getClient().createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec3Vertices");
+            auto vertices = sharedTestState->getScene().createArrayResource(EDataType::Vector3F, 3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec3Vertices");
             EXPECT_TRUE(vertices != nullptr);
             if (!vertices)
                 return nullptr;
@@ -102,10 +95,10 @@ namespace ramses
             return vertices;
         }
 
-        const Vector2fArray* setVec2fArrayInput(GeometryBinding& geometry)
+        ArrayResource* setVec2fArrayInput(GeometryBinding& geometry)
         {
             float verts[8] = { 0.2f };
-            const Vector2fArray* vertices = sharedTestState->getClient().createConstVector2fArray(4u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
+            auto vertices = sharedTestState->getScene().createArrayResource(EDataType::Vector2F, 4u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
             EXPECT_TRUE(vertices != nullptr);
             if (!vertices)
                 return nullptr;
@@ -117,10 +110,10 @@ namespace ramses
             return vertices;
         }
 
-        const Vector4fArray* setVec4fArrayInput(GeometryBinding& geometry)
+        ArrayResource* setVec4fArrayInput(GeometryBinding& geometry)
         {
             float verts[8] = { 0.4f };
-            const Vector4fArray* vertices = sharedTestState->getClient().createConstVector4fArray(2u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec4Vertices");
+            auto vertices = sharedTestState->getScene().createArrayResource(EDataType::Vector4F, 2u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec4Vertices");
             EXPECT_TRUE(vertices != nullptr);
             if (!vertices)
                 return nullptr;
@@ -132,10 +125,10 @@ namespace ramses
             return vertices;
         }
 
-        const FloatArray* setFloatArrayInput(GeometryBinding& geometry)
+        ArrayResource* setFloatArrayInput(GeometryBinding& geometry)
         {
             float verts[8] = { 0.1f };
-            const FloatArray* vertices = sharedTestState->getClient().createConstFloatArray(8u, verts, ResourceCacheFlag_DoNotCache, "floatVertices");
+            auto vertices = sharedTestState->getScene().createArrayResource(EDataType::Float, 8u, verts, ResourceCacheFlag_DoNotCache, "floatVertices");
             EXPECT_TRUE(vertices != nullptr);
             if (!vertices)
                 return nullptr;
@@ -147,10 +140,10 @@ namespace ramses
             return vertices;
         }
 
-        const UInt32Array* setIndicesInput(GeometryBinding& geometry)
+        ArrayResource* setIndicesInput(GeometryBinding& geometry)
         {
             uint32_t inds[3] = { 0u };
-            const UInt32Array* indices = sharedTestState->getClient().createConstUInt32Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
+            auto indices = sharedTestState->getScene().createArrayResource(EDataType::UInt32, 3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
             EXPECT_TRUE(indices != nullptr);
             if (!indices)
                 return nullptr;
@@ -168,7 +161,7 @@ namespace ramses
 
     TEST_F(GeometryBindingTest, CanGetEffect)
     {
-        Effect* emptyEffect = TestEffects::CreateTestEffect(sharedTestState->getClient());
+        Effect* emptyEffect = TestEffects::CreateTestEffect(sharedTestState->getScene());
 
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*emptyEffect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
@@ -181,12 +174,12 @@ namespace ramses
         EXPECT_EQ(1u, fieldCount);
 
         sharedTestState->getScene().destroy(*geometry);
-        sharedTestState->getClient().destroy(*emptyEffect);
+        sharedTestState->getScene().destroy(*emptyEffect);
     }
 
     TEST_F(GeometryBindingTest, dataLayoutHasOnlyIndicesForEmptyEffect)
     {
-        Effect* emptyEffect = TestEffects::CreateTestEffect(sharedTestState->getClient());
+        Effect* emptyEffect = TestEffects::CreateTestEffect(sharedTestState->getScene());
 
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*emptyEffect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
@@ -195,12 +188,12 @@ namespace ramses
         EXPECT_EQ(1u, fieldCount);
 
         sharedTestState->getScene().destroy(*geometry);
-        sharedTestState->getClient().destroy(*emptyEffect);
+        sharedTestState->getScene().destroy(*emptyEffect);
     }
 
     TEST_F(GeometryBindingTest, dataLayoutHasRightEffectHash)
     {
-        Effect* emptyEffect = TestEffects::CreateTestEffect(sharedTestState->getClient());
+        Effect* emptyEffect = TestEffects::CreateTestEffect(sharedTestState->getScene());
 
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*emptyEffect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
@@ -211,7 +204,7 @@ namespace ramses
         EXPECT_EQ(emptyEffect->impl.getLowlevelResourceHash(), effectHashFromGeometryLayout);
 
         sharedTestState->getScene().destroy(*geometry);
-        sharedTestState->getClient().destroy(*emptyEffect);
+        sharedTestState->getScene().destroy(*emptyEffect);
     }
 
     TEST_F(GeometryBindingTest, indicesFieldIsCreatedAtFixedSlot)
@@ -232,7 +225,7 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         static const float verts[9] = { 0.f };
-        const Vector3fArray* const vertices = sharedTestState->getClient().createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
+        ArrayResource* const vertices = sharedTestState->getScene().createArrayResource(EDataType::Vector3F, 3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
         ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
@@ -241,7 +234,7 @@ namespace ramses
         checkHashSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(3u), *vertices, 13u); // first field is indices
 
         sharedTestState->getScene().destroy(*geometry);
-        sharedTestState->getClient().destroy(*vertices);
+        sharedTestState->getScene().destroy(*vertices);
     }
 
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingResourceToInvalidInput)
@@ -250,14 +243,14 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         static const float verts[9] = { 0.f };
-        const Vector3fArray* const vertices = sharedTestState->getClient().createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
+        ArrayResource* const vertices = sharedTestState->getScene().createArrayResource(EDataType::Vector3F, 3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
         ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
         EXPECT_NE(StatusOK, geometry->setInputBuffer(input, *vertices));
 
         sharedTestState->getScene().destroy(*geometry);
-        sharedTestState->getClient().destroy(*vertices);
+        sharedTestState->getScene().destroy(*vertices);
     }
 
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingResourceWithMismatchingTypeInEffect)
@@ -266,7 +259,7 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         static const float verts[8] = { 0.f };
-        const Vector2fArray* const vertices = sharedTestState->getClient().createConstVector2fArray(4u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
+        ArrayResource* const vertices = sharedTestState->getScene().createArrayResource(EDataType::Vector2F, 4u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
         ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
@@ -274,17 +267,17 @@ namespace ramses
         EXPECT_NE(StatusOK, geometry->setInputBuffer(input, *vertices));
 
         sharedTestState->getScene().destroy(*geometry);
-        sharedTestState->getClient().destroy(*vertices);
+        sharedTestState->getScene().destroy(*vertices);
     }
 
-    TEST_F(GeometryBindingTest, reportsErrorWhenSettingVec2ArrayResourceFromAnotherClient)
+    TEST_F(GeometryBindingTest, reportsErrorWhenSettingVec2ArrayResourceFromAnotherScene)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
         float verts[8] = { 0.f };
-        RamsesClient& anotherClient(*sharedTestState->getFramework().createClient("anotherLocalTestClient"));
-        const Vector2fArray* const vertices = anotherClient.createConstVector2fArray(4u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
+        Scene& anotherScene(*sharedTestState->getClient().createScene(sceneId_t{ 0xf00 }));
+        ArrayResource* const vertices = anotherScene.createArrayResource(EDataType::Vector2F, 4u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
         ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
@@ -292,16 +285,17 @@ namespace ramses
         EXPECT_NE(StatusOK, geometry->setInputBuffer(input, *vertices));
 
         sharedTestState->getScene().destroy(*geometry);
+        sharedTestState->getClient().destroy(anotherScene);
     }
 
-    TEST_F(GeometryBindingTest, reportsErrorWhenSettingVec3ArrayResourceFromAnotherClient)
+    TEST_F(GeometryBindingTest, reportsErrorWhenSettingVec3ArrayResourceFromAnotherScene)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
         float verts[9] = { 0.f };
-        RamsesClient& anotherClient(*sharedTestState->getFramework().createClient("anotherLocalTestClient"));
-        const Vector3fArray* const vertices = anotherClient.createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec3Vertices");
+        Scene& anotherScene(*sharedTestState->getClient().createScene(sceneId_t{ 0xf00 }));
+        ArrayResource* const vertices = anotherScene.createArrayResource(EDataType::Vector3F, 3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec3Vertices");
         ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
@@ -309,16 +303,17 @@ namespace ramses
         EXPECT_NE(StatusOK, geometry->setInputBuffer(input, *vertices));
 
         sharedTestState->getScene().destroy(*geometry);
+        sharedTestState->getClient().destroy(anotherScene);
     }
 
-    TEST_F(GeometryBindingTest, reportsErrorWhenSettingVec4ArrayResourceFromAnotherClient)
+    TEST_F(GeometryBindingTest, reportsErrorWhenSettingVec4ArrayResourceFromAnotherScene)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
         float verts[8] = { 0.f };
-        RamsesClient& anotherClient(*sharedTestState->getFramework().createClient("anotherLocalTestClient"));
-        const Vector4fArray* const vertices = anotherClient.createConstVector4fArray(2u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
+        Scene& anotherScene(*sharedTestState->getClient().createScene(sceneId_t{ 0xf00 }));
+        ArrayResource* const vertices = anotherScene.createArrayResource(EDataType::Vector4F, 2u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
         ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
@@ -326,6 +321,7 @@ namespace ramses
         EXPECT_NE(StatusOK, geometry->setInputBuffer(input, *vertices));
 
         sharedTestState->getScene().destroy(*geometry);
+        sharedTestState->getClient().destroy(anotherScene);
     }
 
     TEST_F(GeometryBindingTest, reportsErrorWhenSettingIndexDataBufferFromAnotherScene)
@@ -336,7 +332,7 @@ namespace ramses
         Scene* otherScene = sharedTestState->getClient().createScene(sceneId_t(777u));
         ASSERT_NE(nullptr, otherScene);
 
-        IndexDataBuffer* const indices = otherScene->createIndexDataBuffer(3 * sizeof(uint32_t), EDataType_UInt32, "indices");
+        ArrayBuffer* const indices = otherScene->createArrayBuffer(EDataType::UInt32, 3u, "indices");
         ASSERT_NE(nullptr, indices);
 
         EXPECT_NE(StatusOK, geometry->setIndices(*indices));
@@ -354,7 +350,7 @@ namespace ramses
         Scene* otherScene = sharedTestState->getClient().createScene(sceneId_t(777u));
         ASSERT_NE(nullptr, otherScene);
 
-        VertexDataBuffer* const vertices = otherScene->createVertexDataBuffer(3 * sizeof(float), EDataType_Float, "vertices");
+        ArrayBuffer* const vertices = otherScene->createArrayBuffer(EDataType::Float, 3u, "vertices");
         ASSERT_NE(nullptr, vertices);
 
         AttributeInput input;
@@ -366,14 +362,14 @@ namespace ramses
         sharedTestState->getClient().destroy(*otherScene);
     }
 
-    TEST_F(GeometryBindingTest, reportsErrorWhenSettingFloatArrayResourceFromAnotherClient)
+    TEST_F(GeometryBindingTest, reportsErrorWhenSettingFloatArrayResourceFromAnotherScene)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
         float verts[8] = { 0.f };
-        RamsesClient& anotherClient(*sharedTestState->getFramework().createClient("anotherLocalTestClient"));
-        const FloatArray* const vertices = anotherClient.createConstFloatArray(8u, verts, ResourceCacheFlag_DoNotCache, "floatVertices");
+        Scene& anotherScene(*sharedTestState->getClient().createScene(sceneId_t{ 0xf00 }));
+        ArrayResource* const vertices = anotherScene.createArrayResource(EDataType::Float, 8u, verts, ResourceCacheFlag_DoNotCache, "floatVertices");
         ASSERT_TRUE(vertices != nullptr);
 
         AttributeInput input;
@@ -381,38 +377,41 @@ namespace ramses
         EXPECT_NE(StatusOK, geometry->setInputBuffer(input, *vertices));
 
         sharedTestState->getScene().destroy(*geometry);
+        sharedTestState->getClient().destroy(anotherScene);
     }
 
-    TEST_F(GeometryBindingTest, reportsErrorWhenSettingUint16ArrayIndicesFromAnotherClient)
+    TEST_F(GeometryBindingTest, reportsErrorWhenSettingUint16ArrayIndicesFromAnotherScene)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
         uint16_t inds[3] = { 0u };
-        RamsesClient& anotherClient(*sharedTestState->getFramework().createClient("anotherLocalTestClient"));
-        const UInt16Array* const indices = anotherClient.createConstUInt16Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
+        Scene& anotherScene(*sharedTestState->getClient().createScene(sceneId_t{ 0xf00 }));
+        ArrayResource* const indices = anotherScene.createArrayResource(EDataType::UInt16, 3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
         ASSERT_TRUE(indices != nullptr);
 
         EXPECT_EQ(0u, geometry->impl.getIndicesCount());
         EXPECT_NE(StatusOK, geometry->setIndices(*indices));
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
+        sharedTestState->getClient().destroy(anotherScene);
     }
 
-    TEST_F(GeometryBindingTest, reportsErrorWhenSettingUint32ArrayIndicesFromAnotherClient)
+    TEST_F(GeometryBindingTest, reportsErrorWhenSettingUint32ArrayIndicesFromAnotherScene)
     {
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
         uint32_t inds[3] = { 0u };
-        RamsesClient& anotherClient(*sharedTestState->getFramework().createClient("anotherLocalTestClient"));
-        const UInt32Array* const indices = anotherClient.createConstUInt32Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
+        Scene& anotherScene(*sharedTestState->getClient().createScene(sceneId_t{ 0xf00 }));
+        ArrayResource* const indices = anotherScene.createArrayResource(EDataType::UInt32, 3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
         ASSERT_TRUE(indices != nullptr);
 
         EXPECT_EQ(0u, geometry->impl.getIndicesCount());
         EXPECT_NE(StatusOK, geometry->setIndices(*indices));
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
+        sharedTestState->getClient().destroy(anotherScene);
     }
 
     TEST_F(GeometryBindingTest, canSetIndicesResource16)
@@ -421,7 +420,7 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         const uint16_t inds[3] = { 0u };
-        const UInt16Array* const indices = sharedTestState->getClient().createConstUInt16Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
+        ArrayResource* const indices = sharedTestState->getScene().createArrayResource(EDataType::UInt16, 3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
         ASSERT_TRUE(indices != nullptr);
 
         EXPECT_EQ(0u, geometry->impl.getIndicesCount());
@@ -430,7 +429,7 @@ namespace ramses
         EXPECT_EQ(indices->impl.getElementCount(), geometry->impl.getIndicesCount());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*indices));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
     }
 
     TEST_F(GeometryBindingTest, canSetIndicesResource32)
@@ -439,7 +438,7 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         const uint32_t inds[3] = { 0u };
-        const UInt32Array* const indices = sharedTestState->getClient().createConstUInt32Array(3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
+        ArrayResource* const indices = sharedTestState->getScene().createArrayResource(EDataType::UInt32, 3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
         ASSERT_TRUE(indices != nullptr);
 
         EXPECT_EQ(0u, geometry->impl.getIndicesCount());
@@ -448,7 +447,7 @@ namespace ramses
         EXPECT_EQ(indices->impl.getElementCount(), geometry->impl.getIndicesCount());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*indices));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
     }
 
     TEST_F(GeometryBindingTest, canSetIndicesDataBuffer16)
@@ -456,7 +455,7 @@ namespace ramses
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
-        IndexDataBuffer* const indices = sharedTestState->getScene().createIndexDataBuffer(sizeof(uint16_t), EDataType_UInt16, "index data buffer");
+        ArrayBuffer* const indices = sharedTestState->getScene().createArrayBuffer(EDataType::UInt16, 1u, "index data buffer");
         ASSERT_TRUE(indices != nullptr);
 
         EXPECT_EQ(0u, geometry->impl.getIndicesCount());
@@ -473,13 +472,137 @@ namespace ramses
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
-        IndexDataBuffer* const indices = sharedTestState->getScene().createIndexDataBuffer(sizeof(uint32_t), EDataType_UInt32, "index data buffer");
+        ArrayBuffer* const indices = sharedTestState->getScene().createArrayBuffer(EDataType::UInt32, 1u, "index data buffer");
         ASSERT_TRUE(indices != nullptr);
 
         EXPECT_EQ(0u, geometry->impl.getIndicesCount());
         EXPECT_EQ(StatusOK, geometry->setIndices(*indices));
         checkDataBufferSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(0u), indices->impl, 0u);
         EXPECT_EQ(indices->impl.getElementCount(), geometry->impl.getIndicesCount());
+
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
+    }
+
+    TEST_F(GeometryBindingTest, reportsErrorWhenSetIndicesWithWrongTypeArrayResourceFLoat)
+    {
+        GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
+        ASSERT_TRUE(geometry);
+
+        const float inds[4] = { .0f, .0f, .0f, .0f };
+        ArrayResource* const indices = sharedTestState->getScene().createArrayResource(EDataType::Float, 1u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
+        ASSERT_TRUE(indices);
+
+        EXPECT_NE(StatusOK, geometry->setIndices(*indices));
+
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
+    }
+
+    TEST_F(GeometryBindingTest, reportsErrorWhenSetIndicesWithWrongTypeArrayResourceVec2F)
+    {
+        GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
+        ASSERT_TRUE(geometry);
+
+        const float inds[4] = { .0f, .0f, .0f, .0f };
+        ArrayResource* const indices = sharedTestState->getScene().createArrayResource(EDataType::Vector2F, 1u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
+        ASSERT_TRUE(indices);
+
+        EXPECT_NE(StatusOK, geometry->setIndices(*indices));
+
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
+    }
+
+    TEST_F(GeometryBindingTest, reportsErrorWhenSetIndicesWithWrongTypeArrayResourceVec3F)
+    {
+        GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
+        ASSERT_TRUE(geometry);
+
+        const float inds[4] = { .0f, .0f, .0f, .0f };
+        ArrayResource* const indices = sharedTestState->getScene().createArrayResource(EDataType::Vector3F, 1u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
+        ASSERT_TRUE(indices);
+
+        EXPECT_NE(StatusOK, geometry->setIndices(*indices));
+
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
+    }
+
+    TEST_F(GeometryBindingTest, reportsErrorWhenSetIndicesWithWrongTypeArrayResourceVec4F)
+    {
+        GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
+        ASSERT_TRUE(geometry);
+
+        const float inds[4] = { .0f, .0f, .0f, .0f };
+        ArrayResource* const indices = sharedTestState->getScene().createArrayResource(EDataType::Vector4F, 1u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
+        ASSERT_TRUE(indices);
+
+        EXPECT_NE(StatusOK, geometry->setIndices(*indices));
+
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
+    }
+
+    TEST_F(GeometryBindingTest, reportsErrorWhenSetIndicesWithWrongTypeArrayBufferFloat)
+    {
+        GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
+        ASSERT_TRUE(geometry);
+
+        const float inds[4] = { .0f, .0f, .0f, .0f };
+        ArrayBuffer* indices = sharedTestState->getScene().createArrayBuffer(EDataType::Float, 1u, "indices");
+        ASSERT_TRUE(indices);
+        indices->updateData(0u, 1u, inds);
+
+        EXPECT_NE(StatusOK, geometry->setIndices(*indices));
+
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
+    }
+
+    TEST_F(GeometryBindingTest, reportsErrorWhenSetIndicesWithWrongTypeArrayBufferVec2F)
+    {
+        GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
+        ASSERT_TRUE(geometry);
+
+        const float inds[4] = { .0f, .0f, .0f, .0f };
+        ArrayBuffer* indices = sharedTestState->getScene().createArrayBuffer(EDataType::Vector2F, 1u, "indices");
+        ASSERT_TRUE(indices);
+        indices->updateData(0u, 1u, inds);
+
+        EXPECT_NE(StatusOK, geometry->setIndices(*indices));
+
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
+    }
+
+    TEST_F(GeometryBindingTest, reportsErrorWhenSetIndicesWithWrongTypeArrayBufferVec3F)
+    {
+        GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
+        ASSERT_TRUE(geometry);
+
+        const float inds[4] = { .0f, .0f, .0f, .0f };
+        ArrayBuffer* indices = sharedTestState->getScene().createArrayBuffer(EDataType::Vector3F, 1u, "indices");
+        ASSERT_TRUE(indices);
+        indices->updateData(0u, 1u, inds);
+
+        EXPECT_NE(StatusOK, geometry->setIndices(*indices));
+
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
+    }
+
+    TEST_F(GeometryBindingTest, reportsErrorWhenSetIndicesWithWrongTypeArrayBufferVec4F)
+    {
+        GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
+        ASSERT_TRUE(geometry);
+
+        const float inds[4] = { .0f, .0f, .0f, .0f };
+        ArrayBuffer* indices = sharedTestState->getScene().createArrayBuffer(EDataType::Vector4F, 1u, "indices");
+        ASSERT_TRUE(indices);
+        indices->updateData(0u, 1u, inds);
+
+        EXPECT_NE(StatusOK, geometry->setIndices(*indices));
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indices));
@@ -494,14 +617,14 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         const float verts[9] = { 0.f };
-        const Vector3fArray* const vertices = sharedTestState->getClient().createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
+        ArrayResource* const vertices = sharedTestState->getScene().createArrayResource(EDataType::Vector3F, 3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
         ASSERT_TRUE(vertices != nullptr);
 
         EXPECT_EQ(StatusOK, geometry->setInputBuffer(input, *vertices));
         checkHashSetToInternalScene(*geometry, ramses_internal::DataFieldHandle(3u), *vertices, 0u);
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vertices));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vertices));
     }
 
     TEST_F(GeometryBindingTest, canSetAttributeVertexDataBufferInput)
@@ -512,7 +635,7 @@ namespace ramses
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
         ASSERT_TRUE(geometry != nullptr);
 
-        VertexDataBuffer* const vertices = sharedTestState->getScene().createVertexDataBuffer(3 * sizeof(float), EDataType_Vector3F, "vertices");
+        ArrayBuffer* const vertices = sharedTestState->getScene().createArrayBuffer(EDataType::Vector3F, 3u, "vertices");
         ASSERT_TRUE(vertices != nullptr);
 
         EXPECT_EQ(StatusOK, geometry->setInputBuffer(input, *vertices, 16u));
@@ -531,25 +654,42 @@ namespace ramses
         ASSERT_TRUE(geometry != nullptr);
 
         const float verts[9] = { 0.f };
-        const Vector3fArray* const vertices = sharedTestState->getClient().createConstVector3fArray(3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
+        ArrayResource* const vertices = sharedTestState->getScene().createArrayResource(EDataType::Vector3F, 3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vertices");
         ASSERT_TRUE(vertices != nullptr);
 
         EXPECT_NE(StatusOK, geometry->setInputBuffer(input, *vertices));
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vertices));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vertices));
     }
 
-    TEST_F(GeometryBindingTest, reportsErrorWhenSettingAttributeVertexDataBufferInputWithWrongType)
+    TEST_F(GeometryBindingTest, reportsErrorWhenSettingAttributeVertexDataBufferInputWithWrongTypeUInt16)
     {
         AttributeInput input;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec2fArrayInput", input));
 
         GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        ASSERT_TRUE(geometry != nullptr);
+        ASSERT_TRUE(geometry);
 
-        VertexDataBuffer* const vertices = sharedTestState->getScene().createVertexDataBuffer(sizeof(float), EDataType_Float, "vertices");
-        ASSERT_TRUE(vertices != nullptr);
+        ArrayBuffer* const vertices = sharedTestState->getScene().createArrayBuffer(EDataType::UInt16, 1u, "vertices");
+        ASSERT_TRUE(vertices);
+
+        EXPECT_NE(StatusOK, geometry->setInputBuffer(input, *vertices));
+
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vertices));
+    }
+
+    TEST_F(GeometryBindingTest, reportsErrorWhenSettingAttributeVertexDataBufferInputWithWrongTypeUInt32)
+    {
+        AttributeInput input;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec2fArrayInput", input));
+
+        GeometryBinding* const geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
+        ASSERT_TRUE(geometry);
+
+        ArrayBuffer* const vertices = sharedTestState->getScene().createArrayBuffer(EDataType::UInt32, 1u, "vertices");
+        ASSERT_TRUE(vertices);
 
         EXPECT_NE(StatusOK, geometry->setInputBuffer(input, *vertices));
 
@@ -560,155 +700,155 @@ namespace ramses
     TEST_F(GeometryBindingTest, reportsErrorWhenValidatedWithInvalidEffectReference)
     {
         GeometryBinding* geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        const FloatArray* floatArray = setFloatArrayInput(*geometry);
-        const Vector2fArray* vec2fArray = setVec2fArrayInput(*geometry);
-        const Vector3fArray* vec3fArray = setVec3fArrayInput(*geometry);
-        const Vector4fArray* vec4fArray = setVec4fArrayInput(*geometry);
-        const UInt32Array* indicesArray = setIndicesInput(*geometry);
+        auto floatArray = setFloatArrayInput(*geometry);
+        auto vec2fArray = setVec2fArrayInput(*geometry);
+        auto vec3fArray = setVec3fArrayInput(*geometry);
+        auto vec4fArray = setVec4fArrayInput(*geometry);
+        auto indicesArray = setIndicesInput(*geometry);
         EXPECT_EQ(StatusOK, geometry->validate());
 
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*sharedTestState->effect));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*sharedTestState->effect));
         sharedTestState->effect = nullptr;
         EXPECT_NE(StatusOK, geometry->validate());
 
         // restore the effect in sharedTestState after this test case
-        sharedTestState->effect = sharedTestState->createEffect(sharedTestState->getClient(), false);
+        sharedTestState->effect = sharedTestState->createEffect(sharedTestState->getScene(), false);
         ASSERT_TRUE(nullptr != sharedTestState->effect);
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*floatArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec2fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec3fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec4fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*indicesArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*floatArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec2fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec3fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec4fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indicesArray));
     }
 
     TEST_F(GeometryBindingTest, reportsErrorWhenValidatedWithInvalidIndicesReference)
     {
         GeometryBinding* geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        const FloatArray* floatArray = setFloatArrayInput(*geometry);
-        const Vector2fArray* vec2fArray = setVec2fArrayInput(*geometry);
-        const Vector3fArray* vec3fArray = setVec3fArrayInput(*geometry);
-        const Vector4fArray* vec4fArray = setVec4fArrayInput(*geometry);
-        const UInt32Array* indicesArray = setIndicesInput(*geometry);
+        auto floatArray = setFloatArrayInput(*geometry);
+        auto vec2fArray = setVec2fArrayInput(*geometry);
+        auto vec3fArray = setVec3fArrayInput(*geometry);
+        auto vec4fArray = setVec4fArrayInput(*geometry);
+        auto indicesArray = setIndicesInput(*geometry);
         EXPECT_EQ(StatusOK, geometry->validate());
 
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*indicesArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indicesArray));
         EXPECT_NE(StatusOK, geometry->validate());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*floatArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec2fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec3fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec4fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*floatArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec2fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec3fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec4fArray));
     }
 
     TEST_F(GeometryBindingTest, reportsErrorWhenValidatedWithInvalidInputFloatArrayResource)
     {
         GeometryBinding* geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        const FloatArray* floatArray = setFloatArrayInput(*geometry);
-        const Vector2fArray* vec2fArray = setVec2fArrayInput(*geometry);
-        const Vector3fArray* vec3fArray = setVec3fArrayInput(*geometry);
-        const Vector4fArray* vec4fArray = setVec4fArrayInput(*geometry);
-        const UInt32Array* indicesArray = setIndicesInput(*geometry);
+        auto floatArray = setFloatArrayInput(*geometry);
+        auto vec2fArray = setVec2fArrayInput(*geometry);
+        auto vec3fArray = setVec3fArrayInput(*geometry);
+        auto vec4fArray = setVec4fArrayInput(*geometry);
+        auto indicesArray = setIndicesInput(*geometry);
         EXPECT_EQ(StatusOK, geometry->validate());
 
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*floatArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*floatArray));
         EXPECT_NE(StatusOK, geometry->validate());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec2fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec3fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec4fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*indicesArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec2fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec3fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec4fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indicesArray));
     }
 
     TEST_F(GeometryBindingTest, reportsErrorWhenValidatedWithInvalidInputVec2ArrayResource)
     {
         GeometryBinding* geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        const FloatArray* floatArray = setFloatArrayInput(*geometry);
-        const Vector2fArray* vec2fArray = setVec2fArrayInput(*geometry);
-        const Vector3fArray* vec3fArray = setVec3fArrayInput(*geometry);
-        const Vector4fArray* vec4fArray = setVec4fArrayInput(*geometry);
-        const UInt32Array* indicesArray = setIndicesInput(*geometry);
+        auto floatArray = setFloatArrayInput(*geometry);
+        auto vec2fArray = setVec2fArrayInput(*geometry);
+        auto vec3fArray = setVec3fArrayInput(*geometry);
+        auto vec4fArray = setVec4fArrayInput(*geometry);
+        auto indicesArray = setIndicesInput(*geometry);
         EXPECT_EQ(StatusOK, geometry->validate());
 
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec2fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec2fArray));
         EXPECT_NE(StatusOK, geometry->validate());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*floatArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec3fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec4fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*indicesArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*floatArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec3fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec4fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indicesArray));
     }
 
     TEST_F(GeometryBindingTest, reportsErrorWhenValidatedWithInvalidInputVec3ArrayResource)
     {
         GeometryBinding* geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        const FloatArray* floatArray = setFloatArrayInput(*geometry);
-        const Vector2fArray* vec2fArray = setVec2fArrayInput(*geometry);
-        const Vector3fArray* vec3fArray = setVec3fArrayInput(*geometry);
-        const Vector4fArray* vec4fArray = setVec4fArrayInput(*geometry);
-        const UInt32Array* indicesArray = setIndicesInput(*geometry);
+        auto floatArray = setFloatArrayInput(*geometry);
+        auto vec2fArray = setVec2fArrayInput(*geometry);
+        auto vec3fArray = setVec3fArrayInput(*geometry);
+        auto vec4fArray = setVec4fArrayInput(*geometry);
+        auto indicesArray = setIndicesInput(*geometry);
         EXPECT_EQ(StatusOK, geometry->validate());
 
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec3fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec3fArray));
         EXPECT_NE(StatusOK, geometry->validate());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*floatArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec2fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec4fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*indicesArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*floatArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec2fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec4fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indicesArray));
     }
 
     TEST_F(GeometryBindingTest, reportsErrorWhenValidatedWithInvalidInputVec4ArrayResource)
     {
         GeometryBinding* geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
-        const FloatArray* floatArray = setFloatArrayInput(*geometry);
-        const Vector2fArray* vec2fArray = setVec2fArrayInput(*geometry);
-        const Vector3fArray* vec3fArray = setVec3fArrayInput(*geometry);
-        const Vector4fArray* vec4fArray = setVec4fArrayInput(*geometry);
-        const UInt32Array* indicesArray = setIndicesInput(*geometry);
+        auto floatArray = setFloatArrayInput(*geometry);
+        auto vec2fArray = setVec2fArrayInput(*geometry);
+        auto vec3fArray = setVec3fArrayInput(*geometry);
+        auto vec4fArray = setVec4fArrayInput(*geometry);
+        auto indicesArray = setIndicesInput(*geometry);
         EXPECT_EQ(StatusOK, geometry->validate());
 
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec4fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec4fArray));
         EXPECT_NE(StatusOK, geometry->validate());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*floatArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec2fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec3fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*indicesArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*floatArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec2fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec3fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indicesArray));
     }
 
     TEST_F(GeometryBindingTest, reportsErrorWhenValidatedWithDestroyedVertexDataBuffer)
     {
         GeometryBinding* geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
 
-        VertexDataBuffer* const vertexDataBuffer = sharedTestState->getScene().createVertexDataBuffer(3 * sizeof(float), EDataType_Float, "vertices");
+        ArrayBuffer* const vertexDataBuffer = sharedTestState->getScene().createArrayBuffer(EDataType::Float, 3, "vertices");
         ASSERT_TRUE(vertexDataBuffer != nullptr);
         AttributeInput input;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("floatArrayInput", input));
         geometry->setInputBuffer(input, *vertexDataBuffer);
-        const char data[] = { 0 };
-        vertexDataBuffer->setData(data, 1u);
+        const float data[] = { 0 };
+        vertexDataBuffer->updateData(0u, 1u, data);
 
-        const Vector2fArray* vec2fArray = setVec2fArrayInput(*geometry);
-        const Vector3fArray* vec3fArray = setVec3fArrayInput(*geometry);
-        const Vector4fArray* vec4fArray = setVec4fArrayInput(*geometry);
-        const UInt32Array* indicesArray = setIndicesInput(*geometry);
+        auto vec2fArray = setVec2fArrayInput(*geometry);
+        auto vec3fArray = setVec3fArrayInput(*geometry);
+        auto vec4fArray = setVec4fArrayInput(*geometry);
+        auto indicesArray = setIndicesInput(*geometry);
         EXPECT_EQ(StatusOK, geometry->validate());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vertexDataBuffer));
         EXPECT_NE(StatusOK, geometry->validate());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec2fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec3fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec4fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*indicesArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec2fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec3fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec4fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indicesArray));
     }
 
     TEST_F(GeometryBindingTest, reportsErrorWhenValidatedWithVertexDataBufferThatHasWrongType)
@@ -718,32 +858,32 @@ namespace ramses
         //but it can at least check that the assigned data buffer is of a correct type
         GeometryBinding* geometry = sharedTestState->getScene().createGeometryBinding(*sharedTestState->effect, "geometry");
 
-        VertexDataBuffer* const vertexDataBuffer = sharedTestState->getScene().createVertexDataBuffer(3 * sizeof(float), EDataType_Float, "vertices");
+        ArrayBuffer* const vertexDataBuffer = sharedTestState->getScene().createArrayBuffer(EDataType::Float, 3, "vertices");
         ASSERT_TRUE(vertexDataBuffer != nullptr);
         AttributeInput input;
         EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("floatArrayInput", input));
         geometry->setInputBuffer(input, *vertexDataBuffer);
-        const char data[] = { 0 };
-        vertexDataBuffer->setData(data, 1u);
+        const float data[] = { 0 };
+        vertexDataBuffer->updateData(0u, 1u, data);
 
-        const Vector2fArray* vec2fArray = setVec2fArrayInput(*geometry);
-        const Vector3fArray* vec3fArray = setVec3fArrayInput(*geometry);
-        const Vector4fArray* vec4fArray = setVec4fArrayInput(*geometry);
-        const UInt32Array* indicesArray = setIndicesInput(*geometry);
+        auto vec2fArray = setVec2fArrayInput(*geometry);
+        auto vec3fArray = setVec3fArrayInput(*geometry);
+        auto vec4fArray = setVec4fArrayInput(*geometry);
+        auto indicesArray = setIndicesInput(*geometry);
         EXPECT_EQ(StatusOK, geometry->validate());
 
         //delete data buffer and create new one with same handle
         ramses_internal::DataBufferHandle dataBufferHandle = vertexDataBuffer->impl.getDataBufferHandle();
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vertexDataBuffer));
         ASSERT_FALSE(sharedTestState->getScene().impl.getIScene().isDataBufferAllocated(dataBufferHandle));
-        sharedTestState->getScene().impl.getIScene().allocateDataBuffer(ramses_internal::EDataBufferType::VertexBuffer, ramses_internal::EDataType_Vector2F, 10 * sizeof(float), dataBufferHandle);
+        sharedTestState->getScene().impl.getIScene().allocateDataBuffer(ramses_internal::EDataBufferType::VertexBuffer, ramses_internal::EDataType::Vector2F, 10 * sizeof(float), dataBufferHandle);
         ASSERT_TRUE(sharedTestState->getScene().impl.getIScene().isDataBufferAllocated(dataBufferHandle));
         EXPECT_NE(StatusOK, geometry->validate());
 
         EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*geometry));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec2fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec3fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*vec4fArray));
-        EXPECT_EQ(StatusOK, sharedTestState->getClient().destroy(*indicesArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec2fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec3fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*vec4fArray));
+        EXPECT_EQ(StatusOK, sharedTestState->getScene().destroy(*indicesArray));
     }
 }

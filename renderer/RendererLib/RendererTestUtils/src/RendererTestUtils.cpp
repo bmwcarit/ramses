@@ -62,7 +62,7 @@ bool RendererTestUtils::CompareBitmapToImageInFile(const Image& actualBitmap, co
     const Image diff = expectedBitmap.createDiffTo(actualBitmap);
     assert(diff.getNumberOfPixels() == actualBitmap.getNumberOfPixels());
 
-    const UInt64 sumOfPixelDiff = diff.getSumOfPixelValues();
+    const auto sumOfPixelDiff = diff.getSumOfPixelValues();
     const UInt32 totalNumberOfPixels = diff.getNumberOfPixels();
 
     if (totalNumberOfPixels == 0)
@@ -72,12 +72,13 @@ bool RendererTestUtils::CompareBitmapToImageInFile(const Image& actualBitmap, co
         return false;
     }
 
-    const Float averagePercentErrorPerPixel = (100.0f * sumOfPixelDiff / 256.0f) / totalNumberOfPixels;
+    const Float averagePercentErrorPerPixel = (100.0f * (sumOfPixelDiff.x + sumOfPixelDiff.y + sumOfPixelDiff.z + sumOfPixelDiff.w) / 256.0f) / totalNumberOfPixels;
 
     if (averagePercentErrorPerPixel > maxAveragePercentErrorPerPixel)
     {
         printf("Screenshot comparison failed: %s (%ux%u)\n", expectedScreenshotFileName.c_str(), diff.getWidth(), diff.getHeight());
         printf(" - avg error per pixel %.2f, maximum allowed error is %.2f\n", averagePercentErrorPerPixel, maxAveragePercentErrorPerPixel);
+        printf(" - total error R=%i, G=%i, B=%i, A=%i\n", sumOfPixelDiff.x, sumOfPixelDiff.y, sumOfPixelDiff.z, sumOfPixelDiff.w);
         printf(" - number of pixels different by more than 1 (one or more color channels): %u\n", diff.getNumberOfNonBlackPixels(1));
         printf(" - number of pixels different by more than 64 (one or more color channels): %u\n", diff.getNumberOfNonBlackPixels(64));
         printf(" - number of pixels different by more than 128 (one or more color channels): %u\n", diff.getNumberOfNonBlackPixels(128));
@@ -90,6 +91,11 @@ bool RendererTestUtils::CompareBitmapToImageInFile(const Image& actualBitmap, co
 
         actualBitmap.saveToFilePNG(screenShotPath + "/" + expectedScreenshotFileName + "_ACTUAL.PNG");
         diff.saveToFilePNG(screenShotPath + "/" + expectedScreenshotFileName + "_DIFF.PNG");
+
+        //Create separate RGB and Alpha diffs
+        std::pair<Image, Image> colorAndAlphaDiffImages = diff.createSeparateColorAndAlphaImages();
+        colorAndAlphaDiffImages.first.saveToFilePNG(screenShotPath + "/" + expectedScreenshotFileName + "_DIFF_RGB.PNG");
+        colorAndAlphaDiffImages.second.saveToFilePNG(screenShotPath + "/" + expectedScreenshotFileName + "_DIFF_ALPHA.PNG");
 
         return false;
     }
@@ -156,7 +162,7 @@ void RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::microseconds
 ramses::DisplayConfig RendererTestUtils::CreateTestDisplayConfig(uint32_t iviSurfaceIdOffset, bool iviWindowStartVisible)
 {
     ramses::DisplayConfig displayConfig(static_cast<int32_t>(CommandLineArgs.size()), CommandLineArgs.data());
-    displayConfig.setWaylandIviSurfaceID(firstIviSurfaceId + iviSurfaceIdOffset);
+    displayConfig.setWaylandIviSurfaceID(ramses::waylandIviSurfaceId_t(firstIviSurfaceId + iviSurfaceIdOffset));
 
     if(iviWindowStartVisible)
         displayConfig.setWindowIviVisible();

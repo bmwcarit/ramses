@@ -35,10 +35,10 @@ TEST_F(ARendererCommandBuffer, gracefullyHandlesSceneActionsArrivingAfterUnsubsc
 
     queue.unsubscribeScene(sceneId, false);
 
-    SceneActionCollection sceneActions;
-    sceneActions.addRawSceneActionInformation(ESceneActionId_AddChildToNode, 0);
-    sceneActions.addRawSceneActionInformation(ESceneActionId_RemoveRenderableFromRenderGroup, 0);
-    queue.enqueueActionsForScene(sceneId, std::move(sceneActions));
+    SceneUpdate update;
+    update.actions.addRawSceneActionInformation(ESceneActionId::AddChildToNode, 0);
+    update.actions.addRawSceneActionInformation(ESceneActionId::RemoveRenderableFromRenderGroup, 0);
+    queue.enqueueActionsForScene(sceneId, std::move(update));
 }
 
 TEST_F(ARendererCommandBuffer, parsesCommandsForScreenshotPrintingWithFilename)

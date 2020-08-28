@@ -40,11 +40,14 @@ class RemoteTarget(Target):
         self.executableExistsOnTarget = {}
 
     def _start_ramses_application(self, applicationName, args, workingDirectory, nameExtension, env, dltAppID):
-        extendedArgs = args+" -myip "+self.tcpTestsInterfaceIp
-        if self.tcpAliveIntervalMs:
-            extendedArgs += " -tcpAlive {}".format(self.tcpAliveIntervalMs)
-        if self.tcpAliveTimeoutMs:
-            extendedArgs += " -tcpAliveTimeout {}".format(self.tcpAliveTimeoutMs)
+        if "-someip" in args:
+            extendedArgs = args+" -myip "+self.someIPTestsInterfaceIp
+        else:
+            extendedArgs = args+" -myip "+self.tcpTestsInterfaceIp
+            if self.tcpAliveIntervalMs:
+                extendedArgs += " -tcpAlive {}".format(self.tcpAliveIntervalMs)
+            if self.tcpAliveTimeoutMs:
+                extendedArgs += " -tcpAliveTimeout {}".format(self.tcpAliveTimeoutMs)
         return Target._start_ramses_application(self, applicationName, extendedArgs, workingDirectory, nameExtension, env, dltAppID)
 
     def _executable_exists_on_target(self, binaryPath):

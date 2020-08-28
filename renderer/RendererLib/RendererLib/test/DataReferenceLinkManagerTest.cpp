@@ -37,10 +37,10 @@ public:
     {
         if (createSlots)
         {
-            const DataLayoutHandle providerLayout = providerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
+            const DataLayoutHandle providerLayout = providerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType::Float) }, ResourceContentHash::Invalid());
             providerDataRef = providerSceneAllocator.allocateDataInstance(providerLayout, DataInstanceHandle(3u));
 
-            const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
+            const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType::Float) }, ResourceContentHash::Invalid());
             consumerDataRef = consumerSceneAllocator.allocateDataInstance(consumerLayout, DataInstanceHandle(5u));
 
             providerSceneAllocator.allocateDataSlot({ EDataSlotType_DataProvider, providerId, NodeHandle(), providerDataRef, ResourceContentHash::Invalid(), TextureSamplerHandle() }, providerSlotHandle);
@@ -109,7 +109,7 @@ protected:
 
 TEST_F(ADataReferenceLinkManager, failsToCreateLinkOfMismatchingDataTypes)
 {
-    const DataLayoutHandle providerLayout = providerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Int32) }, ResourceContentHash::Invalid());
+    const DataLayoutHandle providerLayout = providerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType::Int32) }, ResourceContentHash::Invalid());
     const DataInstanceHandle providerDataRef2 = providerSceneAllocator.allocateDataInstance(providerLayout, DataInstanceHandle(9u));
 
     const DataSlotId providerId2(999u);
@@ -137,7 +137,7 @@ TEST_F(ADataReferenceLinkManager, canResolveLinkedData)
 
 TEST_F(ADataReferenceLinkManager, canResolveLinkedDataToMultipleConsumers)
 {
-    const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
+    const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType::Float) }, ResourceContentHash::Invalid());
     const DataInstanceHandle consumerDataRef2 = consumerSceneAllocator.allocateDataInstance(consumerLayout, DataInstanceHandle(9u));
 
     const DataSlotId consumerId2(999u);
@@ -163,7 +163,7 @@ TEST_F(ADataReferenceLinkManager, canResolveLinkedDataToMultipleConsumers)
 
 TEST_F(ADataReferenceLinkManager, doesNotResolveLinkedDataIfConsumerUnlinked)
 {
-    const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
+    const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType::Float) }, ResourceContentHash::Invalid());
     const DataInstanceHandle consumerDataRef2 = consumerSceneAllocator.allocateDataInstance(consumerLayout, DataInstanceHandle(9u));
 
     const DataSlotId consumerId2(999u);
@@ -199,7 +199,7 @@ TEST_F(ADataReferenceLinkManager, confidenceTest_canResolveLinkedWithThreeScenes
     DataInstanceHandle middleProviderDataRef;
     DataInstanceHandle middleConsumerDataRef;
 
-    const DataLayoutHandle layout = middleSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
+    const DataLayoutHandle layout = middleSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType::Float) }, ResourceContentHash::Invalid());
     middleProviderDataRef = middleSceneAllocator.allocateDataInstance(layout, DataInstanceHandle(3u));
     middleConsumerDataRef = middleSceneAllocator.allocateDataInstance(layout, DataInstanceHandle(5u));
 
@@ -277,7 +277,7 @@ TEST_F(ADataReferenceLinkManager, dataFallsBackToPreviouslySetValueIfProviderSce
 
 TEST_F(ADataReferenceLinkManager, confidenceTest_createTwoLinksChangeValueAndUnlink)
 {
-    const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType_Float) }, ResourceContentHash::Invalid());
+    const DataLayoutHandle consumerLayout = consumerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType::Float) }, ResourceContentHash::Invalid());
     const DataInstanceHandle consumerDataRef2 = consumerSceneAllocator.allocateDataInstance(consumerLayout, DataInstanceHandle(9u));
 
     const DataSlotId consumerId2(999u);

@@ -71,13 +71,13 @@ namespace ramses_internal
             );
 
             EffectInputInformationVector uniformInputs;
-            uniformInputs.push_back(EffectInputInformation("u_float", 1, EDataType_Float, EFixedSemantics_Count, EEffectInputTextureType_Invalid));
-            uniformInputs.push_back(EffectInputInformation("u_vec2", 1, EDataType_Vector2F, EFixedSemantics_Count, EEffectInputTextureType_Invalid));
+            uniformInputs.push_back(EffectInputInformation("u_float", 1, EDataType::Float, EFixedSemantics_Count));
+            uniformInputs.push_back(EffectInputInformation("u_vec2", 1, EDataType::Vector2F, EFixedSemantics_Count));
 
             EffectInputInformationVector attributeInputs;
-            attributeInputs.push_back(EffectInputInformation("a_position", 1, EDataType_Vector3F, EFixedSemantics_Count, EEffectInputTextureType_Invalid));
+            attributeInputs.push_back(EffectInputInformation("a_position", 1, EDataType::Vector3F, EFixedSemantics_Count));
 
-            return new EffectResource(vertexShader, fragmentShader, uniformInputs, attributeInputs, "test effect", ResourceCacheFlag_DoNotCache);
+            return new EffectResource(vertexShader, fragmentShader, "", uniformInputs, attributeInputs, "test effect", ResourceCacheFlag_DoNotCache);
         }
 
         static void SetUpTestCase()
@@ -126,6 +126,76 @@ namespace ramses_internal
     IRenderBackend*                     ADevice::renderBackend      = nullptr;
     NiceMock<WindowEventHandlerMock>*   ADevice::eventHandler       = nullptr;
 
+
+    // Needed so that these tests can be blacklisted on drivers which don't support binary shaders
+    class ADeviceSupportingBinaryShaders : public ADevice
+    {
+    };
+
+    // Needed so that these tests can be blacklisted on drivers which don't support geometry shaders
+    class ADeviceSupportingGeometryShaders : public ADevice
+    {
+    public:
+        static EffectResource* CreateTestEffectResourceWithGeometryShader()
+        {
+            const String vertexShader(R"SHADER(
+                #version 320 es
+
+                in highp vec3 a_position;
+                out highp vec3 v_position;
+
+                void main()
+                {
+                    gl_Position = vec4(a_position, 1.0);
+                    v_position = a_position;
+                }
+                )SHADER");
+
+            const String fragmentShader(R"SHADER(
+                #version 320 es
+
+                in highp vec3 g_position;
+                out highp vec4 color;
+
+                uniform highp float u_float;
+                uniform highp vec2 u_vec2;
+
+                void main(void)
+                {
+                    color = vec4(g_position + vec3(u_vec2, 1.0), u_float);
+                }
+                )SHADER");
+
+            const String geometryShader(R"SHADER(
+                #version 320 es
+
+                layout(points) in;
+                layout(points, max_vertices = 1) out;
+                uniform highp float u_geomFloat;
+
+                in highp vec3 v_position[];
+                out highp vec3 g_position;
+
+                void main() {
+
+                    gl_Position = vec4(u_geomFloat);
+                    g_position = v_position[0];
+                    EmitVertex();
+                    EndPrimitive();
+                }
+                )SHADER");
+            EffectInputInformationVector uniformInputs;
+            uniformInputs.push_back(EffectInputInformation("u_float", 1, EDataType::Float, EFixedSemantics_Count));
+            uniformInputs.push_back(EffectInputInformation("u_vec2", 1, EDataType::Vector2F, EFixedSemantics_Count));
+            uniformInputs.push_back(EffectInputInformation("u_geomFloat", 1, EDataType::Float, EFixedSemantics_Count));
+
+            EffectInputInformationVector attributeInputs;
+            attributeInputs.push_back(EffectInputInformation("a_position", 1, EDataType::Vector3F, EFixedSemantics_Count));
+
+            return new EffectResource(vertexShader, fragmentShader, geometryShader, uniformInputs, attributeInputs, "test effect", ResourceCacheFlag_DoNotCache);
+        }
+    };
+
     TEST_F(ADevice, CreatesShaderFromEffect)
     {
         ASSERT_TRUE(testDevice != nullptr);
@@ -143,6 +213,7 @@ namespace ramses_internal
         const EffectResource invalidEffect(
             "--this is some invalide shader source code--",
             templateEffect->getFragmentShader(),
+            "",
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);
@@ -156,6 +227,7 @@ namespace ramses_internal
         const EffectResource invalidEffect(
             templateEffect->getVertexShader(),
             "--this is some invalide shader source code--",
+            "",
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);
@@ -182,6 +254,7 @@ namespace ramses_internal
         const EffectResource invalidEffect(
             templateEffect->getVertexShader(),
             fragmentShader,
+            "",
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);
@@ -217,24 +290,25 @@ namespace ramses_internal
             "}                                                                \n"
             );
         EffectInputInformationVector uniformInputs;
-        uniformInputs.push_back(EffectInputInformation("u_int", 1, EDataType_Int32, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_float", 1, EDataType_Float, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_int", 1, EDataType::Int32, EFixedSemantics_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_float", 1, EDataType::Float, EFixedSemantics_Invalid));
 
-        uniformInputs.push_back(EffectInputInformation("u_vec2", 1, EDataType_Vector2F, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_vec3", 1, EDataType_Vector3F, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_vec4", 1, EDataType_Vector4F, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_vec2", 1, EDataType::Vector2F, EFixedSemantics_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_vec3", 1, EDataType::Vector3F, EFixedSemantics_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_vec4", 1, EDataType::Vector4F, EFixedSemantics_Invalid));
 
-        uniformInputs.push_back(EffectInputInformation("u_ivec2", 1, EDataType_Vector2I, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_ivec3", 1, EDataType_Vector3I, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_ivec4", 1, EDataType_Vector4I, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_ivec2", 1, EDataType::Vector2I, EFixedSemantics_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_ivec3", 1, EDataType::Vector3I, EFixedSemantics_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_ivec4", 1, EDataType::Vector4I, EFixedSemantics_Invalid));
 
-        uniformInputs.push_back(EffectInputInformation("u_mat2", 1, EDataType_Matrix22F, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_mat3", 1, EDataType_Matrix33F, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_mat4", 1, EDataType_Matrix44F, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_mat2", 1, EDataType::Matrix22F, EFixedSemantics_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_mat3", 1, EDataType::Matrix33F, EFixedSemantics_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_mat4", 1, EDataType::Matrix44F, EFixedSemantics_Invalid));
 
         const EffectResource testEffect(
             templateEffect->getVertexShader(),
             fragmentShader,
+            "",
             uniformInputs,
             templateEffect->getAttributeInputs(),
             "uniform test effect", ResourceCacheFlag_DoNotCache);
@@ -290,11 +364,12 @@ namespace ramses_internal
         const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
 
         EffectInputInformationVector uniformInputs = templateEffect->getUniformInputs();
-        uniformInputs.push_back(EffectInputInformation("u_NonExistingFloat", 1, EDataType_Float, EFixedSemantics_Invalid, EEffectInputTextureType_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_NonExistingFloat", 1, EDataType::Float, EFixedSemantics_Invalid));
 
         const EffectResource testEffect(
             templateEffect->getVertexShader(),
             templateEffect->getFragmentShader(),
+            "",
             uniformInputs,
             templateEffect->getAttributeInputs(),
             "test effect", ResourceCacheFlag_DoNotCache);
@@ -316,11 +391,6 @@ namespace ramses_internal
 
         testDevice->deleteShader(handle);
     }
-
-    // Needed so that these tests can be blacklisted on drivers which don't support binary shaders
-    class ADeviceSupportingBinaryShaders : public ADevice
-    {
-    };
 
     TEST_F(ADeviceSupportingBinaryShaders, DownloadsBinaryDataForUploadedShader)
     {
@@ -393,5 +463,78 @@ namespace ramses_internal
 
         testDevice->deleteShader(handle);
         testDevice->deleteShader(handleBinary);
+    }
+
+    TEST_F(ADeviceSupportingGeometryShaders, CreatesShaderFromEffect)
+    {
+        ASSERT_TRUE(testDevice != nullptr);
+
+        const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResourceWithGeometryShader());
+        const DeviceResourceHandle handle = testDevice->uploadShader(*testEffect);
+        EXPECT_TRUE(handle.isValid());
+
+        testDevice->deleteShader(handle);
+    }
+
+    TEST_F(ADeviceSupportingGeometryShaders, RefusesToUploadEffectWithInvalidGeometryShader)
+    {
+        const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResourceWithGeometryShader());
+        const EffectResource invalidEffect(
+            templateEffect->getVertexShader(),
+            templateEffect->getFragmentShader(),
+            "--this is some invalid shader source code--",
+            templateEffect->getUniformInputs(),
+            templateEffect->getAttributeInputs(),
+            "invalid effect", ResourceCacheFlag_DoNotCache);
+        const DeviceResourceHandle handle = testDevice->uploadShader(invalidEffect);
+        EXPECT_FALSE(handle.isValid());
+    }
+
+    TEST_F(ADeviceSupportingGeometryShaders, RefusesToUploadEffectWithUnlinkableShaders)
+    {
+        const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResourceWithGeometryShader());
+
+        const String geometryShader(R"SHADER(
+                #version 320 es
+
+                layout(points) in;
+                layout(points, max_vertices = 1) out;
+                uniform highp float u_geomFloat;
+
+                uniform highp vec4 u_float; //interface mismatch
+
+                void main() {
+
+                    gl_Position = vec4(u_geomFloat * u_float);
+                    EmitVertex();
+                    EndPrimitive();
+                }
+                )SHADER");
+        const EffectResource invalidEffect(
+            templateEffect->getVertexShader(),
+            templateEffect->getFragmentShader(),
+            geometryShader,
+            templateEffect->getUniformInputs(),
+            templateEffect->getAttributeInputs(),
+            "invalid effect", ResourceCacheFlag_DoNotCache);
+        const DeviceResourceHandle handle = testDevice->uploadShader(invalidEffect);
+        EXPECT_FALSE(handle.isValid());
+    }
+
+    TEST_F(ADeviceSupportingGeometryShaders, SetsConstantsOnShader)
+    {
+        ASSERT_TRUE(testDevice != nullptr);
+
+        const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResourceWithGeometryShader());
+        const DeviceResourceHandle handle = testDevice->uploadShader(*testEffect);
+        EXPECT_TRUE(handle.isValid());
+
+        testDevice->activateShader(handle);
+        EXPECT_TRUE(testDevice->isDeviceStatusHealthy()); // check that there were no errors (GL_NO_ERROR in case of OpenGL) - triggers an internal assert otherwise
+        float floatValue = 10.0;
+        testDevice->setConstant(DataFieldHandle(testEffect->getUniformDataFieldHandleByName("u_geomFloat")), 1, &floatValue);
+        EXPECT_TRUE(testDevice->isDeviceStatusHealthy());
+
+        testDevice->deleteShader(handle);
     }
 }

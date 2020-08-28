@@ -57,6 +57,18 @@ namespace ramses
         return impl.getBlendingOperations(operationColor, operationAlpha);
     }
 
+    ramses::status_t Appearance::setBlendingColor(float red, float green, float blue, float alpha)
+    {
+        const status_t status = impl.setBlendingColor(red, green, blue, alpha);
+        LOG_HL_CLIENT_API4(status, red, green, blue, alpha);
+        return status;
+    }
+
+    ramses::status_t Appearance::getBlendingColor(float& red, float& green, float& blue, float& alpha) const
+    {
+        return impl.getBlendingColor(red, green, blue, alpha);
+    }
+
     status_t Appearance::setDepthWrite(EDepthWrite mode)
     {
         const status_t status = impl.setDepthWrite(mode);

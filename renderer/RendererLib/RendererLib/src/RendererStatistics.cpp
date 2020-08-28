@@ -272,7 +272,7 @@ namespace ramses_internal
             const auto& numSceneResourceActionsPerFlush = sceneStats.numSceneResourceActionsPerFlush;
             const auto& flushLatency = sceneStats.flushLatency;
 
-            str << "Scene " << sceneStatsIt.first.getValue() << ": ";
+            str << "Scene " << sceneStatsIt.first << ": ";
             str << "rendered " << sceneStats.numRendered;
             str << ", framesFArrived " << sceneStats.numFramesWhereFlushArrived;
             str << ", framesFApplied " << sceneStats.numFramesWhereFlushApplied;

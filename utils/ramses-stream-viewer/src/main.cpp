@@ -13,16 +13,20 @@
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "ramses-renderer-api/RendererSceneControl.h"
-#include <unordered_set>
 
 #include <Utils/CommandLineParser.h>
 #include <Utils/Argument.h>
 #include "RendererLib/RendererConfigUtils.h"
+#include "ramses-framework-api/IDcsmConsumerEventHandler.h"
+#include "ramses-framework-api/DcsmMetadataUpdate.h"
+#include "ramses-framework-api/DcsmConsumer.h"
 
 #include <thread>
 #include <vector>
 #include <algorithm>
 #include <assert.h>
+#include <unordered_map>
+#include <iostream>
 
 
 constexpr const char* const vertexShader = R"##(
@@ -72,33 +76,33 @@ public:
 
         // prepare triangle geometry: vertex position array and index array
         float vertexPositionsArray[] = {-1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f};
-        m_vertexPositions = m_ramsesClient.createConstVector2fArray(4, vertexPositionsArray);
+        m_vertexPositions = m_scene->createArrayResource(ramses::EDataType::Vector2F, 4, vertexPositionsArray);
 
         uint16_t indicesArray[] = {0, 1, 2, 2, 1, 3};
-        m_indices = m_ramsesClient.createConstUInt16Array(6, indicesArray);
+        m_indices = m_scene->createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
 
 
         static const uint8_t textureData[] = {1u, 1u, 1u, 1u};
         const ramses::MipLevelData mipLevelData(sizeof(textureData), textureData);
-        m_texture = ramsesClient.createTexture2D(1u, 1u, ramses::ETextureFormat_RGBA8, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "");
+        m_texture = m_scene->createTexture2D(ramses::ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ramses::ResourceCacheFlag_DoNotCache, "");
 
         ramses::EffectDescription effectDesc;
 
         effectDesc.setVertexShader(vertexShader);
         effectDesc.setFragmentShader(fragmentShader);
-        m_effect = m_ramsesClient.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
+        m_effect = m_scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
         m_scene->flush();
         m_scene->publish();
     }
 
-    void createMesh(ramses::streamSource_t streamSource)
+    void createMesh(ramses::waylandIviSurfaceId_t streamSource)
     {
         const auto meshEntry = createMeshEntry(streamSource);
         addMesh(meshEntry);
         m_scene->flush();
     }
 
-    void removeMesh(ramses::streamSource_t streamSource)
+    void removeMesh(ramses::waylandIviSurfaceId_t streamSource)
     {
         auto iter = std::find_if(m_meshes.begin(), m_meshes.end(), [streamSource](const MeshEntry& e){ return e.streamSource == streamSource;});
         assert(m_meshes.end() != iter);
@@ -120,7 +124,7 @@ public:
 private:
     struct MeshEntry
     {
-        ramses::streamSource_t      streamSource{0u};
+        ramses::waylandIviSurfaceId_t      streamSource{0u};
         ramses::MeshNode*           meshNode = nullptr;
         ramses::Appearance*         appearance = nullptr;
         ramses::GeometryBinding*    geometryBinding = nullptr;
@@ -128,7 +132,7 @@ private:
         ramses::TextureSampler*     textureSampler = nullptr;
     };
 
-    MeshEntry createMeshEntry(ramses::streamSource_t streamSource)
+    MeshEntry createMeshEntry(ramses::waylandIviSurfaceId_t streamSource)
     {
         MeshEntry meshEntry;
         meshEntry.streamSource = streamSource;
@@ -171,8 +175,8 @@ private:
     ramses::Camera* m_camera                        = nullptr;
     ramses::RenderPass* m_renderPass                = nullptr;
     ramses::RenderGroup* m_renderGroup              = nullptr;
-    const ramses::Vector2fArray* m_vertexPositions  = nullptr;
-    const ramses::UInt16Array* m_indices            = nullptr;
+    const ramses::ArrayResource* m_vertexPositions  = nullptr;
+    const ramses::ArrayResource* m_indices          = nullptr;
     const ramses::Texture2D* m_texture              = nullptr;
     ramses::Effect* m_effect                        = nullptr;
 
@@ -187,16 +191,16 @@ public:
     {
     }
 
-    virtual void streamAvailabilityChanged(ramses::streamSource_t streamId, bool available) override
+    virtual void streamAvailabilityChanged(ramses::waylandIviSurfaceId_t streamId, bool available) override
     {
         if(available)
         {
-            printf("\n\nStream %u available !\n", streamId.getValue());
+            std::cout << std::endl << std::endl << "Stream " << streamId.getValue() << " available !" << std::endl;
             m_sceneCreator.createMesh(streamId);
         }
         else
         {
-            printf("\n\nStream %u unavailable !\n", streamId.getValue());
+            std::cout << std::endl << std::endl << "Stream " << streamId.getValue() << " unavailable !" << std::endl;
             m_sceneCreator.removeMesh(streamId);
         }
     }
@@ -205,15 +209,91 @@ private:
     StreamSourceViewer& m_sceneCreator;
 };
 
+class DcsmConsumerEventHandler: public ramses::IDcsmConsumerEventHandler
+{
+public:
+    DcsmConsumerEventHandler(StreamSourceViewer& sceneCreator, ramses::DcsmConsumer& dcsmConsumer)
+        : m_sceneCreator(sceneCreator)
+        , m_dcsmConsumer(dcsmConsumer)
+    {
+    }
+
+    virtual void contentOffered(ramses::ContentID contentID, ramses::Category /*category*/) override
+    {
+        ramses::CategoryInfoUpdate update({ 1,1 });
+        m_dcsmConsumer.assignContentToConsumer(contentID, update);
+        m_dcsmConsumer.contentStateChange(contentID, ramses::EDcsmState::Ready, ramses::AnimationInformation());
+    }
+
+
+    virtual void contentDescription(ramses::ContentID contentID, ramses::ETechnicalContentType contentType, ramses::TechnicalContentDescriptor contentDescriptor) override
+    {
+        if (contentType == ramses::ETechnicalContentType::WaylandIviSurfaceID)
+        {
+            contentToWaylandSurfaceIdMap[contentID] = ramses::waylandIviSurfaceId_t(static_cast<uint32_t>(contentDescriptor.getValue()));
+        }
+    }
+
+
+    virtual void contentReady(ramses::ContentID contentID) override
+    {
+        auto contentIt = contentToWaylandSurfaceIdMap.find(contentID);
+        if (contentIt != contentToWaylandSurfaceIdMap.end())
+        {
+            std::cout << std::endl << "Going to show content id" << contentID.getValue() << " (wayland surface id " << contentIt->second.getValue() << ")" << std::endl;
+            m_dcsmConsumer.contentStateChange(contentID, ramses::EDcsmState::Shown, ramses::AnimationInformation());
+            m_sceneCreator.createMesh(contentIt->second);
+        }
+    }
+
+    virtual void contentEnableFocusRequest(ramses::ContentID /*contentID*/, int32_t /*focusRequest*/) override
+    {
+    }
+
+    virtual void contentDisableFocusRequest(ramses::ContentID /*contentID*/, int32_t /*focusRequest*/) override
+    {
+    }
+
+    virtual void contentStopOfferRequest(ramses::ContentID contentID) override
+    {
+        m_dcsmConsumer.acceptStopOffer(contentID, ramses::AnimationInformation());
+        removeContent(contentID);
+    }
+
+    virtual void forceContentOfferStopped(ramses::ContentID contentID) override
+    {
+        removeContent(contentID);
+    }
+
+    virtual void contentMetadataUpdated(ramses::ContentID /*contentID*/, const ramses::DcsmMetadataUpdate& /*metadataUpdate*/) override
+    {
+    }
+
+private:
+    void removeContent(ramses::ContentID contentID)
+    {
+        auto contentIt = contentToWaylandSurfaceIdMap.find(contentID);
+        m_sceneCreator.removeMesh(contentIt->second);
+        contentToWaylandSurfaceIdMap.erase(contentIt);
+    }
+
+private:
+    StreamSourceViewer& m_sceneCreator;
+    ramses::DcsmConsumer& m_dcsmConsumer;
+    std::unordered_map<ramses::ContentID, ramses::waylandIviSurfaceId_t> contentToWaylandSurfaceIdMap;
+};
+
 int main(int argc, char* argv[])
 {
     ramses_internal::CommandLineParser parser(argc, argv);
     ramses_internal::ArgumentBool      helpRequested(parser, "help", "help");
     ramses_internal::ArgumentFloat     maxFps(parser, "fps", "framesPerSecond", 60.0f);
+    ramses_internal::ArgumentBool      dcsmSupportRequested(parser, "dcsm", "dcsm", "if option is set stream content is only displayed if also a matching DCSM request is sent to the stream viewer");
 
     if (helpRequested)
     {
         ramses_internal::RendererConfigUtils::PrintCommandLineOptions();
+        std::cout << std::endl << dcsmSupportRequested.getHelpString().c_str() << std::endl;
         return 0;
     }
 
@@ -229,7 +309,7 @@ int main(int argc, char* argv[])
 
     if (!ramsesClient || !renderer)
     {
-        printf("\nFailed to create either ramses client or ramses renderer.\n");
+        std::cerr << std::endl << "Failed to create either ramses client or ramses renderer." << std::endl;
         return 1;
     }
 
@@ -246,15 +326,34 @@ int main(int argc, char* argv[])
     const ramses::sceneId_t sceneId{1u};
     StreamSourceViewer sceneCreator(*ramsesClient, sceneId);
 
-    RendererEventHandler eventHandler(sceneCreator);
-
     sceneControlAPI->setSceneMapping(sceneId, display);
     sceneControlAPI->setSceneState(sceneId, ramses::RendererSceneState::Rendered);
     sceneControlAPI->flush();
 
+    std::unique_ptr<RendererEventHandler> eventHandler;
+    ramses::DcsmConsumer* dcsmConsumer = nullptr;
+    std::unique_ptr<DcsmConsumerEventHandler> dcsmConsumerEventHandler;
+
+    if (dcsmSupportRequested)
+    {
+        dcsmConsumer = framework.createDcsmConsumer();
+        dcsmConsumerEventHandler.reset(new DcsmConsumerEventHandler (sceneCreator, *dcsmConsumer));
+    }
+    else
+    {
+        eventHandler.reset(new RendererEventHandler(sceneCreator));
+    }
+
     for (;;)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        sceneControlAPI->dispatchEvents(eventHandler);
+        if (dcsmSupportRequested)
+        {
+            dcsmConsumer->dispatchEvents(*dcsmConsumerEventHandler);
+        }
+        else
+        {
+            sceneControlAPI->dispatchEvents(*eventHandler);
+        }
     }
 }

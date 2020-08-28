@@ -14,18 +14,29 @@
 
 namespace ramses_internal
 {
-    TEST(AResourceFileRegistry, CannotFindNotRegisteredResourceFile)
+    class AResourceFileRegistry : public ::testing::Test
     {
-        ResourceFilesRegistry registry;
+    public:
+        AResourceFileRegistry()
+            : lock()
+            , stats()
+            , storage(lock, stats)
+            , registry()
+        {}
 
+        PlatformLock lock;
+        StatisticCollectionFramework stats;
+        ResourceStorage storage;
+        ResourceFilesRegistry registry;
+    };
+
+    TEST_F(AResourceFileRegistry, CannotFindNotRegisteredResourceFile)
+    {
         EXPECT_FALSE(registry.hasResourceFile("testfile"));
     }
 
-    TEST(AResourceFileRegistry, FindRegisteredResourceFile)
+    TEST_F(AResourceFileRegistry, FindRegisteredResourceFile)
     {
-        PlatformLock lock;
-        ResourceStorage storage(lock);
-        ResourceFilesRegistry registry;
         ResourceContentHash hash(123, 0);
 
         ResourceTableOfContents toc;
@@ -38,11 +49,8 @@ namespace ramses_internal
         EXPECT_TRUE(registry.hasResourceFile(resourceFileName));
     }
 
-    TEST(AResourceFileRegistry, keepsHashUsageOfRegisteredResources)
+    TEST_F(AResourceFileRegistry, keepsHashUsageOfRegisteredResources)
     {
-        PlatformLock lock;
-        ResourceStorage storage(lock);
-        ResourceFilesRegistry registry;
         ResourceContentHash hash(123, 0);
 
         ResourceTableOfContents toc;
@@ -62,11 +70,8 @@ namespace ramses_internal
         EXPECT_EQ(0u, storage.getAllResourceInfo().size());
     }
 
-    TEST(AResourceFileRegistry, storesResourceFileEntryWithResourceInfo)
+    TEST_F(AResourceFileRegistry, storesResourceFileEntryWithResourceInfo)
     {
-        PlatformLock lock;
-        ResourceStorage storage(lock);
-        ResourceFilesRegistry registry;
         ResourceContentHash hash(123, 0);
         ResourceInfo resInfo(EResourceType_VertexArray, hash, 22, 11);
         UInt32 offset = 11u;
@@ -87,5 +92,63 @@ namespace ramses_internal
         EXPECT_EQ(offset, storedFileEntry.offsetInBytes);
         EXPECT_EQ(size, storedFileEntry.sizeInBytes);
         EXPECT_EQ(resInfo, storedFileEntry.resourceInfo);
+    }
+
+    TEST_F(AResourceFileRegistry, getsContentsOfResourceFileReturnNullptrIfNoFileKnown)
+    {
+        EXPECT_FALSE(registry.getContentsOfResourceFile("testfile1"));
+    }
+
+    TEST_F(AResourceFileRegistry, getsContentsOfResourceFileReturnNullptrIfFileUnknown)
+    {
+        ResourceFileInputStreamSPtr resourceFileStream(new ResourceFileInputStream("testfile"));
+        ResourceTableOfContents toc;
+
+        toc.registerContents({ EResourceType_VertexArray, { 2, 2 }, 22, 11 }, 0, 10);
+        registry.registerResourceFile(resourceFileStream, toc, storage);
+
+        EXPECT_FALSE(registry.getContentsOfResourceFile("testfile2"));
+    }
+
+    TEST_F(AResourceFileRegistry, getsContentOfResourceFile)
+    {
+        ResourceFileInputStreamSPtr resourceFileStream(new ResourceFileInputStream("testfile"));
+        ResourceTableOfContents toc;
+        ResourceInfo info{ EResourceType_VertexArray, { 2, 2 }, 22, 11 };
+        toc.registerContents(info, 0, 10);
+        registry.registerResourceFile(resourceFileStream, toc, storage);
+
+        ResourceFileInputStreamSPtr resourceFileStream2(new ResourceFileInputStream("testfile2"));
+        ResourceTableOfContents toc2;
+        toc2.registerContents({ EResourceType_VertexArray, { 3, 3 }, 23, 13 }, 2, 12);
+        registry.registerResourceFile(resourceFileStream2, toc2, storage);
+
+        auto content = registry.getContentsOfResourceFile("testfile");
+        EXPECT_EQ(content->size(), 1u);
+        EXPECT_EQ(content->begin()->key, ResourceContentHash(2, 2));
+        EXPECT_EQ(content->begin()->value.fileEntry.resourceInfo, info);
+        EXPECT_EQ(content->begin()->value.fileEntry.offsetInBytes, 0u);
+        EXPECT_EQ(content->begin()->value.fileEntry.sizeInBytes, 10u);
+    }
+
+    TEST_F(AResourceFileRegistry, getsMultipleContentsOfResourceFile)
+    {
+        ResourceFileInputStreamSPtr resourceFileStream(new ResourceFileInputStream("testfile"));
+        ResourceTableOfContents toc;
+        toc.registerContents({ EResourceType_VertexArray, { 2, 2 }, 22, 11 }, 0, 10);
+        toc.registerContents({ EResourceType_VertexArray, { 5, 5 }, 22, 11 }, 10, 10);
+        toc.registerContents({ EResourceType_VertexArray, { 1, 1 }, 22, 11 }, 20, 10);
+        registry.registerResourceFile(resourceFileStream, toc, storage);
+
+        ResourceFileInputStreamSPtr resourceFileStream2(new ResourceFileInputStream("testfile2"));
+        ResourceTableOfContents toc2;
+        toc2.registerContents({ EResourceType_VertexArray, { 3, 3 }, 23, 13 }, 2, 12);
+        toc2.registerContents({ EResourceType_VertexArray, { 5, 5 }, 23, 13 }, 14, 12);
+        registry.registerResourceFile(resourceFileStream2, toc2, storage);
+
+        auto content = registry.getContentsOfResourceFile("testfile");
+        EXPECT_EQ(content->size(), 3u);
+        for (auto const& entry : { ResourceContentHash{ 2, 2 }, ResourceContentHash{ 5, 5 }, ResourceContentHash{ 1, 1 } })
+            EXPECT_NE(content->find(entry), content->end());
     }
 }

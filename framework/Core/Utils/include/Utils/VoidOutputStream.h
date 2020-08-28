@@ -19,12 +19,12 @@ namespace ramses_internal
     public:
         explicit VoidOutputStream();
 
-        IOutputStream& write(const void* data, const UInt32 size) override;
+        IOutputStream& write(const void* data, size_t size) override;
 
-        UInt32 getSize() const;
+        size_t getSize() const;
 
     private:
-        UInt32 m_size;
+        size_t m_size;
     };
 
     inline
@@ -33,13 +33,13 @@ namespace ramses_internal
     {
     }
 
-    inline IOutputStream& VoidOutputStream::write(const void* , const UInt32 size)
+    inline IOutputStream& VoidOutputStream::write(const void*, size_t size)
     {
         m_size += size;
         return *this;
     }
 
-    inline UInt32 VoidOutputStream::getSize() const
+    inline size_t VoidOutputStream::getSize() const
     {
         return m_size;
     }
