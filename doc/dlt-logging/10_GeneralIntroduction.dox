@@ -21,7 +21,7 @@ dlt-daemon is a system daemon that gathers log messages from connected applicati
 to build and install the dlt-daemon from the following git repository:
 
 \verbatim
-http://git.projects.genivi.org/dlt-daemon.git
+https://github.com/GENIVI/dlt-daemon.git
 \endverbatim
 
 # dlt_viewer
@@ -32,7 +32,7 @@ messages. dlt_viewer is able to handle connections to multiple target systems.
 The sources are available in the following git repository:
 
 \verbatim
-http://git.projects.genivi.org/dlt-viewer.git
+https://github.com/GENIVI/dlt-viewer.git
 \endverbatim
 
 The following screenshots show the dialogs to establish a connection to an ECU with a running dlt-daemon:
