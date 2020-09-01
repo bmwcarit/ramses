@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -103,6 +103,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a86dff61ecf4bc44dd1ae02244079fa87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmProvider.html#a86dff61ecf4bc44dd1ae02244079fa87">offerContentWithMetadata</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, <a class="el" href="namespaceramses.html#abaddc843cd87d7e57215d7bbc5ef49c1">Category</a> category, <a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> scene, <a class="el" href="namespaceramses.html#a5c6768ac12230d47013c798237d1c738">EDcsmOfferingMode</a> mode, const <a class="el" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a> &amp;metadata)</td></tr>
 <tr class="memdesc:a86dff61ecf4bc44dd1ae02244079fa87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same behavior as <a class="el" href="classramses_1_1DcsmProvider.html#a7a72302ee32910ef774983e58f9f49ef" title="Assigns a ramses scene ID to a contentID and category and offers that content to listening consumers...">offerContent()</a> but additionally send provided metadata to consumers that assigned content to themselves.  <a href="#a86dff61ecf4bc44dd1ae02244079fa87">More...</a><br /></td></tr>
 <tr class="separator:a86dff61ecf4bc44dd1ae02244079fa87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad35385b538fa0c8c54c05ac19bfe6b11"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmProvider.html#ad35385b538fa0c8c54c05ac19bfe6b11">offerContent</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, <a class="el" href="namespaceramses.html#abaddc843cd87d7e57215d7bbc5ef49c1">Category</a> category, <a class="el" href="namespaceramses.html#ac79b962fa2712607b7497565e46f47ff">waylandIviSurfaceId_t</a> surfaceId, <a class="el" href="namespaceramses.html#a5c6768ac12230d47013c798237d1c738">EDcsmOfferingMode</a> mode)</td></tr>
+<tr class="memdesc:ad35385b538fa0c8c54c05ac19bfe6b11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assigns a Wayland IVI Surface ID to a contentID and category and offers that content to listening consumers. Should only be called if content could and should currently be shown. The Wayland IVI Surface belonging to the surface ID must not exist yet.  <a href="#ad35385b538fa0c8c54c05ac19bfe6b11">More...</a><br /></td></tr>
+<tr class="separator:ad35385b538fa0c8c54c05ac19bfe6b11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a705d4edb5b671a73a468215d21a4e49b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmProvider.html#a705d4edb5b671a73a468215d21a4e49b">offerContentWithMetadata</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, <a class="el" href="namespaceramses.html#abaddc843cd87d7e57215d7bbc5ef49c1">Category</a> category, <a class="el" href="namespaceramses.html#ac79b962fa2712607b7497565e46f47ff">waylandIviSurfaceId_t</a> surfaceId, <a class="el" href="namespaceramses.html#a5c6768ac12230d47013c798237d1c738">EDcsmOfferingMode</a> mode, const <a class="el" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a> &amp;metadata)</td></tr>
+<tr class="memdesc:a705d4edb5b671a73a468215d21a4e49b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same behavior as <a class="el" href="classramses_1_1DcsmProvider.html#a7a72302ee32910ef774983e58f9f49ef" title="Assigns a ramses scene ID to a contentID and category and offers that content to listening consumers...">offerContent()</a> but additionally send provided metadata to consumers that assigned content to themselves.  <a href="#a705d4edb5b671a73a468215d21a4e49b">More...</a><br /></td></tr>
+<tr class="separator:a705d4edb5b671a73a468215d21a4e49b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4664a6372152cb54e5d25479291ccb68"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmProvider.html#a4664a6372152cb54e5d25479291ccb68">updateContentMetadata</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, const <a class="el" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a> &amp;metadata)</td></tr>
 <tr class="memdesc:a4664a6372152cb54e5d25479291ccb68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send metadata updates to consumers content is assigned to. The content is earliest sent to consumer on change change offered to assigned.  <a href="#a4664a6372152cb54e5d25479291ccb68">More...</a><br /></td></tr>
 <tr class="separator:a4664a6372152cb54e5d25479291ccb68"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -411,12 +417,12 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>.</dd></dl>
-<dl class="section pre"><dt>Precondition</dt><dd><a class="el" href="classramses_1_1Scene.html" title="The Scene holds a scene graph. It is the essential class for distributing content to the ramses syste...">Scene</a> associated with content is set up and published. </dd></dl>
+<dl class="section pre"><dt>Precondition</dt><dd>Ramses scene content: <a class="el" href="classramses_1_1Scene.html" title="The Scene holds a scene graph. It is the essential class for distributing content to the ramses syste...">Scene</a> associated with content is set up and published. </dd></dl>
 
 </div>
 </div>
 <a id="a7a72302ee32910ef774983e58f9f49ef"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7a72302ee32910ef774983e58f9f49ef">&#9670;&nbsp;</a></span>offerContent()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a7a72302ee32910ef774983e58f9f49ef">&#9670;&nbsp;</a></span>offerContent() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -468,8 +474,61 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<a id="ad35385b538fa0c8c54c05ac19bfe6b11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad35385b538fa0c8c54c05ac19bfe6b11">&#9670;&nbsp;</a></span>offerContent() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::DcsmProvider::offerContent </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a>&#160;</td>
+          <td class="paramname"><em>contentID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#abaddc843cd87d7e57215d7bbc5ef49c1">Category</a>&#160;</td>
+          <td class="paramname"><em>category</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ac79b962fa2712607b7497565e46f47ff">waylandIviSurfaceId_t</a>&#160;</td>
+          <td class="paramname"><em>surfaceId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a5c6768ac12230d47013c798237d1c738">EDcsmOfferingMode</a>&#160;</td>
+          <td class="paramname"><em>mode</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Assigns a Wayland IVI Surface ID to a contentID and category and offers that content to listening consumers. Should only be called if content could and should currently be shown. The Wayland IVI Surface belonging to the surface ID must not exist yet. </p>
+<p>A failing offerContent call might trigger a stopOfferAccepted event, which can be safely ignored.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">contentID</td><td>The ID of the content to be offered </td></tr>
+    <tr><td class="paramname">category</td><td>The category the content is made for </td></tr>
+    <tr><td class="paramname">surfaceId</td><td>The Wayland IVI Surface id containing the content. </td></tr>
+    <tr><td class="paramname">mode</td><td>Indicates if content should be offered within same process only </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
 <a id="a86dff61ecf4bc44dd1ae02244079fa87"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a86dff61ecf4bc44dd1ae02244079fa87">&#9670;&nbsp;</a></span>offerContentWithMetadata()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a86dff61ecf4bc44dd1ae02244079fa87">&#9670;&nbsp;</a></span>offerContentWithMetadata() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -520,6 +579,67 @@ Additional Inherited Members</h2></td></tr>
     <tr><td class="paramname">contentID</td><td>The ID of the content to be offered </td></tr>
     <tr><td class="paramname">category</td><td>The category the content is made for </td></tr>
     <tr><td class="paramname">scene</td><td>The ramses scene ID containing the content. </td></tr>
+    <tr><td class="paramname">mode</td><td>Indicates if content should be offered within same process only </td></tr>
+    <tr><td class="paramname">metadata</td><td>metadata creator filled with metadata </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a705d4edb5b671a73a468215d21a4e49b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a705d4edb5b671a73a468215d21a4e49b">&#9670;&nbsp;</a></span>offerContentWithMetadata() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::DcsmProvider::offerContentWithMetadata </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a>&#160;</td>
+          <td class="paramname"><em>contentID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#abaddc843cd87d7e57215d7bbc5ef49c1">Category</a>&#160;</td>
+          <td class="paramname"><em>category</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ac79b962fa2712607b7497565e46f47ff">waylandIviSurfaceId_t</a>&#160;</td>
+          <td class="paramname"><em>surfaceId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a5c6768ac12230d47013c798237d1c738">EDcsmOfferingMode</a>&#160;</td>
+          <td class="paramname"><em>mode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a> &amp;&#160;</td>
+          <td class="paramname"><em>metadata</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Same behavior as <a class="el" href="classramses_1_1DcsmProvider.html#a7a72302ee32910ef774983e58f9f49ef" title="Assigns a ramses scene ID to a contentID and category and offers that content to listening consumers...">offerContent()</a> but additionally send provided metadata to consumers that assigned content to themselves. </p>
+<p>This method should be used to attach metadata immediately on offer to a content but is no prerequisite for later calls to <a class="el" href="classramses_1_1DcsmProvider.html#a4664a6372152cb54e5d25479291ccb68" title="Send metadata updates to consumers content is assigned to. The content is earliest sent to consumer o...">updateContentMetadata()</a>.</p>
+<p>A failing offerContentWithMetadata call might trigger a stopOfferAccepted event, which can be safely ignored.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">contentID</td><td>The ID of the content to be offered </td></tr>
+    <tr><td class="paramname">category</td><td>The category the content is made for </td></tr>
+    <tr><td class="paramname">surfaceId</td><td>The Wayland IVI Surface id containing the content. </td></tr>
     <tr><td class="paramname">mode</td><td>Indicates if content should be offered within same process only </td></tr>
     <tr><td class="paramname">metadata</td><td>metadata creator filled with metadata </td></tr>
   </table>

@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['waitfordataproviderorconsumercreated',['waitForDataProviderOrConsumerCreated',['../classSceneStateEventHandler.html#a45eb444c90ac5214d07c80e063746dad',1,'SceneStateEventHandler']]],
   ['warpingmeshdata',['WarpingMeshData',['../classramses_1_1WarpingMeshData.html#af7de9d106a7ad73b607655928788f7eb',1,'ramses::WarpingMeshData::WarpingMeshData(uint32_t indexCount, const uint16_t *indices, uint32_t vertexCount, const float *vertexPositions, const float *textureCoordinates)'],['../classramses_1_1WarpingMeshData.html#a4acfd25b5028753885378c3dbb2bfc76',1,'ramses::WarpingMeshData::WarpingMeshData(const WarpingMeshData &amp;other)=delete']]],
   ['warpingmeshdataupdated',['warpingMeshDataUpdated',['../classramses_1_1IRendererEventHandler.html#a56bfb6b44db2d8ef1fce9ba950cb2a4e',1,'ramses::IRendererEventHandler::warpingMeshDataUpdated()'],['../classramses_1_1RendererEventHandlerEmpty.html#a7118da3501b6a44556edf803f81c3606',1,'ramses::RendererEventHandlerEmpty::warpingMeshDataUpdated()']]],
   ['windowclosed',['windowClosed',['../classramses_1_1IRendererEventHandler.html#adc93e1e2f2800d0ff3351cc424025f05',1,'ramses::IRendererEventHandler::windowClosed()'],['../classramses_1_1RendererEventHandlerEmpty.html#ab70f71358aff3739d02b5a5281bf73ff',1,'ramses::RendererEventHandlerEmpty::windowClosed()']]],

@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['unavailable',['Unavailable',['../namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82ca453e6aa38d87b28ccae545967c53004f',1,'ramses']]]
+  ['shown',['Shown',['../namespaceramses.html#aee996152a40d451bbbefff0ae96c66d3aa1921ede72e1b8f5c0a39c77ad1865b4',1,'ramses']]],
+  ['srgb8',['SRGB8',['../namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edab71c01d7fab5970416ff1c79c675dc15',1,'ramses']]],
+  ['srgb8_5falpha8',['SRGB8_ALPHA8',['../namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edaaeb2924b7d240eb7f8cb7de0e310fc43',1,'ramses']]]
 ];

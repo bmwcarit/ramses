@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -89,6 +89,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a18c0fa255be11b30f4e0639a32c16d2a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesHMIUtils.html#a18c0fa255be11b30f4e0639a32c16d2a">DumpUnrequiredSceneObjectsToFile</a> (const <a class="el" href="classramses_1_1Scene.html">Scene</a> &amp;scene, std::ostream &amp;out)</td></tr>
 <tr class="memdesc:a18c0fa255be11b30f4e0639a32c16d2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">As <a class="el" href="classramses_1_1RamsesHMIUtils.html#a876cfe37a9d5d90e7fcbe92fe28daf3c" title="Dumps all objects of a scene which do not contribute to the visual appearance of the scene on screen...">RamsesHMIUtils::DumpUnrequiredSceneObjects</a> but write to given stream.  <a href="#a18c0fa255be11b30f4e0639a32c16d2a">More...</a><br /></td></tr>
 <tr class="separator:a18c0fa255be11b30f4e0639a32c16d2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71cf608709860562beda6f80f58ded61"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classramses_1_1ResourceDataPool.html">ResourceDataPool</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesHMIUtils.html#a71cf608709860562beda6f80f58ded61">GetResourceDataPoolForClient</a> (<a class="el" href="classramses_1_1RamsesClient.html">RamsesClient</a> &amp;client)</td></tr>
+<tr class="memdesc:a71cf608709860562beda6f80f58ded61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the <a class="el" href="classramses_1_1ResourceDataPool.html" title="The ResourceDataPool holds resource data which can be instantiated for a given scene. Resource data can either be added by calling the add functions or by attaching a resource data file to the pool. The same resource data can be instantiated by multiple scenes at the same time. ">ResourceDataPool</a> for this client.  <a href="#a71cf608709860562beda6f80f58ded61">More...</a><br /></td></tr>
+<tr class="separator:a71cf608709860562beda6f80f58ded61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1455985601049a6765acf597d6645a2"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesHMIUtils.html#ac1455985601049a6765acf597d6645a2">SaveResourcesOfSceneToResourceFile</a> (<a class="el" href="classramses_1_1Scene.html">Scene</a> const &amp;scene, std::string const &amp;filename, bool compress)</td></tr>
+<tr class="memdesc:ac1455985601049a6765acf597d6645a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Saves all resources of a scene to a resource file, which can be opened in a <a class="el" href="classramses_1_1ResourceDataPool.html" title="The ResourceDataPool holds resource data which can be instantiated for a given scene. Resource data can either be added by calling the add functions or by attaching a resource data file to the pool. The same resource data can be instantiated by multiple scenes at the same time. ">ResourceDataPool</a>.  <a href="#ac1455985601049a6765acf597d6645a2">More...</a><br /></td></tr>
+<tr class="separator:ac1455985601049a6765acf597d6645a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Utility functions especially created for functions not yet designated for direct API integration. </p>
@@ -202,6 +208,94 @@ Static Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">scene</td><td>the source scene </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">out</td><td>stream to write to </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a71cf608709860562beda6f80f58ded61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71cf608709860562beda6f80f58ded61">&#9670;&nbsp;</a></span>GetResourceDataPoolForClient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classramses_1_1ResourceDataPool.html">ResourceDataPool</a>&amp; ramses::RamsesHMIUtils::GetResourceDataPoolForClient </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classramses_1_1RamsesClient.html">RamsesClient</a> &amp;&#160;</td>
+          <td class="paramname"><em>client</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the <a class="el" href="classramses_1_1ResourceDataPool.html" title="The ResourceDataPool holds resource data which can be instantiated for a given scene. Resource data can either be added by calling the add functions or by attaching a resource data file to the pool. The same resource data can be instantiated by multiple scenes at the same time. ">ResourceDataPool</a> for this client. </p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000006">Deprecated:</a></b></dt><dd>This function and the returned class are deprecated. See <a class="el" href="classramses_1_1ResourceDataPool.html" title="The ResourceDataPool holds resource data which can be instantiated for a given scene. Resource data can either be added by calling the add functions or by attaching a resource data file to the pool. The same resource data can be instantiated by multiple scenes at the same time. ">ramses::ResourceDataPool</a> for details.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to get the <a class="el" href="classramses_1_1ResourceDataPool.html" title="The ResourceDataPool holds resource data which can be instantiated for a given scene. Resource data can either be added by calling the add functions or by attaching a resource data file to the pool. The same resource data can be instantiated by multiple scenes at the same time. ">ResourceDataPool</a> from. return The reference to the <a class="el" href="classramses_1_1ResourceDataPool.html" title="The ResourceDataPool holds resource data which can be instantiated for a given scene. Resource data can either be added by calling the add functions or by attaching a resource data file to the pool. The same resource data can be instantiated by multiple scenes at the same time. ">ResourceDataPool</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac1455985601049a6765acf597d6645a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac1455985601049a6765acf597d6645a2">&#9670;&nbsp;</a></span>SaveResourcesOfSceneToResourceFile()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool ramses::RamsesHMIUtils::SaveResourcesOfSceneToResourceFile </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classramses_1_1Scene.html">Scene</a> const &amp;&#160;</td>
+          <td class="paramname"><em>scene</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string const &amp;&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>compress</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Saves all resources of a scene to a resource file, which can be opened in a <a class="el" href="classramses_1_1ResourceDataPool.html" title="The ResourceDataPool holds resource data which can be instantiated for a given scene. Resource data can either be added by calling the add functions or by attaching a resource data file to the pool. The same resource data can be instantiated by multiple scenes at the same time. ">ResourceDataPool</a>. </p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000007">Deprecated:</a></b></dt><dd>This functionality is deprecated. See <a class="el" href="classramses_1_1ResourceDataPool.html" title="The ResourceDataPool holds resource data which can be instantiated for a given scene. Resource data can either be added by calling the add functions or by attaching a resource data file to the pool. The same resource data can be instantiated by multiple scenes at the same time. ">ramses::ResourceDataPool</a> for details.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">scene</td><td>The scene to save resource of. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">filename</td><td>The file path to write the resource file to. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">compress</td><td>if set to true, resources might be compressed before saving otherwise, uncompressed data will be saved return True if operation succeeded. </td></tr>
   </table>
   </dd>
 </dl>

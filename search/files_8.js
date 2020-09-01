@@ -12,5 +12,7 @@ var searchData=
   ['apiexport_2eh',['APIExport.h',['../APIExport_8h.html',1,'']]],
   ['appearance_2eh',['Appearance.h',['../Appearance_8h.html',1,'']]],
   ['appearanceenums_2eh',['AppearanceEnums.h',['../AppearanceEnums_8h.html',1,'']]],
+  ['arraybuffer_2eh',['ArrayBuffer.h',['../ArrayBuffer_8h.html',1,'']]],
+  ['arrayresource_2eh',['ArrayResource.h',['../ArrayResource_8h.html',1,'']]],
   ['attributeinput_2eh',['AttributeInput.h',['../AttributeInput_8h.html',1,'']]]
 ];

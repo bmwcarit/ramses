@@ -1,24 +1,24 @@
 <map id="ramses::SceneObject" name="ramses::SceneObject">
 <area shape="rect" id="node5" href="$classramses_1_1AnimationObject.html" title="The AnimationObject is a base class for all client API objects owned by an AnimationSystem. " alt="" coords="803,563,973,589"/>
-<area shape="rect" id="node35" href="$classramses_1_1AnimationSystem.html" title="The AnimationSystem holds all animation related data. " alt="" coords="800,753,976,780"/>
-<area shape="rect" id="node37" href="$classramses_1_1Appearance.html" title="The Appearance describes how an object should look like. " alt="" coords="817,892,959,919"/>
-<area shape="rect" id="node38" href="$classramses_1_1BlitPass.html" title="The BlitPass blits contents of one RendeBuffer to another. The source and destination RenderBuffer ob..." alt="" coords="827,943,949,969"/>
-<area shape="rect" id="node39" href="$classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. " alt="" coords="819,993,957,1020"/>
-<area shape="rect" id="node51" href="$classramses_1_1GeometryBinding.html" title="A geometry binding together with an appearance describe how an object will be rendered to the screen..." alt="" coords="801,1044,975,1071"/>
-<area shape="rect" id="node52" href="$classramses_1_1IndexDataBuffer.html" title="The IndexDataBuffer is a mutable scene resource used to specify the indices in a GeometryBinding. " alt="" coords="804,1095,972,1121"/>
-<area shape="rect" id="node53" href="$classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it..." alt="" coords="836,1145,940,1172"/>
-<area shape="rect" id="node61" href="$classramses_1_1RenderBuffer.html" title="RenderBuffer can be used with RenderTarget as buffer for writing or with TextureSampler as buffer for..." alt="" coords="813,1196,963,1223"/>
-<area shape="rect" id="node62" href="$classramses_1_1RenderGroup.html" title="The RenderGroup is a container used to collect renderables which are supposed to be rendered together..." alt="" coords="813,1247,963,1273"/>
-<area shape="rect" id="node63" href="$classramses_1_1RenderPass.html" title="The RenderPass is a container used to collect meshes which are supposed to be rendered together..." alt="" coords="815,1297,961,1324"/>
-<area shape="rect" id="node64" href="$classramses_1_1RenderTarget.html" title="The RenderTarget can be used as an output for a RenderPass. " alt="" coords="812,1348,964,1375"/>
-<area shape="rect" id="node65" href="$classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. " alt="" coords="803,1399,973,1425"/>
-<area shape="rect" id="node66" href="$classramses_1_1StreamTexture.html" title="StreamTexture is a special kind of texture, which holds a reference to a &quot;fallback texture&quot; and a str..." alt="" coords="809,1449,967,1476"/>
-<area shape="rect" id="node67" href="$classramses_1_1Texture2DBuffer.html" title="The Texture2DBuffer is a mutable scene resource used to hold texture data with the possibility to per..." alt="" coords="803,1500,973,1527"/>
-<area shape="rect" id="node68" href="$classramses_1_1TextureSampler.html" title="The TextureSampler holds a texture and its sampling parameters. " alt="" coords="805,1551,971,1577"/>
-<area shape="rect" id="node69" href="$classramses_1_1VertexDataBuffer.html" title="The VertexDataBuffer is a mutable scene resource used to specify attribute vertex data in a GeometryB..." alt="" coords="801,1601,975,1628"/>
-<area shape="rect" id="node2" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="411,1196,556,1223"/>
-<area shape="rect" id="node3" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="203,1196,363,1223"/>
-<area shape="rect" id="node4" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="5,1196,155,1223"/>
+<area shape="rect" id="node35" href="$classramses_1_1AnimationSystem.html" title="The AnimationSystem holds all animation related data. " alt="" coords="800,765,976,792"/>
+<area shape="rect" id="node37" href="$classramses_1_1Appearance.html" title="The Appearance describes how an object should look like. " alt="" coords="817,917,959,944"/>
+<area shape="rect" id="node38" href="$classramses_1_1ArrayBuffer.html" title="The ArrayBuffer is a data object used to provide vertex or index data to ramses::GeometryBinding::set..." alt="" coords="819,968,957,995"/>
+<area shape="rect" id="node39" href="$classramses_1_1BlitPass.html" title="The BlitPass blits contents of one RendeBuffer to another. The source and destination RenderBuffer ob..." alt="" coords="827,1019,949,1045"/>
+<area shape="rect" id="node40" href="$classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. " alt="" coords="819,1069,957,1096"/>
+<area shape="rect" id="node52" href="$classramses_1_1GeometryBinding.html" title="A geometry binding together with an appearance describe how an object will be rendered to the screen..." alt="" coords="801,1145,975,1172"/>
+<area shape="rect" id="node53" href="$classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it..." alt="" coords="836,1196,940,1223"/>
+<area shape="rect" id="node61" href="$classramses_1_1RenderBuffer.html" title="RenderBuffer can be used with RenderTarget as buffer for writing or with TextureSampler as buffer for..." alt="" coords="813,1247,963,1273"/>
+<area shape="rect" id="node62" href="$classramses_1_1RenderGroup.html" title="The RenderGroup is a container used to collect renderables which are supposed to be rendered together..." alt="" coords="813,1297,963,1324"/>
+<area shape="rect" id="node63" href="$classramses_1_1RenderPass.html" title="The RenderPass is a container used to collect meshes which are supposed to be rendered together..." alt="" coords="815,1348,961,1375"/>
+<area shape="rect" id="node64" href="$classramses_1_1RenderTarget.html" title="The RenderTarget can be used as an output for a RenderPass. " alt="" coords="812,1399,964,1425"/>
+<area shape="rect" id="node65" href="$classramses_1_1Resource.html" title="The Resource is the base class of all resources, such as arrays and textures. " alt="" coords="823,1449,953,1476"/>
+<area shape="rect" id="node71" href="$classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. " alt="" coords="803,1500,973,1527"/>
+<area shape="rect" id="node72" href="$classramses_1_1StreamTexture.html" title="StreamTexture is a special kind of texture, which holds a reference to a &quot;fallback texture&quot; and a str..." alt="" coords="809,1551,967,1577"/>
+<area shape="rect" id="node73" href="$classramses_1_1Texture2DBuffer.html" title="The Texture2DBuffer is a mutable texture buffer used to hold texture data with the possibility to per..." alt="" coords="803,1601,973,1628"/>
+<area shape="rect" id="node74" href="$classramses_1_1TextureSampler.html" title="The TextureSampler holds a texture and its sampling parameters. " alt="" coords="805,1652,971,1679"/>
+<area shape="rect" id="node2" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="411,1247,556,1273"/>
+<area shape="rect" id="node3" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="203,1247,363,1273"/>
+<area shape="rect" id="node4" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="5,1247,155,1273"/>
 <area shape="rect" id="node6" href="$classramses_1_1AnimatedProperty.html" title="The AnimatedProperty holds a reference to data that can be animated. " alt="" coords="1051,461,1229,488"/>
 <area shape="rect" id="node7" href="$classramses_1_1Animation.html" title="The Animation combines spline with one or more AnimatedProperty instances and allows control of the a..." alt="" coords="1075,512,1205,539"/>
 <area shape="rect" id="node8" href="$classramses_1_1AnimationSequence.html" title="The AnimationSequence is a container for multiple animations. AnimationSequence has its own virtual t..." alt="" coords="1045,563,1235,589"/>
@@ -49,17 +49,17 @@
 <area shape="rect" id="node33" href="$classramses_1_1SplineStepVector4f.html" title="The SplineStepVector4f stores spline keys of type Vector4f that can be used for animation with step i..." alt="" coords="1309,1171,1494,1197"/>
 <area shape="rect" id="node34" href="$classramses_1_1SplineStepVector4i.html" title="The SplineStepVector4i stores spline keys of type Vector4i that can be used for animation with step i..." alt="" coords="1309,1221,1493,1248"/>
 <area shape="rect" id="node36" href="$classramses_1_1AnimationSystemRealTime.html" title="The AnimationSystemRealTime is a special version of AnimationSystem that is designed to use system ti..." alt="" coords="1024,664,1256,691"/>
-<area shape="rect" id="node40" href="$classramses_1_1DataFloat.html" title="The DataFloat data object stores a float value within a scene. " alt="" coords="1075,715,1205,741"/>
-<area shape="rect" id="node41" href="$classramses_1_1DataInt32.html" title="The DataInt32 data object stores an 32&#45;bit integer value within a scene. " alt="" coords="1075,765,1205,792"/>
-<area shape="rect" id="node42" href="$classramses_1_1DataMatrix22f.html" title="The DataMatrix22f data object stores a matrix with 4 float components (2 rows, 2 columns) within a sc..." alt="" coords="1063,816,1217,843"/>
-<area shape="rect" id="node43" href="$classramses_1_1DataMatrix33f.html" title="The DataMatrix33f data object stores a matrix with 9 float components (3 rows, 3 columns) within a sc..." alt="" coords="1063,867,1217,893"/>
-<area shape="rect" id="node44" href="$classramses_1_1DataMatrix44f.html" title="The DataMatrix44f data object stores a matrix with 16 float components (4 rows, 4 columns) within a s..." alt="" coords="1063,917,1217,944"/>
-<area shape="rect" id="node45" href="$classramses_1_1DataVector2f.html" title="The DataVector2f data object stores a vector with 2 float components within a scene. " alt="" coords="1065,968,1215,995"/>
-<area shape="rect" id="node46" href="$classramses_1_1DataVector2i.html" title="The DataVector2i data object stores a vector with two 32&#45;bit&#45;integer components within a scene..." alt="" coords="1065,1019,1215,1045"/>
-<area shape="rect" id="node47" href="$classramses_1_1DataVector3f.html" title="The DataVector3f data object stores a vector with 3 float components within a scene. " alt="" coords="1065,1069,1215,1096"/>
-<area shape="rect" id="node48" href="$classramses_1_1DataVector3i.html" title="The DataVector3i data object stores a vector with 3 integer components within a scene. " alt="" coords="1065,1120,1215,1147"/>
-<area shape="rect" id="node49" href="$classramses_1_1DataVector4f.html" title="The DataVector4f data object stores a vector with 4 float components within a scene. " alt="" coords="1065,1171,1215,1197"/>
-<area shape="rect" id="node50" href="$classramses_1_1DataVector4i.html" title="The DataVector4i data object stores a vector with 4 integer components within a scene. " alt="" coords="1065,1221,1215,1248"/>
+<area shape="rect" id="node41" href="$classramses_1_1DataFloat.html" title="The DataFloat data object stores a float value within a scene. " alt="" coords="1075,715,1205,741"/>
+<area shape="rect" id="node42" href="$classramses_1_1DataInt32.html" title="The DataInt32 data object stores an 32&#45;bit integer value within a scene. " alt="" coords="1075,765,1205,792"/>
+<area shape="rect" id="node43" href="$classramses_1_1DataMatrix22f.html" title="The DataMatrix22f data object stores a matrix with 4 float components (2 rows, 2 columns) within a sc..." alt="" coords="1063,816,1217,843"/>
+<area shape="rect" id="node44" href="$classramses_1_1DataMatrix33f.html" title="The DataMatrix33f data object stores a matrix with 9 float components (3 rows, 3 columns) within a sc..." alt="" coords="1063,867,1217,893"/>
+<area shape="rect" id="node45" href="$classramses_1_1DataMatrix44f.html" title="The DataMatrix44f data object stores a matrix with 16 float components (4 rows, 4 columns) within a s..." alt="" coords="1063,917,1217,944"/>
+<area shape="rect" id="node46" href="$classramses_1_1DataVector2f.html" title="The DataVector2f data object stores a vector with 2 float components within a scene. " alt="" coords="1065,968,1215,995"/>
+<area shape="rect" id="node47" href="$classramses_1_1DataVector2i.html" title="The DataVector2i data object stores a vector with two 32&#45;bit&#45;integer components within a scene..." alt="" coords="1065,1019,1215,1045"/>
+<area shape="rect" id="node48" href="$classramses_1_1DataVector3f.html" title="The DataVector3f data object stores a vector with 3 float components within a scene. " alt="" coords="1065,1069,1215,1096"/>
+<area shape="rect" id="node49" href="$classramses_1_1DataVector3i.html" title="The DataVector3i data object stores a vector with 3 integer components within a scene. " alt="" coords="1065,1120,1215,1147"/>
+<area shape="rect" id="node50" href="$classramses_1_1DataVector4f.html" title="The DataVector4f data object stores a vector with 4 float components within a scene. " alt="" coords="1065,1171,1215,1197"/>
+<area shape="rect" id="node51" href="$classramses_1_1DataVector4i.html" title="The DataVector4i data object stores a vector with 4 integer components within a scene. " alt="" coords="1065,1221,1215,1248"/>
 <area shape="rect" id="node54" href="$classramses_1_1Camera.html" title="The Camera is part of a scene and defines a view into the scene. " alt="" coords="1081,1272,1199,1299"/>
 <area shape="rect" id="node59" href="$classramses_1_1MeshNode.html" title="The MeshNode holds all information which is needed to render an object to the screen. " alt="" coords="1072,1323,1208,1349"/>
 <area shape="rect" id="node60" href="$classramses_1_1PickableObject.html" title="PickableObject provides a way to specify a &#39;pickable&#39; area. " alt="" coords="1059,1373,1221,1400"/>
@@ -67,4 +67,9 @@
 <area shape="rect" id="node58" href="$classramses_1_1RemoteCamera.html" title="The RemoteCamera is part of a scene and defines a view into the scene defined by the (possibly remote..." alt="" coords="1319,1323,1484,1349"/>
 <area shape="rect" id="node56" href="$classramses_1_1OrthographicCamera.html" title="The OrthographicCamera is a local camera which defines an orthographic view into the scene..." alt="" coords="1547,1247,1740,1273"/>
 <area shape="rect" id="node57" href="$classramses_1_1PerspectiveCamera.html" title="The PerspectiveCamera is a local camera which defines a perspective view into the scene..." alt="" coords="1549,1297,1737,1324"/>
+<area shape="rect" id="node66" href="$classramses_1_1ArrayResource.html" title="The ArrayResource stores a data array of a given type. The data is immutable. The resource can be use..." alt="" coords="1060,1424,1220,1451"/>
+<area shape="rect" id="node67" href="$classramses_1_1Effect.html" title="An effect describes how an object will be rendered to the screen. " alt="" coords="1086,1475,1194,1501"/>
+<area shape="rect" id="node68" href="$classramses_1_1Texture2D.html" title="Texture represents a texture resource. " alt="" coords="1073,1525,1207,1552"/>
+<area shape="rect" id="node69" href="$classramses_1_1Texture3D.html" title="Texture represents a texture resource. " alt="" coords="1073,1576,1207,1603"/>
+<area shape="rect" id="node70" href="$classramses_1_1TextureCube.html" title="TextureCube stores pixel data with 6 equally sized quadratic faces. " alt="" coords="1066,1627,1214,1653"/>
 </map>

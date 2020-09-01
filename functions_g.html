@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -124,6 +124,9 @@ $(function() {
 : <a class="el" href="classramses_1_1BinaryShaderCache.html#a7c840c84b86cafa0e9f764ffd10c0c88">ramses::BinaryShaderCache</a>
 , <a class="el" href="classramses_1_1IBinaryShaderCache.html#ab535b86dd2c1c98928b4260e285b33a3">ramses::IBinaryShaderCache</a>
 </li>
+<li>getBlendingColor()
+: <a class="el" href="classramses_1_1Appearance.html#aea815321bbec95f599eb6485489d6f38">ramses::Appearance</a>
+</li>
 <li>getBlendingFactors()
 : <a class="el" href="classramses_1_1Appearance.html#a6f6efaf9023d8807a90dd6d8184ebc96">ramses::Appearance</a>
 </li>
@@ -183,17 +186,16 @@ $(function() {
 : <a class="el" href="classramses_1_1Appearance.html#a0f9afc6c3433154ae7ef7286723a1b0f">ramses::Appearance</a>
 </li>
 <li>getData()
-: <a class="el" href="classramses_1_1IndexDataBuffer.html#a31d3621ba19472404a438606d3f2f8ed">ramses::IndexDataBuffer</a>
-, <a class="el" href="classramses_1_1VertexDataBuffer.html#a72e95090ed62c1718e994b5325dc34c7">ramses::VertexDataBuffer</a>
+: <a class="el" href="classramses_1_1ArrayBuffer.html#a8d3f6a5cba8b87d1b3e45cc4fd078b0c">ramses::ArrayBuffer</a>
 </li>
 <li>getDataObjectBoundToInput()
 : <a class="el" href="classramses_1_1Appearance.html#a05594003bb2e3a4e04b933fd76482ea7">ramses::Appearance</a>
 </li>
 <li>getDataType()
-: <a class="el" href="classramses_1_1AttributeInput.html#a0384e517f861fac179991aff62872263">ramses::AttributeInput</a>
-, <a class="el" href="classramses_1_1IndexDataBuffer.html#ae30d8bce1f069aa4ec10b6a9db279f35">ramses::IndexDataBuffer</a>
+: <a class="el" href="classramses_1_1ArrayBuffer.html#a6ddeced5556f85efd64048491bf313d1">ramses::ArrayBuffer</a>
+, <a class="el" href="classramses_1_1ArrayResource.html#aa45c9c9518c45b643c39cc6bd9d640bc">ramses::ArrayResource</a>
+, <a class="el" href="classramses_1_1AttributeInput.html#a0384e517f861fac179991aff62872263">ramses::AttributeInput</a>
 , <a class="el" href="classramses_1_1UniformInput.html#a87ba772924eb381413c11e739e689726">ramses::UniformInput</a>
-, <a class="el" href="classramses_1_1VertexDataBuffer.html#a508fbd3e6a9006b9b019c238705964be">ramses::VertexDataBuffer</a>
 </li>
 <li>getDepth()
 : <a class="el" href="classramses_1_1Texture3D.html#ac2bd96e448828b920f4bc2d8b900db48">ramses::Texture3D</a>
@@ -206,9 +208,6 @@ $(function() {
 </li>
 <li>getDescender()
 : <a class="el" href="classramses_1_1IFontInstance.html#a8984eb1dc527c66106a0d2bd0a074ed6">ramses::IFontInstance</a>
-</li>
-<li>getDescription()
-: <a class="el" href="classramses_1_1ResourceFileDescriptionSet.html#ad23517ae8d2efb092cf0c66dfe263fed">ramses::ResourceFileDescriptionSet</a>
 </li>
 <li>getDestinationRenderBuffer()
 : <a class="el" href="classramses_1_1BlitPass.html#a7df469b4ae5bd267db2492d75d7042b4">ramses::BlitPass</a>
@@ -238,9 +237,6 @@ $(function() {
 <li>getFarPlane()
 : <a class="el" href="classramses_1_1LocalCamera.html#add7fc6420297356c9f46827cd063f4cd">ramses::LocalCamera</a>
 </li>
-<li>getFilename()
-: <a class="el" href="classramses_1_1ResourceFileDescription.html#aa9ba3f119f1d612bb295c0396309df3b">ramses::ResourceFileDescription</a>
-</li>
 <li>getFinishedAnimationSincePreviousUpdate()
 : <a class="el" href="classramses_1_1AnimationSystem.html#a24b4a8cd8be1353240e84707925e5716">ramses::AnimationSystem</a>
 </li>
@@ -258,7 +254,10 @@ $(function() {
 : <a class="el" href="classramses_1_1MeshNode.html#ae0620ad6da85669ba8e812c11d7b30f4">ramses::MeshNode</a>
 </li>
 <li>getGeometryBuffer()
-: <a class="el" href="classramses_1_1PickableObject.html#a01ad3ff3f7e3592d35207a7b1c96e25c">ramses::PickableObject</a>
+: <a class="el" href="classramses_1_1PickableObject.html#ad2177f1df294e56705b87b62df5bf23d">ramses::PickableObject</a>
+</li>
+<li>getGeometryShader()
+: <a class="el" href="classramses_1_1EffectDescription.html#a21d9137bf44bba15ab27df0f13af21cc">ramses::EffectDescription</a>
 </li>
 <li>getHeight()
 : <a class="el" href="classramses_1_1IFontInstance.html#a9968e91bdd069c7b97c3ac662d1c1c5f">ramses::IFontInstance</a>
@@ -343,7 +342,8 @@ $(function() {
 , <a class="el" href="classramses_1_1SplineStepVector4i.html#ae1acb714614cb4847057f034e6d669ff">ramses::SplineStepVector4i</a>
 </li>
 <li>getLastEffectErrorMessages()
-: <a class="el" href="classramses_1_1RamsesClient.html#a7953da6144cba2ecfcc380df90112ba4">ramses::RamsesClient</a>
+: <a class="el" href="classramses_1_1ResourceDataPool.html#a37ece31cb38b75149375fbf15d3dbf7a">ramses::ResourceDataPool</a>
+, <a class="el" href="classramses_1_1Scene.html#abe76540e779cf3a012e0570e0d9767be">ramses::Scene</a>
 </li>
 <li>getLeftPlane()
 : <a class="el" href="classramses_1_1LocalCamera.html#a97774ad4a232963c0728c1b146059f34">ramses::LocalCamera</a>
@@ -357,9 +357,8 @@ $(function() {
 <li>getMaximumFramerate()
 : <a class="el" href="classramses_1_1RamsesRenderer.html#ac8d5685d38fb82c58e13f9274ce087d5">ramses::RamsesRenderer</a>
 </li>
-<li>getMaximumSizeInBytes()
-: <a class="el" href="classramses_1_1IndexDataBuffer.html#a6cd0c3887e42bed4f47c5e73fb7e00fb">ramses::IndexDataBuffer</a>
-, <a class="el" href="classramses_1_1VertexDataBuffer.html#aa254b9e3d680a0a01812c29a5a89bc40">ramses::VertexDataBuffer</a>
+<li>getMaximumNumberOfElements()
+: <a class="el" href="classramses_1_1ArrayBuffer.html#afd6cdc23bd06fcbff20e113cadb72a51">ramses::ArrayBuffer</a>
 </li>
 <li>getMeshNodeOrder()
 : <a class="el" href="classramses_1_1RenderGroup.html#a5e5d8327e54ae3dd61146dd3801ba640">ramses::RenderGroup</a>
@@ -371,7 +370,7 @@ $(function() {
 : <a class="el" href="classramses_1_1Texture2DBuffer.html#a9d0e5cdb4ce3b68b4ece84750856ae34">ramses::Texture2DBuffer</a>
 </li>
 <li>getMipLevelData()
-: <a class="el" href="classramses_1_1Texture2DBuffer.html#aa5d435771f462c5901ed9a9117bdae23">ramses::Texture2DBuffer</a>
+: <a class="el" href="classramses_1_1Texture2DBuffer.html#abb45c219d51a77b4d2a28f9ceb09cb9c">ramses::Texture2DBuffer</a>
 </li>
 <li>getMipLevelDataSizeInBytes()
 : <a class="el" href="classramses_1_1Texture2DBuffer.html#a1ae21a890fd46c397a8cce176dcc8828">ramses::Texture2DBuffer</a>
@@ -396,7 +395,6 @@ $(function() {
 : <a class="el" href="classramses_1_1AnimationSystemObjectIterator.html#a489e7bba677af00e9b175d68f74e2f38">ramses::AnimationSystemObjectIterator</a>
 , <a class="el" href="classramses_1_1RenderGroupMeshIterator.html#aca95492c13479d24d4ce7b1519425f19">ramses::RenderGroupMeshIterator</a>
 , <a class="el" href="classramses_1_1RenderPassGroupIterator.html#ab2b97dd05d47a8ce8ece52e2cf115412">ramses::RenderPassGroupIterator</a>
-, <a class="el" href="classramses_1_1ResourceIterator.html#a2a80ba8381e7c648d7ba15a0a92aee05">ramses::ResourceIterator</a>
 , <a class="el" href="classramses_1_1SceneGraphIterator.html#a89a50a64718019bcba936d1ea170d7a3">ramses::SceneGraphIterator</a>
 , <a class="el" href="classramses_1_1SceneIterator.html#a5fdb9ecaafa89a20aa016ac557ba0c99">ramses::SceneIterator</a>
 , <a class="el" href="classramses_1_1SceneObjectIterator.html#aeb24af0948f0848df6ad2a7b4f86e4cf">ramses::SceneObjectIterator</a>
@@ -410,8 +408,8 @@ $(function() {
 <li>getNumberOfCompilerDefines()
 : <a class="el" href="classramses_1_1EffectDescription.html#a6675a6f577fc5f3d3c2038d7a5975adb">ramses::EffectDescription</a>
 </li>
-<li>getNumberOfDescriptions()
-: <a class="el" href="classramses_1_1ResourceFileDescriptionSet.html#ad04e962a4ddb8998c18aa1810f868978">ramses::ResourceFileDescriptionSet</a>
+<li>getNumberOfElements()
+: <a class="el" href="classramses_1_1ArrayResource.html#af29bec5c51d6c5b5aec10f3c6d8757e7">ramses::ArrayResource</a>
 </li>
 <li>getNumberOfFinishedAnimationsSincePreviousUpdate()
 : <a class="el" href="classramses_1_1AnimationSystem.html#aa3bb894ef316a2cc7ceb969960ea09c6">ramses::AnimationSystem</a>
@@ -419,11 +417,8 @@ $(function() {
 <li>getNumberOfKeys()
 : <a class="el" href="classramses_1_1Spline.html#a0e5daaa2be511defcc209168003caec0">ramses::Spline</a>
 </li>
-<li>getNumberOfResources()
-: <a class="el" href="classramses_1_1ResourceFileDescription.html#a1baf3ae75d42459c41ffc2066bcf7639">ramses::ResourceFileDescription</a>
-</li>
 <li>getParent()
-: <a class="el" href="classramses_1_1Node.html#a712d9639a2474f6cdad4cb3972e504a2">ramses::Node</a>
+: <a class="el" href="classramses_1_1Node.html#a5c8aa21330a1c1f08d8686253c39435d">ramses::Node</a>
 </li>
 <li>getPickableObjectId()
 : <a class="el" href="classramses_1_1PickableObject.html#ad0487d57b9668db593797f0b22bf626a">ramses::PickableObject</a>
@@ -432,7 +427,7 @@ $(function() {
 : <a class="el" href="classramses_1_1AnimationSequence.html#a0b3f9240d1506e31f2b48306631ee5f3">ramses::AnimationSequence</a>
 </li>
 <li>getPositionedGlyphs()
-: <a class="el" href="classramses_1_1TextCache.html#a7c9a4c4bf1c27a53183dbf7d4f1ff586">ramses::TextCache</a>
+: <a class="el" href="classramses_1_1TextCache.html#a88bc354d00c7421056dee81e7a9709c0">ramses::TextCache</a>
 </li>
 <li>getPreviewDescription()
 : <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a3a085019a8326483d5e4609d55909339">ramses::DcsmMetadataUpdate</a>
@@ -473,11 +468,14 @@ $(function() {
 : <a class="el" href="classramses_1_1SceneReference.html#a45ae12a4e341bca734ff2c579917e13c">ramses::SceneReference</a>
 </li>
 <li>getResource()
-: <a class="el" href="classramses_1_1ResourceFileDescription.html#aa7e7293e628f2df3ff10defcb26d7c8d">ramses::ResourceFileDescription</a>
+: <a class="el" href="classramses_1_1Scene.html#a15a9c03f5c77556bf5cab46ab992b619">ramses::Scene</a>
 </li>
 <li>getResourceData()
 : <a class="el" href="classramses_1_1DefaultRendererResourceCache.html#aaba77f161e07924579081130226bc6ae">ramses::DefaultRendererResourceCache</a>
 , <a class="el" href="classramses_1_1IRendererResourceCache.html#a41b38c0c5c2655048a0089e872049941">ramses::IRendererResourceCache</a>
+</li>
+<li>GetResourceDataPoolForClient()
+: <a class="el" href="classramses_1_1RamsesHMIUtils.html#a71cf608709860562beda6f80f58ded61">ramses::RamsesHMIUtils</a>
 </li>
 <li>getResourceId()
 : <a class="el" href="classramses_1_1Resource.html#ab335b9b0b3ef4ba5ca198f0b12f2425a">ramses::Resource</a>
@@ -497,14 +495,17 @@ $(function() {
 <li>getScaling()
 : <a class="el" href="classramses_1_1Node.html#aede06973b48683a244e6bf1c67b857a0">ramses::Node</a>
 </li>
+<li>getScene()
+: <a class="el" href="classramses_1_1RamsesClient.html#ab622880cf0503003665d5daa3ed64210">ramses::RamsesClient</a>
+</li>
 <li>getSceneControlAPI()
 : <a class="el" href="classramses_1_1RamsesRenderer.html#aca664b15215a8cb1f410db4da3c65296">ramses::RamsesRenderer</a>
 </li>
-<li>getSceneControlAPI_legacy()
-: <a class="el" href="classramses_1_1RamsesRenderer.html#abd3d3a5cfd2d3662d50554c416fcabad">ramses::RamsesRenderer</a>
-</li>
 <li>getSceneId()
 : <a class="el" href="classramses_1_1Scene.html#aa024fc3485a7b56d29f794fd90cec06f">ramses::Scene</a>
+</li>
+<li>getSceneObjectId()
+: <a class="el" href="classramses_1_1SceneObject.html#af3216b7efec6d1d9e8e7c8fe572a3325">ramses::SceneObject</a>
 </li>
 <li>getScissorRegion()
 : <a class="el" href="classramses_1_1Appearance.html#afa0e7a80f61f478b4c54cfd58b1aa4da">ramses::Appearance</a>
@@ -547,7 +548,7 @@ $(function() {
 : <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#aa3bcd48aabb9e8813ad909cb7f88ccbd">ramses::DcsmMetadataUpdate</a>
 </li>
 <li>getStreamSourceId()
-: <a class="el" href="classramses_1_1StreamTexture.html#aa6b12a89754b4e250840afcd2b2c2789">ramses::StreamTexture</a>
+: <a class="el" href="classramses_1_1StreamTexture.html#a49ca7e97ea1c0eeef3fcfb3613de02e6">ramses::StreamTexture</a>
 </li>
 <li>getSystemCompositorWaylandDisplay()
 : <a class="el" href="classramses_1_1RendererConfig.html#a0adaad0223efd371bc567298a93eb5d6">ramses::RendererConfig</a>
@@ -556,7 +557,7 @@ $(function() {
 : <a class="el" href="classramses_1_1Texture2DBuffer.html#a79084cd07c59287c7da580163b22a82e">ramses::Texture2DBuffer</a>
 </li>
 <li>getTextLine()
-: <a class="el" href="classramses_1_1TextCache.html#a4fa4d50a62b936f9afcf8e261f34a42f">ramses::TextCache</a>
+: <a class="el" href="classramses_1_1TextCache.html#afe5ca8d4907a84308372c4dfa6a3bf17">ramses::TextCache</a>
 </li>
 <li>getTextureFormat()
 : <a class="el" href="classramses_1_1Texture2D.html#a418930a8538bcc5df05e9ceb2f3114f4">ramses::Texture2D</a>
@@ -588,9 +589,8 @@ $(function() {
 <li>getUniformInputCount()
 : <a class="el" href="classramses_1_1Effect.html#ad236c9452f750db71620703b5dfe5653">ramses::Effect</a>
 </li>
-<li>getUsedSizeInBytes()
-: <a class="el" href="classramses_1_1IndexDataBuffer.html#a4d8ca8e42985d066113e9cf252c8250f">ramses::IndexDataBuffer</a>
-, <a class="el" href="classramses_1_1VertexDataBuffer.html#ae8f808222f5563e1a7e6403848050e59">ramses::VertexDataBuffer</a>
+<li>getUsedNumberOfElements()
+: <a class="el" href="classramses_1_1ArrayBuffer.html#ad51eac138da5a54e5306525a4edfcb29">ramses::ArrayBuffer</a>
 </li>
 <li>getValidationReport()
 : <a class="el" href="classramses_1_1StatusObject.html#a9c270ef1525b1836e40a57713cbab999">ramses::StatusObject</a>
@@ -643,10 +643,10 @@ $(function() {
 : <a class="el" href="classramses_1_1RendererConfig.html#a29abe034f1853338b3535fcc8e9e197e">ramses::RendererConfig</a>
 </li>
 <li>getWaylandIviLayerID()
-: <a class="el" href="classramses_1_1DisplayConfig.html#adbec68b97dab8b69f399fc331bc163a8">ramses::DisplayConfig</a>
+: <a class="el" href="classramses_1_1DisplayConfig.html#af4c9394c2aed8ed0c6cce0dde98d1423">ramses::DisplayConfig</a>
 </li>
 <li>getWaylandIviSurfaceID()
-: <a class="el" href="classramses_1_1DisplayConfig.html#a6aa09a5266692b58505b3da520648b75">ramses::DisplayConfig</a>
+: <a class="el" href="classramses_1_1DisplayConfig.html#ab983b1ec39d1c133c890399c24b5aa68">ramses::DisplayConfig</a>
 </li>
 <li>getWidgetBackgroundID()
 : <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#aefd62c518f41393a804390db52255097">ramses::DcsmMetadataUpdate</a>
@@ -679,7 +679,7 @@ $(function() {
 : <a class="el" href="classramses_1_1TextureSampler.html#afd15518c6cccd5fa056c1e4ae184d5eb">ramses::TextureSampler</a>
 </li>
 <li>GlyphKey()
-: <a class="el" href="structramses_1_1GlyphKey.html#abf598307c0959d0c9597dacb42ab64cd">ramses::GlyphKey</a>
+: <a class="el" href="structramses_1_1GlyphKey.html#a1aa0af1b0a31fcd93f0ab013892022d6">ramses::GlyphKey</a>
 </li>
 <li>glyphs
 : <a class="el" href="structramses_1_1TextLine.html#a0aea101ab0af788272fe93e9a8f9309e">ramses::TextLine</a>

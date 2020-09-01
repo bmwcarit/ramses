@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -80,12 +80,6 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aebf2377d1a9a9356a5a84be01b020dcc"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1IClientEventHandler.html#aebf2377d1a9a9356a5a84be01b020dcc">resourceFileLoadFailed</a> (const char *filename)=0</td></tr>
-<tr class="memdesc:aebf2377d1a9a9356a5a84be01b020dcc"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called when asynchronous loading of a resource file failed.  <a href="#aebf2377d1a9a9356a5a84be01b020dcc">More...</a><br /></td></tr>
-<tr class="separator:aebf2377d1a9a9356a5a84be01b020dcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeed2f53f90a379c96d0acdac7c817c69"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1IClientEventHandler.html#aeed2f53f90a379c96d0acdac7c817c69">resourceFileLoadSucceeded</a> (const char *filename)=0</td></tr>
-<tr class="memdesc:aeed2f53f90a379c96d0acdac7c817c69"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called when asynchronous loading of a resource file successfully finished.  <a href="#aeed2f53f90a379c96d0acdac7c817c69">More...</a><br /></td></tr>
-<tr class="separator:aeed2f53f90a379c96d0acdac7c817c69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e53a302b2149d9dfa550d90eeea5910"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1IClientEventHandler.html#a4e53a302b2149d9dfa550d90eeea5910">sceneFileLoadFailed</a> (const char *filename)=0</td></tr>
 <tr class="memdesc:a4e53a302b2149d9dfa550d90eeea5910"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called when asynchronous loading of a scene or one of its associated resource files failed. There will also be events generated for the resource files provided to loadSceneFromFileAsync().  <a href="#a4e53a302b2149d9dfa550d90eeea5910">More...</a><br /></td></tr>
 <tr class="separator:a4e53a302b2149d9dfa550d90eeea5910"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -204,7 +198,7 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a9">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a7">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -258,77 +252,7 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a11">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
-</dl>
-</div>
-</div>
-<a id="aebf2377d1a9a9356a5a84be01b020dcc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aebf2377d1a9a9356a5a84be01b020dcc">&#9670;&nbsp;</a></span>resourceFileLoadFailed()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">virtual void ramses::IClientEventHandler::resourceFileLoadFailed </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>filename</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>This method will be called when asynchronous loading of a resource file failed. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">filename</td><td>The filename of the resource file that failed to load </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a2">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
-</dl>
-</div>
-</div>
-<a id="aeed2f53f90a379c96d0acdac7c817c69"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeed2f53f90a379c96d0acdac7c817c69">&#9670;&nbsp;</a></span>resourceFileLoadSucceeded()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">virtual void ramses::IClientEventHandler::resourceFileLoadSucceeded </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>filename</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>This method will be called when asynchronous loading of a resource file successfully finished. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">filename</td><td>The filename of the resource file that finished loading. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a3">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a9">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -363,7 +287,7 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a4">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a2">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -409,7 +333,7 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a5">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a3">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -455,7 +379,7 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a7">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a5">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -502,7 +426,7 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a12">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a10">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>

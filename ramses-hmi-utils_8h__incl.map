@@ -1,15 +1,17 @@
 <map id="/home/q479079/sources/ramses&#45;oss/client/ramses&#45;client/ramses&#45;client&#45;api/include/ramses&#45;hmi&#45;utils.h" name="/home/q479079/sources/ramses&#45;oss/client/ramses&#45;client/ramses&#45;client&#45;api/include/ramses&#45;hmi&#45;utils.h">
-<area shape="rect" id="node2" href="$APIExport_8h.html" title="ramses&#45;framework&#45;api\l/APIExport.h" alt="" coords="429,645,579,687"/>
-<area shape="rect" id="node3" href="$Scene_8h.html" title="ramses&#45;client&#45;api/Scene.h" alt="" coords="460,124,633,151"/>
-<area shape="rect" id="node4" href="$ClientObject_8h.html" title="ramses&#45;client&#45;api/Client\lObject.h" alt="" coords="673,199,831,240"/>
-<area shape="rect" id="node7" href="$RamsesFrameworkTypes_8h.html" title="ramses&#45;framework&#45;api\l/RamsesFrameworkTypes.h" alt="" coords="709,467,896,508"/>
-<area shape="rect" id="node15" href="$TextureEnums_8h.html" title="ramses&#45;client&#45;api/Texture\lEnums.h" alt="" coords="907,377,1077,419"/>
-<area shape="rect" id="node16" href="$AnimationSystemEnums_8h.html" title="ramses&#45;client&#45;api/Animation\lSystemEnums.h" alt="" coords="43,199,226,240"/>
-<area shape="rect" id="node17" href="$EScenePublicationMode_8h.html" title="ramses&#45;client&#45;api/EScene\lPublicationMode.h" alt="" coords="251,199,421,240"/>
-<area shape="rect" id="node18" href="$EDataType_8h.html" title="ramses&#45;client&#45;api/EDataType.h" alt="" coords="445,206,648,233"/>
-<area shape="rect" id="node5" href="$RamsesObject_8h.html" title="ramses&#45;client&#45;api/Ramses\lObject.h" alt="" coords="657,288,831,329"/>
-<area shape="rect" id="node6" href="$StatusObject_8h.html" title="ramses&#45;framework&#45;api\l/StatusObject.h" alt="" coords="482,377,633,419"/>
-<area shape="rect" id="node14" href="$RamsesObjectTypes_8h.html" title="ramses&#45;client&#45;api/Ramses\lObjectTypes.h" alt="" coords="657,377,831,419"/>
-<area shape="rect" id="node13" href="$EValidationSeverity_8h.html" title="EValidationSeverity.h" alt="" coords="539,474,685,501"/>
-<area shape="rect" id="node8" href="$StronglyTypedValue_8h.html" title="ramses&#45;framework&#45;api\l/StronglyTypedValue.h" alt="" coords="571,556,725,597"/>
+<area shape="rect" id="node2" href="$APIExport_8h.html" title="ramses&#45;framework&#45;api\l/APIExport.h" alt="" coords="782,645,933,687"/>
+<area shape="rect" id="node3" href="$Scene_8h.html" title="ramses&#45;client&#45;api/Scene.h" alt="" coords="792,124,965,151"/>
+<area shape="rect" id="node4" href="$ClientObject_8h.html" title="ramses&#45;client&#45;api/Client\lObject.h" alt="" coords="917,199,1075,240"/>
+<area shape="rect" id="node7" href="$RamsesFrameworkTypes_8h.html" title="ramses&#45;framework&#45;api\l/RamsesFrameworkTypes.h" alt="" coords="895,467,1081,508"/>
+<area shape="rect" id="node15" href="$TextureEnums_8h.html" title="ramses&#45;client&#45;api/Texture\lEnums.h" alt="" coords="630,288,799,329"/>
+<area shape="rect" id="node16" href="$AnimationSystemEnums_8h.html" title="ramses&#45;client&#45;api/Animation\lSystemEnums.h" alt="" coords="237,199,419,240"/>
+<area shape="rect" id="node17" href="$EScenePublicationMode_8h.html" title="ramses&#45;client&#45;api/EScene\lPublicationMode.h" alt="" coords="444,199,615,240"/>
+<area shape="rect" id="node18" href="$EDataType_8h.html" title="ramses&#45;client&#45;api/EDataType.h" alt="" coords="639,206,841,233"/>
+<area shape="rect" id="node19" href="$MipLevelData_8h.html" title="ramses&#45;client&#45;api/MipLevel\lData.h" alt="" coords="1151,377,1329,419"/>
+<area shape="rect" id="node20" href="$TextureSwizzle_8h.html" title="ramses&#45;client&#45;api/Texture\lSwizzle.h" alt="" coords="43,199,213,240"/>
+<area shape="rect" id="node5" href="$RamsesObject_8h.html" title="ramses&#45;client&#45;api/Ramses\lObject.h" alt="" coords="901,288,1075,329"/>
+<area shape="rect" id="node6" href="$StatusObject_8h.html" title="ramses&#45;framework&#45;api\l/StatusObject.h" alt="" coords="674,377,825,419"/>
+<area shape="rect" id="node14" href="$RamsesObjectTypes_8h.html" title="ramses&#45;client&#45;api/Ramses\lObjectTypes.h" alt="" coords="901,377,1075,419"/>
+<area shape="rect" id="node13" href="$EValidationSeverity_8h.html" title="EValidationSeverity.h" alt="" coords="673,474,820,501"/>
+<area shape="rect" id="node8" href="$StronglyTypedValue_8h.html" title="ramses&#45;framework&#45;api\l/StronglyTypedValue.h" alt="" coords="1156,556,1311,597"/>
 </map>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -117,6 +117,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a442d9cbc14797aeb4c395eab94a3b2c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Appearance.html#a442d9cbc14797aeb4c395eab94a3b2c5">getBlendingOperations</a> (<a class="el" href="namespaceramses.html#ae003c64dd1ee017a9c7afda5070c5277">EBlendOperation</a> &amp;operationColor, <a class="el" href="namespaceramses.html#ae003c64dd1ee017a9c7afda5070c5277">EBlendOperation</a> &amp;operationAlpha) const</td></tr>
 <tr class="memdesc:a442d9cbc14797aeb4c395eab94a3b2c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets blending operation for color and alpha.  <a href="#a442d9cbc14797aeb4c395eab94a3b2c5">More...</a><br /></td></tr>
 <tr class="separator:a442d9cbc14797aeb4c395eab94a3b2c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27aa169943ba44d9503e2e3f4b848060"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Appearance.html#a27aa169943ba44d9503e2e3f4b848060">setBlendingColor</a> (float red, float green, float blue, float alpha)</td></tr>
+<tr class="memdesc:a27aa169943ba44d9503e2e3f4b848060"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets blending color that can be used as blending color constant for some blending factors. The default value is (0,0,0,0)  <a href="#a27aa169943ba44d9503e2e3f4b848060">More...</a><br /></td></tr>
+<tr class="separator:a27aa169943ba44d9503e2e3f4b848060"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea815321bbec95f599eb6485489d6f38"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Appearance.html#aea815321bbec95f599eb6485489d6f38">getBlendingColor</a> (float &amp;red, float &amp;green, float &amp;blue, float &amp;alpha) const</td></tr>
+<tr class="memdesc:aea815321bbec95f599eb6485489d6f38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets blending color set via setBlendingColor.  <a href="#aea815321bbec95f599eb6485489d6f38">More...</a><br /></td></tr>
+<tr class="separator:aea815321bbec95f599eb6485489d6f38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e1d6f512472b8fe7be2a05378878fdc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Appearance.html#a9e1d6f512472b8fe7be2a05378878fdc">setDepthWrite</a> (<a class="el" href="namespaceramses.html#adee75749fbc33c9d7371f4e6b3b1b62a">EDepthWrite</a> mode)</td></tr>
 <tr class="memdesc:a9e1d6f512472b8fe7be2a05378878fdc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables or disables writing to depth buffer.  <a href="#a9e1d6f512472b8fe7be2a05378878fdc">More...</a><br /></td></tr>
 <tr class="separator:a9e1d6f512472b8fe7be2a05378878fdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -321,6 +327,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:abd0746b4e37624be18782f7c15cff65e"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classramses_1_1Effect.html">Effect</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Appearance.html#abd0746b4e37624be18782f7c15cff65e">getEffect</a> () const</td></tr>
 <tr class="memdesc:abd0746b4e37624be18782f7c15cff65e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the effect used to create this appearance.  <a href="#abd0746b4e37624be18782f7c15cff65e">More...</a><br /></td></tr>
 <tr class="separator:abd0746b4e37624be18782f7c15cff65e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classramses_1_1SceneObject"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classramses_1_1SceneObject')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classramses_1_1SceneObject.html">ramses::SceneObject</a></td></tr>
+<tr class="memitem:af3216b7efec6d1d9e8e7c8fe572a3325 inherit pub_methods_classramses_1_1SceneObject"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a066567ce6a75f6cbfa79461912c5e263">sceneObjectId_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1SceneObject.html#af3216b7efec6d1d9e8e7c8fe572a3325">getSceneObjectId</a> () const</td></tr>
+<tr class="memdesc:af3216b7efec6d1d9e8e7c8fe572a3325 inherit pub_methods_classramses_1_1SceneObject"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns scene object id which is automatically assigned at creation time of object and is unique within scope of one scene.  <a href="classramses_1_1SceneObject.html#af3216b7efec6d1d9e8e7c8fe572a3325">More...</a><br /></td></tr>
+<tr class="separator:af3216b7efec6d1d9e8e7c8fe572a3325 inherit pub_methods_classramses_1_1SceneObject"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classramses_1_1RamsesObject"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classramses_1_1RamsesObject')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classramses_1_1RamsesObject.html">ramses::RamsesObject</a></td></tr>
 <tr class="memitem:a6173de039718e5359015b2e3adbd7906 inherit pub_methods_classramses_1_1RamsesObject"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesObject.html#a6173de039718e5359015b2e3adbd7906">getName</a> () const</td></tr>
 <tr class="memdesc:a6173de039718e5359015b2e3adbd7906 inherit pub_methods_classramses_1_1RamsesObject"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the name of the object.  <a href="classramses_1_1RamsesObject.html#a6173de039718e5359015b2e3adbd7906">More...</a><br /></td></tr>
@@ -420,7 +430,7 @@ Friends</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The <a class="el" href="classramses_1_1Appearance.html" title="The Appearance describes how an object should look like. ">Appearance</a> describes how an object should look like. </p>
 <p>It provides mechanisms for creating effects </p>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-animation-realtime_2src_2main_8cpp-example.html#_a28">ramses-example-basic-animation-realtime/src/main.cpp</a>, <a class="el" href="ramses-example-basic-animation_2src_2main_8cpp-example.html#_a28">ramses-example-basic-animation/src/main.cpp</a>, <a class="el" href="ramses-example-basic-blending_2src_2main_8cpp-example.html#_a28">ramses-example-basic-blending/src/main.cpp</a>, <a class="el" href="ramses-example-basic-compositing_2src_2main_8cpp-example.html#_a34">ramses-example-basic-compositing/src/main.cpp</a>, <a class="el" href="ramses-example-basic-effect-from-glsl_2src_2main_8cpp-example.html#_a28">ramses-example-basic-effect-from-glsl/src/main.cpp</a>, <a class="el" href="ramses-example-basic-file-loading_2src_2main_8cpp-example.html#_a18">ramses-example-basic-file-loading/src/main.cpp</a>, <a class="el" href="ramses-example-basic-geometry_2src_2main_8cpp-example.html#_a27">ramses-example-basic-geometry/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendergroups_2src_2main_8cpp-example.html#_a31">ramses-example-basic-rendergroups/src/main.cpp</a>, <a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#_a36">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#_a47">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-basic-scenegraph_2src_2main_8cpp-example.html#_a28">ramses-example-basic-scenegraph/src/main.cpp</a>, <a class="el" href="ramses-example-basic-texturing_2src_2main_8cpp-example.html#_a35">ramses-example-basic-texturing/src/main.cpp</a>, <a class="el" href="ramses-example-data-buffers-texture_2src_2main_8cpp-example.html#_a37">ramses-example-data-buffers-texture/src/main.cpp</a>, <a class="el" href="ramses-example-data-buffers-vertices_2src_2main_8cpp-example.html#_a26">ramses-example-data-buffers-vertices/src/main.cpp</a>, <a class="el" href="ramses-example-dcsm-provider_2src_2main_8cpp-example.html#_a27">ramses-example-dcsm-provider/src/main.cpp</a>, <a class="el" href="ramses-example-geometry-instancing_2src_2main_8cpp-example.html#_a28">ramses-example-geometry-instancing/src/main.cpp</a>, <a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#_a36">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#_a29">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-displays_2src_2main_8cpp-example.html#_a30">ramses-example-local-displays/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#_a45">ramses-example-local-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#_a9">ramses-example-local-pick-handling/src/main.cpp</a>, <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#_a45">ramses-example-local-scene-referencing/src/main.cpp</a>, <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#_a38">ramses-example-local-viewport-link/src/main.cpp</a>, and <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#_a50">ramses-example-renderonce/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-animation-realtime_2src_2main_8cpp-example.html#_a31">ramses-example-basic-animation-realtime/src/main.cpp</a>, <a class="el" href="ramses-example-basic-animation_2src_2main_8cpp-example.html#_a31">ramses-example-basic-animation/src/main.cpp</a>, <a class="el" href="ramses-example-basic-blending_2src_2main_8cpp-example.html#_a31">ramses-example-basic-blending/src/main.cpp</a>, <a class="el" href="ramses-example-basic-compositing_2src_2main_8cpp-example.html#_a31">ramses-example-basic-compositing/src/main.cpp</a>, <a class="el" href="ramses-example-basic-effect-from-glsl_2src_2main_8cpp-example.html#_a31">ramses-example-basic-effect-from-glsl/src/main.cpp</a>, <a class="el" href="ramses-example-basic-file-loading_2src_2main_8cpp-example.html#_a15">ramses-example-basic-file-loading/src/main.cpp</a>, <a class="el" href="ramses-example-basic-geometry_2src_2main_8cpp-example.html#_a30">ramses-example-basic-geometry/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendergroups_2src_2main_8cpp-example.html#_a34">ramses-example-basic-rendergroups/src/main.cpp</a>, <a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#_a39">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#_a50">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-basic-scenegraph_2src_2main_8cpp-example.html#_a31">ramses-example-basic-scenegraph/src/main.cpp</a>, <a class="el" href="ramses-example-basic-texturing_2src_2main_8cpp-example.html#_a38">ramses-example-basic-texturing/src/main.cpp</a>, <a class="el" href="ramses-example-data-buffers-texture_2src_2main_8cpp-example.html#_a40">ramses-example-data-buffers-texture/src/main.cpp</a>, <a class="el" href="ramses-example-data-buffers-vertices_2src_2main_8cpp-example.html#_a27">ramses-example-data-buffers-vertices/src/main.cpp</a>, <a class="el" href="ramses-example-dcsm-provider_2src_2main_8cpp-example.html#_a28">ramses-example-dcsm-provider/src/main.cpp</a>, <a class="el" href="ramses-example-geometry-instancing_2src_2main_8cpp-example.html#_a31">ramses-example-geometry-instancing/src/main.cpp</a>, <a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#_a39">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#_a37">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-displays_2src_2main_8cpp-example.html#_a30">ramses-example-local-displays/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#_a40">ramses-example-local-geometry-shaders/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#_a48">ramses-example-local-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#_a11">ramses-example-local-pick-handling/src/main.cpp</a>, <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#_a43">ramses-example-local-scene-referencing/src/main.cpp</a>, <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#_a43">ramses-example-local-viewport-link/src/main.cpp</a>, and <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#_a53">ramses-example-renderonce/src/main.cpp</a>.</dd>
 </dl></div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="acb4cbc91349822128485c8cd2a471f1b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acb4cbc91349822128485c8cd2a471f1b">&#9670;&nbsp;</a></span>Appearance() <span class="overload">[1/2]</span></h2>
@@ -553,8 +563,60 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>status == 0 for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a42">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a63">ramses-example-local-scene-referencing/src/main.cpp</a>, and <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a75">ramses-example-local-viewport-link/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a50">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a61">ramses-example-local-scene-referencing/src/main.cpp</a>, and <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a80">ramses-example-local-viewport-link/src/main.cpp</a>.</dd>
 </dl>
+</div>
+</div>
+<a id="aea815321bbec95f599eb6485489d6f38"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea815321bbec95f599eb6485489d6f38">&#9670;&nbsp;</a></span>getBlendingColor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::Appearance::getBlendingColor </td>
+          <td>(</td>
+          <td class="paramtype">float &amp;&#160;</td>
+          <td class="paramname"><em>red</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float &amp;&#160;</td>
+          <td class="paramname"><em>green</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float &amp;&#160;</td>
+          <td class="paramname"><em>blue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float &amp;&#160;</td>
+          <td class="paramname"><em>alpha</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets blending color set via setBlendingColor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">red</td><td>Red channel in blending color </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">green</td><td>Green channel in blending color </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">blue</td><td>Blue channel in blending color </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">alpha</td><td>Alpha channel in blending color </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>status == 0 for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
+
 </div>
 </div>
 <a id="a6f6efaf9023d8807a90dd6d8184ebc96"></a>
@@ -1737,7 +1799,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-animation_2src_2main_8cpp-example.html#a64">ramses-example-basic-animation/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-animation_2src_2main_8cpp-example.html#a67">ramses-example-basic-animation/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -2121,6 +2183,58 @@ Friends</h2></td></tr>
 
 </div>
 </div>
+<a id="a27aa169943ba44d9503e2e3f4b848060"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27aa169943ba44d9503e2e3f4b848060">&#9670;&nbsp;</a></span>setBlendingColor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::Appearance::setBlendingColor </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>red</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>green</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>blue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>alpha</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets blending color that can be used as blending color constant for some blending factors. The default value is (0,0,0,0) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">red</td><td>Red channel in blending color </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">green</td><td>Green channel in blending color </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">blue</td><td>Blue channel in blending color </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>Alpha channel in blending color </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>status == 0 for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
 <a id="ac19d7763ed7ff2530811a3776d278047"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac19d7763ed7ff2530811a3776d278047">&#9670;&nbsp;</a></span>setBlendingFactors()</h2>
 
@@ -2170,7 +2284,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>status == 0 for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-blending_2src_2main_8cpp-example.html#a41">ramses-example-basic-blending/src/main.cpp</a>, and <a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a40">ramses-example-text-basic/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-blending_2src_2main_8cpp-example.html#a44">ramses-example-basic-blending/src/main.cpp</a>, and <a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a40">ramses-example-text-basic/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -2209,7 +2323,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>status == 0 for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-blending_2src_2main_8cpp-example.html#a45">ramses-example-basic-blending/src/main.cpp</a>, <a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a38">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a39">ramses-example-text-languages/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-blending_2src_2main_8cpp-example.html#a48">ramses-example-basic-blending/src/main.cpp</a>, <a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a38">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a39">ramses-example-text-languages/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -2289,7 +2403,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>status == 0 for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a30">ramses-example-local-datalink/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a38">ramses-example-local-datalink/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -2317,7 +2431,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>status == 0 for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a32">ramses-example-local-datalink/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a40">ramses-example-local-datalink/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -2372,7 +2486,8 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>status == 0 for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#a44">ramses-example-local-geometry-shaders/src/main.cpp</a>.</dd>
+</dl>
 </div>
 </div>
 <a id="ad4d48b8ec74600283ea5c1e414d249a3"></a>
@@ -2410,7 +2525,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>status == 0 for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-compositing_2src_2main_8cpp-example.html#a44">ramses-example-basic-compositing/src/main.cpp</a>, <a class="el" href="ramses-example-basic-file-loading_2src_2main_8cpp-example.html#a72">ramses-example-basic-file-loading/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#a62">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-basic-texturing_2src_2main_8cpp-example.html#a45">ramses-example-basic-texturing/src/main.cpp</a>, <a class="el" href="ramses-example-data-buffers-texture_2src_2main_8cpp-example.html#a47">ramses-example-data-buffers-texture/src/main.cpp</a>, <a class="el" href="ramses-example-dcsm-provider_2src_2main_8cpp-example.html#a39">ramses-example-dcsm-provider/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a55">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a84">ramses-example-local-offscreenbuffer/src/main.cpp</a>, and <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#a64">ramses-example-renderonce/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-compositing_2src_2main_8cpp-example.html#a39">ramses-example-basic-compositing/src/main.cpp</a>, <a class="el" href="ramses-example-basic-file-loading_2src_2main_8cpp-example.html#a69">ramses-example-basic-file-loading/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#a65">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-basic-texturing_2src_2main_8cpp-example.html#a48">ramses-example-basic-texturing/src/main.cpp</a>, <a class="el" href="ramses-example-data-buffers-texture_2src_2main_8cpp-example.html#a50">ramses-example-data-buffers-texture/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a62">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a87">ramses-example-local-offscreenbuffer/src/main.cpp</a>, and <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#a67">ramses-example-renderonce/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -2449,7 +2564,8 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#a81">ramses-example-local-geometry-shaders/src/main.cpp</a>.</dd>
+</dl>
 </div>
 </div>
 <a id="a767aef80335d3c1553e65f355410de2c"></a>
@@ -2532,7 +2648,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-data-buffers-texture_2src_2main_8cpp-example.html#a48">ramses-example-data-buffers-texture/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-data-buffers-texture_2src_2main_8cpp-example.html#a51">ramses-example-data-buffers-texture/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -3059,7 +3175,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-geometry-instancing_2src_2main_8cpp-example.html#a46">ramses-example-geometry-instancing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-geometry-instancing_2src_2main_8cpp-example.html#a49">ramses-example-geometry-instancing/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -3261,7 +3377,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-animation_2src_2main_8cpp-example.html#a49">ramses-example-basic-animation/src/main.cpp</a>, <a class="el" href="ramses-example-basic-blending_2src_2main_8cpp-example.html#a40">ramses-example-basic-blending/src/main.cpp</a>, <a class="el" href="ramses-example-basic-effect-from-glsl_2src_2main_8cpp-example.html#a38">ramses-example-basic-effect-from-glsl/src/main.cpp</a>, <a class="el" href="ramses-example-basic-geometry_2src_2main_8cpp-example.html#a36">ramses-example-basic-geometry/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendergroups_2src_2main_8cpp-example.html#a41">ramses-example-basic-rendergroups/src/main.cpp</a>, <a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#a46">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#a51">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-basic-scenegraph_2src_2main_8cpp-example.html#a38">ramses-example-basic-scenegraph/src/main.cpp</a>, <a class="el" href="ramses-example-data-buffers-vertices_2src_2main_8cpp-example.html#a32">ramses-example-data-buffers-vertices/src/main.cpp</a>, <a class="el" href="ramses-example-geometry-instancing_2src_2main_8cpp-example.html#a47">ramses-example-geometry-instancing/src/main.cpp</a>, <a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#a71">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a41">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-displays_2src_2main_8cpp-example.html#a64">ramses-example-local-displays/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a86">ramses-example-local-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a76">ramses-example-local-pick-handling/src/main.cpp</a>, and <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#a53">ramses-example-renderonce/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-animation_2src_2main_8cpp-example.html#a52">ramses-example-basic-animation/src/main.cpp</a>, <a class="el" href="ramses-example-basic-blending_2src_2main_8cpp-example.html#a43">ramses-example-basic-blending/src/main.cpp</a>, <a class="el" href="ramses-example-basic-effect-from-glsl_2src_2main_8cpp-example.html#a41">ramses-example-basic-effect-from-glsl/src/main.cpp</a>, <a class="el" href="ramses-example-basic-geometry_2src_2main_8cpp-example.html#a39">ramses-example-basic-geometry/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendergroups_2src_2main_8cpp-example.html#a44">ramses-example-basic-rendergroups/src/main.cpp</a>, <a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#a49">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#a54">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-basic-scenegraph_2src_2main_8cpp-example.html#a41">ramses-example-basic-scenegraph/src/main.cpp</a>, <a class="el" href="ramses-example-data-buffers-vertices_2src_2main_8cpp-example.html#a33">ramses-example-data-buffers-vertices/src/main.cpp</a>, <a class="el" href="ramses-example-geometry-instancing_2src_2main_8cpp-example.html#a50">ramses-example-geometry-instancing/src/main.cpp</a>, <a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#a74">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a49">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-displays_2src_2main_8cpp-example.html#a64">ramses-example-local-displays/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#a77">ramses-example-local-geometry-shaders/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a89">ramses-example-local-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a81">ramses-example-local-pick-handling/src/main.cpp</a>, and <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#a56">ramses-example-renderonce/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -141,15 +141,21 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ab1a963cb791b6cd903441135cc0f524d"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#ab1a963cb791b6cd903441135cc0f524d">contentFlushed</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, <a class="el" href="namespaceramses.html#ab7aa6bed4d47d2bd0967fc1a5ed6e95b">sceneVersionTag_t</a> version) override</td></tr>
 <tr class="memdesc:ab1a963cb791b6cd903441135cc0f524d"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classramses_1_1Scene.html" title="The Scene holds a scene graph. It is the essential class for distributing content to the ramses syste...">Scene</a> associated with content was flushed with a version tag.  <a href="#ab1a963cb791b6cd903441135cc0f524d">More...</a><br /></td></tr>
 <tr class="separator:ab1a963cb791b6cd903441135cc0f524d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acdd217cd9b2f98b24df644fa9922cf24"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#acdd217cd9b2f98b24df644fa9922cf24">contentExpirationMonitoringEnabled</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID) override</td></tr>
+<tr class="memdesc:acdd217cd9b2f98b24df644fa9922cf24"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called whenever a content's scene which was not previously monitored for expiration has requested expiration monitoring by sending a scene flush with valid expiration timestamp (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>) and that flush was applied on renderer side. From this point on, the content's scene will be monitored, can expire and recover (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a9ef07c5668af727f07b848dcb3fb5621" title="This method will be called if a content&#39;s scene which is enabled for expiration monitoring (contentEx...">contentExpired</a>, <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a06475973452612c3081e7006439b7b7e" title="This method will be called if a content&#39;s scene which previously expired (ramses::Scene::setExpiratio...">contentRecoveredFromExpiration</a>) until monitoring disabled again (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a3b87d720e463723fbdfdaae246b725ba" title="This method will be called whenever a content&#39;s scene which was previously monitored for expiration h...">contentExpirationMonitoringDisabled</a>). If the scene is associated with multiple contents (at the time of receiving this event) this callback will be triggered for all those contents.  <a href="#acdd217cd9b2f98b24df644fa9922cf24">More...</a><br /></td></tr>
+<tr class="separator:acdd217cd9b2f98b24df644fa9922cf24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b87d720e463723fbdfdaae246b725ba"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a3b87d720e463723fbdfdaae246b725ba">contentExpirationMonitoringDisabled</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID) override</td></tr>
+<tr class="memdesc:a3b87d720e463723fbdfdaae246b725ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called whenever a content's scene which was previously monitored for expiration has requested to stop being monitored by sending a scene flush with invalid expiration timestamp (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>) and that flush was applied on renderer side. From this point on, the content's scene will not be monitored anymore, regardless if it previously expired or not, i.e. there will be no expiration events (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a9ef07c5668af727f07b848dcb3fb5621" title="This method will be called if a content&#39;s scene which is enabled for expiration monitoring (contentEx...">contentExpired</a>, <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a06475973452612c3081e7006439b7b7e" title="This method will be called if a content&#39;s scene which previously expired (ramses::Scene::setExpiratio...">contentRecoveredFromExpiration</a>) until monitoring enabled again (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#acdd217cd9b2f98b24df644fa9922cf24" title="This method will be called whenever a content&#39;s scene which was not previously monitored for expirati...">contentExpirationMonitoringEnabled</a>). If the scene is associated with multiple contents (at the time of receiving this event) this callback will be triggered for all those contents.  <a href="#a3b87d720e463723fbdfdaae246b725ba">More...</a><br /></td></tr>
+<tr class="separator:a3b87d720e463723fbdfdaae246b725ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9ef07c5668af727f07b848dcb3fb5621"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a9ef07c5668af727f07b848dcb3fb5621">contentExpired</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID) override</td></tr>
-<tr class="memdesc:a9ef07c5668af727f07b848dcb3fb5621"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called if a content's scene which has an expiration timestamp set (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (invoke IRendererEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>) is on renderer (not necessarily rendered) at a state that expired, i.e. current time is after the expiration timestamp.  <a href="#a9ef07c5668af727f07b848dcb3fb5621">More...</a><br /></td></tr>
+<tr class="memdesc:a9ef07c5668af727f07b848dcb3fb5621"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called if a content's scene which is enabled for expiration monitoring (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#acdd217cd9b2f98b24df644fa9922cf24" title="This method will be called whenever a content&#39;s scene which was not previously monitored for expirati...">contentExpirationMonitoringEnabled</a>) is on renderer (not necessarily rendered) at a state that expired, i.e. current time is after the expiration timestamp set via <a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>. This callback is called only once when the content's scene expires even if the scene stays expired in subsequent frames. When the scene is updated again with a new not anymore expired timestamp, <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a06475973452612c3081e7006439b7b7e" title="This method will be called if a content&#39;s scene which previously expired (ramses::Scene::setExpiratio...">contentRecoveredFromExpiration</a> is called. If the scene is associated with multiple contents (at the time of receiving this event) this callback will be triggered for all those contents.  <a href="#a9ef07c5668af727f07b848dcb3fb5621">More...</a><br /></td></tr>
 <tr class="separator:a9ef07c5668af727f07b848dcb3fb5621"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a06475973452612c3081e7006439b7b7e"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a06475973452612c3081e7006439b7b7e">contentRecoveredFromExpiration</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID) override</td></tr>
-<tr class="memdesc:a06475973452612c3081e7006439b7b7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called if a content's scene which previously expired (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a9ef07c5668af727f07b848dcb3fb5621" title="This method will be called if a content&#39;s scene which has an expiration timestamp set (ramses::Scene:...">contentExpired</a>) was updated with a new expiration timestamp that is not expired anymore.  <a href="#a06475973452612c3081e7006439b7b7e">More...</a><br /></td></tr>
+<tr class="memdesc:a06475973452612c3081e7006439b7b7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called if a content's scene which previously expired (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a> and <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a9ef07c5668af727f07b848dcb3fb5621" title="This method will be called if a content&#39;s scene which is enabled for expiration monitoring (contentEx...">contentExpired</a>) was updated with a new expiration timestamp that is not expired anymore. This callback is called only once when the content's scene switches state from expired to not expired. This callback is not called when monitoring becomes disabled (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a3b87d720e463723fbdfdaae246b725ba" title="This method will be called whenever a content&#39;s scene which was previously monitored for expiration h...">contentExpirationMonitoringDisabled</a>) while content's scene is expired (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a9ef07c5668af727f07b848dcb3fb5621" title="This method will be called if a content&#39;s scene which is enabled for expiration monitoring (contentEx...">contentExpired</a>). If the scene is associated with multiple contents (at the time of receiving this event) this callback will be triggered for all those contents.  <a href="#a06475973452612c3081e7006439b7b7e">More...</a><br /></td></tr>
 <tr class="separator:a06475973452612c3081e7006439b7b7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a31444e30c066b58affc154390961c302"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a31444e30c066b58affc154390961c302">streamAvailabilityChanged</a> (<a class="el" href="namespaceramses.html#ac6d2218ebfe794dbe8d0f780f059de83">streamSource_t</a> streamId, bool available) override</td></tr>
-<tr class="memdesc:a31444e30c066b58affc154390961c302"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called when a new IVI video stream becomes available, or when an existing stream disappears.  <a href="#a31444e30c066b58affc154390961c302">More...</a><br /></td></tr>
-<tr class="separator:a31444e30c066b58affc154390961c302"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13ae572948b9df3e89bbe6502ee31e6d"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a13ae572948b9df3e89bbe6502ee31e6d">streamAvailabilityChanged</a> (<a class="el" href="namespaceramses.html#ac79b962fa2712607b7497565e46f47ff">waylandIviSurfaceId_t</a> streamId, bool available) override</td></tr>
+<tr class="memdesc:a13ae572948b9df3e89bbe6502ee31e6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called when a new IVI video stream becomes available, or when an existing stream disappears.  <a href="#a13ae572948b9df3e89bbe6502ee31e6d">More...</a><br /></td></tr>
+<tr class="separator:a13ae572948b9df3e89bbe6502ee31e6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ad3d54a006da1dc5cabd9a90b64507b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a6ad3d54a006da1dc5cabd9a90b64507b">contentEnableFocusRequest</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ramses::ContentID</a> contentID, int32_t focusRequest) override</td></tr>
 <tr class="memdesc:a6ad3d54a006da1dc5cabd9a90b64507b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provider requested to switch to/focus this content within the category. Consumer may or may not follow this request. This is a purely Dcsm related message forwarded via <a class="el" href="classramses_1_1DcsmContentControl.html" title="DcsmContentControl provides way to interact with both Dcsm (as consumer) and renderer content control...">ramses::DcsmContentControl</a> event mechanism, see <a class="el" href="classramses_1_1DcsmProvider.html#aa5cac45c6d35b91a5e12d2c0fae514fe" title="Requests an assigned DcsmConsumer to switch to/focus this content within a category. This function does not have to be called to enable a consumer to use this content, it is only needed when the provider side wants to influence the consumer application logic concerning which content to use. When the logical reason for the focus is no longer valid, the request should be disabled again. ">ramses::DcsmProvider::enableFocusRequest</a> for more details. Application logic should react accordingly if it decides to accept the request, typically this means requesting the content to be ready and show afterwards using <a class="el" href="classramses_1_1DcsmContentControl.html#a883e1c26133b3d129f601b9a0454a22e" title="Requests that the provided content is ready to show. ">ramses::DcsmContentControl::requestContentReady</a> and <a class="el" href="classramses_1_1DcsmContentControl.html#a3c4076e85c3e093ede4c3d3c1f213ce8" title="Shows the content. The content must be ready to be shown - see ramses::DcsmContentControl::requestCon...">ramses::DcsmContentControl::showContent</a>.  <a href="#a6ad3d54a006da1dc5cabd9a90b64507b">More...</a><br /></td></tr>
 <tr class="separator:a6ad3d54a006da1dc5cabd9a90b64507b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -305,6 +311,78 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a3b87d720e463723fbdfdaae246b725ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b87d720e463723fbdfdaae246b725ba">&#9670;&nbsp;</a></span>contentExpirationMonitoringDisabled()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ramses::DcsmContentControlEventHandlerEmpty::contentExpirationMonitoringDisabled </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a>&#160;</td>
+          <td class="paramname"><em>contentID</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>This method will be called whenever a content's scene which was previously monitored for expiration has requested to stop being monitored by sending a scene flush with invalid expiration timestamp (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>) and that flush was applied on renderer side. From this point on, the content's scene will not be monitored anymore, regardless if it previously expired or not, i.e. there will be no expiration events (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a9ef07c5668af727f07b848dcb3fb5621" title="This method will be called if a content&#39;s scene which is enabled for expiration monitoring (contentEx...">contentExpired</a>, <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a06475973452612c3081e7006439b7b7e" title="This method will be called if a content&#39;s scene which previously expired (ramses::Scene::setExpiratio...">contentRecoveredFromExpiration</a>) until monitoring enabled again (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#acdd217cd9b2f98b24df644fa9922cf24" title="This method will be called whenever a content&#39;s scene which was not previously monitored for expirati...">contentExpirationMonitoringEnabled</a>). If the scene is associated with multiple contents (at the time of receiving this event) this callback will be triggered for all those contents. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">contentID</td><td>ID of content that has associated the scene, which will not be monitored for expiration anymore </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implements <a class="el" href="classramses_1_1IDcsmContentControlEventHandler.html#a5216236027f85313f1466e4154b99ee2">ramses::IDcsmContentControlEventHandler</a>.</p>
+
+</div>
+</div>
+<a id="acdd217cd9b2f98b24df644fa9922cf24"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acdd217cd9b2f98b24df644fa9922cf24">&#9670;&nbsp;</a></span>contentExpirationMonitoringEnabled()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ramses::DcsmContentControlEventHandlerEmpty::contentExpirationMonitoringEnabled </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a>&#160;</td>
+          <td class="paramname"><em>contentID</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>This method will be called whenever a content's scene which was not previously monitored for expiration has requested expiration monitoring by sending a scene flush with valid expiration timestamp (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>) and that flush was applied on renderer side. From this point on, the content's scene will be monitored, can expire and recover (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a9ef07c5668af727f07b848dcb3fb5621" title="This method will be called if a content&#39;s scene which is enabled for expiration monitoring (contentEx...">contentExpired</a>, <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a06475973452612c3081e7006439b7b7e" title="This method will be called if a content&#39;s scene which previously expired (ramses::Scene::setExpiratio...">contentRecoveredFromExpiration</a>) until monitoring disabled again (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a3b87d720e463723fbdfdaae246b725ba" title="This method will be called whenever a content&#39;s scene which was previously monitored for expiration h...">contentExpirationMonitoringDisabled</a>). If the scene is associated with multiple contents (at the time of receiving this event) this callback will be triggered for all those contents. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">contentID</td><td>ID of content that has associated the scene, which will be monitored for expiration </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implements <a class="el" href="classramses_1_1IDcsmContentControlEventHandler.html#accd6c960039a1a7831d2b60101099b79">ramses::IDcsmContentControlEventHandler</a>.</p>
+
+</div>
+</div>
 <a id="a9ef07c5668af727f07b848dcb3fb5621"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9ef07c5668af727f07b848dcb3fb5621">&#9670;&nbsp;</a></span>contentExpired()</h2>
 
@@ -329,8 +407,8 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>This method will be called if a content's scene which has an expiration timestamp set (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (invoke IRendererEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>) is on renderer (not necessarily rendered) at a state that expired, i.e. current time is after the expiration timestamp. </p>
-<p>This callback is called only once when the scene expires even if scene stays expired in subsequent frames. When the content's scene is updated again with a new not anymore expired timestamp, <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a06475973452612c3081e7006439b7b7e" title="This method will be called if a content&#39;s scene which previously expired (contentExpired) was updated...">contentRecoveredFromExpiration</a> is called. If the expired scene is associated with multiple contents (at the time of receiving this event) this callback will be triggered for all those contents. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>This method will be called if a content's scene which is enabled for expiration monitoring (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#acdd217cd9b2f98b24df644fa9922cf24" title="This method will be called whenever a content&#39;s scene which was not previously monitored for expirati...">contentExpirationMonitoringEnabled</a>) is on renderer (not necessarily rendered) at a state that expired, i.e. current time is after the expiration timestamp set via <a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>. This callback is called only once when the content's scene expires even if the scene stays expired in subsequent frames. When the scene is updated again with a new not anymore expired timestamp, <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a06475973452612c3081e7006439b7b7e" title="This method will be called if a content&#39;s scene which previously expired (ramses::Scene::setExpiratio...">contentRecoveredFromExpiration</a> is called. If the scene is associated with multiple contents (at the time of receiving this event) this callback will be triggered for all those contents. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">contentID</td><td>ID of content that has the expired scene associated. </td></tr>
   </table>
@@ -543,8 +621,8 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>This method will be called if a content's scene which previously expired (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a9ef07c5668af727f07b848dcb3fb5621" title="This method will be called if a content&#39;s scene which has an expiration timestamp set (ramses::Scene:...">contentExpired</a>) was updated with a new expiration timestamp that is not expired anymore. </p>
-<p>This callback is called only once when the scene switches state from expired to not expired. If the expired scene is associated with multiple contents (at the time of receiving this event) this callback will be triggered for all those contents. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>This method will be called if a content's scene which previously expired (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a> and <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a9ef07c5668af727f07b848dcb3fb5621" title="This method will be called if a content&#39;s scene which is enabled for expiration monitoring (contentEx...">contentExpired</a>) was updated with a new expiration timestamp that is not expired anymore. This callback is called only once when the content's scene switches state from expired to not expired. This callback is not called when monitoring becomes disabled (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a3b87d720e463723fbdfdaae246b725ba" title="This method will be called whenever a content&#39;s scene which was previously monitored for expiration h...">contentExpirationMonitoringDisabled</a>) while content's scene is expired (<a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a9ef07c5668af727f07b848dcb3fb5621" title="This method will be called if a content&#39;s scene which is enabled for expiration monitoring (contentEx...">contentExpired</a>). If the scene is associated with multiple contents (at the time of receiving this event) this callback will be triggered for all those contents. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">contentID</td><td>ID of content that has the recovered scene associated. </td></tr>
   </table>
@@ -1055,8 +1133,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a31444e30c066b58affc154390961c302"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a31444e30c066b58affc154390961c302">&#9670;&nbsp;</a></span>streamAvailabilityChanged()</h2>
+<a id="a13ae572948b9df3e89bbe6502ee31e6d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a13ae572948b9df3e89bbe6502ee31e6d">&#9670;&nbsp;</a></span>streamAvailabilityChanged()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1067,7 +1145,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">virtual void ramses::DcsmContentControlEventHandlerEmpty::streamAvailabilityChanged </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceramses.html#ac6d2218ebfe794dbe8d0f780f059de83">streamSource_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ac79b962fa2712607b7497565e46f47ff">waylandIviSurfaceId_t</a>&#160;</td>
           <td class="paramname"><em>streamId</em>, </td>
         </tr>
         <tr>
@@ -1101,7 +1179,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implements <a class="el" href="classramses_1_1IDcsmContentControlEventHandler.html#a2c5366727aef57fb769d69e7daae7cb8">ramses::IDcsmContentControlEventHandler</a>.</p>
+<p>Implements <a class="el" href="classramses_1_1IDcsmContentControlEventHandler.html#aef77d1c6d8b49407bd9c320f79ea2e29">ramses::IDcsmContentControlEventHandler</a>.</p>
 
 </div>
 </div>

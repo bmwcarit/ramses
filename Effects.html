@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -66,11 +66,11 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h1>Overview</h1>
-<p>A <a class="el" href="classramses_1_1Effect.html" title="An effect describes how an object will be rendered to the screen. ">ramses::Effect</a> describes how geometry is rendered to the screen. An effect consists mainly of an vertex and fragment shader, written in the <a href="https://en.wikipedia.org/wiki/OpenGL_Shading_Language">OpenGL Shading Language(GLSL)</a>. RAMSES supports source code and binary shaders.</p>
+<p>A <a class="el" href="classramses_1_1Effect.html" title="An effect describes how an object will be rendered to the screen. ">ramses::Effect</a> describes how geometry is rendered to the screen. An effect consists mainly of vertex and fragment shaders and an optional geometry shader, written in the <a href="https://en.wikipedia.org/wiki/OpenGL_Shading_Language">OpenGL Shading Language(GLSL)</a>. RAMSES supports shaders provided as source code strings or binary shaders.</p>
 <h1>Creating Effects from GLSL Source code</h1>
-<p>Effects can be created from GLSL source code during runtime. To do so, fill out a <a class="el" href="classramses_1_1EffectDescription.html" title="An effect description holds all necessary information for an effect to be created. ">ramses::EffectDescription</a> instance with the required data (refer to class documentation for more details) and pass it to <a class="el" href="classramses_1_1RamsesClient.html#a2c594824fc18dd5a74fa42a3121eb831" title="Create a new Effect by parsing a GLSL shader described by an EffectDescription instance. Refer to RamsesClient::getLastEffectErrorMessages in case of parsing error. ">ramses::RamsesClient::createEffect()</a>.</p>
+<p>Effects can be created from GLSL source code during runtime. To do so, fill out a <a class="el" href="classramses_1_1EffectDescription.html" title="An effect description holds all necessary information for an effect to be created. ">ramses::EffectDescription</a> instance with the required data (refer to class documentation for more details) and pass it to ramses::RamsesClient::createEffect().</p>
 <h1>Loading from a resource file</h1>
-<p>Effects can also be stored in a RAMSES resource file, which can be loaded by <a class="el" href="classramses_1_1RamsesClient.html#a4464f7610a7ff4b21ffc3404121c99e1" title="Loads resources from a file. The file format has to match current Ramses SDK version in major and min...">ramses::RamsesClient::loadResources</a>. RAMSES delivers utilities to pack effects to such resource files, see the RAMSES Shader Tools documentation.</p>
+<p>Effects can also be stored in a RAMSES resource file, which can be loaded by ramses::RamsesClient::loadResources. RAMSES delivers utilities to pack effects to such resource files, see the RAMSES Shader Tools documentation.</p>
 <h1>Supported GLSL versions in RAMSES</h1>
 <p>RAMSES supports the following versions of GLSL:</p>
 <table class="doxtable">
@@ -80,6 +80,10 @@ $(function() {
 <td><a href="https://www.khronos.org/registry/OpenGL/specs/es/2.0/GLSL_ES_Specification_1.00.pdf">GLSL-ES 1.00</a> </td><td>OpenGL ES 2.0 </td></tr>
 <tr>
 <td><a href="https://www.khronos.org/registry/OpenGL/specs/es/3.0/GLSL_ES_Specification_3.00.pdf">GLSL-ES 3.00</a> </td><td>OpenGL ES 3.0 </td></tr>
+<tr>
+<td><a href="https://www.khronos.org/registry/OpenGL/specs/es/3.1/GLSL_ES_Specification_3.10.pdf">GLSL-ES 3.10</a> </td><td>OpenGL ES 3.1 </td></tr>
+<tr>
+<td><a href="https://www.khronos.org/registry/OpenGL/specs/es/3.2/GLSL_ES_Specification_3.20.pdf">GLSL-ES 3.20</a> </td><td>OpenGL ES 3.2 </td></tr>
 <tr>
 <td><a href="https://www.khronos.org/registry/OpenGL/specs/gl/GLSLangSpec.4.20.pdf">GLSL 4.20</a> </td><td>OpenGL 4.2 </td></tr>
 </table>

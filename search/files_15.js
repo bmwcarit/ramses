@@ -15,7 +15,6 @@ var searchData=
   ['renderbuffer_2eh',['RenderBuffer.h',['../RenderBuffer_8h.html',1,'']]],
   ['rendererconfig_2eh',['RendererConfig.h',['../RendererConfig_8h.html',1,'']]],
   ['rendererscenecontrol_2eh',['RendererSceneControl.h',['../RendererSceneControl_8h.html',1,'']]],
-  ['rendererscenecontrol_5flegacy_2eh',['RendererSceneControl_legacy.h',['../RendererSceneControl__legacy_8h.html',1,'']]],
   ['rendererscenestate_2eh',['RendererSceneState.h',['../RendererSceneState_8h.html',1,'']]],
   ['rendergroup_2eh',['RenderGroup.h',['../RenderGroup_8h.html',1,'']]],
   ['rendergroupmeshiterator_2eh',['RenderGroupMeshIterator.h',['../RenderGroupMeshIterator_8h.html',1,'']]],
@@ -24,7 +23,5 @@ var searchData=
   ['rendertarget_2eh',['RenderTarget.h',['../RenderTarget_8h.html',1,'']]],
   ['rendertargetdescription_2eh',['RenderTargetDescription.h',['../RenderTargetDescription_8h.html',1,'']]],
   ['resource_2eh',['Resource.h',['../Resource_8h.html',1,'']]],
-  ['resourcefiledescription_2eh',['ResourceFileDescription.h',['../ResourceFileDescription_8h.html',1,'']]],
-  ['resourcefiledescriptionset_2eh',['ResourceFileDescriptionSet.h',['../ResourceFileDescriptionSet_8h.html',1,'']]],
-  ['resourceiterator_2eh',['ResourceIterator.h',['../ResourceIterator_8h.html',1,'']]]
+  ['resourcedatapool_2eh',['ResourceDataPool.h',['../ResourceDataPool_8h.html',1,'']]]
 ];

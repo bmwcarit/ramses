@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -73,7 +73,7 @@ $(function() {
 <li>they are being sent asynchronously to subscribed ramses renderers</li>
 </ul>
 <p>The typical lifecycle of an effect resource is:</p><ul>
-<li>load shader(s) from GLSL and create effect E by calling <a class="el" href="classramses_1_1RamsesClient.html#a2c594824fc18dd5a74fa42a3121eb831" title="Create a new Effect by parsing a GLSL shader described by an EffectDescription instance. Refer to RamsesClient::getLastEffectErrorMessages in case of parsing error. ">ramses::RamsesClient::createEffect()</a></li>
+<li>load shader(s) from GLSL and create effect E by calling ramses::RamsesClient::createEffect()</li>
 <li>create a scene S, use effect E in scene S, publish scene S etc.</li>
 <li>subscribe to scene S on a renderer (local or remote)</li>
 <li>renderer sees that scene S uses effect E</li>
@@ -95,11 +95,11 @@ $(function() {
 <p>The client-side resourceId can be used to identify effects on the client side (e.g. when loading from files) while the renderer-side resourceId can be used with <a class="el" href="classramses_1_1IBinaryShaderCache.html" title="An interface used to exchange Binary Shader Cache with the RamsesRenderer. The RamsesRenderer will no...">ramses::IBinaryShaderCache</a>, or when using the resource caching interface <a class="el" href="classramses_1_1IRendererResourceCache.html" title="An interface used to implement a caching mechanism for resources used on the RamsesRenderer. Important: Please note that the resource ids in this context do not match client resource ids. ">ramses::IRendererResourceCache</a> which follows similar principles.</p>
 <h1>Why are effects slow to process</h1>
 <p>One essential difference between Effects and other resources is that effects are considerably more expensive to create during runtime for two reasons:</p><ol type="1">
-<li>Effects are being parsed by a GLSlang compiler in <a class="el" href="classramses_1_1RamsesClient.html#a2c594824fc18dd5a74fa42a3121eb831" title="Create a new Effect by parsing a GLSL shader described by an EffectDescription instance. Refer to RamsesClient::getLastEffectErrorMessages in case of parsing error. ">ramses::RamsesClient::createEffect()</a>. This step is necessary in order for RAMSES to figure out which data is required by the effect, such as uniforms, vertex attributes and textures</li>
+<li>Effects are being parsed by a GLSlang compiler in ramses::RamsesClient::createEffect(). This step is necessary in order for RAMSES to figure out which data is required by the effect, such as uniforms, vertex attributes and textures</li>
 <li>For each subscribed renderer, effects are being compiled for the concrete target device. This is necessary because RAMSES as a distributed system must make sure that the same effect can be used on different platforms. This would not be possible if RAMSES would store and distribute binary shaders instead of effects/GLSL code</li>
 </ol>
 <h1>How to skip GLSlang compilation on client side</h1>
-<p>To skip the GLSlang compilation step in <a class="el" href="classramses_1_1RamsesClient.html#a2c594824fc18dd5a74fa42a3121eb831" title="Create a new Effect by parsing a GLSL shader described by an EffectDescription instance. Refer to RamsesClient::getLastEffectErrorMessages in case of parsing error. ">ramses::RamsesClient::createEffect()</a>, the client application can simply do this step in a preprocessing step for all known in advance effects and store the result in resource files. For convenience, ramses provides a tool for exactly this purpose. See (<a class="el" href="GLSLToEffectResource.html">Storing effects in resource files</a>) for more info how to use it.</p>
+<p>To skip the GLSlang compilation step in ramses::RamsesClient::createEffect(), the client application can simply do this step in a preprocessing step for all known in advance effects and store the result in resource files. For convenience, ramses provides a tool for exactly this purpose. See (<a class="el" href="GLSLToEffectResource.html">Storing effects in resource files</a>) for more info how to use it.</p>
 <h1>How to skip the OpenGL X.Y compilation step on the renderer</h1>
 <p>To skip the compilation on the renderer side, it is enough to provide a binary shader when asked for it in <a class="el" href="classramses_1_1IBinaryShaderCache.html#a5a7f3039ec6fbc9f375408a126772320" title="Used by RamsesRenderer to ask the application if it provides binary data for the Effect with the give...">ramses::IBinaryShaderCache::hasBinaryShader()</a>. In order for this to work, the binary shader must match exactly the source code of the original effect. In particular, this means:</p><ul>
 <li>identical source code</li>

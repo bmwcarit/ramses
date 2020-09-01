@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -117,7 +117,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a3705492a690fa9ec03ce9f5a50e74994"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes an existing link between data provider and consumer (<a class="el" href="classramses_1_1RendererSceneControl.html#af4a77700e389a32581ad1b274552b010" title="Links a data provider from one scene to a data consumer in another scene. ">linkData</a>) or offscreen buffer and consumer (<a class="el" href="classramses_1_1RendererSceneControl.html#a404275629b0b73ad04d10f4a1649e8ba" title="Links display&#39;s offscreen buffer to a data consumer in scene. ">linkOffscreenBuffer</a>).  <a href="#a3705492a690fa9ec03ce9f5a50e74994">More...</a><br /></td></tr>
 <tr class="separator:a3705492a690fa9ec03ce9f5a50e74994"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6420e4d8b2754d6ac8831a3bda9233bb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RendererSceneControl.html#a6420e4d8b2754d6ac8831a3bda9233bb">handlePickEvent</a> (<a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> sceneId, float bufferNormalizedCoordX, float bufferNormalizedCoordY)</td></tr>
-<tr class="memdesc:a6420e4d8b2754d6ac8831a3bda9233bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger renderer to test if given pick event with coordinates intersects with any instances of <a class="el" href="classramses_1_1PickableObject.html" title="PickableObject provides a way to specify a &#39;pickable&#39; area. ">ramses::PickableObject</a> contained in given scene. If so, the intersected PickableObjects are reported to <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes. ">ramses::RendererSceneControl</a> (see ramses::IRendererEventHandler::objectsPicked) using their user IDs given at creation time (see <a class="el" href="classramses_1_1Scene.html#a124cab244a81f0558d3c68ad339d3478" title="Create a PickableObject. ">ramses::Scene::createPickableObject</a>).  <a href="#a6420e4d8b2754d6ac8831a3bda9233bb">More...</a><br /></td></tr>
+<tr class="memdesc:a6420e4d8b2754d6ac8831a3bda9233bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger renderer to test if given pick event with coordinates intersects with any instances of <a class="el" href="classramses_1_1PickableObject.html" title="PickableObject provides a way to specify a &#39;pickable&#39; area. ">ramses::PickableObject</a> contained in given scene. If so, the intersected PickableObjects are reported to <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes. ">ramses::RendererSceneControl</a> (see ramses::IRendererEventHandler::objectsPicked) using their user IDs given at creation time (see <a class="el" href="classramses_1_1Scene.html#a09b16859794bc6aadcc6bd93f75e58b2" title="Create a PickableObject. ">ramses::Scene::createPickableObject</a>).  <a href="#a6420e4d8b2754d6ac8831a3bda9233bb">More...</a><br /></td></tr>
 <tr class="separator:a6420e4d8b2754d6ac8831a3bda9233bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afae8c8a433e1a29ea4912d1db4be7311"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RendererSceneControl.html#afae8c8a433e1a29ea4912d1db4be7311">flush</a> ()</td></tr>
 <tr class="memdesc:afae8c8a433e1a29ea4912d1db4be7311"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submits scene control commands (API calls on <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes. ">RendererSceneControl</a>) since previous flush to be executed in the next renderer update loop. This mechanism allows for 'atomic' changes that are applied within a single update loop, thus a single rendered frame. For example one scene can be hidden, another scene shown and data linked, all within single frame. Not all state changes can be executed within a single update loop, see <a class="el" href="classramses_1_1RendererSceneControl.html#a3a67e00fdc6770676e44f1bc254604a0" title="Request state change of a scene. ">setSceneState</a> for details.  <a href="#afae8c8a433e1a29ea4912d1db4be7311">More...</a><br /></td></tr>
@@ -163,7 +163,6 @@ Public Attributes</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
 <tr class="memitem:ace582ac764d79427772152785e51845b"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RendererSceneControl.html#ace582ac764d79427772152785e51845b">RamsesRendererImpl</a></td></tr>
-<tr class="memdesc:ace582ac764d79427772152785e51845b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classramses_1_1RendererSceneControl__legacy.html" title="Control states of scenes. ">RendererSceneControl_legacy</a> can only be instantiated through <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a>.  <a href="#ace582ac764d79427772152785e51845b">More...</a><br /></td></tr>
 <tr class="separator:ace582ac764d79427772152785e51845b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
@@ -179,7 +178,7 @@ Additional Inherited Members</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Control states of scenes. </p>
 <p>Where <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">ramses::RamsesRenderer</a> is used to configure general rendering (create displays, control looping and other global rendering states), <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes. ">RendererSceneControl</a> is used to configure which content should be rendered and where. Scenes can be assigned to display buffers, shown, hidden, data linked, etc. All the commands in this class are put to a queue and submitted only when <a class="el" href="classramses_1_1RendererSceneControl.html#afae8c8a433e1a29ea4912d1db4be7311" title="Submits scene control commands (API calls on RendererSceneControl) since previous flush to be execute...">flush</a> is called, they are then executed asynchronously in the renderer core, the order of execution is preserved. Most of the commands have a corresponding callback which reports the result back to the caller via <a class="el" href="classramses_1_1RendererSceneControl.html#a78bb4710634109f444c018149b54dd92" title="RendererSceneControl methods push commands to an internal queue which is submitted when calling flush...">dispatchEvents</a>. Some commands can fail immediately by returning a status with value other than StatusOK, in such case there will be no callback, because the command will not even be submitted. </p>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#_a10">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#_a8">ramses-example-local-pick-handling/src/main.cpp</a>, and <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#_a81">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#_a10">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#_a3">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#_a10">ramses-example-local-geometry-shaders/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#_a10">ramses-example-local-pick-handling/src/main.cpp</a>, and <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#_a79">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl></div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a47395ff51c80461e50a4fe3eb449d924"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a47395ff51c80461e50a4fe3eb449d924">&#9670;&nbsp;</a></span>RendererSceneControl() <span class="overload">[1/2]</span></h2>
@@ -261,7 +260,8 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a10">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a14">ramses-example-local-offscreenbuffer/src/main.cpp</a>, and <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a9">ramses-example-local-viewport-link/src/main.cpp</a>.</dd>
+</dl>
 </div>
 </div>
 <a id="afae8c8a433e1a29ea4912d1db4be7311"></a>
@@ -281,7 +281,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Submits scene control commands (API calls on <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes. ">RendererSceneControl</a>) since previous flush to be executed in the next renderer update loop. This mechanism allows for 'atomic' changes that are applied within a single update loop, thus a single rendered frame. For example one scene can be hidden, another scene shown and data linked, all within single frame. Not all state changes can be executed within a single update loop, see <a class="el" href="classramses_1_1RendererSceneControl.html#a3a67e00fdc6770676e44f1bc254604a0" title="Request state change of a scene. ">setSceneState</a> for details. </p>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a83">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a81">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -317,7 +317,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Trigger renderer to test if given pick event with coordinates intersects with any instances of <a class="el" href="classramses_1_1PickableObject.html" title="PickableObject provides a way to specify a &#39;pickable&#39; area. ">ramses::PickableObject</a> contained in given scene. If so, the intersected PickableObjects are reported to <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes. ">ramses::RendererSceneControl</a> (see ramses::IRendererEventHandler::objectsPicked) using their user IDs given at creation time (see <a class="el" href="classramses_1_1Scene.html#a124cab244a81f0558d3c68ad339d3478" title="Create a PickableObject. ">ramses::Scene::createPickableObject</a>). </p>
+<p>Trigger renderer to test if given pick event with coordinates intersects with any instances of <a class="el" href="classramses_1_1PickableObject.html" title="PickableObject provides a way to specify a &#39;pickable&#39; area. ">ramses::PickableObject</a> contained in given scene. If so, the intersected PickableObjects are reported to <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes. ">ramses::RendererSceneControl</a> (see ramses::IRendererEventHandler::objectsPicked) using their user IDs given at creation time (see <a class="el" href="classramses_1_1Scene.html#a09b16859794bc6aadcc6bd93f75e58b2" title="Create a PickableObject. ">ramses::Scene::createPickableObject</a>). </p>
 <h1><a class="anchor" id="PickCoordinates"></a>
 PickCoordinates</h1>
 <p>Coordinates normalized to range &lt;-1, 1&gt; where (-1, -1) is bottom left corner of the buffer where scene is mapped to and (1, 1) is top right corner. If the scene to test is rendered directly to framebuffer then display size should be used, i.e. (-1, -1) is bottom left corner of the display and (1, 1) top right corner of display. If the scene is mapped to an offscreen buffer and rendered as a texture mapped on a mesh in another scene, the given coordinates need to be mapped to the offscreen buffer dimensions in the same way. For example if the scene's offscreen buffer is mapped on a 2D quad placed somewhere on screen then the coordinates provided need to be within the region of the 2D quad, i.e. (-1, -1) at bottom left corner of the quad and (1, 1) at top right corner.</p>
@@ -330,7 +330,8 @@ PickCoordinates</h1>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a15">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
+</dl>
 </div>
 </div>
 <a id="af4a77700e389a32581ad1b274552b010"></a>
@@ -559,7 +560,7 @@ PickCoordinates</h1>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a82">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a80">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -602,7 +603,7 @@ PickCoordinates</h1>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. StatusOK does not guarantee success, the result argument in dispatched event has its own status. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a87">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a85">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -665,8 +666,6 @@ PickCoordinates</h1>
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p><a class="el" href="classramses_1_1RendererSceneControl__legacy.html" title="Control states of scenes. ">RendererSceneControl_legacy</a> can only be instantiated through <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a>. </p>
 
 </div>
 </div>

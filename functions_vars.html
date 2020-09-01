@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -182,6 +182,8 @@ $(function() {
 , <a class="el" href="classramses_1_1AnimationSequence.html#a34b1f83b45ea07962ce0328bc7fd0608">ramses::AnimationSequence</a>
 , <a class="el" href="classramses_1_1AnimationSystem.html#af542dc5d067838ea4bff9a66d5e84017">ramses::AnimationSystem</a>
 , <a class="el" href="classramses_1_1Appearance.html#aaef70eb18673c123228faf2cca2d3a5c">ramses::Appearance</a>
+, <a class="el" href="classramses_1_1ArrayBuffer.html#a9d03c08c3696a8b99bd61c428a229002">ramses::ArrayBuffer</a>
+, <a class="el" href="classramses_1_1ArrayResource.html#ae47376f5a6a9648da2d445e11fcf9f2b">ramses::ArrayResource</a>
 , <a class="el" href="classramses_1_1BinaryShaderCache.html#a43dcbe2ba6afd5b30e5d8656b08543c6">ramses::BinaryShaderCache</a>
 , <a class="el" href="classramses_1_1BlitPass.html#a10c2759bab2fc6cfd391d57be2a0c495">ramses::BlitPass</a>
 , <a class="el" href="classramses_1_1Camera.html#af1eacde47b39d70c031d3f5a31f319bc">ramses::Camera</a>
@@ -197,10 +199,8 @@ $(function() {
 , <a class="el" href="classramses_1_1Effect.html#a5abcf03319d6128ea8f6af3eb917c408">ramses::Effect</a>
 , <a class="el" href="classramses_1_1EffectDescription.html#a03fa71a2977a510141ea6062c2038e00">ramses::EffectDescription</a>
 , <a class="el" href="classramses_1_1EffectInput.html#ac818d3be4d0aacd63e8a4c6b74155cda">ramses::EffectInput</a>
-, <a class="el" href="classramses_1_1FloatArray.html#a78cd094420aae9231f097623c8690870">ramses::FloatArray</a>
 , <a class="el" href="classramses_1_1FontRegistry.html#a7781a98feddf1482265657b074da80d8">ramses::FontRegistry</a>
 , <a class="el" href="classramses_1_1GeometryBinding.html#a6127e6d5a687af4cd18acd7ee92e36da">ramses::GeometryBinding</a>
-, <a class="el" href="classramses_1_1IndexDataBuffer.html#ab6301985a0120933e017f3d55347b48c">ramses::IndexDataBuffer</a>
 , <a class="el" href="classramses_1_1MeshNode.html#af938f1b8b115441353f4b748add11cc4">ramses::MeshNode</a>
 , <a class="el" href="classramses_1_1Node.html#aa990ce0640c5f8d533ab892292ff348e">ramses::Node</a>
 , <a class="el" href="classramses_1_1PickableObject.html#a2ba048f5c34a5f3923adeff684495218">ramses::PickableObject</a>
@@ -212,14 +212,12 @@ $(function() {
 , <a class="el" href="classramses_1_1RenderBuffer.html#a48d0ba7cde474f0308bcee41219eebf2">ramses::RenderBuffer</a>
 , <a class="el" href="classramses_1_1RendererConfig.html#aad75c8edfda3f58c9ec8e569f2bed46e">ramses::RendererConfig</a>
 , <a class="el" href="classramses_1_1RendererSceneControl.html#a60c4e15091952c047f530de2c6ba9c11">ramses::RendererSceneControl</a>
-, <a class="el" href="classramses_1_1RendererSceneControl__legacy.html#af1f0da1d19ea096d59febccbfcb2e25e">ramses::RendererSceneControl_legacy</a>
 , <a class="el" href="classramses_1_1RenderGroup.html#a7028c12a4004e555b0c7d0682e151b7f">ramses::RenderGroup</a>
 , <a class="el" href="classramses_1_1RenderPass.html#a74d6ae277bdf32733ae4ffb206d0129f">ramses::RenderPass</a>
 , <a class="el" href="classramses_1_1RenderTarget.html#aef7bf74c8e2b907566d14d3d5229677f">ramses::RenderTarget</a>
 , <a class="el" href="classramses_1_1RenderTargetDescription.html#a5bf1ce174e377b837b64519587ada8ef">ramses::RenderTargetDescription</a>
 , <a class="el" href="classramses_1_1Resource.html#a33c854a7257a968f3f35faf24476a676">ramses::Resource</a>
-, <a class="el" href="classramses_1_1ResourceFileDescription.html#a2a886a2376b196469ad5d41345c9d35f">ramses::ResourceFileDescription</a>
-, <a class="el" href="classramses_1_1ResourceFileDescriptionSet.html#aca503542a7974a637c5a41a02a630444">ramses::ResourceFileDescriptionSet</a>
+, <a class="el" href="classramses_1_1ResourceDataPool.html#ad1a91dfcc151202a8faac2d98a1b83df">ramses::ResourceDataPool</a>
 , <a class="el" href="classramses_1_1Scene.html#abd642ad1f2a26b14613c2bbbb6cd434a">ramses::Scene</a>
 , <a class="el" href="classramses_1_1SceneConfig.html#a95e07bf0d137ddef67f5e5718ce794d5">ramses::SceneConfig</a>
 , <a class="el" href="classramses_1_1SceneGraphIterator.html#ab72fa76d268982ba8f38272380a13787">ramses::SceneGraphIterator</a>
@@ -234,16 +232,10 @@ $(function() {
 , <a class="el" href="classramses_1_1Texture3D.html#ae3cb56a2162caadfee6141afb88bcdaa">ramses::Texture3D</a>
 , <a class="el" href="classramses_1_1TextureCube.html#a788ea42d2debc0e22db77becff546958">ramses::TextureCube</a>
 , <a class="el" href="classramses_1_1TextureSampler.html#a3a446dfc89daaecd620962c7bef5181b">ramses::TextureSampler</a>
-, <a class="el" href="classramses_1_1UInt16Array.html#ae8e0ff7ee6f414b9d55c5150d64c07ee">ramses::UInt16Array</a>
-, <a class="el" href="classramses_1_1UInt32Array.html#ae56f940a181ca82d16d344954cc2a96b">ramses::UInt32Array</a>
-, <a class="el" href="classramses_1_1Vector2fArray.html#aaf84707b43af2ce912ad3629bc5f8a60">ramses::Vector2fArray</a>
-, <a class="el" href="classramses_1_1Vector3fArray.html#ae60968700a226719601de02b19906e74">ramses::Vector3fArray</a>
-, <a class="el" href="classramses_1_1Vector4fArray.html#a2ec9ac59b10ae174308fd3f527c0ef2d">ramses::Vector4fArray</a>
-, <a class="el" href="classramses_1_1VertexDataBuffer.html#a7f2265b0778454e027113113edfa78c6">ramses::VertexDataBuffer</a>
 , <a class="el" href="classramses_1_1WarpingMeshData.html#a157673bfca02fd752c67ac4a6d38f0fd">ramses::WarpingMeshData</a>
 </li>
 <li>indices
-: <a class="el" href="structramses_1_1TextLine.html#a7b40bbde509ea729b01dbe204937cc3b">ramses::TextLine</a>
+: <a class="el" href="structramses_1_1TextLine.html#a86627eb98c6e83a676b268cdacf91006">ramses::TextLine</a>
 </li>
 <li>inputCharsConsumed
 : <a class="el" href="structramses_1_1ExtractedUnicodePoint.html#adb357b9313478143d2a08ea11a9799cb">ramses::ExtractedUnicodePoint</a>
@@ -328,7 +320,7 @@ $(function() {
 : <a class="el" href="structramses_1_1CarModelViewMetadata.html#ad78f0655722516bf4d78cf3171ed6353">ramses::CarModelViewMetadata</a>
 </li>
 <li>positions
-: <a class="el" href="structramses_1_1TextLine.html#a433963ad252a52a7936d826a18f93f14">ramses::TextLine</a>
+: <a class="el" href="structramses_1_1TextLine.html#a5448b107556dc06a66ee65050d80b5c2">ramses::TextLine</a>
 </li>
 <li>posX
 : <a class="el" href="structramses_1_1GlyphMetrics.html#a6dfca783cfc8e391c61f5e04cf15b2d1">ramses::GlyphMetrics</a>
@@ -351,7 +343,7 @@ $(function() {
 
 <h3><a id="index_t"></a>- t -</h3><ul>
 <li>textureCoordinates
-: <a class="el" href="structramses_1_1TextLine.html#af3c5090cfd267f16f1fc61f624c952ba">ramses::TextLine</a>
+: <a class="el" href="structramses_1_1TextLine.html#a46a26a7c2a67ab3c52f64b8567ffd2c1">ramses::TextLine</a>
 </li>
 </ul>
 

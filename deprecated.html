@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -66,14 +66,20 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><dl class="reflist">
-<dt><a class="anchor" id="_deprecated000001"></a>Class <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html">ramses::IRendererSceneControlEventHandler_legacy</a>  </dt>
-<dd>[Use <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes. ">RendererSceneControl</a> and <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html" title="Provides an interface for handling the result of renderer scene control events. Implementation of thi...">IRendererSceneControlEventHandler</a> instead]  </dd>
-<dt><a class="anchor" id="_deprecated000003"></a>Member <a class="el" href="classramses_1_1RamsesRenderer.html#abd3d3a5cfd2d3662d50554c416fcabad">ramses::RamsesRenderer::getSceneControlAPI_legacy</a>  ()</dt>
-<dd>[Use <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes. ">RendererSceneControl</a> via <a class="el" href="classramses_1_1RamsesRenderer.html#aca664b15215a8cb1f410db4da3c65296" title="Get scene control API. ">RamsesRenderer::getSceneControlAPI</a> instead]  </dd>
-<dt><a class="anchor" id="_deprecated000004"></a>Class <a class="el" href="classramses_1_1RendererSceneControl__legacy.html">ramses::RendererSceneControl_legacy</a>  </dt>
-<dd>[Use <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes. ">RendererSceneControl</a> instead]  </dd>
-<dt><a class="anchor" id="_deprecated000002"></a>Class <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>  </dt>
-<dd>[Use <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes. ">RendererSceneControl</a> and <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html" title="Convenience empty implementation of IRendererSceneControlEventHandler that can be used to derive from...">RendererSceneControlEventHandlerEmpty</a> instead] </dd>
+<dt><a class="anchor" id="_deprecated000006"></a>Member <a class="el" href="classramses_1_1RamsesHMIUtils.html#a71cf608709860562beda6f80f58ded61">ramses::RamsesHMIUtils::GetResourceDataPoolForClient</a>  (<a class="el" href="classramses_1_1RamsesClient.html" title="Entry point of RAMSES client API. ">RamsesClient</a> &amp;client)</dt>
+<dd>This function and the returned class are deprecated. See <a class="el" href="classramses_1_1ResourceDataPool.html" title="The ResourceDataPool holds resource data which can be instantiated for a given scene. Resource data can either be added by calling the add functions or by attaching a resource data file to the pool. The same resource data can be instantiated by multiple scenes at the same time. ">ramses::ResourceDataPool</a> for details. </dd>
+<dt><a class="anchor" id="_deprecated000007"></a>Member <a class="el" href="classramses_1_1RamsesHMIUtils.html#ac1455985601049a6765acf597d6645a2">ramses::RamsesHMIUtils::SaveResourcesOfSceneToResourceFile</a>  (<a class="el" href="classramses_1_1Scene.html" title="The Scene holds a scene graph. It is the essential class for distributing content to the ramses syste...">Scene</a> const &amp;scene, std::string const &amp;filename, bool compress)</dt>
+<dd>This functionality is deprecated. See <a class="el" href="classramses_1_1ResourceDataPool.html" title="The ResourceDataPool holds resource data which can be instantiated for a given scene. Resource data can either be added by calling the add functions or by attaching a resource data file to the pool. The same resource data can be instantiated by multiple scenes at the same time. ">ramses::ResourceDataPool</a> for details. </dd>
+<dt><a class="anchor" id="_deprecated000001"></a>Class <a class="el" href="classramses_1_1ResourceDataPool.html">ramses::ResourceDataPool</a>  </dt>
+<dd>This class was being introduced to cover legacy ramses use cases. Using this class is discouraged and it might be removed without warning in the future.  </dd>
+<dt><a class="anchor" id="_deprecated000002"></a>Member <a class="el" href="classramses_1_1ResourceDataPool.html#a10e15b743d81749f7b19aab2dd2aa3fd">ramses::ResourceDataPool::addArrayResourceData</a>  (uint32_t, EDataType, const void *, resourceCacheFlag_t=ResourceCacheFlag_DoNotCache, const char *=nullptr)</dt>
+<dd>Use documented versions above. Will be removed in next major versions.  </dd>
+<dt><a class="anchor" id="_deprecated000003"></a>Member <a class="el" href="classramses_1_1ResourceDataPool.html#a6c591c274f7ac8fc855cf4dd081f131b">ramses::ResourceDataPool::addTexture2DData</a>  (uint32_t, uint32_t, ETextureFormat, uint32_t, const <a class="el" href="structramses_1_1MipLevelData.html" title="Struct containing information about one mip-map level. ">MipLevelData</a> mipLevelData[], bool=false, const <a class="el" href="structramses_1_1TextureSwizzle.html" title="Information of how color channels of a texture are reordered or set to fixed value (one...">TextureSwizzle</a> &amp;={}, resourceCacheFlag_t=ResourceCacheFlag_DoNotCache, const char *=nullptr)</dt>
+<dd>Use documented versions above. Will be removed in next major versions.  </dd>
+<dt><a class="anchor" id="_deprecated000004"></a>Member <a class="el" href="classramses_1_1ResourceDataPool.html#a97416ec60b90e2cbd18a46388797a152">ramses::ResourceDataPool::addTexture3DData</a>  (uint32_t, uint32_t, uint32_t, ETextureFormat, uint32_t, const <a class="el" href="structramses_1_1MipLevelData.html" title="Struct containing information about one mip-map level. ">MipLevelData</a> mipLevelData[], bool=false, resourceCacheFlag_t=ResourceCacheFlag_DoNotCache, const char *=nullptr)</dt>
+<dd>Use documented versions above. Will be removed in next major versions.  </dd>
+<dt><a class="anchor" id="_deprecated000005"></a>Member <a class="el" href="classramses_1_1ResourceDataPool.html#a4e513a536271f301a806c3c363eab113">ramses::ResourceDataPool::addTextureCubeData</a>  (uint32_t, ETextureFormat, uint32_t, const <a class="el" href="structramses_1_1CubeMipLevelData.html" title="Struct containing information about one mip-map level for cube textures. ">CubeMipLevelData</a> mipLevelData[], bool=false, const <a class="el" href="structramses_1_1TextureSwizzle.html" title="Information of how color channels of a texture are reordered or set to fixed value (one...">TextureSwizzle</a> &amp;={}, resourceCacheFlag_t=ResourceCacheFlag_DoNotCache, const char *=nullptr)</dt>
+<dd>Use documented versions above. Will be removed in next major versions. </dd>
 </dl>
 </div></div><!-- contents -->
 <!-- start footer part -->

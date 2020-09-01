@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -94,8 +94,20 @@ $(function() {
 <li>EAnimationSystemFlags_Default
 : <a class="el" href="namespaceramses.html#a5def0f60a48cd70bbc4ebbe5b4ea59a1a735aee6e6f2778d3413917d6542d5916">ramses</a>
 </li>
+<li>EBlendFactor_AlphaSaturate
+: <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aa3a81a8cae574a30a09fb8562f51c1c44">ramses</a>
+</li>
+<li>EBlendFactor_ConstAlpha
+: <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aa83c926f301cc3901ab9d87b6f66a83b3">ramses</a>
+</li>
+<li>EBlendFactor_ConstColor
+: <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aa3c4d74d41c10cbfdccacb0a4f4729c3f">ramses</a>
+</li>
 <li>EBlendFactor_DstAlpha
 : <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aa8f3e3037e97983acd657c2b2e351d563">ramses</a>
+</li>
+<li>EBlendFactor_DstColor
+: <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aacb0e6cd8763d916cbf948df310e702f8">ramses</a>
 </li>
 <li>EBlendFactor_NUMBER_OF_ELEMENTS
 : <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aa38a6721fa5748283592158008a047e1d">ramses</a>
@@ -103,14 +115,29 @@ $(function() {
 <li>EBlendFactor_One
 : <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aa4ac74913fc4c6a9ed07723e941c60341">ramses</a>
 </li>
+<li>EBlendFactor_OneMinusConstAlpha
+: <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aa9a2f78e2e832f8d8d3f9924dbd388692">ramses</a>
+</li>
+<li>EBlendFactor_OneMinusConstColor
+: <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aad050910c05fdee48da96a0b7197dabf0">ramses</a>
+</li>
 <li>EBlendFactor_OneMinusDstAlpha
 : <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aa3e7c0819715031d4ae8af7ec88af0b81">ramses</a>
+</li>
+<li>EBlendFactor_OneMinusDstColor
+: <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aa1ec77e0dd6b75653766717d1db86a382">ramses</a>
 </li>
 <li>EBlendFactor_OneMinusSrcAlpha
 : <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aa38ca3aa38628208af2024f75d781ed08">ramses</a>
 </li>
+<li>EBlendFactor_OneMinusSrcColor
+: <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aaccb842d132b0cd2f24030d57c153cf56">ramses</a>
+</li>
 <li>EBlendFactor_SrcAlpha
 : <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aad4ea42d780d57674c049cded1e23b870">ramses</a>
+</li>
+<li>EBlendFactor_SrcColor
+: <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aa3219504afe53496401b0e428409897b0">ramses</a>
 </li>
 <li>EBlendFactor_Zero
 : <a class="el" href="namespaceramses.html#ad92db747f446d34174fe02bc106db60aae6b0efda8b330d399f90a3b698f13a4e">ramses</a>
@@ -165,24 +192,6 @@ $(function() {
 </li>
 <li>ECullMode_NUMBER_OF_ELEMENTS
 : <a class="el" href="namespaceramses.html#ab5c818582da5e7ab48a107c396cc23e0afec9cebeaa92078a4901cf588b4fb01d">ramses</a>
-</li>
-<li>EDataType_Float
-: <a class="el" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532cabaa3f32f8253f94085791501f1c734ad">ramses</a>
-</li>
-<li>EDataType_UInt16
-: <a class="el" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532ca193bb6a3c7538076090cf766f3fddbb0">ramses</a>
-</li>
-<li>EDataType_UInt32
-: <a class="el" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532cacb2fd83d122a51be690daaa6ef7df081">ramses</a>
-</li>
-<li>EDataType_Vector2F
-: <a class="el" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532ca76d79a7975d67e4485dcf91b9897ca4e">ramses</a>
-</li>
-<li>EDataType_Vector3F
-: <a class="el" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532cafb7f895c48d0e7d70b066acf73071bba">ramses</a>
-</li>
-<li>EDataType_Vector4F
-: <a class="el" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532ca75726c9de0e0a0e9a9e64a97568dbb8d">ramses</a>
 </li>
 <li>EDepthFunc_Always
 : <a class="el" href="namespaceramses.html#a02ba9995e8b06f15a6083e5d5c498041a63c697f8fb9b60ec0ae25fbd35a3deb4">ramses</a>
@@ -274,8 +283,14 @@ $(function() {
 <li>EEffectInputDataType_Matrix44F
 : <a class="el" href="namespaceramses.html#aef424a6a05dc9161133375024bcbf542ade6928b9f8680ff4b1a87c7f2504dcbe">ramses</a>
 </li>
-<li>EEffectInputDataType_TextureSampler
-: <a class="el" href="namespaceramses.html#aef424a6a05dc9161133375024bcbf542afc81f774f571ec676344cfb268fe4129">ramses</a>
+<li>EEffectInputDataType_TextureSampler2D
+: <a class="el" href="namespaceramses.html#aef424a6a05dc9161133375024bcbf542aa435d6a5e4a82cf41b104936bc744694">ramses</a>
+</li>
+<li>EEffectInputDataType_TextureSampler3D
+: <a class="el" href="namespaceramses.html#aef424a6a05dc9161133375024bcbf542a0cc4fcbe5e16c122ea2e9c3f2b235be9">ramses</a>
+</li>
+<li>EEffectInputDataType_TextureSamplerCube
+: <a class="el" href="namespaceramses.html#aef424a6a05dc9161133375024bcbf542a7e90e574bb6a6442d99fc2a4b5581cdd">ramses</a>
 </li>
 <li>EEffectInputDataType_UInt16
 : <a class="el" href="namespaceramses.html#aef424a6a05dc9161133375024bcbf542a818e500b3421d28089bb0515c8a9f9a4">ramses</a>
@@ -832,6 +847,9 @@ $(function() {
 <li>ERamsesObjectType_Appearance
 : <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991ab5de214f5b14db6fe23a4f19815a6d45">ramses</a>
 </li>
+<li>ERamsesObjectType_ArrayResource
+: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991af1510b2777939dd611e4579d24ecf2b9">ramses</a>
+</li>
 <li>ERamsesObjectType_BlitPass
 : <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991a0720ad8755117e8ffc27ac8420cf5e9a">ramses</a>
 </li>
@@ -843,6 +861,9 @@ $(function() {
 </li>
 <li>ERamsesObjectType_ClientObject
 : <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991ac5dfb2dd1e988498127511a3d32c070b">ramses</a>
+</li>
+<li>ERamsesObjectType_DataBufferObject
+: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991a653709de9465a941a2a56c4366b44340">ramses</a>
 </li>
 <li>ERamsesObjectType_DataFloat
 : <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991aa1b5004d8d237ee9245fa53e808379a3">ramses</a>
@@ -883,14 +904,8 @@ $(function() {
 <li>ERamsesObjectType_Effect
 : <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991a528db71779cf9b1fbc6b3a773708758f">ramses</a>
 </li>
-<li>ERamsesObjectType_FloatArray
-: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991a397385c3970ed7afaadcf3b40593e292">ramses</a>
-</li>
 <li>ERamsesObjectType_GeometryBinding
 : <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991afc07fd0b9b8ea0d4d0a5e5303e8b543b">ramses</a>
-</li>
-<li>ERamsesObjectType_IndexDataBuffer
-: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991aea1fc58cff2fb021f2b9f83922c8639f">ramses</a>
 </li>
 <li>ERamsesObjectType_Invalid
 : <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991a3cd2acdfeb737707087575a981243b4b">ramses</a>
@@ -1041,33 +1056,6 @@ $(function() {
 </li>
 <li>ERamsesObjectType_TextureSampler
 : <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991a95cce65f61701b624859fd3717612eac">ramses</a>
-</li>
-<li>ERamsesObjectType_UInt16Array
-: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991a947a1d44f2977c312a497aae45203491">ramses</a>
-</li>
-<li>ERamsesObjectType_UInt32Array
-: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991ab3fec69748e571f8ba4a51c3339d9476">ramses</a>
-</li>
-<li>ERamsesObjectType_Vector2fArray
-: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991a5de2fa9fb71494816d75665a1a4f52ec">ramses</a>
-</li>
-<li>ERamsesObjectType_Vector2iArray
-: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991aaf425c2eda8ae302a5f02fe70add33e8">ramses</a>
-</li>
-<li>ERamsesObjectType_Vector3fArray
-: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991a446e3c85f68bcf5d699e5aa896604a1b">ramses</a>
-</li>
-<li>ERamsesObjectType_Vector3iArray
-: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991a4c18d0c83bd81de694e3da0f9df8a16b">ramses</a>
-</li>
-<li>ERamsesObjectType_Vector4fArray
-: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991a09b5dcad0694d6b6c1a8a269ea6ab661">ramses</a>
-</li>
-<li>ERamsesObjectType_Vector4iArray
-: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991a2cb5fa05c23e6bb4536d2ce65933f6f2">ramses</a>
-</li>
-<li>ERamsesObjectType_VertexDataBuffer
-: <a class="el" href="namespaceramses.html#aa42f06ccdeb3efeeb956b3a04d66a991ab631c526dd4e63aa6b4f29a8b070468a">ramses</a>
 </li>
 <li>ERamsesShellType_Console
 : <a class="el" href="namespaceramses.html#a709e8958d3ef04014627de3612d47a62a8c445ebe6b0675a50f12d23b00e348bd">ramses</a>
@@ -1275,153 +1263,6 @@ $(function() {
 </li>
 <li>ETextureCubeFace_PositiveZ
 : <a class="el" href="namespaceramses.html#acd1dc360c381368a9636ffd855d394a5af3c8068d2c0374033da2d081472f2bf3">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_10x10
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edadb7a034ff478c1e1ca32a40a0fc249a3">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_10x5
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda1634fe050e80548e6a4db50f8baf7fe6">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_10x6
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda5c8b99b6f3405dc24c74f49de204fcda">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_10x8
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda2e9bb74aaa26cf96e99538d17c06cdee">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_12x10
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda580bcffb3014752b89cf83e1f7862dfa">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_12x12
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda401221fb3a641a4a5936946fc30517ff">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_4x4
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda5b7cbb33b3bba97f5c7402dc60d5e80a">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_5x4
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda554803533a0291183038b5203decf779">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_5x5
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda4ee6cfe9f0733369e9085a9c1345b73b">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_6x5
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda88328380a63aaf0b41384f7949ec2a62">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_6x6
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edaf1fb5ad2418be5e55f1c0add98735870">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_8x5
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edabb12215514677b21e30f80e40140b49a">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_8x6
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edadc90ebbb51ed0ce2a49264dee4f1d3ab">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_RGBA_8x8
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edaabcd69c443e135cee50f1aa47f54012c">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_10x10
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda75a2610c6b9977cd9c715d888f6f86cf">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_10x5
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edaacfa0787c6361ab8ee2a309f31a2984d">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_10x6
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda2d974cff63bb7d987d4c1eae7089c520">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_10x8
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda1fe3530bd669b2c32ae58da3692b304b">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_12x10
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edab31cbd72d7e9a46fb159d2cb25181337">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_12x12
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda23e59433f2ba65a43c22fea61c0e9b02">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_4x4
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edac7a7b4203d6d65db0f4343d4ba7dbfa5">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_5x4
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edab9aca72b98af5fcccac0177fdde74903">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_5x5
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda1a666c54e2fed4832cee4b28360a4ed0">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_6x5
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda71f20f7ac6a1af712552985fb5eb327f">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_6x6
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda462e88b1f31fa2f11d119f3c8529eaba">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_8x5
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda80d45dac8dee6a75580b3ebf57e011de">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_8x6
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda19010a8f364450560c28e0f1df7f30e7">ramses</a>
-</li>
-<li>ETextureFormat_ASTC_SRGBA_8x8
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda0ca250dffa6ea8013e1a8173ea5f1416">ramses</a>
-</li>
-<li>ETextureFormat_ETC2RGB
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda301513146dea563bc41342c5aa5710f7">ramses</a>
-</li>
-<li>ETextureFormat_ETC2RGBA
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda7eba75cab85cf48de06fb12c9c0c5526">ramses</a>
-</li>
-<li>ETextureFormat_Invalid
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda22c89203111754fca3d1b3d0fe6c506e">ramses</a>
-</li>
-<li>ETextureFormat_NUMBER_OF_ELEMENTS
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda7dedc036f99aca34d2655bd10108f71f">ramses</a>
-</li>
-<li>ETextureFormat_R16F
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda92a01474f9f72fcbf052159ef1bd70bc">ramses</a>
-</li>
-<li>ETextureFormat_R32F
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda32ef4ea39fd2deaa86cde1d70f7188b3">ramses</a>
-</li>
-<li>ETextureFormat_R8
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda48c4272bd45dbda8e3d6b79e8043757e">ramses</a>
-</li>
-<li>ETextureFormat_RG16F
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda28ffd124913bd7d17034fda9e240a29b">ramses</a>
-</li>
-<li>ETextureFormat_RG32F
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda6733cf5edd891115fff23c0c408f6b37">ramses</a>
-</li>
-<li>ETextureFormat_RG8
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda2475aeaf8f2697851fdac68c40e78e1a">ramses</a>
-</li>
-<li>ETextureFormat_RGB16F
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda53876b9536b589f17e665c5b3666e1bf">ramses</a>
-</li>
-<li>ETextureFormat_RGB32F
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda7dd1d99a46125599ed693b39cf790272">ramses</a>
-</li>
-<li>ETextureFormat_RGB565
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda3a032779713d42e7049fe1359a0e657a">ramses</a>
-</li>
-<li>ETextureFormat_RGB8
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda14ed89a98578799c66e269a61f31ae77">ramses</a>
-</li>
-<li>ETextureFormat_RGBA16F
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edade8fa0cb6f27e0f018807b20b2011fd7">ramses</a>
-</li>
-<li>ETextureFormat_RGBA32F
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda4829088163c1cf7fd7dd069af0845e9b">ramses</a>
-</li>
-<li>ETextureFormat_RGBA4
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda703ae849a3b1489165d9f7c33214339f">ramses</a>
-</li>
-<li>ETextureFormat_RGBA5551
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda5dfaaa82db56b8586676b6d9ca4a44b8">ramses</a>
-</li>
-<li>ETextureFormat_RGBA8
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda3b601742b5ce0d57e1cbc5961f695c7d">ramses</a>
-</li>
-<li>ETextureFormat_SRGB8
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766edae70349320a14560b68abd089f2af6dc4">ramses</a>
-</li>
-<li>ETextureFormat_SRGB8_ALPHA8
-: <a class="el" href="namespaceramses.html#a19ee2a3bbf78fdc5ad2d41ffa6d766eda6536702793af088ceff6df37bc046228">ramses</a>
 </li>
 <li>ETextureSamplingMethod_Linear
 : <a class="el" href="namespaceramses.html#a1a865d087e77ab22df621f6cfbebb8b7a4827677681e64c42a3b39d73d8a6e501">ramses</a>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -171,22 +171,22 @@ $(function() {
 <h3>Member functions use camel case, starting with small first letter. Prefer a name starting with a verb.</h3>
 <ul>
 <li>Rationale: Readability, Consistency</li>
-<li>Wrong: <div class="fragment"><div class="line"><span class="keyword">class </span>MyClass</div><div class="line">{</div><div class="line">    UInt32 Get_Value();</div><div class="line">};</div></div><!-- fragment --></li>
-<li>Correct: <div class="fragment"><div class="line"><span class="keyword">class </span>MyClass</div><div class="line">{</div><div class="line">    UInt32 getValue() <span class="keyword">const</span>;</div><div class="line">};</div></div><!-- fragment --></li>
+<li>Wrong: <div class="fragment"><div class="line"><span class="keyword">class </span>MyClass</div><div class="line">{</div><div class="line">    <a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532cae7956ed7be1c5025a27ed3cb42a396bd">UInt32</a> Get_Value();</div><div class="line">};</div></div><!-- fragment --></li>
+<li>Correct: <div class="fragment"><div class="line"><span class="keyword">class </span>MyClass</div><div class="line">{</div><div class="line">    <a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532cae7956ed7be1c5025a27ed3cb42a396bd">UInt32</a> getValue() <span class="keyword">const</span>;</div><div class="line">};</div></div><!-- fragment --></li>
 <li>Style Checker: N/A</li>
 </ul>
 <h3>Structs should have only public members, which don't have a m_ prefix.</h3>
 <ul>
 <li>Rationale: Readability, Consistency, Simplicity</li>
-<li>Wrong: <div class="fragment"><div class="line"><span class="keyword">struct </span>ThisLooksLikeAClass</div><div class="line">{</div><div class="line">    UInt32 doComplicatedLogic();</div><div class="line"></div><div class="line"><span class="keyword">private</span>:</div><div class="line">    UInt32 m_foo;</div><div class="line">};</div></div><!-- fragment --></li>
-<li>Correct: <div class="fragment"><div class="line"><span class="keyword">struct </span>MyStruct</div><div class="line">{</div><div class="line">    UInt32 foo;</div><div class="line">    UInt32 bar;</div><div class="line">};</div></div><!-- fragment --></li>
+<li>Wrong: <div class="fragment"><div class="line"><span class="keyword">struct </span>ThisLooksLikeAClass</div><div class="line">{</div><div class="line">    <a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532cae7956ed7be1c5025a27ed3cb42a396bd">UInt32</a> doComplicatedLogic();</div><div class="line"></div><div class="line"><span class="keyword">private</span>:</div><div class="line">    <a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532cae7956ed7be1c5025a27ed3cb42a396bd">UInt32</a> m_foo;</div><div class="line">};</div></div><!-- fragment --></li>
+<li>Correct: <div class="fragment"><div class="line"><span class="keyword">struct </span>MyStruct</div><div class="line">{</div><div class="line">    <a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532cae7956ed7be1c5025a27ed3cb42a396bd">UInt32</a> foo;</div><div class="line">    <a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532cae7956ed7be1c5025a27ed3cb42a396bd">UInt32</a> bar;</div><div class="line">};</div></div><!-- fragment --></li>
 <li>Style Checker: N/A</li>
 </ul>
 <h3>Member variables start with prefix "m_", followed by camel case name starting with small letter.</h3>
 <ul>
 <li>Rationale: Readability, Consistency</li>
-<li>Wrong: <div class="fragment"><div class="line"><span class="keyword">class </span>MyClass</div><div class="line">{</div><div class="line">    UInt32 myCoolVar;</div><div class="line">};</div></div><!-- fragment --></li>
-<li>Correct: <div class="fragment"><div class="line"><span class="keyword">class </span>MyClass</div><div class="line">{</div><div class="line">    UInt32 m_myCoolVar;</div><div class="line">};</div></div><!-- fragment --></li>
+<li>Wrong: <div class="fragment"><div class="line"><span class="keyword">class </span>MyClass</div><div class="line">{</div><div class="line">    <a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532cae7956ed7be1c5025a27ed3cb42a396bd">UInt32</a> myCoolVar;</div><div class="line">};</div></div><!-- fragment --></li>
+<li>Correct: <div class="fragment"><div class="line"><span class="keyword">class </span>MyClass</div><div class="line">{</div><div class="line">    <a class="code" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532cae7956ed7be1c5025a27ed3cb42a396bd">UInt32</a> m_myCoolVar;</div><div class="line">};</div></div><!-- fragment --></li>
 <li>Style Checker: N/A</li>
 </ul>
 <h3>Always use <b>const</b> wherever possible.</h3>

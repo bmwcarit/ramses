@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -83,6 +83,7 @@ Inheritance diagram for ramses::IRendererSceneControlEventHandler:</div>
 <div class="center"><img src="classramses_1_1IRendererSceneControlEventHandler__inherit__graph.png" border="0" usemap="#ramses_1_1IRendererSceneControlEventHandler_inherit__map" alt="Inheritance graph"/></div>
 <map name="ramses_1_1IRendererSceneControlEventHandler_inherit__map" id="ramses_1_1IRendererSceneControlEventHandler_inherit__map">
 <area shape="rect" id="node2" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html" title="Convenience empty implementation of IRendererSceneControlEventHandler that can be used to derive from..." alt="" coords="7,95,213,136"/>
+<area shape="rect" id="node3" href="classSceneStateEventHandler.html" title="SceneStateEventHandler" alt="" coords="25,184,195,211"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -118,15 +119,21 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a205d47bc91ef9d2cc60f39766bdf2bf8"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a205d47bc91ef9d2cc60f39766bdf2bf8">sceneFlushed</a> (<a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> sceneId, <a class="el" href="namespaceramses.html#ab7aa6bed4d47d2bd0967fc1a5ed6e95b">sceneVersionTag_t</a> sceneVersionTag)=0</td></tr>
 <tr class="memdesc:a205d47bc91ef9d2cc60f39766bdf2bf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called after a flush with version tag (<a class="el" href="classramses_1_1Scene.html#ac12e7548df54a23bc10c1e5629c1aa88" title="Commits all changes done to the scene since the last flush or since scene creation. This makes a new valid scene state available to all local and remote renderers. ">ramses::Scene::flush</a>) has been applied.  <a href="#a205d47bc91ef9d2cc60f39766bdf2bf8">More...</a><br /></td></tr>
 <tr class="separator:a205d47bc91ef9d2cc60f39766bdf2bf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa36f55ffddbe50085cb19020d9bc6886"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#aa36f55ffddbe50085cb19020d9bc6886">sceneExpirationMonitoringEnabled</a> (<a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> sceneId)=0</td></tr>
+<tr class="memdesc:aa36f55ffddbe50085cb19020d9bc6886"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called whenever a scene which was not previously monitored for expiration has requested expiration monitoring by sending a scene flush with valid expiration timestamp (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>) and that flush was applied on renderer side. From this point on, the scene will be monitored, can expire and recover (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0" title="This method will be called if a scene which is enabled for expiration monitoring (sceneExpirationMoni...">sceneExpired</a>, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a24f748b279d85ac3e0d0dc11740614a3" title="This method will be called if a scene which previously expired (ramses::Scene::setExpirationTimestamp...">sceneRecoveredFromExpiration</a>) until monitoring disabled again (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a2f9d3c748dc4a553bdcf32b3e7662e73" title="This method will be called whenever a scene which was previously monitored for expiration has request...">sceneExpirationMonitoringDisabled</a>).  <a href="#aa36f55ffddbe50085cb19020d9bc6886">More...</a><br /></td></tr>
+<tr class="separator:aa36f55ffddbe50085cb19020d9bc6886"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f9d3c748dc4a553bdcf32b3e7662e73"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a2f9d3c748dc4a553bdcf32b3e7662e73">sceneExpirationMonitoringDisabled</a> (<a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> sceneId)=0</td></tr>
+<tr class="memdesc:a2f9d3c748dc4a553bdcf32b3e7662e73"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called whenever a scene which was previously monitored for expiration has requested to stop being monitored by sending a scene flush with invalid expiration timestamp (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>) and that flush was applied on renderer side. From this point on, the scene will not be monitored anymore, regardless if it previously expired or not, i.e. there will be no expiration events (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0" title="This method will be called if a scene which is enabled for expiration monitoring (sceneExpirationMoni...">sceneExpired</a>, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a24f748b279d85ac3e0d0dc11740614a3" title="This method will be called if a scene which previously expired (ramses::Scene::setExpirationTimestamp...">sceneRecoveredFromExpiration</a>) until monitoring enabled again (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#aa36f55ffddbe50085cb19020d9bc6886" title="This method will be called whenever a scene which was not previously monitored for expiration has req...">sceneExpirationMonitoringEnabled</a>).  <a href="#a2f9d3c748dc4a553bdcf32b3e7662e73">More...</a><br /></td></tr>
+<tr class="separator:a2f9d3c748dc4a553bdcf32b3e7662e73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a994131648d8494923fd77c31a106c4c0"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0">sceneExpired</a> (<a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> sceneId)=0</td></tr>
-<tr class="memdesc:a994131648d8494923fd77c31a106c4c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called if a scene which has an expiration timestamp set (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (invoke IRendererEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>) is on renderer (not necessarily rendered) at a state that expired, i.e. current time is after the expiration timestamp. This callback is called only once when the scene expires even if scene stays expired in subsequent frames. When the scene is updated again with a new not anymore expired timestamp, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a24f748b279d85ac3e0d0dc11740614a3" title="This method will be called if a scene which previously expired (ramses::Scene::setExpirationTimestamp...">sceneRecoveredFromExpiration</a> is called.  <a href="#a994131648d8494923fd77c31a106c4c0">More...</a><br /></td></tr>
+<tr class="memdesc:a994131648d8494923fd77c31a106c4c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called if a scene which is enabled for expiration monitoring (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#aa36f55ffddbe50085cb19020d9bc6886" title="This method will be called whenever a scene which was not previously monitored for expiration has req...">sceneExpirationMonitoringEnabled</a>) is on renderer (not necessarily rendered) at a state that expired, i.e. current time is after the expiration timestamp set via <a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>. This callback is called only once when the scene expires even if scene stays expired in subsequent frames. When the scene is updated again with a new not anymore expired timestamp, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a24f748b279d85ac3e0d0dc11740614a3" title="This method will be called if a scene which previously expired (ramses::Scene::setExpirationTimestamp...">sceneRecoveredFromExpiration</a> is called.  <a href="#a994131648d8494923fd77c31a106c4c0">More...</a><br /></td></tr>
 <tr class="separator:a994131648d8494923fd77c31a106c4c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24f748b279d85ac3e0d0dc11740614a3"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a24f748b279d85ac3e0d0dc11740614a3">sceneRecoveredFromExpiration</a> (<a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> sceneId)=0</td></tr>
-<tr class="memdesc:a24f748b279d85ac3e0d0dc11740614a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called if a scene which previously expired (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (invoke IRendererEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a> and <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0" title="This method will be called if a scene which has an expiration timestamp set (ramses::Scene::setExpira...">sceneExpired</a>) was updated with a new expiration timestamp that is not expired anymore. This callback is called only once when the scene switches state from expired to not expired.  <a href="#a24f748b279d85ac3e0d0dc11740614a3">More...</a><br /></td></tr>
+<tr class="memdesc:a24f748b279d85ac3e0d0dc11740614a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called if a scene which previously expired (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a> and <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0" title="This method will be called if a scene which is enabled for expiration monitoring (sceneExpirationMoni...">sceneExpired</a>) was updated with a new expiration timestamp that is not expired anymore. This callback is called only once when the scene switches state from expired to not expired. This callback is not called when monitoring becomes disabled (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a2f9d3c748dc4a553bdcf32b3e7662e73" title="This method will be called whenever a scene which was previously monitored for expiration has request...">sceneExpirationMonitoringDisabled</a>) while scene is expired (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0" title="This method will be called if a scene which is enabled for expiration monitoring (sceneExpirationMoni...">sceneExpired</a>).  <a href="#a24f748b279d85ac3e0d0dc11740614a3">More...</a><br /></td></tr>
 <tr class="separator:a24f748b279d85ac3e0d0dc11740614a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7a3b038e5431ed1a1fdc8f0f4bbf7d9"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#ab7a3b038e5431ed1a1fdc8f0f4bbf7d9">streamAvailabilityChanged</a> (<a class="el" href="namespaceramses.html#ac6d2218ebfe794dbe8d0f780f059de83">streamSource_t</a> streamId, bool available)=0</td></tr>
-<tr class="memdesc:ab7a3b038e5431ed1a1fdc8f0f4bbf7d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called when a new IVI video stream becomes available, or when an existing stream disappears In terms of Wayland protocol, a stream is available if an "ivi_application" exists which has created a wayland surface (wl_surface) with ivi_id=streamId, and the surface has at least one attached non-nullptr buffer (i.e. renderable content).  <a href="#ab7a3b038e5431ed1a1fdc8f0f4bbf7d9">More...</a><br /></td></tr>
-<tr class="separator:ab7a3b038e5431ed1a1fdc8f0f4bbf7d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0956f933dcda63a29aa301f024974c45"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a0956f933dcda63a29aa301f024974c45">streamAvailabilityChanged</a> (<a class="el" href="namespaceramses.html#ac79b962fa2712607b7497565e46f47ff">waylandIviSurfaceId_t</a> streamId, bool available)=0</td></tr>
+<tr class="memdesc:a0956f933dcda63a29aa301f024974c45"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called when a new IVI video stream becomes available, or when an existing stream disappears In terms of Wayland protocol, a stream is available if an "ivi_application" exists which has created a wayland surface (wl_surface) with ivi_id=streamId, and the surface has at least one attached non-nullptr buffer (i.e. renderable content).  <a href="#a0956f933dcda63a29aa301f024974c45">More...</a><br /></td></tr>
+<tr class="separator:a0956f933dcda63a29aa301f024974c45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acce04232c965e1f37fc0d366e69b7c8a"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#acce04232c965e1f37fc0d366e69b7c8a">objectsPicked</a> (<a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> sceneId, const <a class="el" href="namespaceramses.html#a297993fd73b812e878accd5788e1b82c">pickableObjectId_t</a> *pickedObjects, uint32_t pickedObjectsCount)=0</td></tr>
 <tr class="memdesc:acce04232c965e1f37fc0d366e69b7c8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called when there were scene objects picked. A <a class="el" href="classramses_1_1PickableObject.html" title="PickableObject provides a way to specify a &#39;pickable&#39; area. ">ramses::PickableObject</a> can be 'picked' via a pick input event which is passed to <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes. ">ramses::RendererSceneControl</a> when the scene is rendered (see <a class="el" href="classramses_1_1RendererSceneControl.html#a6420e4d8b2754d6ac8831a3bda9233bb" title="Trigger renderer to test if given pick event with coordinates intersects with any instances of ramses...">ramses::RendererSceneControl::handlePickEvent</a>).  <a href="#acce04232c965e1f37fc0d366e69b7c8a">More...</a><br /></td></tr>
 <tr class="separator:acce04232c965e1f37fc0d366e69b7c8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -208,7 +215,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a6db396b314db92c14266deee57164b31">ramses::RendererSceneControlEventHandlerEmpty</a>.</p>
+<p>Implemented in <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a6db396b314db92c14266deee57164b31">ramses::RendererSceneControlEventHandlerEmpty</a>, and <a class="el" href="classSceneStateEventHandler.html#ac1e2477789a9dd0ef0a251daef82ed0c">SceneStateEventHandler</a>.</p>
 
 </div>
 </div>
@@ -371,7 +378,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a81a9ba13148c9511965bc1df17d2574f">ramses::RendererSceneControlEventHandlerEmpty</a>.</p>
+<p>Implemented in <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a81a9ba13148c9511965bc1df17d2574f">ramses::RendererSceneControlEventHandlerEmpty</a>, and <a class="el" href="classSceneStateEventHandler.html#ae7774e6f0c316722c9af4b959e03ea42">SceneStateEventHandler</a>.</p>
 
 </div>
 </div>
@@ -593,6 +600,78 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a2f9d3c748dc4a553bdcf32b3e7662e73"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f9d3c748dc4a553bdcf32b3e7662e73">&#9670;&nbsp;</a></span>sceneExpirationMonitoringDisabled()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringDisabled </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a>&#160;</td>
+          <td class="paramname"><em>sceneId</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>This method will be called whenever a scene which was previously monitored for expiration has requested to stop being monitored by sending a scene flush with invalid expiration timestamp (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>) and that flush was applied on renderer side. From this point on, the scene will not be monitored anymore, regardless if it previously expired or not, i.e. there will be no expiration events (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0" title="This method will be called if a scene which is enabled for expiration monitoring (sceneExpirationMoni...">sceneExpired</a>, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a24f748b279d85ac3e0d0dc11740614a3" title="This method will be called if a scene which previously expired (ramses::Scene::setExpirationTimestamp...">sceneRecoveredFromExpiration</a>) until monitoring enabled again (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#aa36f55ffddbe50085cb19020d9bc6886" title="This method will be called whenever a scene which was not previously monitored for expiration has req...">sceneExpirationMonitoringEnabled</a>). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sceneId</td><td>The scene id of the scene that will not be monitored for expiration anymore </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a9237861e7a2672972ce212f61e60c03d">ramses::RendererSceneControlEventHandlerEmpty</a>.</p>
+
+</div>
+</div>
+<a id="aa36f55ffddbe50085cb19020d9bc6886"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa36f55ffddbe50085cb19020d9bc6886">&#9670;&nbsp;</a></span>sceneExpirationMonitoringEnabled()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringEnabled </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a>&#160;</td>
+          <td class="paramname"><em>sceneId</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>This method will be called whenever a scene which was not previously monitored for expiration has requested expiration monitoring by sending a scene flush with valid expiration timestamp (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>) and that flush was applied on renderer side. From this point on, the scene will be monitored, can expire and recover (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0" title="This method will be called if a scene which is enabled for expiration monitoring (sceneExpirationMoni...">sceneExpired</a>, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a24f748b279d85ac3e0d0dc11740614a3" title="This method will be called if a scene which previously expired (ramses::Scene::setExpirationTimestamp...">sceneRecoveredFromExpiration</a>) until monitoring disabled again (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a2f9d3c748dc4a553bdcf32b3e7662e73" title="This method will be called whenever a scene which was previously monitored for expiration has request...">sceneExpirationMonitoringDisabled</a>). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sceneId</td><td>The scene id of the scene that will be monitored for expiration </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#af8295cfd70d6a8a7b66652cdcbd654d6">ramses::RendererSceneControlEventHandlerEmpty</a>.</p>
+
+</div>
+</div>
 <a id="a994131648d8494923fd77c31a106c4c0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a994131648d8494923fd77c31a106c4c0">&#9670;&nbsp;</a></span>sceneExpired()</h2>
 
@@ -617,7 +696,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>This method will be called if a scene which has an expiration timestamp set (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (invoke IRendererEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>) is on renderer (not necessarily rendered) at a state that expired, i.e. current time is after the expiration timestamp. This callback is called only once when the scene expires even if scene stays expired in subsequent frames. When the scene is updated again with a new not anymore expired timestamp, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a24f748b279d85ac3e0d0dc11740614a3" title="This method will be called if a scene which previously expired (ramses::Scene::setExpirationTimestamp...">sceneRecoveredFromExpiration</a> is called. </p>
+<p>This method will be called if a scene which is enabled for expiration monitoring (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#aa36f55ffddbe50085cb19020d9bc6886" title="This method will be called whenever a scene which was not previously monitored for expiration has req...">sceneExpirationMonitoringEnabled</a>) is on renderer (not necessarily rendered) at a state that expired, i.e. current time is after the expiration timestamp set via <a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a>. This callback is called only once when the scene expires even if scene stays expired in subsequent frames. When the scene is updated again with a new not anymore expired timestamp, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a24f748b279d85ac3e0d0dc11740614a3" title="This method will be called if a scene which previously expired (ramses::Scene::setExpirationTimestamp...">sceneRecoveredFromExpiration</a> is called. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">sceneId</td><td>The scene id of the scene on which the event occurred </td></tr>
@@ -737,7 +816,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>This method will be called if a scene which previously expired (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (invoke IRendererEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a> and <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0" title="This method will be called if a scene which has an expiration timestamp set (ramses::Scene::setExpira...">sceneExpired</a>) was updated with a new expiration timestamp that is not expired anymore. This callback is called only once when the scene switches state from expired to not expired. </p>
+<p>This method will be called if a scene which previously expired (<a class="el" href="classramses_1_1Scene.html#a5a4e0fd8b04ce23881f3089bfc4c9556" title="Expiration timestamp is a point in time till which the scene is considered to be up-to-date. Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (ramses::IRendererSceneControlEventHandler::sceneExpired). ">ramses::Scene::setExpirationTimestamp</a> and <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0" title="This method will be called if a scene which is enabled for expiration monitoring (sceneExpirationMoni...">sceneExpired</a>) was updated with a new expiration timestamp that is not expired anymore. This callback is called only once when the scene switches state from expired to not expired. This callback is not called when monitoring becomes disabled (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a2f9d3c748dc4a553bdcf32b3e7662e73" title="This method will be called whenever a scene which was previously monitored for expiration has request...">sceneExpirationMonitoringDisabled</a>) while scene is expired (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0" title="This method will be called if a scene which is enabled for expiration monitoring (sceneExpirationMoni...">sceneExpired</a>). </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">sceneId</td><td>The scene id of the scene on which the event occurred </td></tr>
@@ -797,8 +876,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ab7a3b038e5431ed1a1fdc8f0f4bbf7d9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab7a3b038e5431ed1a1fdc8f0f4bbf7d9">&#9670;&nbsp;</a></span>streamAvailabilityChanged()</h2>
+<a id="a0956f933dcda63a29aa301f024974c45"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0956f933dcda63a29aa301f024974c45">&#9670;&nbsp;</a></span>streamAvailabilityChanged()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -809,7 +888,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">virtual void ramses::IRendererSceneControlEventHandler::streamAvailabilityChanged </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceramses.html#ac6d2218ebfe794dbe8d0f780f059de83">streamSource_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ac79b962fa2712607b7497565e46f47ff">waylandIviSurfaceId_t</a>&#160;</td>
           <td class="paramname"><em>streamId</em>, </td>
         </tr>
         <tr>
@@ -842,7 +921,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a247ec2a9253f75fa3babfd65e0222212">ramses::RendererSceneControlEventHandlerEmpty</a>.</p>
+<p>Implemented in <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a6f9edc11c14079f83e04fa51a9b1d8bf">ramses::RendererSceneControlEventHandlerEmpty</a>.</p>
 
 </div>
 </div>

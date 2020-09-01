@@ -18,6 +18,5 @@ var searchData=
   ['haswidgetbackgroundid',['hasWidgetBackgroundID',['../classramses_1_1DcsmMetadataUpdate.html#a9a697b1a2cd101df978070ab76996b42',1,'ramses::DcsmMetadataUpdate']]],
   ['haswidgethudlineid',['hasWidgetHUDLineID',['../classramses_1_1DcsmMetadataUpdate.html#a6c5a440e2e695987eb80d14be40d8665',1,'ramses::DcsmMetadataUpdate']]],
   ['haswidgetorder',['hasWidgetOrder',['../classramses_1_1DcsmMetadataUpdate.html#ad53678e3c52d768ef60a3a7ea1464506',1,'ramses::DcsmMetadataUpdate']]],
-  ['hidecontent',['hideContent',['../classramses_1_1DcsmContentControl.html#a48b58f4d5d2df59c454db90cd19bcd04',1,'ramses::DcsmContentControl']]],
-  ['hidescene',['hideScene',['../classramses_1_1RendererSceneControl__legacy.html#a72495ef997962599f69f4ab2a8bdf5c3',1,'ramses::RendererSceneControl_legacy']]]
+  ['hidecontent',['hideContent',['../classramses_1_1DcsmContentControl.html#a48b58f4d5d2df59c454db90cd19bcd04',1,'ramses::DcsmContentControl']]]
 ];

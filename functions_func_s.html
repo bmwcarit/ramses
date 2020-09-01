@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -67,15 +67,13 @@ $(function() {
 <li>SaveImageBufferToPng()
 : <a class="el" href="classramses_1_1RamsesUtils.html#ab516bb29af11563ab71ac9d796f5d893">ramses::RamsesUtils</a>
 </li>
-<li>saveResources()
-: <a class="el" href="classramses_1_1RamsesClient.html#a3b41835257c9db262aa22e48dc069212">ramses::RamsesClient</a>
-</li>
-<li>saveSceneToFile()
-: <a class="el" href="classramses_1_1RamsesClient.html#a8e1b0324c21ef8cafaf01fdb23932554">ramses::RamsesClient</a>
+<li>SaveResourcesOfSceneToResourceFile()
+: <a class="el" href="classramses_1_1RamsesHMIUtils.html#ac1455985601049a6765acf597d6645a2">ramses::RamsesHMIUtils</a>
 </li>
 <li>saveToFile()
 : <a class="el" href="classramses_1_1BinaryShaderCache.html#aca9936df14b2547b795ce9177a32be21">ramses::BinaryShaderCache</a>
 , <a class="el" href="classramses_1_1DefaultRendererResourceCache.html#af78f9ccdec2b04b4b007495219b280db">ramses::DefaultRendererResourceCache</a>
+, <a class="el" href="classramses_1_1Scene.html#a518965745ef1e9a460bab14747829089">ramses::Scene</a>
 </li>
 <li>scale()
 : <a class="el" href="classramses_1_1Node.html#adb1a7ac9ab30a481c491c4af780bd9fb">ramses::Node</a>
@@ -83,18 +81,20 @@ $(function() {
 <li>Scene()
 : <a class="el" href="classramses_1_1Scene.html#a8fd2fb1892e1bed378fd06a8634b4854">ramses::Scene</a>
 </li>
-<li>sceneAssignedToDisplayBuffer()
-: <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#a83a4dc5f5c1a24241af6eb7d5adfdaa1">ramses::IRendererSceneControlEventHandler_legacy</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#a6e1ca2a5586f14f100bf3521902310f6">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
-</li>
 <li>SceneConfig()
 : <a class="el" href="classramses_1_1SceneConfig.html#a0842dd4e2e6972b67d1df5d1d5c94944">ramses::SceneConfig</a>
 </li>
+<li>sceneExpirationMonitoringDisabled()
+: <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a2f9d3c748dc4a553bdcf32b3e7662e73">ramses::IRendererSceneControlEventHandler</a>
+, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a9237861e7a2672972ce212f61e60c03d">ramses::RendererSceneControlEventHandlerEmpty</a>
+</li>
+<li>sceneExpirationMonitoringEnabled()
+: <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#aa36f55ffddbe50085cb19020d9bc6886">ramses::IRendererSceneControlEventHandler</a>
+, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#af8295cfd70d6a8a7b66652cdcbd654d6">ramses::RendererSceneControlEventHandlerEmpty</a>
+</li>
 <li>sceneExpired()
 : <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0">ramses::IRendererSceneControlEventHandler</a>
-, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#a6ee55d298d1d11467369c7f05f8338b5">ramses::IRendererSceneControlEventHandler_legacy</a>
 , <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#abbc3814bfdaaf45fed51abdb3669dfa1">ramses::RendererSceneControlEventHandlerEmpty</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#ab44d6582164b094d9dbbf47ac7cc7b6d">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
 </li>
 <li>sceneFileLoadFailed()
 : <a class="el" href="classramses_1_1IClientEventHandler.html#a4e53a302b2149d9dfa550d90eeea5910">ramses::IClientEventHandler</a>
@@ -104,23 +104,13 @@ $(function() {
 </li>
 <li>sceneFlushed()
 : <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a205d47bc91ef9d2cc60f39766bdf2bf8">ramses::IRendererSceneControlEventHandler</a>
-, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#a97defc4d01a0d0500cc1164a1cc76770">ramses::IRendererSceneControlEventHandler_legacy</a>
 , <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a128450bdd7ef264424ef1f99036b6eb0">ramses::RendererSceneControlEventHandlerEmpty</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#a9c01b0318f02936b2b949d789c333167">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
 </li>
 <li>SceneGraphIterator()
 : <a class="el" href="classramses_1_1SceneGraphIterator.html#a3ce935f19f65a8d469f5e062610527c7">ramses::SceneGraphIterator</a>
 </li>
-<li>sceneHidden()
-: <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#a47dc392cf33e1f3b1f347a5ee5c5986d">ramses::IRendererSceneControlEventHandler_legacy</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#a90e02e07b669eb64089e2f6ffb1cf0fd">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
-</li>
 <li>SceneIterator()
 : <a class="el" href="classramses_1_1SceneIterator.html#abd1829ccffe76e71fe4fd8dce6ae0ce4">ramses::SceneIterator</a>
-</li>
-<li>sceneMapped()
-: <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#a11702d9ce83d2d665798a00a0eed0d87">ramses::IRendererSceneControlEventHandler_legacy</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#ae8f2942bff669f01f5f53e3e102cf7da">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
 </li>
 <li>SceneObject()
 : <a class="el" href="classramses_1_1SceneObject.html#a9b30ad071bbd3dc0c1f2bf8632432eb2">ramses::SceneObject</a>
@@ -130,15 +120,11 @@ $(function() {
 </li>
 <li>scenePublished()
 : <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a4dd3354bd51d0fe332e8f28508e4afaa">ramses::IRendererSceneControlEventHandler</a>
-, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#a7231186c88c66197812d45988796d62b">ramses::IRendererSceneControlEventHandler_legacy</a>
 , <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a07631c10e8e982729b6a870f3925b1af">ramses::RendererSceneControlEventHandlerEmpty</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#a55bcca536cd98121e3f3123c1ceafd7b">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
 </li>
 <li>sceneRecoveredFromExpiration()
 : <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a24f748b279d85ac3e0d0dc11740614a3">ramses::IRendererSceneControlEventHandler</a>
-, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#a7bc8fe0c8ca3516bd78e55792aadb6a7">ramses::IRendererSceneControlEventHandler_legacy</a>
 , <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a9fa78efc7b932172dd94a233bad9c4ec">ramses::RendererSceneControlEventHandlerEmpty</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#a5ca42cc406915e271045cf5d17200c7b">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
 </li>
 <li>SceneReference()
 : <a class="el" href="classramses_1_1SceneReference.html#a287990356b98d8dc63529a69563ab7fb">ramses::SceneReference</a>
@@ -149,29 +135,12 @@ $(function() {
 <li>sceneReferenceStateChanged()
 : <a class="el" href="classramses_1_1IClientEventHandler.html#a101d6f9ebb074aee2d87ee904bc3b2a4">ramses::IClientEventHandler</a>
 </li>
-<li>sceneShown()
-: <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#a1ca3c7b5ee7141b24033b8e107ea62a8">ramses::IRendererSceneControlEventHandler_legacy</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#a2b3fe9a3b4c06d275a97d62af1d71f96">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
-</li>
 <li>sceneStateChanged()
 : <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a6d004040870b94940f0a67b843672f83">ramses::IRendererSceneControlEventHandler</a>
 , <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a89bbf910ecb31b0ec8ee9b4298c426c1">ramses::RendererSceneControlEventHandlerEmpty</a>
 </li>
-<li>sceneSubscribed()
-: <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#ac1f43d6d2e834a9d6b7393218b9f5f36">ramses::IRendererSceneControlEventHandler_legacy</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#a03b75ff1d2c1917a9a8f05924e3e1f2f">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
-</li>
-<li>sceneUnmapped()
-: <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#ad74a1396233117189813a158cb529675">ramses::IRendererSceneControlEventHandler_legacy</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#a87e02491541e1ed15bcdc3d9c15db701">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
-</li>
-<li>sceneUnpublished()
-: <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#a174360513742578fc2a3308d7a7c7559">ramses::IRendererSceneControlEventHandler_legacy</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#a258b46dae1f30e3deb589774104ed822">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
-</li>
-<li>sceneUnsubscribed()
-: <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#abb546ae13d1a888dd44c45cc2269f3d2">ramses::IRendererSceneControlEventHandler_legacy</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#a7a3da558eb85fd3be0009fc837d5051b">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
+<li>SceneStateEventHandler()
+: <a class="el" href="classSceneStateEventHandler.html#a51121295648aa4416bd143ea99de5ed3">SceneStateEventHandler</a>
 </li>
 <li>setAndroidNativeWindow()
 : <a class="el" href="classramses_1_1DisplayConfig.html#a47059b6a65cca711a85640256eae8f9a">ramses::DisplayConfig</a>
@@ -193,6 +162,9 @@ $(function() {
 </li>
 <li>setBinaryShaderCache()
 : <a class="el" href="classramses_1_1RendererConfig.html#a4aefa725783f7a2d0a755c6cadbc4359">ramses::RendererConfig</a>
+</li>
+<li>setBlendingColor()
+: <a class="el" href="classramses_1_1Appearance.html#a27aa169943ba44d9503e2e3f4b848060">ramses::Appearance</a>
 </li>
 <li>setBlendingFactors()
 : <a class="el" href="classramses_1_1Appearance.html#ac19d7763ed7ff2530811a3776d278047">ramses::Appearance</a>
@@ -239,11 +211,6 @@ $(function() {
 <li>setDaemonPortForTCPCommunication()
 : <a class="el" href="classramses_1_1RamsesFrameworkConfig.html#ae55784d0ec82bfc4e974074e62a8e625">ramses::RamsesFrameworkConfig</a>
 </li>
-<li>setData()
-: <a class="el" href="classramses_1_1IndexDataBuffer.html#ac3a46b84c422ac768ee83d2f17aad3c5">ramses::IndexDataBuffer</a>
-, <a class="el" href="classramses_1_1Texture2DBuffer.html#af513b2716b927866fae8a2f538db1007">ramses::Texture2DBuffer</a>
-, <a class="el" href="classramses_1_1VertexDataBuffer.html#a8c0d88f749077c528ae2d0c92510f52a">ramses::VertexDataBuffer</a>
-</li>
 <li>setDepthFunction()
 : <a class="el" href="classramses_1_1Appearance.html#ac77823282236a2af5c016f8904b66ce0">ramses::Appearance</a>
 </li>
@@ -252,7 +219,6 @@ $(function() {
 </li>
 <li>setDisplayBufferClearColor()
 : <a class="el" href="classramses_1_1RamsesRenderer.html#a615fece250e98bdfde5fae979b55b24e">ramses::RamsesRenderer</a>
-, <a class="el" href="classramses_1_1RendererSceneControl__legacy.html#a29273480a3c3ca67038ab4fd75891a3a">ramses::RendererSceneControl_legacy</a>
 </li>
 <li>setDLTApplicationDescription()
 : <a class="el" href="classramses_1_1RamsesFrameworkConfig.html#a310f3a0d6bffebe9cb8349f210c7b9a8">ramses::RamsesFrameworkConfig</a>
@@ -293,6 +259,12 @@ $(function() {
 <li>setGeometryBinding()
 : <a class="el" href="classramses_1_1MeshNode.html#abf97e76c45b196bc3ee0eea5fac8032e">ramses::MeshNode</a>
 </li>
+<li>setGeometryShader()
+: <a class="el" href="classramses_1_1EffectDescription.html#abfacc30a10c4995c6855d7929c9f38ad">ramses::EffectDescription</a>
+</li>
+<li>setGeometryShaderFromFile()
+: <a class="el" href="classramses_1_1EffectDescription.html#a1b10f087f41bbc99807b10a97b3ca1f5">ramses::EffectDescription</a>
+</li>
 <li>setGPUMemoryCacheSize()
 : <a class="el" href="classramses_1_1DisplayConfig.html#a3c77e0bd69515d1d71d7c0cbf46aa417">ramses::DisplayConfig</a>
 </li>
@@ -300,10 +272,10 @@ $(function() {
 : <a class="el" href="classramses_1_1MeshNode.html#ae7f99ac6ac11b6013f8aa6a37da0e4ac">ramses::MeshNode</a>
 </li>
 <li>setIndices()
-: <a class="el" href="classramses_1_1GeometryBinding.html#aaa304ccc5bbcb658cec3f6fa936426ef">ramses::GeometryBinding</a>
+: <a class="el" href="classramses_1_1GeometryBinding.html#a3cdc6368939eee5b38e24c71e9964b76">ramses::GeometryBinding</a>
 </li>
 <li>setInputBuffer()
-: <a class="el" href="classramses_1_1GeometryBinding.html#aa5d2fbb568d5638a64e70ed19135a8e7">ramses::GeometryBinding</a>
+: <a class="el" href="classramses_1_1GeometryBinding.html#a775b60f22ae9247c3145ddf16696eb46">ramses::GeometryBinding</a>
 </li>
 <li>setInputTexture()
 : <a class="el" href="classramses_1_1Appearance.html#ad4d48b8ec74600283ea5c1e414d249a3">ramses::Appearance</a>
@@ -330,7 +302,7 @@ $(function() {
 : <a class="el" href="classramses_1_1Appearance.html#a72d86d4b0ed4e061e1d8b2005884fc17">ramses::Appearance</a>
 </li>
 <li>setInputValueVector3f()
-: <a class="el" href="classramses_1_1Appearance.html#a24035bf9419ff8e7f45e02b86856ea8f">ramses::Appearance</a>
+: <a class="el" href="classramses_1_1Appearance.html#a5746a15a6ccc5c64cfecf27e19142e0f">ramses::Appearance</a>
 </li>
 <li>setInputValueVector3i()
 : <a class="el" href="classramses_1_1Appearance.html#af0c3055534ba433adad13ff514a56fa7">ramses::Appearance</a>
@@ -407,8 +379,11 @@ $(function() {
 <li>setPeriodicLogsEnabled()
 : <a class="el" href="classramses_1_1RamsesFrameworkConfig.html#a9b66c1f54875e37fef3ffc6e110d5b44">ramses::RamsesFrameworkConfig</a>
 </li>
+<li>SetPerspectiveCameraFrustumToDataObjects()
+: <a class="el" href="classramses_1_1RamsesUtils.html#a8ddcdb0c8ba1dea7d75e494f8f1df494">ramses::RamsesUtils</a>
+</li>
 <li>setPerspectiveProjection()
-: <a class="el" href="classramses_1_1DisplayConfig.html#aa05c9f743cad317cfdd54929a6f33088">ramses::DisplayConfig</a>
+: <a class="el" href="classramses_1_1DisplayConfig.html#a37d33a7cedfdaaeff32392a212b44b58">ramses::DisplayConfig</a>
 </li>
 <li>setPickableObjectId()
 : <a class="el" href="classramses_1_1PickableObject.html#a655e8d3ab03984f0726aca2357d6e599">ramses::PickableObject</a>
@@ -503,7 +478,7 @@ $(function() {
 : <a class="el" href="classramses_1_1RendererConfig.html#a21ee6f70e4b61fc79e3b2d605a09d509">ramses::RendererConfig</a>
 </li>
 <li>setTextureData()
-: <a class="el" href="classramses_1_1TextureSampler.html#ae08541c29ec7f81c609080a225f5a095">ramses::TextureSampler</a>
+: <a class="el" href="classramses_1_1TextureSampler.html#a64ea4aa5ff3330f0896e4bea6c439aa9">ramses::TextureSampler</a>
 </li>
 <li>setTime()
 : <a class="el" href="classramses_1_1AnimationSystem.html#acb47a27af5f5a904f338cb2c053d4b06">ramses::AnimationSystem</a>
@@ -565,10 +540,10 @@ $(function() {
 : <a class="el" href="classramses_1_1RendererConfig.html#a97146e70d5a577718c9f6f7cf631a986">ramses::RendererConfig</a>
 </li>
 <li>setWaylandIviLayerID()
-: <a class="el" href="classramses_1_1DisplayConfig.html#a968e6ea1be726870660c03e18b1ade11">ramses::DisplayConfig</a>
+: <a class="el" href="classramses_1_1DisplayConfig.html#a92079ef324e668e93ec24bad7f336455">ramses::DisplayConfig</a>
 </li>
 <li>setWaylandIviSurfaceID()
-: <a class="el" href="classramses_1_1DisplayConfig.html#a3d3533fedfbbab09ef3ccd51b177505e">ramses::DisplayConfig</a>
+: <a class="el" href="classramses_1_1DisplayConfig.html#a0539a794b04ad16624385d12a3b49917">ramses::DisplayConfig</a>
 </li>
 <li>setWidgetBackgroundID()
 : <a class="el" href="classramses_1_1DcsmMetadataCreator.html#a9c07ec1617e1602f5914ce88a149da01">ramses::DcsmMetadataCreator</a>
@@ -604,9 +579,6 @@ $(function() {
 </li>
 <li>showContent()
 : <a class="el" href="classramses_1_1DcsmContentControl.html#a3c4076e85c3e093ede4c3d3c1f213ce8">ramses::DcsmContentControl</a>
-</li>
-<li>showScene()
-: <a class="el" href="classramses_1_1RendererSceneControl__legacy.html#ab59f5c9509ac616f36e5dd9e6e5a3143">ramses::RendererSceneControl_legacy</a>
 </li>
 <li>SizeInfo()
 : <a class="el" href="structramses_1_1SizeInfo.html#a4f812764fc14541915d8eec7c6f3562b">ramses::SizeInfo</a>
@@ -728,21 +700,16 @@ $(function() {
 , <a class="el" href="classramses_1_1IRendererResourceCache.html#a5826f54ff6e26e1eb3850d5c74d9f636">ramses::IRendererResourceCache</a>
 </li>
 <li>streamAvailabilityChanged()
-: <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a31444e30c066b58affc154390961c302">ramses::DcsmContentControlEventHandlerEmpty</a>
-, <a class="el" href="classramses_1_1IDcsmContentControlEventHandler.html#a2c5366727aef57fb769d69e7daae7cb8">ramses::IDcsmContentControlEventHandler</a>
-, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#ab7a3b038e5431ed1a1fdc8f0f4bbf7d9">ramses::IRendererSceneControlEventHandler</a>
-, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler__legacy.html#a06b238015059feee48fa5d9bc6eedc47">ramses::IRendererSceneControlEventHandler_legacy</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a247ec2a9253f75fa3babfd65e0222212">ramses::RendererSceneControlEventHandlerEmpty</a>
-, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html#aec9567522ebb6bc4ed087f8de4d8d0e4">ramses::RendererSceneControlEventHandlerEmpty_legacy</a>
+: <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a13ae572948b9df3e89bbe6502ee31e6d">ramses::DcsmContentControlEventHandlerEmpty</a>
+, <a class="el" href="classramses_1_1IDcsmContentControlEventHandler.html#aef77d1c6d8b49407bd9c320f79ea2e29">ramses::IDcsmContentControlEventHandler</a>
+, <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a0956f933dcda63a29aa301f024974c45">ramses::IRendererSceneControlEventHandler</a>
+, <a class="el" href="classramses_1_1RendererSceneControlEventHandlerEmpty.html#a6f9edc11c14079f83e04fa51a9b1d8bf">ramses::RendererSceneControlEventHandlerEmpty</a>
 </li>
 <li>StreamTexture()
 : <a class="el" href="classramses_1_1StreamTexture.html#a43b95a6cf704a34955497a01499202fe">ramses::StreamTexture</a>
 </li>
 <li>StronglyTypedValue()
-: <a class="el" href="classramses_1_1StronglyTypedValue.html#a9df0a155206c3984ca60ffbce05df602">ramses::StronglyTypedValue&lt; _baseType, _invalid, _uniqueId &gt;</a>
-</li>
-<li>subscribeScene()
-: <a class="el" href="classramses_1_1RendererSceneControl__legacy.html#a40944e9d5982f98f64b091ade276ce70">ramses::RendererSceneControl_legacy</a>
+: <a class="el" href="classramses_1_1StronglyTypedValue.html#a435e0981de271208171a833842522ee4">ramses::StronglyTypedValue&lt; _baseType, _invalid, _uniqueId &gt;</a>
 </li>
 <li>supportsCharacter()
 : <a class="el" href="classramses_1_1IFontInstance.html#a86d3640d63a5325c6fbbe6ff164d2b90">ramses::IFontInstance</a>

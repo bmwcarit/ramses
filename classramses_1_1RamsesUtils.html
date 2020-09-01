@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -88,18 +88,21 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a2c906c47e2a01098e5eb759d87e1caa7"><td class="memTemplItemLeft" align="right" valign="top">static T *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#a2c906c47e2a01098e5eb759d87e1caa7">TryConvert</a> (<a class="el" href="classramses_1_1RamsesObject.html">RamsesObject</a> &amp;obj)</td></tr>
 <tr class="memdesc:a2c906c47e2a01098e5eb759d87e1caa7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts object to a compatible object type. Object can be converted to any of its base classes. Eg. <a class="el" href="classramses_1_1MeshNode.html" title="The MeshNode holds all information which is needed to render an object to the screen. ">MeshNode</a> can be converted to <a class="el" href="classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it...">Node</a>, <a class="el" href="classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene. ">SceneObject</a>, <a class="el" href="classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. ">ClientObject</a> or <a class="el" href="classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. ">RamsesObject</a>.  <a href="#a2c906c47e2a01098e5eb759d87e1caa7">More...</a><br /></td></tr>
 <tr class="separator:a2c906c47e2a01098e5eb759d87e1caa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4bad26f4d83f7bce22980669fd5bd216"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classramses_1_1Texture2D.html">Texture2D</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#a4bad26f4d83f7bce22980669fd5bd216">CreateTextureResourceFromPng</a> (const char *pngFilePath, <a class="el" href="classramses_1_1RamsesClient.html">RamsesClient</a> &amp;ramsesClient, const <a class="el" href="structramses_1_1TextureSwizzle.html">TextureSwizzle</a> &amp;swizzle={}, const char *name=nullptr)</td></tr>
-<tr class="memdesc:a4bad26f4d83f7bce22980669fd5bd216"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a Texture from the given png file.  <a href="#a4bad26f4d83f7bce22980669fd5bd216">More...</a><br /></td></tr>
-<tr class="separator:a4bad26f4d83f7bce22980669fd5bd216"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3f0f90f3c6d549bea189ed5a113e0f47"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classramses_1_1Texture2D.html">Texture2D</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#a3f0f90f3c6d549bea189ed5a113e0f47">CreateTextureResourceFromPngBuffer</a> (const std::vector&lt; unsigned char &gt; &amp;pngData, <a class="el" href="classramses_1_1RamsesClient.html">RamsesClient</a> &amp;ramsesClient, const <a class="el" href="structramses_1_1TextureSwizzle.html">TextureSwizzle</a> &amp;swizzle={}, const char *name=nullptr)</td></tr>
-<tr class="memdesc:a3f0f90f3c6d549bea189ed5a113e0f47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a Texture from the given png memory buffer.  <a href="#a3f0f90f3c6d549bea189ed5a113e0f47">More...</a><br /></td></tr>
-<tr class="separator:a3f0f90f3c6d549bea189ed5a113e0f47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abeb6bfe7a148a8ddfab574b3020be3c9"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classramses_1_1Texture2D.html">Texture2D</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#abeb6bfe7a148a8ddfab574b3020be3c9">CreateTextureResourceFromPng</a> (const char *pngFilePath, <a class="el" href="classramses_1_1Scene.html">Scene</a> &amp;scene, const <a class="el" href="structramses_1_1TextureSwizzle.html">TextureSwizzle</a> &amp;swizzle={}, const char *name=nullptr)</td></tr>
+<tr class="memdesc:abeb6bfe7a148a8ddfab574b3020be3c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a Texture from the given png file.  <a href="#abeb6bfe7a148a8ddfab574b3020be3c9">More...</a><br /></td></tr>
+<tr class="separator:abeb6bfe7a148a8ddfab574b3020be3c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fabdee1e7a2c41fc2ce76a63d0cf987"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classramses_1_1Texture2D.html">Texture2D</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#a1fabdee1e7a2c41fc2ce76a63d0cf987">CreateTextureResourceFromPngBuffer</a> (const std::vector&lt; unsigned char &gt; &amp;pngData, <a class="el" href="classramses_1_1Scene.html">Scene</a> &amp;scene, const <a class="el" href="structramses_1_1TextureSwizzle.html">TextureSwizzle</a> &amp;swizzle={}, const char *name=nullptr)</td></tr>
+<tr class="memdesc:a1fabdee1e7a2c41fc2ce76a63d0cf987"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a Texture from the given png memory buffer.  <a href="#a1fabdee1e7a2c41fc2ce76a63d0cf987">More...</a><br /></td></tr>
+<tr class="separator:a1fabdee1e7a2c41fc2ce76a63d0cf987"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a86b2a9667e462d38aaa83022f4608033"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structramses_1_1MipLevelData.html">MipLevelData</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#a86b2a9667e462d38aaa83022f4608033">GenerateMipMapsTexture2D</a> (uint32_t width, uint32_t height, uint8_t bytesPerPixel, uint8_t *data, uint32_t &amp;mipMapCount)</td></tr>
 <tr class="memdesc:a86b2a9667e462d38aaa83022f4608033"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate mip maps from original texture 2D data. You obtain ownership of all the data returned in the mip map data object. Note, that the original texture data gets copied and represents the first mip map level.  <a href="#a86b2a9667e462d38aaa83022f4608033">More...</a><br /></td></tr>
 <tr class="separator:a86b2a9667e462d38aaa83022f4608033"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab516bb29af11563ab71ac9d796f5d893"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#ab516bb29af11563ab71ac9d796f5d893">SaveImageBufferToPng</a> (const std::string &amp;filePath, const std::vector&lt; uint8_t &gt; &amp;imageData, uint32_t width, uint32_t height)</td></tr>
-<tr class="memdesc:ab516bb29af11563ab71ac9d796f5d893"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a png from image data, e.g. data generated by RamsesClientService::readPixels. The image data is expected to be in the format rgba8. Width x Height x 4 (rgba8) have to exactly match the size of the image buffer, otherwise no png will be created. Also width * height cannot exceed the size 268435455 or the result will be corrupted.  <a href="#ab516bb29af11563ab71ac9d796f5d893">More...</a><br /></td></tr>
+<tr class="memdesc:ab516bb29af11563ab71ac9d796f5d893"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a png from image data, e.g. data generated by RamsesClientService::readPixels. The image data is expected to be in the format rgba8. Width x Height x 4 (rgba8) have to exactly match the size of the image buffer, otherwise no png will be created. Also width * height cannot exceed the size 268435455 or png creation will fail.  <a href="#ab516bb29af11563ab71ac9d796f5d893">More...</a><br /></td></tr>
 <tr class="separator:ab516bb29af11563ab71ac9d796f5d893"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a180f272347115d28653c979c82975c59"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#a180f272347115d28653c979c82975c59">SaveImageBufferToPng</a> (const std::string &amp;filePath, std::vector&lt; uint8_t &gt; &amp;imageData, uint32_t width, uint32_t height, bool flipImageBufferVertically)</td></tr>
+<tr class="memdesc:a180f272347115d28653c979c82975c59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a png from image data, e.g. data generated by RamsesClientService::readPixels. The image data is expected to be in the format rgba8. Width x Height x 4 (rgba8) have to exactly match the size of the image buffer, otherwise no png will be created. Also width * height cannot exceed the size 268435455 or png creation will fail. The image data can be flipped vertically, as the data coming from a function like RamsesClientService::readPixels gets the data from OpenGL which has the origin in the lower left corner, whereas png has the origin in the upper left corner. So to capture what you see on screen you have to set the flag flipImageBufferVertically to true.  <a href="#a180f272347115d28653c979c82975c59">More...</a><br /></td></tr>
+<tr class="separator:a180f272347115d28653c979c82975c59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e0a2e0243b76a9ce59196dc92dd33d5"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structramses_1_1CubeMipLevelData.html">CubeMipLevelData</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#a4e0a2e0243b76a9ce59196dc92dd33d5">GenerateMipMapsTextureCube</a> (uint32_t faceWidth, uint32_t faceHeight, uint8_t bytesPerPixel, uint8_t *data, uint32_t &amp;mipMapCount)</td></tr>
 <tr class="memdesc:a4e0a2e0243b76a9ce59196dc92dd33d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate mip maps from original texture cube data. You obtain ownership of all the data returned in the mip map data object. Note, that the original texture data gets copied and represents the first mip map level.  <a href="#a4e0a2e0243b76a9ce59196dc92dd33d5">More...</a><br /></td></tr>
 <tr class="separator:a4e0a2e0243b76a9ce59196dc92dd33d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -112,12 +115,15 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ae0050ae9df367cb84fa76d34f03b59ea"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceramses.html#ac4cc31ffbc7fd7afcb6c60375a2281a9">nodeId_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#ae0050ae9df367cb84fa76d34f03b59ea">GetNodeId</a> (const <a class="el" href="classramses_1_1Node.html">Node</a> &amp;node)</td></tr>
 <tr class="memdesc:ae0050ae9df367cb84fa76d34f03b59ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the identifier of a node, which is printed in the renderer logs. The identifier is guaranteed to be unique within a <a class="el" href="classramses_1_1Scene.html" title="The Scene holds a scene graph. It is the essential class for distributing content to the ramses syste...">Scene</a> until the <a class="el" href="classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it...">Node</a> is destroyed. If a <a class="el" href="classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it...">Node</a> is destroyed, a newly created <a class="el" href="classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it...">Node</a> can get the identifier of the destroyed <a class="el" href="classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it...">Node</a>.  <a href="#ae0050ae9df367cb84fa76d34f03b59ea">More...</a><br /></td></tr>
 <tr class="separator:ae0050ae9df367cb84fa76d34f03b59ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ddcdb0c8ba1dea7d75e494f8f1df494"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#a8ddcdb0c8ba1dea7d75e494f8f1df494">SetPerspectiveCameraFrustumToDataObjects</a> (float fov, float aspectRatio, float nearPlane, float farPlane, <a class="el" href="classramses_1_1DataVector4f.html">DataVector4f</a> &amp;frustumPlanesData, <a class="el" href="classramses_1_1DataVector2f.html">DataVector2f</a> &amp;nearFarPlanesData)</td></tr>
+<tr class="memdesc:a8ddcdb0c8ba1dea7d75e494f8f1df494"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience method to set perspective camera frustum using FOV and aspect ratio (like in <a class="el" href="classramses_1_1PerspectiveCamera.html#aea24c939692f0a046b473cf6d0e16267" title="An alternative method (see ramses::LocalCamera::setFrustum) to set the perspective view frustum of th...">ramses::PerspectiveCamera::setFrustum</a>) to two <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> instances which are or will be bound to a <a class="el" href="classramses_1_1PerspectiveCamera.html" title="The PerspectiveCamera is a local camera which defines a perspective view into the scene...">ramses::PerspectiveCamera</a> using <a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">ramses::LocalCamera::bindFrustumPlanes</a>.  <a href="#a8ddcdb0c8ba1dea7d75e494f8f1df494">More...</a><br /></td></tr>
+<tr class="separator:a8ddcdb0c8ba1dea7d75e494f8f1df494"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Temporary functions for convenience. All of these can be implemented on top of the RAMSES Client API, but are offered here as convenience. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a4bad26f4d83f7bce22980669fd5bd216"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4bad26f4d83f7bce22980669fd5bd216">&#9670;&nbsp;</a></span>CreateTextureResourceFromPng()</h2>
+<a id="abeb6bfe7a148a8ddfab574b3020be3c9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abeb6bfe7a148a8ddfab574b3020be3c9">&#9670;&nbsp;</a></span>CreateTextureResourceFromPng()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -134,8 +140,8 @@ Static Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classramses_1_1RamsesClient.html">RamsesClient</a> &amp;&#160;</td>
-          <td class="paramname"><em>ramsesClient</em>, </td>
+          <td class="paramtype"><a class="el" href="classramses_1_1Scene.html">Scene</a> &amp;&#160;</td>
+          <td class="paramname"><em>scene</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -166,19 +172,19 @@ Static Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pngFilePath</td><td>Path to the png file to load </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ramsesClient</td><td>Client the texture object is to be created in </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">scene</td><td><a class="el" href="classramses_1_1Scene.html" title="The Scene holds a scene graph. It is the essential class for distributing content to the ramses syste...">Scene</a> the texture object is to be created in </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">swizzle</td><td>Swizzling of texture color channels </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Name for the created texture </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Created texture object or nullptr on error </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-compositing_2src_2main_8cpp-example.html#a22">ramses-example-basic-compositing/src/main.cpp</a>, <a class="el" href="ramses-example-basic-file-loading_2src_2main_8cpp-example.html#a66">ramses-example-basic-file-loading/src/main.cpp</a>, <a class="el" href="ramses-example-basic-texturing_2src_2main_8cpp-example.html#a23">ramses-example-basic-texturing/src/main.cpp</a>, <a class="el" href="ramses-example-dcsm-provider_2src_2main_8cpp-example.html#a16">ramses-example-dcsm-provider/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a49">ramses-example-local-datalink/src/main.cpp</a>, and <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a79">ramses-example-local-offscreenbuffer/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-compositing_2src_2main_8cpp-example.html#a21">ramses-example-basic-compositing/src/main.cpp</a>, <a class="el" href="ramses-example-basic-file-loading_2src_2main_8cpp-example.html#a63">ramses-example-basic-file-loading/src/main.cpp</a>, <a class="el" href="ramses-example-basic-texturing_2src_2main_8cpp-example.html#a25">ramses-example-basic-texturing/src/main.cpp</a>, <a class="el" href="ramses-example-dcsm-provider_2src_2main_8cpp-example.html#a17">ramses-example-dcsm-provider/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a57">ramses-example-local-datalink/src/main.cpp</a>, and <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a82">ramses-example-local-offscreenbuffer/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
-<a id="a3f0f90f3c6d549bea189ed5a113e0f47"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3f0f90f3c6d549bea189ed5a113e0f47">&#9670;&nbsp;</a></span>CreateTextureResourceFromPngBuffer()</h2>
+<a id="a1fabdee1e7a2c41fc2ce76a63d0cf987"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fabdee1e7a2c41fc2ce76a63d0cf987">&#9670;&nbsp;</a></span>CreateTextureResourceFromPngBuffer()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -195,8 +201,8 @@ Static Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classramses_1_1RamsesClient.html">RamsesClient</a> &amp;&#160;</td>
-          <td class="paramname"><em>ramsesClient</em>, </td>
+          <td class="paramtype"><a class="el" href="classramses_1_1Scene.html">Scene</a> &amp;&#160;</td>
+          <td class="paramname"><em>scene</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -227,7 +233,7 @@ Static Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pngData</td><td>Buffer with PNG data to load </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ramsesClient</td><td>Client the texture object is to be created in </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">scene</td><td><a class="el" href="classramses_1_1Scene.html" title="The Scene holds a scene graph. It is the essential class for distributing content to the ramses syste...">Scene</a> the texture object is to be created in </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">swizzle</td><td>Swizzling of texture color channels </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Name for the created texture </td></tr>
   </table>
@@ -499,7 +505,7 @@ Static Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a id="ab516bb29af11563ab71ac9d796f5d893"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab516bb29af11563ab71ac9d796f5d893">&#9670;&nbsp;</a></span>SaveImageBufferToPng()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab516bb29af11563ab71ac9d796f5d893">&#9670;&nbsp;</a></span>SaveImageBufferToPng() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -544,7 +550,7 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Creates a png from image data, e.g. data generated by RamsesClientService::readPixels. The image data is expected to be in the format rgba8. Width x Height x 4 (rgba8) have to exactly match the size of the image buffer, otherwise no png will be created. Also width * height cannot exceed the size 268435455 or the result will be corrupted. </p>
+<p>Creates a png from image data, e.g. data generated by RamsesClientService::readPixels. The image data is expected to be in the format rgba8. Width x Height x 4 (rgba8) have to exactly match the size of the image buffer, otherwise no png will be created. Also width * height cannot exceed the size 268435455 or png creation will fail. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">filePath</td><td>Path where the png will be saved </td></tr>
@@ -555,6 +561,148 @@ Static Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Success of png creation </dd></dl>
+
+</div>
+</div>
+<a id="a180f272347115d28653c979c82975c59"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a180f272347115d28653c979c82975c59">&#9670;&nbsp;</a></span>SaveImageBufferToPng() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool ramses::RamsesUtils::SaveImageBufferToPng </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filePath</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; uint8_t &gt; &amp;&#160;</td>
+          <td class="paramname"><em>imageData</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>flipImageBufferVertically</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates a png from image data, e.g. data generated by RamsesClientService::readPixels. The image data is expected to be in the format rgba8. Width x Height x 4 (rgba8) have to exactly match the size of the image buffer, otherwise no png will be created. Also width * height cannot exceed the size 268435455 or png creation will fail. The image data can be flipped vertically, as the data coming from a function like RamsesClientService::readPixels gets the data from OpenGL which has the origin in the lower left corner, whereas png has the origin in the upper left corner. So to capture what you see on screen you have to set the flag flipImageBufferVertically to true. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">filePath</td><td>Path where the png will be saved </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">imageData</td><td>Buffer with rgba8 image data that should be saved to png </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>Width of the image </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>Height of the image </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">flipImageBufferVertically</td><td>Vertical Flipping of image data </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Success of png creation </dd></dl>
+
+</div>
+</div>
+<a id="a8ddcdb0c8ba1dea7d75e494f8f1df494"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ddcdb0c8ba1dea7d75e494f8f1df494">&#9670;&nbsp;</a></span>SetPerspectiveCameraFrustumToDataObjects()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool ramses::RamsesUtils::SetPerspectiveCameraFrustumToDataObjects </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>fov</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>aspectRatio</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>nearPlane</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>farPlane</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classramses_1_1DataVector4f.html">DataVector4f</a> &amp;&#160;</td>
+          <td class="paramname"><em>frustumPlanesData</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classramses_1_1DataVector2f.html">DataVector2f</a> &amp;&#160;</td>
+          <td class="paramname"><em>nearFarPlanesData</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Convenience method to set perspective camera frustum using FOV and aspect ratio (like in <a class="el" href="classramses_1_1PerspectiveCamera.html#aea24c939692f0a046b473cf6d0e16267" title="An alternative method (see ramses::LocalCamera::setFrustum) to set the perspective view frustum of th...">ramses::PerspectiveCamera::setFrustum</a>) to two <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> instances which are or will be bound to a <a class="el" href="classramses_1_1PerspectiveCamera.html" title="The PerspectiveCamera is a local camera which defines a perspective view into the scene...">ramses::PerspectiveCamera</a> using <a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">ramses::LocalCamera::bindFrustumPlanes</a>. </p>
+<p>Use case example: just create the two data objects, bind them to one or more cameras and then simply use this method whenever projection parameters need to change. If not all parameters need to be modified, simply query the parameter you want to keep unchanged from the camera (e.g. <a class="el" href="classramses_1_1PerspectiveCamera.html#ad1b1b7f5adb65db8513e7c858f9dc76c" title="Gets the aspect ratio between camera frustum width and height (set via setFrustum, not viewport). ">ramses::PerspectiveCamera::getAspectRatio</a>) and use the same value here.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">fov</td><td>The vertical field of view to be set, must be &gt; 0. This is the full vertical opening angle in degrees. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">aspectRatio</td><td>Ratio between frustum width and height, must be &gt; 0. This value is generally independent from the viewport width and height but typically matches the viewport aspect ratio. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nearPlane</td><td>Near plane of the camera frustum, must be &gt; 0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">farPlane</td><td>Far plane of the camera frustum, must be &gt; nearPlane. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">frustumPlanesData</td><td>Data object where resulting first 4 frustum planes will be set to. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nearFarPlanesData</td><td>Data object where resulting near/far frustum planes will be set to. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True for success, false otherwise. </dd></dl>
 
 </div>
 </div>

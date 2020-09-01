@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -83,16 +83,16 @@ $(function() {
 <div class="caption">
 Guide: how to use shader tools and which ECUs use the results</div></div>
 <h1>Client Pipeline</h1>
-<p>For in advance known effects this pipeline saves the GLSL parsing in <a class="el" href="classramses_1_1RamsesClient.html#a2c594824fc18dd5a74fa42a3121eb831" title="Create a new Effect by parsing a GLSL shader described by an EffectDescription instance. Refer to RamsesClient::getLastEffectErrorMessages in case of parsing error. ">ramses::RamsesClient::createEffect()</a> during runtime, by parsing it offline and storing the resulting resource file.</p>
+<p>For in advance known effects this pipeline saves the GLSL parsing in ramses::RamsesClient::createEffect() during runtime, by parsing it offline and storing the resulting resource file.</p>
 <p>The client pipeline includes following stages:</p><ul>
 <li>ramses-effect-from-glsl-shader (see <a class="el" href="GLSLToEffectResource.html">Storing effects in resource files</a>) gets executed with the shaders of both effects as input.</li>
 <li>Outputs one resource file (.res) and one file that holds a <a class="el" href="structramses_1_1resourceId__t.html" title="Resource identifier used to refer to a resource. ">ramses::resourceId_t</a> refering to a specific effect, for each effect.</li>
 <li>The two Ids must be saved on the ECU that runs the <a class="el" href="classramses_1_1RamsesClient.html" title="Entry point of RAMSES client API. ">ramses::RamsesClient</a> and known to the application, that wants to use the effects</li>
 <li>ramses-resource-packer (see <a class="el" href="ResourcePacker.html">Packing resources into larger files</a>) gets executed with the two resource files as input</li>
 <li>Outputs one resource file containing both effects</li>
-<li>The resource file can now be loaded by <a class="el" href="classramses_1_1RamsesClient.html#a4464f7610a7ff4b21ffc3404121c99e1" title="Loads resources from a file. The file format has to match current Ramses SDK version in major and min...">ramses::RamsesClient::loadResources()</a></li>
+<li>The resource file can now be loaded by ramses::RamsesClient::loadResources()</li>
 <li>In order to use one of these effects in run-time (e.g. to create a <a class="el" href="classramses_1_1Appearance.html" title="The Appearance describes how an object should look like. ">ramses::Appearance</a> or query a uniform) it can be retrieved<br />
- using <a class="el" href="classramses_1_1RamsesClient.html#ad661a6201bf900a34b14842c3c8198c5" title="Get a resource from the client by id. ">ramses::RamsesClient::findResourceById()</a> with the <a class="el" href="structramses_1_1resourceId__t.html" title="Resource identifier used to refer to a resource. ">ramses::resourceId_t</a> that was ouput by ramses-effect-from-glsl-shader and saved for the specific effect</li>
+ using ramses::RamsesClient::findResourceById() with the <a class="el" href="structramses_1_1resourceId__t.html" title="Resource identifier used to refer to a resource. ">ramses::resourceId_t</a> that was ouput by ramses-effect-from-glsl-shader and saved for the specific effect</li>
 </ul>
 <h1>Renderer Pipeline</h1>
 <p>This pipeline saves the OpenGL compilation of an effect on the renderer during runtime, by compiling it offline and storing the binary result.</p>

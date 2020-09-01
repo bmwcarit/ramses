@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -75,7 +75,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>The <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a> base class is part of a scene and defines a view into the scene defined by the client application. The "locality" means that the client has full control over the camera projection and can set viewport and frustum parameters. The <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a> can be used for remote scenes, but it will override the renderer projection parameters and viewport. It is recommended to use a <a class="el" href="classramses_1_1RemoteCamera.html" title="The RemoteCamera is part of a scene and defines a view into the scene defined by the (possibly remote...">RemoteCamera</a> for scenes which are supposed to be distributed.  
+<p>The <a class="el" href="classramses_1_1LocalCamera.html#a81b582dee53cf1f30283c6c0302d1c94" title="Constructor for LocalCamera. ">LocalCamera</a> base class is part of a scene and defines a view into the scene defined by the client application. It is also a <a class="el" href="classramses_1_1Node.html#a61048d7535c89d159f6dbde91de8411f" title="Constructor for Node. ">Node</a> with transformation.  
  <a href="classramses_1_1LocalCamera.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="LocalCamera_8h_source.html">LocalCamera.h</a>&gt;</code></p>
@@ -111,62 +111,71 @@ Collaboration diagram for ramses::LocalCamera:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a2ad45b979f1aa239ca30bfa53f379d52"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#a2ad45b979f1aa239ca30bfa53f379d52">setFrustum</a> (float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane)</td></tr>
-<tr class="memdesc:a2ad45b979f1aa239ca30bfa53f379d52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets camera frustum parameters of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>.  <a href="#a2ad45b979f1aa239ca30bfa53f379d52">More...</a><br /></td></tr>
+<tr class="memdesc:a2ad45b979f1aa239ca30bfa53f379d52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets camera frustum planes of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>.  <a href="#a2ad45b979f1aa239ca30bfa53f379d52">More...</a><br /></td></tr>
 <tr class="separator:a2ad45b979f1aa239ca30bfa53f379d52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aacf595ebc6dd8026ff0da01cb6af9be5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#aacf595ebc6dd8026ff0da01cb6af9be5">setViewport</a> (int32_t x, int32_t y, uint32_t width, uint32_t height)</td></tr>
-<tr class="memdesc:aacf595ebc6dd8026ff0da01cb6af9be5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the viewport of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>. The viewport size does not have to match the size of the destination render buffer (<a class="el" href="classramses_1_1RenderTarget.html" title="The RenderTarget can be used as an output for a RenderPass. ">RenderTarget</a> or framebuffer). However when the size matches, the projected camera volume will match the viewport space perfectly. The viewport is aligned with the lower left corner of the destination render buffer.  <a href="#aacf595ebc6dd8026ff0da01cb6af9be5">More...</a><br /></td></tr>
+<tr class="memdesc:aacf595ebc6dd8026ff0da01cb6af9be5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the viewport to be used when rendering with this camera.  <a href="#aacf595ebc6dd8026ff0da01cb6af9be5">More...</a><br /></td></tr>
 <tr class="separator:aacf595ebc6dd8026ff0da01cb6af9be5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2c948a6917fe19cb47e2a5ea71453fb"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#ac2c948a6917fe19cb47e2a5ea71453fb">getViewportX</a> () const</td></tr>
-<tr class="memdesc:ac2c948a6917fe19cb47e2a5ea71453fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the horizontal offset of the Viewport quad.  <a href="#ac2c948a6917fe19cb47e2a5ea71453fb">More...</a><br /></td></tr>
+<tr class="memdesc:ac2c948a6917fe19cb47e2a5ea71453fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the horizontal offset of the viewport in pixels relative to lower left corner of destination render buffer.  <a href="#ac2c948a6917fe19cb47e2a5ea71453fb">More...</a><br /></td></tr>
 <tr class="separator:ac2c948a6917fe19cb47e2a5ea71453fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31917c5d229d7c851c1406d4093db095"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#a31917c5d229d7c851c1406d4093db095">getViewportY</a> () const</td></tr>
-<tr class="memdesc:a31917c5d229d7c851c1406d4093db095"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the vertical offset of the Viewport quad.  <a href="#a31917c5d229d7c851c1406d4093db095">More...</a><br /></td></tr>
+<tr class="memdesc:a31917c5d229d7c851c1406d4093db095"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the vertical offset of the viewport in pixels relative to lower left corner of destination render buffer.  <a href="#a31917c5d229d7c851c1406d4093db095">More...</a><br /></td></tr>
 <tr class="separator:a31917c5d229d7c851c1406d4093db095"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad2d221e8f979583761cff63b8d6b89b5"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#ad2d221e8f979583761cff63b8d6b89b5">getViewportWidth</a> () const</td></tr>
-<tr class="memdesc:ad2d221e8f979583761cff63b8d6b89b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the horizontal size of the Viewport quad.  <a href="#ad2d221e8f979583761cff63b8d6b89b5">More...</a><br /></td></tr>
+<tr class="memdesc:ad2d221e8f979583761cff63b8d6b89b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the viewport width in pixels.  <a href="#ad2d221e8f979583761cff63b8d6b89b5">More...</a><br /></td></tr>
 <tr class="separator:ad2d221e8f979583761cff63b8d6b89b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abef14e0e4fdcd13c41733b2aa2c87fef"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#abef14e0e4fdcd13c41733b2aa2c87fef">getViewportHeight</a> () const</td></tr>
-<tr class="memdesc:abef14e0e4fdcd13c41733b2aa2c87fef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the vertical size of the Viewport quad.  <a href="#abef14e0e4fdcd13c41733b2aa2c87fef">More...</a><br /></td></tr>
+<tr class="memdesc:abef14e0e4fdcd13c41733b2aa2c87fef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the viewport height in pixels.  <a href="#abef14e0e4fdcd13c41733b2aa2c87fef">More...</a><br /></td></tr>
 <tr class="separator:abef14e0e4fdcd13c41733b2aa2c87fef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97774ad4a232963c0728c1b146059f34"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#a97774ad4a232963c0728c1b146059f34">getLeftPlane</a> () const</td></tr>
-<tr class="memdesc:a97774ad4a232963c0728c1b146059f34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the left plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>.  <a href="#a97774ad4a232963c0728c1b146059f34">More...</a><br /></td></tr>
+<tr class="memdesc:a97774ad4a232963c0728c1b146059f34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the left plane of the camera frustum.  <a href="#a97774ad4a232963c0728c1b146059f34">More...</a><br /></td></tr>
 <tr class="separator:a97774ad4a232963c0728c1b146059f34"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c55c70a60da9ccc27c9de546895cdc5"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#a8c55c70a60da9ccc27c9de546895cdc5">getRightPlane</a> () const</td></tr>
-<tr class="memdesc:a8c55c70a60da9ccc27c9de546895cdc5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the right plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>.  <a href="#a8c55c70a60da9ccc27c9de546895cdc5">More...</a><br /></td></tr>
+<tr class="memdesc:a8c55c70a60da9ccc27c9de546895cdc5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the right plane of the camera frustum.  <a href="#a8c55c70a60da9ccc27c9de546895cdc5">More...</a><br /></td></tr>
 <tr class="separator:a8c55c70a60da9ccc27c9de546895cdc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad2923619215687ab1b3d97e30a0a4dd9"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#ad2923619215687ab1b3d97e30a0a4dd9">getBottomPlane</a> () const</td></tr>
-<tr class="memdesc:ad2923619215687ab1b3d97e30a0a4dd9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the bottom plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>.  <a href="#ad2923619215687ab1b3d97e30a0a4dd9">More...</a><br /></td></tr>
+<tr class="memdesc:ad2923619215687ab1b3d97e30a0a4dd9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the bottom plane of the camera frustum.  <a href="#ad2923619215687ab1b3d97e30a0a4dd9">More...</a><br /></td></tr>
 <tr class="separator:ad2923619215687ab1b3d97e30a0a4dd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc5936e49b030592cf0882ddfcc63763"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#acc5936e49b030592cf0882ddfcc63763">getTopPlane</a> () const</td></tr>
-<tr class="memdesc:acc5936e49b030592cf0882ddfcc63763"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the top plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>.  <a href="#acc5936e49b030592cf0882ddfcc63763">More...</a><br /></td></tr>
+<tr class="memdesc:acc5936e49b030592cf0882ddfcc63763"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the top plane of the camera frustum.  <a href="#acc5936e49b030592cf0882ddfcc63763">More...</a><br /></td></tr>
 <tr class="separator:acc5936e49b030592cf0882ddfcc63763"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94541827c6c67360e638b9ed0ddfeccc"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#a94541827c6c67360e638b9ed0ddfeccc">getNearPlane</a> () const</td></tr>
-<tr class="memdesc:a94541827c6c67360e638b9ed0ddfeccc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the near plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>.  <a href="#a94541827c6c67360e638b9ed0ddfeccc">More...</a><br /></td></tr>
+<tr class="memdesc:a94541827c6c67360e638b9ed0ddfeccc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the near plane of the camera frustum.  <a href="#a94541827c6c67360e638b9ed0ddfeccc">More...</a><br /></td></tr>
 <tr class="separator:a94541827c6c67360e638b9ed0ddfeccc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add7fc6420297356c9f46827cd063f4cd"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#add7fc6420297356c9f46827cd063f4cd">getFarPlane</a> () const</td></tr>
-<tr class="memdesc:add7fc6420297356c9f46827cd063f4cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the far plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>.  <a href="#add7fc6420297356c9f46827cd063f4cd">More...</a><br /></td></tr>
+<tr class="memdesc:add7fc6420297356c9f46827cd063f4cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the far plane of the camera frustum.  <a href="#add7fc6420297356c9f46827cd063f4cd">More...</a><br /></td></tr>
 <tr class="separator:add7fc6420297356c9f46827cd063f4cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8baf11edcb05c5a054cf72e02cb9ffe5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#a8baf11edcb05c5a054cf72e02cb9ffe5">getProjectionMatrix</a> (float(&amp;projectionMatrix)[16]) const</td></tr>
 <tr class="memdesc:a8baf11edcb05c5a054cf72e02cb9ffe5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets projection matrix based on camera parameters. Projection matrix can only be retrieved after all parameters were set and are valid.  <a href="#a8baf11edcb05c5a054cf72e02cb9ffe5">More...</a><br /></td></tr>
 <tr class="separator:a8baf11edcb05c5a054cf72e02cb9ffe5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5fcf8ebe2a1e3d1b40c8323e5f55d15f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#a5fcf8ebe2a1e3d1b40c8323e5f55d15f">bindViewportOffset</a> (const <a class="el" href="classramses_1_1DataVector2i.html">DataVector2i</a> &amp;offsetData)</td></tr>
-<tr class="memdesc:a5fcf8ebe2a1e3d1b40c8323e5f55d15f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Binds a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> to be used as source for viewport offset values.  <a href="#a5fcf8ebe2a1e3d1b40c8323e5f55d15f">More...</a><br /></td></tr>
+<tr class="memdesc:a5fcf8ebe2a1e3d1b40c8323e5f55d15f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Binds a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> to be used as source for viewport offset values.  <a href="#a5fcf8ebe2a1e3d1b40c8323e5f55d15f">More...</a><br /></td></tr>
 <tr class="separator:a5fcf8ebe2a1e3d1b40c8323e5f55d15f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ca72874a1e63390ffb97f1213670c71"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#a7ca72874a1e63390ffb97f1213670c71">bindViewportSize</a> (const <a class="el" href="classramses_1_1DataVector2i.html">DataVector2i</a> &amp;sizeData)</td></tr>
-<tr class="memdesc:a7ca72874a1e63390ffb97f1213670c71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Binds a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> to be used as source for viewport size values.  <a href="#a7ca72874a1e63390ffb97f1213670c71">More...</a><br /></td></tr>
+<tr class="memdesc:a7ca72874a1e63390ffb97f1213670c71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Binds a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> to be used as source for viewport size values.  <a href="#a7ca72874a1e63390ffb97f1213670c71">More...</a><br /></td></tr>
 <tr class="separator:a7ca72874a1e63390ffb97f1213670c71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6869f9777423803f60d0c71552aefdd2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2">bindFrustumPlanes</a> (const <a class="el" href="classramses_1_1DataVector4f.html">DataVector4f</a> &amp;frustumPlanesData, const <a class="el" href="classramses_1_1DataVector2f.html">DataVector2f</a> &amp;nearFarPlanesData)</td></tr>
+<tr class="memdesc:a6869f9777423803f60d0c71552aefdd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Binds <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> to be used as source for frustum planes values.  <a href="#a6869f9777423803f60d0c71552aefdd2">More...</a><br /></td></tr>
+<tr class="separator:a6869f9777423803f60d0c71552aefdd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afaaf6ac82ddf02e8fdb24e5245c56f02"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#afaaf6ac82ddf02e8fdb24e5245c56f02">unbindViewportOffset</a> ()</td></tr>
-<tr class="memdesc:afaaf6ac82ddf02e8fdb24e5245c56f02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unbinds a currently bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> from viewport offset (see bindViewportOffset). Does nothing if no <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> bound.  <a href="#afaaf6ac82ddf02e8fdb24e5245c56f02">More...</a><br /></td></tr>
+<tr class="memdesc:afaaf6ac82ddf02e8fdb24e5245c56f02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unbinds any bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> from viewport offset (see <a class="el" href="classramses_1_1LocalCamera.html#a5fcf8ebe2a1e3d1b40c8323e5f55d15f" title="Binds a ramses::DataObject to be used as source for viewport offset values. ">bindViewportOffset</a>). Does nothing if no <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound.  <a href="#afaaf6ac82ddf02e8fdb24e5245c56f02">More...</a><br /></td></tr>
 <tr class="separator:afaaf6ac82ddf02e8fdb24e5245c56f02"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0de80c8cab8907e5dc23890a5250c9e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#ab0de80c8cab8907e5dc23890a5250c9e">unbindViewportSize</a> ()</td></tr>
-<tr class="memdesc:ab0de80c8cab8907e5dc23890a5250c9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unbinds a currently bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> from viewport size (see bindViewportSize). Does nothing if no <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> bound.  <a href="#ab0de80c8cab8907e5dc23890a5250c9e">More...</a><br /></td></tr>
+<tr class="memdesc:ab0de80c8cab8907e5dc23890a5250c9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unbinds any bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> from viewport size (see <a class="el" href="classramses_1_1LocalCamera.html#a7ca72874a1e63390ffb97f1213670c71" title="Binds a ramses::DataObject to be used as source for viewport size values. ">bindViewportSize</a>). Does nothing if no <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound.  <a href="#ab0de80c8cab8907e5dc23890a5250c9e">More...</a><br /></td></tr>
 <tr class="separator:ab0de80c8cab8907e5dc23890a5250c9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38868d5d7642ed066f42479dc8ffc6c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#a38868d5d7642ed066f42479dc8ffc6c5">unbindFrustumPlanes</a> ()</td></tr>
+<tr class="memdesc:a38868d5d7642ed066f42479dc8ffc6c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unbinds any bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> from frustum planes (see <a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">bindFrustumPlanes</a>). Does nothing if no <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound.  <a href="#a38868d5d7642ed066f42479dc8ffc6c5">More...</a><br /></td></tr>
+<tr class="separator:a38868d5d7642ed066f42479dc8ffc6c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af0f21dcbffb1dd2e8302735865113250"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#af0f21dcbffb1dd2e8302735865113250">isViewportOffsetBound</a> () const</td></tr>
-<tr class="memdesc:af0f21dcbffb1dd2e8302735865113250"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if there is a bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> to viewport offset (see bindViewportOffset).  <a href="#af0f21dcbffb1dd2e8302735865113250">More...</a><br /></td></tr>
+<tr class="memdesc:af0f21dcbffb1dd2e8302735865113250"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if there is a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound to viewport offset (see <a class="el" href="classramses_1_1LocalCamera.html#a5fcf8ebe2a1e3d1b40c8323e5f55d15f" title="Binds a ramses::DataObject to be used as source for viewport offset values. ">bindViewportOffset</a>).  <a href="#af0f21dcbffb1dd2e8302735865113250">More...</a><br /></td></tr>
 <tr class="separator:af0f21dcbffb1dd2e8302735865113250"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae1b4898074a5303667ae8cf332f297e7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#ae1b4898074a5303667ae8cf332f297e7">isViewportSizeBound</a> () const</td></tr>
-<tr class="memdesc:ae1b4898074a5303667ae8cf332f297e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if there is a bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> to viewport size (see bindViewportSize).  <a href="#ae1b4898074a5303667ae8cf332f297e7">More...</a><br /></td></tr>
+<tr class="memdesc:ae1b4898074a5303667ae8cf332f297e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if there is a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound to viewport size (see <a class="el" href="classramses_1_1LocalCamera.html#a7ca72874a1e63390ffb97f1213670c71" title="Binds a ramses::DataObject to be used as source for viewport size values. ">bindViewportSize</a>).  <a href="#ae1b4898074a5303667ae8cf332f297e7">More...</a><br /></td></tr>
 <tr class="separator:ae1b4898074a5303667ae8cf332f297e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a190898f15ee5b76bbd26308831c8832c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1LocalCamera.html#a190898f15ee5b76bbd26308831c8832c">isFrustumPlanesBound</a> () const</td></tr>
+<tr class="memdesc:a190898f15ee5b76bbd26308831c8832c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if there is a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound to viewport size (see <a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">bindFrustumPlanes</a>).  <a href="#a190898f15ee5b76bbd26308831c8832c">More...</a><br /></td></tr>
+<tr class="separator:a190898f15ee5b76bbd26308831c8832c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classramses_1_1Node"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classramses_1_1Node')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classramses_1_1Node.html">ramses::Node</a></td></tr>
 <tr class="memitem:adb3529e11b824decdb6ed8b49fb9b510 inherit pub_methods_classramses_1_1Node"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Node.html#adb3529e11b824decdb6ed8b49fb9b510">hasChild</a> () const</td></tr>
 <tr class="memdesc:adb3529e11b824decdb6ed8b49fb9b510 inherit pub_methods_classramses_1_1Node"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns if node has at least one child <a class="el" href="classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it...">Node</a>.  <a href="classramses_1_1Node.html#adb3529e11b824decdb6ed8b49fb9b510">More...</a><br /></td></tr>
@@ -243,6 +252,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a225906753604a83fc7bf33f743fceb18 inherit pub_methods_classramses_1_1Node"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a06ae4b5bd3d52d290b4cfc9ecc09affe">EVisibilityMode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Node.html#a225906753604a83fc7bf33f743fceb18">getVisibility</a> () const</td></tr>
 <tr class="memdesc:a225906753604a83fc7bf33f743fceb18 inherit pub_methods_classramses_1_1Node"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the visibility property of the <a class="el" href="classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it...">Node</a>. This is just the visibility state of this node object, NOT the hierarchically accumulated visibility of its parents.  <a href="classramses_1_1Node.html#a225906753604a83fc7bf33f743fceb18">More...</a><br /></td></tr>
 <tr class="separator:a225906753604a83fc7bf33f743fceb18 inherit pub_methods_classramses_1_1Node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classramses_1_1SceneObject"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classramses_1_1SceneObject')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classramses_1_1SceneObject.html">ramses::SceneObject</a></td></tr>
+<tr class="memitem:af3216b7efec6d1d9e8e7c8fe572a3325 inherit pub_methods_classramses_1_1SceneObject"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a066567ce6a75f6cbfa79461912c5e263">sceneObjectId_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1SceneObject.html#af3216b7efec6d1d9e8e7c8fe572a3325">getSceneObjectId</a> () const</td></tr>
+<tr class="memdesc:af3216b7efec6d1d9e8e7c8fe572a3325 inherit pub_methods_classramses_1_1SceneObject"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns scene object id which is automatically assigned at creation time of object and is unique within scope of one scene.  <a href="classramses_1_1SceneObject.html#af3216b7efec6d1d9e8e7c8fe572a3325">More...</a><br /></td></tr>
+<tr class="separator:af3216b7efec6d1d9e8e7c8fe572a3325 inherit pub_methods_classramses_1_1SceneObject"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classramses_1_1RamsesObject"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classramses_1_1RamsesObject')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classramses_1_1RamsesObject.html">ramses::RamsesObject</a></td></tr>
 <tr class="memitem:a6173de039718e5359015b2e3adbd7906 inherit pub_methods_classramses_1_1RamsesObject"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesObject.html#a6173de039718e5359015b2e3adbd7906">getName</a> () const</td></tr>
 <tr class="memdesc:a6173de039718e5359015b2e3adbd7906 inherit pub_methods_classramses_1_1RamsesObject"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the name of the object.  <a href="classramses_1_1RamsesObject.html#a6173de039718e5359015b2e3adbd7906">More...</a><br /></td></tr>
@@ -351,7 +364,8 @@ Additional Inherited Members</h2></td></tr>
 <tr class="separator:a248c9883d91fdb952853f4e46f5daca6 inherit pub_attribs_classramses_1_1StatusObject"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a> base class is part of a scene and defines a view into the scene defined by the client application. The "locality" means that the client has full control over the camera projection and can set viewport and frustum parameters. The <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a> can be used for remote scenes, but it will override the renderer projection parameters and viewport. It is recommended to use a <a class="el" href="classramses_1_1RemoteCamera.html" title="The RemoteCamera is part of a scene and defines a view into the scene defined by the (possibly remote...">RemoteCamera</a> for scenes which are supposed to be distributed. </p>
+<div class="textblock"><p>The <a class="el" href="classramses_1_1LocalCamera.html#a81b582dee53cf1f30283c6c0302d1c94" title="Constructor for LocalCamera. ">LocalCamera</a> base class is part of a scene and defines a view into the scene defined by the client application. It is also a <a class="el" href="classramses_1_1Node.html#a61048d7535c89d159f6dbde91de8411f" title="Constructor for Node. ">Node</a> with transformation. </p>
+<p>The term "local" means that the client has full control over the camera projection and can set viewport and frustum parameters, unlike when using <a class="el" href="classramses_1_1RemoteCamera.html" title="The RemoteCamera is part of a scene and defines a view into the scene defined by the (possibly remote...">ramses::RemoteCamera</a>. A valid camera for rendering must have viewport and frustum set. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a81b582dee53cf1f30283c6c0302d1c94"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a81b582dee53cf1f30283c6c0302d1c94">&#9670;&nbsp;</a></span>LocalCamera()</h2>
@@ -414,6 +428,45 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a6869f9777423803f60d0c71552aefdd2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6869f9777423803f60d0c71552aefdd2">&#9670;&nbsp;</a></span>bindFrustumPlanes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::LocalCamera::bindFrustumPlanes </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classramses_1_1DataVector4f.html">DataVector4f</a> &amp;&#160;</td>
+          <td class="paramname"><em>frustumPlanesData</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classramses_1_1DataVector2f.html">DataVector2f</a> &amp;&#160;</td>
+          <td class="paramname"><em>nearFarPlanesData</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Binds <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> to be used as source for frustum planes values. </p>
+<p>In addition to <a class="el" href="classramses_1_1LocalCamera.html#a2ad45b979f1aa239ca30bfa53f379d52" title="Sets camera frustum planes of the LocalCamera. ">setFrustum</a> (alternatively <a class="el" href="classramses_1_1PerspectiveCamera.html#aea24c939692f0a046b473cf6d0e16267" title="An alternative method (see ramses::LocalCamera::setFrustum) to set the perspective view frustum of th...">ramses::PerspectiveCamera::setFrustum</a>), which sets frustum planes directly, a <a class="el" href="classramses_1_1DataVector4f.html" title="The DataVector4f data object stores a vector with 4 float components within a scene. ">ramses::DataVector4f</a> can be bound to provide values for left, right, bottom, top planes and a <a class="el" href="classramses_1_1DataVector2f.html" title="The DataVector2f data object stores a vector with 2 float components within a scene. ">ramses::DataVector2f</a> for near and far planes. When a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> is bound the values from it override those set using <a class="el" href="classramses_1_1LocalCamera.html#a2ad45b979f1aa239ca30bfa53f379d52" title="Sets camera frustum planes of the LocalCamera. ">setFrustum</a>, see <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> for possible use cases. See <a class="el" href="classramses_1_1RamsesUtils.html#a8ddcdb0c8ba1dea7d75e494f8f1df494" title="Convenience method to set perspective camera frustum using FOV and aspect ratio (like in ramses::Pers...">ramses::RamsesUtils::SetPerspectiveCameraFrustumToDataObjects</a> providing way to conveniently set perspective frustum on data objects also with basic validity checking.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">frustumPlanesData</td><td>Data object with 4 floats that will be used as source for frustum planes values. The (x, y, z, w) floats represent (left, right, bottom, top) frustum planes. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nearFarPlanesData</td><td>Data object with 2 floats that will be used as source for frustum planes values. The (x, y) floats represent (near, far) frustum planes. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
 <a id="a5fcf8ebe2a1e3d1b40c8323e5f55d15f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5fcf8ebe2a1e3d1b40c8323e5f55d15f">&#9670;&nbsp;</a></span>bindViewportOffset()</h2>
 
@@ -430,8 +483,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Binds a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> to be used as source for viewport offset values. </p>
-<p>In addition to setViewport, which sets viewport parameters directly (if not bound), a <a class="el" href="classramses_1_1DataVector2i.html" title="The DataVector2i data object stores a vector with two 32-bit-integer components within a scene...">DataVector2i</a> (<a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> holding 2 integer values) can be bound to viewport offset and size. Single <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> can be bound to multiple inputs (also to other <a class="el" href="classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. ">RamsesObject</a> types wherever accepted by API) providing a way to share values across instances/inputs and also allows data linking across scenes (check documentation and examples for details). A value change made to <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> is reflected everywhere it is bound to. While being bound to a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> the values set using setViewport are overridden until unbound again.</p>
+<p>Binds a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> to be used as source for viewport offset values. </p>
+<p>In addition to <a class="el" href="classramses_1_1LocalCamera.html#aacf595ebc6dd8026ff0da01cb6af9be5" title="Sets the viewport to be used when rendering with this camera. ">setViewport</a>, which sets viewport parameters directly, a <a class="el" href="classramses_1_1DataVector2i.html" title="The DataVector2i data object stores a vector with two 32-bit-integer components within a scene...">ramses::DataVector2i</a> can be bound to viewport offset and size. When a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> is bound the values from it override those set using <a class="el" href="classramses_1_1LocalCamera.html#aacf595ebc6dd8026ff0da01cb6af9be5" title="Sets the viewport to be used when rendering with this camera. ">setViewport</a>, see <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> for possible use cases.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">offsetData</td><td>Data object with 2 integers that will be used as source for viewport offset values </td></tr>
@@ -439,7 +492,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a22">ramses-example-local-scene-referencing/src/main.cpp</a>, and <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a15">ramses-example-local-viewport-link/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a20">ramses-example-local-scene-referencing/src/main.cpp</a>, and <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a20">ramses-example-local-viewport-link/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -459,8 +512,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Binds a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> to be used as source for viewport size values. </p>
-<p>In addition to setViewport, which sets viewport parameters directly (if not bound), a <a class="el" href="classramses_1_1DataVector2i.html" title="The DataVector2i data object stores a vector with two 32-bit-integer components within a scene...">DataVector2i</a> (<a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> holding 2 integer values) can be bound to viewport offset and size. Single <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> can be bound to multiple inputs (also to other <a class="el" href="classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. ">RamsesObject</a> types wherever accepted by API) providing a way to share values across instances/inputs and also allows data linking across scenes (check documentation and examples for details). A value change made to <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> is reflected everywhere it is bound to. While being bound to a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> the values set using setViewport are overridden until unbound again.</p>
+<p>Binds a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> to be used as source for viewport size values. </p>
+<p>In addition to <a class="el" href="classramses_1_1LocalCamera.html#aacf595ebc6dd8026ff0da01cb6af9be5" title="Sets the viewport to be used when rendering with this camera. ">setViewport</a>, which sets viewport parameters directly, a <a class="el" href="classramses_1_1DataVector2i.html" title="The DataVector2i data object stores a vector with two 32-bit-integer components within a scene...">ramses::DataVector2i</a> can be bound to viewport offset and size. When a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> is bound the values from it override those set using <a class="el" href="classramses_1_1LocalCamera.html#aacf595ebc6dd8026ff0da01cb6af9be5" title="Sets the viewport to be used when rendering with this camera. ">setViewport</a>, see <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> for possible use cases.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">sizeData</td><td>Data object with 2 integers that will be used as source for viewport size values </td></tr>
@@ -468,7 +521,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a23">ramses-example-local-scene-referencing/src/main.cpp</a>, and <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a16">ramses-example-local-viewport-link/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a21">ramses-example-local-scene-referencing/src/main.cpp</a>, and <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a21">ramses-example-local-viewport-link/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -487,7 +540,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns the bottom plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>. </p>
+<p>Returns the bottom plane of the camera frustum. </p>
+<p>If frustum planes data is bound (<a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">bindFrustumPlanes</a>) the value returned here represents the effective value used, i.e. the one from bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a>, not the one set via <a class="el" href="classramses_1_1LocalCamera.html#a2ad45b979f1aa239ca30bfa53f379d52" title="Sets camera frustum planes of the LocalCamera. ">setFrustum</a>.</p>
 <dl class="section return"><dt>Returns</dt><dd>the bottom plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a> </dd></dl>
 
 </div>
@@ -507,7 +561,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns the far plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>. </p>
+<p>Returns the far plane of the camera frustum. </p>
+<p>If frustum planes data is bound (<a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">bindFrustumPlanes</a>) the value returned here represents the effective value used, i.e. the one from bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a>, not the one set via <a class="el" href="classramses_1_1LocalCamera.html#a2ad45b979f1aa239ca30bfa53f379d52" title="Sets camera frustum planes of the LocalCamera. ">setFrustum</a>.</p>
 <dl class="section return"><dt>Returns</dt><dd>the far plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a> </dd></dl>
 
 </div>
@@ -527,7 +582,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns the left plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>. </p>
+<p>Returns the left plane of the camera frustum. </p>
+<p>If frustum planes data is bound (<a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">bindFrustumPlanes</a>) the value returned here represents the effective value used, i.e. the one from bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a>, not the one set via <a class="el" href="classramses_1_1LocalCamera.html#a2ad45b979f1aa239ca30bfa53f379d52" title="Sets camera frustum planes of the LocalCamera. ">setFrustum</a>.</p>
 <dl class="section return"><dt>Returns</dt><dd>the left plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a> </dd></dl>
 
 </div>
@@ -547,7 +603,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns the near plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>. </p>
+<p>Returns the near plane of the camera frustum. </p>
+<p>If frustum planes data is bound (<a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">bindFrustumPlanes</a>) the value returned here represents the effective value used, i.e. the one from bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a>, not the one set via <a class="el" href="classramses_1_1LocalCamera.html#a2ad45b979f1aa239ca30bfa53f379d52" title="Sets camera frustum planes of the LocalCamera. ">setFrustum</a>.</p>
 <dl class="section return"><dt>Returns</dt><dd>the near plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a> </dd></dl>
 
 </div>
@@ -594,7 +651,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns the right plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>. </p>
+<p>Returns the right plane of the camera frustum. </p>
+<p>If frustum planes data is bound (<a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">bindFrustumPlanes</a>) the value returned here represents the effective value used, i.e. the one from bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a>, not the one set via <a class="el" href="classramses_1_1LocalCamera.html#a2ad45b979f1aa239ca30bfa53f379d52" title="Sets camera frustum planes of the LocalCamera. ">setFrustum</a>.</p>
 <dl class="section return"><dt>Returns</dt><dd>the right plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a> </dd></dl>
 
 </div>
@@ -614,7 +672,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns the top plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>. </p>
+<p>Returns the top plane of the camera frustum. </p>
+<p>If frustum planes data is bound (<a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">bindFrustumPlanes</a>) the value returned here represents the effective value used, i.e. the one from bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a>, not the one set via <a class="el" href="classramses_1_1LocalCamera.html#a2ad45b979f1aa239ca30bfa53f379d52" title="Sets camera frustum planes of the LocalCamera. ">setFrustum</a>.</p>
 <dl class="section return"><dt>Returns</dt><dd>the top plane of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a> </dd></dl>
 
 </div>
@@ -634,8 +693,9 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns the vertical size of the Viewport quad. </p>
-<dl class="section return"><dt>Returns</dt><dd>vertical size of the Viewport quad </dd></dl>
+<p>Returns the viewport height in pixels. </p>
+<p>If viewport data is bound (<a class="el" href="classramses_1_1LocalCamera.html#a7ca72874a1e63390ffb97f1213670c71" title="Binds a ramses::DataObject to be used as source for viewport size values. ">bindViewportSize</a>) the value returned here represents the effective value used, i.e. the one from bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a>, not the one set via <a class="el" href="classramses_1_1LocalCamera.html#aacf595ebc6dd8026ff0da01cb6af9be5" title="Sets the viewport to be used when rendering with this camera. ">setViewport</a>.</p>
+<dl class="section return"><dt>Returns</dt><dd>viewport height in pixels </dd></dl>
 
 </div>
 </div>
@@ -654,8 +714,9 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns the horizontal size of the Viewport quad. </p>
-<dl class="section return"><dt>Returns</dt><dd>horizontal size of the Viewport quad </dd></dl>
+<p>Returns the viewport width in pixels. </p>
+<p>If viewport data is bound (<a class="el" href="classramses_1_1LocalCamera.html#a7ca72874a1e63390ffb97f1213670c71" title="Binds a ramses::DataObject to be used as source for viewport size values. ">bindViewportSize</a>) the value returned here represents the effective value used, i.e. the one from bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a>, not the one set via <a class="el" href="classramses_1_1LocalCamera.html#aacf595ebc6dd8026ff0da01cb6af9be5" title="Sets the viewport to be used when rendering with this camera. ">setViewport</a>.</p>
+<dl class="section return"><dt>Returns</dt><dd>viewport width in pixels </dd></dl>
 
 </div>
 </div>
@@ -674,8 +735,9 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns the horizontal offset of the Viewport quad. </p>
-<dl class="section return"><dt>Returns</dt><dd>horizontal offset of the Viewport quad </dd></dl>
+<p>Returns the horizontal offset of the viewport in pixels relative to lower left corner of destination render buffer. </p>
+<p>If viewport data is bound (<a class="el" href="classramses_1_1LocalCamera.html#a5fcf8ebe2a1e3d1b40c8323e5f55d15f" title="Binds a ramses::DataObject to be used as source for viewport offset values. ">bindViewportOffset</a>) the value returned here represents the effective value used, i.e. the one from bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a>, not the one set via <a class="el" href="classramses_1_1LocalCamera.html#aacf595ebc6dd8026ff0da01cb6af9be5" title="Sets the viewport to be used when rendering with this camera. ">setViewport</a>.</p>
+<dl class="section return"><dt>Returns</dt><dd>horizontal offset of the viewport in pixels </dd></dl>
 
 </div>
 </div>
@@ -694,8 +756,29 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns the vertical offset of the Viewport quad. </p>
-<dl class="section return"><dt>Returns</dt><dd>vertical offset of the Viewport quad </dd></dl>
+<p>Returns the vertical offset of the viewport in pixels relative to lower left corner of destination render buffer. </p>
+<p>If viewport data is bound (<a class="el" href="classramses_1_1LocalCamera.html#a5fcf8ebe2a1e3d1b40c8323e5f55d15f" title="Binds a ramses::DataObject to be used as source for viewport offset values. ">bindViewportOffset</a>) the value returned here represents the effective value used, i.e. the one from bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a>, not the one set via <a class="el" href="classramses_1_1LocalCamera.html#aacf595ebc6dd8026ff0da01cb6af9be5" title="Sets the viewport to be used when rendering with this camera. ">setViewport</a>.</p>
+<dl class="section return"><dt>Returns</dt><dd>vertical offset of the viewport in pixels </dd></dl>
+
+</div>
+</div>
+<a id="a190898f15ee5b76bbd26308831c8832c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a190898f15ee5b76bbd26308831c8832c">&#9670;&nbsp;</a></span>isFrustumPlanesBound()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ramses::LocalCamera::isFrustumPlanesBound </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Checks if there is a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound to viewport size (see <a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">bindFrustumPlanes</a>). </p>
+<dl class="section return"><dt>Returns</dt><dd>True if there is any <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound, false otherwise. </dd></dl>
 
 </div>
 </div>
@@ -714,8 +797,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Checks if there is a bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> to viewport offset (see bindViewportOffset). </p>
-<dl class="section return"><dt>Returns</dt><dd>True if there is any <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> bound, false otherwise. </dd></dl>
+<p>Checks if there is a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound to viewport offset (see <a class="el" href="classramses_1_1LocalCamera.html#a5fcf8ebe2a1e3d1b40c8323e5f55d15f" title="Binds a ramses::DataObject to be used as source for viewport offset values. ">bindViewportOffset</a>). </p>
+<dl class="section return"><dt>Returns</dt><dd>True if there is any <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound, false otherwise. </dd></dl>
 
 </div>
 </div>
@@ -734,8 +817,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Checks if there is a bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> to viewport size (see bindViewportSize). </p>
-<dl class="section return"><dt>Returns</dt><dd>True if there is any <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> bound, false otherwise. </dd></dl>
+<p>Checks if there is a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound to viewport size (see <a class="el" href="classramses_1_1LocalCamera.html#a7ca72874a1e63390ffb97f1213670c71" title="Binds a ramses::DataObject to be used as source for viewport size values. ">bindViewportSize</a>). </p>
+<dl class="section return"><dt>Returns</dt><dd>True if there is any <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound, false otherwise. </dd></dl>
 
 </div>
 </div>
@@ -789,7 +872,10 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Sets camera frustum parameters of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>. </p>
+<p>Sets camera frustum planes of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>. </p>
+<p>It is mandatory to set frustum planes using either this method or <a class="el" href="classramses_1_1PerspectiveCamera.html#aea24c939692f0a046b473cf6d0e16267" title="An alternative method (see ramses::LocalCamera::setFrustum) to set the perspective view frustum of th...">ramses::PerspectiveCamera::setFrustum</a> in order to have a valid camera for rendering.</p>
+<p>In order to set valid frustum, all these must be true: leftPlane &lt; rightPlane &amp; bottomPlane &lt; topPlane &amp; 0 &lt; nearPlane &lt; farPlane.</p>
+<p>Important note: if frustum planes data is bound (see <a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">bindFrustumPlanes</a>) the values set here will not be effective until unbound again, bound values are always overridden by values from bound data object. Bound values can only be modified via the <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound to them.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">leftPlane</td><td>Left plane of the camera frustum. Left opening angle if camera is perspective. </td></tr>
@@ -802,7 +888,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#a27">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a21">ramses-example-local-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a35">ramses-example-local-pick-handling/src/main.cpp</a>, <a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a10">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a10">ramses-example-text-languages/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#a30">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a25">ramses-example-local-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a37">ramses-example-local-pick-handling/src/main.cpp</a>, <a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a10">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a10">ramses-example-text-languages/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -844,20 +930,41 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Sets the viewport of the <a class="el" href="classramses_1_1LocalCamera.html" title="The LocalCamera base class is part of a scene and defines a view into the scene defined by the client...">LocalCamera</a>. The viewport size does not have to match the size of the destination render buffer (<a class="el" href="classramses_1_1RenderTarget.html" title="The RenderTarget can be used as an output for a RenderPass. ">RenderTarget</a> or framebuffer). However when the size matches, the projected camera volume will match the viewport space perfectly. The viewport is aligned with the lower left corner of the destination render buffer. </p>
-<p>Important note: if viewport data is bound (see <a class="el" href="classramses_1_1LocalCamera.html#a5fcf8ebe2a1e3d1b40c8323e5f55d15f" title="Binds a DataObject to be used as source for viewport offset values. ">LocalCamera::bindViewportOffset</a> or <a class="el" href="classramses_1_1LocalCamera.html#a7ca72874a1e63390ffb97f1213670c71" title="Binds a DataObject to be used as source for viewport size values. ">LocalCamera::bindViewportSize</a>) the new value will not be effective until unbound, bound values are always overridden by bound data object. Bound parameters can only be modified via <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> bound to them.</p>
+<p>Sets the viewport to be used when rendering with this camera. </p>
+<p>The viewport size does not have to match the size of the destination render buffer (<a class="el" href="classramses_1_1RenderTarget.html" title="The RenderTarget can be used as an output for a RenderPass. ">ramses::RenderTarget</a> or display's framebuffer). However when the size matches, the projected camera frustum will fill destination buffer fully. The viewport is aligned with the lower left corner of the destination render buffer.</p>
+<p>Important note: if viewport data is bound (see <a class="el" href="classramses_1_1LocalCamera.html#a5fcf8ebe2a1e3d1b40c8323e5f55d15f" title="Binds a ramses::DataObject to be used as source for viewport offset values. ">bindViewportOffset</a> or <a class="el" href="classramses_1_1LocalCamera.html#a7ca72874a1e63390ffb97f1213670c71" title="Binds a ramses::DataObject to be used as source for viewport size values. ">bindViewportSize</a>) the value set here will not be effective until unbound again, bound values are always overridden by values from bound data object. Bound values can only be modified via the <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound to them.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>horizontal offset of the viewport rectangle (zero = leftmost pixel) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>vertical offset of the viewport rectangle (zero = bottommost pixel) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>horizontal size of the viewport rectangle </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>vertical size of the viewport rectangle </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>horizontal offset of the viewport rectangle in pixels (zero = leftmost pixel) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>vertical offset of the viewport rectangle in pixels (zero = bottommost pixel) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>horizontal size of the viewport rectangle in pixels </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>vertical size of the viewport rectangle in pixels </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-rendergroups_2src_2main_8cpp-example.html#a21">ramses-example-basic-rendergroups/src/main.cpp</a>, <a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#a24">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#a25">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a22">ramses-example-local-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a36">ramses-example-local-pick-handling/src/main.cpp</a>, <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#a25">ramses-example-renderonce/src/main.cpp</a>, <a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a11">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a11">ramses-example-text-languages/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-basic-rendergroups_2src_2main_8cpp-example.html#a24">ramses-example-basic-rendergroups/src/main.cpp</a>, <a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#a27">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#a28">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a26">ramses-example-local-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a38">ramses-example-local-pick-handling/src/main.cpp</a>, <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#a28">ramses-example-renderonce/src/main.cpp</a>, <a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a11">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a11">ramses-example-text-languages/src/main.cpp</a>.</dd>
 </dl>
+</div>
+</div>
+<a id="a38868d5d7642ed066f42479dc8ffc6c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a38868d5d7642ed066f42479dc8ffc6c5">&#9670;&nbsp;</a></span>unbindFrustumPlanes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::LocalCamera::unbindFrustumPlanes </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Unbinds any bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> from frustum planes (see <a class="el" href="classramses_1_1LocalCamera.html#a6869f9777423803f60d0c71552aefdd2" title="Binds ramses::DataObject to be used as source for frustum planes values. ">bindFrustumPlanes</a>). Does nothing if no <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound. </p>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
+
 </div>
 </div>
 <a id="afaaf6ac82ddf02e8fdb24e5245c56f02"></a>
@@ -875,7 +982,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Unbinds a currently bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> from viewport offset (see bindViewportOffset). Does nothing if no <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> bound. </p>
+<p>Unbinds any bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> from viewport offset (see <a class="el" href="classramses_1_1LocalCamera.html#a5fcf8ebe2a1e3d1b40c8323e5f55d15f" title="Binds a ramses::DataObject to be used as source for viewport offset values. ">bindViewportOffset</a>). Does nothing if no <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound. </p>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
 
 </div>
@@ -895,7 +1002,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Unbinds a currently bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> from viewport size (see bindViewportSize). Does nothing if no <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">DataObject</a> bound. </p>
+<p>Unbinds any bound <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> from viewport size (see <a class="el" href="classramses_1_1LocalCamera.html#a7ca72874a1e63390ffb97f1213670c71" title="Binds a ramses::DataObject to be used as source for viewport size values. ">bindViewportSize</a>). Does nothing if no <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. ">ramses::DataObject</a> bound. </p>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
 
 </div>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -120,6 +120,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8127e6e13f8f74992be1c00fb90a118c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1SceneReference.html#a8127e6e13f8f74992be1c00fb90a118c">setRenderOrder</a> (int32_t renderOrder)</td></tr>
 <tr class="memdesc:a8127e6e13f8f74992be1c00fb90a118c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set scene render order.  <a href="#a8127e6e13f8f74992be1c00fb90a118c">More...</a><br /></td></tr>
 <tr class="separator:a8127e6e13f8f74992be1c00fb90a118c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classramses_1_1SceneObject"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classramses_1_1SceneObject')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classramses_1_1SceneObject.html">ramses::SceneObject</a></td></tr>
+<tr class="memitem:af3216b7efec6d1d9e8e7c8fe572a3325 inherit pub_methods_classramses_1_1SceneObject"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a066567ce6a75f6cbfa79461912c5e263">sceneObjectId_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1SceneObject.html#af3216b7efec6d1d9e8e7c8fe572a3325">getSceneObjectId</a> () const</td></tr>
+<tr class="memdesc:af3216b7efec6d1d9e8e7c8fe572a3325 inherit pub_methods_classramses_1_1SceneObject"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns scene object id which is automatically assigned at creation time of object and is unique within scope of one scene.  <a href="classramses_1_1SceneObject.html#af3216b7efec6d1d9e8e7c8fe572a3325">More...</a><br /></td></tr>
+<tr class="separator:af3216b7efec6d1d9e8e7c8fe572a3325 inherit pub_methods_classramses_1_1SceneObject"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classramses_1_1RamsesObject"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classramses_1_1RamsesObject')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classramses_1_1RamsesObject.html">ramses::RamsesObject</a></td></tr>
 <tr class="memitem:a6173de039718e5359015b2e3adbd7906 inherit pub_methods_classramses_1_1RamsesObject"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesObject.html#a6173de039718e5359015b2e3adbd7906">getName</a> () const</td></tr>
 <tr class="memdesc:a6173de039718e5359015b2e3adbd7906 inherit pub_methods_classramses_1_1RamsesObject"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the name of the object.  <a href="classramses_1_1RamsesObject.html#a6173de039718e5359015b2e3adbd7906">More...</a><br /></td></tr>
@@ -214,7 +218,7 @@ Friends</h2></td></tr>
 <div class="textblock"><p>The <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">SceneReference</a> object refers to another ramses scene using its sceneId. </p>
 <p>The <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">SceneReference</a> object references a scene, which might be otherwise unknown to this <a class="el" href="classramses_1_1RamsesClient.html" title="Entry point of RAMSES client API. ">RamsesClient</a>, but is or expected to be known to a <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a> subscribed to its master scene (scene in which the reference was created using <a class="el" href="classramses_1_1Scene.html#a2e875fbc515c8ee48d2222db32440a6b" title="Creates a new SceneReference object. ">ramses::Scene::createSceneReference</a>). The <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">SceneReference</a> allows to remotely change limited set of states of the referenced scene on renderer side, results of those requests are reported asynchronously in form of event callbacks, see <a class="el" href="classramses_1_1IClientEventHandler.html" title="Provides an interface for handling the result of client events. Implementation of this interface must...">ramses::IClientEventHandler</a>.</p>
 <p>There cannot be multiple instances of <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">SceneReference</a> referring to the same sceneId, however <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">SceneReference</a> can be destroyed using <a class="el" href="classramses_1_1Scene.html#a74ef9145ecc409eed0f043ea4d58aa85" title="Destroys a previously created object using this scene The object must be owned by this scene in order...">ramses::Scene::destroy</a> and re-created with same sceneId in another scene, i.e. change its 'master' scene. It is recommended to get <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId. ">SceneReference</a> to <a class="el" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82ca453e6aa38d87b28ccae545967c53004f" title="Scene is unavailable (renderer is not subscribed to scene data), scene can be either unpublished or p...">ramses::RendererSceneState::Unavailable</a> state and wait for confirmation (<a class="el" href="classramses_1_1IClientEventHandler.html#a101d6f9ebb074aee2d87ee904bc3b2a4" title="This method will be called when state on renderer side of a scene referenced using ramses::SceneRefer...">ramses::IClientEventHandler::sceneReferenceStateChanged</a>) before destroying it, otherwise the scene remains on renderer side with no owner, potentially consuming resources and causing undesired results if shown, also any pending requests, events or actions will either fail or get lost (no master scene to report to). Even though recommended, setting referenced scene to unavailable before destroying is not strictly required, so it is possible to change its master scene regardless of its actual state on renderer side (even if actively rendered) but this should be done only with extra caution and understanding of the consequences mentioned above. </p>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#_a8">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#_a6">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl></div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a287990356b98d8dc63529a69563ab7fb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a287990356b98d8dc63529a69563ab7fb">&#9670;&nbsp;</a></span>SceneReference()</h2>
@@ -295,7 +299,7 @@ Friends</h2></td></tr>
 
 <p>Get the sceneId of the referenced scene. </p>
 <dl class="section return"><dt>Returns</dt><dd>The scene id of the referenced scene </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a13">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a11">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>
@@ -373,7 +377,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a85">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a83">ramses-example-local-scene-referencing/src/main.cpp</a>.</dd>
 </dl>
 </div>
 </div>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -103,9 +103,6 @@ $(function() {
 <li>connect()
 : <a class="el" href="classramses_1_1RamsesFramework.html#a6687dcdae0b5d9f7e19fb91dcdca547f">ramses::RamsesFramework</a>
 </li>
-<li>contains()
-: <a class="el" href="classramses_1_1ResourceFileDescription.html#af81a16c78e8c8dec1b12e73fcaffe150">ramses::ResourceFileDescription</a>
-</li>
 <li>containsAnimation()
 : <a class="el" href="classramses_1_1AnimationSequence.html#a87788ff9054df8bc5ff6e04285eccac6">ramses::AnimationSequence</a>
 </li>
@@ -132,6 +129,14 @@ $(function() {
 : <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a6ad3d54a006da1dc5cabd9a90b64507b">ramses::DcsmContentControlEventHandlerEmpty</a>
 , <a class="el" href="classramses_1_1IDcsmConsumerEventHandler.html#a52cca297ffc7f79f43b1a8e949e1bd98">ramses::IDcsmConsumerEventHandler</a>
 , <a class="el" href="classramses_1_1IDcsmContentControlEventHandler.html#a6cdce8208542061507be6ef6664fd493">ramses::IDcsmContentControlEventHandler</a>
+</li>
+<li>contentExpirationMonitoringDisabled()
+: <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a3b87d720e463723fbdfdaae246b725ba">ramses::DcsmContentControlEventHandlerEmpty</a>
+, <a class="el" href="classramses_1_1IDcsmContentControlEventHandler.html#a5216236027f85313f1466e4154b99ee2">ramses::IDcsmContentControlEventHandler</a>
+</li>
+<li>contentExpirationMonitoringEnabled()
+: <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#acdd217cd9b2f98b24df644fa9922cf24">ramses::DcsmContentControlEventHandlerEmpty</a>
+, <a class="el" href="classramses_1_1IDcsmContentControlEventHandler.html#accd6c960039a1a7831d2b60101099b79">ramses::IDcsmContentControlEventHandler</a>
 </li>
 <li>contentExpired()
 : <a class="el" href="classramses_1_1DcsmContentControlEventHandlerEmpty.html#a9ef07c5668af727f07b848dcb3fb5621">ramses::DcsmContentControlEventHandlerEmpty</a>
@@ -193,7 +198,7 @@ $(function() {
 , <a class="el" href="classramses_1_1IDcsmContentControlEventHandler.html#a4e558b8d4641c2e17082587d158f1c22">ramses::IDcsmContentControlEventHandler</a>
 </li>
 <li>createAnimatedProperty()
-: <a class="el" href="classramses_1_1AnimationSystem.html#a4d2ad442cf7cc6e0e4435d0ba5cbc61e">ramses::AnimationSystem</a>
+: <a class="el" href="classramses_1_1AnimationSystem.html#a92c0c9f0008522667a2c20d335fd2616">ramses::AnimationSystem</a>
 </li>
 <li>createAnimation()
 : <a class="el" href="classramses_1_1AnimationSystem.html#a5ad1d1f9abc0d501f0158467d17f5582">ramses::AnimationSystem</a>
@@ -207,29 +212,17 @@ $(function() {
 <li>createAppearance()
 : <a class="el" href="classramses_1_1Scene.html#a5980a75ccc0e21f175f6d75803fb9d2b">ramses::Scene</a>
 </li>
+<li>createArrayBuffer()
+: <a class="el" href="classramses_1_1Scene.html#aa69ec4d9d0ccddaede5c2b308ed75b13">ramses::Scene</a>
+</li>
+<li>createArrayResource()
+: <a class="el" href="classramses_1_1Scene.html#a46f0d0ee91cf78632dce9a22585ece45">ramses::Scene</a>
+</li>
 <li>createBlitPass()
 : <a class="el" href="classramses_1_1Scene.html#af8fa88b6bca97be234c7e4d057770c8d">ramses::Scene</a>
 </li>
 <li>createClient()
 : <a class="el" href="classramses_1_1RamsesFramework.html#aa77fd2e1fae319962822b65fffe13526">ramses::RamsesFramework</a>
-</li>
-<li>createConstFloatArray()
-: <a class="el" href="classramses_1_1RamsesClient.html#ad767192d983bf622d3366ff022ca288d">ramses::RamsesClient</a>
-</li>
-<li>createConstUInt16Array()
-: <a class="el" href="classramses_1_1RamsesClient.html#a719ceb711f1377ef87c225a0224aec14">ramses::RamsesClient</a>
-</li>
-<li>createConstUInt32Array()
-: <a class="el" href="classramses_1_1RamsesClient.html#a7f6277b3f0a62bcc9f4f506870ce19a4">ramses::RamsesClient</a>
-</li>
-<li>createConstVector2fArray()
-: <a class="el" href="classramses_1_1RamsesClient.html#afc118f9e2d0fe9999e685b5ae344f394">ramses::RamsesClient</a>
-</li>
-<li>createConstVector3fArray()
-: <a class="el" href="classramses_1_1RamsesClient.html#aa9519a03a605c7572441bda29900a303">ramses::RamsesClient</a>
-</li>
-<li>createConstVector4fArray()
-: <a class="el" href="classramses_1_1RamsesClient.html#a540cd4d22aa5c38cb00dba99d1fbb63b">ramses::RamsesClient</a>
 </li>
 <li>createDataConsumer()
 : <a class="el" href="classramses_1_1Scene.html#a8f703ffad91ae24890f46b6748696bec">ramses::Scene</a>
@@ -283,7 +276,7 @@ $(function() {
 : <a class="el" href="classramses_1_1RamsesRenderer.html#a5e8715c650b5617440220f6980f8cfbe">ramses::RamsesRenderer</a>
 </li>
 <li>createEffect()
-: <a class="el" href="classramses_1_1RamsesClient.html#a2c594824fc18dd5a74fa42a3121eb831">ramses::RamsesClient</a>
+: <a class="el" href="classramses_1_1Scene.html#a1ffa83b481924a424590c6cae8a008e3">ramses::Scene</a>
 </li>
 <li>createFreetype2Font()
 : <a class="el" href="classramses_1_1FontRegistry.html#adf7913b93f629e241ab11f936705c49d">ramses::FontRegistry</a>
@@ -296,9 +289,6 @@ $(function() {
 </li>
 <li>createGeometryBinding()
 : <a class="el" href="classramses_1_1Scene.html#a45950bffee8db288152f030f8b95736b">ramses::Scene</a>
-</li>
-<li>createIndexDataBuffer()
-: <a class="el" href="classramses_1_1Scene.html#a8d6bc487f4b6ae6350c97ecea08982ea">ramses::Scene</a>
 </li>
 <li>createInterruptibleOffscreenBuffer()
 : <a class="el" href="classramses_1_1RamsesRenderer.html#aba3e4d6c6573f9333034bc2d711101b0">ramses::RamsesRenderer</a>
@@ -319,7 +309,7 @@ $(function() {
 : <a class="el" href="classramses_1_1Scene.html#a861cc4650a056daada6f76b5d0c8ab7d">ramses::Scene</a>
 </li>
 <li>createPickableObject()
-: <a class="el" href="classramses_1_1Scene.html#a124cab244a81f0558d3c68ad339d3478">ramses::Scene</a>
+: <a class="el" href="classramses_1_1Scene.html#a09b16859794bc6aadcc6bd93f75e58b2">ramses::Scene</a>
 </li>
 <li>createRealTimeAnimationSystem()
 : <a class="el" href="classramses_1_1Scene.html#a908bdddeeb758d4f32aeab8a9917b86c">ramses::Scene</a>
@@ -341,6 +331,9 @@ $(function() {
 </li>
 <li>createRenderTarget()
 : <a class="el" href="classramses_1_1Scene.html#a6e7e555a554c11c10329ce6c5afc8308">ramses::Scene</a>
+</li>
+<li>createResourceForScene()
+: <a class="el" href="classramses_1_1ResourceDataPool.html#a66fa9df892c8dc8e9dc47693910936e2">ramses::ResourceDataPool</a>
 </li>
 <li>createScene()
 : <a class="el" href="classramses_1_1RamsesClient.html#a8a7c5d446961516bf4a81198194eb30d">ramses::RamsesClient</a>
@@ -424,46 +417,43 @@ $(function() {
 : <a class="el" href="classramses_1_1AnimationSystem.html#a3d194ad368571ed53817d136f775763d">ramses::AnimationSystem</a>
 </li>
 <li>createStreamTexture()
-: <a class="el" href="classramses_1_1Scene.html#a5b28c51e4b40355e305d1d5608da9303">ramses::Scene</a>
+: <a class="el" href="classramses_1_1Scene.html#a6787d55f4a7a98e888146614e51c0f0d">ramses::Scene</a>
 </li>
 <li>createTextLine()
 : <a class="el" href="classramses_1_1TextCache.html#a48f40b9454de876a81bcf6f010da07e8">ramses::TextCache</a>
 </li>
 <li>createTexture2D()
-: <a class="el" href="classramses_1_1RamsesClient.html#a07426cc6f2be55c51b8bcab841b802dc">ramses::RamsesClient</a>
+: <a class="el" href="classramses_1_1Scene.html#a77fa776aed84d357a8afe2951d954b57">ramses::Scene</a>
 </li>
 <li>createTexture2DBuffer()
-: <a class="el" href="classramses_1_1Scene.html#a50f721a5a9c81a3c00a3e0e0c72aec1a">ramses::Scene</a>
+: <a class="el" href="classramses_1_1Scene.html#a3833b7d2c2f1c429531da9f872db5cc8">ramses::Scene</a>
 </li>
 <li>createTexture3D()
-: <a class="el" href="classramses_1_1RamsesClient.html#a1ca903d44fdd711f99732ccb53e084ef">ramses::RamsesClient</a>
+: <a class="el" href="classramses_1_1Scene.html#a3b83079c770efd48a838e70e999df153">ramses::Scene</a>
 </li>
 <li>createTextureConsumer()
 : <a class="el" href="classramses_1_1Scene.html#afcd023e6f43a8143b567cb2551860a5d">ramses::Scene</a>
 </li>
 <li>createTextureCube()
-: <a class="el" href="classramses_1_1RamsesClient.html#a72cfe9e8128bed19462fea9de7632cce">ramses::RamsesClient</a>
+: <a class="el" href="classramses_1_1Scene.html#a4b8c1b09b6398fd63d604e02973f8ee5">ramses::Scene</a>
 </li>
 <li>createTextureProvider()
 : <a class="el" href="classramses_1_1Scene.html#a6754c2eb286f36e19a00db6c66d462c0">ramses::Scene</a>
 </li>
 <li>CreateTextureResourceFromPng()
-: <a class="el" href="classramses_1_1RamsesUtils.html#a4bad26f4d83f7bce22980669fd5bd216">ramses::RamsesUtils</a>
+: <a class="el" href="classramses_1_1RamsesUtils.html#abeb6bfe7a148a8ddfab574b3020be3c9">ramses::RamsesUtils</a>
 </li>
 <li>CreateTextureResourceFromPngBuffer()
-: <a class="el" href="classramses_1_1RamsesUtils.html#a3f0f90f3c6d549bea189ed5a113e0f47">ramses::RamsesUtils</a>
+: <a class="el" href="classramses_1_1RamsesUtils.html#a1fabdee1e7a2c41fc2ce76a63d0cf987">ramses::RamsesUtils</a>
 </li>
 <li>createTextureSampler()
-: <a class="el" href="classramses_1_1Scene.html#aca13fefd05c1ab32baeeedd7c4616181">ramses::Scene</a>
+: <a class="el" href="classramses_1_1Scene.html#aa7764131a31a1564a079568e5e30c259">ramses::Scene</a>
 </li>
 <li>createTransformationDataConsumer()
 : <a class="el" href="classramses_1_1Scene.html#aa7b0c33f60359db37de6269b2c0697fb">ramses::Scene</a>
 </li>
 <li>createTransformationDataProvider()
 : <a class="el" href="classramses_1_1Scene.html#ab4dd547c38daf44a3985267b3a7065a8">ramses::Scene</a>
-</li>
-<li>createVertexDataBuffer()
-: <a class="el" href="classramses_1_1Scene.html#ac88686b4f58941c6b1f5432756a353fc">ramses::Scene</a>
 </li>
 <li>CubeMipLevelData()
 : <a class="el" href="structramses_1_1CubeMipLevelData.html#ad89bb11ce844453f3f2e3f5b228c352f">ramses::CubeMipLevelData</a>

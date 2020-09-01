@@ -14,9 +14,7 @@ var searchData=
   ['renderereventhandlerempty',['RendererEventHandlerEmpty',['../classramses_1_1RendererEventHandlerEmpty.html',1,'ramses']]],
   ['rendererresourceid_5ft',['rendererResourceId_t',['../structramses_1_1rendererResourceId__t.html',1,'ramses']]],
   ['rendererscenecontrol',['RendererSceneControl',['../classramses_1_1RendererSceneControl.html',1,'ramses']]],
-  ['rendererscenecontrol_5flegacy',['RendererSceneControl_legacy',['../classramses_1_1RendererSceneControl__legacy.html',1,'ramses']]],
   ['rendererscenecontroleventhandlerempty',['RendererSceneControlEventHandlerEmpty',['../classramses_1_1RendererSceneControlEventHandlerEmpty.html',1,'ramses']]],
-  ['rendererscenecontroleventhandlerempty_5flegacy',['RendererSceneControlEventHandlerEmpty_legacy',['../classramses_1_1RendererSceneControlEventHandlerEmpty__legacy.html',1,'ramses']]],
   ['rendergroup',['RenderGroup',['../classramses_1_1RenderGroup.html',1,'ramses']]],
   ['rendergroupmeshiterator',['RenderGroupMeshIterator',['../classramses_1_1RenderGroupMeshIterator.html',1,'ramses']]],
   ['renderpass',['RenderPass',['../classramses_1_1RenderPass.html',1,'ramses']]],
@@ -25,8 +23,6 @@ var searchData=
   ['rendertargetdescription',['RenderTargetDescription',['../classramses_1_1RenderTargetDescription.html',1,'ramses']]],
   ['resource',['Resource',['../classramses_1_1Resource.html',1,'ramses']]],
   ['resourcecacheflagtag',['resourceCacheFlagTag',['../structramses_1_1resourceCacheFlagTag.html',1,'ramses']]],
-  ['resourcefiledescription',['ResourceFileDescription',['../classramses_1_1ResourceFileDescription.html',1,'ramses']]],
-  ['resourcefiledescriptionset',['ResourceFileDescriptionSet',['../classramses_1_1ResourceFileDescriptionSet.html',1,'ramses']]],
-  ['resourceid_5ft',['resourceId_t',['../structramses_1_1resourceId__t.html',1,'ramses']]],
-  ['resourceiterator',['ResourceIterator',['../classramses_1_1ResourceIterator.html',1,'ramses']]]
+  ['resourcedatapool',['ResourceDataPool',['../classramses_1_1ResourceDataPool.html',1,'ramses']]],
+  ['resourceid_5ft',['resourceId_t',['../structramses_1_1resourceId__t.html',1,'ramses']]]
 ];

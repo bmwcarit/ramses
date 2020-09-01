@@ -1,6 +1,7 @@
 <map id="ramses::Texture3D" name="ramses::Texture3D">
-<area shape="rect" id="node2" href="$classramses_1_1Resource.html" title="The Resource is the base class of all resources, such as arrays and textures. " alt="" coords="21,229,150,256"/>
-<area shape="rect" id="node3" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="13,155,158,181"/>
-<area shape="rect" id="node4" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="5,80,165,107"/>
-<area shape="rect" id="node5" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="11,5,160,32"/>
+<area shape="rect" id="node2" href="$classramses_1_1Resource.html" title="The Resource is the base class of all resources, such as arrays and textures. " alt="" coords="21,304,150,331"/>
+<area shape="rect" id="node3" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene. " alt="" coords="11,229,159,256"/>
+<area shape="rect" id="node4" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="13,155,158,181"/>
+<area shape="rect" id="node5" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="5,80,165,107"/>
+<area shape="rect" id="node6" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="11,5,160,32"/>
 </map>

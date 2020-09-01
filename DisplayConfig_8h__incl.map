@@ -1,7 +1,7 @@
 <map id="/home/q479079/sources/ramses&#45;oss/renderer/RendererLib/ramses&#45;renderer&#45;api/include/ramses&#45;renderer&#45;api/DisplayConfig.h" name="/home/q479079/sources/ramses&#45;oss/renderer/RendererLib/ramses&#45;renderer&#45;api/include/ramses&#45;renderer&#45;api/DisplayConfig.h">
-<area shape="rect" id="node2" href="$Types_8h.html" title="ramses&#45;renderer&#45;api\l/Types.h" alt="" coords="109,139,247,180"/>
-<area shape="rect" id="node10" href="$StatusObject_8h.html" title="ramses&#45;framework&#45;api\l/StatusObject.h" alt="" coords="283,139,433,180"/>
-<area shape="rect" id="node4" href="$RamsesFrameworkTypes_8h.html" title="ramses&#45;framework&#45;api\l/RamsesFrameworkTypes.h" alt="" coords="85,228,271,269"/>
+<area shape="rect" id="node2" href="$Types_8h.html" title="ramses&#45;renderer&#45;api\l/Types.h" alt="" coords="27,139,164,180"/>
+<area shape="rect" id="node4" href="$RamsesFrameworkTypes_8h.html" title="ramses&#45;framework&#45;api\l/RamsesFrameworkTypes.h" alt="" coords="89,228,275,269"/>
+<area shape="rect" id="node10" href="$StatusObject_8h.html" title="ramses&#45;framework&#45;api\l/StatusObject.h" alt="" coords="279,139,429,180"/>
 <area shape="rect" id="node5" href="$StronglyTypedValue_8h.html" title="ramses&#45;framework&#45;api\l/StronglyTypedValue.h" alt="" coords="95,317,250,359"/>
 <area shape="rect" id="node6" href="$APIExport_8h.html" title="ramses&#45;framework&#45;api\l/APIExport.h" alt="" coords="277,407,428,448"/>
 <area shape="rect" id="node11" href="$EValidationSeverity_8h.html" title="EValidationSeverity.h" alt="" coords="402,235,549,262"/>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">25.0.6</span>
+   &#160;<span id="projectnumber">26.0.2</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -66,8 +66,8 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h1>Summary</h1>
-<p>As described in <a class="el" href="EffectLifecycle.html">Effect lifecycle in RAMSES</a> the overhead of effect creation in <a class="el" href="classramses_1_1RamsesClient.html#a2c594824fc18dd5a74fa42a3121eb831" title="Create a new Effect by parsing a GLSL shader described by an EffectDescription instance. Refer to RamsesClient::getLastEffectErrorMessages in case of parsing error. ">ramses::RamsesClient::createEffect()</a> can be significantly reduced by creating the effects offline and storing them in resource files.</p>
-<p>RAMSES provides a set of tools which enable the bundling of effects in resource files. The effects can be loaded during runtime from these files by using one of the resource loading methods in the client API (e.g. <a class="el" href="classramses_1_1RamsesClient.html#a4464f7610a7ff4b21ffc3404121c99e1" title="Loads resources from a file. The file format has to match current Ramses SDK version in major and min...">ramses::RamsesClient::loadResources</a>). The resources can be resolved using their client-side id (see <a class="el" href="EffectLifecycle.html">Effect lifecycle in RAMSES</a> to avoid mixing up the effect id's) by calling <a class="el" href="classramses_1_1RamsesClient.html#ad661a6201bf900a34b14842c3c8198c5" title="Get a resource from the client by id. ">ramses::RamsesClient::findResourceById</a> after the loading is finished. RAMSES allows partitioning the effects in multiple files and/or creating some effects online and loading some from files.</p>
+<p>As described in <a class="el" href="EffectLifecycle.html">Effect lifecycle in RAMSES</a> the overhead of effect creation in ramses::RamsesClient::createEffect() can be significantly reduced by creating the effects offline and storing them in resource files.</p>
+<p>RAMSES provides a set of tools which enable the bundling of effects in resource files. The effects can be loaded during runtime from these files by using one of the resource loading methods in the client API (e.g. ramses::RamsesClient::loadResources). The resources can be resolved using their client-side id (see <a class="el" href="EffectLifecycle.html">Effect lifecycle in RAMSES</a> to avoid mixing up the effect id's) by calling ramses::RamsesClient::findResourceById after the loading is finished. RAMSES allows partitioning the effects in multiple files and/or creating some effects online and loading some from files.</p>
 <h1>Usage</h1>
 <p>Each effect has to be converted individually by calling <b>ramses-effect-from-glsl-shader</b>:</p>
 <p>With full-named arguments: </p><div class="fragment"><div class="line"><a class="code" href="namespaceramses.html">ramses</a>-effect-from-glsl-shader --in-vertex-shader &lt;filename&gt; --in-fragment-shader &lt;filename&gt; --in-config &lt;filename&gt; --out-resource-file &lt;filename&gt; --out-effect-id &lt;filename&gt; --out-effect-<span class="keywordtype">id</span>-type &lt;client|renderer&gt; --out-effect-name &lt;optional string&gt;</div></div><!-- fragment --><p>With short-named arguments: </p><div class="fragment"><div class="line"><a class="code" href="namespaceramses.html">ramses</a>-effect-from-glsl-shader -iv &lt;filename&gt; -if &lt;filename&gt; -ic &lt;filename&gt; -or &lt;filename&gt;  -oe &lt;filename&gt; -ot &lt;client|renderer&gt; -on &lt;optional string&gt;</div></div><!-- fragment --><h2>Parameter description:</h2>
