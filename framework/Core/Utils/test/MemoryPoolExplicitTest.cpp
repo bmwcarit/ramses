@@ -9,7 +9,6 @@
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "Utils/MemoryPoolExplicit.h"
-#include "ErrorTestUtils.h"
 
 using namespace testing;
 
@@ -35,8 +34,8 @@ namespace ramses_internal
     };
 
     typedef ::testing::Types <
-        MemoryPoolExplicit<ComparableObject, UInt32>,
-        MemoryPoolExplicit<ComparableObject, UInt16>
+        MemoryPoolExplicit<int, UInt32>,
+        MemoryPoolExplicit<int, UInt16>
     > MemoryPoolTypes;
 
     TYPED_TEST_SUITE(AMemoryPoolExplicit, MemoryPoolTypes);

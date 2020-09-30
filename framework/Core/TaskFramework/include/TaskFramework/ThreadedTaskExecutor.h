@@ -59,7 +59,6 @@ namespace ramses_internal
          */
         void stop();
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;
-        virtual void enableAcceptingTasks() override;
 
         virtual void notifyAlive(UInt16 threadIndex) override;
 

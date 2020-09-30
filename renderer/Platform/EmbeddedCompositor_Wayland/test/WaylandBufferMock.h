@@ -20,6 +20,7 @@ namespace ramses_internal
         MOCK_METHOD(WaylandBufferResource&, getResource, (), (const, override));
         MOCK_METHOD(void, reference, (), (override));
         MOCK_METHOD(void, release, (), (override));
+        MOCK_METHOD(bool, isSharedMemoryBuffer, (), (const, override));
     };
 }
 

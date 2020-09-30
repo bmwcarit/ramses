@@ -71,6 +71,7 @@ namespace ramses_internal
 
         MOCK_METHOD(DcsmInstanceId, getServiceInstanceId, (), (const, override));
         MOCK_METHOD(void, setCallbacks, (ISomeIPDcsmStackCallbacks*), (override));
+        MOCK_METHOD(DcsmStackSendDataSizes, getSendDataSizes, (), (const, override));
 
         MOCK_METHOD(bool, sendParticipantInfo, (DcsmInstanceId to, const SomeIPMsgHeader& header, uint16_t protocolVersion, DcsmInstanceId senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow), (override));
         MOCK_METHOD(bool, sendKeepAlive, (DcsmInstanceId to, const SomeIPMsgHeader& header, uint64_t timestampNow), (override));

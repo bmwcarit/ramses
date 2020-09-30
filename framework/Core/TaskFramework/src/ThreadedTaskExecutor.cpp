@@ -77,12 +77,6 @@ namespace ramses_internal
         }
     }
 
-    void ThreadedTaskExecutor::enableAcceptingTasks()
-    {
-        std::lock_guard<std::mutex> guard(m_lock);
-        m_acceptingNewTasks = true;
-    }
-
     void ThreadedTaskExecutor::notifyAlive(UInt16 threadIndex)
     {
         std::lock_guard<std::mutex> g(m_aliveLock);

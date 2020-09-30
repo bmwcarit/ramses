@@ -73,7 +73,7 @@ namespace ramses_internal
         RendererCachedScene&               m_scene;
         SceneAllocateHelper                m_sceneAllocator;
 
-        CameraHandle createTestCamera(const Vector3& translation = Vector3(0.0f), ECameraProjectionType camProjType = ECameraProjectionType_Renderer)
+        CameraHandle createTestCamera(const Vector3& translation = Vector3(0.0f), ECameraProjectionType camProjType = ECameraProjectionType::Renderer)
         {
             const NodeHandle cameraNode = m_sceneAllocator.allocateNode();
             const auto dataLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference} }, {});
@@ -91,13 +91,13 @@ namespace ramses_internal
             m_scene.setDataReference(dataInstance, Camera::FrustumNearFarPlanesField, frustumNearFar);
             const CameraHandle camera = m_sceneAllocator.allocateCamera(camProjType, cameraNode, dataInstance);
 
-            ProjectionParams params = ProjectionParams::Frustum(ECameraProjectionType_Orthographic, FakeLeftPlane, FakeRightPlane, FakeBottomPlane, FakeTopPlane, FakeNearPlane, FakeFarPlane);
-            if (camProjType == ECameraProjectionType_Perspective)
+            ProjectionParams params = ProjectionParams::Frustum(ECameraProjectionType::Orthographic, FakeLeftPlane, FakeRightPlane, FakeBottomPlane, FakeTopPlane, FakeNearPlane, FakeFarPlane);
+            if (camProjType == ECameraProjectionType::Perspective)
                 params = ProjectionParams::Perspective(FakeFoV, FakeAspectRatio, FakeNearPlane, FakeFarPlane);
             m_scene.setDataSingleVector4f(frustumPlanes, DataFieldHandle{ 0 }, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane });
             m_scene.setDataSingleVector2f(frustumNearFar, DataFieldHandle{ 0 }, { params.nearPlane, params.farPlane });
 
-            if (ECameraProjectionType_Renderer != camProjType)
+            if (ECameraProjectionType::Renderer != camProjType)
             {
                 m_scene.setDataSingleVector2i(vpOffsetInstance, DataFieldHandle{ 0 }, { 0, 0 });
                 m_scene.setDataSingleVector2i(vpSizeInstance, DataFieldHandle{ 0 }, { Int32(FakeVpWidth), Int32(FakeVpHeight) });
@@ -137,7 +137,7 @@ namespace ramses_internal
         const Matrix44f mat(0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3);
         m_executorState.setRendererViewMatrix(mat);
 
-        const CameraHandle camera = createTestCamera(Vector3(3, 5, 6), ECameraProjectionType_Perspective);
+        const CameraHandle camera = createTestCamera(Vector3(3, 5, 6), ECameraProjectionType::Perspective);
         m_executorState.setCamera(camera);
 
         const NodeHandle cameraNode = m_scene.getCamera(camera).node;
@@ -152,7 +152,7 @@ namespace ramses_internal
         const Matrix44f mat(Matrix44f::Translation(Vector3(0.5f, 1.5f, 3.5f)));
         m_executorState.setRendererViewMatrix(mat);
 
-        const CameraHandle camera = createTestCamera(Vector3(3, 5, 6), ECameraProjectionType_Perspective);
+        const CameraHandle camera = createTestCamera(Vector3(3, 5, 6), ECameraProjectionType::Perspective);
         m_executorState.setCamera(camera);
 
         EXPECT_EQ(Vector3(2.5f, 3.5f, 2.5f), m_executorState.getCameraWorldPosition());
@@ -170,7 +170,7 @@ namespace ramses_internal
 
     TEST_F(ARenderExecutorInternalState, updatesProjectionMatrixWhenSettingPerspectiveCamera)
     {
-        const CameraHandle camera = createTestCamera(Vector3(0.0f), ECameraProjectionType_Perspective);
+        const CameraHandle camera = createTestCamera(Vector3(0.0f), ECameraProjectionType::Perspective);
 
         m_executorState.setCamera(camera);
 
@@ -182,10 +182,10 @@ namespace ramses_internal
 
     TEST_F(ARenderExecutorInternalState, updatesProjectionMatrixWhenSettingOrthographicCamera)
     {
-        const CameraHandle camera = createTestCamera(Vector3(0.0f), ECameraProjectionType_Orthographic);
+        const CameraHandle camera = createTestCamera(Vector3(0.0f), ECameraProjectionType::Orthographic);
 
         const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(
-            ProjectionParams::Frustum(ECameraProjectionType_Orthographic,
+            ProjectionParams::Frustum(ECameraProjectionType::Orthographic,
                 FakeLeftPlane,
                 FakeRightPlane,
                 FakeBottomPlane,
@@ -203,7 +203,7 @@ namespace ramses_internal
         const Matrix44f mat(0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3);
         m_executorState.setRendererViewMatrix(mat);
 
-        const CameraHandle camera = createTestCamera(Vector3(3, 5, 6), ECameraProjectionType_Perspective);
+        const CameraHandle camera = createTestCamera(Vector3(3, 5, 6), ECameraProjectionType::Perspective);
         m_executorState.setCamera(camera);
         const NodeHandle cameraNode = m_scene.getCamera(camera).node;
         const Matrix44f camViewMat = m_scene.updateMatrixCache(ETransformationMatrixType_Object, cameraNode);

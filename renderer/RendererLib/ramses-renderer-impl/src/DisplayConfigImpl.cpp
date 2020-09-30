@@ -111,7 +111,7 @@ namespace ramses
         if (leftPlane < rightPlane && bottomPlane < topPlane && nearPlane < farPlane)
         {
             const ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Frustum(
-                (isOrthographic ? ramses_internal::ECameraProjectionType_Orthographic : ramses_internal::ECameraProjectionType_Perspective),
+                (isOrthographic ? ramses_internal::ECameraProjectionType::Orthographic : ramses_internal::ECameraProjectionType::Perspective),
                 leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane);
             m_internalConfig.setProjectionParams(projParams);
         }

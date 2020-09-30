@@ -57,13 +57,13 @@ namespace ramses_internal
             testFramework.startTestApplicationAndWaitUntilConnected();
             testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
 
-            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
 
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
             testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
 
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
 
@@ -75,9 +75,9 @@ namespace ramses_internal
         {
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testFramework.startTestApplicationAndWaitUntilConnected();
-            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
 
@@ -94,9 +94,9 @@ namespace ramses_internal
         {
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testFramework.startTestApplicationAndWaitUntilConnected();
-            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
 
@@ -113,9 +113,9 @@ namespace ramses_internal
         {
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testFramework.startTestApplicationAndWaitUntilConnected();
-            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
 
@@ -133,9 +133,9 @@ namespace ramses_internal
         {
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testFramework.startTestApplicationAndWaitUntilConnected();
-            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
 
@@ -150,10 +150,10 @@ namespace ramses_internal
         {
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testFramework.startTestApplicationAndWaitUntilConnected();
-            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
 
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testFramework.sendDetachBufferFromSurfaceToTestApplication(surfaceId);
             testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
@@ -169,10 +169,10 @@ namespace ramses_internal
         {
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testFramework.startTestApplicationAndWaitUntilConnected();
-            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
 
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testFramework.renderOneFrame(); //to process the event
 
@@ -195,10 +195,10 @@ namespace ramses_internal
         {
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testFramework.startTestApplicationAndWaitUntilConnected();
-            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
 
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testFramework.renderOneFrame(); //to process the event
 
@@ -206,7 +206,7 @@ namespace ramses_internal
             testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
             testFramework.renderOneFrame(); //to process the event
 
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
 
             const BoolVector events = renderAndGetSurfaceAvailabilityChangeEvents(testFramework, streamTextureSourceId);
@@ -227,13 +227,13 @@ namespace ramses_internal
             testFramework.startTestApplicationAndWaitUntilConnected();
             testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
 
-            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
 
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
             testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
 
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
 
@@ -244,9 +244,9 @@ namespace ramses_internal
         case SurfaceUnavailableEventGeneratedWhenBufferDetached_NoSceneAvailable:
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
-            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.waitForStreamSurfaceAvailabilityChange(streamTextureSourceId, true);
 

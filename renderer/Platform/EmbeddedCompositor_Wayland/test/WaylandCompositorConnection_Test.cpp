@@ -10,7 +10,7 @@
 #include "EmbeddedCompositor_Wayland/IWaylandRegion.h"
 #include "EmbeddedCompositor_Wayland/IWaylandSurface.h"
 #include "WaylandClientMock.h"
-#include "WaylandResourceMock.h"
+#include "NativeWaylandResourceMock.h"
 #include "EmbeddedCompositor_WaylandMock.h"
 
 #include "gtest/gtest.h"
@@ -44,7 +44,7 @@ namespace ramses_internal
             const uint32_t id               = 1;
             const uint32_t interfaceVersion = 4;
 
-            m_waylandCompositorConnectionResource = new WaylandResourceMock;
+            m_waylandCompositorConnectionResource = new NativeWaylandResourceMock;
 
             InSequence s;
             EXPECT_CALL(m_client, resourceCreate(&wl_compositor_interface, interfaceVersion, id))
@@ -60,7 +60,7 @@ namespace ramses_internal
         StrictMock<WaylandClientMock>              m_client;
         StrictMock<EmbeddedCompositor_WaylandMock> m_compositor;
         WaylandCompositorConnection* m_waylandCompositorConnection = nullptr;
-        WaylandResourceMock* m_waylandCompositorConnectionResource = nullptr;
+        NativeWaylandResourceMock* m_waylandCompositorConnectionResource = nullptr;
     };
 
     TEST_F(AWaylandCompositorConnection, CanBeCreatedAndDestroyed)
@@ -90,7 +90,7 @@ namespace ramses_internal
         const uint32_t id               = 1;
         const uint32_t interfaceVersion = 4;
 
-        WaylandResourceMock* surfaceResource = new WaylandResourceMock;
+        NativeWaylandResourceMock* surfaceResource = new NativeWaylandResourceMock;
 
         InSequence s;
         EXPECT_CALL(m_client, resourceCreate(&wl_surface_interface, interfaceVersion, id))
@@ -120,7 +120,7 @@ namespace ramses_internal
         const uint32_t id               = 1;
         const uint32_t interfaceVersion = 4;
 
-        WaylandResourceMock* regionResource = new WaylandResourceMock;
+        NativeWaylandResourceMock* regionResource = new NativeWaylandResourceMock;
 
         InSequence s;
         EXPECT_CALL(m_client, resourceCreate(&wl_region_interface, interfaceVersion, id))

@@ -51,9 +51,9 @@ namespace ramses_internal
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_Fallback1_Left_Fallback1_Right");
 
             testFramework.startTestApplicationAndWaitUntilConnected();
-            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangle_Left_RedTriangle_Right");
             break;
@@ -66,9 +66,9 @@ namespace ramses_internal
             testFramework.startTestApplicationAndWaitUntilConnected();
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_Fallback1_Left_Fallback2_Right");
 
-            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangle_Left_RedTriangle_Right");
             break;
@@ -80,16 +80,16 @@ namespace ramses_internal
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_Fallback1_Left_Fallback1_Right");
 
             testFramework.startTestApplicationAndWaitUntilConnected();
-            TestApplicationSurfaceId surfaceId1 = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            TestApplicationSurfaceId surfaceId1 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId1, streamTextureSourceId);
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId1);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId1);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangle_Left_Fallback1_Right");
 
-            TestApplicationSurfaceId surfaceId2 = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            TestApplicationSurfaceId surfaceId2 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId2, secondStreamTextureSourceId);
             testFramework.sendSetTriangleColorToTestApplication(ETriangleColor::Blue);
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId2);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId2);
             testFramework.waitForContentOnStreamTexture(secondStreamTextureSourceId);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangle_Left_BlueTriangle_Right");
             break;

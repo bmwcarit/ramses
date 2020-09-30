@@ -41,6 +41,24 @@ namespace ramses_internal
             update.actions.write(String("foobar"));
         }
 
+        void addFlushInformation()
+        {
+            update.flushInfos.containsValidInformation = true;
+            update.flushInfos.hasSizeInfo = true;
+            update.flushInfos.flushCounter = 14;
+            update.flushInfos.flushTimeInfo.clock_type = synchronized_clock_type::SystemTime;
+            update.flushInfos.flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(12345));
+            update.flushInfos.flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(54321));
+            update.flushInfos.resourceChanges.m_addedClientResourceRefs.push_back(ResourceContentHash(77, 66));
+            update.flushInfos.resourceChanges.m_removedClientResourceRefs.push_back(ResourceContentHash(77, 66));
+            SceneResourceAction action;
+            update.flushInfos.resourceChanges.m_sceneResourceActions.push_back(std::move(action));
+            SceneReferenceAction refAction;
+            update.flushInfos.sceneReferences.push_back(refAction);
+            update.flushInfos.sizeInfo = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
+            update.flushInfos.versionTag = SceneVersionTag(2);
+        }
+
         SceneUpdateStreamDeserializer::Result deserialize()
         {
             for (const auto& d : data)
@@ -49,7 +67,7 @@ namespace ramses_internal
                 if (res.result != SceneUpdateStreamDeserializer::ResultType::Empty)
                     return res;
             }
-            return SceneUpdateStreamDeserializer::Result{SceneUpdateStreamDeserializer::ResultType::Failed, SceneActionCollection(), {}};
+            return SceneUpdateStreamDeserializer::Result{SceneUpdateStreamDeserializer::ResultType::Failed, SceneActionCollection(), {}, {}};
         }
 
         void compare(const SceneUpdateStreamDeserializer::Result& result)
@@ -57,6 +75,7 @@ namespace ramses_internal
             ASSERT_EQ(SceneUpdateStreamDeserializer::ResultType::HasData, result.result);
             EXPECT_EQ(update.actions, result.actions);
             ASSERT_EQ(update.resources.size(), result.resources.size());
+            ASSERT_EQ(update.flushInfos, result.flushInfos);
             for (size_t i = 0; i < update.resources.size(); ++i)
             {
                 const IResource* in = update.resources[i].get();
@@ -130,6 +149,14 @@ namespace ramses_internal
         update.resources.push_back(CreateTestResource(100000));
         EXPECT_TRUE(serialize(100));
         EXPECT_GT(data.size(), 1u);
+        expectDeserializeToSame();
+    }
+
+    TEST_F(ASceneUpdateSerialization, canSerializeDeserializeFlushInformation)
+    {
+        addFlushInformation();
+        EXPECT_TRUE(serialize(400));
+        EXPECT_EQ(1u, data.size());
         expectDeserializeToSame();
     }
 
@@ -243,7 +270,7 @@ namespace ramses_internal
             expectDeserializeToSame();
         }
         data.clear();
-        update = { SceneActionCollection{}, {} };
+        update = { SceneActionCollection{}, {}, {}};
         {
             update.resources.push_back(CreateTestResource(5));
             update.resources.push_back(CreateTestResource(120));
@@ -301,7 +328,7 @@ namespace ramses_internal
         for (int run = 0; run < 500; ++run)
         {
             data.clear();
-            update = { SceneActionCollection{}, {} };
+            update = { SceneActionCollection{}, {}, {} };
             const uint32_t numActions = rnd(0, 200);
             for (uint32_t i = 0; i < numActions; ++i)
             {

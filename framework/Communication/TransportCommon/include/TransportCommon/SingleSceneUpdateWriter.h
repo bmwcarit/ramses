@@ -25,7 +25,8 @@ namespace ramses_internal
         enum class BlockType : uint32_t
         {
             SceneActionCollection = 10,
-            Resource              = 11
+            Resource              = 11,
+            FlushInfos            = 12,
         };
 
         constexpr static const uint32_t hasMorePacketsFlag = 0xCA;
@@ -37,6 +38,7 @@ namespace ramses_internal
 
         bool writeSceneActionCollection();
         bool writeResource(const IResource& resource);
+        bool writeFlushInfos(const FlushInformation& infos);
 
         bool writeBlock(BlockType type, std::initializer_list<absl::Span<const Byte>> spans);
         bool writeDataToPackets(absl::Span<const Byte> data, bool writeContinuous = false);

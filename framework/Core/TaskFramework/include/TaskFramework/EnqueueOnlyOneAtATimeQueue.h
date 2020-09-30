@@ -26,7 +26,6 @@ namespace ramses_internal
         virtual ~EnqueueOnlyOneAtATimeQueue();
         virtual bool enqueue(ITask& Task) override;
         virtual void TaskFinished(ITask& Task) override;
-        virtual void enableAcceptingTasks() override;
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;
 
         EnqueueOnlyOneAtATimeQueue(const EnqueueOnlyOneAtATimeQueue&) = delete;

@@ -48,6 +48,13 @@ TEST(AInternalRendererConfig, canGetSetWaylandSocketEmbeddedGroupName)
     EXPECT_EQ(ramses_internal::String("group2"), config.getWaylandSocketEmbeddedGroup());
 }
 
+TEST(AInternalRendererConfig, canGetSetWaylandSocketEmbeddedPermissions)
+{
+    ramses_internal::RendererConfig config;
+    config.setWaylandEmbeddedCompositingSocketPermissions(0654);
+    EXPECT_EQ(0654u, config.getWaylandSocketEmbeddedPermissions());
+}
+
 TEST(AInternalRendererConfig, canGetSetWaylandSocketEmbeddedFD)
 {
     ramses_internal::RendererConfig config;

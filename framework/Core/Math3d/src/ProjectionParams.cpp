@@ -36,7 +36,7 @@ namespace ramses_internal
     ProjectionParams ProjectionParams::Perspective(Float fieldOfViewY, Float aspectRatio, Float nearPlane, Float farPlane)
     {
         ProjectionParams params;
-        params.m_projectionType = ECameraProjectionType_Perspective;
+        params.m_projectionType = ECameraProjectionType::Perspective;
         params.nearPlane = nearPlane;
         params.farPlane = farPlane;
 
@@ -52,7 +52,7 @@ namespace ramses_internal
     ProjectionParams ProjectionParams::Frustum(ECameraProjectionType projectionType, Float leftPlane, Float rightPlane,
         Float bottomPlane, Float topPlane, Float nearPlane, Float farPlane)
     {
-        assert(projectionType != ECameraProjectionType_Renderer);
+        assert(projectionType != ECameraProjectionType::Renderer);
 
         ProjectionParams params;
         params.m_projectionType = projectionType;
@@ -68,7 +68,7 @@ namespace ramses_internal
 
     Float ProjectionParams::GetPerspectiveFovY(const ProjectionParams& projectionParams)
     {
-        assert(projectionParams.m_projectionType == ECameraProjectionType_Perspective);
+        assert(projectionParams.m_projectionType == ECameraProjectionType::Perspective);
         return PlatformMath::Rad2Deg(std::atan2(std::abs(projectionParams.topPlane), projectionParams.nearPlane) +
                                      std::atan2(std::abs(projectionParams.bottomPlane), projectionParams.nearPlane));
     }

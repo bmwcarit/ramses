@@ -110,7 +110,7 @@ namespace ramses_internal
             m_cameraWorldPosition = Vector3(position.x, position.y, position.z);
 
             Viewport newViewport;
-            if (cameraData.projectionType == ECameraProjectionType_Renderer)
+            if (cameraData.projectionType == ECameraProjectionType::Renderer)
             {
                 newViewport = m_frameBuffer.viewport;
                 assert(!renderTargetState.getState().isValid());

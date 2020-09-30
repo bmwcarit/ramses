@@ -37,9 +37,9 @@ namespace ramses_internal
             //start test application
             testFramework.startTestApplicationAndWaitUntilConnected();
             //create surface and render a frame normally (using OpenGL, without RAMSES renderer)
-            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, EmbeddedCompositorScene::GetStreamTextureSourceId());
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(EmbeddedCompositorScene::GetStreamTextureSourceId());
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture");
 

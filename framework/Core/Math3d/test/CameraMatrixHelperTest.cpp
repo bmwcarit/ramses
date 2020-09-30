@@ -37,7 +37,7 @@ TEST(ACameraMatrixHelper, ComputesProjectionMatrix)
 
 TEST(ACameraMatrixHelper, ComputesOrthographicMatrix)
 {
-    Matrix44f projMatrix(CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, 30, 40, 50, 60, 10, 20)));
+    Matrix44f projMatrix(CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Frustum(ECameraProjectionType::Orthographic, 30, 40, 50, 60, 10, 20)));
     // Don't use matrix comparison operator here, but compare exact floats
     // Rationale: tests should be explicit, should not use internal behaviour of matrix class
     EXPECT_FLOAT_EQ(0.2f, projMatrix.m11);
@@ -75,7 +75,7 @@ TEST(APerspectiveProjectionMatrix, ProjectsPointsCloserToViewerFartherFromCenter
 // Confidence test (above tests already test enough)
 TEST(AOrthographicProjectionMatrix, ProjectsPointsWithDifferentDepthToTheSamePixelInNormalizedDeviceSpace)
 {
-    Matrix44f orthographicMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Frustum(ECameraProjectionType_Orthographic,
+    Matrix44f orthographicMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Frustum(ECameraProjectionType::Orthographic,
         -1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 100.0f));
     Vector4 vecA(1.0f, 2.0f, 0.0f, 1.f);
     Vector4 vecB(1.0f, 2.0f, -50.0f, 1.f);

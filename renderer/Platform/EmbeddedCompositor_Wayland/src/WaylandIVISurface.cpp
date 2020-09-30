@@ -9,7 +9,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandIVISurface.h"
 #include "EmbeddedCompositor_Wayland/EmbeddedCompositor_Wayland.h"
 #include "EmbeddedCompositor_Wayland/IWaylandClient.h"
-#include "EmbeddedCompositor_Wayland/IWaylandResource.h"
+#include "EmbeddedCompositor_Wayland/INativeWaylandResource.h"
 #include "EmbeddedCompositor_Wayland/IWaylandSurface.h"
 #include "EmbeddedCompositor_Wayland/IWaylandClient.h"
 
@@ -18,7 +18,7 @@
 namespace ramses_internal
 {
     WaylandIVISurface::WaylandIVISurface(IWaylandClient&             client,
-                                         IWaylandResource&           iviApplicationConnectionResource,
+                                         INativeWaylandResource&           iviApplicationConnectionResource,
                                          WaylandIviSurfaceId         iviSurfaceId,
                                          IWaylandSurface*            surface,
                                          uint32_t                    id,
@@ -96,6 +96,7 @@ namespace ramses_internal
         {
             // Remove ResourceDestroyedCallback
             m_resource->setImplementation(&m_iviSurfaceInterface, this, nullptr);
+            m_resource->destroy();
             delete m_resource;
         }
     }
@@ -124,7 +125,8 @@ namespace ramses_internal
 
         // wl_resource is destroyed outside by the Wayland library, so m_resource looses the ownership of the
         // Wayland resource, so that we don't call wl_resource_destroy.
-        m_resource->disownWaylandResource();
+        delete m_resource;
+        m_resource = nullptr;
     }
 
 

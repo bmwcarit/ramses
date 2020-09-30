@@ -15,6 +15,10 @@
 
 namespace ramses_internal
 {
+    constexpr const size_t DcsmMetadata::MaxPreviewImageSize;
+    constexpr const size_t DcsmMetadata::MaxPreviewImageWidth;
+    constexpr const size_t DcsmMetadata::MaxPreviewImageHeight;
+
     namespace
     {
         enum class DcsmMetadataType : uint32_t
@@ -29,6 +33,7 @@ namespace ramses_internal
             WidgetCarModelVisibility = 8,
             WidgetExclusiveBackground = 9,
             WidgetStreamID = 10,
+            WidgetCarCameraPlanes = 11,
         };
 
         constexpr const uint32_t CurrentMetadataVersion = 1;
@@ -48,6 +53,7 @@ namespace ramses_internal
             !m_hasWidgetHUDLineID &&
             !m_hasCarModel &&
             !m_hasCarModelView &&
+            !m_hasCarCameraPlanes &&
             !m_hasCarModelVisibility &&
             !m_hasExclusiveBackground &&
             !m_hasStreamID;
@@ -64,6 +70,7 @@ namespace ramses_internal
             (m_hasWidgetHUDLineID ? 1 : 0) +
             (m_hasCarModel ? 1 : 0) +
             (m_hasCarModelView ? 1 : 0) +
+            (m_hasCarCameraPlanes ? 1 : 0) +
             (m_hasCarModelVisibility ? 1 : 0) +
             (m_hasExclusiveBackground ? 1 : 0) +
             (m_hasStreamID ? 1 : 0);
@@ -131,6 +138,15 @@ namespace ramses_internal
                << m_carModelView.cameraFOV
                << m_carModelViewTiming.startTimeStamp
                << m_carModelViewTiming.finishedTimeStamp;
+        }
+        if (m_hasCarCameraPlanes)
+        {
+            const uint32_t size = static_cast<uint32_t>(sizeof(m_carCameraPlanes));
+            static_assert(size == sizeof(float)*2, "size mismatch of CarCameraPlaneMetadata");
+            os << DcsmMetadataType::WidgetCarCameraPlanes
+               << size
+               << m_carCameraPlanes.nearPlane
+               << m_carCameraPlanes.farPlane;
         }
         if (m_hasCarModelVisibility)
         {
@@ -229,6 +245,12 @@ namespace ramses_internal
                 is >> m_carModelViewTiming.finishedTimeStamp;
                 break;
 
+            case DcsmMetadataType::WidgetCarCameraPlanes:
+                m_hasCarCameraPlanes = true;
+                is >> m_carCameraPlanes.nearPlane;
+                is >> m_carCameraPlanes.farPlane;
+                break;
+
             case DcsmMetadataType::WidgetCarModelVisibility:
             {
                 m_hasCarModelVisibility = true;
@@ -299,6 +321,11 @@ namespace ramses_internal
             m_carModelView = other.m_carModelView;
             m_carModelViewTiming = other.m_carModelViewTiming;
         }
+        if (other.m_hasCarCameraPlanes)
+        {
+            m_hasCarCameraPlanes = true;
+            m_carCameraPlanes = other.m_carCameraPlanes;
+        }
         if (other.m_hasCarModelVisibility)
         {
             m_hasCarModelVisibility = true;
@@ -325,6 +352,11 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_DCSM, "DcsmMetadata::setPreviewImagePng: Data empty");
             return false;
         }
+        if (dataLength > MaxPreviewImageSize)
+        {
+            LOG_ERROR_P(CONTEXT_DCSM, "DcsmMetadata::setPreviewImagePng: Data length {} is larger than allowed maximum of {} bytes", dataLength, MaxPreviewImageSize);
+            return false;
+        }
 
         const unsigned char* dataC = static_cast<const unsigned char*>(data);
         lodepng::State state;
@@ -334,6 +366,13 @@ namespace ramses_internal
         if (ret != 0)
         {
             LOG_ERROR(CONTEXT_DCSM, "DcsmMetadata::setPreviewImagePng: Invalid PNG, error " << ret << ": " << lodepng_error_text(ret));
+            return false;
+        }
+        if (width > MaxPreviewImageWidth ||
+            height > MaxPreviewImageHeight)
+        {
+            LOG_ERROR_P(CONTEXT_DCSM, "DcsmMetadata::setPreviewImagePng: Dimensions of {}x{} are larger than allowed maximum of {}x{}",
+                        width, height, MaxPreviewImageWidth, MaxPreviewImageHeight);
             return false;
         }
 
@@ -399,6 +438,15 @@ namespace ramses_internal
         return true;
     }
 
+    bool DcsmMetadata::setCarCameraPlanes(const ramses::CarCameraPlaneMetadata& values)
+    {
+        LOG_INFO_P(CONTEXT_DCSM, "DcsmMetadata::setCarCameraPlanes: near {}, far {}", values.nearPlane, values.farPlane);
+
+        m_carCameraPlanes = values;
+        m_hasCarCameraPlanes = true;
+        return true;
+    }
+
     bool DcsmMetadata::setCarModelVisibility(bool visibility)
     {
         LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::setCarModelVisibility: " << visibility);
@@ -461,6 +509,11 @@ namespace ramses_internal
         return m_hasCarModelView;
     }
 
+    bool DcsmMetadata::hasCarCameraPlanes() const
+    {
+        return m_hasCarCameraPlanes;
+    }
+
     bool DcsmMetadata::hasCarModelVisibility() const
     {
         return m_hasCarModelVisibility;
@@ -516,6 +569,11 @@ namespace ramses_internal
         return m_carModelViewTiming;
     }
 
+    ramses::CarCameraPlaneMetadata DcsmMetadata::getCarCameraPlanes() const
+    {
+        return m_carCameraPlanes;
+    }
+
     bool DcsmMetadata::getCarModelVisibility() const
     {
         return m_carModelVisibility;
@@ -548,6 +606,8 @@ namespace ramses_internal
             m_hasCarModelView == other.m_hasCarModelView &&
             m_carModelView == other.m_carModelView &&
             m_carModelViewTiming == other.m_carModelViewTiming &&
+            m_hasCarCameraPlanes == other.m_hasCarCameraPlanes &&
+            m_carCameraPlanes == other.m_carCameraPlanes &&
             m_hasCarModelVisibility == other.m_hasCarModelVisibility &&
             m_carModelVisibility == other.m_carModelVisibility &&
             m_hasExclusiveBackground == other.m_hasExclusiveBackground &&

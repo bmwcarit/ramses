@@ -106,7 +106,7 @@ namespace ramses
          *             Providing the name of the socket file leads to the
          *             embedded compositor searching/creating the socket file in
          *             the directory pointed to by $XDG_RUNTIME_DIR. If a
-         *             groupname is set, also the group rights are set.
+         *             groupname or permissions are given, they will be set.
          *
          *             Be aware that the socket file name is only used if the
          *             file descriptor is set to an invalid value (default), see
@@ -133,14 +133,32 @@ namespace ramses
         const char* getWaylandEmbeddedCompositingSocketName() const;
 
         /**
-        * @brief Request that the embedded compositing display socket obtains the group permissions given
+        * @brief Request that the embedded compositing display socket obtains the group given
         *        by the given name.
+        *
+        * This value is only used when socket is given as name, e.g. via
+        * setWaylandEmbeddedCompositingSocketName(), not when passed in as filedescriptor.
         *
         * @param[in] groupname The group name of the socket.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
         status_t setWaylandEmbeddedCompositingSocketGroup(const char* groupname);
+
+        /**
+        * @brief Request that the embedded compositing display socket obtains the permissions given.
+        *
+        * The format should be the same as expected by chmod() mode argument. Permissions value may not
+        * be 0. If not set "user+group can read/write (0660)" is used as default.
+        *
+        * This value is only used when socket is given as name, e.g. via
+        * setWaylandEmbeddedCompositingSocketName(), not when passed in as filedescriptor.
+        *
+        * @param[in] permissions The permissions of the socket.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
 
         /**
          * @brief      Set the file descriptor for the embedded compositor

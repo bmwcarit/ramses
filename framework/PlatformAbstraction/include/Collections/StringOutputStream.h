@@ -22,21 +22,9 @@ namespace ramses_internal
         explicit StringOutputStream(String initialContent);
         explicit StringOutputStream(std::string initialContent);
 
-        StringOutputStream& operator<<(unsigned short value);
-        StringOutputStream& operator<<(unsigned int value);
-        StringOutputStream& operator<<(unsigned long value);
-        StringOutputStream& operator<<(unsigned long long value);
-        StringOutputStream& operator<<(signed short value);
-        StringOutputStream& operator<<(signed int value);
-        StringOutputStream& operator<<(signed long value);
-        StringOutputStream& operator<<(signed long long value);
-
-        StringOutputStream& operator<<(const bool value);
         StringOutputStream& operator<<(const Char* value);
-        StringOutputStream& operator<<(const Char value);
-        StringOutputStream& operator<<(const void* value);
 
-        template <typename T, typename = decltype(::fmt::formatter<T>())>
+        template <typename T, typename = decltype(::fmt::to_string(std::declval<T>()))>
         StringOutputStream& operator<<(const T& value)
         {
             m_buffer.reserve(m_buffer.size() + fmt::formatted_size("{}", value));
@@ -86,76 +74,10 @@ namespace ramses_internal
         return static_cast<uint32_t>(m_buffer.size());
     }
 
-    inline StringOutputStream& StringOutputStream::operator<<(unsigned short value)
-    {
-        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
-        return *this;
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(unsigned int value)
-    {
-        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
-        return *this;
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(unsigned long value)
-    {
-        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
-        return *this;
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(unsigned long long value)
-    {
-        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
-        return *this;
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(signed short value)
-    {
-        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
-        return *this;
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(signed int value)
-    {
-        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
-        return *this;
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(signed long value)
-    {
-        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
-        return *this;
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(signed long long value)
-    {
-        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
-        return *this;
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(const bool value)
-    {
-        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
-        return *this;
-    }
-
     inline StringOutputStream& StringOutputStream::operator<<(const Char* value)
     {
         if (value)
             fmt::format_to(std::back_inserter(m_buffer), "{}", value);
-        return *this;
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(const Char value)
-    {
-        fmt::format_to(std::back_inserter(m_buffer), "{}", value);
-        return *this;
-    }
-
-    inline StringOutputStream& StringOutputStream::operator<<(const void* pointer)
-    {
-        fmt::format_to(std::back_inserter(m_buffer), "{}", pointer);
         return *this;
     }
 

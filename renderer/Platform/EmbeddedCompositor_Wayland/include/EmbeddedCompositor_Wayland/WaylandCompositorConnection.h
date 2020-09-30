@@ -33,7 +33,7 @@ namespace ramses_internal
         static void CompositorCreateRegionCallback(wl_client* client, wl_resource* clientResource, uint32_t id);
 
         const WaylandClientCredentials  m_clientCredentials;
-        IWaylandResource*           m_resource = nullptr;
+        INativeWaylandResource*           m_resource = nullptr;
         uint32_t                    m_version;
         IEmbeddedCompositor_Wayland& m_embeddedCompositor;
 

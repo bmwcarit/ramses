@@ -20,19 +20,19 @@ namespace ramses_internal
     class WaylandShellSurface: public IWaylandShellSurface
     {
     public:
-        WaylandShellSurface(IWaylandClient& client, IWaylandResource& shellConnectionResource, uint32_t id, IWaylandSurface& surface);
+        WaylandShellSurface(IWaylandClient& client, INativeWaylandResource& shellConnectionResource, uint32_t id, IWaylandSurface& surface);
         ~WaylandShellSurface();
         bool wasSuccessfullyInitialized() const;
         virtual void resourceDestroyed() override;
         virtual void surfaceWasDeleted() override;
         virtual const String& getTitle() const override;
         virtual void shellSurfacePong(IWaylandClient& client, uint32_t serial) override;
-        virtual void shellSurfaceMove(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial) override;
-        virtual void shellSurfaceResize(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, uint32_t edges) override;
+        virtual void shellSurfaceMove(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial) override;
+        virtual void shellSurfaceResize(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial, uint32_t edges) override;
         virtual void shellSurfaceSetToplevel(IWaylandClient& client) override;
-        virtual void shellSurfaceSetTransient(IWaylandClient& client, IWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags) override;
+        virtual void shellSurfaceSetTransient(IWaylandClient& client, INativeWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags) override;
         virtual void shellSurfaceSetFullscreen(IWaylandClient& client, uint32_t method, uint32_t framerate) override;
-        virtual void shellSurfaceSetPopup(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, IWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags) override;
+        virtual void shellSurfaceSetPopup(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial, INativeWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags) override;
         virtual void shellSurfaceSetMaximized(IWaylandClient& client) override;
         virtual void shellSurfaceSetTitle(IWaylandClient& client, const char* title) override;
         virtual void shellSurfaceSetClass(IWaylandClient& client, const char* className) override;
@@ -73,7 +73,7 @@ namespace ramses_internal
         } m_shellSurfaceInterface;
 
         const WaylandClientCredentials m_clientCredentials;
-        IWaylandResource* m_resource = nullptr;
+        INativeWaylandResource* m_resource = nullptr;
         IWaylandSurface* m_surface = nullptr;
         String m_title;
     };

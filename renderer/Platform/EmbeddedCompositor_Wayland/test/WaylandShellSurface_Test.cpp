@@ -9,7 +9,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandShellSurface.h"
 
 #include "WaylandClientMock.h"
-#include "WaylandResourceMock.h"
+#include "NativeWaylandResourceMock.h"
 #include "WaylandSurfaceMock.h"
 #include "gtest/gtest.h"
 
@@ -33,7 +33,7 @@ namespace ramses_internal
             const uint32_t interfaceVersion = 1;
             const uint32_t id = 123;
 
-            m_shellSurfaceResource = new StrictMock<WaylandResourceMock>;
+            m_shellSurfaceResource = new StrictMock<NativeWaylandResourceMock>;
             InSequence s;
             EXPECT_CALL(m_shellResource, getVersion()).WillOnce(Return(interfaceVersion));
             EXPECT_CALL(m_client, resourceCreate(&wl_shell_surface_interface, interfaceVersion, id))
@@ -45,13 +45,23 @@ namespace ramses_internal
             return new WaylandShellSurface(m_client, m_shellResource, id, m_surface);
         }
 
+        void destroyWaylandShellSurface(WaylandShellSurface& shellSurface, bool expectUnsetShellSurface = true)
+        {
+            if(expectUnsetShellSurface)
+                EXPECT_CALL(m_surface, setShellSurface(nullptr));
+            EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, &shellSurface, nullptr));
+            EXPECT_CALL(*m_shellSurfaceResource, destroy());
+
+            delete &shellSurface;
+        }
+
     protected:
         StrictMock<WaylandClientMock>   m_client;
-        StrictMock<WaylandResourceMock> m_shellResource;
+        StrictMock<NativeWaylandResourceMock> m_shellResource;
         StrictMock<WaylandSurfaceMock>  m_surface;
-        StrictMock<WaylandResourceMock> m_seatResource;
-        StrictMock<WaylandResourceMock> m_surfaceResource;
-        StrictMock<WaylandResourceMock>* m_shellSurfaceResource = nullptr;
+        StrictMock<NativeWaylandResourceMock> m_seatResource;
+        StrictMock<NativeWaylandResourceMock> m_surfaceResource;
+        StrictMock<NativeWaylandResourceMock>* m_shellSurfaceResource = nullptr;
     };
 
     TEST_F(AWaylandShellSurface, CanBeCreatedAndDestroyed)
@@ -59,9 +69,7 @@ namespace ramses_internal
         InSequence s;
         WaylandShellSurface* waylandShellSurface = createWaylandShellSurface();
 
-        EXPECT_CALL(m_surface, setShellSurface(nullptr));
-        EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_, waylandShellSurface, nullptr));
-        delete waylandShellSurface;
+        destroyWaylandShellSurface(*waylandShellSurface);
     }
 
     TEST_F(AWaylandShellSurface, CantBeCreatedWhenResourceCreateFails)
@@ -99,7 +107,7 @@ namespace ramses_internal
     {
         StrictMock<WaylandSurfaceMock>* surface = new StrictMock<WaylandSurfaceMock>;
 
-        m_shellSurfaceResource = new StrictMock<WaylandResourceMock>;
+        m_shellSurfaceResource = new StrictMock<NativeWaylandResourceMock>;
 
         const uint32_t interfaceVersion = 1;
         const uint32_t id = 123;
@@ -114,11 +122,11 @@ namespace ramses_internal
         EXPECT_CALL(*surface, hasShellSurface()).WillOnce(Return(false));
         EXPECT_CALL(*surface, setShellSurface(NotNull()));
 
-        WaylandShellSurface shellSurface(m_client, m_shellResource, id, *surface);
+        WaylandShellSurface* shellSurface = new WaylandShellSurface(m_client, m_shellResource, id, *surface);
 
         delete surface;
-        shellSurface.surfaceWasDeleted();
+        shellSurface->surfaceWasDeleted();
 
-        EXPECT_CALL(*m_shellSurfaceResource, setImplementation(_,&shellSurface, nullptr));
+        destroyWaylandShellSurface(*shellSurface, false);
     }
 }

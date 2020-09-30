@@ -1,3 +1,29 @@
+26.0.4
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Flip ramses-stream-viewer stream rendering vertically. Add --flip-y argument to restore old behavior.
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fix someip keepalive handling after disconnect and following connect
+        - Check and enforce DcsmMetadataCreator::setPreviewImagePng size limitations to ensure it can be transferred
+
+        API changes
+        ------------------------------------------------------------------------
+        - Add ramses::GetRamsesVersion to query version information
+
+26.0.3
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Embedded compositor resets Red/Blue swizzle state on switch between different buffer types
+        - Restore thread names on integrity
+
+        API changes
+        ------------------------------------------------------------------------
+        - Add RendererConfig::setWaylandEmbeddedCompositingSocketPermissions to set embedded compositor socket permissions on creation
+
 26.0.2
 -------------------
         Build system

@@ -56,6 +56,18 @@ namespace ramses_internal
             createQuadWithStreamTexture(0.0f, -1.0f, 2.0f, 2.0f, streamSource2, *fallbackTexture1);
             break;
         }
+        case TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SWIZZLED_FALLBACK_TEXTURES:
+        {
+            //use same png with different swizzle for fallbacks
+            const ramses::TextureSwizzle leftTextureSwizzle { ramses::ETextureChannelColor::Green, ramses::ETextureChannelColor::One, ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Alpha };
+            const ramses::TextureSwizzle rightTextureSwizzle { ramses::ETextureChannelColor::Green, ramses::ETextureChannelColor::Blue, ramses::ETextureChannelColor::Red, ramses::ETextureChannelColor::Alpha };
+            ramses::Texture2D* leftSceneFallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", m_scene, leftTextureSwizzle, "leftSceneFallbackTexture");
+            ramses::Texture2D* rightSceneFallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", m_scene, rightTextureSwizzle, "leftSceneFallbackTexture");
+
+            createQuadWithStreamTexture(-2.0f, -1.0f, 2.0f, 2.0f, streamSource1, *leftSceneFallbackTexture);
+            createQuadWithStreamTexture(0.0f, -1.0f, 2.0f, 2.0f, streamSource2, *rightSceneFallbackTexture);
+            break;
+        }
         case SINGLE_STREAM_TEXTURE_ON_THE_LEFT:
         {
             ramses::Texture2D* leftSceneFallbackTexture = ramses::RamsesUtils::CreateTextureResourceFromPng("res/ramses-test-client-embedded-compositing-1.png", m_scene, {}, "leftSceneFallbackTexture");
@@ -161,6 +173,7 @@ namespace ramses_internal
         case SINGLE_STREAM_TEXTURE_WITH_TEXCOORDS_OFFSET:
         case TWO_STREAM_TEXTURES_WITH_SAME_SOURCE_ID_AND_DIFFERENT_FALLBACK_TEXTURES:
         case TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE:
+        case TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SWIZZLED_FALLBACK_TEXTURES:
         case SINGLE_STREAM_TEXTURE_ON_THE_LEFT:
         case SINGLE_STREAM_TEXTURE_ON_THE_RIGHT_WITH_FALLBACK_FROM_LEFT_SCENE:
         case SINGLE_STREAM_TEXTURE_ON_THE_RIGHT:

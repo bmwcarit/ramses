@@ -29,23 +29,6 @@ namespace ramses_internal
     public:
     };
 
-    class TaskWhichEnqueuesInExecute : public ITask
-    {
-    public:
-        explicit TaskWhichEnqueuesInExecute(ITaskQueue& q)
-            : mq(q)
-        {
-        }
-
-        virtual void execute() override
-        {
-            mq.enqueue(task);
-        }
-        MockITask task;
-    private:
-        ITaskQueue& mq;
-    };
-
     class DirectTaskExecutor : public ITaskQueue
     {
     public:
@@ -53,10 +36,6 @@ namespace ramses_internal
         {
             Task.execute();
             return true;
-        }
-
-        virtual void enableAcceptingTasks() override
-        {
         }
 
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override

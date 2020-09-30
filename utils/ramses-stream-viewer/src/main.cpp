@@ -49,7 +49,13 @@ void main(void)
     highp vec2 ts = vec2(textureSize(textureSampler, 0));
     if(gl_FragCoord.x < ts.x && gl_FragCoord.y < ts.y)
     {
-        fragColor = texelFetch(textureSampler, ivec2(gl_FragCoord.xy), 0);
+        fragColor = texelFetch(textureSampler,
+#ifdef FLIP_Y
+                                ivec2(gl_FragCoord.xy),
+#else
+                                ivec2(gl_FragCoord.x, ts.y-gl_FragCoord.y),
+#endif
+                                0);
     }
     else
     {
@@ -62,7 +68,7 @@ void main(void)
 class StreamSourceViewer
 {
 public:
-    StreamSourceViewer(ramses::RamsesClient& ramsesClient, ramses::sceneId_t sceneId)
+    StreamSourceViewer(ramses::RamsesClient& ramsesClient, ramses::sceneId_t sceneId, bool flipY)
         : m_ramsesClient(ramsesClient)
     {
         m_scene = m_ramsesClient.createScene(sceneId);
@@ -90,6 +96,8 @@ public:
 
         effectDesc.setVertexShader(vertexShader);
         effectDesc.setFragmentShader(fragmentShader);
+        if (flipY)
+            effectDesc.addCompilerDefine("FLIP_Y");
         m_effect = m_scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
         m_scene->flush();
         m_scene->publish();
@@ -289,11 +297,14 @@ int main(int argc, char* argv[])
     ramses_internal::ArgumentBool      helpRequested(parser, "help", "help");
     ramses_internal::ArgumentFloat     maxFps(parser, "fps", "framesPerSecond", 60.0f);
     ramses_internal::ArgumentBool      dcsmSupportRequested(parser, "dcsm", "dcsm", "if option is set stream content is only displayed if also a matching DCSM request is sent to the stream viewer");
+    ramses_internal::ArgumentBool      flipY(parser, "y", "flip-y", "flip received stream vertically (on y-axis)");
 
     if (helpRequested)
     {
         ramses_internal::RendererConfigUtils::PrintCommandLineOptions();
-        std::cout << std::endl << dcsmSupportRequested.getHelpString().c_str() << std::endl;
+        std::cout << dcsmSupportRequested.getHelpString().c_str();
+        std::cout << maxFps.getHelpString().c_str();
+        std::cout << flipY.getHelpString().c_str();
         return 0;
     }
 
@@ -324,7 +335,7 @@ int main(int argc, char* argv[])
     framework.connect();
 
     const ramses::sceneId_t sceneId{1u};
-    StreamSourceViewer sceneCreator(*ramsesClient, sceneId);
+    StreamSourceViewer sceneCreator(*ramsesClient, sceneId, flipY);
 
     sceneControlAPI->setSceneMapping(sceneId, display);
     sceneControlAPI->setSceneState(sceneId, ramses::RendererSceneState::Rendered);

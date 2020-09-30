@@ -11,6 +11,7 @@
 #include "Utils/BinaryOutputStream.h"
 #include "TestPngHeader.h"
 #include "gtest/gtest.h"
+#include "lodepng.h"
 
 namespace ramses_internal
 {
@@ -30,6 +31,7 @@ namespace ramses_internal
             filledDm.setWidgetHUDLineID(m_widgethudlineID);
             filledDm.setCarModel(1);
             filledDm.setCarModelView({ 1,2,3,4,5,6,7 }, {8,9});
+            filledDm.setCarCameraPlanes({0.1f, 5.f});
             filledDm.setCarModelVisibility(true);
             filledDm.setExclusiveBackground(true);
             filledDm.setStreamID(49);
@@ -40,6 +42,29 @@ namespace ramses_internal
             const auto vec = ref.toBinary();
             EXPECT_TRUE(vec.size() > 0);
             return DcsmMetadata(vec);
+        }
+
+        static std::vector<unsigned char> ReadFile(const char* fname)
+        {
+            File f(fname);
+            EXPECT_TRUE(f.open(File::Mode::ReadOnlyBinary));
+            UInt fileSize = 0;
+            EXPECT_TRUE(f.getSizeInBytes(fileSize));
+            std::vector<unsigned char> data(fileSize);
+            UInt readBytes = 0;
+            EXPECT_EQ(EStatus::Ok, f.read(data.data(), fileSize, readBytes));
+            assert(readBytes > 0);
+            return data;
+        }
+
+        static std::vector<unsigned char> CreateSizedPngBuffer(uint32_t width, uint32_t height)
+        {
+            std::vector<unsigned char> inData(width*height*4);
+            std::vector<unsigned char> outData;
+            const auto res = lodepng::encode(outData, inData, width, height);
+            EXPECT_EQ(res, 0u);
+            assert(res == 0);
+            return outData;
         }
 
         std::vector<unsigned char> pngHeader;
@@ -114,18 +139,46 @@ namespace ramses_internal
 
     TEST_F(ADcsmMetadata, canSetGetRealPngImage)
     {
-        File f("res/sampleImage.png");
-        EXPECT_TRUE(f.open(File::Mode::ReadOnlyBinary));
-        UInt fileSize = 0;
-        EXPECT_TRUE(f.getSizeInBytes(fileSize));
-        std::vector<unsigned char> img(fileSize);
-        UInt readBytes = 0;
-        EXPECT_EQ(EStatus::Ok, f.read(img.data(), fileSize, readBytes));
-
+        std::vector<unsigned char> img = ReadFile("res/sampleImage.png");
         DcsmMetadata dm;
         EXPECT_TRUE(dm.setPreviewImagePng(img.data(), img.size()));
         EXPECT_TRUE(dm.hasPreviewImagePng());
         EXPECT_EQ(img, dm.getPreviewImagePng());
+    }
+
+    TEST_F(ADcsmMetadata, worksIfImageDataExactlyMaximumSize)
+    {
+        std::vector<unsigned char> img = ReadFile("res/sampleImage.png");
+        img.resize(DcsmMetadata::MaxPreviewImageSize);
+        EXPECT_TRUE(DcsmMetadata().setPreviewImagePng(img.data(), img.size()));
+    }
+
+    TEST_F(ADcsmMetadata, failsIfImageDataTooLarge)
+    {
+        std::vector<unsigned char> img = ReadFile("res/sampleImage.png");
+        img.resize(DcsmMetadata::MaxPreviewImageSize + 1);
+        EXPECT_FALSE(DcsmMetadata().setPreviewImagePng(img.data(), img.size()));
+    }
+
+    TEST_F(ADcsmMetadata, worksIfImageSizeExactlyMaximumSize)
+    {
+        const std::vector<unsigned char> img = CreateSizedPngBuffer(DcsmMetadata::MaxPreviewImageWidth,
+                                                                    DcsmMetadata::MaxPreviewImageHeight);
+        EXPECT_TRUE(DcsmMetadata().setPreviewImagePng(img.data(), img.size()));
+    }
+
+    TEST_F(ADcsmMetadata, failsIfImageWidthTooLarge)
+    {
+        const std::vector<unsigned char> img = CreateSizedPngBuffer(DcsmMetadata::MaxPreviewImageWidth + 1,
+                                                                    DcsmMetadata::MaxPreviewImageHeight);
+        EXPECT_FALSE(DcsmMetadata().setPreviewImagePng(img.data(), img.size()));
+    }
+
+    TEST_F(ADcsmMetadata, failsIfImageHeightTooLarge)
+    {
+        const std::vector<unsigned char> img = CreateSizedPngBuffer(DcsmMetadata::MaxPreviewImageWidth,
+                                                                    DcsmMetadata::MaxPreviewImageHeight + 1);
+        EXPECT_FALSE(DcsmMetadata().setPreviewImagePng(img.data(), img.size()));
     }
 
     TEST_F(ADcsmMetadata, canSetGetPreviewDescription)
@@ -170,6 +223,15 @@ namespace ramses_internal
         EXPECT_TRUE(dm.hasCarModelView());
         EXPECT_EQ(values, dm.getCarModelView());
         EXPECT_EQ(timing, dm.getCarModelViewAnimationInfo());
+    }
+
+    TEST_F(ADcsmMetadata, canSetGetCarCameraPlanes)
+    {
+        DcsmMetadata dm;
+        constexpr ramses::CarCameraPlaneMetadata values{ 2.f, 3.f };
+        dm.setCarCameraPlanes(values);
+        EXPECT_TRUE(dm.hasCarCameraPlanes());
+        EXPECT_EQ(values, dm.getCarCameraPlanes());
     }
 
     TEST_F(ADcsmMetadata, canSetGetCarModelVisibility)
@@ -335,6 +397,16 @@ namespace ramses_internal
         EXPECT_EQ(timing, dm.getCarModelViewAnimationInfo());
     }
 
+    TEST_F(ADcsmMetadata, canSetCarCameraPlanesToNewValue)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setCarCameraPlanes({1.f, 2.f}));
+        EXPECT_TRUE(dm.setCarCameraPlanes({4.f, 5.f}));
+        EXPECT_TRUE(dm.hasCarCameraPlanes());
+        constexpr ramses::CarCameraPlaneMetadata values{4.f, 5.f};
+        EXPECT_EQ(values, dm.getCarCameraPlanes());
+    }
+
     TEST_F(ADcsmMetadata, canSetCarModelVisibilityToNewValue)
     {
         DcsmMetadata dm;
@@ -447,6 +519,20 @@ namespace ramses_internal
         EXPECT_EQ(timing, dm.getCarModelViewAnimationInfo());
     }
 
+    TEST_F(ADcsmMetadata, canUpdateCarCameraPlanesLineFromOther)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setCarCameraPlanes({1.f, 3.f}));
+
+        DcsmMetadata otherDm;
+        EXPECT_TRUE(otherDm.setCarCameraPlanes({6.1f, 7.f}));
+
+        dm.updateFromOther(otherDm);
+        EXPECT_TRUE(dm.hasCarCameraPlanes());
+        constexpr ramses::CarCameraPlaneMetadata values{6.1f, 7.f};
+        EXPECT_EQ(values, dm.getCarCameraPlanes());
+    }
+
     TEST_F(ADcsmMetadata, canUpdateCarModelVisibilityFromOther)
     {
         DcsmMetadata dm;
@@ -495,6 +581,7 @@ namespace ramses_internal
         EXPECT_TRUE(otherDm.setWidgetHUDLineID(789));
         EXPECT_TRUE(otherDm.setCarModel(1234));
         EXPECT_TRUE(otherDm.setCarModelView({ 1,2,3,4,5,6,7 }, { 8,9 }));
+        EXPECT_TRUE(otherDm.setCarCameraPlanes({1.f, 2.f}));
         EXPECT_TRUE(otherDm.setCarModelVisibility(true));
         EXPECT_TRUE(otherDm.setExclusiveBackground(true));
         EXPECT_TRUE(otherDm.setStreamID(45));
@@ -516,6 +603,8 @@ namespace ramses_internal
         EXPECT_TRUE(dm.hasCarModelView());
         EXPECT_EQ(ramses::CarModelViewMetadata({1,2,3,4,5,6,7}), dm.getCarModelView());
         EXPECT_EQ(AnimationInformation({ 8,9 }), dm.getCarModelViewAnimationInfo());
+        EXPECT_TRUE(dm.hasCarCameraPlanes());
+        EXPECT_EQ(ramses::CarCameraPlaneMetadata({1.f, 2.f}), dm.getCarCameraPlanes());
         EXPECT_TRUE(dm.hasCarModelVisibility());
         EXPECT_TRUE(dm.getCarModelVisibility());
         EXPECT_TRUE(dm.hasExclusiveBackground());

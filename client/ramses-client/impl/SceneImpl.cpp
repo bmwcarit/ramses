@@ -101,7 +101,7 @@
 #include "DataSlotUtils.h"
 #include "PickableObjectImpl.h"
 #include "SceneReferenceImpl.h"
-#include "ArrayResourceUtils.h"
+#include "DataTypeUtils.h"
 #include "RamsesVersion.h"
 #include "Scene/ScenePersistation.h"
 
@@ -1813,7 +1813,7 @@ namespace ramses
         ramses_internal::ResourceHashUsage usage = getClientImpl().getClientApplication().getHashUsage(arrayRes->getHash());
 
         ArrayResourceImpl& pimpl = *new ArrayResourceImpl(usage, *this, name);
-        pimpl.initializeFromFrameworkData(arrayRes->getElementCount(), ArrayResourceUtils::ConvertDataTypeForResourceFromInternal(arrayRes->getElementType()));
+        pimpl.initializeFromFrameworkData(arrayRes->getElementCount(), DataTypeUtils::ConvertDataTypeFromInternal(arrayRes->getElementType()));
 
         ArrayResource* arrayResHL = new ArrayResource(pimpl);
         registerCreatedResourceObject(*arrayResHL);

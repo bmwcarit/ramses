@@ -27,12 +27,8 @@ namespace ramses_internal
             ShowStreamTextureOnTwoStreamTexturesWithSameSourceId,
             ShowSameFallbackTextureOnStreamTexturesWithDifferentSourceId,
             ShowTwoStreamTextures,
-            ShowSameBufferOnTwoStreamTextures,
-            TestCorrectBufferRelease,
             ClientRecreatesIVISurfaceWithDifferentId,
         };
-
-        bool checkFreeBufferState(EmbeddedCompositingTestsFramework& testFramework, const ramses_internal::String& bufferFreeState);
     };
 }
 

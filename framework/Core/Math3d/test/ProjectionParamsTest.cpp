@@ -26,8 +26,8 @@ namespace ramses_internal
 
     TEST(AProjectionParams, EqualsToSimilarOrthographicProjParams)
     {
-        ProjectionParams params1 = ProjectionParams::Frustum(ECameraProjectionType_Orthographic, 0.1f, 0.2f, 0.3f, 0.4f, 0.1f, 1000.f);
-        ProjectionParams params2 = ProjectionParams::Frustum(ECameraProjectionType_Orthographic, 0.1f, 0.2f, 0.3f, 0.4f, 0.1f, 1000.f);
+        ProjectionParams params1 = ProjectionParams::Frustum(ECameraProjectionType::Orthographic, 0.1f, 0.2f, 0.3f, 0.4f, 0.1f, 1000.f);
+        ProjectionParams params2 = ProjectionParams::Frustum(ECameraProjectionType::Orthographic, 0.1f, 0.2f, 0.3f, 0.4f, 0.1f, 1000.f);
 
         EXPECT_EQ(params1, params2);
     }
@@ -35,7 +35,7 @@ namespace ramses_internal
     TEST(AProjectionParams, PerspectiveDoesNotEqualOrthographicWithSameCalculatedPlaneValues)
     {
         ProjectionParams params1 = ProjectionParams::Perspective(30.f, 1.0f, 0.1f, 1000.f);
-        ProjectionParams params2 = ProjectionParams::Frustum(ECameraProjectionType_Orthographic, params1.leftPlane, params1.rightPlane,
+        ProjectionParams params2 = ProjectionParams::Frustum(ECameraProjectionType::Orthographic, params1.leftPlane, params1.rightPlane,
             params1.bottomPlane, params1.topPlane, params1.nearPlane, params1.farPlane);
 
         EXPECT_EQ(params1.leftPlane, params2.leftPlane);
@@ -50,8 +50,8 @@ namespace ramses_internal
 
     TEST(AProjectionParams, PerspectiveDoesNotEqualOrthographicWithSamePlaneValues)
     {
-        ProjectionParams params1 = ProjectionParams::Frustum(ECameraProjectionType_Perspective, 0.1f, 0.2f, 0.3f, 0.4f, 0.1f, 1000.f);
-        ProjectionParams params2 = ProjectionParams::Frustum(ECameraProjectionType_Orthographic, 0.1f, 0.2f, 0.3f, 0.4f, 0.1f, 1000.f);
+        ProjectionParams params1 = ProjectionParams::Frustum(ECameraProjectionType::Perspective, 0.1f, 0.2f, 0.3f, 0.4f, 0.1f, 1000.f);
+        ProjectionParams params2 = ProjectionParams::Frustum(ECameraProjectionType::Orthographic, 0.1f, 0.2f, 0.3f, 0.4f, 0.1f, 1000.f);
 
         EXPECT_EQ(params1.leftPlane, params2.leftPlane);
         EXPECT_EQ(params1.rightPlane, params2.rightPlane);
@@ -65,8 +65,8 @@ namespace ramses_internal
 
     TEST(AProjectionParams, CanBeConstructedFromOrthographicParameters)
     {
-        ProjectionParams params(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f));
-        EXPECT_EQ(ECameraProjectionType_Orthographic, params.getProjectionType());
+        ProjectionParams params(ProjectionParams::Frustum(ECameraProjectionType::Orthographic, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f));
+        EXPECT_EQ(ECameraProjectionType::Orthographic, params.getProjectionType());
         EXPECT_EQ(0.1f, params.leftPlane);
         EXPECT_EQ(0.2f, params.rightPlane);
         EXPECT_EQ(0.3f, params.bottomPlane);
@@ -77,10 +77,10 @@ namespace ramses_internal
 
     TEST(AProjectionParams, CanUpdateOrthographicParameters)
     {
-        ProjectionParams params(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f));
+        ProjectionParams params(ProjectionParams::Frustum(ECameraProjectionType::Orthographic, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f));
         params.leftPlane = 0.5f;
 
-        EXPECT_EQ(ECameraProjectionType_Orthographic, params.getProjectionType());
+        EXPECT_EQ(ECameraProjectionType::Orthographic, params.getProjectionType());
         EXPECT_EQ(0.5f, params.leftPlane);
         EXPECT_EQ(0.2f, params.rightPlane);
         EXPECT_EQ(0.3f, params.bottomPlane);
@@ -93,7 +93,7 @@ namespace ramses_internal
     {
         ProjectionParams params(ProjectionParams::Perspective(45.f, 1.5f, 0.1f, 1.0f));
 
-        EXPECT_EQ(ECameraProjectionType_Perspective, params.getProjectionType());
+        EXPECT_EQ(ECameraProjectionType::Perspective, params.getProjectionType());
         EXPECT_FLOAT_EQ(45.f, ProjectionParams::GetPerspectiveFovY(params));
         EXPECT_FLOAT_EQ(1.5f, ProjectionParams::GetAspectRatio(params));
         EXPECT_EQ(0.1f, params.nearPlane);
@@ -167,7 +167,7 @@ namespace ramses_internal
 
     TEST(AProjectionParams, GetAspectRatioOnOrthographicProjection)
     {
-        ProjectionParams params(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, 0.1f, 0.3f, 0.3f, 0.4f, 0.1f, 1000.f));
+        ProjectionParams params(ProjectionParams::Frustum(ECameraProjectionType::Orthographic, 0.1f, 0.3f, 0.3f, 0.4f, 0.1f, 1000.f));
         EXPECT_FLOAT_EQ(2.0f, ProjectionParams::GetAspectRatio(params));
     }
 
@@ -184,23 +184,23 @@ namespace ramses_internal
 
     TEST(AProjectionParams, ValidatesParams)
     {
-        const ProjectionParams params(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
+        const ProjectionParams params(ProjectionParams::Frustum(ECameraProjectionType::Orthographic, -1.f, 1.f, -1.f, 1.f, 0.1f, 1.f));
         EXPECT_TRUE(params.isValid());
 
         // L > R
-        const ProjectionParams params1(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, 1.f, -1.f, -1.f, 1.f, 0.1f, 1.f));
+        const ProjectionParams params1(ProjectionParams::Frustum(ECameraProjectionType::Orthographic, 1.f, -1.f, -1.f, 1.f, 0.1f, 1.f));
         EXPECT_FALSE(params1.isValid());
 
         // B > T
-        const ProjectionParams params2(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, 1.f, -1.f, 0.1f, 1.f));
+        const ProjectionParams params2(ProjectionParams::Frustum(ECameraProjectionType::Orthographic, -1.f, 1.f, 1.f, -1.f, 0.1f, 1.f));
         EXPECT_FALSE(params2.isValid());
 
         // N > F
-        const ProjectionParams params3(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, -1.f, 1.f, 1.f, 0.1f));
+        const ProjectionParams params3(ProjectionParams::Frustum(ECameraProjectionType::Orthographic, -1.f, 1.f, -1.f, 1.f, 1.f, 0.1f));
         EXPECT_FALSE(params3.isValid());
 
         // N = 0
-        const ProjectionParams params4(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, -1.f, 1.f, 0.f, 1.f));
+        const ProjectionParams params4(ProjectionParams::Frustum(ECameraProjectionType::Orthographic, -1.f, 1.f, -1.f, 1.f, 0.f, 1.f));
         EXPECT_FALSE(params4.isValid());
     }
 }

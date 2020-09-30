@@ -22,7 +22,7 @@
 #include "SceneImpl.h"
 #include "ArrayBufferImpl.h"
 #include "RamsesObjectRegistryIterator.h"
-#include "ArrayResourceUtils.h"
+#include "DataTypeUtils.h"
 #include "ObjectIteratorImpl.h"
 #include "SerializationContext.h"
 
@@ -263,7 +263,7 @@ namespace ramses
             return addErrorEntry("GeometryBinding::setIndices failed, indicesResource is not from the same client as this GeometryBinding.");
         }
 
-        if (!ArrayResourceUtils::IsValidIndicesType(arrayResource.getElementType()))
+        if (!DataTypeUtils::IsValidIndicesType(arrayResource.getElementType()))
         {
             return addErrorEntry("GeometryBinding::setIndices failed, indicesResource is not of valid data type.");
         }
@@ -296,7 +296,7 @@ namespace ramses
             return addErrorEntry("GeometryBinding::setIndices failed, dataBuffer is not from the same scene as this GeometryBinding.");
         }
 
-        if (!ArrayResourceUtils::IsValidIndicesType(dataBuffer.getDataType()))
+        if (!DataTypeUtils::IsValidIndicesType(dataBuffer.getDataType()))
         {
             return addErrorEntry("GeometryBinding::setIndices failed, arrayBuffer is not of valid data type.");
         }
@@ -332,7 +332,7 @@ namespace ramses
             return addErrorEntry("GeometryBinding::setInputBuffer failed, bufferResource is not from the same client as the GeometryBinding.");
         }
 
-        if (!ArrayResourceUtils::IsValidVerticesType(bufferResource.getElementType()))
+        if (!DataTypeUtils::IsValidVerticesType(bufferResource.getElementType()))
         {
             return addErrorEntry("GeometryBinding::setInputBuffer failed, bufferResource is not of valid data type.");
         }
@@ -342,7 +342,7 @@ namespace ramses
             return addErrorEntry("GeometryBinding::setInputBuffer failed, input is not properly initialized or cannot be used with this geometry binding.");
         }
 
-        if (!dataTypeMatchesInputType(ArrayResourceUtils::ConvertDataTypeForResourceToInternal(bufferResource.getElementType()), input.getDataType()))
+        if (!dataTypeMatchesInputType(DataTypeUtils::ConvertDataTypeToInternal(bufferResource.getElementType()), input.getDataType()))
         {
             return addErrorEntry("GeometryBinding::setInputBuffer failed, resource buffer type does not match input data type");
         }
@@ -361,7 +361,7 @@ namespace ramses
             return addErrorEntry("GeometryBinding::setInputBuffer failed, dataBuffer is not from the same scene as the GeometryBinding.");
         }
 
-        if (!ArrayResourceUtils::IsValidVerticesType(dataBuffer.getDataType()))
+        if (!DataTypeUtils::IsValidVerticesType(dataBuffer.getDataType()))
         {
             return addErrorEntry("GeometryBinding::setInputBuffer failed, arrayBuffer is not of valid data type.");
         }

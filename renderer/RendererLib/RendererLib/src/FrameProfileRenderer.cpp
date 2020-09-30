@@ -129,7 +129,7 @@ namespace ramses_internal
         , m_stackedTimingLineEffect(nullptr)
         , m_singleColorEffect(nullptr)
     {
-        const ProjectionParams params = ProjectionParams::Frustum(ECameraProjectionType_Orthographic, 0.0f, m_displayWidth, 0.0f, static_cast<Float>(displayHeight), 0.0f, 1.0f);
+        const ProjectionParams params = ProjectionParams::Frustum(ECameraProjectionType::Orthographic, 0.0f, m_displayWidth, 0.0f, static_cast<Float>(displayHeight), 0.0f, 1.0f);
         m_projectionMatrix = CameraMatrixHelper::ProjectionMatrix(params);
     }
 

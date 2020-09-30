@@ -47,10 +47,6 @@ namespace ramses_internal
             return true;
         }
 
-        virtual void enableAcceptingTasks() override
-        {
-        }
-
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override
         {
         }
@@ -168,7 +164,7 @@ namespace ramses_internal
 
         static std::vector<std::vector<Byte>> SerializeResources(const ManagedResourceVector& resVec, uint32_t chunkSize = 100000)
         {
-            SceneUpdate update{SceneActionCollection(), resVec};
+            SceneUpdate update{SceneActionCollection(), resVec, {}};
             return TestSerializeSceneUpdateToVectorChunked(SceneUpdateSerializer(update), chunkSize);
         }
 

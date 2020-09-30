@@ -186,9 +186,9 @@ namespace ramses_internal
 
         PreallocateSceneSize,
 
-        PushResource,
+        PushResource,   // deprecated, do not use
 
-        SetAckFlushState,
+        SetAckFlushState,   // deprecated, do not use
         Flush,
 
         TestAction,

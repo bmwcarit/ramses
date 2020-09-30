@@ -14,7 +14,7 @@ namespace ramses_internal
     {
     }
 
-    WaylandCallbackResource::WaylandCallbackResource(wl_resource* resource, bool ownership): WaylandResource(resource, ownership)
+    WaylandCallbackResource::WaylandCallbackResource(wl_resource* resource): NativeWaylandResource(resource)
     {
     }
 

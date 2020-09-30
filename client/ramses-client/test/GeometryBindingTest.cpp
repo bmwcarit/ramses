@@ -57,12 +57,6 @@ namespace ramses
             EXPECT_EQ(expectedInstancingDivisor, actualDataResource.instancingDivisor);
         }
 
-        void checkHashNotSetInInternalScene(const GeometryBinding& geometryBinding, ramses_internal::DataFieldHandle field) const
-        {
-            const ramses_internal::ResourceField& actualDataResource = sharedTestState->getInternalScene().getDataResource(geometryBinding.impl.getAttributeDataInstance(), field);
-            EXPECT_EQ(ramses_internal::ResourceContentHash::Invalid(), actualDataResource.hash);
-        }
-
         void checkDataBufferSetToInternalScene(const GeometryBinding& geometryBinding, ramses_internal::DataFieldHandle field, const ArrayBufferImpl& dataBuffer, ramses_internal::UInt32 expectedInstancingDivisor) const
         {
             const ramses_internal::DataBufferHandle dataBufferHandle = dataBuffer.getDataBufferHandle();
@@ -71,22 +65,12 @@ namespace ramses
             EXPECT_EQ(expectedInstancingDivisor, actualDataResource.instancingDivisor);
         }
 
-        void checkDataBufferNotSetInInternalScene(const GeometryBinding&           geometryBinding,
-                                               ramses_internal::DataFieldHandle field) const
-        {
-            const ramses_internal::ResourceField&   actualDataResource =
-                sharedTestState->getInternalScene().getDataResource(geometryBinding.impl.getAttributeDataInstance(),
-                                                                    field);
-            EXPECT_EQ(ramses_internal::DataBufferHandle::Invalid(), actualDataResource.dataBuffer);
-        }
-
         ArrayResource* setVec3fArrayInput(GeometryBinding& geometry)
         {
             float verts[9] = { 0.f };
             auto vertices = sharedTestState->getScene().createArrayResource(EDataType::Vector3F, 3u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec3Vertices");
             EXPECT_TRUE(vertices != nullptr);
-            if (!vertices)
-                return nullptr;
+            assert(vertices);
 
             AttributeInput input;
             EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec3fArrayInput", input));
@@ -100,8 +84,7 @@ namespace ramses
             float verts[8] = { 0.2f };
             auto vertices = sharedTestState->getScene().createArrayResource(EDataType::Vector2F, 4u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec2Vertices");
             EXPECT_TRUE(vertices != nullptr);
-            if (!vertices)
-                return nullptr;
+            assert(vertices);
 
             AttributeInput input;
             EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec2fArrayInput", input));
@@ -115,8 +98,7 @@ namespace ramses
             float verts[8] = { 0.4f };
             auto vertices = sharedTestState->getScene().createArrayResource(EDataType::Vector4F, 2u, verts, ramses::ResourceCacheFlag_DoNotCache, "vec4Vertices");
             EXPECT_TRUE(vertices != nullptr);
-            if (!vertices)
-                return nullptr;
+            assert(vertices);
 
             AttributeInput input;
             EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("vec4fArrayInput", input));
@@ -130,8 +112,7 @@ namespace ramses
             float verts[8] = { 0.1f };
             auto vertices = sharedTestState->getScene().createArrayResource(EDataType::Float, 8u, verts, ResourceCacheFlag_DoNotCache, "floatVertices");
             EXPECT_TRUE(vertices != nullptr);
-            if (!vertices)
-                return nullptr;
+            assert(vertices);
 
             AttributeInput input;
             EXPECT_EQ(StatusOK, sharedTestState->effect->findAttributeInput("floatArrayInput", input));
@@ -145,8 +126,7 @@ namespace ramses
             uint32_t inds[3] = { 0u };
             auto indices = sharedTestState->getScene().createArrayResource(EDataType::UInt32, 3u, inds, ramses::ResourceCacheFlag_DoNotCache, "indices");
             EXPECT_TRUE(indices != nullptr);
-            if (!indices)
-                return nullptr;
+            assert(indices);
 
             EXPECT_EQ(0u, geometry.impl.getIndicesCount());
             EXPECT_EQ(StatusOK, geometry.setIndices(*indices));

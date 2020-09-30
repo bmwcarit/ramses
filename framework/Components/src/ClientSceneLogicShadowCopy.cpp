@@ -81,6 +81,7 @@ namespace ramses_internal
                 versionTag);
             // TODO vaclav re-enable sending resources after renderer side can use them
             //sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChanges.m_addedClientResourceRefs);
+            sceneUpdate.flushInfos = { m_flushCounter, versionTag, sceneSizes, m_resourceChanges, m_scene.getSceneReferenceActions(), flushTimeInfo,sceneSizes > m_sceneShadowCopy.getSceneSizeInformation(), true };
         }
 
         // reserve memory in ClientScene after flush because flush might add a lot of data

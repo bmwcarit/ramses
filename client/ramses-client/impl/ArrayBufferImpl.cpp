@@ -11,7 +11,6 @@
 #include "DataTypeUtils.h"
 #include "Scene/ClientScene.h"
 #include "SceneAPI/EDataType.h"
-#include "ArrayResourceUtils.h"
 
 namespace ramses
 {
@@ -27,8 +26,8 @@ namespace ramses
     void ArrayBufferImpl::initializeFrameworkData(EDataType dataType, uint32_t numElements)
     {
         assert(!m_dataBufferHandle.isValid());
-        const ramses_internal::EDataBufferType dataBufferType = ArrayResourceUtils::DeductBufferTypeFromDataType(dataType);
-        const ramses_internal::EDataType dataTypeInternal = DataTypeUtils::GetDataTypeInternal(dataType);
+        const ramses_internal::EDataBufferType dataBufferType = DataTypeUtils::DeductBufferTypeFromDataType(dataType);
+        const ramses_internal::EDataType dataTypeInternal = DataTypeUtils::ConvertDataTypeToInternal(dataType);
         const uint32_t maximumSizeInBytes = EnumToSize(dataTypeInternal) * numElements;
         m_dataBufferHandle = getIScene().allocateDataBuffer(dataBufferType, dataTypeInternal, maximumSizeInBytes);
     }
@@ -61,7 +60,7 @@ namespace ramses
     EDataType ArrayBufferImpl::getDataType() const
     {
         const ramses_internal::GeometryDataBuffer& dataBuffer = getIScene().getDataBuffer(m_dataBufferHandle);
-        return  DataTypeUtils::GetDataTypeFromInternal(dataBuffer.dataType);
+        return  DataTypeUtils::ConvertDataTypeFromInternal(dataBuffer.dataType);
     }
 
     status_t ArrayBufferImpl::getData(ramses_internal::Byte* buffer, uint32_t numElements) const

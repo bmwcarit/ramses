@@ -49,19 +49,19 @@ namespace ramses_internal
         void                            waitUntilNumberOfCompositorConnections(UInt32 numberOfConnections, bool doResourceUpdate = false);
 
         //send message to test app
-        TestApplicationSurfaceId        sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval);
+        TestApplicationSurfaceId        sendCreateSurfaceWithEGLContextToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval);
         TestApplicationShellSurfaceId   sendCreateShellSurfaceToTestApplication(TestApplicationSurfaceId surfaceId);
         void                            sendSetShellSurfaceTitleToTestApplication(TestApplicationShellSurfaceId, const String& title);
         void                            sendSetShellSurfaceDummyValuesToTestApplication(TestApplicationSurfaceId surfaceId, TestApplicationShellSurfaceId shellSurfaceId);
         void                            sendDestroyShellSurfaceToTestApplication(TestApplicationShellSurfaceId shellSurfaceId);
-        TestApplicationSurfaceId        sendCreateSharedMemorySurfaceToTestApplication(UInt32 width, UInt32 height);
+        TestApplicationSurfaceId        sendCreateSurfaceWithoutEGLContextToTestApplication(UInt32 width, UInt32 height);
         void                            sendDestroySurfaceToTestApplication(TestApplicationSurfaceId surfaceId);
         void                            sendCreateIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId, WaylandIviSurfaceId newSurfaceIviId);
         void                            sendDestroyIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId);
-        void                            sendRenderOneFrameToTestApplication(TestApplicationSurfaceId surfaceId);
-        void                            sendAttachBufferToTestApplication(TestApplicationSurfaceId surfaceId);
+        void                            sendRenderOneFrameToEGLBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback = false);
+        void                            sendRenderOneFrameToSharedMemoryBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback = false);
+        void                            sendAttachBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool commit = false);
         void                            sendDestroyBuffersToTestApplication();
-        void                            sendRenderOneFrameAndWaitOnFrameCallbackToTestApplication(TestApplicationSurfaceId surfaceId);
         void                            sendRenderOneFrameToTwoSurfacesAndWaitOnFrameCallbackToTestApplication(TestApplicationSurfaceId surfaceId1, TestApplicationSurfaceId surfaceId2);
         void                            sendAdditionalConnectToEmbeddedCompositorToTestApplication();
         void                            sendDetachBufferFromSurfaceToTestApplication(TestApplicationSurfaceId surfaceId);

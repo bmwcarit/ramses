@@ -20,7 +20,7 @@ namespace ramses_internal
     {
     public:
         virtual ~IWaylandDisplay() {}
-        virtual bool init(const String& socketName, const String& socketGroupName, int socketFD) = 0;
+        virtual bool init(const String& socketName, const String& socketGroupName, uint32_t socketPermissions, int socketFD) = 0;
         virtual IWaylandGlobal* createGlobal(const wl_interface* interface, int version, void* data, wl_global_bind_func_t bind) = 0;
         virtual void dispatchEventLoop() = 0;
         virtual void flushClients()      = 0;

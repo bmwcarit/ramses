@@ -30,6 +30,7 @@ namespace ramses_internal
     EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const RendererConfig& rendererConfig, const DisplayConfig& displayConfig, IContext& context)
         : m_waylandEmbeddedSocketName(rendererConfig.getWaylandSocketEmbedded())
         , m_waylandEmbeddedSocketGroup(rendererConfig.getWaylandSocketEmbeddedGroup())
+        , m_waylandEmbeddedSocketPermissions(rendererConfig.getWaylandSocketEmbeddedPermissions())
         , m_waylandEmbeddedSocketFD(rendererConfig.getWaylandSocketEmbeddedFD())
         , m_context(context)
         , m_compositorGlobal(*this)
@@ -53,7 +54,7 @@ namespace ramses_internal
 
     Bool EmbeddedCompositor_Wayland::init()
     {
-        if (!m_serverDisplay.init(m_waylandEmbeddedSocketName, m_waylandEmbeddedSocketGroup, m_waylandEmbeddedSocketFD))
+        if (!m_serverDisplay.init(m_waylandEmbeddedSocketName, m_waylandEmbeddedSocketGroup, m_waylandEmbeddedSocketPermissions, m_waylandEmbeddedSocketFD))
         {
             return false;
         }
@@ -222,6 +223,18 @@ namespace ramses_internal
         const UInt8* sharedMemoryBufferData = static_cast<const UInt8*>(waylandBufferResource.bufferGetSharedMemoryData());
         LinuxDmabufBufferData* linuxDmabufBuffer = LinuxDmabufBuffer::fromWaylandBufferResource(waylandBufferResource);
 
+        const bool surfaceBufferTypeChanged = waylandSurface->dispatchBufferTypeChanged();
+
+        if(surfaceBufferTypeChanged)
+        {
+            //reset swizzle
+            const TextureSwizzleArray swizzle = {ETextureChannelColor::Red, ETextureChannelColor::Green, ETextureChannelColor::Blue, ETextureChannelColor::Alpha};
+            uint8_t dummyData { 0u };
+            textureUploadingAdapter.uploadTexture2D(textureHandle, 1u, 1u, ETextureFormat::R8, &dummyData, swizzle);
+
+            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::uploadCompositingContentForWaylandSurface(): resetting swizzle for stream source id :" << waylandSurface->getIviSurfaceId());
+        }
+
         if (nullptr != sharedMemoryBufferData)
         {
             const TextureSwizzleArray swizzle = {ETextureChannelColor::Blue, ETextureChannelColor::Green, ETextureChannelColor::Red, ETextureChannelColor::Alpha};
@@ -233,7 +246,7 @@ namespace ramses_internal
         }
         else
         {
-            static_cast<TextureUploadingAdapter_Wayland&>(textureUploadingAdapter).uploadTextureFromWaylandResource(textureHandle, waylandBufferResource.getWaylandNativeResource());
+            static_cast<TextureUploadingAdapter_Wayland&>(textureUploadingAdapter).uploadTextureFromWaylandResource(textureHandle, waylandBufferResource.getLowLevelHandle());
         }
     }
 
@@ -266,7 +279,7 @@ namespace ramses_internal
         const IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(waylandSurfaceId);
         if (waylandClientSurface)
         {
-            return waylandClientSurface->hasPendingBuffer();
+            return waylandClientSurface->hasPendingBuffer() || waylandClientSurface->getWaylandBuffer() != nullptr;
         }
         else
         {
@@ -315,7 +328,7 @@ namespace ramses_internal
     {
         for (auto i: m_waylandBuffers)
         {
-            if (i->getResource().getWaylandNativeResource() == bufferResource.getWaylandNativeResource())
+            if (i->getResource().getLowLevelHandle() == bufferResource.getLowLevelHandle())
             {
                 return i;
             }

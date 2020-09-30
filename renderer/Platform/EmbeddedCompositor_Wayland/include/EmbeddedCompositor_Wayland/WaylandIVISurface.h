@@ -18,13 +18,13 @@ namespace ramses_internal
 {
 
     class EmbeddedCompositor_Wayland;
-    class IWaylandResource;
+    class INativeWaylandResource;
     class IWaylandSurface;
 
     class WaylandIVISurface: public IWaylandIVISurface
     {
     public:
-        WaylandIVISurface(IWaylandClient& client, IWaylandResource& iviApplicationConnectionResource, WaylandIviSurfaceId iviSurfaceId, IWaylandSurface* surface, uint32_t id, EmbeddedCompositor_Wayland& compositor);
+        WaylandIVISurface(IWaylandClient& client, INativeWaylandResource& iviApplicationConnectionResource, WaylandIviSurfaceId iviSurfaceId, IWaylandSurface* surface, uint32_t id, EmbeddedCompositor_Wayland& compositor);
         ~WaylandIVISurface();
         bool wasSuccessfullyInitialized() const;
         virtual void surfaceWasDeleted() override;
@@ -46,7 +46,7 @@ namespace ramses_internal
 
         WaylandIviSurfaceId m_iviSurfaceId;
         IWaylandSurface* m_surface = nullptr;
-        IWaylandResource* m_resource = nullptr;
+        INativeWaylandResource* m_resource = nullptr;
         EmbeddedCompositor_Wayland& m_compositor;
         const WaylandClientCredentials  m_clientCredentials;
     };

@@ -24,13 +24,8 @@ namespace ramses_internal
     class TestingScene
     {
     public:
-    explicit TestingScene(bool preallocate = false)
+    explicit TestingScene()
         {
-            if (preallocate)
-            {
-                scene.preallocateSceneSize(SceneSizeInformation(100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u, 100u));
-            }
-
             scene.allocateNode(0u, parent);
             scene.allocateNode(0u, child);
             scene.allocateNode(0u, childChild1);
@@ -123,9 +118,9 @@ namespace ramses_internal
             scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, uniformData);
             scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Geometry, geometryData);
 
-            scene.allocateCamera(ECameraProjectionType_Renderer, cameraNode, cameraDataInstance, camera);
-            scene.allocateCamera(ECameraProjectionType_Perspective,cameraNode, cameraDataInstance, perspectiveCamera);
-            scene.allocateCamera(ECameraProjectionType_Orthographic, cameraNode, cameraDataInstance, orthographicCamera);
+            scene.allocateCamera(ECameraProjectionType::Renderer, cameraNode, cameraDataInstance, camera);
+            scene.allocateCamera(ECameraProjectionType::Perspective,cameraNode, cameraDataInstance, perspectiveCamera);
+            scene.allocateCamera(ECameraProjectionType::Orthographic, cameraNode, cameraDataInstance, orthographicCamera);
 
             scene.allocateRenderTarget(renderTarget);
             scene.allocateRenderBuffer({ 23u, 42u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 3u }, renderBuffer);
@@ -409,16 +404,16 @@ namespace ramses_internal
         void CheckCamerasEquivalentTo(const OTHERSCENE& otherScene) const
         {
             const Camera& camData = otherScene.getCamera(camera);
-            EXPECT_EQ(ECameraProjectionType_Renderer, camData.projectionType);
+            EXPECT_EQ(ECameraProjectionType::Renderer, camData.projectionType);
             EXPECT_EQ(cameraNode, camData.node);
             EXPECT_EQ(cameraDataInstance, camData.dataInstance);
 
             const Camera& perspCamData = otherScene.getCamera(perspectiveCamera);
-            EXPECT_EQ(ECameraProjectionType_Perspective, perspCamData.projectionType);
+            EXPECT_EQ(ECameraProjectionType::Perspective, perspCamData.projectionType);
             EXPECT_EQ(cameraNode, perspCamData.node);
 
             const Camera& orthoCamData = otherScene.getCamera(orthographicCamera);
-            EXPECT_EQ(ECameraProjectionType_Orthographic, orthoCamData.projectionType);
+            EXPECT_EQ(ECameraProjectionType::Orthographic, orthoCamData.projectionType);
             EXPECT_EQ(cameraNode, orthoCamData.node);
         }
 

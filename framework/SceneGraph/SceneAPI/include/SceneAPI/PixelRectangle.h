@@ -9,21 +9,16 @@
 #ifndef RAMSES_PIXELRECTANGLE_H
 #define RAMSES_PIXELRECTANGLE_H
 
-#include "PlatformAbstraction/PlatformTypes.h"
+#include <cstdint>
 
 namespace ramses_internal
 {
     struct PixelRectangle
     {
-        UInt32 x;
-        UInt32 y;
-        Int32 width;
-        Int32 height;
-
-        static bool IsSameSizeAs(const PixelRectangle& first, const PixelRectangle& second)
-        {
-            return first.width == second.width && first.height == second.height;
-        }
+        uint32_t x;
+        uint32_t y;
+        int32_t width;
+        int32_t height;
     };
 }
 

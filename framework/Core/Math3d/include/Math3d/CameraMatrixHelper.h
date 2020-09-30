@@ -32,7 +32,7 @@ namespace ramses_internal
 
             switch (params.getProjectionType())
             {
-            case ECameraProjectionType_Orthographic:
+            case ECameraProjectionType::Orthographic:
 
                 return Matrix44f(
                     2.0f / (r - l), 0.f, 0.f, -(r + l) / (r - l),
@@ -41,7 +41,7 @@ namespace ramses_internal
                     0.f, 0.f, 0.f, 1.f
                 );
 
-            case ECameraProjectionType_Perspective:
+            case ECameraProjectionType::Perspective:
 
                 return Matrix44f(
                     (2.0f * n) / (r - l), 0.0f, (r + l) / (r - l), 0.0f

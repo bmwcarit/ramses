@@ -13,36 +13,40 @@
 #include "gmock/gmock.h"
 #include "RendererLib/RendererSceneUpdater.h"
 #include "RendererLib/RendererScenes.h"
+#include "RendererResourceManagerMock.h"
 
 namespace ramses_internal
 {
     class RendererSceneUpdaterMock : public RendererSceneUpdater
     {
     public:
-        RendererSceneUpdaterMock(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor)
-            : RendererSceneUpdater(const_cast<Renderer&>(renderer), const_cast<RendererScenes&>(rendererScenes), const_cast<SceneStateExecutor&>(sceneStateExecutor), const_cast<RendererEventCollector&>(rendererEventCollector), const_cast<FrameTimer&>(frameTimer), const_cast<SceneExpirationMonitor&>(expirationMonitor))
-        {
-        }
+        RendererSceneUpdaterMock(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, const IRendererResourceCache* rendererResourceCache);
+        virtual ~RendererSceneUpdaterMock();
 
         MOCK_METHOD(void, handleSceneActions, (SceneId sceneId, SceneUpdate&& update), (override));
         MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, Vector2 coords), (override));
+        MOCK_METHOD(std::unique_ptr<IRendererResourceManager>, createResourceManager, (IResourceProvider&, IResourceUploader&, IRenderBackend&, IEmbeddedCompositingManager&, DisplayHandle, bool, uint64_t), (override));
     };
 
     class RendererSceneUpdaterFacade : public RendererSceneUpdaterMock
     {
     public:
-        RendererSceneUpdaterFacade(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor)
-            : RendererSceneUpdaterMock(renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor)
-        {
-        }
+        RendererSceneUpdaterFacade(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, const IRendererResourceCache* rendererResourceCache);
+        virtual ~RendererSceneUpdaterFacade();
 
-        virtual void handleSceneActions(SceneId sceneId, SceneUpdate&& update) override
-        {
-            SceneUpdate copyOfActionsForScene;
-            copyOfActionsForScene.actions = update.actions.copy();
-            RendererSceneUpdaterMock::handleSceneActions(sceneId, std::move(update));
-            RendererSceneUpdater::handleSceneActions(sceneId, std::move(copyOfActionsForScene)); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater
-        }
+        virtual void handleSceneActions(SceneId sceneId, SceneUpdate&& update) override;
+
+        std::unordered_map<DisplayHandle, testing::StrictMock<RendererResourceManagerMock>*> m_resourceManagerMocks;
+
+    protected:
+        virtual std::unique_ptr<IRendererResourceManager> createResourceManager(
+            IResourceProvider& resourceProvider,
+            IResourceUploader& resourceUploader,
+            IRenderBackend& renderBackend,
+            IEmbeddedCompositingManager& embeddedCompositingManager,
+            DisplayHandle display,
+            bool keepEffectsUploaded,
+            uint64_t gpuCacheSize) override;
     };
 }
 

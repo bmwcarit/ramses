@@ -10,8 +10,9 @@
 #define RAMSES_RAWBINARYOUTPUTSTREAM_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
-#include "PlatformAbstraction/PlatformMemory.h"
 #include "Collections/IOutputStream.h"
+#include <cassert>
+#include <cstring>
 
 namespace ramses_internal
 {
@@ -27,9 +28,6 @@ namespace ramses_internal
         size_t getBytesWritten() const;
 
     private:
-        template<typename T>
-        void writeBaseType(const T& value);
-
         Byte* m_dataBase;
         Byte* m_data;
         size_t m_size;
@@ -44,18 +42,11 @@ namespace ramses_internal
         assert(data != nullptr && size > 0u);
     }
 
-    template<typename T>
-    inline void RawBinaryOutputStream::writeBaseType(const T& value)
-    {
-        assert(m_data + sizeof(T) <= m_dataBase + m_size);
-        PlatformMemory::Copy(m_data, &value, sizeof(T));
-        m_data += sizeof(T);
-    }
-
     inline IOutputStream& RawBinaryOutputStream::write(const void* data, const size_t size)
     {
         assert(m_data + size <= m_dataBase + m_size);
-        PlatformMemory::Copy(m_data, data, size);
+        if (size)
+            std::memcpy(m_data, data, size);
         m_data += size;
         return *this;
     }

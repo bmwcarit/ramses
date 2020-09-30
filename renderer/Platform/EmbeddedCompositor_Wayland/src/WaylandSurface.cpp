@@ -11,7 +11,7 @@
 #include "EmbeddedCompositor_Wayland/IWaylandIVISurface.h"
 #include "EmbeddedCompositor_Wayland/IWaylandShellSurface.h"
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
-#include "EmbeddedCompositor_Wayland/IWaylandResource.h"
+#include "EmbeddedCompositor_Wayland/INativeWaylandResource.h"
 #include "EmbeddedCompositor_Wayland/IWaylandBuffer.h"
 #include "EmbeddedCompositor_Wayland/WaylandCallbackResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandBufferResource.h"
@@ -63,6 +63,7 @@ namespace ramses_internal
         {
             // Remove ResourceDestroyedCallback
             m_surfaceResource->setImplementation(&m_surfaceInterface, this, nullptr);
+            m_surfaceResource->destroy();
             delete m_surfaceResource;
         }
 
@@ -166,7 +167,8 @@ namespace ramses_internal
 
         // wl_resource is destroyed outside by the Wayland library, m_surfaceResource loses the ownership of the
         // Wayland resource, so that we don't call wl_resource_destroy.
-        m_surfaceResource->disownWaylandResource();
+        delete m_surfaceResource;
+        m_surfaceResource = nullptr;
     }
 
     void WaylandSurface::surfaceAttach(IWaylandClient& client, WaylandBufferResource& bufferResource, int x, int y)
@@ -183,6 +185,26 @@ namespace ramses_internal
 
         m_pendingBuffer            = &m_compositor.getOrCreateBuffer(bufferResource);
         m_removeBufferOnNextCommit = false;
+
+        //WaylandSurface::surfaceAttach is called iff attached buffer is not null (if null buffer gets attached then WaylandSurface::surfaceDetach gets called instead)
+        assert(m_pendingBuffer);
+        //if no buffer was attached (e.g. first buffer ever or after detach)
+        const bool pendingBufferIsSharedMemoryBuffer = m_pendingBuffer->isSharedMemoryBuffer();
+        if(!m_buffer)
+        {
+            m_bufferTypeChanged = true;
+
+            LOG_INFO(CONTEXT_RENDERER, "WaylandSurface::surfaceAttach: Mark buffer type as changed for surface with ivi-id :" << getIviSurfaceId()
+                     << " due to attach after no buffer attached to surface. New buffer is Shared mem buffer :" << pendingBufferIsSharedMemoryBuffer);
+        }
+        //if new buffer (pending buffer) has different type from current buffer
+        else if(pendingBufferIsSharedMemoryBuffer != m_buffer->isSharedMemoryBuffer())
+        {
+            m_bufferTypeChanged = true;
+
+            LOG_INFO(CONTEXT_RENDERER, "WaylandSurface::surfaceAttach: Mark buffer type as changed for surface with ivi-id :" << getIviSurfaceId()
+                     << " because newly attached buffer has differen type from current. New buffer is Shared mem buffer :" << pendingBufferIsSharedMemoryBuffer);
+        }
     }
 
     void WaylandSurface::surfaceDetach(IWaylandClient& client)
@@ -228,7 +250,7 @@ namespace ramses_internal
         }
     }
 
-    void WaylandSurface::surfaceSetOpaqueRegion(IWaylandClient& client, IWaylandResource* regionResource)
+    void WaylandSurface::surfaceSetOpaqueRegion(IWaylandClient& client, INativeWaylandResource* regionResource)
     {
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceSetOpaqueRegion");
 
@@ -236,7 +258,7 @@ namespace ramses_internal
         UNUSED(regionResource)
     }
 
-    void WaylandSurface::surfaceSetInputRegion(IWaylandClient& client, IWaylandResource* regionResource)
+    void WaylandSurface::surfaceSetInputRegion(IWaylandClient& client, INativeWaylandResource* regionResource)
     {
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceSetInputRegion");
 
@@ -318,6 +340,13 @@ namespace ramses_internal
         return m_clientCredentials;
     }
 
+    bool WaylandSurface::dispatchBufferTypeChanged()
+    {
+        const auto result = m_bufferTypeChanged;
+        m_bufferTypeChanged = false;
+        return result;
+    }
+
     void WaylandSurface::SurfaceDestroyCallback(wl_client* client, wl_resource* surfaceResource)
     {
         UNUSED(client)
@@ -331,7 +360,7 @@ namespace ramses_internal
         WaylandClient waylandClient(client);
         if (nullptr != bufferResource)
         {
-            WaylandBufferResource waylandBufferResource(bufferResource, false);
+            WaylandBufferResource waylandBufferResource(bufferResource);
             surface->surfaceAttach(waylandClient, waylandBufferResource, x, y);
         }
         else
@@ -363,7 +392,7 @@ namespace ramses_internal
         WaylandClient waylandClient(client);
         if (nullptr != regionResource)
         {
-            WaylandResource waylandRegionResource(regionResource, false);
+            NativeWaylandResource waylandRegionResource(regionResource);
             surface->surfaceSetOpaqueRegion(waylandClient, &waylandRegionResource);
         }
         else
@@ -378,7 +407,7 @@ namespace ramses_internal
         WaylandClient waylandClient(client);
         if (nullptr != regionResource)
         {
-            WaylandResource waylandRegionResource(regionResource, false);
+            NativeWaylandResource waylandRegionResource(regionResource);
             surface->surfaceSetInputRegion(waylandClient, &waylandRegionResource);
         }
         else
@@ -459,6 +488,7 @@ namespace ramses_internal
         for (auto callback: m_frameCallbacks)
         {
             callback->callbackSendDone(time);
+            callback->destroy();
             delete callback;
         }
 

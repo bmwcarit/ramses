@@ -6,8 +6,8 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#ifndef RAMSES_RAMSESVERSION_H
-#define RAMSES_RAMSESVERSION_H
+#ifndef RAMSES_INTERNAL_RAMSESVERSION_H
+#define RAMSES_INTERNAL_RAMSESVERSION_H
 
 #include "Collections/String.h"
 

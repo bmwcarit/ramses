@@ -28,14 +28,7 @@ namespace ramses_internal
         createDefaultMockCalls();
     }
 
-    DeviceMock::DeviceMock(IContext&)
-    {
-        createDefaultMockCalls();
-    }
-
-    DeviceMock::~DeviceMock()
-    {
-    }
+    DeviceMock::~DeviceMock() = default;
 
     void DeviceMock::createDefaultMockCalls()
     {
@@ -63,9 +56,7 @@ namespace ramses_internal
         ON_CALL(*this, getSupportedBinaryProgramFormats(_)).WillByDefault(Invoke([](auto& formats) { formats = { FakeSupportedBinaryShaderFormat }; }));
     }
 
-    DeviceMockWithDestructor::DeviceMockWithDestructor()
-    {
-    }
+    DeviceMockWithDestructor::DeviceMockWithDestructor() = default;
 
     DeviceMockWithDestructor::~DeviceMockWithDestructor()
     {

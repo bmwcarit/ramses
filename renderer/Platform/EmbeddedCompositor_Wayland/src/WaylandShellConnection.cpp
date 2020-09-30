@@ -9,7 +9,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandShellConnection.h"
 #include "EmbeddedCompositor_Wayland/WaylandShellSurface.h"
 #include "EmbeddedCompositor_Wayland/IWaylandShellConnection.h"
-#include "EmbeddedCompositor_Wayland/WaylandResource.h"
+#include "EmbeddedCompositor_Wayland/NativeWaylandResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "Utils/LogMacros.h"
 #include <cassert>
@@ -41,6 +41,7 @@ namespace ramses_internal
         {
             // Remove ResourceDestroyedCallback
             m_resource->setImplementation(&m_shellInterface, this, nullptr);
+            m_resource->destroy();
             delete m_resource;
         }
     }
@@ -55,12 +56,13 @@ namespace ramses_internal
         LOG_TRACE(CONTEXT_RENDERER, "WaylandShellConnection::resourceDestroyed");
         assert(nullptr != m_resource);
 
+        delete m_resource;
+        m_resource = nullptr;
         // wl_resource is destroyed outside by the Wayland library, so m_resource looses the ownership of the
         // Wayland resource, so that we don't call wl_resource_destroy.
-        m_resource->disownWaylandResource();
     }
 
-    void WaylandShellConnection::shellGetShellSurface(IWaylandClient& client, uint32_t id, IWaylandResource& surfaceResource)
+    void WaylandShellConnection::shellGetShellSurface(IWaylandClient& client, uint32_t id, INativeWaylandResource& surfaceResource)
     {
         IWaylandSurface* clientSurface = reinterpret_cast<IWaylandSurface*>(surfaceResource.getUserData());
         assert(nullptr != clientSurface);
@@ -89,7 +91,7 @@ namespace ramses_internal
             static_cast<WaylandShellConnection*>(wl_resource_get_user_data(shellConnectionResource));
 
         WaylandClient waylandClient(client);
-        WaylandResource waylandSurfaceResource(surfaceResource, false);
+        NativeWaylandResource waylandSurfaceResource(surfaceResource);
         shellConnection->shellGetShellSurface(waylandClient, id, waylandSurfaceResource);
     }
 }

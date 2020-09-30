@@ -28,6 +28,8 @@ namespace ramses_internal
         void setWaylandEmbeddedCompositingSocketFD(int fd);
         void setWaylandDisplayForSystemCompositorController(const String& wd);
         const String& getWaylandDisplayForSystemCompositorController() const;
+        bool setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
+        uint32_t getWaylandSocketEmbeddedPermissions() const;
 
         void enableSystemCompositorControl();
         Bool getSystemCompositorControlEnabled() const;
@@ -42,6 +44,7 @@ namespace ramses_internal
     private:
         String m_waylandSocketEmbedded;
         String m_waylandSocketEmbeddedGroupName;
+        uint32_t m_waylandSocketEmbeddedPermissions = 0;
         int m_waylandSocketEmbeddedFD = -1;
         String m_waylandDisplayForSystemCompositorController;
         Bool m_systemCompositorEnabled = false;

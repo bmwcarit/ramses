@@ -21,7 +21,6 @@ namespace ramses_internal
     public:
         virtual ~MockTaskQueue(){};
         MOCK_METHOD(bool, enqueue, (ITask& Task), (override));
-        MOCK_METHOD(void, enableAcceptingTasks, (), (override));
         MOCK_METHOD(void, disableAcceptingTasksAfterExecutingCurrentQueue, (), (override));
     };
 }

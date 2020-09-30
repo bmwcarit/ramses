@@ -33,7 +33,7 @@ namespace ramses_internal
         *os << "\nCamera rotation x=" << camRot.x << " y=" << camRot.y << " z=" << camRot.z;
 
         const ProjectionParams& projParams = config.getProjectionParams();
-        *os << "\nProjectionType=" << projParams.getProjectionType();
+        *os << "\nProjectionType=" << fmt::to_string(projParams.getProjectionType());
 
         *os << "\nLeftPlane=" << projParams.leftPlane;
         *os << "\nRightPlane=" << projParams.rightPlane;

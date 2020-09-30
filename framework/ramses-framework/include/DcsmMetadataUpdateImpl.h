@@ -13,6 +13,7 @@
 #include "Components/DcsmMetadata.h"
 #include "StatusObjectImpl.h"
 #include "ramses-framework-api/CarModelViewMetadata.h"
+#include "ramses-framework-api/CarCameraPlaneMetadata.h"
 
 namespace ramses
 {
@@ -44,6 +45,9 @@ namespace ramses
         bool hasCarModelView() const;
         CarModelViewMetadata getCarModelView() const;
         AnimationInformation getCarModelViewAnimationInfo() const;
+
+        bool hasCarCameraPlanes() const;
+        CarCameraPlaneMetadata getCarCameraPlanes() const;
 
         bool hasCarModelVisibility() const;
         bool getCarModelVisibility() const;

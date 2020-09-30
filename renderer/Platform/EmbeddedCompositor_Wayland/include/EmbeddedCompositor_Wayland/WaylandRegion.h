@@ -20,7 +20,7 @@ namespace ramses_internal
 
     class IEmbeddedCompositor_Wayland;
     class IWaylandClient;
-    class IWaylandResource;
+    class INativeWaylandResource;
 
     class WaylandRegion: public IWaylandRegion
     {
@@ -40,7 +40,7 @@ namespace ramses_internal
 
         static void ResourceDestroyedCallback(wl_resource* regionResource);
 
-        IWaylandResource* m_resource = nullptr;
+        INativeWaylandResource* m_resource = nullptr;
         IEmbeddedCompositor_Wayland& m_compositor;
 
         const struct Region_Interface : private wl_region_interface

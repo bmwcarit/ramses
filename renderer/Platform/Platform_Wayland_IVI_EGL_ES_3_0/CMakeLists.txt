@@ -38,7 +38,8 @@ ACME_MODULE(
     # general module information
     #==========================================================================
     NAME                    EmbeddedCompositor_Wayland_Test
-    TYPE                    BINARY
+    TYPE                    TEST
+    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
     ENABLE_INSTALL          ON
 
     #==========================================================================
@@ -57,12 +58,3 @@ ACME_MODULE(
                             platform-wayland-ivi-egl-es-3-0
                             WaylandUtilities
 )
-
-IF (TARGET EmbeddedCompositor_Wayland_Test)
-    # Tests that make connection and an event loop dispatch currently report potential leaks by address sanitizer
-    # Wayland library seems to internally allocate some resources associated to the connected client, it is unclear at the moment how those should be freed
-    ACME_ADD_TEST(EmbeddedCompositor_Wayland_Test
-        RNDSANDWICHTEST_SWRAST
-        --gtest_filter=-AEmbeddedCompositor_Wayland.*_ClientConnectionTest
-    )
-ENDIF()

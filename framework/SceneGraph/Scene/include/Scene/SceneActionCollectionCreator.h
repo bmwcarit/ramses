@@ -231,9 +231,6 @@ namespace ramses_internal
         void animationSystemRemoveAnimationInstance(AnimationSystemHandle animSystemHandle, AnimationInstanceHandle handle);
         void animationSystemRemoveAnimation(AnimationSystemHandle animSystemHandle, AnimationHandle handle);
 
-        void pushResource(const IResource& resource);
-
-        void setAckFlushState(bool state);
         void flush(
             UInt64 flushIndex,
             bool addSizeInfo,

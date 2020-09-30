@@ -91,7 +91,7 @@ namespace ramses_internal
 
     TYPED_TEST(AnIteratableScene, CanIterateOverCameras)
     {
-        auto allocateF = std::bind(&TypeParam::allocateCamera, &this->m_scene, ECameraProjectionType_Orthographic, NodeHandle{}, DataInstanceHandle{}, CameraHandle{});
+        auto allocateF = std::bind(&TypeParam::allocateCamera, &this->m_scene, ECameraProjectionType::Orthographic, NodeHandle{}, DataInstanceHandle{}, CameraHandle{});
         auto releaseF = std::bind(&TypeParam::releaseCamera, &this->m_scene, std::placeholders::_1);
         this->runTest(allocateF, releaseF, this->m_scene.getCameras());
     }

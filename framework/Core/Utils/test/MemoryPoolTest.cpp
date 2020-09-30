@@ -9,7 +9,6 @@
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "Utils/MemoryPool.h"
-#include "ErrorTestUtils.h"
 
 using namespace testing;
 
@@ -35,8 +34,8 @@ namespace ramses_internal
     };
 
     typedef ::testing::Types<
-        MemoryPool<ComparableObject, UInt32>,
-        MemoryPool<ComparableObject, UInt16>
+        MemoryPool<int, UInt32>,
+        MemoryPool<int, UInt16>
     > MemoryPoolTypes;
 
     TYPED_TEST_SUITE(AMemoryPool, MemoryPoolTypes);

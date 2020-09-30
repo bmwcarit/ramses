@@ -235,7 +235,7 @@ TEST_F(ADisplayConfig, setsPerspectiveProjection)
 
 TEST_F(ADisplayConfig, setsAlternativePerspectiveProjection)
 {
-    const ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Frustum(ramses_internal::ECameraProjectionType_Perspective,
+    const ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Frustum(ramses_internal::ECameraProjectionType::Perspective,
         0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f);
     EXPECT_EQ(ramses::StatusOK, config.setPerspectiveProjection(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f));
     EXPECT_EQ(projParams, config.impl.getInternalDisplayConfig().getProjectionParams());
@@ -255,7 +255,7 @@ TEST_F(ADisplayConfig, doesNotChangeAspectRatioIfViewportIsSet)
 
 TEST_F(ADisplayConfig, setsOrthographicProjection)
 {
-    const ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Frustum(ramses_internal::ECameraProjectionType_Orthographic,
+    const ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Frustum(ramses_internal::ECameraProjectionType::Orthographic,
         30.f, 40.f, 10.f, 100.f, 0.1f, 1.f);
     EXPECT_EQ(ramses::StatusOK, config.setOrthographicProjection(30.f, 40.f, 10.f, 100.f, 0.1f, 1.f));
     EXPECT_EQ(projParams, config.impl.getInternalDisplayConfig().getProjectionParams());

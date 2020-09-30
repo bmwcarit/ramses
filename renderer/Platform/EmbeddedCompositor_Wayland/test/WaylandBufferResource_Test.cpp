@@ -163,7 +163,7 @@ namespace ramses_internal
         virtual void SetUp() override
         {
             const int serverFD = m_socket.createBoundFileDescriptor();
-            m_waylandDisplay.init("", "", serverFD);
+            m_waylandDisplay.init("", "", 0, serverFD);
             m_display = m_waylandDisplay.get();
             ASSERT_TRUE(m_display != nullptr);
 
@@ -223,7 +223,7 @@ namespace ramses_internal
 
             AWaylandBufferResource* awaylandBufferResource = static_cast<AWaylandBufferResource*>(wl_resource_get_user_data(surfaceResource));
 
-            WaylandBufferResource waylandBufferResource(bufferResource, false);
+            WaylandBufferResource waylandBufferResource(bufferResource);
             int32_t width = waylandBufferResource.bufferGetSharedMemoryWidth();
 
             EXPECT_EQ(10, width);
@@ -288,7 +288,8 @@ namespace ramses_internal
         ASSERT_TRUE(m_client != nullptr);
 
         wl_resource*          resource = wl_resource_create(m_client, &wl_buffer_interface, 1, 0);
-        WaylandBufferResource waylandBufferResource(resource, true);
+        WaylandBufferResource waylandBufferResource(resource);
+        waylandBufferResource.destroy();
     }
 
     TEST_F(AWaylandBufferResource, CanGetSharedMemoryWidthHeightAndData)
@@ -304,9 +305,10 @@ namespace ramses_internal
         ASSERT_TRUE(m_client != nullptr);
 
         wl_resource*    resource = wl_resource_create(m_client, &wl_buffer_interface, 1, 0);
-        WaylandBufferResource waylandBufferResource(resource, true);
+        WaylandBufferResource waylandBufferResource(resource);
 
         EXPECT_EQ(waylandBufferResource.bufferGetSharedMemoryData(), nullptr);
+        waylandBufferResource.destroy();
     }
 
     TEST_F(AWaylandBufferResource, ReturnsZeroWidthWhenNoSHMBuffer)
@@ -316,9 +318,10 @@ namespace ramses_internal
         ASSERT_TRUE(m_client != nullptr);
 
         wl_resource*    resource = wl_resource_create(m_client, &wl_buffer_interface, 1, 0);
-        WaylandBufferResource waylandBufferResource(resource, true);
+        WaylandBufferResource waylandBufferResource(resource);
 
         EXPECT_EQ(waylandBufferResource.bufferGetSharedMemoryWidth(), 0);
+        waylandBufferResource.destroy();
     }
 
     TEST_F(AWaylandBufferResource, ReturnsZeroHeightWhenNoSHMBuffer)
@@ -328,9 +331,10 @@ namespace ramses_internal
         ASSERT_TRUE(m_client != nullptr);
 
         wl_resource*    resource = wl_resource_create(m_client, &wl_buffer_interface, 1, 0);
-        WaylandBufferResource waylandBufferResource(resource, true);
+        WaylandBufferResource waylandBufferResource(resource);
 
         EXPECT_EQ(waylandBufferResource.bufferGetSharedMemoryHeight(), 0);
+        waylandBufferResource.destroy();
     }
 
     TEST_F(AWaylandBufferResource, CanBeCloned)
@@ -341,16 +345,17 @@ namespace ramses_internal
 
         wl_resource* resource = wl_resource_create(m_client, &wl_buffer_interface, 1, 0);
         {
-            WaylandBufferResource waylandBufferResource(resource, true);
+            WaylandBufferResource waylandBufferResource(resource);
             m_destroyListener.notify = ResourceDestroyedListener;
             waylandBufferResource.addDestroyListener(&m_destroyListener);
 
             WaylandBufferResource* clonedWaylandBufferResource = waylandBufferResource.clone();
 
-            EXPECT_EQ(resource, clonedWaylandBufferResource->getWaylandNativeResource());
+            EXPECT_EQ(resource, clonedWaylandBufferResource->getLowLevelHandle());
             delete clonedWaylandBufferResource;
             // Cloned object is not owner of the native wayland resource, so destroyed listener must not be called
             EXPECT_EQ(m_resourceDestroyedListenerCalled, 0u);
+            waylandBufferResource.destroy();
         }
 
         EXPECT_EQ(m_resourceDestroyedListenerCalled, 1u);

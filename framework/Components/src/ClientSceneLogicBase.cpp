@@ -136,6 +136,7 @@ namespace ramses_internal
         // TODO vaclav re-enable sending resources after renderer side can use them
         //sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChanges.m_addedClientResourceRefs);
 
+        sceneUpdate.flushInfos = { m_flushCounter, versionTag, scene.getSceneSizeInformation(), m_resourceChanges, {}, flushTimeInfo, true, true };
         LOG_INFO(CONTEXT_CLIENT, "Sending scene " << scene.getSceneId() << " to " << m_subscribersWaitingForScene.size() << " subscribers, " <<
             sceneUpdate.actions.numberOfActions() << " scene actions (" << sceneUpdate.actions.collectionData().size() << " bytes)" <<
             m_resourceChanges.m_addedClientResourceRefs.size() << " client resources, " <<

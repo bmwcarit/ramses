@@ -27,7 +27,7 @@ namespace internal
         using Fun_t = std::function<void()>;
 
         Thread() = default;
-        explicit Thread(std::string name, Fun_t fun);
+        explicit Thread(const std::string& name, Fun_t fun);
 
         Thread(Thread&& other) noexcept;
         Thread& operator=(Thread&& other) noexcept;
@@ -59,8 +59,8 @@ namespace internal
         other.m_running = false;
     }
 
-    inline Thread::Thread(std::string name, Fun_t fun)
-        : m_fun(new Fun_t([name = std::move(name), userfun = std::move(fun)]()
+    inline Thread::Thread(const std::string& name, Fun_t fun)
+        : m_fun(new Fun_t([name = name, userfun = std::move(fun)]()
                           {
 #ifdef __INTEGRITY
                               (void)name;
@@ -76,6 +76,8 @@ namespace internal
 #ifdef __INTEGRITY
         if (pthread_attr_setstacksize(&attr, RAMSES_INTEGRITY_DEFAULT_THREAD_STACK_SIZE) == -1)
             printf("Error while setting stack size for Integrity thread\n");
+
+        pthread_attr_setthreadname(&attr, name.c_str());
 
         // TODO: understand this
         pthread_t currentThreadId = 0;

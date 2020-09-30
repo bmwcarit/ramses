@@ -76,6 +76,8 @@ namespace ramses_internal
             SceneUpdate sceneUpdate;
             SceneActionCollectionCreator creator(sceneUpdate.actions);
             creator.flush(1u, false);
+            sceneUpdate.flushInfos.flushCounter = 1u;
+            sceneUpdate.flushInfos.containsValidInformation = true;
             m_sceneUpdater.handleSceneActions(sceneId, std::move(sceneUpdate));
         }
 
@@ -85,6 +87,8 @@ namespace ramses_internal
             SceneActionCollectionCreator creator(sceneUpdate.actions);
             creator.requestSceneReferenceState(refSceneHandle, refSceneState);
             creator.flush(1u, false);
+            sceneUpdate.flushInfos.flushCounter = 1u;
+            sceneUpdate.flushInfos.containsValidInformation = true;
             m_sceneUpdater.handleSceneActions(sceneId, std::move(sceneUpdate));
         }
 

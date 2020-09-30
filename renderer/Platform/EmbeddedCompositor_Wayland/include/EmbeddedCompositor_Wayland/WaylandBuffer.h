@@ -27,6 +27,7 @@ namespace ramses_internal
         virtual WaylandBufferResource& getResource() const override;
         virtual void reference() override;
         virtual void release() override;
+        virtual bool isSharedMemoryBuffer() const override;
 
     private:
 

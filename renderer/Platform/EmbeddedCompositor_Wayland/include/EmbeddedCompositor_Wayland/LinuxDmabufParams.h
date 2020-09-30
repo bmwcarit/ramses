@@ -18,7 +18,7 @@
 namespace ramses_internal
 {
     class IWaylandClient;
-    class IWaylandResource;
+    class INativeWaylandResource;
     class LinuxDmabufBufferData;
 
     class LinuxDmabufParams
@@ -45,7 +45,7 @@ namespace ramses_internal
         static struct zwp_linux_buffer_params_v1_interface const m_paramsInterface;
 
         const WaylandClientCredentials  m_clientCredentials;
-        IWaylandResource* m_resource = nullptr;
+        INativeWaylandResource* m_resource = nullptr;
         LinuxDmabufBufferData* m_data = nullptr;
 
     friend class LinuxDmabuf;

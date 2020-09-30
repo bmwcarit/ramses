@@ -66,6 +66,9 @@ namespace ramses
 
         bool m_isRunning = true;
         bool m_keysHandling = false;
+
+        // RenderMate registers several Ramsh commands that call RenderMate API from other thread(s)
+        mutable std::recursive_mutex m_lock;
     };
 
     class RendererMateAutoShowHandler : public RendererSceneControlEventHandlerEmpty

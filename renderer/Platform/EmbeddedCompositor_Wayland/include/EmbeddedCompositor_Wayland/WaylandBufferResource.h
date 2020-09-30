@@ -9,15 +9,15 @@
 #ifndef RAMSES_WAYLANDBUFFERRESOURCE_H
 #define RAMSES_WAYLANDBUFFERRESOURCE_H
 
-#include "EmbeddedCompositor_Wayland/WaylandResource.h"
+#include "EmbeddedCompositor_Wayland/NativeWaylandResource.h"
 
 namespace ramses_internal
 {
-    class WaylandBufferResource : public WaylandResource
+    class WaylandBufferResource : public NativeWaylandResource
     {
     public:
         WaylandBufferResource();
-        WaylandBufferResource(wl_resource* resource, bool ownership);
+        explicit WaylandBufferResource(wl_resource* resource);
         virtual void           bufferSendRelease();
         virtual int32_t        bufferGetSharedMemoryWidth() const;
         virtual int32_t        bufferGetSharedMemoryHeight() const;

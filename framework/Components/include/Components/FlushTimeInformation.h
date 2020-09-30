@@ -32,7 +32,7 @@ namespace ramses_internal
 
         FlushTime::Clock::time_point expirationTimestamp = FlushTime::InvalidTimestamp;
         FlushTime::Clock::time_point internalTimestamp = FlushTime::InvalidTimestamp;
-        synchronized_clock_type clock_type;
+        synchronized_clock_type clock_type = synchronized_clock_type::SystemTime;
     };
 
     inline bool operator==(const FlushTimeInformation& a, const FlushTimeInformation& b)

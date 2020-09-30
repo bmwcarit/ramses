@@ -31,9 +31,6 @@ namespace ramses_internal
             : fileEntry(fileEntry_)
             , hashUsage(hashUsage_)
         {}
-
-        ResourceRegistryEntry()
-        {}
     };
     typedef HashMap<ResourceContentHash, ResourceRegistryEntry> FileContentsMap;
     typedef std::unordered_map<ResourceFileInputStreamSPtr, FileContentsMap> ResourceFileInputStreamToFileContentMap;

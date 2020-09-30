@@ -399,36 +399,6 @@ namespace ramses
         return status;
     }
 
-    void AppearanceImpl::cloneReferencedData(ramses_internal::IScene& scene, const AppearanceImpl& srcAppearance, AppearanceImpl& dstAppearance)
-    {
-        const ramses_internal::DataFieldHandle dataReferenceField(0u);
-        dstAppearance.m_bindableInputs.reserve(srcAppearance.m_bindableInputs.size());
-        for (const auto& srcBindableInput : srcAppearance.m_bindableInputs)
-        {
-            const ramses_internal::DataFieldHandle dataField(srcBindableInput.key);
-            const ramses_internal::DataInstanceHandle srcDataRef = srcBindableInput.value.dataReference;
-            const ramses_internal::DataLayoutHandle dataLayoutHandle = scene.getLayoutOfDataInstance(srcDataRef);
-            const ramses_internal::EDataType dataType = scene.getDataLayout(dataLayoutHandle).getField(dataReferenceField).dataType;
-
-            // create internal data reference
-            BindableInput bindableInput;
-            bindableInput.externallyBoundDataObject = srcBindableInput.value.externallyBoundDataObject;
-            bindableInput.dataReference = ramses_internal::DataLayoutCreationHelper::CreateAndBindDataReference(scene, dstAppearance.m_uniformInstance, dataField, dataType);
-            dstAppearance.m_bindableInputs.put(srcBindableInput.key, bindableInput);
-
-            if (bindableInput.externallyBoundDataObject)
-            {
-                // set data reference in case it is externally bound in source appearance
-                scene.setDataReference(dstAppearance.m_uniformInstance, dataField, scene.getDataReference(srcAppearance.m_uniformInstance, dataField));
-            }
-            else
-            {
-                // copy data in case it is not externally bound
-                ramses_internal::DataInstanceHelper::CopyInstanceFieldData(scene, srcDataRef, dataReferenceField, scene, bindableInput.dataReference, dataReferenceField);
-            }
-        }
-    }
-
     void AppearanceImpl::initializeFrameworkData(const EffectImpl& effect)
     {
         m_effectImpl = &effect;

@@ -8,7 +8,7 @@
 
 #include "EmbeddedCompositor_Wayland/WaylandOutputConnection.h"
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
-#include "EmbeddedCompositor_Wayland/IWaylandResource.h"
+#include "EmbeddedCompositor_Wayland/INativeWaylandResource.h"
 #include "Utils/LogMacros.h"
 #include <wayland-server.h>
 #include <wayland-server-protocol.h>
@@ -38,7 +38,7 @@ namespace ramses_internal
 
     void WaylandOutputConnection::sendOutputParams(uint32_t protocolVersion)
     {
-        wl_resource* nativeResource = static_cast<wl_resource*>(m_resource->getWaylandNativeResource());
+        wl_resource* nativeResource = m_resource->getLowLevelHandle();
 
         //Physical width and height set to zero as per documentation in:
         //https://github.com/wayland-project/wayland/blob/1361da9cd5a719b32d978485a29920429a31ed25/tests/data/example-server.h#L3897
@@ -70,6 +70,7 @@ namespace ramses_internal
         {
             // Remove ResourceDestroyedCallback
             m_resource->setImplementation(&m_outputInterface, this, nullptr);
+            m_resource->destroy();
             delete m_resource;
         }
     }
@@ -79,9 +80,10 @@ namespace ramses_internal
         LOG_TRACE(CONTEXT_RENDERER, "WaylandOutputConnection::resourceDestroyed");
         assert(nullptr != m_resource);
 
-        // wl_resource is destroyed outside by the Wayland library, so m_resource loses the ownership of the
-        // Wayland resource, so that we don't call wl_resource_destroy.
-        m_resource->disownWaylandResource();
+        // wl_resource is destroyed outside by the Wayland library
+        // destroy m_resoruce to indicate that wl_resource_destroy does not neeed to be called in destructor
+        delete m_resource;
+        m_resource = nullptr;
     }
 
     void WaylandOutputConnection::ResourceDestroyedCallback(wl_resource* clientResource)

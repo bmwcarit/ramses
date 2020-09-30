@@ -53,13 +53,6 @@ namespace ramses_internal
             return collection;
         }
 
-        RendererCommandContainer dispatchCommands()
-        {
-            RendererCommandContainer cmds;
-            rendererCommandBuffer.swapCommandContainer(cmds);
-            return cmds;
-        }
-
         StrictMock<ResourceConsumerComponentMock> resourceComponent;
         StrictMock<SceneGraphConsumerComponentMock> sceneGraphConsumerComponent;
 

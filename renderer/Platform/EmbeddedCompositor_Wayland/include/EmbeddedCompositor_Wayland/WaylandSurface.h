@@ -47,13 +47,14 @@ namespace ramses_internal
         virtual void surfaceDetach(IWaylandClient& client) override;
         virtual void surfaceDamage(IWaylandClient& client, int x, int y, int width, int height) override;
         virtual void surfaceFrame(IWaylandClient& client, uint32_t id) override;
-        virtual void surfaceSetOpaqueRegion(IWaylandClient& client, IWaylandResource* regionResource) override;
-        virtual void surfaceSetInputRegion(IWaylandClient& client, IWaylandResource* regionResource) override;
+        virtual void surfaceSetOpaqueRegion(IWaylandClient& client, INativeWaylandResource* regionResource) override;
+        virtual void surfaceSetInputRegion(IWaylandClient& client, INativeWaylandResource* regionResource) override;
         virtual void surfaceCommit(IWaylandClient& client) override;
         virtual void surfaceSetBufferTransform(IWaylandClient& client, int32_t transform) override;
         virtual void surfaceSetBufferScale(IWaylandClient& client, int32_t scale) override;
         virtual void surfaceDamageBuffer(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height) override;
         virtual WaylandClientCredentials getClientCredentials() const override;
+        virtual bool dispatchBufferTypeChanged() override;
 
     private:
         void setBufferToSurface(IWaylandBuffer& buffer);
@@ -73,7 +74,7 @@ namespace ramses_internal
 
         static void ResourceDestroyedCallback(wl_resource* surfaceResource);
 
-        IWaylandResource* m_surfaceResource = nullptr;
+        INativeWaylandResource* m_surfaceResource = nullptr;
         std::vector<WaylandCallbackResource*> m_pendingCallbacks;
         std::vector<WaylandCallbackResource*> m_frameCallbacks;
         IWaylandBuffer* m_pendingBuffer = nullptr;
@@ -104,6 +105,8 @@ namespace ramses_internal
 #endif
             }
         } m_surfaceInterface;
+
+        bool m_bufferTypeChanged = false;
     };
 }
 

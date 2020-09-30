@@ -17,8 +17,7 @@
 #include "ramses-client-api/AttributeInput.h"
 #include "ArrayBufferImpl.h"
 #include "RamsesObjectTypeUtils.h"
-#include "ArrayResourceUtils.h"
-#include "ArrayResourceUtils.h"
+#include "DataTypeUtils.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -30,7 +29,7 @@ namespace ramses
     protected:
         ADataBuffer()
             : LocalTestClientWithScene()
-            , elementSizeInBytes(EnumToSize(ArrayResourceUtils::ConvertDataTypeForResourceToInternal(GetParam())))
+            , elementSizeInBytes(EnumToSize(DataTypeUtils::ConvertDataTypeToInternal(GetParam())))
             , dataBuffer(*m_scene.createArrayBuffer(GetParam(), 13, "data buffer"))
             , dataBufferHandle(dataBuffer.impl.getDataBufferHandle())
             , singleElementData(elementSizeInBytes)
@@ -85,7 +84,7 @@ namespace ramses
     {
         const auto effect = TestEffects::CreateTestEffectWithAttribute(this->m_scene);
         GeometryBinding& geom = this->createValidGeometry(effect);
-        if (ArrayResourceUtils::IsValidIndicesType(this->dataBuffer.getDataType()))
+        if (DataTypeUtils::IsValidIndicesType(this->dataBuffer.getDataType()))
             EXPECT_EQ(StatusOK, geom.setIndices(RamsesObjectTypeUtils::ConvertTo<ArrayBuffer>(this->dataBuffer)));
         else
         {
@@ -135,7 +134,7 @@ namespace ramses
     {
         const auto effect = TestEffects::CreateTestEffectWithAttribute(this->m_scene);
         GeometryBinding& geom = this->createValidGeometry(effect);
-        if (ArrayResourceUtils::IsValidIndicesType(this->dataBuffer.getDataType()))
+        if (DataTypeUtils::IsValidIndicesType(this->dataBuffer.getDataType()))
             geom.setIndices(RamsesObjectTypeUtils::ConvertTo<ArrayBuffer>(this->dataBuffer));
         else
         {

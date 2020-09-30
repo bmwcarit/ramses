@@ -73,6 +73,13 @@ namespace ramses
         return status;
     }
 
+    status_t RendererConfig::setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions)
+    {
+        const status_t status = impl.setWaylandEmbeddedCompositingSocketPermissions(permissions);
+        LOG_HL_RENDERER_API1(status, permissions);
+        return status;
+    }
+
     status_t RendererConfig::setWaylandEmbeddedCompositingSocketName(const char* socketname)
     {
         const status_t status = impl.setWaylandEmbeddedCompositingSocketName(socketname);

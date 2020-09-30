@@ -39,9 +39,10 @@ namespace ramses
             sharedTestState = nullptr;
         }
 
-        void SetUp()
+        void SetUp() override
         {
             EXPECT_TRUE(sharedTestState != nullptr);
+            sharedTestState->recreateAppearence();
             appearance = sharedTestState->appearance;
         }
 

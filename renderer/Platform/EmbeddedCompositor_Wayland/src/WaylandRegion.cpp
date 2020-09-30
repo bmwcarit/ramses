@@ -8,7 +8,7 @@
 
 #include "EmbeddedCompositor_Wayland/WaylandRegion.h"
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
-#include "EmbeddedCompositor_Wayland/IWaylandResource.h"
+#include "EmbeddedCompositor_Wayland/INativeWaylandResource.h"
 #include "EmbeddedCompositor_Wayland/IEmbeddedCompositor_Wayland.h"
 #include "Utils/LogMacros.h"
 
@@ -44,7 +44,8 @@ namespace ramses_internal
         if (nullptr != m_resource)
         {
             // Remove ResourceDestroyedCallback
-            m_resource->setImplementation(&wl_region_interface, this, nullptr);
+            m_resource->setImplementation(&m_regionInterface, this, nullptr);
+            m_resource->destroy();
             delete m_resource;
         }
     }
@@ -53,9 +54,10 @@ namespace ramses_internal
     {
         LOG_TRACE(CONTEXT_RENDERER, "WaylandRegion::resourceDestroyed");
 
-        // wl_resource is destroyed outside by the Wayland library, so m_resource loses the ownership of the
-        // Wayland resource, so that we don't call wl_resource_destroy.
-        m_resource->disownWaylandResource();
+        // wl_resource is destroyed outside by the Wayland library
+        // destroy m_resoruce to indicate that wl_resource_destroy does not neeed to be called in destructor
+        delete m_resource;
+        m_resource = nullptr;
     }
 
     void WaylandRegion::regionAdd(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height)

@@ -30,7 +30,7 @@ namespace ramses_internal
 
         const WaylandOutputParams       m_waylandOutputParams;
         const WaylandClientCredentials  m_clientCredentials;
-        IWaylandResource*               m_resource = nullptr;
+        INativeWaylandResource*               m_resource = nullptr;
         const struct Output_Interface : public wl_output_interface
         {
             Output_Interface()

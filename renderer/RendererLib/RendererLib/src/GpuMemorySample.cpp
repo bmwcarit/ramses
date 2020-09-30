@@ -20,7 +20,7 @@ namespace ramses_internal
 
         for (const auto& resourceManagerEntry : updater.m_displayResourceManagers)
         {
-            const RendererResourceManager* resourceManager = static_cast<const RendererResourceManager*>(resourceManagerEntry.value);
+            const RendererResourceManager* resourceManager = static_cast<const RendererResourceManager*>(resourceManagerEntry.second.get());
 
             // Add uploaded client resources
             for (auto& resourceDescIter : resourceManager->m_clientResourceRegistry.getAllResourceDescriptors())

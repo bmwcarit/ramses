@@ -10,7 +10,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 SET(RAMSES_VERSION_MAJOR 26)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 2)
+SET(RAMSES_VERSION_PATCH 4)
 SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
@@ -64,6 +64,7 @@ OPTION(ramses-sdk_BUILD_SMOKE_TESTS "Build smoke test targets: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_DEMOS "Build demo targets: ON, OFF" ON)
 OPTION(ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB "Build client only shared library" OFF)
 OPTION(ramses-sdk_BUILD_FULL_SHARED_LIB "Build per renderer shared libraries" ON)
+OPTION(ramses-sdk_BUILD_DOCS "Build documentation if Doxygen is found" ON)
 OPTION(ramses-sdk_ENABLE_WAYLAND_SHELL "Build a version of ramses renderer which uses wayland shell surfaces instead of IVI surfaces" ON)
 OPTION(ramses-sdk_ENABLE_TCP_SUPPORT "Enable use of TCP communication" ON)
 OPTION(ramses-sdk_ENABLE_DLT "Enable dlt support" ON)
@@ -78,6 +79,7 @@ SET_PROPERTY(CACHE ramses-sdk_CONSOLE_LOGLEVEL PROPERTY STRINGS "off" "fatal" "e
 OPTION(ACME_ENABLE_PLUGIN_PROJECT_CONFIG_HEADER "ACME2 plugin for build config header generation" ON)
 
 SET(RAMSES_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}${RAMSES_VERSION_POSTFIX}")
+set(ramses-sdk_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}" CACHE STRING "Ramses version" FORCE)
 
 MESSAGE(STATUS "RAMSES_VERSION=${RAMSES_VERSION}")
 
@@ -210,9 +212,11 @@ include(cmake/ramses/addCheckerTargets.cmake)
 #==========================================================================
 # build and install documentation
 #==========================================================================
-ADD_SUBDIRECTORY(doc)
+if (ramses-sdk_BUILD_DOCS)
+    add_subdirectory(doc)
+endif()
 
-INSTALL(FILES       README.md LICENSE.txt
+INSTALL(FILES       README.md CHANGELOG.txt LICENSE.txt
         DESTINATION share/doc/${PROJECT_NAME}-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
         COMPONENT   ${PROJECT_NAME}-${PROJECT_VERSION}
     )

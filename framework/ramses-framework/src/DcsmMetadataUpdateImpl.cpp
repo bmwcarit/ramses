@@ -89,6 +89,16 @@ namespace ramses
         return AnimationInformation{ timing.startTimeStamp, timing.finishedTimeStamp };
     }
 
+    bool DcsmMetadataUpdateImpl::hasCarCameraPlanes() const
+    {
+        return m_metadata.hasCarCameraPlanes();
+    }
+
+    CarCameraPlaneMetadata DcsmMetadataUpdateImpl::getCarCameraPlanes() const
+    {
+        return m_metadata.getCarCameraPlanes();
+    }
+
     bool DcsmMetadataUpdateImpl::hasCarModelVisibility() const
     {
         return m_metadata.hasCarModelVisibility();

@@ -14,8 +14,8 @@ namespace ramses_internal
     {
     }
 
-    WaylandBufferResource::WaylandBufferResource(wl_resource* resource, bool ownership)
-        : WaylandResource(resource, ownership)
+    WaylandBufferResource::WaylandBufferResource(wl_resource* resource)
+        : NativeWaylandResource(resource)
     {
     }
 
@@ -67,6 +67,6 @@ namespace ramses_internal
 
     WaylandBufferResource* WaylandBufferResource::clone() const
     {
-        return new WaylandBufferResource(m_resource, false);
+        return new WaylandBufferResource(m_resource);
     }
 }

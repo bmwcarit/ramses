@@ -99,7 +99,7 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
     m_config.setResizable(false);
     EXPECT_FALSE(m_config.isResizable());
 
-    ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Frustum(ramses_internal::ECameraProjectionType_Orthographic,
+    ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Frustum(ramses_internal::ECameraProjectionType::Orthographic,
         0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f);
     m_config.setProjectionParams(projParams);
     EXPECT_EQ(projParams, m_config.getProjectionParams());
@@ -163,7 +163,7 @@ TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)
     EXPECT_FLOAT_EQ(6.f, camRot.z);
 
     const ramses_internal::ProjectionParams& projParams = config.getProjectionParams();
-    EXPECT_EQ(ramses_internal::ECameraProjectionType_Perspective, projParams.getProjectionType());
+    EXPECT_EQ(ramses_internal::ECameraProjectionType::Perspective, projParams.getProjectionType());
     EXPECT_FLOAT_EQ(7.f, ramses_internal::ProjectionParams::GetPerspectiveFovY(projParams));
     EXPECT_FLOAT_EQ(8.f, projParams.nearPlane);
     EXPECT_FLOAT_EQ(9.f, projParams.farPlane);
@@ -207,7 +207,7 @@ TEST_F(AInternalDisplayConfig, getsOrthoParamsAssignedFromCommandLine)
     ramses_internal::RendererConfigUtils::ApplyValuesFromCommandLine(parser, config);
 
     const ramses_internal::ProjectionParams& projParams = config.getProjectionParams();
-    EXPECT_EQ(ramses_internal::ECameraProjectionType_Orthographic, projParams.getProjectionType());
+    EXPECT_EQ(ramses_internal::ECameraProjectionType::Orthographic, projParams.getProjectionType());
     EXPECT_FLOAT_EQ(2.f, projParams.leftPlane);
     EXPECT_FLOAT_EQ(3.f, projParams.rightPlane);
     EXPECT_FLOAT_EQ(4.f, projParams.topPlane);

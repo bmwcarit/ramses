@@ -20,7 +20,8 @@ namespace ramses_internal
     {
         explicit RendererCommandLineArguments(const RendererConfig& config)
             : waylandSocketEmbedded("wse", "wayland-socket-embedded", config.getWaylandSocketEmbedded(), "set socket name clients use to connect to the compositor embedded in the renderer")
-            , waylandSocketEmbeddedGroup("wsegn", "wayland-socket-embedded-groupname", config.getWaylandSocketEmbeddedGroup(), "groupname for permissions of embedded compositing socket")
+            , waylandSocketEmbeddedGroup("wsegn", "wayland-socket-embedded-groupname", config.getWaylandSocketEmbeddedGroup(), "groupname for embedded compositing socket")
+            , waylandSocketEmbeddedPermissions("wsep", "wayland-socket-embedded-permissions", config.getWaylandSocketEmbeddedPermissions(), "permissions for embedded compositing socket")
             , systemCompositorControllerEnabled("scc", "enable-system-compositor-controller", "enable system compositor controller")
             , kpiFilename("kpi", "kpioutputfile", config.getKPIFileName(), "KPI filename")
         {
@@ -28,6 +29,7 @@ namespace ramses_internal
 
         ArgumentString waylandSocketEmbedded;
         ArgumentString waylandSocketEmbeddedGroup;
+        ArgumentUInt32 waylandSocketEmbeddedPermissions;
         ArgumentBool   systemCompositorControllerEnabled;
         ArgumentString kpiFilename;
 
@@ -169,6 +171,7 @@ namespace ramses_internal
         RendererCommandLineArguments rendererArgs(config);
         config.setWaylandEmbeddedCompositingSocketName(rendererArgs.waylandSocketEmbedded.parseValueFromCmdLine(parser));
         config.setWaylandEmbeddedCompositingSocketGroup(rendererArgs.waylandSocketEmbeddedGroup.parseValueFromCmdLine(parser));
+        config.setWaylandEmbeddedCompositingSocketPermissions(rendererArgs.waylandSocketEmbeddedPermissions.parseValueFromCmdLine(parser));
         config.setKPIFileName(rendererArgs.kpiFilename.parseValueFromCmdLine(parser));
 
         if(rendererArgs.systemCompositorControllerEnabled.parseFromCmdLine(parser))
@@ -216,7 +219,7 @@ namespace ramses_internal
             const Float topPlane(rendererArgs.topPlane.parseValueFromCmdLine(parser));
             const Float bottomPlane(rendererArgs.bottomPlane.parseValueFromCmdLine(parser));
 
-            const ProjectionParams projParams = ProjectionParams::Frustum(ECameraProjectionType_Orthographic,
+            const ProjectionParams projParams = ProjectionParams::Frustum(ECameraProjectionType::Orthographic,
                 leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane);
             config.setProjectionParams(projParams);
         }

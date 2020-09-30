@@ -18,6 +18,7 @@
 #include "WaylandApplicationWithRamsesRendererTests.h"
 #include "EmbeddedCompositingTestsWithFD.h"
 #include "WaylandOutputTests.h"
+#include "SharedMemoryBufferTests.h"
 
 namespace ramses_internal
 {
@@ -38,6 +39,7 @@ namespace ramses_internal
             m_waylandApplicationWithRamsesRendererTests.setUpEmbeddedCompositingTestCases(m_testFramework);
             m_embeddedCompositingTestsWithFD.setUpEmbeddedCompositingTestCases(m_testFramework);
             m_waylandOutputTests.setUpEmbeddedCompositingTestCases(m_testFramework);
+            m_sharedMemoryBufferTests.setUpEmbeddedCompositingTestCases(m_testFramework);
 
             m_testFramework.filterTestCases(filterIn, filterOut);
         }
@@ -64,6 +66,7 @@ namespace ramses_internal
         WaylandApplicationWithRamsesRendererTests   m_waylandApplicationWithRamsesRendererTests;
         EmbeddedCompositingTestsWithFD              m_embeddedCompositingTestsWithFD;
         WaylandOutputTests                          m_waylandOutputTests;
+        SharedMemoryBufferTests                     m_sharedMemoryBufferTests;
     };
 }
 

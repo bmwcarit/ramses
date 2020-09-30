@@ -21,9 +21,6 @@ namespace ramses_internal
     class WaylandDisplay;
     class IWaylandGlobal;
     class IWaylandClient;
-    class IWaylandResource;
-    class WaylandBufferResource;
-    class LinuxDmabufBufferData;
 
     class LinuxDmabufGlobal
     {

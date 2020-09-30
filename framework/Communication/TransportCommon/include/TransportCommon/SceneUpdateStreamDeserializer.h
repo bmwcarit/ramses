@@ -10,8 +10,8 @@
 #define RAMSES_SCENEUPDATESTREAMDESERIALIZER_H
 
 #include "Scene/SceneActionCollection.h"
+#include "Components/FlushInformation.h"
 #include "absl/types/span.h"
-
 
 namespace ramses_internal
 {
@@ -30,8 +30,16 @@ namespace ramses_internal
 
         struct Result
         {
+            Result() = default;
+            Result(Result&&) = default;
+            Result& operator=(Result&&) = default;
+
+            Result(Result const&) = delete;
+            Result& operator=(Result const& rhs) = delete;
+
             ResultType                              result;
             SceneActionCollection                   actions;
+            FlushInformation                        flushInfos;
             std::vector<std::unique_ptr<IResource>> resources;
         };
 
@@ -45,6 +53,7 @@ namespace ramses_internal
         bool finalizeBlock();
         bool handleSceneActionCollection();
         bool handleResource();
+        bool handleFlushInfos();
 
         uint32_t m_nextExpectedPacketNum = 1;
         bool m_hasFailed = false;

@@ -83,11 +83,11 @@ namespace ramses_internal
 
             Result toReturn = std::move(m_currentResult);
             toReturn.result = ResultType::HasData;
-            m_currentResult = Result{ResultType::Empty, SceneActionCollection(), {}};
+            m_currentResult = Result{ResultType::Empty, SceneActionCollection(), {}, {}};
             return toReturn;
         }
 
-        return Result{ResultType::Empty, SceneActionCollection(), {}};
+        return Result{ResultType::Empty, SceneActionCollection(), {}, {}};
     }
 
     void SceneUpdateStreamDeserializer::continueReadingBlock(BinaryInputStream& is, size_t dataSize)
@@ -133,6 +133,11 @@ namespace ramses_internal
             if (!handleResource())
                 return false;
         }
+        else if (blockType == SingleSceneUpdateWriter::BlockType::FlushInfos)
+        {
+            if (!handleFlushInfos())
+                return false;
+        }
         else
         {
             // only warn on unknown block, no fail
@@ -147,7 +152,7 @@ namespace ramses_internal
     SceneUpdateStreamDeserializer::Result SceneUpdateStreamDeserializer::fail()
     {
         m_hasFailed = true;
-        return Result{ResultType::Failed, SceneActionCollection(), {}};
+        return Result{ResultType::Failed, SceneActionCollection(), {}, {}};
     }
 
     bool SceneUpdateStreamDeserializer::handleSceneActionCollection()
@@ -190,6 +195,29 @@ namespace ramses_internal
 
         m_currentResult.resources.push_back(ResourceSerialization::Deserialize(absl::Span<const Byte>(is.readPosition(), descSize),
                                                                                absl::Span<const Byte>(is.readPosition() + descSize, dataSize)));
+        return true;
+
+    }
+
+    bool SceneUpdateStreamDeserializer::handleFlushInfos()
+    {
+        if (m_currentBlock.size() < sizeof(uint32_t))
+        {
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::handleFlushInfos: Block to small ({})", m_currentBlock.size());
+            return false;
+        }
+
+        BinaryInputStream is(m_currentBlock.data());
+        uint32_t dataSize = 0;
+        is >> dataSize;
+
+        if (dataSize < FlushInformation::getMinimumSize())
+        {
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::handleFlushInfos: Block to small for a valid FlushInfo ({})", dataSize);
+            return false;
+        }
+
+        m_currentResult.flushInfos = FlushInformationSerialization::Deserialize(absl::Span<const Byte>(is.readPosition(), dataSize));
         return true;
 
     }

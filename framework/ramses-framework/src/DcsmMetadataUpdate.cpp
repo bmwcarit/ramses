@@ -99,6 +99,16 @@ namespace ramses
         return impl.getCarModelViewAnimationInfo();
     }
 
+    bool DcsmMetadataUpdate::hasCarCameraPlanes() const
+    {
+        return impl.hasCarCameraPlanes();
+    }
+
+    CarCameraPlaneMetadata DcsmMetadataUpdate::getCarCameraPlanes() const
+    {
+        return impl.getCarCameraPlanes();
+    }
+
     bool DcsmMetadataUpdate::hasCarModelVisibility() const
     {
         return impl.hasCarModelVisibility();

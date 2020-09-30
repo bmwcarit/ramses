@@ -35,6 +35,8 @@ namespace ramses
 
     bool RendererMate::setSceneState(sceneId_t sceneId, RendererSceneState state, std::string confirmationText)
     {
+        std::lock_guard<std::recursive_mutex> guard(m_lock);
+
         if (getLastReportedSceneState(sceneId) == RendererSceneState::Rendered)
         {
             processConfirmationEchoCommand(std::move(confirmationText));
@@ -48,32 +50,39 @@ namespace ramses
 
     bool RendererMate::setSceneMapping(sceneId_t sceneId, displayId_t displayId)
     {
+        std::lock_guard<std::recursive_mutex> guard(m_lock);
         return m_rendererSceneControl.setSceneMapping(sceneId, displayId) == StatusOK;
     }
 
     bool RendererMate::setSceneDisplayBufferAssignment(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder)
     {
+        std::lock_guard<std::recursive_mutex> guard(m_lock);
         return m_rendererSceneControl.setSceneDisplayBufferAssignment(sceneId, displayBuffer, sceneRenderOrder) == StatusOK;
     }
 
     void RendererMate::processConfirmationEchoCommand(std::string confirmationText)
     {
+        std::lock_guard<std::recursive_mutex> guard(m_lock);
         if (!confirmationText.empty())
             m_ramsesRenderer.logConfirmationEcho(ramses_internal::String{ std::move(confirmationText) });
     }
 
     void RendererMate::linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId)
     {
+        std::lock_guard<std::recursive_mutex> guard(m_lock);
         m_rendererSceneControl.linkOffscreenBuffer(offscreenBufferId, consumerSceneId, consumerDataSlotId);
     }
 
     void RendererMate::linkData(sceneId_t providerSceneId, dataProviderId_t providerId, sceneId_t consumerSceneId, dataConsumerId_t consumerId)
     {
+        std::lock_guard<std::recursive_mutex> guard(m_lock);
         m_rendererSceneControl.linkData(providerSceneId, providerId, consumerSceneId, consumerId);
     }
 
     void RendererMate::dispatchAndFlush(IRendererSceneControlEventHandler& sceneControlHandler, IRendererEventHandler* customRendererEventHandler)
     {
+        std::lock_guard<std::recursive_mutex> guard(m_lock);
+
         RendererSceneControlEventChainer chainer{ *this, sceneControlHandler };
         m_rendererSceneControl.dispatchEvents(chainer);
 
@@ -91,11 +100,13 @@ namespace ramses
 
     bool RendererMate::isRunning() const
     {
+        std::lock_guard<std::recursive_mutex> guard(m_lock);
         return m_isRunning && !m_exitCommand->exitRequested();
     }
 
     RendererSceneState RendererMate::getLastReportedSceneState(sceneId_t sceneId) const
     {
+        std::lock_guard<std::recursive_mutex> guard(m_lock);
         const auto it = m_scenesInfo.find(sceneId);
         return it != m_scenesInfo.cend() ? it->second.currentState : RendererSceneState::Unavailable;
     }
@@ -202,6 +213,7 @@ namespace ramses
 
     void RendererMate::enableKeysHandling()
     {
+        std::lock_guard<std::recursive_mutex> guard(m_lock);
         m_keysHandling = true;
     }
 }

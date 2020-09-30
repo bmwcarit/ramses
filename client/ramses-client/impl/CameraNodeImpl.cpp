@@ -66,14 +66,14 @@ namespace ramses
     {
         NodeImpl::initializeFrameworkData();
 
-        ramses_internal::ECameraProjectionType projType = ramses_internal::ECameraProjectionType_Renderer;
+        ramses_internal::ECameraProjectionType projType = ramses_internal::ECameraProjectionType::Renderer;
         if (ERamsesObjectType_PerspectiveCamera == getType())
         {
-            projType = ramses_internal::ECameraProjectionType_Perspective;
+            projType = ramses_internal::ECameraProjectionType::Perspective;
         }
         else if (ERamsesObjectType_OrthographicCamera == getType())
         {
-            projType = ramses_internal::ECameraProjectionType_Orthographic;
+            projType = ramses_internal::ECameraProjectionType::Orthographic;
         }
 
         // main data instance with all references

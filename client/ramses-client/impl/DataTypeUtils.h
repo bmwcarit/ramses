@@ -11,6 +11,7 @@
 
 #include "ramses-client-api/EDataType.h"
 #include "SceneAPI/EDataType.h"
+#include "SceneAPI/EDataBufferType.h"
 #include <assert.h>
 
 namespace ramses
@@ -18,32 +19,9 @@ namespace ramses
     class DataTypeUtils
     {
     public:
-        static ramses_internal::EDataType GetDataTypeInternal(EDataType dataType)
+        static EDataType ConvertDataTypeFromInternal(ramses_internal::EDataType type)
         {
-            switch (dataType)
-            {
-            case EDataType::UInt16:
-                return ramses_internal::EDataType::UInt16;
-            case EDataType::UInt32:
-                return ramses_internal::EDataType::UInt32;
-            case EDataType::Float:
-                return ramses_internal::EDataType::Float;
-            case EDataType::Vector2F:
-                return ramses_internal::EDataType::Vector2F;
-            case EDataType::Vector3F:
-                return ramses_internal::EDataType::Vector3F;
-            case EDataType::Vector4F:
-                return ramses_internal::EDataType::Vector4F;
-            default:
-                assert(false);
-            }
-
-            return ramses_internal::EDataType::Invalid;
-        }
-
-        static EDataType GetDataTypeFromInternal(ramses_internal::EDataType dataType)
-        {
-            switch (dataType)
+            switch (type)
             {
             case ramses_internal::EDataType::UInt16:
                 return EDataType::UInt16;
@@ -59,8 +37,77 @@ namespace ramses
                 return EDataType::Vector4F;
             default:
                 assert(false);
-                return EDataType::Vector4F;
+                return EDataType::UInt16;
             }
+        }
+
+        static ramses_internal::EDataType ConvertDataTypeToInternal(EDataType type)
+        {
+            switch (type)
+            {
+            case EDataType::UInt16:
+                return ramses_internal::EDataType::UInt16;
+            case EDataType::UInt32:
+                return ramses_internal::EDataType::UInt32;
+            case EDataType::Float:
+                return ramses_internal::EDataType::Float;
+            case EDataType::Vector2F:
+                return ramses_internal::EDataType::Vector2F;
+            case EDataType::Vector3F:
+                return ramses_internal::EDataType::Vector3F;
+            case EDataType::Vector4F:
+                return ramses_internal::EDataType::Vector4F;
+            }
+            assert(false);
+            return ramses_internal::EDataType::UInt16;
+        }
+
+        static ramses_internal::EResourceType DeductResourceTypeFromDataType(EDataType type)
+        {
+            switch (type)
+            {
+            case ramses::EDataType::UInt16:
+            case ramses::EDataType::UInt32:
+                return ramses_internal::EResourceType_IndexArray;
+            case ramses::EDataType::Float:
+            case ramses::EDataType::Vector2F:
+            case ramses::EDataType::Vector3F:
+            case ramses::EDataType::Vector4F:
+                return ramses_internal::EResourceType_VertexArray;
+            }
+            assert(false);
+            return ramses_internal::EResourceType_Invalid;
+        }
+
+        static ramses_internal::EDataBufferType DeductBufferTypeFromDataType(EDataType type)
+        {
+            switch (type)
+            {
+            case ramses::EDataType::UInt16:
+            case ramses::EDataType::UInt32:
+                return ramses_internal::EDataBufferType::IndexBuffer;
+            case ramses::EDataType::Float:
+            case ramses::EDataType::Vector2F:
+            case ramses::EDataType::Vector3F:
+            case ramses::EDataType::Vector4F:
+                return ramses_internal::EDataBufferType::VertexBuffer;
+            }
+            assert(false);
+            return ramses_internal::EDataBufferType::Invalid;
+        }
+
+        static bool IsValidIndicesType(EDataType type)
+        {
+            return type == EDataType::UInt16 ||
+                type == EDataType::UInt32;
+        }
+
+        static bool IsValidVerticesType(EDataType type)
+        {
+            return type == EDataType::Float ||
+                type == EDataType::Vector2F ||
+                type == EDataType::Vector3F ||
+                type == EDataType::Vector4F;
         }
     };
 }

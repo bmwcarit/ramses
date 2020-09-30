@@ -37,6 +37,7 @@ namespace ramses
         EXPECT_FALSE(dmp.hasWidgetHUDLineID());
         EXPECT_FALSE(dmp.hasCarModel());
         EXPECT_FALSE(dmp.hasCarModelView());
+        EXPECT_FALSE(dmp.hasCarCameraPlanes());
         EXPECT_FALSE(dmp.hasCarModelVisibility());
         EXPECT_FALSE(dmp.hasExclusiveBackground());
         EXPECT_FALSE(dmp.hasStreamID());
@@ -103,6 +104,14 @@ namespace ramses
         EXPECT_EQ(values, dmp.getCarModelView());
         constexpr AnimationInformation timingp{ 8,9 };
         EXPECT_EQ(timingp, dmp.getCarModelViewAnimationInfo());
+    }
+
+    TEST_F(ADcsmMetadataUpdate, returnsCarCameraPlanes)
+    {
+        EXPECT_TRUE(md.setCarCameraPlanes(CarCameraPlaneMetadata{1.f, 11.f}));
+        dmp.impl.setMetadata(md);
+        EXPECT_TRUE(dmp.hasCarCameraPlanes());
+        EXPECT_EQ(CarCameraPlaneMetadata({1.f, 11.f}), dmp.getCarCameraPlanes());
     }
 
     TEST_F(ADcsmMetadataUpdate, returnsCarModelVisibility)

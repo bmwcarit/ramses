@@ -9,8 +9,7 @@
 #ifndef RAMSES_TEST_COMPLEXTESTTYPE_H
 #define RAMSES_TEST_COMPLEXTESTTYPE_H
 
-#include "PlatformAbstraction/Hash.h"
-#include <gtest/gtest.h>
+#include <functional>
 
 namespace ramses_internal
 {

@@ -26,7 +26,6 @@ namespace ramses_internal
     {
     public:
         DeviceMock();
-        explicit DeviceMock(IContext&);
         ~DeviceMock() override;
 
         MOCK_METHOD(EDeviceTypeId, getDeviceTypeId, (), (const, override));

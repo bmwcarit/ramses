@@ -219,28 +219,40 @@ namespace ramses_internal
             m_waylandHandler.createIVISurface(surfaceId, surfaceIviId);
             return true;
         }
-        case ETestWaylandApplicationMessage::RenderOneFrame:
+        case ETestWaylandApplicationMessage::RenderOneFrame_ToEGLBuffer:
         {
             TestApplicationSurfaceId surfaceId;
             bool useCallback;
 
             bis >> surfaceId.getReference() >> useCallback;
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to surface with id " << surfaceId.getValue());
-            renderFrame(surfaceId, useCallback);
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to egl buffer on surface with id " << surfaceId.getValue());
+            renderFrameToEGLBuffer(surfaceId, useCallback);
+            return true;
+        }
+        case ETestWaylandApplicationMessage::RenderOneFrame_ToSharedMemoryBuffer:
+        {
+            TestApplicationSurfaceId surfaceId;
+            bool useCallback;
+
+            bis >> surfaceId.getReference() >> useCallback;
+
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to shraed memory buffer on surface with id " << surfaceId.getValue());
+            renderFrameToSharedMemoryBuffer(surfaceId, useCallback);
             return true;
         }
         case ETestWaylandApplicationMessage::AttachBuffer:
         {
             TestApplicationSurfaceId surfaceId;
+            bool commit;
 
-            bis >> surfaceId.getReference();
+            bis >> surfaceId.getReference() >> commit;
 
             LOG_INFO(CONTEXT_RENDERER,
                      "TestWaylandApplication::handleIncomingMessages(): received message attach buffer "
                      "with id "
                          << surfaceId.getValue());
-            attachBuffer(surfaceId);
+            attachBuffer(surfaceId, commit);
             return true;
         }
         case ETestWaylandApplicationMessage::DestroyBuffers:
@@ -389,89 +401,77 @@ namespace ramses_internal
         m_waylandHandler.deinit();
     }
 
-    void TestWaylandApplication::renderFrame(TestApplicationSurfaceId surfaceId, bool useCallback)
+    void TestWaylandApplication::renderFrameToEGLBuffer(TestApplicationSurfaceId surfaceId, bool useCallback)
     {
-        if (m_waylandHandler.getUseEGL(surfaceId))
-        {
-            m_waylandHandler.enableContextForSurface(surfaceId);
-            OpenGLTriangleDrawer triangleDrawer(m_triangleColor);
-            triangleDrawer.draw();
-            m_waylandHandler.swapBuffersAndProcessEvents(surfaceId, useCallback);
-            m_waylandHandler.disableContextForSurface();
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrame buffers swapped");
-        }
-        else
-        {
-            uint32_t width;
-            uint32_t height;
-            m_waylandHandler.getWindowSize(surfaceId, width, height);
-            SHMBuffer* buffer = m_waylandHandler.getFreeSHMBuffer(width, height);
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrame render to SHMBuffer with id  " << buffer->getId());
-            SHMTriangleDrawer triangleDrawer(m_triangleColor);
-
-            triangleDrawer.draw(buffer);
-
-            m_waylandHandler.swapBuffersAndProcessEvents(surfaceId, *buffer, useCallback);
-            if (useCallback)
-            {
-                m_waylandHandler.waitOnFrameCallback(surfaceId);
-            }
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrame shm buffers swapped");
-        }
+        m_waylandHandler.enableContextForSurface(surfaceId);
+        OpenGLTriangleDrawer triangleDrawer(m_triangleColor);
+        triangleDrawer.draw();
+        m_waylandHandler.swapBuffersAndProcessEvents(surfaceId, useCallback);
+        m_waylandHandler.disableContextForSurface();
+        LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrameToEGLBuffer: buffers swapped");
     }
 
-    void TestWaylandApplication::attachBuffer(TestApplicationSurfaceId surfaceId)
+    void TestWaylandApplication::renderFrameToSharedMemoryBuffer(TestApplicationSurfaceId surfaceId, bool useCallback)
+    {
+        uint32_t width;
+        uint32_t height;
+        m_waylandHandler.getWindowSize(surfaceId, width, height);
+        SHMBuffer* buffer = m_waylandHandler.getFreeSHMBuffer(width, height);
+        LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrameToSharedMemoryBuffer render to SHMBuffer with id  " << buffer->getId());
+        SHMTriangleDrawer triangleDrawer(m_triangleColor);
+
+        triangleDrawer.draw(buffer);
+
+        m_waylandHandler.swapBuffersAndProcessEvents(surfaceId, *buffer, useCallback);
+        if (useCallback)
+        {
+            m_waylandHandler.waitOnFrameCallback(surfaceId);
+        }
+        LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrameToSharedMemoryBuffer shm buffers swapped");
+    }
+
+    void TestWaylandApplication::attachBuffer(TestApplicationSurfaceId surfaceId, bool commit)
     {
         uint32_t width;
         uint32_t height;
         m_waylandHandler.getWindowSize(surfaceId, width, height);
         SHMBuffer* buffer = m_waylandHandler.getFreeSHMBuffer(width, height);
         LOG_INFO(CONTEXT_RENDERER,
-                 "TestWaylandApplication::renderFrame render to SHMBuffer with id  " << buffer->getId());
-        SHMTriangleDrawer triangleDrawer(m_triangleColor);
+                 "TestWaylandApplication::attachBuffer: attaching buffer" << buffer->getId());
 
-        triangleDrawer.draw(buffer);
-
-        m_waylandHandler.attachBuffer(surfaceId, *buffer);
+        m_waylandHandler.attachBuffer(surfaceId, *buffer, commit);
     }
 
     void TestWaylandApplication::renderFrameToTwoSurfaces(TestApplicationSurfaceId surfaceId1, TestApplicationSurfaceId surfaceId2, bool useCallback)
     {
-        if (m_waylandHandler.getUseEGL(surfaceId1) || m_waylandHandler.getUseEGL(surfaceId2))
+        uint32_t width1;
+        uint32_t height1;
+        m_waylandHandler.getWindowSize(surfaceId1, width1, height1);
+
+        uint32_t width2;
+        uint32_t height2;
+        m_waylandHandler.getWindowSize(surfaceId2, width2, height2);
+
+        if (width1 != width2 || height1 != height2)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "TestWaylandApplication::renderFrameToTwoSurfaces Rendering to two surfaces with EGL not supported!");
+            LOG_ERROR(CONTEXT_RENDERER, "TestWaylandApplication::renderFrameToTwoSurfaces Surfaces must have same size!");
+            assert(false);
+            return;
         }
-        else
+
+        SHMBuffer* buffer = m_waylandHandler.getFreeSHMBuffer(width1, height2);
+        LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrame render to SHMBuffer with id  " << buffer->getId());
+        SHMTriangleDrawer triangleDrawer(m_triangleColor);
+        triangleDrawer.draw(buffer);
+
+        m_waylandHandler.swapBuffersAndProcessEvents(surfaceId1, *buffer, useCallback);
+        m_waylandHandler.swapBuffersAndProcessEvents(surfaceId2, *buffer, useCallback);
+        if (useCallback)
         {
-            uint32_t width1;
-            uint32_t height1;
-            m_waylandHandler.getWindowSize(surfaceId1, width1, height1);
-
-            uint32_t width2;
-            uint32_t height2;
-            m_waylandHandler.getWindowSize(surfaceId2, width2, height2);
-
-            if (width1 != width2 || height1 != height2)
-            {
-                LOG_ERROR(CONTEXT_RENDERER, "TestWaylandApplication::renderFrameToTwoSurfaces Surfaces must have same size!");
-                assert(false);
-                return;
-            }
-
-            SHMBuffer* buffer = m_waylandHandler.getFreeSHMBuffer(width1, height2);
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrame render to SHMBuffer with id  " << buffer->getId());
-            SHMTriangleDrawer triangleDrawer(m_triangleColor);
-            triangleDrawer.draw(buffer);
-
-            m_waylandHandler.swapBuffersAndProcessEvents(surfaceId1, *buffer, useCallback);
-            m_waylandHandler.swapBuffersAndProcessEvents(surfaceId2, *buffer, useCallback);
-            if (useCallback)
-            {
-                m_waylandHandler.waitOnFrameCallback(surfaceId1);
-                m_waylandHandler.waitOnFrameCallback(surfaceId2);
-            }
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrame shm buffers swapped");
+            m_waylandHandler.waitOnFrameCallback(surfaceId1);
+            m_waylandHandler.waitOnFrameCallback(surfaceId2);
         }
+        LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrame shm buffers swapped");
     }
 
     void TestWaylandApplication::setTriangleColor(ETriangleColor color)

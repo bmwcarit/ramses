@@ -16,6 +16,7 @@
 #include "RendererLib/RendererCommands.h"
 #include "RendererLib/RendererCommandTypes.h"
 #include "RamsesRendererImpl.h"
+#include "Utils/ThreadBarrier.h"
 
 using namespace ramses_internal;
 using namespace testing;
@@ -142,4 +143,53 @@ TEST_F(ARendererMate, continuesToShowSceneAndLogsConfirmationAfterReconnect)
     rendererMateEventHandler.sceneStateChanged(sceneId, ramses::RendererSceneState::Unavailable);
 
     publishAndExpectToGetToState(ramses::RendererSceneState::Rendered, true); // expect confirmation
+}
+
+TEST_F(ARendererMate, canBeCalledFromAnotherThread)
+{
+    // this test simulates 2 threads executing commands (e.g. ramsh commands)
+    // and a thread dispatching and checking some states (e.g. standalone renderer)
+
+    ThreadBarrier initBarrier(3);
+    ThreadBarrier finishedBarrier(3);
+
+    constexpr ramses::sceneId_t sceneId1{ 10123 };
+    constexpr ramses::sceneId_t sceneId2{ 10124 };
+    rendererMateEventHandler.scenePublished(sceneId1);
+    rendererMateEventHandler.scenePublished(sceneId2);
+
+    auto executeMethods = [&](ramses::sceneId_t sId)
+    {
+        initBarrier.wait();
+        EXPECT_TRUE(rendererMate.setSceneState(sId, ramses::RendererSceneState::Available));
+        EXPECT_TRUE(rendererMate.setSceneMapping(sId, displayId));
+        EXPECT_TRUE(rendererMate.setSceneDisplayBufferAssignment(sId, offscreenBufferId));
+        EXPECT_TRUE(rendererMate.setSceneState(sId, ramses::RendererSceneState::Ready));
+        rendererMate.linkOffscreenBuffer(offscreenBufferId, sId, ramses::dataConsumerId_t{ 123 });
+        rendererMate.linkData(sId, ramses::dataProviderId_t{ 123 }, ramses::sceneId_t{ sId.getValue() + 10 }, ramses::dataConsumerId_t{ 123 });
+        rendererMate.processConfirmationEchoCommand("foo");
+        finishedBarrier.wait();
+    };
+
+    std::thread t1(executeMethods, sceneId1);
+    std::thread t2(executeMethods, sceneId2);
+
+    std::thread t3([&]
+    {
+        ramses::RendererSceneControlEventHandlerEmpty handler;
+        initBarrier.wait();
+        for (int i = 0; i < 10; ++i)
+        {
+            rendererMate.dispatchAndFlush(handler);
+            EXPECT_TRUE(rendererMate.isRunning());
+            rendererMate.getLastReportedSceneState(sceneId1);
+            rendererMate.getLastReportedSceneState(sceneId2);
+            rendererMate.enableKeysHandling();
+        }
+        finishedBarrier.wait();
+    });
+
+    t1.join();
+    t2.join();
+    t3.join();
 }

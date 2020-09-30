@@ -375,6 +375,7 @@ protected:
         //}
 
         creator.flush(1u, newSizeInfo > currSizeInfo, newSizeInfo, resourceChanges, sceneRefActions, timeInfo, version);
+        update.flushInfos = {1u, version, newSizeInfo, resourceChanges, sceneRefActions, timeInfo, newSizeInfo>currSizeInfo, true};
         scene.resetResourceChanges();
         rendererSceneUpdater->handleSceneActions(stagingScene[sceneIndex]->getSceneId(), std::move(update));
     }
@@ -439,7 +440,7 @@ protected:
         scene.allocateNode(0u, renderableNode);
         scene.allocateRenderable(renderableNode, renderableHandle);
         scene.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I}, DataFieldInfo{EDataType::Vector2I} }, ResourceProviderMock::FakeEffectHash, camDataLayoutHandle);
-        scene.allocateCamera(ECameraProjectionType_Perspective, scene.allocateNode(), scene.allocateDataInstance(camDataLayoutHandle, camDataHandle), cameraHandle);
+        scene.allocateCamera(ECameraProjectionType::Perspective, scene.allocateNode(), scene.allocateDataInstance(camDataLayoutHandle, camDataHandle), cameraHandle);
 
         scene.addRenderableToRenderGroup(renderGroupHandle, renderableHandle, 0u);
         scene.addRenderGroupToRenderPass(renderPassHandle, renderGroupHandle, 0u);

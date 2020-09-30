@@ -30,8 +30,8 @@ namespace ramses_internal
         virtual void surfaceDetach(IWaylandClient& client) = 0;
         virtual void surfaceDamage(IWaylandClient& client, int x, int y, int width, int height) = 0;
         virtual void surfaceFrame(IWaylandClient& client, uint32_t id) = 0;
-        virtual void surfaceSetOpaqueRegion(IWaylandClient& client, IWaylandResource* regionResource) = 0;
-        virtual void surfaceSetInputRegion(IWaylandClient& client, IWaylandResource* regionResource) = 0;
+        virtual void surfaceSetOpaqueRegion(IWaylandClient& client, INativeWaylandResource* regionResource) = 0;
+        virtual void surfaceSetInputRegion(IWaylandClient& client, INativeWaylandResource* regionResource) = 0;
         virtual void surfaceCommit(IWaylandClient& client) = 0;
         virtual void surfaceSetBufferTransform(IWaylandClient& client, int32_t transform) = 0;
         virtual void surfaceSetBufferScale(IWaylandClient& client, int32_t scale) = 0;
@@ -51,6 +51,7 @@ namespace ramses_internal
         virtual void setIviSurface(IWaylandIVISurface* iviSurface) = 0;
         virtual bool hasIviSurface() const = 0;
         virtual WaylandClientCredentials getClientCredentials() const = 0;
+        virtual bool dispatchBufferTypeChanged() = 0;
     };
 }
 

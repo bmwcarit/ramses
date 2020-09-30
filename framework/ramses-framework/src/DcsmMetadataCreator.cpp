@@ -73,6 +73,13 @@ namespace ramses
         return status;
     }
 
+    status_t DcsmMetadataCreator::setCarCameraPlanes(const CarCameraPlaneMetadata& planesMetadata)
+    {
+        const auto status = impl.setCarCameraPlanes(planesMetadata);
+        LOG_HL_CLIENT_API2(status, planesMetadata.nearPlane, planesMetadata.farPlane);
+        return status;
+    }
+
     status_t DcsmMetadataCreator::setCarModelVisibility(bool visibility)
     {
         const auto status = impl.setCarModelVisibility(visibility);

@@ -36,10 +36,16 @@ namespace ramses_internal
         virtual void handleResponse(const SomeIPMsgHeader& header, uint64_t originalMessageId, uint64_t originalSessionId, uint64_t responseCode) = 0;
     };
 
+    struct DcsmStackSendDataSizes
+    {
+        uint32_t metadataSize;
+    };
+
     class ISomeIPDcsmStack : public ISomeIPStackCommon<DcsmInstanceId>
     {
     public:
         virtual void setCallbacks(ISomeIPDcsmStackCallbacks* handlers) = 0;
+        virtual DcsmStackSendDataSizes getSendDataSizes() const = 0;
 
         virtual bool sendOfferContent(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, Category category, const std::string& friendlyName, uint32_t sortOrder) = 0;
         virtual bool sendRequestStopOfferContent(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, bool forceStopOffer) = 0;

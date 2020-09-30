@@ -18,6 +18,7 @@
 #include "RendererLib/OffscreenBufferLinks.h"
 #include "RendererLib/FrameTimer.h"
 #include "RendererLib/IRendererSceneControl.h"
+#include "RendererLib/IRendererResourceManager.h"
 #include "Scene/EScenePublicationMode.h"
 #include <unordered_map>
 
@@ -29,7 +30,6 @@ namespace ramses_internal
     class IResourceProvider;
     class IResourceUploader;
     class IRendererResourceCache;
-    class IRendererResourceManager;
     class RendererEventCollector;
     class RendererScenes;
     class DisplayConfig;
@@ -39,6 +39,8 @@ namespace ramses_internal
     class TransformationLinkManager;
     class TextureLinkManager;
     class ISceneReferenceLogic;
+    class IRenderBackend;
+    class IEmbeddedCompositingManager;
 
     class RendererSceneUpdater : public IRendererSceneControl
     {
@@ -92,6 +94,16 @@ namespace ramses_internal
 
         void setSceneReferenceLogicHandler(ISceneReferenceLogic& sceneRefLogic);
 
+    protected:
+        virtual std::unique_ptr<IRendererResourceManager> createResourceManager(
+            IResourceProvider& resourceProvider,
+            IResourceUploader& resourceUploader,
+            IRenderBackend& renderBackend,
+            IEmbeddedCompositingManager& embeddedCompositingManager,
+            DisplayHandle display,
+            bool keepEffectsUploaded,
+            uint64_t gpuCacheSize);
+
     private:
         void destroyScene(SceneId sceneID);
         void unloadSceneResourcesAndUnrefSceneResources(SceneId sceneId);
@@ -138,7 +150,7 @@ namespace ramses_internal
 
         AnimationSystemFactory                            m_animationSystemFactory;
 
-        HashMap<DisplayHandle, IRendererResourceManager*> m_displayResourceManagers;
+        std::unordered_map<DisplayHandle, std::unique_ptr<IRendererResourceManager>> m_displayResourceManagers;
 
         struct SceneMapRequest
         {

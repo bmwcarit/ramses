@@ -41,7 +41,7 @@ static CameraHandle preparePickableCamera(TransformationLinkCachedScene& scene, 
     scene.setDataReference(dataInstance, Camera::ViewportSizeField, vpSizeInstance);
     scene.setDataReference(dataInstance, Camera::FrustumPlanesField, frustumPlanes);
     scene.setDataReference(dataInstance, Camera::FrustumNearFarPlanesField, frustumNearFar);
-    const CameraHandle cameraHandle = sceneAllocator.allocateCamera(ECameraProjectionType_Perspective, cameraNodeHandle, dataInstance);
+    const CameraHandle cameraHandle = sceneAllocator.allocateCamera(ECameraProjectionType::Perspective, cameraNodeHandle, dataInstance);
     scene.setDataSingleVector2i(vpOffsetInstance, DataFieldHandle{ 0 }, viewportOffset);
     scene.setDataSingleVector2i(vpSizeInstance, DataFieldHandle{ 0 }, viewportSize);
     const ProjectionParams params = ramses_internal::ProjectionParams::Perspective(19.f, static_cast<float>(viewportSize.x) / static_cast<float>(viewportSize.y), 0.1f, 100.f);

@@ -9,28 +9,27 @@
 #ifndef RAMSES_ECAMERAPROJECTIONTYPE_H
 #define RAMSES_ECAMERAPROJECTIONTYPE_H
 
+#include "Utils/LoggingUtils.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 
 namespace ramses_internal
 {
-    enum ECameraProjectionType
+    enum class ECameraProjectionType
     {
-        ECameraProjectionType_Perspective = 0,
-        ECameraProjectionType_Orthographic,
-        ECameraProjectionType_Renderer
-
+        Perspective = 0,
+        Orthographic,
+        Renderer
     };
 
-    inline const Char* EnumToString(ECameraProjectionType cameraProjectionType)
-    {
-        switch (cameraProjectionType)
-        {
-        case ECameraProjectionType_Perspective: return "ECameraProjectionType_Perspective";
-        case ECameraProjectionType_Orthographic: return "ECameraProjectionType_Orthographic";
-        case ECameraProjectionType_Renderer: return "ECameraProjectionType_Renderer";
-        }
-        return "";
-    }
+    static constexpr const char* const ECameraProjectionTypeNames[] = {
+        "ECameraProjectionType::Perspective",
+        "ECameraProjectionType::Orthographic",
+        "ECameraProjectionType::Renderer",
+    };
 }
 
-#endif //RAMSES_ECAMERAPROJECTIONTYPE_H
+MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::ECameraProjectionType,
+                                        ramses_internal::ECameraProjectionTypeNames,
+                                        ramses_internal::ECameraProjectionType::Renderer);
+
+#endif

@@ -55,8 +55,6 @@ namespace ramses_internal
     Image Image::createDiffTo(const Image& other) const
     {
         assert(m_width == other.m_width && m_height == other.m_height);
-        //make sure theoretical maximum error would not overflow
-        assert(std::log2(256) + std::ceil(std::log2(m_width)) + std::ceil(std::log2(m_height)) <= (sizeof(Vector4i::x) * 8 - 1));
 
         std::vector<UInt8> resultData(m_width * m_height * 4u);
         std::transform(m_data.cbegin(), m_data.cend(), other.m_data.cbegin(), resultData.begin(), [](UInt8 c1, UInt8 c2)
@@ -148,15 +146,32 @@ namespace ramses_internal
 
     Vector4i Image::getSumOfPixelValues() const
     {
+        auto addWithoutOverflow = [](int32_t& dest, uint8_t value) {
+            constexpr int32_t maximumValueBeforeOverflow = std::numeric_limits<int32_t>::max() - std::numeric_limits<uint8_t>::max() - 1;
+
+            const bool overflow = (dest >= maximumValueBeforeOverflow);
+            if (overflow)
+                dest = std::numeric_limits<int32_t>::max();
+            else
+                dest += value;
+
+            return overflow;
+        };
+
+        bool overflow = false;
         Vector4i result{0};
         for (size_t px = 0; px < m_data.size() / 4; ++px)
         {
             const UInt8* pxData = &m_data[4 * px];
-            result.x += pxData[0];
-            result.y += pxData[1];
-            result.z += pxData[2];
-            result.w += pxData[3];
+            overflow |= addWithoutOverflow(result.x, pxData[0]);
+            overflow |= addWithoutOverflow(result.y, pxData[1]);
+            overflow |= addWithoutOverflow(result.z, pxData[2]);
+            overflow |= addWithoutOverflow(result.w, pxData[3]);
         }
+
+        if (overflow)
+            LOG_WARN(CONTEXT_FRAMEWORK, "Image::getSumOfPixelValues: Overflow of sum of pixel values! The overflown values saturate to max possible positive value for int32_t [="
+            << std::numeric_limits<int32_t>::max() << "]");
 
         return result;
     }

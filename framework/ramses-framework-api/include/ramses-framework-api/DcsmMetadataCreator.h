@@ -12,6 +12,7 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/CarModelViewMetadata.h"
+#include "ramses-framework-api/CarCameraPlaneMetadata.h"
 #include <string>
 
 namespace ramses
@@ -101,6 +102,15 @@ namespace ramses
          *         to resolve error message using getStatusMessage().
          */
         status_t setCarModelView(const CarModelViewMetadata& viewMetadata, const AnimationInformation& timingInfo);
+
+        /**
+         * @brief Set car camera planes metadata entry. Used together with setCarModelView().
+         *
+         * @param planesMetadata camera planes metadata for the car model
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t setCarCameraPlanes(const CarCameraPlaneMetadata& planesMetadata);
 
         /**
          * @brief Set car model visibility metadata entry. Requests car model visibility at consumer side.

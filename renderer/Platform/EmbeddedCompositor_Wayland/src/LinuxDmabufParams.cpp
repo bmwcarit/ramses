@@ -12,7 +12,7 @@
 #include "wayland-server.h"
 
 #include "EmbeddedCompositor_Wayland/IWaylandClient.h"
-#include "EmbeddedCompositor_Wayland/IWaylandResource.h"
+#include "EmbeddedCompositor_Wayland/INativeWaylandResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandBufferResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufParams.h"
@@ -59,6 +59,7 @@ namespace ramses_internal
         {
             // Remove ResourceDestroyedCallback
             m_resource->setImplementation(&m_paramsInterface, this, nullptr);
+            m_resource->destroy();
             delete m_resource;
         }
 
@@ -85,7 +86,8 @@ namespace ramses_internal
 
         // wl_resource is destroyed outside by the Wayland library, so our job here is to abandon
         // ownership of the Wayland resource so that we don't call wl_resource_destroy().
-        m_resource->disownWaylandResource();
+        delete m_resource;
+        m_resource = nullptr;
     }
 
     void LinuxDmabufParams::DmabufParamsDestroyCallback(wl_client* client, wl_resource* dmabufParamsResource)
@@ -322,7 +324,7 @@ namespace ramses_internal
             }
         }
 
-        IWaylandResource* bufferWaylandResource = client.resourceCreate(&wl_buffer_interface, 1 /* version */, bufferId);
+        INativeWaylandResource* bufferWaylandResource = client.resourceCreate(&wl_buffer_interface, 1 /* version */, bufferId);
 
         if (nullptr == bufferWaylandResource)
         {
@@ -335,18 +337,20 @@ namespace ramses_internal
         }
 
         // Hand off ownership of the LinuxDmabufBufferData to the new wl_buffer
-        wl_resource* bufferNativeWaylandResource = static_cast<wl_resource*>(bufferWaylandResource->getWaylandNativeResource());
+        wl_resource* bufferNativeWaylandResource = bufferWaylandResource->getLowLevelHandle();
         bufferWaylandResource->setImplementation(&LinuxDmabufBuffer::m_bufferInterface, m_data, BufferDestroyCallback);
         m_data = nullptr;
 
         // Announce the resulting buffer to the client
         if (0 == bufferId)
         {
-            zwp_linux_buffer_params_v1_send_created(static_cast<wl_resource*>(m_resource->getWaylandNativeResource()), bufferNativeWaylandResource);
+            zwp_linux_buffer_params_v1_send_created(m_resource->getLowLevelHandle(), bufferNativeWaylandResource);
         }
 
-        // Clean up
-        bufferWaylandResource->disownWaylandResource();
+        // Clean up the wrapper object, without destroying the underlying wl_resource
+        // The wl_resource used for the bufffer is being created explicitly, but its ownership is handed over to wl_buffer_interface implemenetaion in
+        // LinuxDmabufBuffer::m_bufferInterface, which would now handle the lifecycle of that wl_resource.
+        // TODO: check (or add tests) if it might be necessary to explicitly remove the wl_resource, e.g., if client is killed without proper cleanup
         delete bufferWaylandResource;
     }
 
@@ -358,7 +362,7 @@ namespace ramses_internal
 
     LinuxDmabufBufferData* LinuxDmabufBuffer::fromWaylandBufferResource(WaylandBufferResource& resource)
     {
-        struct wl_resource* nativeResource = static_cast<wl_resource*>(resource.getWaylandNativeResource());
+        struct wl_resource* nativeResource = resource.getLowLevelHandle();
 
         if (!wl_resource_instance_of(nativeResource, &wl_buffer_interface, &m_bufferInterface))
         {

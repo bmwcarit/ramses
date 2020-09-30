@@ -37,6 +37,18 @@ namespace ramses
         return m_internalConfig.getWaylandSocketEmbeddedGroup().c_str();
     }
 
+    status_t RendererConfigImpl::setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions)
+    {
+        if (m_internalConfig.setWaylandEmbeddedCompositingSocketPermissions(permissions))
+            return StatusOK;
+        return addErrorEntry("RendererConfig::setWaylandEmbeddedCompositingSocketPermissions failed");
+    }
+
+    uint32_t RendererConfigImpl::getWaylandSocketEmbeddedPermissions() const
+    {
+        return m_internalConfig.getWaylandSocketEmbeddedPermissions();
+    }
+
     status_t RendererConfigImpl::setBinaryShaderCache(IBinaryShaderCache& cache)
     {
         m_binaryShaderCache = &cache;

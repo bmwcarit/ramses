@@ -48,8 +48,6 @@ namespace ramses_internal
         MOCK_METHOD(void , setRenderStateColorWriteMask, (RenderStateHandle, ColorWriteMask), (override));
 
         MOCK_METHOD(TextureSamplerHandle, allocateTextureSampler, (const TextureSampler& sampler, TextureSamplerHandle handle), (override));
-
-        MOCK_METHOD(void, setAckFlushState, (bool), (override));
     };
 
     class ASceneActionCreatorAndApplier : public ::testing::Test
@@ -215,77 +213,5 @@ namespace ramses_internal
         EXPECT_CALL(scene, setRenderStateColorWriteMask(state, rs.colorWriteMask));
 
         SceneActionApplier::ApplyActionsOnScene(scene, collection);
-    }
-
-    TEST_F(ASceneActionCreatorAndApplier, canEnableAckFlush)
-    {
-        creator.setAckFlushState(true);
-        EXPECT_CALL(scene, setAckFlushState(true));
-        SceneActionApplier::ApplyActionsOnScene(scene, collection);
-    }
-
-    TEST_F(ASceneActionCreatorAndApplier, canDisableAckFlush)
-    {
-        creator.setAckFlushState(false);
-        EXPECT_CALL(scene, setAckFlushState(false));
-        SceneActionApplier::ApplyActionsOnScene(scene, collection);
-    }
-
-
-    template <typename T>
-    class ASceneActionCreatorAndApplierForResources : public ASceneActionCreatorAndApplier
-    {
-    public:
-        SceneActionApplier::ResourceVector receivedResources;
-
-        void compareResources(const SceneActionApplier::ResourceVector& sentResources)
-        {
-            ASSERT_EQ(sentResources.size(), receivedResources.size());
-            for (UInt i = 0; i < sentResources.size(); ++i)
-            {
-                ResourceSerializationTestHelper::CompareResourceValues(*sentResources[i], *receivedResources[i]);
-                ResourceSerializationTestHelper::CompareTypedResources(static_cast<const T&>(*sentResources[i]), static_cast<const T&>(*receivedResources[i]));
-            }
-        }
-    };
-
-    TYPED_TEST_SUITE(ASceneActionCreatorAndApplierForResources, ResourceSerializationTestHelper::Types);
-
-    TYPED_TEST(ASceneActionCreatorAndApplierForResources, writeSingleSmallResource)
-    {
-        SceneActionApplier::ResourceVector sendResources;
-        sendResources.emplace_back(ResourceSerializationTestHelper::CreateTestResource<TypeParam>(5));
-        this->creator.pushResource(*sendResources.front());
-
-        SceneActionApplier::ApplyActionsOnScene(this->scene, this->collection, nullptr, &this->receivedResources);
-        this->compareResources(sendResources);
-    }
-
-    TYPED_TEST(ASceneActionCreatorAndApplierForResources, writeSingleBigResource)
-    {
-        SceneActionApplier::ResourceVector sendResources;
-        sendResources.emplace_back(ResourceSerializationTestHelper::CreateTestResource<TypeParam>(100 * 1000));
-        this->creator.pushResource(*sendResources.front());
-
-        SceneActionApplier::ApplyActionsOnScene(this->scene, this->collection, nullptr, &this->receivedResources);
-        this->compareResources(sendResources);
-    }
-
-    TYPED_TEST(ASceneActionCreatorAndApplierForResources, writeMultipleResources)
-    {
-        SceneActionApplier::ResourceVector sendResources;
-        sendResources.emplace_back(ResourceSerializationTestHelper::CreateTestResource<TypeParam>(100*1000));
-        sendResources.emplace_back(ResourceSerializationTestHelper::CreateTestResource<TypeParam>(100*1000));
-        sendResources.emplace_back(ResourceSerializationTestHelper::CreateTestResource<TypeParam>(100*1000));
-        sendResources.emplace_back(ResourceSerializationTestHelper::CreateTestResource<TypeParam>(100*1000));
-        sendResources.emplace_back(ResourceSerializationTestHelper::CreateTestResource<TypeParam>(100*1000));
-
-        for (const auto& res : sendResources)
-        {
-            this->creator.pushResource(*res);
-        }
-
-        SceneActionApplier::ApplyActionsOnScene(this->scene, this->collection, nullptr, &this->receivedResources);
-        this->compareResources(sendResources);
     }
 }

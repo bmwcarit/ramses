@@ -39,7 +39,7 @@ namespace ramses_internal
         static struct zwp_linux_dmabuf_v1_interface const m_dmabufInterface;
 
         const WaylandClientCredentials  m_clientCredentials;
-        IWaylandResource* m_resource = nullptr;
+        INativeWaylandResource* m_resource = nullptr;
     };
 }
 #endif

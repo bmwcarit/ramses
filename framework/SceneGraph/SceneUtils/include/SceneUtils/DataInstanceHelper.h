@@ -43,9 +43,6 @@ namespace ramses_internal
     class DataInstanceHelper
     {
     public:
-        static void CopyInstanceFieldData(const IScene& srcScene, DataInstanceHandle srcDataInstance, DataFieldHandle srcDataField,
-            IScene& dstScene, DataInstanceHandle dstDataInstance, DataFieldHandle dstDataField);
-
         static void GetInstanceFieldData(const IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, DataInstanceValueVariant& value);
         static void SetInstanceFieldData(IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, const DataInstanceValueVariant& value);
     };

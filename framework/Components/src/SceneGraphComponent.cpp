@@ -504,6 +504,7 @@ namespace ramses_internal
                 sceneUpdate.actions = std::move(result.actions);
                 for (auto& res : result.resources)
                     sceneUpdate.resources.push_back(m_resourceComponent.manageResource(*res.release(), false));
+                sceneUpdate.flushInfos = std::move(result.flushInfos);
                 m_sceneRendererHandler->handleSceneUpdate(sceneId, std::move(sceneUpdate), providerID);
                 break;
             }

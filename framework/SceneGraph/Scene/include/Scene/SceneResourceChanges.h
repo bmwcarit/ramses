@@ -86,6 +86,18 @@ namespace ramses_internal
         ResourceContentHashVector m_removedClientResourceRefs;
 
         SceneResourceActionVector m_sceneResourceActions;
+
+        bool operator==(const SceneResourceChanges& other) const
+        {
+            return m_addedClientResourceRefs == other.m_addedClientResourceRefs
+                && m_removedClientResourceRefs == other.m_removedClientResourceRefs
+                && m_sceneResourceActions == other.m_sceneResourceActions;
+        }
+
+        bool operator!=(const SceneResourceChanges& other) const
+        {
+            return !(*this == other);
+        }
     };
 }
 

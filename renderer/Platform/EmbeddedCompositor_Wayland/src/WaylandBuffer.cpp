@@ -74,4 +74,9 @@ WARNINGS_POP
             m_bufferResource.bufferSendRelease();
         }
     }
+
+    bool WaylandBuffer::isSharedMemoryBuffer() const
+    {
+        return m_bufferResource.bufferGetSharedMemoryData() != nullptr;
+    }
 }

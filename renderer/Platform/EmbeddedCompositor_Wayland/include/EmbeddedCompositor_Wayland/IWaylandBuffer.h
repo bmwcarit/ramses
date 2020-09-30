@@ -20,6 +20,7 @@ namespace ramses_internal
         virtual WaylandBufferResource& getResource() const = 0;
         virtual void reference() = 0;
         virtual void release() = 0;
+        virtual bool isSharedMemoryBuffer() const = 0;
     };
 }
 

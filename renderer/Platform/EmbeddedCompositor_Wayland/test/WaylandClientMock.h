@@ -23,7 +23,7 @@ namespace ramses_internal
         }
         MOCK_METHOD(WaylandClientCredentials, getCredentials, (), (const, override));
         MOCK_METHOD(void, postNoMemory, (), (override));
-        MOCK_METHOD(IWaylandResource*, resourceCreate, (const wl_interface* interface, int version, uint32_t id), (override));
+        MOCK_METHOD(INativeWaylandResource*, resourceCreate, (const wl_interface* interface, int version, uint32_t id), (override));
         MOCK_METHOD(WaylandCallbackResource*, callbackResourceCreate, (const wl_interface* interface, int version, uint32_t id), (override));
     };
 }

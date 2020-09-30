@@ -14,6 +14,7 @@
 #include <grp.h>
 #include <errno.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 namespace ramses_internal
 {
@@ -21,7 +22,7 @@ namespace ramses_internal
     {
     }
 
-    bool WaylandDisplay::init(const String& socketName,  const String& socketGroupName, int socketFD)
+    bool WaylandDisplay::init(const String& socketName,  const String& socketGroupName, uint32_t socketPermissions, int socketFD)
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandDisplay::init");
 
@@ -32,7 +33,7 @@ namespace ramses_internal
             return false;
         }
 
-        if (!addSocketToDisplay(socketName, socketGroupName, socketFD))
+        if (!addSocketToDisplay(socketName, socketGroupName, socketPermissions, socketFD))
         {
             return false;
         }
@@ -52,7 +53,7 @@ namespace ramses_internal
         }
     }
 
-    bool WaylandDisplay::addSocketToDisplay(const String& socketName, const String& socketGroupName, int socketFD)
+    bool WaylandDisplay::addSocketToDisplay(const String& socketName, const String& socketGroupName, uint32_t socketPermissions, int socketFD)
     {
         const Bool socketNameProvided = socketName.size() > 0u;
         const Bool socketFDProvided   = socketFD >= 0;
@@ -63,7 +64,7 @@ namespace ramses_internal
         }
         else if (socketNameProvided && !socketFDProvided)
         {
-            return addSocketToDisplayWithName(socketName, socketGroupName);
+            return addSocketToDisplayWithName(socketName, socketGroupName, socketPermissions);
         }
         else if (socketNameProvided && socketFDProvided)
         {
@@ -104,7 +105,7 @@ namespace ramses_internal
         }
     }
 
-    bool WaylandDisplay::addSocketToDisplayWithName(const String& socketName, const String& socketGroupName)
+    bool WaylandDisplay::addSocketToDisplayWithName(const String& socketName, const String& socketGroupName, uint32_t socketPermissions)
     {
         if (wl_display_add_socket(m_display, socketName.c_str()) < 0)
         {
@@ -115,10 +116,19 @@ namespace ramses_internal
             return false;
         }
 
-        if (!applyPermissionsGroupToEmbeddedCompositingSocket(socketName, socketGroupName))
+        const String socketFullPath = getSocketFullPath(socketName);
+        if (!applyGroupToEmbeddedCompositingSocket(socketFullPath, socketGroupName))
         {
             LOG_ERROR(CONTEXT_RENDERER,
-                      "WaylandDisplay::addSocketToDisplayWithName(): Failed to set permissions on embedded compositor socket :"
+                      "WaylandDisplay::addSocketToDisplayWithName(): Failed to set group '" << socketGroupName << "' on embedded compositor socket :"
+                          << socketName << " !");
+            return false;
+        }
+
+        if (!applyPermissionsToEmbeddedCompositingSocket(socketFullPath, socketPermissions))
+        {
+            LOG_ERROR(CONTEXT_RENDERER,
+                      "WaylandDisplay::addSocketToDisplayWithName(): Failed to set permissions " << socketPermissions << " on embedded compositor socket :"
                           << socketName << " !");
             return false;
         }
@@ -130,7 +140,14 @@ namespace ramses_internal
         return true;
     }
 
-    bool WaylandDisplay::applyPermissionsGroupToEmbeddedCompositingSocket(const String& socketName, const String& socketGroupName)
+    String WaylandDisplay::getSocketFullPath(const String& socketName) const
+    {
+        String      XDGRuntimeDir;
+        PlatformEnvironmentVariables::get("XDG_RUNTIME_DIR", XDGRuntimeDir);
+        return String(fmt::format("{}/{}", XDGRuntimeDir, socketName));
+    }
+
+    bool WaylandDisplay::applyGroupToEmbeddedCompositingSocket(const String& socketFullPath, const String& socketGroupName)
     {
         if (socketGroupName.size() > 0u)
         {
@@ -146,7 +163,7 @@ namespace ramses_internal
             if (0 != status)
             {
                 LOG_ERROR(CONTEXT_RENDERER,
-                          "WaylandDisplay::applyPermissionsGroupToEmbeddedCompositingSocket(): Could not "
+                          "WaylandDisplay::applyGroupToEmbeddedCompositingSocket(): Could not "
                           "get group file entry for group name :"
                               << socketGroupName << ". Error :" << status);
                 return false;
@@ -154,48 +171,65 @@ namespace ramses_internal
             if (nullptr == permissionGroupResult)
             {
                 LOG_ERROR(CONTEXT_RENDERER,
-                          "WaylandDisplay::applyPermissionsGroupToEmbeddedCompositingSocket(): Could not "
-                          "find group for socket permissions with group name :"
+                          "WaylandDisplay::applyGroupToEmbeddedCompositingSocket(): Could not "
+                          "find group for socket with group name :"
                               << socketGroupName);
                 return false;
             }
 
             const gid_t groupID = permissionGroup.gr_gid;
-            String      XDGRuntimeDir;
-            PlatformEnvironmentVariables::get("XDG_RUNTIME_DIR", XDGRuntimeDir);
-            const String fullSocketFilePath     = XDGRuntimeDir + String("/") + socketName;
-            const String fullSocketLockFilePath = fullSocketFilePath + String(".lock");
-            const int    chownStatusSocket      = chown(fullSocketFilePath.c_str(), -1, groupID);
+            const String fullSocketLockFilePath = socketFullPath + String(".lock");
+            const int    chownStatusSocket      = chown(socketFullPath.c_str(), -1, groupID);
             if (0 != chownStatusSocket)
             {
                 LOG_ERROR(CONTEXT_RENDERER,
-                          "WaylandDisplay::applyPermissionsGroupToEmbeddedCompositingSocket(): Could not "
+                          "WaylandDisplay::applyGroupToEmbeddedCompositingSocket(): Could not "
                           "set group :"
-                              << socketGroupName << " permission on :" << fullSocketFilePath
+                              << socketGroupName << " on :" << socketFullPath
                               << ". Error:" << strerror(errno));
                 return false;
             }
             LOG_INFO(CONTEXT_RENDERER,
-                     "WaylandDisplay::applyPermissionsGroupToEmbeddedCompositingSocket(): Successfully set "
+                     "WaylandDisplay::applyGroupToEmbeddedCompositingSocket(): Successfully set "
                      "group :"
-                         << socketGroupName << " permission on socket :" << fullSocketFilePath);
+                         << socketGroupName << " on socket :" << socketFullPath);
 
             // .lock file
             const int chownStatusLockfile = chown(fullSocketLockFilePath.c_str(), -1, groupID);
             if (0 != chownStatusLockfile)
             {
                 LOG_ERROR(CONTEXT_RENDERER,
-                          "WaylandDisplay::::applyPermissionsGroupToEmbeddedCompositingSocket(): Could not "
+                          "WaylandDisplay::::applyGroupToEmbeddedCompositingSocket(): Could not "
                           "set group :"
-                              << socketGroupName << " permission on :" << fullSocketLockFilePath
+                              << socketGroupName << " on :" << fullSocketLockFilePath
                               << ". Error:" << strerror(errno));
                 return false;
             }
             LOG_INFO(CONTEXT_RENDERER,
-                     "WaylandDisplay::::applyPermissionsGroupToEmbeddedCompositingSocket(): Successfully "
+                     "WaylandDisplay::::applyGroupToEmbeddedCompositingSocket(): Successfully "
                      "set group :"
-                         << socketGroupName << " permission on :" << fullSocketLockFilePath);
+                         << socketGroupName << " on :" << fullSocketLockFilePath);
         }
+        return true;
+    }
+
+    bool WaylandDisplay::applyPermissionsToEmbeddedCompositingSocket(const String& socketFullPath, uint32_t socketPermissions)
+    {
+        // if none given use default ug+rw
+        if (socketPermissions == 0)
+            socketPermissions = 0660;
+
+        if (0 != ::chmod(socketFullPath.c_str(), socketPermissions))
+        {
+            LOG_ERROR(CONTEXT_RENDERER,
+                      "WaylandDisplay::applyPermissionsToEmbeddedCompositingSocket(): Could not set permissions: "
+                      << socketPermissions << " on :" << socketFullPath
+                      << ". Error:" << strerror(errno));
+            return false;
+        }
+        LOG_INFO(CONTEXT_RENDERER,
+                 "WaylandDisplay::applyPermissionsToEmbeddedCompositingSocket(): Successfully set permissions: "
+                 << socketPermissions << " on socket :" << socketFullPath);
         return true;
     }
 

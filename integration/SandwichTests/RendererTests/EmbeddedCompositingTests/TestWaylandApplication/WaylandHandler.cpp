@@ -103,7 +103,6 @@ namespace ramses_internal
 
         window->width = windowWidth;
         window->height = windowHeight;
-        window->useEGL = useEGL;
         window->swapInterval = swapInterval;
         if (!createSurface(*window))
         {
@@ -152,10 +151,12 @@ namespace ramses_internal
         checkAndHandleEvents();
     }
 
-    void WaylandHandler::attachBuffer(TestApplicationSurfaceId surfaceId, const SHMBuffer& buffer)
+    void WaylandHandler::attachBuffer(TestApplicationSurfaceId surfaceId, const SHMBuffer& buffer, bool commit)
     {
         TestWaylandWindow& window = getWindow(surfaceId);
         wl_surface_attach(window.surface, buffer.getWaylandBuffer(), 0, 0);
+        if(commit)
+            wl_surface_commit(window.surface);
         wl_display_flush(wayland.display);
     }
 
@@ -503,7 +504,7 @@ namespace ramses_internal
         TestWaylandWindow& window = getWindow(surfaceId);
         if (window.surface != nullptr)
         {
-            if (window.useEGL)
+            if (window.eglsurface != EGL_NO_SURFACE)
             {
                 //TODO Mohamed: figure out what is the real issue and remove this roundtrip
                 //when real issue fixed
@@ -513,6 +514,8 @@ namespace ramses_internal
                     LOG_ERROR(CONTEXT_RENDERER,
                               "WaylandHandler::destroyWindow eglDestroySurface failed !");
                 }
+                window.eglsurface = EGL_NO_SURFACE;
+
                 if (eglDestroyContext(egldisplay, window.eglcontext) != EGL_TRUE)
                 {
                     LOG_ERROR(CONTEXT_RENDERER,
@@ -748,12 +751,6 @@ namespace ramses_internal
         waylandHandler->m_waylandOutputParams.m_waylandOutputReceivedFlags |= WaylandOutputTestParams::WaylandOutput_ScaleReceived;
 
         waylandHandler->m_waylandOutputParams.factor = factor;
-    }
-
-    bool WaylandHandler::getUseEGL(TestApplicationSurfaceId surfaceId) const
-    {
-        TestWaylandWindow& window = getWindow(surfaceId);
-        return window.useEGL;
     }
 
     void WaylandHandler::getWindowSize(TestApplicationSurfaceId surfaceId, uint32_t& width, uint32_t& height) const

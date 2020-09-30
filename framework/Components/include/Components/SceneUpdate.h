@@ -11,6 +11,7 @@
 
 #include "Components/ManagedResource.h"
 #include "Scene/SceneActionCollection.h"
+#include "Components/FlushInformation.h"
 
 namespace ramses_internal
 {
@@ -18,6 +19,7 @@ namespace ramses_internal
     {
         SceneActionCollection actions;
         ManagedResourceVector resources;
+        FlushInformation flushInfos;
     };
 }
 

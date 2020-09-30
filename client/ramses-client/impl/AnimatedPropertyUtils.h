@@ -25,10 +25,10 @@ namespace ramses
         static bool isComponentMatchingEffectInput(EAnimatedPropertyComponent ePropertyComponent, ramses_internal::EDataType dataType);
         static ramses_internal::EVectorComponent getVectorComponentFromProperty(EAnimatedPropertyComponent ePropertyComponent);
 
-    private:
-        AnimatedPropertyUtils() {}
-        ~AnimatedPropertyUtils() {}
+        AnimatedPropertyUtils() = delete;
+        ~AnimatedPropertyUtils() = delete;
 
+    private:
         static bool isComponentValidScalar(EAnimatedPropertyComponent ePropertyComponent);
         static bool isComponentValidVec3(EAnimatedPropertyComponent ePropertyComponent);
         static bool isComponentValidVec4(EAnimatedPropertyComponent ePropertyComponent);

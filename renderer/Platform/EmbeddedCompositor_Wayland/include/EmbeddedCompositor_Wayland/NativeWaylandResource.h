@@ -5,10 +5,10 @@
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
-#ifndef RAMSES_WAYLANDRESOURCE_H
-#define RAMSES_WAYLANDRESOURCE_H
+#ifndef RAMSES_NATIVEWAYLANDRESOURCE_H
+#define RAMSES_NATIVEWAYLANDRESOURCE_H
 
-#include "EmbeddedCompositor_Wayland/IWaylandResource.h"
+#include "EmbeddedCompositor_Wayland/INativeWaylandResource.h"
 #include "wayland-server.h"
 
 namespace ramses_internal
@@ -44,23 +44,23 @@ namespace ramses_internal
          to do some cleanup. This case is very similar to case 2
      */
 
-    class WaylandResource : public IWaylandResource
+    //This class is a simple wrapper around wl_resuorce
+    class NativeWaylandResource : public INativeWaylandResource
     {
     public:
-        WaylandResource();
-        WaylandResource(wl_resource* resource, bool ownership);
-        virtual ~WaylandResource();
+        NativeWaylandResource();
+        explicit NativeWaylandResource(wl_resource* resource);
+
         virtual int getVersion() override;
         virtual void postError(uint32_t code, const String& message) override;
         virtual void* getUserData() override;
-        virtual void setImplementation(const void* implementation, void* data, IWaylandResourceDestroyFuncT destroy) override;
+        virtual void setImplementation(const void* implementation, void* data, IWaylandResourceDestroyFuncT destroyCallback) override;
         virtual void addDestroyListener(wl_listener* listener) override;
-        virtual void* getWaylandNativeResource() override;
-        virtual void disownWaylandResource() override;
+        virtual wl_resource* getLowLevelHandle() override;
+        virtual void destroy() override;
 
     protected:
         wl_resource* m_resource;
-        bool m_ownership;
     };
 }
 

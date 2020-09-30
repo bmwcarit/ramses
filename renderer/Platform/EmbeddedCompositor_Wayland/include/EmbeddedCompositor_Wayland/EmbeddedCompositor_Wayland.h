@@ -15,7 +15,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandDisplay.h"
 #include "EmbeddedCompositor_Wayland/WaylandIVIApplicationGlobal.h"
 #include "EmbeddedCompositor_Wayland/IEmbeddedCompositor_Wayland.h"
-#include "EmbeddedCompositor_Wayland/IWaylandResource.h"
+#include "EmbeddedCompositor_Wayland/INativeWaylandResource.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufGlobal.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "Collections/HashMap.h"
@@ -90,6 +90,7 @@ namespace ramses_internal
 
         const String                m_waylandEmbeddedSocketName;
         const String                m_waylandEmbeddedSocketGroup;
+        const uint32_t              m_waylandEmbeddedSocketPermissions;
         const int                   m_waylandEmbeddedSocketFD;
         IContext&                   m_context;
 

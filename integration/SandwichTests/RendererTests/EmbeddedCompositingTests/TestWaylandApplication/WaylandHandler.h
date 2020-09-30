@@ -67,7 +67,6 @@ namespace ramses_internal
         EGLSurface                            eglsurface     = EGL_NO_SURFACE;
         EGLContext                            eglcontext     = EGL_NO_CONTEXT;
         wl_callback*                          frameCallback  = nullptr;
-        bool                                  useEGL         = true;
         uint32_t                              swapInterval   = 0;
     };
 
@@ -92,11 +91,10 @@ namespace ramses_internal
         void resizeWindow(TestApplicationSurfaceId surfaceId, uint32_t width, uint32_t height);
         void swapBuffersAndProcessEvents(TestApplicationSurfaceId surfaceId, bool useCallback);
         void swapBuffersAndProcessEvents(TestApplicationSurfaceId surfaceId, SHMBuffer& buffer, bool useCallback);
-        void attachBuffer(TestApplicationSurfaceId surfaceId, const SHMBuffer& buffer);
+        void attachBuffer(TestApplicationSurfaceId surfaceId, const SHMBuffer& buffer, bool commit);
         void detachBuffer(TestApplicationSurfaceId surfaceId);
         void deleteSHMBuffers();
         void waitOnFrameCallback(TestApplicationSurfaceId surfaceId);
-        bool getUseEGL(TestApplicationSurfaceId surfaceId) const;
         void getWindowSize(TestApplicationSurfaceId surfaceId, uint32_t& width, uint32_t& height) const;
 
         SHMBuffer* getFreeSHMBuffer(uint32_t width, uint32_t height);

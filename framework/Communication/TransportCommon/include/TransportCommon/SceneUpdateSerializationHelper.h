@@ -18,6 +18,7 @@ namespace ramses_internal
 {
     class SceneActionCollection;
     class IResource;
+    struct FlushInformation;
 
     namespace SceneActionSerialization
     {
@@ -33,6 +34,12 @@ namespace ramses_internal
         absl::Span<const Byte> SerializeData(const IResource& resource);
 
         std::unique_ptr<IResource> Deserialize(absl::Span<const Byte> description, absl::Span<const Byte> data);
+    }
+
+    namespace FlushInformationSerialization
+    {
+        absl::Span<const Byte> SerializeInfos(const FlushInformation& flushInfos, std::vector<Byte>& workingMemory);
+        FlushInformation Deserialize(absl::Span<const Byte> flushInfoBlob);
     }
 }
 

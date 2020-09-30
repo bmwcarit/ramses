@@ -35,12 +35,6 @@ namespace ramses_internal
         return m_acceptNewTasks;
     }
 
-    void TaskForwardingQueue::enableAcceptingTasks()
-    {
-        std::lock_guard<std::recursive_mutex> g(m_lock);
-        m_acceptNewTasks = true;
-    }
-
     void TaskForwardingQueue::disableAcceptingTasksAfterExecutingCurrentQueue()
     {
         std::lock_guard<std::recursive_mutex> l(m_lock);

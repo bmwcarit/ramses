@@ -68,7 +68,7 @@ namespace ramses_internal
                 m_scene.getSceneReferenceActions(),
                 flushTimeInfo,
                 versionTag);
-
+            sceneUpdate.flushInfos = { m_flushCounter, versionTag, sceneSizes, m_resourceChanges, m_scene.getSceneReferenceActions(), flushTimeInfo, sceneSizes > m_previousSceneSizes, true};
             m_previousSceneSizes = sceneSizes;
             // TODO vaclav re-enable sending resources after renderer side can use them
             //sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChanges.m_addedClientResourceRefs);

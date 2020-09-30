@@ -10,7 +10,6 @@
 #include "Utils/MemoryPool.h"
 #include "Utils/MemoryPoolExplicit.h"
 #include "Common/StronglyTypedValue.h"
-#include "ErrorTestUtils.h"
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 
@@ -35,16 +34,24 @@ namespace ramses_internal
         static const UInt32 InitialSize = 100u;
     };
 
-    struct DummyMemoryHandleTag {};
-    using DummyMemoryHandle = TypedMemoryHandle<DummyMemoryHandleTag>;
+    namespace
+    {
+        struct DummyMemoryHandleTag {};
+        using DummyMemoryHandle = TypedMemoryHandle<DummyMemoryHandleTag>;
+
+        struct DummyTestObject
+        {
+            uint32_t integer;
+        };
+    }
 
     typedef ::testing::Types<
-        MemoryPool<ComparableObject, UInt32>,
-        MemoryPool<ComparableObject, UInt16>,
-        MemoryPool<ComparableObject, DummyMemoryHandle>,
-        MemoryPoolExplicit<ComparableObject, UInt32>,
-        MemoryPoolExplicit<ComparableObject, UInt16>,
-        MemoryPoolExplicit<ComparableObject, DummyMemoryHandle>
+        MemoryPool<DummyTestObject, UInt32>,
+        MemoryPool<DummyTestObject, UInt16>,
+        MemoryPool<DummyTestObject, DummyMemoryHandle>,
+        MemoryPoolExplicit<DummyTestObject, UInt32>,
+        MemoryPoolExplicit<DummyTestObject, UInt16>,
+        MemoryPoolExplicit<DummyTestObject, DummyMemoryHandle>
     > MemoryPoolTypes;
 
     TYPED_TEST_SUITE(AMemoryPoolIterator, MemoryPoolTypes);

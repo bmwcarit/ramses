@@ -6,162 +6,84 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "framework_common_gmock_header.h"
-#include "gtest/gtest.h"
-#include "Collections/Vector.h"
-#include "PlatformAbstraction/PlatformMemory.h"
 #include "Utils/RawBinaryOutputStream.h"
-#include "Math3d/Matrix44f.h"
-#include "SceneAPI/ResourceContentHash.h"
-#include "Collections/Guid.h"
+#include "gtest/gtest.h"
+#include <numeric>
 
 namespace ramses_internal
 {
-
-    template<typename T>
-    class RawBinaryOutputStreamBaseTypesTest : public ::testing::Test
+    TEST(ARawBinaryOutputStream, hasExpectedDefaultValues)
     {
-    public:
-        RawBinaryOutputStreamBaseTypesTest()
-        {
-        }
+        std::vector<Byte> buffer(10);
+        RawBinaryOutputStream os(buffer.data(), buffer.size());
 
-        static const T m_value;
-    };
-
-    // provide sensible default values for all tested types
-    template<> const UInt16         RawBinaryOutputStreamBaseTypesTest<UInt16>::m_value       = 1u;
-    template<> const Int32          RawBinaryOutputStreamBaseTypesTest<Int32>::m_value        = -2;
-    template<> const UInt32         RawBinaryOutputStreamBaseTypesTest<UInt32>::m_value       = 3u;
-    template<> const Int64          RawBinaryOutputStreamBaseTypesTest<Int64>::m_value        = -4;
-    template<> const UInt64         RawBinaryOutputStreamBaseTypesTest<UInt64>::m_value       = 5u;
-    template<> const Float          RawBinaryOutputStreamBaseTypesTest<Float>::m_value        = 6.0f;
-    template<> const bool           RawBinaryOutputStreamBaseTypesTest<bool>::m_value         = true;
-    template<> const Matrix44f      RawBinaryOutputStreamBaseTypesTest<Matrix44f>::m_value    = Matrix44f(
-        1.0f, 2.0f, 3.0f, 4.0f,
-        5.0f, 6.0f, 7.0f, 8.0f,
-        9.0f, 10.0f, 11.0f, 12.0f,
-        13.0f, 14.0f, 15.0f, 16.0f);
-    template<> const Guid           RawBinaryOutputStreamBaseTypesTest<Guid>::m_value         = Guid("8d2aeb01-6eea-4acb-8d93-df619186cff9");
-    template<> const ResourceContentHash RawBinaryOutputStreamBaseTypesTest<ResourceContentHash>::m_value = ResourceContentHash(0x0123456789abcdef, 0xfedcba9876543210);
-
-
-    // types to test
-    typedef ::testing::Types<
-        UInt16,
-        Int32,
-        UInt32,
-        Int64,
-        UInt64,
-        Float,
-        bool,
-        Matrix44f,
-        ResourceContentHash> RawBinaryOutputStreamBaseTypesTestTypes;
-
-
-    class RawBinaryOutputStreamComplexTypesTest : public ::testing::Test
-    {
-    public:
-        RawBinaryOutputStreamComplexTypesTest()
-        : m_str(
-            "People assume that time is a strict progression of cause \
-            to effect, but *actually* from a non-linear, non-subjective \
-            viewpoint - it's more like a big ball of wibbly wobbly... \
-            time-y wimey... stuff.")
-        {
-            m_buffer = new UChar[BufferSize];
-            PlatformMemory::Set(&m_buffer[0], 0xaa, BufferSize);
-        }
-
-        virtual ~RawBinaryOutputStreamComplexTypesTest()
-        {
-            delete [] m_buffer;
-        }
-
-        static const UInt BufferSize;
-
-        String m_str;
-        UChar* m_buffer;
-    };
-
-    const UInt RawBinaryOutputStreamComplexTypesTest::BufferSize   = 2 * 1024; // 2K
-
-
-
-    TYPED_TEST_SUITE(RawBinaryOutputStreamBaseTypesTest, RawBinaryOutputStreamBaseTypesTestTypes);
-
-
-    TYPED_TEST(RawBinaryOutputStreamBaseTypesTest, WriteAndCheckSingleElement)
-    {
-        const UInt32 dataSize = 64 * 1024; // 64K
-        std::vector<UInt8> data;
-        data.resize(dataSize);
-
-        RawBinaryOutputStream outstr(&data[0], dataSize);
-        EXPECT_EQ(outstr.getData(), &data[0]);
-        EXPECT_EQ(outstr.getSize(), dataSize);
-
-        outstr << TestFixture::m_value;
-
-        EXPECT_LT(outstr.getBytesWritten(), outstr.getSize());
-        EXPECT_EQ(outstr.getBytesWritten(), sizeof(TypeParam));
-        EXPECT_EQ(PlatformMemory::Compare(&data[0], &TestFixture::m_value, sizeof(TypeParam)), 0);
+        EXPECT_EQ(buffer.data(), os.getData());
+        EXPECT_EQ(buffer.size(), os.getSize());
+        EXPECT_EQ(0u, os.getBytesWritten());
     }
 
-    TYPED_TEST(RawBinaryOutputStreamBaseTypesTest, WriteAndCheckMultipleElements)
+    TEST(ARawBinaryOutputStream, canDoZeroWrite)
     {
-        const UInt32 iterations = 1000;
-        const UInt32 dataSize = 64 * 1024; // 64K
-        std::vector<UInt8> data;
-        data.resize(dataSize);
+        std::vector<Byte> buffer(10);
+        RawBinaryOutputStream os(buffer.data(), buffer.size());
 
-        RawBinaryOutputStream outstr(&data[0], dataSize);
-        EXPECT_EQ(outstr.getData(), &data[0]);
-        EXPECT_EQ(outstr.getSize(), dataSize);
+        const uint32_t d = 123;
+        os.write(&d, 0);
+        EXPECT_EQ(0u, os.getBytesWritten());
 
-        for (UInt32 ii = 0; ii < iterations; ++ii)
-        {
-            outstr << TestFixture::m_value;
-        }
-
-        EXPECT_LT(outstr.getBytesWritten(), outstr.getSize());
-        EXPECT_EQ(outstr.getBytesWritten(), sizeof(TypeParam) * iterations);
-
-        UInt8* dataPtr = &data[0];
-        for (UInt32 ii = 0; ii < iterations; ++ii)
-        {
-            EXPECT_EQ(PlatformMemory::Compare(dataPtr, &TestFixture::m_value, sizeof(TypeParam)), 0);
-            dataPtr += sizeof(TypeParam);
-        }
+        os.write(nullptr, 0);
+        EXPECT_EQ(0u, os.getBytesWritten());
     }
 
-    TEST_F(RawBinaryOutputStreamComplexTypesTest, WriteAndCheckString)
+    TEST(ARawBinaryOutputStream, canWriteData)
     {
-        const UInt32 dataSize = 64 * 1024; // 64K
-        std::vector<UInt8> data;
-        data.resize(dataSize);
+        std::vector<Byte>     buffer(450);
+        std::vector<Byte>     refBuffer(450);
+        RawBinaryOutputStream os(buffer.data(), buffer.size());
 
-        RawBinaryOutputStream outstr(&data[0], dataSize);
-        outstr << m_str;
+        const uint8_t     d8  = 123;
+        const uint16_t    d16 = 65531;
+        const uint64_t    d64 = 0xf897abd898798;
+        std::vector<Byte> dVec(432);
+        std::iota(dVec.begin(), dVec.end(), static_cast<Byte>(127));
 
-        // bytes written equals UInt32 for string length + amount string characters
-        EXPECT_EQ(outstr.getBytesWritten(), m_str.size() + sizeof(UInt32));
-        // string length written correctly?
-        EXPECT_EQ(*reinterpret_cast<UInt32*>(&data[0]), m_str.size());
-        // string written correctly to stream?
-        EXPECT_EQ(PlatformMemory::Compare(&data[0] + sizeof(UInt32), m_str.c_str(), m_str.size()), 0);
+        EXPECT_EQ(refBuffer, buffer);
+
+        os.write(&d8, sizeof(d8));
+        std::memcpy(refBuffer.data(), &d8, sizeof(d8));
+        EXPECT_EQ(1u, os.getBytesWritten());
+        EXPECT_EQ(refBuffer, buffer);
+
+        os.write(&d64, sizeof(d64));
+        std::memcpy(refBuffer.data()+1, &d64, sizeof(d64));
+        EXPECT_EQ(9u, os.getBytesWritten());
+        EXPECT_EQ(refBuffer, buffer);
+
+        os.write(dVec.data(), dVec.size());
+        std::memcpy(refBuffer.data()+9, dVec.data(), dVec.size());
+        EXPECT_EQ(441u, os.getBytesWritten());
+        EXPECT_EQ(refBuffer, buffer);
+
+        os.write(&d16, sizeof(d16));
+        std::memcpy(refBuffer.data()+441, &d16, sizeof(d16));
+        EXPECT_EQ(443u, os.getBytesWritten());
+        EXPECT_EQ(refBuffer, buffer);
+
+        EXPECT_EQ(buffer.data(), os.getData());
+        EXPECT_EQ(buffer.size(), os.getSize());
     }
 
-    TEST_F(RawBinaryOutputStreamComplexTypesTest, WriteAndCheckBuffer)
+    TEST(ARawBinaryOutputStream, canWriteExactlyFittingData)
     {
-        const UInt32 dataSize = 64 * 1024; // 64K
-        std::vector<UInt8> data;
-        data.resize(dataSize);
+        std::vector<Byte>     buffer(4);
+        std::vector<Byte>     refBuffer(4);
+        RawBinaryOutputStream os(buffer.data(), buffer.size());
 
-        RawBinaryOutputStream outstr(&data[0], dataSize);
-        outstr.write(m_buffer, BufferSize);
+        const uint32_t d = 123456789;
+        os.write(&d, sizeof(d));
+        EXPECT_EQ(4u, os.getBytesWritten());
 
-        EXPECT_EQ(outstr.getBytesWritten(), BufferSize);
-        EXPECT_EQ(PlatformMemory::Compare(&data[0], m_buffer, BufferSize), 0);
+        std::memcpy(refBuffer.data(), &d, sizeof(d));
+        EXPECT_EQ(refBuffer, buffer);
     }
 }

@@ -121,7 +121,7 @@ namespace ramses_internal
             m_statistics.statResourcesSentNumber.incCounter(static_cast<UInt32>(resourceToSendViaNetwork.size()));
             for (auto& res : resourceToSendViaNetwork)
                 res->compress(IResource::CompressionLevel::REALTIME);
-            SceneUpdate update{SceneActionCollection(), resourceToSendViaNetwork};
+            SceneUpdate update{SceneActionCollection(), resourceToSendViaNetwork, {} };
             m_communicationSystem.sendResources(requesterId, SceneUpdateSerializer(update));
         }
 
@@ -468,7 +468,7 @@ namespace ramses_internal
 
         for (auto& res : managedResources)
             res->compress(IResource::CompressionLevel::REALTIME);
-        SceneUpdate update{SceneActionCollection(), managedResources};
+        SceneUpdate update{SceneActionCollection(), managedResources, {}};
         m_communicationSystem.sendResources(requesterId, SceneUpdateSerializer(update));
     }
 

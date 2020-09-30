@@ -44,7 +44,7 @@
 
 namespace ramses_internal
 {
-    void SceneActionApplier::ApplySingleActionOnScene(IScene& scene, SceneActionCollection::SceneActionReader& action, AnimationSystemFactory* animSystemFactory, ResourceVector* resources)
+    void SceneActionApplier::ApplySingleActionOnScene(IScene& scene, SceneActionCollection::SceneActionReader& action, AnimationSystemFactory* animSystemFactory)
     {
         switch (action.type())
         {
@@ -1832,13 +1832,6 @@ namespace ramses_internal
             scene.preallocateSceneSize(sizeInfos);
             break;
         }
-        case ESceneActionId::SetAckFlushState:
-        {
-            bool state;
-            action.read(state);
-            scene.setAckFlushState(state);
-            break;
-        }
         case ESceneActionId::Flush:
         {
             break;
@@ -1992,26 +1985,6 @@ namespace ramses_internal
             break;
         }
 
-        case ESceneActionId::PushResource:
-        {
-            ResourceContentHash hash;
-            UInt32 resourceSize;
-            const Byte* resourceData = nullptr;
-            action.read(hash);
-            action.readWithoutCopy(resourceData, resourceSize);
-            BinaryInputStream stream(resourceData);
-            std::unique_ptr<IResource> resource(SingleResourceSerialization::DeserializeResource(stream, hash));
-            if (resources)
-            {
-                resources->push_back(std::move(resource));
-            }
-            else
-            {
-                LOG_DEBUG(CONTEXT_FRAMEWORK, "SceneActionApplier::ApplySingleActionOnScene: got PushResource but ignore because resource vector is nullptr");
-            }
-            break;
-        }
-
         default:
         {
             assert(false && "unhandled scene message id");
@@ -2027,11 +2000,11 @@ namespace ramses_internal
         }
     }
 
-    void SceneActionApplier::ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions, AnimationSystemFactory* animSystemFactory, ResourceVector* resources)
+    void SceneActionApplier::ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions, AnimationSystemFactory* animSystemFactory)
     {
         for (auto& reader : actions)
         {
-            ApplySingleActionOnScene(scene, reader, animSystemFactory, resources);
+            ApplySingleActionOnScene(scene, reader, animSystemFactory);
         }
     }
 

@@ -14,7 +14,7 @@
 #include "wayland-server.h"
 
 #include "EmbeddedCompositor_Wayland/IWaylandClient.h"
-#include "EmbeddedCompositor_Wayland/IWaylandResource.h"
+#include "EmbeddedCompositor_Wayland/INativeWaylandResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 
 #include "EmbeddedCompositor_Wayland/LinuxDmabufConnection.h"
@@ -56,6 +56,7 @@ namespace ramses_internal
         {
             // Remove ResourceDestroyedCallback
             m_resource->setImplementation(&m_dmabufInterface, this, nullptr);
+            m_resource->destroy();
             delete m_resource;
         }
     }
@@ -80,7 +81,8 @@ namespace ramses_internal
 
         // wl_resource is destroyed outside by the Wayland library, so our job here is to abandon
         // ownership of the Wayland resource so that we don't call wl_resource_destroy().
-        m_resource->disownWaylandResource();
+        delete m_resource;
+        m_resource = nullptr;
     }
 
     void LinuxDmabufConnection::DmabufDestroyCallback(wl_client* /*client*/, wl_resource* dmabufConnectionResource)
@@ -111,7 +113,7 @@ namespace ramses_internal
         constexpr uint32_t drmFormatModLinear = DRM_FORMAT_MOD_LINEAR;
         POP_DISABLE_C_STYLE_CAST_WARNING
 
-        wl_resource* resource = static_cast<wl_resource*>(m_resource->getWaylandNativeResource());
+        wl_resource* resource = m_resource->getLowLevelHandle();
 
         for (auto format: fallbackFormats)
         {
@@ -153,7 +155,7 @@ namespace ramses_internal
 
     void LinuxDmabufConnection::createParams(uint32_t id)
     {
-        wl_resource* resource = static_cast<wl_resource*>(m_resource->getWaylandNativeResource());
+        wl_resource* resource = m_resource->getLowLevelHandle();
         WaylandClient client(wl_resource_get_client(resource));
 
         LinuxDmabufParams* params = new LinuxDmabufParams(client, m_resource->getVersion(), id);

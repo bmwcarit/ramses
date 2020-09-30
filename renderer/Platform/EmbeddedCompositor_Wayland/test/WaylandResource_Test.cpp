@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "EmbeddedCompositor_Wayland/WaylandResource.h"
+#include "EmbeddedCompositor_Wayland/NativeWaylandResource.h"
 #include "WaylandUtilities/UnixDomainSocket.h"
 #include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "PlatformAbstraction/PlatformThread.h"
@@ -82,11 +82,12 @@ namespace ramses_internal
     {
         wl_resource* resource = wl_resource_create(m_client, &wl_compositor_interface, 1, 0);
         {
-            WaylandResource waylandResource(resource, true);
+            NativeWaylandResource waylandResource(resource);
             m_destroyListener.notify = ResourceDestroyedListener;
             waylandResource.addDestroyListener(&m_destroyListener);
 
             EXPECT_EQ(m_resourceDestroyedListenerCalled, 0u);
+            waylandResource.destroy();
         }
         // waylandResource gots deleted here
         EXPECT_EQ(m_resourceDestroyedListenerCalled, 1u);
@@ -96,7 +97,7 @@ namespace ramses_internal
     {
         wl_resource* resource = wl_resource_create(m_client, &wl_compositor_interface, 1, 0);
         {
-            WaylandResource waylandResource(resource, false);
+            NativeWaylandResource waylandResource(resource);
             m_destroyListener.notify = ResourceDestroyedListener;
             waylandResource.addDestroyListener(&m_destroyListener);
         }
@@ -109,9 +110,10 @@ namespace ramses_internal
     TEST_F(AWaylandResource, CanGetVersion)
     {
         wl_resource* resource = wl_resource_create(m_client, &wl_compositor_interface, 4, 0);
-        WaylandResource waylandResource(resource, true);
+        NativeWaylandResource waylandResource(resource);
 
         EXPECT_EQ(waylandResource.getVersion(), 4);
+        waylandResource.destroy();
     }
 
     TEST_F(AWaylandResource, CanGetUserData)
@@ -119,8 +121,9 @@ namespace ramses_internal
         wl_resource* resource = wl_resource_create(m_client, &wl_compositor_interface, 1, 0);
         wl_resource_set_user_data(resource, reinterpret_cast<void*>(123));
 
-        WaylandResource waylandResource(resource, true);
+        NativeWaylandResource waylandResource(resource);
         EXPECT_EQ(waylandResource.getUserData(), reinterpret_cast<void*>(123));
+        waylandResource.destroy();
     }
 
     TEST_F(AWaylandResource, CanSetImplementation)
@@ -128,11 +131,12 @@ namespace ramses_internal
         wl_resource* resource = wl_resource_create(m_client, &wl_compositor_interface, 1, 0);
 
         {
-            WaylandResource waylandResource(resource, true);
+            NativeWaylandResource waylandResource(resource);
 
             waylandResource.setImplementation(&m_compositorInterface, this, ResourceDestroyedCallback);
 
             EXPECT_EQ(m_resourceDestroyedCallbackCalled, 0u);
+            waylandResource.destroy();
         }
         // waylandResource gots deleted here
         EXPECT_EQ(m_resourceDestroyedCallbackCalled, 1u);
@@ -141,20 +145,19 @@ namespace ramses_internal
     TEST_F(AWaylandResource, CanGetWaylandNativeResource)
     {
         wl_resource*    resource = wl_resource_create(m_client, &wl_compositor_interface, 1, 0);
-        WaylandResource waylandResource(resource, true);
+        NativeWaylandResource waylandResource(resource);
 
-        EXPECT_EQ(waylandResource.getWaylandNativeResource(), resource);
+        EXPECT_EQ(waylandResource.getLowLevelHandle(), resource);
+        waylandResource.destroy();
     }
 
     TEST_F(AWaylandResource, DoesNotDestroyWaylandNativeResourceWhenOwnershipLost)
     {
         wl_resource* resource = wl_resource_create(m_client, &wl_compositor_interface, 1, 0);
         {
-            WaylandResource waylandResource(resource, true);
+            NativeWaylandResource waylandResource(resource);
             m_destroyListener.notify = ResourceDestroyedListener;
             waylandResource.addDestroyListener(&m_destroyListener);
-
-            waylandResource.disownWaylandResource();
         }
         // waylandResource gots deleted here
         EXPECT_EQ(m_resourceDestroyedListenerCalled, 0u);

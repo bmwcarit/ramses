@@ -114,8 +114,6 @@ namespace ramses
         status_t validateEffect(uint32_t indent, StatusObjectSet& visitedObjects) const;
         status_t validateUniforms(uint32_t indent, StatusObjectSet& visitedObjects) const;
 
-        static void cloneReferencedData(ramses_internal::IScene& scene, const AppearanceImpl& srcAppearance, AppearanceImpl& dstAppearance);
-
         const EffectImpl* m_effectImpl;
         ramses_internal::RenderStateHandle      m_renderStateHandle;
         ramses_internal::DataLayoutHandle       m_uniformLayout;

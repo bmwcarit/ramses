@@ -41,6 +41,19 @@ namespace ramses_internal
         m_waylandSocketEmbeddedGroupName = groupNameForSocketPermissions;
     }
 
+    bool RendererConfig::setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions)
+    {
+        if (permissions == 0)
+            return false;
+        m_waylandSocketEmbeddedPermissions = permissions;
+        return true;
+    }
+
+    uint32_t RendererConfig::getWaylandSocketEmbeddedPermissions() const
+    {
+        return m_waylandSocketEmbeddedPermissions;
+    }
+
     void RendererConfig::setKPIFileName(const String& filename)
     {
         m_kpiFilename = filename;

@@ -124,7 +124,7 @@ class ARenderExecutor: public ::testing::Test
 public:
     ARenderExecutor()
         : device(renderer.deviceMock)
-        , projectionParams(ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -2.0f, 2.0f, -2.0f, 2.0f, -100.0f, 100.0f))
+        , projectionParams(ProjectionParams::Frustum(ECameraProjectionType::Orthographic, -2.0f, 2.0f, -2.0f, 2.0f, -100.0f, 100.0f))
         , rendererScenes(rendererEventCollector)
         , scene(rendererScenes.createScene(SceneInfo()))
         , sceneAllocator(scene)
@@ -178,7 +178,7 @@ protected:
     DataLayoutHandle uniformLayout;
     DataLayoutHandle geometryLayout;
 
-    RenderPassHandle createRenderPassWithCamera(ECameraProjectionType cameraProjType = ECameraProjectionType_Renderer, const Viewport& viewport = { fakeViewportX, fakeViewportY, fakeViewportWidth, fakeViewportHeight })
+    RenderPassHandle createRenderPassWithCamera(ECameraProjectionType cameraProjType = ECameraProjectionType::Renderer, const Viewport& viewport = { fakeViewportX, fakeViewportY, fakeViewportWidth, fakeViewportHeight })
     {
         const RenderPassHandle pass = sceneAllocator.allocateRenderPass();
         const NodeHandle cameraNode = sceneAllocator.allocateNode();
@@ -197,13 +197,13 @@ protected:
         scene.setDataReference(dataInstance, Camera::FrustumNearFarPlanesField, frustumNearFar);
         const CameraHandle camera = sceneAllocator.allocateCamera(cameraProjType, cameraNode, dataInstance);
 
-        ProjectionParams params = ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, -10.f, 10.f, 1.f, 10.f);
-        if (cameraProjType == ECameraProjectionType_Perspective)
+        ProjectionParams params = ProjectionParams::Frustum(ECameraProjectionType::Orthographic, -1.f, 1.f, -10.f, 10.f, 1.f, 10.f);
+        if (cameraProjType == ECameraProjectionType::Perspective)
             params = ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane);
         scene.setDataSingleVector4f(frustumPlanes, DataFieldHandle{ 0 }, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane });
         scene.setDataSingleVector2f(frustumNearFar, DataFieldHandle{ 0 }, { params.nearPlane, params.farPlane });
 
-        if (ECameraProjectionType_Renderer != cameraProjType)
+        if (ECameraProjectionType::Renderer != cameraProjType)
         {
             scene.setDataSingleVector2i(vpOffsetInstance, DataFieldHandle{ 0 }, { viewport.posX, viewport.posY });
             scene.setDataSingleVector2i(vpSizeInstance, DataFieldHandle{ 0 }, { Int32(viewport.width), Int32(viewport.height) });
@@ -482,7 +482,7 @@ TEST_F(ARenderExecutor, RendersEmptyFrameForEmptyScene)
 
 TEST_F(ARenderExecutor, RenderRenderPassIntoRenderTarget)
 {
-    const RenderPassHandle pass = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     const RenderableHandle renderable = createTestRenderable(createTestDataInstance(), createRenderGroup(pass));
     const RenderTargetHandle targetHandle = createRenderTarget(16, 20);
     scene.setRenderPassClearFlag(pass, ramses_internal::EClearFlags::EClearFlags_None);
@@ -523,13 +523,13 @@ TEST_F(ARenderExecutor, RenderRenderableWithoutIndexArray)
 
 TEST_F(ARenderExecutor, RenderMultipleConsecutiveRenderPassesIntoOneRenderTarget)
 {
-    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass1));
 
     const RenderTargetHandle targetHandle = createRenderTarget(16, 20);
     scene.setRenderPassRenderTarget(pass1, targetHandle);
 
-    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     scene.setRenderPassClearFlag(pass2, EClearFlags_None);
     const RenderableHandle renderable2 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass2));
     scene.setRenderPassRenderTarget(pass2, targetHandle);
@@ -558,13 +558,13 @@ TEST_F(ARenderExecutor, RenderMultipleConsecutiveRenderPassesIntoOneRenderTarget
 TEST_F(ARenderExecutor, RenderMultipleRenderPassesIntoMultipleRenderTargets)
 {
     const Viewport fakeVp1(1, 2, 3, 4);
-    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType_Perspective, fakeVp1);
+    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType::Perspective, fakeVp1);
     const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass1));
     const RenderTargetHandle targetHandle1 = createRenderTarget(16, 20);
     scene.setRenderPassRenderTarget(pass1, targetHandle1);
 
     const Viewport fakeVp2(5, 6, 7, 8);
-    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType_Perspective, fakeVp2);
+    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType::Perspective, fakeVp2);
     const RenderableHandle renderable2 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass2));
     const RenderTargetHandle targetHandle2 = createRenderTarget(17, 21);
     scene.setRenderPassRenderTarget(pass2, targetHandle2);
@@ -596,10 +596,10 @@ TEST_F(ARenderExecutor, RenderMultipleRenderPassesIntoMultipleRenderTargets)
 
 TEST_F(ARenderExecutor, ResetsCachedRenderStatesAfterClearingRenderTargets)
 {
-    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass1));
 
-    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     const RenderableHandle renderable2 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass2));
     const RenderTargetHandle targetHandle2 = createRenderTarget(17, 21);
     scene.setRenderPassRenderTarget(pass2, targetHandle2);
@@ -630,35 +630,35 @@ TEST_F(ARenderExecutor, RenderMultipleRenderPassesIntoOneRenderTargetAndEachClea
 {
     const RenderTargetHandle targetHandle = createRenderTarget(16, 20);
 
-    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     scene.setRenderPassClearFlag(pass1, EClearFlags_All);
     scene.setRenderPassRenderTarget(pass1, targetHandle);
 
-    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     scene.setRenderPassClearFlag(pass2, EClearFlags_Color);
     scene.setRenderPassRenderTarget(pass2, targetHandle);
 
-    const RenderPassHandle pass3 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass3 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     scene.setRenderPassClearFlag(pass3, EClearFlags_Depth);
     scene.setRenderPassRenderTarget(pass3, targetHandle);
 
-    const RenderPassHandle pass4 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass4 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     scene.setRenderPassClearFlag(pass4, EClearFlags_Stencil);
     scene.setRenderPassRenderTarget(pass4, targetHandle);
 
-    const RenderPassHandle pass5 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass5 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     scene.setRenderPassClearFlag(pass5, EClearFlags_Color | EClearFlags_Depth);
     scene.setRenderPassRenderTarget(pass5, targetHandle);
 
-    const RenderPassHandle pass6 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass6 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     scene.setRenderPassClearFlag(pass6, EClearFlags_Color | EClearFlags_Stencil);
     scene.setRenderPassRenderTarget(pass6, targetHandle);
 
-    const RenderPassHandle pass7 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass7 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     scene.setRenderPassClearFlag(pass7, EClearFlags_Depth | EClearFlags_Stencil);
     scene.setRenderPassRenderTarget(pass7, targetHandle);
 
-    const RenderPassHandle pass8 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass8 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     scene.setRenderPassClearFlag(pass8, EClearFlags_None);
     scene.setRenderPassRenderTarget(pass8, targetHandle);
 
@@ -786,11 +786,11 @@ TEST_F(ARenderExecutor, RendersMultipleRenderableInstancesWithRendererProjection
 
 TEST_F(ARenderExecutor, RendersRenderableWithOrthographicProjection)
 {
-    const RenderPassHandle renderPass = createRenderPassWithCamera(ECameraProjectionType_Orthographic);
+    const RenderPassHandle renderPass = createRenderPassWithCamera(ECameraProjectionType::Orthographic);
     const RenderableHandle renderable = createTestRenderable(createTestDataInstance(), createRenderGroup(renderPass));
 
     const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(
-        ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, -10.f, 10.f, 1.f, 10.f));
+        ProjectionParams::Frustum(ECameraProjectionType::Orthographic, -1.f, 1.f, -10.f, 10.f, 1.f, 10.f));
 
     expectRenderingWithProjection(renderable, projMatrix);
 }
@@ -994,8 +994,8 @@ TEST_F(ARenderExecutor, ActivatesRenderTargetForRenderPassAfterExecutingBlitPass
 
 TEST_F(ARenderExecutor, willRenderAllRenderablesIfWithinTimeBudget)
 {
-    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
-    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
+    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     const DataInstances dataInstances = createTestDataInstance();
     const RenderableHandle renderable1 = createTestRenderable(dataInstances, createRenderGroup(pass1));
     const RenderableHandle renderable2 = createTestRenderable(dataInstances, createRenderGroup(pass1));
@@ -1034,7 +1034,7 @@ TEST_F(ARenderExecutor, willRenderAllRenderablesIfWithinTimeBudget)
 
 TEST_F(ARenderExecutor, willRenderAtLeastOneRenderableBatchIfExceededTimeBudget)
 {
-    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     const DataInstances dataInstances = createTestDataInstance();
     const RenderGroupHandle renderGroup = createRenderGroup(pass1);
     std::array<RenderableHandle, RenderExecutor::DefaultNumRenderablesToRenderInBetweenTimeBudgetChecks> batchRenderables;
@@ -1070,8 +1070,8 @@ TEST_F(ARenderExecutor, willRenderAtLeastOneRenderableBatchIfExceededTimeBudget)
 
 TEST_F(ARenderExecutor, willContinueRenderingWhereLeftOffLastRenderWhenInterrupted)
 {
-    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
-    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType_Perspective);
+    const RenderPassHandle pass1 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
+    const RenderPassHandle pass2 = createRenderPassWithCamera(ECameraProjectionType::Perspective);
     const DataInstances dataInstances = createTestDataInstance();
     const RenderTargetHandle targetHandle = createRenderTarget(16, 20);
     scene.setRenderPassRenderTarget(pass1, targetHandle);

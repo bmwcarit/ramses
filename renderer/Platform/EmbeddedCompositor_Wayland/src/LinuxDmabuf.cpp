@@ -15,6 +15,8 @@
 
 namespace ramses_internal
 {
+    const unsigned int LinuxDmabufBufferData::MAX_DMABUF_PLANES;
+
     LinuxDmabufBufferData::PlaneData::PlaneData()
         : m_fd(-1)
     {

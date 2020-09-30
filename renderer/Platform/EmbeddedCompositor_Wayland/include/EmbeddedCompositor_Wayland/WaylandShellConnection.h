@@ -23,14 +23,14 @@ namespace ramses_internal
         bool wasSuccessfullyInitialized() const;
 
         virtual void resourceDestroyed() override;
-        virtual void shellGetShellSurface(IWaylandClient& client, uint32_t id, IWaylandResource& surfaceResource) override;
+        virtual void shellGetShellSurface(IWaylandClient& client, uint32_t id, INativeWaylandResource& surfaceResource) override;
 
     private:
         static void ResourceDestroyedCallback(wl_resource* shellConnectionResource);
         static void ShellGetShellSurfaceCallback(wl_client *client, wl_resource* shellConnectionResource, uint32_t id, wl_resource *surfaceResource);
 
         const WaylandClientCredentials m_clientCredentials;
-        IWaylandResource* m_resource = nullptr;
+        INativeWaylandResource* m_resource = nullptr;
 
         const struct Shell_Interface : private wl_shell_interface
         {

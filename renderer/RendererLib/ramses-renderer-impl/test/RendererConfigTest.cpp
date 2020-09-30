@@ -48,12 +48,25 @@ TEST(ARendererConfig, canSetBinaryShaderCache)
     EXPECT_EQ(&cache, config.impl.getBinaryShaderCache());
 }
 
-TEST(ARendererConfig, canSetEmbeddedCompositingSocketPermissionsGroup)
+TEST(ARendererConfig, canSetEmbeddedCompositingSocketGroup)
 {
     ramses::RendererConfig config;
 
     config.setWaylandEmbeddedCompositingSocketGroup("permissionGroup");
     EXPECT_STREQ("permissionGroup", config.impl.getWaylandSocketEmbeddedGroup());
+}
+
+TEST(ARendererConfig, canSetEmbeddedCompositingSocketPermissions)
+{
+    ramses::RendererConfig config;
+    config.setWaylandEmbeddedCompositingSocketPermissions(0660);
+    EXPECT_EQ(0660u, config.impl.getWaylandSocketEmbeddedPermissions());
+}
+
+TEST(ARendererConfig, cannotSetInvalidEmbeddedCompositingSocketPermissions)
+{
+    ramses::RendererConfig config;
+    EXPECT_NE(ramses::StatusOK, config.setWaylandEmbeddedCompositingSocketPermissions(0));
 }
 
 TEST(ARendererConfig, canSetEmbeddedCompositingSocketname)

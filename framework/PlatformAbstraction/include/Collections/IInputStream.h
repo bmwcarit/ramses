@@ -26,52 +26,52 @@ namespace ramses_internal
 
     inline IInputStream& operator>>(IInputStream& stream, int32_t& value)
     {
-        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+        return stream.read(&value, sizeof(value));
     }
 
     inline IInputStream& operator>>(IInputStream& stream, Int64& value)
     {
-        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+        return stream.read(&value, sizeof(value));
     }
 
     inline IInputStream& operator>>(IInputStream& stream, UInt32& value)
     {
-        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+        return stream.read(&value, sizeof(value));
     }
 
     inline IInputStream& operator>>(IInputStream& stream, UInt64& value)
     {
-        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+        return stream.read(&value, sizeof(value));
     }
 
     inline IInputStream& operator>>(IInputStream& stream, bool&  value)
     {
-        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+        return stream.read(&value, sizeof(value));
     }
 
     inline IInputStream& operator>>(IInputStream& stream, Float& value)
     {
-        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+        return stream.read(&value, sizeof(value));
     }
 
     inline IInputStream& operator>>(IInputStream& stream, UInt16& value)
     {
-        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+        return stream.read(&value, sizeof(value));
     }
 
     inline IInputStream& operator>>(IInputStream& stream, Int16& value)
     {
-        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+        return stream.read(&value, sizeof(value));
     }
 
     inline IInputStream& operator>>(IInputStream& stream, UInt8& value)
     {
-        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+        return stream.read(&value, sizeof(value));
     }
 
     inline IInputStream& operator>>(IInputStream& stream, Int8& value)
     {
-        return stream.read(reinterpret_cast<Char*>(&value), sizeof(value));
+        return stream.read(&value, sizeof(value));
     }
 
     template<typename E,

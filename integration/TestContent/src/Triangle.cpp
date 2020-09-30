@@ -28,11 +28,6 @@ namespace ramses
     {
     }
 
-    void Triangle::setColor(enum TriangleAppearance::EColor color, float alpha)
-    {
-        m_appearance.setColor(color, alpha);
-    }
-
     void Triangle::bindColor(const DataVector4f& colorDataObject)
     {
         m_appearance.bindColor(colorDataObject);

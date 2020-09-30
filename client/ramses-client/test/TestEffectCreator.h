@@ -28,6 +28,14 @@ namespace ramses
             EXPECT_TRUE(appearance != nullptr);
         }
 
+        void recreateAppearence()
+        {
+            assert(appearance);
+            this->m_scene.destroy(*appearance);
+            appearance = this->m_scene.createAppearance(*effect);
+            assert(appearance);
+        }
+
         virtual ~TestEffectCreator()
         {
             EXPECT_EQ(StatusOK, this->m_scene.destroy(*appearance));

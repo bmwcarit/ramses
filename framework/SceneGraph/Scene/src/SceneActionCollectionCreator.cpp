@@ -1234,28 +1234,6 @@ namespace ramses_internal
         collection.write(rs.colorWriteMask);
     }
 
-    void SceneActionCollectionCreator::pushResource(const IResource& resource)
-    {
-        collection.beginWriteSceneAction(ESceneActionId::PushResource);
-        collection.write(resource.getHash());
-
-        const UInt32 resourceSize = SingleResourceSerialization::SizeOfSerializedResource(resource);
-        collection.write(resourceSize);
-
-        // Serialize resource to collection by simulating a byte output stream pointing to collection buffer
-        std::vector<Byte>& actionData = collection.getRawDataForDirectWriting();
-        UInt writeStartIdx = actionData.size();
-        actionData.resize(writeStartIdx + resourceSize);
-        RawBinaryOutputStream stream(actionData.data() + writeStartIdx, resourceSize);
-        SingleResourceSerialization::SerializeResource(stream, resource);
-    }
-
-    void SceneActionCollectionCreator::setAckFlushState(bool state)
-    {
-        collection.beginWriteSceneAction(ESceneActionId::SetAckFlushState);
-        collection.write(state);
-    }
-
     void SceneActionCollectionCreator::flush(
         UInt64 flushIndex,
         bool addSizeInfo,

@@ -26,7 +26,6 @@ namespace ramses_internal
         virtual ~TaskForwardingQueue();
 
         virtual bool enqueue(ITask& task) override;
-        virtual void enableAcceptingTasks() override;
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;
 
         virtual void TaskFinished(ITask& Task) override;

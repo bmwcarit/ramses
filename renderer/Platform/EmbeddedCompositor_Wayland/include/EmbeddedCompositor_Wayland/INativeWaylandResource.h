@@ -5,30 +5,31 @@
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
-#ifndef RAMSES_IWAYLANDRESOURCE_H
-#define RAMSES_IWAYLANDRESOURCE_H
+#ifndef RAMSES_INATIVEWAYLANDRESOURCE_H
+#define RAMSES_INATIVEWAYLANDRESOURCE_H
 
 #include <cstdint>
 
 typedef void(*IWaylandResourceDestroyFuncT) (struct wl_resource *resource);
 
 struct wl_listener;
+struct wl_resource;
 
 namespace ramses_internal
 {
     class String;
 
-    class IWaylandResource
+    class INativeWaylandResource
     {
     public:
-        virtual ~IWaylandResource() {}
+        virtual ~INativeWaylandResource() {}
         virtual int getVersion() = 0;
         virtual void postError(uint32_t code, const String& message) = 0;
         virtual void* getUserData() = 0;
-        virtual void setImplementation(const void* implementation, void* data, IWaylandResourceDestroyFuncT destroy) = 0;
+        virtual void setImplementation(const void* implementation, void* data, IWaylandResourceDestroyFuncT destroyCallback) = 0;
         virtual void addDestroyListener(wl_listener* listener) = 0;
-        virtual void* getWaylandNativeResource() = 0;
-        virtual void disownWaylandResource() = 0;
+        virtual wl_resource* getLowLevelHandle() = 0;
+        virtual void destroy() = 0;
     };
 }
 

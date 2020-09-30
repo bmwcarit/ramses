@@ -7,6 +7,8 @@
 //  -------------------------------------------------------------------------
 
 #include "ramses-framework-api/DcsmApiTypes.h"
+#include "RamsesFrameworkTypesImpl.h"
+#include "fmt/format.h"
 #include "gtest/gtest.h"
 #include <unordered_set>
 
@@ -28,6 +30,11 @@ namespace ramses
         EXPECT_TRUE(r1 != r3);
     }
 
+    TEST(DcsmApiTypes, canPrintRect)
+    {
+        EXPECT_EQ("2/3/6/7", fmt::to_string(Rect{2, 3, 6, 7}));
+    }
+
     TEST(DcsmApiTypes, hasSizeInfoComparison)
     {
         SizeInfo si1{1, 2};
@@ -44,6 +51,11 @@ namespace ramses
         EXPECT_TRUE(si1 != si3);
     }
 
+    TEST(DcsmApiTypes, canPrintSizeInfo)
+    {
+        EXPECT_EQ("10/20", fmt::to_string(SizeInfo{10, 20}));
+    }
+
     TEST(DcsmApiTypes, hasAnimationInformationComparison)
     {
         AnimationInformation ai1{1, 2};
@@ -58,5 +70,10 @@ namespace ramses
 
         EXPECT_FALSE(ai1 == ai3);
         EXPECT_TRUE(ai1 != ai3);
+    }
+
+    TEST(DcsmApiTypes, canPrintAnimationInformation)
+    {
+        EXPECT_EQ("[200; 300]", fmt::to_string(AnimationInformation{200, 300}));
     }
 }

@@ -8,15 +8,15 @@
 #ifndef RAMSES_WAYLANDCALLBACKRESOURCE_H
 #define RAMSES_WAYLANDCALLBACKRESOURCE_H
 
-#include "EmbeddedCompositor_Wayland/WaylandResource.h"
+#include "EmbeddedCompositor_Wayland/NativeWaylandResource.h"
 
 namespace ramses_internal
 {
-    class WaylandCallbackResource : public WaylandResource
+    class WaylandCallbackResource : public NativeWaylandResource
     {
     public:
         WaylandCallbackResource();
-        WaylandCallbackResource(wl_resource* resource, bool ownership);
+        explicit WaylandCallbackResource(wl_resource* resource);
         virtual void callbackSendDone(uint32_t callbackData);
     };
 }

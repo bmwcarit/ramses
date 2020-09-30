@@ -366,23 +366,6 @@ namespace ramses
         return m_scene->createRenderTarget(rtDesc, name);
     }
 
-    Effect* createFakeEffectWithPositions(Scene& scene)
-    {
-        EffectDescription effectDesc;
-        effectDesc.setVertexShader(
-            "attribute vec3 vec3input; \n"
-            "void main()\n"
-            "{\n"
-            "  gl_Position = vec4(vec3input, 1.0); \n"
-            "}\n");
-        effectDesc.setFragmentShader(
-            "void main(void)\n"
-            "{\n"
-            "  gl_FragColor = vec4(0.0); \n"
-            "}\n");
-        return scene.impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, "effect");
-    }
-
     template <> GeometryBinding* CreationHelper::createObjectOfType<GeometryBinding>(const char* name)
     {
         return m_scene->createGeometryBinding(*createObjectOfType<Effect>("geometry_binding_effect"), name);

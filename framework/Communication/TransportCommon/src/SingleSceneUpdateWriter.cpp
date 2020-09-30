@@ -64,6 +64,10 @@ namespace ramses_internal
                 return false;
         }
 
+        if (m_update.flushInfos.containsValidInformation)
+            if (!writeFlushInfos(m_update.flushInfos))
+                return false;
+
         if (m_packetWriter.getBytesWritten() > 0)
         {
             if (!finalizePacket(false))
@@ -97,6 +101,17 @@ namespace ramses_internal
         os << static_cast<uint32_t>(descSpan.size())
            << static_cast<uint32_t>(dataSpan.size());
         return writeBlock(BlockType::Resource, {{os.getData(), os.getSize()}, descSpan, dataSpan});
+    }
+
+    bool SingleSceneUpdateWriter::writeFlushInfos(const FlushInformation& infos)
+    {
+        m_temporaryMemToSerializeDescription.clear();
+        const auto descSpan = FlushInformationSerialization::SerializeInfos(infos, m_temporaryMemToSerializeDescription);
+
+        Byte header[sizeof(uint32_t)];
+        RawBinaryOutputStream os(header, sizeof(header));
+        os << static_cast<uint32_t>(descSpan.size());
+        return writeBlock(BlockType::FlushInfos, { {os.getData(), os.getSize()}, descSpan });
     }
 
     void SingleSceneUpdateWriter::initializePacket()

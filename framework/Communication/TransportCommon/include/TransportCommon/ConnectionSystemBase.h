@@ -227,7 +227,10 @@ namespace ramses_internal
             return false;
 
         if (m_keepAliveInterval != std::chrono::milliseconds{0})
+        {
+            assert(!Runnable::isCancelRequested());
             m_thread.start(*this);
+        }
 
         m_connected = true;
         return true;
@@ -251,6 +254,7 @@ namespace ramses_internal
                 m_thread.join();
                 m_frameworkLock.lock();
             }
+            resetCancel();
         }
 
         if (!m_stack->disconnect())

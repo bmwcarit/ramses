@@ -13,14 +13,14 @@
 namespace ramses_internal
 {
     class IWaylandClient;
-    class IWaylandResource;
+    class INativeWaylandResource;
 
     class IWaylandShellConnection
     {
     public:
         virtual ~IWaylandShellConnection(){}
         virtual void resourceDestroyed() = 0;
-        virtual void shellGetShellSurface(IWaylandClient& client, uint32_t id, IWaylandResource& surfaceResource) = 0;
+        virtual void shellGetShellSurface(IWaylandClient& client, uint32_t id, INativeWaylandResource& surfaceResource) = 0;
     };
 }
 

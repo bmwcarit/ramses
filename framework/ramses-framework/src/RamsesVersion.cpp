@@ -6,18 +6,18 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#ifndef RAMSES_UTILS_GTESTHELPER_H
-#define RAMSES_UTILS_GTESTHELPER_H
+#include "ramses-framework-api/RamsesVersion.h"
+#include "ramses-sdk-build-config.h"
 
-#include "gtest/gtest.h"
-#include <cassert>
-
-/// Helper macro when clang-tidy does not understand that execution does not continue on nullptr
-#define ASSERT_NOT_NULL(ptr)     \
-    do                           \
-    {                            \
-        ASSERT_NE(ptr, nullptr); \
-        assert(ptr);             \
-    }  while (0)
-
-#endif
+namespace ramses
+{
+    RamsesVersion GetRamsesVersion()
+    {
+        return RamsesVersion{
+            ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING,
+            ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR_INT,
+            ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR_INT,
+            ramses_sdk::RAMSES_SDK_PROJECT_VERSION_PATCH_INT
+        };
+    }
+}

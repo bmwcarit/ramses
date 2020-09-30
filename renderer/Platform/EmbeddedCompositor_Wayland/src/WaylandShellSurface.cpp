@@ -8,13 +8,13 @@
 
 #include "EmbeddedCompositor_Wayland/WaylandShellSurface.h"
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
-#include "EmbeddedCompositor_Wayland/WaylandResource.h"
+#include "EmbeddedCompositor_Wayland/NativeWaylandResource.h"
 #include "Utils/LogMacros.h"
 #include <cassert>
 
 namespace ramses_internal
 {
-    WaylandShellSurface::WaylandShellSurface(IWaylandClient& client, IWaylandResource& shellConnectionResource, uint32_t id, IWaylandSurface& surface)
+    WaylandShellSurface::WaylandShellSurface(IWaylandClient& client, INativeWaylandResource& shellConnectionResource, uint32_t id, IWaylandSurface& surface)
         : m_clientCredentials(client.getCredentials())
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::WaylandShellSurface  " << m_clientCredentials);
@@ -61,6 +61,7 @@ namespace ramses_internal
         {
             // Remove ResourceDestroyedCallback
             m_resource->setImplementation(&m_shellSurfaceInterface, this, nullptr);
+            m_resource->destroy();
             delete m_resource;
         }
     }
@@ -70,9 +71,10 @@ namespace ramses_internal
         LOG_TRACE(CONTEXT_RENDERER, "WaylandShellSurface::resourceDestroyed");
         assert(nullptr != m_resource);
 
-        // wl_resource is destroyed outside by the Wayland library, so m_resource loses the ownership of the
-        // Wayland resource, so that we don't call wl_resource_destroy.
-        m_resource->disownWaylandResource();
+        // wl_resource is destroyed outside by the Wayland library
+        // destroy m_resoruce to indicate that wl_resource_destroy does not neeed to be called in destructor
+        delete m_resource;
+        m_resource = nullptr;
     }
 
     void WaylandShellSurface::surfaceWasDeleted()
@@ -97,7 +99,7 @@ namespace ramses_internal
         }
     }
 
-    void WaylandShellSurface::shellSurfaceMove(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial)
+    void WaylandShellSurface::shellSurfaceMove(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial)
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceMove");
 
@@ -111,7 +113,7 @@ namespace ramses_internal
         }
     }
 
-    void WaylandShellSurface::shellSurfaceResize(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, uint32_t edges)
+    void WaylandShellSurface::shellSurfaceResize(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial, uint32_t edges)
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceResize");
 
@@ -138,7 +140,7 @@ namespace ramses_internal
         }
     }
 
-    void WaylandShellSurface::shellSurfaceSetTransient(IWaylandClient& client, IWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags)
+    void WaylandShellSurface::shellSurfaceSetTransient(IWaylandClient& client, INativeWaylandResource& parentSurfaceResource, int32_t x, int32_t y, uint32_t flags)
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetTransient");
 
@@ -168,7 +170,7 @@ namespace ramses_internal
         }
     }
 
-    void WaylandShellSurface::shellSurfaceSetPopup(IWaylandClient& client, IWaylandResource& seatResource, uint32_t serial, IWaylandResource& parentSurfaceResource, int32_t x,
+    void WaylandShellSurface::shellSurfaceSetPopup(IWaylandClient& client, INativeWaylandResource& seatResource, uint32_t serial, INativeWaylandResource& parentSurfaceResource, int32_t x,
                                                    int32_t y, uint32_t flags)
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetPopup");
@@ -246,7 +248,7 @@ namespace ramses_internal
     {
         WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
-        WaylandResource waylandSeatResource(seatResource, false);
+        NativeWaylandResource waylandSeatResource(seatResource);
         shellSurface->shellSurfaceMove(waylandClient, waylandSeatResource, serial);
     }
 
@@ -254,7 +256,7 @@ namespace ramses_internal
     {
         WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
-        WaylandResource waylandSeatResource(seatResource, false);
+        NativeWaylandResource waylandSeatResource(seatResource);
         shellSurface->shellSurfaceResize(waylandClient, waylandSeatResource, serial, edges);
     }
 
@@ -270,7 +272,7 @@ namespace ramses_internal
     {
         WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
-        WaylandResource waylandParentSurfaceResource(parentSurfaceResource, false);
+        NativeWaylandResource waylandParentSurfaceResource(parentSurfaceResource);
         shellSurface->shellSurfaceSetTransient(waylandClient, waylandParentSurfaceResource, x, y, flags);
     }
 
@@ -288,8 +290,8 @@ namespace ramses_internal
     {
         WaylandShellSurface* shellSurface = static_cast<WaylandShellSurface*>(wl_resource_get_user_data(surfaceResource));
         WaylandClient waylandClient(client);
-        WaylandResource waylandSeatResource(seatResource, false);
-        WaylandResource waylandParentSurfaceResource(parentSurfaceResource, false);
+        NativeWaylandResource waylandSeatResource(seatResource);
+        NativeWaylandResource waylandParentSurfaceResource(parentSurfaceResource);
         shellSurface->shellSurfaceSetPopup(waylandClient, waylandSeatResource, serial, waylandParentSurfaceResource, x, y, flags);
     }
 

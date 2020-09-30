@@ -16,7 +16,7 @@
 #include "TransportCommon/SceneUpdateSerializer.h"
 #include "Components/SceneUpdate.h"
 #include "SceneUpdateSerializerTestHelper.h"
-
+#include "Resource/ArrayResource.h"
 
 using namespace ramses_internal;
 
@@ -44,9 +44,9 @@ public:
         return collection;
     }
 
-    std::vector<std::vector<Byte>> actionsToChunks(const SceneActionCollection& actions, uint32_t chunkSize = 100000)
+    std::vector<std::vector<Byte>> actionsToChunks(const SceneActionCollection& actions, uint32_t chunkSize = 100000, const ManagedResourceVector& resources = {}, const FlushInformation& flushinfo = {})
     {
-        SceneUpdate update{actions.copy(), {}};
+        SceneUpdate update{actions.copy(), resources, flushinfo.copy()};
         return TestSerializeSceneUpdateToVectorChunked(SceneUpdateSerializer(update), chunkSize);
     }
 
@@ -953,6 +953,136 @@ TEST_F(ASceneGraphComponent, canHandleSceneActionFromRemoteSplitInMultipleChunks
     EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(2), _, Guid(22))).WillOnce([&](const auto&, const auto& update, const auto&) {
         EXPECT_EQ(actions, update.actions);
     });
+    for (const auto& b : actionBlobs)
+        sceneGraphComponent.handleSceneUpdate(SceneId(2), b, Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, deserializesAndForwardsFlushInformationFromRemote)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({ info_22 }, Guid(22));
+
+    EXPECT_CALL(consumer, handleInitializeScene(info_22, Guid(22)));
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(22));
+
+    FlushInformation fi;
+    fi.containsValidInformation = true;
+    fi.flushCounter = 666;
+    fi.flushTimeInfo.clock_type = synchronized_clock_type::PTP;
+    fi.flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(12345));
+    fi.flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(54321));
+    fi.hasSizeInfo = true;
+    fi.resourceChanges.m_addedClientResourceRefs = { {11, 11}, {22, 22} };
+    fi.resourceChanges.m_removedClientResourceRefs = { {33, 33}, {44, 44} };
+    fi.resourceChanges.m_sceneResourceActions = { {} };
+    fi.sceneReferences = { {} };
+    fi.sizeInfo.nodeCount = 555;
+    fi.versionTag = SceneVersionTag{ 9876 };
+
+    SceneActionCollection actions(createFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction, ESceneActionId::Flush }));
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(2), _, Guid(22))).WillOnce([&](const auto&, const auto& update, const auto&) {
+        EXPECT_EQ(actions, update.actions);
+        EXPECT_EQ(update.flushInfos.containsValidInformation, true);
+        EXPECT_EQ(update.flushInfos.flushCounter, 666);
+        EXPECT_EQ(update.flushInfos.flushTimeInfo.clock_type, synchronized_clock_type::PTP);
+        EXPECT_EQ(update.flushInfos.flushTimeInfo.expirationTimestamp, FlushTime::Clock::time_point(std::chrono::milliseconds(12345)));
+        EXPECT_EQ(update.flushInfos.flushTimeInfo.internalTimestamp, FlushTime::Clock::time_point(std::chrono::milliseconds(54321)));
+        EXPECT_EQ(update.flushInfos.hasSizeInfo, true);
+        ResourceContentHashVector resvec1{ {11, 11}, {22, 22} };
+        ResourceContentHashVector resvec2{ {33, 33}, {44, 44} };
+        SceneResourceActionVector savec{ SceneResourceAction() };
+        SceneReferenceActionVector sravec{ {} };
+        EXPECT_EQ(update.flushInfos.resourceChanges.m_addedClientResourceRefs, resvec1);
+        EXPECT_EQ(update.flushInfos.resourceChanges.m_removedClientResourceRefs, resvec2);
+        EXPECT_EQ(update.flushInfos.resourceChanges.m_sceneResourceActions, savec);
+        EXPECT_EQ(update.flushInfos.sceneReferences, sravec);
+        EXPECT_EQ(update.flushInfos.sizeInfo.nodeCount, 555u);
+        EXPECT_EQ(update.flushInfos.versionTag, SceneVersionTag{ 9876 });
+        });
+    const auto actionBlobs = actionsToChunks(actions, 100000, {}, fi);
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), actionBlobs[0], Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, deserializesResourcesFromRemote)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({ info_22 }, Guid(22));
+
+    EXPECT_CALL(consumer, handleInitializeScene(info_22, Guid(22)));
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(22));
+
+    const uint16_t data1 = 16u;
+    const uint32_t data2 = 1234u;
+    const float data3 = 0.1f;
+
+    ManagedResourceVector resources{
+        std::make_shared<const ArrayResource>(EResourceType_IndexArray, 1u, EDataType::UInt16, &data1, ResourceCacheFlag_DoNotCache, "ui16"),
+        std::make_shared<const ArrayResource>(EResourceType_IndexArray, 1u, EDataType::UInt32, &data2, ResourceCacheFlag_DoNotCache, "ui32"),
+        std::make_shared<const ArrayResource>(EResourceType_VertexArray, 1u, EDataType::Float, &data3, ResourceCacheFlag_DoNotCache, "fl")
+    };
+
+    SceneActionCollection actions(createFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction, ESceneActionId::Flush }));
+
+    EXPECT_CALL(resourceComponent, manageResource(_, false)).WillRepeatedly([&](const IResource& res, bool) { return ManagedResource(&res); });
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(2), _, Guid(22))).WillOnce([&](const auto&, const auto& update, const auto&) {
+        ASSERT_EQ(update.resources.size(), 3u);
+        EXPECT_EQ(update.resources[0]->getTypeID(), resources[0]->getTypeID());
+        EXPECT_EQ(update.resources[0]->getHash(), resources[0]->getHash());
+        EXPECT_EQ(update.resources[1]->getTypeID(), resources[1]->getTypeID());
+        EXPECT_EQ(update.resources[1]->getHash(), resources[1]->getHash());
+        EXPECT_EQ(update.resources[2]->getTypeID(), resources[2]->getTypeID());
+        EXPECT_EQ(update.resources[2]->getHash(), resources[2]->getHash());
+        });
+
+    const auto actionBlobs = actionsToChunks(actions, 100000, resources);
+    sceneGraphComponent.handleSceneUpdate(SceneId(2), actionBlobs[0], Guid(22));
+}
+
+TEST_F(ASceneGraphComponent, deserializesResourcesFromRemote_SmallChunks)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+    sceneGraphComponent.newParticipantHasConnected(Guid(22));
+
+    SceneInfo info_22(SceneId(2), "", EScenePublicationMode_LocalAndRemote);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
+    sceneGraphComponent.handleNewScenesAvailable({ info_22 }, Guid(22));
+
+    EXPECT_CALL(consumer, handleInitializeScene(info_22, Guid(22)));
+    sceneGraphComponent.handleInitializeScene(SceneId(2), Guid(22));
+
+    const uint16_t data1[] = { 16u, 17u, 18u, 19u };
+    const uint32_t data2[] = { 1234u, 1235u, 1236u, 1237u };
+    const float data3[] = { 0.1f, 0.2f, 0.3f, 0.4f };
+
+    ManagedResourceVector resources{
+        std::make_shared<const ArrayResource>(EResourceType_IndexArray, 4u, EDataType::UInt16, &data1, ResourceCacheFlag_DoNotCache, "ui16"),
+        std::make_shared<const ArrayResource>(EResourceType_IndexArray, 4u, EDataType::UInt32, &data2, ResourceCacheFlag_DoNotCache, "ui32"),
+        std::make_shared<const ArrayResource>(EResourceType_VertexArray, 4u, EDataType::Float, &data3, ResourceCacheFlag_DoNotCache, "fl")
+    };
+
+    SceneActionCollection actions(createFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction, ESceneActionId::Flush }));
+
+    EXPECT_CALL(resourceComponent, manageResource(_, false)).WillRepeatedly([&](const IResource& res, bool) { return ManagedResource(&res); });
+    EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(2), _, Guid(22))).WillOnce([&](const auto&, const auto& update, const auto&) {
+        ASSERT_EQ(update.resources.size(), 3u);
+        EXPECT_EQ(update.resources[0]->getTypeID(), resources[0]->getTypeID());
+        EXPECT_EQ(update.resources[0]->getHash(), resources[0]->getHash());
+        EXPECT_EQ(update.resources[1]->getTypeID(), resources[1]->getTypeID());
+        EXPECT_EQ(update.resources[1]->getHash(), resources[1]->getHash());
+        EXPECT_EQ(update.resources[2]->getTypeID(), resources[2]->getTypeID());
+        EXPECT_EQ(update.resources[2]->getHash(), resources[2]->getHash());
+        });
+
+    const auto actionBlobs = actionsToChunks(actions, 100, resources);
+    EXPECT_GT(actionBlobs.size(), 1u);
     for (const auto& b : actionBlobs)
         sceneGraphComponent.handleSceneUpdate(SceneId(2), b, Guid(22));
 }

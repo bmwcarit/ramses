@@ -74,8 +74,6 @@ namespace ramses_internal
         virtual const String&               getName                         () const = 0;
         virtual SceneId                     getSceneId                      () const = 0;
 
-        virtual void                        setAckFlushState                (bool /*state*/) {}
-
         virtual void                        preallocateSceneSize            (const SceneSizeInformation& sizeInfo) = 0;
 
         // Renderable

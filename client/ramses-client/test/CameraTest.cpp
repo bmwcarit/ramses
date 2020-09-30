@@ -123,7 +123,7 @@ namespace ramses
     {
         EXPECT_EQ(StatusOK, this->camera->setFrustum(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f));
 
-        const auto projType = (this->camera->getType() == ERamsesObjectType_PerspectiveCamera ? ramses_internal::ECameraProjectionType_Perspective : ramses_internal::ECameraProjectionType_Orthographic);
+        const auto projType = (this->camera->getType() == ERamsesObjectType_PerspectiveCamera ? ramses_internal::ECameraProjectionType::Perspective : ramses_internal::ECameraProjectionType::Orthographic);
         const ramses_internal::Matrix44f expectedMatrix = ramses_internal::CameraMatrixHelper::ProjectionMatrix(ramses_internal::ProjectionParams::Frustum(projType, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f));
 
         float projMatData[16] = { 0.f };

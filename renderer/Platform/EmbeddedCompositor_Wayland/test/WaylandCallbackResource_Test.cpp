@@ -129,7 +129,7 @@ namespace ramses_internal
         virtual void SetUp() override
         {
             const int serverFD = m_socket.createBoundFileDescriptor();
-            m_waylandDisplay.init("", "", serverFD);
+            m_waylandDisplay.init("", "", 0, serverFD);
             m_display = m_waylandDisplay.get();
             ASSERT_TRUE(m_display != nullptr);
         }
@@ -176,8 +176,9 @@ namespace ramses_internal
             UNUSED(resource)
 
             wl_resource* callbackResource = wl_resource_create(client, &wl_callback_interface, 1, id);
-            WaylandCallbackResource waylandCallbackResource(callbackResource, true);
+            WaylandCallbackResource waylandCallbackResource(callbackResource);
             waylandCallbackResource.callbackSendDone(33);
+            waylandCallbackResource.destroy();
         }
 
         static void GetRegistry(struct wl_client* client, struct wl_resource* resource, uint32_t registry)
@@ -219,7 +220,8 @@ namespace ramses_internal
         m_client = wl_client_create(m_display, serverFD);
         ASSERT_TRUE(m_client != nullptr);
         wl_resource* resource = wl_resource_create(m_client, &wl_callback_interface, 1, 0);
-        WaylandCallbackResource waylandCallbackResource(resource, true);
+        WaylandCallbackResource waylandCallbackResource(resource);
+        waylandCallbackResource.destroy();
     }
 
     TEST_F(AWaylandCallbackResource, CanSendDone)

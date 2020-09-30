@@ -231,12 +231,12 @@ namespace ramses_internal
         m_testForkingController.sendMessageToTestApplication(bos);
     }
 
-    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval)
+    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceWithEGLContextToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval)
     {
         return sendCreateSurfaceToTestApplication(width, height, swapInterval, true);
     }
 
-    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSharedMemorySurfaceToTestApplication(UInt32 width, UInt32 height)
+    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceWithoutEGLContextToTestApplication(UInt32 width, UInt32 height)
     {
         return sendCreateSurfaceToTestApplication(width, height, 0, false);
     }
@@ -309,17 +309,24 @@ namespace ramses_internal
         m_testForkingController.sendMessageToTestApplication(bos);
     }
 
-    void EmbeddedCompositingTestsFramework::sendRenderOneFrameToTestApplication(TestApplicationSurfaceId surfaceId)
+    void EmbeddedCompositingTestsFramework::sendRenderOneFrameToEGLBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback)
     {
         BinaryOutputStream bos;
-        bos << ETestWaylandApplicationMessage::RenderOneFrame << surfaceId.getValue() << false;
+        bos << ETestWaylandApplicationMessage::RenderOneFrame_ToEGLBuffer << surfaceId.getValue() << waitOnFramecallback;
         m_testForkingController.sendMessageToTestApplication(bos);
     }
 
-    void EmbeddedCompositingTestsFramework::sendAttachBufferToTestApplication(TestApplicationSurfaceId surfaceId)
+    void EmbeddedCompositingTestsFramework::sendRenderOneFrameToSharedMemoryBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback)
     {
         BinaryOutputStream bos;
-        bos << ETestWaylandApplicationMessage::AttachBuffer << surfaceId.getValue();
+        bos << ETestWaylandApplicationMessage::RenderOneFrame_ToSharedMemoryBuffer << surfaceId.getValue() << waitOnFramecallback;
+        m_testForkingController.sendMessageToTestApplication(bos);
+    }
+
+    void EmbeddedCompositingTestsFramework::sendAttachBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool commit)
+    {
+        BinaryOutputStream bos;
+        bos << ETestWaylandApplicationMessage::AttachBuffer << surfaceId.getValue() << commit;
         m_testForkingController.sendMessageToTestApplication(bos);
     }
 
@@ -327,13 +334,6 @@ namespace ramses_internal
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::DestroyBuffers;
-        m_testForkingController.sendMessageToTestApplication(bos);
-    }
-
-    void EmbeddedCompositingTestsFramework::sendRenderOneFrameAndWaitOnFrameCallbackToTestApplication(TestApplicationSurfaceId surfaceId)
-    {
-        BinaryOutputStream bos;
-        bos << ETestWaylandApplicationMessage::RenderOneFrame << surfaceId.getValue() << true;
         m_testForkingController.sendMessageToTestApplication(bos);
     }
 

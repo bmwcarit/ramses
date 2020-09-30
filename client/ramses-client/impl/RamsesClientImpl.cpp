@@ -50,7 +50,7 @@
 #include "ClientFactory.h"
 #include "FrameworkFactoryRegistry.h"
 #include "Ramsh/Ramsh.h"
-#include "ArrayResourceUtils.h"
+#include "DataTypeUtils.h"
 #include "ResourceDataPoolImpl.h"
 #include "Resource/ArrayResource.h"
 #include "Resource/EffectResource.h"
@@ -627,8 +627,8 @@ namespace ramses
             return {};
         }
 
-        ramses_internal::EDataType elementType = ArrayResourceUtils::ConvertDataTypeForResourceToInternal(type);
-        ramses_internal::EResourceType resourceType = ArrayResourceUtils::DeductResourceTypeFromDataType(type);
+        ramses_internal::EDataType elementType = DataTypeUtils::ConvertDataTypeToInternal(type);
+        ramses_internal::EResourceType resourceType = DataTypeUtils::DeductResourceTypeFromDataType(type);
 
         auto resource = new ramses_internal::ArrayResource(resourceType, numElements, elementType, arrayData, ramses_internal::ResourceCacheFlag(cacheFlag.getValue()), name);
         return manageResource(resource);

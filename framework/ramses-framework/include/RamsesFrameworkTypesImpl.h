@@ -65,6 +65,16 @@ struct fmt::formatter<ramses::Rect> : public ramses_internal::SimpleFormatterBas
 };
 
 template <>
+struct fmt::formatter<ramses::AnimationInformation> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses::AnimationInformation& ai, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(), "[{}; {}]", ai.startTime, ai.finishTime);
+    }
+};
+
+template <>
 struct fmt::formatter<ramses::resourceId_t> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>

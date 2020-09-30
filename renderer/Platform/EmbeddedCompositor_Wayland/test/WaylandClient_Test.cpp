@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
-#include "EmbeddedCompositor_Wayland/IWaylandResource.h"
+#include "EmbeddedCompositor_Wayland/INativeWaylandResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandCallbackResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandDisplay.h"
 #include "WaylandUtilities/UnixDomainSocket.h"
@@ -28,7 +28,7 @@ namespace ramses_internal
         AWaylandClient()
         {
             const int serverFD = m_socket.createBoundFileDescriptor();
-            m_waylandDisplay.init("", "", serverFD);
+            m_waylandDisplay.init("", "", 0, serverFD);
             m_display = m_waylandDisplay.get();
             assert(m_display != nullptr);
         }
@@ -202,7 +202,7 @@ namespace ramses_internal
         EXPECT_EQ(WL_DISPLAY_ERROR_NO_MEMORY, client.getProtocolErrorCode());
     }
 
-    TEST_F(AWaylandClient, CanCreateResourceAndSetsOwnership)
+    TEST_F(AWaylandClient, CanCreateResource)
     {
         const int serverFD = m_socket.getBoundFileDescriptor();
 
@@ -211,9 +211,9 @@ namespace ramses_internal
 
         const int32_t version = 2;
         const uint32_t id = 0;
-        IWaylandResource* resource = waylandClient.resourceCreate(&wl_compositor_interface, version, id);
+        INativeWaylandResource* resource = waylandClient.resourceCreate(&wl_compositor_interface, version, id);
         EXPECT_NE(nullptr, resource);
-        wl_resource* waylandResource = static_cast<wl_resource*>(resource->getWaylandNativeResource());
+        wl_resource* waylandResource = resource->getLowLevelHandle();
 
         EXPECT_NE(nullptr, waylandResource);
         EXPECT_EQ(client, wl_resource_get_client(waylandResource));
@@ -224,10 +224,9 @@ namespace ramses_internal
         resource->addDestroyListener(&m_destroyListener);
 
         EXPECT_EQ(m_resourceDestroyedListenerCalled, 0u);
-        delete resource;
-
-        // This checks, that ownership flag of wl_resource was set to true in WaylandClient::resourceCreate.
+        resource->destroy();
         EXPECT_EQ(m_resourceDestroyedListenerCalled, 1u);
+        delete resource;
 
         wl_client_destroy(client);
     }
@@ -242,7 +241,7 @@ namespace ramses_internal
         const int32_t  version  = 1;
         const uint32_t id       = 0;
         WaylandCallbackResource* resource = waylandClient.callbackResourceCreate(&wl_callback_interface, version, id);
-        wl_resource* waylandResource = static_cast<wl_resource*>(resource->getWaylandNativeResource());
+        wl_resource* waylandResource = resource->getLowLevelHandle();
 
         EXPECT_NE(nullptr, waylandResource);
         EXPECT_EQ(client, wl_resource_get_client(waylandResource));

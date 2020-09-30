@@ -337,7 +337,7 @@ namespace ramses_internal
         const uint32_t fullSize = static_cast<uint32_t>(pp->currentOutBuffer.size());
 
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendMessageToParticipant: To " << pp->address.getParticipantId() <<
-                  ", MsgType " << GetNameForMessageId(msg.messageType) << ", Size " << fullSize);
+                  ", MsgType " << msg.messageType << ", Size " << fullSize);
 
         RawBinaryOutputStream s(reinterpret_cast<uint8_t*>(pp->currentOutBuffer.data()), static_cast<uint32_t>(pp->currentOutBuffer.size()));
         const uint32_t remainingSize = fullSize - sizeof(pp->lengthReceiveBuffer);
@@ -395,7 +395,7 @@ namespace ramses_internal
             assert(pp->outQueueNormal.empty());
             assert(pp->outQueuePrio.empty());
 
-            sendMessageToParticipant(pp, OutMessage(pp->address.getParticipantId(), EMessageId_Alive));
+            sendMessageToParticipant(pp, OutMessage(pp->address.getParticipantId(), EMessageId::Alive));
         }
     }
 
@@ -598,7 +598,7 @@ namespace ramses_internal
                                 ParticipantPtr pp;
                                 if (m_establishedParticipants.get(msg.to, pp) != EStatus::Ok)
                                 {
-                                    LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::postMessageForSending: post message " << GetNameForMessageId(msg.messageType) <<
+                                    LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::postMessageForSending: post message " << msg.messageType <<
                                              " to not (fully) connected participant " << msg.to);
                                     return;
                                 }
@@ -626,74 +626,74 @@ namespace ramses_internal
         EMessageId messageType = static_cast<EMessageId>(messageTypeTmp);
 
         LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleReceivedMessage: From " <<
-                 pp->address.getParticipantId() << ", type " << GetNameForMessageId(messageType) << "/" << messageType);
+                 pp->address.getParticipantId() << ", type " << messageType);
 
         switch (messageType)
         {
-        case EMessageId_Alive:
+        case EMessageId::Alive:
             // no-op. every message updates lastReceived
             break;
-        case EMessageId_ConnectionDescriptionMessage:
+        case EMessageId::ConnectionDescriptionMessage:
             handleConnectionDescriptionMessage(pp, stream);
             break;
-        case EMessageId_ConnectorAddressExchange:
+        case EMessageId::ConnectorAddressExchange:
             handleConnectorAddressExchange(pp, stream);
             break;
-        case EMessageId_PublishScene:
+        case EMessageId::PublishScene:
             handlePublishScene(pp, stream);
             break;
-        case EMessageId_UnpublishScene:
+        case EMessageId::UnpublishScene:
             handleUnpublishScene(pp, stream);
             break;
-        case EMessageId_SubscribeScene:
+        case EMessageId::SubscribeScene:
             handleSubscribeScene(pp, stream);
             break;
-        case EMessageId_UnsubscribeScene:
+        case EMessageId::UnsubscribeScene:
             handleUnsubscribeScene(pp, stream);
             break;
-        case EMessageId_SendSceneUpdate:
+        case EMessageId::SendSceneUpdate:
             handleSceneUpdate(pp, stream);
             break;
-        case EMessageId_TransferResources:
+        case EMessageId::TransferResources:
             handleTransferResources(pp, stream);
             break;
-        case EMessageId_RequestResources:
+        case EMessageId::RequestResources:
             handleRequestResources(pp, stream);
             break;
-        case EMessageId_ResourcesNotAvailable:
+        case EMessageId::ResourcesNotAvailable:
             handleResourcesNotAvailable(pp, stream);
             break;
-        case EMessageId_CreateScene:
+        case EMessageId::CreateScene:
             handleCreateScene(pp, stream);
             break;
-        case EMessageId_RendererEvent:
+        case EMessageId::RendererEvent:
             handleRendererEvent(pp, stream);
             break;
-        case EMessageId_DcsmRegisterContent:
+        case EMessageId::DcsmRegisterContent:
             handleDcsmRegisterContent(pp, stream, pp->receiveBuffer.size());
             break;
-        case EMessageId_DcsmCanvasSizeChange:
+        case EMessageId::DcsmCanvasSizeChange:
             handleDcsmCanvasSizeChange(pp, stream);
             break;
-        case EMessageId_DcsmContentStatusChange:
+        case EMessageId::DcsmContentStatusChange:
             handleDcsmContentStatusChange(pp, stream);
             break;
-        case EMessageId_DcsmContentDescription:
+        case EMessageId::DcsmContentDescription:
             handleDcsmContentDescription(pp, stream);
             break;
-        case EMessageId_DcsmContentAvailable:
+        case EMessageId::DcsmContentAvailable:
             handleDcsmContentAvailable(pp, stream);
             break;
-        case EMessageId_DcsmCategoryContentSwitchRequest:
+        case EMessageId::DcsmCategoryContentSwitchRequest:
             handleDcsmCategoryContentSwitchRequest(pp, stream, pp->receiveBuffer.size());
             break;
-        case EMessageId_DcsmRequestUnregisterContent:
+        case EMessageId::DcsmRequestUnregisterContent:
             handleDcsmRequestUnregisterContent(pp, stream);
             break;
-        case EMessageId_DcsmForceUnregisterContent:
+        case EMessageId::DcsmForceUnregisterContent:
             handleDcsmForceStopOfferContent(pp, stream);
             break;
-        case EMessageId_DcsmUpdateContentMetadata:
+        case EMessageId::DcsmUpdateContentMetadata:
             handleDcsmUpdateContentMetadata(pp, stream);
             break;
         default:
@@ -706,7 +706,7 @@ namespace ramses_internal
     {
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendConnectionDescriptionOnNewConnection: " << pp->address.getParticipantId());
 
-        OutMessage msg(pp->address.getParticipantId(), EMessageId_ConnectionDescriptionMessage);
+        OutMessage msg(pp->address.getParticipantId(), EMessageId::ConnectionDescriptionMessage);
         msg.stream << m_protocolVersion
                    << m_participantAddress.getParticipantId()
                    << m_participantAddress.getParticipantName()
@@ -794,7 +794,7 @@ namespace ramses_internal
                 LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendConnectorAddressExchangeMessagesForNewParticipant: Send " << relevantParticipants << " entries to " <<
                          newPp->address.getParticipantId() << "/" << newPp->address.getParticipantName());
 
-                OutMessage msg(newPp->address.getParticipantId(), EMessageId_ConnectorAddressExchange);
+                OutMessage msg(newPp->address.getParticipantId(), EMessageId::ConnectorAddressExchange);
                 msg.stream << relevantParticipants;
                 for (const auto& p : m_establishedParticipants)
                 {
@@ -820,7 +820,7 @@ namespace ramses_internal
                               << newPp->address.getParticipantId() << "/" << newPp->address.getParticipantName() << " to "
                               << p.value->address.getParticipantId() << "/" << p.value->address.getParticipantName());
 
-                    OutMessage msg(p.value->address.getParticipantId(), EMessageId_ConnectorAddressExchange);
+                    OutMessage msg(p.value->address.getParticipantId(), EMessageId::ConnectorAddressExchange);
                     const NetworkParticipantAddress& addr = newPp->address;
                     msg.stream << static_cast<uint32_t>(1)
                                << addr.getParticipantId()
@@ -838,6 +838,21 @@ namespace ramses_internal
     {
         uint32_t numEntries = 0;
         stream >> numEntries;
+
+        // TODO(Carsten): remove this hack for 27
+        // Between ramses 25 and ramses 26 the enum for EMessageId::ConnectionDescriptionMessage changed, the
+        // ramses 25 ConnectionDescription message will be interpreted by ramses 26 as ConnectorAddressExchange message
+        // To avoid crashes without breaking any compatibility, we check numEntries for plausibility by simply assuming
+        // everything above a threshold to be actually a protocol version from a ConnectionDescription message and
+        // dropping the connection to the participant.
+        constexpr uint32_t protocolVersionWorkaroundThreshold = 100u;
+        if (numEntries > protocolVersionWorkaroundThreshold)
+        {
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectorAddressExchange: Invalid protocol version (expected "
+                << m_protocolVersion << ", got " << numEntries << ") on new connection. Drop connection");
+            removeParticipant(pp, true);
+            return;
+        }
 
         LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectorAddressExchange: from " << pp->address.getParticipantId() << ", numEntries " << numEntries);
 
@@ -906,7 +921,7 @@ namespace ramses_internal
     bool TCPConnectionSystem::sendSubscribeScene(const Guid& to, const SceneId& sceneId)
     {
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendSubscribeScene: to " << to << ", sceneId " << sceneId);
-        OutMessage msg(to, EMessageId_SubscribeScene);
+        OutMessage msg(to, EMessageId::SubscribeScene);
         msg.stream << sceneId.getValue();
         return postMessageForSending(std::move(msg), true);
     }
@@ -928,7 +943,7 @@ namespace ramses_internal
     bool TCPConnectionSystem::sendUnsubscribeScene(const Guid& to, const SceneId& sceneId)
     {
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendUnsubscribeScene: to " << to << ", sceneId " << sceneId);
-        OutMessage msg(to, EMessageId_UnsubscribeScene);
+        OutMessage msg(to, EMessageId::UnsubscribeScene);
         msg.stream << sceneId.getValue();
         return postMessageForSending(std::move(msg), true);
     }
@@ -950,7 +965,7 @@ namespace ramses_internal
     bool TCPConnectionSystem::sendInitializeScene(const Guid& to, const SceneId& sceneId)
     {
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendInitializeScene: to " << to << ", sceneId " << sceneId);
-        OutMessage msg(to, EMessageId_CreateScene);
+        OutMessage msg(to, EMessageId::CreateScene);
         msg.stream << sceneId.getValue();
         return postMessageForSending(std::move(msg), true);
     }
@@ -980,7 +995,7 @@ namespace ramses_internal
         return serializer.writeToPackets({buffer.data(), buffer.size()}, [&](size_t size) {
 
             const uint32_t usedSize = static_cast<uint32_t>(size);
-            OutMessage msg(to, EMessageId_SendSceneUpdate);
+            OutMessage msg(to, EMessageId::SendSceneUpdate);
             msg.stream << sceneId.getValue()
                        << usedSize;
             msg.stream.write(buffer.data(), usedSize);
@@ -1019,7 +1034,7 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(Guid(), EMessageId_PublishScene);
+        OutMessage msg(Guid(), EMessageId::PublishScene);
         msg.stream << static_cast<uint32_t>(newScenes.size());
         for (const auto& s : newScenes)
         {
@@ -1038,7 +1053,7 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(to, EMessageId_PublishScene);
+        OutMessage msg(to, EMessageId::PublishScene);
         msg.stream << static_cast<uint32_t>(availableScenes.size());
         for (const auto& s : availableScenes)
         {
@@ -1088,7 +1103,7 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(Guid(), EMessageId_UnpublishScene);
+        OutMessage msg(Guid(), EMessageId::UnpublishScene);
         msg.stream << static_cast<uint32_t>(unavailableScenes.size());
         for (const auto& s : unavailableScenes)
         {
@@ -1138,7 +1153,7 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(to, EMessageId_RequestResources);
+        OutMessage msg(to, EMessageId::RequestResources);
         msg.stream << static_cast<uint32_t>(resources.size());
         for (const auto& r : resources)
         {
@@ -1181,7 +1196,7 @@ namespace ramses_internal
         return serializer.writeToPackets({buffer.data(), buffer.size()}, [&](size_t size) {
 
             const uint32_t usedSize = static_cast<uint32_t>(size);
-            OutMessage msg(to, EMessageId_TransferResources);
+            OutMessage msg(to, EMessageId::TransferResources);
             msg.stream << usedSize;
             msg.stream.write(buffer.data(), usedSize);
 
@@ -1216,7 +1231,7 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(Guid(), EMessageId_ResourcesNotAvailable);
+        OutMessage msg(Guid(), EMessageId::ResourcesNotAvailable);
         msg.stream << static_cast<uint32_t>(resources.size());
         for (const auto& r : resources)
         {
@@ -1257,7 +1272,7 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendRendererEvent: to " << to << " failed because size too large " << data.size());
             return false;
         }
-        OutMessage msg(to, EMessageId_RendererEvent);
+        OutMessage msg(to, EMessageId::RendererEvent);
         msg.stream << sceneId.getValue()
                    << static_cast<uint32_t>(data.size());
         msg.stream.write(data.data(), static_cast<uint32_t>(data.size()));
@@ -1287,7 +1302,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation ai)
     {
-        OutMessage msg(to, EMessageId_DcsmCanvasSizeChange);
+        OutMessage msg(to, EMessageId::DcsmCanvasSizeChange);
         const auto blob = categoryInfo.toBinary();
         const uint64_t blobSize = blob.size();
         msg.stream << contentID.getValue()
@@ -1324,7 +1339,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation ai)
     {
-        OutMessage msg(to, EMessageId_DcsmContentStatusChange);
+        OutMessage msg(to, EMessageId::DcsmContentStatusChange);
         const auto blob = categoryInfo.toBinary();
         const uint64_t blobSize = blob.size();
         msg.stream << contentID.getValue()
@@ -1364,7 +1379,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmBroadcastOfferContent(ContentID contentID, Category category, const std::string& friendlyName)
     {
-        OutMessage msg(Guid(), EMessageId_DcsmRegisterContent);
+        OutMessage msg(Guid(), EMessageId::DcsmRegisterContent);
         msg.stream << contentID.getValue()
                    << category.getValue()
                    << friendlyName;
@@ -1373,7 +1388,7 @@ namespace ramses_internal
 
     bool TCPConnectionSystem::sendDcsmOfferContent(const Guid& to, ContentID contentID, Category category, const std::string& friendlyName)
     {
-        OutMessage msg(Guid(to), EMessageId_DcsmRegisterContent);
+        OutMessage msg(Guid(to), EMessageId::DcsmRegisterContent);
         msg.stream << contentID.getValue()
                    << category.getValue()
                    << friendlyName;
@@ -1404,7 +1419,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
     {
-        OutMessage msg(to, EMessageId_DcsmContentDescription);
+        OutMessage msg(to, EMessageId::DcsmContentDescription);
         msg.stream << contentID.getValue()
                    << technicalContentType
                    << technicalContentDescriptor.getValue();
@@ -1432,7 +1447,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmContentReady(const Guid& to, ContentID contentID)
     {
-        OutMessage msg(to, EMessageId_DcsmContentAvailable);
+        OutMessage msg(to, EMessageId::DcsmContentAvailable);
         msg.stream << contentID.getValue();
         return postMessageForSending(std::move(msg), true);
     }
@@ -1452,7 +1467,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest)
     {
-        OutMessage msg(to, EMessageId_DcsmCategoryContentSwitchRequest);
+        OutMessage msg(to, EMessageId::DcsmCategoryContentSwitchRequest);
         msg.stream << contentID.getValue();
         msg.stream << true;
         msg.stream << focusRequest;
@@ -1461,7 +1476,7 @@ namespace ramses_internal
 
     bool TCPConnectionSystem::sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest)
     {
-        OutMessage msg(to, EMessageId_DcsmCategoryContentSwitchRequest);
+        OutMessage msg(to, EMessageId::DcsmCategoryContentSwitchRequest);
         msg.stream << contentID.getValue();
         msg.stream << false;
         msg.stream << focusRequest;
@@ -1500,7 +1515,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmBroadcastRequestStopOfferContent(ContentID contentID)
     {
-        OutMessage msg(Guid(), EMessageId_DcsmRequestUnregisterContent);
+        OutMessage msg(Guid(), EMessageId::DcsmRequestUnregisterContent);
         msg.stream << contentID.getValue();
         return postMessageForSending(std::move(msg), true);
     }
@@ -1520,7 +1535,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmBroadcastForceStopOfferContent(ContentID contentID)
     {
-        OutMessage msg(Guid(), EMessageId_DcsmForceUnregisterContent);
+        OutMessage msg(Guid(), EMessageId::DcsmForceUnregisterContent);
         msg.stream << contentID.getValue();
         return postMessageForSending(std::move(msg), true);
     }
@@ -1540,7 +1555,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmUpdateContentMetadata(const Guid& to, ContentID contentID, const DcsmMetadata& metadata)
     {
-        OutMessage msg(to, EMessageId_DcsmUpdateContentMetadata);
+        OutMessage msg(to, EMessageId::DcsmUpdateContentMetadata);
         const auto blob = metadata.toBinary();
         const uint64_t blobSize = blob.size();
         msg.stream << contentID.getValue()

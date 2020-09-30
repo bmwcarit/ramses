@@ -9,6 +9,7 @@
 #include "Ramsh/Ramsh.h"
 #include "Ramsh/RamshCommandArguments.h"
 #include "Ramsh/RamshCommunicationChannelConsole.h"
+#include "Ramsh/RamshCommandExit.h"
 #include "framework_common_gmock_header.h"
 #include "gmock/gmock.h"
 #include "Ramsh/RamshTools.h"
@@ -458,6 +459,21 @@ namespace ramses_internal
             EXPECT_EQ(ELogLevel::Trace, CONTEXT_FRAMEWORK.getLogLevel());
             EXPECT_EQ(ELogLevel::Debug, CONTEXT_CLIENT.getLogLevel());
         }).join();
+    }
+
+    TEST_F(ARamshAsyncTester, canTriggerExitCommand)
+    {
+        RamshCommandExit cmdExit;
+        rsh.add(cmdExit);
+        EXPECT_FALSE(cmdExit.exitRequested());
+        std::thread t([&]() {
+            rsh.execute(CreateInput({"exit"}));
+        });
+
+        cmdExit.waitForExitRequest();
+        EXPECT_TRUE(cmdExit.exitRequested());
+
+        t.join();
     }
 
 }

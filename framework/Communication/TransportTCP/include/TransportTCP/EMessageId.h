@@ -9,96 +9,95 @@
 #ifndef RAMSES_EMESSAGEID_H
 #define RAMSES_EMESSAGEID_H
 
-#include "PlatformAbstraction/PlatformTypes.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
+#include "Utils/LoggingUtils.h"
+#include <type_traits>
 
 namespace ramses_internal
 {
-    typedef UInt32 MessageId;
-
-    enum EMessageId
+    enum class EMessageId : uint32_t
     {
-        EMessageId_PublishScene = 1,
-        EMessageId_UnpublishScene,
-        EMessageId_SubscribeScene,
-        EMessageId_UnsubscribeScene,
+        PublishScene = 1,
+        UnpublishScene,
+        SubscribeScene,
+        UnsubscribeScene,
 
-        EMessageId_ConnectionDescriptionMessage,
-        EMessageId_ConnectorAddressExchange,
-        EMessageId_InputEvent,
-        EMessageId_SendSceneUpdate,
+        ConnectionDescriptionMessage,
+        ConnectorAddressExchange,
+        InputEvent,
+        SendSceneUpdate,
 
-        EMessageId_RendererEvent,
+        RendererEvent,
 
-        EMessageId_Alive,
+        Alive,
 
         // resources
-        EMessageId_TransferResources,
-        EMessageId_RequestResources,
-        EMessageId_ResourcesNotAvailable,
+        TransferResources,
+        RequestResources,
+        ResourcesNotAvailable,
 
         // scene
-        EMessageId_CreateScene,
+        CreateScene,
 
         // dcsm
-        EMessageId_DcsmRegisterContent,
-        EMessageId_DcsmCanvasSizeChange,
-        EMessageId_DcsmContentStatusChange,
-        EMessageId_DcsmContentAvailable,
-        EMessageId_DcsmContentDescription,
-        EMessageId_DcsmCategoryContentSwitchRequest,
-        EMessageId_DcsmRequestUnregisterContent,
-        EMessageId_DcsmForceUnregisterContent,
-        EMessageId_DcsmUpdateContentMetadata,
+        DcsmRegisterContent,
+        DcsmCanvasSizeChange,
+        DcsmContentStatusChange,
+        DcsmContentAvailable,
+        DcsmContentDescription,
+        DcsmCategoryContentSwitchRequest,
+        DcsmRequestUnregisterContent,
+        DcsmForceUnregisterContent,
+        DcsmUpdateContentMetadata,
+
+        NUM_ELEMENTS
     };
 
-#ifndef CreateNameForEnumID
-#define CreateNameForEnumID(ENUMVALUE) \
-case ENUMVALUE: return #ENUMVALUE
-#endif
+    static constexpr const char* const EMessageIdNames[] = {
+        "EMessageId::INVALID_0",  // needed because EMessageId starts at 1
 
-    inline
-    const Char* GetNameForMessageId(MessageId type)
+        "EMessageId::PublishScene",
+        "EMessageId::UnpublishScene",
+        "EMessageId::SubscribeScene",
+        "EMessageId::UnsubscribeScene",
+        "EMessageId::ConnectionDescriptionMessage",
+        "EMessageId::ConnectorAddressExchange",
+        "EMessageId::InputEvent",
+        "EMessageId::SendSceneUpdate",
+        "EMessageId::RendererEvent",
+        "EMessageId::Alive",
+        "EMessageId::TransferResources",
+        "EMessageId::RequestResources",
+        "EMessageId::ResourcesNotAvailable",
+        "EMessageId::CreateScene",
+        "EMessageId::DcsmRegisterContent",
+        "EMessageId::DcsmCanvasSizeChange",
+        "EMessageId::DcsmContentStatusChange",
+        "EMessageId::DcsmContentAvailable",
+        "EMessageId::DcsmContentDescription",
+        "EMessageId::DcsmCategoryContentSwitchRequest",
+        "EMessageId::DcsmRequestUnregisterContent",
+        "EMessageId::DcsmForceUnregisterContent",
+        "EMessageId::DcsmUpdateContentMetadata",
+    };
+
+    inline IOutputStream& operator<<(IOutputStream& outputStream, EMessageId messageId)
     {
-            switch (type)
-            {
-                CreateNameForEnumID(EMessageId_PublishScene);
-                CreateNameForEnumID(EMessageId_UnpublishScene);
-                CreateNameForEnumID(EMessageId_SubscribeScene);
-                CreateNameForEnumID(EMessageId_UnsubscribeScene);
-
-                CreateNameForEnumID(EMessageId_ConnectionDescriptionMessage);
-                CreateNameForEnumID(EMessageId_ConnectorAddressExchange);
-                CreateNameForEnumID(EMessageId_InputEvent);
-                CreateNameForEnumID(EMessageId_SendSceneUpdate);
-
-                CreateNameForEnumID(EMessageId_Alive);
-
-                // resources
-                CreateNameForEnumID(EMessageId_TransferResources);
-                CreateNameForEnumID(EMessageId_RequestResources);
-                CreateNameForEnumID(EMessageId_ResourcesNotAvailable);
-
-                // scene
-                CreateNameForEnumID(EMessageId_CreateScene);
-            }
-            return "Unknown Message Type";
+        return outputStream << static_cast<std::underlying_type_t<EMessageId>>(messageId);
     }
 
-    inline
-    IOutputStream& operator<<(IOutputStream& outputStream, EMessageId messageId)
+    inline IInputStream& operator>>(IInputStream& inputStream, EMessageId& messageId)
     {
-        outputStream << static_cast<UInt32>(messageId);
-        return outputStream;
-    }
-
-    inline
-    IInputStream& operator>>(IInputStream& inputStream, EMessageId& messageId)
-    {
-        inputStream >> reinterpret_cast<UInt32&>(messageId);
+        std::underlying_type_t<EMessageId> val;
+        inputStream >> val;
+        messageId = static_cast<EMessageId>(val);
         return inputStream;
     }
 }
+
+MAKE_ENUM_CLASS_PRINTABLE(ramses_internal::EMessageId,
+                          ramses_internal::EMessageIdNames,
+                          ramses_internal::EMessageId::NUM_ELEMENTS);
 
 #endif

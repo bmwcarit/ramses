@@ -42,9 +42,9 @@ namespace ramses_internal
             testFramework.createBufferDataLink(offscreenBuffer, sceneIdConsumer, TextureLinkScene::DataConsumerId);
 
             testFramework.startTestApplicationAndWaitUntilConnected();
-            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceToTestApplication(384, 384, 1);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.sendRenderOneFrameToTestApplication(surfaceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_CanUseStreamTextureInASceneMappedToOffscreenBuffer");
             break;

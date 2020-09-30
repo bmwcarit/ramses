@@ -67,12 +67,6 @@ namespace ramses_internal
         }
     }
 
-    void EnqueueOnlyOneAtATimeQueue::enableAcceptingTasks()
-    {
-        PlatformGuard guard(mlock);
-        m_acceptingTasks = true;
-    }
-
     void EnqueueOnlyOneAtATimeQueue::disableAcceptingTasksAfterExecutingCurrentQueue()
     {
         mlock.lock();

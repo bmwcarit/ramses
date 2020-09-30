@@ -156,6 +156,8 @@ namespace ramses_internal
 
         void DiffClientResources(ResourceContentHashVector const& old, ResourceContentHashVector const& curr, SceneResourceChanges& changes)
         {
+            assert(std::is_sorted(old.cbegin(), old.cend()));
+            assert(std::is_sorted(curr.cbegin(), curr.cend()));
             std::set_difference(curr.begin(), curr.end(), old.begin(), old.end(), std::back_inserter(changes.m_addedClientResourceRefs));
             std::set_difference(old.begin(), old.end(), curr.begin(), curr.end(), std::back_inserter(changes.m_removedClientResourceRefs));
         }

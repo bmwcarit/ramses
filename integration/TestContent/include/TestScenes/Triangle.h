@@ -40,7 +40,6 @@ namespace ramses
             return m_geometry.GetGeometry();
         }
 
-        void setColor(enum TriangleAppearance::EColor color, float alpha);
         void bindColor(const DataVector4f& colorDataObject);
         void unbindColor();
 

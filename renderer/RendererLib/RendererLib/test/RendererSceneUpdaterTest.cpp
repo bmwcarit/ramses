@@ -321,7 +321,7 @@ TEST_F(ARendererSceneUpdater, renderOncePassesAreRetriggeredWhenSceneMapped)
     auto& stageScene = *stagingScene[0];
     const RenderPassHandle pass = stageScene.allocateRenderPass();
     const auto dataLayout = stageScene.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I}, DataFieldInfo{EDataType::Vector2I} }, ResourceContentHash::Invalid());
-    const CameraHandle camera = stageScene.allocateCamera(ECameraProjectionType_Orthographic, stageScene.allocateNode(), stageScene.allocateDataInstance(dataLayout));
+    const CameraHandle camera = stageScene.allocateCamera(ECameraProjectionType::Orthographic, stageScene.allocateNode(), stageScene.allocateDataInstance(dataLayout));
     stageScene.setRenderPassCamera(pass, camera);
     stageScene.setRenderPassRenderOnce(pass, true);
     performFlush();
@@ -4709,11 +4709,11 @@ TEST_F(ARendererSceneUpdater, reportsPickedObjects)
     iscene.setDataReference(dataInstance, Camera::ViewportSizeField, vpSizeInstance);
     iscene.setDataReference(dataInstance, Camera::FrustumPlanesField, frustumPlanes);
     iscene.setDataReference(dataInstance, Camera::FrustumNearFarPlanesField, frustumNearFar);
-    const auto cameraHandle = sceneAllocator.allocateCamera(ECameraProjectionType_Orthographic, nodeHandle, dataInstance);
+    const auto cameraHandle = sceneAllocator.allocateCamera(ECameraProjectionType::Orthographic, nodeHandle, dataInstance);
 
     iscene.setDataSingleVector2i(vpOffsetInstance, ramses_internal::DataFieldHandle{ 0 }, { 0, 0 });
     iscene.setDataSingleVector2i(vpSizeInstance, ramses_internal::DataFieldHandle{ 0 }, { 1280, 480 });
-    const ProjectionParams params = ramses_internal::ProjectionParams::Frustum(ECameraProjectionType_Orthographic, -1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
+    const ProjectionParams params = ramses_internal::ProjectionParams::Frustum(ECameraProjectionType::Orthographic, -1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
     iscene.setDataSingleVector4f(frustumPlanes, DataFieldHandle{ 0 }, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane });
     iscene.setDataSingleVector2f(frustumNearFar, DataFieldHandle{ 0 }, { params.nearPlane, params.farPlane });
 

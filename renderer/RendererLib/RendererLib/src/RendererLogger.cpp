@@ -266,8 +266,8 @@ namespace ramses_internal
         context.indent();
         for(const auto& managerIt : updater.m_displayResourceManagers)
         {
-            const RendererResourceManager* resourceManager = static_cast<const RendererResourceManager*>(managerIt.value);
-            context << "Display [id: " << managerIt.key << "]" << RendererLogContext::NewLine;
+            const RendererResourceManager* resourceManager = static_cast<const RendererResourceManager*>(managerIt.second.get());
+            context << "Display [id: " << managerIt.first << "]" << RendererLogContext::NewLine;
             context.indent();
             context << resourceManager->m_clientResourceRegistry.getAllResourceDescriptors().size() << " Resources" << RendererLogContext::NewLine << RendererLogContext::NewLine;
 
@@ -376,9 +376,9 @@ namespace ramses_internal
         for (const auto& managerIt : updater.m_displayResourceManagers)
         {
             context.indent();
-            context << "Scenes on display " << managerIt.key << RendererLogContext::NewLine;
+            context << "Scenes on display " << managerIt.first << RendererLogContext::NewLine;
 
-            const RendererResourceManager& resourceManager = static_cast<const RendererResourceManager&>(*managerIt.value);
+            const RendererResourceManager& resourceManager = static_cast<const RendererResourceManager&>(*managerIt.second);
             for (const auto& sceneResRegistryIt : resourceManager.m_sceneResourceRegistryMap)
             {
                 context.indent();
@@ -515,7 +515,7 @@ namespace ramses_internal
         uint64_t savedTransferSizeBySharedResources = 0;
         for (const auto& managerIt : updater.m_displayResourceManagers)
         {
-            const RendererResourceManager& resourceManager = static_cast<const RendererResourceManager&>(*managerIt.value);
+            const RendererResourceManager& resourceManager = static_cast<const RendererResourceManager&>(*managerIt.second);
             for (const auto& p : resourceManager.m_clientResourceRegistry.m_resources)
             {
                 const ResourceDescriptor& rd = p.value;
@@ -549,7 +549,7 @@ namespace ramses_internal
 
         for (const auto& managerIt : updater.m_displayResourceManagers)
         {
-            const RendererResourceManager* resourceManager = static_cast<const RendererResourceManager*>(managerIt.value);
+            const RendererResourceManager* resourceManager = static_cast<const RendererResourceManager*>(managerIt.second.get());
             const auto& resourceDescriptors = resourceManager->m_clientResourceRegistry.getAllResourceDescriptors();
             for (const auto& descriptorIt : resourceDescriptors)
             {
@@ -575,7 +575,7 @@ namespace ramses_internal
                 context.indent();
                 if (!missingResources.empty())
                 {
-                    const RendererResourceManager* resourceManager = static_cast<const RendererResourceManager*>(*updater.m_displayResourceManagers.get(display));
+                    const RendererResourceManager* resourceManager = static_cast<const RendererResourceManager*>(updater.m_displayResourceManagers.find(display)->second.get());
                     for (const auto& hash : missingResources)
                     {
                         const auto& resourceDescriptor = resourceManager->m_clientResourceRegistry.getResourceDescriptor(hash);
@@ -609,9 +609,9 @@ namespace ramses_internal
 
         for (const auto& managerIt : updater.m_displayResourceManagers)
         {
-            context << "Display " << managerIt.key << " resource cached lists:" << RendererLogContext::NewLine;
+            context << "Display " << managerIt.first << " resource cached lists:" << RendererLogContext::NewLine;
             context.indent();
-            const RendererResourceManager& resourceManager = static_cast<const RendererResourceManager&>(*managerIt.value);
+            const RendererResourceManager& resourceManager = static_cast<const RendererResourceManager&>(*managerIt.second);
             const RendererClientResourceRegistry& resRegistry = resourceManager.m_clientResourceRegistry;
             context << "ToRequest = " << resourcesToString(resRegistry.getAllRegisteredResources()) << RendererLogContext::NewLine;
             context << "Requested = " << resourcesToString(resRegistry.getAllRequestedResources()) << RendererLogContext::NewLine;
@@ -759,8 +759,8 @@ namespace ramses_internal
 
                         for(const auto& displayResourceManager : updater.m_displayResourceManagers)
                         {
-                            const DisplayHandle displayHandle = displayResourceManager.key;
-                            const IRendererResourceManager& resourceManager = *displayResourceManager.value;
+                            const DisplayHandle displayHandle = displayResourceManager.first;
+                            const IRendererResourceManager& resourceManager = *displayResourceManager.second;
                             assert(updater.m_renderer.hasDisplayController(displayHandle));
                             const IEmbeddedCompositingManager& embeddedCompositingManager = updater.m_renderer.getDisplayController(displayHandle).getEmbeddedCompositingManager();
                             const IEmbeddedCompositor& embeddedCompositor                 = updater.m_renderer.getDisplayController(displayHandle).getRenderBackend().getEmbeddedCompositor();
@@ -1195,7 +1195,7 @@ namespace ramses_internal
 
             for (const auto& disp : updater.m_displayResourceManagers)
             {
-                const RendererResourceManager& resMgr = static_cast<const RendererResourceManager&>(*disp.value);
+                const RendererResourceManager& resMgr = static_cast<const RendererResourceManager&>(*disp.second);
                 const RendererClientResourceRegistry& resRegistry = resMgr.m_clientResourceRegistry;
                 const auto currFrameIdx = resMgr.m_frameCounter;
 
@@ -1226,7 +1226,7 @@ namespace ramses_internal
                     }
                 };
 
-                sos << "ResWaiting [Disp " << disp.key << " F#" << currFrameIdx << "]: ";
+                sos << "ResWaiting [Disp " << disp.first << " F#" << currFrameIdx << "]: ";
                 LogResources(resRegistry.getAllRequestedResources(), "requested");
                 LogResources(resRegistry.getAllProvidedResources(), "toBeUploaded");
             }
@@ -1237,8 +1237,8 @@ namespace ramses_internal
             sos << "RndClientRes states:";
             for (const auto& disp : updater.m_displayResourceManagers)
             {
-                sos << " Disp" << disp.key.asMemoryHandle() << ":";
-                const RendererResourceManager& resourceManager = static_cast<const RendererResourceManager&>(*disp.value);
+                sos << " Disp" << disp.first.asMemoryHandle() << ":";
+                const RendererResourceManager& resourceManager = static_cast<const RendererResourceManager&>(*disp.second);
                 for (auto& seq : resourceManager.m_clientResourceRegistry.m_stateChangeSequences)
                     sos << " " << seq.key << ":" << SeqToStr(seq.value);
             }

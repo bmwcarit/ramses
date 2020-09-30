@@ -9,7 +9,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandIVIApplicationConnection.h"
 #include "EmbeddedCompositor_Wayland/WaylandSurface.h"
 #include "EmbeddedCompositor_Wayland/WaylandIVISurface.h"
-#include "EmbeddedCompositor_Wayland/WaylandResource.h"
+#include "EmbeddedCompositor_Wayland/NativeWaylandResource.h"
 #include "Utils/LogMacros.h"
 #include <cassert>
 
@@ -46,6 +46,7 @@ namespace ramses_internal
         {
             // Remove ResourceDestroyedCallback
             m_resource->setImplementation(&m_iviApplicationInterface, this, nullptr);
+            m_resource->destroy();
             delete m_resource;
         }
     }
@@ -60,14 +61,15 @@ namespace ramses_internal
         LOG_TRACE(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::iviApplicationConnectionResourceDestroyed");
         assert(nullptr != m_resource);
 
-        // wl_resource is destroyed outside by the Wayland library, so m_resource loses the ownership of the
-        // Wayland resource, so that we don't call wl_resource_destroy.
-        m_resource->disownWaylandResource();
+        // wl_resource is destroyed outside by the Wayland library
+        // destroy m_resoruce to indicate that wl_resource_destroy does not neeed to be called in destructor
+        delete m_resource;
+        m_resource = nullptr;
     }
 
     void WaylandIVIApplicationConnection::iviApplicationIVISurfaceCreate(IWaylandClient&   client,
                                                                          uint32_t          iviId,
-                                                                         IWaylandResource& surfaceResource,
+                                                                         INativeWaylandResource& surfaceResource,
                                                                          uint32_t          id)
     {
         LOG_INFO(CONTEXT_RENDERER,
@@ -109,7 +111,7 @@ namespace ramses_internal
         WaylandIVIApplicationConnection* iviApplicationConnection =
             static_cast<WaylandIVIApplicationConnection*>(wl_resource_get_user_data(iviApplicationConnectionResource));
         WaylandClient waylandClient(client);
-        WaylandResource waylandSurfaceResource(surfaceResource, false);
+        NativeWaylandResource waylandSurfaceResource(surfaceResource);
         iviApplicationConnection->iviApplicationIVISurfaceCreate(waylandClient, iviId, waylandSurfaceResource, id);
     }
 }

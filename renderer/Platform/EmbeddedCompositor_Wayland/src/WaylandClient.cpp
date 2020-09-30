@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
-#include "EmbeddedCompositor_Wayland/WaylandResource.h"
+#include "EmbeddedCompositor_Wayland/NativeWaylandResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandCallbackResource.h"
 #include <cassert>
 
@@ -38,15 +38,15 @@ namespace ramses_internal
         wl_client_post_no_memory(m_client);
     }
 
-    IWaylandResource* WaylandClient::resourceCreate(const wl_interface* interface, int version, uint32_t id)
+    INativeWaylandResource* WaylandClient::resourceCreate(const wl_interface* interface, int version, uint32_t id)
     {
         wl_resource* resource = wl_resource_create(m_client, interface, version, id);
-        return new WaylandResource(resource, true);
+        return new NativeWaylandResource(resource);
     }
 
     WaylandCallbackResource* WaylandClient::callbackResourceCreate(const wl_interface* interface, int version, uint32_t id)
     {
         wl_resource* resource = wl_resource_create(m_client, interface, version, id);
-        return new WaylandCallbackResource(resource, true);
+        return new WaylandCallbackResource(resource);
     }
 }

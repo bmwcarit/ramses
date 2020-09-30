@@ -36,8 +36,9 @@ namespace ramses_internal
 
         bool initializeWayland();
         void stopWayland();
-        void renderFrame(TestApplicationSurfaceId surfaceId, bool useCallback);
-        void attachBuffer(TestApplicationSurfaceId surfaceId);
+        void renderFrameToEGLBuffer(TestApplicationSurfaceId surfaceId, bool useCallback);
+        void renderFrameToSharedMemoryBuffer(TestApplicationSurfaceId surfaceId, bool useCallback);
+        void attachBuffer(TestApplicationSurfaceId surfaceId, bool commit);
         void renderFrameToTwoSurfaces(TestApplicationSurfaceId surfaceId1, TestApplicationSurfaceId surfaceId2, bool useCallback);
         void setTriangleColor(ETriangleColor color);
         void detachBufferFromSurface(TestApplicationSurfaceId surfaceId);

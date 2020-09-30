@@ -26,8 +26,8 @@ namespace ramses_internal
         MOCK_METHOD(void, surfaceDetach, (IWaylandClient& client), (override));
         MOCK_METHOD(void, surfaceDamage, (IWaylandClient& client, int x, int y, int width, int height), (override));
         MOCK_METHOD(void, surfaceFrame, (IWaylandClient& client, uint32_t id), (override));
-        MOCK_METHOD(void, surfaceSetOpaqueRegion, (IWaylandClient& client, IWaylandResource* regionResource), (override));
-        MOCK_METHOD(void, surfaceSetInputRegion, (IWaylandClient& client, IWaylandResource* regionResource), (override));
+        MOCK_METHOD(void, surfaceSetOpaqueRegion, (IWaylandClient& client, INativeWaylandResource* regionResource), (override));
+        MOCK_METHOD(void, surfaceSetInputRegion, (IWaylandClient& client, INativeWaylandResource* regionResource), (override));
         MOCK_METHOD(void, surfaceCommit, (IWaylandClient& client), (override));
         MOCK_METHOD(void, surfaceSetBufferTransform, (IWaylandClient& client, int32_t transform), (override));
         MOCK_METHOD(void, surfaceSetBufferScale, (IWaylandClient& client, int32_t scale), (override));
@@ -46,7 +46,8 @@ namespace ramses_internal
         MOCK_METHOD(void, bufferDestroyed, (IWaylandBuffer& buffer), (override));
         MOCK_METHOD(void, setIviSurface, (IWaylandIVISurface* iviSurface), (override));
         MOCK_METHOD(bool, hasIviSurface, (), (const, override));
-        MOCK_METHOD(WaylandClientCredentials, getClientCredentials, (), (const override));
+        MOCK_METHOD(WaylandClientCredentials, getClientCredentials, (), (const, override));
+        MOCK_METHOD(bool, dispatchBufferTypeChanged, (), (override));
     };
 }
 

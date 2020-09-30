@@ -127,7 +127,7 @@ namespace ramses
             }
             else
             {
-                LOG_ERROR(CONTEXT_TEXT, "UtfUtils::ConvertCharUtf32ToUtf8: invalid Unicode " << convertChar << " Skipping Character\n" );
+                LOG_ERROR(CONTEXT_TEXT, "UtfUtils::ConvertCharUtf32ToUtf8: invalid Unicode " << static_cast<uint32_t>(convertChar) << " Skipping Character\n" );
             }
 
             return utf8string;

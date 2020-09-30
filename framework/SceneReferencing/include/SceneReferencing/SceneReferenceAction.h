@@ -32,6 +32,16 @@ namespace ramses_internal
         SceneReferenceHandle providerScene;
         DataSlotId providerId;
     };
+
+    inline bool operator==(const SceneReferenceAction& a, const SceneReferenceAction& b)
+    {
+        return a.type == b.type
+            && a.consumerScene == b.consumerScene
+            && a.consumerId == b.consumerId
+            && a.providerScene == b.providerScene
+            && a.providerId == b.providerId;
+    }
+
     typedef std::vector<SceneReferenceAction> SceneReferenceActionVector;
 
     class SceneReferenceActionUtils

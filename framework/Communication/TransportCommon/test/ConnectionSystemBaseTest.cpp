@@ -69,6 +69,35 @@ namespace ramses_internal
         ASSERT_FALSE(TestConnectionSystem::CheckConstructorArguments(stack, 1, ParticipantIdentifier(Guid(3), "foo"), 1, std::chrono::milliseconds(5), std::chrono::milliseconds(10), CONTEXT_COMMUNICATION, "test"));
     }
 
+    TEST_F(AConnectionSystemBase, canConnectDisconnectMultipleTimesWithKeepaliveThread)
+    {
+        auto stack = std::make_shared<StrictMock<StackMock>>();
+        EXPECT_CALL(*stack, getServiceInstanceId()).WillRepeatedly(Return(TestInstanceId(2)));
+        EXPECT_CALL(*stack, connect()).WillRepeatedly(Return(true));
+        EXPECT_CALL(*stack, disconnect()).WillRepeatedly(Return(true));
+        auto connsys = construct(1, TestInstanceId(2), ParticipantIdentifier(Guid(3), "foo"), 1, stack, 10, 100);
+        ASSERT_TRUE(connsys != nullptr);
+        {
+            PlatformGuard g(lock);
+            ASSERT_TRUE(connsys->connect());
+        }
+        {
+            PlatformGuard g(lock);
+            ASSERT_TRUE(connsys->disconnect());
+            ASSERT_TRUE(connsys->connect());
+        }
+        {
+            PlatformGuard g(lock);
+            ASSERT_TRUE(connsys->disconnect());
+            ASSERT_TRUE(connsys->connect());
+        }
+        {
+            PlatformGuard g(lock);
+            ASSERT_TRUE(connsys->disconnect());
+        }
+    }
+
+
     class AConnectionSystem : public AConnectionSystemBase
     {
     public:

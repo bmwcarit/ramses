@@ -59,6 +59,24 @@ TEST(AnImage, ReportsTheSumOfAllItsPixels)
     EXPECT_EQ(expectedSumOfPixelData, bitmap.getSumOfPixelValues());
 }
 
+TEST(AnImage, ReportsTheSumOfAllItsPixels_4K_Image)
+{
+    constexpr uint32_t width = 4096;
+    constexpr uint32_t height = 2160;
+
+    constexpr uint8_t maxPixelValue = std::numeric_limits<uint8_t>::max();
+    std::vector<uint8_t> data(width * height * 4, maxPixelValue);
+    const Image bitmap(width, height, std::move(data));
+
+    const Vector4i resultSumOfPixelValues = bitmap.getSumOfPixelValues();
+    ASSERT_EQ(resultSumOfPixelValues.x, resultSumOfPixelValues.y);
+    ASSERT_EQ(resultSumOfPixelValues.x, resultSumOfPixelValues.z);
+    ASSERT_EQ(resultSumOfPixelValues.x, resultSumOfPixelValues.w);
+
+    constexpr int32_t maxSumValue = std::numeric_limits<int32_t>::max();
+    EXPECT_EQ(resultSumOfPixelValues.x, maxSumValue);
+}
+
 TEST(AnImage, CanGenerateSeparateColorAndAlphaImages)
 {
     std::vector<uint8_t> data;

@@ -6,64 +6,56 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "EmbeddedCompositor_Wayland/WaylandResource.h"
+#include "EmbeddedCompositor_Wayland/NativeWaylandResource.h"
 #include "Collections/String.h"
 #include "Utils/LogMacros.h"
 #include <cassert>
 
 namespace ramses_internal
 {
-    WaylandResource::WaylandResource(): m_resource(nullptr), m_ownership(false)
+    NativeWaylandResource::NativeWaylandResource(): m_resource(nullptr)
     {
     }
 
-    WaylandResource::WaylandResource(wl_resource* resource, bool ownership)
+    NativeWaylandResource::NativeWaylandResource(wl_resource* resource)
         : m_resource(resource)
-        , m_ownership(ownership)
     {
         assert(m_resource != nullptr);
     }
 
-    WaylandResource::~WaylandResource()
-    {
-        if (m_ownership)
-        {
-            wl_resource_destroy(m_resource);
-        }
-    }
-
-    int WaylandResource::getVersion()
+    int NativeWaylandResource::getVersion()
     {
         return wl_resource_get_version(m_resource);
     }
 
-    void WaylandResource::postError(uint32_t code, const String& message)
+    void NativeWaylandResource::postError(uint32_t code, const String& message)
     {
         wl_resource_post_error(m_resource, code, "%s", message.c_str());
     }
 
-    void* WaylandResource::getUserData()
+    void* NativeWaylandResource::getUserData()
     {
         return wl_resource_get_user_data(m_resource);
     }
 
-    void WaylandResource::setImplementation(const void* implementation, void* data, IWaylandResourceDestroyFuncT destroy)
+    void NativeWaylandResource::setImplementation(const void* implementation, void* data, IWaylandResourceDestroyFuncT destroyCallback)
     {
-        wl_resource_set_implementation(m_resource, implementation, data, destroy);
+        wl_resource_set_implementation(m_resource, implementation, data, destroyCallback);
     }
 
-    void WaylandResource::addDestroyListener(wl_listener* listener)
+    void NativeWaylandResource::addDestroyListener(wl_listener* listener)
     {
         wl_resource_add_destroy_listener(m_resource, listener);
     }
 
-    void* WaylandResource::getWaylandNativeResource()
+    wl_resource* NativeWaylandResource::getLowLevelHandle()
     {
         return m_resource;
     }
 
-    void WaylandResource::disownWaylandResource()
+    void NativeWaylandResource::destroy()
     {
-        m_ownership = false;
+        assert(m_resource);
+        wl_resource_destroy(m_resource);
     }
 }
