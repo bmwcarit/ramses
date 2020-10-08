@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">26.0.2</span>
+   &#160;<span id="projectnumber">26.0.4</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -145,6 +145,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a15922ad9cd354aa21a91f3a18ea21040"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structramses_1_1AnimationInformation.html">AnimationInformation</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a15922ad9cd354aa21a91f3a18ea21040">getCarModelViewAnimationInfo</a> () const</td></tr>
 <tr class="memdesc:a15922ad9cd354aa21a91f3a18ea21040"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get animation information associated with car model view metadata entry. Value is undefined when not <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a38601de9305fa8d44f7158efb3ffbd57" title="Check if object contains car model view metadata entry. ">hasCarModelView()</a>.  <a href="#a15922ad9cd354aa21a91f3a18ea21040">More...</a><br /></td></tr>
 <tr class="separator:a15922ad9cd354aa21a91f3a18ea21040"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4510b5ad0ad28bcd7d2a8c81ff6bf54c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a4510b5ad0ad28bcd7d2a8c81ff6bf54c">hasCarCameraPlanes</a> () const</td></tr>
+<tr class="memdesc:a4510b5ad0ad28bcd7d2a8c81ff6bf54c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if object contains car camera planes metadata entry.  <a href="#a4510b5ad0ad28bcd7d2a8c81ff6bf54c">More...</a><br /></td></tr>
+<tr class="separator:a4510b5ad0ad28bcd7d2a8c81ff6bf54c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88bf5a625f127b9c5a94d668388c1be2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structramses_1_1CarCameraPlaneMetadata.html">CarCameraPlaneMetadata</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a88bf5a625f127b9c5a94d668388c1be2">getCarCameraPlanes</a> () const</td></tr>
+<tr class="memdesc:a88bf5a625f127b9c5a94d668388c1be2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get car camera planes metadata entry. Value is undefined when not hasCarCameraPlane().  <a href="#a88bf5a625f127b9c5a94d668388c1be2">More...</a><br /></td></tr>
+<tr class="separator:a88bf5a625f127b9c5a94d668388c1be2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a09f560bd9daa5b7bd19bc019714791d4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a09f560bd9daa5b7bd19bc019714791d4">hasCarModelVisibility</a> () const</td></tr>
 <tr class="memdesc:a09f560bd9daa5b7bd19bc019714791d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if object contains car model visibility metadata entry.  <a href="#a09f560bd9daa5b7bd19bc019714791d4">More...</a><br /></td></tr>
 <tr class="separator:a09f560bd9daa5b7bd19bc019714791d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -369,6 +375,26 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a88bf5a625f127b9c5a94d668388c1be2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88bf5a625f127b9c5a94d668388c1be2">&#9670;&nbsp;</a></span>getCarCameraPlanes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structramses_1_1CarCameraPlaneMetadata.html">CarCameraPlaneMetadata</a> ramses::DcsmMetadataUpdate::getCarCameraPlanes </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get car camera planes metadata entry. Value is undefined when not hasCarCameraPlane(). </p>
+<dl class="section return"><dt>Returns</dt><dd>car camera plane metadata </dd></dl>
+
+</div>
+</div>
 <a id="acdd1b3fec1e52d41979de7b3e854c89a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acdd1b3fec1e52d41979de7b3e854c89a">&#9670;&nbsp;</a></span>getCarModel()</h2>
 
@@ -586,6 +612,26 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Get widget order metadata entry. Value is undefined when not <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#ad53678e3c52d768ef60a3a7ea1464506" title="Check if object contains widget order metadata entry. ">hasWidgetOrder()</a>. </p>
 <dl class="section return"><dt>Returns</dt><dd>widget order </dd></dl>
+
+</div>
+</div>
+<a id="a4510b5ad0ad28bcd7d2a8c81ff6bf54c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4510b5ad0ad28bcd7d2a8c81ff6bf54c">&#9670;&nbsp;</a></span>hasCarCameraPlanes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ramses::DcsmMetadataUpdate::hasCarCameraPlanes </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check if object contains car camera planes metadata entry. </p>
+<dl class="section return"><dt>Returns</dt><dd>true when has car camera planes metadata, false when not </dd></dl>
 
 </div>
 </div>

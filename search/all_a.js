@@ -3,6 +3,8 @@ var searchData=
   ['camera',['Camera',['../classramses_1_1Camera.html',1,'ramses::Camera'],['../classramses_1_1Camera.html#a6d3c424fa4eeb0780981f79ffe832705',1,'ramses::Camera::Camera()']]],
   ['camera_2eh',['Camera.h',['../Camera_8h.html',1,'']]],
   ['camerafov',['cameraFOV',['../structramses_1_1CarModelViewMetadata.html#ad9d2470df33243d8ec8e89670faf5f46',1,'ramses::CarModelViewMetadata']]],
+  ['carcameraplanemetadata',['CarCameraPlaneMetadata',['../structramses_1_1CarCameraPlaneMetadata.html',1,'ramses']]],
+  ['carcameraplanemetadata_2eh',['CarCameraPlaneMetadata.h',['../CarCameraPlaneMetadata_8h.html',1,'']]],
   ['carmodelviewmetadata',['CarModelViewMetadata',['../structramses_1_1CarModelViewMetadata.html',1,'ramses']]],
   ['carmodelviewmetadata_2eh',['CarModelViewMetadata.h',['../CarModelViewMetadata_8h.html',1,'']]],
   ['category',['Category',['../namespaceramses.html#abaddc843cd87d7e57215d7bbc5ef49c1',1,'ramses']]],

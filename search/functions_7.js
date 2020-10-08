@@ -2,6 +2,7 @@ var searchData=
 [
   ['handlepickevent',['handlePickEvent',['../classramses_1_1DcsmContentControl.html#aa2c9bb203794425f0022b47dd4884125',1,'ramses::DcsmContentControl::handlePickEvent()'],['../classramses_1_1RendererSceneControl.html#a6420e4d8b2754d6ac8831a3bda9233bb',1,'ramses::RendererSceneControl::handlePickEvent()']]],
   ['hasbinaryshader',['hasBinaryShader',['../classramses_1_1BinaryShaderCache.html#a67f1ea03c20125b82fc6b6295a2e7894',1,'ramses::BinaryShaderCache::hasBinaryShader()'],['../classramses_1_1IBinaryShaderCache.html#a5a7f3039ec6fbc9f375408a126772320',1,'ramses::IBinaryShaderCache::hasBinaryShader()']]],
+  ['hascarcameraplanes',['hasCarCameraPlanes',['../classramses_1_1DcsmMetadataUpdate.html#a4510b5ad0ad28bcd7d2a8c81ff6bf54c',1,'ramses::DcsmMetadataUpdate']]],
   ['hascarmodel',['hasCarModel',['../classramses_1_1DcsmMetadataUpdate.html#ac518631564ea5ba545b6b6e95df37510',1,'ramses::DcsmMetadataUpdate']]],
   ['hascarmodelview',['hasCarModelView',['../classramses_1_1DcsmMetadataUpdate.html#a38601de9305fa8d44f7158efb3ffbd57',1,'ramses::DcsmMetadataUpdate']]],
   ['hascarmodelvisibility',['hasCarModelVisibility',['../classramses_1_1DcsmMetadataUpdate.html#a09f560bd9daa5b7bd19bc019714791d4',1,'ramses::DcsmMetadataUpdate']]],

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">26.0.2</span>
+   &#160;<span id="projectnumber">26.0.4</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -124,6 +124,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa6f0a4c8b4a5831a82d2f7bdc47f8f9c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataCreator.html#aa6f0a4c8b4a5831a82d2f7bdc47f8f9c">setCarModelView</a> (const <a class="el" href="structramses_1_1CarModelViewMetadata.html">CarModelViewMetadata</a> &amp;viewMetadata, const <a class="el" href="structramses_1_1AnimationInformation.html">AnimationInformation</a> &amp;timingInfo)</td></tr>
 <tr class="memdesc:aa6f0a4c8b4a5831a82d2f7bdc47f8f9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set car model view metadata entry. Requests car model view parameters at consumer side.  <a href="#aa6f0a4c8b4a5831a82d2f7bdc47f8f9c">More...</a><br /></td></tr>
 <tr class="separator:aa6f0a4c8b4a5831a82d2f7bdc47f8f9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4ce512729167f8a3a5cdac53e2d7513"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataCreator.html#af4ce512729167f8a3a5cdac53e2d7513">setCarCameraPlanes</a> (const <a class="el" href="structramses_1_1CarCameraPlaneMetadata.html">CarCameraPlaneMetadata</a> &amp;planesMetadata)</td></tr>
+<tr class="memdesc:af4ce512729167f8a3a5cdac53e2d7513"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set car camera planes metadata entry. Used together with <a class="el" href="classramses_1_1DcsmMetadataCreator.html#aa6f0a4c8b4a5831a82d2f7bdc47f8f9c" title="Set car model view metadata entry. Requests car model view parameters at consumer side...">setCarModelView()</a>.  <a href="#af4ce512729167f8a3a5cdac53e2d7513">More...</a><br /></td></tr>
+<tr class="separator:af4ce512729167f8a3a5cdac53e2d7513"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6fe3515006aff16c5061cb613a37b05a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmMetadataCreator.html#a6fe3515006aff16c5061cb613a37b05a">setCarModelVisibility</a> (bool visiblity)</td></tr>
 <tr class="memdesc:a6fe3515006aff16c5061cb613a37b05a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set car model visibility metadata entry. Requests car model visibility at consumer side.  <a href="#a6fe3515006aff16c5061cb613a37b05a">More...</a><br /></td></tr>
 <tr class="separator:a6fe3515006aff16c5061cb613a37b05a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -360,6 +363,33 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>unused </dd></dl>
+
+</div>
+</div>
+<a id="af4ce512729167f8a3a5cdac53e2d7513"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4ce512729167f8a3a5cdac53e2d7513">&#9670;&nbsp;</a></span>setCarCameraPlanes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::DcsmMetadataCreator::setCarCameraPlanes </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structramses_1_1CarCameraPlaneMetadata.html">CarCameraPlaneMetadata</a> &amp;&#160;</td>
+          <td class="paramname"><em>planesMetadata</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set car camera planes metadata entry. Used together with <a class="el" href="classramses_1_1DcsmMetadataCreator.html#aa6f0a4c8b4a5831a82d2f7bdc47f8f9c" title="Set car model view metadata entry. Requests car model view parameters at consumer side...">setCarModelView()</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">planesMetadata</td><td>camera planes metadata for the car model </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function. ">getStatusMessage()</a>. </dd></dl>
 
 </div>
 </div>

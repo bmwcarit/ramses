@@ -10,5 +10,7 @@ var searchData=
   ['m_5ffacedatasize',['m_faceDataSize',['../structramses_1_1CubeMipLevelData.html#a9a484b22a19f401423ae4b527c73da62',1,'ramses::CubeMipLevelData']]],
   ['m_5fimpl',['m_impl',['../classramses_1_1DcsmContentControl.html#ad778e5701a679511f98ef6ce283d12cf',1,'ramses::DcsmContentControl::m_impl()'],['../classramses_1_1DcsmContentControlConfig.html#aa3a5566fb5843d6a276040ab781a5287',1,'ramses::DcsmContentControlConfig::m_impl()']]],
   ['m_5fsize',['m_size',['../structramses_1_1MipLevelData.html#a2d213e0979d03f36dd6fc78075e5c998',1,'ramses::MipLevelData']]],
-  ['meshnode',['meshNode',['../structramses_1_1TextLine.html#a04c8cacfcad1da07b04228156ac04822',1,'ramses::TextLine']]]
+  ['major',['major',['../structramses_1_1RamsesVersion.html#ac8c004096b35d5d9082c67a9d114c1e6',1,'ramses::RamsesVersion']]],
+  ['meshnode',['meshNode',['../structramses_1_1TextLine.html#a04c8cacfcad1da07b04228156ac04822',1,'ramses::TextLine']]],
+  ['minor',['minor',['../structramses_1_1RamsesVersion.html#a9e824d1b31fb45b844ee18a84d57e8bd',1,'ramses::RamsesVersion']]]
 ];

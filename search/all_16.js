@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['patch',['patch',['../structramses_1_1RamsesVersion.html#a770c08faab7b4d3d2d0f5ebe543e6b79',1,'ramses::RamsesVersion']]],
   ['perspectivecamera',['PerspectiveCamera',['../classramses_1_1PerspectiveCamera.html',1,'ramses::PerspectiveCamera'],['../classramses_1_1PerspectiveCamera.html#a939b8a5f95719b3eda2460b7d34e4ea8',1,'ramses::PerspectiveCamera::PerspectiveCamera()']]],
   ['perspectivecamera_2eh',['PerspectiveCamera.h',['../PerspectiveCamera_8h.html',1,'']]],
   ['perspviewportheight',['perspViewportHeight',['../ramses-example-local-pick-handling_2src_2main_8cpp.html#a6918516983911f8a2c65d0299646b447',1,'main.cpp']]],

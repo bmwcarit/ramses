@@ -1,6 +1,7 @@
 var searchData=
 [
   ['camera',['Camera',['../classramses_1_1Camera.html',1,'ramses']]],
+  ['carcameraplanemetadata',['CarCameraPlaneMetadata',['../structramses_1_1CarCameraPlaneMetadata.html',1,'ramses']]],
   ['carmodelviewmetadata',['CarModelViewMetadata',['../structramses_1_1CarModelViewMetadata.html',1,'ramses']]],
   ['categoryinfo',['CategoryInfo',['../structramses_1_1DcsmContentControlConfig_1_1CategoryInfo.html',1,'ramses::DcsmContentControlConfig']]],
   ['categoryinfoupdate',['CategoryInfoUpdate',['../classramses_1_1CategoryInfoUpdate.html',1,'ramses']]],
