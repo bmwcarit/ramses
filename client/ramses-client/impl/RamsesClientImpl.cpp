@@ -201,6 +201,7 @@ namespace ramses
     {
         //getting names for resources (names are transmitted only for debugging purposes)
         ramses_internal::ManagedResourceVector managedResources;
+        managedResources.reserve(resources.size());
         for (const auto res : resources)
         {
             assert(res != nullptr);
@@ -217,6 +218,10 @@ namespace ramses
                 managedResources.push_back(forceLoadedResource);
             }
         }
+
+        // sort resources by hash to maintain a deterministic order in which we write them to file, remove duplicates
+        std::sort(managedResources.begin(), managedResources.end(), [](auto const& a, auto const& b) { return a->getHash() < b->getHash(); });
+        managedResources.erase(std::unique(managedResources.begin(), managedResources.end()), managedResources.end());
 
         // write LL-TOC and LL resources
         ramses_internal::ResourcePersistation::WriteNamedResourcesWithTOCToStream(resourceOutputStream, managedResources, compress);

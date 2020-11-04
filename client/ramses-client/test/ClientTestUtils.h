@@ -16,6 +16,7 @@
 #include "CreationHelper.h"
 #include "MockActionCollector.h"
 #include "RamsesFrameworkImpl.h"
+#include "MeshNodeImpl.h"
 #include "SceneImpl.h"
 #include "Scene/ClientScene.h"
 #include "RamsesClientImpl.h"

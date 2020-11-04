@@ -86,6 +86,8 @@
 #include "Scene/SceneActionApplier.h"
 #include "ramses-hmi-utils.h"
 
+#include <fstream>
+
 namespace ramses
 {
     using namespace testing;
@@ -1459,6 +1461,23 @@ namespace ramses
         ASSERT_TRUE(loadedSceneRef2);
         EXPECT_EQ(referencedSceneId2, loadedSceneRef2->getReferencedSceneId());
         EXPECT_EQ(ramses::RendererSceneState::Rendered, loadedSceneRef2->getRequestedState());
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, savesLLResourceOnlyOnceIfTwoHLResourcesReferToIt)
+    {
+        std::vector<uint16_t> inds(300);
+        std::iota(inds.begin(), inds.end(), static_cast<uint16_t>(0u));
+        this->m_scene.createArrayResource(EDataType::UInt16, 300u, inds.data(), ramses::ResourceCacheFlag_DoNotCache, "indices");
+        this->m_scene.createArrayResource(EDataType::UInt16, 300u, inds.data(), ramses::ResourceCacheFlag_DoNotCache, "indices");
+        this->m_scene.createArrayResource(EDataType::UInt16, 300u, inds.data(), ramses::ResourceCacheFlag_DoNotCache, "indices");
+        this->m_scene.createArrayResource(EDataType::UInt16, 300u, inds.data(), ramses::ResourceCacheFlag_DoNotCache, "indices2");
+        this->m_scene.createArrayResource(EDataType::UInt16, 300u, inds.data(), ramses::ResourceCacheFlag_DoNotCache, "indices2");
+        this->m_scene.createArrayResource(EDataType::UInt16, 300u, inds.data(), ramses::ResourceCacheFlag_DoNotCache, "indices2");
+
+        doWriteReadCycle();
+        std::ifstream in("someTemporaryFile.ram", std::ifstream::ate | std::ifstream::binary);
+        auto size = in.tellg();
+        EXPECT_GT(1600, size) << "scene file size exceeds allowed max size. verify that LL resource is saved only once before adapting this number";
     }
 
     template <typename T>

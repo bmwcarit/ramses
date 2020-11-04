@@ -42,6 +42,8 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(ramses-shared-lib-client-only
     REQUIRED_VARS ramses-shared-lib-client-only_LIBRARIES ramses-shared-lib-client-only_INCLUDE_DIRS
     VERSION_VAR ramses-shared-lib-client-only_VERSION)
 
+set(ramses-sdk_VERSION "@ramses-sdk_VERSION@" CACHE STRING "Ramses version" FORCE)
+
 message(STATUS "Found ramses-shared-lib-client-only libs: ${ramses-shared-lib-client-only_LIBRARIES}")
 message(STATUS "Found ramses-shared-lib-client-only includes: ${ramses-shared-lib-client-only_INCLUDE_DIRS}")
 

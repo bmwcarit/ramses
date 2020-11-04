@@ -142,13 +142,14 @@ struct fmt::formatter<ramses_internal::DcsmMetadata> : public ramses_internal::S
             fmt::format_to(ctx.out(), "{}", dm.m_carModel);
         fmt::format_to(ctx.out(), "; carView:");
         if (dm.hasCarModelView())
-            fmt::format_to(ctx.out(), "{},{},{},{},{},{},{},{}",
+            fmt::format_to(ctx.out(), "{},{},{},{},{},{},{},{},{}",
                            dm.m_carModelView.pitch,
                            dm.m_carModelView.yaw,
                            dm.m_carModelView.distance,
                            dm.m_carModelView.origin_x,
                            dm.m_carModelView.origin_y,
                            dm.m_carModelView.origin_z,
+                           dm.m_carModelView.cameraFOV,
                            dm.m_carModelViewTiming.startTimeStamp,
                            dm.m_carModelViewTiming.finishedTimeStamp);
         fmt::format_to(ctx.out(), "; carVis:");
@@ -157,6 +158,9 @@ struct fmt::formatter<ramses_internal::DcsmMetadata> : public ramses_internal::S
         fmt::format_to(ctx.out(), "; exclBG:");
         if (dm.hasExclusiveBackground())
             fmt::format_to(ctx.out(), "{}", dm.m_exclusiveBackground);
+        fmt::format_to(ctx.out(), "; streamID:");
+        if (dm.hasStreamID())
+            fmt::format_to(ctx.out(), "{}", dm.m_streamID);
         fmt::format_to(ctx.out(), "; focReq:");
         return fmt::format_to(ctx.out(), "]");
     }

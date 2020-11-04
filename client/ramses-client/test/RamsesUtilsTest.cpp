@@ -493,4 +493,10 @@ namespace ramses
         EXPECT_FALSE(RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(33.f, 1.5f, 0.f, 2.f, do1, do2));
         EXPECT_FALSE(RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(33.f, 1.5f, 2.f, 1.f, do1, do2));
     }
+
+    TEST_F(ARamsesUtilsTest, getNodeHandleReturnsMemoryHandle)
+    {
+        MeshNode& node = this->createValidMeshNode();
+        EXPECT_EQ(node.impl.getNodeHandle().asMemoryHandle(), RamsesUtils::GetNodeId(node).getValue());
+    }
 }

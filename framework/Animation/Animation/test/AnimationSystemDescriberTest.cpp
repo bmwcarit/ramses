@@ -58,29 +58,29 @@ namespace ramses_internal
     {
         m_scene.addAnimationSystem(&m_animSystemSource);
 
-        const NodeHandle nodeHandle1 = m_scene.allocateNode();
-        const NodeHandle nodeHandle2 = m_scene.allocateNode();
-        const TransformHandle transHandle1 = m_scene.allocateTransform(nodeHandle1);
-        const TransformHandle transHandle2 = m_scene.allocateTransform(nodeHandle2);
+        const NodeHandle nodeHandle1 = m_scene.allocateNode(0, NodeHandle{ 1u });
+        const NodeHandle nodeHandle2 = m_scene.allocateNode(0, NodeHandle{ 2u });
+        const TransformHandle transHandle1 = m_scene.allocateTransform(nodeHandle1, TransformHandle{ 3u });
+        const TransformHandle transHandle2 = m_scene.allocateTransform(nodeHandle2, TransformHandle{ 4u });
 
-        const SplineHandle splineHandle1 = m_animSystemSource.allocateSpline(ESplineKeyType_Basic, EDataTypeID_Vector3f);
-        const SplineHandle splineHandle2 = m_animSystemSource.allocateSpline(ESplineKeyType_Tangents, EDataTypeID_Float);
+        const SplineHandle splineHandle1 = m_animSystemSource.allocateSpline(ESplineKeyType_Basic, EDataTypeID_Vector3f, SplineHandle{ 5u });
+        const SplineHandle splineHandle2 = m_animSystemSource.allocateSpline(ESplineKeyType_Tangents, EDataTypeID_Float, SplineHandle{ 6u });
         m_animSystemSource.setSplineKeyBasicVector3f(splineHandle1, 99u, Vector3(111.f, -999.f, 66.f));
         m_animSystemSource.setSplineKeyBasicVector3f(splineHandle1, 199u, Vector3(11.f, -99.f, 666.f));
         m_animSystemSource.setSplineKeyTangentsFloat(splineHandle2, 11u, 55.f, Vector2(111.f, -999.f), Vector2(11.f, -99.f));
         m_animSystemSource.setSplineKeyTangentsFloat(splineHandle2, 99u, -88.f, Vector2(11.f, -99.f), Vector2(111.f, -999.f));
 
         typedef DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType ContainerTraitsClass;
-        const DataBindHandle dataBindHandle1 = m_animSystemSource.allocateDataBinding(m_scene, ContainerTraitsClass::TransformNode_Rotation, transHandle1.asMemoryHandle(), InvalidMemoryHandle);
-        const DataBindHandle dataBindHandle2 = m_animSystemSource.allocateDataBinding(m_scene, ContainerTraitsClass::TransformNode_Translation, transHandle2.asMemoryHandle(), InvalidMemoryHandle);
+        const DataBindHandle dataBindHandle1 = m_animSystemSource.allocateDataBinding(m_scene, ContainerTraitsClass::TransformNode_Rotation, transHandle1.asMemoryHandle(), InvalidMemoryHandle, DataBindHandle{ 7u });
+        const DataBindHandle dataBindHandle2 = m_animSystemSource.allocateDataBinding(m_scene, ContainerTraitsClass::TransformNode_Translation, transHandle2.asMemoryHandle(), InvalidMemoryHandle, DataBindHandle{ 8u });
 
-        const AnimationInstanceHandle animInstHandle1 = m_animSystemSource.allocateAnimationInstance(splineHandle1, EInterpolationType_Linear, EVectorComponent_All);
-        const AnimationInstanceHandle animInstHandle2 = m_animSystemSource.allocateAnimationInstance(splineHandle2, EInterpolationType_Bezier, EVectorComponent_Y);
+        const AnimationInstanceHandle animInstHandle1 = m_animSystemSource.allocateAnimationInstance(splineHandle1, EInterpolationType_Linear, EVectorComponent_All, AnimationInstanceHandle{ 9u });
+        const AnimationInstanceHandle animInstHandle2 = m_animSystemSource.allocateAnimationInstance(splineHandle2, EInterpolationType_Bezier, EVectorComponent_Y, AnimationInstanceHandle{ 10u });
         m_animSystemSource.addDataBindingToAnimationInstance(animInstHandle1, dataBindHandle1);
         m_animSystemSource.addDataBindingToAnimationInstance(animInstHandle2, dataBindHandle2);
 
-        const AnimationHandle animHandle1 = m_animSystemSource.allocateAnimation(animInstHandle1);
-        const AnimationHandle animHandle2 = m_animSystemSource.allocateAnimation(animInstHandle2);
+        const AnimationHandle animHandle1 = m_animSystemSource.allocateAnimation(animInstHandle1, AnimationHandle{ 11u });
+        const AnimationHandle animHandle2 = m_animSystemSource.allocateAnimation(animInstHandle2, AnimationHandle{ 12u });
         m_animSystemSource.setAnimationProperties(animHandle1, 2.f, Animation::EAnimationFlags_Relative, 0u, 0u);
         m_animSystemSource.setAnimationProperties(animHandle2, 99.f, Animation::EAnimationFlags_Looping, 1000u, 0u);
         m_animSystemSource.setAnimationStartTime(animHandle1, 5000u);
@@ -96,9 +96,9 @@ namespace ramses_internal
         for (SplineHandle handle(0u); handle < m_animSystemSource.getTotalSplineCount(); ++handle)
         {
             EXPECT_EQ(m_animSystemSource.containsSpline(handle), m_animSystemTarget.containsSpline(handle));
-            const SplineBase* const splineSrc = m_animSystemSource.getSpline(handle);
-            if (splineSrc != nullptr)
+            if (m_animSystemSource.containsSpline(handle))
             {
+                const SplineBase* const splineSrc = m_animSystemSource.getSpline(handle);
                 const SplineBase* const splineTgt = m_animSystemTarget.getSpline(handle);
                 EXPECT_EQ(splineSrc->getKeyType(), splineTgt->getKeyType());
                 EXPECT_EQ(splineSrc->getDataType(), splineTgt->getDataType());
@@ -113,9 +113,9 @@ namespace ramses_internal
         for (DataBindHandle handle(0u); handle < m_animSystemSource.getTotalDataBindCount(); ++handle)
         {
             EXPECT_EQ(m_animSystemSource.containsDataBinding(handle), m_animSystemTarget.containsDataBinding(handle));
-            const AnimationDataBindBase* const dataBindSrc = m_animSystemSource.getDataBinding(handle);
-            if (dataBindSrc != nullptr)
+            if (m_animSystemSource.containsDataBinding(handle))
             {
+                const AnimationDataBindBase* const dataBindSrc = m_animSystemSource.getDataBinding(handle);
                 const AnimationDataBindBase* const dataBindTgt = m_animSystemTarget.getDataBinding(handle);
                 EXPECT_EQ(dataBindSrc->getContainerType(), dataBindTgt->getContainerType());
                 EXPECT_EQ(dataBindSrc->getAccessorType(), dataBindTgt->getAccessorType());

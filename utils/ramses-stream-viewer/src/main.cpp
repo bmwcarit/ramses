@@ -71,7 +71,9 @@ public:
     StreamSourceViewer(ramses::RamsesClient& ramsesClient, ramses::sceneId_t sceneId, bool flipY)
         : m_ramsesClient(ramsesClient)
     {
-        m_scene = m_ramsesClient.createScene(sceneId);
+        ramses::SceneConfig conf;
+        conf.setPublicationMode(ramses::EScenePublicationMode_LocalOnly);
+        m_scene = m_ramsesClient.createScene(sceneId, conf);
         m_camera = m_scene->createRemoteCamera("my camera");
         m_camera->setTranslation(0.0f, 0.0f, 5.0f);
         m_renderPass = m_scene->createRenderPass("my render pass");
@@ -100,7 +102,7 @@ public:
             effectDesc.addCompilerDefine("FLIP_Y");
         m_effect = m_scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
         m_scene->flush();
-        m_scene->publish();
+        m_scene->publish(ramses::EScenePublicationMode_LocalOnly);
     }
 
     void createMesh(ramses::waylandIviSurfaceId_t streamSource)
@@ -331,8 +333,6 @@ int main(int argc, char* argv[])
     displayConfig.setClearColor(0.5f, 0.f, 0.f, 1.f);
     const ramses::displayId_t display = renderer->createDisplay(displayConfig);
     renderer->flush();
-
-    framework.connect();
 
     const ramses::sceneId_t sceneId{1u};
     StreamSourceViewer sceneCreator(*ramsesClient, sceneId, flipY);

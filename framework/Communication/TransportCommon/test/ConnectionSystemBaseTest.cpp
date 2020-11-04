@@ -912,6 +912,101 @@ namespace ramses_internal
         expectRemoteDisconnects({10});
     }
 
+    TEST_F(AConnectionSystemConnected, suppressSendingPinfoEverySecondTimeWhenContinuallyGetsNewSessions)
+    {
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 0, _, _)).WillOnce(Return(true));
+        fromStack.handleServiceAvailable(TestInstanceId(1));
+
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 123, 1}, 99, TestInstanceId(1), 10, 0, 0);
+        // now fully connected
+
+        // disconnect+connect by counter mismatch due to new session -> sending pinfo
+        EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 124, 1}, 99, TestInstanceId(1), 10, 0, 0);
+
+        // disconnect+connect but suppress sending pinfo again to avoid reconnect ping-pong
+        EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 128, 1}, 99, TestInstanceId(1), 10, 0, 0);
+
+        // disconnect+connect by counter mismatch due to new session -> sending pinfo
+        EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 124, 1}, 99, TestInstanceId(1), 10, 0, 0);
+
+        // disconnect+connect but suppress sending pinfo again to avoid reconnect ping-pong
+        EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 128, 1}, 99, TestInstanceId(1), 10, 0, 0);
+
+        expectRemoteDisconnects({10});
+    }
+
+    TEST_F(AConnectionSystemConnected, continuesSendingWithPreviousSessionWhenSkipSendingPinfo)
+    {
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 0, _, _)).WillOnce(Return(true));
+        fromStack.handleServiceAvailable(TestInstanceId(1));
+
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 123, 1}, 99, TestInstanceId(1), 10, 0, 0);
+        // now fully connected
+
+        // disconnect+connect by counter mismatch due to new session -> sending pinfo
+        SomeIPMsgHeader pinfoHdr;
+        EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 10, _, _)).WillOnce(DoAll(SaveArg<1>(&pinfoHdr), Return(true)));
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 124, 1}, 99, TestInstanceId(1), 10, 0, 0);
+
+        // disconnect+connect but suppress sending pinfo again to avoid reconnect ping-pong
+        EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 128, 1}, 99, TestInstanceId(1), 10, 0, 0);
+
+        // continues sending with previously announced session
+        EXPECT_CALL(stack, sendTestMessage(TestInstanceId(1), SomeIPMsgHeader{pinfoHdr.participantId, pinfoHdr.sessionId, 2u}, 44)).WillOnce(Return(true));
+        EXPECT_TRUE(connsys->sendTestMessage(Guid(10), 44));
+
+        expectRemoteDisconnects({10});
+    }
+
+    TEST_F(AConnectionSystemConnected, canHandleIncomingMessagesAfterSkippedSendingPinfo)
+    {
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 0, _, _)).WillOnce(Return(true));
+        fromStack.handleServiceAvailable(TestInstanceId(1));
+
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 123, 1}, 99, TestInstanceId(1), 10, 0, 0);
+        // now fully connected
+
+        // disconnect+connect by counter mismatch due to new session -> sending pinfo
+        EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 124, 1}, 99, TestInstanceId(1), 10, 0, 0);
+
+        // disconnect+connect but suppress sending pinfo again to avoid reconnect ping-pong
+        EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 128, 1}, 99, TestInstanceId(1), 10, 0, 0);
+
+        // can handle incoming message following prev pinfo
+        fromStack.handleKeepAlive(SomeIPMsgHeader{10, 128, 2}, 0);
+
+        expectRemoteDisconnects({10});
+    }
+
+    TEST_F(AConnectionSystemConnected, canHandleKeepaliveAsFirstMesageFromUnknown)
+    {
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 0, _, _)).WillOnce(Return(true));
+        fromStack.handleServiceAvailable(TestInstanceId(1));
+        fromStack.handleKeepAlive(SomeIPMsgHeader{10, 125, 2}, 0);
+    }
+
 
     class AConnectionSystemTimeMockConnected : public AConnectionSystemConnected
     {
@@ -1285,6 +1380,36 @@ namespace ramses_internal
 
         expectRemoteDisconnects({2});
     }
+
+    TEST_F(AConnectionSystemTimeMockConnected, sendsKeepaliveAfterSkippedPinfoWithLastAnnouncedSession)
+    {
+        EXPECT_CALL(*this, steadyClockNow()).WillRepeatedly(Return(Tp(1)));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 0, _, _)).WillOnce(Return(true));
+        fromStack.handleServiceAvailable(TestInstanceId(1));
+
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 123, 1}, 99, TestInstanceId(1), 10, 0, 0);
+        // now fully connected
+
+        // disconnect+connect by counter mismatch due to new session -> sending pinfo
+        SomeIPMsgHeader pinfoHdr;
+        EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 10, _, _)).WillOnce(DoAll(SaveArg<1>(&pinfoHdr), Return(true)));
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 124, 1}, 99, TestInstanceId(1), 10, 0, 0);
+
+        // disconnect+connect but suppress sending pinfo again to avoid reconnect ping-pong
+        EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 128, 1}, 99, TestInstanceId(1), 10, 0, 0);
+
+        // expect regular keepalive sending on last sent session (this will trigger reconnect when pinfo sending was falsely skipped)
+        EXPECT_CALL(stack, sendKeepAlive(TestInstanceId(1), SomeIPMsgHeader{pinfoHdr.participantId, pinfoHdr.sessionId, 2u}, _)).WillOnce(Return(true));
+        doLoop(Ms(2), Ms(3), Tp(3));
+
+        expectRemoteDisconnects({10});
+    }
+
 
     // TODO: test expectedReceiverPid 0, ok, wrong
     // TODO: pid change, old pid was connected

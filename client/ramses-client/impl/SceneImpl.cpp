@@ -202,7 +202,7 @@ namespace ramses
             m_objectRegistry.addObject(*object);
 
             if (auto resource = RamsesUtils::TryConvert<Resource>(*object))
-                m_resourcesById[resource->getResourceId()] = resource;
+                m_resources.insert({ resource->getResourceId(), resource });
 
             if (!serializationContext.registerObjectImpl(&impl, objectID))
             {
@@ -678,7 +678,9 @@ namespace ramses
     status_t SceneImpl::destroyResource(Resource& resource)
     {
         const resourceId_t resId = resource.impl.getResourceId();
-        m_resourcesById.remove(resId);
+        const bool found = removeResourceWithIdFromResources(resId, resource);
+        if (!found)
+            assert(false);
 
         getClientImpl().onResourceDestroyed(resource);
 
@@ -1933,7 +1935,7 @@ namespace ramses
     {
         registerCreatedObject(resource);
         const resourceId_t resId = resource.getResourceId();
-        m_resourcesById.put(resId, &resource);
+        m_resources.insert({ resId, &resource });
     }
 
     std::string SceneImpl::getLastEffectErrorMessages() const
@@ -1943,16 +1945,16 @@ namespace ramses
 
     ramses::Resource* SceneImpl::getResource(resourceId_t rid) const
     {
-        auto resource = m_resourcesById.get(rid);
-        return resource ? *resource : nullptr;
+        const auto range = m_resources.equal_range(rid);
+        return (range.first != range.second) ? range.first->second : nullptr;
     }
 
     Resource* SceneImpl::scanForResourceWithHash(ramses_internal::ResourceContentHash hash) const
     {
-        for (const auto& res : m_resourcesById)
+        for (const auto& res : m_resources)
         {
-            if (hash == res.value->impl.getLowlevelResourceHash())
-                return res.value;
+            if (hash == res.second->impl.getLowlevelResourceHash())
+                return res.second;
         }
 
         return nullptr;
@@ -1994,9 +1996,9 @@ namespace ramses
             return addErrorEntry("Scene::saveToFile failed, error getting save file position.");
 
         ResourceObjects resources;
-        resources.reserve(m_resourcesById.size());
-        for (auto const& res : m_resourcesById)
-            resources.push_back(res.value);
+        resources.reserve(m_resources.size());
+        for (auto const& res : m_resources)
+            resources.push_back(res.second);
         getClientImpl().writeLowLevelResourcesToStream(resources, outputStream, compress);
 
         if (!outputFile.seek(bytesForVersion, ramses_internal::File::SeekOrigin::BeginningOfFile))
@@ -2016,9 +2018,9 @@ namespace ramses
     bool SceneImpl::saveResources(std::string const& fileName, bool compress) const
     {
         ResourceObjects resources;
-        resources.reserve(m_resourcesById.size());
-        for (auto entry : m_resourcesById)
-            resources.push_back(entry.value);
+        resources.reserve(m_resources.size());
+        for (auto entry : m_resources)
+            resources.push_back(entry.second);
 
         return getClientImpl().getResourceDataPool().impl.saveResourceDataFile(fileName, resources, compress);
     }
@@ -2028,4 +2030,24 @@ namespace ramses
         m_sceneFilename = sceneFilename;
     }
 
+    bool SceneImpl::removeResourceWithIdFromResources(resourceId_t const& id, Resource& resource)
+    {
+        auto range = m_resources.equal_range(id);
+        for (auto it = range.first; it != range.second; ++it)
+        {
+            if (it->second == &resource)
+            {
+                m_resources.erase(it);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void SceneImpl::updateResourceId(resourceId_t const& oldId, Resource& resourceWithNewId)
+    {
+        removeResourceWithIdFromResources(oldId, resourceWithNewId);
+        m_resources.insert({ resourceWithNewId.getResourceId(), &resourceWithNewId });
+    }
 }

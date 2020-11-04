@@ -114,25 +114,6 @@ namespace ramses
                 return EEffectAttributeSemantic_Invalid;
             }
         }
-
-        static bool IsInternalEffectInputSemanticsAttribute(ramses_internal::EFixedSemantics semanticType)
-        {
-            switch (semanticType)
-            {
-            case ramses_internal::EFixedSemantics_VertexPositionAttribute:
-            case ramses_internal::EFixedSemantics_VertexNormalAttribute:
-            case ramses_internal::EFixedSemantics_VertexTexCoordAttribute:
-            case ramses_internal::EFixedSemantics_VertexBinormalAttribute:
-            case ramses_internal::EFixedSemantics_VertexTangentAttribute:
-            case ramses_internal::EFixedSemantics_VertexColorAttribute:
-            case ramses_internal::EFixedSemantics_VertexCustomAttribute:
-            case ramses_internal::EFixedSemantics_TextPositionsAttribute:
-            case ramses_internal::EFixedSemantics_TextTextureCoordinatesAttribute:
-                return true;
-            default:
-                return false;
-            }
-        }
     };
 }
 

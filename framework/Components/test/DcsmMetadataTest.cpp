@@ -654,4 +654,26 @@ namespace ramses_internal
         EXPECT_TRUE(StringOutputStream::ToString(emptyDm).size() > 0);
         EXPECT_TRUE(StringOutputStream::ToString(filledDm).size() > 0);
     }
+
+    TEST_F(ADcsmMetadata, containsStreamIDwhenLogged)
+    {
+        // ensure log contains streamid
+        String s = StringOutputStream::ToString(filledDm);
+        EXPECT_TRUE(s.find("49") >= 0);
+    }
+
+    TEST_F(ADcsmMetadata, containsFullSetOfCarviewWhenLogged)
+    {
+        // ensure log contains streamid
+        String s = StringOutputStream::ToString(filledDm);
+        EXPECT_TRUE(s.find("1") >= 0);//pitch
+        EXPECT_TRUE(s.find("2") >= 0);//yaw
+        EXPECT_TRUE(s.find("3") >= 0);//distance
+        EXPECT_TRUE(s.find("4") >= 0);//x
+        EXPECT_TRUE(s.find("5") >= 0);//y
+        EXPECT_TRUE(s.find("6") >= 0);//z
+        EXPECT_TRUE(s.find("7") >= 0);//fov
+        EXPECT_TRUE(s.find("8") >= 0);//animation start
+        EXPECT_TRUE(s.find("9") >= 0);//animation end
+    }
 }

@@ -30,11 +30,14 @@ namespace ramses_internal
         const UInt32 numSplines = animationSystemSource.getTotalSplineCount();
         for (SplineHandle handle(0u); handle < numSplines; ++handle)
         {
-            const SplineBase* const spline = animationSystemSource.getSpline(handle);
-            if (spline != nullptr)
+            if (animationSystemSource.containsSpline(handle))
             {
-                collector.animationSystemAllocateSpline(animSystemHandle, spline->getKeyType(), spline->getDataType(), handle);
-                CopySpline(collector, animSystemHandle, spline, handle);
+                const SplineBase* const spline = animationSystemSource.getSpline(handle);
+                if (spline != nullptr)
+                {
+                    collector.animationSystemAllocateSpline(animSystemHandle, spline->getKeyType(), spline->getDataType(), handle);
+                    CopySpline(collector, animSystemHandle, spline, handle);
+                }
             }
         }
     }
@@ -168,10 +171,13 @@ namespace ramses_internal
         const UInt32 numDataBinds = animationSystemSource.getTotalDataBindCount();
         for (DataBindHandle handle(0u); handle < numDataBinds; ++handle)
         {
-            const AnimationDataBindBase* const dataBind = animationSystemSource.getDataBinding(handle);
-            if (dataBind != nullptr)
+            if (animationSystemSource.containsDataBinding(handle))
             {
-                collector.animationSystemAllocateDataBinding(animSystemHandle, dataBind->getBindID(), dataBind->getHandle(), dataBind->getHandle2(), handle);
+                const AnimationDataBindBase* const dataBind = animationSystemSource.getDataBinding(handle);
+                if (dataBind != nullptr)
+                {
+                    collector.animationSystemAllocateDataBinding(animSystemHandle, dataBind->getBindID(), dataBind->getHandle(), dataBind->getHandle2(), handle);
+                }
             }
         }
     }

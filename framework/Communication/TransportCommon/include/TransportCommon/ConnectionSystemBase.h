@@ -54,6 +54,13 @@ namespace ramses_internal
             uint64_t expectedRecvSessionId;
             uint64_t expectedRecvMessageId;
             std::chrono::steady_clock::time_point lastRecv;
+
+            // TODO(tobias) this is a hack to work around reconnection ping-pong. When set sending pinfo is
+            // skipped on counter mismatch when receiving a pinfo. If it was falsely skipped the next message
+            // or keepalive will trigger an error on remote initiating another connection reset that is then
+            // handled regularly.
+            // This flag is reset on each received pinfo.
+            bool skipSendPinfoOnNextMismatch = false;
         };
 
         // for testing only!
@@ -718,7 +725,9 @@ namespace ramses_internal
         }
         assert(pstate);
 
-        // TODO(tobias): check expectedReceiverPid. ok if own pid or 0, otherwise reset
+        // store skip state if needed and always reset to ensure regular (pinfo) messages reset it
+        bool prevSkipSendPinfoOnNextMismatch = pstate->skipSendPinfoOnNextMismatch;
+        pstate->skipSendPinfoOnNextMismatch = false;
 
         // check if we are open for new session and the message starts a new session
         if (pstate->expectedRecvSessionId == 0 &&
@@ -768,6 +777,9 @@ namespace ramses_internal
                 m_connectionStatusUpdateNotifier.triggerNotification(pstate->pid, EConnectionStatus::EConnectionStatus_NotConnected);
                 m_connectedParticipants.remove(pstate->pid);
             }
+
+            const uint64_t previousSendSessionId = pstate->sendSessionId;
+            const uint64_t previousSendMessageId = pstate->sendMessageId;
             initNewSession(*pstate);
 
             // try to directly connect again
@@ -775,12 +787,29 @@ namespace ramses_internal
             {
                 LOG_INFO(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleParticipantInfo: New session for pid " << pstate->pid << " but sender iid " << senderInstanceId << " not up");
             }
-            else if (!trySendParticipantInfo(*pstate))
-            {
-                LOG_INFO(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleParticipantInfo: New session for pid " << pstate->pid << " but could not successfully send participantInfo to sender iid " << senderInstanceId);
-            }
             else
             {
+                if (prevSkipSendPinfoOnNextMismatch)
+                {
+                    // skip sending and keep last announced session because we assume last pinfo reached receiver and is treated as valid there
+                    LOG_WARN(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleParticipantInfo: Skip sending pinfo to " << pstate->pid << ", iid " << senderInstanceId);
+                    pstate->sendSessionId = previousSendSessionId;
+                    pstate->sendMessageId = previousSendMessageId;
+                }
+                else
+                {
+                    if (!trySendParticipantInfo(*pstate))
+                    {
+                        LOG_INFO(m_logContext,
+                                 "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleParticipantInfo: New session for pid " << pstate->pid
+                                                         << " but could not successfully send participantInfo to sender iid " << senderInstanceId);
+                        return;
+                    }
+
+                    // successfully sent pinfo, skip next one
+                    pstate->skipSendPinfoOnNextMismatch = true;
+                }
+
                 // must take over expected values on connect (regular messages can never start new session)
                 pstate->expectedRecvSessionId = header.sessionId;
                 ++pstate->expectedRecvMessageId;

@@ -156,16 +156,12 @@ namespace ramses_internal
 
     void AnimationData::getAnimationHandles(AnimationHandleVector& handles) const
     {
-        handles.resize(getTotalAnimationCount());
-        AnimationHandleVector::iterator it = handles.begin();
+        handles.reserve(getTotalAnimationCount());
 
         for (AnimationHandle animHandle(0u); animHandle < m_animationPool.getTotalCount(); ++animHandle)
         {
             if (containsAnimation(animHandle))
-            {
-                *it = animHandle;
-                ++it;
-            }
+                handles.push_back(animHandle);
         }
     }
 

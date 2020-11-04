@@ -51,60 +51,30 @@ namespace ramses
     resourceId_t ResourceDataPoolImpl::addArrayResourceData(EDataType type, uint32_t numElements, const void* arrayData, resourceCacheFlag_t cacheFlag, const char* name)
     {
         auto res = m_client.createManagedArrayResource(numElements, type, arrayData, cacheFlag, name);
-        if (!res)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::addArrayResourceData: failed to create managed array resource");
-            return {};
-        }
-
         return addResourceDataToPool(res, name, ERamsesObjectType_ArrayResource);
     }
 
     ramses::resourceId_t ResourceDataPoolImpl::addTexture2DData(ETextureFormat format, uint32_t width, uint32_t height, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name)
     {
         auto res = m_client.createManagedTexture(ramses_internal::EResourceType_Texture2D, width, height, 1u, format, mipMapCount, mipLevelData, generateMipChain, swizzle, cacheFlag, name);
-        if (!res)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::addTexture2DData: failed to create managed texture resource");
-            return {};
-        }
-
         return addResourceDataToPool(res, name, ERamsesObjectType_Texture2D);
     }
 
     ramses::resourceId_t ResourceDataPoolImpl::addTexture3DData(ETextureFormat format, uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name)
     {
         auto res = m_client.createManagedTexture(ramses_internal::EResourceType_Texture3D, width, height, depth, format, mipMapCount, mipLevelData, generateMipChain, {}, cacheFlag, name);
-        if (!res)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::addTexture3DData: failed to create managed texture resource");
-            return {};
-        }
-
         return addResourceDataToPool(res, name, ERamsesObjectType_Texture3D);
     }
 
     ramses::resourceId_t ResourceDataPoolImpl::addTextureCubeData(ETextureFormat format, uint32_t size, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name)
     {
         auto res = m_client.createManagedTexture(ramses_internal::EResourceType_TextureCube, size, 1u, 1u, format, mipMapCount, mipLevelData, generateMipChain, swizzle, cacheFlag, name);
-        if (!res)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::addTextureCubeData: failed to create managed texture resource");
-            return {};
-        }
-
         return addResourceDataToPool(res, name, ERamsesObjectType_TextureCube);
     }
 
     ramses::resourceId_t ResourceDataPoolImpl::addEffectData(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name)
     {
         auto res = m_client.createManagedEffect(effectDesc, cacheFlag, name, m_effectErrorMessages);
-        if (!res)
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::addEffectData: failed to create managed effect resource");
-            return {};
-        }
-
         return addResourceDataToPool(res, name, ERamsesObjectType_Effect);
     }
 

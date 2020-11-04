@@ -11,6 +11,8 @@
 #include "RamsesClientImpl.h"
 #include "RamsesFrameworkTypesImpl.h"
 
+#include "ramses-client-api/Resource.h"
+
 // framework
 #include "ClientApplicationLogic.h"
 #include "Components/ManagedResource.h"
@@ -18,6 +20,7 @@
 #include "Collections/StringOutputStream.h"
 #include "Utils/StringUtils.h"
 #include "Utils/BinaryOutputStream.h"
+#include "RamsesObjectTypeUtils.h"
 #include "city.h"
 
 namespace ramses
@@ -63,7 +66,11 @@ namespace ramses
 
     void ResourceImpl::updateResourceHash()
     {
+        const auto id = m_resourceId;
         m_resourceId = CreateResourceHash(getLowlevelResourceHash(), getName(), getType());
+
+        if (id.isValid() && id != m_resourceId)
+            getSceneImpl().updateResourceId(id, RamsesObjectTypeUtils::ConvertTo<Resource>(getRamsesObject()));
     }
 
     void ResourceImpl::deinitializeFrameworkData()

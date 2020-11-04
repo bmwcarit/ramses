@@ -37,7 +37,9 @@
 
 #include "Collections/Pair.h"
 #include "Utils/StatisticCollection.h"
+#include "RamsesFrameworkTypesImpl.h"
 #include <chrono>
+#include <unordered_map>
 
 namespace ramses_internal
 {
@@ -283,6 +285,8 @@ namespace ramses
 
         void setSceneFileName(std::string const& sceneFilename);
 
+        void updateResourceId(resourceId_t const& oldId, Resource& resourceWithNewId);
+
     private:
         ramses::TextureSampler* createTextureSamplerImpl(
             ETextureAddressMode wrapUMode,
@@ -331,14 +335,15 @@ namespace ramses
 
         status_t writeSceneObjectsToStream(ramses_internal::IOutputStream& outputStream) const;
 
+        bool removeResourceWithIdFromResources(resourceId_t const& id, Resource& resource);
+
         ramses_internal::ClientScene&           m_scene;
         ramses_internal::SceneCommandBuffer     m_commandBuffer;
         sceneVersionTag_t                       m_nextSceneVersion;
         sceneObjectId_t                         m_lastSceneObjectId;
 
-        RamsesObjectRegistry m_objectRegistry;
-        typedef ramses_internal::HashMap<resourceId_t, Resource*> HLResourceHashMap;
-        HLResourceHashMap    m_resourcesById;
+        RamsesObjectRegistry                    m_objectRegistry;
+        std::unordered_multimap <resourceId_t, Resource*>  m_resources;
 
         // This is essentially a local variable only used in the "applyVisibilityToSubtree" method.
         // This is for performance reasons, so we can re-use the same vector each time the method is called.

@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "Scene/ScenePersistation.h"
 #include "Scene/ClientScene.h"
+#include "Animation/AnimationSystemFactory.h"
 #include "TestingScene.h"
 
 using namespace testing;
@@ -36,7 +37,9 @@ namespace ramses_internal
         ScenePersistation::WriteSceneToFile("testfile", scene.getScene());
 
         Scene loadedScene;
-        ScenePersistation::ReadSceneFromFile("testfile", loadedScene);
+        SceneActionCollection dummyCollection;
+        AnimationSystemFactory animSystemFactory(EAnimationSystemOwner_Client, &dummyCollection);
+        ScenePersistation::ReadSceneFromFile("testfile", loadedScene, &animSystemFactory);
         scene.CheckEquivalentTo<IScene>(loadedScene);
     }
 }

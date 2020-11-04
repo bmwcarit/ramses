@@ -100,6 +100,8 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(ramses-shared-lib
     REQUIRED_VARS ramses-shared-lib_LIBRARIES ramses-shared-lib_INCLUDE_DIRS
     VERSION_VAR ramses-shared-lib_VERSION)
 
+set(ramses-sdk_VERSION "@ramses-sdk_VERSION@" CACHE STRING "Ramses version" FORCE)
+
 message(STATUS "Found ramses-shared-lib libs: ${ramses-shared-lib_LIBRARIES}")
 message(STATUS "Found ramses-shared-lib includes: ${ramses-shared-lib_INCLUDE_DIRS}")
 

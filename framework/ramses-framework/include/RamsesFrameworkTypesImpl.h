@@ -89,7 +89,7 @@ namespace std
     template<>
     struct hash<::ramses::resourceId_t>
     {
-        size_t operator()(const ::ramses::resourceId_t& rid)
+        size_t operator()(const ::ramses::resourceId_t& rid) const
         {
             return ramses_internal::HashValue(rid.lowPart, rid.highPart);
         }

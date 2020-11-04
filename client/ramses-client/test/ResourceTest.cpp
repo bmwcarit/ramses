@@ -12,6 +12,7 @@
 #include "ramses-client-api/TextureCube.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/TextureSwizzle.h"
+#include "ramses-client-api/SceneObjectIterator.h"
 #include "ramses-hmi-utils.h"
 #include "ramses-utils.h"
 
@@ -1169,6 +1170,47 @@ namespace ramses
 
         this->getFramework().impl.getStatisticCollection().nextTimeInterval();
         EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesNumber.getCounterValue());
+    }
+
+    TYPED_TEST(ResourceTest, canCreateResourceSetNameAndAfterwardsDestroyResourceCleanly)
+    {
+        TypeParam& obj = this->createResource("resource");
+        obj.setName("otherName");
+        EXPECT_EQ(StatusOK, this->m_scene.destroy(obj));
+        SceneObjectIterator iterator(this->m_scene, ERamsesObjectType_Resource);
+        EXPECT_EQ(iterator.getNext(), nullptr);
+        EXPECT_EQ(StatusOK, this->m_scene.saveToFile("someFileName.ramses", false));
+    }
+
+    TYPED_TEST(ResourceTest, canCreateSameResourceTwiceAndDeleteBothAgain)
+    {
+        TypeParam& obj1 = this->createResource("resource");
+        TypeParam& obj2 = this->createResource("resource");
+        EXPECT_EQ(StatusOK, this->m_scene.destroy(obj1));
+        EXPECT_EQ(StatusOK, this->m_scene.destroy(obj2));
+    }
+
+    TYPED_TEST(ResourceTest, canFindResourceByItsNewIdAfterRenaming)
+    {
+        TypeParam& obj = this->createResource("resource");
+        const auto id = obj.getResourceId();
+        EXPECT_EQ(this->m_scene.getResource(id), &obj);
+        obj.setName("otherName");
+        EXPECT_EQ(this->m_scene.getResource(id), nullptr);
+        EXPECT_EQ(this->m_scene.findObjectByName("otherName"), &obj);
+        EXPECT_EQ(this->m_scene.getResource(obj.getResourceId()), &obj);
+    }
+
+    TYPED_TEST(ResourceTest, canGetResourceByIdAsLongAsAtLeastOneExists)
+    {
+        const auto id = this->createResource("resource").getResourceId();
+        this->createResource("resource");
+        const auto obj1 = this->m_scene.getResource(id);
+        EXPECT_EQ(StatusOK, this->m_scene.destroy(*obj1));
+        const auto obj2 = this->m_scene.getResource(id);
+        EXPECT_NE(obj1, obj2);
+        EXPECT_EQ(StatusOK, this->m_scene.destroy(*obj2));
+        EXPECT_EQ(this->m_scene.getResource(id), nullptr);
     }
 
     TEST_F(AResourceTestClient, statisticCounterIsUpdatedWhenAddingToPoolViaFileAndCreatingForScene)

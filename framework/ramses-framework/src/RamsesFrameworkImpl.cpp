@@ -173,11 +173,6 @@ namespace ramses
         return m_dcsmComponent;
     }
 
-    ramses_internal::IConnectionStatusUpdateNotifier& RamsesFrameworkImpl::getRamsesConnectionStatusUpdateNotifier()
-    {
-        return m_communicationSystem->getRamsesConnectionStatusUpdateNotifier();
-    }
-
     ramses_internal::ParticipantIdentifier RamsesFrameworkImpl::getParticipantAddress() const
     {
         return m_participantAddress;

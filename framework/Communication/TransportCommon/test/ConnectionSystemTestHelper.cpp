@@ -46,6 +46,12 @@ namespace ramses_internal
         }
     }
 
+    void AsyncEventCounter::discardPendingEvents()
+    {
+        std::unique_lock<std::mutex> l(lock);
+        m_eventCounter = 0;
+    }
+
     ConnectionSystemTestDaemon::ConnectionSystemTestDaemon(const std::function<void(ramses::RamsesFrameworkConfigImpl&)>& configModifier)
     {
         ramses::RamsesFrameworkConfigImpl config(0, nullptr);

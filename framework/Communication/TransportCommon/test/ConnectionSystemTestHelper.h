@@ -34,6 +34,8 @@ namespace ramses_internal
         void signal();
         testing::AssertionResult waitForEvents(UInt32 numberEventsToWaitFor, UInt32 waitTimeMsOverride = 0);
 
+        void discardPendingEvents();
+
     private:
         std::mutex lock;
         std::condition_variable cond;
