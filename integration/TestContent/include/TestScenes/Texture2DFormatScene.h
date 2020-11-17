@@ -54,7 +54,7 @@ namespace ramses_internal
             EState_SRGB8_ALPHA8
         };
 
-        Texture2DFormatScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition);
+        Texture2DFormatScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
     protected:
         void createOrthoCamera();

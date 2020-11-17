@@ -122,15 +122,7 @@ namespace ramses_internal
             consumerWithoutTransformsSceneAllocator.allocateTransform(consumerWithoutTransformsNode2, consumerWithoutTransformsTransform2);
 
             // set initial translations
-            providerScene.setTranslation(providerSceneRootTransform, providerSceneRootTranslation);
-            providerScene.setTranslation(providerSceneTransform, providerSceneNodeTranslation);
-            consumer1Scene.setTranslation(consumer1SceneRootTransform, consumer1SceneRootTranslation);
-            consumer1Scene.setTranslation(consumer1SceneTransform, consumer1SceneNodeTranslation);
-            consumer1Scene.setTranslation(consumer1SceneTransform2, consumer1SceneNode2Translation);
-            consumer2Scene.setTranslation(consumer2SceneRootTransform, consumer2SceneRootTranslation);
-            consumer2Scene.setTranslation(consumer2SceneTransform, consumer2SceneNodeTranslation);
-            consumer2ndLevelScene.setTranslation(consumer2ndLevelSceneTransform, consumer2ndLevelSceneNodeTranslation);
-            consumerWithoutTransformsScene.setTranslation(consumerWithoutTransformsTransform2, consumerWithoutTransformsTransform2Translation);
+            setAllTranslations();
 
             // create provider/consumer slots
             ramses_internal::DataSlotHandle slotHandle;
@@ -140,6 +132,35 @@ namespace ramses_internal
             slotHandle = consumer2SceneAllocator.allocateDataSlot({ EDataSlotType_TransformationConsumer, consumer2SceneConsumerId, consumer2SceneRoot, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() });
             slotHandle = consumer2ndLevelSceneAllocator.allocateDataSlot({ EDataSlotType_TransformationConsumer, consumer2ndLevelSceneConsumerId, consumer2ndLevelSceneNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() });
             slotHandle = consumerWithoutTransformsSceneAllocator.allocateDataSlot({ EDataSlotType_TransformationConsumer, consumerWithoutTransformsSceneConsumerId, consumerWithoutTransformsRoot, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, consumerWithoutTransformsSceneConsumerSlotHandle);
+        }
+
+        void setAllTranslations(bool reset = false)
+        {
+            if (reset)
+            {
+                providerScene.setTranslation(providerSceneRootTransform, { 0.f, 0.f, 0.f });
+                providerScene.setTranslation(providerSceneTransform, { 0.f, 0.f, 0.f });
+                consumer1Scene.setTranslation(consumer1SceneRootTransform, { 0.f, 0.f, 0.f });
+                consumer1Scene.setTranslation(consumer1SceneTransform, { 0.f, 0.f, 0.f });
+                consumer1Scene.setTranslation(consumer1SceneTransform2, { 0.f, 0.f, 0.f });
+                consumer2Scene.setTranslation(consumer2SceneRootTransform, { 0.f, 0.f, 0.f });
+                consumer2Scene.setTranslation(consumer2SceneTransform, { 0.f, 0.f, 0.f });
+                consumer2ndLevelScene.setTranslation(consumer2ndLevelSceneTransform, { 0.f, 0.f, 0.f });
+                consumerWithoutTransformsScene.setTranslation(consumerWithoutTransformsTransform2, { 0.f, 0.f, 0.f });
+
+            }
+            else
+            {
+                providerScene.setTranslation(providerSceneRootTransform, providerSceneRootTranslation);
+                providerScene.setTranslation(providerSceneTransform, providerSceneNodeTranslation);
+                consumer1Scene.setTranslation(consumer1SceneRootTransform, consumer1SceneRootTranslation);
+                consumer1Scene.setTranslation(consumer1SceneTransform, consumer1SceneNodeTranslation);
+                consumer1Scene.setTranslation(consumer1SceneTransform2, consumer1SceneNode2Translation);
+                consumer2Scene.setTranslation(consumer2SceneRootTransform, consumer2SceneRootTranslation);
+                consumer2Scene.setTranslation(consumer2SceneTransform, consumer2SceneNodeTranslation);
+                consumer2ndLevelScene.setTranslation(consumer2ndLevelSceneTransform, consumer2ndLevelSceneNodeTranslation);
+                consumerWithoutTransformsScene.setTranslation(consumerWithoutTransformsTransform2, consumerWithoutTransformsTransform2Translation);
+            }
         }
 
         void linkConsumer1SceneToProviderScene()
@@ -169,8 +190,8 @@ namespace ramses_internal
 
         void expectCorrectMatrix(const NodeHandle nodeToCheck, const Matrix44f& worldMatrix, const TransformationLinkCachedScene& scene) const
         {
-            EXPECT_TRUE(matrixFloatEquals(worldMatrix, scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, nodeToCheck)));
-            EXPECT_TRUE(matrixFloatEquals(worldMatrix.inverse(), scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, nodeToCheck)));
+            expectMatrixFloatEqual(worldMatrix, scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, nodeToCheck));
+            expectMatrixFloatEqual(worldMatrix.inverse(), scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, nodeToCheck));
         }
 
         RendererEventVector consumeSceneControlEvents()
@@ -315,6 +336,19 @@ namespace ramses_internal
         expectCorrectMatrix(consumerWithoutTransformsNode3, Matrix44f::Translation(expectedTranslation2), consumerWithoutTransformsScene);
     }
 
+    TEST_F(ATransformationLinkCachedScene, resolvesTransformationAndPropagatesToSceneWithDifferentRotationConventions)
+    {
+        linkConsumer1SceneToProviderScene();
+
+        //reset translations
+        setAllTranslations(true);
+
+        providerScene.setRotation(providerSceneTransform, { 10.f, 0.f, 0.f }, ERotationConvention::ZYX); //only X-Axis
+
+        consumer1Scene.setRotation(consumer1SceneTransform2, { 0.f, 10.f, 0.f }, ERotationConvention::XYZ); //only Y-Axis
+        expectCorrectMatrix(consumer1SceneNode2, Matrix44f::RotationEuler({ 10.f, 10.f, 0.f }, ERotationConvention::XYZ), consumer1Scene);
+    }
+
     TEST_F(ATransformationLinkCachedScene, fallsBackToOriginalTransformationWhenProviderSlotIsRemoved)
     {
         linkConsumer1SceneToProviderScene();
@@ -366,6 +400,24 @@ namespace ramses_internal
 
         const Vector3 expectedTranslation = newRootTranslation + providerSceneNodeTranslation;
         expectCorrectMatrix(consumer1SceneNode, Matrix44f::Translation(expectedTranslation), consumer1Scene);
+    }
+
+    TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderRotationConventionChanges)
+    {
+        linkConsumer1SceneToProviderScene();
+
+        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_World, consumer1SceneNode);
+        consumer1Scene.updateMatrixCacheWithLinks(ETransformationMatrixType_Object, consumer1SceneNode);
+
+        setAllTranslations(true);
+        const Vector3 rotation{ 10.f, 20.f, 30.f };
+        providerScene.setRotation(providerSceneTransform, rotation, ERotationConvention::ZYX);
+
+        expectCorrectMatrix(consumer1SceneNode, Matrix44f::RotationEuler(rotation, ERotationConvention::ZYX), consumer1Scene);
+
+        //change convention
+        providerScene.setRotation(providerSceneTransform, rotation, ERotationConvention::XYZ);
+        expectCorrectMatrix(consumer1SceneNode, Matrix44f::RotationEuler(rotation, ERotationConvention::XYZ), consumer1Scene);
     }
 
     TEST_F(ATransformationLinkCachedScene, recomputesDirtyTransformationWhenProviderSceneRemoved)

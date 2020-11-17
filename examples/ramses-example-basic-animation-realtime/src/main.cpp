@@ -29,7 +29,9 @@ int main(int argc, char* argv[])
     ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "red triangles scene");
 
     // every scene needs a render pass with camera
-    ramses::Camera* camera = scene->createRemoteCamera("my camera");
+    auto* camera = scene->createPerspectiveCamera("my camera");
+    camera->setViewport(0, 0, 1280u, 480u);
+    camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     camera->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
@@ -47,7 +49,7 @@ int main(int argc, char* argv[])
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-basic-animation-realtime.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-animation-realtime.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     const ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = scene->createAppearance(*effect, "triangle appearance");

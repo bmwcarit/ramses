@@ -63,7 +63,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::stopTestApplicationAndWaitUntilDisconnected stop confirmation received");
     }
 
-    void EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(StreamTextureSourceId sourceId)
+    void EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(WaylandIviSurfaceId sourceId)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
         IEmbeddedCompositingManager& embeddedCompositorManager = getEmbeddedCompositorManager();
@@ -78,7 +78,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(): content found on stream source id :" << sourceId.getValue());
     }
 
-    void EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentOnStreamTexture(StreamTextureSourceId sourceId)
+    void EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentOnStreamTexture(WaylandIviSurfaceId sourceId)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
         IEmbeddedCompositingManager& embeddedCompositorManager = getEmbeddedCompositorManager();
@@ -191,7 +191,7 @@ namespace ramses_internal
         getTestRenderer().doOneLoop();
     }
 
-    void EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture(StreamTextureSourceId sourceId)
+    void EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture(WaylandIviSurfaceId sourceId)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
 
@@ -205,7 +205,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture(): surface available for source id :" << sourceId.getValue());
     }
 
-    void EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture(StreamTextureSourceId sourceId)
+    void EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture(WaylandIviSurfaceId sourceId)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
 
@@ -219,7 +219,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture(): surface unavailable for source id :" << sourceId.getValue());
     }
 
-    bool EmbeddedCompositingTestsFramework::waitForStreamSurfaceAvailabilityChange(StreamTextureSourceId streamSource, bool available)
+    bool EmbeddedCompositingTestsFramework::waitForStreamSurfaceAvailabilityChange(WaylandIviSurfaceId streamSource, bool available)
     {
         return getTestRenderer().waitForStreamSurfaceAvailabilityChange(ramses::waylandIviSurfaceId_t(streamSource.getValue()), available);
     }

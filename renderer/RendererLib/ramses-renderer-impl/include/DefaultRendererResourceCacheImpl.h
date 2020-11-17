@@ -58,7 +58,7 @@ namespace ramses
             ByteVector data;
         };
 
-        typedef std::deque<ResourceData> ResourceDataTable;
+        using ResourceDataTable = std::deque<ResourceData>;
 
         ResourceDataTable m_resourceData;
         uint32_t m_maxCacheSizeInBytes;

@@ -27,7 +27,7 @@ namespace ramses_internal
     class DataBufferScene : public IntegrationScene
     {
     public:
-        DataBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        DataBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
         enum
         {
@@ -39,9 +39,14 @@ namespace ramses_internal
             VERTEX_DATA_BUFFER_VECTOR3F,
             VERTEX_DATA_BUFFER_VECTOR4F,
             VERTEX_ARRAY_BUFFER_VECTOR4F,
+            VERTEX_DATA_BUFFER_INTERLEAVED,
+            VERTEX_DATA_BUFFER_INTERLEAVED_TWO_STRIDES,
+            VERTEX_DATA_BUFFER_INTERLEAVED_SINGLE_ATTRIB,
+            VERTEX_DATA_BUFFER_INTERLEAVED_START_VERTEX,
 
             UPDATE_INDEX_DATA_BUFFER,
-            UPDATE_VERTEX_DATA_BUFFER
+            UPDATE_VERTEX_DATA_BUFFER,
+            UPDATE_INTERLEAVED_VERTEX_DATA_BUFFER,
         };
 
         void setState(UInt32 state);
@@ -58,12 +63,17 @@ namespace ramses_internal
         void createVertexDataBufferVector3F();
         void createVertexDataBufferVector4F();
         void createVertexArrayBufferVector4F();
+        void createVertexArrayBufferInterleaved();
+        void createVertexArrayBufferInterleavedTwoStrides();
+        void createVertexArrayBufferInterleavedSingleAttrib();
+        void createVertexArrayBufferInterleavedStartVertex();
 
         ramses::MeshNode* m_meshNode;
         ramses::Effect& m_effect;
         ramses::GeometryBinding* m_geometry = nullptr;
         ramses::ArrayBuffer* m_indexDataBufferUInt32 = nullptr;
         ramses::ArrayBuffer* m_vertexDataBufferVec4 = nullptr;
+        ramses::ArrayBuffer* m_vertexDataBufferInterleaved = nullptr;
     };
 }
 

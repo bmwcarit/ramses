@@ -16,7 +16,6 @@ namespace ramses_internal
     class MultiStreamTextureTests : public IEmbeddedCompositingTest
     {
     public:
-        MultiStreamTextureTests();
         virtual void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) final;
         virtual bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
@@ -29,6 +28,9 @@ namespace ramses_internal
             ShowTwoStreamTextures,
             ClientRecreatesIVISurfaceWithDifferentId,
         };
+
+        static constexpr uint32_t DisplayWidth = IntegrationScene::DefaultViewportWidth * 2;
+        static constexpr uint32_t DisplayHeight = IntegrationScene::DefaultViewportHeight;
     };
 }
 

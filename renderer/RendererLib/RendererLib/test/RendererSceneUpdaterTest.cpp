@@ -14,10 +14,6 @@ namespace ramses_internal {
 const DisplayHandle ARendererSceneUpdater::DisplayHandle1(0u);
 const DisplayHandle ARendererSceneUpdater::DisplayHandle2(1u);
 
-const ResourceContentHash ARendererSceneUpdater::InvalidResource1(0xff00ff01, 0);
-const ResourceContentHash ARendererSceneUpdater::InvalidResource2(0xff00ff02, 0);
-
-
 ///////////////////////////
 // General tests
 ///////////////////////////
@@ -47,7 +43,6 @@ TEST_F(ARendererSceneUpdater, generatesRendererEventForNamedFlush)
     rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
     ASSERT_EQ(1u, events.size());
     EXPECT_EQ(ERendererEventType_SceneFlushed, events[0].eventType);
-    EXPECT_EQ(EResourceStatus_Unknown, events[0].resourceStatus);
     EXPECT_EQ(version, events[0].sceneVersionTag);
 }
 
@@ -205,7 +200,6 @@ TEST_F(ARendererSceneUpdater, canNotDestroyDisplayIfItHasMappedScenes)
 
     destroyDisplay(DisplayHandle1, true);
 
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 
@@ -223,7 +217,6 @@ TEST_F(ARendererSceneUpdater, canNotDestroyDisplayIfItHasRenderedScenes)
     EXPECT_TRUE(renderer.hasDisplayController(DisplayHandle1));
 
     hideScene();
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 
@@ -235,7 +228,6 @@ TEST_F(ARendererSceneUpdater, canDestroyDisplayIfMappedSceneGetsUnmapped)
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 }
@@ -245,7 +237,6 @@ TEST_F(ARendererSceneUpdater, canDestroyDisplayIfMappedSceneGetsUnpublished)
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
-    expectContextEnable();
     unpublishMappedScene();
     destroyDisplay();
 }
@@ -256,6 +247,8 @@ TEST_F(ARendererSceneUpdater, destroyingSceneUpdaterUnmapsAnyMappedSceneFromRend
     createPublishAndSubscribeScene();
     mapScene();
 
+    expectContextEnable(DisplayHandle1, 2);
+    expectUnloadOfSceneResources();
     destroySceneUpdater();
 
     EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(getSceneId()).isValid());
@@ -267,6 +260,8 @@ TEST_F(ARendererSceneUpdater, destroyingSceneUpdaterDestroysAllDisplayContexts)
     createPublishAndSubscribeScene();
     mapScene();
 
+    expectContextEnable(DisplayHandle1, 2);
+    expectUnloadOfSceneResources();
     destroySceneUpdater();
 
     EXPECT_FALSE(renderer.hasDisplayController(DisplayHandle1));
@@ -305,7 +300,6 @@ TEST_F(ARendererSceneUpdater, updateScenesWillUpdateRealTimeAnimationSystems)
     EXPECT_TRUE(time1real < time2real);
 
     hideScene();
-    expectContextEnable();
     unmapScene();
 
     destroyDisplay();
@@ -342,7 +336,6 @@ TEST_F(ARendererSceneUpdater, renderOncePassesAreRetriggeredWhenSceneMapped)
 
     // unmap scene
     hideScene();
-    expectContextEnable();
     unmapScene();
     update();
     scene.markAllRenderOncePassesAsRendered();
@@ -361,7 +354,6 @@ TEST_F(ARendererSceneUpdater, renderOncePassesAreRetriggeredWhenSceneMapped)
     EXPECT_TRUE(scene.getSortedRenderingPasses().empty());
 
     hideScene();
-    expectContextEnable();
     unmapScene();
 
     destroyDisplay();
@@ -385,10 +377,7 @@ TEST_F(ARendererSceneUpdater, canHideSceneIfNotShownYet)
     expectNoEvent();
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
 
-    // unmap scene
-    expectContextEnable();
     unmapScene();
-
     destroyDisplay();
 }
 
@@ -409,11 +398,8 @@ TEST_F(ARendererSceneUpdater, canNotUnmapSceneWhichWasRequestedToBeShown)
     expectInternalSceneStateEvent(ERendererEventType_SceneShown);
     EXPECT_EQ(ESceneState::Rendered, sceneStateExecutor.getSceneState(getSceneId()));
 
-    // unmap scene
     hideScene();
-    expectContextEnable();
     unmapScene();
-
     destroyDisplay();
 }
 
@@ -467,10 +453,9 @@ TEST_F(ARendererSceneUpdater, canCreateOffscreenBuffer)
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 4u, false));
 
-    expectRenderTargetDeleted();
     destroyDisplay();
 }
 
@@ -480,17 +465,16 @@ TEST_F(ARendererSceneUpdater, canCreateDoubleBufferedOffscreenBuffer)
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true, DeviceMock::FakeRenderTargetDeviceHandle, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, true));
+    expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, true);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, true));
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
 TEST_F(ARendererSceneUpdater, failsToCreateOffscreenBufferOnUnknownDisplay)
 {
     const OffscreenBufferHandle buffer(1u);
-    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 }
 
 TEST_F(ARendererSceneUpdater, failsToCreateOffscreenBufferWithSameID)
@@ -499,12 +483,11 @@ TEST_F(ARendererSceneUpdater, failsToCreateOffscreenBufferWithSameID)
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
-    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
-    expectRenderTargetDeleted();
     destroyDisplay();
 }
 
@@ -514,11 +497,11 @@ TEST_F(ARendererSceneUpdater, canDestroyOffscreenBuffer)
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
     destroyDisplay();
@@ -530,11 +513,11 @@ TEST_F(ARendererSceneUpdater, canDestroyDoubleBufferedOffscreenBuffer)
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true, DeviceMock::FakeRenderTargetDeviceHandle, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, true));
+    expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, true);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, true));
 
     expectContextEnable();
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
+    expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
     destroyDisplay();
@@ -551,6 +534,7 @@ TEST_F(ARendererSceneUpdater, failsToDestroyUnknownOffscreenBuffer)
     createDisplayAndExpectSuccess();
 
     const OffscreenBufferHandle buffer(1u);
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
     EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
     destroyDisplay();
@@ -562,16 +546,14 @@ TEST_F(ARendererSceneUpdater, canAssignSceneToOffscreenBuffer)
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     createPublishAndSubscribeScene();
     mapScene(0u);
     EXPECT_TRUE(assignSceneToDisplayBuffer(0, buffer, 11));
 
-    expectContextEnable();
     unmapScene(0u);
-    expectRenderTargetDeleted();
     destroyDisplay();
 }
 
@@ -581,8 +563,8 @@ TEST_F(ARendererSceneUpdater, canAssignSceneToFramebuffer_MultipleTimes)
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     createPublishAndSubscribeScene();
     mapScene(0u);
@@ -591,9 +573,7 @@ TEST_F(ARendererSceneUpdater, canAssignSceneToFramebuffer_MultipleTimes)
     EXPECT_TRUE(assignSceneToDisplayBuffer(0));
     EXPECT_TRUE(assignSceneToDisplayBuffer(0));
 
-    expectContextEnable();
     unmapScene(0u);
-    expectRenderTargetDeleted();
     destroyDisplay();
 }
 
@@ -603,8 +583,8 @@ TEST_F(ARendererSceneUpdater, confidence_failsToDestroyOffscreenBufferIfScenesAr
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     createPublishAndSubscribeScene();
     mapScene(0u);
@@ -615,10 +595,9 @@ TEST_F(ARendererSceneUpdater, confidence_failsToDestroyOffscreenBufferIfScenesAr
     EXPECT_TRUE(assignSceneToDisplayBuffer(0));
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
-    expectContextEnable();
     unmapScene(0u);
     destroyDisplay();
 }
@@ -629,14 +608,14 @@ TEST_F(ARendererSceneUpdater, setsClearColorForOB)
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     EXPECT_CALL(renderer, setClearColor(DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, Vector4{ 1, 2, 3, 4 }));
     rendererSceneUpdater->handleSetClearColor(DisplayHandle1, buffer, { 1, 2, 3, 4 });
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
     destroyDisplay();
@@ -648,14 +627,14 @@ TEST_F(ARendererSceneUpdater, setsClearColorForFBIfNoOBSpecified)
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     EXPECT_CALL(renderer, setClearColor(DisplayHandle1, renderer.getDisplayController(DisplayHandle1).getDisplayBuffer(), Vector4{ 1, 2, 3, 4 }));
     rendererSceneUpdater->handleSetClearColor(DisplayHandle1, OffscreenBufferHandle::Invalid(), { 1, 2, 3, 4 });
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
     destroyDisplay();
@@ -665,8 +644,10 @@ TEST_F(ARendererSceneUpdater, doesNotSetClearColorIfOBSpecifiedButNotFound)
 {
     createDisplayAndExpectSuccess();
 
+    constexpr OffscreenBufferHandle invalidOB{ 1234u };
     EXPECT_CALL(renderer, setClearColor(_, _, _)).Times(0u);
-    rendererSceneUpdater->handleSetClearColor(DisplayHandle1, OffscreenBufferHandle{ 1234u }, { 1, 2, 3, 4 });
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getOffscreenBufferDeviceHandle(invalidOB)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    rendererSceneUpdater->handleSetClearColor(DisplayHandle1, invalidOB, { 1, 2, 3, 4 });
 
     destroyDisplay();
 }
@@ -698,8 +679,8 @@ TEST_F(ARendererSceneUpdater, readPixelsFromOffscreenbuffer)
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 10u, 10u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 10u, 10u, 0u, false));
 
     const UInt32 x = 1u;
     const UInt32 y = 2u;
@@ -715,7 +696,6 @@ TEST_F(ARendererSceneUpdater, readPixelsFromOffscreenbuffer)
     rendererSceneUpdater->processScreenshotResults();
     expectReadPixelsEvents({ {DisplayHandle1, buffer, true} });
 
-    expectRenderTargetDeleted();
     destroyDisplay();
 }
 
@@ -760,6 +740,7 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfInvalidOffscreenBuff
     const Bool sendViaDLT = false;
     const String& filename = "";
 
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
     readPixels(DisplayHandle1, buffer, x, y, width, height, fullScreen, sendViaDLT, filename);
 
     DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
@@ -813,13 +794,14 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfRectangleIsOutOfOffs
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 10u, 10u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 10u, 10u, 0u, false));
 
     const Bool fullScreen = false;
     const Bool sendViaDLT = false;
     const String& filename = "";
 
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getOffscreenBufferDeviceHandle(buffer)).Times(4).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
     readPixels(DisplayHandle1, buffer, 10, 0u, 1u, 1u, fullScreen, sendViaDLT, filename);
     readPixels(DisplayHandle1, buffer, 0u, 10, 1u, 1u, fullScreen, sendViaDLT, filename);
     readPixels(DisplayHandle1, buffer, 0u, 0u, 11u, 1u, fullScreen, sendViaDLT, filename);
@@ -837,7 +819,6 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfRectangleIsOutOfOffs
     rendererSceneUpdater->processScreenshotResults();
     expectNoEvent();
 
-    expectRenderTargetDeleted();
     destroyDisplay();
 }
 
@@ -945,9 +926,7 @@ TEST_F(ARendererSceneUpdater, updatesDataLinks)
 
     hideScene(0u);
     hideScene(1u);
-    expectContextEnable();
     unmapScene(0u);
-    expectContextEnable();
     unmapScene(1u);
     destroyDisplay();
 }
@@ -974,7 +953,6 @@ TEST_F(ARendererSceneUpdater, updatesDataLinksAlsoIfProviderSceneNotShown)
     EXPECT_FLOAT_EQ(providedValue, consumedValue);
 
     hideScene(1u);
-    expectContextEnable();
     unmapScene(1u);
     destroyDisplay();
 }
@@ -1004,9 +982,7 @@ TEST_F(ARendererSceneUpdater, doesNotUpdatesDataLinksIfConsumerSceneNotShown)
     EXPECT_FLOAT_EQ(0.f, consumedValue);
 
     hideScene(0u);
-    expectContextEnable();
     unmapScene(0u);
-    expectContextEnable();
     unmapScene(1u);
     destroyDisplay();
 }
@@ -1024,14 +1000,11 @@ TEST_F(ARendererSceneUpdater, removesTextureLinkWhenProviderSceneUnmapped)
     showScene(0u);
     showScene(1u);
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectTextureUploaded();
+    expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash });
     createTextureSlotsAndLinkThem();
     update();
 
     hideScene(0u);
-    expectContextEnable();
     unmapScene(0u);
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToConsumer(getSceneId(0u)));
@@ -1040,8 +1013,6 @@ TEST_F(ARendererSceneUpdater, removesTextureLinkWhenProviderSceneUnmapped)
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToProvider(getSceneId(1u)));
 
     hideScene(1u);
-    expectContextEnable();
-    expectTextureDeleted();
     unmapScene(1u);
     destroyDisplay();
 }
@@ -1059,14 +1030,11 @@ TEST_F(ARendererSceneUpdater, removesTextureLinkWhenConsumerSceneUnmapped)
     showScene(0u);
     showScene(1u);
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectTextureUploaded();
+    expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash });
     createTextureSlotsAndLinkThem();
     update();
 
     hideScene(1u);
-    expectContextEnable();
     unmapScene(1u);
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToConsumer(getSceneId(0u)));
@@ -1075,8 +1043,6 @@ TEST_F(ARendererSceneUpdater, removesTextureLinkWhenConsumerSceneUnmapped)
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToProvider(getSceneId(1u)));
 
     hideScene(0u);
-    expectContextEnable();
-    expectTextureDeleted();
     unmapScene(0u);
     destroyDisplay();
 }
@@ -1100,7 +1066,6 @@ TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfProviderSceneNotMapped)
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToProvider(getSceneId(1u)));
 
     hideScene(1u);
-    expectContextEnable();
     unmapScene(1u);
     destroyDisplay();
 }
@@ -1115,9 +1080,7 @@ TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfConsumerSceneNotMapped)
     mapScene(0u);
     showScene(0u);
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectTextureUploaded();
+    expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash });
     createTextureSlotsAndLinkThem(nullptr, 0u, 1u, false);
     update();
 
@@ -1127,8 +1090,6 @@ TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfConsumerSceneNotMapped)
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToProvider(getSceneId(1u)));
 
     hideScene(0u);
-    expectContextEnable();
-    expectTextureDeleted();
     unmapScene(0u);
     destroyDisplay();
 }
@@ -1158,9 +1119,7 @@ TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfProviderSceneMappedToDif
     mapScene(0u, DisplayHandle1);
     mapScene(1u, DisplayHandle2);
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectTextureUploaded();
+    expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash });
     createTextureSlotsAndLinkThem(nullptr, 0u, 1u, false);
     update();
 
@@ -1169,11 +1128,8 @@ TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfProviderSceneMappedToDif
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToConsumer(getSceneId(1u)));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToProvider(getSceneId(1u)));
 
-    expectContextEnable(DisplayHandle1);
-    expectTextureDeleted();
-    unmapScene(0u);
-    expectContextEnable(DisplayHandle2);
-    unmapScene(1u);
+    unmapScene(0u, DisplayHandle1);
+    unmapScene(1u, DisplayHandle2);
 
     destroyDisplay(DisplayHandle1);
     destroyDisplay(DisplayHandle2);
@@ -1197,8 +1153,8 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed)
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
@@ -1212,7 +1168,7 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed)
     EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
@@ -1221,7 +1177,6 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed)
 
     hideScene(0u);
     hideScene(1u);
-    expectContextEnable(DisplayHandle1, 2u);
     unmapScene(0u);
     unmapScene(1u);
 
@@ -1246,8 +1201,8 @@ TEST_F(ARendererSceneUpdater, confidenceTest_triggersRemovalOfBufferLinkWhenCons
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
@@ -1261,7 +1216,6 @@ TEST_F(ARendererSceneUpdater, confidenceTest_triggersRemovalOfBufferLinkWhenCons
     EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
 
     hideScene(0u);
-    expectContextEnable();
     unmapScene(0u);
 
     EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
@@ -1269,10 +1223,7 @@ TEST_F(ARendererSceneUpdater, confidenceTest_triggersRemovalOfBufferLinkWhenCons
     EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
 
     hideScene(1u);
-    expectContextEnable();
     unmapScene(1u);
-
-    expectRenderTargetDeleted();
     destroyDisplay();
 }
 
@@ -1284,15 +1235,14 @@ TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotMapped)
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     createBufferLink(buffer, getSceneId(), consumerId, true);
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId()));
 
-    expectRenderTargetDeleted();
     destroyDisplay();
 }
 
@@ -1308,19 +1258,18 @@ TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfProviderBufferIsFromAnoth
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable(DisplayHandle2);
-    expectRenderTargetUploaded(DisplayHandle2, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle2, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer, DisplayHandle2);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle2, 1u, 1u, 0u, false));
 
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
     createBufferLink(buffer, getSceneId(), consumerId, true);
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId()));
 
-    expectContextEnable();
     unmapScene();
 
     destroyDisplay(DisplayHandle1);
-    expectRenderTargetDeleted(DisplayHandle2);
     destroyDisplay(DisplayHandle2);
 }
 
@@ -1332,10 +1281,10 @@ TEST_F(ARendererSceneUpdater, updateSceneStreamTexturesDirtinessGeneratesEventsF
 {
     createDisplayAndExpectSuccess();
 
-    const StreamTextureSourceId newStreamId(7563u);
-    const StreamTextureSourceId obsoleteStreamId(8883u);
-    const StreamTextureSourceIdVector newStreams{ newStreamId };
-    const StreamTextureSourceIdVector obsoleteStreams{ obsoleteStreamId };
+    const WaylandIviSurfaceId newStreamId(7563u);
+    const WaylandIviSurfaceId obsoleteStreamId(8883u);
+    const WaylandIviSurfaceIdVector newStreams{ newStreamId };
+    const WaylandIviSurfaceIdVector obsoleteStreams{ obsoleteStreamId };
 
     expectNoEvent();
 
@@ -1358,29 +1307,26 @@ TEST_F(ARendererSceneUpdater, updateSceneStreamTexturesDirtinessGeneratesEventsF
 TEST_F(ARendererSceneUpdater, willShowSceneEvenIfFlushesPending)
 {
     createDisplayAndExpectSuccess();
-
     createPublishAndSubscribeScene();
-    performFlushWithCreateNodeAction();
 
+    performFlushWithCreateNodeAction();
     mapScene();
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    const ResourceContentHash nonExistingResource{ 0u, 123u };
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     createRenderable();
-    setRenderableResources(0u, nonExistingResource);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    rendererSceneUpdater->handleSceneShowRequest(getSceneId(0u));
+    setRenderableResources();
+
+    // simulate effect not uploaded yet
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
-    //expect scene shown despite having a pending flush
-    expectInternalSceneStateEvent(ERendererEventType_SceneShown);
+
+    // scene shown even if flush pending
+    showScene();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
     unmapScene();
     destroyDisplay();
 }
@@ -1413,9 +1359,9 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamTextureStateIsN
     mapScene();
     showScene();
     createRenderableAndResourcesWithStreamTexture();
-    const DeviceResourceHandle fakeDeviceResourceHandle(1u);
-    expectEmbeddedCompositingManagerReturnsDeviceHandle(fakeDeviceResourceHandle);
 
+    expectContextEnable();
+    expectStreamTextureUploaded();
     update();
     expectRenderableResourcesClean();
 
@@ -1427,8 +1373,6 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamTextureStateIsN
     }
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, true, false, true);
     unmapScene();
     destroyDisplay();
 }
@@ -1440,19 +1384,17 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamTextureStateIsUpdated
     mapScene();
     showScene();
     createRenderableAndResourcesWithStreamTexture();
-    const DeviceResourceHandle fakeDeviceResourceHandle(1u);
-    expectEmbeddedCompositingManagerReturnsDeviceHandle(fakeDeviceResourceHandle);
 
+    expectContextEnable();
+    expectStreamTextureUploaded();
     update();
     expectRenderableResourcesClean();
 
     {
         const SceneId sceneId = stagingScene[0u]->getSceneId();
         SceneStreamTextures updatedStreamTextures;
-        updatedStreamTextures.put(sceneId, StreamTextureHandleVector());
-        updatedStreamTextures.get(sceneId)->push_back(streamTextureHandle);
+        updatedStreamTextures.put(sceneId, { streamTextureHandle });
         EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfStreamTexturesAndSources(_, _, _)).WillOnce(SetArgReferee<0>(updatedStreamTextures));
-        expectEmbeddedCompositingManagerReturnsDeviceHandle(fakeDeviceResourceHandle);
 
         expectModifiedScenesReportedToRenderer();
         update();
@@ -1465,8 +1407,6 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamTextureStateIsUpdated
     }
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, true, false, true);
     unmapScene();
     destroyDisplay();
 }
@@ -1478,9 +1418,9 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdate
     mapScene();
     showScene();
     createRenderableAndResourcesWithStreamTexture();
-    const DeviceResourceHandle fakeDeviceResourceHandle(1u);
-    expectEmbeddedCompositingManagerReturnsDeviceHandle(fakeDeviceResourceHandle);
 
+    expectContextEnable();
+    expectStreamTextureUploaded();
     update();
     expectRenderableResourcesClean();
 
@@ -1504,8 +1444,6 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdate
     }
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, true, false, true);
     unmapScene();
     destroyDisplay();
 }
@@ -1526,7 +1464,6 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfNonEmptyFlushApplied)
     update();
 
     hideScene();
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 }
@@ -1544,7 +1481,6 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptyFlushAppliedOnEm
     update();
 
     hideScene();
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 }
@@ -1565,25 +1501,22 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfEmptyFlushAppliedOnNo
     update();
 
     hideScene();
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 }
 
 
-TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfSynchFlushAppliedWithExistingClientResources)
+TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfFlushAppliedWithResources)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     createRenderable();
-
-    expectResourceRequest();
     setRenderableResources();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
+
     expectModifiedScenesReportedToRenderer();
     update();
     expectRenderableResourcesClean();
@@ -1592,26 +1525,22 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfSynchFlushAppliedWithExisti
     update();
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1);
     unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfSynchFlushCouldNotBeAppliedDueToMissingClientResource)
+TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfPendingFlushNotApplied)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     createRenderable();
 
     {
-        expectResourceRequest();
         setRenderableResources();
-        expectContextEnable();
-        expectRenderableResourcesUploaded();
         expectModifiedScenesReportedToRenderer();
         update();
         expectRenderableResourcesClean();
@@ -1622,63 +1551,59 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfSynchFlushCouldNotBeA
     update();
 
     {
-        resourceProvider1.setIndexArrayAvailability(false);
-        setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash2);
-        expectResourceRequest();
+        expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
+        setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+        reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Provided);
+
         expectNoModifiedScenesReportedToRenderer();
         update();
         EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
     }
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1);
     unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfSynchFlushAppliedAfterMissingClientResourceArrives)
+TEST_F(ARendererSceneUpdater, MarkSceneAsModified_AfterPendingFlushApplied)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
-    const ResourceContentHash missingResourceHash = ResourceProviderMock::FakeIndexArrayHash;
-    createRenderable();
-    setRenderableResources(0u, missingResourceHash);
-
     {
-        resourceProvider1.setIndexArrayAvailability(false);
-
-        expectResourceRequest();
-        expectContextEnable();
-        expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-        update();
-        EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-    }
-
-    expectNoModifiedScenesReportedToRenderer();
-    update();
-
-    {
-        resourceProvider1.setIndexArrayAvailability(true);
-
-        expectContextEnable();
-        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+        expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+        createRenderable();
+        setRenderableResources();
         expectModifiedScenesReportedToRenderer();
         update();
-        ASSERT_TRUE(lastFlushWasAppliedOnRendererScene());
         expectRenderableResourcesClean();
     }
-
-    EXPECT_CALL(resourceProvider1, popArrivedResources(_)).Times(AnyNumber()).WillRepeatedly(Return(ManagedResourceVector()));
     expectNoModifiedScenesReportedToRenderer();
     update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    {
+        // blocking flush
+        expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
+        setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+        reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Provided);
+    }
+    expectNoModifiedScenesReportedToRenderer();
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    {
+        // unblock flush
+        expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash });
+        reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Uploaded);
+    }
+    expectModifiedScenesReportedToRenderer();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1);
     unmapScene();
     destroyDisplay();
 }
@@ -1713,9 +1638,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_IfSceneIsConsumerA
 
     hideScene(0u);
     hideScene(1u);
-    expectContextEnable();
     unmapScene(0u);
-    expectContextEnable();
     unmapScene(1u);
     destroyDisplay();
 }
@@ -1729,7 +1652,6 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_DataLinking_IfSceneIsPr
     createPublishAndSubscribeScene();
     mapScene(1u);
     showScene(1u);
-
 
     DataInstanceHandle consumerDataRef;
     const float providedValue(333.f);
@@ -1748,7 +1670,6 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_DataLinking_IfSceneIsPr
     update();
 
     hideScene(1u);
-    expectContextEnable();
     unmapScene(1u);
     destroyDisplay();
 }
@@ -1797,11 +1718,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_IndirectlyDependan
     hideScene(0u);
     hideScene(1u);
     hideScene(2u);
-    expectContextEnable();
     unmapScene(0u);
-    expectContextEnable();
     unmapScene(1u);
-    expectContextEnable();
     unmapScene(2u);
     destroyDisplay();
 }
@@ -1850,11 +1768,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_OnlyDependantConsu
     hideScene(0u);
     hideScene(1u);
     hideScene(2u);
-    expectContextEnable();
     unmapScene(0u);
-    expectContextEnable();
     unmapScene(1u);
-    expectContextEnable();
     unmapScene(2u);
     destroyDisplay();
 }
@@ -1877,9 +1792,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_IfSceneConsumesFro
 
     {
         //tex. link scene 1 to scene 0
-        expectResourceRequest();
-        expectContextEnable();
-        expectTextureUploaded();
+        expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash });
         createTextureSlotsAndLinkThem();
         update();
     }
@@ -1906,12 +1819,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_IfSceneConsumesFro
     hideScene(0u);
     hideScene(1u);
     hideScene(2u);
-    expectContextEnable();
-    expectTextureDeleted();
     unmapScene(0u);
-    expectContextEnable();
     unmapScene(1u);
-    expectContextEnable();
     unmapScene(2u);
     destroyDisplay();
 }
@@ -1968,11 +1877,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_DataLinking_ConfidenceTest)
     hideScene(1u);
     hideScene(2u);
     hideScene(3u);
-    expectContextEnable();
     unmapScene(1u);
-    expectContextEnable();
     unmapScene(2u);
-    expectContextEnable();
     unmapScene(3u);
     destroyDisplay();
 }
@@ -1990,19 +1896,16 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TextureLinking_IfSceneIsConsum
     showScene(1u);
 
     DataSlotHandle providerDataSlotHandle;
-    expectResourceRequest();
-    expectContextEnable();
-    expectTextureUploaded();
+    expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash });
     createTextureSlotsAndLinkThem(&providerDataSlotHandle);
     update();
 
     expectNoModifiedScenesReportedToRenderer();
     update();
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectTextureUploaded();
-    updateProviderTextureSlot(0u, providerDataSlotHandle, ResourceProviderMock::FakeTextureHash2);
+    expectResourcesUnreferenced({ MockResourceHash::TextureHash });
+    expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash2 });
+    updateProviderTextureSlot(0u, providerDataSlotHandle, MockResourceHash::TextureHash2);
     performFlush();
     expectModifiedScenesReportedToRenderer({0u, 1u});
     update();
@@ -2012,8 +1915,6 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TextureLinking_IfSceneIsConsum
 
     hideScene(0u);
     hideScene(1u);
-    expectContextEnable(DisplayHandle1, 2u);
-    expectTextureDeleted().Times(2);
     unmapScene(0u);
     unmapScene(1u);
     destroyDisplay();
@@ -2038,22 +1939,22 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TextureLinking_ConfidenceTest)
 
     {
         //link scene 1 to scene 0
-        expectResourceRequest();
-        expectContextEnable();
-        expectTextureUploaded();
+        expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash });
         createTextureSlotsAndLinkThem();
         update();
     }
 
     DataSlotHandle providerDataSlotHandle;
     {
-        //linke scene 2 to scene 1
+        //link scene 2 to scene 1
+        expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash }, 1u);
         createTextureSlotsAndLinkThem(&providerDataSlotHandle, 1u, 2u);
         update();
     }
 
     {
-        //linke scene 3 to scene 2
+        //link scene 3 to scene 2
+        expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash }, 2u);
         createTextureSlotsAndLinkThem(nullptr, 2u, 3u);
         update();
     }
@@ -2061,10 +1962,9 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TextureLinking_ConfidenceTest)
     expectNoModifiedScenesReportedToRenderer();
     update();
 
-    expectResourceRequest(DisplayHandle1, 1u);
-    expectContextEnable();
-    expectTextureUploaded();
-    updateProviderTextureSlot(1u, providerDataSlotHandle, ResourceProviderMock::FakeTextureHash2);
+    expectResourcesUnreferenced({ MockResourceHash::TextureHash }, 1u);
+    expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash2 }, 1u);
+    updateProviderTextureSlot(1u, providerDataSlotHandle, MockResourceHash::TextureHash2);
     performFlush(1u);
     expectModifiedScenesReportedToRenderer({1u, 2u, 3u});
     update();
@@ -2075,8 +1975,6 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TextureLinking_ConfidenceTest)
     hideScene(1u);
     hideScene(2u);
     hideScene(3u);
-    expectContextEnable(DisplayHandle1, 4u);
-    expectTextureDeleted().Times(2);
     unmapScene();
     unmapScene(1u);
     unmapScene(2u);
@@ -2113,7 +2011,6 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TransformationLinking_IfSceneI
 
     hideScene(0u);
     hideScene(1u);
-    expectContextEnable(DisplayHandle1, 2u);
     unmapScene(0u);
     unmapScene(1u);
     destroyDisplay();
@@ -2169,7 +2066,6 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_TransformationLinking_Confiden
     hideScene(1u);
     hideScene(2u);
     hideScene(3u);
-    expectContextEnable(DisplayHandle1, 4u);
     unmapScene();
     unmapScene(1u);
     unmapScene(2u);
@@ -2184,8 +2080,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_IfScene
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2214,10 +2110,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_IfScene
 
     hideScene(0u);
     hideScene(1u);
-    expectContextEnable(DisplayHandle1, 2u);
     unmapScene(0u);
     unmapScene(1u);
-    expectRenderTargetDeleted();
     destroyDisplay();
 }
 
@@ -2230,8 +2124,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_IfScene
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2265,11 +2159,9 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_IfScene
     hideScene(0u);
     hideScene(1u);
     hideScene(2u);
-    expectContextEnable(DisplayHandle1, 3u);
     unmapScene(0u);
     unmapScene(1u);
     unmapScene(2u);
-    expectRenderTargetDeleted();
     destroyDisplay();
 }
 
@@ -2280,8 +2172,8 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_OffscreenBufferLinking_
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2310,10 +2202,8 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_OffscreenBufferLinking_
 
     hideScene(0u);
     hideScene(1u);
-    expectContextEnable(DisplayHandle1, 2u);
     unmapScene(0u);
     unmapScene(1u);
-    expectRenderTargetDeleted();
     destroyDisplay();
 }
 
@@ -2326,8 +2216,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_TwoCons
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2367,11 +2257,9 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_TwoCons
     hideScene(0u);
     hideScene(1u);
     hideScene(2u);
-    expectContextEnable(DisplayHandle1, 3u);
     unmapScene(0u);
     unmapScene(1u);
     unmapScene(2u);
-    expectRenderTargetDeleted();
     destroyDisplay();
 }
 
@@ -2382,14 +2270,14 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Indirec
 
     const OffscreenBufferHandle buffer1(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer1, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer1);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer1, DisplayHandle1, 1u, 1u, 0u, false));
 
     const OffscreenBufferHandle buffer2(2u);
     const DeviceResourceHandle offscreenBufferDeviceHandle(5556u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true, offscreenBufferDeviceHandle);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer2, DisplayHandle1, offscreenBufferDeviceHandle);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, DisplayHandle1, 1u, 1u, 0u, false));
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2430,11 +2318,9 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Indirec
     hideScene(0u);
     hideScene(1u);
     hideScene(2u);
-    expectContextEnable(DisplayHandle1, 3u);
     unmapScene(0u);
     unmapScene(1u);
     unmapScene(2u);
-    expectRenderTargetDeleted(DisplayHandle1, 2u);
     destroyDisplay();
 }
 
@@ -2446,14 +2332,15 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_OffscreenBufferLinking_
 
     const OffscreenBufferHandle buffer1(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer1, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer1);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer1, DisplayHandle1, 1u, 1u, 0u, false));
 
     const OffscreenBufferHandle buffer2(2u);
     const DeviceResourceHandle offscreenBufferDeviceHandle(5556u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true, offscreenBufferDeviceHandle);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer2, DisplayHandle1, offscreenBufferDeviceHandle);
+
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, DisplayHandle1, 1u, 1u, 0u, false));
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2487,11 +2374,9 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_OffscreenBufferLinking_
     hideScene(0u);
     hideScene(1u);
     hideScene(2u);
-    expectContextEnable(DisplayHandle1, 3u);
     unmapScene(0u);
     unmapScene(1u);
     unmapScene(2u);
-    expectRenderTargetDeleted(DisplayHandle1, 2u);
     destroyDisplay();
 }
 
@@ -2508,8 +2393,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     for (const auto buffer : buffers)
     {
         expectContextEnable();
-        expectRenderTargetUploaded(DisplayHandle1, true, DeviceResourceHandle(buffer.asMemoryHandle()));
-        EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+        expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceResourceHandle(buffer.asMemoryHandle()));
+        EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
     }
 
     for (UInt32 i = 0u; i < 6; ++i)
@@ -2558,14 +2443,12 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     update();
 
 
-    expectContextEnable(DisplayHandle1, 6u);
     for (UInt32 i = 0u; i < 6; ++i)
     {
         hideScene(i);
         unmapScene(i);
     }
 
-    expectRenderTargetDeleted(DisplayHandle1, 3u);
     destroyDisplay();
 }
 
@@ -2582,8 +2465,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     for (const auto buffer : buffers)
     {
         expectContextEnable();
-        expectRenderTargetUploaded(DisplayHandle1, true, DeviceResourceHandle(buffer.asMemoryHandle()));
-        EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+        expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceResourceHandle(buffer.asMemoryHandle()));
+        EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
     }
 
     for (UInt32 i = 0u; i < 5; ++i)
@@ -2624,15 +2507,12 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     expectNoModifiedScenesReportedToRenderer();
     update();
 
-
-    expectContextEnable(DisplayHandle1, 5u);
     for (UInt32 i = 0u; i < 5; ++i)
     {
         hideScene(i);
         unmapScene(i);
     }
 
-    expectRenderTargetDeleted(DisplayHandle1, 3u);
     destroyDisplay();
 }
 
@@ -2659,7 +2539,6 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfRealTimeAnimationIsActive)
     update();
 
     hideScene();
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 }
@@ -2674,8 +2553,8 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferLinkedToScen
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
     EXPECT_TRUE(assignSceneToDisplayBuffer(scene2, buffer));
 
     const DataSlotId consumer = createTextureConsumer(scene1);
@@ -2695,13 +2574,11 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferLinkedToScen
 
     hideScene(scene1);
     hideScene(scene2);
-    expectContextEnable();
     unmapScene(scene1);
-    expectContextEnable();
     unmapScene(scene2);
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
     destroyDisplay();
@@ -2717,8 +2594,8 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferUnlinkedFrom
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
     EXPECT_TRUE(assignSceneToDisplayBuffer(scene2, buffer));
 
     const DataSlotId consumer = createTextureConsumer(scene1);
@@ -2745,13 +2622,11 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferUnlinkedFrom
 
     hideScene(scene1);
     hideScene(scene2);
-    expectContextEnable();
     unmapScene(scene1);
-    expectContextEnable();
     unmapScene(scene2);
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
     destroyDisplay();
@@ -2769,8 +2644,8 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_WhenProviderSceneAssignedToOB
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
     EXPECT_TRUE(assignSceneToDisplayBuffer(scene2, buffer));
 
     expectNoModifiedScenesReportedToRenderer();
@@ -2791,13 +2666,11 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_WhenProviderSceneAssignedToOB
 
     hideScene(scene1);
     hideScene(scene2);
-    expectContextEnable();
     unmapScene(scene1);
-    expectContextEnable();
     unmapScene(scene2);
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
     destroyDisplay();
@@ -2833,9 +2706,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfTransformationConsumerAndPro
 
     hideScene(providerScene);
     hideScene(consumerScene);
-    expectContextEnable();
     unmapScene(providerScene);
-    expectContextEnable();
     unmapScene(consumerScene);
     destroyDisplay();
 }
@@ -2871,9 +2742,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfDataConsumerAndProviderLinke
 
     hideScene(providerScene);
     hideScene(consumerScene);
-    expectContextEnable();
     unmapScene(providerScene);
-    expectContextEnable();
     unmapScene(consumerScene);
     destroyDisplay();
 }
@@ -2889,9 +2758,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfTextureConsumerAndProviderLi
     showScene(providerScene);
     showScene(consumerScene);
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectTextureUploaded();
+    expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash }, providerScene);
     const auto providerConsumer = createTextureSlots(nullptr, providerScene, consumerScene);
     update();
 
@@ -2911,10 +2778,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfTextureConsumerAndProviderLi
 
     hideScene(providerScene);
     hideScene(consumerScene);
-    expectContextEnable();
-    expectTextureDeleted();
     unmapScene(providerScene);
-    expectContextEnable();
     unmapScene(consumerScene);
     destroyDisplay();
 }
@@ -2936,12 +2800,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfInterruptedSceneIsHidd
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
     hideScene(scene);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -2962,12 +2823,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneIsHidden)
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -2992,14 +2850,10 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneIsShown)
     hideScene(sceneToShow);
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(sceneToShow);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3022,14 +2876,10 @@ TEST_F(ARendererSceneUpdater, doesNotResetInterruptedRenderingIfAnotherSceneIsMa
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(sceneToMap);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3048,18 +2898,14 @@ TEST_F(ARendererSceneUpdater, doesNotResetInterruptedRenderingIfAnotherSceneIsUn
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
-    expectContextEnable();
     unmapScene(sceneToUnmap);
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3081,12 +2927,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfInterruptedSceneAssign
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3104,8 +2947,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneAssignedTo
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true, DeviceResourceHandle(321u));
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceResourceHandle(321u));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
     EXPECT_TRUE(assignSceneToDisplayBuffer(sceneToAssign, buffer));
 
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
@@ -3116,18 +2959,14 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneAssignedTo
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(sceneToAssign);
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3141,7 +2980,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneAssignedTo
     mapScene(scene);
     mapScene(sceneInterrupted);
 
-    const OffscreenBufferHandle buffer = showAndInitiateInterruptedRendering(scene, sceneInterrupted);
+    const auto buffer = showAndInitiateInterruptedRendering(scene, sceneInterrupted);
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
     EXPECT_TRUE(assignSceneToDisplayBuffer(scene, buffer));
@@ -3149,12 +2988,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneAssignedTo
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3170,7 +3006,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneLinkedToOf
 
     const DataSlotId texConsumer = createTextureConsumer(scene);
 
-    const OffscreenBufferHandle buffer = showAndInitiateInterruptedRendering(scene, sceneInterrupted);
+    const auto buffer = showAndInitiateInterruptedRendering(scene, sceneInterrupted);
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
     createBufferLink(buffer, getSceneId(scene), texConsumer);
@@ -3178,12 +3014,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneLinkedToOf
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3201,8 +3034,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneUnlinkedFr
 
     const OffscreenBufferHandle buffer(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true, DeviceResourceHandle(321u));
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceResourceHandle(321u));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
     const DataSlotId texConsumer = createTextureConsumer(sceneToUnlink);
     createBufferLink(buffer, getSceneId(sceneToUnlink), texConsumer);
 
@@ -3214,18 +3047,14 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneUnlinkedFr
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(sceneToUnlink);
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3250,12 +3079,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTransformationLinked)
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3281,12 +3107,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTransformationUnlinked
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3312,12 +3135,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfDataLinked)
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3344,12 +3164,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfDataUnlinked)
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3364,9 +3181,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTexturesLinked)
     mapScene(sceneInterrupted);
 
     // provider/consumer order does not matter here
-    expectResourceRequest();
-    expectContextEnable();
-    expectTextureUploaded();
+    expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash }, scene);
     const auto providerConsumerId = createTextureSlots(nullptr, scene, sceneInterrupted);
 
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
@@ -3377,13 +3192,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTexturesLinked)
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
-    expectTextureDeleted();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3398,9 +3209,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTexturesUnlinked)
     mapScene(sceneInterrupted);
 
     // provider/consumer order does not matter here
-    expectResourceRequest();
-    expectContextEnable();
-    expectTextureUploaded();
+    expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash }, scene);
     const auto providerConsumerId = createTextureSlots(nullptr, scene, sceneInterrupted);
     linkProviderToConsumer(getSceneId(scene), providerConsumerId.first, getSceneId(sceneInterrupted), providerConsumerId.second);
 
@@ -3412,13 +3221,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfTexturesUnlinked)
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
-    expectTextureDeleted();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3435,25 +3240,22 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferCreated
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
-    const OffscreenBufferHandle buffer(1u);
+    const OffscreenBufferHandle buffer2(1u);
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true, DeviceResourceHandle(321u));
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer2, DisplayHandle1, DeviceResourceHandle(321u));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, DisplayHandle1, 1u, 1u, 0u, false));
 
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
     expectContextEnable();
-    expectRenderTargetDeleted();
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    expectOffscreenBufferDeleted(buffer2);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer2, DisplayHandle1));
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3461,10 +3263,11 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferDeleted
 {
     createDisplayAndExpectSuccess();
 
-    const OffscreenBufferHandle buffer(1u);
+    constexpr OffscreenBufferHandle buffer(1u);
+    constexpr DeviceResourceHandle bufferDeviceHandle{ 321u };
     expectContextEnable();
-    expectRenderTargetUploaded(DisplayHandle1, true, DeviceResourceHandle(321u));
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, false));
+    expectOffscreenBufferUploaded(buffer, DisplayHandle1, bufferDeviceHandle);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false));
 
     const UInt32 scene = createPublishAndSubscribeScene();
     const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
@@ -3476,19 +3279,16 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferDeleted
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectOffscreenBufferDeleted(buffer, DisplayHandle1, bufferDeviceHandle);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
 
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3511,13 +3311,10 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfDisplayCreated)
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
     destroyDisplay(DisplayHandle2);
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay(DisplayHandle1);
 }
 
@@ -3546,12 +3343,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfDisplayDestroyed)
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay(DisplayHandle1);
 }
 
@@ -3587,12 +3381,9 @@ TEST_F(ARendererSceneUpdater, blocksFlushesForSceneAssignedToInterruptibleOBWhen
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3628,12 +3419,9 @@ TEST_F(ARendererSceneUpdater, doesNotBlockFlushesForSceneAssignedToNormalOBWhenT
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3646,19 +3434,16 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
     createRenderable(sceneInterrupted);
     setRenderableResources(sceneInterrupted);
 
-    expectResourceRequest(DisplayHandle1, sceneInterrupted);
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
-
+    expectResourcesReferencedAndProvided_altogether({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, sceneInterrupted);
     mapScene(scene);
     mapScene(sceneInterrupted);
 
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
-
-    // add blocking sync flush so that upcoming flushes are queuing up
-    setRenderableResources(sceneInterrupted, InvalidResource1);
-    expectResourceRequest(DisplayHandle1, sceneInterrupted);
+    // add blocking flush so that upcoming flushes are queuing up
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 }, sceneInterrupted);
+    setRenderableResources(sceneInterrupted, MockResourceHash::IndexArrayHash2);
+    reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Provided);
     update();
 
     // flushes are blocked due to unresolved resource
@@ -3667,6 +3452,9 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
     update();
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
+    // will force apply and log blocking resources
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getResourceType(_)).Times(AnyNumber());
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash }, sceneInterrupted);
     for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
     {
         performFlush(sceneInterrupted);
@@ -3675,17 +3463,14 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
 
     // after maximum of pending flushes was reached the flushes were applied regardless of missing resource
     expectSceneEvent(ERendererEventType_SceneFlushed);
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene(sceneInterrupted));
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
     hideScene(scene);
     hideScene(sceneInterrupted);
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
     unmapScene(scene);
-    expectContextEnable();
     unmapScene(sceneInterrupted);
 
-    expectRenderTargetDeleted(DisplayHandle1, 1u, true);
     destroyDisplay();
 }
 
@@ -3792,7 +3577,6 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedAndRend
     }
 
     hideScene();
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 }
@@ -3826,7 +3610,6 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneBeingFlushedButNotRendere
     expectSceneEvent(ERendererEventType_SceneExpired);
 
     hideScene();
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 }
@@ -3861,7 +3644,6 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedButNotR
     }
     expectNoEvent();
 
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 }
@@ -3922,7 +3704,6 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
     expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
 
     hideScene();
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 }
@@ -3966,7 +3747,6 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
     }
     expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
 
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 }
@@ -3992,7 +3772,6 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedRegular
     }
 
     hideScene();
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 }
@@ -4008,11 +3787,10 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneBeingFlushedButBl
     update();
     expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
+    // blocking flush
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
     createRenderable(scene);
-    setRenderableResources(scene, InvalidResource1);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
 
     for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
@@ -4023,8 +3801,6 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneBeingFlushedButBl
     }
     expectSceneEvent(ERendererEventType_SceneExpired);
 
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
     unmapScene();
     destroyDisplay();
 }
@@ -4041,11 +3817,10 @@ TEST_F(ARendererSceneUpdater, reportsExpirationSceneBeingFlushedAndRenderedButBl
     update();
     expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
+    // blocking flush
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
     createRenderable(scene);
-    setRenderableResources(scene, InvalidResource1);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
 
     for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2; ++i)
@@ -4058,8 +3833,6 @@ TEST_F(ARendererSceneUpdater, reportsExpirationSceneBeingFlushedAndRenderedButBl
     expectSceneEvent(ERendererEventType_SceneExpired);
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
     unmapScene();
     destroyDisplay();
 }
@@ -4078,12 +3851,11 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
     update();
     expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
 
+    // blocking flush
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
     createRenderableNoFlush(scene);
-    setRenderableResourcesNoFlush(scene, InvalidResource1);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
     performFlushWithExpiration(scene, expTS);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
 
     for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
@@ -4096,13 +3868,8 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
     expectSceneEvent(ERendererEventType_SceneExpired);
 
     // simulate upload
-    setRenderableResourcesNoFlush(scene);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
-    performFlushWithExpiration(scene, expTS); // not blocked anymore
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
     update();
-    expectResourceRequestCancel(InvalidResource1);
 
     for (UInt32 i = ForceApplyFlushesLimit / 2u; i < ForceApplyFlushesLimit; ++i)
     {
@@ -4114,8 +3881,6 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
     expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
     unmapScene();
     destroyDisplay();
 }
@@ -4230,7 +3995,6 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_render
     expectNoEvent();
 
     hideScene(scene);
-    expectContextEnable();
     unmapScene(scene);
     destroyDisplay();
 }
@@ -4279,7 +4043,6 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_ren
     expectNoEvent();
 
     hideScene(scene);
-    expectContextEnable();
     unmapScene(scene);
     destroyDisplay();
 }
@@ -4325,7 +4088,6 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_hidden
     // expect no expiration as last flush disabled expiration
     expectNoEvent();
 
-    expectContextEnable();
     unmapScene(scene);
     destroyDisplay();
 }
@@ -4375,7 +4137,6 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_hid
     // expect no expiration as last flush disabled expiration
     expectNoEvent();
 
-    expectContextEnable();
     unmapScene(scene);
     destroyDisplay();
 }
@@ -4432,7 +4193,6 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whileModifyingScene_c
     // expect no expiration as last flush disabled expiration
     expectNoEvent();
 
-    expectContextEnable();
     unmapScene(scene);
     destroyDisplay();
 }
@@ -4487,7 +4247,6 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenFl
     // expect no expiration as last flush disabled expiration
     expectNoEvent();
 
-    expectContextEnable();
     unmapScene(scene);
     destroyDisplay();
 }
@@ -4541,7 +4300,6 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenEm
     // expect no expiration as last flush disabled expiration
     expectNoEvent();
 
-    expectContextEnable();
     unmapScene(scene);
     destroyDisplay();
 }
@@ -4595,7 +4353,6 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_re
     expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     hideScene(scene);
-    expectContextEnable();
     unmapScene(scene);
     destroyDisplay();
 }
@@ -4659,7 +4416,6 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_re
     expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
 
     hideScene(scene);
-    expectContextEnable();
     unmapScene(scene);
     destroyDisplay();
 }
@@ -4726,15 +4482,14 @@ TEST_F(ARendererSceneUpdater, reportsPickedObjects)
     performFlush();
 
     expectContextEnable();
-    EXPECT_CALL(renderer.getDisplayMock(display).m_renderBackend->deviceMock, allocateVertexBuffer(_, _));
-    EXPECT_CALL(renderer.getDisplayMock(display).m_renderBackend->deviceMock, uploadVertexBufferData(_, _, _));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], uploadDataBuffer(_, _, _, _, _));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], updateDataBuffer(_, _, _, _));
     update();
 
+    EXPECT_CALL(*rendererSceneUpdater, handlePickEvent(_, _));
     rendererSceneUpdater->handlePickEvent(getSceneId(), { -0.375000f, 0.250000f });
     expectSceneEvent(ERendererEventType_ObjectsPicked);
 
-    expectContextEnable();
-    EXPECT_CALL(renderer.getDisplayMock(display).m_renderBackend->deviceMock, deleteVertexBuffer(_));
     unmapScene();
     destroyDisplay();
 }
@@ -4757,6 +4512,8 @@ TEST_F(ARendererSceneUpdater, emitsSequenceOfSceneStateChangesWhenRepublished_fr
     mapScene();
 
     expectContextEnable();
+    expectUnloadOfSceneResources();
+
     const SceneId sceneId = stagingScene[0]->getSceneId();
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(sceneId));
     rendererSceneUpdater->handleSceneUnpublished(sceneId);
@@ -4775,6 +4532,8 @@ TEST_F(ARendererSceneUpdater, emitsSequenceOfSceneStateChangesWhenRepublished_fr
     showScene();
 
     expectContextEnable();
+    expectUnloadOfSceneResources();
+
     const SceneId sceneId = stagingScene[0]->getSceneId();
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(sceneId));
     rendererSceneUpdater->handleSceneUnpublished(sceneId);
@@ -4825,12 +4584,9 @@ TEST_F(ARendererSceneUpdater, propagatesGeneratedSceneReferenceActionsToSceneRef
     showScene();
 
     // simulate blocking flush on missing resource
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
+    createRenderable();
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
@@ -4844,10 +4600,7 @@ TEST_F(ARendererSceneUpdater, propagatesGeneratedSceneReferenceActionsToSceneRef
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
     // unblock pending flushes by providing resource
-    setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
 
     EXPECT_CALL(sceneReferenceLogic, addActions(getSceneId(), _)).WillOnce([&](auto, const auto& actions)
     {
@@ -4869,12 +4622,9 @@ TEST_F(ARendererSceneUpdater, propagatesGeneratedSceneReferenceActionsToSceneRef
     //make empty flush to make sure actions were consumed
     performFlush(0u, {}, nullptr, {}, {});
     EXPECT_CALL(sceneReferenceLogic, addActions(_, _)).Times(0u);
-    expectResourceRequestCancel(InvalidResource1);
     update();
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
     unmapScene();
     destroyDisplay();
 }

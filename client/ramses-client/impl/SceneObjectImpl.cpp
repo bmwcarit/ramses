@@ -76,4 +76,10 @@ namespace ramses
     {
         return m_sceneObjectId;
     }
+
+    ramses::sceneId_t SceneObjectImpl::getSceneId() const
+    {
+        return m_scene.getSceneId();
+    }
+
 }

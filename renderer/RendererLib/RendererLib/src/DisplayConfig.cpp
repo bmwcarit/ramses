@@ -66,7 +66,6 @@ namespace ramses_internal
         m_startVisibleIvi = startVisible;
     }
 
-
     Bool DisplayConfig::getFullscreenState() const
     {
         return m_fullscreen;
@@ -144,26 +143,6 @@ namespace ramses_internal
         m_windowPositionY = posy;
     }
 
-    const Vector3& DisplayConfig::getCameraPosition() const
-    {
-        return m_cameraPosition;
-    }
-
-    void DisplayConfig::setCameraPosition(const Vector3& position)
-    {
-        m_cameraPosition = position;
-    }
-
-    const Vector3& DisplayConfig::getCameraRotation() const
-    {
-        return m_cameraRotation;
-    }
-
-    void DisplayConfig::setCameraRotation(const Vector3& rotation)
-    {
-        m_cameraRotation = rotation;
-    }
-
     void DisplayConfig::setWarpingEnabled(Bool enabled)
     {
         m_warpingEnabled = enabled;
@@ -182,16 +161,6 @@ namespace ramses_internal
     Bool DisplayConfig::getKeepEffectsUploaded() const
     {
         return m_keepEffectsUploaded;
-    }
-
-    void DisplayConfig::setProjectionParams(const ProjectionParams& params)
-    {
-        m_projectionParams = params;
-    }
-
-    const ProjectionParams& DisplayConfig::getProjectionParams() const
-    {
-        return m_projectionParams;
     }
 
     Bool DisplayConfig::isResizable() const
@@ -256,9 +225,6 @@ namespace ramses_internal
             m_desiredWindowHeight        == other.m_desiredWindowHeight &&
             m_windowPositionX            == other.m_windowPositionX &&
             m_windowPositionY            == other.m_windowPositionY &&
-            m_cameraPosition             == other.m_cameraPosition &&
-            m_cameraRotation             == other.m_cameraRotation &&
-            m_projectionParams           == other.m_projectionParams &&
             m_waylandIviLayerID          == other.m_waylandIviLayerID &&
             m_waylandIviSurfaceID        == other.m_waylandIviSurfaceID &&
             m_integrityRGLDeviceUnit     == other.m_integrityRGLDeviceUnit &&

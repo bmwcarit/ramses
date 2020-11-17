@@ -193,17 +193,17 @@ namespace ramses_internal
         const UInt32 dataFieldElementCount = 3u;
         const DataFieldInfoVector dataFieldInfos =
         {
-            DataFieldInfo{ EDataType::Int32,     dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType::Float,     dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType::Vector2F,  dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType::Vector3F,  dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType::Vector4F,  dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType::Vector2I,  dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType::Vector3I,  dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType::Vector4I,  dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType::Matrix22F, dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType::Matrix33F, dataFieldElementCount, EFixedSemantics_Invalid },
-            DataFieldInfo{ EDataType::Matrix44F, dataFieldElementCount, EFixedSemantics_Invalid }
+            DataFieldInfo{ EDataType::Int32,     dataFieldElementCount, EFixedSemantics::Invalid },
+            DataFieldInfo{ EDataType::Float,     dataFieldElementCount, EFixedSemantics::Invalid },
+            DataFieldInfo{ EDataType::Vector2F,  dataFieldElementCount, EFixedSemantics::Invalid },
+            DataFieldInfo{ EDataType::Vector3F,  dataFieldElementCount, EFixedSemantics::Invalid },
+            DataFieldInfo{ EDataType::Vector4F,  dataFieldElementCount, EFixedSemantics::Invalid },
+            DataFieldInfo{ EDataType::Vector2I,  dataFieldElementCount, EFixedSemantics::Invalid },
+            DataFieldInfo{ EDataType::Vector3I,  dataFieldElementCount, EFixedSemantics::Invalid },
+            DataFieldInfo{ EDataType::Vector4I,  dataFieldElementCount, EFixedSemantics::Invalid },
+            DataFieldInfo{ EDataType::Matrix22F, dataFieldElementCount, EFixedSemantics::Invalid },
+            DataFieldInfo{ EDataType::Matrix33F, dataFieldElementCount, EFixedSemantics::Invalid },
+            DataFieldInfo{ EDataType::Matrix44F, dataFieldElementCount, EFixedSemantics::Invalid }
         };
 
         const DataLayoutHandle dataLayout = m_scene.allocateDataLayout(dataFieldInfos, ResourceContentHash::Invalid());

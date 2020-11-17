@@ -23,7 +23,7 @@ namespace ramses_internal
     class StreamTextureScene : public IntegrationScene
     {
     public:
-        StreamTextureScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        StreamTextureScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
         enum
         {

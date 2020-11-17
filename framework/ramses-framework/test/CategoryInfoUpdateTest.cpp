@@ -16,63 +16,72 @@ namespace ramses
     TEST(ACategoryInfoUpdate, constructionAndEquality)
     {
         CategoryInfoUpdate defaultConstructed;
-        CategoryInfoUpdate explicitConstuctor(SizeInfo(4,5));
-        CategoryInfoUpdate explicitConstuctorZero(SizeInfo(0, 0));
         CategoryInfoUpdate setAfterward;
+        CategoryInfoUpdate constructorZero(SizeInfo{ 0, 0 }, Rect{0, 0, 0, 0}, Rect{0, 0, 0, 0});
+        CategoryInfoUpdate constructorAllSizes(SizeInfo{ 4, 5 }, Rect{0, 0, 4, 5}, Rect{1, 2, 3, 4});
+        CategoryInfoUpdate constructorWithDefaultForSafeRect(SizeInfo{ 4, 5 }, Rect{0, 0, 4, 5});
+        CategoryInfoUpdate constructorSafeRectSetToZero(SizeInfo{ 4, 5 }, Rect{0, 0, 4, 5}, Rect{0, 0, 0, 0});
 
-        EXPECT_FALSE(explicitConstuctorZero == defaultConstructed);
-
+        EXPECT_FALSE(constructorZero == defaultConstructed);
+        EXPECT_FALSE(constructorZero == constructorWithDefaultForSafeRect);
         EXPECT_TRUE(defaultConstructed == setAfterward);
-        EXPECT_FALSE(explicitConstuctor == defaultConstructed);
-        EXPECT_FALSE(explicitConstuctor == setAfterward);
 
-        setAfterward.setCategorySize({0, 0, 4,5});
-        EXPECT_TRUE(explicitConstuctor == setAfterward);
+        EXPECT_TRUE(constructorWithDefaultForSafeRect == constructorSafeRectSetToZero);
+
+        EXPECT_FALSE(constructorAllSizes == defaultConstructed);
+        EXPECT_FALSE(constructorAllSizes == constructorWithDefaultForSafeRect);
+        EXPECT_FALSE(constructorAllSizes == constructorSafeRectSetToZero);
+        EXPECT_FALSE(constructorAllSizes == setAfterward);
+
+        setAfterward.setRenderSize({ 4, 5 });
+        setAfterward.setCategoryRect({ 0, 0, 4, 5 });
+        setAfterward.setSafeRect({ 1, 2, 3, 4 });
+        EXPECT_TRUE(constructorAllSizes == setAfterward);
     }
 
     TEST(ACategoryInfoUpdate, emptyObjectHasNoValues)
     {
         CategoryInfoUpdate update;
-        EXPECT_FALSE(update.hasCategorySizeUpdate());
+        EXPECT_FALSE(update.hasCategoryRectUpdate());
         EXPECT_FALSE(update.hasRenderSizeUpdate());
-        EXPECT_FALSE(update.hasSafeAreaSizeUpdate());
+        EXPECT_FALSE(update.hasSafeRectUpdate());
         //defaults
-        EXPECT_EQ(0u, update.getCategorySize().x);
-        EXPECT_EQ(0u, update.getCategorySize().y);
-        EXPECT_EQ(0u, update.getCategorySize().width);
-        EXPECT_EQ(0u, update.getCategorySize().height);
+        EXPECT_EQ(0u, update.getCategoryRect().x);
+        EXPECT_EQ(0u, update.getCategoryRect().y);
+        EXPECT_EQ(0u, update.getCategoryRect().width);
+        EXPECT_EQ(0u, update.getCategoryRect().height);
         EXPECT_EQ(0u, update.getRenderSize().width);
         EXPECT_EQ(0u, update.getRenderSize().height);
-        EXPECT_EQ(0u, update.getSafeAreaSize().x);
-        EXPECT_EQ(0u, update.getSafeAreaSize().y);
-        EXPECT_EQ(0u, update.getSafeAreaSize().width);
-        EXPECT_EQ(0u, update.getSafeAreaSize().height);
+        EXPECT_EQ(0u, update.getSafeRect().x);
+        EXPECT_EQ(0u, update.getSafeRect().y);
+        EXPECT_EQ(0u, update.getSafeRect().width);
+        EXPECT_EQ(0u, update.getSafeRect().height);
     }
 
-    TEST(ACategoryInfoUpdate, setCategorySize)
+    TEST(ACategoryInfoUpdate, setCategoryRect)
     {
         CategoryInfoUpdate update;
 
-        EXPECT_FALSE(update.hasCategorySizeUpdate());
-        update.setCategorySize({1,2,3,5});
-        EXPECT_TRUE(update.hasCategorySizeUpdate());
-        EXPECT_EQ(1u, update.getCategorySize().x);
-        EXPECT_EQ(2u, update.getCategorySize().y);
-        EXPECT_EQ(3u, update.getCategorySize().width);
-        EXPECT_EQ(5u, update.getCategorySize().height);
+        EXPECT_FALSE(update.hasCategoryRectUpdate());
+        update.setCategoryRect({1,2,3,5});
+        EXPECT_TRUE(update.hasCategoryRectUpdate());
+        EXPECT_EQ(1u, update.getCategoryRect().x);
+        EXPECT_EQ(2u, update.getCategoryRect().y);
+        EXPECT_EQ(3u, update.getCategoryRect().width);
+        EXPECT_EQ(5u, update.getCategoryRect().height);
     }
 
-    TEST(ACategoryInfoUpdate, setSafeArea)
+    TEST(ACategoryInfoUpdate, setSafeRect)
     {
         CategoryInfoUpdate update;
 
-        EXPECT_FALSE(update.hasSafeAreaSizeUpdate());
-        update.setSafeAreaSize({ 1,2,3,5 });
-        EXPECT_TRUE(update.hasSafeAreaSizeUpdate());
-        EXPECT_EQ(1u, update.getSafeAreaSize().x);
-        EXPECT_EQ(2u, update.getSafeAreaSize().y);
-        EXPECT_EQ(3u, update.getSafeAreaSize().width);
-        EXPECT_EQ(5u, update.getSafeAreaSize().height);
+        EXPECT_FALSE(update.hasSafeRectUpdate());
+        update.setSafeRect({ 1,2,3,5 });
+        EXPECT_TRUE(update.hasSafeRectUpdate());
+        EXPECT_EQ(1u, update.getSafeRect().x);
+        EXPECT_EQ(2u, update.getSafeRect().y);
+        EXPECT_EQ(3u, update.getSafeRect().width);
+        EXPECT_EQ(5u, update.getSafeRect().height);
     }
 
     TEST(ACategoryInfoUpdate, setRenderSize)
@@ -86,16 +95,16 @@ namespace ramses
         EXPECT_EQ(2u, update.getRenderSize().height);
     }
 
-    TEST(ACategoryInfoUpdate, setCategorySizeMultipleTimesUpdatesValues)
+    TEST(ACategoryInfoUpdate, setCategoryRectMultipleTimesUpdatesValues)
     {
         CategoryInfoUpdate update;
-        update.setCategorySize({1, 2, 3, 5});
-        update.setCategorySize({3, 4, 13, 15});
-        EXPECT_TRUE(update.hasCategorySizeUpdate());
-        EXPECT_EQ(3u, update.getCategorySize().x);
-        EXPECT_EQ(4u, update.getCategorySize().y);
-        EXPECT_EQ(13u, update.getCategorySize().width);
-        EXPECT_EQ(15u, update.getCategorySize().height);
+        update.setCategoryRect({1, 2, 3, 5});
+        update.setCategoryRect({3, 4, 13, 15});
+        EXPECT_TRUE(update.hasCategoryRectUpdate());
+        EXPECT_EQ(3u, update.getCategoryRect().x);
+        EXPECT_EQ(4u, update.getCategoryRect().y);
+        EXPECT_EQ(13u, update.getCategoryRect().width);
+        EXPECT_EQ(15u, update.getCategoryRect().height);
     }
 
     TEST(ACategoryInfoUpdate, setRenderSizeMultipleTimesUpdatesValues)
@@ -108,16 +117,16 @@ namespace ramses
         EXPECT_EQ(4u, update.getRenderSize().height);
     }
 
-    TEST(ACategoryInfoUpdate, setSafeAreaSizeMultipleTimesUpdatesValues)
+    TEST(ACategoryInfoUpdate, setSafeRectMultipleTimesUpdatesValues)
     {
         CategoryInfoUpdate update;
-        update.setSafeAreaSize({ 1, 2, 3, 5 });
-        update.setSafeAreaSize({ 3, 4, 13, 15 });
-        EXPECT_TRUE(update.hasSafeAreaSizeUpdate());
-        EXPECT_EQ(3u,  update.getSafeAreaSize().x);
-        EXPECT_EQ(4u,  update.getSafeAreaSize().y);
-        EXPECT_EQ(13u, update.getSafeAreaSize().width);
-        EXPECT_EQ(15u, update.getSafeAreaSize().height);
+        update.setSafeRect({ 1, 2, 3, 5 });
+        update.setSafeRect({ 3, 4, 13, 15 });
+        EXPECT_TRUE(update.hasSafeRectUpdate());
+        EXPECT_EQ(3u,  update.getSafeRect().x);
+        EXPECT_EQ(4u,  update.getSafeRect().y);
+        EXPECT_EQ(13u, update.getSafeRect().width);
+        EXPECT_EQ(15u, update.getSafeRect().height);
     }
 
     TEST(ACategoryInfoUpdate, AssignFromInternalObject)
@@ -126,26 +135,26 @@ namespace ramses
         ramses::CategoryInfoUpdate update;
 
         update.impl.setCategoryInfo(info);
-        EXPECT_FALSE(update.hasCategorySizeUpdate());
+        EXPECT_FALSE(update.hasCategoryRectUpdate());
         EXPECT_FALSE(update.hasRenderSizeUpdate());
-        EXPECT_FALSE(update.hasSafeAreaSizeUpdate());
+        EXPECT_FALSE(update.hasSafeRectUpdate());
 
-        info.setCategorySize(1, 2, 3, 4);
+        info.setCategoryRect(1, 2, 3, 4);
         info.setRenderSize(11,22);
-        info.setSafeArea(5,6,7,8);
+        info.setSafeRect(5,6,7,8);
         update.impl.setCategoryInfo(info);
-        EXPECT_TRUE(update.hasCategorySizeUpdate());
-        EXPECT_TRUE(update.hasSafeAreaSizeUpdate());
+        EXPECT_TRUE(update.hasCategoryRectUpdate());
+        EXPECT_TRUE(update.hasSafeRectUpdate());
         EXPECT_TRUE(update.hasRenderSizeUpdate());
-        EXPECT_EQ(1u, update.getCategorySize().x);
-        EXPECT_EQ(2u, update.getCategorySize().y);
-        EXPECT_EQ(3u, update.getCategorySize().width);
-        EXPECT_EQ(4u, update.getCategorySize().height);
+        EXPECT_EQ(1u, update.getCategoryRect().x);
+        EXPECT_EQ(2u, update.getCategoryRect().y);
+        EXPECT_EQ(3u, update.getCategoryRect().width);
+        EXPECT_EQ(4u, update.getCategoryRect().height);
         EXPECT_EQ(11u, update.getRenderSize().width);
         EXPECT_EQ(22u, update.getRenderSize().height);
-        EXPECT_EQ(5u, update.getSafeAreaSize().x);
-        EXPECT_EQ(6u, update.getSafeAreaSize().y);
-        EXPECT_EQ(7u, update.getSafeAreaSize().width);
-        EXPECT_EQ(8u, update.getSafeAreaSize().height);
+        EXPECT_EQ(5u, update.getSafeRect().x);
+        EXPECT_EQ(6u, update.getSafeRect().y);
+        EXPECT_EQ(7u, update.getSafeRect().width);
+        EXPECT_EQ(8u, update.getSafeRect().height);
     }
 }

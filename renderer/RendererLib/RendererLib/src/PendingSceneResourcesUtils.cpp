@@ -99,7 +99,7 @@ namespace ramses_internal
                 resourceManager.unloadRenderTargetBuffer(RenderBufferHandle(handle), scene.getSceneId());
                 break;
             case ESceneResourceAction_CreateStreamTexture:
-                resourceManager.uploadStreamTexture(StreamTextureHandle(handle), StreamTextureSourceId(scene.getStreamTexture(StreamTextureHandle(handle)).source), scene.getSceneId());
+                resourceManager.uploadStreamTexture(StreamTextureHandle(handle), WaylandIviSurfaceId(scene.getStreamTexture(StreamTextureHandle(handle)).source), scene.getSceneId());
                 break;
             case ESceneResourceAction_DestroyStreamTexture:
                 resourceManager.unloadStreamTexture(StreamTextureHandle(handle), scene.getSceneId());

@@ -19,7 +19,7 @@
 
 class IRendererTest;
 
-typedef std::vector<RenderingTestCase*> RenderingTestCases;
+using RenderingTestCases = std::vector<RenderingTestCase *>;
 
 namespace ramses
 {
@@ -53,7 +53,7 @@ public:
     bool getSceneToRendered(ramses::sceneId_t sceneId, uint32_t testDisplayIdx = 0);
 
     void dispatchRendererEvents(ramses::IRendererEventHandler& eventHandler, ramses::IRendererSceneControlEventHandler& sceneControlEventHandler);
-    ramses::displayBufferId_t   createOffscreenBuffer       (uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible);
+    ramses::displayBufferId_t   createOffscreenBuffer       (uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount = 0u);
     void                        destroyOffscreenBuffer      (uint32_t testDisplayIdx, ramses::displayBufferId_t buffer);
     void assignSceneToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t buffer, int32_t renderOrder = 0);
     void createBufferDataLink(ramses::displayBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
@@ -75,7 +75,10 @@ public:
     static bool NameMatchesFilter(const ramses_internal::String& name, const ramses_internal::StringVector& filter);
 
     template <typename INTEGRATION_SCENE>
-    ramses::sceneId_t createAndShowScene(ramses_internal::UInt32 sceneState, const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f), const ramses::SceneConfig& sceneConfig = ramses::SceneConfig())
+    ramses::sceneId_t createAndShowScene(
+        uint32_t sceneState,
+        const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f),
+        const ramses::SceneConfig& sceneConfig = {})
     {
         const ramses::sceneId_t sceneId = getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState, cameraPosition, sceneConfig);
         publishAndFlushScene(sceneId);
@@ -83,8 +86,17 @@ public:
         return sceneId;
     }
 
+    template <typename INTEGRATION_SCENE>
+    ramses::sceneId_t createAndShowScene(uint32_t sceneState, uint32_t vpWidth, uint32_t vpHeight)
+    {
+        const ramses::sceneId_t sceneId = getScenesRegistry().createScene<INTEGRATION_SCENE>(sceneState, { 0, 0, 0 }, vpWidth, vpHeight);
+        publishAndFlushScene(sceneId);
+        getSceneToRendered(sceneId);
+        return sceneId;
+    }
+
 protected:
-    typedef std::vector<ramses::displayBufferId_t> OffscreenBufferVector;
+    using OffscreenBufferVector = std::vector<ramses::displayBufferId_t>;
     struct TestDisplayInfo
         {
             ramses::displayId_t displayId;
@@ -92,7 +104,7 @@ protected:
             OffscreenBufferVector offscreenBuffers;
         };
 
-    typedef std::vector<TestDisplayInfo> TestDisplays;
+    using TestDisplays = std::vector<TestDisplayInfo>;
     const TestDisplays& getDisplays() const;
 
 private:

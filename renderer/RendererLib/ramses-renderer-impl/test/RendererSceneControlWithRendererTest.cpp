@@ -26,12 +26,6 @@ namespace ramses
     class RendererSceneStateTracker final : public RendererSceneControlEventHandlerEmpty
     {
     public:
-        virtual void scenePublished(sceneId_t) override
-        {
-            // if scene published it means it was unpublished/unavailable before, keep state as unavailable
-            m_lastState = RendererSceneState::Unavailable;
-        }
-
         virtual void sceneStateChanged(sceneId_t, RendererSceneState state) override
         {
             m_lastState = state;
@@ -106,7 +100,8 @@ namespace ramses
         // static to avoid reinits for all the test cases
         static std::unique_ptr<RamsesClientAndRendererWithScene> ramsesClientRenderer;
 
-        static constexpr int NumStates = static_cast<int>(RendererSceneState::Rendered) + 1;
+        static constexpr int StartState = static_cast<int>(RendererSceneState::Available);
+        static constexpr int NumStates = static_cast<int>(RendererSceneState::Rendered) + 1 - StartState;
         static constexpr int NumLoopsToReachRenderedTargetState = 6; // from published to rendered
     };
 
@@ -153,7 +148,7 @@ namespace ramses
             ramsesClientRenderer->m_renderer.doOneLoop();
             ramsesClientRenderer->m_sceneControl.dispatchEvents(m_sceneStateTracker);
         }
-        EXPECT_EQ(RendererSceneState::Unavailable, m_sceneStateTracker.m_lastState);
+        EXPECT_EQ(RendererSceneState::Available, m_sceneStateTracker.m_lastState);
     }
 
     /////////
@@ -168,12 +163,12 @@ namespace ramses
 
         RendererSceneState GetTargetState1() const
         {
-            return RendererSceneState((GetParam() / NumStepsToReachTargetState) / NumStates);
+            return RendererSceneState(StartState + (GetParam() / NumStepsToReachTargetState) / NumStates);
         }
 
         RendererSceneState GetTargetState2() const
         {
-            return RendererSceneState((GetParam() / NumStepsToReachTargetState) % NumStates);
+            return RendererSceneState(StartState + (GetParam() / NumStepsToReachTargetState) % NumStates);
         }
 
         int GetStepToSwitchState() const
@@ -237,7 +232,7 @@ namespace ramses
 
         RendererSceneState GetTargetState() const
         {
-            return RendererSceneState(GetParam() % NumStates);
+            return RendererSceneState(StartState + (GetParam() % NumStates));
         }
 
         int GetStepToUnpublish() const
@@ -287,11 +282,7 @@ namespace ramses
             ramsesClientRenderer->m_renderer.doOneLoop();
             ramsesClientRenderer->m_sceneControl.dispatchEvents(m_sceneStateTracker);
         }
-        // special case when initial publish triggers subscribe, then in same frame unpublish/republish arrives, scene control executes subscribe at end of frame - therefore succeeds
-        if (GetTargetState() >= RendererSceneState::Available && GetStepToUnpublish() == 0 && GetStepToRepublish() == 0)
-            EXPECT_EQ(RendererSceneState::Available, m_sceneStateTracker.m_lastState);
-        else
-            EXPECT_EQ(RendererSceneState::Unavailable, m_sceneStateTracker.m_lastState);
+        EXPECT_EQ(RendererSceneState::Available, m_sceneStateTracker.m_lastState);
 
         // test that rendered state can be reached again in new cycle
         ramsesClientRenderer->m_sceneControl.setSceneState(ramsesClientRenderer->m_sceneId, RendererSceneState::Rendered);

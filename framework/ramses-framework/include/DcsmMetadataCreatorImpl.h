@@ -10,7 +10,6 @@
 #define RAMSES_DCSMMETADATACREATORIMPL_H
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "ramses-framework-api/CarCameraPlaneMetadata.h"
 #include "Components/DcsmMetadata.h"
 #include "StatusObjectImpl.h"
 
@@ -20,7 +19,7 @@ namespace ramses
     {
     public:
         DcsmMetadataCreatorImpl();
-        ~DcsmMetadataCreatorImpl();
+        virtual ~DcsmMetadataCreatorImpl();
 
         status_t setPreviewImagePng(const void* data, size_t dataLength);
         status_t setPreviewDescription(std::u32string previewDescription);
@@ -29,12 +28,12 @@ namespace ramses
         status_t setWidgetHUDLineID(int32_t widgetHudLineID);
         status_t setCarModel(int32_t carModel);
         status_t setCarModelView(const CarModelViewMetadata& data, const AnimationInformation& timingInfo);
-        status_t setCarCameraPlanes(const CarCameraPlaneMetadata& planesMetadata);
         status_t setCarModelVisibility(bool visibility);
         status_t setExclusiveBackground(bool state);
         status_t setStreamID(int32_t streamID);
 
         ramses_internal::DcsmMetadata getMetadata() const;
+
     private:
         ramses_internal::DcsmMetadata m_metadata;
     };

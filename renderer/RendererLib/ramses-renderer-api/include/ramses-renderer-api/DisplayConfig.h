@@ -16,8 +16,7 @@
 namespace ramses
 {
     /**
-    * @brief The DisplayConfig holds a set of parameters to be used
-    * to initialize a display.
+    * @brief The DisplayConfig holds a set of parameters to be used to initialize a display.
     */
     class RAMSES_API DisplayConfig : public StatusObject
     {
@@ -45,52 +44,6 @@ namespace ramses
         * @brief Destructor of DisplayConfig
         */
         virtual ~DisplayConfig();
-
-        /**
-        * @brief Sets the view position of the display.
-        * The view denotes the logical location of the display in the global RAMSES world.
-        *
-        * @param[in] x The 'x' component of the position
-        * @param[in] y The 'y' component of the position
-        * @param[in] z The 'z' component of the position
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t setViewPosition(float x, float y, float z);
-
-        /**
-        * @brief Gets the view position of the display.
-        * @param[out] x The 'x' component of the position
-        * @param[out] y The 'y' component of the position
-        * @param[out] z The 'z' component of the position
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t getViewPosition(float& x, float& y, float& z) const;
-
-        /**
-        * @brief Sets the view rotation of the display.
-        * See DisplayConfig::setViewPosition().
-        *
-        * @param[in] x The 'x' component of the rotation
-        * @param[in] y The 'y' component of the rotation
-        * @param[in] z The 'z' component of the rotation
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t setViewRotation(float x, float y, float z);
-
-        /**
-        * @brief Gets the view rotation of the display.
-        * See DisplayConfig::getViewPosition().
-        *
-        * @param[in] x The 'x' component of the rotation
-        * @param[in] y The 'y' component of the rotation
-        * @param[in] z The 'z' component of the rotation
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t getViewRotation(float& x, float& y, float& z) const;
 
         /**
         * @brief Sets the window size and position in display pixel space.
@@ -145,49 +98,6 @@ namespace ramses
         status_t setWindowBorderless(bool borderless);
 
         /**
-        * @brief Sets a projection based on a perspective view frustum.
-        *
-        * @param[in] fieldOfViewY The vertical field of view of the frustum
-        * @param[in] aspectRatio The aspect ratio between the frustum's width and height
-        * @param[in] nearPlane The near plane of the frustum
-        * @param[in] farPlane The far plane of the frustum
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t setPerspectiveProjection(float fieldOfViewY, float aspectRatio, float nearPlane, float farPlane);
-
-        /**
-        * @brief Sets a projection based on a perspective view frustum.
-        *        This represents an alternative setter of perspective projection parameters,
-        *        where the opening angles of the vertical and horizontal planes of the camera
-        *        frustum can be given explicitly.
-        *
-        * @param[in] leftPlane Opening angle of the left camera frustum plane
-        * @param[in] rightPlane Opening angle of the left camera frustum plane
-        * @param[in] bottomPlane Opening angle of the bottom camera frustum plane
-        * @param[in] topPlane Opening angle of the top camera frustum plane
-        * @param[in] nearPlane Distance from center to the 'near' wall of the frustum
-        * @param[in] farPlane Distance from center to the 'far' wall of the frustum
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t setPerspectiveProjection(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane);
-
-        /**
-        * @brief Sets an orthographic projection based on a cube.
-        *
-        * @param[in] leftPlane Distance from center to the left wall of the cube
-        * @param[in] rightPlane Distance from center to the right wall of the cube
-        * @param[in] bottomPlane Distance from center to the bottom wall of the cube
-        * @param[in] topPlane Distance from center to the top wall of the cube
-        * @param[in] nearPlane Distance from center to the 'near' wall of the cube (in analogy to near plane in perspective projection)
-        * @param[in] farPlane Distance from center to the 'far' wall of the cube (in analogy to far plane in perspective projection)
-        * @return StatusOK for success, otherwise the returned status can be used
-        *         to resolve error message using getStatusMessage().
-        */
-        status_t setOrthographicProjection(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane);
-
-        /**
         * @brief Set number of samples to be used with multisampled rendering.
         *
         * @param[in] numSamples Number of samples per pixel, valid values are 1, 2 and 4
@@ -235,7 +145,6 @@ namespace ramses
         * @return the current setting of wayland IVI layer ID, returns waylandIviLayerId_t::Invalid() if no value has been set yet
         */
         waylandIviLayerId_t getWaylandIviLayerID() const;
-
 
         /**
         * @brief [Mandatory on Wayland] Set IVI surface ID to use when creating the display window on Wayland.

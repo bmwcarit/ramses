@@ -35,7 +35,6 @@ namespace ramses
         , m_parser(argc, argv)
         , m_dltAppID("RAMS")
         , m_dltAppDescription("RAMS-DESC")
-        , m_maximumTotalBytesForAsyncResourceLoading(MAXIMUM_BYTES_FOR_ASYNC_RESOURCE_LOADING)
         , m_enableProtocolVersionOffset(false)
     {
         parseCommandLine();
@@ -239,17 +238,6 @@ namespace ramses
     const char* RamsesFrameworkConfigImpl::getDLTApplicationDescription() const
     {
         return m_dltAppDescription.c_str();
-    }
-
-
-    uint32_t RamsesFrameworkConfigImpl::getMaximumTotalBytesForAsyncResourceLoading() const
-    {
-        return m_maximumTotalBytesForAsyncResourceLoading;
-    }
-
-    void RamsesFrameworkConfigImpl::setMaximumTotalBytesAllowedForAsyncResourceLoading(uint32_t maximumTotalBytesForAsyncResourceLoading)
-    {
-        m_maximumTotalBytesForAsyncResourceLoading = maximumTotalBytesForAsyncResourceLoading;
     }
 
     void RamsesFrameworkConfigImpl::setPeriodicLogsEnabled(bool enabled)

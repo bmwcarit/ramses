@@ -12,13 +12,13 @@
 
 namespace ramses_internal
 {
-    TextScene_Base::TextScene_Base(ramses::Scene& scene, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    TextScene_Base::TextScene_Base(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_textCache(scene, m_fontRegistry, 1024u, 1024u)
         , m_textOrthoCamera(m_scene.createOrthographicCamera("text camera"))
     {
-        m_textOrthoCamera->setFrustum(0.0f, static_cast<Float>(DefaultDisplayWidth), 0.0f, static_cast<Float>(DefaultDisplayHeight), 0.1f, 10.f);
-        m_textOrthoCamera->setViewport(0, 0, DefaultDisplayWidth, DefaultDisplayHeight);
+        m_textOrthoCamera->setFrustum(0.0f, static_cast<Float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<Float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
+        m_textOrthoCamera->setViewport(0, 0, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         setCameraToDefaultRenderPass(m_textOrthoCamera);
     }
 }

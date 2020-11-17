@@ -37,6 +37,7 @@ namespace ramses
         const ramses_internal::ClientScene& getIScene() const;
         ramses_internal::ClientScene&       getIScene();
         sceneObjectId_t getSceneObjectId() const;
+        sceneId_t getSceneId() const;
 
         bool isFromTheSameSceneAs(const SceneObjectImpl& otherObject) const;
 

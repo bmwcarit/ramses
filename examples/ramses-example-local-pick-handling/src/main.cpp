@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-local-pick-handling.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-local-pick-handling.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     ramses::Effect* effect = clientScene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearanceA = clientScene->createAppearance(*effect, "triangle appearance A");

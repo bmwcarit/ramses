@@ -12,6 +12,7 @@
 #include "RendererAPI/Types.h"
 #include "SceneAPI/RenderState.h"
 #include "SceneAPI/Handles.h"
+#include "SceneAPI/EDataType.h"
 #include "Math3d/Vector2.h"
 #include "Math3d/Vector4.h"
 #include "Math3d/Matrix44f.h"
@@ -49,6 +50,7 @@ namespace ramses_internal
             DeviceResourceHandle vertexBufferHandle = DeviceResourceHandle::Invalid();
             DeviceResourceHandle indexBufferHandle = DeviceResourceHandle::Invalid();
             EDrawMode drawMode = EDrawMode::Triangles;
+            EDataType dataType = EDataType::Invalid;
             UInt32 indexCount = 0;
         };
 
@@ -112,7 +114,6 @@ namespace ramses_internal
         Geometry createHorizontalLineGeometry();
         Geometry createVerticalLineGeometry();
         Renderable createRenderable(const Geometry& geometry, const Look& look, const Vector4& color, const Vector2& translation, const Vector2& scale);
-        Renderable createRenderable(const Look& look, const Vector4& color, const Vector2& translation, const Vector2& scale);
         Matrix44f createMVPMatrix(const Vector2& translation, const Vector2& scale);
 
         void addStaticRenderable(const Geometry& geometry, const Look& look, const Vector4& color, const Vector2& translation, const Vector2& scale);

@@ -29,7 +29,7 @@ namespace ramses_internal
         void notifyAnimationInstanceChanged(AnimationInstanceHandle handle);
         void notifySplineChanged(SplineHandle handle);
 
-        typedef std::vector<AnimationDataListener*> AnimationListenerVector;
+        using AnimationListenerVector = std::vector<AnimationDataListener *>;
 
         AnimationListenerVector m_observers;
     };

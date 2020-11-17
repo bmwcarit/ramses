@@ -69,14 +69,7 @@ namespace ramses
     status_t DcsmMetadataCreator::setCarModelView(const CarModelViewMetadata& data, const AnimationInformation& timingInfo)
     {
         const auto status = impl.setCarModelView(data, timingInfo);
-        LOG_HL_CLIENT_API9(status, data.pitch, data.yaw, data.distance, data.origin_x, data.origin_y, data.origin_z, data.cameraFOV, timingInfo.startTime, timingInfo.finishTime);
-        return status;
-    }
-
-    status_t DcsmMetadataCreator::setCarCameraPlanes(const CarCameraPlaneMetadata& planesMetadata)
-    {
-        const auto status = impl.setCarCameraPlanes(planesMetadata);
-        LOG_HL_CLIENT_API2(status, planesMetadata.nearPlane, planesMetadata.farPlane);
+        LOG_HL_CLIENT_API11(status, data.pitch, data.yaw, data.distance, data.origin_x, data.origin_y, data.origin_z, data.cameraFOV, data.nearPlane, data.farPlane, timingInfo.startTime, timingInfo.finishTime);
         return status;
     }
 

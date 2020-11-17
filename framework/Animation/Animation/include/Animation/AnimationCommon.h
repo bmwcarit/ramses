@@ -15,20 +15,20 @@
 
 namespace ramses_internal
 {
-    typedef UInt32 SplineTimeStamp;
-    typedef UInt32 SplineKeyIndex;
+    using SplineTimeStamp = UInt32;
+    using SplineKeyIndex = UInt32;
 
     struct SplineHandleTag {};
-    typedef TypedMemoryHandle<SplineHandleTag> SplineHandle;
+    using SplineHandle = TypedMemoryHandle<SplineHandleTag>;
 
     struct DataBindHandleTag{};
-    typedef TypedMemoryHandle<DataBindHandleTag> DataBindHandle;
+    using DataBindHandle = TypedMemoryHandle<DataBindHandleTag>;
 
     struct AnimationInstanceHandleTag {};
-    typedef TypedMemoryHandle<AnimationInstanceHandleTag> AnimationInstanceHandle;
+    using AnimationInstanceHandle = TypedMemoryHandle<AnimationInstanceHandleTag>;
 
     struct AnimationHandleTag {};
-    typedef TypedMemoryHandle<AnimationHandleTag> AnimationHandle;
+    using AnimationHandle = TypedMemoryHandle<AnimationHandleTag>;
 
     const SplineTimeStamp         InvalidSplineTimeStamp         = SplineTimeStamp(-1);
     const SplineKeyIndex          InvalidSplineKeyIndex          = SplineKeyIndex(-1);

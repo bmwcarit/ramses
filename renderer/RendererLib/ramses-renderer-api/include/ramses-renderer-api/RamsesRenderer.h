@@ -21,7 +21,6 @@ namespace ramses
     class WarpingMeshData;
     class RendererSceneControl;
     class DcsmContentControl;
-    class DcsmContentControlConfig;
 
     /**
     * @brief RamsesRenderer is the main renderer component which provides API to configure
@@ -226,11 +225,12 @@ namespace ramses
         * @param[in] display id of display for which the buffer should be created
         * @param[in] width width of the buffer to be created (has to be higher than 0 and lower than 4096)
         * @param[in] height height of the buffer to be created (has to be higher than 0 and lower than 4096)
+        * @param[in] sampleCount Optional sample count for MSAA number of samples. Default value is Zero, which disables MSAA for the offscreen buffer.
         * @return Identifier of the created offscreen buffer.
         *         In case of unsupported resolution \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
         *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
         */
-        displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height);
+        displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount = 0u);
 
         /**
         * @brief     Additional API to create an offscreen buffer as interruptible.
@@ -357,12 +357,9 @@ namespace ramses
         *          stays valid as long as this #RamsesRenderer instance is alive. It cannot be destroyed
         *          without destroying the #RamsesRenderer.
         *
-        * @param config Parameters to be used to instantiate the #ramses::DcsmContentControl.
-        *               There must be at least one DCSM category in the config in order to succeed.
-        *               These are used only at instantiation time, modifications to config done later have no effect on this #ramses::DcsmContentControl instance.
         * @return Pointer to #ramses::DcsmContentControl, or nullptr on error
         */
-        DcsmContentControl* createDcsmContentControl(const DcsmContentControlConfig& config);
+        DcsmContentControl* createDcsmContentControl();
 
         /////////////////////////////////////////////////
         //      System Compositor API

@@ -11,6 +11,7 @@
 
 #include "Components/ClientSceneLogicBase.h"
 #include "Components/FlushTimeInformation.h"
+#include "Components/ManagedResource.h"
 
 namespace ramses_internal
 {
@@ -19,7 +20,7 @@ namespace ramses_internal
     public:
         ClientSceneLogicShadowCopy(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress);
 
-        virtual void flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
+        virtual bool flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
 
     private:
         virtual void postAddSubscriber() override;
@@ -28,6 +29,7 @@ namespace ramses_internal
         SceneWithExplicitMemory m_sceneShadowCopy;
         FlushTimeInformation m_flushTimeInfoOfLastFlush;
         SceneVersionTag m_lastVersionTag;
+        ManagedResourceVector m_lastFlushUsedResources;
     };
 }
 

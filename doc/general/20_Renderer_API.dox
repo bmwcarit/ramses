@@ -22,12 +22,18 @@ The RAMSES Renderer API allows to
 The renderer setup consists of a #ramses::RamsesRenderer object and a set of displays belonging to it.
 Every display can be configured through an individual ramses::DisplayConfig.
 
+# Scene control and scene states
 
-# Scene Rendering States
+A renderer offers a set of APIs to allow to control the scene states. Currently there are the RendererSceneControl
+and the DcsmContentControl. They can be created with the #ramses::RamsesRenderer::getSceneControlAPI respectively the
+#ramses::RamsesRenderer::createDcsmContentControl functions.
+
+## RendererSceneControl
 Graphical content (a #ramses::Scene provided from #ramses::RamsesClient) is always in a certain state,
 a state in the context of single #ramses::RamsesRenderer instance.
 Typically the desired state to reach is that the scene is rendered, however the scene has to go through
 several other states to reach that:
+
 -# scene is published, i.e. client announced that the scene can be requested from one or more renderers
 -# renderer requests scene and its data, any change to scene data will be transferred to renderer
 -# renderer maps scene to a display, assigns to framebuffer or offscreen buffer and uploads all scene resources
@@ -36,8 +42,10 @@ several other states to reach that:
 These states and other parameters can be set/requested using #ramses::RendererSceneControl, see its documentation
 for more details.
 
-@image html renderer_scene_states.png "Renderer Scene States: These are internal states that aren't exposed to the high level, but can be found on renderer log output."
+@image html renderer_scene_states.png "Renderer Scene States"
 
+## DcsmContentControl
+DcsmContentControl uses a RendererSceneControl and a DcsmConsumer to allow a user to render ramses scene Dcsm contents with one interface. Refer to the @ref DCSMProtocol documentation for details.
 
 ## Data Linking
 
@@ -58,7 +66,7 @@ The consumer node (and all its children in scenegraph topology) will transform u
 
 ### DataObject Linking
 
-#ramses::DataObject can be used to set values of #ramses::Appearance uniforms or #ramses::LocalCamera parameters which can also be linked across scenes.
+#ramses::DataObject can be used to set values of #ramses::Appearance uniforms or #ramses::Camera parameters which can also be linked across scenes.
 As long as data type is matched a data value stored in a ramses::DataObject of one scene can be used as uniform input of an #ramses::Appearance in another scene.
 
 ### Texture Linking

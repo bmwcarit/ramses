@@ -56,9 +56,6 @@ namespace ramses_internal
     {
     public:
         virtual void handleRendererEvent(const SomeIPMsgHeader& header, SceneId sceneId, const std::vector<Byte>& data) = 0;
-        virtual void handleRequestResources(const SomeIPMsgHeader& header, const ResourceContentHashVector& resources) = 0;
-        virtual void handleResourcesNotAvailable(const SomeIPMsgHeader& header, const ResourceContentHashVector& resources) = 0;
-        virtual void handleResourceTransfer(const SomeIPMsgHeader& header, absl::Span<const Byte> resourceData) = 0;
         virtual void handleSceneUpdate(const SomeIPMsgHeader& header, SceneId sceneId, absl::Span<const Byte> sceneUpdate) = 0;
         virtual void handleSceneAvailabilityChange(const SomeIPMsgHeader& header, const std::vector<SceneAvailabilityUpdate>& update) = 0;
         virtual void handleSceneSubscriptionChange(const SomeIPMsgHeader& header, const std::vector<SceneSubscriptionUpdate>& update) = 0;
@@ -68,11 +65,9 @@ namespace ramses_internal
     struct RamsesStackSendDataSizes
     {
         uint32_t sceneActionData;
-        uint32_t resourceData;
         uint32_t renderEventData;
         uint32_t sceneAvailabilityList;
         uint32_t sceneSubscriptionList;
-        uint32_t resourceHashList;
     };
 
     class ISomeIPRamsesStack : public ISomeIPStackCommon<RamsesInstanceId>
@@ -82,9 +77,6 @@ namespace ramses_internal
         virtual RamsesStackSendDataSizes getSendDataSizes() const = 0;
 
         virtual bool sendRendererEvent(RamsesInstanceId to, const SomeIPMsgHeader& header, SceneId sceneId, const std::vector<Byte>& data) = 0;
-        virtual bool sendRequestResources(RamsesInstanceId to, const SomeIPMsgHeader& header, absl::Span<const ResourceContentHash> resources) = 0;
-        virtual bool sendResourcesNotAvailable(RamsesInstanceId to, const SomeIPMsgHeader& header, absl::Span<const ResourceContentHash> resources) = 0;
-        virtual bool sendResourceTransfer(RamsesInstanceId to, const SomeIPMsgHeader& header, const std::vector<Byte>& resourceData) = 0;
         virtual bool sendSceneUpdate(RamsesInstanceId to, const SomeIPMsgHeader& header, SceneId sceneId, const std::vector<Byte>& sceneUpdate) = 0;
         virtual bool sendSceneAvailabilityChange(RamsesInstanceId to, const SomeIPMsgHeader& header, const std::vector<SceneAvailabilityUpdate>& update) = 0;
         virtual bool sendSceneSubscriptionChange(RamsesInstanceId to, const SomeIPMsgHeader& header, const std::vector<SceneSubscriptionUpdate>& update) = 0;

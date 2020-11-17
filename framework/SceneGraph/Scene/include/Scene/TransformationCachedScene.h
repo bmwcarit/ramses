@@ -20,8 +20,8 @@ namespace ramses_internal
     template <template<typename, typename> class MEMORYPOOL>
     class TransformationCachedSceneT;
 
-    typedef TransformationCachedSceneT<MemoryPool> TransformationCachedScene;
-    typedef TransformationCachedSceneT<MemoryPoolExplicit> TransformationCachedSceneWithExplicitMemory;
+    using TransformationCachedScene = TransformationCachedSceneT<MemoryPool>;
+    using TransformationCachedSceneWithExplicitMemory = TransformationCachedSceneT<MemoryPoolExplicit>;
 
     template <template<typename, typename> class MEMORYPOOL>
     class TransformationCachedSceneT : public SceneT<MEMORYPOOL>
@@ -42,7 +42,7 @@ namespace ramses_internal
         virtual void                    releaseTransform(TransformHandle transform) override;
 
         virtual void                    setTranslation(TransformHandle transform, const Vector3& translation) override;
-        virtual void                    setRotation(TransformHandle transform, const Vector3& rotation) override;
+        virtual void                    setRotation(TransformHandle transform, const Vector3& rotation, ERotationConvention convention) override;
         virtual void                    setScaling(TransformHandle transform, const Vector3& scaling) override;
 
         Matrix44f                       updateMatrixCache(ETransformationMatrixType matrixType, NodeHandle node) const;
@@ -68,7 +68,7 @@ namespace ramses_internal
         void                        propagateDirty(NodeHandle node) const;
 
         // Cache
-        typedef MEMORYPOOL<MatrixCacheEntry, NodeHandle> MatrixCachePool;
+        using MatrixCachePool = MEMORYPOOL<MatrixCacheEntry, NodeHandle>;
         mutable MatrixCachePool m_matrixCachePool;
 
         HashMap<NodeHandle, TransformHandle> m_nodeToTransformMap;

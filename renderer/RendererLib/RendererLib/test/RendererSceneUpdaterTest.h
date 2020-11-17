@@ -14,7 +14,7 @@
 #include "RendererEventCollector.h"
 #include "SceneAPI/TextureSampler.h"
 #include "Scene/ActionCollectingScene.h"
-#include "Scene/SceneResourceUtils.h"
+#include "SceneUtils/ResourceUtils.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/RendererSceneUpdater.h"
 #include "RendererLib/SceneStateExecutor.h"
@@ -28,14 +28,16 @@
 #include "Animation/ActionCollectingAnimationSystem.h"
 #include "Scene/SceneDataBinding.h"
 #include "ComponentMocks.h"
-#include "ResourceProviderMock.h"
+#include "ResourceDeviceHandleAccessorMock.h"
 #include "RendererResourceCacheMock.h"
+#include "MockResourceHash.h"
 #include "SceneReferenceLogicMock.h"
 #include "SceneAllocateHelper.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Collections/Pair.h"
 #include "RendererSceneEventSenderMock.h"
+#include "RendererSceneUpdaterMock.h"
 #include <unordered_set>
 #include <memory>
 #include "Components/SceneUpdate.h"
@@ -46,20 +48,12 @@ class ARendererSceneUpdater : public ::testing::Test
 {
 public:
     ARendererSceneUpdater()
-        : renderableHandle(1u)
-        , uniformDataInstanceHandle(0u)
-        , geometryDataInstanceHandle(1u)
-        , samplerHandle(2u)
-        , streamTextureHandle(0u)
-        , platformFactoryMock()
-        , rendererEventCollector()
-        , rendererScenes(rendererEventCollector)
+        : rendererScenes(rendererEventCollector)
         , expirationMonitor(rendererScenes, rendererEventCollector)
         , renderer(platformFactoryMock, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
-        , sceneEventSender()
         , resourceUploader(renderer.getStatistics())
         , sceneStateExecutor(renderer, sceneEventSender, rendererEventCollector)
-        , rendererSceneUpdater(new RendererSceneUpdater(renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor, &rendererResourceCacheMock))
+        , rendererSceneUpdater(new RendererSceneUpdaterFacade(renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor, &rendererResourceCacheMock))
     {
         rendererSceneUpdater->setSceneReferenceLogicHandler(sceneReferenceLogic);
         frameTimer.startFrame();
@@ -67,6 +61,10 @@ public:
         rendererSceneUpdater->setLimitFlushesForceUnsubscribe(ForceUnsubscribeFlushLimit);
 
         EXPECT_CALL(renderer, setClearColor(_, _, _)).Times(0);
+        // called explicitly from tests, no sense in tracking
+        EXPECT_CALL(*rendererSceneUpdater, handleSceneUpdate(_, _)).Times(AnyNumber());
+        // resource cache exists but reports it has all resources already - only specific tests cases test further
+        EXPECT_CALL(rendererResourceCacheMock, hasResource(_, _)).Times(AnyNumber()).WillRepeatedly(Return(true));
     }
 
     virtual void TearDown() override
@@ -79,6 +77,8 @@ protected:
     {
         renderer.getProfilerStatistics().markFrameFinished(std::chrono::microseconds{ 0u });
         EXPECT_CALL(sceneReferenceLogic, update());
+        for (auto& resMgr : rendererSceneUpdater->m_resourceManagerMocks)
+            EXPECT_CALL(*resMgr.second, hasResourcesToBeUploaded());
         rendererSceneUpdater->updateScenes();
     }
 
@@ -243,11 +243,35 @@ protected:
         expectInternalSceneStateEvent(ERendererEventType_SceneHidden);
     }
 
-    void unmapScene(UInt32 sceneIndex = 0u)
+    void unmapScene(UInt32 sceneIndex = 0u, DisplayHandle display = DisplayHandle1, bool expectResourcesUnload = true)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
+        if (expectResourcesUnload)
+        {
+            expectContextEnable(display);
+            expectUnloadOfSceneResources(sceneIndex, display);
+        }
+
         rendererSceneUpdater->handleSceneUnmappingRequest(sceneId);
         expectInternalSceneStateEvent(ERendererEventType_SceneUnmapped);
+        expectNoResourceReferencedByScene(sceneIndex, display);
+    }
+
+    void expectNoResourceReferencedByScene(UInt32 sceneIndex = 0u, DisplayHandle display = DisplayHandle1)
+    {
+        rendererSceneUpdater->m_resourceManagerMocks[display]->expectNoResourceReferencesForScene(getSceneId(sceneIndex));
+    }
+
+    int getResourceRefCount(ResourceContentHash resource, DisplayHandle display = DisplayHandle1)
+    {
+        return rendererSceneUpdater->m_resourceManagerMocks[display]->getResourceRefCount(resource);
+    }
+
+    void expectUnloadOfSceneResources(UInt32 sceneIndex = 0u, DisplayHandle display = DisplayHandle1)
+    {
+        const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], unloadAllSceneResourcesForScene(sceneId));
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], unreferenceAllResourcesForScene(sceneId));
     }
 
     void unpublishMapRequestedScene(UInt32 sceneIndex = 0u)
@@ -259,9 +283,11 @@ protected:
         EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
     }
 
-    void unpublishMappedScene(UInt32 sceneIndex = 0u)
+    void unpublishMappedScene(UInt32 sceneIndex = 0u, DisplayHandle display = DisplayHandle1)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
+        expectContextEnable(display);
+        expectUnloadOfSceneResources(sceneIndex, display);
         EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(sceneId));
         rendererSceneUpdater->handleSceneUnpublished(sceneId);
         expectInternalSceneStateEvents({ ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
@@ -357,27 +383,19 @@ protected:
 
         SceneActionCollectionCreator creator(update.actions);
 
-        ResourceContentHashVector clientResources;
-        SceneResourceChanges resourceChanges;
-        SceneResourceUtils::GetAllClientResourcesFromScene(clientResources, scene);
-        SceneResourceUtils::DiffClientResources(previousClientResources[sceneIndex], clientResources, resourceChanges);
-        previousClientResources[sceneIndex].swap(clientResources);
+        ResourceContentHashVector resources;
+        ResourceChanges resourceChanges;
+        ResourceUtils::GetAllResourcesFromScene(resources, scene);
+        ResourceUtils::DiffResources(previousResources[sceneIndex], resources, resourceChanges);
+        previousResources[sceneIndex].swap(resources);
         resourceChanges.m_sceneResourceActions = scene.getSceneResourceActions();
 
-        // TODO vaclav re-enable sending resources after renderer side can use them
-        //for (const auto& resHash : resourceChanges.m_addedClientResourceRefs)
-        //{
-        //    ResourceDeleterCallingCallback cb;
-        //    auto resource = std::make_unique<ArrayResource>(EResourceType_VertexArray, 0, EDataType::Float, nullptr, ResourceCacheFlag_DoNotCache, String());
-        //    resource->setResourceData(ResourceBlob{ 1 }, resHash);
-        //    ManagedResource mr(*resource.release(), cb);
-        //    update.resources.push_back(mr);
-        //}
+        for (const auto& resHash : resourceChanges.m_resourcesAdded)
+            update.resources.push_back(MockResourceHash::GetManagedResource(resHash));
 
-        creator.flush(1u, newSizeInfo > currSizeInfo, newSizeInfo, resourceChanges, sceneRefActions, timeInfo, version);
         update.flushInfos = {1u, version, newSizeInfo, resourceChanges, sceneRefActions, timeInfo, newSizeInfo>currSizeInfo, true};
         scene.resetResourceChanges();
-        rendererSceneUpdater->handleSceneActions(stagingScene[sceneIndex]->getSceneId(), std::move(update));
+        rendererSceneUpdater->handleSceneUpdate(stagingScene[sceneIndex]->getSceneId(), std::move(update));
     }
 
     void performFlushWithExpiration(UInt32 sceneIndex, UInt32 expirationTS)
@@ -393,15 +411,34 @@ protected:
 
     void createDisplayAndExpectSuccess(DisplayHandle displayHandle = DisplayHandle1, const DisplayConfig& displayConfig = DisplayConfig())
     {
-        rendererSceneUpdater->createDisplayContext(displayConfig, (displayHandle == DisplayHandle1 ? resourceProvider1 : resourceProvider2), resourceUploader, displayHandle);
+        EXPECT_CALL(*rendererSceneUpdater, createResourceManager(Ref(resourceUploader), _, _, displayHandle, _, _));
+        rendererSceneUpdater->createDisplayContext(displayConfig, resourceUploader, displayHandle);
         EXPECT_TRUE(renderer.hasDisplayController(displayHandle));
         expectEvent(ERendererEventType_DisplayCreated);
+
+        // no offscreen buffers reported uploaded by default
+        ON_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getOffscreenBufferDeviceHandle(_)).WillByDefault(Return(DeviceResourceHandle::Invalid()));
+        ON_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getOffscreenBufferColorBufferDeviceHandle(_)).WillByDefault(Return(DeviceResourceHandle::Invalid()));
+        // scene updater queries display/offscreen buffer from device handle when updating modified scenes states - these are invalid for display framebuffer
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getOffscreenBufferHandle(DisplayControllerMock::FakeFrameBufferHandle)).Times(AnyNumber()).WillRepeatedly(Return(OffscreenBufferHandle::Invalid()));
+
+        // scene updater logic might call resource manager for ref/unref of resources with empty list - no need to track those
+        ResourceContentHashVector emptyResources;
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], referenceResourcesForScene(_, emptyResources)).Times(AnyNumber());
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], unreferenceResourcesForScene(_, emptyResources)).Times(AnyNumber());
+
+        // querying of resources state happens often, concrete tests can control status reported
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getResourceStatus(_)).Times(AnyNumber());
+
+        // by default skip path triggering upload/unload, concrete tests can override
+        ON_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], hasResourcesToBeUploaded()).WillByDefault(Return(false));
     }
 
     void destroyDisplay(DisplayHandle displayHandle = DisplayHandle1, bool expectFail = false)
     {
         if (!expectFail)
         {
+            rendererSceneUpdater->m_resourceManagerMocks[displayHandle]->expectNoResourceReferences();
             expectContextEnable(displayHandle);
         }
         rendererSceneUpdater->destroyDisplayContext(displayHandle);
@@ -439,7 +476,7 @@ protected:
         scene.allocateRenderGroup(0u, 0u, renderGroupHandle);
         scene.allocateNode(0u, renderableNode);
         scene.allocateRenderable(renderableNode, renderableHandle);
-        scene.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I}, DataFieldInfo{EDataType::Vector2I} }, ResourceProviderMock::FakeEffectHash, camDataLayoutHandle);
+        scene.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I}, DataFieldInfo{EDataType::Vector2I} }, MockResourceHash::EffectHash, camDataLayoutHandle);
         scene.allocateCamera(ECameraProjectionType::Perspective, scene.allocateNode(), scene.allocateDataInstance(camDataLayoutHandle, camDataHandle), cameraHandle);
 
         scene.addRenderableToRenderGroup(renderGroupHandle, renderableHandle, 0u);
@@ -452,24 +489,24 @@ protected:
         {
             uniformDataFields.push_back(DataFieldInfo{ EDataType::TextureSampler2D });
         }
-        scene.allocateDataLayout(uniformDataFields, ResourceProviderMock::FakeEffectHash, uniformDataLayoutHandle);
+        scene.allocateDataLayout(uniformDataFields, MockResourceHash::EffectHash, uniformDataLayoutHandle);
         scene.allocateDataInstance(uniformDataLayoutHandle, uniformDataInstanceHandle);
         scene.setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Uniforms, uniformDataInstanceHandle);
 
         DataFieldInfoVector geometryDataFields;
-        geometryDataFields.push_back(DataFieldInfo{ EDataType::Indices, 1u, EFixedSemantics_Indices });
+        geometryDataFields.push_back(DataFieldInfo{ EDataType::Indices, 1u, EFixedSemantics::Indices });
         if (withVertexArray)
         {
-            geometryDataFields.push_back(DataFieldInfo{ EDataType::Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute });
+            geometryDataFields.push_back(DataFieldInfo{ EDataType::Vector3Buffer, 1u, EFixedSemantics::Invalid });
         }
-        scene.allocateDataLayout(geometryDataFields, ResourceProviderMock::FakeEffectHash, geometryDataLayoutHandle);
+        scene.allocateDataLayout(geometryDataFields, MockResourceHash::EffectHash, geometryDataLayoutHandle);
         scene.allocateDataInstance(geometryDataLayoutHandle, geometryDataInstanceHandle);
         scene.setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Geometry, geometryDataInstanceHandle);
     }
 
     void destroyRenderable(UInt32 sceneIndex = 0u)
     {
-        const RenderGroupHandle renderGroupHandle(0u);
+        const RenderGroupHandle renderGroupHandle(3u);
         IScene& scene = *stagingScene[sceneIndex];
         scene.removeRenderableFromRenderGroup(renderGroupHandle, renderableHandle);
         scene.releaseRenderable(renderableHandle);
@@ -477,23 +514,16 @@ protected:
         performFlush(sceneIndex);
     }
 
-    void setRenderableResources(UInt32 sceneIndex = 0u, ResourceContentHash indexArrayHash = ResourceProviderMock::FakeIndexArrayHash)
+    void setRenderableResources(UInt32 sceneIndex = 0u, ResourceContentHash indexArrayHash = MockResourceHash::IndexArrayHash)
     {
         setRenderableResourcesNoFlush(sceneIndex, indexArrayHash);
         performFlush(sceneIndex);
     }
 
-    void setRenderableResourcesNoFlush(UInt32 sceneIndex = 0u, ResourceContentHash indexArrayHash = ResourceProviderMock::FakeIndexArrayHash)
+    void setRenderableResourcesNoFlush(UInt32 sceneIndex = 0u, ResourceContentHash indexArrayHash = MockResourceHash::IndexArrayHash)
     {
         IScene& scene = *stagingScene[sceneIndex];
-        scene.setDataResource(geometryDataInstanceHandle, DataFieldHandle(0u), indexArrayHash, DataBufferHandle::Invalid(), 0u);
-    }
-
-    void setRenderableVertexArray(UInt32 sceneIndex = 0u, ResourceContentHash vertexArrayHash = ResourceProviderMock::FakeVertArrayHash)
-    {
-        IScene& scene = *stagingScene[sceneIndex];
-        scene.setDataResource(geometryDataInstanceHandle, DataFieldHandle(1u), vertexArrayHash, DataBufferHandle::Invalid(), 0u);
-        performFlush(sceneIndex);
+        scene.setDataResource(geometryDataInstanceHandle, DataFieldHandle(0u), indexArrayHash, DataBufferHandle::Invalid(), 0u, 0u, 0u);
     }
 
     void setRenderableStreamTexture(UInt32 sceneIndex = 0u)
@@ -506,155 +536,101 @@ protected:
     void createSamplerWithStreamTexture(UInt32 sceneIndex = 0u)
     {
         IScene& scene = *stagingScene[sceneIndex];
-        scene.allocateStreamTexture(1u, ResourceContentHash::Invalid(), streamTextureHandle);
+        scene.allocateStreamTexture(WaylandIviSurfaceId{ 1u }, ResourceContentHash::Invalid(), streamTextureHandle);
         scene.allocateTextureSampler({ {}, streamTextureHandle }, samplerHandle);
     }
 
-    void createRenderableAndResourcesWithStreamTexture(UInt32 sceneIndex = 0u, bool uploadClientResources = true)
+    void createRenderableAndResourcesWithStreamTexture(UInt32 sceneIndex = 0u, DisplayHandle displayHandle = DisplayHandle1)
     {
-        const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
+        expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, sceneIndex, displayHandle);
         createRenderable(sceneIndex, false, true);
         setRenderableResources(sceneIndex);
 
         createSamplerWithStreamTexture(sceneIndex);
         setRenderableStreamTexture(sceneIndex);
 
-        expectResourceRequest(DisplayHandle1, sceneIndex);
-        if (uploadClientResources)
-        {
-            expectContextEnable();
-            expectRenderableResourcesUploaded(DisplayHandle1, true, true, false, true);
-        }
-        else
-        {
-            EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, uploadStreamTexture(_, _, sceneId));
-        }
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], uploadStreamTexture(streamTextureHandle, _, getSceneId(sceneIndex)));
     }
 
     void removeRenderableResources(UInt32 sceneIndex = 0u)
     {
         IScene& scene = *stagingScene[sceneIndex];
         // it is not allowed to set both resource and data buffer as invalid, so for the purpose of the test cases here we set to non-existent data buffer with handle 0
-        scene.setDataResource(geometryDataInstanceHandle, DataFieldHandle(0u), ResourceContentHash::Invalid(), DataBufferHandle(0u), 0u);
+        scene.setDataResource(geometryDataInstanceHandle, DataFieldHandle(0u), ResourceContentHash::Invalid(), DataBufferHandle(0u), 0u, 0u, 0u);
 
         performFlush(sceneIndex);
     }
 
-    void expectResourceRequest(DisplayHandle displayHandle = DisplayHandle1, UInt32 sceneIndex = 0u)
+    void expectResourcesReferenced(const ResourceContentHashVector& resources, UInt32 sceneIdx = 0u, DisplayHandle display = DisplayHandle1, int times = 1)
     {
-        const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
-        EXPECT_CALL((displayHandle == DisplayHandle1 ? resourceProvider1 : resourceProvider2), requestResourceAsyncronouslyFromFramework(_, _, sceneId));
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], referenceResourcesForScene(getSceneId(sceneIdx), resources)).Times(times);
     }
 
-    void expectRenderableResourcesUploaded(DisplayHandle displayHandle = DisplayHandle1, bool effect = true, bool indexBuffer = true, bool vertexArray = false, bool streamTexture = false)
+    void expectResourcesProvided(DisplayHandle display = DisplayHandle1, int times = 1)
     {
-        if (effect)
-        {
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, uploadShader(_));
-        }
-        if (indexBuffer)
-        {
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, allocateIndexBuffer(_, _));
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, uploadIndexBufferData(_, _, _));
-        }
-        if (vertexArray)
-        {
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, allocateVertexBuffer(_, _));
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, uploadVertexBufferData(_, _, _));
-        }
-
-        if (streamTexture)
-        {
-            EXPECT_CALL(*renderer.getDisplayMock(displayHandle).m_embeddedCompositingManager, uploadStreamTexture(_, _, _));
-        }
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], provideResourceData(_)).Times(times);
     }
 
-    void expectResourceRequestCancel(ResourceContentHash hash, DisplayHandle displayHandle = DisplayHandle1)
+    void expectResourcesReferencedAndProvided(const ResourceContentHashVector& resources, UInt32 sceneIdx = 0u, DisplayHandle display = DisplayHandle1)
     {
-        EXPECT_CALL((displayHandle == DisplayHandle1 ? resourceProvider1 : resourceProvider2), cancelResourceRequest(hash, _));
+        // most tests add 1 resource in 1 flush, referencing logic is executed per flush
+        for (const auto& res : resources)
+            expectResourcesReferenced({ res }, sceneIdx, display, 1);
+        expectResourcesProvided(display, int(resources.size()));
     }
 
-    void expectRenderableResourcesDeleted(DisplayHandle displayHandle = DisplayHandle1, bool effect = true, bool indexBuffer = true, bool vertexArray = false, bool streamTexture = false)
+    void expectResourcesReferencedAndProvided_altogether(const ResourceContentHashVector& resources, UInt32 sceneIdx = 0u, DisplayHandle display = DisplayHandle1)
     {
-        if (effect)
-        {
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, deleteShader(_));
-        }
-        if (indexBuffer)
-        {
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, deleteIndexBuffer(_));
-        }
-        if (vertexArray)
-        {
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, deleteVertexBuffer(_));
-        }
-
-        if (streamTexture)
-        {
-            EXPECT_CALL(*renderer.getDisplayMock(displayHandle).m_embeddedCompositingManager, deleteStreamTexture(_, _, _));
-        }
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], referenceResourcesForScene(getSceneId(sceneIdx), resources));
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], provideResourceData(_)).Times(int(resources.size()));
     }
 
-    void expectTextureUploaded(DisplayHandle displayHandle = DisplayHandle1)
+    void expectResourcesUnreferenced(const ResourceContentHashVector& resources, UInt32 sceneIdx = 0u, DisplayHandle display = DisplayHandle1, int times = 1)
     {
-        EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, allocateTexture2D(_, _, _, _, _, _));
-        EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, uploadTextureData(_, _, _, _, _, _, _, _, _, _));
-        EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, generateMipmaps(_)).Times(AnyNumber()); // some fake textures have generate mips flag on, not relevant here
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], unreferenceResourcesForScene(getSceneId(sceneIdx), resources)).Times(times);
     }
 
-    auto& expectTextureDeleted(DisplayHandle displayHandle = DisplayHandle1)
+    void reportResourceAs(ResourceContentHash resource, EResourceStatus status, DisplayHandle display = DisplayHandle1)
     {
-        return EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, deleteTexture(_));
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], getResourceStatus(resource)).Times(AnyNumber()).WillRepeatedly(Return(status));
     }
 
-    void expectRenderTargetUploaded(DisplayHandle displayHandle = DisplayHandle1, bool expectClear = false, DeviceResourceHandle rtDeviceHandleToReturn = DeviceMock::FakeRenderTargetDeviceHandle, bool doubleBuffered = false)
+    void expectOffscreenBufferUploaded(OffscreenBufferHandle buffer, DisplayHandle displayHandle = DisplayHandle1, DeviceResourceHandle rtDeviceHandleToReturn = DeviceMock::FakeRenderTargetDeviceHandle, bool doubleBuffered = false)
     {
         {
             InSequence seq;
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, uploadRenderBuffer(_)).Times(2u);
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, uploadRenderTarget(_)).WillOnce(Return(rtDeviceHandleToReturn));
-
-            if (doubleBuffered)
-            {
-                EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, uploadRenderBuffer(_));
-                EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, uploadRenderTarget(_));
-                EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, pairRenderTargetsForDoubleBuffering(_, _));
-            }
+            EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+            EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], uploadOffscreenBuffer(buffer, _, _, _, doubleBuffered));
+            EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getOffscreenBufferDeviceHandle(buffer)).WillRepeatedly(Return(rtDeviceHandleToReturn));
         }
+        // scene updater queries offscreen buffer from device handle when updating modified scenes states
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getOffscreenBufferHandle(rtDeviceHandleToReturn)).Times(AnyNumber()).WillRepeatedly(Return(buffer));
+    }
 
-        if (expectClear)
-        {
-            const UInt32 expectationTimes = doubleBuffered ? 2u : 1u;
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, activateRenderTarget(_)).Times(expectationTimes);
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, colorMask(true, true, true, true)).Times(expectationTimes);
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(expectationTimes);
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, depthWrite(EDepthWrite::Enabled)).Times(expectationTimes);
-            RenderState::ScissorRegion scissorRegion{};
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion)).Times(expectationTimes);
-            EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, clear(_)).Times(expectationTimes);
-        }
+    void expectOffscreenBufferDeleted(OffscreenBufferHandle buffer, DisplayHandle displayHandle = DisplayHandle1, DeviceResourceHandle deviceHandle = DeviceMock::FakeRenderTargetDeviceHandle)
+    {
+        InSequence seq;
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(deviceHandle));
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], unloadOffscreenBuffer(buffer));
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getOffscreenBufferDeviceHandle(buffer)).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
     }
 
     void expectBlitPassUploaded()
     {
-        {
-            InSequence seq;
-            EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadRenderBuffer(_)).Times(2u);
-            EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadRenderTarget(_)).Times(2u);
-        }
-    }
-
-    void expectRenderTargetDeleted(DisplayHandle displayHandle = DisplayHandle1, UInt32 times = 1u, bool doubleBuffered = false)
-    {
-        EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, deleteRenderBuffer(_)).Times((doubleBuffered? 3u : 2u) * times);
-        EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, deleteRenderTarget(_)).Times((doubleBuffered ? 2u : 1u) * times);
-        EXPECT_CALL(renderer.getDisplayMock(displayHandle).m_renderBackend->deviceMock, unpairRenderTargets(_)).Times((doubleBuffered ? times : 0u));
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadRenderTargetBuffer(_, getSceneId(0u), _)).Times(2);
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadBlitPassRenderTargets(_, _, _, getSceneId(0u)));
     }
 
     void expectBlitPassDeleted()
     {
-        EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderTarget(_)).Times(2u);
-        EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderBuffer(_)).Times(2u);
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], unloadRenderTargetBuffer(_, getSceneId(0u))).Times(2);
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], unloadBlitPassRenderTargets(_, getSceneId(0u)));
+    }
+
+    void expectStreamTextureUploaded(DisplayHandle displayHandle = DisplayHandle1)
+    {
+        static constexpr DeviceResourceHandle FakeStreamTextureDeviceHandle{ 987 };
+        EXPECT_CALL(*renderer.getDisplayMock(displayHandle).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillRepeatedly(Return(FakeStreamTextureDeviceHandle));
     }
 
     void createRenderTargetWithBuffers(UInt32 sceneIndex = 0u, RenderTargetHandle renderTargetHandle = RenderTargetHandle{ 0u }, RenderBufferHandle bufferHandle = RenderBufferHandle{ 0u }, RenderBufferHandle depthHandle = RenderBufferHandle{ 1u })
@@ -666,6 +642,18 @@ protected:
         scene.addRenderTargetRenderBuffer(renderTargetHandle, bufferHandle);
         scene.addRenderTargetRenderBuffer(renderTargetHandle, depthHandle);
         performFlush(sceneIndex);
+    }
+
+    void expectRenderTargetUploaded(DisplayHandle display = DisplayHandle1, UInt32 sceneIdx = 0u)
+    {
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], uploadRenderTargetBuffer(_, getSceneId(sceneIdx), _)).Times(2);
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], uploadRenderTarget(_, _, getSceneId(sceneIdx)));
+    }
+
+    void expectRenderTargetUnloaded(DisplayHandle display = DisplayHandle1, UInt32 sceneIdx = 0u)
+    {
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], unloadRenderTargetBuffer(_, getSceneId(sceneIdx))).Times(2);
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], unloadRenderTarget(_, getSceneId(sceneIdx)));
     }
 
     void createBlitPass()
@@ -749,7 +737,7 @@ protected:
 
         const DataSlotId providerId(getNextFreeDataSlotIdForDataLinking());
         const DataSlotId consumerId(getNextFreeDataSlotIdForDataLinking());
-        DataSlotHandle providerDataSlot = scene1.allocateDataSlot({ EDataSlotType_TextureProvider, providerId, NodeHandle(), DataInstanceHandle::Invalid(), ResourceProviderMock::FakeTextureHash, TextureSamplerHandle() });
+        DataSlotHandle providerDataSlot = scene1.allocateDataSlot({ EDataSlotType_TextureProvider, providerId, NodeHandle(), DataInstanceHandle::Invalid(), MockResourceHash::TextureHash, TextureSamplerHandle() });
         if (nullptr != providerDataSlotHandleOut)
             *providerDataSlotHandleOut = providerDataSlot;
         scene2.allocateDataSlot({ EDataSlotType_TextureConsumer, consumerId, NodeHandle(), DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), sampler });
@@ -840,7 +828,6 @@ protected:
 
     void destroySceneUpdater()
     {
-        expectContextEnable(DisplayHandle1, 2u);
         rendererSceneUpdater.reset();
         expectEvent(ERendererEventType_DisplayDestroyed);
     }
@@ -855,11 +842,6 @@ protected:
     {
         const RendererCachedScene& scene = rendererScenes.getScene(stagingScene[sceneIndex]->getSceneId());
         EXPECT_TRUE(scene.renderableResourcesDirty(renderableHandle));
-    }
-
-    void expectEmbeddedCompositingManagerReturnsDeviceHandle(DeviceResourceHandle deviceResourceHandle, UInt32 times = 1u)
-    {
-        EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).Times(times).WillRepeatedly(Return(deviceResourceHandle));
     }
 
     void expectModifiedScenesReportedToRenderer(std::initializer_list<UInt32> indices = {0u})
@@ -939,8 +921,8 @@ protected:
         // assign scene to double buffered OB
         const OffscreenBufferHandle buffer(111u);
         expectContextEnable();
-        expectRenderTargetUploaded(DisplayHandle1, true, DeviceMock::FakeRenderTargetDeviceHandle, true);
-        EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, true));
+        expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, true);
+        EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, true));
         EXPECT_TRUE(assignSceneToDisplayBuffer(interruptedSceneIdx, buffer));
 
         showScene(sceneIdx);
@@ -1019,15 +1001,12 @@ protected:
     static const DisplayHandle DisplayHandle1;
     static const DisplayHandle DisplayHandle2;
 
-    static const ResourceContentHash InvalidResource1;
-    static const ResourceContentHash InvalidResource2;
+    const RenderableHandle renderableHandle{ 1 };
+    const DataInstanceHandle uniformDataInstanceHandle{ 0 };
+    const DataInstanceHandle geometryDataInstanceHandle{ 1 };
 
-    const RenderableHandle renderableHandle;
-    const DataInstanceHandle uniformDataInstanceHandle;
-    const DataInstanceHandle geometryDataInstanceHandle;
-
-    const TextureSamplerHandle samplerHandle;
-    const StreamTextureHandle streamTextureHandle;
+    const TextureSamplerHandle samplerHandle{ 2 };
+    const StreamTextureHandle streamTextureHandle{ 0 };
 
     std::vector<std::unique_ptr<ActionCollectingScene>> stagingScene;
     DataSlotId dataSlotIdForDataLinking{9911u};
@@ -1035,8 +1014,8 @@ protected:
     static constexpr UInt ForceApplyFlushesLimit = 10u;
     static constexpr UInt ForceUnsubscribeFlushLimit = 20u;
 
-    NiceMock<RendererResourceCacheMock> rendererResourceCacheMock;
-    StrictMock<PlatformFactoryStrictMock> platformFactoryMock;
+    StrictMock<RendererResourceCacheMock> rendererResourceCacheMock;
+    StrictMock<PlatformStrictMock> platformFactoryMock;
     RendererEventCollector rendererEventCollector;
     RendererScenes rendererScenes;
     SceneExpirationMonitor expirationMonitor;
@@ -1044,14 +1023,13 @@ protected:
     RendererStatistics rendererStatistics;
     StrictMock<RendererMockWithStrictMockDisplay> renderer;
     StrictMock<RendererSceneEventSenderMock> sceneEventSender;
-    StrictMock<ResourceProviderMock> resourceProvider1;
-    StrictMock<ResourceProviderMock> resourceProvider2;
     FrameTimer frameTimer;
     ResourceUploader resourceUploader;
     SceneStateExecutor sceneStateExecutor;
-    std::unique_ptr<RendererSceneUpdater> rendererSceneUpdater;
+    std::unique_ptr<RendererSceneUpdaterFacade> rendererSceneUpdater;
 
-    std::unordered_map<UInt32, ResourceContentHashVector> previousClientResources;
+    std::unordered_map<UInt32, ResourceContentHashVector> previousResources;
 };
 }
+
 #endif

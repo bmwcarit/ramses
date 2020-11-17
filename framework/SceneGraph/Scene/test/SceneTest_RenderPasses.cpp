@@ -52,7 +52,7 @@ namespace ramses_internal
     {
         const RenderPassHandle renderPass = this->m_scene.allocateRenderPass();
         const auto dataLayout = this->m_scene.allocateDataLayout({DataFieldInfo{ramses_internal::EDataType::Vector2I}, DataFieldInfo{ramses_internal::EDataType::Vector2I}}, ResourceContentHash(123u, 0u));
-        const CameraHandle camera = this->m_scene.allocateCamera(ECameraProjectionType::Renderer, this->m_scene.allocateNode(), this->m_scene.allocateDataInstance(dataLayout));
+        const CameraHandle camera = this->m_scene.allocateCamera(ECameraProjectionType::Perspective, this->m_scene.allocateNode(), this->m_scene.allocateDataInstance(dataLayout));
         EXPECT_FALSE(this->m_scene.getRenderPass(renderPass).camera.isValid());
 
         this->m_scene.setRenderPassCamera(renderPass, camera);

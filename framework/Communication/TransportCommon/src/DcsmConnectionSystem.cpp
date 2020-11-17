@@ -55,19 +55,19 @@ namespace ramses_internal
     }
 
     // public send functions
-    bool DcsmConnectionSystem::sendBroadcastOfferContent(ContentID content, Category category, const std::string& friendlyName, uint32_t sortOrder)
+    bool DcsmConnectionSystem::sendBroadcastOfferContent(ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, uint32_t sortOrder)
     {
-        LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendBroadcastOfferContent: content " << content << ", category " << category << ", name " << friendlyName << ", sortOrder " << sortOrder);
+        LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendBroadcastOfferContent: content " << content << ", category " << category << ", technicalContentType " << EnumToString(technicalContentType) << ", name " << friendlyName << ", sortOrder " << sortOrder);
         return sendBroadcast("sendBroadcastOfferContent", [&](DcsmInstanceId iid, SomeIPMsgHeader hdr) {
-            return m_stack->sendOfferContent(iid, hdr, content, category, friendlyName, sortOrder);
+            return m_stack->sendOfferContent(iid, hdr, content, category, technicalContentType, friendlyName, sortOrder);
         });
     }
 
-    bool DcsmConnectionSystem::sendOfferContent(const Guid& to, ContentID content, Category category, const std::string& friendlyName, uint32_t sortOrder)
+    bool DcsmConnectionSystem::sendOfferContent(const Guid& to, ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, uint32_t sortOrder)
     {
-        LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendOfferContent: to " << to << ", content " << content << ", category " << category << ", name " << friendlyName << ", sortOrder " << sortOrder);
+        LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendOfferContent: to " << to << ", content " << content << ", category " << category << ", technicalContentType " << EnumToString(technicalContentType) << ", name " << friendlyName << ", sortOrder " << sortOrder);
         return sendUnicast("sendOfferContent", to, [&](DcsmInstanceId iid, SomeIPMsgHeader hdr) {
-            return m_stack->sendOfferContent(iid, hdr, content, category, friendlyName, sortOrder);
+            return m_stack->sendOfferContent(iid, hdr, content, category, technicalContentType, friendlyName, sortOrder);
         });
     }
 
@@ -88,12 +88,12 @@ namespace ramses_internal
         });
     }
 
-    bool DcsmConnectionSystem::sendContentDescription(const Guid& to, ContentID content, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
+    bool DcsmConnectionSystem::sendContentDescription(const Guid& to, ContentID content, TechnicalContentDescriptor technicalContentDescriptor)
     {
         LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendContentDescription: to " << to << ", content " << content <<
-                 ", technicalContentType " << EnumToString(technicalContentType) << ", technicalContentDescriptor " << technicalContentDescriptor.getValue());
+                 ", technicalContentDescriptor " << technicalContentDescriptor.getValue());
         return sendUnicast("sendContentDescription", to, [&](DcsmInstanceId iid, SomeIPMsgHeader hdr) {
-            return m_stack->sendContentDescription(iid, hdr, content, technicalContentType, technicalContentDescriptor);
+            return m_stack->sendContentDescription(iid, hdr, content, technicalContentDescriptor);
         });
     }
 
@@ -152,11 +152,11 @@ namespace ramses_internal
 
 
     // handlers for generic ISomeIPDcsmCallbacks callbacks
-    void DcsmConnectionSystem::handleOfferContent(const SomeIPMsgHeader& header, ContentID content, Category category, const std::string& friendlyName, uint32_t /*sortOrder*/)
+    void DcsmConnectionSystem::handleOfferContent(const SomeIPMsgHeader& header, ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, uint32_t /*sortOrder*/)
     {
         assert(m_dcsmConsumerHandler);
         if (const Guid* pid = processReceivedMessageHeader(header, "handleOfferContent"))
-            m_dcsmConsumerHandler->handleOfferContent(content, category, friendlyName, *pid);
+            m_dcsmConsumerHandler->handleOfferContent(content, category, technicalContentType, friendlyName, *pid);
     }
 
     void DcsmConnectionSystem::handleRequestStopOfferContent(const SomeIPMsgHeader& header, ContentID content, bool forceStopOffer)
@@ -185,11 +185,11 @@ namespace ramses_internal
             m_dcsmProviderHandler->handleCanvasSizeChange(content, categoryInfo, animation, *pid);
     }
 
-    void DcsmConnectionSystem::handleContentDescription(const SomeIPMsgHeader& header, ContentID content, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
+    void DcsmConnectionSystem::handleContentDescription(const SomeIPMsgHeader& header, ContentID content, TechnicalContentDescriptor technicalContentDescriptor)
     {
         assert(m_dcsmConsumerHandler);
         if (const Guid* pid = processReceivedMessageHeader(header, "handleContentDescription"))
-            m_dcsmConsumerHandler->handleContentDescription(content, technicalContentType, technicalContentDescriptor, *pid);
+            m_dcsmConsumerHandler->handleContentDescription(content, technicalContentDescriptor, *pid);
     }
 
     void DcsmConnectionSystem::handleContentReady(const SomeIPMsgHeader& header, ContentID content)

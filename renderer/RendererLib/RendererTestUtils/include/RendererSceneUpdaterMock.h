@@ -23,9 +23,9 @@ namespace ramses_internal
         RendererSceneUpdaterMock(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, const IRendererResourceCache* rendererResourceCache);
         virtual ~RendererSceneUpdaterMock();
 
-        MOCK_METHOD(void, handleSceneActions, (SceneId sceneId, SceneUpdate&& update), (override));
+        MOCK_METHOD(void, handleSceneUpdate, (SceneId sceneId, SceneUpdate&& update), (override));
         MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, Vector2 coords), (override));
-        MOCK_METHOD(std::unique_ptr<IRendererResourceManager>, createResourceManager, (IResourceProvider&, IResourceUploader&, IRenderBackend&, IEmbeddedCompositingManager&, DisplayHandle, bool, uint64_t), (override));
+        MOCK_METHOD(std::unique_ptr<IRendererResourceManager>, createResourceManager, (IResourceUploader&, IRenderBackend&, IEmbeddedCompositingManager&, DisplayHandle, bool, uint64_t), (override));
     };
 
     class RendererSceneUpdaterFacade : public RendererSceneUpdaterMock
@@ -34,13 +34,13 @@ namespace ramses_internal
         RendererSceneUpdaterFacade(const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, const IRendererResourceCache* rendererResourceCache);
         virtual ~RendererSceneUpdaterFacade();
 
-        virtual void handleSceneActions(SceneId sceneId, SceneUpdate&& update) override;
+        virtual void handleSceneUpdate(SceneId sceneId, SceneUpdate&& update) override;
+        virtual void handlePickEvent(SceneId sceneId, Vector2 coords) override;
 
-        std::unordered_map<DisplayHandle, testing::StrictMock<RendererResourceManagerMock>*> m_resourceManagerMocks;
+        std::unordered_map<DisplayHandle, testing::StrictMock<RendererResourceManagerRefCountMock>*> m_resourceManagerMocks;
 
     protected:
         virtual std::unique_ptr<IRendererResourceManager> createResourceManager(
-            IResourceProvider& resourceProvider,
             IResourceUploader& resourceUploader,
             IRenderBackend& renderBackend,
             IEmbeddedCompositingManager& embeddedCompositingManager,

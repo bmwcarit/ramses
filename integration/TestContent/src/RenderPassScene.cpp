@@ -10,7 +10,6 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 
 namespace ramses_internal
@@ -33,11 +32,11 @@ namespace ramses_internal
         translateNode->addChild(*meshNode2);
         translateNode->translate(0.0f, 0.0f, -12.0f);
 
-        ramses::Camera* camera1 = m_scene.createRemoteCamera();
-        ramses::Camera* camera2 = m_scene.createRemoteCamera();
+        ramses::Camera& camera1 = createCameraWithDefaultParameters();
+        ramses::Camera& camera2 = createCameraWithDefaultParameters();
 
         ramses::Node* cameraTranslateNode = m_scene.createNode();
-        camera2->setParent(*cameraTranslateNode);
+        camera2.setParent(*cameraTranslateNode);
         cameraTranslateNode->translate(-1.5f, -1.5f, 5.0f);
 
         ramses::RenderPass* renderPass1 = m_scene.createRenderPass();
@@ -64,15 +63,15 @@ namespace ramses_internal
             break;
 
         case ONE_MESH_PER_PASS:
-            renderPass1->setCamera(*camera1);
-            renderPass2->setCamera(*camera2);
+            renderPass1->setCamera(camera1);
+            renderPass2->setCamera(camera2);
             renderGroup1->addMeshNode(*meshNode1);
             renderGroup2->addMeshNode(*meshNode2);
             break;
 
         case MESH_IN_MULTIPLE_PASSES:
-            renderPass1->setCamera(*camera1);
-            renderPass2->setCamera(*camera2);
+            renderPass1->setCamera(camera1);
+            renderPass2->setCamera(camera2);
             renderGroup1->addMeshNode(*meshNode1);
             renderGroup2->addMeshNode(*meshNode1);
             break;
@@ -82,7 +81,7 @@ namespace ramses_internal
             renderGroup1->addMeshNode(*meshNode1);
             renderGroup2->addMeshNode(*meshNode2);
 
-            renderPass1->setCamera(*camera1);
+            renderPass1->setCamera(camera1);
             renderPass1->addRenderGroup(*renderGroup1, 2);
             renderPass1->addRenderGroup(*renderGroup2, 1);
         }
@@ -95,14 +94,14 @@ namespace ramses_internal
             renderGroup2->addRenderGroup(*renderGroup1, 2);
             renderGroup2->addMeshNode(*meshNode2, 1);
 
-            renderPass1->setCamera(*camera1);
+            renderPass1->setCamera(camera1);
             renderPass1->addRenderGroup(*renderGroup2);
         }
         break;
 
         case PASSES_WITH_DIFFERENT_RENDER_ORDER:
-            renderPass1->setCamera(*camera1);
-            renderPass2->setCamera(*camera1); // So both render passes render with same camera - to same screen location
+            renderPass1->setCamera(camera1);
+            renderPass2->setCamera(camera1); // So both render passes render with same camera - to same screen location
 
             renderGroup1->addMeshNode(*meshNode1);
             renderGroup2->addMeshNode(*meshNode2);
@@ -112,12 +111,12 @@ namespace ramses_internal
 
         case PASSES_WITH_LEFT_AND_RIGHT_VIEWPORT:
             ramses::PerspectiveCamera* cameraLeft = m_scene.createPerspectiveCamera();
-            cameraLeft->setFrustum(20.f, DefaultDisplayWidth * 0.5f / DefaultDisplayHeight, 0.1f, 100.f );
-            cameraLeft->setViewport(0u, 0u, DefaultDisplayWidth / 2u, DefaultDisplayHeight);
+            cameraLeft->setFrustum(20.f, IntegrationScene::DefaultViewportWidth * 0.5f / IntegrationScene::DefaultViewportHeight, 0.1f, 100.f );
+            cameraLeft->setViewport(0u, 0u, IntegrationScene::DefaultViewportWidth / 2u, IntegrationScene::DefaultViewportHeight);
 
             ramses::PerspectiveCamera* cameraRight = m_scene.createPerspectiveCamera();
-            cameraRight->setFrustum(20.f, DefaultDisplayWidth * 0.5f / (DefaultDisplayHeight - 20u), 0.1f, 100.f);
-            cameraRight->setViewport(DefaultDisplayWidth / 2u, 20u, DefaultDisplayWidth / 2u, DefaultDisplayHeight - 20u);
+            cameraRight->setFrustum(20.f, IntegrationScene::DefaultViewportWidth * 0.5f / (IntegrationScene::DefaultViewportHeight - 20u), 0.1f, 100.f);
+            cameraRight->setViewport(IntegrationScene::DefaultViewportWidth / 2u, 20u, IntegrationScene::DefaultViewportWidth / 2u, IntegrationScene::DefaultViewportHeight - 20u);
 
             renderPass1->setCamera(*cameraLeft);
             renderPass2->setCamera(*cameraRight);

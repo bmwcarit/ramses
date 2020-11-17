@@ -79,9 +79,9 @@ created by the text logic. The effect has to have semantics assigned to various 
 inputs so that the text logic knows where to bind necessary inputs like vertices, texture coordinates
 and sampler with glyph texture.
 These are the semantics required for text:
- - EEffectAttributeSemantic_TextPositions (attribute of type vec2)
- - EEffectAttributeSemantic_TextTextureCoordinates (attribute of type vec2)
- - EEffectUniformSemantic_TextTexture (uniform of type sampler2D)
+ - EEffectAttributeSemantic::TextPositions (attribute of type vec2)
+ - EEffectAttributeSemantic::TextTextureCoordinates (attribute of type vec2)
+ - EEffectUniformSemantic::TextTexture (uniform of type sampler2D)
 
 Check the text example to see typical text shader usage, generally shader can have any logic
 and can be customized to fit user's needs. Similarily Appearance's properties can be arbitrary

@@ -98,10 +98,10 @@ namespace ramses
         return impl.getSceneControlAPI();
     }
 
-    DcsmContentControl* RamsesRenderer::createDcsmContentControl(const DcsmContentControlConfig& config)
+    DcsmContentControl* RamsesRenderer::createDcsmContentControl()
     {
-        auto ret = impl.createDcsmContentControl(config);
-        LOG_HL_RENDERER_API1(LOG_API_GENERIC_PTR_STRING(ret), LOG_API_GENERIC_OBJECT_STRING(config));
+        auto ret = impl.createDcsmContentControl();
+        LOG_HL_RENDERER_API_NOARG(LOG_API_GENERIC_PTR_STRING(ret));
         return ret;
     }
 
@@ -112,9 +112,9 @@ namespace ramses
         return status;
     }
 
-    displayBufferId_t RamsesRenderer::createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height)
+    displayBufferId_t RamsesRenderer::createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount)
     {
-        const displayBufferId_t bufferId = impl.createOffscreenBuffer(display, width, height, false);
+        const displayBufferId_t bufferId = impl.createOffscreenBuffer(display, width, height, sampleCount, false);
         LOG_HL_RENDERER_API3(bufferId, display, width, height);
         return bufferId;
     }
@@ -212,7 +212,7 @@ namespace ramses
 
     displayBufferId_t RamsesRenderer::createInterruptibleOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height)
     {
-        const auto bufferId = impl.createOffscreenBuffer(display, width, height, true);
+        const auto bufferId = impl.createOffscreenBuffer(display, width, height, 0u, true);
         LOG_HL_RENDERER_API3(bufferId, display, width, height);
         return bufferId;
     }

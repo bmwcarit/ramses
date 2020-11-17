@@ -168,7 +168,7 @@ namespace ramses
         /**
         * @brief   Convenience method to set perspective camera frustum using FOV and aspect ratio
         *          (like in #ramses::PerspectiveCamera::setFrustum) to two #ramses::DataObject instances
-        *          which are or will be bound to a #ramses::PerspectiveCamera using #ramses::LocalCamera::bindFrustumPlanes.
+        *          which are or will be bound to a #ramses::PerspectiveCamera using #ramses::Camera::bindFrustumPlanes.
         * @details Use case example: just create the two data objects, bind them to one or more cameras
         *          and then simply use this method whenever projection parameters need to change.
         *          If not all parameters need to be modified, simply query the parameter you want to keep

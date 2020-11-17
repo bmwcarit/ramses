@@ -22,9 +22,9 @@ namespace ramses_internal
     class RenderExecutor
     {
     public:
-        RenderExecutor(IDevice& device, const FrameBufferInfo& frameBuffer, const SceneRenderExecutionIterator& renderFrom = {}, const FrameTimer* frameTimer = nullptr);
+        RenderExecutor(IDevice& device, const TargetBufferInfo& bufferInfo, const SceneRenderExecutionIterator& renderFrom = {}, const FrameTimer* frameTimer = nullptr);
 
-        SceneRenderExecutionIterator executeScene(const RendererCachedScene& scene, const Matrix44f& rendererViewMatrix) const;
+        SceneRenderExecutionIterator executeScene(const RendererCachedScene& scene) const;
 
         // This is exposed and can be modified but acts as a global parameter
         static constexpr const UInt32 DefaultNumRenderablesToRenderInBetweenTimeBudgetChecks = 10u;
@@ -40,7 +40,7 @@ namespace ramses_internal
         void executeConstant        (EDataType dataType, UInt32 elementCount, DataInstanceHandle dataInstance, DataFieldHandle dataInstancefield, DataFieldHandle uniformInputField) const;
         void executeDrawCall        () const;
 
-        void setGlobalInternalStates    (const RendererCachedScene& scene, const Matrix44f& rendererViewMatrix) const;
+        void setGlobalInternalStates    (const RendererCachedScene& scene) const;
         void setRenderableInternalStates(RenderableHandle renderableHandle) const;
 
         void activateRenderTarget       (RenderTargetHandle renderTarget) const;

@@ -7,8 +7,11 @@
 //  -------------------------------------------------------------------------
 
 #include "gtest/gtest.h"
+#include "TestEqualHelper.h"
 #include "Math3d/Matrix33f.h"
 #include "Collections/StringOutputStream.h"
+#include <vector>
+#include <array>
 
 namespace ramses_internal
 {
@@ -215,33 +218,125 @@ namespace ramses_internal
 
     class Matrix33fParamTest : public Matrix33fTest, public ::testing::WithParamInterface<Vector3>
     {
+    protected:
+        Matrix33f calculateRotationMatrixAroundAxis(uint8_t axis, float angle)
+        {
+            //Note: it does not matter which convention is used, since rotation around single axis
+            //would result in same matrix using any convention
+            switch (axis)
+            {
+            case 0: //x-axis
+                return Matrix33f::RotationEuler({ angle, 0.f, 0.f }, ERotationConvention::XYZ);
+            case 1: //y-axis
+                return Matrix33f::RotationEuler({ 0.f, angle, 0.f }, ERotationConvention::XYZ);
+            case 2: //z-axis
+                return Matrix33f::RotationEuler({ 0.f, 0.f, angle }, ERotationConvention::XYZ);
+            }
+
+            assert(false);
+            return Matrix33f::Empty;
+        };
+
+        struct RotationConventionTest
+        {
+            ERotationConvention convention;
+            std::array<uint8_t, 3> axesRepresentedByInputAngles; //what do [x,y,z] rotation angles mean in terms of axes? (they have different meaning for "Proper Euler conventions")
+            std::array<uint8_t, 3> matrixMultiplicationOrder; //in which order should the matrices be multiplied (for verification)?
+        };
+        static std::vector<RotationConventionTest> rotationAxesPerConvention;
     };
+
+    std::vector<Matrix33fParamTest::RotationConventionTest> Matrix33fParamTest::rotationAxesPerConvention
+    {
+        //Tait-Bryan angles' conventions:
+        //The conventions always specify rotation around the three axes X, Y and Z. The order in which rotation around
+        //the axes is applied differs from one convention to another.
+        //i.e., XYZ input angles indicate rotation around X, Y, and Z axes respectively, and the order of matrix multiplication is
+        //the same as the order of the angles in the convention (name).
+        //Since input rotation angles in Tait-Bryan conventions always mean X, Y and Z, therefore all of the 6 Tait-Bryan conventions
+        //take value {0, 1, 2} for "what the input angles' axes mean"
+        { ERotationConvention::XYZ, {0, 1, 2}, {0, 1, 2} },
+        { ERotationConvention::XZY, {0, 1, 2}, {0, 2, 1} },
+        { ERotationConvention::YXZ, {0, 1, 2}, {1, 0, 2} },
+        { ERotationConvention::YZX, {0, 1, 2}, {1, 2, 0} },
+        { ERotationConvention::ZXY, {0, 1, 2}, {2, 0, 1} },
+        { ERotationConvention::ZYX, {0, 1, 2}, {2, 1, 0} },
+
+        //Proper Euler angles' conventions:
+        //The conventions always specify only Two axes for rotation, but rotation around ONE of those axes is applied TWICE with DIFFERENT angles.
+        //i.e., input XYZ angles indicate rotation angles around the axes as stated in the convention, and matrix multiplication
+        //is always done in order RxRyRz (where x is the 1st angle, y is the 2nd angle and z is the 3rd angle)
+        //Since matrix multiplication is always done in the same order for all of Proper Euler conventions, therefore the order of matrix multiplication
+        //for all 6 of Proper Euler conventions is {0, 1, 2}
+        { ERotationConvention::XYX, {0, 1, 0}, {0, 1, 2} },
+        { ERotationConvention::XZX, {0, 2, 0}, {0, 1, 2} },
+        { ERotationConvention::YXY, {1, 0, 1}, {0, 1, 2} },
+        { ERotationConvention::YZY, {1, 2, 1}, {0, 1, 2} },
+        { ERotationConvention::ZXZ, {2, 0, 2}, {0, 1, 2} },
+        { ERotationConvention::ZYZ, {2, 1, 2}, {0, 1, 2} },
+    };
+
 
     TEST_P(Matrix33fParamTest, SetAndRecreateRotationXYZ)
     {
-        mat1 = Matrix33f::RotationEulerXYZ(GetParam());
+        mat1 = Matrix33f::RotationEuler(GetParam(), ERotationConvention::XYZ);
 
         Vector3 resRotation;
-        EXPECT_TRUE(mat1.toRotationEulerXYZ(resRotation));
+        EXPECT_TRUE(mat1.toRotationEuler(resRotation, ERotationConvention::XYZ));
 
-        Matrix33f mat2 = Matrix33f::RotationEulerXYZ(resRotation);
-        for (uint32_t i = 0u; i < 9u; i++)
-        {
-            EXPECT_NEAR(mat1.data[i], mat2.data[i], 1.0e-6f);
-        }
+        Matrix33f mat2 = Matrix33f::RotationEuler(resRotation, ERotationConvention::XYZ);
+        expectMatrixFloatEqual(mat1, mat2);
     }
 
-    TEST_P(Matrix33fParamTest, SetAndRecreateRotationZYX)
+    TEST_P(Matrix33fParamTest, SetAndRecreateRotationLegacyZYX)
     {
-        mat1 = Matrix33f::RotationEulerZYX(GetParam());
+        mat1 = Matrix33f::RotationEuler(GetParam(), ERotationConvention::Legacy_ZYX);
 
         Vector3 resRotation;
-        EXPECT_TRUE(mat1.toRotationEulerZYX(resRotation));
+        EXPECT_TRUE(mat1.toRotationEuler(resRotation, ERotationConvention::Legacy_ZYX));
 
-        Matrix33f mat2 = Matrix33f::RotationEulerZYX(resRotation);
-        for (uint32_t i = 0u; i < 9u; i++)
+        Matrix33f mat2 = Matrix33f::RotationEuler(resRotation, ERotationConvention::Legacy_ZYX);
+        expectMatrixFloatEqual(mat1, mat2);
+    }
+
+    TEST_P(Matrix33fParamTest, RotationLegacyZYXConformsWithNonLegacyZYX)
+    {
+        //calculate Legacy ZYX rotation matrix using test input rotation angles
+        const auto rotationAngles = GetParam();
+        mat1 = Matrix33f::RotationEuler(rotationAngles, ERotationConvention::Legacy_ZYX);
+
+        //negate test input XYZ rotation angles and calculate (non-legacy) ZYX rotation matrix
+        const auto negativeRotation = rotationAngles * -1.f;
+        const Matrix33f mat2 = Matrix33f::RotationEuler(negativeRotation, ERotationConvention::ZYX);
+
+        expectMatrixFloatEqual(mat1, mat2);
+    }
+
+    TEST_P(Matrix33fParamTest, RotationWithEulerConventions)
+    {
+        const float rotationAngle0 = GetParam().x;
+        const float rotationAngle1 = GetParam().y;
+        const float rotationAngle2 = GetParam().z;
+
+        for (const auto& conventionTest : rotationAxesPerConvention)
         {
-            EXPECT_NEAR(mat1.data[i], mat2.data[i], 1.0e-6f);
+            const ERotationConvention convention = conventionTest.convention;
+            const auto& rotationAxes = conventionTest.axesRepresentedByInputAngles;
+            const auto& matrixOrder = conventionTest.matrixMultiplicationOrder;
+
+            const auto rotA0 = calculateRotationMatrixAroundAxis(rotationAxes[0], rotationAngle0);
+            const auto rotA1 = calculateRotationMatrixAroundAxis(rotationAxes[1], rotationAngle1);
+            const auto rotA2 = calculateRotationMatrixAroundAxis(rotationAxes[2], rotationAngle2);
+
+            const Matrix33f rotMatrices[] = { rotA0, rotA1, rotA2 };
+
+            //calculate rotation matrix using the convention to be tested
+            const Matrix33f rotationMatrixUsingConvention = Matrix33f::RotationEuler({ rotationAngle0, rotationAngle1, rotationAngle2 }, convention);
+
+            //calculate rotation matrix which results from the multiplication of each axis separately
+            const Matrix33f expectedRotationMatrix = rotMatrices[matrixOrder[0]] * rotMatrices[matrixOrder[1]] * rotMatrices[matrixOrder[2]];
+
+            expectMatrixFloatEqual(rotationMatrixUsingConvention, expectedRotationMatrix);
         }
     }
 
@@ -254,5 +349,4 @@ namespace ramses_internal
     };
 
     INSTANTIATE_TEST_SUITE_P(TestRotationConsistency, Matrix33fParamTest, ::testing::ValuesIn(values));
-
 }

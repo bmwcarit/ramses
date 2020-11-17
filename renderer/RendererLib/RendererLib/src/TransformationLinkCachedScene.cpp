@@ -28,12 +28,12 @@ namespace ramses_internal
         SceneLinkScene::addChildToNode(parent, child);
     }
 
-    void TransformationLinkCachedScene::setRotation(TransformHandle transform, const Vector3& rotation)
+    void TransformationLinkCachedScene::setRotation(TransformHandle transform, const Vector3& rotation, ERotationConvention convention)
     {
         const NodeHandle nodeTransformIsConnectedTo = getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());
         propagateDirtyToConsumers(nodeTransformIsConnectedTo);
-        SceneLinkScene::setRotation(transform, rotation);
+        SceneLinkScene::setRotation(transform, rotation, convention);
     }
 
     void TransformationLinkCachedScene::setScaling(TransformHandle transform, const Vector3& scaling)

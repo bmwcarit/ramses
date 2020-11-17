@@ -9,7 +9,6 @@
 #include "gmock/gmock.h"
 #include "DcsmContentControlImpl.h"
 #include "ramses-renderer-api/IDcsmContentControlEventHandler.h"
-#include "ramses-renderer-api/DcsmContentControlConfig.h"
 #include "ramses-framework-api/IDcsmConsumerEventHandler.h"
 #include "ramses-framework-api/DcsmMetadataUpdate.h"
 #include "RendererSceneControlImpl.h"
@@ -34,6 +33,7 @@ public:
     MOCK_METHOD(void, contentNotAvailable, (ContentID), (override));
     MOCK_METHOD(void, contentMetadataUpdated, (ContentID, const DcsmMetadataUpdate&), (override));
     MOCK_METHOD(void, offscreenBufferLinked, (displayBufferId_t, ContentID, dataConsumerId_t, bool), (override));
+    MOCK_METHOD(void, contentLinkedToTextureConsumer, (ContentID, ContentID, dataConsumerId_t, bool), (override));
     MOCK_METHOD(void, dataLinked, (ContentID, dataProviderId_t, ContentID, dataConsumerId_t, bool), (override));
     MOCK_METHOD(void, dataUnlinked, (ContentID, dataConsumerId_t, bool), (override));
     MOCK_METHOD(void, objectsPicked, (ContentID, const pickableObjectId_t*, uint32_t), (override));
@@ -69,19 +69,12 @@ class ADcsmContentControl : public Test
 {
 public:
     ADcsmContentControl()
-        : m_dcsmContentControl(DcsmContentControlConfig{ {m_categoryID1, {{16, 16}, m_displayId}}, {m_categoryID2, {{32,32}, m_displayId} } }, m_dcsmConsumerMock, m_sceneControlMock)
+        : m_dcsmContentControl(m_dcsmConsumerMock, m_sceneControlMock)
         , m_dcsmHandler(m_dcsmContentControl)
         , m_sceneControlHandler(m_dcsmContentControl)
     {
-        m_CategoryInfoUpdate1.setCategorySize({0, 0, 16, 16});
-        // when using initializer version on ContentControlConfig rendersize gets set by default to given category width/height
-        m_CategoryInfoUpdate1.setRenderSize({16, 16});
-        m_CategoryInfoUpdate2.setCategorySize({ 0, 0, 32, 32});
-        // when using initializer version on ContentControlConfig rendersize gets set by default to given category width/height
-        m_CategoryInfoUpdate2.setRenderSize({ 32, 32 });
-
-        m_CategoryInfoUpdate3.setCategorySize({0, 0, 64, 64});
-        m_CategoryInfoUpdate3.setRenderSize({ 64, 64 });
+        m_dcsmContentControl.addContentCategory(m_categoryID1, m_displayId, m_CategoryInfoUpdate1);
+        m_dcsmContentControl.addContentCategory(m_categoryID2, m_displayId, m_CategoryInfoUpdate2);
     }
 
     virtual void TearDown() override
@@ -107,7 +100,7 @@ public:
             EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
             return StatusOK;
         });
-        m_dcsmHandler.contentOffered(contentID, categoryID);
+        m_dcsmHandler.contentOffered(contentID, categoryID, ETechnicalContentType::RamsesSceneID);
         update(m_lastUpdateTS);
 
         // provider sends content description right after assign
@@ -118,7 +111,7 @@ public:
             EXPECT_CALL(m_sceneControlMock, setSceneMapping(sceneId, m_displayId));
             EXPECT_CALL(m_sceneControlMock, setSceneState(sceneId, RendererSceneState::Ready));
         }
-        m_dcsmHandler.contentDescription(contentID, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ sceneId.getValue() });
+        m_dcsmHandler.contentDescription(contentID, TechnicalContentDescriptor{ sceneId.getValue() });
         update(m_lastUpdateTS);
         if (!alreadyAssignedToOtherContent)
             m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
@@ -147,9 +140,9 @@ protected:
     const ContentID m_contentID3{ 323 };
     const ContentID m_contentID4{ 324 };
     const displayId_t m_displayId{ 0 };
-    CategoryInfoUpdate m_CategoryInfoUpdate1;
-    CategoryInfoUpdate m_CategoryInfoUpdate2;
-    CategoryInfoUpdate m_CategoryInfoUpdate3;
+    CategoryInfoUpdate m_CategoryInfoUpdate1{{ 16, 16 }, { 0, 0, 16, 16 }};
+    CategoryInfoUpdate m_CategoryInfoUpdate2{{ 32, 32 }, { 0, 0, 32, 32 }};
+    CategoryInfoUpdate m_CategoryInfoUpdate3{{ 64, 64 }, { 0, 0, 64, 64 }};
 
     StrictMock<DcsmConsumerMock> m_dcsmConsumerMock;
     StrictMock<RendererSceneControlMock> m_sceneControlMock;
@@ -163,13 +156,41 @@ protected:
 constexpr sceneId_t ADcsmContentControl::SceneId1;
 constexpr sceneId_t ADcsmContentControl::SceneId2;
 
+TEST(DcsmContentControl, failsToAddCategoryWithoutSettingRenderSizeAndCategoryRect)
+{
+    ramses::RamsesFramework framework;
+    ramses::RamsesRenderer* renderer = framework.createRenderer({});
+    ramses::DcsmContentControl* dcc = renderer->createDcsmContentControl();
+    EXPECT_NE(StatusOK, dcc->addContentCategory(ramses::Category(1), ramses::displayId_t(0), {}));
+
+    CategoryInfoUpdate categoryInfo1{};
+    categoryInfo1.setRenderSize({ 200, 200 });
+    EXPECT_NE(StatusOK, dcc->addContentCategory(ramses::Category(1), ramses::displayId_t(0), categoryInfo1));
+
+    CategoryInfoUpdate categoryInfo2{};
+    categoryInfo2.setCategoryRect({ 0, 0, 100, 100 });
+    EXPECT_NE(StatusOK, dcc->addContentCategory(ramses::Category(1), ramses::displayId_t(0), categoryInfo2));
+}
+
+TEST(DcsmContentControl, failsToAddCategoryThatHasAlreadyBeenAdded)
+{
+    ramses::RamsesFramework framework;
+    ramses::RamsesRenderer* renderer = framework.createRenderer({});
+    ramses::DcsmContentControl* dcc = renderer->createDcsmContentControl();
+    const CategoryInfoUpdate categoryInfo{{200, 200}, {0, 0, 100, 100}};
+    const Category category(1);
+    EXPECT_EQ(StatusOK, dcc->addContentCategory(category, ramses::displayId_t(0), categoryInfo));
+    EXPECT_NE(StatusOK, dcc->addContentCategory(category, ramses::displayId_t(0), categoryInfo));
+}
+
 TEST(DcsmContentControl, canAddAndRemoveCategories)
 {
     ramses::RamsesFramework framework;
     ramses::RamsesRenderer* renderer = framework.createRenderer({});
-    ramses::DcsmContentControl* dcc = renderer->createDcsmContentControl({});
-    EXPECT_EQ(StatusOK, DcsmContentControl::addContentCategory(*dcc, ramses::Category(1), { {20, 20},ramses::displayId_t(0)}));
-    EXPECT_EQ(StatusOK, DcsmContentControl::removeContentCategory(*dcc, ramses::Category(1)));
+    ramses::DcsmContentControl* dcc = renderer->createDcsmContentControl();
+    const CategoryInfoUpdate categoryInfo{{200, 200}, {0, 0, 100, 100}};
+    EXPECT_EQ(StatusOK, dcc->addContentCategory(ramses::Category(1), ramses::displayId_t(0), categoryInfo));
+    EXPECT_EQ(StatusOK, dcc->removeContentCategory(ramses::Category(1)));
 }
 
 TEST_F(ADcsmContentControl, handlesDcsmOffered)
@@ -178,7 +199,8 @@ TEST_F(ADcsmContentControl, handlesDcsmOffered)
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
 }
 
@@ -188,18 +210,18 @@ TEST_F(ADcsmContentControl, handlesDcsmContentDescription)
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
-
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
 
     update();
 }
 
 TEST_F(ADcsmContentControl, doesNotAssignWhenDcsmOfferedContentForUnregisteredCategory)
 {
-    m_dcsmHandler.contentOffered(m_contentID1, Category{ 666 });
+    m_dcsmHandler.contentOffered(m_contentID1, Category{ 666 }, ETechnicalContentType::RamsesSceneID);
     update();
 }
 
@@ -209,35 +231,35 @@ TEST_F(ADcsmContentControl, handlesDcsmOfferedForMultipleContentsAndCategories)
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _)).WillOnce([&](const auto&, const auto& infoupdate) {
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
+    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     // content3 uses another category
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
         EXPECT_EQ(m_CategoryInfoUpdate2, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryID2);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryID2));
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryID2, ETechnicalContentType::RamsesSceneID);
     update();
 
-    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
-    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
-    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryID2));
     // there is no mechanism to track if same state for same scene already requested because it is not needed, therefore 3 times
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available)).Times(3);
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
-    m_dcsmHandler.contentDescription(m_contentID2, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
-    m_dcsmHandler.contentDescription(m_contentID3, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID2, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID3, TechnicalContentDescriptor{ SceneId1.getValue() });
     update();
 }
 
 TEST_F(ADcsmContentControl, categoryAddedLater)
 {
-    m_dcsmHandler.contentOffered(m_contentID4, m_categoryUninteresting);
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    m_dcsmHandler.contentOffered(m_contentID4, m_categoryUninteresting, ETechnicalContentType::RamsesSceneID);
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater, ETechnicalContentType::RamsesSceneID);
     update();
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 
@@ -245,30 +267,56 @@ TEST_F(ADcsmContentControl, categoryAddedLater)
         EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
         return StatusOK;
         });
-    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
-        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId} );
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryAddedLater));
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater, m_displayId, m_CategoryInfoUpdate3);
     update();
 }
 
 TEST_F(ADcsmContentControl, categoryAddedLater_OfferAfterThat)
 {
-    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
-        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId} );
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater, m_displayId, m_CategoryInfoUpdate3);
     update();
 
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
         EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryAddedLater));
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater, ETechnicalContentType::RamsesSceneID);
     update();
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 }
 
+TEST_F(ADcsmContentControl, categoryAddedLater_canBeReadified)
+{
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater, ETechnicalContentType::RamsesSceneID);
+    update();
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
+        return StatusOK;
+        });
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryAddedLater));
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater, m_displayId, m_CategoryInfoUpdate3);
+    update();
+
+    //content description will come as answer to assigning
+    EXPECT_CALL(m_sceneControlMock, setSceneState(_, RendererSceneState::Available));
+    m_dcsmHandler.contentDescription(m_contentID3, TechnicalContentDescriptor{ SceneId1.getValue() });
+
+    // request ready
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID3, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneMapping(_, m_displayId));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(_, RendererSceneState::Ready));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID3, 0));
+    update();
+}
+
 TEST_F(ADcsmContentControl, categoryAddedLater_MultipleOffersExistingBefore)
 {
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
-    m_dcsmHandler.contentOffered(m_contentID4, m_categoryAddedLater);
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater, ETechnicalContentType::RamsesSceneID);
+    m_dcsmHandler.contentOffered(m_contentID4, m_categoryAddedLater, ETechnicalContentType::RamsesSceneID);
     update();
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 
@@ -280,14 +328,15 @@ TEST_F(ADcsmContentControl, categoryAddedLater_MultipleOffersExistingBefore)
         EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
         return StatusOK;
         });
-    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
-        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryAddedLater));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID4, m_categoryAddedLater));
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater, m_displayId, m_CategoryInfoUpdate3);
     update();
 }
 
 TEST_F(ADcsmContentControl, categoryAddedLater_reAddingCategoryGivesEventsAgain)
 {
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater, ETechnicalContentType::RamsesSceneID);
     update();
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 
@@ -295,8 +344,8 @@ TEST_F(ADcsmContentControl, categoryAddedLater_reAddingCategoryGivesEventsAgain)
         EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
         return StatusOK;
         });
-    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
-        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryAddedLater));
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater, m_displayId, m_CategoryInfoUpdate3);
     update();
 
     m_dcsmContentControl.removeContentCategory(m_categoryAddedLater);
@@ -306,29 +355,27 @@ TEST_F(ADcsmContentControl, categoryAddedLater_reAddingCategoryGivesEventsAgain)
         EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
         return StatusOK;
         });
-    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
-        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryAddedLater));
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater, m_displayId, m_CategoryInfoUpdate3);
     update();
 }
 
 TEST_F(ADcsmContentControl, categoryAddedLater_NoEventIfCategoryRemovedBeforeOffer)
 {
-    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
-        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater, m_displayId, m_CategoryInfoUpdate3);
     update();
 
     m_dcsmContentControl.removeContentCategory(m_categoryAddedLater);
     update();
 
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater, ETechnicalContentType::RamsesSceneID);
     update();
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 }
 
 TEST_F(ADcsmContentControl, removeCategory_withContentsAssigned)
 {
-    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
-        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater, m_displayId, m_CategoryInfoUpdate3);
     update();
 
     // offer some contents
@@ -336,7 +383,8 @@ TEST_F(ADcsmContentControl, removeCategory_withContentsAssigned)
         EXPECT_EQ(m_CategoryInfoUpdate3, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryAddedLater));
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater, ETechnicalContentType::RamsesSceneID);
     update();
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 
@@ -346,7 +394,7 @@ TEST_F(ADcsmContentControl, removeCategory_withContentsAssigned)
 
 TEST_F(ADcsmContentControl, categoryAddedLater_NoEventIfUnofferedBeforeAddingCategory)
 {
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater, ETechnicalContentType::RamsesSceneID);
     update();
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 
@@ -354,14 +402,13 @@ TEST_F(ADcsmContentControl, categoryAddedLater_NoEventIfUnofferedBeforeAddingCat
     update();
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 
-    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
-        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater, m_displayId, m_CategoryInfoUpdate3);
     update();
 }
 
 TEST_F(ADcsmContentControl, categoryAddedLater_NoEventIfForceStoppedBeforeAddingCategory)
 {
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater);
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryAddedLater, ETechnicalContentType::RamsesSceneID);
     update();
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 
@@ -369,8 +416,7 @@ TEST_F(ADcsmContentControl, categoryAddedLater_NoEventIfForceStoppedBeforeAdding
     update();
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
 
-    m_dcsmContentControl.addContentCategory(m_categoryAddedLater,
-        { {m_CategoryInfoUpdate3.getCategorySize().width, m_CategoryInfoUpdate3.getCategorySize().height},m_displayId });
+    m_dcsmContentControl.addContentCategory(m_categoryAddedLater, m_displayId, m_CategoryInfoUpdate3);
     update();
 }
 
@@ -381,18 +427,42 @@ TEST_F(ADcsmContentControl, requestsContentReady)
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
 
-    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
 
     // request ready
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
     EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId1, m_displayId));
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+    update();
+}
+
+TEST_F(ADcsmContentControl, canAlreadyRequestReadyBeforeDescriptionComes)
+{
+    // offered
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    update();
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+    update();
+
+    // needs to wait for description message
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId1, m_displayId));
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+
+    // request ready
     update();
 }
 
@@ -423,11 +493,11 @@ TEST_F(ADcsmContentControl, handlesContentAndSceneReadyForMultipleContentsSharin
         EXPECT_EQ(m_CategoryInfoUpdate2, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryID2);
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryID2, ETechnicalContentType::RamsesSceneID);
     update();
 
     // provider sends content description right after assign
-    m_dcsmHandler.contentDescription(m_contentID3, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID3, TechnicalContentDescriptor{ SceneId1.getValue() });
     update();
 
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID3, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
@@ -650,12 +720,12 @@ TEST_F(ADcsmContentControl, canGetContentRenderedAndThenSwitchToAnotherContentAt
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update(30);
     // announce new content's description
     const sceneId_t otherScene{ SceneId1.getValue() + 10 };
     EXPECT_CALL(m_sceneControlMock, setSceneState(otherScene, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID2, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ otherScene.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID2, TechnicalContentDescriptor{ otherScene.getValue() });
     update(30);
     m_sceneControlHandler.sceneStateChanged(otherScene, RendererSceneState::Available);
     update(30);
@@ -734,11 +804,11 @@ TEST_F(ADcsmContentControl, canGetContentRenderedAndThenSwitchToAnotherContentAt
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update(30);
 
     // provider sends content description right after assign
-    m_dcsmHandler.contentDescription(m_contentID2, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID2, TechnicalContentDescriptor{ SceneId1.getValue() });
     update(30);
 
     // first request new content ready
@@ -869,7 +939,7 @@ TEST_F(ADcsmContentControl, stopOfferRequestCanBeAccepted)
     EXPECT_EQ(StatusOK, m_dcsmContentControl.acceptStopOffer(m_contentID1, AnimationInformation{ 10, 20 }));
     update(15);
 
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Unavailable));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     update(100);
 
     // content is now unknown and cannot be used
@@ -908,7 +978,7 @@ TEST_F(ADcsmContentControl, scheduleContentHideBeforeAcceptingStopOfferRequest)
 
     // 2 scene state change requests were scheduled - one for hide request, one as result of accepted stop offer
     // the latter overrides the first
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Unavailable));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     update(100);
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Unavailable);
     update(110);
@@ -940,7 +1010,7 @@ TEST_F(ADcsmContentControl, contentCanBeReofferedAfterStopOfferRequestAccepted)
     EXPECT_EQ(StatusOK, m_dcsmContentControl.acceptStopOffer(m_contentID1, AnimationInformation{ 10, 20 }));
 
     update(10);
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Unavailable));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     update(20);
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Unavailable);
     update(21);
@@ -958,84 +1028,96 @@ TEST_F(ADcsmContentControl, contentCanBeReofferedAfterStopOfferRequestAccepted)
 
 TEST_F(ADcsmContentControl, failsToSetSizeOfUnknownCategory)
 {
-    EXPECT_NE(StatusOK, m_dcsmContentControl.setCategorySize(Category{ 9999 }, CategoryInfoUpdate( {1, 1} ), AnimationInformation{}));
+    CategoryInfoUpdate categoryInfo{ {0, 0}, { 0, 0, 1, 1 } };
+    EXPECT_NE(StatusOK, m_dcsmContentControl.setCategoryInfo(Category{ 9999 }, categoryInfo, AnimationInformation{}));
 }
 
-TEST_F(ADcsmContentControl, sendsCategorySizeChangeToAllContentsAssociatedWithIt)
+TEST_F(ADcsmContentControl, sendsCategoryRectChangeToAllContentsAssociatedWithIt)
 {
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _)).WillOnce([&](const auto&, const auto& infoupdate) {
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
         EXPECT_EQ(m_CategoryInfoUpdate2, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryID2);
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryID2, ETechnicalContentType::RamsesSceneID);
+
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryID2));
     update();
 
+    CategoryInfoUpdate newCategoryInfo{ {0, 0}, { 0, 0, 333, 111 } };
     EXPECT_CALL(m_dcsmConsumerMock, contentSizeChange(m_contentID1, _, AnimationInformation{ 500, 1000 })).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
-        EXPECT_EQ(CategoryInfoUpdate({333, 111}), infoupdate);
+        EXPECT_EQ(newCategoryInfo, infoupdate);
         return StatusOK;
         });
     EXPECT_CALL(m_dcsmConsumerMock, contentSizeChange(m_contentID2, _, AnimationInformation{ 500, 1000 })).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
-        EXPECT_EQ(CategoryInfoUpdate({333, 111}), infoupdate);
+        EXPECT_EQ(newCategoryInfo, infoupdate);
         return StatusOK;
         });
-    EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategorySize(m_categoryID1, CategoryInfoUpdate( {333, 111 }), AnimationInformation{ 500, 1000 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategoryInfo(m_categoryID1, newCategoryInfo, AnimationInformation{ 500, 1000 }));
 
+    CategoryInfoUpdate otherNewCategoryInfo{ {0, 0}, { 0, 0, 666, 999 } };
     EXPECT_CALL(m_dcsmConsumerMock, contentSizeChange(m_contentID3, _, AnimationInformation{ 10, 100 })).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
-        EXPECT_EQ(CategoryInfoUpdate({666, 999}), infoupdate);
+        EXPECT_EQ(otherNewCategoryInfo, infoupdate);
         return StatusOK;
         });
-    EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategorySize(m_categoryID2, CategoryInfoUpdate( {666, 999} ), AnimationInformation{ 10, 100 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategoryInfo(m_categoryID2, otherNewCategoryInfo, AnimationInformation{ 10, 100 }));
 }
 
-TEST_F(ADcsmContentControl, sendsLatestCategorySizeToNewContentOfferedForItEvenIfNotReachedTheFinishTimeForTheSizeChange)
+TEST_F(ADcsmContentControl, sendsLatestCategoryRectToNewContentOfferedForItEvenIfNotReachedTheFinishTimeForTheSizeChange)
 {
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1,  _)).WillOnce([&](const auto&, const auto& infoupdate) {
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     update();
 
+    CategoryInfoUpdate categoryInfo{ {0, 0}, { 0, 0, 333, 111 } };
     EXPECT_CALL(m_dcsmConsumerMock, contentSizeChange(m_contentID1, _, AnimationInformation{ 500, 1000 })).WillOnce([&](const auto&, const auto& infoupdate, const auto&) {
-        EXPECT_EQ(CategoryInfoUpdate({333, 111}), infoupdate);
+        EXPECT_EQ(categoryInfo, infoupdate);
         return StatusOK;
         });
-    EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategorySize(m_categoryID1, CategoryInfoUpdate( {333, 111} ), AnimationInformation{ 500, 1000 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.setCategoryInfo(m_categoryID1, categoryInfo, AnimationInformation{ 500, 1000 }));
 
     // before start time
     update(10);
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _)).WillOnce([&](const auto&, const auto& infoupdate) {
-        EXPECT_EQ(CategoryInfoUpdate({333, 111}), infoupdate);
+        EXPECT_EQ(categoryInfo, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
 
     // between start and end time
     update(700);
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
-        EXPECT_EQ(CategoryInfoUpdate({333, 111}), infoupdate);
+        EXPECT_EQ(categoryInfo, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID3, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryID1));
 
     // after end time
     const ContentID contentID4{ m_contentID3.getValue() + 1 };
     update(1100);
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(contentID4, _)).WillOnce([&](const auto&, const auto& infoupdate) {
-        EXPECT_EQ(CategoryInfoUpdate({333, 111}), infoupdate);
+        EXPECT_EQ(categoryInfo, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(contentID4, m_categoryID1);
+    m_dcsmHandler.contentOffered(contentID4, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID4, m_categoryID1));
 
     update(2000);
 }
@@ -1108,12 +1190,12 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeReadyConfirmedFromDcs
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     update();
 
-    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     update();
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update();
@@ -1152,11 +1234,11 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeReadyConfirmedFromRen
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
     // provider sends content description right after assign
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update();
 
@@ -1199,11 +1281,11 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeDcsmReadyConfirmedAnd
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
     // provider sends content description right after assign
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update();
 
@@ -1251,11 +1333,11 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeRendererReadyConfirme
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
     // provider sends content description right after assign
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update();
 
@@ -1308,11 +1390,11 @@ TEST_F(ADcsmContentControl, willNotTryToMapSceneIfReadyRequestedButForcedStopOff
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
     // provider sends content description right after assign
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update();
 
@@ -1350,11 +1432,11 @@ TEST_F(ADcsmContentControl, willNotTryToMapSceneIfReadyRequestedButAcceptedStopO
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
     // provider sends content description right after assign
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update();
 
@@ -1372,7 +1454,7 @@ TEST_F(ADcsmContentControl, willNotTryToMapSceneIfReadyRequestedButAcceptedStopO
     // accept right away
     EXPECT_CALL(m_dcsmConsumerMock, acceptStopOffer(m_contentID1, AnimationInformation{ 0, 0 }));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.acceptStopOffer(m_contentID1, AnimationInformation{ 0, 0 }));
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Unavailable));
+    // no scene state change requested, stays at Available
     update();
 
     // simulate Dcsm just became ready, nothing expected
@@ -1397,11 +1479,11 @@ TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedDcsmReady
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update(100); // set initial time
     // provider sends content description right after assign
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update(100);
 
@@ -1448,11 +1530,11 @@ TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedRendererR
     // offered
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update(100); // set initial time
     // provider sends content description right after assign
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update(100);
 
@@ -1507,7 +1589,8 @@ TEST_F(ADcsmContentControl, failsToDataLinkUnknownProviderContent)
     constexpr dataConsumerId_t consumerId{ 13 };
 
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _));
-    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
     update();
 
     EXPECT_NE(StatusOK, m_dcsmContentControl.linkData(m_contentID1, providerId, m_contentID2, consumerId));
@@ -1519,7 +1602,8 @@ TEST_F(ADcsmContentControl, failsToDataLinkUnknownConsumerContent)
     constexpr dataConsumerId_t consumerId{ 13 };
 
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     update();
 
     EXPECT_NE(StatusOK, m_dcsmContentControl.linkData(m_contentID1, providerId, m_contentID2, consumerId));
@@ -1532,8 +1616,10 @@ TEST_F(ADcsmContentControl, failsToDataLinkProviderContentWithUnknownScene)
 
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _));
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
-    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
     update();
 
     EXPECT_NE(StatusOK, m_dcsmContentControl.linkData(m_contentID1, providerId, m_contentID2, consumerId));
@@ -1548,7 +1634,8 @@ TEST_F(ADcsmContentControl, failsToDataLinkConsumerContentWithUnknownScene)
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
 
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID2, _));
-    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
 
     EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
     update();
@@ -1650,7 +1737,8 @@ TEST_F(ADcsmContentControl, failsToUnlinkDataConsumerContentWithUnknownScene)
     constexpr dataConsumerId_t consumerId{ 13 };
 
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     update();
 
     EXPECT_NE(StatusOK, m_dcsmContentControl.unlinkData(m_contentID1, consumerId));
@@ -1727,7 +1815,9 @@ TEST_F(ADcsmContentControl, failsToHandlePickEventContentWithUnknownScene)
         EXPECT_EQ(m_CategoryInfoUpdate2, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID2);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID2, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID2));
+
     update();
 
     EXPECT_NE(StatusOK, m_dcsmContentControl.handlePickEvent(m_contentID1, x_coord, y_coord));
@@ -1742,7 +1832,8 @@ TEST_F(ADcsmContentControl, requestsHandlePickEvent)
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     update();
 
     makeDcsmContentReady(m_contentID1, m_categoryID1);
@@ -1780,11 +1871,11 @@ TEST_F(ADcsmContentControl, reportsObjectsPickedWithCorrectContents)
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
         });
-    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1);
-    update();
+    m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
+    update();
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId2, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID2, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId2.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID2, TechnicalContentDescriptor{ SceneId2.getValue() });
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID2, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
     EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId2, m_displayId));
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId2, RendererSceneState::Ready));
@@ -1835,10 +1926,10 @@ TEST_F(ADcsmContentControl, reportsObjectsPickedWithZeroContentIfContentGoneBefo
 TEST_F(ADcsmContentControl, handlesDcsmMetadataUpdate)
 {
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     update();
 
     DcsmMetadataUpdate mdp(*new DcsmMetadataUpdateImpl);
@@ -1883,11 +1974,11 @@ TEST_F(ADcsmContentControl, failsToAssignNotReadyContentToDisplayBuffer)
 {
     // offered
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
-    update();
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    update();
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     update();
 
     // request ready
@@ -1925,7 +2016,8 @@ TEST_F(ADcsmContentControl, failsToOffscreenBufferLinkConsumerContentWithUnknown
     constexpr dataConsumerId_t consumerId{ 13 };
 
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     update();
 
     EXPECT_NE(StatusOK, m_dcsmContentControl.linkOffscreenBuffer(obId, m_contentID1, consumerId));
@@ -2216,11 +2308,12 @@ TEST_F(ADcsmContentControl, noSupportForWaylandIviSurfaceIdContentButOfferAndReq
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
     });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1);
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::WaylandIviSurfaceID);
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     update();
 
     //content description with type WaylandIviSurfaceID does not cause contentAvailable call to the user (m_eventHandlerMock is StrictMock)
-    m_dcsmHandler.contentDescription(m_contentID1, ETechnicalContentType::WaylandIviSurfaceID, TechnicalContentDescriptor{543});
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{543});
 
     // cannot request ready
     EXPECT_NE(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));

@@ -125,11 +125,11 @@ public:
         ramses::EffectDescription effectDesc;
         effectDesc.setVertexShaderFromFile("res/ramses-example-dcsm-provider.vert");
         effectDesc.setFragmentShaderFromFile("res/ramses-example-dcsm-provider.frag");
-        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
         ramses::EffectDescription effectDescOutline;
         effectDescOutline.setVertexShaderFromFile("res/ramses-example-dcsm-provider-outline.vert");
         effectDescOutline.setFragmentShaderFromFile("res/ramses-example-dcsm-provider-outline.frag");
-        effectDescOutline.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+        effectDescOutline.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
         const ramses::Effect* effectTex = m_scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
         m_appearance = m_scene->createAppearance(*effectTex, "triangle appearance");
@@ -296,7 +296,7 @@ public:
     virtual void contentSizeChange(ramses::ContentID /*contentID*/, const ramses::CategoryInfoUpdate& categoryInfo, ramses::AnimationInformation animInfo) override
     {
         // save the resize parameters, which are then used within our logic loop
-        m_newSize = ramses::SizeInfo{ categoryInfo.getCategorySize().width, categoryInfo.getCategorySize().height };
+        m_newSize = ramses::SizeInfo{ categoryInfo.getCategoryRect().width, categoryInfo.getCategoryRect().height };
         m_sizeAnim = animInfo;
         m_sizeReceived = true;
     }

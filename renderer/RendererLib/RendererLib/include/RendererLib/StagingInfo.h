@@ -12,7 +12,7 @@
 #include "SceneAPI/SceneSizeInformation.h"
 #include "SceneAPI/SceneVersionTag.h"
 #include "Scene/SceneActionCollection.h"
-#include "Scene/SceneResourceChanges.h"
+#include "Scene/ResourceChanges.h"
 #include "SceneReferencing/SceneReferenceAction.h"
 #include "Components/FlushTimeInformation.h"
 #include "Components/ManagedResource.h"
@@ -23,24 +23,22 @@ namespace ramses_internal
 
     struct PendingFlush
     {
-        SceneActionCollection sceneActions;
-        UInt64                flushIndex = 0u;
-        FlushTimeInformation  timeInfo;
-        SceneVersionTag       versionTag;
+        SceneActionCollection     sceneActions;
+        UInt64                    flushIndex = 0u;
+        FlushTimeInformation      timeInfo;
+        SceneVersionTag           versionTag;
+
+        ManagedResourceVector     resourceDataToProvide;
+        ResourceContentHashVector resourcesAdded;
+        ResourceContentHashVector resourcesRemoved;
     };
-    typedef std::vector<PendingFlush> PendingFlushes;
+    using PendingFlushes = std::vector<PendingFlush>;
 
     struct PendingData
     {
         bool                      allPendingFlushesApplied = false;
         PendingFlushes            pendingFlushes;
-        // client resources that are needed in addition to resources in use by renderer scene
-        ResourceContentHashVector clientResourcesNeeded;
-        // client resources that will not be needed anymore after pending flushes are applied
-        ResourceContentHashVector clientResourcesUnneeded;
-        // client resources that were newly needed and then unneeded within the scope of pending flushes,
-        // they were requested and need to be therefore unrequested after pending flushes are applied
-        ResourceContentHashVector clientResourcesPendingUnneeded;
+
         // scene resource actions to execute after pending flushes are applied
         SceneResourceActionVector sceneResourceActions;
         // scene reference actions to execute after pending flushes are applied
@@ -50,9 +48,6 @@ namespace ramses_internal
         {
             pendingData.allPendingFlushesApplied = false;
             pendingData.pendingFlushes.clear();
-            pendingData.clientResourcesNeeded.clear();
-            pendingData.clientResourcesUnneeded.clear();
-            pendingData.clientResourcesPendingUnneeded.clear();
             pendingData.sceneResourceActions.clear();
             pendingData.sceneReferenceActions.clear();
         }
@@ -61,8 +56,6 @@ namespace ramses_internal
     struct StagingInfo
     {
         SceneSizeInformation      sizeInformation;
-        // client resources referenced by renderer scene (without pending flushes)
-        ResourceContentHashVector clientResourcesInUse;
         PendingData               pendingData;
         SceneVersionTag           lastAppliedVersionTag;
         ManagedResourceVector     resourcesToUploadOnceMapping;

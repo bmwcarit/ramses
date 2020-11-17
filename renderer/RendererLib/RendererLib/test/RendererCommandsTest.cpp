@@ -12,7 +12,7 @@
 #include "RendererLib/DisplayConfig.h"
 #include "RendererCommands/Screenshot.h"
 #include "Ramsh/RamshTools.h"
-#include "ResourceProviderMock.h"
+#include "ResourceDeviceHandleAccessorMock.h"
 #include "ResourceUploaderMock.h"
 #include "RendererLib/EKeyModifier.h"
 #include "Math3d/Vector2i.h"
@@ -192,10 +192,9 @@ TEST_F(ARendererCommands, createsCommandForCreatingDisplay)
 {
     const DisplayHandle displayHandle(1u);
     const DisplayConfig displayConfig;
-    ResourceProviderMock resourceProvider;
     NiceMock<ResourceUploaderMock> resourceUploader;
 
-    queue.createDisplay(displayConfig, resourceProvider, resourceUploader, displayHandle);
+    queue.createDisplay(displayConfig, resourceUploader, displayHandle);
 
     EXPECT_EQ(1u, queue.getCommands().getTotalCommandCount());
     EXPECT_EQ(ERendererCommand_CreateDisplay, queue.getCommands().getCommandType(0u));
@@ -204,7 +203,6 @@ TEST_F(ARendererCommands, createsCommandForCreatingDisplay)
 
     EXPECT_EQ(displayHandle, command.displayHandle);
     EXPECT_EQ(displayConfig, command.displayConfig);
-    EXPECT_EQ(&resourceProvider, command.resourceProvider);
     EXPECT_EQ(&resourceUploader, command.resourceUploader);
 }
 
@@ -337,8 +335,9 @@ TEST_F(ARendererCommands, createsCommandsOffscreenBuffer)
     const OffscreenBufferHandle buffer(2u);
     const UInt32 width(16u);
     const UInt32 height(32u);
+    const UInt32 sampleCount(4u);
 
-    queue.createOffscreenBuffer(buffer, display, width, height, true);
+    queue.createOffscreenBuffer(buffer, display, width, height, sampleCount, true);
     queue.destroyOffscreenBuffer(buffer, display);
 
     EXPECT_EQ(2u, queue.getCommands().getTotalCommandCount());
@@ -352,6 +351,7 @@ TEST_F(ARendererCommands, createsCommandsOffscreenBuffer)
     EXPECT_EQ(buffer, cmd1.bufferHandle);
     EXPECT_EQ(width, cmd1.bufferWidth);
     EXPECT_EQ(height, cmd1.bufferHeight);
+    EXPECT_EQ(sampleCount, cmd1.bufferSampleCount);
     EXPECT_TRUE(cmd1.interruptible);
 
     EXPECT_EQ(display, cmd2.displayHandle);
@@ -406,30 +406,6 @@ TEST_F(ARendererCommands, createsCommandForHidingSceneOnDisplay)
     const auto& command = queue.getCommands().getCommandData<SceneStateCommand>(0u);
 
     EXPECT_EQ(sceneId, command.sceneId);
-}
-
-TEST_F(ARendererCommands, createsCommandsForDisplayMovement)
-{
-    queue.moveView          (Vector3(1.0f, 1.0f, 1.0f));
-    queue.setViewPosition   (Vector3(2.0f, 2.0f, 2.0f));
-    queue.rotateView        (Vector3(3.0f, 3.0f, 3.0f));
-    queue.setViewRotation   (Vector3(4.0f, 4.0f, 4.0f));
-
-    EXPECT_EQ(4u, queue.getCommands().getTotalCommandCount());
-    EXPECT_EQ(ERendererCommand_RelativeTranslation  , queue.getCommands().getCommandType(0));
-    EXPECT_EQ(ERendererCommand_AbsoluteTranslation  , queue.getCommands().getCommandType(1));
-    EXPECT_EQ(ERendererCommand_RelativeRotation     , queue.getCommands().getCommandType(2));
-    EXPECT_EQ(ERendererCommand_AbsoluteRotation     , queue.getCommands().getCommandType(3));
-
-    const RendererViewCommand& command1 = queue.getCommands().getCommandData<RendererViewCommand>(0);
-    const RendererViewCommand& command2 = queue.getCommands().getCommandData<RendererViewCommand>(1);
-    const RendererViewCommand& command3 = queue.getCommands().getCommandData<RendererViewCommand>(2);
-    const RendererViewCommand& command4 = queue.getCommands().getCommandData<RendererViewCommand>(3);
-
-    EXPECT_EQ(Vector3(1.0f, 1.0f, 1.0f), command1.displayMovement);
-    EXPECT_EQ(Vector3(2.0f, 2.0f, 2.0f), command2.displayMovement);
-    EXPECT_EQ(Vector3(3.0f, 3.0f, 3.0f), command3.displayMovement);
-    EXPECT_EQ(Vector3(4.0f, 4.0f, 4.0f), command4.displayMovement);
 }
 
 TEST_F(ARendererCommands, createsCommandsForLogging)
@@ -670,7 +646,7 @@ TEST_F(ARendererCommands, createsCommandForSettingFrameTimerLimits)
         const auto& command = queue.getCommands().getCommandData<SetFrameTimerLimitsCommmand>(0);
         EXPECT_EQ(ERendererCommand_SetFrameTimerLimits, queue.getCommands().getCommandType(0));
         EXPECT_EQ(5u, command.limitForSceneResourcesUploadMicrosec);
-        EXPECT_EQ(10u, command.limitForClientResourcesUploadMicrosec);
+        EXPECT_EQ(10u, command.limitForResourcesUploadMicrosec);
         EXPECT_EQ(30u, command.limitForOffscreenBufferRenderMicrosec);
     }
 }

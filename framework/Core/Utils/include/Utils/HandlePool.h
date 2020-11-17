@@ -20,7 +20,7 @@ namespace ramses_internal
     class HandlePool
     {
     public:
-        typedef HANDLE handle_type;
+        using handle_type = HANDLE;
 
         explicit HandlePool(UInt32 size = 0);
 

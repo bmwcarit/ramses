@@ -122,6 +122,20 @@ namespace ramses
         */
         virtual void offscreenBufferLinked(displayBufferId_t offscreenBufferId, ContentID consumerContent, dataConsumerId_t consumerId, bool success) = 0;
 
+        /** @brief Content and consumer were linked (or failed to be linked) as result of calling #ramses::DcsmContentControl::linkContentToTextureConsumer.
+        * @details Note that there is a possibility that given consumerContent ID is different from the one passed when calling
+        *          #ramses::DcsmContentControl::linkContentToTextureConsumer. This can happen if the underlying type involved in this data linking is used
+        *          by multiple contents, in that case simply one of the contents will be given here.
+        *          Also note that given consumerContent ID will be invalid if the consumer content or its scene became unavailable
+        *          before this callback is emitted.
+        *
+        * @param providerContent ID of content which is providing texture (scene on offscreenbuffer or wayland surface).
+        * @param consumerContent ID of content using scene that consumes the linked content.
+        * @param consumerId ID of data consumer in the consumer scene.
+        * @param success True if content successfully linked, false otherwise.
+        */
+        virtual void contentLinkedToTextureConsumer(ContentID providerContent, ContentID consumerContent, dataConsumerId_t consumerId, bool success) = 0;
+
         /** @brief Data provider and consumer were linked (or failed to be linked) as result of calling #ramses::DcsmContentControl::linkData.
         * @details Note that there is a possibility that given consumerContent ID or providerContent ID is different from the one passed
         *          when calling #ramses::DcsmContentControl::linkData. This can happen if the Ramses scene involved in this data linking is used
@@ -330,6 +344,15 @@ namespace ramses
         virtual void offscreenBufferLinked(displayBufferId_t offscreenBufferId, ContentID consumerContent, dataConsumerId_t consumerId, bool success) override
         {
             (void)offscreenBufferId;
+            (void)consumerContent;
+            (void)consumerId;
+            (void)success;
+        }
+
+        /// @copydoc ramses::IDcsmContentControlEventHandler::contentLinkedToTextureConsumer
+        void contentLinkedToTextureConsumer(ContentID providerContent, ContentID consumerContent, dataConsumerId_t consumerId, bool success) override
+        {
+            (void)providerContent;
             (void)consumerContent;
             (void)consumerId;
             (void)success;

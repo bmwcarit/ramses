@@ -12,7 +12,6 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/CarModelViewMetadata.h"
-#include "ramses-framework-api/CarCameraPlaneMetadata.h"
 #include <string>
 
 namespace ramses
@@ -38,7 +37,7 @@ namespace ramses
 
         /**
          * @brief Set preview image metadata entry. Data must point to a valid
-         *        in memory representation of a PNG file.
+         *        in memory representation of a PNG file for the time of calling this method.
          *
          * @param data pointer to memory buffer with PNG content
          * @param dataLength length in bytes of data
@@ -102,15 +101,6 @@ namespace ramses
          *         to resolve error message using getStatusMessage().
          */
         status_t setCarModelView(const CarModelViewMetadata& viewMetadata, const AnimationInformation& timingInfo);
-
-        /**
-         * @brief Set car camera planes metadata entry. Used together with setCarModelView().
-         *
-         * @param planesMetadata camera planes metadata for the car model
-         * @return StatusOK for success, otherwise the returned status can be used
-         *         to resolve error message using getStatusMessage().
-         */
-        status_t setCarCameraPlanes(const CarCameraPlaneMetadata& planesMetadata);
 
         /**
          * @brief Set car model visibility metadata entry. Requests car model visibility at consumer side.

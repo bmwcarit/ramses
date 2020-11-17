@@ -12,6 +12,7 @@
 #include "SceneAPI/RendererSceneState.h"
 #include "SceneAPI/SceneVersionTag.h"
 #include "SceneAPI/DataSlot.h"
+#include "SceneAPI/SceneId.h"
 
 namespace ramses_internal
 {

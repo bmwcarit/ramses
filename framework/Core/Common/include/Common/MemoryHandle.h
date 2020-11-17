@@ -14,7 +14,7 @@
 
 namespace ramses_internal
 {
-    typedef UInt32 MemoryHandle;
+    using MemoryHandle = UInt32;
 
     constexpr MemoryHandle InvalidMemoryHandle = std::numeric_limits<MemoryHandle>::max();
 }

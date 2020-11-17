@@ -14,14 +14,9 @@
 
 namespace ramses_internal
 {
-
     EmbeddedCompositor_Dummy::EmbeddedCompositor_Dummy()
     {
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::EmbeddedCompositor_Dummy:  created EmbeddedCompositor_Dummy");
-    }
-
-    EmbeddedCompositor_Dummy::~EmbeddedCompositor_Dummy()
-    {
     }
 
     Bool EmbeddedCompositor_Dummy::init()
@@ -35,7 +30,7 @@ namespace ramses_internal
         LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::endFrame");
     }
 
-    UInt32 EmbeddedCompositor_Dummy::uploadCompositingContentForStreamTexture(StreamTextureSourceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter)
+    UInt32 EmbeddedCompositor_Dummy::uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter)
     {
         UNUSED(textureUploadingAdapter)
         UNUSED(textureHandle)
@@ -43,13 +38,13 @@ namespace ramses_internal
         return 0;
     }
 
-    StreamTextureSourceIdSet EmbeddedCompositor_Dummy::dispatchUpdatedStreamTextureSourceIds()
+    WaylandIviSurfaceIdSet EmbeddedCompositor_Dummy::dispatchUpdatedStreamTextureSourceIds()
     {
         LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::dispatchUpdatedStreamTextureSourceIds:");
-        return StreamTextureSourceIdSet();
+        return {};
     }
 
-    Bool EmbeddedCompositor_Dummy::isContentAvailableForStreamTexture(StreamTextureSourceId streamTextureSourceId) const
+    Bool EmbeddedCompositor_Dummy::isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
         LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::isContentAvailableForStreamTexture: streamTextureSourceId: " << streamTextureSourceId.getValue());
         return false;
@@ -75,7 +70,7 @@ namespace ramses_internal
         return 0;
     }
 
-    Bool EmbeddedCompositor_Dummy::hasSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const
+    Bool EmbeddedCompositor_Dummy::hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
         LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::hasSurfaceForStreamTexture: streamTextureSourceId: " << streamTextureSourceId.getValue());
         return false;
@@ -109,12 +104,12 @@ namespace ramses_internal
         return false;
     }
 
-    StreamTextureSourceIdSet EmbeddedCompositor_Dummy::dispatchNewStreamTextureSourceIds()
+    WaylandIviSurfaceIdSet EmbeddedCompositor_Dummy::dispatchNewStreamTextureSourceIds()
     {
         return {};
     }
 
-    StreamTextureSourceIdSet EmbeddedCompositor_Dummy::dispatchObsoleteStreamTextureSourceIds()
+    WaylandIviSurfaceIdSet EmbeddedCompositor_Dummy::dispatchObsoleteStreamTextureSourceIds()
     {
         return {};
     }

@@ -8,7 +8,6 @@
 
 #include "TransportCommon/RamsesConnectionSystem.h"
 #include "TransportCommon/ServiceHandlerInterfaces.h"
-#include "TransportCommon/TransportUtilities.h"
 #include "TransportCommon/ISceneUpdateSerializer.h"
 #include "Scene/SceneActionCollection.h"
 
@@ -64,45 +63,6 @@ namespace ramses_internal
     void RamsesConnectionSystem::setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler)
     {
         m_sceneRendererServiceHandler = handler;
-    }
-
-
-    bool RamsesConnectionSystem::sendRequestResources(const Guid& to, const ResourceContentHashVector& resources)
-    {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "RamsesConnectionSystem(" << m_communicationUserID << ")::sendRequestResources: to " << to << ", numResources " << resources.size());
-
-        return TransportUtilities::SplitToChunks(m_stack->getSendDataSizes().resourceHashList, static_cast<UInt32>(resources.size()), [&](uint32_t startIdx, uint32_t endIdx) {
-            return sendUnicast("sendRequestResources", to, [&](RamsesInstanceId iid, SomeIPMsgHeader hdr) {
-                return m_stack->sendRequestResources(iid, hdr, {resources.data() + startIdx, endIdx-startIdx});
-            });
-        });
-    }
-
-    bool RamsesConnectionSystem::sendResourcesNotAvailable(const Guid& to, const ResourceContentHashVector& resources)
-    {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "RamsesConnectionSystem(" << m_communicationUserID << ")::sendResourcesNotAvailable: to " << to << ", numResources " << resources.size());
-
-        return TransportUtilities::SplitToChunks(m_stack->getSendDataSizes().resourceHashList, static_cast<UInt32>(resources.size()), [&](uint32_t startIdx, uint32_t endIdx) {
-            return sendUnicast("sendResourcesNotAvailable", to, [&](RamsesInstanceId iid, SomeIPMsgHeader hdr) {
-                return m_stack->sendResourcesNotAvailable(iid, hdr, {resources.data() + startIdx, endIdx-startIdx});
-            });
-        });
-    }
-
-    bool RamsesConnectionSystem::sendResources(const Guid& to, const ISceneUpdateSerializer& serializer)
-    {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "RamsesConnectionSystem(" << m_communicationUserID << ")::sendResources: to " << to);
-
-        const uint32_t blobSize = std::min(m_maxSendBlobSize, m_stack->getSendDataSizes().resourceData);
-        m_blobSerializationWorkingMemory.resize(blobSize);
-        return serializer.writeToPackets({m_blobSerializationWorkingMemory.data(), m_blobSerializationWorkingMemory.size()}, [&](size_t size) {
-            m_blobSerializationWorkingMemory.resize(size);
-            const bool result = sendUnicast("sendResources", to, [&](RamsesInstanceId iid, SomeIPMsgHeader hdr) {
-                    return m_stack->sendResourceTransfer(iid, hdr, m_blobSerializationWorkingMemory);
-            });
-            m_blobSerializationWorkingMemory.resize(blobSize);
-            return result;
-        });
     }
 
     static std::vector<SceneAvailabilityUpdate> CreateSceneAvailabilityUpdate(const SceneInfoVector& scenes, bool available)
@@ -214,30 +174,9 @@ namespace ramses_internal
                 m_sceneProviderServiceHandler->handleRendererEvent(sceneId, std::move(data), *pid);
     }
 
-    void RamsesConnectionSystem::handleRequestResources(const SomeIPMsgHeader& header, const ResourceContentHashVector& resources)
-    {
-        if (const Guid* pid = processReceivedMessageHeader(header, "handleRequestResources"))
-            if (m_resourceProviderServiceHandler)
-                m_resourceProviderServiceHandler->handleRequestResources(resources, *pid);
-    }
-
-    void RamsesConnectionSystem::handleResourcesNotAvailable(const SomeIPMsgHeader& header, const ResourceContentHashVector& resources)
-    {
-        if (const Guid* pid = processReceivedMessageHeader(header, "handleResourcesNotAvailable"))
-            if (m_resourceConsumerServiceHandler)
-                m_resourceConsumerServiceHandler->handleResourcesNotAvailable(resources, *pid);
-    }
-
-    void RamsesConnectionSystem::handleResourceTransfer(const SomeIPMsgHeader& header, absl::Span<const Byte> resourceData)
-    {
-        if (const Guid* pid = processReceivedMessageHeader(header, "handleResourceTransfer"))
-            if (m_resourceConsumerServiceHandler)
-                m_resourceConsumerServiceHandler->handleSendResource(resourceData, *pid);
-    }
-
     void RamsesConnectionSystem::handleSceneUpdate(const SomeIPMsgHeader& header, SceneId sceneId, absl::Span<const Byte> sceneUpdateData)
     {
-        if (const Guid* pid = processReceivedMessageHeader(header, "handleSceneActions"))
+        if (const Guid* pid = processReceivedMessageHeader(header, "handleSceneUpdate"))
             if (m_sceneRendererServiceHandler)
                 m_sceneRendererServiceHandler->handleSceneUpdate(sceneId, std::move(sceneUpdateData), *pid);
     }

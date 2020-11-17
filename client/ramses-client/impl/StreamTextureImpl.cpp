@@ -14,6 +14,7 @@
 #include "Texture2DImpl.h"
 #include "ramses-client-api/Texture2D.h"
 #include "RamsesObjectTypeUtils.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses
 {
@@ -52,13 +53,13 @@ namespace ramses
 
     waylandIviSurfaceId_t StreamTextureImpl::getStreamSource() const
     {
-        return waylandIviSurfaceId_t(getIScene().getStreamTexture(m_streamTextureHandle).source);
+        return waylandIviSurfaceId_t{ getIScene().getStreamTexture(m_streamTextureHandle).source.getValue() };
     }
 
     void StreamTextureImpl::initializeFrameworkData(waylandIviSurfaceId_t source, const Texture2DImpl& fallbackTexture)
     {
         assert(!m_streamTextureHandle.isValid());
-        m_streamTextureHandle = getIScene().allocateStreamTexture(source.getValue(), fallbackTexture.getLowlevelResourceHash());
+        m_streamTextureHandle = getIScene().allocateStreamTexture(ramses_internal::WaylandIviSurfaceId{ source.getValue() }, fallbackTexture.getLowlevelResourceHash());
         assert(m_streamTextureHandle.isValid());
     }
 

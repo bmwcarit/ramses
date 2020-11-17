@@ -75,14 +75,14 @@ namespace ramses
             uint32_t                indentation;
             ramses_internal::String message;
         };
-        typedef std::vector<ValidationMessage> ValidationMessages;
+        using ValidationMessages = std::vector<ValidationMessage>;
 
         mutable bool                    m_hasErrorMessages;
         mutable ValidationMessages      m_validationMessages;
         mutable ramses_internal::String m_validationReport;
 
         static std::mutex m_statusCacheLock;
-        typedef ramses_internal::MessagePool<32u, StatusOK> StatusCache;
+        using StatusCache = ramses_internal::MessagePool<32U, StatusOK>;
         static StatusCache m_statusCache;
     };
 }

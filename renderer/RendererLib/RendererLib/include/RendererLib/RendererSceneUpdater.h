@@ -13,9 +13,8 @@
 #include "SceneAPI/SceneId.h"
 #include "Collections/HashMap.h"
 #include "Animation/AnimationSystemFactory.h"
-#include "RendererLib/EResourceStatus.h"
 #include "RendererLib/StagingInfo.h"
-#include "RendererLib/OffscreenBufferLinks.h"
+#include "RendererLib/BufferLinks.h"
 #include "RendererLib/FrameTimer.h"
 #include "RendererLib/IRendererSceneControl.h"
 #include "RendererLib/IRendererResourceManager.h"
@@ -24,10 +23,9 @@
 
 namespace ramses_internal
 {
-    class IScene;
+    class RendererCachedScene;
     class Renderer;
     class SceneStateExecutor;
-    class IResourceProvider;
     class IResourceUploader;
     class IRendererResourceCache;
     class RendererEventCollector;
@@ -59,9 +57,9 @@ namespace ramses_internal
             IRendererResourceCache* rendererResourceCache = nullptr);
         virtual ~RendererSceneUpdater();
 
-        virtual void handleSceneActions(SceneId sceneId, SceneUpdate&& sceneUpdate);
+        virtual void handleSceneUpdate(SceneId sceneId, SceneUpdate&& sceneUpdate);
 
-        void createDisplayContext(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle);
+        void createDisplayContext(const DisplayConfig& displayConfig, IResourceUploader& resourceUploader, DisplayHandle handle);
         void destroyDisplayContext(DisplayHandle handle);
         void updateScenes();
         void processScreenshotResults();
@@ -81,7 +79,7 @@ namespace ramses_internal
         void handleScenePublished               (SceneId sceneId, EScenePublicationMode mode);
         void handleSceneUnpublished             (SceneId sceneId);
         void handleSceneReceived                (const SceneInfo& sceneInfo);
-        Bool handleBufferCreateRequest          (OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, Bool isDoubleBuffered);
+        Bool handleBufferCreateRequest          (OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered);
         Bool handleBufferDestroyRequest         (OffscreenBufferHandle buffer, DisplayHandle display);
         void handleSetClearColor                (DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor);
         void handleReadPixels                   (DisplayHandle display, OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo);
@@ -96,7 +94,6 @@ namespace ramses_internal
 
     protected:
         virtual std::unique_ptr<IRendererResourceManager> createResourceManager(
-            IResourceProvider& resourceProvider,
             IResourceUploader& resourceUploader,
             IRenderBackend& renderBackend,
             IEmbeddedCompositingManager& embeddedCompositingManager,
@@ -110,16 +107,17 @@ namespace ramses_internal
         bool markClientAndSceneResourcesForReupload(SceneId sceneId);
 
         UInt32 updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
-        void applySceneActions(IScene& scene, PendingFlush& flushInfo);
-        UInt32 applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo, EResourceStatus resourcesStatus);
+        void applySceneActions(RendererCachedScene& scene, PendingFlush& flushInfo);
+        UInt32 applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
         void processStagedResourceChanges(SceneId sceneID, StagingInfo& stagingInfo, DisplayHandle& activeDisplay);
 
-        Bool willApplyingChangesMakeAllResourcesAvailable(SceneId sceneId) const;
+        Bool areResourcesFromPendingFlushesUploaded(SceneId sceneId) const;
         Bool areClientResourcesInUseUploaded(SceneId sceneId) const;
 
         void logTooManyFlushesAndUnsubscribeIfRemoteScene(SceneId sceneId, std::size_t numPendingFlushes);
         void consolidatePendingSceneActions(SceneId sceneID, SceneUpdate&& sceneUpdate);
-        void consolidateResourceChanges(PendingData& pendingData, const SceneResourceChanges& resourceChanges, ResourceContentHashVector& newlyNeededClientResources) const;
+        void consolidateResourceDataForMapping(SceneId sceneID);
+        void referenceAndProvidePendingResourceData(SceneId sceneID, DisplayHandle display);
         void requestAndUploadAndUnloadResources(DisplayHandle& activeDisplay);
         void updateEmbeddedCompositingResources(DisplayHandle& activeDisplay);
         void tryToApplyPendingFlushes();
@@ -137,7 +135,8 @@ namespace ramses_internal
         void markScenesDependantOnModifiedConsumersAsModified(const DataReferenceLinkManager& dataRefLinkManager, const TransformationLinkManager &transfLinkManager, const TextureLinkManager& texLinkManager);
         void markScenesDependantOnModifiedOffscreenBuffersAsModified(const TextureLinkManager& texLinkManager);
 
-        void logMissingResources(const ResourceContentHashVector& resourceVector, SceneId sceneId) const;
+        void logMissingResources(const PendingData& pendingData, SceneId sceneId) const;
+        void logMissingResources(const ResourceContentHashVector& neededResources, SceneId sceneId) const;
 
         Renderer&                                         m_renderer;
         RendererScenes&                                   m_rendererScenes;
@@ -158,7 +157,7 @@ namespace ramses_internal
             FrameTimer::Clock::time_point requestTimeStamp;
             FrameTimer::Clock::time_point lastLogTimeStamp;
         };
-        typedef HashMap<SceneId, SceneMapRequest> SceneMapRequests;
+        using SceneMapRequests = HashMap<SceneId, SceneMapRequest>;
         SceneMapRequests m_scenesToBeMapped;
 
         // extracted from RendererSceneUpdater::updateScenesTransformationCache to avoid per frame allocation

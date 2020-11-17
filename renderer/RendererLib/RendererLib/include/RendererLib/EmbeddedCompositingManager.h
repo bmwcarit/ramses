@@ -23,14 +23,17 @@ namespace ramses_internal
     public:
         EmbeddedCompositingManager(IDevice& device, IEmbeddedCompositor& embeddedCompositor, ITextureUploadingAdapter& textureUploadingAdapter);
 
-        virtual void uploadStreamTexture(StreamTextureHandle handle, StreamTextureSourceId source, SceneId sceneId) override;
-        virtual void deleteStreamTexture(StreamTextureHandle handle, StreamTextureSourceId source, SceneId sceneId) override;
-        virtual void dispatchStateChangesOfStreamTexturesAndSources(SceneStreamTextures& streamTexturesWithStateChange, StreamTextureSourceIdVector& newStreams, StreamTextureSourceIdVector& obsoleteStreams) override;
+        virtual void refStream(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId) override;
+        virtual void unrefStream(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId) override;
+        virtual void refStream(WaylandIviSurfaceId source) override;
+        virtual void unrefStream(WaylandIviSurfaceId source) override;
+
+        virtual void dispatchStateChangesOfStreamTexturesAndSources(SceneStreamTextures& streamTexturesWithStateChange, WaylandIviSurfaceIdVector& newStreams, WaylandIviSurfaceIdVector& obsoleteStreams) override;
         virtual void processClientRequests() override;
         virtual Bool hasUpdatedContentFromStreamSourcesToUpload() const override;
         virtual void uploadResourcesAndGetUpdates(UpdatedSceneIdSet &updatedScenes, StreamTextureBufferUpdates& bufferUpdates) override;
         virtual void notifyClients() override;
-        virtual DeviceResourceHandle getCompositedTextureDeviceHandleForStreamTexture(StreamTextureSourceId source) const override;
+        virtual DeviceResourceHandle getCompositedTextureDeviceHandleForStreamTexture(WaylandIviSurfaceId source) const override;
         virtual Bool hasRealCompositor() const override; //TODO Mohamed: remove this as soon as EC dummy is removed
 
     private:
@@ -39,21 +42,23 @@ namespace ramses_internal
             SceneId sceneId;
             StreamTextureHandle streamTextureHandle;
         };
-        typedef std::vector<StreamSourceSceneUsageEntry> StreamSourceSceneUsageEntryVector;
+        using StreamSourceSceneUsageEntryVector = std::vector<StreamSourceSceneUsageEntry>;
 
         struct StreamTextureSourceInfo
         {
             DeviceResourceHandle compositedTextureHandle;
             StreamSourceSceneUsageEntryVector sceneUsage;
-            Bool contentAvailable;
+            int streamBufferUsage = 0;
+            bool contentAvailable = false;
         };
 
-        void uploadNewStreamTexture(StreamTextureSourceId source);
+        void createStreamTexture(WaylandIviSurfaceId source);
+        void destroyStreamTexture(WaylandIviSurfaceId source);
         static void AddStreamTexturesWithStateChange(SceneStreamTextures& result, const StreamSourceSceneUsageEntryVector& streamTexturesWithStateChange);
 
         IDevice& m_device;
         IEmbeddedCompositor& m_embeddedCompositor;
-        HashMap<StreamTextureSourceId, StreamTextureSourceInfo> m_streamTextureSourceInfoMap;
+        HashMap<WaylandIviSurfaceId, StreamTextureSourceInfo> m_streamTextureSourceInfoMap;
         ITextureUploadingAdapter& m_textureUploadingAdapter;
     };
 }

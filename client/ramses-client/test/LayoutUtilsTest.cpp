@@ -76,53 +76,6 @@ namespace ramses
         expectBBoxEq({ 1, 0, 15, 13, 6 }, LayoutUtils::GetBoundingBoxForString(m_positionedGlyphs.crbegin() + 1, m_positionedGlyphs.crend() - 1));
     }
 
-    TEST_F(ALayoutUtils, FindsNoFittingForEmptyString)
-    {
-        EXPECT_EQ(m_positionedGlyphs.cbegin(), LayoutUtils::FindFittingSubstring(m_positionedGlyphs.cbegin(), m_positionedGlyphs.cbegin(), 1000u));
-        EXPECT_EQ(m_positionedGlyphs.cend(), LayoutUtils::FindFittingSubstring(m_positionedGlyphs.cend(), m_positionedGlyphs.cend(), 1000u));
-        EXPECT_EQ(m_positionedGlyphs.crbegin(), LayoutUtils::FindFittingSubstring(m_positionedGlyphs.crbegin(), m_positionedGlyphs.crbegin(), 1000u));
-        EXPECT_EQ(m_positionedGlyphs.crend(), LayoutUtils::FindFittingSubstring(m_positionedGlyphs.crend(), m_positionedGlyphs.crend(), 1000u));
-    }
-
-    TEST_F(ALayoutUtils, FindsNoFittingForInvalidRange)
-    {
-        EXPECT_EQ(m_positionedGlyphs.cbegin(), LayoutUtils::FindFittingSubstring(m_positionedGlyphs.cend(), m_positionedGlyphs.cbegin(), 1000u));
-        EXPECT_EQ(m_positionedGlyphs.crbegin(), LayoutUtils::FindFittingSubstring(m_positionedGlyphs.crend(), m_positionedGlyphs.crbegin(), 1000u));
-    }
-
-    TEST_F(ALayoutUtils, FindsNoFittingForZeroMaxWidth)
-    {
-        EXPECT_EQ(m_positionedGlyphs.cbegin(), LayoutUtils::FindFittingSubstring(m_positionedGlyphs.cbegin(), m_positionedGlyphs.cend(), 0u));
-        EXPECT_EQ(m_positionedGlyphs.crbegin(), LayoutUtils::FindFittingSubstring(m_positionedGlyphs.crbegin(), m_positionedGlyphs.crend(), 0u));
-    }
-
-    TEST_F(ALayoutUtils, ReportsWholeGivenStringAsFittingIfMaxWidthEqualsItsWidth)
-    {
-        const auto bbox = LayoutUtils::GetBoundingBoxForString(m_positionedGlyphs.cbegin(), m_positionedGlyphs.cend());
-        EXPECT_EQ(m_positionedGlyphs.cend(), LayoutUtils::FindFittingSubstring(m_positionedGlyphs.cbegin(), m_positionedGlyphs.cend(), bbox.width + bbox.offsetX));
-    }
-
-    TEST_F(ALayoutUtils, ReportsWholeGivenStringAsNOTFittingIfMaxWidthJustBelowItsWidth)
-    {
-        const auto bbox = LayoutUtils::GetBoundingBoxForString(m_positionedGlyphs.cbegin(), m_positionedGlyphs.cend());
-        EXPECT_NE(m_positionedGlyphs.cend(), LayoutUtils::FindFittingSubstring(m_positionedGlyphs.cbegin(), m_positionedGlyphs.cend(), bbox.width + bbox.offsetX - 1u));
-    }
-
-    TEST_F(ALayoutUtils, FindsFittingSubstringForGivenMaxWidth)
-    {
-        EXPECT_EQ(m_positionedGlyphs.cbegin() + 3, LayoutUtils::FindFittingSubstring(m_positionedGlyphs.cbegin(), m_positionedGlyphs.cend(), 11u));
-    }
-
-    TEST_F(ALayoutUtils, FindsNoFittingIfFirstCharExceedsMaxWidth)
-    {
-        EXPECT_EQ(m_positionedGlyphs.cbegin(), LayoutUtils::FindFittingSubstring(m_positionedGlyphs.cbegin(), m_positionedGlyphs.cend(), 1u));
-    }
-
-    TEST_F(ALayoutUtils, FindsFittingFirstCharIfItsWidthEqualsMaxWidth)
-    {
-        EXPECT_EQ(m_positionedGlyphs.cbegin() + 1, LayoutUtils::FindFittingSubstring(m_positionedGlyphs.cbegin(), m_positionedGlyphs.cend(), 2u));
-    }
-
     TEST_F(ALayoutUtils, EmptyGlyphsAtBeginningContributeToOffsetAndAdvanceOfBoundingBox)
     {
         const auto bbox = LayoutUtils::GetBoundingBoxForString(m_glyphsBeginningWithWhiteSpaces.cbegin(), m_glyphsBeginningWithWhiteSpaces.cend());
@@ -141,42 +94,5 @@ namespace ramses
         EXPECT_EQ(11u, bbox.width);
         EXPECT_EQ(7u, bbox.height);
         EXPECT_EQ(12, bbox.combinedAdvance);
-    }
-
-    TEST_F(ALayoutUtils, StringWithEmptyGlyphsAlwaysFits)
-    {
-        const GlyphMetricsVector emptyGlyphs
-        {
-            { GlyphKey(GlyphId(1u), FontInstanceId(1u)),  0u,  0u,  0,  0,  1 },
-            { GlyphKey(GlyphId(2u), FontInstanceId(1u)),  0u,  0u,  0,  0,  2 },
-            { GlyphKey(GlyphId(3u), FontInstanceId(1u)),  0u,  0u,  0,  0,  5 },
-            { GlyphKey(GlyphId(4u), FontInstanceId(1u)),  0u,  0u,  0,  0,  1 },
-        };
-
-        const auto last1 = LayoutUtils::FindFittingSubstring(emptyGlyphs.cbegin(), emptyGlyphs.cend(), 0u);
-        EXPECT_EQ(emptyGlyphs.cend(), last1);
-        const auto last2 = LayoutUtils::FindFittingSubstring(emptyGlyphs.crbegin(), emptyGlyphs.crend(), 0u);
-        EXPECT_EQ(emptyGlyphs.crend(), last2);
-    }
-
-    TEST_F(ALayoutUtils, EmptyGlyphsAtBeginningOfStringAlwaysFit)
-    {
-        // all glyphs but last (with data) fit
-        EXPECT_EQ(m_glyphsBeginningWithWhiteSpaces.cend() - 1, LayoutUtils::FindFittingSubstring(m_glyphsBeginningWithWhiteSpaces.cbegin(), m_glyphsBeginningWithWhiteSpaces.cend(), 0u));
-    }
-
-    TEST_F(ALayoutUtils, EmptyGlyphsAtBeginningOfStringAffectFittingOfNonEmptyGlyphsDueToAdvancing)
-    {
-        EXPECT_EQ(m_glyphsBeginningWithWhiteSpaces.cend() - 1, LayoutUtils::FindFittingSubstring(m_glyphsBeginningWithWhiteSpaces.cbegin(), m_glyphsBeginningWithWhiteSpaces.cend(), 24u)); // just below limit
-        EXPECT_EQ(m_glyphsBeginningWithWhiteSpaces.cend(), LayoutUtils::FindFittingSubstring(m_glyphsBeginningWithWhiteSpaces.cbegin(), m_glyphsBeginningWithWhiteSpaces.cend(), 25u));
-    }
-
-    TEST_F(ALayoutUtils, EmptyGlyphsAtEndOfStringHasNoAffectOnFitting)
-    {
-        const GlyphMetricsVector glyphsEndingWithWhiteSpaces{ m_glyphsBeginningWithWhiteSpaces.crbegin(), m_glyphsBeginningWithWhiteSpaces.crend() };
-
-        EXPECT_EQ(glyphsEndingWithWhiteSpaces.cbegin(), LayoutUtils::FindFittingSubstring(glyphsEndingWithWhiteSpaces.cbegin(), glyphsEndingWithWhiteSpaces.cend(), 0u));
-        EXPECT_EQ(glyphsEndingWithWhiteSpaces.cbegin(), LayoutUtils::FindFittingSubstring(glyphsEndingWithWhiteSpaces.cbegin(), glyphsEndingWithWhiteSpaces.cend(), 15u)); // just below limit
-        EXPECT_EQ(glyphsEndingWithWhiteSpaces.cend(), LayoutUtils::FindFittingSubstring(glyphsEndingWithWhiteSpaces.cbegin(), glyphsEndingWithWhiteSpaces.cend(), 16u));
     }
 }

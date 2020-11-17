@@ -25,7 +25,6 @@ namespace ramses
 {
     class Node;
     class MeshNode;
-    class RemoteCamera;
     class PerspectiveCamera;
     class OrthographicCamera;
     class Appearance;
@@ -43,6 +42,7 @@ namespace ramses
     class RenderTarget;
     class RenderTargetDescription;
     class TextureSampler;
+    class TextureSamplerMS;
     class AttributeInput;
     class DataObject;
     class DataFloat;
@@ -134,14 +134,6 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t saveToFile(const char* fileName, bool compress) const;
-
-        /**
-        * @brief Creates a Remote Camera in this Scene
-        *
-        * @param[in] name The optional name of the Remote Camera
-        * @return Pointer to the created RemoteCamera, null on failure
-        */
-        RemoteCamera* createRemoteCamera(const char* name = nullptr);
 
         /**
         * @brief Creates a Perspective Camera in this Scene
@@ -326,9 +318,7 @@ namespace ramses
         * @param[in] bufferType Type of the RenderBuffer to be created (color, depth, depth/stecil).
         * @param[in] bufferFormat Data format to use for the RenderBuffer to be created.
         * @param[in] accessMode Read/Write access mode of render buffer
-        * @param[in] sampleCount Optional sample count for MSAA number of samples. Can only be set for write-only render buffers.
-                                 Default value is Zero, which disables MSAA for the render buffer. Trying to create read/write render
-                                 buffer with sampleCount other than Zero will fail.
+        * @param[in] sampleCount Optional sample count for MSAA number of samples. Default value is Zero, which disables MSAA for the render buffer.
         * @param[in] name Optional name of the object.
         * @return Pointer to the created RenderBuffer, null on failure.
         **/
@@ -432,7 +422,7 @@ namespace ramses
         * @param[in] wrapVMode texture wrap mode for v axis.
         * @param[in] minSamplingMethod texture min sampling method.
         * @param[in] magSamplingMethod texture mag sampling method. Must be set to either Nearest or Linear.
-        * @param[in] renderBuffer RenderBuffer to be used with this sampler object. The render buffer must have access mode of read/write.
+        * @param[in] renderBuffer RenderBuffer to be used with this sampler object. The render buffer must have access mode of read/write and 0 samples (#ramses::RenderBuffer::getSampleCount).
         * @param[in] anisotropyLevel Texture sampling anisotropy level.
         *            1: isotropic sampling, >1: anisotropic sampling
         *            usual values: 1, 2, 4, 8, 16 (dependent on graphics platform)
@@ -489,16 +479,29 @@ namespace ramses
             const char* name = nullptr);
 
         /**
-         * @brief Create a new ArrayResource. It is taking ownership of the given range of data of a certain type and keeps it
-         *        as a resource, an immutable data object. See #ramses::ArrayResource for more details.
-         *
-         * @param[in] type The data type of the array elements.
-         * @param[in] numElements The number of elements of the given data type to use for the resource.
-         * @param[in] arrayData Pointer to the data to be used to create the array from.
-         * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
-         * @param[in] name The optional name of the ArrayResource.
-         * @return A pointer to the created ArrayResource, null on failure
-         */
+        * @brief Creates a multisampled texture sampler object.
+        * @param[in] renderBuffer RenderBuffer to be used with this sampler object. The render buffer must be multisampled and have access mode of read/write.
+        * @param[in] name Optional name of the object.
+        * @return Pointer to the created #ramses::TextureSamplerMS, null on failure.
+        */
+        TextureSamplerMS* createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name);
+
+        /**
+        * @brief Create a new ArrayResource. It is taking ownership of the given range of data of a certain type and keeps it
+        *        as a resource, an immutable data object. See #ramses::ArrayResource for more details.
+        *
+        * @details If an #ramses::ArrayResource object is created with type #ramses::EDataType::ByteBlob then an element
+        *          is defined as one byte, rather than a logical vertex element. Hence, functions of the class
+        *          #ramses::ArrayResource referring to element refer to a single byte within byte array, element size is 1 byte
+        *          and number of elements is the same as max size in bytes.
+        *
+        * @param[in] type The data type of the array elements.
+        * @param[in] numElements The number of elements of the given data type to use for the resource.
+        * @param[in] arrayData Pointer to the data to be used to create the array from.
+        * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
+        * @param[in] name The optional name of the ArrayResource.
+        * @return A pointer to the created ArrayResource, null on failure
+        */
         ArrayResource* createArrayResource(
             EDataType type,
             uint32_t numElements,
@@ -613,10 +616,17 @@ namespace ramses
         std::string getLastEffectErrorMessages() const;
 
         /**
-        * @brief Create a new ArrayBuffer. The created object is a mutable buffer object that can be used as index or
-        * as vertex buffer in GeometryBinding. The created object has mutable contents and immutable size that has
-        * to be specified at creation time. Upon creation the contents are undefined. The contents of the object
-        * can be (partially) updated, the change to the object data is transferred to renderer on next flush.
+        * @brief Create a new #ramses::ArrayBuffer. The created object is a mutable buffer object that can be used as index or
+        * as vertex buffer in #ramses::GeometryBinding.
+        *
+        * @details The created object has mutable contents and immutable size that has
+        *          to be specified at creation time. Upon creation the contents are undefined. The contents of the object
+        *          can be (partially) updated, the change to the object data is transferred to renderer on next flush.
+        *
+        *          Note: if an #ramses::ArrayBuffer object is created with type #ramses::EDataType::ByteBlob then an element
+        *          is defined as one byte, rather than a logical vertex element. Hence, all functions of the class
+        *          #ramses::ArrayBuffer referring to element refer to a single byte within byte array, element size is 1 byte
+        *          and max number of elements is the same as max size in bytes.
         *
         * @param[in] dataType Data type of the array data.
         * @param[in] maxNumElements The maximum number of data elements this buffer can hold.
@@ -788,7 +798,7 @@ namespace ramses
         status_t updateTextureProvider(const Texture2D& texture, dataProviderId_t dataId);
 
         /**
-        * @brief Annotates a TextureSampler as a content consumer.
+        * @brief Annotates a #ramses::TextureSampler as a content consumer.
         *        Texture provider and texture consumer can be linked on Ramses Renderer side.
         *        Linking textures means that the consumer's sampler will use provider's texture as content.
         * @param[in] sampler which shall consume texture content from provider texture.
@@ -797,6 +807,17 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t dataId);
+
+        /**
+        * @brief Annotates a #ramses::TextureSamplerMS as a content consumer.
+        *        Texture provider and texture consumer can be linked on Ramses Renderer side.
+        *        Linking textures means that the consumer's sampler will use provider's texture as content.
+        * @param[in] sampler which shall consume texture content from provider texture.
+        * @param[in] dataId id to reference the consumer in this scene
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t createTextureConsumer(const TextureSamplerMS& sampler, dataConsumerId_t dataId);
 
         /**
         * @brief Create a new animation system. The animation system will be
@@ -864,11 +885,11 @@ namespace ramses
         *          or data consumer does not exist or their data type does not match.
         *
         *          Scene reference must be known to renderer side before attempting to make a data link. Make sure any involved
-        *          #ramses::SceneReference was reported to be in state Available or higher
+        *          #ramses::SceneReference was reported to be in state Ready or higher
         *          (see #ramses::IClientEventHandler::sceneReferenceStateChanged).
         *
-        *          Should one of the scene references of the data link go to state Unavailable while the data link is active, the link
-        *          will implicitly be destroyed and needs to be rerequested again.
+        *          Should one of the scene references of the data link go to state Available or Unavailable while the data link is active,
+        *          the link will implicitly be destroyed and needs to be rerequested again.
         *
         *          If successful the operation can be assumed to be effective in the next frame consumer scene is rendered after flushed.
         *          If the data consumer is already linked to a provider (data or offscreen buffer), the old link will be discarded,

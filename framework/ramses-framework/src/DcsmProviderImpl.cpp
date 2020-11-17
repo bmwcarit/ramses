@@ -87,9 +87,9 @@ namespace ramses
             return addErrorEntry((ramses_internal::StringOutputStream() << "DcsmProvider::" << callerMethod << " failed, ContentID is already registered.").c_str());
 
         m_contents[contentID] = {category};
-        if (!m_dcsm.sendOfferContent(ramses_internal::ContentID(contentID.getValue()), ramses_internal::Category(category.getValue()), "", mode == EDcsmOfferingMode::LocalOnly))
+        if (!m_dcsm.sendOfferContent(ramses_internal::ContentID(contentID.getValue()), ramses_internal::Category(category.getValue()), contentType, "", mode == EDcsmOfferingMode::LocalOnly))
             return addErrorEntry((ramses_internal::StringOutputStream() << "DcsmProvider::" << callerMethod << " failed, failure to send sendOfferContent message.").c_str());
-        else if (!m_dcsm.sendContentDescription(ramses_internal::ContentID(contentID.getValue()), contentType, contentDescriptor))
+        else if (!m_dcsm.sendContentDescription(ramses_internal::ContentID(contentID.getValue()), contentDescriptor))
         {
             m_dcsm.sendRequestStopOfferContent(ramses_internal::ContentID(contentID.getValue()));
             return addErrorEntry((ramses_internal::StringOutputStream() << "DcsmProvider::" << callerMethod << " failed, failure to send sendContentDescription message.").c_str());

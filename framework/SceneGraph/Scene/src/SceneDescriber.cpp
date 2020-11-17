@@ -114,17 +114,18 @@ namespace ramses_internal
                 const Vector3& translation = source.getTranslation(t);
                 if (translation != Vector3(0.f))
                 {
-                    collector.setTransformComponent(ETransformPropertyType_Translation, t, translation);
+                    collector.setTransformComponent(ETransformPropertyType_Translation, t, translation, {});
                 }
                 const Vector3& rotation = source.getRotation(t);
                 if (rotation != Vector3(0.f))
                 {
-                    collector.setTransformComponent(ETransformPropertyType_Rotation, t, rotation);
+                    const auto rotationConvention = source.getRotationConvention(t);
+                    collector.setTransformComponent(ETransformPropertyType_Rotation, t, rotation, rotationConvention);
                 }
                 const Vector3& scaling = source.getScaling(t);
                 if (scaling != Vector3(1.0f))
                 {
-                    collector.setTransformComponent(ETransformPropertyType_Scaling, t, scaling);
+                    collector.setTransformComponent(ETransformPropertyType_Scaling, t, scaling, {});
                 }
             }
         }
@@ -306,6 +307,7 @@ namespace ramses_internal
                         break;
                     }
                     case EDataType::TextureSampler2D:
+                    case EDataType::TextureSampler2DMS:
                     case EDataType::TextureSampler3D:
                     case EDataType::TextureSamplerCube:
                     {
@@ -329,7 +331,7 @@ namespace ramses_internal
                         const ResourceField& dataResource = source.getDataResource(i, f);
                         if (dataResource.hash.isValid() || dataResource.dataBuffer.isValid())
                         {
-                            collector.setDataResource(i, f, dataResource.hash, dataResource.dataBuffer, source.getDataResource(i, f).instancingDivisor);
+                            collector.setDataResource(i, f, dataResource.hash, dataResource.dataBuffer, source.getDataResource(i, f).instancingDivisor, dataResource.offsetWithinElementInBytes, dataResource.stride);
                         }
                         break;
                     }

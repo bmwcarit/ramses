@@ -16,14 +16,14 @@ namespace ramses_internal
 {
     // GLHandle is not strongly typed because most of the time its scope is limited and involves GL call
     // and it is stored in GPUResource as platform independent type, thus would require conversion every time it is used
-    typedef UInt32 GLHandle;
+    using GLHandle = UInt32;
     static const GLHandle InvalidGLHandle(0u);
 
     struct GLInputLocationTag {};
-    typedef StronglyTypedValue<Int32, -1, GLInputLocationTag> GLInputLocation;
+    using GLInputLocation = StronglyTypedValue<Int32, -1, GLInputLocationTag>;
     static const GLInputLocation GLInputLocationInvalid(-1);
 
-    typedef Int32 TextureSlot;
+    using TextureSlot = Int32;
 }
 
 #endif

@@ -19,8 +19,8 @@
 
 namespace ramses_internal
 {
-    TextScene::TextScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : TextScene_Base(scene, cameraPosition)
+    TextScene::TextScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : TextScene_Base(scene, cameraPosition, vpWidth, vpHeight)
     {
         const ramses::FontId font = m_fontRegistry.createFreetype2Font("res/ramses-test-client-Roboto-Bold.ttf");
         const ramses::FontId chineseFont = m_fontRegistry.createFreetype2Font("res/ramses-test-client-WenQuanYiMicroHei.ttf");
@@ -40,10 +40,10 @@ namespace ramses_internal
         effectDesc.setVertexShaderFromFile("res/ramses-test-client-text.vert");
         effectDesc.setFragmentShaderFromFile("res/ramses-test-client-text.frag");
 
-        effectDesc.setAttributeSemantic("a_position", ramses::EEffectAttributeSemantic_TextPositions);
-        effectDesc.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
-        effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic_TextTexture);
-        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+        effectDesc.setAttributeSemantic("a_position", ramses::EEffectAttributeSemantic::TextPositions);
+        effectDesc.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic::TextTextureCoordinates);
+        effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic::TextTexture);
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
         ramses::Effect* textEffect = m_scene.createEffect(effectDesc);
         ramses::UniformInput colorInput;

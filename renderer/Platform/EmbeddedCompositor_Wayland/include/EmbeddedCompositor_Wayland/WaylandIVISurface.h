@@ -16,7 +16,6 @@
 
 namespace ramses_internal
 {
-
     class EmbeddedCompositor_Wayland;
     class INativeWaylandResource;
     class IWaylandSurface;

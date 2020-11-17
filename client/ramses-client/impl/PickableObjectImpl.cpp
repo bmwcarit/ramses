@@ -11,7 +11,7 @@
 #include "CameraNodeImpl.h"
 #include "SceneAPI/PickableObject.h"
 #include "SceneAPI/SceneTypes.h"
-#include "ramses-client-api/LocalCamera.h"
+#include "ramses-client-api/Camera.h"
 #include "Scene/ClientScene.h"
 #include "SerializationContext.h"
 #include "RamsesObjectTypeUtils.h"
@@ -20,7 +20,6 @@
 
 namespace ramses
 {
-
     PickableObjectImpl::PickableObjectImpl(SceneImpl& scene, const char* pickableObjectName)
         : NodeImpl(scene, ERamsesObjectType_PickableObject, pickableObjectName)
     {
@@ -120,7 +119,6 @@ namespace ramses
 
     status_t PickableObjectImpl::setCamera(const CameraNodeImpl& cameraImpl)
     {
-        assert(cameraImpl.isOfType(ERamsesObjectType_LocalCamera));
         if (!isFromTheSameSceneAs(cameraImpl))
         {
             return addErrorEntry("PickableObject::setCamera failed - camera is not from the same scene as this PickableObject");
@@ -144,14 +142,9 @@ namespace ramses
         return cameraValidity;
     }
 
-    const LocalCamera* PickableObjectImpl::getCamera() const
+    const Camera* PickableObjectImpl::getCamera() const
     {
-        if (nullptr != m_cameraImpl)
-        {
-            return &RamsesObjectTypeUtils::ConvertTo<LocalCamera>(m_cameraImpl->getRamsesObject());
-        }
-
-        return nullptr;
+        return (m_cameraImpl ? &RamsesObjectTypeUtils::ConvertTo<Camera>(m_cameraImpl->getRamsesObject()) : nullptr);
     }
 
     status_t PickableObjectImpl::setPickableObjectId(pickableObjectId_t id)

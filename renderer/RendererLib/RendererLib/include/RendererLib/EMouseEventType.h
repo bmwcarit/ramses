@@ -14,7 +14,6 @@
 
 namespace ramses_internal
 {
-
     enum EMouseEventType
     {
         EMouseEventType_Invalid          = 0,
@@ -37,7 +36,7 @@ namespace ramses_internal
         EMouseEventType_NUMBER_OF_ELEMENTS
     };
 
-    static const Char* MouseEventTypeNames[] =
+    static const char* MouseEventTypeNames[] =
     {
         "EMouseEventType_Invalid",
         "EMouseEventType_LeftButtonDown",

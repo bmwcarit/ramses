@@ -100,3 +100,75 @@ function(ACME_FOLDERIZE_TARGETS)
         ACME_FOLDERIZE_TARGET(${tgt})
     endforeach()
 endfunction()
+
+#==============================================================================
+# resource copying to buildfolder + install
+#==============================================================================
+
+function(ACME_COPY_RESOURCES_FOR_TARGET tgt)
+    if (NOT TARGET ${tgt})
+        message(FATAL_ERROR "Target ${tgt} does not exist")
+    endif()
+
+    # parse args
+    cmake_parse_arguments(RES "" "ENABLE_INSTALL" "" ${ARGN})
+    set(res_folders ${RES_UNPARSED_ARGUMENTS})
+
+    # install whole folders if requested
+    if (RES_ENABLE_INSTALL)
+        foreach(user_dir ${res_folders})
+            install(DIRECTORY ${user_dir}/ DESTINATION ${ACME_INSTALL_RESOURCE} COMPONENT "${ACME_PACKAGE_NAME}")
+        endforeach()
+    endif()
+
+    # create copy target for directories
+    foreach(user_dir ${res_folders})
+        get_filename_component(dir "${user_dir}" ABSOLUTE)
+
+        if (NOT IS_DIRECTORY "${dir}")
+            message(FATAL_ERROR "${tgt} has invalid RESOURCE_FOLDER ${user_dir}")
+        endif()
+
+        # generate dir target name
+        string(MD5 dir_hash "${dir}")
+        set(target_name "rescopy-${dir_hash}")
+
+        # collect files
+        set(output_dir_base "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res")
+        file(GLOB_RECURSE dir_files_rel RELATIVE "${dir}" "${dir}/*")
+        set(dir_files_src)
+        set(dir_files_dst)
+        foreach (file ${dir_files_rel})
+            list(APPEND dir_files_src "${dir}/${file}")
+            list(APPEND dir_files_dst "${output_dir_base}/${file}")
+        endforeach()
+
+        # add files to target sources
+        target_sources(${tgt} PRIVATE ${dir_files_src})
+
+        # check if already copy target fir dir
+        get_property(dir_copy_target DIRECTORY "${PROJECT_BASE_DIR}" PROPERTY ACME_DIR_COPY_${dir_hash})
+        if (dir_copy_target)
+            add_dependencies(${tgt} ${dir_copy_target})
+        else()
+            # no copy target yet, create one
+            add_custom_command(
+                OUTPUT ${dir_files_dst}
+                COMMAND ${CMAKE_COMMAND} -E copy_directory "${dir}" "${output_dir_base}"
+                DEPENDS "${dir_files_src}"
+                COMMENT "Copying ${dir} -> ${output_dir_base}"
+                )
+
+            add_custom_target(${target_name} DEPENDS ${dir_files_dst})
+            set_property(TARGET ${target_name} PROPERTY FOLDER "CMakePredefinedTargets/rescopy")
+
+            add_dependencies(${tgt} ${target_name})
+
+            # store target name
+            set_property(DIRECTORY ${PROJECT_BASE_DIR} PROPERTY ACME_DIR_COPY_${dir_hash} ${target_name})
+        endif()
+
+        # TODO check uniqueness (?)
+
+    endforeach()
+endfunction()

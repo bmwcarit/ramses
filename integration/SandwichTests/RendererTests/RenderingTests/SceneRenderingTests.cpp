@@ -8,6 +8,7 @@
 
 #include "SceneRenderingTests.h"
 #include "SceneAPI/RenderState.h"
+#include "RamsesRendererImpl.h"
 #include "TestScenes/MultipleTrianglesScene.h"
 #include "TestScenes/SingleAppearanceScene.h"
 #include "TestScenes/HierarchicalRedTrianglesScene.h"
@@ -23,9 +24,9 @@
 #include "TestScenes/ArrayInputScene.h"
 #include "TestScenes/GeometryInstanceScene.h"
 #include "TestScenes/RenderTargetScene.h"
-#include "RamsesRendererImpl.h"
 #include "TestScenes/DataBufferScene.h"
 #include "TestScenes/GeometryShaderScene.h"
+#include "TestScenes/ArrayResourceScene.h"
 
 using namespace ramses_internal;
 
@@ -123,6 +124,16 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(DataBuffer_VertexDataBufferGetsUpdated, *this, "DataBuffer_VertexDataBufferGetsUpdated");
     testFramework.createTestCaseWithDefaultDisplay(DataBuffer_SwitchFromClientArrayResourceToDataBuffer, *this, "DataBuffer_SwitchFromClientArrayResourceToDataBuffer");
     testFramework.createTestCaseWithDefaultDisplay(DataBuffer_SwitchFromDataBufferToClientArrayResource, *this, "DataBuffer_SwitchFromDataBufferToClientArrayResource");
+    testFramework.createTestCaseWithDefaultDisplay(DataBuffer_InterleavedVertexAttribute, *this, "DataBuffer_InterleavedVertexAttribute");
+    testFramework.createTestCaseWithDefaultDisplay(DataBuffer_InterleavedVertexAttribute_GetsUpdated, *this, "DataBuffer_InterleavedVertexAttribute_GetsUpdated");
+    testFramework.createTestCaseWithDefaultDisplay(DataBuffer_InterleavedVertexAttribute_TwoStrides, *this, "DataBuffer_InterleavedVertexAttribute_TwoStrides");
+    testFramework.createTestCaseWithDefaultDisplay(DataBuffer_InterleavedVertexAttribute_SingleAttrib, *this, "DataBuffer_InterleavedVertexAttribute_SingleAttrib");
+    testFramework.createTestCaseWithDefaultDisplay(DataBuffer_InterleavedVertexAttribute_StartVertexOffset, *this, "DataBuffer_InterleavedVertexAttribute_StartVertexOffset");
+
+    testFramework.createTestCaseWithDefaultDisplay(ArrayResource_InterleavedVertexAttribute, *this, "ArrayResource_InterleavedVertexAttribute");
+    testFramework.createTestCaseWithDefaultDisplay(ArrayResource_InterleavedVertexAttribute_TwoStrides, *this, "ArrayResource_InterleavedVertexAttribute_TwoStrides");
+    testFramework.createTestCaseWithDefaultDisplay(ArrayResource_InterleavedVertexAttribute_SingleAttrib, *this, "ArrayResource_InterleavedVertexAttribute_SingleAttrib");
+    testFramework.createTestCaseWithDefaultDisplay(ArrayResource_InterleavedVertexAttribute_StartVertexOffset, *this, "ArrayResource_InterleavedVertexAttribute_StartVertexOffset");
 
     testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV320_PointsInTriangleStripOut, *this, "GeometryShaderGlslV320_PointsInTriangleStripOut");
     testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV320_PointsInLineStripOut, *this, "GeometryShaderGlslV320_PointsInLineStripOut");
@@ -134,6 +145,8 @@ void SceneRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV310Extension_PointsInPointsOut, *this, "GeometryShaderGlslV310Extension_PointsInPointsOut");
     testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV310Extension_TrianglesInTriangleStripOut, *this, "GeometryShaderGlslV310Extension_TrianglesInTriangleStripOut");
     testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV310Extension_TrianglesInPointsOut, *this, "GeometryShaderGlslV310Extension_TrianglesInPointsOut");
+
+    testFramework.createTestCaseWithDefaultDisplay(EulerRotationConventions, *this, "EulerRotationConventions");
 
     testFramework.createTestCaseWithDefaultDisplay(Display_SetClearColor, *this, "Display_SetClearColor").m_displayConfigs.front().setClearColor(0.5f, 0.25f, 0.75f, 1.f);
 
@@ -337,6 +350,28 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
         testFramework.getScenesRegistry().setSceneState<DataBufferScene>(sceneId, DataBufferScene::VERTEX_ARRAY_BUFFER_VECTOR4F);
         return testFramework.renderAndCompareScreenshot("DataBufferScene_EquilateralTriangle", 0u);
     }
+    case DataBuffer_InterleavedVertexAttribute:
+        return runBasicTest<DataBufferScene>(testFramework, DataBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+    case DataBuffer_InterleavedVertexAttribute_GetsUpdated:
+    {
+        const ramses::sceneId_t sceneId = testFramework.createAndShowScene<DataBufferScene>(DataBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED, Vector3(2, -1, 18));
+        testFramework.getScenesRegistry().setSceneState<DataBufferScene>(sceneId, DataBufferScene::UPDATE_INTERLEAVED_VERTEX_DATA_BUFFER);
+        return testFramework.renderAndCompareScreenshot("DataBufferScene_RedTriangleInverted", 0u);
+    }
+    case DataBuffer_InterleavedVertexAttribute_TwoStrides:
+        return runBasicTest<DataBufferScene>(testFramework, DataBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED_TWO_STRIDES, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+    case ArrayResource_InterleavedVertexAttribute:
+        return runBasicTest<DataBufferScene>(testFramework, ArrayResourceScene::ARRAY_RESOURCE_INTERLEAVED, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+    case ArrayResource_InterleavedVertexAttribute_TwoStrides:
+        return runBasicTest<DataBufferScene>(testFramework, ArrayResourceScene::ARRAY_RESOURCE_INTERLEAVED_TWO_STRIDES, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+    case ArrayResource_InterleavedVertexAttribute_SingleAttrib:
+        return runBasicTest<DataBufferScene>(testFramework, ArrayResourceScene::ARRAY_RESOURCE_INTERLEAVED_SINGLE_ATTRIB, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+    case ArrayResource_InterleavedVertexAttribute_StartVertexOffset:
+        return runBasicTest<DataBufferScene>(testFramework, ArrayResourceScene::ARRAY_RESOURCE_INTERLEAVED_START_VERTEX, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+    case DataBuffer_InterleavedVertexAttribute_SingleAttrib:
+        return runBasicTest<DataBufferScene>(testFramework, DataBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED_SINGLE_ATTRIB, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
+    case DataBuffer_InterleavedVertexAttribute_StartVertexOffset:
+        return runBasicTest<DataBufferScene>(testFramework, DataBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED_START_VERTEX, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
     case Display_SetClearColor:
     {
         return testFramework.renderAndCompareScreenshot("Display_SetClearColor", 0u, 0.4f);
@@ -371,6 +406,9 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
     case GeometryShaderGlslV310Extension_TrianglesInPointsOut:
         return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL310_TRIANGLES_IN_POINTS_OUT, "GeometryShaderScene_TrianglesInPointsOut", .1f);
 
+    case EulerRotationConventions:
+        return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::EULER_ROTATION_CONVENTIONS, "MultipleTriangleScene_EulerRotationConventions");
+
     default:
         assert(!"Invalid renderer test ID!");
         return false;
@@ -383,9 +421,8 @@ bool SceneRenderingTests::runBasicTest(
     UInt32 sceneState,
     const String& expectedImageName,
     float maxAveragePercentErrorPerPixel,
-    const Vector3& cameraTranslation,
-    const ramses::SceneConfig& sceneConfig)
+    const Vector3& cameraTranslation)
 {
-    testFramework.createAndShowScene<INTEGRATION_SCENE>(sceneState, cameraTranslation, sceneConfig);
+    testFramework.createAndShowScene<INTEGRATION_SCENE>(sceneState, cameraTranslation);
     return testFramework.renderAndCompareScreenshot(expectedImageName, 0u, maxAveragePercentErrorPerPixel);
 }

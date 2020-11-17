@@ -13,6 +13,7 @@
 #include "ramses-framework-api/RendererSceneState.h"
 #include "RendererAPI/Types.h"
 #include "RendererAPI/EDeviceTypeId.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "RendererTestUtils.h"
 #include <memory>
 
@@ -33,7 +34,7 @@ namespace ramses_internal
     class TestRenderer
     {
     public:
-        virtual ~TestRenderer() {};
+        virtual ~TestRenderer() = default;
 
         void initializeRendererWithFramework(ramses::RamsesFramework& ramsesFramework, const ramses::RendererConfig& rendererConfig);
         bool isRendererInitialized() const;
@@ -61,7 +62,7 @@ namespace ramses_internal
         bool isRendererThreadEnabled() const;
         void doOneLoop();
 
-        ramses::displayBufferId_t createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptible);
+        ramses::displayBufferId_t createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount = 0u);
         void destroyOffscreenBuffer(ramses::displayId_t displayId, ramses::displayBufferId_t buffer);
         void assignSceneToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t buffer, int32_t renderOrder);
         void setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const ramses_internal::Vector4& clearColor);

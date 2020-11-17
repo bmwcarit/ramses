@@ -75,7 +75,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, AllocatedTextureSamplerHasGivenReferencesToResources_StreamTexture)
     {
-        const StreamTextureHandle streamTex(this->m_scene.allocateStreamTexture(10u, ResourceContentHash(30u, 40u)));
+        const StreamTextureHandle streamTex(this->m_scene.allocateStreamTexture(WaylandIviSurfaceId{ 10u }, ResourceContentHash(30u, 40u)));
         const TextureSamplerHandle sampler = this->m_scene.allocateTextureSampler({ SamplerStates, streamTex });
 
         EXPECT_FALSE(this->m_scene.getTextureSampler(sampler).textureResource.isValid());

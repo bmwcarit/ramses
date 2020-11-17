@@ -24,23 +24,6 @@ namespace ramses
     {
     public:
         /**
-        * @brief This method will be called if a previously unknown or unpublished scene becomes published.
-        * @details This is just informative callback, a scene can be set to a certain RendererSceneState
-        *          even if it is not published yet/anymore, see #ramses::RendererSceneControl::setSceneState.
-        *          Even though scene's RendererSceneState depends on whether scene is published or not,
-        *          there is no 1:1 representation of published/unpublished in RendererSceneState enumeration,
-        *          this comes partially from the fact that publish/unpublish is controlled from RamsesClient API,
-        *          not the renderer's scene control API.
-        *          There is no explicit callback when scene is unpublished, its state
-        *          would be reported as #RendererSceneState::Unavailable via #sceneStateChanged as side effect,
-        *          however a scene being in state #RendererSceneState::Unavailable does not
-        *          necessarily mean it is unpublished.
-        *
-        * @param sceneId The ID of scene that was published
-        */
-        virtual void scenePublished(sceneId_t sceneId) = 0;
-
-        /**
         * @brief This method will be called when state of a scene changes.
         * @details Typically this is a result of #ramses::RendererSceneControl::setSceneState call
         *          but can be also triggered externally (e.g. scene was unpublished by client).
@@ -208,14 +191,6 @@ namespace ramses
     class RAMSES_API RendererSceneControlEventHandlerEmpty : public IRendererSceneControlEventHandler
     {
     public:
-        /**
-        * @copydoc ramses::IRendererSceneControlEventHandler::scenePublished
-        */
-        virtual void scenePublished(sceneId_t sceneId) override
-        {
-            (void)sceneId;
-        }
-
         /**
         * @copydoc ramses::IRendererSceneControlEventHandler::sceneStateChanged
         */

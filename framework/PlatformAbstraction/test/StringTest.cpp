@@ -644,10 +644,10 @@ TEST(String, EndsWith)
     String path("D:");
     EXPECT_FALSE(path.endsWith("\\"));
 
-    String path2("D:\\dir1\\dir2");
+    String path2(R"(D:\dir1\dir2)");
     EXPECT_FALSE(path2.endsWith("\\"));
 
-    String path3("D:\\dir1\\dir2\\");
+    String path3(R"(D:\dir1\dir2\)");
     EXPECT_TRUE(path3.endsWith("\\"));
 }
 

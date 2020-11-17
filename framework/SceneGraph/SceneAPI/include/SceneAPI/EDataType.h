@@ -42,6 +42,7 @@ WARNING_DISABLE_GCC(-Wshadow)
         // non-POD types
         DataReference,
         TextureSampler2D,
+        TextureSampler2DMS,
         TextureSampler3D,
         TextureSamplerCube,
         Indices,        // special type that is not strictly typed by effect and both 16/32bit integer can be used
@@ -50,6 +51,7 @@ WARNING_DISABLE_GCC(-Wshadow)
         Vector2Buffer,
         Vector3Buffer,
         Vector4Buffer,
+        ByteBlob,
 
         NUMBER_OF_ELEMENTS // must be last, used for checking
     };
@@ -74,6 +76,7 @@ WARNINGS_POP
         "DATATYPE_MATRIX44F",
         "DATATYPE_DATAREFERENCE",
         "DATATYPE_TEXTURESAMPLER2D",
+        "DATATYPE_TEXTURESAMPLER2DMS",
         "DATATYPE_TEXTURESAMPLER3D",
         "DATATYPE_TEXTURESAMPLERCUBE",
         "DATATYPE_INDICES",
@@ -81,7 +84,8 @@ WARNINGS_POP
         "DATATYPE_FLOATBUFFER",
         "DATATYPE_VECTOR2BUFFER",
         "DATATYPE_VECTOR3BUFFER",
-        "DATATYPE_VECTOR4BUFFER"
+        "DATATYPE_VECTOR4BUFFER",
+        "DATATYPE_BYTE_BLOB"
     };
 
     ENUM_TO_STRING(EDataType, DataTypeNames, EDataType::NUMBER_OF_ELEMENTS);
@@ -116,6 +120,24 @@ WARNINGS_POP
         };
     }
 
+    inline EDataType BufferTypeToElementType(EDataType bufferType)
+    {
+        switch (bufferType)
+        {
+        case EDataType::FloatBuffer:
+            return EDataType::Float;
+        case EDataType::Vector2Buffer:
+            return EDataType::Vector2F;
+        case EDataType::Vector3Buffer:
+            return EDataType::Vector3F;
+        case EDataType::Vector4Buffer:
+            return EDataType::Vector4F;
+        default:
+            assert(false);
+            return EDataType::Invalid;
+        }
+    }
+
     inline UInt32 EnumToSize(EDataType type)
     {
         switch (type)
@@ -133,9 +155,11 @@ WARNINGS_POP
         case EDataType::Matrix22F        : return sizeof(Float) * EnumToNumComponents(EDataType::Matrix22F);
         case EDataType::Matrix33F        : return sizeof(Float) * EnumToNumComponents(EDataType::Matrix33F);
         case EDataType::Matrix44F        : return sizeof(Float) * EnumToNumComponents(EDataType::Matrix44F);
+        case EDataType::ByteBlob         : return 1u;
 
         case EDataType::DataReference    : return sizeof(DataInstanceHandle);
         case EDataType::TextureSampler2D : return sizeof(TextureSamplerHandle);
+        case EDataType::TextureSampler2DMS : return sizeof(TextureSamplerHandle);
         case EDataType::TextureSampler3D : return sizeof(TextureSamplerHandle);
         case EDataType::TextureSamplerCube:return sizeof(TextureSamplerHandle);
         case EDataType::Indices          : return sizeof(ResourceField);
@@ -170,6 +194,7 @@ WARNINGS_POP
 
         case EDataType::DataReference    : return alignof(DataInstanceHandle);
         case EDataType::TextureSampler2D : return alignof(TextureSamplerHandle);
+        case EDataType::TextureSampler2DMS : return alignof(TextureSamplerHandle);
         case EDataType::TextureSampler3D : return alignof(TextureSamplerHandle);
         case EDataType::TextureSamplerCube:return alignof(TextureSamplerHandle);
         case EDataType::Indices          : return alignof(ResourceField);
@@ -197,6 +222,7 @@ WARNINGS_POP
     inline static bool IsTextureSamplerType(EDataType dataType)
     {
         return dataType == EDataType::TextureSampler2D
+            || dataType == EDataType::TextureSampler2DMS
             || dataType == EDataType::TextureSampler3D
             || dataType == EDataType::TextureSamplerCube;
     }

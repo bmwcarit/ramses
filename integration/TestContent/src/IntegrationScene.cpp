@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "TestScenes/IntegrationScene.h"
-#include "ramses-client-api/RemoteCamera.h"
+#include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/EffectDescription.h"
@@ -18,39 +18,36 @@
 
 namespace ramses_internal
 {
-    const UInt32 IntegrationScene::DefaultDisplayWidth(200u);
-    const UInt32 IntegrationScene::DefaultDisplayHeight(200u);
-
-    IntegrationScene::IntegrationScene(ramses::Scene& scene,  const Vector3& cameraPosition)
+    IntegrationScene::IntegrationScene(ramses::Scene& scene,  const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : m_scene(scene)
         , m_defaultRenderGroup(*m_scene.createRenderGroup("defaultRenderGroup"))
         , m_defaultRenderPass(*m_scene.createRenderPass("defaultRenderPass"))
         , m_defaultCameraTranslationNode(*m_scene.createNode("defaultCameraTranslation"))
-        , m_defaultCamera(m_scene.createRemoteCamera("defaultCamera"))
+        , m_defaultCamera(*m_scene.createPerspectiveCamera("defaultCamera"))
     {
+        m_defaultCamera.setViewport(0, 0, vpWidth, vpHeight);
+        m_defaultCamera.setFrustum(19.f, float(vpWidth) / vpHeight, 0.1f, 1500.f);
         m_defaultCameraTranslationNode.setTranslation(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-        m_defaultCamera->setParent(m_defaultCameraTranslationNode);
-        m_defaultRenderPass.setCamera(*m_defaultCamera);
+        m_defaultCamera.setParent(m_defaultCameraTranslationNode);
+        m_defaultRenderPass.setCamera(m_defaultCamera);
         m_defaultRenderPass.addRenderGroup(m_defaultRenderGroup);
         m_defaultRenderPass.setClearFlags(ramses::EClearFlags_None);
     }
 
-    IntegrationScene::~IntegrationScene()
-    {
-    }
+    IntegrationScene::~IntegrationScene() = default;
 
     ramses::Effect* IntegrationScene::getTestEffect(const String& nameOrShaderFile)
     {
         ramses::EffectDescription effectDesc;
         effectDesc.setVertexShaderFromFile(("res/" + nameOrShaderFile + ".vert").c_str());
         effectDesc.setFragmentShaderFromFile(("res/" + nameOrShaderFile + ".frag").c_str());
-        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
-        effectDesc.setUniformSemantic("viewMatrix", ramses::EEffectUniformSemantic_ViewMatrix);
-        effectDesc.setUniformSemantic("modelMatrix", ramses::EEffectUniformSemantic_ModelMatrix);
-        effectDesc.setUniformSemantic("cameraPosition", ramses::EEffectUniformSemantic_CameraWorldPosition);
-        effectDesc.setUniformSemantic("u_customTexture", ramses::EEffectUniformSemantic_TextTexture);
-        effectDesc.setAttributeSemantic("a_customPosition", ramses::EEffectAttributeSemantic_TextPositions);
-        effectDesc.setAttributeSemantic("a_customTexCoord", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
+        effectDesc.setUniformSemantic("viewMatrix", ramses::EEffectUniformSemantic::ViewMatrix);
+        effectDesc.setUniformSemantic("modelMatrix", ramses::EEffectUniformSemantic::ModelMatrix);
+        effectDesc.setUniformSemantic("cameraPosition", ramses::EEffectUniformSemantic::CameraWorldPosition);
+        effectDesc.setUniformSemantic("u_customTexture", ramses::EEffectUniformSemantic::TextTexture);
+        effectDesc.setAttributeSemantic("a_customPosition", ramses::EEffectAttributeSemantic::TextPositions);
+        effectDesc.setAttributeSemantic("a_customTexCoord", ramses::EEffectAttributeSemantic::TextTextureCoordinates);
 
         ramses::Effect* effect = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, nameOrShaderFile.c_str());
         assert(nullptr != effect);
@@ -76,8 +73,17 @@ namespace ramses_internal
         return m_defaultCameraTranslationNode;
     }
 
-    ramses::Camera& IntegrationScene::getDefaultCamera()
+    ramses::PerspectiveCamera& IntegrationScene::getDefaultCamera()
     {
-        return *m_defaultCamera;
+        return m_defaultCamera;
     }
+
+    ramses::PerspectiveCamera& IntegrationScene::createCameraWithDefaultParameters()
+    {
+        auto camera = m_scene.createPerspectiveCamera();
+        camera->setViewport(0, 0, m_defaultCamera.getViewportWidth(), m_defaultCamera.getViewportHeight());
+        camera->setFrustum(m_defaultCamera.getVerticalFieldOfView(), m_defaultCamera.getAspectRatio(), m_defaultCamera.getNearPlane(), m_defaultCamera.getFarPlane());
+        return *camera;
+    }
+
 }

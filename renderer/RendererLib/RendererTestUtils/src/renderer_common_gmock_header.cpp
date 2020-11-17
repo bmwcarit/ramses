@@ -26,21 +26,6 @@ namespace ramses_internal
         *os << "\nWindowHeight=" << config.getDesiredWindowHeight();
         *os << "\nWindowPositionX=" << config.getWindowPositionX();
         *os << "\nWindowPositionY=" << config.getWindowPositionY();
-
-        const Vector3 camPos = config.getCameraPosition();
-        *os << "\nCamera position x=" << camPos.x << " y=" << camPos.y << " z=" << camPos.z;
-        const Vector3 camRot = config.getCameraRotation();
-        *os << "\nCamera rotation x=" << camRot.x << " y=" << camRot.y << " z=" << camRot.z;
-
-        const ProjectionParams& projParams = config.getProjectionParams();
-        *os << "\nProjectionType=" << fmt::to_string(projParams.getProjectionType());
-
-        *os << "\nLeftPlane=" << projParams.leftPlane;
-        *os << "\nRightPlane=" << projParams.rightPlane;
-        *os << "\nBottomPlane=" << projParams.bottomPlane;
-        *os << "\nTopPlane=" << projParams.topPlane;
-        *os << "\nNearPlane=" << projParams.nearPlane;
-        *os << "\nFarPlane=" << projParams.farPlane;
     }
 
     void PrintTo(const RendererConfig& config, ::std::ostream* os)

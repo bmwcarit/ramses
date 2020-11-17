@@ -7,15 +7,14 @@
 //  -------------------------------------------------------------------------
 
 #include "Ramsh/Ramsh.h"
-#include "ramses-sdk-build-config.h"
 #include "Utils/LogMacros.h"
 #include "Ramsh/RamshCommandSetContextLogLevelFilter.h"
 
 namespace ramses_internal
 {
     Ramsh::Ramsh()
-        : m_cmdPrintBuildConfig(::ramses_sdk::RAMSES_SDK_BUILD_CONFIG)
-        , m_cmdPrintRamsesVersion(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING)
+        : m_cmdPrintBuildConfig()
+        , m_cmdPrintRamsesVersion()
     {
         add(m_cmdPrintBuildConfig);
         add(m_cmdPrintRamsesVersion);

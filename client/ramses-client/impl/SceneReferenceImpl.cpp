@@ -56,6 +56,9 @@ namespace ramses
 
     status_t SceneReferenceImpl::requestState(RendererSceneState requestedState)
     {
+        if (requestedState == RendererSceneState::Unavailable)
+            return addErrorEntry("SceneReference::requestState: Can not request scene reference state Unavailable. In order to release the scene from renderer request Available state");
+
         getIScene().requestSceneReferenceState(m_sceneReferenceHandle, GetInternalSceneReferenceState(requestedState));
         return StatusOK;
     }

@@ -15,8 +15,12 @@
 namespace ramses
 {
     /**
-     * @brief The ArrayResource stores a data array of a given type. The data is immutable.
-     *        The resource can be used as input for a #ramses::GeometryBinding.
+    * @brief The #ArrayResource stores a data array of a given type. The data is immutable.
+    *        The resource can be used as input for a #ramses::GeometryBinding.
+    *
+    * @details If an #ArrayResource object is created with type #ramses::EDataType::ByteBlob then an element
+    *          is defined as one byte, rather than a logical vertex element. Hence, number of elements is
+    *          the same as size in bytes.
     */
     class RAMSES_API ArrayResource : public Resource
     {

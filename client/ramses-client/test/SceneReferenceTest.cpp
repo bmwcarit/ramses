@@ -31,7 +31,7 @@ namespace ramses
         ASSERT_TRUE(this->getInternalScene().isSceneReferenceAllocated(sceneRefHandle));
         const auto& sceneRef = this->getInternalScene().getSceneReference(sceneRefHandle);
         EXPECT_EQ(123u, sceneRef.sceneId.getValue());
-        EXPECT_EQ(ramses_internal::RendererSceneState::Unavailable, sceneRef.requestedState);
+        EXPECT_EQ(ramses_internal::RendererSceneState::Available, sceneRef.requestedState);
         EXPECT_EQ(0, sceneRef.renderOrder);
         EXPECT_FALSE(sceneRef.flushNotifications);
 
@@ -65,7 +65,7 @@ namespace ramses
     TEST_F(ASceneReference, getsInitialRequestedSceneState)
     {
         SceneReference* sceneReference = this->m_scene.createSceneReference(sceneId_t(123), "testSceneReference");
-        ASSERT_EQ(RendererSceneState::Unavailable, sceneReference->getRequestedState());
+        ASSERT_EQ(RendererSceneState::Available, sceneReference->getRequestedState());
     }
 
     TEST_F(ASceneReference, canGetRequestedSceneState)

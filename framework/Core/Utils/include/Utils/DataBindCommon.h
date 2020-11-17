@@ -77,12 +77,12 @@
 
 namespace ramses_internal
 {
-    typedef UInt32 TDataBindID;
+    using TDataBindID = UInt32;
 
     template <typename ClassType>
     struct DataBindContainerTraits
     {
-        typedef void(ClassType::*TFuncGeneric)();
+        using TFuncGeneric = void (ClassType::*)();
 
         const TFuncGeneric m_pGetterFunc;
         const TFuncGeneric m_pSetterFunc;

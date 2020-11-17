@@ -18,6 +18,7 @@ namespace ramses
     class UniformInput;
     class DataObject;
     class TextureSampler;
+    class TextureSamplerMS;
     class Effect;
 
     /**
@@ -780,6 +781,16 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t setInputTexture(const UniformInput& input, const TextureSampler& textureSampler);
+
+        /**
+        * @brief Sets multisampled texture sampler to the input
+        *
+        * @param[in] input The effect multisampled shader uniform input to set the value to
+        * @param[in] textureSampler The multisampled texture sampler
+        * @return status == 0 for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setInputTexture(const UniformInput& input, const TextureSamplerMS& textureSampler);
 
         /**
         * @brief Gets texture sampler currently set to the input

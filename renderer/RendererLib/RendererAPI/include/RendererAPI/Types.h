@@ -34,45 +34,39 @@ namespace ramses_internal
     };
 
     struct DisplayHandleTag {};
-    typedef TypedMemoryHandle<DisplayHandleTag> DisplayHandle;
-    typedef std::vector<DisplayHandle> DisplayHandleVector;
+    using DisplayHandle = TypedMemoryHandle<DisplayHandleTag>;
+    using DisplayHandleVector = std::vector<DisplayHandle>;
 
     struct OffscreenBufferHandleTag {};
-    typedef TypedMemoryHandle<OffscreenBufferHandleTag> OffscreenBufferHandle;
+    using OffscreenBufferHandle = TypedMemoryHandle<OffscreenBufferHandleTag>;
+    struct StreamBufferHandleTag {};
+    using StreamBufferHandle = TypedMemoryHandle<StreamBufferHandleTag>;
 
-    typedef void* GenericDataPtr;
-    typedef const void* GenericConstDataPtr;
+    using GenericDataPtr = void *;
+    using GenericConstDataPtr = const void *;
 
-    typedef void* NativeHandle;
+    using NativeHandle = void *;
 
-    typedef HashSet<RenderableHandle> RenderableSet;
-    typedef std::vector<Bool> BoolVector;
-    typedef std::vector<UInt8> UInt8Vector;
-    typedef std::vector<RenderTargetHandle> RenderTargetHandleVector;
+    using RenderableSet = HashSet<RenderableHandle>;
+    using BoolVector = std::vector<Bool>;
+    using UInt8Vector = std::vector<UInt8>;
+    using RenderTargetHandleVector = std::vector<RenderTargetHandle>;
 
     struct DeviceResourceHandleTag {};
-    typedef TypedMemoryHandle<DeviceResourceHandleTag> DeviceResourceHandle;
-    typedef std::vector<DeviceResourceHandle> DeviceHandleVector;
-
-    struct StreamTextureSourceIdTag {};
-    typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, StreamTextureSourceIdTag> StreamTextureSourceId;
-    typedef HashSet<StreamTextureSourceId> StreamTextureSourceIdSet;
-    typedef std::vector<StreamTextureSourceId> StreamTextureSourceIdVector;
-
-    // TODO Violin this needs removing - no need for two types for stream texture id...
-    typedef StreamTextureSourceId WaylandIviSurfaceId;
+    using DeviceResourceHandle = TypedMemoryHandle<DeviceResourceHandleTag>;
+    using DeviceHandleVector = std::vector<DeviceResourceHandle>;
 
     struct WaylandIviLayerIdTag {};
-    typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, WaylandIviLayerIdTag> WaylandIviLayerId;
+    using WaylandIviLayerId = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), WaylandIviLayerIdTag>;
 
     struct IntegrityEglDisplayIdTag {};
-    typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, IntegrityEglDisplayIdTag> IntegrityRGLDeviceUnit;
+    using IntegrityRGLDeviceUnit = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), IntegrityEglDisplayIdTag>;
 
     struct WindowsWindowHandleTag {};
-    typedef StronglyTypedValue<void*, nullptr, WindowsWindowHandleTag> WindowsWindowHandle;
+    using WindowsWindowHandle = StronglyTypedValue<void *, nullptr, WindowsWindowHandleTag>;
 
     struct AndroidNativeWindowPtrTag {};
-    typedef StronglyTypedValue<void*, nullptr, AndroidNativeWindowPtrTag> AndroidNativeWindowPtr;
+    using AndroidNativeWindowPtr = StronglyTypedValue<void *, nullptr, AndroidNativeWindowPtrTag>;
 
     struct ScreenshotInfo
     {
@@ -89,12 +83,11 @@ namespace ramses_internal
         Bool          sendViaDLT;
         UInt8Vector   pixelData;
     };
-    typedef std::vector<ScreenshotInfo> ScreenshotInfoVector;
+    using ScreenshotInfoVector = std::vector<ScreenshotInfo>;
 
     using BinaryShaderFormatID = StronglyTypedValue<UInt32, 0, struct BinaryShaderFormatIDTag>;
 }
 
-MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::StreamTextureSourceId)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WaylandIviLayerId)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::IntegrityRGLDeviceUnit)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WindowsWindowHandle)

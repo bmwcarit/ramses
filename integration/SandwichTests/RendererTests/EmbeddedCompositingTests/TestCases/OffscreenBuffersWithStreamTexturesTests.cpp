@@ -13,10 +13,6 @@
 
 namespace ramses_internal
 {
-    OffscreenBuffersWithStreamTexturesTests::OffscreenBuffersWithStreamTexturesTests()
-    {
-    }
-
     void OffscreenBuffersWithStreamTexturesTests::setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework)
     {
         testFramework.createTestCaseWithDefaultDisplay(CanUseStreamTextureInASceneMappedToOffscreenBuffer, *this, "CanUseStreamTextureInASceneMappedToOffscreenBuffer");
@@ -26,7 +22,7 @@ namespace ramses_internal
     {
         Bool testResultValue = true;
 
-        const StreamTextureSourceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
+        const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
 
         testFramework.setEnvironmentVariableWaylandDisplay();
 
@@ -34,8 +30,8 @@ namespace ramses_internal
         {
         case CanUseStreamTextureInASceneMappedToOffscreenBuffer:
         {
-            const auto sceneIdProvider = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
-            const auto sceneIdConsumer = testFramework.createAndShowScene<TextureLinkScene>(TextureLinkScene::DATA_CONSUMER);
+            const auto sceneIdProvider = testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, 256u, 256u);
+            const auto sceneIdConsumer = testFramework.createAndShowScene<TextureLinkScene>(TextureLinkScene::DATA_CONSUMER, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
 
             const auto offscreenBuffer = testFramework.createOffscreenBuffer(0, 256, 256, false);
             testFramework.assignSceneToDisplayBuffer(sceneIdProvider, offscreenBuffer);

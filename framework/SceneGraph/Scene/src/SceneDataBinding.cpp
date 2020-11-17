@@ -7,12 +7,14 @@
 //  -------------------------------------------------------------------------
 
 #include "Scene/SceneDataBinding.h"
+#include "SceneAPI/Handles.h"
+#include "Math3d/Vector3.h"
 
 namespace ramses_internal
 {
     DATA_BIND_DEFINE_BEGIN(IScene)
         DATA_BIND_DEFINE( 0,  IScene,  IScene::getTranslation,           IScene::setTranslation,           IScene::isTransformAllocated,     EDataTypeID_Vector3f,  EDataBindAccessorType_Handles_1)
-        DATA_BIND_DEFINE( 1,  IScene,  IScene::getRotation,              IScene::setRotation,              IScene::isTransformAllocated,     EDataTypeID_Vector3f,  EDataBindAccessorType_Handles_1)
+        DATA_BIND_DEFINE( 1,  IScene,  IScene::getRotation,              IScene::setRotationForAnimation,  IScene::isTransformAllocated,     EDataTypeID_Vector3f,  EDataBindAccessorType_Handles_1)
         DATA_BIND_DEFINE( 2,  IScene,  IScene::getScaling,               IScene::setScaling,               IScene::isTransformAllocated,     EDataTypeID_Vector3f,  EDataBindAccessorType_Handles_1)
         DATA_BIND_DEFINE( 3,  IScene,  IScene::getDataSingleFloat,       IScene::setDataSingleFloat,       IScene::isDataInstanceAllocated,  EDataTypeID_Float,     EDataBindAccessorType_Handles_2)
         DATA_BIND_DEFINE( 4,  IScene,  IScene::getDataSingleVector2f,    IScene::setDataSingleVector2f,    IScene::isDataInstanceAllocated,  EDataTypeID_Vector2f,  EDataBindAccessorType_Handles_2)

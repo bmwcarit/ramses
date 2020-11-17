@@ -190,7 +190,7 @@ namespace ramses_internal
         return m_scene.allocateRenderBuffer(renderBuffer, preallocateHandle(handle));
     }
 
-    StreamTextureHandle SceneAllocateHelper::allocateStreamTexture(uint32_t streamSource, ResourceContentHash fallbackTextureHash, StreamTextureHandle handle)
+    StreamTextureHandle SceneAllocateHelper::allocateStreamTexture(WaylandIviSurfaceId streamSource, ResourceContentHash fallbackTextureHash, StreamTextureHandle handle)
     {
         return m_scene.allocateStreamTexture(streamSource, fallbackTextureHash, preallocateHandle(handle));
     }

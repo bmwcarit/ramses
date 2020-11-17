@@ -12,7 +12,6 @@
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/WarpingMeshData.h"
 #include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-renderer-api/DcsmContentControlConfig.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include "ramses-framework-api/RamsesFramework.h"
 
@@ -101,7 +100,6 @@ protected:
     ramses::RamsesFramework framework;
     ramses::RamsesRenderer& renderer;
     const ramses_internal::RendererCommands& commandBuffer;
-    ramses::DcsmContentControlConfig m_dcsmContentControlConfig{ { ramses::Category{ 123u }, ramses::DcsmContentControlConfig::CategoryInfo{ ramses::SizeInfo{ 1u, 2u }, ramses::displayId_t{} } } };
 };
 
 class ARamsesRendererWithDisplay : public ARamsesRenderer
@@ -155,13 +153,13 @@ TEST_F(ARamsesRenderer, canOnlyGetOneSceneControlAPI_RendererSceneControl)
     EXPECT_EQ(api, renderer.getSceneControlAPI());
     EXPECT_EQ(api, renderer.getSceneControlAPI());
 
-    EXPECT_TRUE(renderer.createDcsmContentControl(m_dcsmContentControlConfig) == nullptr);
-    EXPECT_TRUE(renderer.createDcsmContentControl(m_dcsmContentControlConfig) == nullptr);
+    EXPECT_TRUE(renderer.createDcsmContentControl() == nullptr);
+    EXPECT_TRUE(renderer.createDcsmContentControl() == nullptr);
 }
 
 TEST_F(ARamsesRenderer, canOnlyGetOneSceneControlAPI_DcsmContentControl)
 {
-    EXPECT_TRUE(renderer.createDcsmContentControl(m_dcsmContentControlConfig) != nullptr);
+    EXPECT_TRUE(renderer.createDcsmContentControl() != nullptr);
 
     EXPECT_TRUE(renderer.getSceneControlAPI() == nullptr);
     EXPECT_TRUE(renderer.getSceneControlAPI() == nullptr);
@@ -169,15 +167,10 @@ TEST_F(ARamsesRenderer, canOnlyGetOneSceneControlAPI_DcsmContentControl)
 
 TEST_F(ARamsesRenderer, canCreateDcsmContentControlOnlyOnce)
 {
-    EXPECT_TRUE(renderer.createDcsmContentControl(m_dcsmContentControlConfig) != nullptr);
+    EXPECT_TRUE(renderer.createDcsmContentControl() != nullptr);
 
-    EXPECT_TRUE(renderer.createDcsmContentControl(m_dcsmContentControlConfig) == nullptr);
-    EXPECT_TRUE(renderer.createDcsmContentControl(m_dcsmContentControlConfig) == nullptr);
-}
-
-TEST_F(ARamsesRenderer, canCreateDcsmContentControlWithNoCategoryInConfig)
-{
-    EXPECT_NE(nullptr, renderer.createDcsmContentControl(ramses::DcsmContentControlConfig{}));
+    EXPECT_TRUE(renderer.createDcsmContentControl() == nullptr);
+    EXPECT_TRUE(renderer.createDcsmContentControl() == nullptr);
 }
 
 /*
@@ -190,17 +183,6 @@ TEST_F(ARamsesRenderer, createsACommandForDisplayCreation)
     EXPECT_NE(ramses::displayId_t::Invalid(), displayId);
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_CreateDisplay);
     checkForRendererCommandCount(1u);
-}
-
-TEST_F(ARamsesRenderer, createsNoCommandForDisplayCreationWithInvalidConfig)
-{
-    ramses::DisplayConfig config;
-    EXPECT_EQ(ramses::StatusOK, config.setPerspectiveProjection(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-    ramses::displayId_t displayId = renderer.createDisplay(config);
-
-    EXPECT_EQ(ramses::displayId_t::Invalid(), displayId);
-    checkForRendererCommandCount(0u);
 }
 
 TEST_F(ARamsesRenderer, createsMultipleCommandsForMultipleDisplayCreation)
@@ -308,7 +290,7 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForValidWarpingDataUpdateOnWarp
 */
 TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate)
 {
-    EXPECT_NE(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 40u, 40u));
+    EXPECT_NE(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 40u, 40u, 4u));
     checkForRendererCommandCount(1u);
     checkForRendererCommand(0u, ramses_internal::ERendererCommand_CreateOffscreenBuffer);
 }
@@ -323,12 +305,12 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferDestroy)
 
 TEST_F(ARamsesRendererWithDisplay, failsToCreateOffscreenBufferWithUnsupportedResolution)
 {
-    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 0u, 1u));
-    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 1u, 0u));
-    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 0u, 0u));
-    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 5000u, 1u));
-    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 1u, 5000u));
-    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 5000u, 5000u));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 0u, 1u, 4u));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 1u, 0u, 4u));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 0u, 0u, 4u));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 5000u, 1u, 4u));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 1u, 5000u, 4u));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 5000u, 5000u, 4u));
 }
 
 /*
@@ -515,7 +497,7 @@ TEST_F(ARamsesRenderer, canRunRendererInItsOwnThreadAndCallAPIMethods)
     renderer.flush();
 
     renderer.readPixels(displayId, {}, 1u, 2u, 3u, 4u);
-    const auto ob = renderer.createOffscreenBuffer(displayId, 1u, 1u);
+    const auto ob = renderer.createOffscreenBuffer(displayId, 1u, 1u, 4u);
     renderer.destroyOffscreenBuffer(displayId, ob);
     renderer.flush();
 

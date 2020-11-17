@@ -26,7 +26,7 @@ namespace ramses_internal
     class RamshInput;
     class RamshCommunicationChannel;
 
-    typedef HashMap<String, RamshCommand*> KeywordToCommandMap;
+    using KeywordToCommandMap = HashMap<String, RamshCommand *>;
 
     class Ramsh
     {

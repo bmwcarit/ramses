@@ -54,13 +54,6 @@ namespace ramses_internal
 
         struct Event
         {
-            enum class Type
-            {
-                ScenePublished,
-                SceneStateChanged
-            };
-
-            Type type;
             SceneId sceneId;
             RendererSceneState state;
         };

@@ -20,7 +20,7 @@ ImageBox::ImageBox(ramses::TextureSampler& textureSampler,
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-text-shadow-demo-rgba-texturing.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-text-shadow-demo-rgba-texturing.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     const ramses::Effect& effect     = *scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
     ramses::Appearance&   appearance = *scene.createAppearance(effect);
@@ -52,7 +52,7 @@ ImageBox::ImageBox(ramses::TextureSampler& textureSampler,
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-text-shadow-demo-a-texturing.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-text-shadow-demo-a-texturing.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     const ramses::Effect& effect     = *scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
     ramses::Appearance&   appearance = *scene.createAppearance(effect);

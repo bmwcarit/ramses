@@ -17,12 +17,13 @@
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/OrthographicCamera.h"
+#include "ramses-client-api/PerspectiveCamera.h"
 #include <cassert>
 
 namespace ramses_internal
 {
-    TextureBufferScene::TextureBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    TextureBufferScene::TextureBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_quadMesh(*scene.createMeshNode())
         , m_effectSingleMip(*getTestEffect("ramses-test-client-texture-buffer"))
         , m_effectAllMips(*getTestEffect("ramses-test-client-texture-buffer-allmips"))
@@ -91,7 +92,7 @@ namespace ramses_internal
         cameraTranslate->setTranslation(cameraPosition.x, cameraPosition.y, cameraPosition.z);
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
         orthoCamera->setFrustum(0.0f, 1.0f, 0.0f, 1.0f, 0.1f, 100.f);
-        orthoCamera->setViewport(0, 0, DefaultDisplayWidth, DefaultDisplayHeight);
+        orthoCamera->setViewport(0, 0, getDefaultCamera().getViewportWidth(), getDefaultCamera().getViewportHeight());
         orthoCamera->setParent(*cameraTranslate);
         setCameraToDefaultRenderPass(orthoCamera);
     }

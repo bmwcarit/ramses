@@ -32,7 +32,7 @@ namespace ramses_internal
         Bool hasDependencyAsConsumerToProvider(SceneId consumerScene, SceneId providerScene) const;
         void updateSceneOrder() const;
 
-        typedef HashMap<SceneId, SceneIdVector> ConsumerToProvidersMap;
+        using ConsumerToProvidersMap = HashMap<SceneId, SceneIdVector>;
         ConsumerToProvidersMap m_consumerToProvidersMap;
 
         mutable SceneIdVector m_sceneOrderList;

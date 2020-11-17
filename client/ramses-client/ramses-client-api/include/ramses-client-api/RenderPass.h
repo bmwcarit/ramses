@@ -60,6 +60,11 @@ namespace ramses
         const Camera* getCamera() const;
 
         /**
+        * @copydoc getCamera() const
+        */
+        Camera* getCamera();
+
+        /**
         * @brief Add a RenderGroup to this RenderPass for rendering.
         * @details RenderGroup can be added to multiple RenderPass instances but cannot be added multiple
         *          times to the same instance.

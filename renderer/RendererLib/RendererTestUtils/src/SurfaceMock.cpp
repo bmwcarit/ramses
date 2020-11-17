@@ -27,15 +27,6 @@ namespace ramses_internal
     {
     }
 
-    SurfaceMockWithDestructor::SurfaceMockWithDestructor()
-    {
-    }
-
-    SurfaceMockWithDestructor::~SurfaceMockWithDestructor()
-    {
-        Die();
-    }
-
     template class SurfaceMock < NiceMock > ;
     template class SurfaceMock < StrictMock > ;
 }

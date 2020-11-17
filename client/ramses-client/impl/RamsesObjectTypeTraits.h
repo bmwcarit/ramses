@@ -79,10 +79,8 @@ namespace ramses
     DEFINE_RAMSES_OBJECT_TRAITS(AnimationSystem, ERamsesObjectType_AnimationSystem, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(AnimationSystemRealTime, ERamsesObjectType_AnimationSystemRealTime, ERamsesObjectType_AnimationSystem, true);
     DEFINE_RAMSES_OBJECT_TRAITS(MeshNode, ERamsesObjectType_MeshNode, ERamsesObjectType_Node, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(RemoteCamera, ERamsesObjectType_RemoteCamera, ERamsesObjectType_Camera, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(PerspectiveCamera, ERamsesObjectType_PerspectiveCamera, ERamsesObjectType_LocalCamera, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(OrthographicCamera, ERamsesObjectType_OrthographicCamera, ERamsesObjectType_LocalCamera, true);
-    DEFINE_RAMSES_OBJECT_TRAITS(LocalCamera, ERamsesObjectType_LocalCamera, ERamsesObjectType_Camera, false);
+    DEFINE_RAMSES_OBJECT_TRAITS(PerspectiveCamera, ERamsesObjectType_PerspectiveCamera, ERamsesObjectType_Camera, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(OrthographicCamera, ERamsesObjectType_OrthographicCamera, ERamsesObjectType_Camera, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Effect, ERamsesObjectType_Effect, ERamsesObjectType_Resource, true);
     DEFINE_RAMSES_OBJECT_TRAITS(AnimatedProperty, ERamsesObjectType_AnimatedProperty, ERamsesObjectType_AnimationObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(Animation, ERamsesObjectType_Animation, ERamsesObjectType_AnimationObject, true);
@@ -123,6 +121,7 @@ namespace ramses
     DEFINE_RAMSES_OBJECT_TRAITS(RenderPass, ERamsesObjectType_RenderPass, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(BlitPass, ERamsesObjectType_BlitPass, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(TextureSampler, ERamsesObjectType_TextureSampler, ERamsesObjectType_SceneObject, true);
+    DEFINE_RAMSES_OBJECT_TRAITS(TextureSamplerMS, ERamsesObjectType_TextureSamplerMS, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(RenderBuffer, ERamsesObjectType_RenderBuffer, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(RenderTarget, ERamsesObjectType_RenderTarget, ERamsesObjectType_SceneObject, true);
     DEFINE_RAMSES_OBJECT_TRAITS(DataFloat, ERamsesObjectType_DataFloat, ERamsesObjectType_DataObject, true);
@@ -182,8 +181,6 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Node)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_MeshNode)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Camera)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RemoteCamera)
-        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_LocalCamera)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_PerspectiveCamera)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_OrthographicCamera)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_Effect)
@@ -228,6 +225,7 @@ namespace ramses
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RenderPass)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_BlitPass)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TextureSampler)
+        DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_TextureSamplerMS)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RenderBuffer)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_RenderTarget)
         DEFINE_RAMSES_OBJECT_TRAITS_LIST(ERamsesObjectType_DataBufferObject)

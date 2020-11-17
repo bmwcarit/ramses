@@ -50,6 +50,7 @@ namespace ramses_internal
         void setLogLevelForContexts(ELogLevel logLevel);
 
         void setConsoleLogLevel(ELogLevel logLevel);
+        void setConsoleLogLevelProgrammatically(ELogLevel logLevel);
         ELogLevel getConsoleLogLevel() const;
 
         void setAfterConsoleLogCallback(const std::function<void()>& callback);
@@ -64,6 +65,7 @@ namespace ramses_internal
         static const ELogLevel LogLevelDefault_Contexts = ELogLevel::Info;
         static const ELogLevel LogLevelDefault_Console = ELogLevel::Info;
 
+
         static void UpdateConsoleLogLevelFromDefine(ELogLevel& loglevel);
         static void UpdateConsoleLogLevelFromEnvVar(ELogLevel& loglevel);
 
@@ -72,12 +74,14 @@ namespace ramses_internal
 
         std::mutex m_appenderLock;
         bool m_isInitialized;
+        bool m_consoleLogLevelSetProgrammatically = false;
         ConsoleLogAppender m_consoleLogAppender;
         std::unique_ptr<DltLogAppender> m_dltLogAppender;
         std::unique_ptr<LogAppenderBase> m_platformLogAppender;
         std::vector<LogContext*> m_logContexts;
         std::vector<LogAppenderBase*> m_logAppenders;
         LogContext& m_fileTransferContext;
+        ELogLevel m_consoleLogLevelProgrammatically = LogLevelDefault_Console;
     };
 
     inline RamsesLogger& GetRamsesLogger()

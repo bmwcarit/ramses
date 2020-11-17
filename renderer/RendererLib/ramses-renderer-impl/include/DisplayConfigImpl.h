@@ -20,17 +20,11 @@ namespace ramses
     public:
         DisplayConfigImpl(int32_t argc, char const* const* argv);
 
-        status_t setViewPosition(float x, float y, float z);
-        status_t getViewPosition(float& x, float& y, float& z) const;
-        status_t setViewRotation(float x, float y, float z);
-        status_t getViewRotation(float& x, float& y, float& z) const;
         status_t setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height);
         status_t getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const;
         status_t setFullscreen(bool fullscreen);
         bool     isFullscreen() const;
         status_t setBorderless(bool borderless);
-        status_t setPerspectiveProjection(float fieldOfViewY, float aspectRatio, float nearPlane, float farPlane);
-        status_t setProjection(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane, bool isOrthographic);
         status_t setMultiSampling(uint32_t numSamples);
         status_t getMultiSamplingSamples(uint32_t& numSamples) const;
         status_t enableWarpingPostEffect();
@@ -52,8 +46,6 @@ namespace ramses
         status_t setOffscreen(bool offscreenFlag);
         status_t setWindowsWindowHandle(void* hwnd);
         void*    getWindowsWindowHandle() const;
-
-        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
         //impl methods
         const ramses_internal::DisplayConfig& getInternalDisplayConfig() const;

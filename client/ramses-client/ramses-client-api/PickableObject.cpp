@@ -8,7 +8,7 @@
 
 //API
 #include "ramses-client-api/PickableObject.h"
-#include "ramses-client-api/LocalCamera.h"
+#include "ramses-client-api/Camera.h"
 
 //internal
 #include "PickableObjectImpl.h"
@@ -29,12 +29,12 @@ namespace ramses
         return impl.getGeometryBuffer();
     }
 
-    const LocalCamera* PickableObject::getCamera() const
+    const Camera* PickableObject::getCamera() const
     {
         return impl.getCamera();
     }
 
-    status_t PickableObject::setCamera(const LocalCamera& camera)
+    status_t PickableObject::setCamera(const Camera& camera)
     {
         const status_t status = impl.setCamera(camera.impl);
         LOG_HL_CLIENT_API1(status, LOG_API_RAMSESOBJECT_STRING(camera));

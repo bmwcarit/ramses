@@ -9,11 +9,11 @@
 #ifndef RAMSES_PLATFORM_X11_EGL_ES_3_0_H
 #define RAMSES_PLATFORM_X11_EGL_ES_3_0_H
 
-#include "Platform_X11/PlatformFactory_X11_EGL.h"
+#include "Platform_X11/Platform_X11_EGL.h"
 
 namespace ramses_internal
 {
-    class Platform_X11_EGL_ES_3_0 : public PlatformFactory_X11_EGL
+    class Platform_X11_EGL_ES_3_0 : public Platform_X11_EGL
     {
     public:
         explicit Platform_X11_EGL_ES_3_0(const RendererConfig& rendererConfig);
@@ -21,8 +21,8 @@ namespace ramses_internal
         virtual IDevice*      createDevice(IContext& context) override final;
 
     protected:
-        void getContextAttributes(std::vector<EGLint>& attributes) const override final;
-        void getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const override final;
+        virtual void getContextAttributes(std::vector<EGLint>& attributes) const override final;
+        virtual void getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const override final;
     };
 }
 

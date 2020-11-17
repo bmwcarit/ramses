@@ -26,19 +26,19 @@ namespace ramses
         return status;
     }
 
-    bool CategoryInfoUpdate::hasSafeAreaSizeUpdate() const
+    bool CategoryInfoUpdate::hasSafeRectUpdate() const
     {
-        return impl.hasSafeAreaSizeUpdate();
+        return impl.hasSafeRectUpdate();
     }
 
-    ramses::Rect CategoryInfoUpdate::getSafeAreaSize() const
+    ramses::Rect CategoryInfoUpdate::getSafeRect() const
     {
-        return impl.getSafeAreaSize();
+        return impl.getSafeRect();
     }
 
-    ramses::status_t CategoryInfoUpdate::setSafeAreaSize(Rect rect)
+    ramses::status_t CategoryInfoUpdate::setSafeRect(Rect rect)
     {
-        const auto status = impl.setSafeAreaSize(rect);
+        const auto status = impl.setSafeRect(rect);
         LOG_HL_CLIENT_API1(status, rect);
         return status;
     }
@@ -57,10 +57,12 @@ namespace ramses
         LOG_HL_CLIENT_API_NOARG(LOG_API_VOID);
     }
 
-    CategoryInfoUpdate::CategoryInfoUpdate(SizeInfo categorySize)
+    CategoryInfoUpdate::CategoryInfoUpdate(SizeInfo renderSize, Rect categoryRect, Rect safeRect)
         : CategoryInfoUpdate()
     {
-        setCategorySize(Rect(0, 0, categorySize.width, categorySize.height));
+        setRenderSize(renderSize);
+        setCategoryRect(categoryRect);
+        setSafeRect(safeRect);
     }
 
     bool CategoryInfoUpdate::operator!=(const CategoryInfoUpdate& rhs) const
@@ -78,19 +80,19 @@ namespace ramses
         LOG_HL_CLIENT_API_NOARG(LOG_API_VOID);
     }
 
-    bool CategoryInfoUpdate::hasCategorySizeUpdate() const
+    bool CategoryInfoUpdate::hasCategoryRectUpdate() const
     {
-        return impl.hasCategorySizeUpdate();
+        return impl.hasCategoryRectUpdate();
     }
 
-    Rect CategoryInfoUpdate::getCategorySize() const
+    Rect CategoryInfoUpdate::getCategoryRect() const
     {
-        return impl.getCategorySize();
+        return impl.getCategoryRect();
     }
 
-    status_t CategoryInfoUpdate::setCategorySize(Rect rect)
+    status_t CategoryInfoUpdate::setCategoryRect(Rect rect)
     {
-        const auto status = impl.setCategorySize(rect);
+        const auto status = impl.setCategoryRect(rect);
         LOG_HL_CLIENT_API1(status, rect);
         return status;
     }

@@ -35,5 +35,6 @@ IF(ramses-sdk_BUILD_EXAMPLES)
     ADD_SUBDIRECTORY(ramses-example-text-basic)
     ADD_SUBDIRECTORY(ramses-example-text-languages)
     ADD_SUBDIRECTORY(ramses-example-dcsm-provider)
+    ADD_SUBDIRECTORY(ramses-example-interleaved-vertex-buffers)
 ENDIF()
 

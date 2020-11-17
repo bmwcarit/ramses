@@ -82,10 +82,18 @@ namespace ramses
         EXPECT_TRUE(nullptr == m_scene.createRenderBuffer(1u, 1u, ERenderBufferType_DepthStencil, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite));
     }
 
-    TEST_F(RenderBufferTest, canNotCreateReadWriteMSAARenderBuffer)
+    TEST_F(RenderBufferTest, canCreateReadWriteMSAARenderBuffer)
     {
-        const RenderBuffer* renderBuffer = m_scene.createRenderBuffer(400u, 400u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 4u);
-        EXPECT_EQ(nullptr, renderBuffer);
+        const RenderBuffer* renderBuffer = m_scene.createRenderBuffer(600u, 400u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 4u, "RenderBuffer");
+        ASSERT_TRUE(renderBuffer != nullptr);
+        EXPECT_EQ(600u, renderBuffer->getWidth());
+        EXPECT_EQ(400u, renderBuffer->getHeight());
+        EXPECT_EQ(ERenderBufferType_Color, renderBuffer->getBufferType());
+        EXPECT_EQ(ERenderBufferFormat_RGBA8, renderBuffer->getBufferFormat());
+        EXPECT_EQ(ERenderBufferAccessMode_ReadWrite, renderBuffer->getAccessMode());
+        EXPECT_EQ(4u, renderBuffer->getSampleCount());
+        const ramses_internal::RenderBufferHandle rbHandle = renderBuffer->impl.getRenderBufferHandle();
+        EXPECT_TRUE(m_internalScene.isRenderBufferAllocated(rbHandle));
     }
 
     TEST_F(RenderBufferTest, reportsErrorIfNotUsedInAnyRenderPassNorBlitPass)

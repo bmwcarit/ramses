@@ -9,11 +9,11 @@
 #ifndef RAMSES_PLATFORM_ANDROID_EGL_ES_3_0_H
 #define RAMSES_PLATFORM_ANDROID_EGL_ES_3_0_H
 
-#include "Platform_Android/PlatformFactory_Android_EGL.h"
+#include "Platform_Android/Platform_Android_EGL.h"
 
 namespace ramses_internal
 {
-    class Platform_Android_EGL_ES_3_0 : public PlatformFactory_Android_EGL
+    class Platform_Android_EGL_ES_3_0 : public Platform_Android_EGL
     {
     public:
         Platform_Android_EGL_ES_3_0(const RendererConfig& rendererConfig);

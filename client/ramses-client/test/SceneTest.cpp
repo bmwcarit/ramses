@@ -12,10 +12,10 @@
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/BlitPass.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/DataFloat.h"
 #include "ramses-client-api/TextureSampler.h"
+#include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/StreamTexture.h"
@@ -51,6 +51,23 @@ namespace ramses
     protected:
         ramses::EffectDescription effectDescriptionEmpty;
     };
+
+    TEST(SceneOjects, canGiveSceneID)
+    {
+        RamsesFramework framework;
+        RamsesClient& client(*framework.createClient(nullptr));
+        Scene* sceneA = client.createScene(sceneId_t(1u));
+        Scene* sceneB = client.createScene(sceneId_t(2u));
+
+        ramses::Node* fromSceneA = sceneA->createNode();
+        ramses::SceneObject* objectFromB = sceneB->createNode();
+
+        EXPECT_EQ(sceneId_t(1u), fromSceneA->getSceneId());
+        EXPECT_EQ(sceneId_t(2u), objectFromB->getSceneId());
+
+        // use case to retrieve scene object itself
+        EXPECT_EQ(sceneA, client.getScene(fromSceneA->getSceneId()));
+    }
 
     class ASceneWithContent : public SimpleSceneTopology
     {
@@ -129,10 +146,12 @@ namespace ramses
     TEST_F(AScene, doesNotDestroyCameraWhileItIsStillUsedByARenderPass)
     {
         RenderPass* pass = m_scene.createRenderPass();
-        Camera* camera = m_scene.createRemoteCamera();
-        pass->setCamera(*camera);
+        PerspectiveCamera* perspCam = m_scene.createPerspectiveCamera();
+        perspCam->setFrustum(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f);
+        perspCam->setViewport(0, 0, 100, 200);
+        pass->setCamera(*perspCam);
 
-        EXPECT_NE(StatusOK, m_scene.destroy(*camera));
+        EXPECT_NE(StatusOK, m_scene.destroy(*perspCam));
     }
 
     TEST_F(AScene, removesMeshNodeFromRenderGroupsOnDestruction)
@@ -199,6 +218,13 @@ namespace ramses
             TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *texture);
             EXPECT_TRUE(nullptr == textureSampler);
         }
+        {
+            RenderBuffer* renderBuffer = anotherScene.createRenderBuffer(4u, 4u, ERenderBufferType_Color, ERenderBufferFormat_RGB8, ERenderBufferAccessMode_ReadWrite, 4u);
+            ASSERT_TRUE(nullptr != renderBuffer);
+
+            TextureSamplerMS* textureSampler = m_scene.createTextureSamplerMS(*renderBuffer, "sampler");
+            EXPECT_TRUE(nullptr == textureSampler);
+        }
     }
 
     TEST_F(AScene, failsToCreateTextureSamplerWhenRenderTargetIsFromAnotherScene)
@@ -208,6 +234,18 @@ namespace ramses
         ASSERT_TRUE(nullptr != renderBuffer);
 
         TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *renderBuffer);
+        EXPECT_TRUE(nullptr == textureSampler);
+
+        client.destroy(anotherScene);
+    }
+
+    TEST_F(AScene, failsToCreateTextureSamplerMSWhenRenderTargetIsFromAnotherScene)
+    {
+        Scene& anotherScene = *client.createScene(sceneId_t(12u));
+        RenderBuffer* renderBuffer = anotherScene.createRenderBuffer(100u, 100u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite);
+        ASSERT_TRUE(nullptr != renderBuffer);
+
+        TextureSamplerMS* textureSampler = m_scene.createTextureSamplerMS(*renderBuffer, "sampler");
         EXPECT_TRUE(nullptr == textureSampler);
 
         client.destroy(anotherScene);
@@ -235,6 +273,15 @@ namespace ramses
         ASSERT_TRUE(nullptr != renderBuffer);
 
         TextureSampler* textureSampler = m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Nearest, ETextureSamplingMethod_Linear, *renderBuffer);
+        EXPECT_TRUE(nullptr == textureSampler);
+    }
+
+    TEST_F(AScene, failsToCreateTextureSamplerMSWhenRenderBufferIsNotReadable)
+    {
+        RenderBuffer* renderBuffer = m_scene.createRenderBuffer(100u, 100u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_WriteOnly);
+        ASSERT_TRUE(nullptr != renderBuffer);
+
+        TextureSamplerMS* textureSampler = m_scene.createTextureSamplerMS(*renderBuffer, "sampler");
         EXPECT_TRUE(nullptr == textureSampler);
     }
 
@@ -806,6 +853,20 @@ namespace ramses
         client.destroy(anotherScene);
     }
 
+    TEST_F(AScene, reportsErrorWhenCreateTextureConsumerWithSamplerMSFromAnotherScene)
+    {
+        Scene& anotherScene = *client.createScene(sceneId_t(12u));
+        RenderBuffer* renderBuffer = anotherScene.createRenderBuffer(4u, 4u, ERenderBufferType_Color, ERenderBufferFormat_RGB8, ERenderBufferAccessMode_ReadWrite, 4u);
+        ASSERT_TRUE(nullptr != renderBuffer);
+
+        const TextureSamplerMS* sampler = anotherScene.createTextureSamplerMS(*renderBuffer, "sampler");
+        ASSERT_TRUE(nullptr != sampler);
+
+        EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{ 1u }));
+
+        client.destroy(anotherScene);
+    }
+
     TEST_F(AScene, canCreateATextureProviderDataSlot)
     {
         EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
@@ -872,6 +933,27 @@ namespace ramses
         EXPECT_EQ(ramses_internal::EDataSlotType_TextureConsumer, m_scene.impl.getIScene().getDataSlot(slotHandle).type);
     }
 
+    TEST_F(AScene, canCreateATextureConsumerDataSlotWithTextureSamplerMS)
+    {
+        EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
+
+        RenderBuffer* renderBuffer = m_scene.createRenderBuffer(4u, 4u, ERenderBufferType_Color, ERenderBufferFormat_RGB8, ERenderBufferAccessMode_ReadWrite, 4u);
+        ASSERT_TRUE(nullptr != renderBuffer);
+
+        const TextureSamplerMS* sampler = m_scene.createTextureSamplerMS(*renderBuffer, "sampler");
+
+        ASSERT_TRUE(nullptr != sampler);
+
+        EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{ 666u }));
+
+        EXPECT_EQ(1u, m_scene.impl.getIScene().getDataSlotCount());
+        ramses_internal::DataSlotHandle slotHandle(0u);
+        ASSERT_TRUE(m_scene.impl.getIScene().isDataSlotAllocated(slotHandle));
+        EXPECT_EQ(sampler->impl.getTextureSamplerHandle(), m_scene.impl.getIScene().getDataSlot(slotHandle).attachedTextureSampler);
+        EXPECT_EQ(ramses_internal::DataSlotId(666u), m_scene.impl.getIScene().getDataSlot(slotHandle).id);
+        EXPECT_EQ(ramses_internal::EDataSlotType_TextureConsumer, m_scene.impl.getIScene().getDataSlot(slotHandle).type);
+    }
+
     TEST_F(AScene, canNotCreateATextureConsumerDataSlotIfOtherThan2DTextureAssigned)
     {
         EXPECT_EQ(0u, m_scene.impl.getIScene().getDataSlotCount());
@@ -920,6 +1002,18 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{666u}));
         EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{667u}));
+    }
+
+    TEST_F(AScene, canNotCreateMoreThanOneConsumerForATextureSamplerMS)
+    {
+        RenderBuffer* renderBuffer = m_scene.createRenderBuffer(4u, 4u, ERenderBufferType_Color, ERenderBufferFormat_RGB8, ERenderBufferAccessMode_ReadWrite, 4u);
+        ASSERT_TRUE(nullptr != renderBuffer);
+
+        const TextureSamplerMS* sampler = m_scene.createTextureSamplerMS(*renderBuffer, "sampler");
+        ASSERT_TRUE(nullptr != sampler);
+
+        EXPECT_EQ(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{ 666u }));
+        EXPECT_NE(StatusOK, m_scene.createTextureConsumer(*sampler, dataConsumerId_t{ 667u }));
     }
 
     TEST_F(AScene, canNotCreateMoreThanOneProviderForATexture)
@@ -1210,6 +1304,18 @@ namespace ramses
         m_scene.destroy(*vertexDataBufferVec4);
     }
 
+    TEST_F(AScene, canCreateInterleavedVertexDataBuffer)
+    {
+        ArrayBuffer* const interleavedVertexBuffer = m_scene.createArrayBuffer(EDataType::ByteBlob, 14u);
+        ASSERT_NE(nullptr, interleavedVertexBuffer);
+
+        EXPECT_EQ(ramses::EDataType::ByteBlob, interleavedVertexBuffer->getDataType());
+        EXPECT_EQ(1u, GetSizeOfDataType(interleavedVertexBuffer->getDataType()));
+        EXPECT_EQ(14u, interleavedVertexBuffer->getMaximumNumberOfElements());
+
+        m_scene.destroy(*interleavedVertexBuffer);
+    }
+
     TEST_F(AScene, flushIncreasesStatisticCounter)
     {
         EXPECT_EQ(0u, m_scene.impl.getStatisticCollection().statFlushesTriggered.getCounterValue());
@@ -1317,7 +1423,7 @@ namespace ramses
             "{"
             "gl_Position = someMatrix * vec4(1.0);"
             "}");
-        effectDescriptionEmpty.setUniformSemantic("someMatrix", ramses::EEffectUniformSemantic_ProjectionMatrix);
+        effectDescriptionEmpty.setUniformSemantic("someMatrix", ramses::EEffectUniformSemantic::ProjectionMatrix);
         const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_TRUE(nullptr != effectFixture);
     }
@@ -1330,7 +1436,7 @@ namespace ramses
             "{"
             "gl_Position = someMatrix * vec4(1.0);"
             "}");
-        effectDescriptionEmpty.setUniformSemantic("someMatrix", ramses::EEffectUniformSemantic_ProjectionMatrix);
+        effectDescriptionEmpty.setUniformSemantic("someMatrix", ramses::EEffectUniformSemantic::ProjectionMatrix);
         const ramses::Effect* effectFixture = m_scene.createEffect(effectDescriptionEmpty, ramses::ResourceCacheFlag_DoNotCache, "name");
         EXPECT_FALSE(nullptr != effectFixture);
     }
@@ -1397,4 +1503,16 @@ namespace ramses
         ramses_internal::CONTEXT_HLAPI_CLIENT.setLogLevel(oldLogLevel);
     }
 
+    TEST_F(AScene, returnsFalseOnFlushWhenResourcesAreMissing)
+    {
+        m_creationHelper.createObjectOfType<StreamTexture>("meh");
+        EXPECT_EQ(StatusOK, m_scene.flush()); // test legal scene state => flush success
+        m_scene.destroy(*RamsesUtils::TryConvert<SceneObject>(*m_scene.findObjectByName("fallbackTex")));
+        m_scene.destroy(*RamsesUtils::TryConvert<SceneObject>(*m_scene.findObjectByName("meh")));
+        EXPECT_EQ(StatusOK, m_scene.flush()); // resource is deleted, but nobody needs it => flush success
+
+        m_creationHelper.createObjectOfType<StreamTexture>("meh2");
+        m_scene.destroy(*RamsesUtils::TryConvert<SceneObject>(*m_scene.findObjectByName("fallbackTex")));
+        EXPECT_NE(StatusOK, m_scene.flush()); // test scene with resource missing => flush failed
+    }
 }

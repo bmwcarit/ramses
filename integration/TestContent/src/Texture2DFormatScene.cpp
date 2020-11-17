@@ -226,8 +226,8 @@ const ramses::MipLevelData mipLevelData_null;
 
 namespace ramses_internal
 {
-    Texture2DFormatScene::Texture2DFormatScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    Texture2DFormatScene::Texture2DFormatScene(ramses::Scene& scene, uint32_t state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
         createOrthoCamera();
 
@@ -261,7 +261,7 @@ namespace ramses_internal
     {
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
         orthoCamera->setFrustum(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 10.f);
-        orthoCamera->setViewport(0, 0, DefaultDisplayWidth, DefaultDisplayHeight);
+        orthoCamera->setViewport(0, 0, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         setCameraToDefaultRenderPass(orthoCamera);
     }
 

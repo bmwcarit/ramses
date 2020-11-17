@@ -17,7 +17,7 @@
 namespace ramses_internal
 {
     struct DataSlotIdTag {};
-    typedef StronglyTypedValue<UInt32, 0, DataSlotIdTag> DataSlotId;
+    using DataSlotId = StronglyTypedValue<UInt32, 0, DataSlotIdTag>;
 
     struct DataSlot
     {

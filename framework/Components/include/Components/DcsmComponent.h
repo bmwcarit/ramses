@@ -53,8 +53,8 @@ namespace ramses_internal
         virtual bool sendContentStateChange(ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation ai) override;
 
         // Local provider send methods
-        virtual bool sendOfferContent(ContentID contentID, Category category, const std::string& friendlyName, bool localOnly) override;
-        virtual bool sendContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
+        virtual bool sendOfferContent(ContentID contentID, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, bool localOnly) override;
+        virtual bool sendContentDescription(ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor) override;
         virtual bool sendContentReady(ContentID contentID) override;
         virtual bool sendContentEnableFocusRequest(ContentID contentID, int32_t) override;
         virtual bool sendContentDisableFocusRequest(ContentID contentID, int32_t) override;
@@ -66,8 +66,8 @@ namespace ramses_internal
         virtual void handleContentStateChange(ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID) override;
 
         // IDcsmConsumerServiceHandler implementation
-        virtual void handleOfferContent(ContentID contentID, Category, const std::string& friendlyName, const Guid& providerID) override;
-        virtual void handleContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) override;
+        virtual void handleOfferContent(ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName, const Guid& providerID) override;
+        virtual void handleContentDescription(ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) override;
         virtual void handleContentReady(ContentID contentID, const Guid& providerID) override;
         virtual void handleContentEnableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID) override;
         virtual void handleContentDisableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID) override;
@@ -144,8 +144,8 @@ namespace ramses_internal
 
         void addProviderEvent_CanvasSizeChange(ContentID contentID, CategoryInfo categoryInfo, AnimationInformation, const Guid& consumerID);
         void addProviderEvent_ContentStateChange(ContentID contentID, EDcsmState status, CategoryInfo categoryInfo,AnimationInformation, const Guid& consumerID);
-        void addConsumerEvent_OfferContent(ContentID contentID, Category, const Guid& providerID);
-        void addConsumerEvent_ContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID);
+        void addConsumerEvent_OfferContent(ContentID contentID, Category, ETechnicalContentType technicalContentType, const Guid& providerID);
+        void addConsumerEvent_ContentDescription(ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID);
         void addConsumerEvent_ContentReady(ContentID contentID, const Guid& providerID);
         void addConsumerEvent_ContentEnableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID);
         void addConsumerEvent_ContentDisableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID);

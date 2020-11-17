@@ -87,10 +87,7 @@ RenderingTestCase& RendererTestsFramework::createTestCaseWithDefaultDisplay(rams
 {
     RenderingTestCase& testCase = createTestCase(id, rendererTest, name);
     ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0, iviWindowStartVisible);
-    displayConfig.setWindowRectangle(0, 0, ramses_internal::IntegrationScene::DefaultDisplayWidth, ramses_internal::IntegrationScene::DefaultDisplayHeight);
-    displayConfig.setPerspectiveProjection(19.f,
-        static_cast<float>(ramses_internal::IntegrationScene::DefaultDisplayWidth) / ramses_internal::IntegrationScene::DefaultDisplayHeight,
-        0.1f, 1500.f);
+    displayConfig.setWindowRectangle(0, 0, ramses_internal::IntegrationScene::DefaultViewportWidth, ramses_internal::IntegrationScene::DefaultViewportHeight);
     testCase.m_displayConfigs.push_back(displayConfig);
 
     return testCase;
@@ -135,11 +132,11 @@ void RendererTestsFramework::dispatchRendererEvents(ramses::IRendererEventHandle
     m_testRenderer.dispatchEvents(eventHandler, sceneControlEventHandler);
 }
 
-ramses::displayBufferId_t RendererTestsFramework::createOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible)
+ramses::displayBufferId_t RendererTestsFramework::createOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount)
 {
     assert(testDisplayIdx < m_displays.size());
     const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
-    ramses::displayBufferId_t buffer = m_testRenderer.createOffscreenBuffer(displayId, width, height, interruptible);
+    ramses::displayBufferId_t buffer = m_testRenderer.createOffscreenBuffer(displayId, width, height, interruptible, sampleCount);
     m_displays[testDisplayIdx].offscreenBuffers.push_back(buffer);
     return buffer;
 }

@@ -68,10 +68,10 @@ namespace ramses_internal
         return m_publishedScenes.contains(sceneId);
     }
 
-    void ClientApplicationLogic::flush(SceneId sceneId, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag)
+    bool ClientApplicationLogic::flush(SceneId sceneId, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag)
     {
         PlatformGuard guard(m_frameworkLock);
-        m_scenegraphProviderComponent->handleFlush(sceneId, timeInfo, versionTag);
+        return m_scenegraphProviderComponent->handleFlush(sceneId, timeInfo, versionTag);
     }
 
     void ClientApplicationLogic::removeScene(SceneId sceneId)
@@ -105,12 +105,6 @@ namespace ramses_internal
         return m_resourceComponent->getResourceHashUsage(hash);
     }
 
-    ManagedResourceVector ClientApplicationLogic::getResources() const
-    {
-        PlatformGuard guard(m_frameworkLock);
-        return m_resourceComponent->getResources();
-    }
-
     void ClientApplicationLogic::addResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ResourceTableOfContents& toc)
     {
         PlatformGuard guard(m_frameworkLock);
@@ -123,10 +117,10 @@ namespace ramses_internal
         m_resourceComponent->removeResourceFile(resourceFileName);
     }
 
-    void ClientApplicationLogic::forceLoadFromResourceFile(const String& resourceFileName)
+    void ClientApplicationLogic::loadResourceFromFile(const String& resourceFileName)
     {
         PlatformGuard guard(m_frameworkLock);
-        m_resourceComponent->forceLoadFromResourceFile(resourceFileName);
+        m_resourceComponent->loadResourceFromFile(resourceFileName);
     }
 
     bool ClientApplicationLogic::hasResourceFile(const String& resourceFileName) const
@@ -153,9 +147,13 @@ namespace ramses_internal
         LOG_WARN(CONTEXT_FRAMEWORK, "ClientApplicationLogic::handleResourceAvailabilityEvent: is not implemented yet.");
     }
 
-    ManagedResource ClientApplicationLogic::forceLoadResource(const ResourceContentHash& hash) const
+    ManagedResource ClientApplicationLogic::loadResource(const ResourceContentHash& hash) const
     {
         PlatformGuard guard(m_frameworkLock);
-        return m_resourceComponent->forceLoadResource(hash);
+        auto mr = m_resourceComponent->loadResource(hash);
+        if (!mr)
+            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::loadResource: Could not find or load requested resource: " << hash);
+
+        return mr;
     }
 }

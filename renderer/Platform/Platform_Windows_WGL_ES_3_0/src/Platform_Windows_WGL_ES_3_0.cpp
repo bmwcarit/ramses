@@ -16,13 +16,13 @@
 
 namespace ramses_internal
 {
-    IPlatformFactory* PlatformFactory_Base::CreatePlatformFactory(const RendererConfig& rendererConfig)
+    IPlatform* Platform_Base::CreatePlatform(const RendererConfig& rendererConfig)
     {
         return new Platform_Windows_WGL_ES_3_0(rendererConfig);
     }
 
     Platform_Windows_WGL_ES_3_0::Platform_Windows_WGL_ES_3_0(const RendererConfig& rendererConfig)
-        : PlatformFactory_Windows_WGL(rendererConfig)
+        : Platform_Windows_WGL(rendererConfig)
     {
     }
 

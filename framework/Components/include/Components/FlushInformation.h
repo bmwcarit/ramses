@@ -10,7 +10,7 @@
 #define RAMSES_FLUSHINFORMATION_H
 
 #include "SceneAPI/SceneSizeInformation.h"
-#include "Scene/SceneResourceChanges.h"
+#include "Scene/ResourceChanges.h"
 #include "SceneReferencing/SceneReferenceAction.h"
 #include "FlushTimeInformation.h"
 #include "SceneAPI/SceneVersionTag.h"
@@ -47,7 +47,7 @@ namespace ramses_internal
         UInt64 flushCounter = 0;
         SceneVersionTag versionTag;
         SceneSizeInformation sizeInfo;
-        SceneResourceChanges resourceChanges;
+        ResourceChanges resourceChanges;
         SceneReferenceActionVector sceneReferences;
         FlushTimeInformation flushTimeInfo;
         bool hasSizeInfo = false;
@@ -94,7 +94,7 @@ struct fmt::formatter<ramses_internal::FlushInformation> : public ramses_interna
             fi.containsValidInformation,
             fi.flushCounter,
             fi.versionTag,
-            fi.resourceChanges.m_addedClientResourceRefs.size(), fi.resourceChanges.m_removedClientResourceRefs.size(), fi.resourceChanges.m_sceneResourceActions.size(),
+            fi.resourceChanges.m_resourcesAdded.size(), fi.resourceChanges.m_resourcesRemoved.size(), fi.resourceChanges.m_sceneResourceActions.size(),
             fi.sceneReferences.size(),
             fi.flushTimeInfo.clock_type,
             static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(fi.flushTimeInfo.expirationTimestamp).time_since_epoch().count()),

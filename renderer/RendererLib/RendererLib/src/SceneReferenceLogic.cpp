@@ -275,7 +275,7 @@ namespace ramses_internal
                     const auto sceneRefId = sceneRefIt.first;
                     if (m_rendererScenes.hasScene(sceneRefId))
                     {
-                        const auto cleanupState = RendererSceneState::Unavailable;
+                        const auto cleanupState = RendererSceneState::Available;
                         LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: cleaning up (master {} / ref {}) by setting state to {}", masterScene.first, sceneRefId, EnumToString(cleanupState));
                         m_sceneLogic.setSceneState(sceneRefId, cleanupState);
                     }

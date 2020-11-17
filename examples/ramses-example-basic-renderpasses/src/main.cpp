@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-basic-renderpasses.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-renderpasses.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
     ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
 
     /// [Basic Renderpasses Example]

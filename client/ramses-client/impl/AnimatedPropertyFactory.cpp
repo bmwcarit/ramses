@@ -65,13 +65,21 @@ namespace ramses
     {
         if (!AnimatedPropertyUtils::isComponentMatchingTransformNode(ePropertyComponent))
         {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedPropertyImpl:  cannot initialize animated property, requested property and/or component is not compatible");
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedProperty:  cannot initialize animated property, requested property and/or component is not compatible");
             return nullptr;
         }
 
         if (!m_animationSystem.getSceneImpl().containsSceneObject(propertyOwner))
         {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedPropertyImpl:  cannot initialize animated property, requested property and animation system do not belong to the same scene");
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedProperty:  cannot initialize animated property, requested property and animation system do not belong to the same scene");
+            return nullptr;
+        }
+
+        using ContainerTraitsClass = ramses_internal::DataBindContainerToTraitsSelector<ramses_internal::IScene>::ContainerTraitsClassType;
+        if (bindID == ContainerTraitsClass::TransformNode_Rotation
+            && propertyOwner.getIScene().getRotationConvention(propertyOwner.getTransformHandle()) != ramses_internal::ERotationConvention::Legacy_ZYX)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedProperty:  cannot initialize animated property, can not animate rotation for node that does not use legacy rotation convention");
             return nullptr;
         }
 
@@ -85,13 +93,13 @@ namespace ramses
     {
         if (!AnimatedPropertyUtils::isComponentMatchingEffectInput(ePropertyComponent, propertyOwner.getDataType()))
         {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedPropertyImpl:  cannot initialize animated property, requested property and/or component is not compatible");
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedProperty:  cannot initialize animated property, requested property and/or component is not compatible");
             return nullptr;
         }
 
         if (!m_animationSystem.getSceneImpl().containsSceneObject(appearance))
         {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedPropertyImpl:  cannot initialize animated property, requested property and animation system do not belong to the same scene");
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedProperty:  cannot initialize animated property, requested property and animation system do not belong to the same scene");
             return nullptr;
         }
 
@@ -120,13 +128,13 @@ namespace ramses
     {
         if (!AnimatedPropertyUtils::isComponentMatchingEffectInput(ePropertyComponent, propertyOwner.getDataType()))
         {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedPropertyImpl:  cannot initialize animated property, requested property and/or component is not compatible");
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedProperty:  cannot initialize animated property, requested property and/or component is not compatible");
             return nullptr;
         }
 
         if (!m_animationSystem.getSceneImpl().containsSceneObject(propertyOwner))
         {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedPropertyImpl:  cannot initialize animated property, requested property and animation system do not belong to the same scene");
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "AnimatedPropertyFactory::createAnimatedProperty:  cannot initialize animated property, requested property and animation system do not belong to the same scene");
             return nullptr;
         }
 

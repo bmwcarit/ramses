@@ -15,14 +15,6 @@ namespace ramses_internal
     CommunicationSystemMock::CommunicationSystemMock() = default;
     CommunicationSystemMock::~CommunicationSystemMock() = default;
 
-    void CommunicationSystemMock::setResourceProviderServiceHandler(IResourceProviderServiceHandler*)
-    {
-    }
-
-    void CommunicationSystemMock::setResourceConsumerServiceHandler(IResourceConsumerServiceHandler*)
-    {
-    }
-
     void CommunicationSystemMock::setSceneProviderServiceHandler(ISceneProviderServiceHandler*)
     {
     }

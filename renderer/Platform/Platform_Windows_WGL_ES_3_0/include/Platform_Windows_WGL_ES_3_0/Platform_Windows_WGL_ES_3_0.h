@@ -11,12 +11,12 @@
 
 #define DEVICE_TYPE_ID EDeviceTypeId_GL_ES_3_0
 
-#include "Surface_Windows_WGL/PlatformFactory_Windows_WGL.h"
+#include "Surface_Windows_WGL/Platform_Windows_WGL.h"
 
 
 namespace ramses_internal
 {
-    class Platform_Windows_WGL_ES_3_0 : public PlatformFactory_Windows_WGL
+    class Platform_Windows_WGL_ES_3_0 : public Platform_Windows_WGL
     {
     public:
         Platform_Windows_WGL_ES_3_0(const RendererConfig& rendererConfig);

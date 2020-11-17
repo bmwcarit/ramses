@@ -25,17 +25,17 @@ namespace ramses
         const ramses_internal::CategoryInfo& getCategoryInfo() const;
         void setCategoryInfo(const ramses_internal::CategoryInfo& other);
 
-        bool hasCategorySizeUpdate() const;
-        Rect getCategorySize() const;
-        status_t setCategorySize(Rect rect);
+        bool hasCategoryRectUpdate() const;
+        Rect getCategoryRect() const;
+        status_t setCategoryRect(Rect rect);
 
         bool hasRenderSizeUpdate() const;
         SizeInfo getRenderSize() const;
         status_t setRenderSize(SizeInfo sizeInfo);
 
-        bool hasSafeAreaSizeUpdate() const;
-        Rect getSafeAreaSize() const;
-        status_t setSafeAreaSize(Rect rect);
+        bool hasSafeRectUpdate() const;
+        Rect getSafeRect() const;
+        status_t setSafeRect(Rect rect);
     private:
         ramses_internal::CategoryInfo m_categoryInfo;
     };

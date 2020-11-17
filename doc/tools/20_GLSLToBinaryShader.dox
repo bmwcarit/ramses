@@ -53,8 +53,8 @@ be passed to RAMSES. It is possible to omit properties which are not needed.
 
 \code
 UNIFORM_SEMANTIC matrix44fInput EEffectUniformSemantic_ModelViewMatrix
-UNIFORM_SEMANTIC texture2dInput EEffectUniformSemantic_TextTexture
-ATTRIBUTE_SEMANTIC vec2fArrayInput EEffectAttributeSemantic_TextPositions
+UNIFORM_SEMANTIC texture2dInput EEffectUniformSemantic::TextTexture
+ATTRIBUTE_SEMANTIC vec2fArrayInput EEffectAttributeSemantic::TextPositions
 DEFINE enable_multidraw
 DEFINE draw_buffers
 \endcode
@@ -67,7 +67,7 @@ more details.
 To define a Uniform Semantic, start a line with keyword UNIFORM_SEMANTIC. The second token is the inputName for the
 semantic, and the third token is the semantic name.
 
-### Attribute semantic definition: ATTRIBUTE_SEMANTIC inputName EEffectAttributeSemantic_XXX
+### Attribute semantic definition: ATTRIBUTE_SEMANTIC inputName EEffectAttributeSemantic::XXX
 To define an attribute semantic, start a line with keyWord ATTRIBUTE_SEMANTIC. The second token is the inputName for the
 semantic, and the third token is the semantic name.
 

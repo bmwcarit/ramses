@@ -14,7 +14,6 @@
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/Camera.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/MeshNode.h"
@@ -55,7 +54,7 @@ namespace ramses_internal
 
         for (size_t i = 0; i < texConsumerDataIds.size(); ++i)
         {
-            m_quadsWithTextureConsumerLinks[i].reset(new DynamicQuad_ClientResources(m_scene, subQuadsForTextureConsumers[i]));
+            m_quadsWithTextureConsumerLinks[i].reset(new DynamicQuad_Resources(m_scene, subQuadsForTextureConsumers[i]));
             m_quadsWithTextureConsumerLinks[i]->createTextureDataConsumer(texConsumerDataIds[i]);
         }
 

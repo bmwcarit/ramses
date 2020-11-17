@@ -20,7 +20,7 @@ namespace ramses_internal
         E_TestCommandTypes_DoNothing
     };
 
-    typedef Command< E_TestCommandTypes > CustomCommand;
+    using CustomCommand = Command<E_TestCommandTypes>;
 
     struct DoThisCommand : public CustomCommand
     {

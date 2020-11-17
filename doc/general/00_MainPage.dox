@@ -24,7 +24,7 @@ relations, as well as API for rendering content from distributed sources.
 - @ref TextRendering
 - @ref RendererAPI
 - @ref OffscreenBuffers
-- @ref Examples
+- @ref CodeExamples
 - @ref ContentExpiration
 - @ref DCSMProtocol
 - @ref SceneReferencing

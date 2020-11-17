@@ -94,14 +94,14 @@ namespace ramses_internal
     TEST_F(ADcsmConnectionSystem, sendMethodsFailWhenNotConnected)
     {
         std::lock_guard<std::recursive_mutex> g(lock);
-        EXPECT_FALSE(connsys->sendOfferContent(Guid(10), ContentID(44), Category(55), "fooname", 2));
+        EXPECT_FALSE(connsys->sendOfferContent(Guid(10), ContentID(44), Category(55), static_cast<ETechnicalContentType>(5), "fooname", 2));
         EXPECT_FALSE(connsys->sendCanvasSizeChange(Guid(10), ContentID(33), CategoryInfo{10, 11}, 300, AnimationInformation{100, 200}));
         EXPECT_FALSE(connsys->sendContentReady(Guid(10), ContentID(2)));
-        EXPECT_FALSE(connsys->sendContentDescription(Guid(10), ContentID(2), static_cast<ETechnicalContentType>(5), TechnicalContentDescriptor(10)));
+        EXPECT_FALSE(connsys->sendContentDescription(Guid(10), ContentID(2), TechnicalContentDescriptor(10)));
         EXPECT_FALSE(connsys->sendContentStateChange(Guid(10), ContentID(16012), EDcsmState::Assigned, CategoryInfo{0xFFFFF2, 0x7FFFF1}, AnimationInformation{432342, 43211}));
         EXPECT_FALSE(connsys->sendContentEnableFocusRequest(Guid(10), ContentID(42434), 32));
         EXPECT_FALSE(connsys->sendContentDisableFocusRequest(Guid(10), ContentID(42434), 32));
-        EXPECT_FALSE(connsys->sendBroadcastOfferContent(ContentID(44), Category(55), "bar", 3));
+        EXPECT_FALSE(connsys->sendBroadcastOfferContent(ContentID(44), Category(55), static_cast<ETechnicalContentType>(5), "bar", 3));
         EXPECT_FALSE(connsys->sendBroadcastRequestStopOfferContent(ContentID(9), true));
         EXPECT_FALSE(connsys->sendBroadcastUpdateContentMetadata(ContentID(55), metadata));
         EXPECT_FALSE(connsys->sendUpdateContentMetadata(Guid(10), ContentID(56), metadata));
@@ -113,8 +113,8 @@ namespace ramses_internal
         connectRemote(DcsmInstanceId(3), Guid(10));
 
         SomeIPMsgHeader firstHdr;
-        EXPECT_CALL(stack, sendOfferContent(DcsmInstanceId(3), ValidHdr(pid, 2u), ContentID(44), Category(55), "fooname", 2)).WillOnce(DoAll(SaveArg<1>(&firstHdr), Return(true)));
-        EXPECT_TRUE(connsys->sendOfferContent(Guid(10), ContentID(44), Category(55), "fooname", 2));
+        EXPECT_CALL(stack, sendOfferContent(DcsmInstanceId(3), ValidHdr(pid, 2u), ContentID(44), Category(55), static_cast<ETechnicalContentType>(9), "fooname", 2)).WillOnce(DoAll(SaveArg<1>(&firstHdr), Return(true)));
+        EXPECT_TRUE(connsys->sendOfferContent(Guid(10), ContentID(44), Category(55), static_cast<ETechnicalContentType>(9), "fooname", 2));
 
         EXPECT_CALL(stack, sendCanvasSizeChange(DcsmInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 3u}, ContentID(33), CategoryInfo{10, 11}, 300, AnimationInformation{100, 200})).WillOnce(Return(true));
         EXPECT_TRUE(connsys->sendCanvasSizeChange(Guid(10), ContentID(33), CategoryInfo{10, 11}, 300, AnimationInformation{100, 200}));
@@ -134,8 +134,8 @@ namespace ramses_internal
         EXPECT_CALL(stack, sendUpdateContentMetadata(DcsmInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 8u}, ContentID(65464), metadata.toBinary())).WillOnce(Return(true));
         EXPECT_TRUE(connsys->sendUpdateContentMetadata(Guid(10), ContentID(65464), metadata));
 
-        EXPECT_CALL(stack, sendContentDescription(DcsmInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 9u}, ContentID(88), static_cast<ETechnicalContentType>(9), TechnicalContentDescriptor(21))).WillOnce(Return(true));
-        EXPECT_TRUE(connsys->sendContentDescription(Guid(10), ContentID(88), static_cast<ETechnicalContentType>(9), TechnicalContentDescriptor(21)));
+        EXPECT_CALL(stack, sendContentDescription(DcsmInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 9u}, ContentID(88), TechnicalContentDescriptor(21))).WillOnce(Return(true));
+        EXPECT_TRUE(connsys->sendContentDescription(Guid(10), ContentID(88), TechnicalContentDescriptor(21)));
 
         expectRemoteDisconnects({2, 10});
     }
@@ -147,9 +147,9 @@ namespace ramses_internal
 
         SomeIPMsgHeader firstHdrIid_1;
         SomeIPMsgHeader firstHdrIid_3;
-        EXPECT_CALL(stack, sendOfferContent(DcsmInstanceId(1), ValidHdr(pid, 2u), ContentID(44), Category(55), "bar", 3)).WillOnce(DoAll(SaveArg<1>(&firstHdrIid_1), Return(true)));
-        EXPECT_CALL(stack, sendOfferContent(DcsmInstanceId(3), ValidHdr(pid, 2u), ContentID(44), Category(55), "bar", 3)).WillOnce(DoAll(SaveArg<1>(&firstHdrIid_3), Return(true)));
-        EXPECT_TRUE(connsys->sendBroadcastOfferContent(ContentID(44), Category(55), "bar", 3));
+        EXPECT_CALL(stack, sendOfferContent(DcsmInstanceId(1), ValidHdr(pid, 2u), ContentID(44), Category(55), static_cast<ETechnicalContentType>(9), "bar", 3)).WillOnce(DoAll(SaveArg<1>(&firstHdrIid_1), Return(true)));
+        EXPECT_CALL(stack, sendOfferContent(DcsmInstanceId(3), ValidHdr(pid, 2u), ContentID(44), Category(55), static_cast<ETechnicalContentType>(9), "bar", 3)).WillOnce(DoAll(SaveArg<1>(&firstHdrIid_3), Return(true)));
+        EXPECT_TRUE(connsys->sendBroadcastOfferContent(ContentID(44), Category(55), static_cast<ETechnicalContentType>(9), "bar", 3));
 
         EXPECT_CALL(stack, sendRequestStopOfferContent(DcsmInstanceId(1), SomeIPMsgHeader{pid, firstHdrIid_1.sessionId, 3u}, ContentID(9), true)).WillOnce(Return(true));
         EXPECT_CALL(stack, sendRequestStopOfferContent(DcsmInstanceId(3), SomeIPMsgHeader{pid, firstHdrIid_3.sessionId, 3u}, ContentID(9), true)).WillOnce(Return(true));
@@ -169,17 +169,17 @@ namespace ramses_internal
         fromStack.handleServiceUnavailable(DcsmInstanceId(1));
         Mock::VerifyAndClearExpectations(&connections);
 
-        EXPECT_FALSE(connsys->sendOfferContent(Guid(10), ContentID(44), Category(55), "fooname", 2));
+        EXPECT_FALSE(connsys->sendOfferContent(Guid(10), ContentID(44), Category(55), static_cast<ETechnicalContentType>(5), "fooname", 2));
         EXPECT_FALSE(connsys->sendCanvasSizeChange(Guid(10), ContentID(33), CategoryInfo{10, 11}, 300, AnimationInformation{100, 200}));
-        EXPECT_FALSE(connsys->sendContentDescription(Guid(10), ContentID(2), static_cast<ETechnicalContentType>(5), TechnicalContentDescriptor(10)));
+        EXPECT_FALSE(connsys->sendContentDescription(Guid(10), ContentID(2), TechnicalContentDescriptor(10)));
         EXPECT_FALSE(connsys->sendContentReady(Guid(10), ContentID(2)));
         EXPECT_FALSE(connsys->sendContentStateChange(Guid(10), ContentID(16012), EDcsmState::Assigned, CategoryInfo{0xFFFFF2, 0x7FFFF1}, AnimationInformation{432342, 43211}));
         EXPECT_FALSE(connsys->sendContentEnableFocusRequest(Guid(10), ContentID(42434), 32));
         EXPECT_FALSE(connsys->sendContentDisableFocusRequest(Guid(10), ContentID(42434), 32));
 
-        EXPECT_FALSE(connsys->sendOfferContent(Guid(2), ContentID(44), Category(55), "fooname", 2));
+        EXPECT_FALSE(connsys->sendOfferContent(Guid(2), ContentID(44), Category(55), static_cast<ETechnicalContentType>(5), "fooname", 2));
         EXPECT_FALSE(connsys->sendCanvasSizeChange(Guid(2), ContentID(33), CategoryInfo{10, 11}, 300, AnimationInformation{100, 200}));
-        EXPECT_FALSE(connsys->sendContentDescription(Guid(2), ContentID(2), static_cast<ETechnicalContentType>(5), TechnicalContentDescriptor(10)));
+        EXPECT_FALSE(connsys->sendContentDescription(Guid(2), ContentID(2), TechnicalContentDescriptor(10)));
         EXPECT_FALSE(connsys->sendContentReady(Guid(2), ContentID(2)));
         EXPECT_FALSE(connsys->sendContentStateChange(Guid(2), ContentID(16012), EDcsmState::Assigned, CategoryInfo{0xFFFFF2, 0x7FFFF1}, AnimationInformation{432342, 43211}));
         EXPECT_FALSE(connsys->sendContentEnableFocusRequest(Guid(2), ContentID(42434), 32));
@@ -191,8 +191,8 @@ namespace ramses_internal
     {
         connectRemote(DcsmInstanceId(3), Guid(10));
 
-        EXPECT_CALL(consumer, handleOfferContent(ContentID(44), Category(55), "fooname", Guid(10)));
-        fromStack.handleOfferContent(SomeIPMsgHeader{10, 123, 2}, ContentID(44), Category(55), "fooname", 2);
+        EXPECT_CALL(consumer, handleOfferContent(ContentID(44), Category(55), static_cast<ETechnicalContentType>(9), "fooname", Guid(10)));
+        fromStack.handleOfferContent(SomeIPMsgHeader{10, 123, 2}, ContentID(44), Category(55), static_cast<ETechnicalContentType>(9), "fooname", 2);
 
         EXPECT_CALL(consumer, handleRequestStopOfferContent(ContentID(4324), Guid(10)));
         fromStack.handleRequestStopOfferContent(SomeIPMsgHeader{10, 123, 3}, ContentID(4324), false);

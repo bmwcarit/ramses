@@ -107,15 +107,28 @@ namespace ramses_internal
     {
         // send to network (no ownership transfer)
         bool sendToSelf = false;
+        bool alreadyCompressed = false;
         for (const auto& to : toVec)
         {
             if (m_myID == to)
+            {
                 sendToSelf = true;
+            }
             else
+            {
+                if (!alreadyCompressed)
+                {
+                    for (auto& resource : sceneUpdate.resources)
+                    {
+                        resource->compress(IResource::CompressionLevel::REALTIME);
+                    }
+                    alreadyCompressed = true;
+                }
                 m_communicationSystem.sendSceneUpdate(to, sceneId, SceneUpdateSerializer(sceneUpdate));
+            }
         }
 
-        // send to self last to move sceneActions to local renderer
+        // send to self last to move sceneUpdate to local renderer
         if (sendToSelf && m_sceneRendererHandler)
             m_sceneRendererHandler->handleSceneUpdate(sceneId, std::move(sceneUpdate), m_myID);
     }
@@ -283,13 +296,13 @@ namespace ramses_internal
         sceneLogic.unpublish();
     }
 
-    void SceneGraphComponent::handleFlush(SceneId sceneId, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
+    bool SceneGraphComponent::handleFlush(SceneId sceneId, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
     {
         assert(m_clientSceneLogicMap.contains(sceneId));
 
         ClientSceneLogicBase& sceneLogic = **m_clientSceneLogicMap.get(sceneId);
 
-        sceneLogic.flushSceneActions(flushTimeInfo, versionTag);
+        return sceneLogic.flushSceneActions(flushTimeInfo, versionTag);
     }
 
     void SceneGraphComponent::handleRemoveScene(SceneId sceneId)
@@ -503,7 +516,7 @@ namespace ramses_internal
                 SceneUpdate sceneUpdate;
                 sceneUpdate.actions = std::move(result.actions);
                 for (auto& res : result.resources)
-                    sceneUpdate.resources.push_back(m_resourceComponent.manageResource(*res.release(), false));
+                    sceneUpdate.resources.emplace_back(std::move(res));
                 sceneUpdate.flushInfos = std::move(result.flushInfos);
                 m_sceneRendererHandler->handleSceneUpdate(sceneId, std::move(sceneUpdate), providerID);
                 break;

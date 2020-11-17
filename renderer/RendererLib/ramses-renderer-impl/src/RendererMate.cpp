@@ -24,8 +24,7 @@ namespace ramses
         framework.getRamsh().add(*m_exitCommand);
         m_ramshCommands.push_back(std::make_unique<ramses_internal::ShowSceneOnDisplay>(*this));
         m_ramshCommands.push_back(std::make_unique<ramses_internal::HideScene>(*this));
-        m_ramshCommands.push_back(std::make_unique<ramses_internal::UnmapScene>(*this));
-        m_ramshCommands.push_back(std::make_unique<ramses_internal::UnsubscribeScene>(*this));
+        m_ramshCommands.push_back(std::make_unique<ramses_internal::ReleaseScene>(*this));
         m_ramshCommands.push_back(std::make_unique<ramses_internal::LinkData>(*this));
         m_ramshCommands.push_back(std::make_unique<ramses_internal::ConfirmationEcho>(*this));
         for (auto& cmd : m_ramshCommands)
@@ -133,75 +132,10 @@ namespace ramses
         if (keyEvent != EKeyEvent_Pressed)
             return;
 
-        ramses_internal::RendererCommandBuffer& commandBuffer = m_ramsesRenderer.getRenderer().getRendererCommandBuffer();
         if (keyCode == EKeyCode_Escape && keyModifiers == EKeyModifier_NoModifier)
         {
             m_isRunning = false;
             return;
-        }
-
-        // flymode: steer camera with keyboard from rendering window
-        if (keyCode == EKeyCode_0)
-        {
-            commandBuffer.resetView();
-            commandBuffer.setViewPosition(ramses_internal::Vector3());
-            commandBuffer.setViewRotation(ramses_internal::Vector3());
-            return;
-        }
-        else
-        {
-            const bool uppercaseChar = (keyModifiers & EKeyModifier_Shift) != 0;
-
-            ramses_internal::Float defaultRotateStepSize = 3.0f;
-            ramses_internal::Float defaultTranslateStepSize = 0.1f;
-
-            const bool isRotation = (keyCode >= EKeyCode_X && keyCode <= EKeyCode_Z);
-            ramses_internal::Float step = isRotation ? defaultRotateStepSize : defaultTranslateStepSize;
-
-            ramses_internal::Vector3 movement(0.0f);
-            switch (keyCode)
-            {
-                // translate
-            case EKeyCode_W:
-                movement.z = -step;
-                break;
-            case EKeyCode_S:
-                movement.z = step;
-                break;
-            case EKeyCode_A:
-                movement.x = -step;
-                break;
-            case EKeyCode_D:
-                movement.x = step;
-                break;
-            case EKeyCode_Q:
-                movement.y = -step;
-                break;
-            case EKeyCode_E:
-                movement.y = step;
-                break;
-                // rotate
-            case EKeyCode_X:
-                movement.x = step;
-                break;
-            case EKeyCode_Y:
-                movement.y = step;
-                break;
-            case EKeyCode_Z:
-                movement.z = step;
-                break;
-            default:
-                break;
-            }
-
-            if (isRotation)
-            {
-                commandBuffer.rotateView(uppercaseChar ? -movement : movement);
-            }
-            else
-            {
-                commandBuffer.moveView(uppercaseChar ? 100.0f*movement : movement);
-            }
         }
     };
 

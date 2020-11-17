@@ -21,6 +21,8 @@ public:
     virtual bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
 private:
+    template <typename INTEGRATION_SCENE>
+    ramses::sceneId_t createAndShowScene(RendererTestsFramework& testFramework, uint32_t sceneState, const ramses_internal::Vector3& camPos, uint32_t vpWidth = ramses_internal::IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = ramses_internal::IntegrationScene::DefaultViewportHeight);
     bool renderAndCompareScreenshot(RendererTestsFramework& testFramework, const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx = 0u, float expectedPixelError = RendererTestUtils::DefaultMaxAveragePercentPerPixel);
 
     enum
@@ -37,6 +39,8 @@ private:
         OffscreenBufferLinkTest_ProviderSceneUsesDepthTest,
         OffscreenBufferLinkTest_ProviderSceneUsesStencilTest,
         OffscreenBufferLinkTest_SetClearColor,
+        OffscreenBufferLinkTest_ConsumerLinkedToMSAABuffer,
+        OffscreenBufferLinkTest_ConsumerUnlinkedMSAABuffer
     };
 
     ramses::sceneId_t m_sceneIdProvider;
@@ -49,6 +53,9 @@ private:
     const ramses_internal::Vector3 m_cameraMid{ 0.f, 0.f, 8.f };
 
     const bool m_interruptibleBuffers;
+
+    static constexpr uint32_t OBWidth = 256u;
+    static constexpr uint32_t OBHeight = 256u;
 };
 
 #endif

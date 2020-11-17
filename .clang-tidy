@@ -170,6 +170,9 @@ Checks:
     misc-unconventional-assign-operator,
 
     modernize-use-nullptr,
+    modernize-use-bool-literals,
+    modernize-raw-string-literal,
+    modernize-use-nodiscard,
 
     performance-faster-string-find,
     performance-for-range-copy,
@@ -182,6 +185,7 @@ Checks:
     performance-type-promotion-in-math-fn,
     performance-unnecessary-copy-initialization,
     performance-unnecessary-value-param,
+    performance-no-automatic-move,
 
     portability-simd-intrinsics,
 
@@ -227,7 +231,7 @@ Checks:
 WarningsAsErrors: '*'
 
 # ignore headers in external because we cannot fix them
-HeaderFilterRegex: '/git/(client|demo|examples|external/capu|framework|integration|renderer|utils)/'
+HeaderFilterRegex: '/git/(client|demo|examples|framework|integration|renderer|utils|proprietary/(android|demo|framework|utils))/'
 
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
@@ -235,5 +239,3 @@ FormatStyle:     none
 CheckOptions:
   - key: modernize-use-nullptr.NullMacros
     value: 'NULL'
-  - key: performance-unnecessary-value-param.AllowedTypes
-    value: 'const_reverse_iterator$'

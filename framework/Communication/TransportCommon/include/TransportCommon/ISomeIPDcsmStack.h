@@ -23,12 +23,12 @@ namespace ramses_internal
     class ISomeIPDcsmStackCallbacks : public ISomeIPStackCallbacksCommon<DcsmInstanceId>
     {
     public:
-        virtual void handleOfferContent(const SomeIPMsgHeader& header, ContentID content, Category category, const std::string& friendlyName, uint32_t sortOrder) = 0;
+        virtual void handleOfferContent(const SomeIPMsgHeader& header, ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, uint32_t sortOrder) = 0;
         virtual void handleRequestStopOfferContent(const SomeIPMsgHeader& header, ContentID content, bool forceStopOffer) = 0;
         virtual void handleUpdateContentMetadata(const SomeIPMsgHeader& header, ContentID content, absl::Span<const Byte> metadata) = 0;
 
         virtual void handleCanvasSizeChange(const SomeIPMsgHeader& header, ContentID content, const CategoryInfo& categoryInfo, uint16_t dpi, const AnimationInformation& animation) = 0;
-        virtual void handleContentDescription(const SomeIPMsgHeader& header, ContentID content, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
+        virtual void handleContentDescription(const SomeIPMsgHeader& header, ContentID content, TechnicalContentDescriptor technicalContentDescriptor) = 0;
         virtual void handleContentReady(const SomeIPMsgHeader& header, ContentID content) = 0;
         virtual void handleContentStateChange(const SomeIPMsgHeader& header, ContentID content, EDcsmState state, const CategoryInfo& sizeInfo, const AnimationInformation& animation) = 0;
         virtual void handleContentEnableFocusRequest(const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest) = 0;
@@ -47,12 +47,12 @@ namespace ramses_internal
         virtual void setCallbacks(ISomeIPDcsmStackCallbacks* handlers) = 0;
         virtual DcsmStackSendDataSizes getSendDataSizes() const = 0;
 
-        virtual bool sendOfferContent(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, Category category, const std::string& friendlyName, uint32_t sortOrder) = 0;
+        virtual bool sendOfferContent(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, uint32_t sortOrder) = 0;
         virtual bool sendRequestStopOfferContent(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, bool forceStopOffer) = 0;
         virtual bool sendUpdateContentMetadata(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, const std::vector<Byte>& data) = 0;
 
         virtual bool sendCanvasSizeChange(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, const CategoryInfo& categoryInfo, uint16_t dpi, const AnimationInformation& animation) = 0;
-        virtual bool sendContentDescription(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
+        virtual bool sendContentDescription(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, TechnicalContentDescriptor technicalContentDescriptor) = 0;
         virtual bool sendContentReady(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content) = 0;
         virtual bool sendContentStateChange(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, EDcsmState state, const CategoryInfo& sizeInfo, const AnimationInformation& animation) = 0;
         virtual bool sendContentEnableFocusRequest(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest) = 0;

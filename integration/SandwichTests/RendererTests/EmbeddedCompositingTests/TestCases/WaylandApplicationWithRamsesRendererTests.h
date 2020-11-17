@@ -16,7 +16,6 @@ namespace ramses_internal
     class WaylandApplicationWithRamsesRendererTests : public IEmbeddedCompositingTest
     {
     public:
-        WaylandApplicationWithRamsesRendererTests();
         virtual void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) final;
         virtual bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 

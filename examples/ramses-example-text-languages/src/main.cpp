@@ -49,10 +49,10 @@ int main(int argc, char* argv[])
 
     // create appearance to be used in text
     ramses::EffectDescription effectDesc;
-    effectDesc.setAttributeSemantic("a_position", ramses::EEffectAttributeSemantic_TextPositions);
-    effectDesc.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
-    effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic_TextTexture);
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setAttributeSemantic("a_position", ramses::EEffectAttributeSemantic::TextPositions);
+    effectDesc.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic::TextTextureCoordinates);
+    effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic::TextTexture);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
     effectDesc.setVertexShaderFromFile("res/ramses-example-text-languages-effect.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-text-languages-effect.frag");
     const ramses::Effect* textEffect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "simpleTextShader");

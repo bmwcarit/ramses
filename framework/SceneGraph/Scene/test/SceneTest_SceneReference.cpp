@@ -32,7 +32,7 @@ namespace ramses_internal
 
         const SceneReference& sr = this->m_scene.getSceneReference(handle);
         EXPECT_EQ(sceneId, sr.sceneId);
-        EXPECT_EQ(RendererSceneState::Unavailable, sr.requestedState);
+        EXPECT_EQ(RendererSceneState::Available, sr.requestedState);
         EXPECT_EQ(0, sr.renderOrder);
         EXPECT_FALSE(sr.flushNotifications);
     }

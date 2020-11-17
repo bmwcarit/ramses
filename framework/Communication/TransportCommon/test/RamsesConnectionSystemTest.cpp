@@ -38,12 +38,10 @@ namespace ramses_internal
                                                        CountingConnectionSystemClock());
             assert(ptr);
 
-            ptr->setResourceProviderServiceHandler(&resourceProvider);
-            ptr->setResourceConsumerServiceHandler(&resourceConsumer);
             ptr->setSceneProviderServiceHandler(&sceneProvider);
             ptr->setSceneRendererServiceHandler(&sceneRenderer);
             ptr->getConnectionStatusUpdateNotifier().registerForConnectionUpdates(&connections);
-            EXPECT_CALL(stack, getSendDataSizes()).WillRepeatedly(Return(RamsesStackSendDataSizes{1000, 1000, 1000, 10, 10, 10}));
+            EXPECT_CALL(stack, getSendDataSizes()).WillRepeatedly(Return(RamsesStackSendDataSizes{1000, 1000, 10, 10}));
 
             return ptr;
         }
@@ -65,8 +63,6 @@ namespace ramses_internal
         std::shared_ptr<StrictMock<SomeIPRamsesStackMock>> stackPtr;
         StrictMock<SomeIPRamsesStackMock>& stack;
         StrictMock<MockConnectionStatusListener> connections;
-        StrictMock<ResourceConsumerServiceHandlerMock> resourceConsumer;
-        StrictMock<ResourceProviderServiceHandlerMock> resourceProvider;
         StrictMock<SceneProviderServiceHandlerMock> sceneProvider;
         StrictMock<SceneRendererServiceHandlerMock> sceneRenderer;
         PlatformLock lock;
@@ -75,9 +71,6 @@ namespace ramses_internal
         std::unique_ptr<RamsesConnectionSystem> connsys;
         ISomeIPRamsesStackCallbacks& fromStack;
         StrictMock<SceneUpdateSerializerMock> serializerMock;
-
-        ResourceContentHashVector resourceHashes_1{{1, 2}, {999, 0xabcdef0123}, {0, 0}, {5, 6}};
-        ResourceContentHashVector resourceHashes_2{{6, 7}, {999, 0xabcdef0123}, {0, 1}};
 
         SceneInfoVector sceneInfos{SceneInfo{SceneId(99), "asd"}, SceneInfo{SceneId(1), ""}, SceneInfo{SceneId(0), "boo"}};
         std::vector<SceneAvailabilityUpdate> sceneUpdateAvailable{{SceneId(99), "asd", true}, {SceneId(1), "", true}, {SceneId(0), "boo", true}};
@@ -108,14 +101,11 @@ namespace ramses_internal
     TEST_F(ARamsesConnectionSystem, sendMethodsFailWhenNotConnected)
     {
         std::lock_guard<std::recursive_mutex> g(lock);
-        EXPECT_FALSE(connsys->sendRequestResources(Guid(10), resourceHashes_1));
-        EXPECT_FALSE(connsys->sendResourcesNotAvailable(Guid(10), resourceHashes_2));
         EXPECT_FALSE(connsys->sendScenesAvailable(Guid(10), sceneInfos));
         EXPECT_FALSE(connsys->sendSubscribeScene(Guid(10), SceneId(321)));
         EXPECT_FALSE(connsys->sendUnsubscribeScene(Guid(10), SceneId(678)));
         EXPECT_FALSE(connsys->sendInitializeScene(Guid(10), SceneId(65)));
         EXPECT_FALSE(connsys->sendRendererEvent(Guid(10), SceneId(2), dataBlob));
-        EXPECT_FALSE(connsys->sendResources(Guid(10), FakseSceneUpdateSerializer({dataBlob}, 1000)));
         EXPECT_FALSE(connsys->sendSceneUpdate(Guid(10), SceneId(876), FakseSceneUpdateSerializer({dataBlob}, 1000)));
     }
 
@@ -125,31 +115,22 @@ namespace ramses_internal
         connectRemote(RamsesInstanceId(3), Guid(10));
 
         SomeIPMsgHeader firstHdr;
-        EXPECT_CALL(stack, sendRequestResources(RamsesInstanceId(3), ValidHdr(pid, 2u), absl::Span<const ResourceContentHash>(resourceHashes_1))).WillOnce(DoAll(SaveArg<1>(&firstHdr), Return(true)));
-        EXPECT_TRUE(connsys->sendRequestResources(Guid(10), resourceHashes_1));
-
-        EXPECT_CALL(stack, sendResourcesNotAvailable(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 3u}, absl::Span<const ResourceContentHash>(resourceHashes_2))).WillOnce(Return(true));
-        EXPECT_TRUE(connsys->sendResourcesNotAvailable(Guid(10), resourceHashes_2));
-
-        EXPECT_CALL(stack, sendSceneAvailabilityChange(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 4u}, sceneUpdateAvailable)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendSceneAvailabilityChange(RamsesInstanceId(3), ValidHdr(pid, 2u), sceneUpdateAvailable)).WillOnce(DoAll(SaveArg<1>(&firstHdr), Return(true)));
         EXPECT_TRUE(connsys->sendScenesAvailable(Guid(10), sceneInfos));
 
-        EXPECT_CALL(stack, sendSceneSubscriptionChange(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 5u}, std::vector<SceneSubscriptionUpdate>({{SceneId(321), true}}))).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendSceneSubscriptionChange(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 3u}, std::vector<SceneSubscriptionUpdate>({{SceneId(321), true}}))).WillOnce(Return(true));
         EXPECT_TRUE(connsys->sendSubscribeScene(Guid(10), SceneId(321)));
 
-        EXPECT_CALL(stack, sendSceneSubscriptionChange(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 6u}, std::vector<SceneSubscriptionUpdate>({{SceneId(678), false}}))).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendSceneSubscriptionChange(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 4u}, std::vector<SceneSubscriptionUpdate>({{SceneId(678), false}}))).WillOnce(Return(true));
         EXPECT_TRUE(connsys->sendUnsubscribeScene(Guid(10), SceneId(678)));
 
-        EXPECT_CALL(stack, sendInitializeScene(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 7u}, SceneId(65))).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendInitializeScene(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 5u}, SceneId(65))).WillOnce(Return(true));
         EXPECT_TRUE(connsys->sendInitializeScene(Guid(10), SceneId(65)));
 
-        EXPECT_CALL(stack, sendRendererEvent(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 8u}, SceneId(2), dataBlob)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendRendererEvent(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 6u}, SceneId(2), dataBlob)).WillOnce(Return(true));
         EXPECT_TRUE(connsys->sendRendererEvent(Guid(10), SceneId(2), dataBlob));
 
-        EXPECT_CALL(stack, sendResourceTransfer(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 9u}, dataBlob)).WillOnce(Return(true));
-        EXPECT_TRUE(connsys->sendResources(Guid(10), FakseSceneUpdateSerializer({dataBlob}, 1000)));
-
-        EXPECT_CALL(stack, sendSceneUpdate(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 10u}, SceneId(999), dataBlob)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendSceneUpdate(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 7u}, SceneId(999), dataBlob)).WillOnce(Return(true));
         EXPECT_TRUE(connsys->sendSceneUpdate(Guid(10), SceneId(999), FakseSceneUpdateSerializer({dataBlob}, 1000)));
 
         expectRemoteDisconnects({2, 10});
@@ -181,24 +162,18 @@ namespace ramses_internal
         fromStack.handleServiceUnavailable(RamsesInstanceId(1));
         Mock::VerifyAndClearExpectations(&connections);
 
-        EXPECT_FALSE(connsys->sendRequestResources(Guid(10), resourceHashes_1));
-        EXPECT_FALSE(connsys->sendResourcesNotAvailable(Guid(10), resourceHashes_2));
         EXPECT_FALSE(connsys->sendScenesAvailable(Guid(10), sceneInfos));
         EXPECT_FALSE(connsys->sendSubscribeScene(Guid(10), SceneId(321)));
         EXPECT_FALSE(connsys->sendUnsubscribeScene(Guid(10), SceneId(678)));
         EXPECT_FALSE(connsys->sendInitializeScene(Guid(10), SceneId(65)));
         EXPECT_FALSE(connsys->sendRendererEvent(Guid(10), SceneId(2), dataBlob));
-        EXPECT_FALSE(connsys->sendResources(Guid(10), FakseSceneUpdateSerializer({dataBlob}, 1000)));
         EXPECT_FALSE(connsys->sendSceneUpdate(Guid(10), SceneId(876), FakseSceneUpdateSerializer({dataBlob}, 1000)));
 
-        EXPECT_FALSE(connsys->sendRequestResources(Guid(2), resourceHashes_1));
-        EXPECT_FALSE(connsys->sendResourcesNotAvailable(Guid(2), resourceHashes_2));
         EXPECT_FALSE(connsys->sendScenesAvailable(Guid(2), sceneInfos));
         EXPECT_FALSE(connsys->sendSubscribeScene(Guid(2), SceneId(321)));
         EXPECT_FALSE(connsys->sendUnsubscribeScene(Guid(2), SceneId(678)));
         EXPECT_FALSE(connsys->sendInitializeScene(Guid(2), SceneId(65)));
         EXPECT_FALSE(connsys->sendRendererEvent(Guid(2), SceneId(2), dataBlob));
-        EXPECT_FALSE(connsys->sendResources(Guid(2), FakseSceneUpdateSerializer({dataBlob}, 1000)));
         EXPECT_FALSE(connsys->sendSceneUpdate(Guid(2), SceneId(876), FakseSceneUpdateSerializer({dataBlob}, 1000)));
     }
 
@@ -206,93 +181,28 @@ namespace ramses_internal
     {
         connectRemote(RamsesInstanceId(3), Guid(10));
 
-        EXPECT_CALL(resourceConsumer, handleResourcesNotAvailable(resourceHashes_1, Guid(10)));
-        fromStack.handleResourcesNotAvailable(SomeIPMsgHeader{10, 123, 2}, resourceHashes_1);
-
-        EXPECT_CALL(resourceConsumer, handleSendResource(absl::Span<const Byte>(dataBlob), Guid(10)));
-        fromStack.handleResourceTransfer(SomeIPMsgHeader{10, 123, 3}, dataBlob);
-
-        EXPECT_CALL(resourceProvider, handleRequestResources(resourceHashes_2, Guid(10)));
-        fromStack.handleRequestResources(SomeIPMsgHeader{10, 123, 4}, resourceHashes_2);
-
         EXPECT_CALL(sceneProvider, handleSubscribeScene(SceneId(67), Guid(10)));
         EXPECT_CALL(sceneProvider, handleUnsubscribeScene(SceneId(68), Guid(10)));
         EXPECT_CALL(sceneProvider, handleSubscribeScene(SceneId(1), Guid(10)));
-        fromStack.handleSceneSubscriptionChange(SomeIPMsgHeader{10, 123, 5}, {{SceneId(67), true}, {SceneId(68), false}, {SceneId(1), true}});
-        fromStack.handleSceneSubscriptionChange(SomeIPMsgHeader{10, 123, 6}, {});  // empty list triggers nothing
+        fromStack.handleSceneSubscriptionChange(SomeIPMsgHeader{10, 123, 2}, {{SceneId(67), true}, {SceneId(68), false}, {SceneId(1), true}});
+        fromStack.handleSceneSubscriptionChange(SomeIPMsgHeader{10, 123, 3}, {});  // empty list triggers nothing
 
         EXPECT_CALL(sceneProvider, handleRendererEvent(SceneId(69), dataBlob, Guid(10)));
-        fromStack.handleRendererEvent(SomeIPMsgHeader{10, 123, 7}, SceneId(69), dataBlob);
+        fromStack.handleRendererEvent(SomeIPMsgHeader{10, 123, 4}, SceneId(69), dataBlob);
 
         EXPECT_CALL(sceneRenderer, handleNewScenesAvailable(SceneInfoVector{SceneInfo(SceneId(99), "asd", EScenePublicationMode_LocalAndRemote), SceneInfo(SceneId(0), "boo", EScenePublicationMode_LocalAndRemote)}, Guid(10)));
         EXPECT_CALL(sceneRenderer, handleScenesBecameUnavailable(SceneInfoVector{SceneInfo(SceneId(400001), "xxxxxxuzuuu"), SceneInfo(SceneId(1), "")}, Guid(10)));
-        fromStack.handleSceneAvailabilityChange(SomeIPMsgHeader{10, 123, 8}, {{SceneId(99), "asd", true}, {SceneId(400001), "xxxxxxuzuuu", false},
+        fromStack.handleSceneAvailabilityChange(SomeIPMsgHeader{10, 123, 5}, {{SceneId(99), "asd", true}, {SceneId(400001), "xxxxxxuzuuu", false},
                                                                               {SceneId(1), "", false}, {SceneId(0), "boo", true}});
-        fromStack.handleSceneAvailabilityChange(SomeIPMsgHeader{10, 123, 9}, {});  // empty list triggers nothing
+        fromStack.handleSceneAvailabilityChange(SomeIPMsgHeader{10, 123, 6}, {});  // empty list triggers nothing
 
         EXPECT_CALL(sceneRenderer, handleInitializeScene(SceneId(9999954), Guid(10)));
-        fromStack.handleInitializeScene(SomeIPMsgHeader{10, 123, 10}, SceneId(9999954));
+        fromStack.handleInitializeScene(SomeIPMsgHeader{10, 123, 7}, SceneId(9999954));
 
         EXPECT_CALL(sceneRenderer, handleSceneUpdate(SceneId(34534), absl::Span<const Byte>(dataBlob), Guid(10)));
-        fromStack.handleSceneUpdate(SomeIPMsgHeader{10, 123, 11}, SceneId(34534), dataBlob);
+        fromStack.handleSceneUpdate(SomeIPMsgHeader{10, 123, 8}, SceneId(34534), dataBlob);
 
         expectRemoteDisconnects({10});
-    }
-
-    TEST_F(ARamsesConnectionSystemConnected, listSendMethodsChunkData)
-    {
-        connectRemote(RamsesInstanceId(3), Guid(10));
-
-        EXPECT_CALL(stack, getSendDataSizes()).WillRepeatedly(Return(RamsesStackSendDataSizes{1000, 1000, 1000, 10, 10, 2}));  // split after 2 resources
-
-        ResourceContentHashVector hashesChunk_1(resourceHashes_2.begin(), resourceHashes_2.begin()+2);
-        ResourceContentHashVector hashesChunk_2(resourceHashes_2.begin()+2, resourceHashes_2.begin()+3);
-
-        EXPECT_CALL(stack, sendRequestResources(RamsesInstanceId(3), ValidHdr(pid, 2u), absl::Span<const ResourceContentHash>(hashesChunk_1))).WillOnce(Return(true));
-        EXPECT_CALL(stack, sendRequestResources(RamsesInstanceId(3), ValidHdr(pid, 3u), absl::Span<const ResourceContentHash>(hashesChunk_2))).WillOnce(Return(true));
-        EXPECT_TRUE(connsys->sendRequestResources(Guid(10), resourceHashes_2));
-
-        EXPECT_CALL(stack, sendResourcesNotAvailable(RamsesInstanceId(3), ValidHdr(pid, 4u), absl::Span<const ResourceContentHash>(hashesChunk_1))).WillOnce(Return(true));
-        EXPECT_CALL(stack, sendResourcesNotAvailable(RamsesInstanceId(3), ValidHdr(pid, 5u), absl::Span<const ResourceContentHash>(hashesChunk_2))).WillOnce(Return(true));
-        EXPECT_TRUE(connsys->sendResourcesNotAvailable(Guid(10), resourceHashes_2));
-
-        expectRemoteDisconnects({10});
-    }
-
-    TEST_F(ARamsesConnectionSystemConnected, blobSendMethodsChunkData)
-    {
-        connectRemote(RamsesInstanceId(3), Guid(10));
-
-        SomeIPMsgHeader firstHdr;
-        EXPECT_CALL(stack, sendResourceTransfer(RamsesInstanceId(3), ValidHdr(pid, 2u), dataBlob)).WillOnce(DoAll(SaveArg<1>(&firstHdr), Return(true)));
-        EXPECT_CALL(stack, sendResourceTransfer(RamsesInstanceId(3), ValidHdr(pid, 3u), dataBlob_2)).WillOnce(Return(true));
-        EXPECT_TRUE(connsys->sendResources(Guid(10), FakseSceneUpdateSerializer({dataBlob, dataBlob_2}, 1000)));
-
-        EXPECT_CALL(stack, sendSceneUpdate(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 4u}, SceneId(999), dataBlob)).WillOnce(Return(true));
-        EXPECT_CALL(stack, sendSceneUpdate(RamsesInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 5u}, SceneId(999), dataBlob_2)).WillOnce(Return(true));
-        EXPECT_TRUE(connsys->sendSceneUpdate(Guid(10), SceneId(999), FakseSceneUpdateSerializer({dataBlob, dataBlob_2}, 1000)));
-
-        expectRemoteDisconnects({10});
-    }
-
-    TEST_F(ARamsesConnectionSystemConnected, sendMethodsForwardStackFailures_sendRequestResources)
-    {
-        connectRemote(RamsesInstanceId(3), Guid(10));
-        expectRemoteDisconnects({10});
-        EXPECT_CALL(stack, getSendDataSizes()).WillRepeatedly(Return(RamsesStackSendDataSizes{1000, 1000, 1000, 10, 10, 2}));  // split after 2 resources
-
-        EXPECT_CALL(stack, sendRequestResources(RamsesInstanceId(3), ValidHdr(pid, 2u), _)).WillOnce(Return(false));
-        EXPECT_FALSE(connsys->sendRequestResources(Guid(10), resourceHashes_2));
-    }
-
-    TEST_F(ARamsesConnectionSystemConnected, sendMethodsForwardStackFailures_sendResourcesNotAvailable)
-    {
-        connectRemote(RamsesInstanceId(3), Guid(10));
-        expectRemoteDisconnects({10});
-        EXPECT_CALL(stack, getSendDataSizes()).WillRepeatedly(Return(RamsesStackSendDataSizes{1000, 1000, 1000, 10, 10, 2}));  // split after 2 resources
-
-        EXPECT_CALL(stack, sendResourcesNotAvailable(RamsesInstanceId(3), ValidHdr(pid, 2u), _)).WillOnce(Return(false));
-        EXPECT_FALSE(connsys->sendResourcesNotAvailable(Guid(10), resourceHashes_2));
     }
 
     TEST_F(ARamsesConnectionSystemConnected, sendMethodsForwardStackFailures_sendScenesAvailable)
@@ -342,15 +252,6 @@ namespace ramses_internal
         EXPECT_FALSE(connsys->sendRendererEvent(Guid(10), SceneId(2), dataBlob));
     }
 
-    TEST_F(ARamsesConnectionSystemConnected, sendMethodsForwardStackFailures_sendResources)
-    {
-        connectRemote(RamsesInstanceId(3), Guid(10));
-        expectRemoteDisconnects({10});
-
-        EXPECT_CALL(stack, sendResourceTransfer(RamsesInstanceId(3), ValidHdr(pid, 2u), dataBlob)).WillOnce(Return(false));
-        EXPECT_FALSE(connsys->sendResources(Guid(10), FakseSceneUpdateSerializer({dataBlob, dataBlob_2}, 1000)));
-    }
-
     TEST_F(ARamsesConnectionSystemConnected, sendMethodsForwardStackFailures_sendSceneUpdate)
     {
         connectRemote(RamsesInstanceId(3), Guid(10));
@@ -358,5 +259,16 @@ namespace ramses_internal
 
         EXPECT_CALL(stack, sendSceneUpdate(RamsesInstanceId(3), ValidHdr(pid, 2u), SceneId(999), dataBlob)).WillOnce(Return(false));
         EXPECT_FALSE(connsys->sendSceneUpdate(Guid(10), SceneId(999), FakseSceneUpdateSerializer({dataBlob, dataBlob_2}, 1000)));
+    }
+
+    TEST_F(ARamsesConnectionSystemConnected, blobSendMethodsChunkData)
+    {
+        connectRemote(RamsesInstanceId(3), Guid(10));
+
+        EXPECT_CALL(stack, sendSceneUpdate(RamsesInstanceId(3), ValidHdr(pid, 2u), SceneId(999), dataBlob)).WillOnce(Return(true));
+        EXPECT_CALL(stack, sendSceneUpdate(RamsesInstanceId(3), ValidHdr(pid, 3u), SceneId(999), dataBlob_2)).WillOnce(Return(true));
+        EXPECT_TRUE(connsys->sendSceneUpdate(Guid(10), SceneId(999), FakseSceneUpdateSerializer({ dataBlob, dataBlob_2 }, 1000)));
+
+        expectRemoteDisconnects({ 10 });
     }
 }

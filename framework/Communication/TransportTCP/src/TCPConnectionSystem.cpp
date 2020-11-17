@@ -10,7 +10,6 @@
 
 #include "Components/ResourceStreamSerialization.h"
 #include "Scene/SceneActionCollection.h"
-#include "TransportCommon/TransportUtilities.h"
 #include "Utils/BinaryInputStream.h"
 #include "Utils/RawBinaryOutputStream.h"
 #include "Utils/StatisticCollection.h"
@@ -50,8 +49,6 @@ namespace ramses_internal
         , m_statisticCollection(statisticCollection)
         , m_ramsesConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName(), "ramses", frameworkLock)
         , m_dcsmConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName(), "dcsm", frameworkLock)
-        , m_resourceConsumerHandler(nullptr)
-        , m_resourceProviderHandler(nullptr)
         , m_sceneProviderHandler(nullptr)
         , m_sceneRendererHandler(nullptr)
         , m_dcsmProviderHandler(nullptr)
@@ -136,16 +133,6 @@ namespace ramses_internal
         return m_dcsmConnectionStatusUpdateNotifier;
     }
 
-    void TCPConnectionSystem::setResourceProviderServiceHandler(IResourceProviderServiceHandler* handler)
-    {
-        m_resourceProviderHandler = handler;
-    }
-
-    void TCPConnectionSystem::setResourceConsumerServiceHandler(IResourceConsumerServiceHandler* handler)
-    {
-        m_resourceConsumerHandler = handler;
-    }
-
     void TCPConnectionSystem::setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler)
     {
         m_sceneProviderHandler = handler;
@@ -189,8 +176,7 @@ namespace ramses_internal
         {
             if (pp.value->type != EParticipantType::PureDaemon)
             {
-                m_ramsesConnectionStatusUpdateNotifier.triggerNotification(pp.value->address.getParticipantId(), EConnectionStatus_NotConnected);
-                m_dcsmConnectionStatusUpdateNotifier.triggerNotification(pp.value->address.getParticipantId(), EConnectionStatus_NotConnected);
+                triggerConnectionUpdateNotification(pp.value->address.getParticipantId(), EConnectionStatus_NotConnected);
             }
         }
 
@@ -341,7 +327,8 @@ namespace ramses_internal
 
         RawBinaryOutputStream s(reinterpret_cast<uint8_t*>(pp->currentOutBuffer.data()), static_cast<uint32_t>(pp->currentOutBuffer.size()));
         const uint32_t remainingSize = fullSize - sizeof(pp->lengthReceiveBuffer);
-        s << remainingSize;
+        s << remainingSize
+          << m_protocolVersion;
 
         asio::async_write(pp->socket, asio::const_buffer(pp->currentOutBuffer.data(), pp->currentOutBuffer.size()),
                           [this, pp](asio::error_code e, std::size_t sentBytes) {
@@ -377,12 +364,10 @@ namespace ramses_internal
 
     void TCPConnectionSystem::doSendQueuedMessage(const ParticipantPtr& pp)
     {
-        if (pp->currentOutBuffer.empty() &&
-            (!pp->outQueueNormal.empty() || !pp->outQueuePrio.empty()))
+        if (pp->currentOutBuffer.empty() && !pp->outQueue.empty())
         {
-            auto& queue = pp->outQueuePrio.empty() ? pp->outQueueNormal : pp->outQueuePrio;
-            OutMessage msg = std::move(queue.front());
-            queue.pop_front();
+            OutMessage msg = std::move(pp->outQueue.front());
+            pp->outQueue.pop_front();
 
             sendMessageToParticipant(pp, std::move(msg));
         }
@@ -392,10 +377,9 @@ namespace ramses_internal
     {
         if (pp->currentOutBuffer.empty())
         {
-            assert(pp->outQueueNormal.empty());
-            assert(pp->outQueuePrio.empty());
+            assert(pp->outQueue.empty());
 
-            sendMessageToParticipant(pp, OutMessage(pp->address.getParticipantId(), EMessageId::Alive));
+            sendMessageToParticipant(pp, OutMessage(std::vector<Guid>(), EMessageId::Alive));
         }
     }
 
@@ -481,8 +465,7 @@ namespace ramses_internal
 
         if (pp->state == EParticipantState::Established && pp->type != EParticipantType::PureDaemon)
         {
-            m_ramsesConnectionStatusUpdateNotifier.triggerNotification(pp->address.getParticipantId(), EConnectionStatus_NotConnected);
-            m_dcsmConnectionStatusUpdateNotifier.triggerNotification(pp->address.getParticipantId(), EConnectionStatus_NotConnected);
+            triggerConnectionUpdateNotification(pp->address.getParticipantId(), EConnectionStatus_NotConnected);
         }
 
         // tear down and cancel everything
@@ -565,7 +548,7 @@ namespace ramses_internal
         }
     }
 
-    bool TCPConnectionSystem::postMessageForSending(OutMessage msg, bool hasPrio)
+    bool TCPConnectionSystem::postMessageForSending(OutMessage msg)
     {
         // expect framework lock to be held
         if (!m_runState)
@@ -575,20 +558,23 @@ namespace ramses_internal
         }
 
         m_statisticCollection.statMessagesSent.incCounter(1);
-        asio::post(m_runState->m_io, [this, msg = std::move(msg), hasPrio]() mutable {
-                            const bool broadcast = msg.to.isInvalid();
-                            if (broadcast)
+
+        // Skip if broadcast with no participants
+        if (msg.to.empty())
+            return true;
+
+        asio::post(m_runState->m_io, [this, msg = std::move(msg)]() mutable {
+                            if (msg.to.size() > 1)
                             {
-                                for (auto& p : m_establishedParticipants)
+                                for (auto& p : msg.to)
                                 {
-                                    ParticipantPtr& pp = p.value;
+                                    ParticipantPtr pp;
+                                    if (m_establishedParticipants.get(p, pp) != EStatus::Ok)
+                                        continue; // skip invalid participant in broadcast. might happen due to disconnect race
                                     assert(pp);
 
                                     // cannot move here when broadcast to more than 1 participant
-                                    if (hasPrio)
-                                        pp->outQueuePrio.push_back(msg);
-                                    else
-                                        pp->outQueueNormal.push_back(msg);
+                                    pp->outQueue.push_back(msg);
 
                                     doSendQueuedMessage(pp);
                                 }
@@ -596,18 +582,15 @@ namespace ramses_internal
                             else
                             {
                                 ParticipantPtr pp;
-                                if (m_establishedParticipants.get(msg.to, pp) != EStatus::Ok)
+                                if (m_establishedParticipants.get(msg.to.front(), pp) != EStatus::Ok)
                                 {
                                     LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::postMessageForSending: post message " << msg.messageType <<
-                                             " to not (fully) connected participant " << msg.to);
+                                             " to not (fully) connected participant " << msg.to.front());
                                     return;
                                 }
                                 assert(pp);
 
-                                if (hasPrio)
-                                    pp->outQueuePrio.push_back(std::move(msg));
-                                else
-                                    pp->outQueueNormal.push_back(std::move(msg));
+                                pp->outQueue.push_back(std::move(msg));
 
                                 doSendQueuedMessage(pp);
                             }
@@ -620,6 +603,17 @@ namespace ramses_internal
     {
         assert(pp->receiveBuffer.size() > 0);
         BinaryInputStream stream(pp->receiveBuffer.data());
+
+        uint32_t recvProtocolVersion = 0;
+        stream >> recvProtocolVersion;
+
+        if (m_protocolVersion != recvProtocolVersion)
+        {
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleReceivedMessage: Invalid protocol version received (expected "
+                     << m_protocolVersion << ", got " << recvProtocolVersion << "). Drop connection");
+            removeParticipant(pp, true);
+            return;
+        }
 
         uint32_t messageTypeTmp = 0;
         stream >> messageTypeTmp;
@@ -654,15 +648,6 @@ namespace ramses_internal
         case EMessageId::SendSceneUpdate:
             handleSceneUpdate(pp, stream);
             break;
-        case EMessageId::TransferResources:
-            handleTransferResources(pp, stream);
-            break;
-        case EMessageId::RequestResources:
-            handleRequestResources(pp, stream);
-            break;
-        case EMessageId::ResourcesNotAvailable:
-            handleResourcesNotAvailable(pp, stream);
-            break;
         case EMessageId::CreateScene:
             handleCreateScene(pp, stream);
             break;
@@ -670,7 +655,7 @@ namespace ramses_internal
             handleRendererEvent(pp, stream);
             break;
         case EMessageId::DcsmRegisterContent:
-            handleDcsmRegisterContent(pp, stream, pp->receiveBuffer.size());
+            handleDcsmRegisterContent(pp, stream);
             break;
         case EMessageId::DcsmCanvasSizeChange:
             handleDcsmCanvasSizeChange(pp, stream);
@@ -685,7 +670,7 @@ namespace ramses_internal
             handleDcsmContentAvailable(pp, stream);
             break;
         case EMessageId::DcsmCategoryContentSwitchRequest:
-            handleDcsmCategoryContentSwitchRequest(pp, stream, pp->receiveBuffer.size());
+            handleDcsmCategoryContentSwitchRequest(pp, stream);
             break;
         case EMessageId::DcsmRequestUnregisterContent:
             handleDcsmRequestUnregisterContent(pp, stream);
@@ -706,9 +691,8 @@ namespace ramses_internal
     {
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendConnectionDescriptionOnNewConnection: " << pp->address.getParticipantId());
 
-        OutMessage msg(pp->address.getParticipantId(), EMessageId::ConnectionDescriptionMessage);
-        msg.stream << m_protocolVersion
-                   << m_participantAddress.getParticipantId()
+        OutMessage msg(std::vector<Guid>(), EMessageId::ConnectionDescriptionMessage);
+        msg.stream << m_participantAddress.getParticipantId()
                    << m_participantAddress.getParticipantName()
                    << m_participantAddress.getIp()
                    << static_cast<uint16_t>(m_runState->m_acceptor.local_endpoint().port())
@@ -727,17 +711,6 @@ namespace ramses_internal
         {
             LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectionDescriptionMessage: Unexpected connection description from " << pp->address.getParticipantId() <<
                       " in state " << EnumToString(pp->state));
-            removeParticipant(pp, true);
-            return;
-        }
-
-        // check protocol version first before reading anything else. allows graceful protocol updates also of connection description message
-        uint32_t protocolVersion = 0;
-        stream >> protocolVersion;
-        if (m_protocolVersion != protocolVersion)
-        {
-            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectionDescriptionMessage: Invalid protocol version (expected "
-                     << m_protocolVersion << ", got " << protocolVersion << ") on new connection. Drop connection");
             removeParticipant(pp, true);
             return;
         }
@@ -767,10 +740,7 @@ namespace ramses_internal
         m_establishedParticipants.put(guid, pp);
 
         if (pp->type != EParticipantType::PureDaemon)
-        {
-            m_ramsesConnectionStatusUpdateNotifier.triggerNotification(guid, EConnectionStatus_Connected);
-            m_dcsmConnectionStatusUpdateNotifier.triggerNotification(guid, EConnectionStatus_Connected);
-        }
+            triggerConnectionUpdateNotification(guid, EConnectionStatus_Connected);
 
         sendConnectorAddressExchangeMessagesForNewParticipant(pp);
     }
@@ -808,7 +778,7 @@ namespace ramses_internal
                                    << p.value->type;
                     }
                 }
-                postMessageForSending(std::move(msg), true);
+                postMessageForSending(std::move(msg));
             }
 
             // send new participant to all others, inc daemons
@@ -828,7 +798,7 @@ namespace ramses_internal
                                << addr.getIp()
                                << addr.getPort()
                                << newPp->type;
-                    postMessageForSending(std::move(msg), true);
+                    postMessageForSending(std::move(msg));
                 }
             }
         }
@@ -838,21 +808,6 @@ namespace ramses_internal
     {
         uint32_t numEntries = 0;
         stream >> numEntries;
-
-        // TODO(Carsten): remove this hack for 27
-        // Between ramses 25 and ramses 26 the enum for EMessageId::ConnectionDescriptionMessage changed, the
-        // ramses 25 ConnectionDescription message will be interpreted by ramses 26 as ConnectorAddressExchange message
-        // To avoid crashes without breaking any compatibility, we check numEntries for plausibility by simply assuming
-        // everything above a threshold to be actually a protocol version from a ConnectionDescription message and
-        // dropping the connection to the participant.
-        constexpr uint32_t protocolVersionWorkaroundThreshold = 100u;
-        if (numEntries > protocolVersionWorkaroundThreshold)
-        {
-            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectorAddressExchange: Invalid protocol version (expected "
-                << m_protocolVersion << ", got " << numEntries << ") on new connection. Drop connection");
-            removeParticipant(pp, true);
-            return;
-        }
 
         LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectorAddressExchange: from " << pp->address.getParticipantId() << ", numEntries " << numEntries);
 
@@ -923,7 +878,7 @@ namespace ramses_internal
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendSubscribeScene: to " << to << ", sceneId " << sceneId);
         OutMessage msg(to, EMessageId::SubscribeScene);
         msg.stream << sceneId.getValue();
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handleSubscribeScene(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -945,7 +900,7 @@ namespace ramses_internal
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendUnsubscribeScene: to " << to << ", sceneId " << sceneId);
         OutMessage msg(to, EMessageId::UnsubscribeScene);
         msg.stream << sceneId.getValue();
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handleUnsubscribeScene(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -967,7 +922,7 @@ namespace ramses_internal
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendInitializeScene: to " << to << ", sceneId " << sceneId);
         OutMessage msg(to, EMessageId::CreateScene);
         msg.stream << sceneId.getValue();
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handleCreateScene(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -1000,7 +955,7 @@ namespace ramses_internal
                        << usedSize;
             msg.stream.write(buffer.data(), usedSize);
 
-            return postMessageForSending(std::move(msg), false);
+            return postMessageForSending(std::move(msg));
         });
     }
 
@@ -1034,14 +989,14 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(Guid(), EMessageId::PublishScene);
+        OutMessage msg(m_connectedParticipantsForBroadcasts, EMessageId::PublishScene);
         msg.stream << static_cast<uint32_t>(newScenes.size());
         for (const auto& s : newScenes)
         {
             msg.stream << s.sceneID.getValue()
                        << s.friendlyName;
         }
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     bool TCPConnectionSystem::sendScenesAvailable(const Guid& to, const SceneInfoVector& availableScenes)
@@ -1060,7 +1015,7 @@ namespace ramses_internal
             msg.stream << s.sceneID.getValue()
                        << s.friendlyName;
         }
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handlePublishScene(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -1103,14 +1058,14 @@ namespace ramses_internal
                                                 sos << "]";
                                             }));
 
-        OutMessage msg(Guid(), EMessageId::UnpublishScene);
+        OutMessage msg(m_connectedParticipantsForBroadcasts, EMessageId::UnpublishScene);
         msg.stream << static_cast<uint32_t>(unavailableScenes.size());
         for (const auto& s : unavailableScenes)
         {
             msg.stream << s.sceneID.getValue()
                        << s.friendlyName;
         }
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handleUnpublishScene(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -1144,126 +1099,6 @@ namespace ramses_internal
     }
 
     // --
-    bool TCPConnectionSystem::sendRequestResources(const Guid& to, const ResourceContentHashVector& resources)
-    {
-        LOG_DEBUG_F(CONTEXT_COMMUNICATION, ([&](ramses_internal::StringOutputStream& sos) {
-                                                sos << "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendRequestResources: to " << to << " [";
-                                                for (const auto& r : resources)
-                                                    sos << r << "; ";
-                                                sos << "]";
-                                            }));
-
-        OutMessage msg(to, EMessageId::RequestResources);
-        msg.stream << static_cast<uint32_t>(resources.size());
-        for (const auto& r : resources)
-        {
-            msg.stream << r;
-        }
-        return postMessageForSending(std::move(msg), true);
-    }
-
-    void TCPConnectionSystem::handleRequestResources(const ParticipantPtr& pp, BinaryInputStream& stream)
-    {
-        if (m_resourceProviderHandler)
-        {
-            uint32_t numResources = 0;
-            stream >> numResources;
-
-            ResourceContentHashVector resources(numResources);
-            for (uint32_t i = 0; i < numResources; ++i)
-                stream >> resources[i];
-
-            LOG_TRACE_F(CONTEXT_COMMUNICATION, ([&](ramses_internal::StringOutputStream& sos) {
-                                                    sos << "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleRequestResources: from " << pp->address.getParticipantId() << " [";
-                                                    for (const auto& r : resources)
-                                                        sos << r << "; ";
-                                                    sos << "]";
-                                                }));
-
-            PlatformGuard guard(m_frameworkLock);
-            m_resourceProviderHandler->handleRequestResources(resources, pp->address.getParticipantId());
-        }
-    }
-
-    // --
-    bool TCPConnectionSystem::sendResources(const Guid& to, const ISceneUpdateSerializer& serializer)
-    {
-        LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendResources: to " << to);
-
-        static_assert(ResourceDataSize < 1000000, "ResourceDataSize too big");
-
-        std::vector<Byte> buffer(ResourceDataSize);
-        return serializer.writeToPackets({buffer.data(), buffer.size()}, [&](size_t size) {
-
-            const uint32_t usedSize = static_cast<uint32_t>(size);
-            OutMessage msg(to, EMessageId::TransferResources);
-            msg.stream << usedSize;
-            msg.stream.write(buffer.data(), usedSize);
-
-            m_statisticCollection.statResourcesSentSize.incCounter(usedSize);
-            return postMessageForSending(std::move(msg), false);
-        });
-    }
-
-    void TCPConnectionSystem::handleTransferResources(const ParticipantPtr& pp, BinaryInputStream& stream)
-    {
-        if (m_resourceConsumerHandler)
-        {
-            uint32_t dataSize;
-            stream >> dataSize;
-
-            const Byte* receiveBufferEnd = pp->receiveBuffer.data() + pp->receiveBuffer.size();
-            absl::Span<const Byte> resourceData(reinterpret_cast<const Byte*>(stream.readPosition()), static_cast<uint32_t>(receiveBufferEnd - stream.readPosition()));
-
-            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleTransferResources: from " << pp->address.getParticipantId() << ", dataSize " << dataSize);
-            PlatformGuard guard(m_frameworkLock);
-            m_resourceConsumerHandler->handleSendResource(resourceData, pp->address.getParticipantId());
-        }
-    }
-
-    // --
-    bool TCPConnectionSystem::sendResourcesNotAvailable(const Guid& to, const ResourceContentHashVector& resources)
-    {
-        LOG_DEBUG_F(CONTEXT_COMMUNICATION, ([&](ramses_internal::StringOutputStream& sos) {
-                                                sos << "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendResourcesNotAvailable: to " << to << " [";
-                                                for (const auto& r : resources)
-                                                    sos << r << "; ";
-                                                sos << "]";
-                                            }));
-
-        OutMessage msg(Guid(), EMessageId::ResourcesNotAvailable);
-        msg.stream << static_cast<uint32_t>(resources.size());
-        for (const auto& r : resources)
-        {
-            msg.stream << r;
-        }
-        return postMessageForSending(std::move(msg), true);
-    }
-
-    void TCPConnectionSystem::handleResourcesNotAvailable(const ParticipantPtr& pp, BinaryInputStream& stream)
-    {
-        if (m_resourceConsumerHandler)
-        {
-            uint32_t numResources = 0;
-            stream >> numResources;
-
-            ResourceContentHashVector resources(numResources);
-            for (uint32_t i = 0; i < numResources; ++i)
-                stream >> resources[i];
-
-            LOG_DEBUG_F(CONTEXT_COMMUNICATION, ([&](ramses_internal::StringOutputStream& sos) {
-                                                    sos << "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleResourcesNotAvailable: from " << pp->address.getParticipantId() << " [";
-                                                    for (const auto& r : resources)
-                                                        sos << r << "; ";
-                                                    sos << "]";
-                                                }));
-
-            PlatformGuard guard(m_frameworkLock);
-            m_resourceConsumerHandler->handleResourcesNotAvailable(resources, pp->address.getParticipantId());
-        }
-    }
-
-    // --
     bool TCPConnectionSystem::sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data)
     {
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendRendererEvent: to " << to << ", size " << data.size());
@@ -1276,7 +1111,7 @@ namespace ramses_internal
         msg.stream << sceneId.getValue()
                    << static_cast<uint32_t>(data.size());
         msg.stream.write(data.data(), static_cast<uint32_t>(data.size()));
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handleRendererEvent(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -1310,7 +1145,7 @@ namespace ramses_internal
                    << ai.finishedTimeStamp
                    << blobSize;
         msg.stream.write(blob.data(), static_cast<uint32_t>(blobSize));
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handleDcsmCanvasSizeChange(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -1348,7 +1183,7 @@ namespace ramses_internal
                    << ai.finishedTimeStamp
                    << blobSize;
         msg.stream.write(blob.data(), static_cast<uint32_t>(blobSize));
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handleDcsmContentStatusChange(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -1377,25 +1212,27 @@ namespace ramses_internal
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmBroadcastOfferContent(ContentID contentID, Category category, const std::string& friendlyName)
+    bool TCPConnectionSystem::sendDcsmBroadcastOfferContent(ContentID contentID, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName)
     {
-        OutMessage msg(Guid(), EMessageId::DcsmRegisterContent);
+        OutMessage msg(m_connectedParticipantsForBroadcasts, EMessageId::DcsmRegisterContent);
         msg.stream << contentID.getValue()
                    << category.getValue()
+                   << technicalContentType
                    << friendlyName;
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
-    bool TCPConnectionSystem::sendDcsmOfferContent(const Guid& to, ContentID contentID, Category category, const std::string& friendlyName)
+    bool TCPConnectionSystem::sendDcsmOfferContent(const Guid& to, ContentID contentID, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName)
     {
         OutMessage msg(Guid(to), EMessageId::DcsmRegisterContent);
         msg.stream << contentID.getValue()
                    << category.getValue()
+                   << technicalContentType
                    << friendlyName;
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
-    void TCPConnectionSystem::handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream, size_t size)
+    void TCPConnectionSystem::handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream)
     {
         if (m_dcsmConsumerHandler)
         {
@@ -1405,25 +1242,24 @@ namespace ramses_internal
             Category category;
             stream >> category.getReference();
 
+            ETechnicalContentType technicalContentType;
+            stream >> technicalContentType;
+
             std::string name;
-            if (size > stream.getCurrentReadBytes()) //TODO(Bernhard): Temporary workaround to send name backwards compatible in Ramses 26. Can be removed with next major version
-            {
-                stream >> name;
-            }
+            stream >> name;
 
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmConsumerHandler->handleOfferContent(contentID, category, name, pp->address.getParticipantId());
+            m_dcsmConsumerHandler->handleOfferContent(contentID, category, technicalContentType, name, pp->address.getParticipantId());
         }
     }
 
     // --
-    bool TCPConnectionSystem::sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
+    bool TCPConnectionSystem::sendDcsmContentDescription(const Guid& to, ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor)
     {
         OutMessage msg(to, EMessageId::DcsmContentDescription);
         msg.stream << contentID.getValue()
-                   << technicalContentType
                    << technicalContentDescriptor.getValue();
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handleDcsmContentDescription(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -1433,14 +1269,11 @@ namespace ramses_internal
             ContentID contentID;
             stream >> contentID.getReference();
 
-            ETechnicalContentType technicalContentType;
-            stream >> technicalContentType;
-
             TechnicalContentDescriptor technicalContentDescriptor;
             stream >> technicalContentDescriptor.getReference();
 
             PlatformGuard guard(m_frameworkLock);
-            m_dcsmConsumerHandler->handleContentDescription(contentID, technicalContentType, technicalContentDescriptor, pp->address.getParticipantId());
+            m_dcsmConsumerHandler->handleContentDescription(contentID, technicalContentDescriptor, pp->address.getParticipantId());
         }
     }
 
@@ -1449,7 +1282,7 @@ namespace ramses_internal
     {
         OutMessage msg(to, EMessageId::DcsmContentAvailable);
         msg.stream << contentID.getValue();
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -1471,7 +1304,7 @@ namespace ramses_internal
         msg.stream << contentID.getValue();
         msg.stream << true;
         msg.stream << focusRequest;
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     bool TCPConnectionSystem::sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest)
@@ -1480,34 +1313,28 @@ namespace ramses_internal
         msg.stream << contentID.getValue();
         msg.stream << false;
         msg.stream << focusRequest;
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
-    void TCPConnectionSystem::handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream, size_t size)
+    void TCPConnectionSystem::handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream)
     {
         if (m_dcsmConsumerHandler)
         {
             ContentID contentID;
             stream >> contentID.getReference();
-            if (size > stream.getCurrentReadBytes())
+
+            bool isEnable = false;
+            int32_t focusRequest = 0;
+            stream >> isEnable;
+            stream >> focusRequest;
+            PlatformGuard guard(m_frameworkLock);
+            if (isEnable)
             {
-                bool isEnable = false;
-                int32_t focusRequest = 0;
-                stream >> isEnable;
-                stream >> focusRequest;
-                PlatformGuard guard(m_frameworkLock);
-                if (isEnable)
-                {
-                    m_dcsmConsumerHandler->handleContentEnableFocusRequest(contentID, focusRequest, pp->address.getParticipantId());
-                }
-                else
-                {
-                    m_dcsmConsumerHandler->handleContentDisableFocusRequest(contentID, focusRequest, pp->address.getParticipantId());
-                }
+                m_dcsmConsumerHandler->handleContentEnableFocusRequest(contentID, focusRequest, pp->address.getParticipantId());
             }
             else
             {
-                LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem::handleDcsmCategoryContentSwitchRequest received deprecated contentSwitchRequest");
+                m_dcsmConsumerHandler->handleContentDisableFocusRequest(contentID, focusRequest, pp->address.getParticipantId());
             }
         }
     }
@@ -1515,9 +1342,9 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmBroadcastRequestStopOfferContent(ContentID contentID)
     {
-        OutMessage msg(Guid(), EMessageId::DcsmRequestUnregisterContent);
+        OutMessage msg(m_connectedParticipantsForBroadcasts, EMessageId::DcsmRequestUnregisterContent);
         msg.stream << contentID.getValue();
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handleDcsmRequestUnregisterContent(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -1535,9 +1362,9 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmBroadcastForceStopOfferContent(ContentID contentID)
     {
-        OutMessage msg(Guid(), EMessageId::DcsmForceUnregisterContent);
+        OutMessage msg(m_connectedParticipantsForBroadcasts, EMessageId::DcsmForceUnregisterContent);
         msg.stream << contentID.getValue();
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handleDcsmForceStopOfferContent(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -1561,7 +1388,7 @@ namespace ramses_internal
         msg.stream << contentID.getValue()
                    << blobSize;
         msg.stream.write(blob.data(), static_cast<uint32_t>(blobSize));
-        return postMessageForSending(std::move(msg), true);
+        return postMessageForSending(std::move(msg));
     }
 
     void TCPConnectionSystem::handleDcsmUpdateContentMetadata(const ParticipantPtr& pp, BinaryInputStream& stream)
@@ -1655,6 +1482,26 @@ namespace ramses_internal
         else
             LOG_INFO(CONTEXT_PERIODIC, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << "): Not connected");
     }
+
+    void TCPConnectionSystem::triggerConnectionUpdateNotification(Guid participant, EConnectionStatus status)
+    {
+        PlatformGuard guard(m_frameworkLock);
+        if (status == EConnectionStatus_Connected)
+        {
+            assert(std::find(m_connectedParticipantsForBroadcasts.begin(), m_connectedParticipantsForBroadcasts.end(), participant) == m_connectedParticipantsForBroadcasts.end());
+            m_connectedParticipantsForBroadcasts.push_back(participant);
+        }
+        else
+        {
+            m_connectedParticipantsForBroadcasts.erase(std::remove(m_connectedParticipantsForBroadcasts.begin(),
+                                                                   m_connectedParticipantsForBroadcasts.end(),
+                                                                   participant),
+                                                       m_connectedParticipantsForBroadcasts.end());
+        }
+        m_ramsesConnectionStatusUpdateNotifier.triggerNotification(participant, status);
+        m_dcsmConnectionStatusUpdateNotifier.triggerNotification(participant, status);
+    }
+
 
     // --- TCPConnectionSystem::Participant ---
     TCPConnectionSystem::Participant::Participant(const NetworkParticipantAddress& address_, asio::io_service& io_,

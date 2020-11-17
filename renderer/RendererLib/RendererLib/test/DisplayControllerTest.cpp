@@ -109,31 +109,6 @@ namespace ramses_internal
         destroyDisplayControllerWithWarping(displayController);
     }
 
-    TEST_F(ADisplayController, hasZeroPositionAndRotationWithDefaultConfiguration)
-    {
-        IDisplayController& displayController = createDisplayController();
-
-        EXPECT_EQ(Vector3(0.0f), displayController.getViewPosition());
-        EXPECT_EQ(Vector3(0.0f), displayController.getViewRotation());
-
-        destroyDisplayController(displayController);
-    }
-
-    TEST_F(ADisplayController, canSetItsPositionAndRotation)
-    {
-        IDisplayController& displayController = createDisplayController();
-
-        const Vector3 position(1.0f, 2.0f, 3.0f);
-        displayController.setViewPosition(position);
-        EXPECT_EQ(position, displayController.getViewPosition());
-
-        const Vector3 rotation(1.1f, 2.1f, 3.1f);
-        displayController.setViewRotation(rotation);
-        EXPECT_EQ(rotation, displayController.getViewRotation());
-
-        destroyDisplayController(displayController);
-    }
-
     TEST_F(ADisplayController, readsPixelsFromFramebuffer)
     {
         IDisplayController& displayController = createDisplayController();

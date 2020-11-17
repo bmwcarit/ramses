@@ -18,7 +18,7 @@ namespace ramses_internal
     class AnimationProcessDataCache
     {
     public:
-        typedef HashMap<AnimationHandle, AnimationProcessData> DataProcessMap;
+        using DataProcessMap = HashMap<AnimationHandle, AnimationProcessData>;
 
         explicit AnimationProcessDataCache(const AnimationData& animationData);
 

@@ -119,7 +119,7 @@ public:
         ramses::EffectDescription effectDesc;
         effectDesc.setVertexShaderFromFile("res/ramses-dcsm-list.vert");
         effectDesc.setFragmentShaderFromFile("res/ramses-dcsm-list.frag");
-        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
         const ramses::Effect* effectTex = m_scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
         m_appearance = m_scene->createAppearance(*effectTex, "triangle appearance");
@@ -237,9 +237,9 @@ public:
 
     virtual void contentSizeChange(ramses::ContentID /*contentID*/, const ramses::CategoryInfoUpdate& categoryInfo, ramses::AnimationInformation animInfo) override
     {
-        if (categoryInfo.hasCategorySizeUpdate())
+        if (categoryInfo.hasCategoryRectUpdate())
         {
-            m_newSize = ramses::SizeInfo{ categoryInfo.getCategorySize().width, categoryInfo.getCategorySize().height };
+            m_newSize = ramses::SizeInfo{ categoryInfo.getCategoryRect().width, categoryInfo.getCategoryRect().height };
             m_sizeAnim = animInfo;
             m_sizeReceived = true;
         }

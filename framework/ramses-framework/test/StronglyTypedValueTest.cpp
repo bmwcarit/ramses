@@ -18,7 +18,7 @@ namespace ramses
         struct UInt32Tag {};
         typedef StronglyTypedValue<uint32_t, 10u, UInt32Tag> StronglyTypedUInt32;
 
-        typedef StronglyTypedValue<void*, nullptr, struct VoidPtrTag> StronglyTypedPtr;
+        using StronglyTypedPtr = StronglyTypedValue<void*, nullptr, struct VoidPtrTag>;
     }
 
     TEST(AStronglyTypedValue, CanBeCreatedWithDefaultValue)

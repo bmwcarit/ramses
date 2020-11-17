@@ -71,7 +71,7 @@ namespace ramses_internal
         virtual void handleCreateScene(ClientScene& scene, bool enableLocalOnlyOptimization, ISceneProviderEventConsumer& eventInterface) override;
         virtual void handlePublishScene(SceneId sceneId, EScenePublicationMode publicationMode) override;
         virtual void handleUnpublishScene(SceneId sceneId) override;
-        virtual void handleFlush(SceneId sceneId, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
+        virtual bool handleFlush(SceneId sceneId, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
         virtual void handleRemoveScene(SceneId sceneId) override;
 
         // ISceneProviderServiceHandler
@@ -104,10 +104,10 @@ namespace ramses_internal
 
         HashMap<SceneId, SceneInfo> m_locallyPublishedScenes;
 
-        typedef HashMap<SceneId, ClientSceneLogicBase*> ClientSceneLogicMap;
+        using ClientSceneLogicMap = HashMap<SceneId, ClientSceneLogicBase *>;
         ClientSceneLogicMap m_clientSceneLogicMap;
 
-        typedef HashMap<SceneId, ISceneProviderEventConsumer*> SceneEventConsumerMap;
+        using SceneEventConsumerMap = HashMap<SceneId, ISceneProviderEventConsumer *>;
         SceneEventConsumerMap m_sceneEventConsumers;
 
         IResourceProviderComponent& m_resourceComponent;

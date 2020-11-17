@@ -43,8 +43,9 @@ void RenderTargetRenderingTests::setUpTestCases(RendererTestsFramework& testFram
     testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_OneColorBufferNoDepthOrStencil, *this, "RenderBuffer_OneColorBufferNoDepthOrStencil");
     testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_OneColorBufferWithWriteOnlyDepthBuffer, *this, "RenderBuffer_OneColorBufferWithWriteOnlyDepthBuffer");
     testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_OneColorBufferWithWriteOnlyDepthStencilBuffer, *this, "RenderBuffer_OneColorBufferWithWriteOnlyDepthStencilBuffer");
-    testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_MsaaSampleCount2, *this, "RenderBuffer_MsaaSampleCount2");
-    testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_MsaaSampleCount4, *this, "RenderBuffer_MsaaSampleCount4");
+    testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_MsaaSampleCount2Blit, *this, "RenderBuffer_MsaaSampleCount2Blit");
+    testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_MsaaSampleCount4Blit, *this, "RenderBuffer_MsaaSampleCount4Blit");
+    testFramework.createTestCaseWithDefaultDisplay(RenderBuffer_MsaaSampleCount4TexelFetch, *this, "RenderBuffer_MsaaSampleCount4TexelFetch");
 }
 
 bool RenderTargetRenderingTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)
@@ -99,10 +100,12 @@ bool RenderTargetRenderingTests::run(RendererTestsFramework& testFramework, cons
         return runBasicTest<RenderBufferScene>(testFramework, RenderBufferScene::ONE_COLOR_BUFFER_WITH_WRITE_ONLY_DEPTH_BUFFER, "RenderBuffer_OneColorBufferWithWriteOnlyDepthBuffer");
     case RenderBuffer_OneColorBufferWithWriteOnlyDepthStencilBuffer:
         return runBasicTest<RenderBufferScene>(testFramework, RenderBufferScene::ONE_COLOR_BUFFER_WITH_WRITE_ONLY_DEPTH_STENCIL_BUFFER, "RenderBuffer_OneColorBufferWithWriteOnlyDepthStencilBuffer");
-    case RenderBuffer_MsaaSampleCount2:
-        return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_2, "RenderBuffer_MsaaSampleCount2", 0.33f);
-    case RenderBuffer_MsaaSampleCount4:
-        return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_4, "RenderBuffer_MsaaSampleCount4");
+    case RenderBuffer_MsaaSampleCount2Blit:
+        return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_2_BLIT, "RenderBuffer_MsaaSampleCount2Blit", 0.33f);
+    case RenderBuffer_MsaaSampleCount4Blit:
+        return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_4_BLIT, "RenderBuffer_MsaaSampleCount4Blit");
+    case RenderBuffer_MsaaSampleCount4TexelFetch:
+        return runBasicTest<MsaaRenderBufferScene>(testFramework, MsaaRenderBufferScene::SAMPLE_COUNT_4_TEXEL_FETCH, "RenderBuffer_MsaaSampleCount4TexelFetch");
 
     default:
         assert(!"Invalid renderer test ID!");

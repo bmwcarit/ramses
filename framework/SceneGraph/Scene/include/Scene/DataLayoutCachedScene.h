@@ -37,7 +37,7 @@ namespace ramses_internal
         DataLayoutHandle findDataLayoutEntry(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutCacheEntry*& entryOut);
 
         // Cache entries are stored in groups, each group has data layouts with same number of fields to speed up searching
-        typedef HashMap<DataLayoutHandle, DataLayoutCacheEntry> DataLayoutCacheGroup;
+        using DataLayoutCacheGroup = HashMap<DataLayoutHandle, DataLayoutCacheEntry>;
         std::vector<DataLayoutCacheGroup> m_dataLayoutCache;
     };
 }

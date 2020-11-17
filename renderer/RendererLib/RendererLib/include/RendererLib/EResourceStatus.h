@@ -9,34 +9,29 @@
 #ifndef RAMSES_ERESOURCESTATUS_H
 #define RAMSES_ERESOURCESTATUS_H
 
-#include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/LoggingUtils.h"
-#include <assert.h>
 
 namespace ramses_internal
 {
-    enum EResourceStatus
+    enum class EResourceStatus
     {
-        EResourceStatus_Unknown = 0,   ///< Resource is not known to renderer
-        EResourceStatus_Registered,    ///< Resource has been registered, not requested yet
-        EResourceStatus_Requested,     ///< Resource has been requested from provider, not provided yet
-        EResourceStatus_Provided,      ///< Resource has been provided, not uploaded yet
-        EResourceStatus_Uploaded,      ///< Resource has been uploaded and is ready for rendering
-        EResourceStatus_Broken,        ///< Resource failed to be uploaded, it is freed from system memory and will not be attempted to upload again
-
-        EResourceStatus_NUMBER_OF_ELEMENTS
+        Registered = 0,   ///< Resource is known to renderer but there is no information/data available
+        Provided,         ///< Resource is registered and data has been provided, not uploaded yet
+        Uploaded,         ///< Resource has been uploaded and is ready for rendering
+        Broken            ///< Resource failed to be uploaded, it is freed from system memory and will not be attempted to upload again
     };
 
-    static const char* ResourceStatusNames[] =
+    static constexpr const char* ResourceStatusNames[] =
     {
-        "EResourceStatus_Unknown",
         "EResourceStatus_Registered",
-        "EResourceStatus_Requested",
         "EResourceStatus_Provided",
         "EResourceStatus_Uploaded",
         "EResourceStatus_Broken"
     };
-
-    ENUM_TO_STRING(EResourceStatus, ResourceStatusNames, EResourceStatus_NUMBER_OF_ELEMENTS);
 }
+
+MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::EResourceStatus,
+    ramses_internal::ResourceStatusNames,
+    ramses_internal::EResourceStatus::Broken);
+
 #endif

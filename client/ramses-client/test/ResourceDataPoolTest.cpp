@@ -275,28 +275,6 @@ namespace ramses
         EXPECT_NE(rdp.getLastEffectErrorMessages(), "");
     }
 
-    // TODO REMOVE
-    TEST_F(AResourceDataPool, canStillCreateResourceDataWithDeprecatedFunctions)
-    {
-        uint16_t data = 0;
-        auto arrayId = rdp.addArrayResourceData(1, EDataType::UInt16, &data, ResourceCacheFlag_DoNotCache, resName);
-        uint8_t data1[4] = { 0u };
-        MipLevelData mipLevelData1(sizeof(data1), data1);
-        TextureSwizzle swizzle;
-        auto tex2dId = rdp.addTexture2DData(1u, 1u, ETextureFormat::RGBA8, 1, &mipLevelData1, false, swizzle, ResourceCacheFlag_DoNotCache, resName);
-        uint8_t data2[32] = { 0u };
-        MipLevelData mipLevelData2(sizeof(data2), data2);
-        auto tex3dId = rdp.addTexture3DData(1u, 2u, 4u, ETextureFormat::RGBA8, 1, &mipLevelData2, false, ResourceCacheFlag_DoNotCache, resName);
-        uint8_t data3[4] = { 0u };
-        CubeMipLevelData mipLevelData3(sizeof(data3), data3, data3, data3, data3, data3, data3);
-        auto texCubeId = rdp.addTextureCubeData(1u, ETextureFormat::RGBA8, 1, &mipLevelData3, false, swizzle, ResourceCacheFlag_DoNotCache, resName);
-
-        EXPECT_TRUE(this->template instantiateVerifyAndCastResource<ArrayResource>(arrayId));
-        EXPECT_TRUE(this->template instantiateVerifyAndCastResource<Texture2D>(tex2dId));
-        EXPECT_TRUE(this->template instantiateVerifyAndCastResource<Texture3D>(tex3dId));
-        EXPECT_TRUE(this->template instantiateVerifyAndCastResource<TextureCube>(texCubeId));
-    }
-
     TYPED_TEST(AResourceDataPoolTyped, acceptsNullptrAsName)
     {
         this->resName = nullptr;
@@ -370,8 +348,6 @@ namespace ramses
 
     TYPED_TEST(AResourceDataPoolTyped, canAddAndInstantiateSceneKeepsLLResourceAlive)
     {
-        this->client.impl.setClientResourceCacheTimeout(std::chrono::milliseconds(0));
-
         auto id = this->template createResourceData<TypeParam>();
         auto res = this->template instantiateVerifyAndCastResource<TypeParam>(id);
         EXPECT_TRUE(this->rdp.removeResourceData(id));
@@ -386,8 +362,6 @@ namespace ramses
 
     TYPED_TEST(AResourceDataPoolTyped, canAddAndInstantiatePoolKeepsLLResourceAlive)
     {
-        this->client.impl.setClientResourceCacheTimeout(std::chrono::milliseconds(0));
-
         auto id = this->template createResourceData<TypeParam>();
         auto res = this->template instantiateVerifyAndCastResource<TypeParam>(id);
         auto llhash = static_cast<Resource*>(res)->impl.getLowlevelResourceHash();

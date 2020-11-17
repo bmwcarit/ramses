@@ -13,11 +13,12 @@
 #include "RendererLib/RendererStatistics.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/EDataBufferType.h"
-#include "ResourceProviderMock.h"
+#include "ResourceDeviceHandleAccessorMock.h"
 #include "RendererResourceCacheMock.h"
 #include "RendererResourceCacheFake.h"
 #include "RenderBackendMock.h"
 #include "EmbeddedCompositingManagerMock.h"
+#include "MockResourceHash.h"
 
 namespace ramses_internal {
 using namespace testing;
@@ -29,7 +30,7 @@ public:
         : fakeSceneId(66u)
         , resUploader(stats)
         , frameTimer()
-        , resourceManager(resourceProvider, resUploader, renderer, embeddedCompositingManager, ResourceRequesterID(1), disableEffectDeletion, frameTimer, stats)
+        , resourceManager(resUploader, renderer, embeddedCompositingManager, disableEffectDeletion, frameTimer, stats)
     {
     }
 
@@ -39,38 +40,23 @@ public:
         resourceManager.unloadAllSceneResourcesForScene(fakeSceneId);
     }
 
-    void requestResource(ResourceContentHash hash, SceneId sceneId, bool expectRequest = true)
+    void referenceResource(ResourceContentHash hash, SceneId sceneId)
     {
-        ResourceContentHashVector list;
-        list.push_back(hash);
+        const ResourceContentHashVector list{ hash };
 
-        resourceManager.referenceClientResourcesForScene(sceneId, list);
-        if (expectRequest)
-        {
-            EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(list, resourceManager.getRequesterID(), sceneId));
-        }
-        resourceManager.requestAndUnrequestPendingClientResources();
+        resourceManager.referenceResourcesForScene(sceneId, list);
+        EXPECT_TRUE(contains_c(*resourceManager.getResourcesInUseByScene(sceneId), hash));
     }
 
-    void unrequestResource(ResourceContentHash hash, SceneId sceneId)
+    void unreferenceResource(ResourceContentHash hash, SceneId sceneId)
     {
-        ResourceContentHashVector list;
-        list.push_back(hash);
+        const ResourceContentHashVector list{ hash };
 
-        resourceManager.unreferenceClientResourcesForScene(sceneId, list);
-        resourceManager.requestAndUnrequestPendingClientResources();
-    }
-
-    void rendererSceneUpdaterFlowWithCache(IRendererResourceCache* cache)
-    {
-        // This is the flow from RendererSceneUpdater
-        resourceManager.getRequestedResourcesAlreadyInCache(cache);
-        resourceManager.requestAndUnrequestPendingClientResources();
-        resourceManager.processArrivedClientResources(cache);
+        resourceManager.unreferenceResourcesForScene(sceneId, list);
+        EXPECT_TRUE(!resourceManager.getResourcesInUseByScene(sceneId) || !contains_c(*resourceManager.getResourcesInUseByScene(sceneId), hash));
     }
 
 protected:
-    StrictMock<ResourceProviderMock> resourceProvider;
     StrictMock<RenderBackendStrictMock> renderer;
     StrictMock<RenderBackendStrictMock> additionalRenderer;
     StrictMock<EmbeddedCompositingManagerMock> embeddedCompositingManager;
@@ -83,203 +69,163 @@ protected:
 
 TEST_F(ARendererResourceManager, PerformsCorrectlyResourceLifecycle)
 {
-    ResourceContentHash resource = ResourceProviderMock::FakeVertArrayHash;
+    constexpr ResourceContentHash resource = MockResourceHash::VertArrayHash;
 
-    // request some resources
-    requestResource(resource, fakeSceneId);
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource));
-    EXPECT_FALSE(resourceManager.getClientResourceDeviceHandle(resource).isValid());
+    // register some resource
+    referenceResource(resource, fakeSceneId);
+    EXPECT_EQ(EResourceStatus::Registered, resourceManager.getResourceStatus(resource));
+    EXPECT_FALSE(resourceManager.getResourceDeviceHandle(resource).isValid());
 
-    // check if resources have arrived -> we also have an object now
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_TRUE(resourceManager.hasClientResourcesToBeUploaded());
-    EXPECT_EQ(EResourceStatus_Provided, resourceManager.getClientResourceStatus(resource));
-    EXPECT_FALSE(resourceManager.getClientResourceDeviceHandle(resource).isValid());
+    // provide data
+    const auto managedRes = MockResourceHash::GetManagedResource(resource);
+    resourceManager.provideResourceData(managedRes);
+    EXPECT_TRUE(resourceManager.hasResourcesToBeUploaded());
+    EXPECT_EQ(EResourceStatus::Provided, resourceManager.getResourceStatus(resource));
+    EXPECT_FALSE(resourceManager.getResourceDeviceHandle(resource).isValid());
 
     // upload the resource
-    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_, _));
+    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_));
     EXPECT_CALL(renderer.deviceMock, uploadVertexBufferData(_, _, _));
-    resourceManager.uploadAndUnloadPendingClientResources();
-    EXPECT_EQ(EResourceStatus_Uploaded, resourceManager.getClientResourceStatus(resource));
-    EXPECT_TRUE(resourceManager.getClientResourceDeviceHandle(resource).isValid());
+    resourceManager.uploadAndUnloadPendingResources();
+    EXPECT_EQ(EResourceStatus::Uploaded, resourceManager.getResourceStatus(resource));
+    EXPECT_TRUE(resourceManager.getResourceDeviceHandle(resource).isValid());
+    EXPECT_FALSE(resourceManager.hasResourcesToBeUploaded());
 
     // delete resource
     ResourceContentHashVector resources;
     resources.push_back(resource);
-    resourceManager.unreferenceClientResourcesForScene(fakeSceneId, resources);
+    resourceManager.unreferenceResourcesForScene(fakeSceneId, { resource });
     EXPECT_CALL(renderer.deviceMock, deleteVertexBuffer(_));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 
     // Make sure the resource was deleted before the resourceManager gets out of scope
     // and deletes it automatically
     Mock::VerifyAndClearExpectations(&renderer);
 }
 
-TEST_F(ARendererResourceManager, SplitsResourceRequestsByProvidingScene)
+TEST_F(ARendererResourceManager, ReferencedResourceHasCorrectStatus)
 {
-    const SceneId fakeSceneId2(fakeSceneId.getValue() + 1);
+    ResourceContentHash resource = MockResourceHash::VertArrayHash;
 
-    const ResourceContentHashVector hashs1(1, ResourceProviderMock::FakeVertArrayHash);
-    const ResourceContentHashVector hashs2(1, ResourceProviderMock::FakeIndexArrayHash);
+    referenceResource(resource, fakeSceneId);
+    EXPECT_EQ(EResourceStatus::Registered, resourceManager.getResourceStatus(resource));
+    EXPECT_FALSE(resourceManager.getResourceDeviceHandle(resource).isValid());
 
-    resourceManager.referenceClientResourcesForScene(fakeSceneId, hashs1);
-    resourceManager.referenceClientResourcesForScene(fakeSceneId2, hashs2);
-
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(hashs1, resourceManager.getRequesterID(), fakeSceneId));
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(hashs2, resourceManager.getRequesterID(), fakeSceneId2));
-    resourceManager.requestAndUnrequestPendingClientResources();
-
-    EXPECT_CALL(resourceProvider, cancelResourceRequest(_, _)).Times(2);
-    unrequestResource(ResourceProviderMock::FakeVertArrayHash, fakeSceneId);
-    unrequestResource(ResourceProviderMock::FakeIndexArrayHash, fakeSceneId2);
+    unreferenceResource(resource, fakeSceneId);
 }
 
-TEST_F(ARendererResourceManager, ResourceIsRequestedByAllScenesUsingIt)
+TEST_F(ARendererResourceManager, ReferencedAndProvidedResourceHasCorrectStatus)
 {
-    const SceneId fakeSceneId2(fakeSceneId.getValue() + 1);
+    ResourceContentHash resource = MockResourceHash::VertArrayHash;
 
-    const ResourceContentHashVector hashs(1, ResourceProviderMock::FakeVertArrayHash);
+    referenceResource(resource, fakeSceneId);
+    EXPECT_EQ(EResourceStatus::Registered, resourceManager.getResourceStatus(resource));
+    EXPECT_FALSE(resourceManager.hasResourcesToBeUploaded());
+    EXPECT_FALSE(resourceManager.getResourceDeviceHandle(resource).isValid());
 
-    resourceManager.referenceClientResourcesForScene(fakeSceneId, hashs);
-    resourceManager.referenceClientResourcesForScene(fakeSceneId2, hashs);
+    const auto managedRes = MockResourceHash::GetManagedResource(resource);
+    resourceManager.provideResourceData(managedRes);
+    EXPECT_TRUE(resourceManager.hasResourcesToBeUploaded());
+    EXPECT_EQ(EResourceStatus::Provided, resourceManager.getResourceStatus(resource));
+    EXPECT_FALSE(resourceManager.getResourceDeviceHandle(resource).isValid());
 
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(hashs, resourceManager.getRequesterID(), fakeSceneId));
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(hashs, resourceManager.getRequesterID(), fakeSceneId2));
-    resourceManager.requestAndUnrequestPendingClientResources();
-
-    EXPECT_CALL(resourceProvider, cancelResourceRequest(_, _)).Times(1);
-    unrequestResource(ResourceProviderMock::FakeVertArrayHash, fakeSceneId);
-    unrequestResource(ResourceProviderMock::FakeVertArrayHash, fakeSceneId2);
+    unreferenceResource(resource, fakeSceneId);
 }
 
-TEST_F(ARendererResourceManager, RequestedResourceHasCorrectStatus)
+TEST_F(ARendererResourceManager, unreferencingResourceThatWasNotUploadedYetWillNotReportItAsPendingForUploadAnymore)
 {
-    ResourceContentHash resource = ResourceProviderMock::FakeVertArrayHash;
+    ResourceContentHash resource = MockResourceHash::VertArrayHash;
 
-    requestResource(resource, fakeSceneId);
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource));
-    EXPECT_FALSE(resourceManager.getClientResourceDeviceHandle(resource).isValid());
+    referenceResource(resource, fakeSceneId);
+    resourceManager.provideResourceData(MockResourceHash::GetManagedResource(resource));
+    EXPECT_TRUE(resourceManager.hasResourcesToBeUploaded());
+    EXPECT_EQ(EResourceStatus::Provided, resourceManager.getResourceStatus(resource));
 
-    EXPECT_CALL(resourceProvider, cancelResourceRequest(resource, _));
-    unrequestResource(resource, fakeSceneId);
+    unreferenceResource(resource, fakeSceneId);
+    EXPECT_FALSE(resourceManager.hasResourcesToBeUploaded());
 }
 
-TEST_F(ARendererResourceManager, RequestedAndArrivedResourceHasCorrectStatus)
+TEST_F(ARendererResourceManager, DeletesResourceUsedBySingleSceneWhenUnreferenced)
 {
-    ResourceContentHash resource = ResourceProviderMock::FakeVertArrayHash;
-
-    requestResource(resource, fakeSceneId);
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource));
-    EXPECT_FALSE(resourceManager.hasClientResourcesToBeUploaded());
-    EXPECT_FALSE(resourceManager.getClientResourceDeviceHandle(resource).isValid());
-
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_TRUE(resourceManager.hasClientResourcesToBeUploaded());
-    EXPECT_EQ(EResourceStatus_Provided, resourceManager.getClientResourceStatus(resource));
-    EXPECT_FALSE(resourceManager.getClientResourceDeviceHandle(resource).isValid());
-
-    unrequestResource(resource, fakeSceneId);
-}
-
-TEST_F(ARendererResourceManager, unrequestingResourceThatWasNotUploadedYetWillNotReportItAsPendingForUploadAnymore)
-{
-    ResourceContentHash resource = ResourceProviderMock::FakeVertArrayHash;
-
-    requestResource(resource, fakeSceneId);
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_TRUE(resourceManager.hasClientResourcesToBeUploaded());
-    EXPECT_EQ(EResourceStatus_Provided, resourceManager.getClientResourceStatus(resource));
-
-    unrequestResource(resource, fakeSceneId);
-    EXPECT_FALSE(resourceManager.hasClientResourcesToBeUploaded());
-}
-
-TEST_F(ARendererResourceManager, DeletesResourceUsedBySingleSceneWhenUnrequested)
-{
-    ResourceContentHash resource = ResourceProviderMock::FakeVertArrayHash;
+    ResourceContentHash resource = MockResourceHash::VertArrayHash;
 
     // request some resource
-    requestResource(resource, fakeSceneId);
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource));
+    referenceResource(resource, fakeSceneId);
+    resourceManager.provideResourceData(MockResourceHash::GetManagedResource(resource));
+    EXPECT_TRUE(resourceManager.hasResourcesToBeUploaded());
 
-    // check if resource has arrived -> we also have an object now
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_TRUE(resourceManager.hasClientResourcesToBeUploaded());
-
-    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_, _));
+    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_));
     EXPECT_CALL(renderer.deviceMock, uploadVertexBufferData(_, _, _));
-    resourceManager.uploadAndUnloadPendingClientResources();
-    EXPECT_EQ(EResourceStatus_Uploaded, resourceManager.getClientResourceStatus(resource));
-    EXPECT_TRUE(resourceManager.getClientResourceDeviceHandle(resource).isValid());
+    resourceManager.uploadAndUnloadPendingResources();
+    EXPECT_EQ(EResourceStatus::Uploaded, resourceManager.getResourceStatus(resource));
+    EXPECT_TRUE(resourceManager.getResourceDeviceHandle(resource).isValid());
 
-    ResourceContentHashVector resources;
-    resources.push_back(resource);
-    resourceManager.unreferenceClientResourcesForScene(fakeSceneId, resources);
+    resourceManager.unreferenceResourcesForScene(fakeSceneId, { resource });
     EXPECT_CALL(renderer.deviceMock, deleteVertexBuffer(_));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 
     // Make sure the resource was deleted before the resourceManager gets out of scope
     // and deletes it automatically
     Mock::VerifyAndClearExpectations(&renderer);
 }
 
-TEST_F(ARendererResourceManager, requestingAnUnloadedResourceAgainShouldUploadItAgain)
+TEST_F(ARendererResourceManager, referencingAnUnloadedResourceAgainShouldUploadItAgain)
 {
-    ResourceContentHash resource = ResourceProviderMock::FakeVertArrayHash;
+    ResourceContentHash resource = MockResourceHash::VertArrayHash;
+    const auto managedRes = MockResourceHash::GetManagedResource(resource);
 
-    // request
-    requestResource(resource, fakeSceneId);
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_TRUE(resourceManager.hasClientResourcesToBeUploaded());
-    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_, _));
+    // ref
+    referenceResource(resource, fakeSceneId);
+    resourceManager.provideResourceData(managedRes);
+    EXPECT_TRUE(resourceManager.hasResourcesToBeUploaded());
+    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_));
     EXPECT_CALL(renderer.deviceMock, uploadVertexBufferData(_, _, _));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 
-    // unrequest
+    // unref
     ResourceContentHashVector resources;
     resources.push_back(resource);
-    resourceManager.unreferenceClientResourcesForScene(fakeSceneId, resources);
+    resourceManager.unreferenceResourcesForScene(fakeSceneId, resources);
     EXPECT_CALL(renderer.deviceMock, deleteVertexBuffer(_));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_FALSE(resourceManager.hasClientResourcesToBeUploaded());
+    EXPECT_FALSE(resourceManager.hasResourcesToBeUploaded());
 
     Mock::VerifyAndClearExpectations(&renderer);
 
-    // request again
-    requestResource(resource, fakeSceneId);
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource));
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_TRUE(resourceManager.hasClientResourcesToBeUploaded());
+    // ref again
+    referenceResource(resource, fakeSceneId);
+    EXPECT_EQ(EResourceStatus::Registered, resourceManager.getResourceStatus(resource));
+    resourceManager.provideResourceData(managedRes);
+    EXPECT_TRUE(resourceManager.hasResourcesToBeUploaded());
     EXPECT_CALL(renderer, getDevice()).Times(2);
-    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_, _));
+    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_));
     EXPECT_CALL(renderer.deviceMock, uploadVertexBufferData(_, _, _));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 
     //general clean-up (expect needed because of strict mock)
-    unrequestResource(resource, fakeSceneId);
+    unreferenceResource(resource, fakeSceneId);
     EXPECT_CALL(renderer.deviceMock, deleteVertexBuffer(_));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 }
 
 TEST_F(ARendererResourceManager, deletesNoLongerNeededResourcesWhenSceneDestroyed)
 {
-    ResourceContentHash resource = ResourceProviderMock::FakeVertArrayHash;
+    ResourceContentHash resource = MockResourceHash::VertArrayHash;
 
-    requestResource(resource, fakeSceneId);
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_TRUE(resourceManager.hasClientResourcesToBeUploaded());
+    referenceResource(resource, fakeSceneId);
+    resourceManager.provideResourceData(MockResourceHash::GetManagedResource(resource));
+    EXPECT_TRUE(resourceManager.hasResourcesToBeUploaded());
 
-    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_, _));
+    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_));
     EXPECT_CALL(renderer.deviceMock, uploadVertexBufferData(_, _, _));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 
     ResourceContentHashVector usedResources;
     usedResources.push_back(resource);
-    resourceManager.unreferenceClientResourcesForScene(fakeSceneId, usedResources);
+    resourceManager.unreferenceResourcesForScene(fakeSceneId, usedResources);
     EXPECT_CALL(renderer.deviceMock, deleteVertexBuffer(_));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 
     // Make sure the resource was deleted before the resourceManager gets out of scope
     // and deletes it automatically
@@ -289,50 +235,48 @@ TEST_F(ARendererResourceManager, deletesNoLongerNeededResourcesWhenSceneDestroye
 TEST_F(ARendererResourceManager, callsEmbeddedCompositingManagerForUploadingAndUnloadingStreamTexture)
 {
     const StreamTextureHandle handle(1);
-    const StreamTextureSourceId source(2);
-    EXPECT_CALL(embeddedCompositingManager, uploadStreamTexture(handle, source, fakeSceneId));
+    const WaylandIviSurfaceId source(2);
+    EXPECT_CALL(embeddedCompositingManager, refStream(handle, source, fakeSceneId));
     resourceManager.uploadStreamTexture(handle, source, fakeSceneId);
 
-    EXPECT_CALL(embeddedCompositingManager, deleteStreamTexture(handle, source, fakeSceneId));
+    EXPECT_CALL(embeddedCompositingManager, unrefStream(handle, source, fakeSceneId));
     resourceManager.unloadStreamTexture(handle, fakeSceneId);
 }
 
 TEST_F(ARendererResourceManager, doesNotDeleteResourcesNeededByAnotherSceneWhenSceneDestroyed)
 {
-    ResourceContentHash vertResource = ResourceProviderMock::FakeVertArrayHash;
-    ResourceContentHash indexResource = ResourceProviderMock::FakeIndexArrayHash;
+    ResourceContentHash vertResource = MockResourceHash::VertArrayHash;
+    ResourceContentHash indexResource = MockResourceHash::IndexArrayHash;
 
     const SceneId fakeSceneId2(4u);
 
     //index array is also needed by scene 2
-    requestResource(vertResource, fakeSceneId);
-    requestResource(indexResource, fakeSceneId);
-    requestResource(indexResource, fakeSceneId2, false);
+    referenceResource(vertResource, fakeSceneId);
+    referenceResource(indexResource, fakeSceneId);
+    referenceResource(indexResource, fakeSceneId2);
 
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_TRUE(resourceManager.hasClientResourcesToBeUploaded());
+    resourceManager.provideResourceData(MockResourceHash::GetManagedResource(vertResource));
+    resourceManager.provideResourceData(MockResourceHash::GetManagedResource(indexResource));
+    EXPECT_TRUE(resourceManager.hasResourcesToBeUploaded());
 
-    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_, _));
+    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_));
     EXPECT_CALL(renderer.deviceMock, uploadVertexBufferData(_, _, _));
     EXPECT_CALL(renderer.deviceMock, allocateIndexBuffer(_, _));
     EXPECT_CALL(renderer.deviceMock, uploadIndexBufferData(_, _, _));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 
-    ResourceContentHashVector usedResources;
-    usedResources.push_back(vertResource);
-    usedResources.push_back(indexResource);
-    resourceManager.unreferenceClientResourcesForScene(fakeSceneId, usedResources);
+    resourceManager.unreferenceResourcesForScene(fakeSceneId, { vertResource, indexResource });
     EXPECT_CALL(renderer.deviceMock, deleteVertexBuffer(_));
     EXPECT_CALL(renderer.deviceMock, deleteIndexBuffer(_)).Times(0); //not allowed to be deleted
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 
     Mock::VerifyAndClearExpectations(&renderer);
 
     //general clean-up (expect needed because of strict mock)
-    unrequestResource(indexResource, fakeSceneId2);
+    unreferenceResource(indexResource, fakeSceneId2);
     EXPECT_CALL(renderer, getDevice());
     EXPECT_CALL(renderer.deviceMock, deleteIndexBuffer(_));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 }
 
 TEST_F(ARendererResourceManager, canUploadAndUpdateAndUnloadDataBuffer_IndexBuffer)
@@ -360,7 +304,7 @@ TEST_F(ARendererResourceManager, canUploadAndUpdateAndUnloadDataBuffer_VertexBuf
     const EDataBufferType dataBufferType = EDataBufferType::VertexBuffer;
     const EDataType dataType = EDataType::UInt32;
     const UInt32 sizeInBytes = 1024u;
-    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(dataType, sizeInBytes));
+    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(sizeInBytes));
     resourceManager.uploadDataBuffer(dataBuffer, dataBufferType, dataType, sizeInBytes, fakeSceneId);
 
     EXPECT_EQ(DeviceMock::FakeVertexBufferDeviceHandle, resourceManager.getDataBufferDeviceHandle(dataBuffer, fakeSceneId));
@@ -543,7 +487,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilA
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(renderer.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(renderer.deviceMock, clear(_));
-    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, false);
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, false);
 
     EXPECT_EQ(DeviceMock::FakeRenderTargetDeviceHandle, resourceManager.getOffscreenBufferDeviceHandle(bufferHandle));
     EXPECT_EQ(DeviceMock::FakeRenderBufferDeviceHandle, resourceManager.getOffscreenBufferColorBufferDeviceHandle(bufferHandle));
@@ -553,6 +497,31 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilA
     EXPECT_CALL(renderer.deviceMock, deleteRenderBuffer(_)).Times(2u);
 }
 
+TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilAttachedWithMSAAenabled)
+{
+    const OffscreenBufferHandle bufferHandle(1u);
+    const RenderBuffer colorOffscreenBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 4u);
+    const RenderBuffer depthOffscreenBuffer(1u, 1u, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 4u);
+    InSequence seq;
+    EXPECT_CALL(renderer.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer)));
+    EXPECT_CALL(renderer.deviceMock, uploadRenderBuffer(Eq(depthOffscreenBuffer)));
+    EXPECT_CALL(renderer.deviceMock, uploadRenderTarget(_));
+    EXPECT_CALL(renderer.deviceMock, activateRenderTarget(_));
+    EXPECT_CALL(renderer.deviceMock, colorMask(true, true, true, true));
+    EXPECT_CALL(renderer.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(renderer.deviceMock, depthWrite(EDepthWrite::Enabled));
+    RenderState::ScissorRegion scissorRegion{};
+    EXPECT_CALL(renderer.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
+    EXPECT_CALL(renderer.deviceMock, clear(_));
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 4u, false);
+
+    EXPECT_EQ(DeviceMock::FakeRenderTargetDeviceHandle, resourceManager.getOffscreenBufferDeviceHandle(bufferHandle));
+    EXPECT_EQ(DeviceMock::FakeRenderBufferDeviceHandle, resourceManager.getOffscreenBufferColorBufferDeviceHandle(bufferHandle));
+    EXPECT_EQ(bufferHandle, resourceManager.getOffscreenBufferHandle(DeviceMock::FakeRenderTargetDeviceHandle));
+
+    EXPECT_CALL(renderer.deviceMock, deleteRenderTarget(_));
+    EXPECT_CALL(renderer.deviceMock, deleteRenderBuffer(_)).Times(2u);
+}
 
 TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithDoubleBuffering)
 {
@@ -589,7 +558,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithDoubleBuffering)
     EXPECT_CALL(renderer.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(renderer.deviceMock, clear(_));
     EXPECT_CALL(renderer.deviceMock, pairRenderTargetsForDoubleBuffering(_, _));
-    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, true);
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, true);
 
     EXPECT_EQ(offscreenBufferDeviceHandle1, resourceManager.getOffscreenBufferDeviceHandle(bufferHandle));
     EXPECT_EQ(colorBufferDeviceHandle1, resourceManager.getOffscreenBufferColorBufferDeviceHandle(bufferHandle));
@@ -612,7 +581,7 @@ TEST_F(ARendererResourceManager, CanUnloadOffscreenBuffer)
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(renderer.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(renderer.deviceMock, clear(_));
-    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, false);
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, false);
 
     EXPECT_CALL(renderer.deviceMock, deleteRenderTarget(_));
     EXPECT_CALL(renderer.deviceMock, deleteRenderBuffer(_)).Times(2u);
@@ -634,7 +603,7 @@ TEST_F(ARendererResourceManager, CanUnloadDoubleBufferedOffscreenBuffer)
     EXPECT_CALL(renderer.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion)).Times(2u);
     EXPECT_CALL(renderer.deviceMock, clear(_)).Times(2u);
     EXPECT_CALL(renderer.deviceMock, pairRenderTargetsForDoubleBuffering(_, _));
-    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, true);
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, true);
 
     EXPECT_CALL(renderer.deviceMock, unpairRenderTargets(_)).Times(1u);
     EXPECT_CALL(renderer.deviceMock, deleteRenderTarget(_)).Times(2u);
@@ -644,156 +613,65 @@ TEST_F(ARendererResourceManager, CanUnloadDoubleBufferedOffscreenBuffer)
     EXPECT_FALSE(resourceManager.getOffscreenBufferDeviceHandle(bufferHandle).isValid());
 }
 
+TEST_F(ARendererResourceManager, UploadsAndUnloadsStreamBuffers)
+{
+    constexpr StreamBufferHandle sbHandle1{ 1u };
+    constexpr StreamBufferHandle sbHandle2{ 2u };
+    constexpr WaylandIviSurfaceId sbSrc1{ 11u };
+    constexpr WaylandIviSurfaceId sbSrc2{ 12u };
+    EXPECT_CALL(embeddedCompositingManager, refStream(sbSrc1));
+    resourceManager.uploadStreamBuffer(sbHandle1, sbSrc1);
+    EXPECT_CALL(embeddedCompositingManager, refStream(sbSrc2));
+    resourceManager.uploadStreamBuffer(sbHandle2, sbSrc2);
+
+    EXPECT_CALL(embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(sbSrc1)).WillOnce(Return(DeviceMock::FakeRenderTargetDeviceHandle));
+    EXPECT_EQ(DeviceMock::FakeRenderTargetDeviceHandle, resourceManager.getStreamBufferDeviceHandle(sbHandle1));
+    EXPECT_CALL(embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(sbSrc2)).WillOnce(Return(DeviceMock::FakeRenderBufferDeviceHandle));
+    EXPECT_EQ(DeviceMock::FakeRenderBufferDeviceHandle, resourceManager.getStreamBufferDeviceHandle(sbHandle2));
+
+    EXPECT_CALL(embeddedCompositingManager, unrefStream(sbSrc1));
+    resourceManager.unloadStreamBuffer(sbHandle1);
+    EXPECT_CALL(embeddedCompositingManager, unrefStream(sbSrc2));
+    resourceManager.unloadStreamBuffer(sbHandle2);
+}
+
 TEST_F(ARendererResourceManager, UploadAndDeleteValidShader)
 {
-    const ResourceContentHash resource = ResourceProviderMock::FakeEffectHash;
+    const ResourceContentHash resource = MockResourceHash::EffectHash;
 
     // request some resources
-    requestResource(resource, fakeSceneId);
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_TRUE(resourceManager.hasClientResourcesToBeUploaded());
+    referenceResource(resource, fakeSceneId);
+    resourceManager.provideResourceData(MockResourceHash::GetManagedResource(resource));
+    EXPECT_TRUE(resourceManager.hasResourcesToBeUploaded());
     EXPECT_CALL(renderer.deviceMock, uploadShader(_));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 
-    EXPECT_EQ(EResourceStatus_Uploaded, resourceManager.getClientResourceStatus(resource));
+    EXPECT_EQ(EResourceStatus::Uploaded, resourceManager.getResourceStatus(resource));
 
-    unrequestResource(resource, fakeSceneId);
+    unreferenceResource(resource, fakeSceneId);
     EXPECT_CALL(renderer.deviceMock, deleteShader(_));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 }
 
 TEST_F(ARendererResourceManager, UploadInvalidShaderResultsInBrokenResource)
 {
-    const ResourceContentHash resource = ResourceProviderMock::FakeEffectHash;
+    const ResourceContentHash resource = MockResourceHash::EffectHash;
 
     // request some resources
-    requestResource(resource, fakeSceneId);
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_TRUE(resourceManager.hasClientResourcesToBeUploaded());
+    referenceResource(resource, fakeSceneId);
+    resourceManager.provideResourceData(MockResourceHash::GetManagedResource(resource));
+    EXPECT_TRUE(resourceManager.hasResourcesToBeUploaded());
     EXPECT_CALL(renderer.deviceMock, uploadShader(_)).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
-    resourceManager.uploadAndUnloadPendingClientResources();
+    resourceManager.uploadAndUnloadPendingResources();
 
     // resource must be broken
-    EXPECT_EQ(EResourceStatus_Broken, resourceManager.getClientResourceStatus(resource));
+    EXPECT_EQ(EResourceStatus::Broken, resourceManager.getResourceStatus(resource));
     Mock::VerifyAndClearExpectations(&renderer);
 
-    EXPECT_FALSE(resourceManager.hasClientResourcesToBeUploaded());
+    EXPECT_FALSE(resourceManager.hasResourcesToBeUploaded());
 
     // not expecting any unload
-    unrequestResource(resource, fakeSceneId);
-}
-
-TEST_F(ARendererResourceManager, UnrequestingResourceThatDidNotArriveDoesNotDeleteItFromGPU)
-{
-    ResourceContentHash resource = ResourceProviderMock::FakeVertArrayHash;
-
-    requestResource(resource, fakeSceneId);
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource));
-
-    ResourceContentHashVector resources;
-    resources.push_back(resource);
-
-    EXPECT_CALL(resourceProvider, cancelResourceRequest(resource, resourceManager.getRequesterID()));
-    unrequestResource(resource, fakeSceneId);
-
-    // Make sure the resource was deleted before the resourceManager gets out of scope
-    // and deletes it automatically
-    Mock::VerifyAndClearExpectations(&renderer);
-}
-
-TEST_F(ARendererResourceManager, reportsNoArrivedResourcesIfRequestedUnavailableResource)
-{
-    const ResourceContentHash resource(0x00ff00ff, 0);
-    requestResource(resource, fakeSceneId);
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_FALSE(resourceManager.hasClientResourcesToBeUploaded());
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource));
-
-    ResourceContentHashVector resources;
-    resources.push_back(resource);
-    EXPECT_CALL(resourceProvider, cancelResourceRequest(resource, _));
-    unrequestResource(resource, fakeSceneId);
-    EXPECT_FALSE(resourceManager.hasClientResourcesToBeUploaded());
-}
-
-TEST_F(ARendererResourceManager, rerequestsResourceIfUnavailableForSeveralUpdateIterations)
-{
-    const ResourceContentHash resource(0x00ff00ff, 0);
-    ResourceContentHashVector resources;
-    resources.push_back(resource);
-    resourceManager.referenceClientResourcesForScene(fakeSceneId, resources);
-
-    InSequence seq;
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(resources, resourceManager.getRequesterID(), fakeSceneId));
-    resourceManager.requestAndUnrequestPendingClientResources();
-
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(resources, resourceManager.getRequesterID(), fakeSceneId));
-    for (UInt32 i = 0u; i < 90; ++i)
-    {
-        resourceManager.requestAndUnrequestPendingClientResources();
-    }
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource));
-
-    EXPECT_CALL(resourceProvider, cancelResourceRequest(resource, _));
-    unrequestResource(resource, fakeSceneId);
-}
-
-TEST_F(ARendererResourceManager, doesNotRerequestsResourceAfterItArrived)
-{
-    const ResourceContentHash resource = ResourceProviderMock::FakeIndexArrayHash;
-    ResourceContentHashVector resources;
-    resources.push_back(resource);
-    resourceManager.referenceClientResourcesForScene(fakeSceneId, resources);
-
-    InSequence seq;
-
-    resourceProvider.setIndexArrayAvailability(false);
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(resources, resourceManager.getRequesterID(), fakeSceneId));
-    resourceManager.requestAndUnrequestPendingClientResources();
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource));
-
-    resourceProvider.setIndexArrayAvailability(true);
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(resources, resourceManager.getRequesterID(), fakeSceneId));
-    for (UInt32 i = 0u; i < 90u; ++i)
-    {
-        resourceManager.requestAndUnrequestPendingClientResources();
-    }
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_EQ(EResourceStatus_Provided, resourceManager.getClientResourceStatus(resource));
-
-    // no more requests after it was provided
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(resources, resourceManager.getRequesterID(), fakeSceneId)).Times(0);
-    for (UInt32 i = 0u; i < 90u; ++i)
-    {
-        resourceManager.requestAndUnrequestPendingClientResources();
-    }
-
-    unrequestResource(resource, fakeSceneId);
-}
-
-TEST_F(ARendererResourceManager, doesNotRerequestsResourceAfterItIsUnrequested)
-{
-    const ResourceContentHash resource(0x00ff00ff, 0);
-    ResourceContentHashVector resources;
-    resources.push_back(resource);
-    resourceManager.referenceClientResourcesForScene(fakeSceneId, resources);
-
-    InSequence seq;
-
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(resources, resourceManager.getRequesterID(), fakeSceneId));
-    resourceManager.requestAndUnrequestPendingClientResources();
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource));
-
-    EXPECT_CALL(resourceProvider, cancelResourceRequest(resource, _));
-    unrequestResource(resource, fakeSceneId);
-
-    // no more requests after it was unrequested
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(resources, resourceManager.getRequesterID(), fakeSceneId)).Times(0);
-    for (UInt32 i = 0u; i < 10u; ++i)
-    {
-        resourceManager.requestAndUnrequestPendingClientResources();
-    }
+    unreferenceResource(resource, fakeSceneId);
 }
 
 class ARendererResourceManagerWithDisabledEffectDeletion : public ARendererResourceManager
@@ -807,17 +685,17 @@ public:
 
 TEST_F(ARendererResourceManagerWithDisabledEffectDeletion, DeletesEffectOnlyWhenDestructed_NotWhenUnrequested)
 {
-    const ResourceContentHash resource = ResourceProviderMock::FakeEffectHash;
+    const ResourceContentHash resource = MockResourceHash::EffectHash;
 
     // request some resources
-    requestResource(resource, fakeSceneId);
-    resourceManager.processArrivedClientResources(nullptr);
-    EXPECT_TRUE(resourceManager.hasClientResourcesToBeUploaded());
+    referenceResource(resource, fakeSceneId);
+    resourceManager.provideResourceData(MockResourceHash::GetManagedResource(resource));
+    EXPECT_TRUE(resourceManager.hasResourcesToBeUploaded());
     EXPECT_CALL(renderer.deviceMock, uploadShader(_));
-    resourceManager.uploadAndUnloadPendingClientResources();
-    EXPECT_EQ(EResourceStatus_Uploaded, resourceManager.getClientResourceStatus(resource));
+    resourceManager.uploadAndUnloadPendingResources();
+    EXPECT_EQ(EResourceStatus::Uploaded, resourceManager.getResourceStatus(resource));
 
-    unrequestResource(resource, fakeSceneId);
+    unreferenceResource(resource, fakeSceneId);
 
     // Make sure the effect was not deleted, before resource manager is destroyed
     Mock::VerifyAndClearExpectations(&renderer.deviceMock);
@@ -851,8 +729,8 @@ TEST_F(ARendererResourceManager, unloadsAllSceneResources)
 
     // upload stream texture
     const StreamTextureHandle streamTextureHandle(1);
-    const StreamTextureSourceId source(2);
-    EXPECT_CALL(embeddedCompositingManager, uploadStreamTexture(streamTextureHandle, source, fakeSceneId));
+    const WaylandIviSurfaceId source(2);
+    EXPECT_CALL(embeddedCompositingManager, refStream(streamTextureHandle, source, fakeSceneId));
     resourceManager.uploadStreamTexture(streamTextureHandle, source, fakeSceneId);
 
     //upload index data buffer
@@ -862,7 +740,7 @@ TEST_F(ARendererResourceManager, unloadsAllSceneResources)
 
     //upload vertex data buffer
     const DataBufferHandle vertexDataBufferHandle(777u);
-    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_, _));
+    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(_));
     resourceManager.uploadDataBuffer(vertexDataBufferHandle, EDataBufferType::VertexBuffer, EDataType::Float, 10u, fakeSceneId);
 
     //upload texture buffer
@@ -873,7 +751,7 @@ TEST_F(ARendererResourceManager, unloadsAllSceneResources)
     // unload all scene resources
     EXPECT_CALL(renderer.deviceMock, deleteRenderBuffer(_)).Times(2);
     EXPECT_CALL(renderer.deviceMock, deleteRenderTarget(_)).Times(3);
-    EXPECT_CALL(embeddedCompositingManager, deleteStreamTexture(streamTextureHandle, source, fakeSceneId));
+    EXPECT_CALL(embeddedCompositingManager, unrefStream(streamTextureHandle, source, fakeSceneId));
     EXPECT_CALL(renderer.deviceMock, deleteIndexBuffer(_));
     EXPECT_CALL(renderer.deviceMock, deleteVertexBuffer(_));
     EXPECT_CALL(renderer.deviceMock, deleteTexture(_));
@@ -884,105 +762,149 @@ TEST_F(ARendererResourceManager, unloadsAllSceneResources)
     Mock::VerifyAndClearExpectations(&renderer);
 }
 
-TEST_F(ARendererResourceManager, hasResourceCacheWithoutItemAndDoesNotWantToCacheIt)
-{
-    InSequence seq;
-    StrictMock<RendererResourceCacheMock> resourceCache;
-
-    ResourceContentHashVector resList;
-    resList.push_back(ResourceProviderMock::FakeTextureHash);
-    resList.push_back(ResourceProviderMock::FakeTextureHash2);
-    resourceManager.referenceClientResourcesForScene(fakeSceneId, resList);
-
-    ON_CALL(resourceCache, hasResource(_, _)).WillByDefault(Return(false));
-    EXPECT_CALL(resourceCache, hasResource(_, _)).Times(static_cast<UInt32>(resList.size()));
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(_, _, _)).Times(1);
-
-    ON_CALL(resourceCache, shouldResourceBeCached(_, _, _, _)).WillByDefault(Return(false));
-    EXPECT_CALL(resourceCache, shouldResourceBeCached(_, _, _, _)).Times(static_cast<UInt32>(resList.size()));
-
-    rendererSceneUpdaterFlowWithCache(&resourceCache);
-    resourceManager.unreferenceClientResourcesForScene(fakeSceneId, resList);
-}
-
-TEST_F(ARendererResourceManager, hasResourceCacheWithoutItemAndWantsToCacheIt)
-{
-    InSequence seq;
-    StrictMock<RendererResourceCacheMock> resourceCache;
-
-    ResourceContentHashVector resList;
-    resList.push_back(ResourceProviderMock::FakeTextureHash);
-    resList.push_back(ResourceProviderMock::FakeTextureHash2);
-    resourceManager.referenceClientResourcesForScene(fakeSceneId, resList);
-
-    ON_CALL(resourceCache, hasResource(_, _)).WillByDefault(Return(false));
-    EXPECT_CALL(resourceCache, hasResource(_, _)).Times(2);
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(_, _, _)).Times(1);
-
-    ON_CALL(resourceCache, shouldResourceBeCached(_, _, _, _)).WillByDefault(Return(true));
-
-    EXPECT_CALL(resourceCache, shouldResourceBeCached(_, _, _, _)).Times(1);
-    EXPECT_CALL(resourceCache, storeResource(_, _, _, _, _)).Times(1);
-    EXPECT_CALL(resourceCache, shouldResourceBeCached(_, _, _, _)).Times(1);
-    EXPECT_CALL(resourceCache, storeResource(_, _, _, _, _)).Times(1);
-
-    rendererSceneUpdaterFlowWithCache(&resourceCache);
-    resourceManager.unreferenceClientResourcesForScene(fakeSceneId, resList);
-}
-
-TEST_F(ARendererResourceManager, canStoreAndRetrieveFromResourceCache)
-{
-    InSequence seq;
-    StrictMock<RendererResourceCacheFake> resourceCache;
-
-    ResourceContentHashVector resList;
-    resList.push_back(ResourceProviderMock::FakeTextureHash);
-    resourceManager.referenceClientResourcesForScene(fakeSceneId, resList);
-
-    EXPECT_CALL(resourceCache, hasResource(_, _)).WillOnce(Return(false));
-    EXPECT_CALL(resourceProvider, requestResourceAsyncronouslyFromFramework(_, _, _)).Times(1);
-    EXPECT_CALL(resourceCache, shouldResourceBeCached(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_CALL(resourceCache, storeResource(_, _, _, _, _)).Times(1);
-
-    rendererSceneUpdaterFlowWithCache(&resourceCache);
-
-    // Clear internal state of resource manager, so it will access the cache again
-    resourceManager.unreferenceClientResourcesForScene(fakeSceneId, resList);
-    resourceManager.requestAndUnrequestPendingClientResources();
-    resourceManager.referenceClientResourcesForScene(fakeSceneId, resList);
-
-    // The resource is now cached, so it can now be retrieved
-    EXPECT_CALL(resourceCache, hasResource(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(resourceCache, getResourceData(_, _, _)).Times(1);
-
-    rendererSceneUpdaterFlowWithCache(&resourceCache);
-
-    resourceManager.unreferenceClientResourcesForScene(fakeSceneId, resList);
-}
-
 TEST_F(ARendererResourceManager, canUnreferenceAllResourcesUsedByAScene)
 {
     const SceneId fakeSceneId2(fakeSceneId.getValue() + 1u);
-    const auto resource1 = ResourceProviderMock::FakeVertArrayHash;
-    const auto resource2 = ResourceProviderMock::FakeIndexArrayHash;
-    const auto resource3 = ResourceProviderMock::FakeTextureHash;
+    const auto resource1 = MockResourceHash::VertArrayHash;
+    const auto resource2 = MockResourceHash::IndexArrayHash;
+    const auto resource3 = MockResourceHash::TextureHash;
 
     // request some resources
-    requestResource(resource1, fakeSceneId);
-    requestResource(resource2, fakeSceneId);
-    requestResource(resource2, fakeSceneId2, false); // second request for same resource, different scene
-    requestResource(resource3, fakeSceneId);
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource1));
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource2));
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource3));
+    referenceResource(resource1, fakeSceneId);
+    referenceResource(resource2, fakeSceneId);
+    referenceResource(resource2, fakeSceneId2);
+    referenceResource(resource3, fakeSceneId);
+    EXPECT_EQ(EResourceStatus::Registered, resourceManager.getResourceStatus(resource1));
+    EXPECT_EQ(EResourceStatus::Registered, resourceManager.getResourceStatus(resource2));
+    EXPECT_EQ(EResourceStatus::Registered, resourceManager.getResourceStatus(resource3));
 
-    resourceManager.unreferenceAllClientResourcesForScene(fakeSceneId);
+    resourceManager.unreferenceAllResourcesForScene(fakeSceneId);
 
-    EXPECT_CALL(resourceProvider, cancelResourceRequest(resource1, _));
-    EXPECT_CALL(resourceProvider, cancelResourceRequest(resource3, _));
-    resourceManager.requestAndUnrequestPendingClientResources();
-    EXPECT_EQ(EResourceStatus_Requested, resourceManager.getClientResourceStatus(resource2));
+    EXPECT_EQ(EResourceStatus::Registered, resourceManager.getResourceStatus(resource2));
 
-    resourceManager.unreferenceAllClientResourcesForScene(fakeSceneId2);
+    resourceManager.unreferenceAllResourcesForScene(fakeSceneId2);
 }
+
+TEST_F(ARendererResourceManager, canProvideResourceData)
+{
+    const auto managedRes = MockResourceHash::GetManagedResource(MockResourceHash::EffectHash);
+    // resource must be referenced by scene before providing data
+    referenceResource(MockResourceHash::EffectHash, fakeSceneId);
+    EXPECT_EQ(EResourceStatus::Registered, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+
+    resourceManager.provideResourceData(managedRes);
+    EXPECT_EQ(EResourceStatus::Provided, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+
+    resourceManager.unreferenceAllResourcesForScene(fakeSceneId);
+}
+
+TEST_F(ARendererResourceManager, providingResourceDataMulitpleTimesIsNoop)
+{
+    const auto managedRes = MockResourceHash::GetManagedResource(MockResourceHash::EffectHash);
+    // resource must be referenced by scene before providing data
+    referenceResource(MockResourceHash::EffectHash, fakeSceneId);
+    EXPECT_EQ(EResourceStatus::Registered, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+
+    resourceManager.provideResourceData(managedRes);
+    EXPECT_EQ(EResourceStatus::Provided, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+
+    // resource is already provided so providing data again is noop
+    resourceManager.provideResourceData(managedRes);
+    resourceManager.provideResourceData(managedRes);
+    EXPECT_EQ(EResourceStatus::Provided, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+
+    resourceManager.unreferenceAllResourcesForScene(fakeSceneId);
+}
+
+TEST_F(ARendererResourceManager, providingResourceDataWhenAlreadyUploadedIsNoop)
+{
+    const auto managedRes = MockResourceHash::GetManagedResource(MockResourceHash::EffectHash);
+    // resource must be referenced by scene before providing data
+    referenceResource(MockResourceHash::EffectHash, fakeSceneId);
+    EXPECT_EQ(EResourceStatus::Registered, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+
+    resourceManager.provideResourceData(managedRes);
+    EXPECT_EQ(EResourceStatus::Provided, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+
+    // upload the resource
+    EXPECT_CALL(renderer.deviceMock, uploadShader(_));
+    resourceManager.uploadAndUnloadPendingResources();
+    EXPECT_EQ(EResourceStatus::Uploaded, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+    EXPECT_TRUE(resourceManager.getResourceDeviceHandle(MockResourceHash::EffectHash).isValid());
+
+    // resource is already provided so providing data again is noop
+    resourceManager.provideResourceData(managedRes);
+    resourceManager.provideResourceData(managedRes);
+    EXPECT_EQ(EResourceStatus::Uploaded, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+    EXPECT_TRUE(resourceManager.getResourceDeviceHandle(MockResourceHash::EffectHash).isValid());
+
+    EXPECT_CALL(renderer.deviceMock, deleteShader(_));
+    resourceManager.unreferenceAllResourcesForScene(fakeSceneId);
+}
+
+TEST_F(ARendererResourceManagerWithDisabledEffectDeletion, rereferencingResourceKeptInCacheIsNotUploadedAgain)
+{
+    const auto managedRes = MockResourceHash::GetManagedResource(MockResourceHash::EffectHash);
+    // resource must be referenced by scene before providing data
+    referenceResource(MockResourceHash::EffectHash, fakeSceneId);
+    EXPECT_EQ(EResourceStatus::Registered, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+
+    resourceManager.provideResourceData(managedRes);
+    EXPECT_EQ(EResourceStatus::Provided, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+
+    // upload the resource
+    EXPECT_CALL(renderer.deviceMock, uploadShader(_));
+    resourceManager.uploadAndUnloadPendingResources();
+    EXPECT_EQ(EResourceStatus::Uploaded, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+    EXPECT_TRUE(resourceManager.getResourceDeviceHandle(MockResourceHash::EffectHash).isValid());
+
+    unreferenceResource(MockResourceHash::EffectHash, fakeSceneId);
+    resourceManager.uploadAndUnloadPendingResources();
+    EXPECT_EQ(EResourceStatus::Uploaded, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+
+    referenceResource(MockResourceHash::EffectHash, fakeSceneId);
+    EXPECT_EQ(EResourceStatus::Uploaded, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+
+    resourceManager.uploadAndUnloadPendingResources();
+    EXPECT_EQ(EResourceStatus::Uploaded, resourceManager.getResourceStatus(MockResourceHash::EffectHash));
+
+    resourceManager.unreferenceAllResourcesForScene(fakeSceneId);
+    EXPECT_CALL(renderer.deviceMock, deleteShader(_));
+}
+
+TEST_F(ARendererResourceManager, UnloadsAllRemainingOffscreenBuffersAndStreamBuffersAtDestruction)
+{
+    // 2 offscreen buffers
+    constexpr OffscreenBufferHandle obHandle{ 1u };
+    constexpr OffscreenBufferHandle obHandle2{ 2u };
+    EXPECT_CALL(renderer.deviceMock, uploadRenderTarget(_)).Times(2u);
+    EXPECT_CALL(renderer.deviceMock, uploadRenderBuffer(_)).Times(4u);
+    EXPECT_CALL(renderer.deviceMock, activateRenderTarget(_)).Times(2u);
+    EXPECT_CALL(renderer.deviceMock, colorMask(true, true, true, true)).Times(2u);
+    EXPECT_CALL(renderer.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(2u);
+    EXPECT_CALL(renderer.deviceMock, depthWrite(EDepthWrite::Enabled)).Times(2u);
+    EXPECT_CALL(renderer.deviceMock, scissorTest(EScissorTest::Disabled, RenderState::ScissorRegion{})).Times(2u);
+    EXPECT_CALL(renderer.deviceMock, clear(_)).Times(2u);
+    resourceManager.uploadOffscreenBuffer(obHandle, 1u, 1u, 0u, false);
+    resourceManager.uploadOffscreenBuffer(obHandle2, 1u, 1u, 0u, false);
+
+    // 2 stream buffers
+    constexpr StreamBufferHandle sbHandle{ 1u };
+    constexpr StreamBufferHandle sbHandle2{ 2u };
+    constexpr WaylandIviSurfaceId sbSrc1{ 11u };
+    constexpr WaylandIviSurfaceId sbSrc2{ 12u };
+    EXPECT_CALL(embeddedCompositingManager, refStream(sbSrc1));
+    EXPECT_CALL(embeddedCompositingManager, refStream(sbSrc2));
+    resourceManager.uploadStreamBuffer(sbHandle, sbSrc1);
+    resourceManager.uploadStreamBuffer(sbHandle2, sbSrc2);
+
+    // will destroy OBs directly on device
+    EXPECT_CALL(renderer.deviceMock, deleteRenderTarget(_)).Times(2u);
+    EXPECT_CALL(renderer.deviceMock, deleteRenderBuffer(_)).Times(4u);
+
+    // will destroy SBs via EC manager
+    EXPECT_CALL(embeddedCompositingManager, unrefStream(sbSrc1));
+    EXPECT_CALL(embeddedCompositingManager, unrefStream(sbSrc2));
+}
+
 }

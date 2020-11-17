@@ -272,7 +272,7 @@ namespace ramses_internal
     class Container : public ContainerBase<EDataType>
     {
     public:
-        typedef typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType GetSetType;
+        using GetSetType = typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType;
 
         virtual GetSetType getValue(UInt32 handle) const override
         {
@@ -297,7 +297,7 @@ namespace ramses_internal
     class ContainerDerived : public ContainerBaseType
     {
     public:
-        typedef typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType GetSetType;
+        using GetSetType = typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType;
 
         virtual GetSetType getValue(UInt32 handle) const
         {
@@ -317,8 +317,8 @@ namespace ramses_internal
     template <typename ContainerBaseType, typename EDataType>
     const EDataType ContainerDerived<ContainerBaseType, EDataType>::InvalidData;
 
-    typedef ContainerBase<Int32> BindContainerType;
-    typedef ContainerDerived<Container<Int32>, Int32> UsedContainerType;
+    using BindContainerType = ContainerBase<Int32>;
+    using UsedContainerType = ContainerDerived<Container<Int32>, Int32>;
 
     DATA_BIND_DECLARE_BEGIN(BindContainerType, 1)
         DATA_BIND_DECLARE(0, VALUE0)

@@ -56,9 +56,9 @@ namespace ramses_internal
             EXPECT_CALL(m_renderBackend.deviceMock, uploadRenderTarget(_));
 
             EXPECT_CALL(m_renderBackend.deviceMock, uploadShader(_));
-            EXPECT_CALL(m_renderBackend.deviceMock, allocateVertexBuffer(_, _));
+            EXPECT_CALL(m_renderBackend.deviceMock, allocateVertexBuffer(_));
             EXPECT_CALL(m_renderBackend.deviceMock, uploadVertexBufferData(_, _, _));
-            EXPECT_CALL(m_renderBackend.deviceMock, allocateVertexBuffer(_, _));
+            EXPECT_CALL(m_renderBackend.deviceMock, allocateVertexBuffer(_));
             EXPECT_CALL(m_renderBackend.deviceMock, uploadVertexBufferData(_, _, _));
             EXPECT_CALL(m_renderBackend.deviceMock, allocateIndexBuffer(_, _));
             EXPECT_CALL(m_renderBackend.deviceMock, uploadIndexBufferData(_, _, _));

@@ -28,11 +28,12 @@ namespace ramses
     class Texture2DBuffer;
     class RenderBuffer;
     class StreamTexture;
+    class Resource;
 
     class TextureSamplerImpl final : public SceneObjectImpl
     {
     public:
-        TextureSamplerImpl(SceneImpl& scene, const char* name);
+        TextureSamplerImpl(SceneImpl& scene, ERamsesObjectType type, const char* name);
         virtual ~TextureSamplerImpl();
 
         void initializeFrameworkData(

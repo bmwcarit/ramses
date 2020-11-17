@@ -11,168 +11,87 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "SceneAPI/EDataType.h"
+#include "Utils/LoggingUtils.h"
 
 namespace ramses_internal
 {
-    enum EFixedSemantics
+    enum class EFixedSemantics
     {
-        // Camera data properties
-        EFixedSemantics_RendererViewMatrix = 1,
-        EFixedSemantics_CameraViewMatrix,
-        EFixedSemantics_ProjectionMatrix,
-        EFixedSemantics_ViewMatrix,               // EFixedSemantics_RendererViewMatrix * EFixedSemantics_CameraViewMatrix
+        Invalid = 0,
 
-        EFixedSemantics_ModelMatrix,
-        EFixedSemantics_ModelViewMatrix,
-        EFixedSemantics_ModelViewMatrix33,
-        EFixedSemantics_ModelViewProjectionMatrix,
-        EFixedSemantics_NormalMatrix,
+        ProjectionMatrix,
+        ViewMatrix,
+        ModelMatrix,
+        ModelViewMatrix,
+        ModelViewMatrix33,
+        ModelViewProjectionMatrix,
+        NormalMatrix,
+        CameraWorldPosition,
+        DisplayBufferResolution,
 
-        EFixedSemantics_CameraWorldPosition,
+        // Used to identify indices in geometry data fields
+        Indices,
 
-        // Global data
-        EFixedSemantics_RendererScreenResX,
-        EFixedSemantics_RendererScreenResY,
-        EFixedSemantics_RendererScreenResolution,
-
-        EFixedSemantics_Indices,
-
-        // Vertex attributes
-        EFixedSemantics_VertexPositionAttribute,
-        EFixedSemantics_VertexNormalAttribute,
-        EFixedSemantics_VertexTexCoordAttribute,
-        EFixedSemantics_VertexBinormalAttribute,
-        EFixedSemantics_VertexTangentAttribute,
-        EFixedSemantics_VertexColorAttribute,
-        EFixedSemantics_VertexCustomAttribute,
-
-        // Fragment data
-        EFixedSemantics_VertexPositionOutput,
-        EFixedSemantics_FragmentPositionInput,
-
-        // Text specific
-        EFixedSemantics_TextPositionsAttribute,
-        EFixedSemantics_TextTextureCoordinatesAttribute,
-        EFixedSemantics_TextTextureUniform,
-
-        EFixedSemantics_Invalid,
-
-        EFixedSemantics_Count // must be last, used for checking for dynamic semantics
+        // Text specific (used on client side only)
+        TextTexture,
+        TextPositionsAttribute,
+        TextTextureCoordinatesAttribute
     };
 
-    inline const Char* EnumToString(EFixedSemantics semantics)
+    static constexpr const char* const EFixedSemanticsNames[] =
     {
-        switch(semantics)
-        {
-        case EFixedSemantics_RendererViewMatrix:
-            return "EFixedSemantics_RendererViewMatrix";
-        case EFixedSemantics_CameraViewMatrix:
-            return "EFixedSemantics_CameraViewMatrix";
-        case EFixedSemantics_ProjectionMatrix:
-            return "EFixedSemantics_CameraProjectionMatrix";
-        case EFixedSemantics_ViewMatrix:
-            return "EFixedSemantics_ViewMatrix";
-        case EFixedSemantics_CameraWorldPosition:
-            return "EFixedSemantics_CameraWorldPosition";
-        case EFixedSemantics_ModelMatrix:
-            return "EFixedSemantics_MeshModelMatrix";
-        case EFixedSemantics_ModelViewMatrix:
-            return "EFIXEDSEMANTICS_MODEL_VIEW_MATRIX";
-        case EFixedSemantics_ModelViewMatrix33:
-            return "EFIXEDSEMANTICS_MODEL_VIEW_MATRIX33";
-        case EFixedSemantics_ModelViewProjectionMatrix:
-            return "EFIXEDSEMANTICS_MODEL_VIEW_PROJECTION_MATRIX";
-        case EFixedSemantics_NormalMatrix:
-            return "EFIXEDSEMANTICS_NORMAL_MATRIX";
-        case EFixedSemantics_RendererScreenResX:
-            return "EFIXEDSEMANTICS_RENDERER_SCREEN_RESX";
-        case EFixedSemantics_RendererScreenResY:
-            return "EFixedSemantics_RendererScreenResY";
-        case EFixedSemantics_Indices:
-            return "EFixedSemantics_Indices";
-        case EFixedSemantics_VertexPositionAttribute:
-            return "EFixedSemantics_VertexPositionAttribute";
-        case EFixedSemantics_VertexNormalAttribute:
-            return "EFixedSemantics_VertexNormalAttribute";
-        case EFixedSemantics_VertexTexCoordAttribute:
-            return "EFixedSemantics_VertexTexCoordAttribute";
-        case EFixedSemantics_VertexBinormalAttribute:
-            return "EFixedSemantics_VertexBinormalAttribute";
-        case EFixedSemantics_VertexTangentAttribute:
-            return "EFixedSemantics_VertexTangentAttribute";
-        case EFixedSemantics_VertexColorAttribute:
-            return "EFixedSemantics_VertexColorAttribute";
-        case EFixedSemantics_VertexCustomAttribute:
-            return "EFixedSemantics_VertexCustomAttribute";
-        case EFixedSemantics_RendererScreenResolution:
-            return "EFixedSemantics_RendererScreenResolution";
-        case EFixedSemantics_FragmentPositionInput:
-            return "EFixedSemantics_FragmentPositionInput";
-        case EFixedSemantics_VertexPositionOutput:
-            return "EFixedSemantics_VertexPositionOutput";
-        case EFixedSemantics_TextPositionsAttribute:
-            return "EFixedSemantics_TextPositionsAttribute";
-        case EFixedSemantics_TextTextureCoordinatesAttribute:
-            return "EFixedSemantics_TextTextureCoordinatesAttribute";
-        case EFixedSemantics_TextTextureUniform:
-            return "EFixedSemantics_TextTextureUniform";
-        default:
-            return "UNKNOWN_SEMANTICS";
-        }
-    }
+        "EFixedSemantics_Invalid",
+        "EFixedSemantics_ProjectionMatrix",
+        "EFixedSemantics_ViewMatrix",
+        "EFixedSemantics_ModelMatrix",
+        "EFixedSemantics_ModelViewMatrix",
+        "EFixedSemantics_ModelViewMatrix33",
+        "EFixedSemantics_ModelViewProjectionMatrix",
+        "EFixedSemantics_NormalMatrix",
+        "EFixedSemantics_CameraWorldPosition",
+        "EFixedSemantics_DisplayBufferResolution",
+        "EFixedSemantics_Indices",
+        "EFixedSemantics_TextTexture",
+        "EFixedSemantics_TextPositionsAttribute",
+        "EFixedSemantics_TextTextureCoordinatesAttribute"
+    };
 
     inline bool IsSemanticCompatibleWithDataType(EFixedSemantics semantics, EDataType dataType)
     {
         switch (semantics)
         {
-        case EFixedSemantics_RendererViewMatrix:
-        case EFixedSemantics_CameraViewMatrix:
-        case EFixedSemantics_ProjectionMatrix:
-        case EFixedSemantics_ViewMatrix:
-        case EFixedSemantics_ModelMatrix:
-        case EFixedSemantics_ModelViewMatrix:
-        case EFixedSemantics_ModelViewProjectionMatrix:
-        case EFixedSemantics_NormalMatrix:
+        case EFixedSemantics::ProjectionMatrix:
+        case EFixedSemantics::ViewMatrix:
+        case EFixedSemantics::ModelMatrix:
+        case EFixedSemantics::ModelViewMatrix:
+        case EFixedSemantics::ModelViewProjectionMatrix:
+        case EFixedSemantics::NormalMatrix:
             return dataType == EDataType::Matrix44F;
-        case EFixedSemantics_ModelViewMatrix33:
+        case EFixedSemantics::ModelViewMatrix33:
             return dataType == EDataType::Matrix33F;
-        case EFixedSemantics_RendererScreenResX:
-        case EFixedSemantics_RendererScreenResY:
-            return dataType == EDataType::Float;
-        case EFixedSemantics_Indices:
+        case EFixedSemantics::Indices:
             return dataType == EDataType::UInt16
                 || dataType == EDataType::UInt32;
-        case EFixedSemantics_TextPositionsAttribute:
-            return dataType == EDataType::Vector2F;
-        case EFixedSemantics_TextTextureCoordinatesAttribute:
-            return dataType == EDataType::Vector2F;
-        case EFixedSemantics_VertexPositionAttribute:
-        case EFixedSemantics_VertexNormalAttribute:
-        case EFixedSemantics_VertexTexCoordAttribute:
-        case EFixedSemantics_VertexBinormalAttribute:
-        case EFixedSemantics_VertexTangentAttribute:
-        case EFixedSemantics_VertexColorAttribute:
-        case EFixedSemantics_VertexCustomAttribute:
-            return dataType == EDataType::Float
-                || dataType == EDataType::Vector2F
-                || dataType == EDataType::Vector3F
-                || dataType == EDataType::Vector4F;
-        case EFixedSemantics_VertexPositionOutput:
-        case EFixedSemantics_FragmentPositionInput:
-            return dataType == EDataType::Vector4F;
-        case EFixedSemantics_CameraWorldPosition:
+        case EFixedSemantics::CameraWorldPosition:
             return dataType == EDataType::Vector3F;
-        case EFixedSemantics_RendererScreenResolution:
+        case EFixedSemantics::DisplayBufferResolution:
             return dataType == EDataType::Vector2F;
-        case EFixedSemantics_TextTextureUniform:
+        case EFixedSemantics::TextTexture:
             return dataType == EDataType::TextureSampler2D;
-        case EFixedSemantics_Invalid:
-            return false;
-        default:
-            assert(0);
+        case EFixedSemantics::TextPositionsAttribute:
+        case EFixedSemantics::TextTextureCoordinatesAttribute:
+            return dataType == EDataType::Vector2F;
+        case EFixedSemantics::Invalid:
             return false;
         }
+
+        assert(false);
+        return false;
     }
 }
+
+MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::EFixedSemantics,
+    ramses_internal::EFixedSemanticsNames,
+    ramses_internal::EFixedSemantics::TextTextureCoordinatesAttribute);
 
 #endif

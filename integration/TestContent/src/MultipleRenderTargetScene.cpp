@@ -9,7 +9,6 @@
 #include "TestScenes/MultipleRenderTargetScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"
@@ -24,8 +23,8 @@
 
 namespace ramses_internal
 {
-    MultipleRenderTargetScene::MultipleRenderTargetScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : CommonRenderBufferTestScene(scene, cameraPosition)
+    MultipleRenderTargetScene::MultipleRenderTargetScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : CommonRenderBufferTestScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_renderBuffer1(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
         , m_renderBuffer2(initRenderBuffer(scene, state))
         , m_depthBuffer(*scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Depth, ramses::ERenderBufferFormat_Depth24, ramses::ERenderBufferAccessMode_ReadWrite))
@@ -245,11 +244,11 @@ namespace ramses_internal
             quad2 = &createQuadWithTexture(m_depthBuffer, Vector3(0.6f, 0.f, -8.f), Vector4(1.f, 0.f, 0.f, 1.f));
         }
 
-        ramses::Camera *camera = m_scene.createRemoteCamera();
-        camera->setParent(getDefaultCameraTranslationNode());
+        ramses::Camera& camera = createCameraWithDefaultParameters();
+        camera.setParent(getDefaultCameraTranslationNode());
         ramses::RenderPass* renderPass = m_scene.createRenderPass();
         renderPass->setRenderOrder(100);
-        renderPass->setCamera(*camera);
+        renderPass->setCamera(camera);
         ramses::RenderGroup* renderGroup = m_scene.createRenderGroup();
         renderPass->addRenderGroup(*renderGroup);
         renderGroup->addMeshNode(*quad1);

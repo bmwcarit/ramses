@@ -9,11 +9,11 @@
 #ifndef RAMSES_PLATFORM_WAYLAND_IVI_EGL_ES_3_0_H
 #define RAMSES_PLATFORM_WAYLAND_IVI_EGL_ES_3_0_H
 
-#include "PlatformFactory_Wayland_IVI_EGL/PlatformFactory_Wayland_IVI_EGL.h"
+#include "Platform_Wayland_IVI_EGL/Platform_Wayland_IVI_EGL.h"
 
 namespace ramses_internal
 {
-    class Platform_Wayland_IVI_EGL_ES_3_0 : public PlatformFactory_Wayland_IVI_EGL
+    class Platform_Wayland_IVI_EGL_ES_3_0 : public Platform_Wayland_IVI_EGL
     {
     public:
         explicit Platform_Wayland_IVI_EGL_ES_3_0(const RendererConfig& rendererConfig);

@@ -62,7 +62,7 @@ namespace ramses
         setPickableCamera();
         ASSERT_NE(nullptr, pickableCamera);
 
-        const LocalCamera* cam = pickableObject.getCamera();
+        const auto cam = pickableObject.getCamera();
         EXPECT_EQ(cam, pickableObject.getCamera());
         EXPECT_EQ(cam->impl.getCameraHandle(), pickableCamera->impl.getCameraHandle());
     }

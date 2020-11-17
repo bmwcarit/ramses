@@ -11,12 +11,12 @@
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PickableObject.h"
 
 #include "ClientTestUtils.h"
 #include "Math3d/Vector3.h"
 #include "RamsesObjectTestTypes.h"
+#include "TestEqualHelper.h"
 
 namespace ramses
 {
@@ -137,6 +137,80 @@ namespace ramses
         ramses_internal::Vector3 resultVector(2.f, 3.f, 4.f);
         EXPECT_EQ(StatusOK, this->m_node->getScaling(actualScale.x, actualScale.y, actualScale.z));
         EXPECT_EQ(resultVector, actualScale);
+    }
+
+    TYPED_TEST(NodeTransformationTest, rotateLegacyZYXAndNonLegacyConventions)
+    {
+        const ramses_internal::Vector3 rotationAngles(30.f, 60.f, 120.f);
+        EXPECT_EQ(StatusOK, this->m_node->setRotation(rotationAngles.x, rotationAngles.y, rotationAngles.z));
+        const auto expectedLegacyZYXMatrix = ramses_internal::Matrix44f::RotationEuler(rotationAngles, ramses_internal::ERotationConvention::Legacy_ZYX);
+
+        ramses_internal::Matrix44f resultNodeMatrix;
+        this->m_node->getModelMatrix(resultNodeMatrix.data);
+        expectMatrixFloatEqual(expectedLegacyZYXMatrix, resultNodeMatrix);
+
+        TypeParam* childNode = &this->template createObject<TypeParam>("child node");
+        this->m_node->addChild(*childNode);
+
+        ramses_internal::Matrix44f resultChlidNodeMatrix;
+        childNode->getModelMatrix(resultChlidNodeMatrix.data);
+        expectMatrixFloatEqual(expectedLegacyZYXMatrix, resultChlidNodeMatrix);
+
+        EXPECT_EQ(StatusOK, childNode->setRotation(rotationAngles.x, rotationAngles.y, rotationAngles.z, ramses::ERotationConvention::XYZ));
+        childNode->getModelMatrix(resultChlidNodeMatrix.data);
+        expectMatrixFloatEqual(ramses_internal::Matrix44f::Identity, resultChlidNodeMatrix);
+
+        const ramses_internal::Vector3 childRotationAngles(35.f, 65.f, 125.f);
+        EXPECT_EQ(StatusOK, childNode->setRotation(childRotationAngles.x, childRotationAngles.y, childRotationAngles.z, ramses::ERotationConvention::XYX));
+        childNode->getModelMatrix(resultChlidNodeMatrix.data);
+        const auto expectedChildRotateMatrix = expectedLegacyZYXMatrix *
+                                                ramses_internal::Matrix44f::RotationEuler(childRotationAngles, ramses_internal::ERotationConvention::XYX);
+        expectMatrixFloatEqual(expectedChildRotateMatrix, resultChlidNodeMatrix);
+    }
+
+    TYPED_TEST(NodeTransformationTest, rotateMixConventions)
+    {
+        /*
+                     node
+                (10, 0, 0, XYZ)
+                /              \
+             chlid0           child1
+         (0, 20, 0, ZYX)    (0, 20, 30, ZYZ)
+                |
+            grandChild
+          (0, 0, 30, YZX)
+        */
+        TypeParam* child0 = &this->template createObject<TypeParam>("child0 node");
+        TypeParam* child1 = &this->template createObject<TypeParam>("child1 node");
+        TypeParam* grandChild = &this->template createObject<TypeParam>("grand child node");
+        this->m_node->addChild(*child0);
+        this->m_node->addChild(*child1);
+        child0->addChild(*grandChild);
+
+        EXPECT_EQ(StatusOK, this->m_node    ->setRotation(10.f, 0.f , 0.f , ramses::ERotationConvention::XYZ));
+        EXPECT_EQ(StatusOK, child0          ->setRotation(0.f , 20.f, 0.f , ramses::ERotationConvention::ZYX));
+        EXPECT_EQ(StatusOK, child1          ->setRotation(0.f , 20.f, 30.f, ramses::ERotationConvention::ZYZ));
+        EXPECT_EQ(StatusOK, grandChild      ->setRotation(0.f ,  0.f, 30.f, ramses::ERotationConvention::YZX));
+
+        //expected matrices for rotation after transformation chain is applied
+        const auto expectedNodeRotationMatrix           = ramses_internal::Matrix44f::RotationEuler({ 10.f , 0.f , 0.f  }, ramses_internal::ERotationConvention::XYZ);
+        const auto expectedChild0RorationMatrix         = ramses_internal::Matrix44f::RotationEuler({ 10.f , 20.f, 0.f  }, ramses_internal::ERotationConvention::XYZ);
+        const auto expectedChild1RorationMatrix         = ramses_internal::Matrix44f::RotationEuler({ 10.f , 20.f, 30.f }, ramses_internal::ERotationConvention::XYZ);
+        const auto expectedGrandChildRorationMatrix     = ramses_internal::Matrix44f::RotationEuler({ 10.f , 20.f, 30.f }, ramses_internal::ERotationConvention::XYZ);
+
+        ramses_internal::Matrix44f resultNodeMatrix;
+        ramses_internal::Matrix44f resultChild0Matrix;
+        ramses_internal::Matrix44f resultChild1Matrix;
+        ramses_internal::Matrix44f resultGrandChildMatrix;
+        this->m_node->getModelMatrix(resultNodeMatrix.data);
+        child0      ->getModelMatrix(resultChild0Matrix.data);
+        child1      ->getModelMatrix(resultChild1Matrix.data);
+        grandChild  ->getModelMatrix(resultGrandChildMatrix.data);
+
+        expectMatrixFloatEqual(expectedNodeRotationMatrix       , resultNodeMatrix);
+        expectMatrixFloatEqual(expectedChild0RorationMatrix     , resultChild0Matrix);
+        expectMatrixFloatEqual(expectedChild1RorationMatrix     , resultChild1Matrix);
+        expectMatrixFloatEqual(expectedGrandChildRorationMatrix , resultGrandChildMatrix);
     }
 
     template <typename T>

@@ -13,245 +13,396 @@
 
 namespace ramses_internal {
 
-TEST_F(ARendererSceneUpdater, unrequestsResourcesInUseByMappedSceneWhenSceneGetsUnpublished)
+TEST_F(ARendererSceneUpdater, referencesAndProvidesResourcesWhenSceneMapped)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+
+    createRenderable();
+    setRenderableResources();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    expectResourcesReferencedAndProvided_altogether({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    mapScene();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, referencesAndProvidesOnlyResourcesInUseWhenSceneMapped)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+
+    createRenderable();
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash3);
+    update();
+
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    update();
+
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
+    update();
+
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    expectResourcesReferencedAndProvided_altogether({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    mapScene();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, unreferencesResourcesNotInUse)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     createRenderable();
-    setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
-    unpublishMappedScene();
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash });
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash2 });
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash3 });
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash3);
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, unreferencesResourcesNotInUseOnlyAfterPendingFlushesApplied)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    // pending flush
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Provided);
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+
+    // unblock resource
+    reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Uploaded);
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash });
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, sameResourceComingFromMultipleScenesIsReferencedAndProvidedMultipleTimes)
+{
+    createDisplayAndExpectSuccess();
+    const auto s1 = createPublishAndSubscribeScene();
+    const auto s2 = createPublishAndSubscribeScene();
+    const auto s3 = createPublishAndSubscribeScene();
+    mapScene(s1);
+    mapScene(s2);
+    mapScene(s3);
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, s1);
+    createRenderable(s1);
+    setRenderableResources(s1);
+    update();
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, s2);
+    createRenderable(s2);
+    setRenderableResources(s2);
+    update();
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, s3);
+    createRenderable(s3);
+    setRenderableResources(s3);
+    update();
+    EXPECT_EQ(3, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(3, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    unmapScene(s1);
+    unmapScene(s2);
+    unmapScene(s3);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, sameResourceComingFromMultipleScenesIsUnreferencedWhenSceneUnmappedOrUnpublished)
+{
+    createDisplayAndExpectSuccess();
+    const auto s1 = createPublishAndSubscribeScene();
+    const auto s2 = createPublishAndSubscribeScene();
+    const auto s3 = createPublishAndSubscribeScene();
+    mapScene(s1);
+    mapScene(s2);
+    mapScene(s3);
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, s1);
+    createRenderable(s1);
+    setRenderableResources(s1);
+    update();
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, s2);
+    createRenderable(s2);
+    setRenderableResources(s2);
+    update();
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, s3);
+    createRenderable(s3);
+    setRenderableResources(s3);
+    update();
+    EXPECT_EQ(3, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(3, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    // destroy renderable in s1
+    destroyRenderable(s1);
+    expectResourcesUnreferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, s1);
+    update();
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    // unmap s1
+    unmapScene(s1);
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    // unmap s2
+    unmapScene(s2);
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    // unpublish s3
+    unpublishMappedScene(s3);
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
 
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, unrequestsResourcesInUseByMapRequestedSceneWhenSceneGetsUnpublished)
+TEST_F(ARendererSceneUpdater, offersProvidedResourceToResourceCacheAndStoresOnlyIfCacheWants)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
+
+    EXPECT_CALL(rendererResourceCacheMock, hasResource(MockResourceHash::EffectHash, _)).WillOnce(Return(false));
+    EXPECT_CALL(rendererResourceCacheMock, hasResource(MockResourceHash::IndexArrayHash, _)).WillOnce(Return(false));
+
+    // wants effect
+    EXPECT_CALL(rendererResourceCacheMock, shouldResourceBeCached(MockResourceHash::EffectHash, _, ResourceCacheFlag_DoNotCache, getSceneId())).WillOnce(Return(true));
+    // does not want indices
+    EXPECT_CALL(rendererResourceCacheMock, shouldResourceBeCached(MockResourceHash::IndexArrayHash, _, ResourceCacheFlag_DoNotCache, getSceneId())).WillOnce(Return(false));
+
+    // store effect
+    EXPECT_CALL(rendererResourceCacheMock, storeResource(MockResourceHash::EffectHash, _, _, ResourceCacheFlag_DoNotCache, getSceneId()));
+
+    update();
+
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, triggersResourceUploadAndUnloadWhenResourceProvided)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
+
+    // trigger unload/upload code path
+    ON_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], hasResourcesToBeUploaded()).WillByDefault(Return(true));
+    expectContextEnable();
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadAndUnloadPendingResources());
+    update();
+
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByMapRequestedSceneWhenSceneGetsUnpublished)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
 
+    // blocking flush so that scene will never get mapped
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
     createRenderable();
-    setRenderableResources(0u, InvalidResource1);
-
-    // this is necessary for processing the scene on renderer side first
-    // otherwise the renderer has not processed the scene actions for creating the scene
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
 
     requestMapScene();
     update();
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
     expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
+    expectUnloadOfSceneResources();
     unpublishMapRequestedScene();
 
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, unrequestsResourcesInUseByRenderedSceneWhenSceneGetsUnpublished)
+TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByRenderedSceneWhenSceneGetsUnpublished)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     createRenderable();
     setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
     update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
     expectContextEnable();
-    expectRenderableResourcesDeleted();
+    expectUnloadOfSceneResources();
     unpublishShownScene();
 
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, unrequestsResourcesInUseByMappedSceneWhenSceneGetsUnsubscribedByError)
+TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByMappedSceneWhenSceneGetsUnsubscribedByError)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     createRenderable();
     setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
     expectContextEnable();
-    expectRenderableResourcesDeleted();
+    expectUnloadOfSceneResources();
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(_));
     unsubscribeMappedScene();
 
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, unrequestsResourcesInUseByMapRequestedSceneWhenSceneGetsUnsubscribedByError)
+TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByMapRequestedSceneWhenSceneGetsUnsubscribedByError)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
 
+    // blocking flush so that scene will never get mapped
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
     createRenderable();
-    setRenderableResources(0u, InvalidResource1);
-
-    // this is necessary for processing the scene on renderer side first
-    // otherwise the renderer has not processed the scene actions for creating the scene
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
 
     requestMapScene();
     update();
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
     expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
+    expectUnloadOfSceneResources();
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(_));
     unsubscribeMapRequestedScene();
 
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, unrequestsResourcesInUseByRenderedSceneWhenSceneGetsUnsubscribedByError)
+TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByRenderedSceneWhenSceneGetsUnsubscribedByError)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     createRenderable();
     setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
     update();
 
     expectContextEnable();
-    expectRenderableResourcesDeleted();
-
+    expectUnloadOfSceneResources();
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(_));
     unsubscribeShownScene();
 
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, unrequestsResourcesInUseByMappedSceneWhenUpdaterDestructed)
+TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByMappedSceneWhenUpdaterDestructed)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     createRenderable();
     setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
     update();
 
-    expectRenderableResourcesDeleted();
-
+    expectContextEnable(DisplayHandle1, 2u);
+    expectUnloadOfSceneResources();
     destroySceneUpdater();
 }
 
-TEST_F(ARendererSceneUpdater, confidenceTest_doesNotRequestOrUnrequestResourcesIfSceneNotMapped)
+TEST_F(ARendererSceneUpdater, confidenceTest_doesNotReferenceOrUnreferenceResourcesIfSceneNotMapped)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     createRenderable();
     setRenderableResources();
 
-    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
-    EXPECT_CALL(displayMock.m_renderBackend->deviceMock, uploadShader(_)).Times(0);
-    EXPECT_CALL(displayMock.m_renderBackend->deviceMock, uploadBinaryShader(_, _, _, _)).Times(0);
-    EXPECT_CALL(displayMock.m_renderBackend->deviceMock, deleteShader(_)).Times(0);
-
     update();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, uploadsSceneResourcesAtMappingTime)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    createRenderTargetWithBuffers();
-    update();
-
-    expectContextEnable();
-    expectRenderTargetUploaded();
-    mapScene();
-
-    expectContextEnable();
-    expectRenderTargetDeleted();
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, uploadsResourcesNextUpdateAfterSceneMapped)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    createRenderable();
-    setRenderableResources();
-    update();
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
-    mapScene();
-
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, updatesDirtynessOfMappedSceneResources)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-
-    createRenderable();
-    setRenderableResources(0u, InvalidResource1);
-
-    expectContextEnable();
-    expectResourceRequest();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    update();
-
-    setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
-    unmapScene();
-
     destroyDisplay();
 }
 
@@ -263,24 +414,19 @@ TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_SingleScene)
     showScene();
     createRenderableAndResourcesWithStreamTexture();
 
-    DeviceResourceHandle fakeDeviceResourceHandle(1u);
-    expectEmbeddedCompositingManagerReturnsDeviceHandle(fakeDeviceResourceHandle);
+    expectContextEnable();
+    expectStreamTextureUploaded();
     update();
     expectRenderableResourcesClean();
 
-    StreamTextureHandleVector mockUpdatedStreamTexturesForScene({ streamTextureHandle });
     SceneStreamTextures mockUpdatedStreamTextures;
-    mockUpdatedStreamTextures.put(getSceneId(), mockUpdatedStreamTexturesForScene);
+    mockUpdatedStreamTextures.put(getSceneId(), { streamTextureHandle });
     EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfStreamTexturesAndSources(_, _, _)).WillRepeatedly(SetArgReferee<0>(mockUpdatedStreamTextures));
-
-    expectEmbeddedCompositingManagerReturnsDeviceHandle(DeviceResourceHandle::Invalid());
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
     update();
-
     expectRenderableResourcesDirty();
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, true, false, true);
     unmapScene();
     destroyDisplay();
 }
@@ -294,12 +440,16 @@ TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_MultipleScenes)
     mapScene(1u);
     showScene(0u);
     showScene(1u);
-    createRenderableAndResourcesWithStreamTexture(0u);
-    createRenderableAndResourcesWithStreamTexture(1u, false);
 
-    DeviceResourceHandle fakeDeviceResourceHandle(1u);
-    expectEmbeddedCompositingManagerReturnsDeviceHandle(fakeDeviceResourceHandle, 2u);
+    createRenderableAndResourcesWithStreamTexture(0u);
+    expectContextEnable();
+    expectStreamTextureUploaded();
     update();
+
+    expectContextEnable();
+    createRenderableAndResourcesWithStreamTexture(1u);
+    update();
+
     expectRenderableResourcesClean(0u);
     expectRenderableResourcesClean(1u);
 
@@ -308,115 +458,30 @@ TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_MultipleScenes)
     mockUpdatedStreamTextures.put(getSceneId(0u), mockUpdatedStreamTexturesForScene);
     mockUpdatedStreamTextures.put(getSceneId(1u), mockUpdatedStreamTexturesForScene);
     EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfStreamTexturesAndSources(_, _, _)).WillRepeatedly(SetArgReferee<0>(mockUpdatedStreamTextures));
-
-    expectEmbeddedCompositingManagerReturnsDeviceHandle(DeviceResourceHandle::Invalid(), 2u);
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).Times(2).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
     update();
     expectRenderableResourcesDirty(0u);
     expectRenderableResourcesDirty(1u);
 
     hideScene(0u);
     hideScene(1u);
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, false, false, false, true);
     unmapScene(0u);
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, true, false, true);
     unmapScene(1u);
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, unrequestedResourceIsCanceledNextUpdateCycleIfTriggeredBySyncFlush)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-
-    createRenderable();
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    update();
-
-    setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
-    update();
-
-    expectResourceRequestCancel(InvalidResource1);
-    update();
-
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, updatesDirtinessOfRenderedSceneResources)
+TEST_F(ARendererSceneUpdater, pendingFlushesAreNotAppliedIfResourcesNotReady)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     createRenderable();
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    update();
-
     setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, syncFlush_appliesPendingFlushesAlwaysIfSceneNotMapped)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
-
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    performFlush();
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    performFlush();
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, syncFlush_pendingFlushesAreNotAppliedIfResourcesNotReady)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
@@ -429,25 +494,22 @@ TEST_F(ARendererSceneUpdater, syncFlush_pendingFlushesAreNotAppliedIfResourcesNo
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
     unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, syncFlush_whenSceneBecomesReadyPendingFlushesAreAppliedInOrderAtOnce)
+TEST_F(ARendererSceneUpdater, appliesPendingFlushesAtOnceAndInOrderWhenUnblocked_mapped)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
 
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
     expectNoEvent();
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
 
     const SceneVersionTag version1(1u);
@@ -457,24 +519,22 @@ TEST_F(ARendererSceneUpdater, syncFlush_whenSceneBecomesReadyPendingFlushesAreAp
     performFlush(0u, version1);
     update();
     expectNoEvent();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
     performFlush(0u, version2);
     update();
     expectNoEvent();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
     performFlush(0u, version3);
     update();
     expectNoEvent();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
-    setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+    // unblock pending flushes
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    expectResourceRequestCancel(InvalidResource1);
-    update();
 
     RendererEventVector events;
     RendererEventVector dummy;
@@ -483,30 +543,28 @@ TEST_F(ARendererSceneUpdater, syncFlush_whenSceneBecomesReadyPendingFlushesAreAp
     EXPECT_EQ(ERendererEventType_SceneFlushed, events[0].eventType);
     EXPECT_EQ(ERendererEventType_SceneFlushed, events[1].eventType);
     EXPECT_EQ(ERendererEventType_SceneFlushed, events[2].eventType);
-    EXPECT_EQ(EResourceStatus_Uploaded, events[0].resourceStatus);
-    EXPECT_EQ(EResourceStatus_Uploaded, events[1].resourceStatus);
-    EXPECT_EQ(EResourceStatus_Uploaded, events[2].resourceStatus);
     EXPECT_EQ(version1.getValue(), events[0].sceneVersionTag.getValue());
     EXPECT_EQ(version2.getValue(), events[1].sceneVersionTag.getValue());
     EXPECT_EQ(version3.getValue(), events[2].sceneVersionTag.getValue());
 
-    expectRenderableResourcesDeleted();
+    expectContextEnable(DisplayHandle1, 2u);
+    expectUnloadOfSceneResources();
     destroySceneUpdater();
 }
 
-TEST_F(ARendererSceneUpdater, syncFlush_multiplePendingFlushesPerRenderLoopAreAppliedInOrderAtOnce)
+TEST_F(ARendererSceneUpdater, appliesPendingFlushesAtOnceAndInOrderWhenUnblocked_shown)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
+    showScene();
 
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
     expectNoEvent();
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
 
     const SceneVersionTag version1(1u);
@@ -514,18 +572,24 @@ TEST_F(ARendererSceneUpdater, syncFlush_multiplePendingFlushesPerRenderLoopAreAp
     const SceneVersionTag version3(3u);
 
     performFlush(0u, version1);
-    performFlush(0u, version2);
-    performFlush(0u, version3);
+    update();
+    expectNoEvent();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
-    setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+    performFlush(0u, version2);
+    update();
+    expectNoEvent();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    performFlush(0u, version3);
+    update();
+    expectNoEvent();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    // unblock pending flushes
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    expectResourceRequestCancel(InvalidResource1);
-    update();
 
     RendererEventVector events;
     RendererEventVector dummy;
@@ -534,255 +598,273 @@ TEST_F(ARendererSceneUpdater, syncFlush_multiplePendingFlushesPerRenderLoopAreAp
     EXPECT_EQ(ERendererEventType_SceneFlushed, events[0].eventType);
     EXPECT_EQ(ERendererEventType_SceneFlushed, events[1].eventType);
     EXPECT_EQ(ERendererEventType_SceneFlushed, events[2].eventType);
-    EXPECT_EQ(EResourceStatus_Uploaded, events[0].resourceStatus);
-    EXPECT_EQ(EResourceStatus_Uploaded, events[1].resourceStatus);
-    EXPECT_EQ(EResourceStatus_Uploaded, events[2].resourceStatus);
     EXPECT_EQ(version1.getValue(), events[0].sceneVersionTag.getValue());
     EXPECT_EQ(version2.getValue(), events[1].sceneVersionTag.getValue());
     EXPECT_EQ(version3.getValue(), events[2].sceneVersionTag.getValue());
 
-    expectRenderableResourcesDeleted();
+    expectContextEnable(DisplayHandle1, 2u);
+    expectUnloadOfSceneResources();
     destroySceneUpdater();
 }
 
-TEST_F(ARendererSceneUpdater, syncFlush_pendingFlushesAreAppliedOnlyAfterResourcesAreReady)
+TEST_F(ARendererSceneUpdater, pendingFlushesAreNotAppliedUntilBlockingResourceUploadedEvenIfUnreferencedByOtherFlush)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
     setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+    expectNoEvent();
+
+    // block on indices not uploaded
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    performFlush();
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    // replace indices with another one which is uploaded right away
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    performFlush();
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    // even though not used anymore wait until previously blocking resource uploaded
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Uploaded);
+    // it will be unreferenced as unused right after
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash });
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    expectResourceRequestCancel(InvalidResource1);
+    performFlush();
     update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
     unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, syncFlush_pendingFlushesAreAppliedIfBlockingDirtyResourceNotUsedAnymore)
+TEST_F(ARendererSceneUpdater, swappingResourcesWhileBlockedEndsUpInEqualRefAndUnrefCounts)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash);
-    expectResourceRequest();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
-    expectContextEnable();
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    expectResourceRequestCancel(InvalidResource1);
-    update();
-
-    hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, syncFlush_multipleFlushesChangingResourceDependencyNotAppliedUntilResolved)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    setRenderableResources(0u, InvalidResource2);
-    expectResourceRequest();
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    setRenderableResources(0u, InvalidResource1);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    // set valid available resource
-    expectResourceRequestCancel(InvalidResource2);
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
     setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+
+    // block on indices1
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+
+    // swap indices1 for indices2
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Provided);
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+
+    // swap back - indices1 is referenced and provided again (client sends resource once more)
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash });
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+
+    // swap once more - indices2 is referenced and provided again (client sends resource once more)
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+
+    // unblock both
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Uploaded);
+    reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Uploaded);
+    // indices is unused and therefore unreferenced
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash }, 0u, DisplayHandle1, 2); // was reffed twice, no zero
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash2 }, 0u, DisplayHandle1, 1); // unrefs are applied sequentially after apply - indices2 was swapped in/out
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash2));
 
-    expectResourceRequestCancel(InvalidResource1);
+    // destroy renderable so there are no more resources in use
+    destroyRenderable();
+    expectResourcesUnreferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash2 });
     update();
+
+    expectNoResourceReferencedByScene();
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
     unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, syncFlush_pendingFlushesWillBeAppliedIfSceneGetsUnmapped)
+TEST_F(ARendererSceneUpdater, pendingFlushesWillBeAppliedIfSceneGetsUnmapped)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
 
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
-    expectContextEnable();
-    expectResourceRequestCancel(InvalidResource1);
     unmapScene();
 
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, syncFlush_resourceUsedByRenderedSceneUnreferencedInSyncFlushWillBeUnrequestedOnceFlushIsReady)
+TEST_F(ARendererSceneUpdater, resourceUsedByRenderedSceneUnreferencedInFlushWillBeUnreferencedOnceFlushIsReady)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
+    showScene();
 
-    createRenderable(0u);
-    setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
+    // renderable with resources uploaded and shown
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
 
-    setRenderableResources(0u, InvalidResource1);
-    expectResourceRequest();
+    // swap indices and block on it
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Provided);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash2));
 
-    setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash2);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+    reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Uploaded);
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash });
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash2));
 
-    expectResourceRequestCancel(InvalidResource1);
-    update();
-
-    // previously used index buffer was marked as unused
-    // and will be unloaded (depending on unload strategy)
-    // together with the one currently in use
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_)).Times(2u);
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
-
-    destroySceneUpdater();
+    hideScene();
+    unmapScene();
+    destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, syncFlush_resourceUsedByRenderedSceneUnreferencedAndReferencedInSyncFlushesWillMakeFlushReadyAgain)
+TEST_F(ARendererSceneUpdater, canRemapScene)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
 
-    createRenderable(0u);
-    setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    setRenderableResources(0u, InvalidResource1);
-    expectResourceRequest();
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    expectResourceRequestCancel(InvalidResource1);
-    update();
-
-    expectRenderableResourcesDeleted();
-    destroySceneUpdater();
-}
-
-TEST_F(ARendererSceneUpdater, confidenceTest_syncFlush_mappedSceneWithBlockingSyncFlushGetsUnmappedAndRemapped)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    expectContextEnable();
-    expectResourceRequestCancel(InvalidResource1);
     unmapScene();
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+    expectResourcesReferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     mapScene();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    expectRenderableResourcesDeleted();
+    expectContextEnable(DisplayHandle1, 2u);
+    expectUnloadOfSceneResources();
+    destroySceneUpdater();
+}
+
+TEST_F(ARendererSceneUpdater, canRemapSceneWithUnusedTextureSampler)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable(0u, false, true); // with sampler that will not be set
+    setRenderableResources();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    unmapScene();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    expectResourcesReferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    mapScene();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    expectContextEnable(DisplayHandle1, 2u);
+    expectUnloadOfSceneResources();
+    destroySceneUpdater();
+}
+
+TEST_F(ARendererSceneUpdater, mappedSceneWithBlockingFlushGetsUnmappedAndRemapped)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    unmapScene();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    // resource will not be blocked next time used
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
+
+    expectResourcesReferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    mapScene();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    expectContextEnable(DisplayHandle1, 2u);
+    expectUnloadOfSceneResources();
     destroySceneUpdater();
 }
 
@@ -794,32 +876,24 @@ TEST_F(ARendererSceneUpdater, newRenderTargetIsUploadedOnlyAfterPendingFlushAppl
 
     update();
 
-    // emulate blocking sync flush
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
+    // emulate blocking flush with new RT
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
     createRenderTargetWithBuffers();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
     // unblock pending flushes
-    setRenderableResources();
-    expectResourceRequest();
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
     expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
     expectRenderTargetUploaded();
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderTarget(_)).Times(0u);
 
-    expectResourceRequestCancel(InvalidResource1);
     update();
 
-    expectContextEnable();
-    expectRenderTargetDeleted();
-    expectRenderableResourcesDeleted();
     unmapScene();
     destroyDisplay();
 }
@@ -836,31 +910,24 @@ TEST_F(ARendererSceneUpdater, renderTargetIsUnloadedOnlyAfterPendingFlushApplied
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    // emulate blocking sync flush
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
+    // emulate blocking flush with release of RT
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
     destroyRenderTargetWithBuffers();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
     // unblock pending flushes
-    setRenderableResources();
-    expectResourceRequest();
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
     expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
-    expectRenderTargetDeleted();
+    expectRenderTargetUnloaded();
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderTarget(_)).Times(0u);
 
-    expectResourceRequestCancel(InvalidResource1);
     update();
 
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
     unmapScene();
     destroyDisplay();
 }
@@ -877,7 +944,10 @@ TEST_F(ARendererSceneUpdater, renderTargetIsUploadedOnceWhenMappedIfCreatedBefor
     mapScene();
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectRenderTargetUnloaded();
+    destroyRenderTargetWithBuffers();
+    update();
+
     unmapScene();
     destroyDisplay();
 }
@@ -894,7 +964,10 @@ TEST_F(ARendererSceneUpdater, renderTargetIsUploadedOnceWhenCreatedIfAlreadyMapp
     update();
 
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectRenderTargetUnloaded();
+    destroyRenderTargetWithBuffers();
+    update();
+
     unmapScene();
     destroyDisplay();
 }
@@ -913,12 +986,10 @@ TEST_F(ARendererSceneUpdater, unloadsAndUploadsRenderTargetWithSameHandleDestroy
     destroyRenderTargetWithBuffers();
     createRenderTargetWithBuffers();
     expectContextEnable();
-    expectRenderTargetDeleted();
+    expectRenderTargetUnloaded();
     expectRenderTargetUploaded();
     update();
 
-    expectContextEnable();
-    expectRenderTargetDeleted();
     unmapScene();
     destroyDisplay();
 }
@@ -933,37 +1004,11 @@ TEST_F(ARendererSceneUpdater, doesNotUploadOrUnloadRenderTargetWithSameHandleCre
     destroyRenderTargetWithBuffers();
     update();
 
-    expectContextEnable();
     unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, doesNotReuploadResourcesForSceneUnmappedAndMappedToSameDisplay)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-
-    createRenderable();
-    setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
-    update();
-
-    expectContextEnable();
-    unmapScene();
-    update();
-    mapScene();
-
-    expectContextEnable();
-    unmapScene();
-
-    expectRenderableResourcesDeleted();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, resourcesAreReuploadedAfterSceneRemapped)
+TEST_F(ARendererSceneUpdater, resourcesAreReuploadedAfterSceneRemappedToAnotherDisplay)
 {
     createDisplayAndExpectSuccess(DisplayHandle1);
     createDisplayAndExpectSuccess(DisplayHandle2);
@@ -971,28 +1016,23 @@ TEST_F(ARendererSceneUpdater, resourcesAreReuploadedAfterSceneRemapped)
     createPublishAndSubscribeScene();
     mapScene(0u, DisplayHandle1);
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, 0u, DisplayHandle1);
     createRenderable();
     setRenderableResources();
-    expectResourceRequest();
-    expectContextEnable(DisplayHandle1);
-    expectRenderableResourcesUploaded(DisplayHandle1);
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    unmapScene(0u, DisplayHandle1);
     update();
 
-    expectContextEnable(DisplayHandle1);
-    unmapScene();
-    update();
-
-    expectResourceRequest(DisplayHandle2);
-    expectContextEnable(DisplayHandle2);
-    expectRenderableResourcesUploaded(DisplayHandle2);
+    expectResourcesReferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, 0u, DisplayHandle2);
     mapScene(0u, DisplayHandle2);
+    update();
 
-    expectContextEnable(DisplayHandle2);
-    unmapScene();
+    unmapScene(0u, DisplayHandle2);
+    update();
 
-    expectRenderableResourcesDeleted(DisplayHandle1);
     destroyDisplay(DisplayHandle1);
-    expectRenderableResourcesDeleted(DisplayHandle2);
     destroyDisplay(DisplayHandle2);
 }
 
@@ -1007,8 +1047,6 @@ TEST_F(ARendererSceneUpdater, renderTargetAndBuffersAreReuploadedAfterSceneRemap
     expectRenderTargetUploaded();
     update();
 
-    expectContextEnable();
-    expectRenderTargetDeleted();
     unmapScene();
     update();
 
@@ -1016,8 +1054,6 @@ TEST_F(ARendererSceneUpdater, renderTargetAndBuffersAreReuploadedAfterSceneRemap
     expectRenderTargetUploaded();
     mapScene();
 
-    expectContextEnable();
-    expectRenderTargetDeleted();
     unmapScene();
     destroyDisplay();
 }
@@ -1033,8 +1069,6 @@ TEST_F(ARendererSceneUpdater, blitPassesReuploadedAfterSceneRemapped)
     expectBlitPassUploaded();
     update();
 
-    expectContextEnable();
-    expectBlitPassDeleted();
     unmapScene();
     update();
 
@@ -1042,13 +1076,11 @@ TEST_F(ARendererSceneUpdater, blitPassesReuploadedAfterSceneRemapped)
     expectBlitPassUploaded();
     mapScene();
 
-    expectContextEnable();
-    expectBlitPassDeleted();
     unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, confidenceTest_syncFlush_twoDisplaysEachWithSceneAndSyncFlushAppliedAfterResourcesReady)
+TEST_F(ARendererSceneUpdater, confidenceTest_twoDisplaysEachWithSceneAndFlushAppliedAfterResourcesReady)
 {
     createDisplayAndExpectSuccess(DisplayHandle1);
     createDisplayAndExpectSuccess(DisplayHandle2);
@@ -1062,118 +1094,79 @@ TEST_F(ARendererSceneUpdater, confidenceTest_syncFlush_twoDisplaysEachWithSceneA
     showScene(0u);
     showScene(1u);
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, 0u, DisplayHandle1);
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, 1u, DisplayHandle2);
     createRenderable(0u);
     createRenderable(1u);
-    setRenderableResources(0u, InvalidResource1);
-    setRenderableResources(1u, InvalidResource1);
+    setRenderableResources(0u);
+    setRenderableResources(1u);
 
-    expectContextEnable(DisplayHandle1);
-    expectContextEnable(DisplayHandle2);
-    expectResourceRequest();
-    expectResourceRequest(DisplayHandle2, 1u);
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    expectRenderableResourcesUploaded(DisplayHandle2, true, false);
+    // blocked
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided, DisplayHandle1);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided, DisplayHandle2);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene(0u));
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene(1u));
 
-    setRenderableResources(0u);
-    setRenderableResources(1u);
-    expectResourceRequest();
-    expectResourceRequest(DisplayHandle2, 1u);
-    expectContextEnable(DisplayHandle1, 1u);
-    expectContextEnable(DisplayHandle2, 1u);
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
-    expectRenderableResourcesUploaded(DisplayHandle2, false, true);
+    // unblocked
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded, DisplayHandle1);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded, DisplayHandle2);
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene(0u));
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene(1u));
 
-    expectResourceRequestCancel(InvalidResource1, DisplayHandle1);
-    expectResourceRequestCancel(InvalidResource1, DisplayHandle2);
     update();
 
     hideScene(0u);
     hideScene(1u);
-    expectContextEnable(DisplayHandle1);
-    expectContextEnable(DisplayHandle2);
-    expectRenderableResourcesDeleted(DisplayHandle1);
-    expectRenderableResourcesDeleted(DisplayHandle2);
-    unmapScene(0u);
-    unmapScene(1u);
+    unmapScene(0u, DisplayHandle1);
+    unmapScene(1u, DisplayHandle2);
     destroyDisplay(DisplayHandle1);
     destroyDisplay(DisplayHandle2);
 }
 
-TEST_F(ARendererSceneUpdater, syncFlush_waitingForResourceAndUnmapWillRequestThatResourceWithNextMap)
+TEST_F(ARendererSceneUpdater, blockedResourceAndUnmapWillReferenceThatResourceWithNextMap)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
 
-    createRenderable(0u);
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
-    expectContextEnable();
     unmapScene();
-
-    expectResourceRequestCancel(InvalidResource1);
     update();
-
-    requestMapScene();
-    update();
-
-    expectResourceRequest();
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene()); // flush applied already here because scene is not mapped
-
-    setRenderableResources();
-    //expectResourceRequestCancel(InvalidResource1);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
-    update();
-    expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    expectResourceRequestCancel(InvalidResource1);
+    expectResourcesReferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
+    mapScene();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
     update();
 
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
     unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, canDestroyDisplayIfThereArePendingUploadsDueToLimitedUploadTimeBudget)
+TEST_F(ARendererSceneUpdater, canDestroyDisplayIfThereArePendingUploads)
 {
-    //set upload budget to Zero so it always succeeds to upload only 1 resource
-    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, 0u);
-
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
 
-    createRenderable(0u, true);
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
     setRenderableResources();
-    setRenderableVertexArray();
-
-    // expect effect uploaded
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false, false);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
-    // rest of resources are pending to be uploaded
-
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false, false);
     unmapScene();
     destroyDisplay();
 }
@@ -1184,79 +1177,75 @@ TEST_F(ARendererSceneUpdater, onlyMapsASceneIfAllNeededResourcesAreUploaded)
     createPublishAndSubscribeScene();
 
     createRenderable();
-    setRenderableResources(0u, InvalidResource1);
+    setRenderableResources();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
+    expectResourcesReferencedAndProvided_altogether({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     requestMapScene();
     EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    setRenderableResources(); // simulate upload
+    // simulate upload
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
     update();
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
     expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
 
-    expectResourceRequestCancel(InvalidResource1);
     update();
 
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
     unmapScene();
-
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, onlyMapsASceneIfAllNeededResourcesAreUploaded_WithTwoDifferentInvalidResourcesUsed)
+TEST_F(ARendererSceneUpdater, onlyMapsASceneIfAllNeededResourcesAreUploaded_WithTwoDifferentBlockingResources)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
 
     createRenderable();
-    setRenderableResources(0u, InvalidResource1);
+    setRenderableResources();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
+    expectResourcesReferencedAndProvided_altogether({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    // block 2 resources
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
     requestMapScene();
     EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectResourceRequest(DisplayHandle1);
-    setRenderableResources(0u, InvalidResource2);
-    update();
+    // unblock 1st resource
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
 
-    setRenderableResources(); // simulate upload
-    expectResourceRequestCancel(InvalidResource1);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+    // still blocked
+    update();
+    EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
+
+    // unblock 2nd resource
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Uploaded);
+
+    // only now is scene mapped
     update();
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
     expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
 
-    expectResourceRequestCancel(InvalidResource2);
     update();
 
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
     unmapScene();
-
     destroyDisplay();
 }
 
@@ -1287,9 +1276,12 @@ TEST_F(ARendererSceneUpdater, canUnmapSceneWhenSceneIsMappingAndUploadingWithMap
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
     expectContextEnable();
+    expectUnloadOfSceneResources();
     rendererSceneUpdater->handleSceneUnmappingRequest(getSceneId());
     expectInternalSceneStateEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnmapped });
     EXPECT_EQ(ESceneState::Subscribed, sceneStateExecutor.getSceneState(getSceneId()));
+
+    update();
 
     destroyDisplay();
 }
@@ -1300,130 +1292,121 @@ TEST_F(ARendererSceneUpdater, unmappingSceneWhenSceneIsMappingAndUploadingWillUn
     createPublishAndSubscribeScene();
 
     createRenderable();
-    setRenderableResources(0u, InvalidResource1);
+    setRenderableResources();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
+    expectResourcesReferencedAndProvided_altogether({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     requestMapScene();
     EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
     expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
+    expectUnloadOfSceneResources();
     rendererSceneUpdater->handleSceneUnmappingRequest(getSceneId());
     expectInternalSceneStateEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnmapped });
     EXPECT_EQ(ESceneState::Subscribed, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectResourceRequestCancel(InvalidResource1);
     update();
 
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, renderTargetIsUploadedInCorrectOrderRightAfterUnblockedMappingBeforeResourceCacheUpdate)
+TEST_F(ARendererSceneUpdater, renderTargetIsUploadedWhenSceneMappingAndUploadingEvenIfMappingBlockedByFlush)
 {
+    // create scene with RT
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     createRenderable();
+    createRenderTargetWithBuffers();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
+    // request map but block resource
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     requestMapScene();
     EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
+
+    expectContextEnable();
+    expectRenderTargetUploaded();
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
-    // scene with RT is now internally mapped but RT is not uploaded yet
 
-    // blocking sync flush
-    createRenderTargetWithBuffers();
-    setRenderableResources(0u, InvalidResource1);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
     // unblock flush by making resource available
-    setRenderableResources(); // simulate upload
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
 
-    // only now is RT uploaded
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderTargetUploaded();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
     update();
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
     expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
 
-    expectResourceRequestCancel(InvalidResource1);
     update();
 
-    expectContextEnable();
-    expectRenderTargetDeleted();
-    expectRenderableResourcesDeleted();
     unmapScene();
-
     destroyDisplay();
 }
 
 // This is to reproduce and prove fix for a crash that happens in very very special constellation
-TEST_F(ARendererSceneUpdater, renderTargetIsUploadedInCorrectOrderAfterSceneMappedWithShowRequestAndBlockingFlushComingAtSameTime)
+// Note: this is probably outdated setup not reproducible in current code, keeping as confidence test
+TEST_F(ARendererSceneUpdater, confidenceTest_renderTargetIsUploadedInCorrectOrderAfterSceneMappedWithShowRequestAndBlockingFlushComingAtSameTime)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
 
-    // create renderable with invalid (unresolvable) resource
+    // create renderable
     createRenderTargetWithBuffers();
     createRenderable();
-    setRenderableResources(0u, InvalidResource1);
+    setRenderableResources();
 
-    // map scene
+    // request map scene
     requestMapScene();
     EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
+
+    // block resource
+    expectResourcesReferencedAndProvided_altogether({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
     expectContextEnable();
     expectRenderTargetUploaded();
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    // do one loop in mapped state that will upload resolvable resources
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    // do one loop in uploading state that will upload resolvable resources
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
     // swap invalid resource for another invalid (this will put the first invalid into 'to be unreferenced' list in current implementation)
-    expectResourceRequest();
-    setRenderableResources(0u, InvalidResource2);
-    expectResourceRequestCancel(InvalidResource1);
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
+    reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Provided);
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    // unblock mapping by switching to a valid resource
-    setRenderableResources(); // switch to valid resource
-    expectResourceRequestCancel(InvalidResource2);
+    // unblock mapping
+    reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Uploaded);
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash });
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
     update();
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
     expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
 
     //////////////////
     // unmap scene will unload render target, invalid resources is still in 'to be unreferenced' list
-    expectContextEnable();
-    expectRenderTargetDeleted();
     unmapScene();
     update();
 
     // request map
     requestMapScene();
     EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
+    expectResourcesReferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash2 });
     expectContextEnable();
     expectRenderTargetUploaded();
     update();
@@ -1443,53 +1426,46 @@ TEST_F(ARendererSceneUpdater, renderTargetIsUploadedInCorrectOrderAfterSceneMapp
     update();
 
     hideScene();
-    expectContextEnable();
-    expectRenderTargetDeleted();
-    expectRenderableResourcesDeleted();
     unmapScene();
-
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, syncFlush_multipleFlushesWithRemoveAndAddResourceReferenceWhileAlreadyBlockedByInvalidResource)
+TEST_F(ARendererSceneUpdater, multipleFlushesWithRemoveAndAddResourceReferenceWhileAlreadyBlocked)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
-    // create blocking sync flush (using invalid resource)
-    createRenderable(0u, true);
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    // create blocking flush
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
+    createRenderable();
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
     // add new resource reference
-    setRenderableVertexArray(0u, ResourceProviderMock::FakeVertArrayHash);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, false, true);
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash });
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
     // remove and add again the previously added resource reference
-    setRenderableVertexArray(0u, InvalidResource1);
-    setRenderableVertexArray(0u, ResourceProviderMock::FakeVertArrayHash);
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    update();
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash }, 0u, DisplayHandle1);
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
+    update();
 
     // update
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
     // unblock flushes
-    expectResourceRequestCancel(InvalidResource1);
-    setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true, false);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash }, 0u, DisplayHandle1, 1);
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash2 });
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
@@ -1497,224 +1473,142 @@ TEST_F(ARendererSceneUpdater, syncFlush_multipleFlushesWithRemoveAndAddResourceR
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    // uninit
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, true, true);
     unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, syncFlush_multipleFlushesWithAddAndRemoveResourceReferenceWhileAlreadyBlockedByInvalidResource)
+TEST_F(ARendererSceneUpdater, multipleFlushesWithAddAndRemoveBlockingResourceWhileAlreadyBlocked)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
     showScene();
 
-    // create blocking sync flush (using invalid resource)
-    createRenderable(0u, true);
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    // add new resource reference
-    setRenderableVertexArray(0u, ResourceProviderMock::FakeVertArrayHash);
-    setRenderableVertexArray(0u, InvalidResource1);
-
-    // pending resources is uploaded even if it is replaced in another pending flush
-    expectContextEnable();
-    expectResourceRequest();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, false, true);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    // unblock flushes
-    setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash);
-    setRenderableVertexArray(0u, ResourceProviderMock::FakeVertArrayHash);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true, false);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // update
-    expectResourceRequestCancel(InvalidResource1);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // uninit
-    hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, true, true);
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, syncFlush_multipleFlushesWithRemoveAndAddAndRemoveResourceReferenceWhileAlreadyBlockedByInvalidResource)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-
-    // create blocking sync flush (using invalid resource)
-    createRenderable(0u, true);
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    // add new resource reference
-    setRenderableVertexArray(0u, ResourceProviderMock::FakeVertArrayHash);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, false, true);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    // remove, add and remove again the previously added resource reference
-    setRenderableVertexArray(0u, InvalidResource1);
-    setRenderableVertexArray(0u, ResourceProviderMock::FakeVertArrayHash);
-    setRenderableVertexArray(0u, InvalidResource1);
-
-    // update and expect no change
-    // the vertex array resource would be unloaded once sync flushes are unblocked
-    // unless it is referenced again which is the case in this test in the following section
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    // unblock flushes
-    setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash);
-    setRenderableVertexArray(0u, ResourceProviderMock::FakeVertArrayHash);
-    expectResourceRequestCancel(InvalidResource1);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true, false);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // update
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // uninit
-    hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, true, true);
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, syncFlush_multipleFlushesWithAddAndRemoveAndAddResourceReferenceWhileAlreadyBlockedByInvalidResource)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-
-    // create blocking sync flush (using invalid resource)
-    createRenderable(0u, true);
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    // add new resource reference
-    setRenderableVertexArray(0u, ResourceProviderMock::FakeVertArrayHash);
-    setRenderableVertexArray(0u, InvalidResource1);
-    setRenderableVertexArray(0u, ResourceProviderMock::FakeVertArrayHash);
-
-    // update and expect exactly one resource request/upload
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, false, true);
-    update();
-    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-
-    // unblock flushes
-    expectResourceRequestCancel(InvalidResource1);
-    setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true, false);
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // update
-    update();
-    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-
-    // uninit
-    hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, true, true);
-    unmapScene();
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, pendingResourceAndProvidedResourceAreBothUnreferencedAtTheSameTime)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-
-    update();
-
+    // create blocking flush
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
     createRenderable();
-    setRenderableResources(0u, InvalidResource1);
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    // remove and add again the blocking resource
+    expectResourcesReferenced({ MockResourceHash::IndexArrayHash2 });
+    expectResourcesReferenced({ MockResourceHash::IndexArrayHash });
+    expectResourcesProvided(DisplayHandle1, 2);
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
     update();
 
-    removeRenderableResources();
-
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
+    // update
     update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
-    performFlush();
-    expectResourceRequestCancel(InvalidResource1);
+    // unblock flushes
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Uploaded);
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash });
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash2 });
     update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
+    // update
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    hideScene();
     unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, queriesRendererResourceCacheBeforeRequestingResources)
+TEST_F(ARendererSceneUpdater, multipleFlushesWithAddAndRemoveAndAddBlockingResourceReferenceWhileAlreadyBlocked)
 {
-    // These are the (default) resources provided by "setRenderableResources()". In this test we are just
-    // interested in verifying that the SceneUpdater calls the cache. The actual cache flow is tested elsewhere.
-    EXPECT_CALL(rendererResourceCacheMock, hasResource(ResourceProviderMock::FakeEffectHash, _)).Times(1);
-    EXPECT_CALL(rendererResourceCacheMock, hasResource(ResourceProviderMock::FakeIndexArrayHash, _)).Times(1);
-
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
+    mapScene();
+    showScene();
+
+    // create blocking flush
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     createRenderable();
-    setRenderableResources();
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    // add, remove and add again another blocking resource (MockResourceHash::IndexArrayHash)
+    expectResourcesReferenced({ MockResourceHash::IndexArrayHash }, 0u, DisplayHandle1, 2);
+    expectResourcesReferenced({ MockResourceHash::IndexArrayHash2 }, 0u, DisplayHandle1, 1);
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
+    expectResourcesProvided(DisplayHandle1, 3);
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
     update();
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
-    mapScene();
+    // update
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
+    // unblock flushes
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Uploaded);
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash }, 0u, DisplayHandle1, 1);
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash2 }, 0u, DisplayHandle1, 1);
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    // update
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    hideScene();
     unmapScene();
+    destroyDisplay();
+}
 
+TEST_F(ARendererSceneUpdater, multipleFlushesWithRemoveAndAddAndRemoveBlockingResourceReferenceWhileAlreadyBlocked)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+    showScene();
+
+    // create blocking flush
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
+    createRenderable();
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    // remove, add and remove again another blocking resource (MockResourceHash::IndexArrayHash)
+    expectResourcesReferenced({ MockResourceHash::IndexArrayHash2 }, 0u, DisplayHandle1, 2);
+    expectResourcesReferenced({ MockResourceHash::IndexArrayHash }, 0u, DisplayHandle1, 1);
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    expectResourcesProvided(DisplayHandle1, 3);
+    update();
+
+    // update
+    update();
+    EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+
+    // unblock flushes
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Uploaded);
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash }, 0u, DisplayHandle1, 2);
+    expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash2 }, 0u, DisplayHandle1, 1);
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    // update
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    hideScene();
+    unmapScene();
     destroyDisplay();
 }
 
@@ -1724,51 +1618,41 @@ TEST_F(ARendererSceneUpdater, willMapSceneAfterMaximumNumberOfPendingFlushesReac
     createPublishAndSubscribeScene();
 
     createRenderable();
-    setRenderableResources(0u, InvalidResource1);
-    createRenderTargetWithBuffers();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
     requestMapScene();
     EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectContextEnable();
-    expectRenderTargetUploaded();
+    // mapping blocked by effect
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
+    update();
+    EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
+    update();
+
+    // add blocking flush so that upcoming flushes are queuing up
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash });
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
+    setRenderableResources();
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
-    update();
-    EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
-
-    // add blocking sync flush so that upcoming flushes are queuing up
-    setRenderableResources(0u, InvalidResource2);
-    expectResourceRequestCancel(InvalidResource1);
-
-    EXPECT_CALL(resourceProvider1, requestResourceAsyncronouslyFromFramework(_, _, getSceneId())).Times(AnyNumber());
+    // will force apply and log blocking resources
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getResourceType(_)).Times(AnyNumber());
     for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
     {
-        performFlush(0u);
+        performFlush();
         update();
     }
+    // expect force mapped
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
     expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    setRenderableResources(); // simulate upload
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
     update();
 
-    expectResourceRequestCancel(InvalidResource2);
-    update();
-
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
-    expectRenderTargetDeleted();
     unmapScene();
-
     destroyDisplay();
 }
 
@@ -1776,79 +1660,57 @@ TEST_F(ARendererSceneUpdater, forceAppliesPendingFlushesAfterMaximumNumberReache
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
+    mapScene();
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
     createRenderable();
+    update();
+
+    // add blocking flush so that upcoming flushes are queuing up
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash });
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
     setRenderableResources();
-
-    requestMapScene();
-    EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
     update();
-    EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
-    update();
-    EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
-    expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
-
-    // add blocking sync flush so that upcoming flushes are queuing up
-    setRenderableResources(0u, InvalidResource1);
-    createRenderTargetWithBuffers();
-    expectResourceRequest();
-    update();
+    // type queried for logging of missing resources
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getResourceType(_)).Times(AnyNumber());
 
     // mapped state
     {
         // flushes are blocked due to unresolved resource
-        const SceneVersionTag pendingFlushTag(123u);
-        performFlush(0u, pendingFlushTag);
-        update();
-        expectNoEvent();
-
-        expectContextEnable();
-        expectRenderTargetUploaded();
-        EXPECT_CALL(resourceProvider1, requestResourceAsyncronouslyFromFramework(_, _, getSceneId())).Times(AnyNumber());
         for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
         {
-            performFlush(0u);
+            performFlush();
             update();
         }
 
         // after maximum of pending flushes was reached the flushes were applied regardless of missing resource
-        expectSceneEvent(ERendererEventType_SceneFlushed);
+        EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
     }
 
     showScene();
 
     // rendered state
     {
-        // add blocking sync flush so that upcoming flushes are queuing up
-        setRenderableResources(0u, InvalidResource2);
-        expectResourceRequestCancel(InvalidResource1);
+        // add new blocking flush so that upcoming flushes are queuing up
+        expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash });
+        expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
+        reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Provided);
+        setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
 
         // flushes are blocked due to unresolved resource
-        const SceneVersionTag pendingFlushTag(124u);
-        performFlush(0u, pendingFlushTag);
-        update();
-        expectNoEvent();
-
         for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
         {
-            performFlush(0u);
+            performFlush();
             update();
         }
 
         // after maximum of pending flushes was reached the flushes were applied regardless of missing resource
-        expectSceneEvent(ERendererEventType_SceneFlushed);
+        EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
     }
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
-    expectRenderTargetDeleted();
     unmapScene();
-
     destroyDisplay();
 }
 
@@ -1856,94 +1718,61 @@ TEST_F(ARendererSceneUpdater, reactsOnDynamicChangesOfFlushForceApplyLimit)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
+    mapScene();
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
     createRenderable();
+    update();
+
+    // add blocking flush so that upcoming flushes are queuing up
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash });
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
     setRenderableResources();
-
-    requestMapScene();
-    EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
-    update();
-    EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
-    update();
-    EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
-    expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
-
-    // add blocking sync flush so that upcoming flushes are queuing up
-    setRenderableResources(0u, InvalidResource1);
-    createRenderTargetWithBuffers();
-    expectResourceRequest();
     update();
 
     // Reduce flush limit -> expect force flush earlier
     constexpr UInt newShorterFlushLimit = ForceApplyFlushesLimit / 2u;
     rendererSceneUpdater->setLimitFlushesForceApply(newShorterFlushLimit);
 
+    // type queried for logging of missing resources
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getResourceType(_)).Times(AnyNumber());
+
     // mapped state
     {
         // flushes are blocked due to unresolved resource
-        const SceneVersionTag pendingFlushTag(123u);
-        performFlush(0u, pendingFlushTag);
-        update();
-        expectNoEvent();
-
-        expectContextEnable();
-        expectRenderTargetUploaded();
-
-        EXPECT_CALL(resourceProvider1, requestResourceAsyncronouslyFromFramework(_, _, getSceneId())).Times(AnyNumber());
-        for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
+        for (UInt i = 0u; i < newShorterFlushLimit + 1u; ++i)
         {
-            performFlush(0u);
+            performFlush();
             update();
-            if (i == newShorterFlushLimit - 1)
-            {
-                // after newly set maximum of pending flushes was reached the flushes were applied regardless of missing resource
-                expectSceneEvent(ERendererEventType_SceneFlushed);
-            }
         }
 
-        // Remaining flushes still blocked, because resource still missing
-        expectNoEvent();
+        // after maximum of pending flushes was reached the flushes were applied regardless of missing resource
+        EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
     }
 
     showScene();
 
     // rendered state
     {
-        // add blocking sync flush so that upcoming flushes are queuing up
-        setRenderableResources(0u, InvalidResource2);
-        expectResourceRequestCancel(InvalidResource1);
+        // add new blocking flush so that upcoming flushes are queuing up
+        expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash });
+        expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
+        reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Provided);
+        setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
 
         // flushes are blocked due to unresolved resource
-        const SceneVersionTag pendingFlushTag(124u);
-        performFlush(0u, pendingFlushTag);
-        update();
-        expectNoEvent();
-
-        for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
+        for (UInt i = 0u; i < newShorterFlushLimit + 1u; ++i)
         {
-            performFlush(0u);
+            performFlush();
             update();
-            if (i == newShorterFlushLimit - 1)
-            {
-                // after newly set maximum of pending flushes was reached the flushes were applied regardless of missing resource
-                expectSceneEvent(ERendererEventType_SceneFlushed);
-            }
         }
 
-        // Remaining flushes still blocked, because resource still missing
-        expectNoEvent();
+        // after maximum of pending flushes was reached the flushes were applied regardless of missing resource
+        EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
     }
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
-    expectRenderTargetDeleted();
     unmapScene();
-
     destroyDisplay();
 }
 
@@ -1953,34 +1782,32 @@ TEST_F(ARendererSceneUpdater, applyingPendingFlushesAfterMaximumNumberOfPendingF
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash }, 0u);
     createRenderable(0u);
-    createRenderable(1u);
-    setRenderableResources(0u);
-    setRenderableResources(1u);
-
-    expectResourceRequest(DisplayHandle1, 0u);
-    expectResourceRequest(DisplayHandle1, 1u);
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
     mapScene(0u);
-    mapScene(1u);
     showScene(0u);
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash }, 1u);
+    createRenderable(1u);
+    mapScene(1u);
     showScene(1u);
 
-    setRenderableResources(0u, InvalidResource1);
-    setRenderableResources(1u, InvalidResource1);
-    expectResourceRequest();
+    // blocking resource
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash }, 0u);
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash);
     update();
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash }, 1u);
+    setRenderableResources(1u, MockResourceHash::IndexArrayHash);
+    update();
+
+    // type queried for logging of missing resources
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getResourceType(_)).Times(AnyNumber());
 
     {
         // flushes are blocked due to unresolved resource
-        const SceneVersionTag pendingFlushTag0(111u);
-        const SceneVersionTag pendingFlushTag1(222u);
-        performFlush(0u, pendingFlushTag0);
-        performFlush(1u, pendingFlushTag1);
-        update();
-        expectNoEvent();
-
         for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
         {
             performFlush(1u);
@@ -1988,14 +1815,9 @@ TEST_F(ARendererSceneUpdater, applyingPendingFlushesAfterMaximumNumberOfPendingF
         }
 
         // after maximum of pending flushes was reached the flushes were applied regardless of missing resource
-        // but only for scene 1, scene 0 stays blocked as the number of pending flushes there is below the maximum treshold
-        RendererEventVector events;
-        RendererEventVector dummy;
-        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
-        ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneFlushed, events.front().eventType);
-        EXPECT_EQ(getSceneId(1u), events.front().sceneId);
-        EXPECT_EQ(pendingFlushTag1, events.front().sceneVersionTag);
+        // but only for scene 1, scene 0 stays blocked as the number of pending flushes there is below the maximum threshold
+        EXPECT_FALSE(lastFlushWasAppliedOnRendererScene(0u));
+        EXPECT_TRUE(lastFlushWasAppliedOnRendererScene(1u));
 
         // repeat for scene 0
         for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
@@ -2005,22 +1827,15 @@ TEST_F(ARendererSceneUpdater, applyingPendingFlushesAfterMaximumNumberOfPendingF
         }
 
         // after maximum of pending flushes was reached the flushes were applied regardless of missing resource
-        // but only for scene 0 now
-        events.clear();
-        rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
-        ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneFlushed, events.front().eventType);
-        EXPECT_EQ(getSceneId(0u), events.front().sceneId);
-        EXPECT_EQ(pendingFlushTag0, events.front().sceneVersionTag);
+        // also for scene 0 now
+        EXPECT_TRUE(lastFlushWasAppliedOnRendererScene(0u));
+        EXPECT_TRUE(lastFlushWasAppliedOnRendererScene(1u));
     }
 
     hideScene(0u);
     hideScene(1u);
-    expectContextEnable(DisplayHandle1, 2u);
-    expectRenderableResourcesDeleted();
     unmapScene(0u);
     unmapScene(1u);
-
     destroyDisplay();
 }
 
@@ -2029,8 +1844,10 @@ TEST_F(ARendererSceneUpdater, nonBlockingFlushesGetAppliedEvenIfSceneIsBlockedTo
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
 
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
     createRenderable();
-    setRenderableResources(0u, InvalidResource1);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
+    update();
 
     requestMapScene();
     EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
@@ -2038,52 +1855,38 @@ TEST_F(ARendererSceneUpdater, nonBlockingFlushesGetAppliedEvenIfSceneIsBlockedTo
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
-    // scene is now blocked to be mapped due to use of InvalidResource1
+    // scene is now blocked to be mapped due to effect
 
-    // blocking sync flush cannot be applied
-    createRenderTargetWithBuffers();
-    expectResourceRequest();
-    setRenderableResources(0u, InvalidResource2);
+    // blocking flush cannot be applied
+    expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash });
+    setRenderableResources();
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
-    // scene still cannot be mapped because it still uses InvalidResource1, the switch to InvalidResource2 is pending
+    // scene still cannot be mapped because it still uses effect, also flushes are blocking now
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    // switch back to InvalidResource1 meaning that the pending flushes combined are non-blocking
-    setRenderableResources(0u, InvalidResource1);
-    expectContextEnable();
-    expectRenderTargetUploaded();
+    // unblock indices meaning that the pending flushes are non-blocking
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Uploaded);
     update();
     // pending flushes were applied even though scene is waiting to be mapped
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
-    // scene still cannot be mapped because it still uses InvalidResource1
+    // scene still cannot be mapped because it still uses effect
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectResourceRequestCancel(InvalidResource2);
     update();
 
-    // remove InvalidResource1 and allow scene to get mapped
-    setRenderableResources(); // simulate upload
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+    // unblock also effect
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
     update();
     expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectResourceRequestCancel(InvalidResource1);
     update();
 
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
-    expectRenderTargetDeleted();
     unmapScene();
-
     destroyDisplay();
 }
 
@@ -2093,58 +1896,39 @@ TEST_F(ARendererSceneUpdater, canUnmapSceneWithPendingFlushAndRequestMapInSingle
     createPublishAndSubscribeScene();
     mapScene();
 
+    // blocking flush
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
     createRenderable();
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
     update();
-    // there are pending flushes due to use of InvalidResource1
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
-    // unmap and request map without update in between
-    expectContextEnable();
+    // unmap and request map
     unmapScene();
+    expectResourcesReferenced({ MockResourceHash::EffectHash });
     requestMapScene();
     EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
 
-    // InvalidResource1 was unrequested when unmapped and cancel processed in next update
-    // however it is in use by scene and will be requested again when scene is mapped
-    expectResourceRequestCancel(InvalidResource1);
     // scene is not mapped so pending flushes are applied to scene
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
     // and scene switches to mapping/uploading state
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    // next update causes all resources in use to be requested and uploaded if available
-    expectResourceRequest();
-    // normally resources would be re-uploaded here but due to resource manager implementation
-    // unreferenced resources are unloaded only when new resource needs to be uploaded
-    // which is not the case here therefore no upload happens
-    //expectContextEnable();
-    //expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    // next update causes all resources in use to be uploaded if available
     update();
-    // scene is now blocked to be mapped due to use of InvalidResource1
+    // scene is now blocked to be mapped due to use of effect
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    // remove InvalidResource1 and allow scene to get mapped
-    setRenderableResources(); // simulate upload
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+    // unblock effect
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
     update();
     expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectResourceRequestCancel(InvalidResource1);
     update();
 
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
     unmapScene();
-
     destroyDisplay();
 }
 
@@ -2154,61 +1938,63 @@ TEST_F(ARendererSceneUpdater, canUnmapSceneWithPendingFlushAndRequestMapAndAddAn
     createPublishAndSubscribeScene();
     mapScene();
 
+    // blocking flush
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     createRenderable();
-    setRenderableResources(0u, InvalidResource1);
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    setRenderableResources();
+    reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
     update();
-    // there are pending flushes due to use of InvalidResource1
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
 
-    // unmap and request map without update in between
-    expectContextEnable();
+    // unmap and request map
     unmapScene();
     requestMapScene();
-    // in addition add one more blocking flush
-    setRenderableResources(0u, InvalidResource2);
-    EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
 
-    // InvalidResource1 was unrequested when unmapped and cancel processed in next update
-    // it will be also replaced with InvalidResource2 when flush from above gets applied so it will not be requested again when mapped
-    expectResourceRequestCancel(InvalidResource1);
+    // in addition add one more blocking flush replacing previous blocking resource
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+
+    // indices1 was unreferenced when unmapped
+    // it will be also replaced with indices2 when flush from above gets applied so it will not be requested again when mapped
     // scene is not mapped so pending flushes are applied to scene
+    expectResourcesReferenced({ MockResourceHash::EffectHash }, 0u, DisplayHandle1, 1); // sync logic to compensate missing ref for new logic when scene re-mapped
+    expectResourcesReferenced({ MockResourceHash::IndexArrayHash2 }, 0u, DisplayHandle1, 1); // new logic (new flush with provided indices2)
+    reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Provided);
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
     // and scene switches to mapping/uploading state
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2)); // new logic ref comes later before providing
 
-    // next update causes all resources in use to be requested and uploaded if available
-    expectResourceRequest();
-    // normally resources would be re-uploaded here but due to resource manager implementation
-    // unreferenced resources are unloaded only when new resource needs to be uploaded
-    // which is not the case here therefore no upload happens
-    //expectContextEnable();
-    //expectRenderableResourcesUploaded(DisplayHandle1, true, false);
+    // next update causes all resources in use to be uploaded if available
+    expectResourcesProvided(DisplayHandle1, 1); // only indices2 is provided because it was kept by new logic for mapping
     update();
-    // scene is now blocked to be mapped due to use of InvalidResource1
+    // scene is now blocked to be mapped due to use of indices2
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    // remove InvalidResource1 and allow scene to get mapped
-    setRenderableResources(); // simulate upload
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+    // unblock indices2
+    reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Uploaded);
     update();
     expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectResourceRequestCancel(InvalidResource2);
     update();
-    update();
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash2));
 
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
     unmapScene();
-
     destroyDisplay();
 }
 
@@ -2232,14 +2018,13 @@ TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceed
 
     // context is enabled twice, first before uploading, second when unloading due to forced unsubscribe/destroy
     expectContextEnable(DisplayHandle1, 2u);
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadRenderBuffer(_)).Times(AtLeast(2));
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadRenderTarget(_)).Times(AnyNumber());
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadRenderTargetBuffer(_, getSceneId(), _)).Times(AtLeast(2));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadRenderTarget(_, _, getSceneId())).Times(AnyNumber());
     // render buffers are collected first therefore render targets might or might not be uploaded before interruption, depending on checking frequency (internal logic of scene resources uploader)
 
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(_));
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderBuffer(_)).Times(AtLeast(2));
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderTarget(_)).Times(AnyNumber());
 
+    expectUnloadOfSceneResources();
     update();
     expectInternalSceneStateEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect });
 
@@ -2256,11 +2041,9 @@ TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceed
 
     // create scene with some resources and render it
     mapScene(sceneIdx1);
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     createRenderable(sceneIdx1);
     setRenderableResources(sceneIdx1);
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
     update();
     showScene(sceneIdx1);
 
@@ -2281,14 +2064,13 @@ TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceed
 
     // context is enabled twice, first before uploading, second when unloading due to forced unsubscribe/destroy
     expectContextEnable(DisplayHandle1, 2u);
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadRenderBuffer(_)).Times(AtLeast(2));
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadRenderTarget(_)).Times(AnyNumber());
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadRenderTargetBuffer(_, getSceneId(sceneIdx2), _)).Times(AtLeast(2));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadRenderTarget(_, _, getSceneId(sceneIdx2))).Times(AnyNumber());
     // render buffers are collected first therefore render targets might or might not be uploaded before interruption, depending on checking frequency (internal logic of scene resources uploader)
 
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(_));
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderBuffer(_)).Times(AtLeast(2));
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteRenderTarget(_)).Times(AnyNumber());
 
+    expectUnloadOfSceneResources(sceneIdx2);
     update();
     expectInternalSceneStateEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect });
 
@@ -2297,178 +2079,74 @@ TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceed
 
     // hide and unmap first scene
     hideScene(sceneIdx1);
-    expectContextEnable();
-    expectRenderableResourcesDeleted();
     unmapScene(sceneIdx1);
 
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, confidenceTest_forcePendingFlushWithNewResourcesBeingRequestedAndRandomlyUnrequestedAndRandomlyFailingToUpload)
+TEST_F(ARendererSceneUpdater, confidenceTest_forceApplyPendingFlushes_keepCyclingThroughResourcesAndSimulateRandomlyCannotUpload)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
-
-    createRenderable();
-    setRenderableResources();
-
-    expectResourceRequest();
-    expectContextEnable();
-    expectRenderableResourcesUploaded();
     mapScene();
     showScene();
 
-    constexpr int NumFlushesToForceApply = 10;
+    const std::array<ResourceContentHash, 3> resourcesToCycle{ MockResourceHash::IndexArrayHash, MockResourceHash::IndexArrayHash2, MockResourceHash::IndexArrayHash3 };
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, resourcesToCycle[0] });
+    createRenderable();
+    setRenderableResources(0u, resourcesToCycle[0]);
+    update();
+
+    constexpr int NumFlushesToForceApply = 5;
     rendererSceneUpdater->setLimitFlushesForceApply(NumFlushesToForceApply);
 
-    IScene& scene = *stagingScene[0];
-    RenderableHandle renderable{ 999u };
-    NiceMock<ManagedResourceDeleterCallbackMock> resDeleterCb;
-    ResourceDeleterCallingCallback resDeleter{ resDeleterCb };
+    // due to random resources not uploaded strict un/ref mocking is not feasible
+    // important check is at end that resources ref count reaches zero
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], referenceResourcesForScene(getSceneId(), _)).Times(AnyNumber());
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], unreferenceResourcesForScene(getSceneId(), _)).Times(AnyNumber());
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], provideResourceData(_)).Times(AnyNumber());
+    // will force apply and log blocking resources
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getResourceType(_)).Times(AnyNumber());
 
-    // ignore effect unload mock - depends on successful uploads and removed usages of uploaded effects
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteShader(_)).Times(AnyNumber());
-    // ignore resource request mock - can re-request if many iterations
-    EXPECT_CALL(resourceProvider1, requestResourceAsyncronouslyFromFramework(_, _, getSceneId())).Times(AnyNumber());
-
-    std::unique_ptr<EffectResource> prevRequestedResource;
-    for (int i = 0; i < 1000; ++i)
+    // start from 1, 0 is active at this point
+    for (int i = 1; i < 100; ++i)
     {
-        renderable++;
+        ResourceContentHash nextRes = resourcesToCycle[i % 3];
 
-        std::unique_ptr<EffectResource> effectRes{ new EffectResource{std::to_string(i).c_str(), std::to_string(i).c_str(), "", EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache} };
-        const ResourceContentHash effectHash(effectRes->getHash());
-
-        // add effect to scene as new resource
-        const auto dataInstanceGeom = scene.allocateDataInstance(scene.allocateDataLayout({ DataFieldInfo{ EDataType::Indices, 1u, EFixedSemantics_Indices } }, effectHash));
-        scene.setDataResource(dataInstanceGeom, DataFieldHandle(0u), ResourceProviderMock::FakeIndexArrayHash, {}, 0);
-        const auto dataInstanceUniforms = scene.allocateDataInstance(scene.allocateDataLayout({}, effectHash));
-
-        scene.allocateRenderable(scene.allocateNode(), renderable);
-        scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Geometry, dataInstanceGeom);
-        scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, dataInstanceUniforms);
-
-        // remove random effect usage every few updates
-        if ((i + 1) % 3 == 0)
+        if (lastFlushWasAppliedOnRendererScene())
         {
-            const RenderableHandle rendToDisable{ 999u + MemoryHandle(TestRandom::Get(0, i - 1)) };
-            if (scene.isRenderableAllocated(rendToDisable))
-            {
-                const auto diToDisable = scene.getRenderable(rendToDisable).dataInstances[ERenderableDataSlotType_Uniforms];
-                const ResourceContentHash resToCancel = scene.getDataLayout(scene.getLayoutOfDataInstance(diToDisable)).getEffectHash();
-                EXPECT_CALL(resourceProvider1, cancelResourceRequest(resToCancel, _)).Times(AnyNumber()); // canceled if not arrived already
-                scene.releaseRenderable(rendToDisable);
-                if (prevRequestedResource && prevRequestedResource->getHash() == resToCancel)
-                    prevRequestedResource.reset();
-            }
+            // reset reporting of all resources to default - uploaded
+            for (const auto r : resourcesToCycle)
+                reportResourceAs(r, EResourceStatus::Uploaded);
+
+            // randomly block next resource
+            if (TestRandom::Get(0, 10) > 7)
+                reportResourceAs(nextRes, EResourceStatus::Provided);
         }
 
-        performFlush(0u);
-
-        // simulate previously requested resource arriving and randomly fail to upload
-        if (prevRequestedResource)
-        {
-            EXPECT_CALL(resourceProvider1, popArrivedResources(_)).WillOnce([&](const ResourceRequesterID&) { return ManagedResourceVector{ ManagedResource{prevRequestedResource.get(), resDeleter} }; });
-            expectContextEnable();
-            if (TestRandom::Get(0, 3) == 0)
-                EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadShader(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
-            else
-                EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, uploadShader(_)).WillOnce(Return(DeviceMock::FakeShaderDeviceHandle));
-        }
-        else
-            EXPECT_CALL(resourceProvider1, popArrivedResources(_)).WillOnce(Return(ManagedResourceVector{}));
-        prevRequestedResource.swap(effectRes);
-
+        setRenderableResources(0u, nextRes);
         update();
     }
 
-    // canceling resources is done lazily only when there is some other resource requested
-    // make sure all previous flushes were force applied to match cancelResourceRequest mock call count
-    EXPECT_CALL(resourceProvider1, popArrivedResources(_)).Times(AnyNumber()).WillRepeatedly(Return(ManagedResourceVector{}));
-    for (int i = 0; i < NumFlushesToForceApply; ++i)
-    {
-        performFlush(0u);
-        update();
-    }
+    destroyRenderable();
+    update();
+
+    // in case loop ended with blocking flush reset reporting of all resources to uploaded
+    for (const auto r : resourcesToCycle)
+        reportResourceAs(r, EResourceStatus::Uploaded);
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    // make sure that after destroying renderable reference counts reach zero
+    expectNoResourceReferencedByScene();
 
     hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, false);
-    unmapScene();
-
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, UploadsAndUnloadsResourceNeededAndUnneeded)
-{
-    createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-
-    createRenderable();
-
-    // Resource manager does not unload unneeded resources right away,
-    // it unloads any unneeded resource 1 update cycle after it was unreferenced
-    // and only if there is anything else to upload.
-    // This test cycles through exclusively using 3 different resources so that
-    // there is always 1 unneeded resource and 1 to upload.
-
-    // res1 used
-    {
-        setRenderableResources();
-        expectResourceRequest();
-        expectContextEnable();
-        expectRenderableResourcesUploaded();
-        update();
-    }
-    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
-
-    // res2 used, res1 unneeded
-    {
-        setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash2);
-        expectResourceRequest();
-        expectContextEnable();
-        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
-        update();
-    }
-    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
-
-    // res3 used, res2 unneeded, res1 unloaded
-    {
-        EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_));
-
-        setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash3);
-        expectResourceRequest();
-        expectContextEnable();
-        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
-        update();
-    }
-    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
-
-    // res1 used, res3 unneeded, res2 unloaded
-    {
-        EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_));
-
-        setRenderableResources(0u, ResourceProviderMock::FakeIndexArrayHash);
-        expectResourceRequest();
-        expectContextEnable();
-        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
-        update();
-    }
-    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
-
-    // res1 and res3 remain to unload on deinit
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_)).Times(2);
-
-    hideScene();
-    expectContextEnable();
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
     unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, UploadsAndUnloadsResourceNeededAndUnneeded_sharedByTwoRenderables)
+TEST_F(ARendererSceneUpdater, referencesAndUnreferencesResourcesSharedByTwoRenderablesFromTwoScenes)
 {
     createDisplayAndExpectSuccess();
 
@@ -2477,78 +2155,231 @@ TEST_F(ARendererSceneUpdater, UploadsAndUnloadsResourceNeededAndUnneeded_sharedB
     mapScene(s1);
     mapScene(s2);
 
+    expectResourcesReferenced({ MockResourceHash::EffectHash }, s1);
+    expectResourcesReferenced({ MockResourceHash::EffectHash }, s2);
+    expectResourcesProvided(DisplayHandle1, 2);
     createRenderable(s1);
     createRenderable(s2);
-
-    // Resource manager does not unload unneeded resources right away,
-    // it unloads any unneeded resource 1 update cycle after it was unreferenced
-    // and only if there is anything else to upload.
-    // This test cycles through exclusively using 3 different resources so that
-    // there is always 1 unneeded resource and 1 to upload.
+    update();
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash3));
 
     // res1 used
     {
+        expectResourcesReferenced({ MockResourceHash::IndexArrayHash }, s1);
+        expectResourcesReferenced({ MockResourceHash::IndexArrayHash }, s2);
+        expectResourcesProvided(DisplayHandle1, 2);
         setRenderableResources(s1);
         setRenderableResources(s2);
-        expectResourceRequest(DisplayHandle1, s1);
-        expectResourceRequest(DisplayHandle1, s2);
-        expectContextEnable();
-        expectRenderableResourcesUploaded();
         update();
     }
-    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
-    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_displayController);
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash3));
 
     // res2 used, res1 unneeded
     {
-        setRenderableResources(s1, ResourceProviderMock::FakeIndexArrayHash2);
-        setRenderableResources(s2, ResourceProviderMock::FakeIndexArrayHash2);
-        expectResourceRequest(DisplayHandle1, s1);
-        expectResourceRequest(DisplayHandle1, s2);
-        expectContextEnable();
-        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+        expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash }, s1);
+        expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash }, s2);
+        expectResourcesReferenced({ MockResourceHash::IndexArrayHash2 }, s1);
+        expectResourcesReferenced({ MockResourceHash::IndexArrayHash2 }, s2);
+        expectResourcesProvided(DisplayHandle1, 2);
+        setRenderableResources(s1, MockResourceHash::IndexArrayHash2);
+        setRenderableResources(s2, MockResourceHash::IndexArrayHash2);
         update();
     }
-    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
-    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_displayController);
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash3));
 
     // res3 used, res2 unneeded, res1 unloaded
     {
-        EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_));
-
-        setRenderableResources(s1, ResourceProviderMock::FakeIndexArrayHash3);
-        setRenderableResources(s2, ResourceProviderMock::FakeIndexArrayHash3);
-        expectResourceRequest(DisplayHandle1, s1);
-        expectResourceRequest(DisplayHandle1, s2);
-        expectContextEnable();
-        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+        expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash2 }, s1);
+        expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash2 }, s2);
+        expectResourcesReferenced({ MockResourceHash::IndexArrayHash3 }, s1);
+        expectResourcesReferenced({ MockResourceHash::IndexArrayHash3 }, s2);
+        expectResourcesProvided(DisplayHandle1, 2);
+        setRenderableResources(s1, MockResourceHash::IndexArrayHash3);
+        setRenderableResources(s2, MockResourceHash::IndexArrayHash3);
         update();
     }
-    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
-    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_displayController);
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::IndexArrayHash3));
 
     // res1 used, res3 unneeded, res2 unloaded
     {
-        EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_));
-
-        setRenderableResources(s1, ResourceProviderMock::FakeIndexArrayHash);
-        setRenderableResources(s2, ResourceProviderMock::FakeIndexArrayHash);
-        expectResourceRequest(DisplayHandle1, s1);
-        expectResourceRequest(DisplayHandle1, s2);
-        expectContextEnable();
-        expectRenderableResourcesUploaded(DisplayHandle1, false, true);
+        expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash3 }, s1);
+        expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash3 }, s2);
+        expectResourcesReferenced({ MockResourceHash::IndexArrayHash }, s1);
+        expectResourcesReferenced({ MockResourceHash::IndexArrayHash }, s2);
+        expectResourcesProvided(DisplayHandle1, 2);
+        setRenderableResources(s1, MockResourceHash::IndexArrayHash);
+        setRenderableResources(s2, MockResourceHash::IndexArrayHash);
         update();
     }
-    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock);
-    Mock::VerifyAndClearExpectations(&renderer.getDisplayMock(DisplayHandle1).m_displayController);
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(2, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash3));
 
-    // res1 and res3 remain to unload on deinit
-    EXPECT_CALL(renderer.getDisplayMock(DisplayHandle1).m_renderBackend->deviceMock, deleteIndexBuffer(_)).Times(2);
+    destroyRenderable(s1);
+    destroyRenderable(s2);
+    expectResourcesUnreferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, s1);
+    expectResourcesUnreferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, s2);
+    update();
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash3));
+    expectNoResourceReferencedByScene(s1);
+    expectNoResourceReferencedByScene(s2);
 
-    expectContextEnable(DisplayHandle1, 2u);
-    expectRenderableResourcesDeleted(DisplayHandle1, true, false);
     unmapScene(s1);
     unmapScene(s2);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, ConsolidatesNoMoreNeededResourcesBeforeMapped)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    createRenderable();
+
+    // res1 used
+    setRenderableResources();
+    update();
+
+    // res2 used, res1 unneeded
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+    update();
+
+    // res3 used, res1 + res2 unneeded
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash3);
+    update();
+
+    // even if cycled through 3 resources only last one is uploaded
+    expectResourcesReferencedAndProvided_altogether({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash3 });
+    mapScene();
+
+    destroyRenderable();
+    expectResourcesUnreferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash3 });
+    update();
+    expectNoResourceReferencedByScene();
+
+    unmapScene();
+    destroyDisplay();
+}
+
+/////////////////////
+// tests to make sure request logic and new push logic can co-exist
+/////////////////////
+
+TEST_F(ARendererSceneUpdater, keepsTrackOfRefsAfterSceneRemapped)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
+    update();
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    unmapScene();
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    expectResourcesReferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    mapScene();
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    destroyRenderable();
+    expectResourcesUnreferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    update();
+    expectNoResourceReferencedByScene();
+
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, keepsTrackOfRefsAfterSceneRemapped_resourceAddedInBetweenReMappingIsProvided)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
+    createRenderable();
+    update();
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    unmapScene();
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    setRenderableResources();
+
+    expectResourcesReferenced({ MockResourceHash::EffectHash }); // extra ref due to re-map for new logic
+    expectResourcesReferenced({ MockResourceHash::IndexArrayHash }); // ref for new logic from arrived resource
+    expectResourcesProvided(); // provided resource added in between mapping
+    mapScene();
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+
+    destroyRenderable();
+    expectResourcesUnreferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    update();
+    expectNoResourceReferencedByScene();
+
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, keepsTrackOfRefsAfterSceneRemapped_resourceAddedAndRemovedInBetweenReMapping)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+    createRenderable();
+    setRenderableResources();
+    update();
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+
+    unmapScene();
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+
+    setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
+
+    expectResourcesReferenced({ MockResourceHash::EffectHash }); // extra ref due to re-map for new logic
+    expectResourcesReferenced({ MockResourceHash::IndexArrayHash2 }); // ref for new logic from arrived resource
+    expectResourcesProvided(); // provided resource added in between mapping
+    mapScene();
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::EffectHash));
+    EXPECT_EQ(0, getResourceRefCount(MockResourceHash::IndexArrayHash));
+    EXPECT_EQ(1, getResourceRefCount(MockResourceHash::IndexArrayHash2));
+
+    destroyRenderable();
+    expectResourcesUnreferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash2 });
+    update();
+    expectNoResourceReferencedByScene();
+
+    unmapScene();
     destroyDisplay();
 }
 

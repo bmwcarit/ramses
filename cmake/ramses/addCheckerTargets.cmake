@@ -6,10 +6,10 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-IF (ramses-sdk_PYTHON3)
+IF (ramses-sdk_PYTHON3 AND CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     ADD_CUSTOM_TARGET(CHECK_CODE_STYLE
-        COMMAND ${ramses-sdk_PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/code_style_checker/check_all_styles.py ${CMAKE_CURRENT_SOURCE_DIR}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/code_style_checker
+        COMMAND ${ramses-sdk_PYTHON3} ${PROJECT_SOURCE_DIR}/scripts/code_style_checker/check_all_styles.py
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/scripts/code_style_checker
         )
     SET_PROPERTY(TARGET CHECK_CODE_STYLE PROPERTY FOLDER "CMakePredefinedTargets")
     ACME_INFO("+ CHECK_CODE_STYLE")

@@ -32,39 +32,41 @@ namespace ramses
         /// @brief Default constructor with no data set
         CategoryInfoUpdate();
 
-        /*
-         * @brief Convenience constructor setting the category width and height (x/y position 0)
+        /**
+         * @brief constructor for CategoryInfoUpdate
          *
-         * @param categorySize the new category size
+         * @param renderSize the new render size
+         * @param categoryRect the new category rect
+         * @param safeRect the new safe rect
          */
-        explicit CategoryInfoUpdate(SizeInfo categorySize);
+        CategoryInfoUpdate(SizeInfo renderSize, Rect categoryRect, Rect safeRect = {0,0,0,0});
 
         /// Destructor
         ~CategoryInfoUpdate();
 
         /**
-         * @brief Check if object contains category size update.
+         * @brief Check if object contains category rect update.
          *
-         * @return true when has category size update, false when not
+         * @return true when has category rect update, false when not
          */
-        bool hasCategorySizeUpdate() const;
+        bool hasCategoryRectUpdate() const;
 
         /**
-         * @brief Get new category size.
-         *        Only valid when hasCategorySizeUpdate().
+         * @brief Get new category rect.
+         *        Only valid when hasCategoryRectUpdate().
          *
-         * @return rectangle describing the category siye
+         * @return rectangle describing the category dimensions
          */
-        Rect getCategorySize() const;
+        Rect getCategoryRect() const;
 
         /**
-         * @brief Set new category size.
+         * @brief Set new category rect.
          *
-         * @param rect rectangle describing the new category size
+         * @param rect rectangle describing the new category dimensions
          * @return StatusOK for success, otherwise the returned status can be used
         *          to resolve error message using getStatusMessage().
          */
-        status_t setCategorySize(Rect rect);
+        status_t setCategoryRect(Rect rect);
 
         /**
          * @brief Check if object contains render size update.
@@ -91,28 +93,28 @@ namespace ramses
         status_t setRenderSize(SizeInfo sizeInfo);
 
         /**
-         * @brief Check if object contains safe area size update.
+         * @brief Check if object contains safe rect update.
          *
-         * @return true when has safe area size update, false when not
+         * @return true when has safe rect update, false when not
          */
-        bool hasSafeAreaSizeUpdate() const;
+        bool hasSafeRectUpdate() const;
 
         /**
-         * @brief Get new safe area size.
-         *        Only valid when hasSafeAreaSizeUpdate().
+         * @brief Get new safe rect.
+         *        Only valid when hasSafeRectUpdate().
          *
-         * @return rectangle describing the safe area size
+         * @return rectangle describing the safe dimensions
          */
-        Rect getSafeAreaSize() const;
+        Rect getSafeRect() const;
 
         /**
-         * @brief Set new safe area size.
+         * @brief Set new safe rect.
          *
-         * @param rect rectangle describing the new safe area size
+         * @param rect rectangle describing the new safe dimensions
          * @return StatusOK for success, otherwise the returned status can be used
         *          to resolve error message using getStatusMessage().
          */
-        status_t setSafeAreaSize(Rect rect);
+        status_t setSafeRect(Rect rect);
 
         /**
          * @brief Constructor from impl

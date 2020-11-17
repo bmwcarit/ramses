@@ -30,7 +30,7 @@ namespace ramses_internal
         virtual void handleCreateScene(ClientScene& scene, bool enableLocalOnlyOptimization, ISceneProviderEventConsumer& eventInterface) = 0;
         virtual void handlePublishScene(SceneId sceneId, EScenePublicationMode publicationMode) = 0;
         virtual void handleUnpublishScene(SceneId sceneId) = 0;
-        virtual void handleFlush(SceneId sceneId, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) = 0;
+        virtual bool handleFlush(SceneId sceneId, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) = 0;
         virtual void handleRemoveScene(SceneId sceneId) = 0;
     };
 }

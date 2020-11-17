@@ -52,8 +52,6 @@ namespace ramses_internal
     ProjectionParams ProjectionParams::Frustum(ECameraProjectionType projectionType, Float leftPlane, Float rightPlane,
         Float bottomPlane, Float topPlane, Float nearPlane, Float farPlane)
     {
-        assert(projectionType != ECameraProjectionType::Renderer);
-
         ProjectionParams params;
         params.m_projectionType = projectionType;
         params.leftPlane = leftPlane;

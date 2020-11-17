@@ -8,8 +8,8 @@
 
 #include "Animation/AnimationSystemFactory.h"
 #include "Scene/SceneActionApplier.h"
-#include "Scene/SceneResourceChanges.h"
-#include "Scene/SceneResourceUtils.h"
+#include "Scene/ResourceChanges.h"
+#include "SceneUtils/ResourceUtils.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/IDisplayController.h"
 #include "RendererAPI/ISurface.h"
@@ -26,7 +26,6 @@
 #include "RendererLib/FrameTimer.h"
 #include "RendererLib/SceneExpirationMonitor.h"
 #include "RendererLib/EmbeddedCompositingManager.h"
-#include "RendererLib/PendingClientResourcesUtils.h"
 #include "RendererLib/PendingSceneResourcesUtils.h"
 #include "RendererLib/RendererLogger.h"
 #include "RendererLib/IntersectionUtils.h"
@@ -77,7 +76,7 @@ namespace ramses_internal
         }
     }
 
-    void RendererSceneUpdater::handleSceneActions(SceneId sceneId, SceneUpdate&& sceneUpdate)
+    void RendererSceneUpdater::handleSceneUpdate(SceneId sceneId, SceneUpdate&& sceneUpdate)
     {
         ESceneState sceneState = m_sceneStateExecutor.getSceneState(sceneId);
 
@@ -98,7 +97,7 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_RENDERER, "    RendererSceneUpdater::handleSceneActions could not apply scene actions because scene " << sceneId << " is neither subscribed nor mapped");
     }
 
-    void RendererSceneUpdater::createDisplayContext(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle)
+    void RendererSceneUpdater::createDisplayContext(const DisplayConfig& displayConfig, IResourceUploader& resourceUploader, DisplayHandle handle)
     {
         assert(m_displayResourceManagers.count(handle) == 0);
         m_renderer.resetRenderInterruptState();
@@ -111,7 +110,7 @@ namespace ramses_internal
             IEmbeddedCompositingManager& embeddedCompositingManager = displayController.getEmbeddedCompositingManager();
 
             // ownership of uploadStrategy is transferred into RendererResourceManager
-            auto resourceManager = createResourceManager(resourceProvider, resourceUploader, renderBackend, embeddedCompositingManager, handle, displayConfig.getKeepEffectsUploaded(), displayConfig.getGPUMemoryCacheSize());
+            auto resourceManager = createResourceManager(resourceUploader, renderBackend, embeddedCompositingManager, handle, displayConfig.getKeepEffectsUploaded(), displayConfig.getGPUMemoryCacheSize());
             m_displayResourceManagers.insert({ handle, std::move(resourceManager) });
             m_rendererEventCollector.addDisplayEvent(ERendererEventType_DisplayCreated, handle);
 
@@ -125,20 +124,17 @@ namespace ramses_internal
     }
 
     std::unique_ptr<IRendererResourceManager> RendererSceneUpdater::createResourceManager(
-        IResourceProvider& resourceProvider,
         IResourceUploader& resourceUploader,
         IRenderBackend& renderBackend,
         IEmbeddedCompositingManager& embeddedCompositingManager,
-        DisplayHandle display,
+        DisplayHandle,
         bool keepEffectsUploaded,
         uint64_t gpuCacheSize)
     {
         return std::make_unique<RendererResourceManager>(
-            resourceProvider,
             resourceUploader,
             renderBackend,
             embeddedCompositingManager,
-            ResourceRequesterID(display.asMemoryHandle()),
             keepEffectsUploaded,
             m_frameTimer,
             m_renderer.getStatistics(),
@@ -307,119 +303,158 @@ namespace ramses_internal
         PendingFlush& flushInfo = pendingFlushes.back();
 
         const UInt32 numActions = sceneUpdate.actions.numberOfActions();
-        assert(numActions > 0);
-        Bool hasSizeInfo = false;
-        SceneResourceChanges resourceChanges;
-        SceneActionApplier::ReadParameterForFlushAction(sceneUpdate.actions.back(), flushInfo.flushIndex, hasSizeInfo, stagingInfo.sizeInformation, resourceChanges, pendingData.sceneReferenceActions, flushInfo.timeInfo, flushInfo.versionTag);
+        flushInfo.flushIndex = sceneUpdate.flushInfos.flushCounter;
+        ResourceChanges& resourceChanges = sceneUpdate.flushInfos.resourceChanges;
 
-        if (sceneUpdate.flushInfos.containsValidInformation &&
-            !(flushInfo.flushIndex == sceneUpdate.flushInfos.flushCounter &&
-                hasSizeInfo == sceneUpdate.flushInfos.hasSizeInfo &&
-                flushInfo.timeInfo.clock_type == sceneUpdate.flushInfos.flushTimeInfo.clock_type &&
-                std::chrono::time_point_cast<std::chrono::milliseconds>(flushInfo.timeInfo.expirationTimestamp) == std::chrono::time_point_cast<std::chrono::milliseconds>(sceneUpdate.flushInfos.flushTimeInfo.expirationTimestamp) &&
-                std::chrono::time_point_cast<std::chrono::milliseconds>(flushInfo.timeInfo.internalTimestamp) == std::chrono::time_point_cast<std::chrono::milliseconds>(sceneUpdate.flushInfos.flushTimeInfo.internalTimestamp) &&
-                flushInfo.versionTag == sceneUpdate.flushInfos.versionTag))
-        {
-            LOG_WARN_P(CONTEXT_RENDERER, "FlushInformation of SceneUpdate differs from legacy scene action flush data. {} != legacy:flushcounter{};version:{};time[{};exp:{};int:{}];sizeInfo:{}",
-                sceneUpdate.flushInfos,
-                flushInfo.flushIndex, flushInfo.versionTag, flushInfo.timeInfo.clock_type,
-                static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushInfo.timeInfo.expirationTimestamp).time_since_epoch().count()),
-                static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushInfo.timeInfo.internalTimestamp).time_since_epoch().count()),
-                hasSizeInfo);
-            assert(false);
-        }
+        if (sceneUpdate.flushInfos.hasSizeInfo)
+            stagingInfo.sizeInformation = sceneUpdate.flushInfos.sizeInfo;
+        pendingData.sceneReferenceActions = sceneUpdate.flushInfos.sceneReferences;
+        flushInfo.timeInfo = sceneUpdate.flushInfos.flushTimeInfo;
+        flushInfo.versionTag = sceneUpdate.flushInfos.versionTag;
 
-        // get ptp synchronized time and check current and receive times for validity
-        const auto flushConsolidateTs = FlushTime::Clock::now();
-        if (flushConsolidateTs != FlushTime::InvalidTimestamp &&
-            flushInfo.timeInfo.internalTimestamp != FlushTime::InvalidTimestamp)
+        // get ptp synchronized time and check current and received times for validity
+        std::chrono::milliseconds flushLatencyMs{ 0 };
+        if (flushInfo.timeInfo.internalTimestamp != FlushTime::InvalidTimestamp)
         {
             // collect latency timing statistics between flush call on Scene and here
-            const auto flushLatencyMs = std::chrono::duration_cast<std::chrono::milliseconds>(flushConsolidateTs - flushInfo.timeInfo.internalTimestamp);
-            m_renderer.getStatistics().trackArrivedFlush(sceneID, numActions, resourceChanges.m_addedClientResourceRefs.size(), resourceChanges.m_removedClientResourceRefs.size(), resourceChanges.m_sceneResourceActions.size(), flushLatencyMs);
+            const auto flushConsolidateTs = FlushTime::Clock::now();
+            if (flushConsolidateTs != FlushTime::InvalidTimestamp)
+                flushLatencyMs = std::chrono::duration_cast<std::chrono::milliseconds>(flushConsolidateTs - flushInfo.timeInfo.internalTimestamp);
         }
+
+        m_renderer.getStatistics().trackArrivedFlush(sceneID, numActions, resourceChanges.m_resourcesAdded.size(), resourceChanges.m_resourcesRemoved.size(), resourceChanges.m_sceneResourceActions.size(), flushLatencyMs);
 
         LOG_TRACE_F(CONTEXT_RENDERER, ([&](StringOutputStream& logStream) {
             logStream << "Flush " << flushInfo.flushIndex << " for scene " << sceneID << " arrived ";
             logStream << "[actions:" << numActions << "(" << sceneUpdate.actions.collectionData().size() << " bytes)]";
-            logStream << "[addRefs res (" << resourceChanges.m_addedClientResourceRefs.size() << "):";
-            for (const auto& hash : resourceChanges.m_addedClientResourceRefs)
+            logStream << "[addRefs res (" << resourceChanges.m_resourcesAdded.size() << "):";
+            for (const auto& hash : resourceChanges.m_resourcesAdded)
                 logStream << " " << hash;
             logStream << "]";
-            logStream << "[removeRefs res (" << resourceChanges.m_removedClientResourceRefs.size() << "):";
-            for (const auto& hash : resourceChanges.m_removedClientResourceRefs)
+            logStream << "[removeRefs res (" << resourceChanges.m_resourcesRemoved.size() << "):";
+            for (const auto& hash : resourceChanges.m_resourcesRemoved)
                 logStream << " " << hash;
             logStream << "]";
             logStream << "[scene res actions:" << resourceChanges.m_sceneResourceActions.size() << "]";
-            if (hasSizeInfo)
+            if (sceneUpdate.flushInfos.hasSizeInfo)
             {
                 logStream << " " << stagingInfo.sizeInformation.asString().c_str();
             }
         }));
-        if (!resourceChanges.empty())
+        if (!sceneUpdate.flushInfos.resourceChanges.empty())
         {
-            LOG_TRACE(CONTEXT_RENDERER, resourceChanges.asString());
+            LOG_TRACE(CONTEXT_RENDERER, sceneUpdate.flushInfos.resourceChanges.asString());
         }
 
-        // TODO vaclav store and use pushed resources
-        assert(sceneUpdate.resources.empty());
-        //for (const auto& addedRes : resourceChanges.m_addedClientResourceRefs)
-        //{
-        //    assert(absl::c_find_if(sceneUpdate.resources, [&addedRes](const ManagedResource& mr) {return mr.getResourceObject()->getHash() == addedRes; }) != sceneUpdate.resources.cend());
-        //    UNUSED(addedRes);
-        //}
+        PendingSceneResourcesUtils::ConsolidateSceneResourceActions(resourceChanges.m_sceneResourceActions, pendingData.sceneResourceActions);
 
-        ResourceContentHashVector newlyNeededClientResources;
-        consolidateResourceChanges(stagingInfo.pendingData, resourceChanges, newlyNeededClientResources);
-
-        // add references to newly needed client resources right away
-        if (!newlyNeededClientResources.empty())
-        {
-            const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneID);
-            if (displayHandle.isValid())
-            {
-                IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(displayHandle)->second;
-                resourceManager.referenceClientResourcesForScene(sceneID, newlyNeededClientResources);
-            }
-        }
-
+        assert(sceneUpdate.resources.size() == resourceChanges.m_resourcesAdded.size());
+        assert(std::equal(sceneUpdate.resources.cbegin(), sceneUpdate.resources.cend(), resourceChanges.m_resourcesAdded.cbegin(),
+            [](const auto& mr, const auto& hash) { return mr->getHash() == hash; }));
+        flushInfo.resourceDataToProvide = std::move(sceneUpdate.resources);
+        flushInfo.resourcesAdded = std::move(resourceChanges.m_resourcesAdded);
+        flushInfo.resourcesRemoved = std::move(resourceChanges.m_resourcesRemoved);
         flushInfo.sceneActions = std::move(sceneUpdate.actions);
 
         if (pendingFlushes.size() > m_maximumPendingFlushesToKillScene)
             logTooManyFlushesAndUnsubscribeIfRemoteScene(sceneID, stagingInfo.pendingData.pendingFlushes.size());
     }
 
-    void RendererSceneUpdater::consolidateResourceChanges(PendingData& pendingData, const SceneResourceChanges& resourceChanges, ResourceContentHashVector& newlyNeededClientResources) const
+    void RendererSceneUpdater::consolidateResourceDataForMapping(SceneId sceneID)
     {
-        if (!resourceChanges.m_addedClientResourceRefs.empty() || !resourceChanges.m_removedClientResourceRefs.empty())
+        // consolidate resources from pending flushes into staging data for mapping
+        StagingInfo& stagingInfo = m_rendererScenes.getStagingInfo(sceneID);
+        auto& resourcesForMapping = stagingInfo.resourcesToUploadOnceMapping;
+        for (auto& pendingFlush : stagingInfo.pendingData.pendingFlushes)
         {
-            ResourceContentHashVector newlyUnneededPreviouslyNeededResources;
-            PendingClientResourcesUtils::ConsolidateAddedResources(pendingData.clientResourcesNeeded, pendingData.clientResourcesUnneeded, newlyNeededClientResources, resourceChanges.m_addedClientResourceRefs);
-            PendingClientResourcesUtils::ConsolidateRemovedResources(pendingData.clientResourcesNeeded, pendingData.clientResourcesUnneeded, newlyUnneededPreviouslyNeededResources, resourceChanges.m_removedClientResourceRefs);
-            PendingClientResourcesUtils::ConsolidateNewlyNeededResources(newlyNeededClientResources, pendingData.clientResourcesPendingUnneeded);
-            PendingClientResourcesUtils::ConsolidateNewlyUnneededResources(pendingData.clientResourcesPendingUnneeded, newlyUnneededPreviouslyNeededResources);
+            // remove no more needed resources
+            if (!pendingFlush.resourcesRemoved.empty())
+            {
+                auto it = std::remove_if(resourcesForMapping.begin(), resourcesForMapping.end(), [&](const auto& mr)
+                {
+                    const auto mrHash = mr->getHash();
+                    return absl::c_find(pendingFlush.resourcesRemoved, mrHash) != pendingFlush.resourcesRemoved.cend();
+                });
+                resourcesForMapping.erase(it, resourcesForMapping.end());
+            }
+            // add newly needed resources
+            resourcesForMapping.insert(resourcesForMapping.end(), pendingFlush.resourceDataToProvide.cbegin(), pendingFlush.resourceDataToProvide.cend());
+            pendingFlush.resourceDataToProvide.clear();
+
+            // assert stored resources are unique (without modifying state!)
+            assert([&resourcesForMapping]
+            {
+                ResourceContentHashVector hashes{ resourcesForMapping.size() };
+                std::transform(resourcesForMapping.cbegin(), resourcesForMapping.cend(), hashes.begin(), [](const auto& mr) { return mr->getHash(); });
+                std::sort(hashes.begin(), hashes.end());
+                return std::unique(hashes.begin(), hashes.end()) == hashes.end();
+            }());
+        }
+    }
+
+    void RendererSceneUpdater::referenceAndProvidePendingResourceData(SceneId sceneID, DisplayHandle display)
+    {
+        // collect and provide resource data to resource manager
+        auto& resMgr = *m_displayResourceManagers.find(display)->second;
+        std::vector<ManagedResourceVector*> resourcesToProvide;
+
+        // collect from staged data for scene to be mapped
+        StagingInfo& stagingInfo = m_rendererScenes.getStagingInfo(sceneID);
+        if (!stagingInfo.resourcesToUploadOnceMapping.empty())
+        {
+            auto& resDataToMap = stagingInfo.resourcesToUploadOnceMapping;
+            ResourceContentHashVector hashesToMap{ resDataToMap.size() };
+            std::transform(resDataToMap.cbegin(), resDataToMap.cend(), hashesToMap.begin(), [](const auto& mr) { return mr->getHash(); });
+            resMgr.referenceResourcesForScene(sceneID, hashesToMap);
+            resourcesToProvide.push_back(&resDataToMap);
         }
 
-        PendingSceneResourcesUtils::ConsolidateSceneResourceActions(resourceChanges.m_sceneResourceActions, pendingData.sceneResourceActions);
+        // collect from pending flushes
+        for (auto& pendingFlush : stagingInfo.pendingData.pendingFlushes)
+        {
+            if (!pendingFlush.resourceDataToProvide.empty())
+            {
+                resMgr.referenceResourcesForScene(sceneID, pendingFlush.resourcesAdded);
+                resourcesToProvide.push_back(&pendingFlush.resourceDataToProvide);
+            }
+        }
+
+        // provide all collected resource data
+        for (auto resList : resourcesToProvide)
+        {
+            for (const auto& mr : *resList)
+            {
+                resMgr.provideResourceData(mr);
+                uint32_t dummySize = 0;
+                if (m_rendererResourceCache && !m_rendererResourceCache->hasResource(mr->getHash(), dummySize))
+                    RendererResourceManagerUtils::StoreResource(m_rendererResourceCache, mr.get(), sceneID);
+            }
+            // data was provided, clear shared_ptr references from list
+            resList->clear();
+        }
     }
 
     void RendererSceneUpdater::requestAndUploadAndUnloadResources(DisplayHandle& activeDisplay)
     {
-        // request newly referenced resources
-        // and upload and unload pending resources
+        for (const auto& rendererScene : m_rendererScenes)
+        {
+            const SceneId sceneID = rendererScene.key;
+            const auto display = m_renderer.getDisplaySceneIsAssignedTo(sceneID);
+            if (!display.isValid())
+                consolidateResourceDataForMapping(sceneID);
+            else
+                referenceAndProvidePendingResourceData(sceneID, display);
+        }
+
+        // if there are resources to upload, unload and upload pending resources
         for(const auto& it : m_displayResourceManagers)
         {
             const DisplayHandle displayHandle = it.first;
             IRendererResourceManager& resourceManager = *it.second;
-
-            resourceManager.getRequestedResourcesAlreadyInCache(m_rendererResourceCache);
-            resourceManager.requestAndUnrequestPendingClientResources();
-            resourceManager.processArrivedClientResources(m_rendererResourceCache);
-
-            if (resourceManager.hasClientResourcesToBeUploaded())
+            if (resourceManager.hasResourcesToBeUploaded())
             {
                 activateDisplayContext(activeDisplay, displayHandle);
-                resourceManager.uploadAndUnloadPendingClientResources();
+                resourceManager.uploadAndUnloadPendingResources();
             }
         }
     }
@@ -476,7 +511,7 @@ namespace ramses_internal
         const Bool sceneIsRenderedOrRequested = (sceneState == ESceneState::Rendered || sceneState == ESceneState::RenderRequested); // requested can become rendered still in this frame
         const Bool sceneIsMapped = (sceneState == ESceneState::Mapped) || sceneIsRenderedOrRequested;
         const Bool sceneIsMappedOrMapping = (sceneState == ESceneState::MappingAndUploading) || sceneIsMapped;
-        const Bool resourcesReady = sceneIsMappedOrMapping && willApplyingChangesMakeAllResourcesAvailable(sceneID);
+        const Bool resourcesReady = sceneIsMappedOrMapping && areResourcesFromPendingFlushesUploaded(sceneID);
 
         Bool canApplyFlushes = !sceneIsMappedOrMapping || resourcesReady;
 
@@ -487,7 +522,7 @@ namespace ramses_internal
         if (!canApplyFlushes && sceneIsMapped && pendingFlushes.size() > m_maximumPendingFlushes)
         {
             LOG_ERROR(CONTEXT_RENDERER, "Force applying pending flushes! Scene " << sceneID << " has " << pendingFlushes.size() << " pending flushes, renderer cannot catch up with resource updates.");
-            logMissingResources(stagingInfo.pendingData.clientResourcesNeeded, sceneID);
+            logMissingResources(stagingInfo.pendingData, sceneID);
 
             canApplyFlushes = true;
             m_renderer.resetRenderInterruptState();
@@ -495,9 +530,8 @@ namespace ramses_internal
 
         if (canApplyFlushes)
         {
-            const EResourceStatus resourcesStatus = (resourcesReady ? EResourceStatus_Uploaded : EResourceStatus_Unknown);
             stagingInfo.pendingData.allPendingFlushesApplied = true;
-            return applyPendingFlushes(sceneID, stagingInfo, resourcesStatus);
+            return applyPendingFlushes(sceneID, stagingInfo);
         }
         else
             m_renderer.getStatistics().flushBlocked(sceneID);
@@ -505,9 +539,9 @@ namespace ramses_internal
         return 0;
     }
 
-    UInt32 RendererSceneUpdater::applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo, EResourceStatus resourcesStatus)
+    UInt32 RendererSceneUpdater::applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo)
     {
-        IScene& rendererScene = const_cast<RendererCachedScene&>(m_rendererScenes.getScene(sceneID));
+        auto& rendererScene = const_cast<RendererCachedScene&>(m_rendererScenes.getScene(sceneID));
         rendererScene.preallocateSceneSize(stagingInfo.sizeInformation);
 
         PendingData& pendingData = stagingInfo.pendingData;
@@ -523,16 +557,14 @@ namespace ramses_internal
             {
                 LOG_INFO(CONTEXT_SMOKETEST, "Named flush applied on scene " << rendererScene.getSceneId() <<
                     " with sceneVersionTag " << pendingFlush.versionTag);
-                m_rendererEventCollector.addSceneFlushEvent(ERendererEventType_SceneFlushed, sceneID, pendingFlush.versionTag, resourcesStatus);
+                m_rendererEventCollector.addSceneFlushEvent(ERendererEventType_SceneFlushed, sceneID, pendingFlush.versionTag);
             }
             stagingInfo.lastAppliedVersionTag = pendingFlush.versionTag;
             m_expirationMonitor.onFlushApplied(sceneID, pendingFlush.timeInfo.expirationTimestamp, pendingFlush.versionTag, pendingFlush.flushIndex);
             m_renderer.getStatistics().flushApplied(sceneID);
 
-            // mark scene as modified only if it received scene actions other than those below
-            static const std::vector<ESceneActionId> SceneActionsIgnoredForMarkingAsModified = { ESceneActionId::Flush, ESceneActionId::SetAckFlushState };
-            const bool isFlushWithChanges = std::any_of(pendingFlush.sceneActions.begin(), pendingFlush.sceneActions.end(),
-                [](const SceneActionCollection::SceneActionReader& a) { return !contains_c(SceneActionsIgnoredForMarkingAsModified, a.type()); });
+            // mark scene as modified only if it received scene actions other than flush
+            const bool isFlushWithChanges = !pendingFlush.sceneActions.empty();
             if (isFlushWithChanges)
                 // there are changes to scene -> mark it as modified to be re-rendered
                 m_modifiedScenesToRerender.put(sceneID);
@@ -578,8 +610,8 @@ namespace ramses_internal
         if (displayHandle.isValid())
         {
             IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(displayHandle)->second;
-            resourceManager.unreferenceClientResourcesForScene(sceneID, pendingData.clientResourcesUnneeded);
-            resourceManager.unreferenceClientResourcesForScene(sceneID, pendingData.clientResourcesPendingUnneeded);
+            for (const auto& pendingFlush : pendingData.pendingFlushes)
+                resourceManager.unreferenceResourcesForScene(sceneID, pendingFlush.resourcesRemoved);
 
             const auto& pendingSceneResourceActions = pendingData.sceneResourceActions;
             if (!pendingSceneResourceActions.empty())
@@ -588,10 +620,6 @@ namespace ramses_internal
                 PendingSceneResourcesUtils::ApplySceneResourceActions(pendingSceneResourceActions, m_rendererScenes.getScene(sceneID), resourceManager);
             }
         }
-
-        // Pending flush(es) were applied, update the list of resources in use (regardless of scene being mapped or not),
-        // consolidate needed/unneeded resources for the applied flush(es)
-        PendingClientResourcesUtils::ConsolidateNeededAndUnneededResources(stagingInfo.clientResourcesInUse, pendingData.clientResourcesNeeded, pendingData.clientResourcesUnneeded);
     }
 
     void RendererSceneUpdater::updateSceneStreamTexturesDirtiness()
@@ -606,8 +634,8 @@ namespace ramses_internal
             if(embeddedCompositingManager.hasRealCompositor())
             {
                 SceneStreamTextures updatedStreamTextures;
-                StreamTextureSourceIdVector newStreams;
-                StreamTextureSourceIdVector obsoleteStreams;
+                WaylandIviSurfaceIdVector newStreams;
+                WaylandIviSurfaceIdVector obsoleteStreams;
                 embeddedCompositingManager.dispatchStateChangesOfStreamTexturesAndSources(updatedStreamTextures, newStreams, obsoleteStreams);
 
                 for (const auto stream : newStreams)
@@ -691,24 +719,20 @@ namespace ramses_internal
                 const StagingInfo& stagingInfo = m_rendererScenes.getStagingInfo(sceneId);
 
                 bool canBeMapped = false;
-                // allow map only if there are no pending flushes
+                // allow map only if there are no pending flushes and all used resources uploaded
                 if (stagingInfo.pendingData.pendingFlushes.empty())
                 {
-                    canBeMapped = true;
-                    for (const auto& res : stagingInfo.clientResourcesInUse)
-                    {
-                        if (resourceManager.getClientResourceStatus(res) != EResourceStatus_Uploaded)
-                        {
-                            canBeMapped = false;
-                            break;
-                        }
-                    }
+                    const auto usedResources = resourceManager.getResourcesInUseByScene(sceneId);
+                    canBeMapped = !usedResources || std::all_of(usedResources->cbegin(), usedResources->cend(),
+                        [&](const auto& res) { return resourceManager.getResourceStatus(res) == EResourceStatus::Uploaded; });
                 }
 
                 if (!canBeMapped && stagingInfo.pendingData.pendingFlushes.size() > m_maximumPendingFlushes)
                 {
                     LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene " << sceneId << " due to " << stagingInfo.pendingData.pendingFlushes.size() << " pending flushes, renderer cannot catch up with resource updates.");
-                    logMissingResources(stagingInfo.clientResourcesInUse, sceneId);
+                    const auto usedResources = resourceManager.getResourcesInUseByScene(sceneId);
+                    if (usedResources)
+                        logMissingResources(*usedResources, sceneId);
 
                     canBeMapped = true;
                 }
@@ -758,17 +782,20 @@ namespace ramses_internal
                 {
                     const auto totalWaitingTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentFrameTime - mapRequest.requestTimeStamp);
                     const IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(mapRequest.display)->second;
-                    const StagingInfo& stagingInfo = m_rendererScenes.getStagingInfo(sceneMapReq.key);
 
                     logger << "Scene " << sceneMapReq.key << " waiting " << totalWaitingTime.count() << " ms for resources in order to be mapped: ";
                     size_t numResourcesWaiting = 0u;
-                    for (const auto& res : stagingInfo.clientResourcesInUse)
+                    const auto usedResources = resourceManager.getResourcesInUseByScene(sceneMapReq.key);
+                    if (usedResources)
                     {
-                        const auto resStatus = resourceManager.getClientResourceStatus(res);
-                        if (resStatus != EResourceStatus_Uploaded)
+                        for (const auto& res : *usedResources)
                         {
-                            if (++numResourcesWaiting <= MaxNumResourcesToLog)
-                                logger << res << " <" << EnumToString(resStatus) << ">; ";
+                            const auto resStatus = resourceManager.getResourceStatus(res);
+                            if (resStatus != EResourceStatus::Uploaded)
+                            {
+                                if (++numResourcesWaiting <= MaxNumResourcesToLog)
+                                    logger << res << " <" << resStatus << ">; ";
+                            }
                         }
                     }
                     logger << " " << numResourcesWaiting << " unresolved resources in total";
@@ -796,7 +823,7 @@ namespace ramses_internal
         }
     }
 
-    void RendererSceneUpdater::applySceneActions(IScene& scene, PendingFlush& flushInfo)
+    void RendererSceneUpdater::applySceneActions(RendererCachedScene& scene, PendingFlush& flushInfo)
     {
         const SceneActionCollection& actionsForScene = flushInfo.sceneActions;
         const UInt32 numActions = actionsForScene.numberOfActions();
@@ -852,7 +879,7 @@ namespace ramses_internal
         DisplayHandle activeDisplay;
         activateDisplayContext(activeDisplay, displayHandle);
         resourceManager.unloadAllSceneResourcesForScene(sceneId);
-        resourceManager.unreferenceAllClientResourcesForScene(sceneId);
+        resourceManager.unreferenceAllResourcesForScene(sceneId);
 
         RendererCachedScene& rendererScene = m_rendererScenes.getScene(sceneId);
         rendererScene.resetResourceCache();
@@ -868,10 +895,10 @@ namespace ramses_internal
         IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(displayHandle)->second;
 
         // collect all scene resources in scene and upload them
-        const IScene& scene = m_rendererScenes.getScene(sceneId);
+        const auto& scene = m_rendererScenes.getScene(sceneId);
         SceneResourceActionVector sceneResourceActions;
         size_t sceneResourcesByteSize = 0u;
-        SceneResourceUtils::GetAllSceneResourcesFromScene(sceneResourceActions, scene, sceneResourcesByteSize);
+        ResourceUtils::GetAllSceneResourcesFromScene(sceneResourceActions, scene, sceneResourcesByteSize);
         if (!sceneResourceActions.empty())
         {
             DisplayHandle activeDisplay;
@@ -886,10 +913,35 @@ namespace ramses_internal
         }
 
         // reference all the resources in use by the scene to be mapped
-        const auto& clientResources = m_rendererScenes.getStagingInfo(sceneId).clientResourcesInUse;
-        if (!clientResources.empty())
-            LOG_INFO(CONTEXT_RENDERER, "Marking " << clientResources.size() << " client resources as used by scene " << sceneId << ", resources which are not yet available will be requested/loaded and uploaded to GPU.");
-        resourceManager.referenceClientResourcesForScene(sceneId, m_rendererScenes.getStagingInfo(sceneId).clientResourcesInUse);
+        ResourceContentHashVector resourcesUsedInScene;
+        ResourceUtils::GetAllResourcesFromScene(resourcesUsedInScene, scene);
+        if (!resourcesUsedInScene.empty())
+        {
+            LOG_INFO(CONTEXT_RENDERER, "Marking " << resourcesUsedInScene.size() << " client resources as used by scene " << sceneId);
+
+            // compare actual 'in-use' list with 'to be uploaded for mapping' list
+            // the only case these do not contain same elements is re-map case (other than first mapping)
+            const auto& providedResources = m_rendererScenes.getStagingInfo(sceneId).resourcesToUploadOnceMapping;
+            ResourceContentHashVector providedHashes{ providedResources.size() };
+            std::transform(providedResources.cbegin(), providedResources.cend(), providedHashes.begin(), [](const auto& mr) { return mr->getHash(); });
+
+            std::sort(resourcesUsedInScene.begin(), resourcesUsedInScene.end());
+            std::sort(providedHashes.begin(), providedHashes.end());
+            if (resourcesUsedInScene != providedHashes)
+            {
+                // For mapping which is not first new logic does not trigger reference of those resources (it only works with incoming flushes),
+                // therefore here we explicitly reference them for new logic - in a way we simulate they came in flushes.
+                // However there might be some resources (with data) which already came in flushes between mapping, those are stored in 'to be uploaded for mapping' list,
+                // those will be referenced and provided by new logic automatically next frame. So we reference only resources in use that are not waiting provided.
+                ResourceContentHashVector resourcesToReference;
+                std::set_difference(resourcesUsedInScene.cbegin(), resourcesUsedInScene.cend(), providedHashes.cbegin(), providedHashes.cend(), std::back_inserter(resourcesToReference));
+                resourceManager.referenceResourcesForScene(sceneId, resourcesToReference);
+                LOG_INFO_P(CONTEXT_RENDERER, "Out of {} resources used in scene {} there are {} resources that are not ready to be provided and uploaded unless already cached.", resourcesUsedInScene.size(), sceneId, resourcesToReference.size());
+            }
+            else
+                LOG_INFO_P(CONTEXT_RENDERER, "All resources used in scene {} are ready to be provided and uploaded.", sceneId);
+        }
+
         return true;
     }
 
@@ -1010,7 +1062,7 @@ namespace ramses_internal
         }
     }
 
-    Bool RendererSceneUpdater::handleBufferCreateRequest(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, Bool isDoubleBuffered)
+    Bool RendererSceneUpdater::handleBufferCreateRequest(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered)
     {
         if (!m_displayResourceManagers.count(display))
         {
@@ -1027,7 +1079,7 @@ namespace ramses_internal
 
         DisplayHandle activeDisplay;
         activateDisplayContext(activeDisplay, display);
-        resourceManager.uploadOffscreenBuffer(buffer, width, height, isDoubleBuffered);
+        resourceManager.uploadOffscreenBuffer(buffer, width, height, sampleCount, isDoubleBuffered);
         const DeviceResourceHandle deviceHandle = resourceManager.getOffscreenBufferDeviceHandle(buffer);
         m_renderer.resetRenderInterruptState();
         m_renderer.registerOffscreenBuffer(display, deviceHandle, width, height, isDoubleBuffered);
@@ -1217,7 +1269,7 @@ namespace ramses_internal
         if (!display.isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Renderer::createBufferLink failed: consumer scene (Scene: " << consumerSceneId << ") has to be mapped!");
-            m_rendererEventCollector.addOBLinkEvent(ERendererEventType_SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
+            m_rendererEventCollector.addBufferLinkEvent(ERendererEventType_SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
 
@@ -1225,7 +1277,7 @@ namespace ramses_internal
         if (!resourceManager.getOffscreenBufferDeviceHandle(buffer).isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Renderer::createBufferLink failed: offscreen buffer " << buffer << " has to exist on the same display where the consumer scene " << consumerSceneId << " is mapped!");
-            m_rendererEventCollector.addOBLinkEvent(ERendererEventType_SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
+            m_rendererEventCollector.addBufferLinkEvent(ERendererEventType_SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
 
@@ -1292,19 +1344,16 @@ namespace ramses_internal
         m_sceneReferenceLogic = &sceneRefLogic;
     }
 
-    Bool RendererSceneUpdater::willApplyingChangesMakeAllResourcesAvailable(SceneId sceneId) const
+    Bool RendererSceneUpdater::areResourcesFromPendingFlushesUploaded(SceneId sceneId) const
     {
         const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
         const IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(displayHandle)->second;
 
-        const auto& neededResources = m_rendererScenes.getStagingInfo(sceneId).pendingData.clientResourcesNeeded;
-        for (const auto& res : neededResources)
-        {
-            if (EResourceStatus_Uploaded != resourceManager.getClientResourceStatus(res))
-            {
-                return false;
-            }
-        }
+        const auto& pendingData = m_rendererScenes.getStagingInfo(sceneId).pendingData;
+        for (const auto& pendingFlush : pendingData.pendingFlushes)
+            for (const auto& res : pendingFlush.resourcesAdded)
+                if (resourceManager.getResourceStatus(res) != EResourceStatus::Uploaded)
+                    return false;
 
         return true;
     }
@@ -1455,7 +1504,15 @@ namespace ramses_internal
         }
     }
 
-    void RendererSceneUpdater::logMissingResources(const ResourceContentHashVector& resourceVector, SceneId sceneId) const
+    void RendererSceneUpdater::logMissingResources(const PendingData& pendingData, SceneId sceneId) const
+    {
+        ResourceContentHashVector missingResources;
+        for (const auto& pendingFlush : pendingData.pendingFlushes)
+            missingResources.insert(missingResources.end(), pendingFlush.resourcesAdded.cbegin(), pendingFlush.resourcesAdded.cend());
+        logMissingResources(missingResources, sceneId);
+    }
+
+    void RendererSceneUpdater::logMissingResources(const ResourceContentHashVector& neededResources, SceneId sceneId) const
     {
         const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
         assert(displayHandle.isValid());
@@ -1469,9 +1526,9 @@ namespace ramses_internal
             missingResourcesToLog.reserve(MaxMissingResourcesToLog);
             UInt numMissingResources = 0u;
 
-            for (const auto& res : resourceVector)
+            for (const auto& res : neededResources)
             {
-                if (resourceManager.getClientResourceStatus(res) != EResourceStatus_Uploaded)
+                if (resourceManager.getResourceStatus(res) != EResourceStatus::Uploaded)
                 {
                     if (missingResourcesToLog.size() < MaxMissingResourcesToLog)
                         missingResourcesToLog.push_back(res);
@@ -1483,8 +1540,8 @@ namespace ramses_internal
             for (const auto& res : missingResourcesToLog)
             {
                 sos << " [hash: " << res
-                    << "; " << EnumToString(resourceManager.getClientResourceStatus(res))
-                    << "; " << EnumToString(resourceManager.getClientResourceType(res))
+                    << "; " << resourceManager.getResourceStatus(res)
+                    << "; " << EnumToString(resourceManager.getResourceType(res))
                     << "]\n";
             }
             if (numMissingResources > missingResourcesToLog.size())

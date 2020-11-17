@@ -17,8 +17,8 @@ namespace ramses
     class RamsesObject;
     class NodeImpl;
 
-    typedef std::vector<RamsesObject*> RamsesObjectVector;
-    typedef ramses_internal::HashSet<NodeImpl*> NodeImplSet;
+    using RamsesObjectVector = std::vector<RamsesObject *>;
+    using NodeImplSet = ramses_internal::HashSet<NodeImpl *>;
 }
 
 #endif

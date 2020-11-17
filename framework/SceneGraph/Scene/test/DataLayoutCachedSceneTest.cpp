@@ -42,8 +42,8 @@ namespace ramses_internal
 
     TEST_F(ADataLayoutCachedScene, willGiveSameHandleForExistingLayout)
     {
-        const DataLayoutHandle dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType::Float, 2u, EFixedSemantics_ModelMatrix) }, ResourceContentHash(123u, 0u));
-        const DataLayoutHandle dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType::Float, 2u, EFixedSemantics_ModelMatrix) }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType::Float, 2u, EFixedSemantics::ModelMatrix) }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType::Float, 2u, EFixedSemantics::ModelMatrix) }, ResourceContentHash(123u, 0u));
         EXPECT_EQ(dataLayout1, dataLayout2);
         EXPECT_EQ(2u, scene.getNumDataLayoutReferences(dataLayout1));
     }
@@ -68,8 +68,8 @@ namespace ramses_internal
 
     TEST_F(ADataLayoutCachedScene, willAllocateNewHandleForNonMatchingDataFieldSemantics)
     {
-        const auto dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType::Float, 1u, EFixedSemantics_CameraViewMatrix) }, {});
-        const auto dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType::Float, 1u, EFixedSemantics_ModelMatrix) }, {});
+        const auto dataLayout1 = scene.allocateDataLayout({ DataFieldInfo(EDataType::Float, 1u, EFixedSemantics::ViewMatrix) }, {});
+        const auto dataLayout2 = scene.allocateDataLayout({ DataFieldInfo(EDataType::Float, 1u, EFixedSemantics::ModelMatrix) }, {});
         EXPECT_NE(dataLayout1, dataLayout2);
         EXPECT_EQ(1u, scene.getNumDataLayoutReferences(dataLayout1));
         EXPECT_EQ(1u, scene.getNumDataLayoutReferences(dataLayout2));

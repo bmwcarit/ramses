@@ -128,7 +128,7 @@ namespace ramses_internal
             m_transformHandle1 = scene.allocateTransform(nodeHandle1);
             m_transformHandle2 = scene.allocateTransform(nodeHandle2);
 
-            scene.setRotation(m_transformHandle1, Vector3(1.0f, 1.0f, 1.0f));
+            scene.setRotation(m_transformHandle1, Vector3(1.0f, 1.0f, 1.0f), ERotationConvention::Legacy_ZYX);
             scene.setTranslation(m_transformHandle2, Vector3(1.0f, 1.0f, 1.0f));
         }
     }

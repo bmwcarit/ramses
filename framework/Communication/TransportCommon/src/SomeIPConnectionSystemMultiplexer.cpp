@@ -154,31 +154,6 @@ namespace ramses_internal
     // -----------------------------------------------------------
     // ------------------ RAMSES ---------------------------------
     // -----------------------------------------------------------
-
-    bool SomeIPConnectionSystemMultiplexer::sendRequestResources(const Guid& to, const ResourceContentHashVector& resources)
-    {
-        if (m_ramsesConnectionSystem)
-            return m_ramsesConnectionSystem->sendRequestResources(to, resources);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendRequestResources: ramses not enabled");
-        return false;
-    }
-
-    bool SomeIPConnectionSystemMultiplexer::sendResourcesNotAvailable(const Guid& to, const ResourceContentHashVector& resources)
-    {
-        if (m_ramsesConnectionSystem)
-            return m_ramsesConnectionSystem->sendResourcesNotAvailable(to, resources);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendResourcesNotAvailable: ramses not enabled");
-        return false;
-    }
-
-    bool SomeIPConnectionSystemMultiplexer::sendResources(const Guid& to, const ISceneUpdateSerializer& serializer)
-    {
-        if (m_ramsesConnectionSystem)
-            return m_ramsesConnectionSystem->sendResources(to, serializer);
-        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendResources: ramses not enabled");
-        return false;
-    }
-
     bool SomeIPConnectionSystemMultiplexer::broadcastNewScenesAvailable(const SceneInfoVector& newScenes)
     {
         if (m_ramsesConnectionSystem)
@@ -243,18 +218,6 @@ namespace ramses_internal
         return false;
     }
 
-    void SomeIPConnectionSystemMultiplexer::setResourceProviderServiceHandler(IResourceProviderServiceHandler* handler)
-    {
-        if (m_ramsesConnectionSystem)
-            m_ramsesConnectionSystem->setResourceProviderServiceHandler(handler);
-    }
-
-    void SomeIPConnectionSystemMultiplexer::setResourceConsumerServiceHandler(IResourceConsumerServiceHandler* handler)
-    {
-        if (m_ramsesConnectionSystem)
-            m_ramsesConnectionSystem->setResourceConsumerServiceHandler(handler);
-    }
-
     void SomeIPConnectionSystemMultiplexer::setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler)
     {
         if (m_ramsesConnectionSystem)
@@ -272,26 +235,26 @@ namespace ramses_internal
     // ------------------ DCSM -----------------------------------
     // -----------------------------------------------------------
 
-    bool SomeIPConnectionSystemMultiplexer::sendDcsmBroadcastOfferContent(ContentID content, Category category, const std::string& friendlyName)
+    bool SomeIPConnectionSystemMultiplexer::sendDcsmBroadcastOfferContent(ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName)
     {
         if (m_dcsmConnectionSystem)
-            return m_dcsmConnectionSystem->sendBroadcastOfferContent(content, category, friendlyName, 0);
+            return m_dcsmConnectionSystem->sendBroadcastOfferContent(content, category, technicalContentType, friendlyName, 0);
         LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmBroadcastOfferContent: dcsm not enabled");
         return false;
     }
 
-    bool SomeIPConnectionSystemMultiplexer::sendDcsmOfferContent(const Guid& to, ContentID content, Category category, const std::string& friendlyName)
+    bool SomeIPConnectionSystemMultiplexer::sendDcsmOfferContent(const Guid& to, ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName)
     {
         if (m_dcsmConnectionSystem)
-            return m_dcsmConnectionSystem->sendOfferContent(to, content, category, friendlyName, 0);
+            return m_dcsmConnectionSystem->sendOfferContent(to, content, category, technicalContentType, friendlyName, 0);
         LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmOfferContent: dcsm not enabled");
         return false;
     }
 
-    bool SomeIPConnectionSystemMultiplexer::sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor)
+    bool SomeIPConnectionSystemMultiplexer::sendDcsmContentDescription(const Guid& to, ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor)
     {
         if (m_dcsmConnectionSystem)
-            return m_dcsmConnectionSystem->sendContentDescription(to, contentID, technicalContentType, technicalContentDescriptor);
+            return m_dcsmConnectionSystem->sendContentDescription(to, contentID, technicalContentDescriptor);
         LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentDescription: dcsm not enabled");
         return false;
     }

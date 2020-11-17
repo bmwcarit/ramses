@@ -26,6 +26,7 @@ namespace ramses_internal
 
         void createDataLink(SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId);
         void createBufferLink(OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerId);
+        void createBufferLink(StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerId);
         void removeDataLink(SceneId consumerSceneId, DataSlotId consumerId);
 
         void handleSceneRemoved(SceneId sceneId);
@@ -33,12 +34,15 @@ namespace ramses_internal
         void handleDataSlotCreated(SceneId sceneId, DataSlotHandle dataSlotHandle);
         void handleDataSlotDestroyed(SceneId sceneId, DataSlotHandle dataSlotHandle);
         void handleBufferDestroyed(OffscreenBufferHandle providerBuffer);
+        void handleBufferDestroyed(StreamBufferHandle providerBuffer);
 
         const TransformationLinkManager& getTransformationLinkManager() const;
         const DataReferenceLinkManager&  getDataReferenceLinkManager() const;
         const TextureLinkManager&        getTextureLinkManager() const;
 
     private:
+        template <typename BUFFERHANDLE>
+        void createBufferLinkInternal(BUFFERHANDLE providerBuffer, SceneId consumerSceneId, DataSlotId consumerId);
         template <typename LINKMANAGER>
         void removeLinksToProvider(SceneId sceneId, DataSlotHandle providerSlotHandle, LINKMANAGER& manager) const;
         void removeAnyDataLinkFromConsumer(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle);

@@ -14,8 +14,8 @@
 
 namespace ramses_internal
 {
-    HierarchicalRedTrianglesScene::HierarchicalRedTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    HierarchicalRedTrianglesScene::HierarchicalRedTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_groupNode(nullptr)
         , m_subGroup1Node(nullptr)
         , m_subGroup2Node(nullptr)

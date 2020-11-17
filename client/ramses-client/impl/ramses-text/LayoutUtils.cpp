@@ -54,44 +54,9 @@ namespace ramses
             return getBoundingBoxForString(first, last);
         }
 
-        StringBoundingBox GetBoundingBoxForString(GlyphMetricsVector::const_reverse_iterator first, GlyphMetricsVector::const_reverse_iterator last)
+        StringBoundingBox GetBoundingBoxForString(const GlyphMetricsVector::const_reverse_iterator& first, const GlyphMetricsVector::const_reverse_iterator& last)
         {
             return getBoundingBoxForString(first, last);
-        }
-
-        template <typename Iter>
-        static Iter findFittingSubstring(Iter first, Iter last, uint32_t maxWidth)
-        {
-            if (first >= last)
-                return last;
-
-            int32_t xmax = std::numeric_limits<int32_t>::min();
-            int32_t totalAdvance = 0;
-
-            for (; first != last; ++first)
-            {
-                // glyphs with no bitmap data always fit, take only their advance
-                if (first->width > 0u && first->height > 0u)
-                {
-                    xmax = std::max<int32_t>(xmax, totalAdvance + first->posX + first->width);
-                    if (xmax > int(maxWidth))
-                        break;
-                }
-
-                totalAdvance += first->advance;
-            }
-
-            return first;
-        }
-
-        GlyphMetricsVector::const_iterator FindFittingSubstring(GlyphMetricsVector::const_iterator first, GlyphMetricsVector::const_iterator last, uint32_t maxWidth)
-        {
-            return findFittingSubstring(first, last, maxWidth);
-        }
-
-        GlyphMetricsVector::const_reverse_iterator FindFittingSubstring(GlyphMetricsVector::const_reverse_iterator first, GlyphMetricsVector::const_reverse_iterator last, uint32_t maxWidth)
-        {
-            return findFittingSubstring(first, last, maxWidth);
         }
     }
 }

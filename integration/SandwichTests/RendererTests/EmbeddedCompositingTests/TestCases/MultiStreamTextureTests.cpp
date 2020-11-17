@@ -13,19 +13,10 @@
 
 namespace ramses_internal
 {
-    MultiStreamTextureTests::MultiStreamTextureTests()
-    {
-    }
-
     void MultiStreamTextureTests::setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework)
     {
-        const UInt32 displayWidth = ramses_internal::IntegrationScene::DefaultDisplayWidth * 2;
-        const UInt32 displayHeight = ramses_internal::IntegrationScene::DefaultDisplayHeight;
-        const float aspectRatio = static_cast<float>(displayWidth) / displayHeight;
-
         ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0, true);
-        displayConfig.setWindowRectangle(0, 0, displayWidth, displayHeight);
-        displayConfig.setPerspectiveProjection(19.f, aspectRatio, 0.1f, 1500.f);
+        displayConfig.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
 
         testFramework.createTestCase(ShowDifferentFallbackTexturesOnStreamTexturesWithSameSourceId, *this, "ShowDifferentFallbackTexturesOnStreamTexturesWithSameSourceId").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(ShowStreamTextureOnTwoStreamTexturesWithSameSourceId, *this, "ShowStreamTextureOnTwoStreamTexturesWithSameSourceId").m_displayConfigs.push_back(displayConfig);
@@ -38,9 +29,9 @@ namespace ramses_internal
     {
         Bool testResultValue = true;
 
-        const StreamTextureSourceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
-        const StreamTextureSourceId secondStreamTextureSourceId(EmbeddedCompositorScene::GetSecondStreamTextureSourceId());
-        const StreamTextureSourceId thirdStreamTextureSourceId(EmbeddedCompositorScene::GetThirdStreamTextureSourceId());
+        const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
+        const WaylandIviSurfaceId secondStreamTextureSourceId(EmbeddedCompositorScene::GetSecondStreamTextureSourceId());
+        const WaylandIviSurfaceId thirdStreamTextureSourceId(EmbeddedCompositorScene::GetThirdStreamTextureSourceId());
 
         testFramework.setEnvironmentVariableWaylandDisplay();
 
@@ -48,7 +39,7 @@ namespace ramses_internal
         {
         case ShowDifferentFallbackTexturesOnStreamTexturesWithSameSourceId:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_SAME_SOURCE_ID_AND_DIFFERENT_FALLBACK_TEXTURES);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_SAME_SOURCE_ID_AND_DIFFERENT_FALLBACK_TEXTURES, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, secondStreamTextureSourceId);
@@ -59,7 +50,7 @@ namespace ramses_internal
         }
         case ShowStreamTextureOnTwoStreamTexturesWithSameSourceId:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_SAME_SOURCE_ID_AND_DIFFERENT_FALLBACK_TEXTURES);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_SAME_SOURCE_ID_AND_DIFFERENT_FALLBACK_TEXTURES, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -70,7 +61,7 @@ namespace ramses_internal
         }
         case ShowSameFallbackTextureOnStreamTexturesWithDifferentSourceId:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, thirdStreamTextureSourceId);
@@ -81,7 +72,7 @@ namespace ramses_internal
         }
         case ShowTwoStreamTextures:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId1 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId1, streamTextureSourceId);
@@ -98,7 +89,7 @@ namespace ramses_internal
         }
         case ClientRecreatesIVISurfaceWithDifferentId:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);

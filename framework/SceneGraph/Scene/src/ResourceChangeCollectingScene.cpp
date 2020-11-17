@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "Scene/ResourceChangeCollectingScene.h"
-#include "SceneUtils/ResourceChangeUtils.h"
 #include "Utils/MemoryPoolExplicit.h"
 
 namespace ramses_internal
@@ -22,28 +21,28 @@ namespace ramses_internal
         return m_sceneResourceActions;
     }
 
-    bool ResourceChangeCollectingScene::getClientResourcesChanged() const
+    bool ResourceChangeCollectingScene::haveResourcesChanged() const
     {
-        return m_clientResourcesChanged;
+        return m_resourcesChanged;
     }
 
     void ResourceChangeCollectingScene::resetResourceChanges()
     {
         m_sceneResourceActions.clear();
-        m_clientResourcesChanged = false;
+        m_resourcesChanged = false;
     }
 
 
     void ResourceChangeCollectingScene::releaseRenderable(RenderableHandle renderableHandle)
     {
-        m_clientResourcesChanged = true;
+        m_resourcesChanged = true;
         TransformationCachedScene::releaseRenderable(renderableHandle);
 
     }
 
     void ResourceChangeCollectingScene::setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance)
     {
-        m_clientResourcesChanged = true;
+        m_resourcesChanged = true;
         TransformationCachedScene::setRenderableDataInstance(renderableHandle, slot, newDataInstance);
     }
 
@@ -51,27 +50,27 @@ namespace ramses_internal
     {
         auto oldVisibility = getRenderable(renderableHandle).visibilityMode;
         if (oldVisibility != visibility && (oldVisibility == EVisibilityMode::Off || visibility == EVisibilityMode::Off))
-            m_clientResourcesChanged = true;
+            m_resourcesChanged = true;
 
         TransformationCachedScene::setRenderableVisibility(renderableHandle, visibility);
     }
 
-    void ResourceChangeCollectingScene::setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor)
+    void ResourceChangeCollectingScene::setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride)
     {
-        m_clientResourcesChanged = true;
-        TransformationCachedScene::setDataResource(dataInstanceHandle, field, hash, dataBuffer, instancingDivisor);
+        m_resourcesChanged = true;
+        TransformationCachedScene::setDataResource(dataInstanceHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
     }
 
     void ResourceChangeCollectingScene::setDataTextureSamplerHandle(DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle)
     {
-        m_clientResourcesChanged = true;
+        m_resourcesChanged = true;
         TransformationCachedScene::setDataTextureSamplerHandle(containerHandle, field, samplerHandle);
     }
 
     ramses_internal::TextureSamplerHandle ResourceChangeCollectingScene::allocateTextureSampler(const TextureSampler& sampler, TextureSamplerHandle handle /*= TextureSamplerHandle::Invalid()*/)
     {
         if (sampler.textureResource.isValid())
-            m_clientResourcesChanged = true;
+            m_resourcesChanged = true;
 
         return TransformationCachedScene::allocateTextureSampler(sampler, handle);
     }
@@ -79,7 +78,7 @@ namespace ramses_internal
     void ResourceChangeCollectingScene::releaseTextureSampler(TextureSamplerHandle handle)
     {
         if (getTextureSampler(handle).textureResource.isValid())
-            m_clientResourcesChanged = true;
+            m_resourcesChanged = true;
 
         TransformationCachedScene::releaseTextureSampler(handle);
     }
@@ -87,13 +86,13 @@ namespace ramses_internal
     ramses_internal::DataSlotHandle ResourceChangeCollectingScene::allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle /*= DataSlotHandle::Invalid()*/)
     {
         if (dataSlot.attachedTexture.isValid())
-            m_clientResourcesChanged = true;
+            m_resourcesChanged = true;
         return TransformationCachedScene::allocateDataSlot(dataSlot, handle);
     }
 
     void ResourceChangeCollectingScene::setDataSlotTexture(DataSlotHandle providerHandle, const ResourceContentHash& texture)
     {
-        m_clientResourcesChanged = true;
+        m_resourcesChanged = true;
         TransformationCachedScene::setDataSlotTexture(providerHandle, texture);
     }
 
@@ -101,7 +100,7 @@ namespace ramses_internal
     {
         const ResourceContentHash& textureHash = getDataSlot(handle).attachedTexture;
         if (textureHash.isValid())
-            m_clientResourcesChanged = true;
+            m_resourcesChanged = true;
 
         TransformationCachedScene::releaseDataSlot(handle);
     }
@@ -132,9 +131,9 @@ namespace ramses_internal
         m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_DestroyRenderBuffer });
     }
 
-    StreamTextureHandle ResourceChangeCollectingScene::allocateStreamTexture(uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle)
+    StreamTextureHandle ResourceChangeCollectingScene::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle)
     {
-        m_clientResourcesChanged = true;
+        m_resourcesChanged = true;
 
         StreamTextureHandle newHandle = TransformationCachedScene::allocateStreamTexture(streamSource, fallbackTextureHash, streamTextureHandle);
         m_sceneResourceActions.push_back({ newHandle.asMemoryHandle(), ESceneResourceAction_CreateStreamTexture });
@@ -143,7 +142,7 @@ namespace ramses_internal
 
     void ResourceChangeCollectingScene::releaseStreamTexture(StreamTextureHandle handle)
     {
-        m_clientResourcesChanged = true;
+        m_resourcesChanged = true;
 
         TransformationCachedScene::releaseStreamTexture(handle);
         m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_DestroyStreamTexture });

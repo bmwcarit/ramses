@@ -8,6 +8,7 @@
 
 #include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/TextureSampler.h"
+#include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"

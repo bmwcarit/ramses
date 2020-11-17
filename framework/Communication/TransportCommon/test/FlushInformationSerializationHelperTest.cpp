@@ -44,8 +44,8 @@ namespace ramses_internal
         in.flushTimeInfo.clock_type = synchronized_clock_type::SystemTime;
         in.flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(12345));
         in.flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(54321));
-        in.resourceChanges.m_addedClientResourceRefs.push_back(ResourceContentHash(77, 66));
-        in.resourceChanges.m_removedClientResourceRefs.push_back(ResourceContentHash(77, 66));
+        in.resourceChanges.m_resourcesAdded.push_back(ResourceContentHash(77, 66));
+        in.resourceChanges.m_resourcesRemoved.push_back(ResourceContentHash(77, 66));
         SceneResourceAction action;
         in.resourceChanges.m_sceneResourceActions.push_back(std::move(action));
         SceneReferenceAction refAction{ SceneReferenceActionType::LinkData, SceneReferenceHandle{ 1 }, DataSlotId{ 1 }, SceneReferenceHandle{ 2 }, DataSlotId{ 2 } };
@@ -63,8 +63,8 @@ namespace ramses_internal
         in.flushTimeInfo.clock_type = synchronized_clock_type::PTP;
         in.flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(12345));
         in.flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(54321));
-        in.resourceChanges.m_addedClientResourceRefs.push_back(ResourceContentHash(77, 66));
-        in.resourceChanges.m_removedClientResourceRefs.push_back(ResourceContentHash(77, 66));
+        in.resourceChanges.m_resourcesAdded.push_back(ResourceContentHash(77, 66));
+        in.resourceChanges.m_resourcesRemoved.push_back(ResourceContentHash(77, 66));
         SceneResourceAction action;
         in.resourceChanges.m_sceneResourceActions.push_back(std::move(action));
         in.versionTag = SceneVersionTag(2);
@@ -79,8 +79,8 @@ namespace ramses_internal
         in.flushTimeInfo.clock_type = synchronized_clock_type::SystemTime;
         in.flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(12345));
         in.flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(54321));
-        in.resourceChanges.m_addedClientResourceRefs.push_back(ResourceContentHash(77, 66));
-        in.resourceChanges.m_removedClientResourceRefs.push_back(ResourceContentHash(77, 66));
+        in.resourceChanges.m_resourcesAdded.push_back(ResourceContentHash(77, 66));
+        in.resourceChanges.m_resourcesRemoved.push_back(ResourceContentHash(77, 66));
         SceneResourceAction action;
         in.resourceChanges.m_sceneResourceActions.push_back(std::move(action));
         SceneReferenceAction refAction{ SceneReferenceActionType::LinkData, SceneReferenceHandle{ 1 }, DataSlotId{ 1 }, SceneReferenceHandle{ 2 }, DataSlotId{ 2 } };

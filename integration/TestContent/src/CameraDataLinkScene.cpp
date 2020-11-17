@@ -76,13 +76,13 @@ namespace ramses_internal
 
         auto camera = m_scene.createPerspectiveCamera();
         camera->setViewport(0, 0, 16u, 16u);
-        camera->setFrustum(19.f, static_cast<float>(ramses_internal::IntegrationScene::DefaultDisplayWidth) / ramses_internal::IntegrationScene::DefaultDisplayHeight, 0.1f, 100.f);
+        camera->setFrustum(19.f, static_cast<float>(ramses_internal::IntegrationScene::DefaultViewportWidth) / ramses_internal::IntegrationScene::DefaultViewportHeight, 0.1f, 100.f);
         setCameraToDefaultRenderPass(camera);
 
         auto dataVpOffset = m_scene.createDataVector2i();
         auto dataVpSize = m_scene.createDataVector2i();
         dataVpOffset->setValue(0, 0);
-        dataVpSize->setValue(int32_t(ramses_internal::IntegrationScene::DefaultDisplayWidth), int32_t(ramses_internal::IntegrationScene::DefaultDisplayHeight));
+        dataVpSize->setValue(int32_t(ramses_internal::IntegrationScene::DefaultViewportWidth), int32_t(ramses_internal::IntegrationScene::DefaultViewportHeight));
         camera->bindViewportOffset(*dataVpOffset);
         camera->bindViewportSize(*dataVpSize);
         auto dataFrustumPlanes = m_scene.createDataVector4f();
@@ -103,7 +103,7 @@ namespace ramses_internal
         auto dataFrustumPlanes = m_scene.createDataVector4f();
         auto dataFrustumNearFarPlanes = m_scene.createDataVector2f();
         dataVpOffset->setValue(20, 20);
-        dataVpSize->setValue(int32_t(ramses_internal::IntegrationScene::DefaultDisplayWidth/2), int32_t(ramses_internal::IntegrationScene::DefaultDisplayHeight/2));
+        dataVpSize->setValue(int32_t(ramses_internal::IntegrationScene::DefaultViewportWidth/2), int32_t(ramses_internal::IntegrationScene::DefaultViewportHeight/2));
         ramses::RamsesUtils::SetPerspectiveCameraFrustumToDataObjects(
             60.f, // much wider FOV will make content smaller when projected
             0.5f, // original aspect ratio is 1:1, this will make content wider

@@ -26,7 +26,7 @@ namespace ramses_internal
 
 
     private:
-        typedef std::vector<CommandLineArgument> ArgumentList;
+        using ArgumentList = std::vector<CommandLineArgument>;
         mutable ArgumentList m_args;
         String m_programName;
     };

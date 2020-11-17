@@ -14,13 +14,13 @@
 
 namespace ramses_internal
 {
-    IPlatformFactory* PlatformFactory_Base::CreatePlatformFactory(const RendererConfig& rendererConfig)
+    IPlatform* Platform_Base::CreatePlatform(const RendererConfig& rendererConfig)
     {
         return new Platform_Wayland_Shell_EGL_ES_3_0(rendererConfig);
     }
 
     Platform_Wayland_Shell_EGL_ES_3_0::Platform_Wayland_Shell_EGL_ES_3_0(const RendererConfig& rendererConfig)
-        : PlatformFactory_Wayland_Shell_EGL(rendererConfig)
+        : Platform_Wayland_Shell_EGL(rendererConfig)
     {
     }
 

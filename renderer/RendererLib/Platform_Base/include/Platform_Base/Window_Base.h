@@ -11,7 +11,6 @@
 
 #include "RendererAPI/IWindow.h"
 
-
 namespace ramses_internal
 {
     class DisplayConfig;

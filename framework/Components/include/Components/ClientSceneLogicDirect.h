@@ -10,6 +10,7 @@
 #define RAMSES_CLIENTSCENELOGICDIRECT_H
 
 #include "Components/ClientSceneLogicBase.h"
+#include "SceneAPI/SceneSizeInformation.h"
 
 namespace ramses_internal
 {
@@ -18,10 +19,10 @@ namespace ramses_internal
     public:
         ClientSceneLogicDirect(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress);
 
-        virtual void flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
+        virtual bool flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;
 
     private:
-        SceneSizeInformation   m_previousSceneSizes;
+        SceneSizeInformation m_previousSceneSizes;
     };
 }
 

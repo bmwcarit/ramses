@@ -62,11 +62,6 @@ namespace ramses_internal
         ERendererCommand_UnmapSceneFromDisplays,
         ERendererCommand_ShowScene,
         ERendererCommand_HideScene,
-        ERendererCommand_RelativeTranslation,
-        ERendererCommand_AbsoluteTranslation,
-        ERendererCommand_RelativeRotation,
-        ERendererCommand_AbsoluteRotation,
-        ERendererCommand_ResetRenderView,
         ERendererCommand_UpdateWarpingData,
         ERendererCommand_ReadPixels,
         ERendererCommand_SetClearColor,
@@ -112,10 +107,9 @@ namespace ramses_internal
         ERendererCommand_COUNT
     };
 
-    class IResourceProvider;
     class IResourceUploader;
 
-    typedef Command< ERendererCommandType > RendererCommand;
+    using RendererCommand = Command<ERendererCommandType>;
 
     struct SceneInfoCommand : public RendererCommand
     {
@@ -139,7 +133,6 @@ namespace ramses_internal
 
         DisplayHandle displayHandle;
         DisplayConfig displayConfig;
-        IResourceProvider* resourceProvider = nullptr;
         IResourceUploader* resourceUploader = nullptr;
     };
 
@@ -212,14 +205,8 @@ namespace ramses_internal
         OffscreenBufferHandle  bufferHandle;
         UInt32                 bufferWidth = 0u;
         UInt32                 bufferHeight = 0u;
+        UInt32                 bufferSampleCount = 0u;
         Bool                   interruptible = false;
-    };
-
-    struct RendererViewCommand : public RendererCommand
-    {
-        DEFINE_COMMAND_TYPE(RendererViewCommand, ERendererCommandType_RendererView);
-
-        Vector3                 displayMovement;
     };
 
     struct LogCommand : public RendererCommand
@@ -277,7 +264,7 @@ namespace ramses_internal
     {
         DEFINE_COMMAND_TYPE(SetFrameTimerLimitsCommmand, ERendererCommandType_FrameTimerLimits);
 
-        UInt64 limitForClientResourcesUploadMicrosec = 0u;
+        UInt64 limitForResourcesUploadMicrosec = 0u;
         UInt64 limitForSceneResourcesUploadMicrosec = 0u;
         UInt64 limitForOffscreenBufferRenderMicrosec = 0u;
         UInt limitForPendingFlushesForceApply = 0u;
@@ -304,11 +291,6 @@ namespace ramses_internal
         "ERendererCommand_UnmapSceneFromDisplays",
         "ERendererCommand_ShowScene",
         "ERendererCommand_HideScene",
-        "ERendererCommand_RelativeTranslation",
-        "ERendererCommand_AbsoluteTranslation",
-        "ERendererCommand_RelativeRotation",
-        "ERendererCommand_AbsoluteRotation",
-        "ERendererCommand_ResetRenderView",
         "ERendererCommand_UpdateWarpingData",
         "ERendererCommand_ReadPixels",
         "ERendererCommand_SetClearColor",

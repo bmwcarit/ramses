@@ -148,7 +148,7 @@ namespace ramses
 
     bool ResourceDataPoolImpl::forceLoadResourcesFromResourceDataFile(std::string const& filename)
     {
-        m_client.getClientApplication().forceLoadFromResourceFile(filename.c_str());
+        m_client.getClientApplication().loadResourceFromFile(filename.c_str());
         return true;
     }
 
@@ -350,7 +350,7 @@ namespace ramses
             status = scene.impl.createAndDeserializeObjectImpls<ArrayResource, ArrayResourceImpl>(inputStream, context, 1);
             break;
         default:
-            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::createResourceForScene failed, unexpected object type in file stream.");
+            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::createResourceForScene failed, unexpected object type in file stream " << type);
         }
 
         return status == StatusOK ? scene.getResource(id) : nullptr;

@@ -24,12 +24,12 @@ public:
     void fillEffectDescription(ramses::EffectDescription& description) const;
 
 private:
-    typedef std::vector<ramses_internal::String> Tokens;
-    typedef ramses_internal::HashSet<ramses_internal::String> CompilerDefines;
-    typedef ramses_internal::HashMap<ramses_internal::String, ramses::EEffectUniformSemantic> UniformSemantics;
-    typedef ramses_internal::HashMap<ramses_internal::String, ramses::EEffectAttributeSemantic> AttributeSemantics;
-    typedef ramses_internal::HashMap<ramses_internal::String, ramses::EEffectUniformSemantic> UniformSemanticNameTable;
-    typedef ramses_internal::HashMap<ramses_internal::String, ramses::EEffectAttributeSemantic> AttributeSemanticNameTable;
+    using Tokens = std::vector<ramses_internal::String>;
+    using CompilerDefines = ramses_internal::HashSet<ramses_internal::String>;
+    using UniformSemantics = ramses_internal::HashMap<ramses_internal::String, ramses::EEffectUniformSemantic>;
+    using AttributeSemantics = ramses_internal::HashMap<ramses_internal::String, ramses::EEffectAttributeSemantic>;
+    using UniformSemanticNameTable = ramses_internal::HashMap<ramses_internal::String, ramses::EEffectUniformSemantic>;
+    using AttributeSemanticNameTable = ramses_internal::HashMap<ramses_internal::String, ramses::EEffectAttributeSemantic>;
 
     bool parseConfigLine(int lineNumber, const ramses_internal::String& line);
     bool parseUniformSemantic(int lineNumber, const ramses_internal::String& line, const Tokens& tokens);

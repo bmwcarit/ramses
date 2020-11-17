@@ -8,8 +8,8 @@
 
 #include "renderer_common_gmock_header.h"
 #include "RendererLib/WindowedRenderer.h"
-#include "ResourceProviderMock.h"
-#include "PlatformFactoryMock.h"
+#include "PlatformMock.h"
+#include "ResourceDeviceHandleAccessorMock.h"
 #include "RenderBackendMock.h"
 #include "ResourceUploaderMock.h"
 #include "RendererLib/RendererCommandBuffer.h"
@@ -43,7 +43,7 @@ public:
     {
         const DisplayConfig dummyConfig;
 
-        m_commandBuffer.createDisplay(dummyConfig, m_resourceProvider, m_resourceUploader, displayHandle);
+        m_commandBuffer.createDisplay(dummyConfig, m_resourceUploader, displayHandle);
         EXPECT_CALL(m_platformFactoryMock, createRenderBackend(_, _));
         update();
 
@@ -68,9 +68,8 @@ public:
     }
 
 protected:
-    PlatformFactoryNiceMock m_platformFactoryMock;
+    PlatformNiceMock m_platformFactoryMock;
     StrictMock<RendererSceneEventSenderMock> m_sceneEventSender;
-    NiceMock<ResourceProviderMock> m_resourceProvider;
     NiceMock<ResourceUploaderMock> m_resourceUploader;
     RendererCommandBuffer m_commandBuffer;
     RendererStatistics m_rendererStatistics;
@@ -111,11 +110,10 @@ TEST_F(AWindowedRenderer, canCreateAndDestroyDisplayInSingleLoop)
 {
     const DisplayHandle displayHandle(1u);
     const DisplayConfig dummyConfig;
-    NiceMock<ResourceProviderMock> resourceProvider;
     NiceMock<ResourceUploaderMock> resourceUploader;
 
     RendererCommandBuffer& rendererCommandBuffer = m_renderer.getRendererCommandBuffer();
-    rendererCommandBuffer.createDisplay(dummyConfig, resourceProvider, resourceUploader, displayHandle);
+    rendererCommandBuffer.createDisplay(dummyConfig, resourceUploader, displayHandle);
     rendererCommandBuffer.destroyDisplay(displayHandle);
 
     EXPECT_CALL(m_platformFactoryMock, createRenderBackend(_, _));

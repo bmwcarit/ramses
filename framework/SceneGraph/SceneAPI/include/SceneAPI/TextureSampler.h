@@ -23,8 +23,10 @@ namespace ramses_internal
             ClientTexture,
             TextureBuffer,
             RenderBuffer,
+            RenderBufferMS,
             StreamTexture,
-            OffscreenBuffer
+            OffscreenBuffer,
+            StreamBuffer
         };
 
         TextureSampler() = default;

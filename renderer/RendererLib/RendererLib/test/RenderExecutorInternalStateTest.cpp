@@ -13,7 +13,7 @@
 #include "RendererLib/SceneLinksManager.h"
 #include "RendererLib/RendererScenes.h"
 #include "TestEqualHelper.h"
-#include "ResourceProviderMock.h"
+#include "ResourceDeviceHandleAccessorMock.h"
 #include "RendererEventCollector.h"
 #include "Math3d/Matrix44f.h"
 #include "EmbeddedCompositingManagerMock.h"
@@ -28,7 +28,7 @@ namespace ramses_internal
     {
         const UInt32 FakeVpWidth = 800;
         const UInt32 FakeVpHeight = 600;
-        const Float FakeAspectRatio = 0.5f;
+        const Float FakeAspectRatio = float(FakeVpWidth) / FakeVpHeight;
         const Float FakeNearPlane = 0.1f;
         const Float FakeFarPlane = 0.2f;
         const Float FakeLeftPlane = 0.3f;
@@ -43,11 +43,9 @@ namespace ramses_internal
     {
     public:
         ARenderExecutorInternalState()
-            : m_fbProjParams(ProjectionParams::Perspective(19.f, static_cast<Float>(FakeVpWidth) / FakeVpHeight, 0.1f, 1500.f))
-            , m_fbProjMat(CameraMatrixHelper::ProjectionMatrix(m_fbProjParams))
-            , m_fbInfo(DeviceResourceHandle(0u), m_fbProjParams, Viewport(0, 0, FakeVpWidth, FakeVpHeight))
-            , m_executorState(m_device, m_fbInfo)
-            , m_executorStateWithTimer(m_device, m_fbInfo, {}, &m_frameTimer)
+            : m_bufferInfo{ DeviceResourceHandle(0u), FakeVpWidth, FakeVpHeight }
+            , m_executorState(m_device, m_bufferInfo)
+            , m_executorStateWithTimer(m_device, m_bufferInfo, {}, &m_frameTimer)
             , m_rendererScenes(m_rendererEventCollector)
             , m_sceneLinksManager(m_rendererScenes.getSceneLinksManager())
             , m_sceneId(666u)
@@ -60,9 +58,7 @@ namespace ramses_internal
 
     protected:
         StrictMock<DeviceMock>             m_device;
-        const ProjectionParams             m_fbProjParams;
-        const Matrix44f                    m_fbProjMat;
-        FrameBufferInfo                    m_fbInfo;
+        TargetBufferInfo                   m_bufferInfo;
         FrameTimer                         m_frameTimer;
         RenderExecutorInternalState        m_executorState;
         RenderExecutorInternalState        m_executorStateWithTimer;
@@ -73,7 +69,7 @@ namespace ramses_internal
         RendererCachedScene&               m_scene;
         SceneAllocateHelper                m_sceneAllocator;
 
-        CameraHandle createTestCamera(const Vector3& translation = Vector3(0.0f), ECameraProjectionType camProjType = ECameraProjectionType::Renderer)
+        CameraHandle createTestCamera(const Vector3& translation = Vector3(0.0f), ECameraProjectionType camProjType = ECameraProjectionType::Perspective)
         {
             const NodeHandle cameraNode = m_sceneAllocator.allocateNode();
             const auto dataLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference} }, {});
@@ -97,11 +93,8 @@ namespace ramses_internal
             m_scene.setDataSingleVector4f(frustumPlanes, DataFieldHandle{ 0 }, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane });
             m_scene.setDataSingleVector2f(frustumNearFar, DataFieldHandle{ 0 }, { params.nearPlane, params.farPlane });
 
-            if (ECameraProjectionType::Renderer != camProjType)
-            {
-                m_scene.setDataSingleVector2i(vpOffsetInstance, DataFieldHandle{ 0 }, { 0, 0 });
-                m_scene.setDataSingleVector2i(vpSizeInstance, DataFieldHandle{ 0 }, { Int32(FakeVpWidth), Int32(FakeVpHeight) });
-            }
+            m_scene.setDataSingleVector2i(vpOffsetInstance, DataFieldHandle{ 0 }, { 0, 0 });
+            m_scene.setDataSingleVector2i(vpSizeInstance, DataFieldHandle{ 0 }, { Int32(FakeVpWidth), Int32(FakeVpHeight) });
 
             const TransformHandle cameraTransform = m_sceneAllocator.allocateTransform(cameraNode);
             m_scene.setTranslation(cameraTransform, translation);
@@ -109,6 +102,13 @@ namespace ramses_internal
             return camera;
         }
     };
+
+    TEST_F(ARenderExecutorInternalState, canGetTargetBufferInfo)
+    {
+        EXPECT_EQ(DeviceResourceHandle(0u), m_executorState.getTargetBufferInfo().deviceHandle);
+        EXPECT_EQ(FakeVpWidth, m_executorState.getTargetBufferInfo().width);
+        EXPECT_EQ(FakeVpHeight, m_executorState.getTargetBufferInfo().height);
+    }
 
     TEST_F(ARenderExecutorInternalState, hasIdentityProjectionMatrixInDefaultState)
     {
@@ -125,47 +125,15 @@ namespace ramses_internal
         ASSERT_EQ(&otherScene, &m_executorState.getScene());
     }
 
-    TEST_F(ARenderExecutorInternalState, setsRendererViewMatrix)
-    {
-        const Matrix44f mat(0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3);
-        m_executorState.setRendererViewMatrix(mat);
-        EXPECT_EQ(mat, m_executorState.getRendererViewMatrix());
-    }
-
     TEST_F(ARenderExecutorInternalState, updatesCameraRelatedMatricesWhenSettingCamera)
     {
-        const Matrix44f mat(0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3);
-        m_executorState.setRendererViewMatrix(mat);
-
         const CameraHandle camera = createTestCamera(Vector3(3, 5, 6), ECameraProjectionType::Perspective);
         m_executorState.setCamera(camera);
 
         const NodeHandle cameraNode = m_scene.getCamera(camera).node;
         const Matrix44f camViewMat = m_scene.updateMatrixCache(ETransformationMatrixType_Object, cameraNode);
 
-        EXPECT_EQ(camViewMat, m_executorState.getCameraViewMatrix());
-        EXPECT_TRUE(matrixFloatEquals(mat * camViewMat, m_executorState.getViewMatrix()));
-    }
-
-    TEST_F(ARenderExecutorInternalState, updatesCameraPositionSemanticValueWhenSettingCamera)
-    {
-        const Matrix44f mat(Matrix44f::Translation(Vector3(0.5f, 1.5f, 3.5f)));
-        m_executorState.setRendererViewMatrix(mat);
-
-        const CameraHandle camera = createTestCamera(Vector3(3, 5, 6), ECameraProjectionType::Perspective);
-        m_executorState.setCamera(camera);
-
-        EXPECT_EQ(Vector3(2.5f, 3.5f, 2.5f), m_executorState.getCameraWorldPosition());
-    }
-
-    TEST_F(ARenderExecutorInternalState, DISABLED_setsFramebufferProjectionMatrixWhenSettingCameraOfTypeRenderer)
-    {
-        const Matrix44f mat(0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3);
-        m_executorState.setRendererViewMatrix(mat);
-
-        const CameraHandle camera = createTestCamera(Vector3(3, 5, 6));
-        m_executorState.setCamera(camera);
-        EXPECT_TRUE(matrixFloatEquals(m_fbProjMat, m_executorState.getProjectionMatrix()));
+        expectMatrixFloatEqual(camViewMat, m_executorState.getViewMatrix());
     }
 
     TEST_F(ARenderExecutorInternalState, updatesProjectionMatrixWhenSettingPerspectiveCamera)
@@ -200,9 +168,6 @@ namespace ramses_internal
 
     TEST_F(ARenderExecutorInternalState, setRenderableUpdatesAllModelDependentMatrices)
     {
-        const Matrix44f mat(0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3);
-        m_executorState.setRendererViewMatrix(mat);
-
         const CameraHandle camera = createTestCamera(Vector3(3, 5, 6), ECameraProjectionType::Perspective);
         m_executorState.setCamera(camera);
         const NodeHandle cameraNode = m_scene.getCamera(camera).node;
@@ -217,7 +182,7 @@ namespace ramses_internal
         const RenderGroupHandle renderGroup = m_sceneAllocator.allocateRenderGroup();
         m_scene.addRenderGroupToRenderPass(renderPass, renderGroup, 0);
         m_scene.addRenderableToRenderGroup(renderGroup, renderable, 0);
-        m_scene.setRotation(renderableTransform, Vector3(1, 2, 3));
+        m_scene.setRotation(renderableTransform, Vector3(1, 2, 3), ERotationConvention::Legacy_ZYX);
 
         NiceMock<ResourceDeviceHandleAccessorMock> resourceAccessor;
         NiceMock<EmbeddedCompositingManagerMock> embeddedCompositingManager;
@@ -227,12 +192,14 @@ namespace ramses_internal
         m_executorState.setRenderable(renderable);
 
         const Matrix44f modelMat = m_scene.updateMatrixCache(ETransformationMatrixType_World, renderableNode);
-        const Matrix44f expectedViewMat = mat * camViewMat;
+        const Matrix44f expectedViewMat = camViewMat;
         const Matrix44f expectedProjectionMat = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(FakeFoV, static_cast<Float>(FakeVpWidth) / FakeVpHeight, FakeNearPlane, FakeFarPlane));
 
-        EXPECT_TRUE(matrixFloatEquals(modelMat, m_executorState.getModelMatrix()));
-        EXPECT_TRUE(matrixFloatEquals(expectedViewMat * modelMat, m_executorState.getModelViewMatrix()));
-        EXPECT_TRUE(matrixFloatEquals(expectedProjectionMat * expectedViewMat * modelMat, m_executorState.getModelViewProjectionMatrix()));
+        expectMatrixFloatEqual(modelMat, m_executorState.getModelMatrix());
+        expectMatrixFloatEqual(expectedViewMat, m_executorState.getViewMatrix());
+        expectMatrixFloatEqual(expectedProjectionMat, m_executorState.getProjectionMatrix());
+        expectMatrixFloatEqual(expectedViewMat * modelMat, m_executorState.getModelViewMatrix());
+        expectMatrixFloatEqual(expectedProjectionMat * expectedViewMat * modelMat, m_executorState.getModelViewProjectionMatrix());
     }
 
     TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsUnchangedIfSetToSameValue)

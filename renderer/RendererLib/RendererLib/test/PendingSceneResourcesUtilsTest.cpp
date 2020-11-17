@@ -12,7 +12,7 @@
 #include "RendererResourceManagerMock.h"
 #include "Scene/Scene.h"
 #include "SceneAllocateHelper.h"
-#include "Scene/SceneResourceUtils.h"
+#include "SceneUtils/ResourceUtils.h"
 
 namespace ramses_internal {
 using namespace testing;
@@ -26,7 +26,7 @@ public:
     {
         allocateHelper.allocateRenderTarget(renderTargetHandle);
         allocateHelper.allocateRenderBuffer({ 16u, 16u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u }, renderBufferHandle);
-        allocateHelper.allocateStreamTexture(0, ResourceContentHash(1u, 2u), streamTextureHandle);
+        allocateHelper.allocateStreamTexture(WaylandIviSurfaceId{ 0u }, ResourceContentHash(1u, 2u), streamTextureHandle);
         allocateHelper.allocateBlitPass(RenderBufferHandle(81u), RenderBufferHandle(82u), blitPassHandle);
         allocateHelper.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType::UInt32, 10u, dataBufferHandle);
         allocateHelper.allocateTextureBuffer(ETextureFormat::R8, { { 4, 4 },{ 2, 2 },{ 1, 1 } }, textureBufferHandle);
@@ -134,7 +134,7 @@ TEST_F(APendingSceneResourcesUtils, getsSceneResourcesFromSceneAndApliesThem)
 {
     SceneResourceActionVector actions;
     size_t resSize = 999u;
-    SceneResourceUtils::GetAllSceneResourcesFromScene(actions, scene, resSize);
+    ResourceUtils::GetAllSceneResourcesFromScene(actions, scene, resSize);
     EXPECT_FALSE(actions.empty());
     EXPECT_EQ(21u, resSize);
 

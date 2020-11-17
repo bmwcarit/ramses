@@ -18,7 +18,6 @@ namespace ramses_internal
 {
     class WarpingMeshData;
     class DisplayConfig;
-    class IResourceProvider;
     class IResourceUploader;
 
     class RendererCommandBuffer
@@ -41,10 +40,10 @@ namespace ramses_internal
 
         void enqueueActionsForScene(SceneId sceneId, SceneUpdate&& sceneUpdate);
 
-        void createDisplay(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle);
+        void createDisplay(const DisplayConfig& displayConfig, IResourceUploader& resourceUploader, DisplayHandle handle);
         void destroyDisplay(DisplayHandle handle);
 
-        void createOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, bool interruptible);
+        void createOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, bool interruptible);
         void destroyOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle display);
         void assignSceneToDisplayBuffer(SceneId sceneId, OffscreenBufferHandle buffer, Int32 sceneRenderOrder);
 
@@ -55,12 +54,6 @@ namespace ramses_internal
         void linkSceneData(SceneId providerSceneId, DataSlotId providerDataSlotId, SceneId consumerSceneId, DataSlotId consumerDataSlotId);
         void linkBufferToSceneData(OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerDataSlotId);
         void unlinkSceneData(SceneId consumerSceneId, DataSlotId consumerDataSlotId);
-
-        void moveView       (const Vector3& offset);
-        void setViewPosition(const Vector3& position);
-        void rotateView     (const Vector3& rotationDiff);
-        void setViewRotation(const Vector3& rotation);
-        void resetView();
 
         void logStatistics      ();
         void logRendererInfo    (ERendererLogTopic topic, Bool verbose, NodeHandle nodeHandleFilter);

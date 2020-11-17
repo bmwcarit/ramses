@@ -42,21 +42,6 @@ namespace ramses_internal
             return fake;
         }
 
-        virtual bool sendRequestResources(const Guid& /*to*/, const ResourceContentHashVector& /*resources*/) override
-        {
-            return true;
-        }
-
-        virtual bool sendResourcesNotAvailable(const Guid& /*to*/, const ResourceContentHashVector& /*resources*/) override
-        {
-            return true;
-        }
-
-        virtual bool sendResources(const Guid& /*to*/, const ISceneUpdateSerializer& /*serializer*/) override
-        {
-            return true;
-        }
-
         virtual bool broadcastNewScenesAvailable(const SceneInfoVector& /*newScenes*/) override
         {
             return true;
@@ -97,17 +82,17 @@ namespace ramses_internal
             return true;
         }
 
-        virtual bool sendDcsmBroadcastOfferContent(ContentID /*contentID*/, Category, const std::string&) override
+        virtual bool sendDcsmBroadcastOfferContent(ContentID /*contentID*/, Category, ETechnicalContentType /*technicalContentType*/, const std::string&) override
         {
             return true;
         }
 
-        virtual bool sendDcsmOfferContent(const Guid& /*to*/, ContentID /*contentID*/, Category, const std::string&) override
+        virtual bool sendDcsmOfferContent(const Guid& /*to*/, ContentID /*contentID*/, Category, ETechnicalContentType /*technicalContentType*/, const std::string&) override
         {
             return true;
         }
 
-        virtual bool sendDcsmContentDescription(const Guid& /*to*/, ContentID /*contentID*/, ETechnicalContentType /*technicalContentType*/, TechnicalContentDescriptor /*technicalContentDescriptor*/) override
+        virtual bool sendDcsmContentDescription(const Guid& /*to*/, ContentID /*contentID*/, TechnicalContentDescriptor /*technicalContentDescriptor*/) override
         {
             return true;
         }
@@ -150,14 +135,6 @@ namespace ramses_internal
         virtual bool sendDcsmUpdateContentMetadata(const Guid& /*to*/, ContentID /*contentID*/, const DcsmMetadata& /*metadata*/) override
         {
             return true;
-        }
-
-        virtual void setResourceProviderServiceHandler(IResourceProviderServiceHandler* /*handler*/) override
-        {
-        }
-
-        virtual void setResourceConsumerServiceHandler(IResourceConsumerServiceHandler* /*handler*/) override
-        {
         }
 
         virtual void setSceneProviderServiceHandler(ISceneProviderServiceHandler* /*handler*/) override

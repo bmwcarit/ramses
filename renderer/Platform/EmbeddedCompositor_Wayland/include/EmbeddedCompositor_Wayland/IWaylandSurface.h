@@ -11,6 +11,7 @@
 
 #include "EmbeddedCompositor_Wayland/IWaylandClient.h"
 #include "RendererAPI/Types.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {

@@ -14,6 +14,11 @@
 #include "DummyResource.h"
 #include "PlatformAbstraction/PlatformLock.h"
 #include "Scene/ClientScene.h"
+#include "Components/ResourceComponent.h"
+#include "Components/SceneGraphComponent.h"
+#include "Resource/TextureResource.h"
+#include "TransportCommon/FakeConnectionSystem.h"
+#include "TransportCommon/FakeConnectionStatusUpdateNotifier.h"
 
 using namespace ramses_internal;
 
@@ -123,13 +128,6 @@ TEST_F(AClientApplicationLogic, triesToGetHashUsageFromResourceComponent)
     logic.getHashUsage(dummyResourceHash);
 }
 
-TEST_F(AClientApplicationLogic, triesToGetResourcesFromResourceComponent)
-{
-    ON_CALL(resourceComponent, getResources()).WillByDefault(Return(ManagedResourceVector()));
-    EXPECT_CALL(resourceComponent, getResources());
-    logic.getResources();
-}
-
 TEST_F(AClientApplicationLogic, addsAndRemovesResourceFilesFromComponent)
 {
     ResourceFileInputStreamSPtr resourceFileInputStream;
@@ -168,4 +166,108 @@ TEST_F(AClientApplicationLogic, incomingResourceAvailabilityEventDoesNoHarm)
     event.sceneid = SceneId { 123 };
 
     logic.handleResourceAvailabilityEvent(event, Guid {});
+}
+
+TEST_F(AClientApplicationLogic, returnsReturnValueFromComponentOnFlush)
+{
+    EXPECT_CALL(scenegraphProviderComponent, handleFlush(_, _, _)).WillOnce(Return(true));
+    EXPECT_TRUE(logic.flush(sceneId, {}, {}));
+
+    EXPECT_CALL(scenegraphProviderComponent, handleFlush(_, _, _)).WillOnce(Return(false));
+    EXPECT_FALSE(logic.flush(sceneId, {}, {}));
+}
+
+class AClientApplicationLogicWithRealComponents : public ::testing::Test
+{
+public:
+    AClientApplicationLogicWithRealComponents()
+        : resComp(stats, fwlock)
+        , sceneComp(clientId, commSystem, connStatusUpdateNotifier, resComp, fwlock)
+        , logic(clientId, fwlock)
+    {
+        logic.init(resComp, sceneComp);
+    }
+
+protected:
+    const SceneId sceneId = SceneId(1u);
+    const Guid clientId = Guid(1);
+    const Guid renderer1 = Guid(2);
+    const Guid renderer2 = Guid(3);
+
+    PlatformLock fwlock;
+    StatisticCollectionFramework stats;
+    ResourceComponent resComp;
+    FakeConnectionSystem commSystem;
+    FakeConnectionStatusUpdateNotifier connStatusUpdateNotifier;
+    SceneGraphComponent sceneComp;
+
+    ClientApplicationLogic logic;
+};
+
+TEST_F(AClientApplicationLogicWithRealComponents, keepsResourcesAliveForNewSubscriberForShadowCopyScene)
+{
+    ClientScene clientScene{ SceneInfo(sceneId) };
+    logic.createScene(clientScene, false);
+    logic.publishScene(sceneId, EScenePublicationMode_LocalAndRemote);
+    auto res = new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String());
+    res->setResourceData(ResourceBlob{ 1 }, { 1u, 1u });
+    auto hash = res->getHash();
+    {
+        // simulate creation of texture2d
+        auto manRes = logic.addResource(res);
+
+        auto hashUsage = logic.getHashUsage(hash);
+
+        // use texture2d
+        auto stHandle = clientScene.allocateStreamTexture(WaylandIviSurfaceId{ 1u }, hash);
+
+        sceneComp.handleSubscribeScene(sceneId, renderer1);
+        EXPECT_TRUE(logic.flush(sceneId, {}, {}));
+
+        // release stream texture along with its texture2d (by leaving scope)
+        clientScene.releaseStreamTexture(stHandle);
+    }
+
+    EXPECT_EQ(resComp.getResource(hash).get(), res);
+    sceneComp.handleSubscribeScene(sceneId, renderer2);
+}
+
+TEST_F(AClientApplicationLogicWithRealComponents, keepsAlsoOldResourcesAliveForNewSubscriberForShadowCopyScene)
+{
+    ClientScene clientScene{ SceneInfo(sceneId) };
+    logic.createScene(clientScene, false);
+    logic.publishScene(sceneId, EScenePublicationMode_LocalAndRemote);
+    auto res = new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String());
+    res->setResourceData(ResourceBlob{ 1 }, { 1u, 1u });
+    auto res2 = new TextureResource(EResourceType_Texture2D, TextureMetaInfo(2u, 2u, 1u, ETextureFormat::R8, true, {}, { 4u }), ResourceCacheFlag_DoNotCache, String());
+    res2->setResourceData(ResourceBlob{ 2 }, { 2u, 2u });
+    auto hash = res->getHash();
+    auto hash2 = res2->getHash();
+    {
+        // simulate creation of texture2d
+        auto manRes = logic.addResource(res);
+        auto hashUsage = logic.getHashUsage(hash);
+
+        // use texture2d
+        auto stHandle = clientScene.allocateStreamTexture(WaylandIviSurfaceId{ 1u }, hash);
+
+        sceneComp.handleSubscribeScene(sceneId, renderer1);
+        EXPECT_TRUE(logic.flush(sceneId, {}, {}));
+
+        // another stream texture
+        auto manRes2 = logic.addResource(res2);
+        auto hashUsage2 = logic.getHashUsage(hash2);
+
+        // use texture2d
+        clientScene.allocateStreamTexture(WaylandIviSurfaceId{ 2u }, hash2);
+
+        EXPECT_TRUE(logic.flush(sceneId, {}, {}));
+
+        // release first stream texture along with its texture2d (by leaving scope)
+        clientScene.releaseStreamTexture(stHandle);
+    }
+
+    EXPECT_EQ(resComp.getResource(hash).get(), res);
+    EXPECT_EQ(resComp.getResource(hash2).get(), res2);
+    sceneComp.handleSubscribeScene(sceneId, renderer2);
 }

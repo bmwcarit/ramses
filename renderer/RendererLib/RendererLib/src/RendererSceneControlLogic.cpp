@@ -234,7 +234,7 @@ namespace ramses_internal
                 sos << " (scene " << sceneId;
                 sos << ", " << EnumToString(newState) << ")";
             }));
-            m_pendingEvents.push_back({ Event::Type::SceneStateChanged, sceneId, newState });
+            m_pendingEvents.push_back({ sceneId, newState });
         }
     }
 
@@ -243,9 +243,6 @@ namespace ramses_internal
         assert(m_scenesInfo.count(sceneId) == 0 || getCurrentSceneState(sceneId) == ESceneStateInternal::Unpublished);
 
         setCurrentSceneState(sceneId, ESceneStateInternal::Published);
-        m_pendingEvents.push_back({ Event::Type::ScenePublished, sceneId, RendererSceneState::Unavailable });
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic generated event: scene published (scene " << sceneId << ")");
-
         goToTargetState(sceneId);
     }
 
@@ -357,7 +354,14 @@ namespace ramses_internal
         {
         case EventResult::OK:
             setCurrentSceneState(sceneId, ESceneStateInternal::Subscribed);
-            goToTargetState(sceneId);
+            // after unmap, we always need to continue to unsubscribed, before we can continue to a potentially different target state
+            if (getLastSceneStateCommandWaitingForReply(sceneId) == ESceneStateCommand::None)
+            {
+                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic continuing to unsubscribe after unmap regardless of target state of scene with id: " << sceneId);
+                m_sceneStateControl.handleSceneUnsubscriptionRequest(sceneId, false);
+                SceneInfo& sceneInfo = m_scenesInfo[sceneId];
+                sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Unsubscribe;
+            }
             break;
         case EventResult::Indirect:
             setCurrentSceneState(sceneId, ESceneStateInternal::Subscribed);
@@ -500,8 +504,8 @@ namespace ramses_internal
         switch (internalState)
         {
         case ESceneStateInternal::Unpublished:
-        case ESceneStateInternal::Published:
             return RendererSceneState::Unavailable;
+        case ESceneStateInternal::Published:
         case ESceneStateInternal::Subscribed:
         case ESceneStateInternal::Mapped:
             return RendererSceneState::Available;
@@ -520,9 +524,9 @@ namespace ramses_internal
         switch (state)
         {
         case RendererSceneState::Unavailable:
-            return ESceneStateInternal::Published;
+            return ESceneStateInternal::Unpublished;
         case RendererSceneState::Available:
-            return ESceneStateInternal::Subscribed;
+            return ESceneStateInternal::Published;
         case RendererSceneState::Ready:
             return ESceneStateInternal::MappedAndAssigned;
         case RendererSceneState::Rendered:

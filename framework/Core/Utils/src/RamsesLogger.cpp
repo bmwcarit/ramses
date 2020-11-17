@@ -75,6 +75,14 @@ namespace ramses_internal
         }
     }
 
+    void RamsesLogger::setConsoleLogLevelProgrammatically(ELogLevel logLevel)
+    {
+        m_consoleLogAppender.setLogLevel(logLevel);
+        m_consoleLogLevelSetProgrammatically = true;
+        m_consoleLogLevelProgrammatically = logLevel;
+    }
+
+
     void RamsesLogger::initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, bool disableDLT, bool enableDLTApplicationRegistration)
     {
         if (m_isInitialized)
@@ -90,6 +98,10 @@ namespace ramses_internal
         ELogLevel logLevelConsole = LogLevelDefault_Console;
 
         UpdateConsoleLogLevelFromDefine(logLevelConsole);
+
+        // programmatically set log level should override define, but will be afterwards overridden by cmdl arg "log-level-console" or "log-level"
+        if (m_consoleLogLevelSetProgrammatically)
+            logLevelConsole = m_consoleLogLevelProgrammatically;
 
         // generic "-l" argument applies to all log levels
         ArgumentString logLevelStr(parser, "l", "log-level", "");

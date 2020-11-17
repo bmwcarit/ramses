@@ -16,7 +16,6 @@ namespace ramses_internal
     class MultiSceneStreamTextureTests : public IEmbeddedCompositingTest
     {
     public:
-        MultiSceneStreamTextureTests();
         virtual void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) final;
         virtual bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
@@ -27,6 +26,9 @@ namespace ramses_internal
             CanUseTwoStreamTexturesWithSameSourceIdAndDifferentFallbackTextureFromTwoScenes,
             CanUseTwoStreamTexturesWithDifferentSourceIdAndSameFallbackTextureFromTwoScenes,
         };
+
+        static constexpr uint32_t DisplayWidth = IntegrationScene::DefaultViewportWidth * 2;
+        static constexpr uint32_t DisplayHeight = IntegrationScene::DefaultViewportHeight;
     };
 }
 

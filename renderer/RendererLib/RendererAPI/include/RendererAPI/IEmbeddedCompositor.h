@@ -10,34 +10,31 @@
 #define RAMSES_IEMBEDDEDCOMPOSITOR_H
 
 #include "RendererAPI/Types.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {
-
     class RendererLogContext;
     class ITextureUploadingAdapter;
 
     class IEmbeddedCompositor
     {
     public:
-
-        virtual ~IEmbeddedCompositor()
-        {
-        }
+        virtual ~IEmbeddedCompositor() = default;
 
         virtual void handleRequestsFromClients() = 0;
         virtual Bool hasUpdatedStreamTextureSources() const = 0;
-        virtual StreamTextureSourceIdSet dispatchUpdatedStreamTextureSourceIds() = 0;
-        virtual StreamTextureSourceIdSet dispatchNewStreamTextureSourceIds() = 0;
-        virtual StreamTextureSourceIdSet dispatchObsoleteStreamTextureSourceIds() = 0;
+        virtual WaylandIviSurfaceIdSet dispatchUpdatedStreamTextureSourceIds() = 0;
+        virtual WaylandIviSurfaceIdSet dispatchNewStreamTextureSourceIds() = 0;
+        virtual WaylandIviSurfaceIdSet dispatchObsoleteStreamTextureSourceIds() = 0;
         virtual void endFrame(Bool notifyClients) = 0;
-        virtual UInt32 uploadCompositingContentForStreamTexture(StreamTextureSourceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter) = 0;
+        virtual UInt32 uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter) = 0;
 
-        virtual Bool isContentAvailableForStreamTexture(StreamTextureSourceId streamTextureSourceId) const = 0;
+        virtual Bool isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const = 0;
         virtual UInt64 getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(WaylandIviSurfaceId waylandSurfaceId) const = 0;
         virtual Bool isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const = 0;
         virtual UInt32 getNumberOfCompositorConnections() const = 0;
-        virtual Bool hasSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const = 0;
+        virtual Bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const = 0;
         virtual String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const = 0;
         virtual void logInfos(RendererLogContext& context) const = 0;
 

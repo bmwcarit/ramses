@@ -41,8 +41,6 @@
 #include "SceneImpl.h"
 
 #include <memory>
-#include <chrono>
-
 
 namespace ramses_internal
 {
@@ -76,8 +74,8 @@ namespace ramses
     class ResourceImpl;
     class RamsesClient;
 
-    typedef std::vector<Scene*> SceneVector;
-    typedef std::vector<Resource*> ResourceVector;
+    using SceneVector = std::vector<Scene *>;
+    using ResourceVector = std::vector<Resource *>;
 
     class RamsesClientImpl final : public RamsesObjectImpl
     {
@@ -124,10 +122,7 @@ namespace ramses
         // special wrappers for known thread safe function
         ramses_internal::ResourceHashUsage getHashUsage_ThreadSafe(const ramses_internal::ResourceContentHash& hash) const;
         ramses_internal::ManagedResource getResource_ThreadSafe(ramses_internal::ResourceContentHash hash) const;
-        ramses_internal::ManagedResource forceLoadResource_ThreadSafe(const ramses_internal::ResourceContentHash& hash) const;
-
-        void setClientResourceCacheTimeout(std::chrono::milliseconds timeout);
-        void updateClientResourceCache();
+        ramses_internal::ManagedResource loadResource_ThreadSafe(const ramses_internal::ResourceContentHash& hash) const;
 
         SceneReference* findSceneReference(sceneId_t masterSceneId, sceneId_t referencedSceneId);
 
@@ -139,8 +134,6 @@ namespace ramses
         void writeLowLevelResourcesToStream(const ResourceObjects& resources, ramses_internal::BinaryFileOutputStream& resourceOutputStream, bool compress) const;
         static bool ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::BinaryFileInputStream& inputStream, const ramses_internal::String& verboseFileName);
         static void WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream);
-
-        void onResourceDestroyed(Resource& resource);
 
         ResourceDataPool& getResourceDataPool();
         ResourceDataPool const& getResourceDataPool() const;
@@ -170,12 +163,6 @@ namespace ramses
         private:
             Scene* m_scene;
             ramses_internal::ClientScene* m_lowLevelScene;
-        };
-
-        struct ResourceLoadStatus
-        {
-            bool successful;
-            ramses_internal::String filename;
         };
 
         struct SceneLoadStatus
@@ -215,9 +202,6 @@ namespace ramses
 
         std::vector<SceneLoadStatus> m_asyncSceneLoadStatusVec;
 
-        std::chrono::milliseconds m_clientResourceCacheTimeout;
-        using ClientResourceCache = std::deque<std::pair<std::chrono::time_point<std::chrono::steady_clock>, ramses_internal::ResourceHashUsage>>;
-        ClientResourceCache m_clientResourceCache;
         ResourceDataPool m_resourceDataPool;
     };
 

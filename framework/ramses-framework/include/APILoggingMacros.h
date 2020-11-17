@@ -72,6 +72,10 @@
         LOG_HL_CLIENT_API7(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7 _LOG_API_SEPERATOR arg8)
 #define LOG_HL_CLIENT_API9(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) \
         LOG_HL_CLIENT_API8(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 _LOG_API_SEPERATOR arg9)
+#define LOG_HL_CLIENT_API10(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10) \
+        LOG_HL_CLIENT_API9 (retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9 _LOG_API_SEPERATOR arg10)
+#define LOG_HL_CLIENT_API11(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11) \
+        LOG_HL_CLIENT_API10(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 _LOG_API_SEPERATOR arg11)
 
 // Renderer side macros
 #define _LOG_HL_RENDERER_API_STR(str) \

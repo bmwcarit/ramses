@@ -30,7 +30,9 @@ int main(int argc, char* argv[])
     ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "triangle scene");
 
     // every scene needs a render pass with camera
-    ramses::Camera* camera = scene->createRemoteCamera("my camera");
+    auto* camera = scene->createPerspectiveCamera("my camera");
+    camera->setViewport(0, 0, 1280u, 480u);
+    camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     camera->setTranslation(0.0f, 0.0f, 35.0f);
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
@@ -42,7 +44,7 @@ int main(int argc, char* argv[])
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-data-buffers-vertices.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-data-buffers-vertices.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     ramses::Effect* effect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = scene->createAppearance(*effect, "triangle appearance data buffer");
@@ -80,16 +82,16 @@ int main(int argc, char* argv[])
 
     // Create the DataBuffers
     // The data buffers need more information about size
-    const uint32_t SizeOfVertices = 16u;
-    const uint32_t SizeOfIndices  = 42u;
+    const uint32_t NumVertices = 16u;
+    const uint32_t NumIndices  = 42u;
 
     // then create the buffers via the _scene_
-    ramses::ArrayBuffer* vertices = scene->createArrayBuffer( ramses::EDataType::Vector3F, SizeOfVertices, "some varying vertices");
-    ramses::ArrayBuffer*  indices  = scene->createArrayBuffer( ramses::EDataType::UInt16, SizeOfIndices, "some varying indices");
+    ramses::ArrayBuffer* vertices = scene->createArrayBuffer( ramses::EDataType::Vector3F, NumVertices, "some varying vertices");
+    ramses::ArrayBuffer*  indices  = scene->createArrayBuffer( ramses::EDataType::UInt16, NumIndices, "some varying indices");
 
     // finally set/update the data
-    vertices->updateData(0u, SizeOfVertices, vertexPositions);
-    indices->updateData( 0u, SizeOfIndices, indexData);
+    vertices->updateData(0u, NumVertices, vertexPositions);
+    indices->updateData( 0u, NumIndices, indexData);
 
     /// [Data Buffer Example Setup]
 
@@ -121,35 +123,30 @@ int main(int argc, char* argv[])
         const uint32_t index      = i * 3u;
         const float    xValue     = vertexPositions[index+0];
         const float    yValue     = vertexPositions[index+1];
+        const float    zValue     = vertexPositions[index+2];
 
         updatedValues[0] = xValue + scaleFactor * xValue * currentFactor;
         updatedValues[1] = yValue + scaleFactor * yValue * currentFactor;
+        updatedValues[2] = zValue;
     };
 
     /// [Data Buffer Example Loop]
     const std::vector<uint32_t> ridges  = { 1, 7,  8, 14 };
     const std::vector<uint32_t> notches = { 3, 4, 11, 12 };
 
+    float updatedValues[3];
     for (uint64_t timeStamp = 0u; timeStamp < 10000u; timeStamp += 20u)
     {
         for(auto i: ridges)
         {
-            float updatedValues[2];
-            const uint32_t updatedValuesLength = 2;
-            const uint32_t offsetInDataBuffer  = i * 3u;
-
             translateVertex(updatedValues, i, timeStamp, 0.25f);
-            vertices->updateData(offsetInDataBuffer, updatedValuesLength, updatedValues);
+            vertices->updateData(i, 1, updatedValues);
         }
 
         for(auto i: notches)
         {
-            float updatedValues[2];
-            const uint32_t updatedValuesLength = 2;
-            const uint32_t offsetInDataBuffer  = i * 3u;
-
             translateVertex(updatedValues, i, timeStamp, -0.4f);
-            vertices->updateData(offsetInDataBuffer, updatedValuesLength, updatedValues);
+            vertices->updateData(i, 1, updatedValues);
         }
 
         // signal the scene it is in a state that can be rendered

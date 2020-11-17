@@ -15,14 +15,14 @@ namespace ramses_internal
 {
     UInt32 RenderExecutor::NumRenderablesToRenderInBetweenTimeBudgetChecks = RenderExecutor::DefaultNumRenderablesToRenderInBetweenTimeBudgetChecks;
 
-    RenderExecutor::RenderExecutor(IDevice& device, const FrameBufferInfo& frameBuffer, const SceneRenderExecutionIterator& renderFrom, const FrameTimer* frameTimer)
-        : m_state(device, frameBuffer, renderFrom, frameTimer)
+    RenderExecutor::RenderExecutor(IDevice& device, const TargetBufferInfo& bufferInfo, const SceneRenderExecutionIterator& renderFrom, const FrameTimer* frameTimer)
+        : m_state(device, bufferInfo, renderFrom, frameTimer)
     {
     }
 
-    SceneRenderExecutionIterator RenderExecutor::executeScene(const RendererCachedScene& scene, const Matrix44f& rendererViewMatrix) const
+    SceneRenderExecutionIterator RenderExecutor::executeScene(const RendererCachedScene& scene) const
     {
-        setGlobalInternalStates(scene, rendererViewMatrix);
+        setGlobalInternalStates(scene);
 
         const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
         for ( ; m_state.m_currentRenderIterator.getRenderPassIdx() < orderedPasses.size(); m_state.m_currentRenderIterator.incrementRenderPassIdx())
@@ -186,15 +186,16 @@ namespace ramses_internal
             device.activateShader(m_state.shaderDeviceHandle.getState());
         }
 
-        const DeviceHandleVector& geometryDeviceHandles = renderScene.getCachedHandlesForVertexAttributes()[vertexData.asMemoryHandle()];
+        const auto& vtxCache = renderScene.getCachedHandlesForVertexAttributes(vertexData);
         // Vertex attributes cache contains indices as first element, therefore the vertex attributes are shifted by 1 when accessing them
-        const UInt attributesCount = geometryDeviceHandles.size() - 1u;
-        for (DataFieldHandle attributeField(0u); attributeField < attributesCount; ++attributeField)
+        assert(vtxCache.size() > 0);
+        const UInt attributesCount = vtxCache.size() - 1;
+        for (DataFieldHandle attributeField(0u); attributeField < attributesCount ; ++attributeField)
         {
-            const DeviceResourceHandle geometryBufferHandle = geometryDeviceHandles[attributeField.asMemoryHandle() + 1u];
-            assert(geometryBufferHandle.isValid());
-            const UInt32 instancingDivisor = renderScene.getDataResource(vertexData, attributeField + 1u).instancingDivisor;
-            device.activateVertexBuffer(geometryBufferHandle, attributeField, instancingDivisor, renderable.startVertex);
+            const auto& attribCache = vtxCache[attributeField.asMemoryHandle() + 1];
+            assert(attribCache.deviceHandle.isValid());
+            const auto& resourceField = renderScene.getDataResource(vertexData, attributeField + 1);
+            device.activateVertexBuffer(attribCache.deviceHandle, attributeField, resourceField.instancingDivisor, renderable.startVertex, attribCache.dataType, resourceField.offsetWithinElementInBytes, resourceField.stride);
         }
 
         const DataLayoutHandle dataLayoutHandle = renderScene.getLayoutOfDataInstance(uniformData);
@@ -327,6 +328,17 @@ namespace ramses_internal
                 samplerStates.m_anisotropyLevel);
             break;
         }
+        case EDataType::TextureSampler2DMS:
+        {
+            const TextureSamplerHandle samplerHandle = renderScene.getDataTextureSamplerHandle(dataInstance, dataInstancefield);
+            assert(samplerHandle.isValid());
+
+            const DeviceResourceHandle textureDeviceHandle = renderScene.getCachedHandlesForTextureSamplers()[samplerHandle.asMemoryHandle()];
+            assert(textureDeviceHandle.isValid());
+
+            device.activateTexture(textureDeviceHandle, uniformInputField);
+            break;
+        }
 
         default:
             assert(false && "Unrecognized data type");
@@ -336,7 +348,7 @@ namespace ramses_internal
     void RenderExecutor::executeDrawCall() const
     {
         IDevice& device = m_state.getDevice();
-        const IScene& renderScene = m_state.getScene();
+        const auto& renderScene = m_state.getScene();
         const Renderable& renderable = renderScene.getRenderable(m_state.getRenderable());
 
         const bool hasIndexArray = m_state.indexBufferDeviceHandle.getState() != DeviceResourceHandle::Invalid();
@@ -356,10 +368,9 @@ namespace ramses_internal
         }
     }
 
-    void RenderExecutor::setGlobalInternalStates(const RendererCachedScene& scene, const Matrix44f& rendererViewMatrix) const
+    void RenderExecutor::setGlobalInternalStates(const RendererCachedScene& scene) const
     {
         m_state.setScene(scene);
-        m_state.setRendererViewMatrix(rendererViewMatrix);
     }
 
     void RenderExecutor::setRenderableInternalStates(RenderableHandle renderableHandle) const
@@ -373,8 +384,8 @@ namespace ramses_internal
         m_state.shaderDeviceHandle.setState(effectDeviceHandle);
 
         const DataInstanceHandle vertexData = renderable.dataInstances[ERenderableDataSlotType_Geometry];
-        const DeviceHandleVector& geometryDeviceHandles = renderScene.getCachedHandlesForVertexAttributes()[vertexData.asMemoryHandle()];
-        m_state.indexBufferDeviceHandle.setState(geometryDeviceHandles.front());
+        const auto& vtxCache = renderScene.getCachedHandlesForVertexAttributes(vertexData);
+        m_state.indexBufferDeviceHandle.setState(vtxCache.front().deviceHandle);
 
         const RenderState& renderState = renderScene.getRenderState(renderable.renderState);
 
@@ -423,7 +434,7 @@ namespace ramses_internal
         else
         {
             // Framebuffer
-            renderTargetDeviceResource = m_state.getFrameBufferInfo().deviceHandle;
+            renderTargetDeviceResource = m_state.getTargetBufferInfo().deviceHandle;
         }
 
         IDevice& device = m_state.getDevice();
@@ -433,87 +444,75 @@ namespace ramses_internal
     void RenderExecutor::resolveAndSetSemanticDataField(EFixedSemantics semantics, DataInstanceHandle dataInstHandle, DataFieldHandle dataFieldHandle) const
     {
         // semantic data is 'cached' directly in scene, for this special case non-const access is needed
-        IScene& scene = const_cast<RendererCachedScene&>(m_state.getScene());
+        auto& scene = const_cast<RendererCachedScene&>(m_state.getScene());
         switch (semantics)
         {
-        case EFixedSemantics_CameraViewMatrix:
-        {
-            const Matrix44f& mat = m_state.getCameraViewMatrix();
-            scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
-            break;
-        }
-        case EFixedSemantics_RendererViewMatrix:
-        {
-            const Matrix44f& mat = m_state.getRendererViewMatrix();
-            scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
-            break;
-        }
-        case EFixedSemantics_ViewMatrix:
+        case EFixedSemantics::ViewMatrix:
         {
             const Matrix44f& mat = m_state.getViewMatrix();
             scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
-        case EFixedSemantics_ProjectionMatrix:
+        case EFixedSemantics::ProjectionMatrix:
         {
             const Matrix44f& mat = m_state.getProjectionMatrix();
             scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
-        case EFixedSemantics_ModelMatrix:
+        case EFixedSemantics::ModelMatrix:
         {
             const Matrix44f& mat = m_state.getModelMatrix();
             scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
-        case EFixedSemantics_ModelViewMatrix:
+        case EFixedSemantics::ModelViewMatrix:
         {
             const Matrix44f& mat = m_state.getModelViewMatrix();
             scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
-        case EFixedSemantics_ModelViewMatrix33:
+        case EFixedSemantics::ModelViewMatrix33:
         {
             const Matrix33f mat = Matrix33f(m_state.getModelViewMatrix());
             scene.setDataSingleMatrix33f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
-        case EFixedSemantics_ModelViewProjectionMatrix:
+        case EFixedSemantics::ModelViewProjectionMatrix:
         {
             const Matrix44f& mat = m_state.getModelViewProjectionMatrix();
             scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
-        case EFixedSemantics_CameraWorldPosition:
+        case EFixedSemantics::CameraWorldPosition:
         {
             const Vector3& pos = m_state.getCameraWorldPosition();
             scene.setDataSingleVector3f(dataInstHandle, dataFieldHandle, pos);
             break;
         }
-        case EFixedSemantics_RendererScreenResolution:
-        {
-            const Vector2 screenResolution(static_cast<float>(m_state.getFrameBufferInfo().viewport.width), static_cast<float>(m_state.getFrameBufferInfo().viewport.height));
-            scene.setDataSingleVector2f(dataInstHandle, dataFieldHandle, screenResolution);
-            break;
-        }
-        case EFixedSemantics_NormalMatrix:
+        case EFixedSemantics::NormalMatrix:
         {
             const Matrix44f& mat = m_state.getModelViewMatrix().inverse().transpose();
             scene.setDataSingleMatrix44f(dataInstHandle, dataFieldHandle, mat);
             break;
         }
-        case EFixedSemantics_TextTextureUniform:
-            // not used to fill in data on renderer
+        case EFixedSemantics::DisplayBufferResolution:
+        {
+            const Vector2 bufferRes{ float(m_state.getTargetBufferInfo().width), float(m_state.getTargetBufferInfo().height) };
+            scene.setDataSingleVector2f(dataInstHandle, dataFieldHandle, bufferRes);
+            break;
+        }
+        case EFixedSemantics::TextTexture:
+            // used on client side only
             break;
         default:
-            assert(false && "Unknown semantics");
+            assert(false && "Unsupported semantics");
             break;
         }
     }
 
     void RenderExecutor::setSemanticDataFields() const
     {
-        const IScene& scene = m_state.getScene();
+        const auto& scene = m_state.getScene();
         const RenderableHandle renderable = m_state.getRenderable();
         const DataInstanceHandle dataInstance = scene.getRenderable(renderable).dataInstances[ERenderableDataSlotType_Uniforms];
         const DataLayoutHandle dataLayoutHandle = scene.getLayoutOfDataInstance(dataInstance);
@@ -523,7 +522,7 @@ namespace ramses_internal
         for (DataFieldHandle i(0u); i < fieldCount; ++i)
         {
             const EFixedSemantics semantics = dataLayout.getField(i).semantics;
-            if (semantics != EFixedSemantics_Invalid)
+            if (semantics != EFixedSemantics::Invalid)
             {
                 resolveAndSetSemanticDataField(semantics, dataInstance, i);
             }

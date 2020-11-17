@@ -31,8 +31,8 @@ namespace ramses_internal
     constexpr const ramses::dataProviderId_t MultiTypeLinkScene::TextureProviderId;
     constexpr const ramses::dataConsumerId_t MultiTypeLinkScene::TextureConsumerId;
 
-    MultiTypeLinkScene::MultiTypeLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    MultiTypeLinkScene::MultiTypeLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
         ramses::Effect* effectTex = getTestEffect("ramses-test-client-textured");

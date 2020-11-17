@@ -30,8 +30,7 @@ namespace ramses_internal
             filledDm.setWidgetOrder(m_widgetorder);
             filledDm.setWidgetHUDLineID(m_widgethudlineID);
             filledDm.setCarModel(1);
-            filledDm.setCarModelView({ 1,2,3,4,5,6,7 }, {8,9});
-            filledDm.setCarCameraPlanes({0.1f, 5.f});
+            filledDm.setCarModelView({ 1,2,3,4,5,6,7, 0.1f, 5.f }, {8,9});
             filledDm.setCarModelVisibility(true);
             filledDm.setExclusiveBackground(true);
             filledDm.setStreamID(49);
@@ -217,21 +216,12 @@ namespace ramses_internal
     TEST_F(ADcsmMetadata, canSetGetCarModelView)
     {
         DcsmMetadata dm;
-        constexpr ramses::CarModelViewMetadata values{ 7,6,5,4,3,2,1 };
+        constexpr ramses::CarModelViewMetadata values{ 7,6,5,4,3,2,1,0.1f,11.f };
         constexpr AnimationInformation timing{ 9,8 };
         dm.setCarModelView(values, timing);
         EXPECT_TRUE(dm.hasCarModelView());
         EXPECT_EQ(values, dm.getCarModelView());
         EXPECT_EQ(timing, dm.getCarModelViewAnimationInfo());
-    }
-
-    TEST_F(ADcsmMetadata, canSetGetCarCameraPlanes)
-    {
-        DcsmMetadata dm;
-        constexpr ramses::CarCameraPlaneMetadata values{ 2.f, 3.f };
-        dm.setCarCameraPlanes(values);
-        EXPECT_TRUE(dm.hasCarCameraPlanes());
-        EXPECT_EQ(values, dm.getCarCameraPlanes());
     }
 
     TEST_F(ADcsmMetadata, canSetGetCarModelVisibility)
@@ -388,23 +378,13 @@ namespace ramses_internal
     TEST_F(ADcsmMetadata, canSetCarModelViewToNewValue)
     {
         DcsmMetadata dm;
-        EXPECT_TRUE(dm.setCarModelView({ 1,2,3,4,5,6,7 }, { 8,9 }));
-        EXPECT_TRUE(dm.setCarModelView({ 7,6,5,4,3,2,1 }, { 9,8 }));
+        EXPECT_TRUE(dm.setCarModelView({ 1,2,3,4,5,6,7,0.8f,0.9f }, { 8,9 }));
+        EXPECT_TRUE(dm.setCarModelView({ 7,6,5,4,3,2,1,0.1f,0.2f }, { 9,8 }));
         EXPECT_TRUE(dm.hasCarModelView());
-        constexpr ramses::CarModelViewMetadata values{7,6,5,4,3,2,1};
+        constexpr ramses::CarModelViewMetadata values{7,6,5,4,3,2,1,0.1f,0.2f};
         EXPECT_EQ(values, dm.getCarModelView());
         constexpr AnimationInformation timing{ 9,8 };
         EXPECT_EQ(timing, dm.getCarModelViewAnimationInfo());
-    }
-
-    TEST_F(ADcsmMetadata, canSetCarCameraPlanesToNewValue)
-    {
-        DcsmMetadata dm;
-        EXPECT_TRUE(dm.setCarCameraPlanes({1.f, 2.f}));
-        EXPECT_TRUE(dm.setCarCameraPlanes({4.f, 5.f}));
-        EXPECT_TRUE(dm.hasCarCameraPlanes());
-        constexpr ramses::CarCameraPlaneMetadata values{4.f, 5.f};
-        EXPECT_EQ(values, dm.getCarCameraPlanes());
     }
 
     TEST_F(ADcsmMetadata, canSetCarModelVisibilityToNewValue)
@@ -506,31 +486,17 @@ namespace ramses_internal
     TEST_F(ADcsmMetadata, canUpdateCarModelViewLineFromOther)
     {
         DcsmMetadata dm;
-        EXPECT_TRUE(dm.setCarModelView({ 1,2,3,4,5,6,7 }, { 8,9 }));
+        EXPECT_TRUE(dm.setCarModelView({ 1,2,3,4,5,6,7,0.8f,0.9f }, { 8,9 }));
 
         DcsmMetadata otherDm;
-        EXPECT_TRUE(otherDm.setCarModelView({ 7,6,5,4,3,2,1 }, { 9,8 }));
+        EXPECT_TRUE(otherDm.setCarModelView({ 7,6,5,4,3,2,1,0.1f,0.2f }, { 9,8 }));
 
         dm.updateFromOther(otherDm);
         EXPECT_TRUE(dm.hasCarModelView());
-        constexpr ramses::CarModelViewMetadata values{7,6,5,4,3,2,1};
+        constexpr ramses::CarModelViewMetadata values{7,6,5,4,3,2,1,0.1f,0.2f};
         EXPECT_EQ(values, dm.getCarModelView());
         constexpr AnimationInformation timing{ 9,8 };
         EXPECT_EQ(timing, dm.getCarModelViewAnimationInfo());
-    }
-
-    TEST_F(ADcsmMetadata, canUpdateCarCameraPlanesLineFromOther)
-    {
-        DcsmMetadata dm;
-        EXPECT_TRUE(dm.setCarCameraPlanes({1.f, 3.f}));
-
-        DcsmMetadata otherDm;
-        EXPECT_TRUE(otherDm.setCarCameraPlanes({6.1f, 7.f}));
-
-        dm.updateFromOther(otherDm);
-        EXPECT_TRUE(dm.hasCarCameraPlanes());
-        constexpr ramses::CarCameraPlaneMetadata values{6.1f, 7.f};
-        EXPECT_EQ(values, dm.getCarCameraPlanes());
     }
 
     TEST_F(ADcsmMetadata, canUpdateCarModelVisibilityFromOther)
@@ -580,8 +546,7 @@ namespace ramses_internal
         EXPECT_TRUE(otherDm.setWidgetBackgroundID(567));
         EXPECT_TRUE(otherDm.setWidgetHUDLineID(789));
         EXPECT_TRUE(otherDm.setCarModel(1234));
-        EXPECT_TRUE(otherDm.setCarModelView({ 1,2,3,4,5,6,7 }, { 8,9 }));
-        EXPECT_TRUE(otherDm.setCarCameraPlanes({1.f, 2.f}));
+        EXPECT_TRUE(otherDm.setCarModelView({ 1,2,3,4,5,6,7,0.1f,0.2f }, { 8,9 }));
         EXPECT_TRUE(otherDm.setCarModelVisibility(true));
         EXPECT_TRUE(otherDm.setExclusiveBackground(true));
         EXPECT_TRUE(otherDm.setStreamID(45));
@@ -601,10 +566,8 @@ namespace ramses_internal
         EXPECT_TRUE(dm.hasCarModel());
         EXPECT_EQ(1234, dm.getCarModel());
         EXPECT_TRUE(dm.hasCarModelView());
-        EXPECT_EQ(ramses::CarModelViewMetadata({1,2,3,4,5,6,7}), dm.getCarModelView());
+        EXPECT_EQ(ramses::CarModelViewMetadata({1,2,3,4,5,6,7,0.1f,0.2f}), dm.getCarModelView());
         EXPECT_EQ(AnimationInformation({ 8,9 }), dm.getCarModelViewAnimationInfo());
-        EXPECT_TRUE(dm.hasCarCameraPlanes());
-        EXPECT_EQ(ramses::CarCameraPlaneMetadata({1.f, 2.f}), dm.getCarCameraPlanes());
         EXPECT_TRUE(dm.hasCarModelVisibility());
         EXPECT_TRUE(dm.getCarModelVisibility());
         EXPECT_TRUE(dm.hasExclusiveBackground());

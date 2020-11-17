@@ -9,12 +9,12 @@
 #ifndef RAMSES_PLATFORM_WINDOWS_WGL_4_2_CORE_H
 #define RAMSES_PLATFORM_WINDOWS_WGL_4_2_CORE_H
 
-#include "Surface_Windows_WGL/PlatformFactory_Windows_WGL.h"
+#include "Surface_Windows_WGL/Platform_Windows_WGL.h"
 #include "RendererAPI/IWindowEventHandler.h"
 
 namespace ramses_internal
 {
-    class Platform_Windows_WGL_4_2_core : public PlatformFactory_Windows_WGL
+    class Platform_Windows_WGL_4_2_core : public Platform_Windows_WGL
     {
     public:
         Platform_Windows_WGL_4_2_core(const RendererConfig& rendererConfig);

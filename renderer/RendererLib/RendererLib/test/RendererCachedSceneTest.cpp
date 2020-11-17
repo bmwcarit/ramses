@@ -11,7 +11,6 @@
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererEventCollector.h"
-#include "FrameBufferInfo.h"
 
 namespace ramses_internal
 {
@@ -905,9 +904,9 @@ namespace ramses_internal
         const ResourceContentHash effect1{ 1, 0 };
         const ResourceContentHash effect2{ 2, 0 };
         const ResourceContentHash effect3{ 3, 0 };
-        ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect1)).WillByDefault(Return(DeviceResourceHandle(1)));
-        ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect2)).WillByDefault(Return(DeviceResourceHandle(2)));
-        ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect3)).WillByDefault(Return(DeviceResourceHandle(3)));
+        ON_CALL(sceneHelper.resourceManager, getResourceDeviceHandle(effect1)).WillByDefault(Return(DeviceResourceHandle(1)));
+        ON_CALL(sceneHelper.resourceManager, getResourceDeviceHandle(effect2)).WillByDefault(Return(DeviceResourceHandle(2)));
+        ON_CALL(sceneHelper.resourceManager, getResourceDeviceHandle(effect3)).WillByDefault(Return(DeviceResourceHandle(3)));
 
         const DataLayoutHandle layout1 = sceneAllocator.allocateDataLayout({}, effect3);
         const DataInstanceHandle dataInstance1 = sceneAllocator.allocateDataInstance(layout1);
@@ -952,9 +951,9 @@ namespace ramses_internal
         const ResourceContentHash effect1{ 1, 0 };
         const ResourceContentHash effect2{ 2, 0 };
         const ResourceContentHash effect3{ 3, 0 };
-        ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect1)).WillByDefault(Return(DeviceResourceHandle(1)));
-        ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect2)).WillByDefault(Return(DeviceResourceHandle(2)));
-        ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect3)).WillByDefault(Return(DeviceResourceHandle(3)));
+        ON_CALL(sceneHelper.resourceManager, getResourceDeviceHandle(effect1)).WillByDefault(Return(DeviceResourceHandle(1)));
+        ON_CALL(sceneHelper.resourceManager, getResourceDeviceHandle(effect2)).WillByDefault(Return(DeviceResourceHandle(2)));
+        ON_CALL(sceneHelper.resourceManager, getResourceDeviceHandle(effect3)).WillByDefault(Return(DeviceResourceHandle(3)));
 
         const DataLayoutHandle layout1 = sceneAllocator.allocateDataLayout({}, effect3);
         const DataInstanceHandle dataInstance1 = sceneAllocator.allocateDataInstance(layout1);
@@ -994,8 +993,8 @@ namespace ramses_internal
 
         const ResourceContentHash effect1{ 1, 0 };
         const ResourceContentHash effect2{ 2, 0 };
-        ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect1)).WillByDefault(Return(DeviceResourceHandle(1)));
-        ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect2)).WillByDefault(Return(DeviceResourceHandle(2)));
+        ON_CALL(sceneHelper.resourceManager, getResourceDeviceHandle(effect1)).WillByDefault(Return(DeviceResourceHandle(1)));
+        ON_CALL(sceneHelper.resourceManager, getResourceDeviceHandle(effect2)).WillByDefault(Return(DeviceResourceHandle(2)));
 
         // rend1 and rend3 have same effect
         const DataLayoutHandle layout1 = sceneAllocator.allocateDataLayout({}, effect1);
@@ -1029,8 +1028,8 @@ namespace ramses_internal
 
         const ResourceContentHash effect1{ 1, 0 };
         const ResourceContentHash effect2{ 2, 0 };
-        ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect1)).WillByDefault(Return(DeviceResourceHandle(1)));
-        ON_CALL(sceneHelper.resourceManager, getClientResourceDeviceHandle(effect2)).WillByDefault(Return(DeviceResourceHandle(2)));
+        ON_CALL(sceneHelper.resourceManager, getResourceDeviceHandle(effect1)).WillByDefault(Return(DeviceResourceHandle(1)));
+        ON_CALL(sceneHelper.resourceManager, getResourceDeviceHandle(effect2)).WillByDefault(Return(DeviceResourceHandle(2)));
 
         const DataLayoutHandle effect1layout = sceneAllocator.allocateDataLayout({}, effect1);
         const DataLayoutHandle effect2layout = sceneAllocator.allocateDataLayout({}, effect2);

@@ -54,7 +54,6 @@ namespace ramses
     class Appearance;
     class RamsesClientImpl;
     class Camera;
-    class RemoteCamera;
     class PerspectiveCamera;
     class OrthographicCamera;
     class Appearance;
@@ -87,6 +86,7 @@ namespace ramses
     class BlitPass;
     class PickableObject;
     class TextureSampler;
+    class TextureSamplerMS;
     class StreamTexture;
     class Texture2D;
     class Texture3D;
@@ -125,7 +125,6 @@ namespace ramses
         status_t saveToFile(const char* fileName, bool compress) const;
         bool saveResources(std::string const& fileName, bool compress) const;
 
-        RemoteCamera*       createRemoteCamera(const char* name);
         PerspectiveCamera*  createPerspectiveCamera(const char* name);
         OrthographicCamera* createOrthographicCamera(const char* name);
 
@@ -200,6 +199,8 @@ namespace ramses
             const StreamTexture& streamTexture,
             const char* name);
 
+        ramses::TextureSamplerMS* createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name);
+
         DataFloat*     createDataFloat(const char* name);
         DataVector2f*  createDataVector2f(const char* name);
         DataVector3f*  createDataVector3f(const char* name);
@@ -219,6 +220,7 @@ namespace ramses
         status_t createTextureProvider(const Texture2D& texture, dataProviderId_t id);
         status_t updateTextureProvider(const Texture2D& texture, dataProviderId_t id);
         status_t createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t id);
+        status_t createTextureConsumer(const TextureSamplerMS& sampler, dataConsumerId_t id);
 
         AnimationSystem*         createAnimationSystem(uint32_t flags, const char* name);
         AnimationSystemRealTime* createRealTimeAnimationSystem(uint32_t flags, const char* name);
@@ -301,6 +303,9 @@ namespace ramses
             ramses_internal::MemoryHandle contentHandle,                 // a render target's color buffer, or a texture buffer, or a stream texture
             const char* name /*= 0*/);
 
+        template <typename SAMPLER>
+        status_t createTextureConsumerImpl(const SAMPLER& sampler, dataConsumerId_t id);
+
         RenderPass* createRenderPassInternal(const char* name);
         void registerCreatedObject(SceneObject& object);
         void registerCreatedResourceObject(Resource& resource);
@@ -310,6 +315,9 @@ namespace ramses
 
         template <typename OBJECT, typename CONTAINER>
         void removeObjectFromAllContainers(const OBJECT& object);
+
+        template <typename SAMPLER>
+        status_t destroyTextureSampler(SAMPLER& sampler);
 
         void markAllChildrenDirty(Node& node);
 
@@ -322,12 +330,11 @@ namespace ramses
         status_t destroyAnimationSystem(AnimationSystem& animationSystem);
         status_t destroyNode(Node& node);
         status_t destroyDataObject(DataObject& dataObject);
-        status_t destroyTextureSampler(TextureSampler& sampler);
         status_t destroyResource(Resource& resource);
         status_t destroyObject(SceneObject& object);
 
         typedef std::pair<NodeImpl*, EVisibilityMode> NodeVisibilityPair;
-        typedef std::vector<NodeVisibilityPair> NodeVisibilityInfoVector;
+        using NodeVisibilityInfoVector = std::vector<NodeVisibilityPair>;
 
         void applyVisibilityToSubtree(NodeImpl& node, EVisibilityMode visibilityToApply);
         void prepareListOfDirtyNodesForHierarchicalVisibility(NodeVisibilityInfoVector& nodesToProcess);

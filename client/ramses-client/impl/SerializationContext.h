@@ -21,11 +21,11 @@ namespace ramses
     class RamsesObjectImpl;
     class NodeImpl;
 
-    typedef uint32_t ObjectIDType;
+    using ObjectIDType = uint32_t;
 
     class DeserializationContext
     {
-        typedef ramses_internal::HashSet<RamsesObjectImpl*> RamsesObjectImplSet;
+        using RamsesObjectImplSet = ramses_internal::HashSet<RamsesObjectImpl *>;
 
     public:
         explicit DeserializationContext();
@@ -57,7 +57,7 @@ namespace ramses
 
     class SerializationContext
     {
-        typedef ramses_internal::HashMap<const RamsesObjectImpl*, ObjectIDType> IdMap;
+        using IdMap = ramses_internal::HashMap<const RamsesObjectImpl *, ObjectIDType>;
 
     public:
         SerializationContext();

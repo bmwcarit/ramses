@@ -17,7 +17,7 @@ namespace ramses_internal
     struct SceneReference
     {
         SceneId sceneId;
-        RendererSceneState requestedState = RendererSceneState::Unavailable;
+        RendererSceneState requestedState = RendererSceneState::Available;
         int32_t renderOrder = 0;
         bool flushNotifications = false;
     };

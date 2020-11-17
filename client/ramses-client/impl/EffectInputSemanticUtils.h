@@ -22,96 +22,91 @@ namespace ramses
         {
             switch (semanticType)
             {
-            case EEffectUniformSemantic_ProjectionMatrix:
-                return ramses_internal::EFixedSemantics_ProjectionMatrix;
-            case EEffectUniformSemantic_ModelMatrix:
-                return ramses_internal::EFixedSemantics_ModelMatrix;
-            case EEffectUniformSemantic_RendererViewMatrix:
-                return ramses_internal::EFixedSemantics_RendererViewMatrix;
-            case EEffectUniformSemantic_CameraViewMatrix:
-                return ramses_internal::EFixedSemantics_CameraViewMatrix;
-            case EEffectUniformSemantic_CameraWorldPosition:
-                return ramses_internal::EFixedSemantics_CameraWorldPosition;
-            case EEffectUniformSemantic_ViewMatrix:
-                return ramses_internal::EFixedSemantics_ViewMatrix;
-            case EEffectUniformSemantic_ModelViewMatrix:
-                return ramses_internal::EFixedSemantics_ModelViewMatrix;
-            case EEffectUniformSemantic_ModelViewMatrix33:
-                return ramses_internal::EFixedSemantics_ModelViewMatrix33;
-            case EEffectUniformSemantic_ModelViewProjectionMatrix:
-                return ramses_internal::EFixedSemantics_ModelViewProjectionMatrix;
-            case EEffectUniformSemantic_NormalMatrix:
-                return ramses_internal::EFixedSemantics_NormalMatrix;
-            case EEffectUniformSemantic_RendererScreenResolution:
-                return ramses_internal::EFixedSemantics_RendererScreenResolution;
-            case EEffectUniformSemantic_TextTexture:
-                return ramses_internal::EFixedSemantics_TextTextureUniform;
-            default:
-                assert(false);
-                return ramses_internal::EFixedSemantics_Invalid;
+            case EEffectUniformSemantic::ProjectionMatrix:
+                return ramses_internal::EFixedSemantics::ProjectionMatrix;
+            case EEffectUniformSemantic::ModelMatrix:
+                return ramses_internal::EFixedSemantics::ModelMatrix;
+            case EEffectUniformSemantic::CameraWorldPosition:
+                return ramses_internal::EFixedSemantics::CameraWorldPosition;
+            case EEffectUniformSemantic::ViewMatrix:
+                return ramses_internal::EFixedSemantics::ViewMatrix;
+            case EEffectUniformSemantic::ModelViewMatrix:
+                return ramses_internal::EFixedSemantics::ModelViewMatrix;
+            case EEffectUniformSemantic::ModelViewMatrix33:
+                return ramses_internal::EFixedSemantics::ModelViewMatrix33;
+            case EEffectUniformSemantic::ModelViewProjectionMatrix:
+                return ramses_internal::EFixedSemantics::ModelViewProjectionMatrix;
+            case EEffectUniformSemantic::NormalMatrix:
+                return ramses_internal::EFixedSemantics::NormalMatrix;
+            case EEffectUniformSemantic::DisplayBufferResolution:
+                return ramses_internal::EFixedSemantics::DisplayBufferResolution;
+            case EEffectUniformSemantic::TextTexture:
+                return ramses_internal::EFixedSemantics::TextTexture;
+            case EEffectUniformSemantic::Invalid:
+                return ramses_internal::EFixedSemantics::Invalid;
             }
+
+            assert(false);
+            return ramses_internal::EFixedSemantics::Invalid;
         }
 
         static EEffectUniformSemantic GetEffectUniformSemanticFromInternal(ramses_internal::EFixedSemantics semanticType)
         {
             switch (semanticType)
             {
-            case ramses_internal::EFixedSemantics_ProjectionMatrix:
-                return EEffectUniformSemantic_ProjectionMatrix;
-            case ramses_internal::EFixedSemantics_ModelMatrix:
-                return EEffectUniformSemantic_ModelMatrix;
-            case ramses_internal::EFixedSemantics_RendererViewMatrix:
-                return EEffectUniformSemantic_RendererViewMatrix;
-            case ramses_internal::EFixedSemantics_CameraViewMatrix:
-                return EEffectUniformSemantic_CameraViewMatrix;
-            case ramses_internal::EFixedSemantics_CameraWorldPosition:
-                return EEffectUniformSemantic_CameraWorldPosition;
-            case ramses_internal::EFixedSemantics_ViewMatrix:
-                return EEffectUniformSemantic_ViewMatrix;
-            case ramses_internal::EFixedSemantics_ModelViewMatrix:
-                return EEffectUniformSemantic_ModelViewMatrix;
-            case ramses_internal::EFixedSemantics_ModelViewMatrix33:
-                return EEffectUniformSemantic_ModelViewMatrix33;
-            case ramses_internal::EFixedSemantics_ModelViewProjectionMatrix:
-                return EEffectUniformSemantic_ModelViewProjectionMatrix;
-            case ramses_internal::EFixedSemantics_RendererScreenResolution:
-                return EEffectUniformSemantic_RendererScreenResolution;
-            case ramses_internal::EFixedSemantics_NormalMatrix:
-                return EEffectUniformSemantic_NormalMatrix;
-            case ramses_internal::EFixedSemantics_TextTextureUniform:
-                return EEffectUniformSemantic_TextTexture;
-            case ramses_internal::EFixedSemantics_Invalid:
-                return EEffectUniformSemantic_Invalid;
+            case ramses_internal::EFixedSemantics::ProjectionMatrix:
+                return EEffectUniformSemantic::ProjectionMatrix;
+            case ramses_internal::EFixedSemantics::ModelMatrix:
+                return EEffectUniformSemantic::ModelMatrix;
+            case ramses_internal::EFixedSemantics::CameraWorldPosition:
+                return EEffectUniformSemantic::CameraWorldPosition;
+            case ramses_internal::EFixedSemantics::ViewMatrix:
+                return EEffectUniformSemantic::ViewMatrix;
+            case ramses_internal::EFixedSemantics::ModelViewMatrix:
+                return EEffectUniformSemantic::ModelViewMatrix;
+            case ramses_internal::EFixedSemantics::ModelViewMatrix33:
+                return EEffectUniformSemantic::ModelViewMatrix33;
+            case ramses_internal::EFixedSemantics::ModelViewProjectionMatrix:
+                return EEffectUniformSemantic::ModelViewProjectionMatrix;
+            case ramses_internal::EFixedSemantics::DisplayBufferResolution:
+                return EEffectUniformSemantic::DisplayBufferResolution;
+            case ramses_internal::EFixedSemantics::NormalMatrix:
+                return EEffectUniformSemantic::NormalMatrix;
+            case ramses_internal::EFixedSemantics::TextTexture:
+                return EEffectUniformSemantic::TextTexture;
             default:
-                return EEffectUniformSemantic_Invalid;
+                return EEffectUniformSemantic::Invalid;
             }
+
+            return EEffectUniformSemantic::Invalid;
         }
 
         static ramses_internal::EFixedSemantics GetEffectInputSemanticInternal(EEffectAttributeSemantic semanticType)
         {
             switch (semanticType)
             {
-            case EEffectAttributeSemantic_TextPositions:
-                return ramses_internal::EFixedSemantics_TextPositionsAttribute;
-            case EEffectAttributeSemantic_TextTextureCoordinates:
-                return ramses_internal::EFixedSemantics_TextTextureCoordinatesAttribute;
-            default:
-                return ramses_internal::EFixedSemantics_Invalid;
+            case EEffectAttributeSemantic::TextPositions:
+                return ramses_internal::EFixedSemantics::TextPositionsAttribute;
+            case EEffectAttributeSemantic::TextTextureCoordinates:
+                return ramses_internal::EFixedSemantics::TextTextureCoordinatesAttribute;
+            case EEffectAttributeSemantic::Invalid:
+                return ramses_internal::EFixedSemantics::Invalid;
             }
+
+            assert(false);
+            return ramses_internal::EFixedSemantics::Invalid;
         }
 
         static EEffectAttributeSemantic GetEffectAttributeSemanticFromInternal(ramses_internal::EFixedSemantics semanticType)
         {
             switch (semanticType)
             {
-            case ramses_internal::EFixedSemantics_TextPositionsAttribute:
-                return EEffectAttributeSemantic_TextPositions;
-            case ramses_internal::EFixedSemantics_TextTextureCoordinatesAttribute:
-                return EEffectAttributeSemantic_TextTextureCoordinates;
-            case ramses_internal::EFixedSemantics_Invalid:
-                return EEffectAttributeSemantic_Invalid;
+            case ramses_internal::EFixedSemantics::TextPositionsAttribute:
+                return EEffectAttributeSemantic::TextPositions;
+            case ramses_internal::EFixedSemantics::TextTextureCoordinatesAttribute:
+                return EEffectAttributeSemantic::TextTextureCoordinates;
             default:
-                return EEffectAttributeSemantic_Invalid;
+                return EEffectAttributeSemantic::Invalid;
             }
         }
     };

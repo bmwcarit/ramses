@@ -23,7 +23,7 @@
 #include "SceneImpl.h"
 #include "RamsesClientImpl.h"
 #include "MeshNodeImpl.h"
-#include "Scene/SceneResourceUtils.h"
+#include "SceneUtils/ResourceUtils.h"
 #include "Scene/ClientScene.h"
 #include "RamsesClientImpl.h"
 #include "RamsesObjectTypeUtils.h"
@@ -59,7 +59,7 @@ namespace ramses
         }
 
         ramses_internal::ResourceContentHashVector resourcesUsedInScene;
-        ramses_internal::SceneResourceUtils::GetAllClientResourcesFromScene(resourcesUsedInScene, scene.impl.getIScene());
+        ramses_internal::ResourceUtils::GetAllResourcesFromScene(resourcesUsedInScene, scene.impl.getIScene());
         for (const auto hash : resourcesUsedInScene)
         {
             if (!knownHashes.contains(hash))

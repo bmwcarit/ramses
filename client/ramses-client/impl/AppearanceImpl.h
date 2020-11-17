@@ -125,7 +125,7 @@ namespace ramses
             ramses_internal::DataInstanceHandle dataReference;
         };
 
-        typedef ramses_internal::HashMap<uint32_t, BindableInput> BindableInputMap;
+        using BindableInputMap = ramses_internal::HashMap<uint32_t, BindableInput>;
         BindableInputMap m_bindableInputs;
     };
 }

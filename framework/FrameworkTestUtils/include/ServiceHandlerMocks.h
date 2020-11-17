@@ -19,25 +19,6 @@
 
 namespace ramses_internal
 {
-    class ResourceConsumerServiceHandlerMock : public IResourceConsumerServiceHandler
-    {
-    public:
-        ResourceConsumerServiceHandlerMock();
-        virtual ~ResourceConsumerServiceHandlerMock() override;
-
-        MOCK_METHOD(void, handleSendResource, (absl::Span<const Byte> data, const Guid& providerID), (override));
-        MOCK_METHOD(void, handleResourcesNotAvailable, (const ResourceContentHashVector& resources, const Guid& providerID), (override));
-    };
-
-    class ResourceProviderServiceHandlerMock : public IResourceProviderServiceHandler
-    {
-    public:
-        ResourceProviderServiceHandlerMock();
-        virtual ~ResourceProviderServiceHandlerMock() override;
-
-        MOCK_METHOD(void, handleRequestResources, (const ResourceContentHashVector& resources, const Guid& requesterId), (override));
-    };
-
     class SceneProviderServiceHandlerMock : public ISceneProviderServiceHandler
     {
     public:
@@ -80,8 +61,8 @@ namespace ramses_internal
         DcsmConsumerServiceHandlerMock();
         virtual ~DcsmConsumerServiceHandlerMock() override;
 
-        MOCK_METHOD(void, handleOfferContent, (ContentID contentID, Category, const std::string& friendlyName, const Guid& providerID), (override));
-        MOCK_METHOD(void, handleContentDescription, (ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID), (override));
+        MOCK_METHOD(void, handleOfferContent, (ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName, const Guid& providerID), (override));
+        MOCK_METHOD(void, handleContentDescription, (ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID), (override));
         MOCK_METHOD(void, handleContentReady, (ContentID contentID, const Guid& providerID), (override));
         MOCK_METHOD(void, handleContentEnableFocusRequest, (ContentID contentID, int32_t focusRequest, const Guid& providerID), (override));
         MOCK_METHOD(void, handleContentDisableFocusRequest, (ContentID contentID, int32_t focusRequest, const Guid& providerID), (override));

@@ -87,7 +87,7 @@ namespace ramses_internal
     HideScene::HideScene(ramses::RendererMate& rendererMate)
         : RendererMateRamshCommand(rendererMate)
     {
-        description = "Hide a mapped scene";
+        description = "Hide a rendered scene";
         registerKeyword("hideScene");
 
         getArgument<0>()
@@ -101,37 +101,20 @@ namespace ramses_internal
         return true;
     }
 
-    UnmapScene::UnmapScene(ramses::RendererMate& rendererMate)
+    ReleaseScene::ReleaseScene(ramses::RendererMate& rendererMate)
         : RendererMateRamshCommand(rendererMate)
     {
-        description = "Unmap a scene from a display";
-        registerKeyword("unmapScene");
+        description = "Release (Unmap and Unsubscribe) a scene from renderer";
+        registerKeyword("releaseScene");
 
         getArgument<0>()
             .registerKeyword("sceneId")
             .setDescription("Scene id");
     }
 
-    bool UnmapScene::execute(uint64_t& sceneId) const
+    bool ReleaseScene::execute(uint64_t& sceneId) const
     {
         m_rendererMate.setSceneState(ramses::sceneId_t{ sceneId }, ramses::RendererSceneState::Available);
-        return true;
-    }
-
-    UnsubscribeScene::UnsubscribeScene(ramses::RendererMate& rendererMate)
-        : RendererMateRamshCommand(rendererMate)
-    {
-        description = "Unsubscribe renderer from a scene it is subscribed to";
-        registerKeyword("unsubscribeScene");
-
-        getArgument<0>()
-            .registerKeyword("sceneId")
-            .setDescription("Scene id");
-    }
-
-    bool UnsubscribeScene::execute(uint64_t& sceneId) const
-    {
-        m_rendererMate.setSceneState(ramses::sceneId_t{ sceneId }, ramses::RendererSceneState::Unavailable);
         return true;
     }
 

@@ -91,9 +91,11 @@ namespace ramses_internal
         // Transformation
         virtual const Vector3&              getTranslation                  (TransformHandle handle) const override;
         virtual const Vector3&              getRotation                     (TransformHandle handle) const override;
+        virtual ERotationConvention         getRotationConvention           (TransformHandle handle) const override;
         virtual const Vector3&              getScaling                      (TransformHandle handle) const override;
         virtual void                        setTranslation                  (TransformHandle handle, const Vector3& translation) override;
-        virtual void                        setRotation                     (TransformHandle handle, const Vector3& rotation) override;
+        virtual void                        setRotation                     (TransformHandle handle, const Vector3& rotation, ERotationConvention convention) override;
+        virtual void                        setRotationForAnimation         (TransformHandle handle, const Vector3& rotation) override;
         virtual void                        setScaling                      (TransformHandle handle, const Vector3& scaling) override;
 
         virtual DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) override;
@@ -135,7 +137,7 @@ namespace ramses_internal
         virtual void                        setDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data) override;
         virtual void                        setDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data) override;
         virtual void                        setDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data) override;
-        virtual void                        setDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor) override;
+        virtual void                        setDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) override;
         virtual void                        setDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
         virtual void                        setDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef) override;
 
@@ -236,7 +238,7 @@ namespace ramses_internal
         virtual const RenderBuffer&         getRenderBuffer                 (RenderBufferHandle handle) const override;
 
         // stream texture
-        virtual StreamTextureHandle         allocateStreamTexture           (uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
+        virtual StreamTextureHandle         allocateStreamTexture           (WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
         virtual void                        releaseStreamTexture            (StreamTextureHandle streamTextureHandle) override;
         virtual bool                        isStreamTextureAllocated        (StreamTextureHandle streamTextureHandle) const override;
         virtual UInt32                      getStreamTextureCount           () const override;

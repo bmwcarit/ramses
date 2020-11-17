@@ -19,8 +19,8 @@ namespace ramses_internal
     class Spline : public SplineBase
     {
     public:
-        typedef Spline<Key, EDataType> SplineType;
-        typedef Key<EDataType> KeyType;
+        using SplineType = Spline<Key, EDataType>;
+        using KeyType = Key<EDataType>;
 
         // SplineBase interface
         virtual ESplineKeyType getKeyType() const override;
@@ -39,7 +39,7 @@ namespace ramses_internal
         void setKeyInternal(SplineKeyIndex keyIndex, SplineTimeStamp timeStamp, const KeyType& key);
         void shiftKeysByOneStartingFrom(SplineKeyIndex startFromIndex);
 
-        typedef std::vector<KeyType> KeyVector;
+        using KeyVector = std::vector<KeyType>;
 
         KeyVector m_keys;
     };

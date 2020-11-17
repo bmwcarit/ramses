@@ -144,4 +144,19 @@ namespace ramses_internal
         us.insert(ResourceContentHash{1, 2});
         EXPECT_EQ(2u, us.size());
     }
+
+    TEST(AResourceContentHash, canPrintResourceContentHashVector)
+    {
+        ResourceContentHashVector vec{
+            {0x0123456789abcdef, 0x0123456789abcdef},
+            {0x0123456789abcdef, 0x1123456789abcdef},
+            {0x0123456789abcdef, 0x2123456789abcdef},
+            {0x0123456789abcdef, 0x3123456789abcdef},
+            {0x0123456789abcdef, 0x4123456789abcdef},
+            {0x0123456789abcdef, 0x5123456789abcdef},
+            {0x0123456789abcdef, 0x6123456789abcdef} };
+
+        EXPECT_EQ(fmt::to_string(vec), "[7 resources: inv_0123456789ABCDEF0123456789ABCDEF vtx_1123456789ABCDEF0123456789ABCDEF idx_2123456789ABCDEF0123456789ABCDEF tx2_3123456789ABCDEF0123456789ABCDEF tx3_4123456789ABCDEF0123456789ABCDEF txc_5123456789ABCDEF0123456789ABCDEF eff_6123456789ABCDEF0123456789ABCDEF]");
+    }
+
 }

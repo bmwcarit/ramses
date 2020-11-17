@@ -236,30 +236,6 @@ namespace ramses
         */
         ResourceDataPoolImpl& impl;
 
-        /**
-         * \brief Deprecated overload of addArrayResourceData function with different order of parameters. Do not use.
-         * \deprecated Use documented versions above. Will be removed in next major versions.
-         */
-        resourceId_t addArrayResourceData(uint32_t, EDataType, const void*, resourceCacheFlag_t = ResourceCacheFlag_DoNotCache, const char* = nullptr);
-
-        /**
-         * \brief Deprecated overload of addTexture2DData function with different order of parameters. Do not use.
-         * \deprecated Use documented versions above. Will be removed in next major versions.
-         */
-        resourceId_t addTexture2DData(uint32_t, uint32_t, ETextureFormat, uint32_t, const MipLevelData mipLevelData[], bool = false, const TextureSwizzle& = {}, resourceCacheFlag_t = ResourceCacheFlag_DoNotCache, const char* = nullptr);
-
-        /**
-         * \brief Deprecated overload of addTexture3DData function with different order of parameters. Do not use.
-         * \deprecated Use documented versions above. Will be removed in next major versions.
-         */
-        resourceId_t addTexture3DData(uint32_t, uint32_t, uint32_t, ETextureFormat, uint32_t, const MipLevelData mipLevelData[], bool = false, resourceCacheFlag_t = ResourceCacheFlag_DoNotCache, const char* = nullptr);
-
-        /**
-         * \brief Deprecated overload of addTextureCubeData function with different order of parameters. Do not use.
-         * \deprecated Use documented versions above. Will be removed in next major versions.
-         */
-        resourceId_t addTextureCubeData(uint32_t, ETextureFormat, uint32_t, const CubeMipLevelData mipLevelData[], bool = false, const TextureSwizzle& = {}, resourceCacheFlag_t = ResourceCacheFlag_DoNotCache, const char* = nullptr);
-
     private:
 
         /**

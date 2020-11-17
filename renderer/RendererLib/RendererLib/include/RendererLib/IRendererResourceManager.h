@@ -15,7 +15,9 @@
 #include "SceneAPI/SceneTypes.h"
 #include "SceneAPI/TextureSamplerStates.h"
 #include "SceneAPI/EDataType.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Resource/ResourceTypes.h"
+#include "Components/ManagedResource.h"
 
 namespace ramses_internal
 {
@@ -26,18 +28,16 @@ namespace ramses_internal
     class IRendererResourceManager : public IResourceDeviceHandleAccessor
     {
     public:
-        // Client resources
-        virtual EResourceStatus  getClientResourceStatus(const ResourceContentHash& hash) const = 0;
-        virtual EResourceType    getClientResourceType(const ResourceContentHash& hash) const = 0;
+        // Immutable resources
+        virtual EResourceStatus  getResourceStatus(const ResourceContentHash& hash) const = 0;
+        virtual EResourceType    getResourceType(const ResourceContentHash& hash) const = 0;
 
-        virtual void             referenceClientResourcesForScene     (SceneId sceneId, const ResourceContentHashVector& resources) = 0;
-        virtual void             unreferenceClientResourcesForScene   (SceneId sceneId, const ResourceContentHashVector& resources) = 0;
+        virtual void             referenceResourcesForScene     (SceneId sceneId, const ResourceContentHashVector& resources) = 0;
+        virtual void             unreferenceResourcesForScene   (SceneId sceneId, const ResourceContentHashVector& resources) = 0;
 
-        virtual void             getRequestedResourcesAlreadyInCache(const IRendererResourceCache* cache) = 0;
-        virtual void             requestAndUnrequestPendingClientResources() = 0;
-        virtual void             processArrivedClientResources(IRendererResourceCache* cache) = 0;
-        virtual Bool             hasClientResourcesToBeUploaded() const = 0;
-        virtual void             uploadAndUnloadPendingClientResources() = 0;
+        virtual void             provideResourceData(const ManagedResource& mr) = 0;
+        virtual Bool             hasResourcesToBeUploaded() const = 0;
+        virtual void             uploadAndUnloadPendingResources() = 0;
 
         // Scene resources
         virtual void             uploadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer) = 0;
@@ -48,7 +48,7 @@ namespace ramses_internal
         virtual void             uploadTextureSampler(TextureSamplerHandle handle, SceneId sceneId, const TextureSamplerStates& states) = 0;
         virtual void             unloadTextureSampler(TextureSamplerHandle handle, SceneId sceneId) = 0;
 
-        virtual void             uploadStreamTexture(StreamTextureHandle handle, StreamTextureSourceId source, SceneId sceneId) = 0;
+        virtual void             uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId) = 0;
         virtual void             unloadStreamTexture(StreamTextureHandle handle, SceneId sceneId) = 0;
 
         virtual void             uploadBlitPassRenderTargets(BlitPassHandle blitPass, RenderBufferHandle sourceRenderBuffer, RenderBufferHandle destinationRenderBuffer, SceneId sceneId) = 0;
@@ -63,11 +63,15 @@ namespace ramses_internal
         virtual void             updateTextureBuffer(TextureBufferHandle textureBufferHandle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data, SceneId sceneId) = 0;
 
         virtual void             unloadAllSceneResourcesForScene(SceneId sceneId) = 0;
-        virtual void             unreferenceAllClientResourcesForScene(SceneId sceneId) = 0;
+        virtual void             unreferenceAllResourcesForScene(SceneId sceneId) = 0;
+        virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const = 0;
 
         // Renderer resources
-        virtual void             uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, Bool isDoubleBuffered) = 0;
+        virtual void             uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered) = 0;
         virtual void             unloadOffscreenBuffer(OffscreenBufferHandle bufferHandle) = 0;
+
+        virtual void             uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId) = 0;
+        virtual void             unloadStreamBuffer(StreamBufferHandle bufferHandle) = 0;
     };
 }
 #endif

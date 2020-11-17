@@ -29,7 +29,7 @@ namespace ramses
     class RenderTarget;
     class RenderTargetImpl;
 
-    typedef std::vector<const RenderGroupImpl*>   RenderGroupVector;
+    using RenderGroupVector = std::vector<const RenderGroupImpl *>;
 
     class RenderPassImpl final : public SceneObjectImpl
     {
@@ -46,6 +46,7 @@ namespace ramses
 
         status_t      setCamera(const CameraNodeImpl& cameraImpl);
         const Camera* getCamera()const;
+        Camera* getCamera();
 
         status_t setClearColor(const ramses_internal::Vector4& clearColor);
         const ramses_internal::Vector4& getClearColor() const;

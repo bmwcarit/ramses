@@ -19,7 +19,7 @@ namespace ramses_internal
     {
         EXPECT_EQ(0u, this->m_scene.getStreamTextureCount());
 
-        const uint32_t streamSource(12);
+        const WaylandIviSurfaceId streamSource(12);
         const ResourceContentHash fallbackTextureHash(123, 0);
         StreamTextureHandle textureHandle = this->m_scene.allocateStreamTexture(streamSource, fallbackTextureHash);
 
@@ -32,7 +32,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, SetsStreamTextureForceFallbackImageSetting)
     {
-        const uint32_t streamSource(12);
+        const WaylandIviSurfaceId streamSource(12);
         const ResourceContentHash fallbackTextureHash(123, 0);
         StreamTextureHandle textureHandle = this->m_scene.allocateStreamTexture(streamSource, fallbackTextureHash);
 
@@ -48,7 +48,7 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, DeleteStreamTextureAndCheckScene)
     {
-        StreamTextureHandle textureHandle = this->m_scene.allocateStreamTexture(0, ResourceContentHash(123u, 0));
+        StreamTextureHandle textureHandle = this->m_scene.allocateStreamTexture(WaylandIviSurfaceId{ 0u }, ResourceContentHash(123u, 0));
 
         EXPECT_NE(StreamTextureHandle::Invalid(), textureHandle);
         EXPECT_TRUE(this->m_scene.isStreamTextureAllocated(textureHandle));

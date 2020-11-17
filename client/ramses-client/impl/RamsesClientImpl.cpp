@@ -73,7 +73,6 @@ namespace ramses
         , m_framework(framework)
         , m_loadFromFileTaskQueue(framework.getTaskQueue())
         , m_deleteSceneQueue(framework.getTaskQueue())
-        , m_clientResourceCacheTimeout(5000)
         , m_resourceDataPool(*new ResourceDataPoolImpl(*this))
     {
         assert(!framework.isConnected());
@@ -213,9 +212,9 @@ namespace ramses
             }
             else
             {
-                const ramses_internal::ManagedResource forceLoadedResource = getClientApplication().forceLoadResource(hash);
-                assert(forceLoadedResource);
-                managedResources.push_back(forceLoadedResource);
+                const ramses_internal::ManagedResource loadedResource = getClientApplication().loadResource(hash);
+                assert(loadedResource);
+                managedResources.push_back(loadedResource);
             }
         }
 
@@ -500,9 +499,9 @@ namespace ramses
         return m_appLogic.getResource(hash);
     }
 
-    ramses_internal::ManagedResource RamsesClientImpl::forceLoadResource_ThreadSafe(const ramses_internal::ResourceContentHash& hash) const
+    ramses_internal::ManagedResource RamsesClientImpl::loadResource_ThreadSafe(const ramses_internal::ResourceContentHash& hash) const
     {
-        return m_appLogic.forceLoadResource(hash);
+        return m_appLogic.loadResource(hash);
     }
 
     const Scene* RamsesClientImpl::findSceneByName(const char* name) const
@@ -589,29 +588,6 @@ namespace ramses
         addValidationMessage(EValidationSeverity_Info, indent, msg.c_str());
 
         return status;
-    }
-
-    void RamsesClientImpl::onResourceDestroyed(Resource& resource)
-    {
-        if (m_clientResourceCacheTimeout > std::chrono::milliseconds{ 0u })
-        {
-            const auto timeNow = std::chrono::steady_clock::now();
-            m_clientResourceCache.push_back(std::make_pair(timeNow, m_framework.getResourceComponent().getResourceHashUsage(resource.impl.getLowlevelResourceHash())));
-        }
-    }
-
-    void RamsesClientImpl::updateClientResourceCache()
-    {
-        const auto timeNow = std::chrono::steady_clock::now();
-        while (m_clientResourceCache.size() != 0 && timeNow > m_clientResourceCache.front().first + m_clientResourceCacheTimeout)
-        {
-            m_clientResourceCache.pop_front();
-        }
-    }
-
-    void RamsesClientImpl::setClientResourceCacheTimeout(std::chrono::milliseconds timeout)
-    {
-        m_clientResourceCacheTimeout = timeout;
     }
 
     ResourceDataPool& RamsesClientImpl::getResourceDataPool()

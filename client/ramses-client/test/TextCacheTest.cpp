@@ -83,9 +83,9 @@ namespace ramses
                 "  gl_FragColor = vec4(a, a, a, a); \n"
                 "}\n");
 
-            effectDesc.setAttributeSemantic("a_position", EEffectAttributeSemantic_TextPositions);
-            effectDesc.setAttributeSemantic("a_texcoord", EEffectAttributeSemantic_TextTextureCoordinates);
-            effectDesc.setUniformSemantic("u_texture", EEffectUniformSemantic_TextTexture);
+            effectDesc.setAttributeSemantic("a_position", EEffectAttributeSemantic::TextPositions);
+            effectDesc.setAttributeSemantic("a_texcoord", EEffectAttributeSemantic::TextTextureCoordinates);
+            effectDesc.setUniformSemantic("u_texture", EEffectUniformSemantic::TextTexture);
 
             Effect* effect = scene.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, "");
             return effect;

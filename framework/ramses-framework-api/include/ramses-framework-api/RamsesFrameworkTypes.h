@@ -99,7 +99,7 @@ namespace ramses
          * @brief Create invalid resource Id
          * @return Invalid resource id
          */
-        constexpr static resourceId_t Invalid()
+        static constexpr resourceId_t Invalid()
         {
             return resourceId_t();
         }
@@ -161,6 +161,20 @@ namespace ramses
         ERamsesShellType_None = 0,
         ERamsesShellType_Console,
         ERamsesShellType_Default
+    };
+
+    /**
+    * @brief Type of Ramses Log Level
+    */
+    enum class ELogLevel
+    {
+        Off,
+        Fatal,
+        Error,
+        Warn,
+        Info,
+        Debug,
+        Trace
     };
 
     /**

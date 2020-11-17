@@ -9,8 +9,8 @@
 #include "TestScenes/RenderPassOnceScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
+#include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderPass.h"
@@ -133,10 +133,10 @@ namespace ramses_internal
         transNode->setTranslation(0.f, 0.f, -4.f);
         meshNode->setParent(*transNode);
 
-        ramses::Camera *camera = m_scene.createRemoteCamera();
-        camera->setParent(getDefaultCameraTranslationNode());
+        ramses::Camera& camera = createCameraWithDefaultParameters();
+        camera.setParent(getDefaultCameraTranslationNode());
         ramses::RenderPass* renderPass = m_scene.createRenderPass();
-        renderPass->setCamera(*camera);
+        renderPass->setCamera(camera);
         ramses::RenderGroup* renderGroup = m_scene.createRenderGroup();
         renderPass->addRenderGroup(*renderGroup);
         renderPass->setRenderOrder(1);

@@ -18,7 +18,7 @@
 #include "RendererEventTestHandler.h"
 #include "SceneAPI/SceneId.h"
 
-#include "PlatformFactoryMock.h"
+#include "PlatformMock.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/ArrayBuffer.h"
@@ -47,7 +47,7 @@ namespace ramses_internal
     using namespace testing;
 
     //RamsesRendererDispatchTest is already applying a hack to setup mock factory which is automatically inherited by the following class
-    extern NiceMock<PlatformFactoryNiceMock>* gPlatformFactoryMock;
+    extern NiceMock<PlatformNiceMock>* gPlatformMock;
 
     class ARamsesRendererPicking : public ::testing::Test
     {
@@ -55,8 +55,8 @@ namespace ramses_internal
         void createDisplay()
         {
             //This has the effect that the display buffer will be created with given width and height which is needed to test the picking algorithm
-            EXPECT_CALL(gPlatformFactoryMock->renderBackendMock.surfaceMock.windowMock, getWidth()).WillRepeatedly(Return(1280));
-            EXPECT_CALL(gPlatformFactoryMock->renderBackendMock.surfaceMock.windowMock, getHeight()).WillRepeatedly(Return(480));
+            EXPECT_CALL(gPlatformMock->renderBackendMock.surfaceMock.windowMock, getWidth()).WillRepeatedly(Return(1280));
+            EXPECT_CALL(gPlatformMock->renderBackendMock.surfaceMock.windowMock, getHeight()).WillRepeatedly(Return(480));
 
             m_displayId = m_renderer.createDisplay({});
             updateAndDispatch();

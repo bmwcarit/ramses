@@ -24,8 +24,7 @@ private:
         ramses_internal::UInt32 sceneState,
         const ramses_internal::String& expectedImageName,
         float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel,
-        const ramses_internal::Vector3& cameraTranslation = ramses_internal::Vector3(0.0f),
-        const ramses::SceneConfig& sceneConfig = ramses::SceneConfig());
+        const ramses_internal::Vector3& cameraTranslation = ramses_internal::Vector3(0.0f));
 
     enum
     {
@@ -123,6 +122,16 @@ private:
         DataBuffer_VertexDataBufferGetsUpdated,
         DataBuffer_SwitchFromClientArrayResourceToDataBuffer,
         DataBuffer_SwitchFromDataBufferToClientArrayResource,
+        DataBuffer_InterleavedVertexAttribute,
+        DataBuffer_InterleavedVertexAttribute_GetsUpdated,
+        DataBuffer_InterleavedVertexAttribute_TwoStrides,
+        DataBuffer_InterleavedVertexAttribute_SingleAttrib,
+        DataBuffer_InterleavedVertexAttribute_StartVertexOffset,
+
+        ArrayResource_InterleavedVertexAttribute,
+        ArrayResource_InterleavedVertexAttribute_TwoStrides,
+        ArrayResource_InterleavedVertexAttribute_SingleAttrib,
+        ArrayResource_InterleavedVertexAttribute_StartVertexOffset,
 
         Display_SetClearColor,
 
@@ -136,6 +145,8 @@ private:
         GeometryShaderGlslV310Extension_PointsInPointsOut,
         GeometryShaderGlslV310Extension_TrianglesInTriangleStripOut,
         GeometryShaderGlslV310Extension_TrianglesInPointsOut,
+
+        EulerRotationConventions,
 
         FrameProfiler_Show
     };

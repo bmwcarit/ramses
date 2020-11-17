@@ -15,11 +15,15 @@
 
 namespace ramses_internal
 {
+    enum class EDataType;
+
     struct ResourceField
     {
         ResourceContentHash hash;
         DataBufferHandle dataBuffer;
         UInt32 instancingDivisor;
+        UInt16 offsetWithinElementInBytes;
+        UInt16 stride;
     };
 }
 

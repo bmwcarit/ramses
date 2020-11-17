@@ -20,7 +20,7 @@ namespace ramses_internal
     class AnimationDataBindTestContainer
     {
     public:
-        typedef typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType GetSetType;
+        using GetSetType = typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType;
 
         GetSetType getVal0() const
         {
@@ -175,15 +175,15 @@ namespace ramses_internal
         }
     };
 
-    typedef AnimationDataBindTestContainer<bool>    AnimationDataBindTestBool;
-    typedef AnimationDataBindTestContainer<Int32>   AnimationDataBindTestInt32;
-    typedef AnimationDataBindTestContainer<Float>   AnimationDataBindTestFloat;
-    typedef AnimationDataBindTestContainer<Vector2> AnimationDataBindTestVector2;
-    typedef AnimationDataBindTestContainer<Vector3> AnimationDataBindTestVector3;
-    typedef AnimationDataBindTestContainer<Vector4> AnimationDataBindTestVector4;
-    typedef AnimationDataBindTestContainer<Vector2i> AnimationDataBindTestVector2i;
-    typedef AnimationDataBindTestContainer<Vector3i> AnimationDataBindTestVector3i;
-    typedef AnimationDataBindTestContainer<Vector4i> AnimationDataBindTestVector4i;
+    using AnimationDataBindTestBool = AnimationDataBindTestContainer<bool>;
+    using AnimationDataBindTestInt32 = AnimationDataBindTestContainer<Int32>;
+    using AnimationDataBindTestFloat = AnimationDataBindTestContainer<Float>;
+    using AnimationDataBindTestVector2 = AnimationDataBindTestContainer<Vector2>;
+    using AnimationDataBindTestVector3 = AnimationDataBindTestContainer<Vector3>;
+    using AnimationDataBindTestVector4 = AnimationDataBindTestContainer<Vector4>;
+    using AnimationDataBindTestVector2i = AnimationDataBindTestContainer<Vector2i>;
+    using AnimationDataBindTestVector3i = AnimationDataBindTestContainer<Vector3i>;
+    using AnimationDataBindTestVector4i = AnimationDataBindTestContainer<Vector4i>;
 
     DATA_BIND_DECLARE_BEGIN(AnimationDataBindTestBool, 3)
         DATA_BIND_DECLARE(0, VALUE0)

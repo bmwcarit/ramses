@@ -21,9 +21,9 @@ namespace ramses_internal
     class StronglyTypedValue final
     {
     public:
-        typedef _baseType BaseType;
+        using BaseType = _baseType;
 
-        constexpr static StronglyTypedValue Invalid() noexcept
+        static constexpr StronglyTypedValue Invalid() noexcept
         {
             return StronglyTypedValue(_invalid);
         }

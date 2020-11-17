@@ -18,35 +18,35 @@ namespace ramses_internal
     {
         enum class CategoryInfoUpdateType : uint32_t
         {
-            CategorySize = 1,
+            CategoryRect = 1,
             RenderSize = 2,
-            SafeArea = 3,
+            SafeRect = 3,
         };
 
         constexpr const uint32_t CurrentBinaryCategoryInfoVersion = 1;
     }
 
     CategoryInfo::CategoryInfo()
-        : m_categorySizeX(0)
-        , m_categorySizeY(0)
-        , m_categorySizeWidth(0)
-        , m_categorySizeHeight(0)
+        : m_categoryRectX(0)
+        , m_categoryRectY(0)
+        , m_categoryRectWidth(0)
+        , m_categoryRectHeight(0)
         , m_renderSizeWidth(0)
         , m_renderSizeHeight(0)
-        , m_safeAreaX(0)
-        , m_safeAreaY(0)
-        , m_safeAreaWidth(0)
-        , m_safeAreaHeight(0)
-        , m_categorySizeChanged(false)
+        , m_safeRectX(0)
+        , m_safeRectY(0)
+        , m_safeRectWidth(0)
+        , m_safeRectHeight(0)
+        , m_categoryRectChanged(false)
         , m_renderSizeChanged(false)
-        , m_safeAreaChanged(false)
+        , m_safeRectChanged(false)
     {
     }
 
     CategoryInfo::CategoryInfo(uint32_t width, uint32_t height)
         : CategoryInfo()
     {
-        setCategorySize(0, 0, width, height);
+        setCategoryRect(0, 0, width, height);
     }
 
     CategoryInfo::CategoryInfo(absl::Span<const Byte> data)
@@ -55,38 +55,38 @@ namespace ramses_internal
         fromBinary(data);
     }
 
-    void CategoryInfo::setCategorySize(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    void CategoryInfo::setCategoryRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
-        m_categorySizeX = x;
-        m_categorySizeY = y;
-        m_categorySizeWidth = width;
-        m_categorySizeHeight = height;
-        m_categorySizeChanged = true;
+        m_categoryRectX = x;
+        m_categoryRectY = y;
+        m_categoryRectWidth = width;
+        m_categoryRectHeight = height;
+        m_categoryRectChanged = true;
     }
 
     uint32_t CategoryInfo::getCategoryX() const
     {
-        return m_categorySizeX;
+        return m_categoryRectX;
     }
 
     uint32_t CategoryInfo::getCategoryY() const
     {
-        return m_categorySizeY;
+        return m_categoryRectY;
     }
 
     uint32_t CategoryInfo::getCategoryWidth() const
     {
-        return m_categorySizeWidth;
+        return m_categoryRectWidth;
     }
 
     uint32_t CategoryInfo::getCategoryHeight() const
     {
-        return m_categorySizeHeight;
+        return m_categoryRectHeight;
     }
 
-    bool CategoryInfo::hasCategorySizeChange() const
+    bool CategoryInfo::hasCategoryRectChange() const
     {
-        return m_categorySizeChanged;
+        return m_categoryRectChanged;
     }
 
     void CategoryInfo::setRenderSize(uint32_t width, uint32_t height)
@@ -111,60 +111,60 @@ namespace ramses_internal
         return m_renderSizeChanged;
     }
 
-    void CategoryInfo::setSafeArea(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    void CategoryInfo::setSafeRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
-        m_safeAreaChanged = true;
-        m_safeAreaX = x;
-        m_safeAreaY = y;
-        m_safeAreaWidth = width;
-        m_safeAreaHeight = height;
+        m_safeRectChanged = true;
+        m_safeRectX = x;
+        m_safeRectY = y;
+        m_safeRectWidth = width;
+        m_safeRectHeight = height;
     }
 
-    uint32_t CategoryInfo::getSafeAreaX() const
+    uint32_t CategoryInfo::getSafeRectX() const
     {
-        return m_safeAreaX;
+        return m_safeRectX;
     }
 
-    uint32_t CategoryInfo::getSafeAreaY() const
+    uint32_t CategoryInfo::getSafeRectY() const
     {
-        return m_safeAreaY;
+        return m_safeRectY;
     }
 
-    uint32_t CategoryInfo::getSafeAreaWidth() const
+    uint32_t CategoryInfo::getSafeRectWidth() const
     {
-        return m_safeAreaWidth;
+        return m_safeRectWidth;
     }
 
-    uint32_t CategoryInfo::getSafeAreaHeight() const
+    uint32_t CategoryInfo::getSafeRectHeight() const
     {
-        return m_safeAreaHeight;
+        return m_safeRectHeight;
     }
 
-    bool CategoryInfo::hasSafeAreaSizeChange() const
+    bool CategoryInfo::hasSafeRectChange() const
     {
-        return m_safeAreaChanged;
+        return m_safeRectChanged;
     }
 
     std::vector<Byte> CategoryInfo::toBinary() const
     {
         BinaryOutputStream os;
         const uint32_t numEntries =
-            (m_categorySizeChanged ? 1 : 0)
+            (m_categoryRectChanged ? 1 : 0)
             + (m_renderSizeChanged ? 1 : 0)
-            + (m_safeAreaChanged ? 1 : 0);
+            + (m_safeRectChanged ? 1 : 0);
         os << CurrentBinaryCategoryInfoVersion
             << numEntries;
 
         // write entries
-        if (m_categorySizeChanged)
+        if (m_categoryRectChanged)
         {
             constexpr uint32_t size = static_cast<uint32_t>(sizeof(uint32_t) * 4);
-            os << CategoryInfoUpdateType::CategorySize
+            os << CategoryInfoUpdateType::CategoryRect
                 << size
-                << m_categorySizeX
-                << m_categorySizeY
-                << m_categorySizeWidth
-                << m_categorySizeHeight;
+                << m_categoryRectX
+                << m_categoryRectY
+                << m_categoryRectWidth
+                << m_categoryRectHeight;
         }
         if (m_renderSizeChanged)
         {
@@ -174,15 +174,15 @@ namespace ramses_internal
                 << m_renderSizeWidth
                 << m_renderSizeHeight;
         }
-        if (m_safeAreaChanged)
+        if (m_safeRectChanged)
         {
             constexpr uint32_t size = static_cast<uint32_t>(sizeof(uint32_t) * 4);
-            os << CategoryInfoUpdateType::SafeArea
+            os << CategoryInfoUpdateType::SafeRect
                 << size
-                << m_safeAreaX
-                << m_safeAreaY
-                << m_safeAreaWidth
-                << m_safeAreaHeight;
+                << m_safeRectX
+                << m_safeRectY
+                << m_safeRectWidth
+                << m_safeRectHeight;
         }
         return os.release();
     }
@@ -211,24 +211,24 @@ namespace ramses_internal
                 >> size;
             switch (type)
             {
-            case CategoryInfoUpdateType::CategorySize:
-                m_categorySizeChanged = true;
-                is >> m_categorySizeX;
-                is >> m_categorySizeY;
-                is >> m_categorySizeWidth;
-                is >> m_categorySizeHeight;
+            case CategoryInfoUpdateType::CategoryRect:
+                m_categoryRectChanged = true;
+                is >> m_categoryRectX;
+                is >> m_categoryRectY;
+                is >> m_categoryRectWidth;
+                is >> m_categoryRectHeight;
                 break;
             case CategoryInfoUpdateType::RenderSize:
                 m_renderSizeChanged = true;
                 is >> m_renderSizeWidth;
                 is >> m_renderSizeHeight;
                 break;
-            case CategoryInfoUpdateType::SafeArea:
-                m_safeAreaChanged = true;
-                is >> m_safeAreaX;
-                is >> m_safeAreaY;
-                is >> m_safeAreaWidth;
-                is >> m_safeAreaHeight;
+            case CategoryInfoUpdateType::SafeRect:
+                m_safeRectChanged = true;
+                is >> m_safeRectX;
+                is >> m_safeRectY;
+                is >> m_safeRectWidth;
+                is >> m_safeRectHeight;
                 break;
             default:
                 LOG_WARN(CONTEXT_DCSM, "CategoryInfo::fromBinary: skip unknown type " << static_cast<uint32_t>(type) << ", size " << size);
@@ -241,19 +241,19 @@ namespace ramses_internal
 
     bool CategoryInfo::operator==(const CategoryInfo& rhs) const
     {
-        return m_categorySizeX == rhs.m_categorySizeX
-            && m_categorySizeY == rhs.m_categorySizeY
-            && m_categorySizeWidth == rhs.m_categorySizeWidth
-            && m_categorySizeHeight == rhs.m_categorySizeHeight
-            && m_categorySizeChanged == rhs.m_categorySizeChanged
+        return m_categoryRectX == rhs.m_categoryRectX
+            && m_categoryRectY == rhs.m_categoryRectY
+            && m_categoryRectWidth == rhs.m_categoryRectWidth
+            && m_categoryRectHeight == rhs.m_categoryRectHeight
+            && m_categoryRectChanged == rhs.m_categoryRectChanged
             && m_renderSizeChanged == rhs.m_renderSizeChanged
             && m_renderSizeWidth == rhs.m_renderSizeWidth
             && m_renderSizeHeight == rhs.m_renderSizeHeight
-            && m_safeAreaX == rhs.m_safeAreaX
-            && m_safeAreaY == rhs.m_safeAreaY
-            && m_safeAreaWidth == rhs.m_safeAreaWidth
-            && m_safeAreaHeight == rhs.m_safeAreaHeight
-            && m_safeAreaChanged == rhs.m_safeAreaChanged;
+            && m_safeRectX == rhs.m_safeRectX
+            && m_safeRectY == rhs.m_safeRectY
+            && m_safeRectWidth == rhs.m_safeRectWidth
+            && m_safeRectHeight == rhs.m_safeRectHeight
+            && m_safeRectChanged == rhs.m_safeRectChanged;
     }
 
     bool CategoryInfo::operator!=(const CategoryInfo& rhs) const

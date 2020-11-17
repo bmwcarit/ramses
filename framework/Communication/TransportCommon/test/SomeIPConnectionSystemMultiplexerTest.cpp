@@ -44,8 +44,6 @@ namespace ramses_internal
             {
                 setDcsmProviderServiceHandler(&provider);
                 setDcsmConsumerServiceHandler(&consumer);
-                setResourceProviderServiceHandler(&resourceProvider);
-                setResourceConsumerServiceHandler(&resourceConsumer);
                 setSceneProviderServiceHandler(&sceneProvider);
                 setSceneRendererServiceHandler(&sceneRenderer);
             }
@@ -90,8 +88,6 @@ namespace ramses_internal
             }
 
             Callbacks& callbacks;
-            StrictMock<ResourceConsumerServiceHandlerMock> resourceConsumer;
-            StrictMock<ResourceProviderServiceHandlerMock> resourceProvider;
             StrictMock<SceneProviderServiceHandlerMock> sceneProvider;
             StrictMock<SceneRendererServiceHandlerMock> sceneRenderer;
             StrictMock<DcsmProviderServiceHandlerMock> provider;
@@ -118,7 +114,7 @@ namespace ramses_internal
         auto MakeRamses()
         {
             EXPECT_CALL(*ramsesStack, getServiceInstanceId()).WillRepeatedly(Return(RamsesInstanceId(2)));
-            EXPECT_CALL(*ramsesStack, getSendDataSizes()).WillRepeatedly(Return(RamsesStackSendDataSizes{1000, 1000, 1000, 10, 10, 10}));
+            EXPECT_CALL(*ramsesStack, getSendDataSizes()).WillRepeatedly(Return(RamsesStackSendDataSizes{1000, 1000, 10, 10}));
             return RamsesConnectionSystem::Construct(ramsesStack, commUser, namedPid, 99, lock, stats,
                                                      std::chrono::milliseconds(0), std::chrono::milliseconds(0),
                                                      clock);
@@ -254,8 +250,8 @@ namespace ramses_internal
 
 
         // now connected, dcsm send calls must succeed
-        EXPECT_CALL(*dcsmStack, sendOfferContent(DcsmInstanceId(1), _, ContentID(44), Category(55), "mycontent", 0)).WillOnce(Return(true));
-        EXPECT_TRUE(csm->sendDcsmOfferContent(Guid(1), ContentID(44), Category(55), "mycontent"));
+        EXPECT_CALL(*dcsmStack, sendOfferContent(DcsmInstanceId(1), _, ContentID(44), Category(55), static_cast<ETechnicalContentType>(5), "mycontent", 0)).WillOnce(Return(true));
+        EXPECT_TRUE(csm->sendDcsmOfferContent(Guid(1), ContentID(44), Category(55), static_cast<ETechnicalContentType>(5), "mycontent"));
 
         EXPECT_CALL(*dcsmStack, sendCanvasSizeChange(DcsmInstanceId(1), _, ContentID(33), CategoryInfo{10, 11}, 0, AnimationInformation{100, 200})).WillOnce(Return(true));
         EXPECT_TRUE(csm->sendDcsmCanvasSizeChange(Guid(1), ContentID(33), CategoryInfo{10, 11}, AnimationInformation{100, 200}));
@@ -263,8 +259,8 @@ namespace ramses_internal
         EXPECT_CALL(*dcsmStack, sendContentReady(DcsmInstanceId(1), _, ContentID(2))).WillOnce(Return(true));
         EXPECT_TRUE(csm->sendDcsmContentReady(Guid(1), ContentID(2)));
 
-        EXPECT_CALL(*dcsmStack, sendContentDescription(DcsmInstanceId(1), _, ContentID(2), static_cast<ETechnicalContentType>(5), TechnicalContentDescriptor(10))).WillOnce(Return(true));
-        EXPECT_TRUE(csm->sendDcsmContentDescription(Guid(1), ContentID(2), static_cast<ETechnicalContentType>(5), TechnicalContentDescriptor(10)));
+        EXPECT_CALL(*dcsmStack, sendContentDescription(DcsmInstanceId(1), _, ContentID(2), TechnicalContentDescriptor(10))).WillOnce(Return(true));
+        EXPECT_TRUE(csm->sendDcsmContentDescription(Guid(1), ContentID(2), TechnicalContentDescriptor(10)));
 
         EXPECT_CALL(*dcsmStack, sendContentStateChange(DcsmInstanceId(1), _, ContentID(16012), EDcsmState::Assigned, CategoryInfo{0xFFFFF2, 0x7FFFF1}, AnimationInformation{432342, 43211})).WillOnce(Return(true));
         EXPECT_TRUE(csm->sendDcsmContentStateChange(Guid(1), ContentID(16012), EDcsmState::Assigned, CategoryInfo{0xFFFFF2, 0x7FFFF1}, AnimationInformation{432342, 43211}));
@@ -275,8 +271,8 @@ namespace ramses_internal
         EXPECT_CALL(*dcsmStack, sendContentDisableFocusRequest(DcsmInstanceId(1), _, ContentID(42434), 32)).WillOnce(Return(true));
         EXPECT_TRUE(csm->sendDcsmContentDisableFocusRequest(Guid(1), ContentID(42434), 32));
 
-        EXPECT_CALL(*dcsmStack, sendOfferContent(DcsmInstanceId(1), _, ContentID(44), Category(55), "mycontent", 0)).WillOnce(Return(true));
-        EXPECT_TRUE(csm->sendDcsmBroadcastOfferContent(ContentID(44), Category(55), "mycontent"));
+        EXPECT_CALL(*dcsmStack, sendOfferContent(DcsmInstanceId(1), _, ContentID(44), Category(55), static_cast<ETechnicalContentType>(5), "mycontent", 0)).WillOnce(Return(true));
+        EXPECT_TRUE(csm->sendDcsmBroadcastOfferContent(ContentID(44), Category(55), static_cast<ETechnicalContentType>(5), "mycontent"));
 
         EXPECT_CALL(*dcsmStack, sendRequestStopOfferContent(DcsmInstanceId(1), _, ContentID(9), false)).WillOnce(Return(true));
         EXPECT_TRUE(csm->sendDcsmBroadcastRequestStopOfferContent(ContentID(9)));
@@ -296,8 +292,6 @@ namespace ramses_internal
 
 
         // ramses calls must fail
-        EXPECT_FALSE(csm->sendRequestResources(Guid(1), resourceHashes));
-        EXPECT_FALSE(csm->sendResourcesNotAvailable(Guid(1), resourceHashes));
         EXPECT_FALSE(csm->sendScenesAvailable(Guid(1), sceneInfos));
         EXPECT_FALSE(csm->sendSubscribeScene(Guid(1), SceneId(321)));
         EXPECT_FALSE(csm->sendUnsubscribeScene(Guid(1), SceneId(678)));
@@ -306,7 +300,6 @@ namespace ramses_internal
         EXPECT_FALSE(csm->broadcastNewScenesAvailable(sceneInfos));
         EXPECT_FALSE(csm->broadcastScenesBecameUnavailable(sceneInfos));
         EXPECT_FALSE(csm->sendSceneUpdate(Guid(1), SceneId(434), FakseSceneUpdateSerializer({dataBlob}, 1000)));
-        EXPECT_FALSE(csm->sendResources(Guid(1), FakseSceneUpdateSerializer({dataBlob}, 1000)));
 
 
         // disconnect
@@ -333,12 +326,6 @@ namespace ramses_internal
 
 
         // now connected, ramses send calls must succeed
-        EXPECT_CALL(*ramsesStack, sendRequestResources(RamsesInstanceId(1), _, absl::Span<const ResourceContentHash>(resourceHashes))).WillOnce(Return(true));
-        EXPECT_TRUE(csm->sendRequestResources(Guid(1), resourceHashes));
-
-        EXPECT_CALL(*ramsesStack, sendResourcesNotAvailable(RamsesInstanceId(1), _, absl::Span<const ResourceContentHash>(resourceHashes))).WillOnce(Return(true));
-        EXPECT_TRUE(csm->sendResourcesNotAvailable(Guid(1), resourceHashes));
-
         EXPECT_CALL(*ramsesStack, sendSceneAvailabilityChange(RamsesInstanceId(1), _, sceneUpdateAvailable)).WillOnce(Return(true));
         EXPECT_TRUE(csm->sendScenesAvailable(Guid(1), sceneInfos));
 
@@ -360,33 +347,26 @@ namespace ramses_internal
         EXPECT_CALL(*ramsesStack, sendSceneAvailabilityChange(RamsesInstanceId(1), _, sceneUpdateUnavailable)).WillOnce(Return(true));
         EXPECT_TRUE(csm->broadcastScenesBecameUnavailable(sceneInfos));
 
-        EXPECT_CALL(*ramsesStack, sendResourceTransfer(RamsesInstanceId(1), _, dataBlob)).WillOnce(Return(true));
-        EXPECT_TRUE(csm->sendResources(Guid(1), FakseSceneUpdateSerializer({dataBlob}, 1000)));
-
         EXPECT_CALL(*ramsesStack, sendSceneUpdate(RamsesInstanceId(1), _, SceneId(999), dataBlob)).WillOnce(Return(true));
         EXPECT_TRUE(csm->sendSceneUpdate(Guid(1), SceneId(999), FakseSceneUpdateSerializer({dataBlob}, 1000)));
 
 
         // ramses messages from stack must be passed to handler
-        EXPECT_CALL(csm->resourceConsumer, handleResourcesNotAvailable(resourceHashes, Guid(1)));
-        csm->ramsesStackCallbacks().handleResourcesNotAvailable(SomeIPMsgHeader{1, 1, 2}, resourceHashes);
-        EXPECT_CALL(csm->resourceProvider, handleRequestResources(resourceHashes, Guid(1)));
-        csm->ramsesStackCallbacks().handleRequestResources(SomeIPMsgHeader{1, 1, 3}, resourceHashes);
         EXPECT_CALL(csm->sceneProvider, handleRendererEvent(SceneId(69), dataBlob, Guid(1)));
-        csm->ramsesStackCallbacks().handleRendererEvent(SomeIPMsgHeader{1, 1, 4}, SceneId(69), dataBlob);
+        csm->ramsesStackCallbacks().handleRendererEvent(SomeIPMsgHeader{1, 1, 2}, SceneId(69), dataBlob);
         EXPECT_CALL(csm->sceneRenderer, handleInitializeScene(SceneId(9999954), Guid(1)));
-        csm->ramsesStackCallbacks().handleInitializeScene(SomeIPMsgHeader{1, 1, 5}, SceneId(9999954));
+        csm->ramsesStackCallbacks().handleInitializeScene(SomeIPMsgHeader{1, 1, 3}, SceneId(9999954));
 
 
         // dcsm calls must fail
-        EXPECT_FALSE(csm->sendDcsmOfferContent(Guid(1), ContentID(44), Category(55), "mycontent"));
+        EXPECT_FALSE(csm->sendDcsmOfferContent(Guid(1), ContentID(44), Category(55), static_cast<ETechnicalContentType>(5), "mycontent"));
         EXPECT_FALSE(csm->sendDcsmCanvasSizeChange(Guid(1), ContentID(33), CategoryInfo{10, 11}, AnimationInformation{100, 200}));
         EXPECT_FALSE(csm->sendDcsmContentReady(Guid(1), ContentID(2)));
-        EXPECT_FALSE(csm->sendDcsmContentDescription(Guid(1), ContentID(2), static_cast<ETechnicalContentType>(5), TechnicalContentDescriptor(10)));
+        EXPECT_FALSE(csm->sendDcsmContentDescription(Guid(1), ContentID(2), TechnicalContentDescriptor(10)));
         EXPECT_FALSE(csm->sendDcsmContentStateChange(Guid(1), ContentID(16012), EDcsmState::Assigned, CategoryInfo{0xFFFFF2, 0x7FFFF1}, AnimationInformation{432342, 43211}));
         EXPECT_FALSE(csm->sendDcsmContentEnableFocusRequest(Guid(1), ContentID(42434), 32));
         EXPECT_FALSE(csm->sendDcsmContentDisableFocusRequest(Guid(1), ContentID(42434), 32));
-        EXPECT_FALSE(csm->sendDcsmBroadcastOfferContent(ContentID(44), Category(55), "mycontent"));
+        EXPECT_FALSE(csm->sendDcsmBroadcastOfferContent(ContentID(44), Category(55), static_cast<ETechnicalContentType>(5), "mycontent"));
         EXPECT_FALSE(csm->sendDcsmBroadcastRequestStopOfferContent(ContentID(9)));
         EXPECT_FALSE(csm->sendDcsmBroadcastForceStopOfferContent(ContentID(9)));
         EXPECT_FALSE(csm->sendDcsmUpdateContentMetadata(Guid(1), ContentID(56), metadata));

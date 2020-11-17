@@ -9,7 +9,6 @@
 #include <gtest/gtest.h>
 
 #include "ramses-client-api/MeshNode.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/UniformInput.h"
@@ -66,8 +65,8 @@ namespace ramses
     {
     public:
         typedef std::vector<EAnimatedPropertyComponent> ComponentVector;
-        typedef std::vector<ComponentVector> PropertyComponentVector;
-        typedef std::vector<EAnimatedProperty> PropertyVector;
+        using PropertyComponentVector = std::vector<ComponentVector>;
+        using PropertyVector = std::vector<EAnimatedProperty>;
 
         static void SetUpTestCase()
         {

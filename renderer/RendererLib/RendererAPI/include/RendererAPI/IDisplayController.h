@@ -43,15 +43,6 @@ namespace ramses_internal
         virtual IEmbeddedCompositingManager& getEmbeddedCompositingManager() = 0;
         virtual UInt32                  getDisplayWidth() const = 0;
         virtual UInt32                  getDisplayHeight() const = 0;
-        virtual void                    setProjectionParams(const ProjectionParams& params) = 0;
-        virtual const ProjectionParams& getProjectionParams() const = 0;
-
-        virtual void                    setViewPosition(const Vector3& position) = 0;
-        virtual void                    setViewRotation(const Vector3& rotation) = 0;
-        virtual const Vector3&          getViewPosition() const = 0;
-        virtual const Vector3&          getViewRotation() const = 0;
-        virtual const Matrix44f&        getViewMatrix() const = 0;
-        virtual void                    resetView() const = 0;
 
         virtual void                    readPixels(DeviceResourceHandle renderTargetHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut) = 0;
         virtual Bool                    isWarpingEnabled() const = 0;

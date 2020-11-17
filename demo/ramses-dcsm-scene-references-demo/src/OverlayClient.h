@@ -30,11 +30,11 @@ public:
 
     void createOverlayScenes();
 
-    constexpr static ramses::sceneId_t Overlay1SceneId{ 10001 };
-    constexpr static ramses::sceneId_t Overlay2SceneId{ 10002 };
+    static constexpr ramses::sceneId_t Overlay1SceneId{ 10001 };
+    static constexpr ramses::sceneId_t Overlay2SceneId{ 10002 };
 
-    constexpr static ramses::dataConsumerId_t Overlay1ViewportOffsetId{ 100011 };
-    constexpr static ramses::dataConsumerId_t Overlay2ViewportOffsetId{ 100021 };
+    static constexpr ramses::dataConsumerId_t Overlay1ViewportOffsetId{ 100011 };
+    static constexpr ramses::dataConsumerId_t Overlay2ViewportOffsetId{ 100021 };
 
 private:
     ramses::RamsesFramework& m_framework;

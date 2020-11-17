@@ -72,7 +72,7 @@ namespace ramses_internal
 
     DeviceResourceHandle RendererSceneResourceRegistry::getRenderTargetDeviceHandle(RenderTargetHandle handle) const
     {
-        return m_renderTargets.get(handle)->deviceHandle;
+        return *m_renderTargets.get(handle);
     }
 
     void RendererSceneResourceRegistry::getAllRenderTargets(RenderTargetHandleVector& renderTargets) const
@@ -118,7 +118,7 @@ namespace ramses_internal
         }
     }
 
-    void RendererSceneResourceRegistry::addStreamTexture(StreamTextureHandle handle, StreamTextureSourceId source)
+    void RendererSceneResourceRegistry::addStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source)
     {
         assert(!m_streamTextures.contains(handle));
         m_streamTextures.put(handle, { source });
@@ -130,10 +130,10 @@ namespace ramses_internal
         m_streamTextures.remove(handle);
     }
 
-    StreamTextureSourceId RendererSceneResourceRegistry::getStreamTextureSourceId(StreamTextureHandle handle) const
+    WaylandIviSurfaceId RendererSceneResourceRegistry::getStreamTextureSourceId(StreamTextureHandle handle) const
     {
         assert(m_streamTextures.contains(handle));
-        return m_streamTextures.get(handle)->id;
+        return *m_streamTextures.get(handle);
     }
 
     void RendererSceneResourceRegistry::getAllStreamTextures(StreamTextureHandleVector& streamTextures) const
@@ -235,7 +235,7 @@ namespace ramses_internal
     DeviceResourceHandle RendererSceneResourceRegistry::getTextureSamplerDeviceHandle(TextureSamplerHandle handle) const
     {
         assert(m_textureSamplers.contains(handle));
-        return m_textureSamplers.get(handle)->deviceHandle;
+        return *m_textureSamplers.get(handle);
     }
 
     void RendererSceneResourceRegistry::getAllTextureSamplers(TextureSamplerHandleVector& textureSamplers) const

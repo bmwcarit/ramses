@@ -48,7 +48,7 @@ namespace ramses
         status_t setIndices(const ArrayBuffer& arrayBuffer);
 
         /**
-        * @brief Assign a data array with data type Float or VectorxF to a given effect attribute input.
+        * @brief Assign a data array resource to a given effect attribute input.
         *
         * @param[in] attributeInput The effect attribute input to set the buffer to
         * @param[in] arrayResource An array resource carrying vertex data.
@@ -57,6 +57,19 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayResource& arrayResource, uint32_t instancingDivisor = 0);
+
+        /**
+        * @brief   Assign a data array resource to a given effect attribute input with offset and stride.
+        * @details Custom offset and/or stride can be only used with array buffers of data type #ramses::EDataType::ByteBlob.
+        *
+        * @param[in] attributeInput The effect attribute input to set the buffer to
+        * @param[in] arrayResource The vertex attribute buffer.
+        * @param[in] offset Offset in bytes for where the attribute data is starting within the data blob.
+        * @param[in] stride Stride of the interleaved vertex attribute.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayResource& arrayResource, uint16_t offset, uint16_t stride);
 
         /**
         * @brief Assign a vertex attribute buffer to a given effect attribute input.
@@ -68,6 +81,19 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayBuffer& arrayBuffer, uint32_t instancingDivisor = 0);
+
+        /**
+        * @brief   Assign vertex attribute buffer with offset and stride.
+        * @details Custom offset and/or stride can be only used with array buffers of data type #ramses::EDataType::ByteBlob.
+        *
+        * @param[in] attributeInput The effect attribute input to set the buffer to
+        * @param[in] arrayBuffer The vertex attribute buffer.
+        * @param[in] offset Offset in bytes for where the attribute data is starting within the data blob.
+        * @param[in] stride Stride of the interleaved vertex attribute.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setInputBuffer(const AttributeInput& attributeInput, const ArrayBuffer& arrayBuffer, uint16_t offset, uint16_t stride);
 
         /**
         * @brief Gets the effect used to create this geometry binding

@@ -26,17 +26,17 @@ namespace ramses
 
     DcsmContentControl::~DcsmContentControl() = default;
 
-    status_t DcsmContentControl::addContentCategory(DcsmContentControl& control, Category category, DcsmContentControlConfig::CategoryInfo categoryInformation)
+    status_t DcsmContentControl::addContentCategory(Category category, displayId_t display, const CategoryInfoUpdate& categoryInformation)
     {
-        const auto status = control.m_impl.addContentCategory(category, categoryInformation);
-        LOG_HL_RENDERER_STATIC_API4(status, category, categoryInformation.display, categoryInformation.size.width, categoryInformation.size.height);
+        const auto status = m_impl.addContentCategory(category, display, categoryInformation);
+        LOG_HL_RENDERER_API4(status, category, display, categoryInformation.getCategoryRect().width, categoryInformation.getCategoryRect().height);
         return status;
     }
 
-    status_t DcsmContentControl::removeContentCategory(DcsmContentControl& control, Category category)
+    status_t DcsmContentControl::removeContentCategory(Category category)
     {
-        const auto status = control.m_impl.removeContentCategory(category);
-        LOG_HL_RENDERER_STATIC_API1(status, category);
+        const auto status = m_impl.removeContentCategory(category);
+        LOG_HL_RENDERER_API1(status, category);
         return status;
     }
 
@@ -68,9 +68,9 @@ namespace ramses
         return status;
     }
 
-    status_t DcsmContentControl::setCategorySize(Category categoryId, const CategoryInfoUpdate& categoryInfo, AnimationInformation timingInfo)
+    status_t DcsmContentControl::setCategoryInfo(Category categoryId, const CategoryInfoUpdate& categoryInfo, AnimationInformation timingInfo)
     {
-        const auto status = m_impl.setCategorySize(categoryId, categoryInfo, timingInfo);
+        const auto status = m_impl.setCategoryInfo(categoryId, categoryInfo, timingInfo);
         LOG_HL_RENDERER_API4(status, categoryId, categoryInfo, timingInfo.startTime, timingInfo.finishTime);
         return status;
     }
@@ -93,6 +93,13 @@ namespace ramses
     {
         const auto status = m_impl.linkOffscreenBuffer(offscreenBufferId, consumerContentID, consumerId);
         LOG_HL_RENDERER_API3(status, offscreenBufferId, consumerContentID, consumerId);
+        return status;
+    }
+
+    status_t DcsmContentControl::linkContentToTextureConsumer(ContentID contentID, ContentID consumerContentID, dataConsumerId_t consumerId)
+    {
+        const auto status = m_impl.linkContentToTextureConsumer(contentID, consumerContentID, consumerId);
+        LOG_HL_RENDERER_API3(status, contentID, consumerContentID, consumerId);
         return status;
     }
 

@@ -33,7 +33,6 @@ RendererBundle::RendererBundle(ANativeWindow* nativeWindow, int width, int heigh
 
     ramses::DisplayConfig displayConfig;
     displayConfig.setWindowRectangle(0, 0, width, height);
-    displayConfig.setPerspectiveProjection(19.f, static_cast<float>(width)/static_cast<float>(height), 0.1f, 1500.f);
     displayConfig.setAndroidNativeWindow(m_nativeWindow);
     ramses::displayId_t displayId = m_renderer->createDisplay(displayConfig);
 
@@ -74,11 +73,14 @@ RendererBundle::SceneStateAutoShowEventHandler::SceneStateAutoShowEventHandler(r
 {
 }
 
-void RendererBundle::SceneStateAutoShowEventHandler::scenePublished(ramses::sceneId_t sceneId)
+void RendererBundle::SceneStateAutoShowEventHandler::sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
 {
-    m_sceneControlAPI.setSceneMapping(sceneId, m_displayId);
-    m_sceneControlAPI.setSceneState(sceneId, ramses::RendererSceneState::Rendered);
-    m_sceneControlAPI.flush();
+    if (state == ramses::RendererSceneState::Available)
+    {
+        m_sceneControlAPI.setSceneMapping(sceneId, m_displayId);
+        m_sceneControlAPI.setSceneState(sceneId, ramses::RendererSceneState::Rendered);
+        m_sceneControlAPI.flush();
+    }
 }
 
 ANativeWindow* RendererBundle::getNativeWindow()

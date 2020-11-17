@@ -28,7 +28,9 @@
 #include "SceneAPI/Renderable.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/RendererSceneState.h"
-#include "Scene/SceneResourceChanges.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
+#include "SceneAPI/ERotationConvention.h"
+#include "Scene/ResourceChanges.h"
 #include "Resource/TextureMetaInfo.h"
 #include "Components/FlushTimeInformation.h"
 #include "SceneReferencing/SceneReferenceAction.h"
@@ -98,7 +100,7 @@ namespace ramses_internal
         void removeChildFromNode(NodeHandle parent, NodeHandle child);
 
         // Transformation
-        void setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, const Vector3& newValue);
+        void setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, const Vector3& newValue, ERotationConvention rotationConvention);
 
         void allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle);
         void releaseDataLayout(DataLayoutHandle layoutHandle);
@@ -117,7 +119,7 @@ namespace ramses_internal
         void setDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data);
         void setDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data);
         void setDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data);
-        void setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor);
+        void setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride);
         void setDataTextureSamplerHandle(DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle);
         void setDataReference(DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef);
 
@@ -171,7 +173,7 @@ namespace ramses_internal
         void releaseRenderBuffer(RenderBufferHandle handle);
 
         // Stream textures
-        void allocateStreamTexture(uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle);
+        void allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle);
         void releaseStreamTexture(StreamTextureHandle streamTextureHandle);
         void setStreamTextureForceFallback(StreamTextureHandle streamTextureHandle, bool forceFallbackImage);
 
@@ -230,15 +232,6 @@ namespace ramses_internal
         void animationSystemRemoveDataBinding(AnimationSystemHandle animSystemHandle, DataBindHandle handle);
         void animationSystemRemoveAnimationInstance(AnimationSystemHandle animSystemHandle, AnimationInstanceHandle handle);
         void animationSystemRemoveAnimation(AnimationSystemHandle animSystemHandle, AnimationHandle handle);
-
-        void flush(
-            UInt64 flushIndex,
-            bool addSizeInfo,
-            const SceneSizeInformation& sizeInfo = SceneSizeInformation(),
-            const SceneResourceChanges& resourceChanges = SceneResourceChanges(),
-            const SceneReferenceActionVector& sceneReferences = SceneReferenceActionVector(),
-            const FlushTimeInformation& flushTimeInfo = {},
-            SceneVersionTag versionTag = SceneVersionTag::Invalid());
 
         // compound actions
         void compoundRenderableData(RenderableHandle renderableHandle

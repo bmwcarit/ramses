@@ -28,7 +28,7 @@ namespace ramses_internal
             , mapDisplayHandle(1u)
             , rendererScenes(rendererEventCollector)
             , expirationMonitor(rendererScenes, rendererEventCollector)
-            , renderer(platformFactory, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
+            , renderer(platform, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
             , sceneStateExecutor(renderer, rendererSceneSender, rendererEventCollector)
         {
         }
@@ -152,7 +152,7 @@ namespace ramses_internal
 
         const DisplayHandle mapDisplayHandle;
 
-        NiceMock<PlatformFactoryNiceMock> platformFactory;
+        NiceMock<PlatformNiceMock> platform;
         RendererEventCollector rendererEventCollector;
         RendererScenes rendererScenes;
         SceneExpirationMonitor expirationMonitor;

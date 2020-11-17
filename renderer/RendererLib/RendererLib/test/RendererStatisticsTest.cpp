@@ -234,7 +234,7 @@ TEST_F(ARendererStatistics, untracksOffscreenBuffer)
 
 TEST_F(ARendererStatistics, tracksStreamTextureSource)
 {
-    const StreamTextureSourceId src{ 99u };
+    const WaylandIviSurfaceId src{ 99u };
     stats.streamTextureUpdated(src, 2u);
     stats.frameFinished(0u);
     stats.frameFinished(0u);
@@ -250,7 +250,7 @@ TEST_F(ARendererStatistics, tracksStreamTextureSource)
 
 TEST_F(ARendererStatistics, logsValidNumbersWhenStreamTextureInactive)
 {
-    const StreamTextureSourceId src{ 99u };
+    const WaylandIviSurfaceId src{ 99u };
     stats.streamTextureUpdated(src, 2u); // will register source
     stats.reset();
     stats.frameFinished(0u);
@@ -262,7 +262,7 @@ TEST_F(ARendererStatistics, logsValidNumbersWhenStreamTextureInactive)
 
 TEST_F(ARendererStatistics, untracksStreamTextureSource)
 {
-    const StreamTextureSourceId src{ 99u };
+    const WaylandIviSurfaceId src{ 99u };
     stats.streamTextureUpdated(src, 2u);
     stats.frameFinished(0u);
 
@@ -271,23 +271,23 @@ TEST_F(ARendererStatistics, untracksStreamTextureSource)
     EXPECT_FALSE(logOutputContains("SourceId 99"));
 }
 
-TEST_F(ARendererStatistics, tracksClientResourceUploads)
+TEST_F(ARendererStatistics, tracksResourceUploads)
 {
-    stats.clientResourceUploaded(2u);
+    stats.resourceUploaded(2u);
     stats.frameFinished(0u);
-    EXPECT_TRUE(logOutputContains("clientResUploaded 1 (2 B)"));
+    EXPECT_TRUE(logOutputContains("resUploaded 1 (2 B)"));
 
     stats.reset();
-    EXPECT_FALSE(logOutputContains("clientResUploaded"));
+    EXPECT_FALSE(logOutputContains("resUploaded"));
 
-    stats.clientResourceUploaded(2u);
-    stats.clientResourceUploaded(77u);
-    stats.clientResourceUploaded(100u);
+    stats.resourceUploaded(2u);
+    stats.resourceUploaded(77u);
+    stats.resourceUploaded(100u);
     stats.frameFinished(0u);
-    EXPECT_TRUE(logOutputContains("clientResUploaded 3 (179 B)"));
+    EXPECT_TRUE(logOutputContains("resUploaded 3 (179 B)"));
 
     stats.reset();
-    EXPECT_FALSE(logOutputContains("clientResUploaded"));
+    EXPECT_FALSE(logOutputContains("resUploaded"));
 }
 
 TEST_F(ARendererStatistics, tracksSceneResourceUploads)
@@ -345,8 +345,8 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
         stats.framebufferSwapped(disp1);
         stats.frameFinished(0);
 
-        stats.clientResourceUploaded(2u);
-        stats.clientResourceUploaded(77u);
+        stats.resourceUploaded(2u);
+        stats.resourceUploaded(77u);
         stats.shaderCompiled(std::chrono::microseconds(0u), "", SceneId(54321));
         stats.shaderCompiled(std::chrono::microseconds(1000u), "slow effect", SceneId(12345));
 
@@ -380,7 +380,7 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
         EXPECT_TRUE(logOutputContains("FPS [minFrameTime "));
         EXPECT_TRUE(logOutputContains("us, maxFrameTime "));
         EXPECT_TRUE(logOutputContains("], drawcallsPerFrame 25, numFrames 4"));
-        EXPECT_TRUE(logOutputContains("clientResUploaded 2 (79 B)"));
+        EXPECT_TRUE(logOutputContains("resUploaded 2 (79 B)"));
         EXPECT_TRUE(logOutputContains("shadersCompiled 2"));
         EXPECT_TRUE(logOutputContains("for total ms:1"));
         EXPECT_TRUE(logOutputContains("FB1: 3; OB11: 1 (intr: 1)"));

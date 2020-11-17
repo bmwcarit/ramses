@@ -67,6 +67,8 @@ namespace ramses
         *        (#ramses::SceneReference::requestNotificationsForSceneVersionTags).
         *        It will also be called once right after enabling notifications (after they were previously disabled)
         *        with the last applied valid version tag.
+        *        Notifications will only be sent if the scene reference state is Ready.
+        *
         * @param sceneRef Instance of #ramses::SceneReference that references the scene which the versioned flush belongs to
         * @param versionTag Version tag of the scene flush
         */

@@ -23,23 +23,6 @@ namespace ramses_internal
     struct SceneReferenceEvent;
     class CategoryInfo;
 
-    class IResourceConsumerServiceHandler
-    {
-    public:
-        virtual ~IResourceConsumerServiceHandler() {}
-
-        virtual void handleSendResource(absl::Span<const Byte> data, const Guid& providerID) = 0;
-        virtual void handleResourcesNotAvailable(const ResourceContentHashVector& resources, const Guid& providerID) = 0;
-    };
-
-    class IResourceProviderServiceHandler
-    {
-    public:
-        virtual ~IResourceProviderServiceHandler() {}
-
-        virtual void handleRequestResources(const ResourceContentHashVector& resources, const Guid& requesterId) = 0;
-    };
-
     class ISceneProviderServiceHandler
     {
     public:
@@ -76,8 +59,8 @@ namespace ramses_internal
     {
     public:
         virtual ~IDcsmConsumerServiceHandler() {};
-        virtual void handleOfferContent(ContentID contentID, Category, const std::string& friendlyName, const Guid& providerID) = 0;
-        virtual void handleContentDescription(ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) = 0;
+        virtual void handleOfferContent(ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName, const Guid& providerID) = 0;
+        virtual void handleContentDescription(ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID) = 0;
         virtual void handleContentReady(ContentID contentID, const Guid& providerID) = 0;
         virtual void handleContentEnableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID) = 0;
         virtual void handleContentDisableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID) = 0;

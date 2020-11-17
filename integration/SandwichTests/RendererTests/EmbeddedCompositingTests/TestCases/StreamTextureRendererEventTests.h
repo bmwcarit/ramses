@@ -16,7 +16,6 @@ namespace ramses_internal
     class StreamTextureRendererEventTests : public IEmbeddedCompositingTest
     {
     public:
-        StreamTextureRendererEventTests();
         virtual void setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework) override final;
         virtual bool runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase) override final;
 
@@ -37,8 +36,8 @@ namespace ramses_internal
 
         bool runTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase);
 
-        bool renderAndExpectNoStreamSurfaceAvailabilityChanged(EmbeddedCompositingTestsFramework& testFramework, StreamTextureSourceId streamSourceId);
-        BoolVector renderAndGetSurfaceAvailabilityChangeEvents(EmbeddedCompositingTestsFramework& testFramework, StreamTextureSourceId streamSourceId);
+        bool renderAndExpectNoStreamSurfaceAvailabilityChanged(EmbeddedCompositingTestsFramework& testFramework, WaylandIviSurfaceId streamSourceId);
+        BoolVector renderAndGetSurfaceAvailabilityChangeEvents(EmbeddedCompositingTestsFramework& testFramework, WaylandIviSurfaceId streamSourceId);
     };
 }
 

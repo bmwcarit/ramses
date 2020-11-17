@@ -9,7 +9,7 @@
 #ifndef RAMSES_PENDINGSCENERESOURCESUTILS_H
 #define RAMSES_PENDINGSCENERESOURCESUTILS_H
 
-#include "Scene/SceneResourceChanges.h"
+#include "Scene/ResourceChanges.h"
 
 namespace ramses_internal
 {

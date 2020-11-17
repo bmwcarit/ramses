@@ -22,7 +22,7 @@ namespace ramses_internal
         SceneId        consumerSceneId;
         DataSlotHandle consumerSlot;
     };
-    typedef std::vector<SceneLink> SceneLinkVector;
+    using SceneLinkVector = std::vector<SceneLink>;
 
     class SceneLinks
     {

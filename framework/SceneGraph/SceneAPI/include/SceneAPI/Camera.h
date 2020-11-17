@@ -17,7 +17,7 @@ namespace ramses_internal
 {
     struct Camera
     {
-        ECameraProjectionType projectionType = ECameraProjectionType::Renderer;
+        ECameraProjectionType projectionType = ECameraProjectionType::Perspective;
         NodeHandle node;
         DataInstanceHandle dataInstance;
 

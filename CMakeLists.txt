@@ -8,9 +8,9 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
-SET(RAMSES_VERSION_MAJOR 26)
+SET(RAMSES_VERSION_MAJOR 27)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 6)
+SET(RAMSES_VERSION_PATCH 2)
 SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
@@ -51,7 +51,7 @@ ELSE ()
     ENDIF ()
 ENDIF (NOT CMAKE_BUILD_TYPE)
 
-MESSAGE(STATUS "Ramses Build Config: SystemName ${CMAKE_SYSTEM_NAME}, SystemVersion ${CMAKE_SYSTEM_VERSION}, CompilerID ${CMAKE_CXX_COMPILER_ID}, TargetOS ${TARGET_OS}, BuildType ${CMAKE_BUILD_TYPE}, TargetBitness ${TARGET_BITNESS}")
+MESSAGE(STATUS "Ramses Build Config: SystemName ${CMAKE_SYSTEM_NAME}, SystemVersion ${CMAKE_SYSTEM_VERSION}, CompilerID ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}, TargetOS ${TARGET_OS}, BuildType ${CMAKE_BUILD_TYPE}, TargetBitness ${TARGET_BITNESS}")
 
 # find options
 OPTION(ramses-sdk_ALLOW_PLATFORM_FREETYPE "Enable to search for platform provided freetype and harfbuzz" ON)
@@ -176,14 +176,15 @@ ACME2_PROJECT(
 
                                 # Surface Components
                                 AUTO renderer/Platform/Surface_Windows_WGL
-                                AUTO renderer/Platform/PlatformFactory_Wayland_EGL
-                                AUTO renderer/Platform/PlatformFactory_Wayland_IVI_EGL
-                                AUTO renderer/Platform/PlatformFactory_Wayland_Shell_EGL
+                                AUTO renderer/Platform/Platform_Wayland_EGL
+                                AUTO renderer/Platform/Platform_Wayland_IVI_EGL
+                                AUTO renderer/Platform/Platform_Wayland_Shell_EGL
 
                                 # Platforms
                                 AUTO renderer/Platform/Platform_Windows_WGL_4_2_core
                                 AUTO renderer/Platform/Platform_Windows_WGL_4_5
                                 AUTO renderer/Platform/Platform_Windows_WGL_ES_3_0
+                                AUTO renderer/Platform/Platform_EGL
                                 AUTO renderer/Platform/Platform_Wayland_IVI_EGL_ES_3_0
                                 AUTO renderer/Platform/Platform_Wayland_Shell_EGL_ES_3_0
                                 AUTO renderer/Platform/Platform_X11

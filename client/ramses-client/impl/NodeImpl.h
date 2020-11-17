@@ -12,10 +12,18 @@
 // internal
 #include "SceneObjectImpl.h"
 #include "ramses-client-api/EVisibilityMode.h"
+#include "ramses-client-api/ERotationConvention.h"
+
 // ramses framework
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneId.h"
+#include "SceneAPI/ERotationConvention.h"
 #include "Collections/Vector.h"
+
+namespace ramses_internal
+{
+    class Vector3;
+}
 
 namespace ramses
 {
@@ -62,7 +70,9 @@ namespace ramses
         status_t getTranslation(float& x, float& y, float& z) const;
         status_t rotate(float x, float y, float z);
         status_t setRotation(float x, float y, float z);
+        status_t setRotation(float x, float y, float z, ERotationConvention rotationConvention);
         status_t getRotation(float& x, float& y, float& z) const;
+        status_t getRotation(float& x, float& y, float& z, ERotationConvention& rotationConvention) const;
         status_t scale(float x, float y, float z);
         status_t setScaling(float x, float y, float z);
         status_t getScaling(float& x, float& y, float& z) const;
@@ -80,9 +90,10 @@ namespace ramses
         bool isDirty() const;
 
     private:
-        typedef std::vector<NodeImpl*> NodeVector;
+        using NodeVector = std::vector<NodeImpl *>;
 
         void removeChildInternally(NodeVector::iterator childIt);
+        status_t setRotationInternal(const ramses_internal::Vector3& rotation, ramses_internal::ERotationConvention rotationConventionInternal);
 
         ramses_internal::NodeHandle m_nodeHandle;
 

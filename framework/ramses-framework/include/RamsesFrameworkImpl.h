@@ -23,7 +23,14 @@
 #include "Components/LogDcsmInfo.h"
 #include "RamsesObjectFactoryInterfaces.h"
 #include <unordered_map>
+#include "TransportCommon/EConnectionProtocol.h"
 #include <memory>
+
+namespace SomeIP
+{
+    class ServerManager;
+    class ClientManager;
+}
 
 namespace ramses_internal
 {
@@ -75,6 +82,7 @@ namespace ramses
         ramses_internal::ITaskQueue& getTaskQueue();
         ramses_internal::PeriodicLogger& getPeriodicLogger();
         ramses_internal::StatisticCollectionFramework& getStatisticCollection();
+        static void SetConsoleLogLevel(ELogLevel logLevel);
 
     private:
         RamsesFrameworkImpl(const RamsesFrameworkConfigImpl& config, const ramses_internal::ParticipantIdentifier& participantAddress);
@@ -82,6 +90,7 @@ namespace ramses
         static void LogEnvironmentVariableIfSet(const ramses_internal::String& envVarName);
         static void LogAvailableCommunicationStacks();
         static void LogBuildInformation();
+        static ramses_internal::ELogLevel GetELogLevelInternal(ramses::ELogLevel logLevel);
 
         static constexpr uint32_t PeriodicLogIntervalInSeconds = 2;
         // the framework-wide mutex that is used by all framework-base classes to synchronize access to shared resource

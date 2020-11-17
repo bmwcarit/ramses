@@ -68,8 +68,8 @@ namespace ramses_internal
 
         const float x = 0.0f;
         const float y = 0.0f;
-        const float w = static_cast<float>(DefaultDisplayWidth);
-        const float h = static_cast<float>(DefaultDisplayHeight) * 0.5f;
+        const float w = static_cast<float>(IntegrationScene::DefaultViewportWidth);
+        const float h = static_cast<float>(IntegrationScene::DefaultViewportHeight) * 0.5f;
         const float z = -1.0f;
 
         float vertexPositionsArray[] = {
@@ -124,8 +124,8 @@ namespace ramses_internal
     void Texture2DAnisotropicTextureFilteringScene::createOrthoCamera()
     {
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
-        orthoCamera->setFrustum(0.0f, static_cast<Float>(DefaultDisplayWidth), 0.0f, static_cast<Float>(DefaultDisplayHeight), 0.1f, 10.f);
-        orthoCamera->setViewport(0, 0, DefaultDisplayWidth, DefaultDisplayHeight);
+        orthoCamera->setFrustum(0.0f, static_cast<Float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<Float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
+        orthoCamera->setViewport(0, 0, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         setCameraToDefaultRenderPass(orthoCamera);
     }
 

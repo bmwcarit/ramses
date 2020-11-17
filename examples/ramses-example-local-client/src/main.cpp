@@ -43,7 +43,9 @@ int main(int argc, char* argv[])
     ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "local client example scene");
 
     // every scene needs a render pass with camera
-    ramses::Camera* camera = clientScene->createRemoteCamera("my camera");
+    auto* camera = clientScene->createPerspectiveCamera("my camera");
+    camera->setViewport(0, 0, 1280u, 480u);
+    camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     ramses::RenderPass* renderPass = clientScene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -60,7 +62,7 @@ int main(int argc, char* argv[])
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-local-client-test.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-local-client-test.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     ramses::Effect* effect = clientScene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "triangle appearance");

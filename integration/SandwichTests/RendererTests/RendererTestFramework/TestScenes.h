@@ -23,22 +23,57 @@ public:
     ~TestScenes();
 
     template <typename INTEGRATION_SCENE>
-    void createScene(uint32_t state, ramses::sceneId_t sceneId, const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f), const ramses::SceneConfig& sceneConfig = ramses::SceneConfig())
+    void createScene(
+        uint32_t state,
+        ramses::sceneId_t sceneId,
+        const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f),
+        const ramses::SceneConfig& sceneConfig = {})
     {
         SceneData data;
         data.clientScene = m_client.createScene(sceneId, sceneConfig);
         data.integrationScene = new INTEGRATION_SCENE(*data.clientScene, state, cameraPosition);
         m_scenes.put(sceneId, data);
+
     }
     template <typename INTEGRATION_SCENE>
-    ramses::sceneId_t createScene(uint32_t state, const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f), const ramses::SceneConfig& sceneConfig = ramses::SceneConfig())
+    ramses::sceneId_t createScene(
+        uint32_t state,
+        const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f),
+        const ramses::SceneConfig& sceneConfig = {})
     {
         const ramses::sceneId_t sceneId = m_nextSceneId;
         m_nextSceneId.getReference()++;
         createScene<INTEGRATION_SCENE>(state, sceneId, cameraPosition, sceneConfig);
         return sceneId;
     }
-    void createFileLoadingScene(ramses::sceneId_t sceneId, const ramses_internal::Vector3& cameraPosition, const ramses::RamsesFrameworkConfig& config, uint32_t sceneState);
+
+    template <typename INTEGRATION_SCENE>
+    void createScene(
+        uint32_t state,
+        ramses::sceneId_t sceneId,
+        const ramses_internal::Vector3& cameraPosition,
+        uint32_t vpWidth,
+        uint32_t vpHeight)
+    {
+        SceneData data;
+        data.clientScene = m_client.createScene(sceneId);
+        data.integrationScene = new INTEGRATION_SCENE(*data.clientScene, state, cameraPosition, vpWidth, vpHeight);
+        m_scenes.put(sceneId, data);
+    }
+    template <typename INTEGRATION_SCENE>
+    ramses::sceneId_t createScene(
+        uint32_t state,
+        const ramses_internal::Vector3& cameraPosition,
+        uint32_t vpWidth,
+        uint32_t vpHeight)
+    {
+        const ramses::sceneId_t sceneId = m_nextSceneId;
+        m_nextSceneId.getReference()++;
+        createScene<INTEGRATION_SCENE>(state, sceneId, cameraPosition, vpWidth, vpHeight);
+        return sceneId;
+    }
+
+    void createFileLoadingScene(ramses::sceneId_t sceneId, const ramses_internal::Vector3& cameraPosition, const ramses::RamsesFrameworkConfig& config, uint32_t sceneState, uint32_t vpWidth, uint32_t vpHeight);
 
     const ramses::Scene& getScene(ramses::sceneId_t sceneId) const;
     ramses::Scene& getScene(ramses::sceneId_t sceneId);
@@ -61,7 +96,7 @@ private:
         ramses::Scene* clientScene = nullptr;
         ramses_internal::IntegrationScene* integrationScene = nullptr;
     };
-    typedef ramses_internal::HashMap< ramses::sceneId_t, SceneData > SceneMap;
+    using SceneMap = ramses_internal::HashMap<ramses::sceneId_t, SceneData>;
 
     ramses::RamsesClient& m_client;
     ramses::sceneId_t m_nextSceneId{1u};

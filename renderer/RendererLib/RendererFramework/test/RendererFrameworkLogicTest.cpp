@@ -23,7 +23,6 @@ namespace ramses_internal
         ARendererFrameworkLogic()
             : testing::Test()
             , fixture(
-            resourceComponent,
             sceneGraphConsumerComponent,
             rendererCommandBuffer,
             frameworkLock
@@ -53,7 +52,6 @@ namespace ramses_internal
             return collection;
         }
 
-        StrictMock<ResourceConsumerComponentMock> resourceComponent;
         StrictMock<SceneGraphConsumerComponentMock> sceneGraphConsumerComponent;
 
         RendererCommandBuffer rendererCommandBuffer;
@@ -101,7 +99,7 @@ namespace ramses_internal
         expectSceneCommand(ERendererCommand_PublishedScene);
 
         SceneUpdate sceneUpdate;
-        sceneUpdate.actions = createFakeSceneActionCollectionFromTypes({ ESceneActionId::AddChildToNode , ESceneActionId::Flush });
+        sceneUpdate.actions = createFakeSceneActionCollectionFromTypes({ ESceneActionId::AddChildToNode });
         fixture.handleSceneUpdate(sceneId, std::move(sceneUpdate), providerID);
 
         RendererCommandContainer commands;
@@ -110,32 +108,8 @@ namespace ramses_internal
         EXPECT_EQ(ERendererCommand_SceneUpdate, commands.getCommandType(0u));
         const SceneUpdateCommand& cmd = commands.getCommandData<SceneUpdateCommand>(0u);
         EXPECT_EQ(sceneId, cmd.sceneId);
-        EXPECT_EQ(2u, cmd.sceneUpdate.actions.numberOfActions());
+        EXPECT_EQ(1u, cmd.sceneUpdate.actions.numberOfActions());
         EXPECT_EQ(ESceneActionId::AddChildToNode, cmd.sceneUpdate.actions[0].type());
-    }
-
-    TEST_F(ARendererFrameworkLogic, requestsResourcesViaResourceComponentWithCorrectProviderID)
-    {
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode_LocalAndRemote), providerID);
-
-        const ResourceContentHash resource(44u, 0);
-        ResourceContentHashVector resources;
-        resources.push_back(resource);
-
-        ResourceRequesterID requester(1);
-
-        EXPECT_CALL(resourceComponent, requestResourceAsynchronouslyFromFramework(resources, requester, providerID));
-        fixture.requestResourceAsyncronouslyFromFramework(resources, requester, sceneId);
-    }
-
-    TEST_F(ARendererFrameworkLogic, cancelsResourceRequestViaResourceComponent)
-    {
-        const ResourceContentHash resource(44u, 0);
-
-        ResourceRequesterID requester(1);
-
-        EXPECT_CALL(resourceComponent, cancelResourceRequest(resource, requester));
-        fixture.cancelResourceRequest(resource, requester);
     }
 
     TEST_F(ARendererFrameworkLogic, willNotSendSubscribeMessageWhenProviderUnknown)

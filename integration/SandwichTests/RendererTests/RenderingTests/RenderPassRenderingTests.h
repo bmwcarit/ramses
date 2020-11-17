@@ -23,14 +23,12 @@ private:
     bool runRenderOnceTest(RendererTestsFramework& testFramework);
     bool runRetriggerRenderOnceTest(RendererTestsFramework& testFramework);
     bool runRemapSceneWithRenderOnceTest(RendererTestsFramework& testFramework);
-    bool runResubscribeSceneWithRenderOnceTest(RendererTestsFramework& testFramework);
 
     enum
     {
         RenderPassTest_RenderOnce = 0,
         RenderPassTest_RetriggerRenderOnce,
         RenderPassTest_RemapSceneWithRenderOnce,
-        RenderPassTest_ResubscribeSceneWithRenderOnce
     };
 };
 

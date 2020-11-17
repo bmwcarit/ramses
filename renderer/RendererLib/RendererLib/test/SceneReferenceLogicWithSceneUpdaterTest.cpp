@@ -19,10 +19,10 @@
 #include "RendererSceneControlLogicMock.h"
 #include "RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
-#include "PlatformFactoryMock.h"
+#include "PlatformMock.h"
 #include "RendererMock.h"
 #include "RendererSceneEventSenderMock.h"
-#include "ResourceProviderMock.h"
+#include "ResourceDeviceHandleAccessorMock.h"
 #include "Components/SceneUpdate.h"
 
 using namespace testing;
@@ -38,7 +38,8 @@ namespace ramses_internal
         ASceneReferenceLogicWithSceneUpdater()
             : m_scenes(m_eventCollector)
             , m_expirationMonitor(m_scenes, m_eventCollector)
-            , m_renderer(m_platformFactory, m_scenes, m_eventCollector, m_expirationMonitor, m_rendererStatistics)
+            , m_renderer(m_platform, m_scenes, m_eventCollector, m_expirationMonitor, m_rendererStatistics)
+            , m_resourceUploader(m_rendererStatistics)
             , m_sceneStateExecutor(m_renderer, m_sceneEventSenderFromSceneUpdater, m_eventCollector)
             , m_sceneUpdater(m_renderer, m_scenes, m_sceneStateExecutor, m_eventCollector, m_frameTimer, m_expirationMonitor)
             , m_sceneLogic(m_sceneUpdater)
@@ -49,14 +50,18 @@ namespace ramses_internal
 
         virtual void SetUp() override
         {
-            // get master scene to available state
-            m_sceneLogic.setSceneState(MasterSceneId, RendererSceneState::Available);
+            // get master scene to ready state
+            m_sceneUpdater.createDisplayContext({}, m_resourceUploader, DisplayId);
+            m_sceneLogic.setSceneMapping(MasterSceneId, DisplayId);
+            m_sceneLogic.setSceneState(MasterSceneId, RendererSceneState::Ready);
             publishScene(MasterSceneId);
             update();
             receiveScene(MasterSceneId);
             flushScene(MasterSceneId);
+            update();
+            update();
 
-            ASSERT_EQ(ESceneState::Subscribed, m_sceneStateExecutor.getSceneState(MasterSceneId));
+            ASSERT_EQ(ESceneState::Mapped, m_sceneStateExecutor.getSceneState(MasterSceneId));
             update();
         }
 
@@ -75,10 +80,9 @@ namespace ramses_internal
         {
             SceneUpdate sceneUpdate;
             SceneActionCollectionCreator creator(sceneUpdate.actions);
-            creator.flush(1u, false);
             sceneUpdate.flushInfos.flushCounter = 1u;
             sceneUpdate.flushInfos.containsValidInformation = true;
-            m_sceneUpdater.handleSceneActions(sceneId, std::move(sceneUpdate));
+            m_sceneUpdater.handleSceneUpdate(sceneId, std::move(sceneUpdate));
         }
 
         void flushSceneWithRefSceneStateRequest(SceneId sceneId, SceneReferenceHandle refSceneHandle, RendererSceneState refSceneState)
@@ -86,10 +90,9 @@ namespace ramses_internal
             SceneUpdate sceneUpdate;
             SceneActionCollectionCreator creator(sceneUpdate.actions);
             creator.requestSceneReferenceState(refSceneHandle, refSceneState);
-            creator.flush(1u, false);
             sceneUpdate.flushInfos.flushCounter = 1u;
             sceneUpdate.flushInfos.containsValidInformation = true;
-            m_sceneUpdater.handleSceneActions(sceneId, std::move(sceneUpdate));
+            m_sceneUpdater.handleSceneUpdate(sceneId, std::move(sceneUpdate));
         }
 
         void processInternalEventsBySceneLogic()
@@ -102,8 +105,7 @@ namespace ramses_internal
             RendererSceneControlLogic::Events outSceneEvents;
             m_sceneLogic.consumeEvents(outSceneEvents);
             for (const auto& evt : outSceneEvents)
-                if (evt.type == RendererSceneControlLogic::Event::Type::SceneStateChanged)
-                    m_eventCollector.addSceneEvent(ERendererEventType_SceneStateChanged, evt.sceneId, evt.state);
+                m_eventCollector.addSceneEvent(ERendererEventType_SceneStateChanged, evt.sceneId, evt.state);
         }
 
         void update()
@@ -123,10 +125,11 @@ namespace ramses_internal
     protected:
         RendererEventCollector m_eventCollector;
         RendererScenes m_scenes;
-        NiceMock<PlatformFactoryNiceMock> m_platformFactory;
+        NiceMock<PlatformNiceMock> m_platform;
         SceneExpirationMonitor m_expirationMonitor;
         RendererStatistics m_rendererStatistics;
         NiceMock<RendererMockWithNiceMockDisplay> m_renderer;
+        ResourceUploader m_resourceUploader;
 
         NiceMock<RendererSceneEventSenderMock> m_sceneEventSenderFromSceneUpdater;
         StrictMock<RendererSceneEventSenderMock> m_sceneEventSenderFromSceneRefLogic;
@@ -140,21 +143,16 @@ namespace ramses_internal
         static constexpr SceneId MasterSceneId{ 123 };
         static constexpr SceneId RefSceneId{ 125 };
         static constexpr SceneReferenceHandle RefSceneHandle{ 13 };
+        static constexpr DisplayHandle DisplayId{ 0u };
     };
 
     constexpr SceneId ASceneReferenceLogicWithSceneUpdater::MasterSceneId;
     constexpr SceneId ASceneReferenceLogicWithSceneUpdater::RefSceneId;
     constexpr SceneReferenceHandle ASceneReferenceLogicWithSceneUpdater::RefSceneHandle;
+    constexpr DisplayHandle ASceneReferenceLogicWithSceneUpdater::DisplayId;
 
     TEST_F(ASceneReferenceLogicWithSceneUpdater, requestsReferencedSceneStateChangeAlwaysInSameUpdateLoopWithFlushApplied)
     {
-        // create display so mapping can work
-        NiceMock<ResourceProviderMock> resourceProvider;
-        ResourceUploader resourceUploader{ m_renderer.getStatistics() };
-        constexpr DisplayHandle display{ 0 };
-        m_sceneUpdater.createDisplayContext({}, resourceProvider, resourceUploader, display);
-        // set mapping and request master scene rendered so that ref scene is not limited by master scene state
-        m_sceneLogic.setSceneMapping(MasterSceneId, display);
         m_sceneLogic.setSceneState(MasterSceneId, RendererSceneState::Rendered);
 
         m_sceneUpdater.handleScenePublished(RefSceneId, EScenePublicationMode_LocalAndRemote);
@@ -165,17 +163,14 @@ namespace ramses_internal
         InSequence seq;
 
         // request available
-        flushSceneWithRefSceneStateRequest(MasterSceneId, refSceneHandle, RendererSceneState::Available);
+        flushSceneWithRefSceneStateRequest(MasterSceneId, refSceneHandle, RendererSceneState::Ready);
+        EXPECT_CALL(m_sceneEventSenderFromSceneRefLogic, sendSceneStateChanged(MasterSceneId, RefSceneId, RendererSceneState::Available));
         update();
         EXPECT_EQ(ESceneState::SubscriptionRequested, m_sceneStateExecutor.getSceneState(RefSceneId));
 
         receiveScene(RefSceneId);
         flushScene(RefSceneId);
         EXPECT_EQ(ESceneState::Subscribed, m_sceneStateExecutor.getSceneState(RefSceneId));
-        EXPECT_CALL(m_sceneEventSenderFromSceneRefLogic, sendSceneStateChanged(MasterSceneId, RefSceneId, RendererSceneState::Available));
-
-        // request ready
-        flushSceneWithRefSceneStateRequest(MasterSceneId, refSceneHandle, RendererSceneState::Ready);
         update();
         EXPECT_EQ(ESceneState::MappingAndUploading, m_sceneStateExecutor.getSceneState(RefSceneId));
         update();
@@ -194,21 +189,6 @@ namespace ramses_internal
 
     TEST_F(ASceneReferenceLogicWithSceneUpdater, willShowMasterSceneWithItsRefSceneInSameUpdateLoop)
     {
-        NiceMock<ResourceProviderMock> resourceProvider;
-        ResourceUploader resourceUploader{ m_renderer.getStatistics() };
-
-        constexpr DisplayHandle display{ 0 };
-        m_sceneUpdater.createDisplayContext({}, resourceProvider, resourceUploader, display);
-
-        // get master scene ready
-        {
-            m_sceneLogic.setSceneMapping(MasterSceneId, display);
-            m_sceneLogic.setSceneState(MasterSceneId, RendererSceneState::Ready);
-            update();
-            update(); // 2 updates needed due to intermediate states
-            EXPECT_EQ(ESceneState::Mapped, m_sceneStateExecutor.getSceneState(MasterSceneId));
-        }
-
         auto& masterScene = m_scenes.getScene(MasterSceneId);
         const auto refSceneHandle = SceneAllocateHelper(masterScene).allocateSceneReference(RefSceneId);
 
@@ -245,12 +225,6 @@ namespace ramses_internal
 
     TEST_F(ASceneReferenceLogicWithSceneUpdater, willHideMasterSceneWithItsRefSceneInSameUpdateLoop)
     {
-        // create display so mapping can work
-        NiceMock<ResourceProviderMock> resourceProvider;
-        ResourceUploader resourceUploader{ m_renderer.getStatistics() };
-        constexpr DisplayHandle display{ 0 };
-        m_sceneUpdater.createDisplayContext({}, resourceProvider, resourceUploader, display);
-
         auto& masterScene = m_scenes.getScene(MasterSceneId);
         const auto refSceneHandle = SceneAllocateHelper(masterScene).allocateSceneReference(RefSceneId);
 
@@ -261,7 +235,6 @@ namespace ramses_internal
             EXPECT_CALL(m_sceneEventSenderFromSceneRefLogic, sendSceneStateChanged(MasterSceneId, RefSceneId, RendererSceneState::Ready));
             EXPECT_CALL(m_sceneEventSenderFromSceneRefLogic, sendSceneStateChanged(MasterSceneId, RefSceneId, RendererSceneState::Rendered));
 
-            m_sceneLogic.setSceneMapping(MasterSceneId, display);
             m_sceneLogic.setSceneState(MasterSceneId, RendererSceneState::Rendered);
 
             masterScene.requestSceneReferenceState(refSceneHandle, RendererSceneState::Rendered);
@@ -291,12 +264,6 @@ namespace ramses_internal
 
     TEST_F(ASceneReferenceLogicWithSceneUpdater, unpublishOfMasterSceneTriggersUnsubscribeOfItsRefSceneInSameUpdateLoop)
     {
-        // create display so mapping can work
-        NiceMock<ResourceProviderMock> resourceProvider;
-        ResourceUploader resourceUploader{ m_renderer.getStatistics() };
-        constexpr DisplayHandle display{ 0 };
-        m_sceneUpdater.createDisplayContext({}, resourceProvider, resourceUploader, display);
-
         auto& masterScene = m_scenes.getScene(MasterSceneId);
         const auto refSceneHandle = SceneAllocateHelper(masterScene).allocateSceneReference(RefSceneId);
 
@@ -307,7 +274,6 @@ namespace ramses_internal
             EXPECT_CALL(m_sceneEventSenderFromSceneRefLogic, sendSceneStateChanged(MasterSceneId, RefSceneId, RendererSceneState::Ready));
             EXPECT_CALL(m_sceneEventSenderFromSceneRefLogic, sendSceneStateChanged(MasterSceneId, RefSceneId, RendererSceneState::Rendered));
 
-            m_sceneLogic.setSceneMapping(MasterSceneId, display);
             m_sceneLogic.setSceneState(MasterSceneId, RendererSceneState::Rendered);
 
             masterScene.requestSceneReferenceState(refSceneHandle, RendererSceneState::Rendered);
@@ -334,8 +300,6 @@ namespace ramses_internal
         InSequence seq;
         EXPECT_CALL(m_sceneEventSenderFromSceneRefLogic, sendSceneStateChanged(MasterSceneId, RefSceneId, RendererSceneState::Ready));
         EXPECT_CALL(m_sceneEventSenderFromSceneRefLogic, sendSceneStateChanged(MasterSceneId, RefSceneId, RendererSceneState::Available));
-        EXPECT_CALL(m_sceneEventSenderFromSceneRefLogic, sendSceneStateChanged(MasterSceneId, RefSceneId, RendererSceneState::Unavailable));
-        update();
         update();
         update();
         // ... and destroyed eventually

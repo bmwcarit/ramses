@@ -18,9 +18,9 @@
 #include "RendererResourceManagerMock.h"
 #include "EmbeddedCompositingManagerMock.h"
 #include "DeviceMock.h"
-#include "ResourceProviderMock.h"
 #include "SceneAllocateHelper.h"
 #include "Scene/DataLayout.h"
+#include "MockResourceHash.h"
 
 namespace ramses_internal
 {
@@ -34,19 +34,19 @@ namespace ramses_internal
             , m_indexArrayAvailable(indexArrayAvailable)
         {
             if (m_indexArrayAvailable)
-                ON_CALL(resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeIndexArrayHash)).WillByDefault(Return(DeviceMock::FakeIndexBufferDeviceHandle));
+                ON_CALL(resourceManager, getResourceDeviceHandle(MockResourceHash::IndexArrayHash)).WillByDefault(Return(DeviceMock::FakeIndexBufferDeviceHandle));
             else
-                ON_CALL(resourceManager, getClientResourceDeviceHandle(ResourceProviderMock::FakeIndexArrayHash)).WillByDefault(Return(DeviceResourceHandle::Invalid()));
+                ON_CALL(resourceManager, getResourceDeviceHandle(MockResourceHash::IndexArrayHash)).WillByDefault(Return(DeviceResourceHandle::Invalid()));
 
             DataFieldInfoVector geometryDataFields(2u);
-            geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType::Indices, 1u, EFixedSemantics_Indices);
-            geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType::Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
-            m_sceneAllocator.allocateDataLayout(geometryDataFields, ResourceProviderMock::FakeEffectHash, testGeometryLayout);
+            geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType::Indices, 1u, EFixedSemantics::Indices);
+            geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType::Vector3Buffer, 1u, EFixedSemantics::Invalid);
+            m_sceneAllocator.allocateDataLayout(geometryDataFields, MockResourceHash::EffectHash, testGeometryLayout);
 
             DataFieldInfoVector uniformDataFields(2u);
             uniformDataFields[dataField.asMemoryHandle()] = DataFieldInfo(EDataType::Float);
             uniformDataFields[samplerField.asMemoryHandle()] = DataFieldInfo(EDataType::TextureSampler2D);
-            m_sceneAllocator.allocateDataLayout(uniformDataFields, ResourceProviderMock::FakeEffectHash, testUniformLayout);
+            m_sceneAllocator.allocateDataLayout(uniformDataFields, MockResourceHash::EffectHash, testUniformLayout);
         }
 
         RenderGroupHandle createRenderGroup(RenderPassHandle pass1 = RenderPassHandle::Invalid(), RenderPassHandle pass2 = RenderPassHandle::Invalid())
@@ -98,7 +98,7 @@ namespace ramses_internal
         {
             const RenderPassHandle pass = m_sceneAllocator.allocateRenderPass();
             const auto dataLayout = m_sceneAllocator.allocateDataLayout({DataFieldInfo{EDataType::Vector2I}, DataFieldInfo{EDataType::Vector2I}}, ResourceContentHash::Invalid());
-            const CameraHandle camera = m_sceneAllocator.allocateCamera(ECameraProjectionType::Renderer, m_sceneAllocator.allocateNode(), m_sceneAllocator.allocateDataInstance(dataLayout));
+            const CameraHandle camera = m_sceneAllocator.allocateCamera(ECameraProjectionType::Perspective, m_sceneAllocator.allocateNode(), m_sceneAllocator.allocateDataInstance(dataLayout));
             m_scene.setRenderPassCamera(pass, camera);
             return pass;
         }
@@ -125,9 +125,9 @@ namespace ramses_internal
             return m_sceneAllocator.allocateTextureSampler({ {}, handleOrHash });
         }
 
-        TextureSamplerHandle createTextureSamplerWithFakeClientTexture()
+        TextureSamplerHandle createTextureSamplerWithFakeTexture()
         {
-            return createTextureSampler(ResourceProviderMock::FakeTextureHash);
+            return createTextureSampler(MockResourceHash::TextureHash);
         }
 
         DataInstanceHandle createAndAssignUniformDataInstance(RenderableHandle renderable, TextureSamplerHandle sampler)
@@ -154,9 +154,9 @@ namespace ramses_internal
         {
             auto vertexData = m_scene.getRenderable(renderable).dataInstances[ERenderableDataSlotType_Geometry];
             if (setVertices)
-                m_scene.setDataResource(vertexData, vertAttribField, ResourceProviderMock::FakeVertArrayHash, DataBufferHandle::Invalid(), 0u);
+                m_scene.setDataResource(vertexData, vertAttribField, MockResourceHash::VertArrayHash, DataBufferHandle::Invalid(), 0u, 0u, 0u);
             if (setIndices)
-                m_scene.setDataResource(vertexData, indicesField, ResourceProviderMock::FakeIndexArrayHash, DataBufferHandle::Invalid(), 0u);
+                m_scene.setDataResource(vertexData, indicesField, MockResourceHash::IndexArrayHash, DataBufferHandle::Invalid(), 0u, 0u, 0u);
         }
 
         template <typename TextureContentHandle>

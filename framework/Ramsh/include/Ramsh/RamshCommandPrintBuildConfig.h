@@ -18,11 +18,8 @@ namespace ramses_internal
     class RamshCommandPrintBuildConfig : public RamshCommand
     {
     public:
-        explicit RamshCommandPrintBuildConfig(const char* const configStrings);
+        RamshCommandPrintBuildConfig();
         virtual bool executeInput(const RamshInput& input) override;
-
-    protected:
-        const char* const m_configString;
     };
 
 }// namespace ramses_internal

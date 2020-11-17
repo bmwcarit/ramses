@@ -46,15 +46,6 @@ namespace ramses_internal
         virtual IEmbeddedCompositingManager& getEmbeddedCompositingManager() override;
         virtual UInt32                  getDisplayWidth() const override;
         virtual UInt32                  getDisplayHeight() const override;
-        virtual void                    setProjectionParams(const ProjectionParams& params) override;
-        virtual const ProjectionParams& getProjectionParams() const override;
-
-        virtual void                    setViewPosition(const Vector3& position) override;
-        virtual void                    setViewRotation(const Vector3& rotation) override;
-        virtual const Vector3&          getViewPosition() const override;
-        virtual const Vector3&          getViewRotation() const override;
-        virtual const Matrix44f&        getViewMatrix() const override;
-        virtual void                    resetView() const override;
 
         virtual void                    readPixels(DeviceResourceHandle renderTargetHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut) override;
         virtual Bool                    isWarpingEnabled() const override;
@@ -63,16 +54,9 @@ namespace ramses_internal
         virtual void validateRenderingStatusHealthy() const override;
 
     private:
-        void updateViewMatrix();
-
         IRenderBackend&         m_renderBackend;
         IDevice&                m_device;
         EmbeddedCompositingManager m_embeddedCompositingManager;
-
-        Vector3                 m_viewPosition;
-        Vector3                 m_viewRotation;
-        Matrix44f               m_viewMatrix;
-        ProjectionParams        m_projectionParams;
 
         const UInt32            m_displayWidth;
         const UInt32            m_displayHeight;

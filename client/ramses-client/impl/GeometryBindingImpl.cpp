@@ -191,7 +191,8 @@ namespace ramses
             return getValidationErrorStatus();
         }
 
-        if (!dataTypeMatchesInputType(getIScene().getDataBuffer(dataBuffer).dataType, fieldDataType))
+        const auto dataBufferType = getIScene().getDataBuffer(dataBuffer).dataType;
+        if (!dataTypeMatchesInputType(dataBufferType, fieldDataType))
         {
             addValidationMessage(EValidationSeverity_Error, indent, "GeometryBinding is referring to data buffer with type that does not match data layout field type");
             return getValidationErrorStatus();
@@ -226,7 +227,7 @@ namespace ramses
         dataFields.reserve(attributesList.size());
 
         // Indices are always stored at fixed data slot with index IndicesDataFieldIndex
-        dataFields.push_back(ramses_internal::DataFieldInfo{ ramses_internal::EDataType::Indices, 1u, ramses_internal::EFixedSemantics_Indices });
+        dataFields.push_back(ramses_internal::DataFieldInfo{ ramses_internal::EDataType::Indices, 1u, ramses_internal::EFixedSemantics::Indices });
         for (const auto& attribInfo : attributesList)
         {
             dataFields.push_back(ramses_internal::DataFieldInfo{ attribInfo.dataType, attribInfo.elementCount, attribInfo.semantics });
@@ -270,7 +271,7 @@ namespace ramses
 
         const ramses_internal::DataLayout& layout = getIScene().getDataLayout(m_attributeLayout);
         const uint32_t fieldCount = layout.getFieldCount();
-        ramses_internal::EFixedSemantics indicesFieldSemantics = ramses_internal::EFixedSemantics_Invalid;
+        ramses_internal::EFixedSemantics indicesFieldSemantics = ramses_internal::EFixedSemantics::Invalid;
         const ramses_internal::DataFieldHandle field(IndicesDataFieldIndex);
 
         if (IndicesDataFieldIndex < fieldCount)
@@ -278,9 +279,9 @@ namespace ramses
             indicesFieldSemantics = layout.getField(field).semantics;
         }
 
-        if (indicesFieldSemantics == ramses_internal::EFixedSemantics_Indices)
+        if (indicesFieldSemantics == ramses_internal::EFixedSemantics::Indices)
         {
-            getIScene().setDataResource(m_attributeInstance, field, arrayResource.getLowlevelResourceHash(), ramses_internal::DataBufferHandle::Invalid(), 0);
+            getIScene().setDataResource(m_attributeInstance, field, arrayResource.getLowlevelResourceHash(), ramses_internal::DataBufferHandle::Invalid(), 0u, 0u, 0u);
             m_indicesCount = arrayResource.getElementCount();
 
             return StatusOK;
@@ -303,7 +304,7 @@ namespace ramses
 
         const ramses_internal::DataLayout& layout = getIScene().getDataLayout(m_attributeLayout);
         const uint32_t fieldCount = layout.getFieldCount();
-        ramses_internal::EFixedSemantics indicesFieldSemantics = ramses_internal::EFixedSemantics_Invalid;
+        ramses_internal::EFixedSemantics indicesFieldSemantics = ramses_internal::EFixedSemantics::Invalid;
         const ramses_internal::DataFieldHandle field(IndicesDataFieldIndex);
 
         if (IndicesDataFieldIndex < fieldCount)
@@ -311,11 +312,11 @@ namespace ramses
             indicesFieldSemantics = layout.getField(field).semantics;
         }
 
-        if (indicesFieldSemantics == ramses_internal::EFixedSemantics_Indices)
+        if (indicesFieldSemantics == ramses_internal::EFixedSemantics::Indices)
         {
             const ramses_internal::DataBufferHandle dataBufferHandle = dataBuffer.getDataBufferHandle();
 
-            getIScene().setDataResource(m_attributeInstance, field, ramses_internal::ResourceContentHash::Invalid(), dataBufferHandle, 0);
+            getIScene().setDataResource(m_attributeInstance, field, ramses_internal::ResourceContentHash::Invalid(), dataBufferHandle, 0u, 0u, 0u);
 
             m_indicesCount = dataBuffer.getElementCount();
 
@@ -325,16 +326,16 @@ namespace ramses
         return addErrorEntry("GeometryBinding::setIndices failed - indices slot was not enabled in this geometry.");
     }
 
-    status_t GeometryBindingImpl::setInputBuffer(const EffectInputImpl& input, const ArrayResourceImpl& bufferResource, uint32_t instancingDivisor)
+    status_t GeometryBindingImpl::setInputBuffer(const EffectInputImpl& input, const ArrayResourceImpl& bufferResource, uint32_t instancingDivisor, uint16_t offset, uint16_t stride)
     {
         if (!isFromTheSameSceneAs(bufferResource))
         {
-            return addErrorEntry("GeometryBinding::setInputBuffer failed, bufferResource is not from the same client as the GeometryBinding.");
+            return addErrorEntry("GeometryBinding::setInputBuffer failed, array resource is not from the same client as the GeometryBinding.");
         }
 
         if (!DataTypeUtils::IsValidVerticesType(bufferResource.getElementType()))
         {
-            return addErrorEntry("GeometryBinding::setInputBuffer failed, bufferResource is not of valid data type.");
+            return addErrorEntry("GeometryBinding::setInputBuffer failed, array resource is not of valid data type.");
         }
 
         if (input.getEffectHash() != m_effectImpl->getLowlevelResourceHash())
@@ -342,19 +343,20 @@ namespace ramses
             return addErrorEntry("GeometryBinding::setInputBuffer failed, input is not properly initialized or cannot be used with this geometry binding.");
         }
 
+        if ((offset > 0 || stride > 0) && bufferResource.getElementType() != EDataType::ByteBlob)
+            return addErrorEntry("GeometryBinding::setInputBuffer failed, custom stride/offset can be used only with array resources of type byte blob");
+
         if (!dataTypeMatchesInputType(DataTypeUtils::ConvertDataTypeToInternal(bufferResource.getElementType()), input.getDataType()))
-        {
-            return addErrorEntry("GeometryBinding::setInputBuffer failed, resource buffer type does not match input data type");
-        }
+            return addErrorEntry("GeometryBinding::setInputBuffer failed, array resource type does not match input data type");
 
         // data field index on low level scene is indexed starting after reserved slot for indices
         const ramses_internal::DataFieldHandle dataField(input.getInputIndex() + IndicesDataFieldIndex + 1u);
-        getIScene().setDataResource(m_attributeInstance, dataField, bufferResource.getLowlevelResourceHash(), ramses_internal::DataBufferHandle::Invalid(), instancingDivisor);
+        getIScene().setDataResource(m_attributeInstance, dataField, bufferResource.getLowlevelResourceHash(), ramses_internal::DataBufferHandle::Invalid(), instancingDivisor, offset, stride);
 
         return StatusOK;
     }
 
-    status_t GeometryBindingImpl::setInputBuffer(const EffectInputImpl& input, const ArrayBufferImpl& dataBuffer, uint32_t instancingDivisor /*= 0*/)
+    status_t GeometryBindingImpl::setInputBuffer(const EffectInputImpl& input, const ArrayBufferImpl& dataBuffer, uint32_t instancingDivisor, uint16_t offset, uint16_t stride)
     {
         if (!isFromTheSameSceneAs(dataBuffer))
         {
@@ -374,14 +376,15 @@ namespace ramses
         const ramses_internal::DataBufferHandle dataBufferHandle = dataBuffer.getDataBufferHandle();
         const ramses_internal::EDataType dataBufferDataType = getIScene().getDataBuffer(dataBufferHandle).dataType;
 
+        if ((offset > 0 || stride > 0) && dataBuffer.getDataType() != EDataType::ByteBlob)
+            return addErrorEntry("GeometryBinding::setInputBuffer failed, custom stride/offset can be used only with data buffers of type byte blob");
+
         if (!dataTypeMatchesInputType(dataBufferDataType, input.getDataType()))
-        {
             return addErrorEntry("GeometryBinding::setInputBuffer failed, vertex data buffer type does not match input data type");
-        }
 
         // data field index on low level scene is indexed starting after reserved slot for indices
         const ramses_internal::DataFieldHandle dataField(input.getInputIndex() + IndicesDataFieldIndex + 1u);
-        getIScene().setDataResource(m_attributeInstance, dataField, ramses_internal::ResourceContentHash::Invalid(), dataBufferHandle, instancingDivisor);
+        getIScene().setDataResource(m_attributeInstance, dataField, ramses_internal::ResourceContentHash::Invalid(), dataBufferHandle, instancingDivisor, offset, stride);
 
         return StatusOK;
     }
@@ -393,6 +396,8 @@ namespace ramses
         case ramses_internal::EDataType::UInt16:
         case ramses_internal::EDataType::UInt32:
             return inputDataType == ramses_internal::EDataType::Indices;
+        case ramses_internal::EDataType::ByteBlob:
+            return ramses_internal::IsBufferDataType(inputDataType);
         case ramses_internal::EDataType::Float:
             return inputDataType == ramses_internal::EDataType::FloatBuffer;
         case ramses_internal::EDataType::Vector2F:

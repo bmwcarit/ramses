@@ -21,20 +21,19 @@
 #include "RamsesRendererUtils.h"
 
 //This is needed to abstract from a specific rendering platform
-#include "PlatformFactoryMock.h"
-#include "Platform_Base/PlatformFactory_Base.h"
-#include "ResourceProviderMock.h"
+#include "PlatformMock.h"
+#include "Platform_Base/Platform_Base.h"
 
 namespace ramses_internal
 {
     using namespace testing;
 
-    NiceMock<PlatformFactoryNiceMock>* gPlatformFactoryMock = nullptr;
+    NiceMock<PlatformNiceMock>* gPlatformMock = nullptr;
 
-    ramses_internal::IPlatformFactory* ramses_internal::PlatformFactory_Base::CreatePlatformFactory(const ramses_internal::RendererConfig&)
+    ramses_internal::IPlatform* ramses_internal::Platform_Base::CreatePlatform(const ramses_internal::RendererConfig&)
     {
-        gPlatformFactoryMock = new ::testing::NiceMock<PlatformFactoryNiceMock>();
-        return gPlatformFactoryMock;
+        gPlatformMock = new ::testing::NiceMock<PlatformNiceMock>();
+        return gPlatformMock;
     }
 
     class ARamsesRendererDispatch : public ::testing::Test
@@ -93,7 +92,7 @@ namespace ramses_internal
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForDisplayCreation)
     {
-        ON_CALL(*gPlatformFactoryMock, createRenderBackend(_, _)).WillByDefault(Return(static_cast<ramses_internal::IRenderBackend*>(nullptr)));
+        ON_CALL(*gPlatformMock, createRenderBackend(_, _)).WillByDefault(Return(static_cast<ramses_internal::IRenderBackend*>(nullptr)));
         createDisplayAndExpectResult(ramses::ERendererEventResult_FAIL);
     }
 

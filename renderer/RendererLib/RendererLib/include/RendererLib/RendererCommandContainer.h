@@ -14,7 +14,7 @@
 
 namespace ramses_internal
 {
-    typedef CommandContainer<ERendererCommand, RendererCommand> RendererCommandContainer;
+    using RendererCommandContainer = CommandContainer<ERendererCommand, RendererCommand>;
 }
 
 #endif

@@ -50,6 +50,11 @@ int main(int argc, const char* argv[])
     renderer.createDisplay(displayConfig);
     renderer.flush();
 
+    int x = 0;
+    uint32_t displayWidth = 0;
+    uint32_t displayHeight = 0;
+    displayConfig.getWindowRectangle(x, x, displayWidth, displayHeight);
+
     ramses::RendererMate rendererMate(renderer.impl, framework.impl);
     ramses::RendererMateAutoShowHandler dmEventHandler(rendererMate, !disableAutoMapping.wasDefined());
 
@@ -58,14 +63,14 @@ int main(int argc, const char* argv[])
         // host scene contains provider nodes
         const ramses::sceneId_t hostSceneId(12u);
         ramses::Scene* hostScene = client.createScene(hostSceneId);
-        ramses_internal::TransformationLinkScene transformationProviderScene(*hostScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_PROVIDER_WITHOUT_CONTENT, ramses_internal::Vector3(0.0f));
+        ramses_internal::TransformationLinkScene transformationProviderScene(*hostScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_PROVIDER_WITHOUT_CONTENT, { 0.f, 0.f, 0.f }, displayWidth, displayHeight);
         hostScene->flush();
         hostScene->publish(ramses::EScenePublicationMode_LocalOnly);
 
         //client scene
         const ramses::sceneId_t localSceneId(42u);
         ramses::Scene* clientScene = client.createScene(localSceneId);
-        ramses_internal::TransformationLinkScene redTriangleScene(*clientScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER, ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+        ramses_internal::TransformationLinkScene redTriangleScene(*clientScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER, { 0.f, 0.f, 12.f }, displayWidth, displayHeight);
         clientScene->flush();
         clientScene->publish(ramses::EScenePublicationMode_LocalOnly);
 
@@ -78,7 +83,7 @@ int main(int argc, const char* argv[])
 
             // scene to distribute only
             ramses::Scene* remoteScene = client.createScene(remoteSceneId);
-            ramses_internal::TransformationLinkScene blueTriangleScene(*remoteScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER_OVERRIDEN, ramses_internal::Vector3(0.0f, 0.0f, 12.0f));
+            ramses_internal::TransformationLinkScene blueTriangleScene(*remoteScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER_OVERRIDEN, { 0.f, 0.f, 12.f }, displayWidth, displayHeight);
             remoteScene->flush();
             remoteScene->publish();
         }
@@ -102,7 +107,7 @@ int main(int argc, const char* argv[])
             case 3:
             {
                 ramses::sceneId_t sceneId(13u);
-                ramses_internal::FileLoadingScene fileLoadingScene(client, ramses_internal::FileLoadingScene::CREATE_SAVE_DESTROY_LOAD_USING_SAME_CLIENT, sceneId, ramses_internal::Vector3(0.0, 0.0, 5.0), ".", ramses::RamsesFrameworkConfig(argc, argv));
+                ramses_internal::FileLoadingScene fileLoadingScene(client, ramses_internal::FileLoadingScene::CREATE_SAVE_DESTROY_LOAD_USING_SAME_CLIENT, sceneId, { 0.f, 0.f, 5.f }, ".", ramses::RamsesFrameworkConfig(argc, argv), displayWidth, displayHeight);
                 ramses::Scene* scene = fileLoadingScene.getCreatedScene();
                 scene->publish();
 
@@ -121,12 +126,8 @@ int main(int argc, const char* argv[])
                 framework.impl.getRamsh().add(testStepCommand);
 
                 const ramses::sceneId_t sceneId(1u);
-                ramses::Scene&          clientScene = *client.createScene(sceneId);
-
-                ramses_internal::TransformationLinkScene redTriangleScene(
-                    clientScene,
-                    ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER,
-                    ramses_internal::Vector3(0.0f, 0.0f, 4.0f));
+                ramses::Scene& clientScene = *client.createScene(sceneId);
+                ramses_internal::TransformationLinkScene redTriangleScene(clientScene, ramses_internal::TransformationLinkScene::TRANSFORMATION_CONSUMER, { 0.f, 0.f, 4.f }, displayWidth, displayHeight);
 
                 clientScene.publish();
                 clientScene.flush();

@@ -17,7 +17,12 @@ namespace ramses_internal
     class IResourceDeviceHandleAccessor;
     class IEmbeddedCompositingManager;
 
-    typedef std::vector<DeviceHandleVector> DeviceHandleCache;
+    struct VertexAttribCacheEntry
+    {
+        DeviceResourceHandle deviceHandle;
+        EDataType dataType;
+    };
+    using DataInstanceVertexAttribs = std::vector<VertexAttribCacheEntry>;
 
     class ResourceCachedScene : public DataReferenceLinkCachedScene
     {
@@ -37,7 +42,7 @@ namespace ramses_internal
 
         // Renderable data (stuff required for rendering)
         virtual void                        setRenderableDataInstance   (RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
-        virtual void                        setDataResource             (DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor) override;
+        virtual void                        setDataResource             (DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) override;
         virtual void                        setDataTextureSamplerHandle (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
 
         virtual void                        setForceFallbackImage       (StreamTextureHandle streamTextureHandle, Bool forceFallbackImage) override;
@@ -51,7 +56,7 @@ namespace ramses_internal
         Bool                                renderableResourcesDirty    (const RenderableVector& handles) const;
 
         DeviceResourceHandle                getRenderableEffectDeviceHandle(RenderableHandle renderable) const;
-        const DeviceHandleCache&            getCachedHandlesForVertexAttributes() const;
+        const DataInstanceVertexAttribs&    getCachedHandlesForVertexAttributes(DataInstanceHandle dataInstance) const;
         const DeviceHandleVector&           getCachedHandlesForTextureSamplers() const;
         const DeviceHandleVector&           getCachedHandlesForRenderTargets() const;
         const DeviceHandleVector&           getCachedHandlesForBlitPassRenderTargets() const;
@@ -87,8 +92,10 @@ namespace ramses_internal
         Bool updateTextureSamplerResourceAsTextureBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const TextureBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut);
         Bool updateTextureSamplerResourceAsStreamTexture(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, const StreamTextureHandle streamTextureHandle, DeviceResourceHandle& deviceHandleInOut);
 
+        using VertexAttribsCache = std::vector<DataInstanceVertexAttribs>;
+
         DeviceHandleVector         m_effectDeviceHandleCache;
-        DeviceHandleCache          m_deviceHandleCacheForVertexAttributes;
+        VertexAttribsCache         m_deviceHandleCacheForVertexAttributes;
         mutable DeviceHandleVector m_deviceHandleCacheForTextures;
         DeviceHandleVector         m_renderTargetCache;
         DeviceHandleVector         m_blitPassCache;

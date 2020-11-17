@@ -68,10 +68,10 @@ namespace ramses_internal
         m_commands.enqueueActionsForScene(sceneId, std::move(sceneUpdate));
     }
 
-    void RendererCommandBuffer::createDisplay(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle)
+    void RendererCommandBuffer::createDisplay(const DisplayConfig& displayConfig, IResourceUploader& resourceUploader, DisplayHandle handle)
     {
         PlatformGuard guard(m_lock);
-        m_commands.createDisplay(displayConfig, resourceProvider, resourceUploader, handle);
+        m_commands.createDisplay(displayConfig, resourceUploader, handle);
     }
 
     void RendererCommandBuffer::destroyDisplay(DisplayHandle handle)
@@ -80,10 +80,10 @@ namespace ramses_internal
         m_commands.destroyDisplay(handle);
     }
 
-    void RendererCommandBuffer::createOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, bool interruptible)
+    void RendererCommandBuffer::createOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, bool interruptible)
     {
         PlatformGuard guard(m_lock);
-        m_commands.createOffscreenBuffer(buffer, display, width, height, interruptible);
+        m_commands.createOffscreenBuffer(buffer, display, width, height, sampleCount, interruptible);
     }
 
     void RendererCommandBuffer::destroyOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle display)
@@ -156,36 +156,6 @@ namespace ramses_internal
     {
         PlatformGuard guard(m_lock);
         m_commands.unlinkSceneData(consumerSceneId, consumerDataSlotId);
-    }
-
-    void RendererCommandBuffer::moveView(const Vector3& offset)
-    {
-        PlatformGuard guard(m_lock);
-        m_commands.moveView(offset);
-    }
-
-    void RendererCommandBuffer::setViewPosition(const Vector3& position)
-    {
-        PlatformGuard guard(m_lock);
-        m_commands.setViewPosition(position);
-    }
-
-    void RendererCommandBuffer::rotateView(const Vector3& rotationDiff)
-    {
-        PlatformGuard guard(m_lock);
-        m_commands.rotateView(rotationDiff);
-    }
-
-    void RendererCommandBuffer::setViewRotation(const Vector3& rotation)
-    {
-        PlatformGuard guard(m_lock);
-        m_commands.setViewRotation(rotation);
-    }
-
-    void RendererCommandBuffer::resetView()
-    {
-        PlatformGuard guard(m_lock);
-        m_commands.resetView();
     }
 
     void RendererCommandBuffer::logStatistics()
@@ -374,7 +344,7 @@ namespace ramses_internal
             case ERendererCommand_CreateDisplay:
             {
                 const DisplayCommand& cmd = commands.getCommandData<DisplayCommand>(i);
-                m_commands.createDisplay(cmd.displayConfig, *cmd.resourceProvider, *cmd.resourceUploader, cmd.displayHandle);
+                m_commands.createDisplay(cmd.displayConfig, *cmd.resourceUploader, cmd.displayHandle);
             }
             break;
             case ERendererCommand_DestroyDisplay:
@@ -405,35 +375,6 @@ namespace ramses_internal
             {
                 const SceneStateCommand& cmd = commands.getCommandData<SceneStateCommand>(i);
                 m_commands.hideScene(cmd.sceneId);
-            }
-            break;
-            case ERendererCommand_RelativeTranslation:
-            {
-                const RendererViewCommand& cmd = commands.getCommandData<RendererViewCommand>(i);
-                m_commands.moveView(cmd.displayMovement);
-            }
-            break;
-            case ERendererCommand_AbsoluteTranslation:
-            {
-                const RendererViewCommand& cmd = commands.getCommandData<RendererViewCommand>(i);
-                m_commands.setViewPosition(cmd.displayMovement);
-            }
-            break;
-            case ERendererCommand_RelativeRotation:
-            {
-                const RendererViewCommand& cmd = commands.getCommandData<RendererViewCommand>(i);
-                m_commands.rotateView(cmd.displayMovement);
-            }
-            break;
-            case ERendererCommand_AbsoluteRotation:
-            {
-                const RendererViewCommand& cmd = commands.getCommandData<RendererViewCommand>(i);
-                m_commands.setViewRotation(cmd.displayMovement);
-            }
-            break;
-            case ERendererCommand_ResetRenderView:
-            {
-                m_commands.resetView();
             }
             break;
             case ERendererCommand_UpdateWarpingData:
@@ -469,7 +410,7 @@ namespace ramses_internal
             case ERendererCommand_CreateOffscreenBuffer:
             {
                 const OffscreenBufferCommand& cmd = commands.getCommandData<OffscreenBufferCommand>(i);
-                m_commands.createOffscreenBuffer(cmd.bufferHandle, cmd.displayHandle, cmd.bufferWidth, cmd.bufferHeight, cmd.interruptible);
+                m_commands.createOffscreenBuffer(cmd.bufferHandle, cmd.displayHandle, cmd.bufferWidth, cmd.bufferHeight, cmd.bufferSampleCount, cmd.interruptible);
             }
             break;
             case ERendererCommand_DestroyOffscreenBuffer:
@@ -587,7 +528,7 @@ namespace ramses_internal
             case ERendererCommand_SetFrameTimerLimits:
             {
                 const auto& cmd = commands.getCommandData<SetFrameTimerLimitsCommmand>(i);
-                m_commands.setFrameTimerLimits(cmd.limitForSceneResourcesUploadMicrosec, cmd.limitForClientResourcesUploadMicrosec, cmd.limitForOffscreenBufferRenderMicrosec);
+                m_commands.setFrameTimerLimits(cmd.limitForSceneResourcesUploadMicrosec, cmd.limitForResourcesUploadMicrosec, cmd.limitForOffscreenBufferRenderMicrosec);
             }
             break;
             case ERendererCommand_SetLimits_FlushesForceApply:

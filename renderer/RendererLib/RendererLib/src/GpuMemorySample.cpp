@@ -23,11 +23,11 @@ namespace ramses_internal
             const RendererResourceManager* resourceManager = static_cast<const RendererResourceManager*>(resourceManagerEntry.second.get());
 
             // Add uploaded client resources
-            for (auto& resourceDescIter : resourceManager->m_clientResourceRegistry.getAllResourceDescriptors())
+            for (auto& resourceDescIter : resourceManager->m_resourceRegistry.getAllResourceDescriptors())
             {
                 const auto& resourceDescriptor = resourceDescIter.value;
 
-                if (EResourceStatus_Uploaded == resourceDescriptor.status)
+                if (EResourceStatus::Uploaded == resourceDescriptor.status)
                 {
                     for (const auto& sceneUsage : resourceDescriptor.sceneUsage)
                     {

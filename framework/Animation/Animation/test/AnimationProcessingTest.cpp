@@ -546,11 +546,11 @@ namespace ramses_internal
     void AnimationProcessingTest::AnimateSingleComponentDataTest(EVectorComponent component, EVectorComponent maxTypeComponent)
     {
         typedef AnimatableTypeTraits<VectorData> TypeTraits;
-        typedef typename TypeTraits::ComponentType ComponentType;
-        typedef SplineInitializer<ComponentType, 10u> SplineInitializerComponent;
-        typedef AnimationDataBindTestContainer<VectorData> ContainerVec;
-        typedef AnimationDataBind<ContainerVec, VectorData> DataBindVec;
-        typedef AnimationDataBind<ContainerVec, VectorData, MemoryHandle> DataBindVec1;
+        using ComponentType = typename TypeTraits::ComponentType;
+        using SplineInitializerComponent = SplineInitializer<ComponentType, 10U>;
+        using ContainerVec = AnimationDataBindTestContainer<VectorData>;
+        using DataBindVec = AnimationDataBind<ContainerVec, VectorData>;
+        using DataBindVec1 = AnimationDataBind<ContainerVec, VectorData, MemoryHandle>;
 
         AnimationData animationData;
         SplineInitializerComponent splineInit;

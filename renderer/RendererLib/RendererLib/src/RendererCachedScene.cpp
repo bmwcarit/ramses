@@ -8,7 +8,6 @@
 
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererLib/RenderableComparator.h"
-#include "FrameBufferInfo.h"
 #include "RenderingPassOrderComparator.h"
 #include <algorithm>
 

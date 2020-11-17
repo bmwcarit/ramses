@@ -38,6 +38,7 @@ namespace ramses_internal
 
     void RendererCommands::setSceneState(SceneId sceneId, RendererSceneState state)
     {
+        assert(state != RendererSceneState::Unavailable);
         SceneStateCommand cmd;
         cmd.sceneId = sceneId;
         cmd.state = state;
@@ -84,12 +85,11 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_SceneUpdate, std::move(cmd));
     }
 
-    void RendererCommands::createDisplay(const DisplayConfig& displayConfig, IResourceProvider& resourceProvider, IResourceUploader& resourceUploader, DisplayHandle handle)
+    void RendererCommands::createDisplay(const DisplayConfig& displayConfig, IResourceUploader& resourceUploader, DisplayHandle handle)
     {
         DisplayCommand cmd;
         cmd.displayHandle = handle;
         cmd.displayConfig = displayConfig;
-        cmd.resourceProvider = &resourceProvider;
         cmd.resourceUploader = &resourceUploader;
         m_commands.addCommand(ERendererCommand_CreateDisplay, cmd);
     }
@@ -191,13 +191,14 @@ namespace ramses_internal
         m_commands.addCommand(ERendererCommand_UnlinkSceneData, cmd);
     }
 
-    void RendererCommands::createOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, Bool interruptible)
+    void RendererCommands::createOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool interruptible)
     {
         OffscreenBufferCommand cmd;
         cmd.displayHandle = display;
         cmd.bufferHandle = buffer;
         cmd.bufferWidth = width;
         cmd.bufferHeight = height;
+        cmd.bufferSampleCount = sampleCount;
         cmd.interruptible = interruptible;
         m_commands.addCommand(ERendererCommand_CreateOffscreenBuffer, cmd);
     }
@@ -217,41 +218,6 @@ namespace ramses_internal
         cmd.sceneRenderOrder = sceneRenderOrder;
         cmd.offscreenBuffer = buffer;
         m_commands.addCommand(ERendererCommand_AssignSceneToDisplayBuffer, cmd);
-    }
-
-    void RendererCommands::moveView(const Vector3& offset)
-    {
-        RendererViewCommand cmd;
-        cmd.displayMovement = offset;
-        m_commands.addCommand(ERendererCommand_RelativeTranslation, cmd);
-    }
-
-    void RendererCommands::setViewPosition(const Vector3& position)
-    {
-        RendererViewCommand cmd;
-        cmd.displayMovement = position;
-        m_commands.addCommand(ERendererCommand_AbsoluteTranslation, cmd);
-    }
-
-    void RendererCommands::rotateView(const Vector3& rotationDiff)
-    {
-        RendererViewCommand cmd;
-        cmd.displayMovement = rotationDiff;
-        m_commands.addCommand(ERendererCommand_RelativeRotation, cmd);
-    }
-
-    void RendererCommands::setViewRotation(const Vector3& rotation)
-    {
-        RendererViewCommand cmd;
-        cmd.displayMovement = rotation;
-        m_commands.addCommand(ERendererCommand_AbsoluteRotation, cmd);
-    }
-
-    void RendererCommands::resetView()
-    {
-        RendererViewCommand cmd;
-        cmd.displayMovement = Vector3(0.0f);
-        m_commands.addCommand(ERendererCommand_ResetRenderView, cmd);
     }
 
     void RendererCommands::logRendererInfo(ERendererLogTopic topic, Bool verbose, NodeHandle nodeHandleFilter)
@@ -382,7 +348,7 @@ namespace ramses_internal
     {
         SetFrameTimerLimitsCommmand cmd;
         cmd.limitForSceneResourcesUploadMicrosec = limitForSceneResourcesUpload;
-        cmd.limitForClientResourcesUploadMicrosec = limitForClientResourcesUploadMicrosec;
+        cmd.limitForResourcesUploadMicrosec = limitForClientResourcesUploadMicrosec;
         cmd.limitForOffscreenBufferRenderMicrosec = limitForOffscreenBufferRenderMicrosec;
         m_commands.addCommand(ERendererCommand_SetFrameTimerLimits, cmd);
     }

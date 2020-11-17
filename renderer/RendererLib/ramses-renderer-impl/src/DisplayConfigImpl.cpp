@@ -8,7 +8,6 @@
 
 #include "DisplayConfigImpl.h"
 #include "RendererLib/RendererConfigUtils.h"
-#include "Math3d/CameraMatrixHelper.h"
 
 namespace ramses
 {
@@ -17,36 +16,6 @@ namespace ramses
     {
         ramses_internal::CommandLineParser parser(argc, argv);
         ramses_internal::RendererConfigUtils::ApplyValuesFromCommandLine(parser, m_internalConfig);
-    }
-
-    status_t DisplayConfigImpl::setViewPosition(float x, float y, float z)
-    {
-        m_internalConfig.setCameraPosition(ramses_internal::Vector3(x, y, z));
-        return StatusOK;
-    }
-
-    status_t DisplayConfigImpl::getViewPosition(float& x, float& y, float& z) const
-    {
-        const ramses_internal::Vector3 position = m_internalConfig.getCameraPosition();
-        x = position.x;
-        y = position.y;
-        z = position.z;
-        return StatusOK;
-    }
-
-    status_t DisplayConfigImpl::setViewRotation(float x, float y, float z)
-    {
-        m_internalConfig.setCameraRotation(ramses_internal::Vector3(x, y, z));
-        return StatusOK;
-    }
-
-    status_t DisplayConfigImpl::getViewRotation(float& x, float& y, float& z) const
-    {
-        const ramses_internal::Vector3 position = m_internalConfig.getCameraRotation();
-        x = position.x;
-        y = position.y;
-        z = position.z;
-        return StatusOK;
     }
 
     status_t DisplayConfigImpl::setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height)
@@ -87,38 +56,6 @@ namespace ramses
     status_t DisplayConfigImpl::setBorderless(bool borderless)
     {
         m_internalConfig.setBorderlessState(borderless);
-        return StatusOK;
-    }
-
-    status_t DisplayConfigImpl::setPerspectiveProjection(float fieldOfViewY, float aspectRatio, float nearPlane, float farPlane)
-    {
-        if (fieldOfViewY > 0.0f && fieldOfViewY < 180.0f && aspectRatio > 0.0f && nearPlane > 0.0f && nearPlane < farPlane)
-        {
-
-            const ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Perspective(fieldOfViewY, aspectRatio, nearPlane, farPlane);
-            m_internalConfig.setProjectionParams(projParams);
-        }
-        else
-        {
-            return addErrorEntry("DisplayConfig::setPerspectiveProjection failed - Invalid parameters!");
-        }
-
-        return StatusOK;
-    }
-
-    status_t DisplayConfigImpl::setProjection(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane, bool isOrthographic)
-    {
-        if (leftPlane < rightPlane && bottomPlane < topPlane && nearPlane < farPlane)
-        {
-            const ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Frustum(
-                (isOrthographic ? ramses_internal::ECameraProjectionType::Orthographic : ramses_internal::ECameraProjectionType::Perspective),
-                leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane);
-            m_internalConfig.setProjectionParams(projParams);
-        }
-        else
-        {
-            return addErrorEntry("DisplayConfig::setProjection failed - Invalid plane parameters!");
-        }
         return StatusOK;
     }
 
@@ -257,29 +194,5 @@ namespace ramses
     const char* DisplayConfigImpl::getWaylandDisplay() const
     {
         return m_internalConfig.getWaylandDisplay().c_str();
-    }
-
-    status_t DisplayConfigImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
-    {
-        status_t status = StatusObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
-
-        const ramses_internal::ProjectionParams& projParams = m_internalConfig.getProjectionParams();
-        if (projParams.nearPlane <= 0 || projParams.nearPlane >= projParams.farPlane)
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "near plane can not be zero or negative, greater than or equal to far plane");
-            status = getValidationErrorStatus();
-        }
-        if (projParams.leftPlane >= projParams.rightPlane)
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "left plane can not be greater than or equal to right plane");
-            status = getValidationErrorStatus();
-        }
-        if (projParams.bottomPlane >= projParams.topPlane)
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "bottom plane can not be greater than or equal to top plane");
-            status = getValidationErrorStatus();
-        }
-        return status;
     }
 }

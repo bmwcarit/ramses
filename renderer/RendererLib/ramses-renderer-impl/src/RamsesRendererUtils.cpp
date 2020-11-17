@@ -10,23 +10,6 @@
 
 namespace ramses
 {
-    ESceneResourceStatus RamsesRendererUtils::GetResourceStatus(ramses_internal::EResourceStatus resourceStatus)
-    {
-        switch (resourceStatus)
-        {
-        case ramses_internal::EResourceStatus_Uploaded:
-            return ESceneResourceStatus_Ready;
-        case ramses_internal::EResourceStatus_Requested:
-        case ramses_internal::EResourceStatus_Provided:
-        case ramses_internal::EResourceStatus_Broken:
-        case ramses_internal::EResourceStatus_Unknown:
-            return ESceneResourceStatus_Pending;
-        default:
-            assert(false);
-        }
-        return ESceneResourceStatus_Pending;
-    }
-
     ramses::EMouseEvent RamsesRendererUtils::GetMouseEvent(ramses_internal::EMouseEventType type)
     {
         switch (type)

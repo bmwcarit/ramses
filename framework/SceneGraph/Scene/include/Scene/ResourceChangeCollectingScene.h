@@ -10,7 +10,7 @@
 #define RAMSES_RESOURCECHANGECOLLECTINGSCENE_H
 
 #include "Scene/TransformationCachedScene.h"
-#include "Scene/SceneResourceChanges.h"
+#include "Scene/ResourceChanges.h"
 
 namespace ramses_internal
 {
@@ -20,7 +20,7 @@ namespace ramses_internal
         explicit ResourceChangeCollectingScene(const SceneInfo& sceneInfo = SceneInfo());
 
         const SceneResourceActionVector&    getSceneResourceActions() const;
-        bool                                getClientResourcesChanged() const;
+        bool                                haveResourcesChanged() const;
         void                                resetResourceChanges();
 
         // functions which affect client resources
@@ -28,7 +28,7 @@ namespace ramses_internal
         virtual void                        setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
         virtual void                        setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visibility) override;
 
-        virtual void                        setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor) override;
+        virtual void                        setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) override;
         virtual void                        setDataTextureSamplerHandle(DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
 
         virtual TextureSamplerHandle        allocateTextureSampler(const TextureSampler& sampler, TextureSamplerHandle handle = TextureSamplerHandle::Invalid()) override;
@@ -39,7 +39,7 @@ namespace ramses_internal
         virtual void                        releaseDataSlot(DataSlotHandle handle) override;
 
         // functions which both affect client and scene resources
-        virtual StreamTextureHandle         allocateStreamTexture(uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
+        virtual StreamTextureHandle         allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
         virtual void                        releaseStreamTexture(StreamTextureHandle handle) override;
 
         // functions which affect scene resources
@@ -63,7 +63,7 @@ namespace ramses_internal
     private:
 
         SceneResourceActionVector   m_sceneResourceActions;
-        bool                        m_clientResourcesChanged = false;
+        bool                        m_resourcesChanged = false;
     };
 }
 

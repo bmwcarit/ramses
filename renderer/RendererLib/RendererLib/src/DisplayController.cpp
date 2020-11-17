@@ -25,7 +25,6 @@ namespace ramses_internal
         : m_renderBackend(renderer)
         , m_device(m_renderBackend.getDevice())
         , m_embeddedCompositingManager(m_device, m_renderBackend.getEmbeddedCompositor(), m_renderBackend.getTextureUploadingAdapter())
-        , m_projectionParams(ProjectionParams::Perspective(19.f, 1.f, 0.f, 1.f))
         , m_displayWidth(m_renderBackend.getSurface().getWindow().getWidth())
         , m_displayHeight(m_renderBackend.getSurface().getWindow().getHeight())
         , m_postProcessing(new Postprocessing(postProcessingEffectIds, m_displayWidth, m_displayHeight, m_device))
@@ -58,10 +57,10 @@ namespace ramses_internal
 
     SceneRenderExecutionIterator DisplayController::renderScene(const RendererCachedScene& scene, DeviceResourceHandle buffer, const Viewport& viewport, const SceneRenderExecutionIterator& renderFrom, const FrameTimer* frameTimer)
     {
-        const FrameBufferInfo fbInfo(buffer, m_projectionParams, viewport);
-        RenderExecutor executor(m_renderBackend.getDevice(), fbInfo, renderFrom, frameTimer);
+        const TargetBufferInfo bufferInfo{ buffer, viewport.width, viewport.height };
+        RenderExecutor executor(m_renderBackend.getDevice(), bufferInfo, renderFrom, frameTimer);
 
-        return executor.executeScene(scene, getViewMatrix());
+        return executor.executeScene(scene);
     }
 
     void DisplayController::executePostProcessing()
@@ -92,43 +91,6 @@ namespace ramses_internal
         m_device.readPixels(&dataOut[0], x, y, width, height);
     }
 
-    void DisplayController::setProjectionParams(const ProjectionParams& params)
-    {
-        m_projectionParams = params;
-    }
-
-    const ProjectionParams& DisplayController::getProjectionParams() const
-    {
-        return m_projectionParams;
-    }
-
-    void DisplayController::setViewPosition(const Vector3& position)
-    {
-        m_viewPosition = position;
-        updateViewMatrix();
-    }
-
-    void DisplayController::setViewRotation(const Vector3& rotation)
-    {
-        m_viewRotation = rotation;
-        updateViewMatrix();
-    }
-
-    const Vector3& DisplayController::getViewPosition() const
-    {
-        return m_viewPosition;
-    }
-
-    const Vector3& DisplayController::getViewRotation() const
-    {
-        return m_viewRotation;
-    }
-
-    const Matrix44f& DisplayController::getViewMatrix() const
-    {
-        return m_viewMatrix;
-    }
-
     UInt32 DisplayController::getDisplayWidth() const
     {
         return m_displayWidth;
@@ -137,11 +99,6 @@ namespace ramses_internal
     UInt32 DisplayController::getDisplayHeight() const
     {
         return m_displayHeight;
-    }
-
-    void DisplayController::updateViewMatrix()
-    {
-        m_viewMatrix = Matrix44f::RotationEulerZYX(m_viewRotation).transpose() * Matrix44f::Translation(-m_viewPosition);
     }
 
     DeviceResourceHandle DisplayController::getDisplayBuffer() const
@@ -158,10 +115,6 @@ namespace ramses_internal
     void DisplayController::setWarpingMeshData(const WarpingMeshData& warpingMeshData)
     {
         m_postProcessing->setWarpingMeshData(warpingMeshData);
-    }
-
-    void DisplayController::resetView() const
-    {
     }
 
     IRenderBackend& DisplayController::getRenderBackend() const

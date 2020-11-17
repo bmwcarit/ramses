@@ -14,6 +14,11 @@
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/Appearance.h"
+#include "ramses-client-api/RenderGroup.h"
+#include "ramses-client-api/RenderPass.h"
+#include "ramses-client-api/RenderTargetDescription.h"
+#include "ramses-client-api/PerspectiveCamera.h"
+#include "ramses-client-api/RenderTarget.h"
 
 #include "Scene/ClientScene.h"
 #include "TestScenes/Triangle.h"
@@ -24,10 +29,10 @@ namespace ramses_internal
     constexpr const ramses::dataProviderId_t TextureLinkScene::DataProviderId;
     constexpr const ramses::dataConsumerId_t TextureLinkScene::DataConsumerId;
 
-    TextureLinkScene::TextureLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    TextureLinkScene::TextureLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
-        ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
+        ramses::Effect* effect = (state == DATA_CONSUMER_MS) ? getTestEffect("ramses-test-client-render-one-buffer-ms") : getTestEffect("ramses-test-client-textured");
         ramses::Triangle triangle1(scene, *effect, ramses::TriangleAppearance::EColor_Red);
         ramses::Triangle triangle2(scene, *effect, ramses::TriangleAppearance::EColor_Green);
 
@@ -105,6 +110,41 @@ namespace ramses_internal
             const ramses::TextureSampler& sampler = createSampler(texture);
             setSampler(appearance1, sampler);
             setSampler(appearance2, sampler);
+
+            scene.createTextureConsumer(sampler, DataConsumerId);
+        }
+            break;
+        case DATA_CONSUMER_MS:
+        {
+            const ramses::RenderBuffer& fallBackBuffer = *m_scene.createRenderBuffer(16u, 16u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGB8, ramses::ERenderBufferAccessMode_ReadWrite, 4u, "ConsumerBuffer");
+            // Create a RenderPass that clears the fallBackBuffer to a visible color, so it can be seen in case the fallBackBuffer is shown
+            ramses::RenderPass& renderPassClear = *m_scene.createRenderPass();
+            ramses::PerspectiveCamera& camera = *m_scene.createPerspectiveCamera();
+            // dummy camera values here, because it is only a clear pass
+            camera.setFrustum(1.0f, 1.0f, 1.0f, 100.0f);
+            camera.setViewport(0u, 0u, 2u, 2u);
+            renderPassClear.setCamera(camera);
+            const ramses::RenderGroup& renderGroup = *m_scene.createRenderGroup();
+            renderPassClear.addRenderGroup(renderGroup);
+            ramses::RenderTargetDescription rtdesc{};
+            rtdesc.addRenderBuffer(fallBackBuffer);
+            ramses::RenderTarget* renderTarget = m_scene.createRenderTarget(rtdesc);
+            renderPassClear.setRenderTarget(renderTarget);
+            renderPassClear.setClearColor(1.0f, 1.0f, 0.f, 1.0f);
+
+            const ramses::TextureSamplerMS& sampler = *m_scene.createTextureSamplerMS(fallBackBuffer, "samplerMSConsumer");
+
+            ramses::UniformInput texInput;
+            appearance1.getEffect().findUniformInput("textureSampler", texInput);
+            appearance1.setInputTexture(texInput, sampler);
+            appearance2.getEffect().findUniformInput("textureSampler", texInput);
+            appearance2.setInputTexture(texInput, sampler);
+
+            ramses::UniformInput sampleCountInput;
+            appearance1.getEffect().findUniformInput("sampleCount", sampleCountInput);
+            appearance1.setInputValueInt32(sampleCountInput, 4u);
+            appearance2.getEffect().findUniformInput("sampleCount", sampleCountInput);
+            appearance2.setInputValueInt32(sampleCountInput, 4u);
 
             scene.createTextureConsumer(sampler, DataConsumerId);
         }

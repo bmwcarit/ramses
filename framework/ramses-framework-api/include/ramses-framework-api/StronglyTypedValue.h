@@ -25,7 +25,7 @@ namespace ramses
         /**
         * @brief The underlying type of the class
         */
-        typedef _baseType BaseType;
+        using BaseType = _baseType;
 
         /**
         * @brief Static Getter for Invalid

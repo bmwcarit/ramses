@@ -30,7 +30,7 @@ class TestRendererWithDstRect(test_classes.OnSelectedTargetsTest):
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
 
-        self.testClient = self.target.start_client("ramses-test-client", "-tn 10 -ts 0 -cz 5", nameExtension='1')
+        self.testClient = self.target.start_client("ramses-test-client", "-tn 22 -ts 0 -cz 5", nameExtension='1')
         self.checkThatApplicationWasStarted(self.testClient)
         self.addCleanup(self.target.kill_application, self.testClient)
 

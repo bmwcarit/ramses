@@ -71,13 +71,13 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void TransformationCachedSceneT<MEMORYPOOL>::setRotation(TransformHandle transform, const Vector3& rotation)
+    void TransformationCachedSceneT<MEMORYPOOL>::setRotation(TransformHandle transform, const Vector3& rotation, ERotationConvention convention)
     {
         const NodeHandle nodeTransformIsConnectedTo = this->getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());
         getMatrixCacheEntry(nodeTransformIsConnectedTo).m_isIdentity = false;
         propagateDirty(nodeTransformIsConnectedTo);
-        SceneT<MEMORYPOOL>::setRotation(transform, rotation);
+        SceneT<MEMORYPOOL>::setRotation(transform, rotation, convention);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -222,14 +222,14 @@ namespace ramses_internal
     template <template<typename, typename> class MEMORYPOOL>
     void TransformationCachedSceneT<MEMORYPOOL>::computeWorldMatrixForNode(NodeHandle node, Matrix44f& chainMatrix) const
     {
-        const TransformHandle* transformPtr = m_nodeToTransformMap.get(node);
-        if (transformPtr != nullptr)
+        const TransformHandle* transformHandlePtr = m_nodeToTransformMap.get(node);
+        if (transformHandlePtr != nullptr)
         {
-            const TransformHandle transform = *transformPtr;
+            const auto& transform = SceneT<MEMORYPOOL>::getTransform(*transformHandlePtr);
             const Matrix44f matrix =
-                Matrix44f::Translation(SceneT<MEMORYPOOL>::getTranslation(transform)) *
-                Matrix44f::Scaling(SceneT<MEMORYPOOL>::getScaling(transform)) *
-                Matrix44f::RotationEulerZYX(SceneT<MEMORYPOOL>::getRotation(transform));
+                Matrix44f::Translation(transform.translation) *
+                Matrix44f::Scaling(transform.scaling) *
+                Matrix44f::RotationEuler(transform.rotation, transform.rotationConvention);
 
             chainMatrix *= matrix;
         }
@@ -238,14 +238,14 @@ namespace ramses_internal
     template <template<typename, typename> class MEMORYPOOL>
     void TransformationCachedSceneT<MEMORYPOOL>::computeObjectMatrixForNode(NodeHandle node, Matrix44f& chainMatrix) const
     {
-        const TransformHandle* transformPtr = m_nodeToTransformMap.get(node);
-        if (transformPtr != nullptr)
+        const TransformHandle* transformHandlePtr = m_nodeToTransformMap.get(node);
+        if (transformHandlePtr != nullptr)
         {
-            const TransformHandle transform = *transformPtr;
+            const auto& transform = SceneT<MEMORYPOOL>::getTransform(*transformHandlePtr);
             const Matrix44f matrix =
-                Matrix44f::RotationEulerZYX(SceneT<MEMORYPOOL>::getRotation(transform)).transpose() *
-                Matrix44f::Scaling(SceneT<MEMORYPOOL>::getScaling(transform).inverse()) *
-                Matrix44f::Translation(-SceneT<MEMORYPOOL>::getTranslation(transform));
+                Matrix44f::RotationEuler(transform.rotation, transform.rotationConvention).transpose() *
+                Matrix44f::Scaling(transform.scaling.inverse()) *
+                Matrix44f::Translation(-transform.translation);
 
             chainMatrix = matrix * chainMatrix;
         }

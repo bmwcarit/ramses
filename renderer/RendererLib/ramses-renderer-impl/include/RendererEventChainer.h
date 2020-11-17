@@ -109,12 +109,6 @@ namespace ramses
         {
         }
 
-        virtual void scenePublished(sceneId_t sceneId) override
-        {
-            m_handler1.scenePublished(sceneId);
-            m_handler2.scenePublished(sceneId);
-        }
-
         virtual void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override
         {
             m_handler1.sceneStateChanged(sceneId, state);

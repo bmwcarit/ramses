@@ -30,9 +30,6 @@ namespace ramses_internal
                                                                  std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow);
         ~RamsesConnectionSystem() override;
 
-        bool sendRequestResources(const Guid& to, const ResourceContentHashVector& resources);
-        bool sendResourcesNotAvailable(const Guid& to, const ResourceContentHashVector& resources);
-        bool sendResources(const Guid& to, const ISceneUpdateSerializer& serializer);
         bool broadcastNewScenesAvailable(const SceneInfoVector& newScenes);
         bool broadcastScenesBecameUnavailable(const SceneInfoVector& unavailableScenes);
         bool sendScenesAvailable(const Guid& to, const SceneInfoVector& availableScenes);
@@ -59,9 +56,6 @@ namespace ramses_internal
 
         // from ISomeIPRamsesCallbacks
         virtual void handleRendererEvent(const SomeIPMsgHeader& header, SceneId sceneId, const std::vector<Byte>& data) override;
-        virtual void handleRequestResources(const SomeIPMsgHeader& header, const ResourceContentHashVector& resources) override;
-        virtual void handleResourcesNotAvailable(const SomeIPMsgHeader& header, const ResourceContentHashVector& resources) override;
-        virtual void handleResourceTransfer(const SomeIPMsgHeader& header, absl::Span<const Byte> resourceData) override;
         virtual void handleSceneUpdate(const SomeIPMsgHeader& header, SceneId sceneId, absl::Span<const Byte> sceneUpdate) override;
         virtual void handleSceneAvailabilityChange(const SomeIPMsgHeader& header, const std::vector<SceneAvailabilityUpdate>& update) override;
         virtual void handleSceneSubscriptionChange(const SomeIPMsgHeader& header, const std::vector<SceneSubscriptionUpdate>& update) override;

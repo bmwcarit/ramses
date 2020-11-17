@@ -327,7 +327,7 @@ TYPED_TEST(ASceneLinksManager, removesAllLinksToProviderOnProviderSlotDestructio
     EXPECT_FALSE(this->concreteLinkManager.getDependencyChecker().hasDependencyAsConsumer(this->consumerSceneId));
 }
 
-typedef ASceneLinksManager<TextureLinkManager> SceneLinksTextureManager;
+using SceneLinksTextureManager = ASceneLinksManager<TextureLinkManager>;
 
 TEST_F(SceneLinksTextureManager, unlinksTextureLinksForUnmappedProviderScene)
 {

@@ -26,15 +26,15 @@ namespace ramses_internal
     class CommonRenderBufferTestScene : public IntegrationScene
     {
     public:
-        CommonRenderBufferTestScene(ramses::Scene& scene, const Vector3& cameraPosition);
+        CommonRenderBufferTestScene(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
     protected:
         const ramses::Effect&       getEffectRenderOneBuffer();
         const ramses::Effect&       getEffectRenderTwoBuffers();
         ramses::PerspectiveCamera&  createCamera(Float nearPlane = 1.0f, Float farPlane = 100.0f);
-        const ramses::MeshNode&     createQuadWithTexture(const ramses::RenderBuffer& renderBuffer, const Vector3& translation);
+        const ramses::MeshNode&     createQuadWithTexture(const ramses::RenderBuffer& renderBuffer);
         ramses::MeshNode&           createMesh(const ramses::Effect& effect, ramses::TriangleAppearance::EColor color = ramses::TriangleAppearance::EColor_Red);
-        ramses::RenderPass*         addRenderPassUsingRenderBufferAsQuadTexture(ramses::RenderBuffer& sourceRenderBuffer);
+        ramses::RenderPass*         addRenderPassUsingRenderBufferAsQuadTexture(const ramses::MeshNode& quad);
 
     };
 }

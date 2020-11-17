@@ -14,6 +14,7 @@
 #include "RendererLib/RendererScenes.h"
 #include "SceneAllocateHelper.h"
 #include "Math3d/ProjectionParams.h"
+#include "Math3d/CameraMatrixHelper.h"
 
 using namespace ramses_internal;
 
@@ -50,7 +51,7 @@ static CameraHandle preparePickableCamera(TransformationLinkCachedScene& scene, 
 
     TransformHandle cameraTransformation = sceneAllocator.allocateTransform(cameraNodeHandle);
     scene.setTranslation(cameraTransformation, translation);
-    scene.setRotation(cameraTransformation, rotation);
+    scene.setRotation(cameraTransformation, rotation, ERotationConvention::Legacy_ZYX);
     scene.setScaling(cameraTransformation, scale);
     return cameraHandle;
 }
@@ -62,7 +63,7 @@ static void preparePickableObject(TransformationLinkCachedScene& scene, SceneAll
     scene.setPickableObjectCamera(pickableHandle, cameraHandle);
     TransformHandle pickableTransformation = sceneAllocator.allocateTransform(pickableNodeHandle);
     scene.setTranslation(pickableTransformation, translation);
-    scene.setRotation(pickableTransformation, rotation);
+    scene.setRotation(pickableTransformation, rotation, ERotationConvention::Legacy_ZYX);
     scene.setScaling(pickableTransformation, scale);
 }
 
@@ -240,7 +241,7 @@ TEST(IntersectionUtilsTest, canPickSingleTriangle)
                                             1.0f, 0.0f, 0.0f,
                                             0.0f, 1.0f, 0.0f };
     const Matrix44f                modelMatrix = Matrix44f::Identity;
-    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation(0.0f, 0.0f, 1.0f);
+    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation({ 0.0f, 0.0f, 1.0f });
     const Matrix44f viewMatrix = cameraTransformationMatrix.inverse();
     const Matrix44f                projectionMatrix = Matrix44f::Identity;
     const Vector2 ndsPickCoords(0.0f, 0.0f);
@@ -253,7 +254,7 @@ TEST(IntersectionUtilsTest, canPickSingleTriangle)
     EXPECT_FLOAT_EQ(intersectionPoint.y, 0.f);
     EXPECT_FLOAT_EQ(intersectionPoint.z, 0.f);
 
-    const Matrix44f scalingModelMatrix = Matrix44f::Scaling(1.0f, 2.0f, 3.0f);
+    const Matrix44f scalingModelMatrix = Matrix44f::Scaling({ 1.0f, 2.0f, 3.0f });
 
     intersectionHappened =
         IntersectionUtils::TestGeometryPicked(ndsPickCoords, triangleData.data(), triangleData.size(), scalingModelMatrix, viewMatrix, projectionMatrix, intersectionPoint);
@@ -269,8 +270,8 @@ TEST(IntersectionUtilsTest, noPickSingleTriangleTranslatedAwayFromPick)
                                             1.0f, 0.0f, 0.0f,
                                             0.0f, 1.0f, 0.0f };
 
-    const Matrix44f modelMatrix = Matrix44f::Translation(0.0f, 1.0f, 0.0f);
-    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation(0.0f, 0.0f, 1.0f);
+    const Matrix44f modelMatrix = Matrix44f::Translation({ 0.0f, 1.0f, 0.0f });
+    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation({ 0.0f, 0.0f, 1.0f });
     const Matrix44f viewMatrix       = cameraTransformationMatrix.inverse();
     const Matrix44f projectionMatrix = Matrix44f::Identity;
     const Vector2 ndsPickCoords(0.0f, 0.0f);
@@ -301,7 +302,7 @@ TEST(IntersectionUtilsTest, canIntersectMultipleTriangleGeometry)
     quad.insert(quad.end(), triangle2Data.begin(), triangle2Data.end());
 
     const Matrix44f modelMatrix = Matrix44f::Identity;
-    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation(0.0f, 0.0f, 1.0f);
+    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation({ 0.0f, 0.0f, 1.0f });
     const Matrix44f viewMatrix = cameraTransformationMatrix.inverse();
     const Matrix44f projectionMatrix = Matrix44f::Identity;
     const Vector2 ndsPickCoords(0.0f, 0.0f);
@@ -329,7 +330,7 @@ TEST(IntersectionUtilsTest, noIntersectPickNotPointingToMultipleTriangles)
     quad.insert(quad.end(), triangle2Data.begin(), triangle2Data.end());
 
     const Matrix44f modelMatrix = Matrix44f::Identity;
-    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation(0.0f, 0.0f, 1.0f);
+    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation({ 0.0f, 0.0f, 1.0f });
     const Matrix44f viewMatrix = cameraTransformationMatrix.inverse();
     const Matrix44f projectionMatrix = Matrix44f::Identity;
     const Vector2 ndsPickCoords(0.0f, 0.0f);
@@ -487,7 +488,7 @@ TEST(IntersectionUtilsTest, picksIntersectionPointAtNearestTriangleInPickable)
                                              };
 
     const Matrix44f modelMatrix = Matrix44f::Identity;
-    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation(0.0f, 0.0f, 1.0f);
+    const Matrix44f cameraTransformationMatrix = Matrix44f::Translation({ 0.0f, 0.0f, 1.0f });
     const Matrix44f viewMatrix = cameraTransformationMatrix.inverse();
     const Matrix44f projectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(30.f, 1.f, 0.1f, 100.f));
     const Vector2 ndsPickCoords(0.0f, 0.0f);

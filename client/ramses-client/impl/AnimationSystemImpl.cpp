@@ -458,7 +458,7 @@ namespace ramses
 
     bool AnimationSystemImpl::GetDataBindIDForDataType(ramses_internal::EDataType dataType, ramses_internal::TDataBindID& bindId)
     {
-        typedef ramses_internal::DataBindContainerToTraitsSelector<ramses_internal::IScene>::ContainerTraitsClassType ContainerTraitsClass;
+        using ContainerTraitsClass = ramses_internal::DataBindContainerToTraitsSelector<ramses_internal::IScene>::ContainerTraitsClassType;
 
         switch (dataType)
         {

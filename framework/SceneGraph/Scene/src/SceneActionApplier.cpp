@@ -8,13 +8,15 @@
 
 #include "Scene/SceneActionApplier.h"
 #include "Scene/TransformPropertyType.h"
-#include "Scene/SceneResourceChanges.h"
+#include "Scene/ResourceChanges.h"
 #include "SceneAPI/IScene.h"
 #include "SceneAPI/PixelRectangle.h"
 #include "SceneAPI/TextureSampler.h"
 #include "SceneAPI/Viewport.h"
 #include "SceneAPI/Camera.h"
 #include "SceneAPI/RenderBuffer.h"
+#include "SceneAPI/ERotationConvention.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "AnimationAPI/IAnimationSystem.h"
 #include "Animation/AnimationSystemFactory.h"
 #include "Animation/Animation.h"
@@ -93,7 +95,9 @@ namespace ramses_internal
             {
             case ETransformPropertyType_Rotation:
             {
-                scene.setRotation(transform, vec);
+                ERotationConvention rotationConvention;
+                action.read(rotationConvention);
+                scene.setRotation(transform, vec, rotationConvention);
                 break;
             }
             case ETransformPropertyType_Scaling:
@@ -281,12 +285,16 @@ namespace ramses_internal
             ResourceContentHash hash;
             DataBufferHandle dataBuffer;
             UInt32 instancingDivisor;
+            UInt16 offset;
+            UInt16 stride;
             action.read(handle);
             action.read(field);
             action.read(hash);
             action.read(dataBuffer);
             action.read(instancingDivisor);
-            scene.setDataResource(handle, field, hash, dataBuffer, instancingDivisor);
+            action.read(offset);
+            action.read(stride);
+            scene.setDataResource(handle, field, hash, dataBuffer, instancingDivisor, offset, stride);
             break;
         }
         case ESceneActionId::SetDataTextureSamplerHandle:
@@ -509,7 +517,7 @@ namespace ramses_internal
         case ESceneActionId::AllocateStreamTexture:
         {
             StreamTextureHandle handle;
-            uint32_t streamSource;
+            WaylandIviSurfaceId streamSource;
             ResourceContentHash fallbackTextureHash;
             String objectName;
             UInt64 objectId;
@@ -1832,10 +1840,6 @@ namespace ramses_internal
             scene.preallocateSceneSize(sizeInfos);
             break;
         }
-        case ESceneActionId::Flush:
-        {
-            break;
-        }
         case ESceneActionId::TestAction:
         {
             break;
@@ -1992,12 +1996,7 @@ namespace ramses_internal
         }
         }
 
-        // check that action was fully consumed
-        // (flush is never read, all others should be fully read)
-        if (action.type() != ESceneActionId::Flush)
-        {
-            assert(action.isFullyRead());
-        }
+        assert(action.isFullyRead());
     }
 
     void SceneActionApplier::ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions, AnimationSystemFactory* animSystemFactory)
@@ -2006,41 +2005,6 @@ namespace ramses_internal
         {
             ApplySingleActionOnScene(scene, reader, animSystemFactory);
         }
-    }
-
-    void SceneActionApplier::ReadParameterForFlushAction(
-        SceneActionCollection::SceneActionReader action,
-        UInt64& flushIndex,
-        bool& hasSizeInfo,
-        SceneSizeInformation& sizeInfo,
-        SceneResourceChanges& resourceChanges,
-        SceneReferenceActionVector& sceneReferenceActions,
-        FlushTimeInformation& flushTimeInfo,
-        SceneVersionTag& versionTag)
-    {
-        assert(action.type() == ESceneActionId::Flush);
-        action.read(flushIndex);
-        uint8_t flushFlags = 0u;
-        action.read(flushFlags);
-        hasSizeInfo = (flushFlags & ESceneActionFlushBits_HasSizeInfo) != 0;
-
-        if (hasSizeInfo)
-            GetSceneSizeInformation(action, sizeInfo);
-        resourceChanges.getFromSceneAction(action);
-        SceneReferenceActionUtils::ReadFromCollection(sceneReferenceActions, action);
-
-        UInt64 tsVal = 0;
-        action.read(tsVal);
-        flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(tsVal));
-        action.read(tsVal);
-        flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(tsVal));
-        uint32_t clockTypeAsUInt = 0;
-        action.read(clockTypeAsUInt);
-        flushTimeInfo.clock_type = static_cast<synchronized_clock_type>(clockTypeAsUInt);
-
-        action.read(versionTag);
-
-        assert(action.isFullyRead());
     }
 
     void SceneActionApplier::GetSceneSizeInformation(SceneActionCollection::SceneActionReader& action, SceneSizeInformation& sizeInfo)

@@ -16,7 +16,7 @@ namespace ramses_internal
     struct TestApplicationShellSurfaceIdTag
     {
     };
-    typedef StronglyTypedValue<UInt32, 0xFFFFFFFF, TestApplicationShellSurfaceIdTag> TestApplicationShellSurfaceId;
+    using TestApplicationShellSurfaceId = StronglyTypedValue<UInt32, 0xFFFFFFFF, TestApplicationShellSurfaceIdTag>;
 }
 
 #endif

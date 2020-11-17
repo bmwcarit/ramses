@@ -18,7 +18,6 @@
 #include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 
-#include "ramses-renderer-api/DcsmContentControlConfig.h"
 #include "ramses-renderer-api/IDcsmContentControlEventHandler.h"
 #include "ramses-renderer-api/DcsmContentControl.h"
 
@@ -61,13 +60,13 @@ public:
         m_renderer->flush();
 
         /*
-         * Create config which defines that we are interested in the specified master Category and want to
+         * Add Content Category to DcsmContentControl which defines that we are interested in the specified master Category and want to
          * show it on the created display. This will make the DcsmContentControl automatically assign contents
          * of that category to itself.
         */
-        ramses::DcsmContentControlConfig ccconfig;
-        ccconfig.addCategory(m_category, { { w, h }, displayId });
-        m_contentControl = m_renderer->createDcsmContentControl(ccconfig);
+        m_contentControl = m_renderer->createDcsmContentControl();
+        ramses::CategoryInfoUpdate categoryInfo{{ w, h }, { 0, 0, w, h }};
+        m_contentControl->addContentCategory(m_category, displayId, categoryInfo);
     }
 
     void startLoop()
@@ -173,31 +172,24 @@ public:
         */
 
         /*
-         * The callback of the scene references reaching Available state will be called. The new state allows the
+         * The callback of the scene references reaching Ready state will be called. The new state allows the
          * data linking between the master scenes' data providers and the overlay scenes' data consumers.
+         * Since the requested scene reference state is Rendered, it will also automatically bring the referenced scenes
+         * to a Ready state.
         */
-        waitForSceneRefState(OverlayClient::Overlay1SceneId, ramses::RendererSceneState::Available);
-        waitForSceneRefState(OverlayClient::Overlay2SceneId, ramses::RendererSceneState::Available);
+        waitForSceneRefState(OverlayClient::Overlay1SceneId, ramses::RendererSceneState::Ready);
+        waitForSceneRefState(OverlayClient::Overlay2SceneId, ramses::RendererSceneState::Ready);
 
         m_masterScene->linkData(nullptr, o1VPOffsetProviderId, m_o1SceneRef, OverlayClient::Overlay1ViewportOffsetId);
         m_masterScene->linkData(nullptr, o2VPOffsetProviderId, m_o2SceneRef, OverlayClient::Overlay2ViewportOffsetId);
         m_masterScene->flush();
 
         /*
-         * The master scene reaching Available state will also call the DcsmContentControls event handler callback
-         * and trigger the renderer to bring the master scene to a Ready state. Since the requested scene reference state
-         * is Rendered, it will also automatically bring the referenced scenes to a Ready state.
-         * See RendererSide::contentAvailable
-        */
-
-        /*
-         * As soon as the scene references are reported to be Ready on the master client event handler, let the DCSM
-         * provider mark the master content ready for DCSM, because it can be sure now that a rendered frame is
+         * As soon as the scene references are reported ready on the master client event handler and we established the data links,
+         * let the DCSM provider mark the master content ready for DCSM: it is guaranteed now  that a rendered frame is
          * visually consistent because both the master scene and the two mandatory overlay scenes are ready for rendering.
          * The optional external scene will not be waited for.
         */
-        waitForSceneRefState(OverlayClient::Overlay1SceneId, ramses::RendererSceneState::Ready);
-        waitForSceneRefState(OverlayClient::Overlay2SceneId, ramses::RendererSceneState::Ready);
         m_provider->markContentReady(masterContent);
 
         /*

@@ -10,7 +10,6 @@
 
 #include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/AnimationSystem.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/GeometryBinding.h"
@@ -20,6 +19,7 @@
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/TextureSampler.h"
+#include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/ArrayResource.h"

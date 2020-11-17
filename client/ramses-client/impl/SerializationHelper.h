@@ -42,7 +42,7 @@ namespace ramses
         {
             const ERamsesObjectType baseType = TYPE_ID_OF_RAMSES_OBJECT<ObjectsBaseType>::ID;
 
-            typedef std::pair<ERamsesObjectType, uint32_t> TypeCountPair;
+            using TypeCountPair = std::pair<ERamsesObjectType, uint32_t>;
             std::vector<TypeCountPair> typesToSerialize;
             typesToSerialize.reserve(ERamsesObjectType_NUMBER_OF_TYPES);
             uint32_t totalCount = 0u;

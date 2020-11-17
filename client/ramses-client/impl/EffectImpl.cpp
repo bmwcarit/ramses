@@ -213,7 +213,7 @@ namespace ramses
 
     uint32_t EffectImpl::findEffectInputIndex(const ramses_internal::EffectInputInformationVector& effectInputVector, ramses_internal::EFixedSemantics inputSemantics) const
     {
-        if (ramses_internal::EFixedSemantics_Invalid == inputSemantics)
+        if (ramses_internal::EFixedSemantics::Invalid == inputSemantics)
             return InvalidInputIndex;
 
         const uint32_t numInputs = static_cast<uint32_t>(effectInputVector.size());

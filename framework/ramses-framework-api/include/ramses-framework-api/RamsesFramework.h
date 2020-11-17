@@ -173,6 +173,13 @@ namespace ramses
         status_t destroyDcsmConsumer(const DcsmConsumer& consumer);
 
         /**
+        * @brief Set the log level for all console log messages and apply it immediately.
+        *
+        * @param[in] logLevel the log level to be applied
+        */
+        static void SetConsoleLogLevel(ELogLevel logLevel);
+
+        /**
         * @brief Destructor of RamsesFramework
         */
         ~RamsesFramework() override;

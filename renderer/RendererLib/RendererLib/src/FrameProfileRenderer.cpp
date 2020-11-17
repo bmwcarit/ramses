@@ -140,15 +140,15 @@ namespace ramses_internal
 
     void FrameProfileRenderer::createEffects()
     {
-        EffectInputInformation color("color", 1, EDataType::Vector4F, EFixedSemantics_Invalid);
-        EffectInputInformation mvpMatrix("mvpMatrix", 1, EDataType::Matrix44F, EFixedSemantics_ModelViewProjectionMatrix);
+        EffectInputInformation color("color", 1, EDataType::Vector4F, EFixedSemantics::Invalid);
+        EffectInputInformation mvpMatrix("mvpMatrix", 1, EDataType::Matrix44F, EFixedSemantics::ModelViewProjectionMatrix);
 
         EffectInputInformationVector uniforms;
         uniforms.push_back(color);
         uniforms.push_back(mvpMatrix);
 
         EffectInputInformationVector attributes;
-        EffectInputInformation position("a_position", 1, EDataType::Float, EFixedSemantics_VertexPositionAttribute);
+        EffectInputInformation position("a_position", 1, EDataType::Float, EFixedSemantics::Invalid);
         attributes.push_back(position);
         m_timingLineEffect = new EffectResource(TimingLineVertexShader, SimpleColorFragmentShader, "", uniforms, attributes, "overlayShader", ResourceCacheFlag_DoNotCache);
         m_singleColorEffect = new EffectResource(SimpleVertexShader, SimpleColorFragmentShader, "", uniforms, attributes, "overlayShader", ResourceCacheFlag_DoNotCache);
@@ -158,7 +158,7 @@ namespace ramses_internal
         iuniforms.push_back(mvpMatrix);
 
         EffectInputInformationVector iAttributes;
-        EffectInputInformation iposition("a_position", FrameProfilerStatistics::NumberOfEntries, EDataType::Float, EFixedSemantics_Invalid);
+        EffectInputInformation iposition("a_position", FrameProfilerStatistics::NumberOfEntries, EDataType::Float, EFixedSemantics::Invalid);
         iAttributes.push_back(iposition);
 
         m_stackedTimingLineEffect = new EffectResource(StackedTimingLineVertexShader, IndexedColorFragmentShader, "", iuniforms, iAttributes, "overlayShader", ResourceCacheFlag_DoNotCache);
@@ -249,7 +249,8 @@ namespace ramses_internal
         const ArrayResource res(EResourceType_VertexArray, static_cast<UInt32>(timingData.size()), EDataType::Float, timingData.data(), ResourceCacheFlag_DoNotCache, String());
         if (!geometry.vertexBufferHandle.isValid())
         {
-            geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize());
+            geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getDecompressedDataSize());
+            geometry.dataType = EDataType::FloatBuffer;
         }
         m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData().data(), res.getDecompressedDataSize());
     }
@@ -259,7 +260,8 @@ namespace ramses_internal
         const ArrayResource res(EResourceType_VertexArray, static_cast<UInt32>(counterValues.size()), EDataType::Float, counterValues.data(), ResourceCacheFlag_DoNotCache, String());
         if (!geometry.vertexBufferHandle.isValid())
         {
-            geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize());
+            geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getDecompressedDataSize());
+            geometry.dataType = EDataType::FloatBuffer;
         }
         m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData().data(), res.getDecompressedDataSize());
     }
@@ -281,7 +283,8 @@ namespace ramses_internal
         geometry.indexCount = 4;
 
         const ArrayResource res(EResourceType_VertexArray, 4, EDataType::Vector2F, vertices, ResourceCacheFlag_DoNotCache, String());
-        geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize());
+        geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getDecompressedDataSize());
+        geometry.dataType = EDataType::Vector2Buffer;
         m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData().data(), res.getDecompressedDataSize());
 
         const ArrayResource indexArray(EResourceType_IndexArray, geometry.indexCount, EDataType::UInt16, filled ? indicesFilled : indicesLines, ResourceCacheFlag_DoNotCache, String());
@@ -305,7 +308,8 @@ namespace ramses_internal
         geometry.drawMode = EDrawMode::Lines;
 
         const ArrayResource res(EResourceType_VertexArray, 2, EDataType::Vector2F, vertices, ResourceCacheFlag_DoNotCache, String());
-        geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize());
+        geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getDecompressedDataSize());
+        geometry.dataType = EDataType::Vector2Buffer;
         m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData().data(), res.getDecompressedDataSize());
 
         const ArrayResource indexArray(EResourceType_IndexArray, 2, EDataType::UInt16, indices, ResourceCacheFlag_DoNotCache, String());
@@ -329,7 +333,8 @@ namespace ramses_internal
         geometry.drawMode = EDrawMode::Lines;
 
         const ArrayResource res(EResourceType_VertexArray, 2, EDataType::Vector2F, vertices, ResourceCacheFlag_DoNotCache, String());
-        geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize());
+        geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getDecompressedDataSize());
+        geometry.dataType = EDataType::Vector2Buffer;
         m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData().data(), res.getDecompressedDataSize());
 
         const ArrayResource indexArray(EResourceType_IndexArray, 2, EDataType::UInt16, indices, ResourceCacheFlag_DoNotCache, String());
@@ -541,7 +546,9 @@ namespace ramses_internal
         m_device->setConstant(drawable.look.mvpHandle, 1, &drawable.mvpMatrix);
 
         m_device->drawMode(drawable.geometry.drawMode);
-        m_device->activateVertexBuffer(drawable.geometry.vertexBufferHandle, drawable.look.positionHandle, 0u, 0u);
+
+        assert(IsBufferDataType(drawable.geometry.dataType));
+        m_device->activateVertexBuffer(drawable.geometry.vertexBufferHandle, drawable.look.positionHandle, 0u, 0u, drawable.geometry.dataType, 0u, 0u);
         m_device->activateIndexBuffer(drawable.geometry.indexBufferHandle);
         m_device->drawIndexedTriangles(0, drawable.geometry.indexCount, 0);
     }

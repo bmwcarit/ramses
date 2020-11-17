@@ -43,8 +43,7 @@ namespace ramses
         , m_threadWatchdogConfig(config.m_watchdogConfig)
         // NOTE: ThreadedTaskExecutor must always be constructed after CommunicationSystem
         , m_threadedTaskExecutor(3, config.m_watchdogConfig)
-        , m_resourceComponent(m_threadedTaskExecutor, m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(),
-            m_statisticCollection, m_frameworkLock, config.getMaximumTotalBytesForAsyncResourceLoading())
+        , m_resourceComponent(m_statisticCollection, m_frameworkLock)
         , m_scenegraphComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(), m_resourceComponent, m_frameworkLock)
         , m_dcsmComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getDcsmConnectionStatusUpdateNotifier(), m_frameworkLock)
         , m_ramshCommandLogConnectionInformation(*m_communicationSystem)
@@ -349,6 +348,11 @@ namespace ramses
 
         LOG_INFO(CONTEXT_FRAMEWORK, "Starting Ramses Client Application: " << participantAddress.getParticipantName() << " guid:" << participantAddress.getParticipantId() <<
                  " stack: " << config.impl.getUsedProtocol());
+
+        const ramses_internal::ArgumentString executionIdentifier(parser, "executionIdentifier", "executionIdentifier", String());
+        if (executionIdentifier.hasValue())
+            LOG_INFO(CONTEXT_FRAMEWORK, "Program execution identifier: '" << static_cast<String>(executionIdentifier) << "'");
+
         const ramses_internal::ArgumentUInt32 periodicLogTimeout(parser, "plt", "periodicLogTimeout", uint32_t(PeriodicLogIntervalInSeconds));
 
         LogEnvironmentVariableIfSet("XDG_RUNTIME_DIR");
@@ -421,6 +425,35 @@ namespace ramses
         }
 
         return participantName;
+    }
+
+    void RamsesFrameworkImpl::SetConsoleLogLevel(ELogLevel logLevel)
+    {
+        GetRamsesLogger().setConsoleLogLevelProgrammatically(GetELogLevelInternal(logLevel));
+    }
+
+    ramses_internal::ELogLevel RamsesFrameworkImpl::GetELogLevelInternal(ELogLevel logLevel)
+    {
+        switch (logLevel)
+        {
+        case ramses::ELogLevel::Off:
+            return ramses_internal::ELogLevel::Off;
+        case ramses::ELogLevel::Fatal:
+            return ramses_internal::ELogLevel::Fatal;
+        case ramses::ELogLevel::Error:
+            return ramses_internal::ELogLevel::Error;
+        case ramses::ELogLevel::Warn:
+            return ramses_internal::ELogLevel::Warn;
+        case ramses::ELogLevel::Info:
+            return ramses_internal::ELogLevel::Info;
+        case ramses::ELogLevel::Debug:
+            return ramses_internal::ELogLevel::Debug;
+        case ramses::ELogLevel::Trace:
+            return ramses_internal::ELogLevel::Trace;
+        }
+
+        assert(false);
+        return ramses_internal::ELogLevel::Off;
     }
 
     void RamsesFrameworkImpl::LogEnvironmentVariableIfSet(const ramses_internal::String& envVarName)

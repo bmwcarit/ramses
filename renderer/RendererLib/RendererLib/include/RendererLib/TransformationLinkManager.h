@@ -38,8 +38,8 @@ namespace ramses_internal
     private:
         DataSlotHandle getDataSlotForNode(SceneId sceneId, NodeHandle node) const;
 
-        typedef HashMap<NodeHandle, DataSlotHandle> NodeToSlotMap;
-        typedef HashMap<SceneId, NodeToSlotMap> SceneToNodeSlotMap;
+        using NodeToSlotMap = HashMap<NodeHandle, DataSlotHandle>;
+        using SceneToNodeSlotMap = HashMap<SceneId, NodeToSlotMap>;
         SceneToNodeSlotMap m_nodesToDataSlots;
     };
 }

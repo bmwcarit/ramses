@@ -16,8 +16,8 @@ namespace ramses_internal
     class AnimationTime
     {
     public:
-        typedef UInt64 TimeStamp;
-        typedef UInt64 Duration;
+        using TimeStamp = UInt64;
+        using Duration = UInt64;
 
         AnimationTime(TimeStamp timeStamp = InvalidTimeStamp);  //NOLINT(google-explicit-constructor) allow implcit conversion for convenience
         AnimationTime(const AnimationTime& other) = default;

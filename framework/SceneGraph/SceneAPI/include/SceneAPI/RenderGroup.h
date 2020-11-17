@@ -19,7 +19,7 @@ namespace ramses_internal
         RenderableHandle renderable;
         Int32            order;
     };
-    typedef std::vector<RenderableOrderEntry> RenderableOrderVector;
+    using RenderableOrderVector = std::vector<RenderableOrderEntry>;
 
     struct RenderGroup
     {

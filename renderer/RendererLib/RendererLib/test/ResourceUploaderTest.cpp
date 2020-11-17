@@ -106,7 +106,7 @@ TEST_F(AResourceUploader, uploadsVertexArrayResource)
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
-    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize())).WillOnce(Return(DeviceResourceHandle(123)));
+    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(res.getDecompressedDataSize())).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadVertexBufferData(DeviceResourceHandle(123), res.getResourceData().data(), res.getDecompressedDataSize()));
     EXPECT_EQ(123u, uploader.uploadResource(renderer, resourceObject, vramSize));
     EXPECT_EQ(res.getDecompressedDataSize(), vramSize);
@@ -479,11 +479,11 @@ TEST_F(AResourceUploader, uploadsWithMultipleRenderBackends)
     resourceObject.resource = managedRes;
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(1);
 
-    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize())).WillOnce(Return(DeviceResourceHandle(123)));
+    EXPECT_CALL(renderer.deviceMock, allocateVertexBuffer(res.getDecompressedDataSize())).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(renderer.deviceMock, uploadVertexBufferData(DeviceResourceHandle(123), res.getResourceData().data(), res.getDecompressedDataSize()));
     EXPECT_EQ(123u, uploader.uploadResource(renderer, resourceObject, vramSize));
 
-    EXPECT_CALL(additionalRenderer.deviceMock, allocateVertexBuffer(res.getElementType(), res.getDecompressedDataSize())).WillOnce(Return(DeviceResourceHandle(123)));
+    EXPECT_CALL(additionalRenderer.deviceMock, allocateVertexBuffer(res.getDecompressedDataSize())).WillOnce(Return(DeviceResourceHandle(123)));
     EXPECT_CALL(additionalRenderer.deviceMock, uploadVertexBufferData(DeviceResourceHandle(123), res.getResourceData().data(), res.getDecompressedDataSize()));
     EXPECT_EQ(123u, uploader.uploadResource(additionalRenderer, resourceObject, vramSize));
 }

@@ -21,8 +21,6 @@
 
 namespace ramses_internal
 {
-    class IResourceStorageChangeListener;
-
     class ResourceStorage: public IManagedResourceDeleterCallback, public IResourceHashUsageCallback
     {
         struct RefCntResource
@@ -38,7 +36,6 @@ namespace ramses_internal
         explicit ResourceStorage(PlatformLock& lockToUse, StatisticCollectionFramework& statistics);
         virtual ~ResourceStorage();
 
-        void setListener(IResourceStorageChangeListener& listener);
         ResourceInfoVector getAllResourceInfo() const;
         ManagedResource manageResource(const IResource& resource, bool deletionAllowed = false);
         ManagedResourceVector getResources();
@@ -49,7 +46,6 @@ namespace ramses_internal
 
         virtual void managedResourceDeleted(const IResource& resourceToRemove) override;
         virtual void resourceHashUsageZero(const ResourceContentHash& hash) override;
-        uint64_t getBytesUsedByResourcesInMemory() const;
         void reserveResourceCount(uint32_t totalCount);
 
         void markDeletionDisallowed(const ResourceContentHash& hash);
@@ -63,10 +59,8 @@ namespace ramses_internal
         PlatformLock& m_resourceMapLock;
         StatisticCollectionFramework& m_statistics;
 
-        typedef HashMap<ResourceContentHash, RefCntResource> ResourceMap;
+        using ResourceMap = HashMap<ResourceContentHash, RefCntResource>;
         ResourceMap m_resourceMap;
-        IResourceStorageChangeListener* m_listener = nullptr;
-        uint64_t m_bytesCurrentlyUsedByResourcesInMemory = 0;
     };
 }
 

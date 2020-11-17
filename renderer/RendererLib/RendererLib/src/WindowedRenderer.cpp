@@ -11,7 +11,7 @@
 #include "RendererLib/FrameTimer.h"
 
 #include "RendererAPI/IRenderBackend.h"
-#include "RendererAPI/IPlatformFactory.h"
+#include "RendererAPI/IPlatform.h"
 #include "RendererAPI/IDevice.h"
 #include "RendererAPI/ISurface.h"
 #include "RendererAPI/IWindow.h"
@@ -28,13 +28,13 @@ namespace ramses_internal
     WindowedRenderer::WindowedRenderer(
         RendererCommandBuffer& commandBuffer,
         IRendererSceneEventSender& rendererSceneSender,
-        IPlatformFactory& platformFactory,
+        IPlatform& platform,
         RendererStatistics& rendererStatistics,
         const String& monitorFilename)
         : m_rendererCommandBuffer(commandBuffer)
         , m_rendererScenes(m_rendererEventCollector)
         , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector)
-        , m_renderer(platformFactory, m_rendererScenes, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, rendererStatistics)
+        , m_renderer(platform, m_rendererScenes, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, rendererStatistics)
         , m_sceneStateExecutor(m_renderer, rendererSceneSender, m_rendererEventCollector)
         , m_rendererSceneUpdater(m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor)
         , m_sceneControlLogic(m_rendererSceneUpdater)
@@ -187,15 +187,7 @@ namespace ramses_internal
 
         for (const auto& evt : outSceneEvents)
         {
-            switch (evt.type)
-            {
-            case RendererSceneControlLogic::Event::Type::ScenePublished:
-                m_rendererEventCollector.addSceneEvent(ERendererEventType_ScenePublished, evt.sceneId, RendererSceneState::Unavailable);
-                break;
-            case RendererSceneControlLogic::Event::Type::SceneStateChanged:
-                m_rendererEventCollector.addSceneEvent(ERendererEventType_SceneStateChanged, evt.sceneId, evt.state);
-                break;
-            }
+            m_rendererEventCollector.addSceneEvent(ERendererEventType_SceneStateChanged, evt.sceneId, evt.state);
         }
     }
 

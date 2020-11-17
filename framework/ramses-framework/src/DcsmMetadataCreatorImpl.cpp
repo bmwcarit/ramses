@@ -63,13 +63,6 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t DcsmMetadataCreatorImpl::setCarCameraPlanes(const CarCameraPlaneMetadata& data)
-    {
-        if (!m_metadata.setCarCameraPlanes(data))
-            return addErrorEntry("DcsmMetadataCreatorImpl::setCarCameraPlanes: input not valid");
-        return StatusOK;
-    }
-
     status_t DcsmMetadataCreatorImpl::setCarModelVisibility(bool visibility)
     {
         if (!m_metadata.setCarModelVisibility(visibility))

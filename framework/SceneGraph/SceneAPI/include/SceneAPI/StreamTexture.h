@@ -10,6 +10,7 @@
 #define RAMSES_INTERNAL_STREAMTEXTURE_H
 
 #include "SceneAPI/ResourceContentHash.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {
@@ -17,7 +18,7 @@ namespace ramses_internal
     {
         ResourceContentHash fallbackTexture;
         bool forceFallbackTexture = false;
-        uint32_t source = 0u;
+        WaylandIviSurfaceId source;
     };
 }
 

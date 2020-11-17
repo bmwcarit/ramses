@@ -186,11 +186,6 @@ namespace ramses_internal
 
         PreallocateSceneSize,
 
-        PushResource,   // deprecated, do not use
-
-        SetAckFlushState,   // deprecated, do not use
-        Flush,
-
         TestAction,
 
         CompoundRenderable,
@@ -200,11 +195,6 @@ namespace ramses_internal
         Incomplete,
 
         NUMBER_OF_TYPES
-    };
-
-    enum ESceneActionFlushBits : uint32_t
-    {
-        ESceneActionFlushBits_HasSizeInfo               = BIT(0u),
     };
 
     static constexpr const uint32_t NumOfSceneActionTypes = static_cast<uint32_t>(ESceneActionId::NUMBER_OF_TYPES);
@@ -386,11 +376,6 @@ case ENUMVALUE: return #ENUMVALUE
             CreateNameForEnumID(ESceneActionId::AnimationSystemRemoveAnimation);
 
             CreateNameForEnumID(ESceneActionId::PreallocateSceneSize);
-
-            CreateNameForEnumID(ESceneActionId::PushResource);
-
-            CreateNameForEnumID(ESceneActionId::SetAckFlushState);
-            CreateNameForEnumID(ESceneActionId::Flush);
 
             CreateNameForEnumID(ESceneActionId::TestAction);
 

@@ -15,19 +15,19 @@ namespace ramses
     {
     };
 
-    bool CategoryInfoUpdateImpl::hasCategorySizeUpdate() const
+    bool CategoryInfoUpdateImpl::hasCategoryRectUpdate() const
     {
-        return m_categoryInfo.hasCategorySizeChange();
+        return m_categoryInfo.hasCategoryRectChange();
     }
 
-    Rect CategoryInfoUpdateImpl::getCategorySize() const
+    Rect CategoryInfoUpdateImpl::getCategoryRect() const
     {
         return Rect{m_categoryInfo.getCategoryX(), m_categoryInfo.getCategoryY(), m_categoryInfo.getCategoryWidth(), m_categoryInfo.getCategoryHeight()};
     }
 
-    status_t CategoryInfoUpdateImpl::setCategorySize(Rect rect)
+    status_t CategoryInfoUpdateImpl::setCategoryRect(Rect rect)
     {
-        m_categoryInfo.setCategorySize(rect.x, rect.y, rect.width, rect.height);
+        m_categoryInfo.setCategoryRect(rect.x, rect.y, rect.width, rect.height);
 
         return StatusOK;
     }
@@ -59,19 +59,19 @@ namespace ramses
         return StatusOK;
     }
 
-    bool CategoryInfoUpdateImpl::hasSafeAreaSizeUpdate() const
+    bool CategoryInfoUpdateImpl::hasSafeRectUpdate() const
     {
-        return m_categoryInfo.hasSafeAreaSizeChange();
+        return m_categoryInfo.hasSafeRectChange();
     }
 
-    ramses::Rect CategoryInfoUpdateImpl::getSafeAreaSize() const
+    ramses::Rect CategoryInfoUpdateImpl::getSafeRect() const
     {
-        return Rect{m_categoryInfo.getSafeAreaX(), m_categoryInfo.getSafeAreaY() , m_categoryInfo.getSafeAreaWidth() , m_categoryInfo.getSafeAreaHeight() };
+        return Rect{m_categoryInfo.getSafeRectX(), m_categoryInfo.getSafeRectY() , m_categoryInfo.getSafeRectWidth() , m_categoryInfo.getSafeRectHeight() };
     }
 
-    status_t CategoryInfoUpdateImpl::setSafeAreaSize(Rect rect)
+    status_t CategoryInfoUpdateImpl::setSafeRect(Rect rect)
     {
-        m_categoryInfo.setSafeArea(rect.x, rect.y, rect.width, rect.height);
+        m_categoryInfo.setSafeRect(rect.x, rect.y, rect.width, rect.height);
 
         return StatusOK;
     }

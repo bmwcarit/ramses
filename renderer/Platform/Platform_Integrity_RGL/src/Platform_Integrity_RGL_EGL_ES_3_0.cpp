@@ -12,17 +12,16 @@
 #include "Device_GL/Device_GL.h"
 #include "Platform_Base/EmbeddedCompositor_Dummy.h"
 #include "RendererLib/DisplayConfig.h"
-#include "Platform_Base/Surface_Base.h"
 
 namespace ramses_internal
 {
-    IPlatformFactory* PlatformFactory_Base::CreatePlatformFactory(const RendererConfig& rendererConfig)
+    IPlatform* Platform_Base::CreatePlatform(const RendererConfig& rendererConfig)
     {
         return new Platform_Integrity_RGL_EGL_ES_3_0(rendererConfig);
     }
 
     Platform_Integrity_RGL_EGL_ES_3_0::Platform_Integrity_RGL_EGL_ES_3_0(const RendererConfig& rendererConfig)
-        : PlatformFactory_Base(rendererConfig)
+        : Platform_Base(rendererConfig)
     {
     }
 
@@ -67,16 +66,6 @@ namespace ramses_internal
         assert(0 != platformContext);
         Device_GL* device = new Device_GL(*platformContext, 3, 0, true);
         return addPlatformDevice(device);
-    }
-
-    ISurface* Platform_Integrity_RGL_EGL_ES_3_0::createSurface(IWindow& window, IContext& context)
-    {
-        Window_Integrity_RGL* platformWindow = getPlatformWindow<Window_Integrity_RGL>(window);
-        Context_EGL* platformContext = getPlatformContext<Context_EGL>(context);
-        assert(0 != platformWindow);
-        assert(0 != platformContext);
-        Surface_Base* platformSurface = new Surface_Base(*platformWindow, *platformContext);
-        return addPlatformSurface(platformSurface);
     }
 
     IEmbeddedCompositor* Platform_Integrity_RGL_EGL_ES_3_0::createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context)

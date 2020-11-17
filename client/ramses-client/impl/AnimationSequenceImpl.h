@@ -79,7 +79,7 @@ namespace ramses
         bool isSequenceActive() const;
         const AnimationImpl* findAnimation(ramses_internal::AnimationHandle handle) const;
 
-        typedef ramses_internal::HashMap<ramses_internal::AnimationHandle, SequenceItem> SequenceItemMap;
+        using SequenceItemMap = ramses_internal::HashMap<ramses_internal::AnimationHandle, SequenceItem>;
 
         SequenceItemMap                          m_animations;
         float                                    m_playbackSpeed;

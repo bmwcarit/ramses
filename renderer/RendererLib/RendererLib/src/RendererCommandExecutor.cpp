@@ -121,7 +121,7 @@ namespace ramses_internal
                 const DisplayCommand& command = m_executedCommands.getCommandData<DisplayCommand>(i);
                 const DisplayHandle displayHandle = command.displayHandle;
                 LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << displayHandle);
-                m_rendererSceneUpdater.createDisplayContext(command.displayConfig, *command.resourceProvider, *command.resourceUploader, displayHandle);
+                m_rendererSceneUpdater.createDisplayContext(command.displayConfig, *command.resourceUploader, displayHandle);
                 break;
             }
             case ERendererCommand_DestroyDisplay:
@@ -194,60 +194,6 @@ namespace ramses_internal
                 m_rendererSceneUpdater.handleSetClearColor(command.displayHandle, command.obHandle, command.clearColor);
                 break;
             }
-            case ERendererCommand_RelativeTranslation:
-            {
-                const RendererViewCommand& command = m_executedCommands.getCommandData<RendererViewCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                for (DisplayHandle handle(0u); handle < m_renderer.getDisplayControllerCount(); ++handle)
-                {
-                    if (m_renderer.hasDisplayController(handle))
-                    {
-                        IDisplayController& controller = m_renderer.getDisplayController(handle);
-                        controller.setViewPosition(controller.getViewPosition() + command.displayMovement);
-                    }
-                }
-                break;
-            }
-            case ERendererCommand_AbsoluteTranslation:
-            {
-                const RendererViewCommand& command = m_executedCommands.getCommandData<RendererViewCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                for (DisplayHandle handle(0u); handle < m_renderer.getDisplayControllerCount(); ++handle)
-                {
-                    if (m_renderer.hasDisplayController(handle))
-                    {
-                        m_renderer.getDisplayController(handle).setViewPosition(command.displayMovement);
-                    }
-                }
-                break;
-            }
-            case ERendererCommand_RelativeRotation:
-            {
-                const RendererViewCommand& command = m_executedCommands.getCommandData<RendererViewCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                for (DisplayHandle handle(0u); handle < m_renderer.getDisplayControllerCount(); ++handle)
-                {
-                    if (m_renderer.hasDisplayController(handle))
-                    {
-                        IDisplayController& controller = m_renderer.getDisplayController(handle);
-                        controller.setViewRotation(controller.getViewRotation() + command.displayMovement);
-                    }
-                }
-                break;
-            }
-            case ERendererCommand_AbsoluteRotation:
-            {
-                const RendererViewCommand& command = m_executedCommands.getCommandData<RendererViewCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                for (DisplayHandle handle(0u); handle < m_renderer.getDisplayControllerCount(); ++handle)
-                {
-                    if (m_renderer.hasDisplayController(handle))
-                    {
-                        m_renderer.getDisplayController(handle).setViewRotation(command.displayMovement);
-                    }
-                }
-                break;
-            }
             case ERendererCommand_LinkSceneData:
             {
                 const DataLinkCommand& command = m_executedCommands.getCommandData<DataLinkCommand>(i);
@@ -273,7 +219,7 @@ namespace ramses_internal
             {
                 const OffscreenBufferCommand& command = m_executedCommands.getCommandData<OffscreenBufferCommand>(i);
                 LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << command.displayHandle << " bufferHandle " << command.bufferHandle);
-                const Bool succeeded = m_rendererSceneUpdater.handleBufferCreateRequest(command.bufferHandle, command.displayHandle, command.bufferWidth, command.bufferHeight, command.interruptible);
+                const Bool succeeded = m_rendererSceneUpdater.handleBufferCreateRequest(command.bufferHandle, command.displayHandle, command.bufferWidth, command.bufferHeight, command.bufferSampleCount, command.interruptible);
                 m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType_OffscreenBufferCreated : ERendererEventType_OffscreenBufferCreateFailed), command.bufferHandle, command.displayHandle);
                 break;
             }
@@ -305,18 +251,6 @@ namespace ramses_internal
                 LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
                 LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) { m_renderer.getStatistics().writeStatsToStream(sos); }));
                 LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) { m_renderer.getProfilerStatistics().writeLongestFrameTimingsToStream(sos); }));
-                break;
-            }
-            case ERendererCommand_ResetRenderView:
-            {
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                for (DisplayHandle handle(0u); handle < m_renderer.getDisplayControllerCount(); ++handle)
-                {
-                    if (m_renderer.hasDisplayController(handle))
-                    {
-                        m_renderer.getDisplayController(handle).resetView();
-                    }
-                }
                 break;
             }
             case ERendererCommand_SystemCompositorControllerListIviSurfaces:
@@ -424,15 +358,15 @@ namespace ramses_internal
                 SceneUpdateCommand& command = m_executedCommands.getCommandData<SceneUpdateCommand>(i);
                 const SceneId sceneId = command.sceneId;
                 SceneUpdate& sceneUpdate = command.sceneUpdate;
-                m_rendererSceneUpdater.handleSceneActions(sceneId, std::move(sceneUpdate));
+                m_rendererSceneUpdater.handleSceneUpdate(sceneId, std::move(sceneUpdate));
                 break;
             }
             case ERendererCommand_SetFrameTimerLimits:
             {
                 const SetFrameTimerLimitsCommmand& command = m_executedCommands.getCommandData<SetFrameTimerLimitsCommmand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneResUpload " << command.limitForSceneResourcesUploadMicrosec << " clientResUpload " << command.limitForClientResourcesUploadMicrosec << " render " << command.limitForOffscreenBufferRenderMicrosec);
+                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneResUpload " << command.limitForSceneResourcesUploadMicrosec << " resUpload " << command.limitForResourcesUploadMicrosec << " render " << command.limitForOffscreenBufferRenderMicrosec);
                 m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneResourcesUpload, command.limitForSceneResourcesUploadMicrosec);
-                m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ClientResourcesUpload, command.limitForClientResourcesUploadMicrosec);
+                m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, command.limitForResourcesUploadMicrosec);
                 m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, command.limitForOffscreenBufferRenderMicrosec);
                 break;
             }

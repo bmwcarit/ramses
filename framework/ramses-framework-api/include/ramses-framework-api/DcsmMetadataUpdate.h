@@ -12,7 +12,6 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/CarModelViewMetadata.h"
-#include "ramses-framework-api/CarCameraPlaneMetadata.h"
 #include <string>
 #include <vector>
 
@@ -147,21 +146,6 @@ namespace ramses
         * @return animation information for car model view metadata
         */
         AnimationInformation getCarModelViewAnimationInfo() const;
-
-        /**
-         * @brief Check if object contains car camera planes metadata entry.
-         *
-         * @return true when has car camera planes metadata, false when not
-         */
-        bool hasCarCameraPlanes() const;
-
-        /**
-         * @brief Get car camera planes metadata entry.
-         *        Value is undefined when not hasCarCameraPlane().
-         *
-         * @return car camera plane metadata
-         */
-        CarCameraPlaneMetadata getCarCameraPlanes() const;
 
         /**
          * @brief Check if object contains car model visibility metadata entry.

@@ -12,7 +12,6 @@
 #include "StatusObjectImpl.h"
 #include "ramses-framework-api/IDcsmConsumerEventHandler.h"
 #include "ramses-renderer-api/DcsmContentControl.h"
-#include "ramses-renderer-api/DcsmContentControlConfig.h"
 #include "ramses-renderer-api/IDcsmContentControlEventHandler.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "Components/DcsmMetadata.h"
@@ -33,18 +32,19 @@ namespace ramses
     class DcsmContentControlImpl final : public StatusObjectImpl, public IDcsmConsumerEventHandler, public IRendererSceneControlEventHandler
     {
     public:
-        DcsmContentControlImpl(const DcsmContentControlConfig& config, IDcsmConsumerImpl& dcsmConsumer, IRendererSceneControl& sceneControl);
+        DcsmContentControlImpl(IDcsmConsumerImpl& dcsmConsumer, IRendererSceneControl& sceneControl);
 
-        status_t addContentCategory(Category category, DcsmContentControlConfig::CategoryInfo categoryInformation);
+        status_t addContentCategory(Category category, displayId_t display, const CategoryInfoUpdate& categoryInformation);
         status_t removeContentCategory(Category category);
         status_t requestContentReady(ContentID contentID, uint64_t timeOut);
         status_t showContent(ContentID contentID, AnimationInformation timingInfo);
         status_t hideContent(ContentID contentID, AnimationInformation timingInfo);
         status_t releaseContent(ContentID contentID, AnimationInformation timingInfo);
-        status_t setCategorySize(Category categoryId, const CategoryInfoUpdate& size, AnimationInformation timingInfo);
+        status_t setCategoryInfo(Category categoryId, const CategoryInfoUpdate& categoryInfo, AnimationInformation timingInfo);
         status_t acceptStopOffer(ContentID contentID, AnimationInformation timingInfo);
         status_t assignContentToDisplayBuffer(ContentID contentID, displayBufferId_t displayBuffer, int32_t renderOrder);
         status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, ContentID consumerContentID, dataConsumerId_t consumerId);
+        status_t linkContentToTextureConsumer(ContentID contentID, ContentID consumerContentID, dataConsumerId_t consumerId);
         status_t linkData(ContentID providerContentID, dataProviderId_t providerId, ContentID consumerContentID, dataConsumerId_t consumerId);
         status_t unlinkData(ContentID consumerContentID, dataConsumerId_t consumerId);
         status_t handlePickEvent(ContentID contentID, float bufferNormalizedCoordX, float bufferNormalizedCoordY);
@@ -52,8 +52,8 @@ namespace ramses
 
     private:
         // IDcsmConsumerEventHandler
-        virtual void contentOffered(ContentID contentID, Category category) override;
-        virtual void contentDescription(ContentID contentID, ETechnicalContentType contentType, TechnicalContentDescriptor contentDescriptor) override;
+        virtual void contentOffered(ContentID contentID, Category category, ETechnicalContentType contentType) override;
+        virtual void contentDescription(ContentID contentID, TechnicalContentDescriptor contentDescriptor) override;
         virtual void contentReady(ContentID contentID) override;
         virtual void contentEnableFocusRequest(ramses::ContentID contentID, int32_t focusRequest) override;
         virtual void contentDisableFocusRequest(ramses::ContentID contentID, int32_t focusRequest) override;
@@ -62,7 +62,6 @@ namespace ramses
         virtual void contentMetadataUpdated(ContentID contentID, const DcsmMetadataUpdate& metadataUpdate) override;
 
         // IRendererSceneControlEventHandler
-        virtual void scenePublished(sceneId_t sceneId) override;
         virtual void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override;
         virtual void offscreenBufferLinked(displayBufferId_t offscreenBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override;
         virtual void dataLinked(sceneId_t providerScene, dataProviderId_t providerId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success) override;
@@ -109,7 +108,7 @@ namespace ramses
         struct ContentInfo
         {
             Category category;
-            ramses_internal::ETechnicalContentType contentType;
+            ETechnicalContentType contentType;
 
             bool readyRequested = false;
             bool dcsmReady = false;
@@ -121,6 +120,7 @@ namespace ramses
         {
             Category category;
             ContentID contentID;
+            ETechnicalContentType contentType;
         };
         std::vector<OfferedContents> m_offeredContentsForOtherCategories;
 

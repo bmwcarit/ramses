@@ -13,11 +13,11 @@
 
 namespace ramses
 {
-    typedef int64_t        timeMilliseconds_t;    /**< Time in milliseconds type */
-    typedef uint64_t       globalTimeStamp_t;     /**< Global time stamp type */
-    typedef uint32_t       splineTimeStamp_t;     /**< Spline key time stamp type */
-    typedef uint32_t       sequenceTimeStamp_t;   /**< Local sequence time stamp for animation within sequence */
-    typedef uint32_t       splineKeyIndex_t;      /**< Spline key index type */
+    using timeMilliseconds_t = int64_t;    /**< Time in milliseconds type */
+    using globalTimeStamp_t = uint64_t;     /**< Global time stamp type */
+    using splineTimeStamp_t = uint32_t;     /**< Spline key time stamp type */
+    using sequenceTimeStamp_t = uint32_t;   /**< Local sequence time stamp for animation within sequence */
+    using splineKeyIndex_t = uint32_t;      /**< Spline key index type */
 
     /// Time stamp within a sequence local time denoting an invalid value
     const sequenceTimeStamp_t InvalidSequenceTimeStamp = sequenceTimeStamp_t(-1);

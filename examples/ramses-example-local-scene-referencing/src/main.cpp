@@ -115,7 +115,7 @@ uniform highp vec4 color;
 void main(void) {
     gl_FragColor = color + vec4(0.1);
 })glsl");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     ramses::Effect* effect = clientScene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "triangle appearance");
@@ -244,15 +244,15 @@ int main(int argc, char* argv[])
     masterScene->flush();
     /// [Scene referencing setup]
 
-    // request master scene to be available, so scene references can become available as well
-    sceneControlAPI.setSceneState(sceneIdMaster, ramses::RendererSceneState::Available);
+    // request master scene to be ready, so scene references can become ready as well
+    sceneControlAPI.setSceneState(sceneIdMaster, ramses::RendererSceneState::Ready);
     sceneControlAPI.flush();
 
     /// [Scene referencing data linking]
     // wait for referenced scene to be available, before trying to data link
     SceneReferenceEventHandler eventHandler(client);
-    eventHandler.waitForSceneRefState(refSceneId1, ramses::RendererSceneState::Available);
-    eventHandler.waitForSceneRefState(refSceneId2, ramses::RendererSceneState::Available);
+    eventHandler.waitForSceneRefState(refSceneId1, ramses::RendererSceneState::Ready);
+    eventHandler.waitForSceneRefState(refSceneId2, ramses::RendererSceneState::Ready);
 
     // Link master scene's data objects to other scenes cameras' viewports
     masterScene->linkData(nullptr, VP1OffsetProviderId, sceneRef1, VPOffsetConsumerId);

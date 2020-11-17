@@ -111,4 +111,9 @@ namespace ramses
         LOG_HL_CLIENT_API1(result, LOG_API_GENERIC_PTR_STRING(&consumer));
         return result;
     }
+
+    void RamsesFramework::SetConsoleLogLevel(ELogLevel logLevel)
+    {
+        RamsesFrameworkImpl::SetConsoleLogLevel(logLevel);
+    }
 }

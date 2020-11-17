@@ -12,7 +12,7 @@
 #include "RendererLib/DisplayConfig.h"
 #include "RendererCommands/Screenshot.h"
 #include "Ramsh/RamshTools.h"
-#include "ResourceProviderMock.h"
+#include "ResourceDeviceHandleAccessorMock.h"
 #include "ResourceUploaderMock.h"
 #include "Math3d/Vector2i.h"
 #include "Scene/SceneActionCollectionCreator.h"
@@ -84,7 +84,6 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     const DisplayHandle displayHandle(1u);
     const DisplayConfig displayConfig;
     const OffscreenBufferHandle obHandle{ 6u };
-    ResourceProviderMock resourceProvider;
     NiceMock<ResourceUploaderMock> resourceUploader;
 
     const SceneId providerSceneId;
@@ -104,7 +103,7 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     queueToFetch.setSceneDisplayBufferAssignment(sceneId, obHandle, -13);
     queueToFetch.subscribeScene(sceneId);
     queueToFetch.unsubscribeScene(sceneId, false);
-    queueToFetch.createDisplay(displayConfig, resourceProvider, resourceUploader, displayHandle);
+    queueToFetch.createDisplay(displayConfig, resourceUploader, displayHandle);
     queueToFetch.destroyDisplay(displayHandle);
     queueToFetch.mapSceneToDisplay(sceneId, displayHandle);
     queueToFetch.assignSceneToDisplayBuffer(sceneId, obHandle, 11);
@@ -115,11 +114,6 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     queueToFetch.readPixels(displayHandle, obHandle, "testImage", false, 0, 0, 64, 64);
     queueToFetch.linkSceneData(providerSceneId, providerId, consumerSceneId, consumerId);
     queueToFetch.unlinkSceneData(consumerSceneId, consumerId);
-    queueToFetch.moveView(Vector3(1.0f));
-    queueToFetch.setViewPosition(Vector3(2.0f));
-    queueToFetch.rotateView(Vector3(3.0f));
-    queueToFetch.setViewRotation(Vector3(4.0f));
-    queueToFetch.resetView();
     queueToFetch.logStatistics();
     queueToFetch.systemCompositorControllerListIviSurfaces();
     queueToFetch.systemCompositorControllerSetIviSurfaceVisibility(WaylandIviSurfaceId(6), true);
@@ -135,7 +129,7 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     queueToFetch.setClearColor(displayHandle, obHandle, clearColor);
     queueToFetch.setFrameTimerLimits(4u, 1u, 3u);
 
-    EXPECT_EQ(38u, queueToFetch.getCommands().getTotalCommandCount());
+    EXPECT_EQ(33u, queueToFetch.getCommands().getTotalCommandCount());
 
     queue.addCommands(queueToFetch); //fetchRendererCommands
     queueToFetch.clear(); //clear fetched command queue
@@ -144,7 +138,7 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     queue.swapCommandContainer(commands);
 
     EXPECT_EQ(0u, queueToFetch.getCommands().getTotalCommandCount());
-    EXPECT_EQ(38u, commands.getTotalCommandCount());
+    EXPECT_EQ(33u, commands.getTotalCommandCount());
 
     //check some details of the fetched commands
     EXPECT_EQ(ERendererCommand_PublishedScene, commands.getCommandType(0));
@@ -159,7 +153,6 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     const DisplayCommand& dispCmd = commands.getCommandData<DisplayCommand>(8);
     EXPECT_EQ(displayHandle, dispCmd.displayHandle);
     EXPECT_EQ(displayConfig, dispCmd.displayConfig);
-    EXPECT_EQ(static_cast<IResourceProvider*>(&resourceProvider), dispCmd.resourceProvider);
     EXPECT_EQ(static_cast<IResourceUploader*>(&resourceUploader), dispCmd.resourceUploader);
 
     EXPECT_EQ(ERendererCommand_AssignSceneToDisplayBuffer, commands.getCommandType(11));
@@ -168,12 +161,12 @@ TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
     EXPECT_EQ(obHandle, assignCmd.offscreenBuffer);
     EXPECT_EQ(11, assignCmd.sceneRenderOrder);
 
-    EXPECT_EQ(ERendererCommand_ConfirmationEcho, commands.getCommandType(34));
-    const ConfirmationEchoCommand& echoCmd = commands.getCommandData<ConfirmationEchoCommand>(34);
+    EXPECT_EQ(ERendererCommand_ConfirmationEcho, commands.getCommandType(29));
+    const ConfirmationEchoCommand& echoCmd = commands.getCommandData<ConfirmationEchoCommand>(29);
     EXPECT_TRUE(echoCmd.text == ramses_internal::String("testEcho"));
 
-    EXPECT_EQ(ERendererCommand_SetClearColor, commands.getCommandType(36));
-    const auto& clearColorCmd = commands.getCommandData<SetClearColorCommand>(36);
+    EXPECT_EQ(ERendererCommand_SetClearColor, commands.getCommandType(31));
+    const auto& clearColorCmd = commands.getCommandData<SetClearColorCommand>(31);
     EXPECT_EQ(displayHandle, clearColorCmd.displayHandle);
     EXPECT_EQ(obHandle, clearColorCmd.obHandle);
     EXPECT_EQ(clearColor, clearColorCmd.clearColor);

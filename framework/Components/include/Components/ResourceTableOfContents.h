@@ -27,7 +27,7 @@ namespace ramses_internal
         ResourceInfo resourceInfo;
     };
 
-    typedef HashMap<ResourceContentHash, ResourceFileEntry> TableOfContentsMap;
+    using TableOfContentsMap = HashMap<ResourceContentHash, ResourceFileEntry>;
 
     class ResourceTableOfContents
     {

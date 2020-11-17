@@ -24,7 +24,7 @@ namespace ramses_internal
         Int32 globalSceneOrder;
         Bool shown;
     };
-    typedef std::vector<AssignedSceneInfo> AssignedScenes;
+    using AssignedScenes = std::vector<AssignedSceneInfo>;
 
     struct DisplayBufferInfo
     {

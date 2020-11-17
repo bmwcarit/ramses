@@ -11,6 +11,7 @@
 
 #include "ramses-client-api/SceneObject.h"
 #include "ramses-client-api/EVisibilityMode.h"
+#include "ramses-client-api/ERotationConvention.h"
 
 namespace ramses
 {
@@ -134,7 +135,15 @@ namespace ramses
         status_t getInverseModelMatrix(float(&inverseModelMatrix)[16]) const;
 
         /**
-        * @brief Rotates in all three directions with the given values.
+        * @brief Rotates in all three directions with the given values without affecting
+        *        the currently set rotation convention.
+        *
+        *        This function can be used only if #ramses::Node::setRotation(float,float,float) is used to set
+        *        node rotation, which implicitly uses left-handed Euler ZYX rotation convention, otherwise it will fail.
+        *
+        * @deprecated This function is deprecated and will be removed in one of the next
+        *             major releases. It is encouraged if possible to already migrate to using
+        *             #ramses::Node::setRotation(float,float,float,ERotationConvention) and #ramses::Node::getRotation(float&,float&,float&,ERotationConvention&)const.
         *
         * @param[in] x Value in degrees which is added to the current rotation around x-axis
         * @param[in] y Value in degrees which is added to the current rotation around y-axis
@@ -145,18 +154,50 @@ namespace ramses
         status_t rotate(float x, float y, float z);
 
         /**
-        * @brief Sets the absolute rotation in all three directions.
+        * @brief Sets the absolute rotation in all three directions for left-handed rotation
+        *        using Euler ZYX rotation convention. If this function is used to set, then only
+        *        #ramses::Node::getRotation(float&,float&,float&)const can be used to get node rotation, which
+        *        implicitly uses left-handed Euler ZYX rotation convention.
         *
-        * @param[in] x The value in degrees for the current rotation around x-axis.
-        * @param[in] y The value in degrees for the current rotation around y-axis.
-        * @param[in] z The value in degrees for the current rotation around z-axis.
+        * @deprecated This function is deprecated and will be removed in one of the next
+        *             major releases. It is encouraged if possible to already migrate to using
+        *             #ramses::Node::setRotation(float,float,float,ERotationConvention) and #ramses::Node::getRotation(float&,float&,float&,ERotationConvention&)const.
+        *
+        * @param[in] x The value in degrees for the rotation around x-axis.
+        * @param[in] y The value in degrees for the rotation around y-axis.
+        * @param[in] z The value in degrees for the rotation around z-axis.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
         status_t setRotation(float x, float y, float z);
 
         /**
-        * @brief Retrieves the absolute rotation.
+        * @brief Sets the absolute rotation in all three directions for right-handed rotation using the chosen Euler
+        *        angles rotation convention. If this function is used to set, then only
+        *        #ramses::Node::getRotation(float&,float&,float&,ERotationConvention&)const can be used to get node rotation.
+        *
+        * @param[in] x The value in degrees for the rotation around x-axis in case of Tait-Bryan conventions, for Proper Euler conventions specifies
+                       the rotation angle for the first angle in the convention name.
+        * @param[in] y The value in degrees for the rotation around y-axis in case of Tait-Bryan conventions, for Proper Euler conventions specifies
+                       the rotation angle for the second angle in the convention name.
+        * @param[in] z The value in degrees for the rotation around z-axis in case of Tait-Bryan conventions, for Proper Euler conventions specifies
+                       the rotation angle for the third angle in the convention name.
+        * @param[in] rotationConvention The rotation convention to use for calculation of rotation matrix.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setRotation(float x, float y, float z, ERotationConvention rotationConvention);
+
+        /**
+        * @brief Retrieves the absolute rotation for left-handed rotation using
+        *        Euler ZYX rotation convention.
+        *
+        *        This function can be used only if #ramses::Node::setRotation(float,float,float) is used to set
+        *        node rotation, which implicitly uses left-handed Euler ZYX rotation convention, otherwise it will fail.
+        *
+        * @deprecated This function is deprecated and will be removed in one of the next
+        *             major releases. It is encouraged if possible to already migrate to using
+        *             #ramses::Node::setRotation(float,float,float,ERotationConvention) and #ramses::Node::getRotation(float&,float&,float&,ERotationConvention&)const.
         *
         * @param[out] x Current value in degrees on x-axis.
         * @param[out] y Current value in degrees on y-axis.
@@ -165,6 +206,23 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t getRotation(float& x, float& y, float& z) const;
+
+        /**
+        * @brief Retrieves the absolute rotation for right-handed rotation in all three directions and the used Euler
+        *        angles rotation convention. This function can be used only
+        *        if #ramses::Node::setRotation(float,float,float,ERotationConvention) is used to set node rotation.
+        *
+        * @param[out] x Current value in degrees for rotation around x-axis in case of Tait-Bryan conventions, in case of Proper Euler conventions gets
+                       the rotation angle for the first angle in the convention name.
+        * @param[out] y Current value in degrees for rotation around y-axis in case of Tait-Bryan conventions, in case of Proper Euler conventions gets
+                       the rotation angle for the second angle in the convention name.
+        * @param[out] z Current value in degrees for rotation around z-axis in case of Tait-Bryan conventions, in case of Proper Euler conventions gets
+                       the rotation angle for the third angle in the convention name.
+        * @param[out] rotationConvention The rotation convention to use for calculation of rotation matrix.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t getRotation(float& x, float& y, float& z, ERotationConvention& rotationConvention) const;
 
         /**
         * @brief Translates in all three directions with the given values.

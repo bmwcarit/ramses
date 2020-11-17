@@ -561,7 +561,7 @@ namespace ramses
     const EDataType& SplineImpl::getSplineKeyValue(const ramses_internal::SplineBase* spline, ramses_internal::SplineKeyIndex keyIndex)
     {
         typedef ramses_internal::SplineKey<EDataType> SplineKeyType;
-        typedef ramses_internal::Spline<ramses_internal::SplineKey, EDataType> SplineType;
+        using SplineType = ramses_internal::Spline<ramses_internal::SplineKey, EDataType>;
 
         assert(spline != nullptr);
         assert(spline->getKeyType() == ramses_internal::ESplineKeyType_Basic);
@@ -575,8 +575,8 @@ namespace ramses
     template <typename EDataType>
     const EDataType& SplineImpl::getSplineKeyTangentsValue(const ramses_internal::SplineBase* spline, ramses_internal::SplineKeyIndex keyIndex, float& tanInX, float& tanInY, float& tanOutX, float& tanOutY)
     {
-        typedef ramses_internal::SplineKeyTangents<EDataType> SplineKeyType;
-        typedef ramses_internal::Spline<ramses_internal::SplineKeyTangents, EDataType> SplineType;
+        using SplineKeyType = ramses_internal::SplineKeyTangents<EDataType>;
+        using SplineType = ramses_internal::Spline<ramses_internal::SplineKeyTangents, EDataType>;
 
         assert(spline != nullptr);
         assert(spline->getKeyType() == ramses_internal::ESplineKeyType_Tangents);

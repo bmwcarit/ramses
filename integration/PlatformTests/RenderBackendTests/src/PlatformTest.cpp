@@ -13,7 +13,7 @@
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/ISurface.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
-#include "Platform_Base/PlatformFactory_Base.h"
+#include "Platform_Base/Platform_Base.h"
 
 namespace ramses_internal
 {
@@ -33,13 +33,13 @@ namespace ramses_internal
     public:
         APlatform()
         {
-            platformFactory = PlatformFactory_Base::CreatePlatformFactory(rendererConfig);
-            assert(nullptr != platformFactory);
+            platform = Platform_Base::CreatePlatform(rendererConfig);
+            assert(nullptr != platform);
         }
 
         ~APlatform()
         {
-            delete platformFactory;
+            delete platform;
         }
 
     protected:
@@ -61,12 +61,12 @@ namespace ramses_internal
             // Needed because of compositor - if surface is not turned visible, some of the EGL calls block
             displayConfig.setStartVisibleIvi(true);
 
-            return platformFactory->createRenderBackend(displayConfig, eventHandlerMock);
+            return platform->createRenderBackend(displayConfig, eventHandlerMock);
 
         }
 
         RendererConfig rendererConfig;
-        IPlatformFactory* platformFactory = nullptr;
+        IPlatform* platform = nullptr;
         StrictMock<WindowEventHandlerMock>  eventHandlerMock;
 
     };
@@ -75,7 +75,7 @@ namespace ramses_internal
     {
         IRenderBackend* renderBackend = createRenderBackend();
         ASSERT_NE(nullptr, renderBackend);
-        platformFactory->destroyRenderBackend(*renderBackend);
+        platform->destroyRenderBackend(*renderBackend);
     }
 
     TEST_F(APlatform, CanCreateMultipleRenderBackends)
@@ -86,8 +86,8 @@ namespace ramses_internal
         IRenderBackend* secondRenderBackend = createRenderBackend(false, true);
         ASSERT_NE(nullptr, secondRenderBackend);
 
-        platformFactory->destroyRenderBackend(*renderBackend);
-        platformFactory->destroyRenderBackend(*secondRenderBackend);
+        platform->destroyRenderBackend(*renderBackend);
+        platform->destroyRenderBackend(*secondRenderBackend);
     }
 
     // TODO Violin This does not work on systems which don't have support for multisampling... Needs to be filtered properly
@@ -95,7 +95,7 @@ namespace ramses_internal
     {
         IRenderBackend* renderBackend = createRenderBackend(true);
         ASSERT_NE(nullptr, renderBackend);
-        platformFactory->destroyRenderBackend(*renderBackend);
+        platform->destroyRenderBackend(*renderBackend);
     }
 
     TEST_F(APlatform, CanRecreatePlatformFactories)
@@ -103,12 +103,12 @@ namespace ramses_internal
         {
             IRenderBackend* renderBackend = createRenderBackend();
             ASSERT_NE(nullptr, renderBackend);
-            platformFactory->destroyRenderBackend(*renderBackend);
+            platform->destroyRenderBackend(*renderBackend);
         }
         {
             IRenderBackend* renderBackend = createRenderBackend();
             ASSERT_NE(nullptr, renderBackend);
-            platformFactory->destroyRenderBackend(*renderBackend);
+            platform->destroyRenderBackend(*renderBackend);
         }
     }
 
@@ -121,7 +121,7 @@ namespace ramses_internal
         EXPECT_TRUE(renderBackend->getSurface().enable());
         EXPECT_TRUE(renderBackend->getSurface().enable());
 
-        platformFactory->destroyRenderBackend(*renderBackend);
+        platform->destroyRenderBackend(*renderBackend);
     }
 
     TEST_F(APlatform, CanBeDisabled)
@@ -131,7 +131,7 @@ namespace ramses_internal
 
         EXPECT_TRUE(renderBackend->getSurface().disable());
 
-        platformFactory->destroyRenderBackend(*renderBackend);
+        platform->destroyRenderBackend(*renderBackend);
     }
 
     TEST_F(APlatform, Confidence_CanBeEnabledAndDisabledMultipleTimes)
@@ -144,6 +144,6 @@ namespace ramses_internal
         EXPECT_TRUE(renderBackend->getSurface().disable());
         EXPECT_TRUE(renderBackend->getSurface().enable());
 
-        platformFactory->destroyRenderBackend(*renderBackend);
+        platform->destroyRenderBackend(*renderBackend);
     }
 }

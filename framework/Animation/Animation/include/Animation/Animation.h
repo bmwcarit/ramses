@@ -18,7 +18,7 @@ namespace ramses_internal
     class Animation
     {
     public:
-        typedef UInt32 Flags;
+        using Flags = UInt32;
         enum EAnimationFlags : uint32_t
         {
             EAnimationFlags_Looping            = BIT(0u), ///< Enable looping, must set also m_loopDuration to non-zero value

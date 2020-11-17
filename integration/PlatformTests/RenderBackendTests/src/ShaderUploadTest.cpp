@@ -24,7 +24,7 @@
 #include "Resource/ResourceTypes.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "Platform_Base/Device_Base.h"
-#include "Platform_Base/PlatformFactory_Base.h"
+#include "Platform_Base/Platform_Base.h"
 #include <memory>
 
 using namespace testing;
@@ -71,28 +71,28 @@ namespace ramses_internal
             );
 
             EffectInputInformationVector uniformInputs;
-            uniformInputs.push_back(EffectInputInformation("u_float", 1, EDataType::Float, EFixedSemantics_Count));
-            uniformInputs.push_back(EffectInputInformation("u_vec2", 1, EDataType::Vector2F, EFixedSemantics_Count));
+            uniformInputs.push_back(EffectInputInformation("u_float", 1, EDataType::Float, EFixedSemantics::Invalid));
+            uniformInputs.push_back(EffectInputInformation("u_vec2", 1, EDataType::Vector2F, EFixedSemantics::Invalid));
 
             EffectInputInformationVector attributeInputs;
-            attributeInputs.push_back(EffectInputInformation("a_position", 1, EDataType::Vector3F, EFixedSemantics_Count));
+            attributeInputs.push_back(EffectInputInformation("a_position", 1, EDataType::Vector3F, EFixedSemantics::Invalid));
 
             return new EffectResource(vertexShader, fragmentShader, "", uniformInputs, attributeInputs, "test effect", ResourceCacheFlag_DoNotCache);
         }
 
         static void SetUpTestCase()
         {
-            assert(nullptr == platformFactory);
+            assert(nullptr == platform);
 
             ramses::RendererConfig rendererConfig = RendererTestUtils::CreateTestRendererConfig();
-            platformFactory = ramses_internal::PlatformFactory_Base::CreatePlatformFactory(rendererConfig.impl.getInternalRendererConfig());
-            assert(nullptr != platformFactory);
+            platform = ramses_internal::Platform_Base::CreatePlatform(rendererConfig.impl.getInternalRendererConfig());
+            assert(nullptr != platform);
 
             eventHandler = new NiceMock<WindowEventHandlerMock>();
 
             ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0);
             displayConfig.setWindowRectangle(0, 0, 16u, 16u);
-            renderBackend = platformFactory->createRenderBackend(displayConfig.impl.getInternalDisplayConfig(), *eventHandler);
+            renderBackend = platform->createRenderBackend(displayConfig.impl.getInternalDisplayConfig(), *eventHandler);
             assert(nullptr != renderBackend);
 
             testDevice = &renderBackend->getDevice();
@@ -102,27 +102,27 @@ namespace ramses_internal
         {
             testDevice = nullptr;
 
-            platformFactory->destroyRenderBackend(*renderBackend);
+            platform->destroyRenderBackend(*renderBackend);
             renderBackend = nullptr;
 
-            delete platformFactory;
-            platformFactory = nullptr;
+            delete platform;
+            platform = nullptr;
 
             delete eventHandler;
             eventHandler = nullptr;
         }
 
     protected:
-        static IDevice*                         testDevice;
+        static IDevice*                             testDevice;
 
     private:
-        static IPlatformFactory*                    platformFactory;
+        static IPlatform*                           platform;
         static IRenderBackend*                      renderBackend;
         static NiceMock<WindowEventHandlerMock>*    eventHandler;
     };
 
     IDevice*                            ADevice::testDevice         = nullptr;
-    IPlatformFactory*                   ADevice::platformFactory    = nullptr;
+    IPlatform*                          ADevice::platform           = nullptr;
     IRenderBackend*                     ADevice::renderBackend      = nullptr;
     NiceMock<WindowEventHandlerMock>*   ADevice::eventHandler       = nullptr;
 
@@ -185,12 +185,12 @@ namespace ramses_internal
                 }
                 )SHADER");
             EffectInputInformationVector uniformInputs;
-            uniformInputs.push_back(EffectInputInformation("u_float", 1, EDataType::Float, EFixedSemantics_Count));
-            uniformInputs.push_back(EffectInputInformation("u_vec2", 1, EDataType::Vector2F, EFixedSemantics_Count));
-            uniformInputs.push_back(EffectInputInformation("u_geomFloat", 1, EDataType::Float, EFixedSemantics_Count));
+            uniformInputs.push_back(EffectInputInformation("u_float", 1, EDataType::Float, EFixedSemantics::Invalid));
+            uniformInputs.push_back(EffectInputInformation("u_vec2", 1, EDataType::Vector2F, EFixedSemantics::Invalid));
+            uniformInputs.push_back(EffectInputInformation("u_geomFloat", 1, EDataType::Float, EFixedSemantics::Invalid));
 
             EffectInputInformationVector attributeInputs;
-            attributeInputs.push_back(EffectInputInformation("a_position", 1, EDataType::Vector3F, EFixedSemantics_Count));
+            attributeInputs.push_back(EffectInputInformation("a_position", 1, EDataType::Vector3F, EFixedSemantics::Invalid));
 
             return new EffectResource(vertexShader, fragmentShader, geometryShader, uniformInputs, attributeInputs, "test effect", ResourceCacheFlag_DoNotCache);
         }
@@ -290,20 +290,20 @@ namespace ramses_internal
             "}                                                                \n"
             );
         EffectInputInformationVector uniformInputs;
-        uniformInputs.push_back(EffectInputInformation("u_int", 1, EDataType::Int32, EFixedSemantics_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_float", 1, EDataType::Float, EFixedSemantics_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_int", 1, EDataType::Int32, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_float", 1, EDataType::Float, EFixedSemantics::Invalid));
 
-        uniformInputs.push_back(EffectInputInformation("u_vec2", 1, EDataType::Vector2F, EFixedSemantics_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_vec3", 1, EDataType::Vector3F, EFixedSemantics_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_vec4", 1, EDataType::Vector4F, EFixedSemantics_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_vec2", 1, EDataType::Vector2F, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_vec3", 1, EDataType::Vector3F, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_vec4", 1, EDataType::Vector4F, EFixedSemantics::Invalid));
 
-        uniformInputs.push_back(EffectInputInformation("u_ivec2", 1, EDataType::Vector2I, EFixedSemantics_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_ivec3", 1, EDataType::Vector3I, EFixedSemantics_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_ivec4", 1, EDataType::Vector4I, EFixedSemantics_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_ivec2", 1, EDataType::Vector2I, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_ivec3", 1, EDataType::Vector3I, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_ivec4", 1, EDataType::Vector4I, EFixedSemantics::Invalid));
 
-        uniformInputs.push_back(EffectInputInformation("u_mat2", 1, EDataType::Matrix22F, EFixedSemantics_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_mat3", 1, EDataType::Matrix33F, EFixedSemantics_Invalid));
-        uniformInputs.push_back(EffectInputInformation("u_mat4", 1, EDataType::Matrix44F, EFixedSemantics_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_mat2", 1, EDataType::Matrix22F, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_mat3", 1, EDataType::Matrix33F, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_mat4", 1, EDataType::Matrix44F, EFixedSemantics::Invalid));
 
         const EffectResource testEffect(
             templateEffect->getVertexShader(),
@@ -364,7 +364,7 @@ namespace ramses_internal
         const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
 
         EffectInputInformationVector uniformInputs = templateEffect->getUniformInputs();
-        uniformInputs.push_back(EffectInputInformation("u_NonExistingFloat", 1, EDataType::Float, EFixedSemantics_Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_NonExistingFloat", 1, EDataType::Float, EFixedSemantics::Invalid));
 
         const EffectResource testEffect(
             templateEffect->getVertexShader(),

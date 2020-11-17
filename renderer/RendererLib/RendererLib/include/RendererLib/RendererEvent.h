@@ -15,11 +15,11 @@
 #include "SceneAPI/RendererSceneState.h"
 #include "SceneAPI/DataSlot.h"
 #include "SceneAPI/SceneVersionTag.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "RendererLib/EMouseEventType.h"
 #include "RendererLib/EKeyEventType.h"
 #include "RendererLib/EKeyCode.h"
 #include "RendererLib/DisplayConfig.h"
-#include "RendererLib/EResourceStatus.h"
 #include "Math3d/Vector2i.h"
 #include "Utils/LoggingUtils.h"
 #include <chrono>
@@ -198,7 +198,7 @@ namespace ramses_internal
 
         ERendererEventType          eventType;
         SceneId                     sceneId;
-        RendererSceneState          state;
+        RendererSceneState          state = RendererSceneState::Unavailable;
         DisplayHandle               displayHandle;
         DisplayConfig               displayConfig;
         UInt8Vector                 pixelData;
@@ -207,13 +207,13 @@ namespace ramses_internal
         DataSlotId                  providerdataId;
         DataSlotId                  consumerdataId;
         OffscreenBufferHandle       offscreenBuffer;
+        StreamBufferHandle          streamBuffer;
         SceneVersionTag             sceneVersionTag;
-        EResourceStatus             resourceStatus = EResourceStatus_Unknown;
         MouseEvent                  mouseEvent;
         ResizeEvent                 resizeEvent;
         KeyEvent                    keyEvent;
         WindowMoveEvent             moveEvent;
-        StreamTextureSourceId       streamSourceId;
+        WaylandIviSurfaceId         streamSourceId;
         PickableObjectIds           pickedObjectIds;
         RenderThreadPeriodicLoopTimes renderThreadLoopTimes;
     };

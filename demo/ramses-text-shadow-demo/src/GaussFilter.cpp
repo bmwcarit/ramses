@@ -62,7 +62,7 @@ GaussFilter::GaussFilter(ramses::RenderBuffer& inputBuffer,
         effectDesc.setVertexShaderFromFile("res/ramses-text-shadow-demo-gauss-filter-v.vert");
         effectDesc.setFragmentShaderFromFile("res/ramses-text-shadow-demo-gauss-filter-v.frag");
     }
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     m_effect     = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
     m_appearance = scene.createAppearance(*m_effect);

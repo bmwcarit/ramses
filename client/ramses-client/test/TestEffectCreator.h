@@ -44,7 +44,7 @@ namespace ramses
         static Effect* createEffect(Scene& scene, bool withSemantics)
         {
             ramses_internal::String VertexShader(
-                "#version 300 es\n"
+                "#version 310 es\n"
                 "uniform lowp float floatInput;\n"
                 "uniform lowp float floatInputArray[3];\n"
 
@@ -93,15 +93,16 @@ namespace ramses
                 "}\n");
 
             ramses_internal::String FragmentShader(
-                "#version 300 es\n"
+                "#version 310 es\n"
                 "precision mediump float;\n"
                 "uniform sampler2D texture2dInput;\n"
+                "uniform lowp sampler2DMS texture2dMSInput;\n"
                 "uniform lowp sampler3D texture3dInput;\n"
                 "uniform samplerCube textureCubeInput;\n"
                 "out vec4 FragColor;"
                 "void main(void)\n"
                 "{\n"
-                "    FragColor = vec4(1.0) + texture(texture2dInput, vec2(0,0)) + texture(texture3dInput, vec3(0, 0, 0)) + texture(textureCubeInput, vec3(0,0,0));\n"
+                "    FragColor = vec4(1.0) + texture(texture2dInput, vec2(0,0)) + texelFetch(texture2dMSInput, ivec2(0,0), 0) + texture(texture3dInput, vec3(0, 0, 0)) + texture(textureCubeInput, vec3(0,0,0));\n"
                 "}\n");
 
             ramses::EffectDescription effectDesc;
@@ -110,9 +111,9 @@ namespace ramses
 
             if (withSemantics)
             {
-                effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic_TextPositions);
-                effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic_ModelViewMatrix);
-                effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
+                effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic::TextPositions);
+                effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic::ModelViewMatrix);
+                effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic::TextTexture);
             }
 
             return scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "input test effect");

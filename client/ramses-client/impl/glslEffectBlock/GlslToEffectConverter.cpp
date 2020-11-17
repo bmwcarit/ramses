@@ -262,7 +262,10 @@ namespace ramses_internal
             switch (type.getSampler().dim)
             {
             case glslang::Esd2D:
-                input.dataType = EDataType::TextureSampler2D;
+                if (type.getSampler().isMultiSample())
+                    input.dataType = EDataType::TextureSampler2DMS;
+                else
+                    input.dataType = EDataType::TextureSampler2D;
                 return true;
             case glslang::Esd3D:
                 input.dataType = EDataType::TextureSampler3D;
@@ -374,7 +377,7 @@ namespace ramses_internal
         {
             if (!IsSemanticCompatibleWithDataType(*semantic, input.dataType))
             {
-                m_message << input.inputName << ": input type " << EnumToString(input.dataType) << " not compatible with semantic " << EnumToString(*semantic);
+                m_message << input.inputName << ": input type " << EnumToString(input.dataType) << " not compatible with semantic " << *semantic;
                 return false;
             }
             input.semantics = *semantic;

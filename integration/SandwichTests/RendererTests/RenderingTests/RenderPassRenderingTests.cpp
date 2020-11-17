@@ -17,7 +17,6 @@ void RenderPassRenderingTests::setUpTestCases(RendererTestsFramework& testFramew
     testFramework.createTestCaseWithDefaultDisplay(RenderPassTest_RenderOnce, *this, "RenderPassTest_RenderOnce");
     testFramework.createTestCaseWithDefaultDisplay(RenderPassTest_RetriggerRenderOnce, *this, "RenderPassTest_RetriggerRenderOnce");
     testFramework.createTestCaseWithDefaultDisplay(RenderPassTest_RemapSceneWithRenderOnce, *this, "RenderPassTest_RemapSceneWithRenderOnce");
-    testFramework.createTestCaseWithDefaultDisplay(RenderPassTest_ResubscribeSceneWithRenderOnce, *this, "RenderPassTest_ResubscribeSceneWithRenderOnce");
 }
 
 bool RenderPassRenderingTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)
@@ -30,8 +29,6 @@ bool RenderPassRenderingTests::run(RendererTestsFramework& testFramework, const 
         return runRetriggerRenderOnceTest(testFramework);
     case RenderPassTest_RemapSceneWithRenderOnce:
         return runRemapSceneWithRenderOnceTest(testFramework);
-    case RenderPassTest_ResubscribeSceneWithRenderOnce:
-        return runResubscribeSceneWithRenderOnceTest(testFramework);
     default:
         assert(!"Invalid renderer test ID!");
         return false;
@@ -103,26 +100,6 @@ bool RenderPassRenderingTests::runRemapSceneWithRenderOnceTest(RendererTestsFram
     }
 
     testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Available);
-    if (!testFramework.renderAndCompareScreenshot("OffscreenBufferLinkTest_Black"))
-    {
-        return false;
-    }
-
-    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
-
-    return testFramework.renderAndCompareScreenshot("RenderPassOnce_Initial");
-}
-
-bool RenderPassRenderingTests::runResubscribeSceneWithRenderOnceTest(RendererTestsFramework& testFramework)
-{
-    const ramses::sceneId_t sceneId = createAndSetupInitialRenderOnceScene(testFramework);
-
-    if (!testFramework.renderAndCompareScreenshot("RenderPassOnce_Initial"))
-    {
-        return false;
-    }
-
-    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Unavailable);
     if (!testFramework.renderAndCompareScreenshot("OffscreenBufferLinkTest_Black"))
     {
         return false;

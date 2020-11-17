@@ -23,10 +23,10 @@ namespace ramses_internal
         m_creator.preallocateSceneSize(sizeInfo);
     }
 
-    void ActionCollectingScene::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor)
+    void ActionCollectingScene::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride)
     {
-        ResourceChangeCollectingScene::setDataResource(containerHandle, field, hash, dataBuffer, instancingDivisor);
-        m_creator.setDataResource(containerHandle, field, hash, dataBuffer, instancingDivisor);
+        ResourceChangeCollectingScene::setDataResource(containerHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
+        m_creator.setDataResource(containerHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
     }
 
     void ActionCollectingScene::setDataTextureSamplerHandle(DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle)
@@ -138,19 +138,19 @@ namespace ramses_internal
     void ActionCollectingScene::setScaling(TransformHandle handle, const Vector3& scaling)
     {
         ResourceChangeCollectingScene::setScaling(handle, scaling);
-        m_creator.setTransformComponent(ETransformPropertyType_Scaling, handle, scaling);
+        m_creator.setTransformComponent(ETransformPropertyType_Scaling, handle, scaling, {});
     }
 
-    void ActionCollectingScene::setRotation(TransformHandle handle, const Vector3& rotation)
+    void ActionCollectingScene::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
     {
-        ResourceChangeCollectingScene::setRotation(handle, rotation);
-        m_creator.setTransformComponent(ETransformPropertyType_Rotation, handle, rotation);
+        ResourceChangeCollectingScene::setRotation(handle, rotation, convention);
+        m_creator.setTransformComponent(ETransformPropertyType_Rotation, handle, rotation, convention);
     }
 
     void ActionCollectingScene::setTranslation(TransformHandle handle, const Vector3& translation)
     {
         ResourceChangeCollectingScene::setTranslation(handle, translation);
-        m_creator.setTransformComponent(ETransformPropertyType_Translation, handle, translation);
+        m_creator.setTransformComponent(ETransformPropertyType_Translation, handle, translation, {});
     }
 
     void ActionCollectingScene::removeChildFromNode(NodeHandle parent, NodeHandle child)
@@ -629,7 +629,7 @@ namespace ramses_internal
         m_creator.setRenderPassClearFlag(pass, clearFlag);
     }
 
-    StreamTextureHandle ActionCollectingScene::allocateStreamTexture(uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle /*= StreamTextureHandle::Invalid()*/)
+    StreamTextureHandle ActionCollectingScene::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle /*= StreamTextureHandle::Invalid()*/)
     {
         const StreamTextureHandle handleActual = ResourceChangeCollectingScene::allocateStreamTexture(streamSource, fallbackTextureHash, streamTextureHandle);
         m_creator.allocateStreamTexture(streamSource, fallbackTextureHash, handleActual);

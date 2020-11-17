@@ -36,7 +36,7 @@ namespace ramses
         }
 
     protected:
-        AnimationSequence* createAnimationSequence(Animation** animation = nullptr, Node** animatedNode = nullptr)
+        AnimationSequence* createAnimationSequence(Animation** animation = nullptr, Node** animatedNode = nullptr, EAnimatedProperty propertyToAnimate  = EAnimatedProperty_Translation)
         {
             SplineLinearVector3f* spline = animationSystem.createSplineLinearVector3f("spline");
             EXPECT_FALSE(spline == nullptr);
@@ -47,8 +47,9 @@ namespace ramses
             Node* node = m_scene.createNode("node");
             EXPECT_FALSE(node == nullptr);
             node->setTranslation(1.0f, 1.0f, 1.0f);
+            node->setRotation(1.f, 2.f, 3.f);
 
-            AnimatedProperty* prop = animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation, EAnimatedPropertyComponent_All);
+            AnimatedProperty* prop = animationSystem.createAnimatedProperty(*node, propertyToAnimate, EAnimatedPropertyComponent_All);
             EXPECT_FALSE(prop == nullptr);
 
             Animation* anim = animationSystem.createAnimation(*prop, *spline, "anim");
@@ -142,6 +143,29 @@ namespace ramses
         EXPECT_TRUE(anim == nullptr);
     }
 
+    TEST_F(AnimationSystemTest, createAnimationPropertyToRotateNonLegacyRotationFails)
+    {
+        Node* node = this->m_scene.createNode("node");
+        EXPECT_FALSE(node == nullptr);
+        node->setRotation(1.f, 2.f, 3.f, ramses::ERotationConvention::XYX);
+
+        AnimatedProperty* prop = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Rotation);
+        EXPECT_TRUE(prop == nullptr);
+    }
+
+    TEST_F(AnimationSystemTest, createAnimationPropertyToTranslateOrScaleNonLegacyRotationSucceeds)
+    {
+        Node* node = this->m_scene.createNode("node");
+        EXPECT_FALSE(node == nullptr);
+        node->setRotation(1.f, 2.f, 3.f, ramses::ERotationConvention::XYX);
+
+        AnimatedProperty* prop1 = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Translation);
+        EXPECT_FALSE(prop1 == nullptr);
+
+        AnimatedProperty* prop2 = this->animationSystem.createAnimatedProperty(*node, EAnimatedProperty_Scaling);
+        EXPECT_FALSE(prop2 == nullptr);
+    }
+
     TEST_F(AnimationSystemTest, createAnimationWithSplineAndPropertyComponentMismatchFails)
     {
         SplineLinearVector3f* spline = this->animationSystem.createSplineLinearVector3f("spline");
@@ -198,6 +222,22 @@ namespace ramses
         EXPECT_EQ(StatusOK, animationSystem.validate());
     }
 
+    TEST_F(AnimationSystemTest, canValidate_SucceedsIfTranslatingOrScalingNodeWithNonLegacyRotation)
+    {
+        Animation* animation = nullptr;
+        Node* node = nullptr;
+
+        //translation
+        createAnimationSequence(&animation, &node, EAnimatedProperty_Translation);
+        node->setRotation(1.f, 2.f, 3.f, ramses::ERotationConvention::XYX);
+        EXPECT_EQ(StatusOK, animationSystem.validate());
+
+        //scaling
+        createAnimationSequence(&animation, &node, EAnimatedProperty_Scaling);
+        node->setRotation(1.f, 2.f, 3.f, ramses::ERotationConvention::XYX);
+        EXPECT_EQ(StatusOK, animationSystem.validate());
+    }
+
     TEST_F(AnimationSystemTest, validationReportsContainsObjectCounts)
     {
         // 1 sequence
@@ -243,6 +283,34 @@ namespace ramses
         EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimationSequence instances: 1") >= 0);
         EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimatedProperty instances: 1") >= 0);
         EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_SplineLinearVector3f instances: 1") >= 0);
+    }
+
+    TEST_F(AnimationSystemTest, failsToValidateIfDataBindingIsNotValid)
+    {
+        Animation* animation = nullptr;
+        Node* node = nullptr;
+        createAnimationSequence(&animation, &node, EAnimatedProperty_Rotation);
+        this->getScene().destroy(*node);
+
+        EXPECT_NE(StatusOK, animationSystem.validate());
+
+        const ramses_internal::String validationReport = animationSystem.getValidationReport();
+        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimationSequence instances: 1") >= 0);
+        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimatedProperty instances: 1") >= 0);
+        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_SplineLinearVector3f instances: 1") >= 0);
+    }
+
+    TEST_F(AnimationSystemTest, failsToValidateIfNodeRotatesUsingNonLegacyConvention)
+    {
+        Animation* animation = nullptr;
+        Node* node = nullptr;
+        createAnimationSequence(&animation, &node, EAnimatedProperty_Rotation);
+        node->setRotation(1.f, 2.f, 3.f, ramses::ERotationConvention::XYX);
+
+        EXPECT_NE(StatusOK, animationSystem.validate());
+
+        const ramses_internal::String validationReport = animationSystem.getValidationReport();
+        EXPECT_TRUE(validationReport.find("trying to animate rotation for node that does not use legacy rotation convention") >= 0);
     }
 
     TEST_F(AnimationSystemTestClientSideProcessing, createAnimationSystemWithClientSideProcessingAndCheckInterpolationResults)

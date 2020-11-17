@@ -10,6 +10,7 @@
 #define RAMSES_RENDERERSTATISTICS_H
 
 #include "SceneAPI/SceneId.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "RendererAPI/Types.h"
 #include "Utils/StatisticCollection.h"
 #include "PlatformAbstraction/PlatformTime.h"
@@ -27,7 +28,7 @@ namespace ramses_internal
         UInt32 getDrawCallsPerFrame() const;
 
         void sceneRendered(SceneId sceneId);
-        void trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedClientResources, UInt numRemovedClientResources, UInt numSceneResourceActions, std::chrono::milliseconds latency);
+        void trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedResources, UInt numRemovedResources, UInt numSceneResourceActions, std::chrono::milliseconds latency);
         void flushApplied(SceneId sceneId);
         void flushBlocked(SceneId sceneId);
 
@@ -35,14 +36,14 @@ namespace ramses_internal
         void offscreenBufferInterrupted(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer);
         void framebufferSwapped(DisplayHandle display);
 
-        void clientResourceUploaded(UInt byteSize);
+        void resourceUploaded(UInt byteSize);
         void sceneResourceUploaded(SceneId sceneId, UInt byteSize);
-        void streamTextureUpdated(StreamTextureSourceId sourceId, UInt numUpdates);
+        void streamTextureUpdated(WaylandIviSurfaceId sourceId, UInt numUpdates);
         void shaderCompiled(std::chrono::microseconds microsecondsUsed, const String& name, SceneId sceneid);
 
         void untrackScene(SceneId sceneId);
         void untrackOffscreenBuffer(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer);
-        void untrackStreamTexture(StreamTextureSourceId sourceId);
+        void untrackStreamTexture(WaylandIviSurfaceId sourceId);
 
         void frameFinished(UInt32 drawCalls);
         void reset();
@@ -56,8 +57,8 @@ namespace ramses_internal
         UInt64 m_lastFrameTick = 0u;
         UInt32 m_frameDurationMin = std::numeric_limits<UInt32>::max();
         UInt32 m_frameDurationMax = 0u;
-        UInt m_clientResourcesUploaded = 0u;
-        UInt m_clientResourcesBytesUploaded = 0u;
+        UInt m_resourcesUploaded = 0u;
+        UInt m_resourcesBytesUploaded = 0u;
         UInt m_shadersCompiled = 0u;
         UInt64 m_microsecondsForShaderCompilation = 0u;
         String m_maximumDurationShaderName;
@@ -79,8 +80,8 @@ namespace ramses_internal
             Int32 lastFrameFlushBlocked = std::numeric_limits<Int32>::min();
 
             SummaryEntry<UInt> numSceneActionsPerFlush;
-            SummaryEntry<UInt> numClientResourcesAddedPerFlush;
-            SummaryEntry<UInt> numClientResourcesRemovedPerFlush;
+            SummaryEntry<UInt> numResourcesAddedPerFlush;
+            SummaryEntry<UInt> numResourcesRemovedPerFlush;
             SummaryEntry<UInt> numSceneResourceActionsPerFlush;
             SummaryEntry<int64_t> flushLatency;
 
@@ -124,7 +125,7 @@ namespace ramses_internal
         // using map so that items are logged ordered
         std::map< SceneId, SceneStatistics, StronglyTypedValueComparator<SceneId> > m_sceneStatistics;
         std::map< DisplayHandle, DisplayStatistics > m_displayStatistics;
-        std::map< StreamTextureSourceId, StreamTextureStatistics, StronglyTypedValueComparator<StreamTextureSourceId> > m_streamTextureStatistics;
+        std::map< WaylandIviSurfaceId, StreamTextureStatistics, StronglyTypedValueComparator<WaylandIviSurfaceId> > m_streamTextureStatistics;
     };
 }
 

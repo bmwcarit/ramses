@@ -42,11 +42,11 @@ namespace ramses_internal
             scene.allocateTransform(childChild2, t2);
 
             scene.setTranslation(t1, t1Translation);
-            scene.setRotation   (t1, t1Rotation   );
+            scene.setRotation   (t1, t1Rotation   , ERotationConvention::ZYZ);
             scene.setScaling    (t1, t1Scaling    );
 
             scene.setTranslation(t2, t2Translation);
-            scene.setRotation   (t2, t2Rotation   );
+            scene.setRotation   (t2, t2Rotation   , ERotationConvention::XYX);
             scene.setScaling    (t2, t2Scaling    );
 
             scene.allocateRenderState(renderState);
@@ -76,7 +76,7 @@ namespace ramses_internal
             DataFieldInfoVector uniformLayoutDataFields{
                 DataFieldInfo(EDataType::Float),
                 DataFieldInfo(EDataType::Vector4F, 2u),
-                DataFieldInfo(EDataType::Matrix33F, 1u, EFixedSemantics_ModelViewMatrix33),
+                DataFieldInfo(EDataType::Matrix33F, 1u, EFixedSemantics::ModelViewMatrix33),
                 DataFieldInfo(EDataType::Matrix44F),
                 DataFieldInfo(EDataType::TextureSampler2D),
                 DataFieldInfo(EDataType::DataReference)
@@ -94,7 +94,7 @@ namespace ramses_internal
             scene.allocateDataInstance(scene.allocateDataLayout({ ramses_internal::DataFieldInfo{ramses_internal::EDataType::Vector2I}, ramses_internal::DataFieldInfo{ramses_internal::EDataType::Vector2I} },
                                                                 ResourceContentHash::Invalid()), cameraDataInstance);
 
-            scene.allocateStreamTexture(87u, ResourceContentHash(234, 0), streamTexture);
+            scene.allocateStreamTexture(streamSource, ResourceContentHash(234, 0), streamTexture);
             scene.setForceFallbackImage(streamTexture, true);
 
             scene.allocateTextureSampler({ samplerStates, textureHash }, samplerWithTextureResource);
@@ -106,22 +106,21 @@ namespace ramses_internal
             scene.setDataSingleFloat(uniformData, DataFieldHandle(0u), 0.5f);
             const Vector4 dataVec4fArray[2] = { Vector4(0.0f, 1.0f, 2.0f, 3.0f), Vector4(4.0f, 5.0f, 6.0f, 7.0f) };
             scene.setDataVector4fArray(uniformData, DataFieldHandle(1), 2, dataVec4fArray);
-            scene.setDataSingleMatrix33f(uniformData, DataFieldHandle(2), Matrix33f::RotationEulerZYX(5.0f, 4.0f, 3.0f));
-            scene.setDataSingleMatrix44f(uniformData, DataFieldHandle(3), Matrix44f::Translation(5.0f, 4.0f, 3.0f));
+            scene.setDataSingleMatrix33f(uniformData, DataFieldHandle(2), Matrix33f::RotationEuler({ 5.0f, 4.0f, 3.0f }, ERotationConvention::Legacy_ZYX));
+            scene.setDataSingleMatrix44f(uniformData, DataFieldHandle(3), Matrix44f::Translation({ 5.0f, 4.0f, 3.0f }));
             scene.setDataTextureSamplerHandle(uniformData, DataFieldHandle(4), samplerWithTextureResource);
 
             scene.setDataReference(uniformData, DataFieldHandle(5), dataRef);
 
             scene.allocateDataInstance(vertexLayout, geometryData);
-            scene.setDataResource(geometryData, DataFieldHandle(0u), indexArrayHash, DataBufferHandle::Invalid(), indexArrayDivisor);
-            scene.setDataResource(geometryData, DataFieldHandle(1u), vertexArrayHash, DataBufferHandle::Invalid(), vertexArrayDivisor);
-            scene.setDataResource(geometryData, DataFieldHandle(2u), ResourceContentHash::Invalid(), vertexDataBuffer, vertexArrayDivisor);
+            scene.setDataResource(geometryData, DataFieldHandle(0u), indexArrayHash, DataBufferHandle::Invalid(), indexArrayDivisor, 0u, 0u);
+            scene.setDataResource(geometryData, DataFieldHandle(1u), vertexArrayHash, DataBufferHandle::Invalid(), vertexArrayDivisor, 111u, 71u);
+            scene.setDataResource(geometryData, DataFieldHandle(2u), ResourceContentHash::Invalid(), vertexDataBuffer, vertexArrayDivisor, 222u, 72u);
 
             scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, uniformData);
             scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Geometry, geometryData);
 
-            scene.allocateCamera(ECameraProjectionType::Renderer, cameraNode, cameraDataInstance, camera);
-            scene.allocateCamera(ECameraProjectionType::Perspective,cameraNode, cameraDataInstance, perspectiveCamera);
+            scene.allocateCamera(ECameraProjectionType::Perspective, cameraNode, cameraDataInstance, camera);
             scene.allocateCamera(ECameraProjectionType::Orthographic, cameraNode, cameraDataInstance, orthographicCamera);
 
             scene.allocateRenderTarget(renderTarget);
@@ -256,11 +255,12 @@ namespace ramses_internal
 
             EXPECT_EQ(t1Translation, otherScene.getTranslation (t1));
             EXPECT_EQ(t1Scaling    , otherScene.getScaling     (t1));
-            EXPECT_EQ(t1Rotation   , otherScene.getRotation    (t1));
+            EXPECT_EQ(ERotationConvention::ZYZ, otherScene.getRotationConvention(t1));
 
             EXPECT_EQ(t2Translation, otherScene.getTranslation (t2));
             EXPECT_EQ(t2Scaling    , otherScene.getScaling     (t2));
             EXPECT_EQ(t2Rotation   , otherScene.getRotation    (t2));
+            EXPECT_EQ(ERotationConvention::XYX, otherScene.getRotationConvention(t2));
         }
 
         template <typename OTHERSCENE>
@@ -342,7 +342,7 @@ namespace ramses_internal
             EXPECT_EQ(1u, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(1)).elementCount);
             EXPECT_EQ(1u, otherScene.getDataLayout(vertexLayout).getField(DataFieldHandle(2)).elementCount);
             // check semantics
-            EXPECT_EQ(EFixedSemantics_ModelViewMatrix33, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(2)).semantics);
+            EXPECT_EQ(EFixedSemantics::ModelViewMatrix33, otherScene.getDataLayout(uniformLayout).getField(DataFieldHandle(2)).semantics);
         }
 
         template <typename OTHERSCENE>
@@ -363,6 +363,8 @@ namespace ramses_internal
                 EXPECT_EQ(vertexArrayHash, dataResource.hash);
                 EXPECT_FALSE(dataResource.dataBuffer.isValid());
                 EXPECT_EQ(vertexArrayDivisor, dataResource.instancingDivisor);
+                EXPECT_EQ(111u, dataResource.offsetWithinElementInBytes);
+                EXPECT_EQ(71u, dataResource.stride);
             }
 
             {
@@ -370,6 +372,8 @@ namespace ramses_internal
                 EXPECT_EQ(ResourceContentHash::Invalid(), dataResource.hash);
                 EXPECT_EQ(vertexDataBuffer, dataResource.dataBuffer);
                 EXPECT_EQ(vertexArrayDivisor, dataResource.instancingDivisor);
+                EXPECT_EQ(222u, dataResource.offsetWithinElementInBytes);
+                EXPECT_EQ(72u, dataResource.stride);
             }
 
             {
@@ -386,8 +390,8 @@ namespace ramses_internal
             EXPECT_EQ(Vector4(0.0f, 1.0f, 2.0f, 3.0f), dataVec4fArray[0]);
             EXPECT_EQ(Vector4(4.0f, 5.0f, 6.0f, 7.0f), dataVec4fArray[1]);
 
-            EXPECT_EQ(Matrix33f::RotationEulerZYX(5.0f, 4.0f, 3.0f), otherScene.getDataSingleMatrix33f(uniformData, DataFieldHandle(2u)));
-            EXPECT_EQ(Matrix44f::Translation(5.0f, 4.0f, 3.0f), otherScene.getDataSingleMatrix44f(uniformData, DataFieldHandle(3u)));
+            EXPECT_EQ(Matrix33f::RotationEuler({ 5.0f, 4.0f, 3.0f }, ERotationConvention::Legacy_ZYX), otherScene.getDataSingleMatrix33f(uniformData, DataFieldHandle(2u)));
+            EXPECT_EQ(Matrix44f::Translation({ 5.0f, 4.0f, 3.0f }), otherScene.getDataSingleMatrix44f(uniformData, DataFieldHandle(3u)));
             EXPECT_EQ(samplerWithTextureResource, otherScene.getDataTextureSamplerHandle(uniformData, DataFieldHandle(4u)));
             EXPECT_EQ(dataRef, otherScene.getDataReference(uniformData, DataFieldHandle(5u)));
         }
@@ -420,13 +424,9 @@ namespace ramses_internal
         void CheckCamerasEquivalentTo(const OTHERSCENE& otherScene) const
         {
             const Camera& camData = otherScene.getCamera(camera);
-            EXPECT_EQ(ECameraProjectionType::Renderer, camData.projectionType);
+            EXPECT_EQ(ECameraProjectionType::Perspective, camData.projectionType);
             EXPECT_EQ(cameraNode, camData.node);
             EXPECT_EQ(cameraDataInstance, camData.dataInstance);
-
-            const Camera& perspCamData = otherScene.getCamera(perspectiveCamera);
-            EXPECT_EQ(ECameraProjectionType::Perspective, perspCamData.projectionType);
-            EXPECT_EQ(cameraNode, perspCamData.node);
 
             const Camera& orthoCamData = otherScene.getCamera(orthographicCamera);
             EXPECT_EQ(ECameraProjectionType::Orthographic, orthoCamData.projectionType);
@@ -519,7 +519,7 @@ namespace ramses_internal
         void CheckStreamTexturesEquivalentTo(const OTHERSCENE& otherScene) const
         {
             EXPECT_TRUE(otherScene.isStreamTextureAllocated(streamTexture));
-            EXPECT_EQ(87u, otherScene.getStreamTexture(streamTexture).source);
+            EXPECT_EQ(streamSource, otherScene.getStreamTexture(streamTexture).source);
             EXPECT_EQ(ResourceContentHash(234, 0), otherScene.getStreamTexture(streamTexture).fallbackTexture);
             EXPECT_TRUE(otherScene.getStreamTexture(streamTexture).forceFallbackTexture);
         }
@@ -647,7 +647,6 @@ namespace ramses_internal
         const Vector3               obbExtent                       {7.1f, 7.2f, 7.3f};
 
         const CameraHandle           camera                         {20u};
-        const CameraHandle           perspectiveCamera              {22u};
         const CameraHandle           orthographicCamera             {24u};
         const NodeHandle             parent                         {10u};
         const NodeHandle             child                          {15u};
@@ -689,6 +688,7 @@ namespace ramses_internal
         const PickableObjectHandle   pickableHandle                 { 68u };
         const PickableObjectId       pickableId                     { 69u };
         const SceneReferenceHandle   sceneRef                       { 70u };
+        const WaylandIviSurfaceId    streamSource                   { 71u };
         const SceneId                sceneRefSceneId                { 123 };
         const AnimationSystemHandle  animSystem                     { 210u };
         const SplineHandle           spline                         { 211u };

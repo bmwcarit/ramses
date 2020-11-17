@@ -49,8 +49,8 @@ namespace ramses_internal
             update.flushInfos.flushTimeInfo.clock_type = synchronized_clock_type::SystemTime;
             update.flushInfos.flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(12345));
             update.flushInfos.flushTimeInfo.internalTimestamp = FlushTime::Clock::time_point(std::chrono::milliseconds(54321));
-            update.flushInfos.resourceChanges.m_addedClientResourceRefs.push_back(ResourceContentHash(77, 66));
-            update.flushInfos.resourceChanges.m_removedClientResourceRefs.push_back(ResourceContentHash(77, 66));
+            update.flushInfos.resourceChanges.m_resourcesAdded.push_back(ResourceContentHash(77, 66));
+            update.flushInfos.resourceChanges.m_resourcesRemoved.push_back(ResourceContentHash(77, 66));
             SceneResourceAction action;
             update.flushInfos.resourceChanges.m_sceneResourceActions.push_back(std::move(action));
             SceneReferenceAction refAction;

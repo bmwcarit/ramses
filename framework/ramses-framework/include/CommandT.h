@@ -22,7 +22,7 @@ namespace ramses_internal
     template< typename COMMAND_TYPE_INFO >
     struct Command
     {
-        typedef COMMAND_TYPE_INFO CommandTypeInfo;
+        using CommandTypeInfo = COMMAND_TYPE_INFO;
 
         explicit Command(COMMAND_TYPE_INFO commandType_)
             : commandType(commandType_)

@@ -10,7 +10,6 @@
 #define RAMSES_COMPONENTS_DCSMMETADATA_H
 
 #include "ramses-framework-api/CarModelViewMetadata.h"
-#include "ramses-framework-api/CarCameraPlaneMetadata.h"
 #include "Collections/StringOutputStream.h"
 #include "Components/DcsmTypes.h"
 #include "absl/types/span.h"
@@ -44,7 +43,6 @@ namespace ramses_internal
         bool setWidgetHUDLineID(int32_t widgetHUDlineID);
         bool setCarModel(int32_t carModel);
         bool setCarModelView(const ramses::CarModelViewMetadata& values, const AnimationInformation& timingInfo);
-        bool setCarCameraPlanes(const ramses::CarCameraPlaneMetadata& values);
         bool setCarModelVisibility(bool visibility);
         bool setExclusiveBackground(bool state);
         bool setStreamID(int32_t streamID);
@@ -56,7 +54,6 @@ namespace ramses_internal
         bool hasWidgetHUDLineID() const;
         bool hasCarModel() const;
         bool hasCarModelView() const;
-        bool hasCarCameraPlanes() const;
         bool hasCarModelVisibility() const;
         bool hasExclusiveBackground() const;
         bool hasStreamID() const;
@@ -69,7 +66,6 @@ namespace ramses_internal
         int32_t getCarModel() const;
         ramses::CarModelViewMetadata getCarModelView() const;
         AnimationInformation getCarModelViewAnimationInfo() const;
-        ramses::CarCameraPlaneMetadata getCarCameraPlanes() const;
         bool getCarModelVisibility() const;
         bool getExclusiveBackground() const;
         int32_t getStreamID() const;
@@ -95,12 +91,10 @@ namespace ramses_internal
         int32_t m_streamID = 0;
         ramses::CarModelViewMetadata m_carModelView = {};
         AnimationInformation m_carModelViewTiming = {};
-        ramses::CarCameraPlaneMetadata m_carCameraPlanes = {};
         bool m_exclusiveBackground = false;
         bool m_carModelVisibility = false;
 
         bool m_hasCarModelView = false;
-        bool m_hasCarCameraPlanes = false;
         bool m_hasPreviewImagePng = false;
         bool m_hasPreviewDescription = false;
         bool m_hasWidgetOrder = false;

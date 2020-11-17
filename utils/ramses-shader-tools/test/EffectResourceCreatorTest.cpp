@@ -95,15 +95,15 @@ TEST_F(AnEffectResourceCreator, canCreateEffectResourceFromGlslShaders)
 
     ramses::EffectInputImpl matrix44fInput;
     EXPECT_TRUE(ramses::StatusOK == effectRead->impl.findUniformInput("matrix44fInput", matrix44fInput));
-    EXPECT_TRUE(ramses::EEffectUniformSemantic_ModelViewMatrix == matrix44fInput.getUniformSemantics());
+    EXPECT_TRUE(ramses::EEffectUniformSemantic::ModelViewMatrix == matrix44fInput.getUniformSemantics());
 
     ramses::EffectInputImpl texture2dInput;
     EXPECT_TRUE(ramses::StatusOK == effectRead->impl.findUniformInput("texture2dInput", texture2dInput));
-    EXPECT_TRUE(ramses::EEffectUniformSemantic_TextTexture == texture2dInput.getUniformSemantics());
+    EXPECT_TRUE(ramses::EEffectUniformSemantic::TextTexture == texture2dInput.getUniformSemantics());
 
     ramses::EffectInputImpl vec2fArrayInput;
     EXPECT_TRUE(ramses::StatusOK == effectRead->impl.findAttributeInput("vec2fArrayInput", vec2fArrayInput));
-    EXPECT_TRUE(ramses::EEffectAttributeSemantic_TextPositions == vec2fArrayInput.getAttributeSemantics());
+    EXPECT_TRUE(ramses::EEffectAttributeSemantic::TextPositions == vec2fArrayInput.getAttributeSemantics());
 }
 
 TEST_F(AnEffectResourceCreator, canCreateEffectWithCorrectNameWhenEffectNameIsNotProvided)

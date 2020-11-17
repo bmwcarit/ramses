@@ -19,7 +19,7 @@ namespace ramses_internal
     class DataBindTestContainer
     {
     public:
-        typedef typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType GetSetType;
+        using GetSetType = typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType;
 
         GetSetType getVal0() const
         {
@@ -154,16 +154,16 @@ namespace ramses_internal
         }
     };
 
-    typedef DataBindTestContainer<bool> DataBindTestBool;
-    typedef DataBindTestContainer<Int32> DataBindTestInt32;
-    typedef DataBindTestContainer<Float> DataBindTestFloat;
-    typedef DataBindTestContainer<Vector2> DataBindTestVector2;
-    typedef DataBindTestContainer<Vector3> DataBindTestVector3;
-    typedef DataBindTestContainer<Vector4> DataBindTestVector4;
-    typedef DataBindTestContainer<Matrix44f> DataBindTestMatrix44f;
-    typedef DataBindTestContainer<Vector2i> DataBindTestVector2i;
-    typedef DataBindTestContainer<Vector3i> DataBindTestVector3i;
-    typedef DataBindTestContainer<Vector4i> DataBindTestVector4i;
+    using DataBindTestBool = DataBindTestContainer<bool>;
+    using DataBindTestInt32 = DataBindTestContainer<Int32>;
+    using DataBindTestFloat = DataBindTestContainer<Float>;
+    using DataBindTestVector2 = DataBindTestContainer<Vector2>;
+    using DataBindTestVector3 = DataBindTestContainer<Vector3>;
+    using DataBindTestVector4 = DataBindTestContainer<Vector4>;
+    using DataBindTestMatrix44f = DataBindTestContainer<Matrix44f>;
+    using DataBindTestVector2i = DataBindTestContainer<Vector2i>;
+    using DataBindTestVector3i = DataBindTestContainer<Vector3i>;
+    using DataBindTestVector4i = DataBindTestContainer<Vector4i>;
 
     DATA_BIND_DECLARE_BEGIN(DataBindTestBool, 3)
         DATA_BIND_DECLARE(0, VALUE0)

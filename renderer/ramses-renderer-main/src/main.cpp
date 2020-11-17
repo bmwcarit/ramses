@@ -12,7 +12,6 @@
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-renderer-api/IDcsmContentControlEventHandler.h"
 #include "ramses-renderer-api/DcsmContentControl.h"
-#include "ramses-renderer-api/DcsmContentControlConfig.h"
 #include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "RendererLib/RendererConfigUtils.h"
 #include "Utils/Argument.h"
@@ -39,7 +38,7 @@ struct CategoryData
 {
     uint32_t category = 0u;
     ramses::SizeInfo renderSize = { 0, 0 };
-    ramses::Rect categorySize = { 0, 0, 0, 0 };
+    ramses::Rect categoryRect = { 0, 0, 0, 0 };
     ramses::displayId_t display{ 0u };
 };
 
@@ -105,10 +104,10 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
             command.category = atoi(tokens[tokenIndex++].c_str());
             command.renderSize.width = atoi(tokens[tokenIndex++].c_str());
             command.renderSize.height = atoi(tokens[tokenIndex++].c_str());
-            command.categorySize.x = atoi(tokens[tokenIndex++].c_str());
-            command.categorySize.y = atoi(tokens[tokenIndex++].c_str());
-            command.categorySize.width = atoi(tokens[tokenIndex++].c_str());
-            command.categorySize.height = atoi(tokens[tokenIndex++].c_str());
+            command.categoryRect.x = atoi(tokens[tokenIndex++].c_str());
+            command.categoryRect.y = atoi(tokens[tokenIndex++].c_str());
+            command.categoryRect.width = atoi(tokens[tokenIndex++].c_str());
+            command.categoryRect.height = atoi(tokens[tokenIndex++].c_str());
             command.display.getReference() = uint32_t(atoi(tokens[tokenIndex++].c_str()));
             categories.push_back(command);
         }
@@ -161,17 +160,11 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
 
     if (enabledcsm)
     {
-        ramses::DcsmContentControlConfig conf;
-        for (const auto& ci : categories)
-            conf.addCategory(ramses::Category(ci.category), ramses::DcsmContentControlConfig::CategoryInfo{ {ci.categorySize.width, ci.categorySize.height} , ci.display });
-
-        ramses::DcsmContentControl& dcsmContentControl = *renderer.createDcsmContentControl(conf);
+        ramses::DcsmContentControl& dcsmContentControl = *renderer.createDcsmContentControl();
         for (const auto& ci : categories)
         {
-            ramses::CategoryInfoUpdate sizeInfo{};
-            sizeInfo.setRenderSize({ ci.renderSize });
-            sizeInfo.setCategorySize({ ci.categorySize });
-            dcsmContentControl.setCategorySize(ramses::Category(ci.category), sizeInfo, {});
+            ramses::CategoryInfoUpdate categoryInfo{{ ci.renderSize }, { ci.categoryRect }};
+            dcsmContentControl.addContentCategory(ramses::Category(ci.category), ci.display, categoryInfo);
         }
         Handler handler(dcsmContentControl);
         dcsmContentControl.update(0u, handler);

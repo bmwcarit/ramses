@@ -40,6 +40,11 @@ namespace ramses
         return impl.getCamera();
     }
 
+    Camera* RenderPass::getCamera()
+    {
+        return impl.getCamera();
+    }
+
     status_t RenderPass::addRenderGroup(const RenderGroup& renderGroup, int32_t orderWithinPass)
     {
         const status_t status = impl.addRenderGroup(renderGroup.impl, orderWithinPass);

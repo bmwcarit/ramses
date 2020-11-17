@@ -9,7 +9,7 @@
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "Scene/ResourceChangeCollectingScene.h"
-#include "Scene/SceneResourceUtils.h"
+#include "SceneUtils/ResourceUtils.h"
 
 namespace ramses_internal
 {
@@ -28,8 +28,8 @@ namespace ramses_internal
             // DataLayout triggers marking its effect hash as new resource, in order not to affect all the test cases here
             // the effect hash used by these default layouts is 'invalid'
             DataFieldInfoVector geometryDataFields(2u);
-            geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType::Indices, 1u, EFixedSemantics_Indices);
-            geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType::Vector3Buffer, 1u, EFixedSemantics_VertexPositionAttribute);
+            geometryDataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType::Indices, 1u, EFixedSemantics::Indices);
+            geometryDataFields[vertAttribField.asMemoryHandle()] = DataFieldInfo(EDataType::Vector3Buffer, 1u, EFixedSemantics::Invalid);
             scene.allocateDataLayout(geometryDataFields, ResourceContentHash::Invalid(), testGeometryLayout);
 
             DataFieldInfoVector uniformDataFields(2u);
@@ -67,7 +67,7 @@ namespace ramses_internal
         {
             SceneResourceActionVector fromScene;
             size_t fromSceneSceneResourcesByteSize = 0u;
-            SceneResourceUtils::GetAllSceneResourcesFromScene(fromScene, scene, fromSceneSceneResourcesByteSize);
+            ResourceUtils::GetAllSceneResourcesFromScene(fromScene, scene, fromSceneSceneResourcesByteSize);
 
             EXPECT_EQ(sceneResourceActions.size(), fromScene.size());
             EXPECT_EQ(sceneResourceActions, fromScene);
@@ -139,7 +139,7 @@ namespace ramses_internal
     TEST_F(AResourceChangeCollectingScene, createdStreamTextureCollectsBothSceneResourceActionAndFallbackTexture)
     {
         const ResourceContentHash fallbackTex(1u, 2u);
-        const StreamTextureHandle handle = scene.allocateStreamTexture(1u, fallbackTex);
+        const StreamTextureHandle handle = scene.allocateStreamTexture(WaylandIviSurfaceId{1u}, fallbackTex);
 
         ASSERT_EQ(1u, sceneResourceActions.size());
         EXPECT_EQ(handle, sceneResourceActions[0].handle);
@@ -154,7 +154,7 @@ namespace ramses_internal
         expectSameSceneResourceChangesWhenExtractedFromScene();
         scene.resetResourceChanges();
 
-        const StreamTextureHandle handle = scene.allocateStreamTexture(1u, fallbackTex);
+        const StreamTextureHandle handle = scene.allocateStreamTexture(WaylandIviSurfaceId{1u}, fallbackTex);
 
         ASSERT_EQ(1u, sceneResourceActions.size());
         EXPECT_EQ(handle, sceneResourceActions[0].handle);
@@ -164,7 +164,7 @@ namespace ramses_internal
     TEST_F(AResourceChangeCollectingScene, destroyedStreamTextureCollectsBothSceneResourceActionAndFallbackTexture)
     {
         const ResourceContentHash fallbackTex(1u, 2u);
-        const StreamTextureHandle handle = scene.allocateStreamTexture(1u, fallbackTex);
+        const StreamTextureHandle handle = scene.allocateStreamTexture(WaylandIviSurfaceId{1u}, fallbackTex);
         scene.resetResourceChanges();
 
         scene.releaseStreamTexture(handle);
@@ -177,7 +177,7 @@ namespace ramses_internal
     {
         const ResourceContentHash fallbackTex(1u, 2u);
         scene.allocateTextureSampler({ {}, fallbackTex });
-        const StreamTextureHandle handle = scene.allocateStreamTexture(1u, fallbackTex);
+        const StreamTextureHandle handle = scene.allocateStreamTexture(WaylandIviSurfaceId{ 1u }, fallbackTex);
         expectSameSceneResourceChangesWhenExtractedFromScene();
         scene.resetResourceChanges();
 
@@ -324,67 +324,67 @@ namespace ramses_internal
 
     TEST_F(AResourceChangeCollectingScene, hasClientResourcesNotDirtyOnCreation)
     {
-        EXPECT_FALSE(scene.getClientResourcesChanged());
+        EXPECT_FALSE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, doesNotMarkClientResourcesDirtyOnNewRenderable)
     {
         createRenderable();
-        EXPECT_FALSE(scene.getClientResourcesChanged());
+        EXPECT_FALSE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, doesNotMarkClientResourcesDirtyOnNewDataInstance)
     {
         scene.allocateDataInstance(testUniformLayout);
-        EXPECT_FALSE(scene.getClientResourcesChanged());
+        EXPECT_FALSE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenAddingADataInstanceToARenderable)
     {
         const RenderableHandle renderable = createRenderable();
         createVertexDataInstance(renderable);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesNotDirtyAfterResettingResourceCollection)
     {
         const RenderableHandle renderable = createRenderable();
         createVertexDataInstance(renderable);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
         scene.resetResourceChanges();
-        EXPECT_FALSE(scene.getClientResourcesChanged());
+        EXPECT_FALSE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenReleasingARenderable)
     {
         const RenderableHandle renderable = createRenderable();
         scene.releaseRenderable(renderable);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenChangingRenderableVisibilityOnlyFromOrToOff)
     {
         const RenderableHandle renderable = createRenderable();
         scene.setRenderableVisibility(renderable, EVisibilityMode::Visible);
-        EXPECT_FALSE(scene.getClientResourcesChanged());
+        EXPECT_FALSE(scene.haveResourcesChanged());
         scene.setRenderableVisibility(renderable, EVisibilityMode::Invisible);
-        EXPECT_FALSE(scene.getClientResourcesChanged());
+        EXPECT_FALSE(scene.haveResourcesChanged());
         scene.setRenderableVisibility(renderable, EVisibilityMode::Visible);
-        EXPECT_FALSE(scene.getClientResourcesChanged());
+        EXPECT_FALSE(scene.haveResourcesChanged());
         scene.setRenderableVisibility(renderable, EVisibilityMode::Off);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
         scene.resetResourceChanges();
         scene.setRenderableVisibility(renderable, EVisibilityMode::Visible);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
         scene.resetResourceChanges();
         scene.setRenderableVisibility(renderable, EVisibilityMode::Off);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
         scene.resetResourceChanges();
         scene.setRenderableVisibility(renderable, EVisibilityMode::Invisible);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
         scene.resetResourceChanges();
         scene.setRenderableVisibility(renderable, EVisibilityMode::Off);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenSettingADataResource)
@@ -393,18 +393,18 @@ namespace ramses_internal
         const DataInstanceHandle dataInstance = createVertexDataInstance(renderable);
         scene.resetResourceChanges();
 
-        scene.setDataResource(dataInstance, vertAttribField, { 123, 0 }, DataBufferHandle::Invalid(), 0u);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        scene.setDataResource(dataInstance, vertAttribField, { 123, 0 }, DataBufferHandle::Invalid(), 0u, 0u, 0u);
+        EXPECT_TRUE(scene.haveResourcesChanged());
 
         scene.resetResourceChanges();
-        scene.setDataResource(dataInstance, indicesField, { 456, 0 }, DataBufferHandle::Invalid(), 0u);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        scene.setDataResource(dataInstance, indicesField, { 456, 0 }, DataBufferHandle::Invalid(), 0u, 0u, 0u);
+        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenAllocatingATextureSampler)
     {
         scene.allocateTextureSampler({ {}, { 123, 0 } });
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesNotDirtyWhenAllocatingATextureSamplerWithInvalidTexture)
@@ -414,7 +414,7 @@ namespace ramses_internal
         sampler.textureResource = ResourceContentHash::Invalid();
         sampler.contentHandle = scene.allocateRenderBuffer({}).asMemoryHandle();
         scene.allocateTextureSampler(sampler);
-        EXPECT_FALSE(scene.getClientResourcesChanged());
+        EXPECT_FALSE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenSettingADataTextureSampler)
@@ -425,7 +425,7 @@ namespace ramses_internal
 
         const TextureSamplerHandle sampler = scene.allocateTextureSampler({ {}, { 456, 0 } });
         scene.setDataTextureSamplerHandle(dataInstance, samplerField, sampler);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenReleasingATextureSampler)
@@ -434,7 +434,7 @@ namespace ramses_internal
         scene.resetResourceChanges();
 
         scene.releaseTextureSampler(handle);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesNotDirtyWhenReleasingATextureSamplerWithInvalidTexture)
@@ -447,19 +447,19 @@ namespace ramses_internal
         scene.resetResourceChanges();
 
         scene.releaseTextureSampler(handle);
-        EXPECT_FALSE(scene.getClientResourcesChanged());
+        EXPECT_FALSE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenAllocatingADataSlot)
     {
         scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), NodeHandle(), DataInstanceHandle(), { 123, 0 }, TextureSamplerHandle() });
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesNotDirtyWhenAllocatingADataSlotWithInvalidTexture)
     {
         scene.allocateDataSlot({ EDataSlotType_TextureProvider, DataSlotId(0u), NodeHandle(), DataInstanceHandle(), ResourceContentHash::Invalid(), TextureSamplerHandle() });
-        EXPECT_FALSE(scene.getClientResourcesChanged());
+        EXPECT_FALSE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenSettingTextureToDataSlot)
@@ -468,7 +468,7 @@ namespace ramses_internal
         scene.resetResourceChanges();
 
         scene.setDataSlotTexture(dataSlot, { 456, 0 });
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenReleasingADataSlot)
@@ -477,7 +477,7 @@ namespace ramses_internal
         scene.resetResourceChanges();
 
         scene.releaseDataSlot(dataSlot);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesNotDirtyWhenReleasingADataSlotWithInvalidTexture)
@@ -486,20 +486,20 @@ namespace ramses_internal
         scene.resetResourceChanges();
 
         scene.releaseDataSlot(dataSlot);
-        EXPECT_FALSE(scene.getClientResourcesChanged());
+        EXPECT_FALSE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenAllocatingAStreamTexture)
     {
-        scene.allocateStreamTexture(0u, { 123, 0 });
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        scene.allocateStreamTexture(WaylandIviSurfaceId{0u}, { 123, 0 });
+        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 
     TEST_F(AResourceChangeCollectingScene, marksClientResourcesDirtyWhenReleasingAStreamTexture)
     {
-        auto streamTex = scene.allocateStreamTexture(0u, { 123, 0 });
+        auto streamTex = scene.allocateStreamTexture(WaylandIviSurfaceId{ 0u }, { 123, 0 });
         scene.resetResourceChanges();
         scene.releaseStreamTexture(streamTex);
-        EXPECT_TRUE(scene.getClientResourcesChanged());
+        EXPECT_TRUE(scene.haveResourcesChanged());
     }
 }

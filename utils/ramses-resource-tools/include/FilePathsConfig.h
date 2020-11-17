@@ -12,7 +12,7 @@
 #include "Collections/String.h"
 #include "Collections/HashSet.h"
 
-typedef ramses_internal::HashSet<ramses_internal::String> FilePaths;
+using FilePaths = ramses_internal::HashSet<ramses_internal::String>;
 
 class FilePathsConfig
 {

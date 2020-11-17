@@ -58,13 +58,13 @@ namespace ramses
         bool containsObject(const RamsesObject& object) const;
         void trackSceneObjectById(RamsesObject& object);
 
-        typedef ramses_internal::HashMap<ramses_internal::String, RamsesObject*> ObjectNameMap;
+        using ObjectNameMap = ramses_internal::HashMap<ramses_internal::String, RamsesObject *>;
         ObjectNameMap m_objectsByName;
 
-        typedef ramses_internal::HashMap<sceneObjectId_t, SceneObject*> ObjectIdMap;
+        using ObjectIdMap = ramses_internal::HashMap<sceneObjectId_t, SceneObject *>;
         ObjectIdMap m_objectsById;
 
-        typedef ramses_internal::MemoryPool < RamsesObject*, RamsesObjectHandle > RamsesObjectsPool;
+        using RamsesObjectsPool = ramses_internal::MemoryPool<RamsesObject *, RamsesObjectHandle>;
         RamsesObjectsPool m_objects[ERamsesObjectType_NUMBER_OF_TYPES];
 
         NodeImplSet m_dirtyNodes;

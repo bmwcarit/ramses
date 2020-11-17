@@ -30,8 +30,8 @@
 
 namespace ramses
 {
-    TextureSamplerImpl::TextureSamplerImpl(SceneImpl& scene, const char* name)
-        : SceneObjectImpl(scene, ERamsesObjectType_TextureSampler, name)
+    TextureSamplerImpl::TextureSamplerImpl(SceneImpl& scene, ERamsesObjectType type, const char* name)
+        : SceneObjectImpl(scene, type, name)
         , m_textureType(ERamsesObjectType_Invalid)
     {
     }
@@ -181,6 +181,9 @@ namespace ramses
 
     ramses_internal::EDataType TextureSamplerImpl::getTextureDataType() const
     {
+        if (getIScene().getTextureSampler(m_textureSamplerHandle).contentType == ramses_internal::TextureSampler::ContentType::RenderBufferMS)
+            return ramses_internal::EDataType::TextureSampler2DMS;
+
         switch (m_textureType)
         {
             case ERamsesObjectType_Texture2D:

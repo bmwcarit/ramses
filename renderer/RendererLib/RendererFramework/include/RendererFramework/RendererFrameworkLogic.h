@@ -9,7 +9,6 @@
 #ifndef RAMSES_RENDERERFRAMEWORKLOGIC_H
 #define RAMSES_RENDERERFRAMEWORKLOGIC_H
 
-#include "RendererFramework/IResourceProvider.h"
 #include "RendererFramework/IRendererSceneEventSender.h"
 #include "Scene/SceneActionCollection.h"
 #include "Collections/HashMap.h"
@@ -28,12 +27,10 @@ namespace ramses_internal
 
     class RendererFrameworkLogic
         : public ISceneRendererHandler
-        , public IResourceProvider
         , public IRendererSceneEventSender
     {
     public:
         RendererFrameworkLogic(
-            IResourceConsumerComponent& res,
             ISceneGraphConsumerComponent& sgc,
             RendererCommandBuffer& rendererCommandBuffer,
             PlatformLock& frameworkLock);
@@ -44,11 +41,6 @@ namespace ramses_internal
         virtual void handleSceneUpdate(const SceneId& sceneId, SceneUpdate&& sceneUpdate, const Guid& providerID) override;
         virtual void handleNewSceneAvailable(const SceneInfo& newScene, const Guid& providerID) override;
         virtual void handleSceneBecameUnavailable(const SceneId& unavailableScene, const Guid& providerID) override;
-
-        // IResourceProviderServiceHandler
-        virtual void requestResourceAsyncronouslyFromFramework(const ResourceContentHashVector& ids, const ResourceRequesterID& requesterID, const SceneId& sceneId) override;
-        virtual void cancelResourceRequest(const ResourceContentHash& resourceHash, const ResourceRequesterID& requesterID) override;
-        virtual ManagedResourceVector popArrivedResources(const ResourceRequesterID& requesterID) override;
 
         // IRendererSceneEventSender
         virtual void sendSubscribeScene(SceneId sceneId) override;
@@ -61,7 +53,6 @@ namespace ramses_internal
     private:
         PlatformLock&                 m_frameworkLock;
         ISceneGraphConsumerComponent& m_sceneGraphConsumerComponent;
-        IResourceConsumerComponent&   m_resourceComponent;
         RendererCommandBuffer&        m_rendererCommands;
 
         HashMap<SceneId, std::pair<Guid, String> > m_sceneClients;

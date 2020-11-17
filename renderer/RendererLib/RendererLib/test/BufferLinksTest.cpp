@@ -8,33 +8,27 @@
 
 #include "renderer_common_gmock_header.h"
 #include "gtest/gtest.h"
-#include "RendererLib/OffscreenBufferLinks.h"
+#include "RendererLib/BufferLinks.h"
 
 using namespace testing;
 using namespace ramses_internal;
 
+using BufferTypes = ::testing::Types <
+    OffscreenBufferHandle,
+    StreamBufferHandle > ;
+
+template <typename BUFFERHANDLE>
 class ABufferLinks : public ::testing::Test
 {
-public:
-    ABufferLinks()
-        : providerBuffer1(1u)
-        , providerBuffer2(2u)
-        , consumerScene1(3u)
-        , consumerScene2(4u)
-        , consumerSlot1(3u)
-        , consumerSlot2(4u)
-    {
-    }
-
 protected:
-    static bool LinksEqual(const OffscreenBufferLink& link1, const OffscreenBufferLink& link2)
+    static bool LinksEqual(const BufferLink<BUFFERHANDLE>& link1, const BufferLink<BUFFERHANDLE>& link2)
     {
         return link1.providerBuffer == link2.providerBuffer
             && link1.consumerSceneId == link2.consumerSceneId
             && link1.consumerSlot == link2.consumerSlot;
     }
 
-    static bool ContainsLink(const OffscreenBufferLinkVector& links, const OffscreenBufferLink& link)
+    static bool ContainsLink(const BufferLinkVector<BUFFERHANDLE>& links, const BufferLink<BUFFERHANDLE>& link)
     {
         for(const auto& linkIter : links)
         {
@@ -49,123 +43,125 @@ protected:
 
     void expectNoLinks()
     {
-        EXPECT_FALSE(sceneLinks.hasAnyLinksToProvider(consumerScene1));
-        EXPECT_FALSE(sceneLinks.hasAnyLinksToProvider(consumerScene2));
-        EXPECT_FALSE(sceneLinks.hasAnyLinksToConsumer(providerBuffer1));
-        EXPECT_FALSE(sceneLinks.hasAnyLinksToConsumer(providerBuffer2));
-        EXPECT_FALSE(sceneLinks.hasLinkedProvider(consumerScene1, consumerSlot1));
-        EXPECT_FALSE(sceneLinks.hasLinkedProvider(consumerScene1, consumerSlot2));
-        EXPECT_FALSE(sceneLinks.hasLinkedProvider(consumerScene2, consumerSlot1));
-        EXPECT_FALSE(sceneLinks.hasLinkedProvider(consumerScene2, consumerSlot2));
-        expectLinkCount(providerBuffer1, 0u);
-        expectLinkCount(providerBuffer2, 0u);
-        expectLinkCount(consumerScene1, 0u);
-        expectLinkCount(consumerScene2, 0u);
+        EXPECT_FALSE(this->sceneLinks.hasAnyLinksToProvider(this->consumerScene1));
+        EXPECT_FALSE(this->sceneLinks.hasAnyLinksToProvider(this->consumerScene2));
+        EXPECT_FALSE(this->sceneLinks.hasAnyLinksToConsumer(this->providerBuffer1));
+        EXPECT_FALSE(this->sceneLinks.hasAnyLinksToConsumer(this->providerBuffer2));
+        EXPECT_FALSE(this->sceneLinks.hasLinkedProvider(this->consumerScene1, this->consumerSlot1));
+        EXPECT_FALSE(this->sceneLinks.hasLinkedProvider(this->consumerScene1, this->consumerSlot2));
+        EXPECT_FALSE(this->sceneLinks.hasLinkedProvider(this->consumerScene2, this->consumerSlot1));
+        EXPECT_FALSE(this->sceneLinks.hasLinkedProvider(this->consumerScene2, this->consumerSlot2));
+        expectLinkCount(this->providerBuffer1, 0u);
+        expectLinkCount(this->providerBuffer2, 0u);
+        expectLinkCount(this->consumerScene1, 0u);
+        expectLinkCount(this->consumerScene2, 0u);
     }
 
     void expectLinkCount(SceneId sceneId, UInt32 providerScenesLinked)
     {
-        OffscreenBufferLinkVector links;
-        sceneLinks.getLinkedProviders(sceneId, links);
+        BufferLinkVector<BUFFERHANDLE> links;
+        this->sceneLinks.getLinkedProviders(sceneId, links);
         EXPECT_EQ(providerScenesLinked, links.size());
     }
 
-    void expectLinkCount(OffscreenBufferHandle providerBuffer, UInt32 consumerScenesLinked)
+    void expectLinkCount(BUFFERHANDLE providerBuffer, UInt32 consumerScenesLinked)
     {
-        OffscreenBufferLinkVector links;
-        sceneLinks.getLinkedConsumers(providerBuffer, links);
+        BufferLinkVector<BUFFERHANDLE> links;
+        this->sceneLinks.getLinkedConsumers(providerBuffer, links);
         EXPECT_EQ(consumerScenesLinked, links.size());
     }
 
     void expectLink(
-        OffscreenBufferHandle providerBuffer,
+        BUFFERHANDLE providerBuffer,
         SceneId consumerSceneId,
         DataSlotHandle consumerSlotHandle)
     {
-        EXPECT_TRUE(sceneLinks.hasAnyLinksToProvider(consumerSceneId));
-        EXPECT_TRUE(sceneLinks.hasAnyLinksToConsumer(providerBuffer));
-        EXPECT_TRUE(sceneLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle));
+        EXPECT_TRUE(this->sceneLinks.hasAnyLinksToProvider(consumerSceneId));
+        EXPECT_TRUE(this->sceneLinks.hasAnyLinksToConsumer(providerBuffer));
+        EXPECT_TRUE(this->sceneLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle));
 
-        OffscreenBufferLink expectedLink;
+        BufferLink<BUFFERHANDLE> expectedLink;
         expectedLink.providerBuffer = providerBuffer;
         expectedLink.consumerSceneId = consumerSceneId;
         expectedLink.consumerSlot = consumerSlotHandle;
 
-        OffscreenBufferLinkVector links;
-        sceneLinks.getLinkedProviders(consumerSceneId, links);
+        BufferLinkVector<BUFFERHANDLE> links;
+        this->sceneLinks.getLinkedProviders(consumerSceneId, links);
         EXPECT_TRUE(ContainsLink(links, expectedLink));
         links.clear();
 
-        EXPECT_TRUE(LinksEqual(expectedLink, sceneLinks.getLinkedProvider(consumerSceneId, consumerSlotHandle)));
+        EXPECT_TRUE(LinksEqual(expectedLink, this->sceneLinks.getLinkedProvider(consumerSceneId, consumerSlotHandle)));
 
-        sceneLinks.getLinkedConsumers(providerBuffer, links);
+        this->sceneLinks.getLinkedConsumers(providerBuffer, links);
         EXPECT_TRUE(ContainsLink(links, expectedLink));
     }
 
-    OffscreenBufferLinks sceneLinks;
+    BufferLinks<BUFFERHANDLE> sceneLinks;
 
-    const OffscreenBufferHandle providerBuffer1;
-    const OffscreenBufferHandle providerBuffer2;
-    const SceneId consumerScene1;
-    const SceneId consumerScene2;
+    const BUFFERHANDLE providerBuffer1{ 1u };
+    const BUFFERHANDLE providerBuffer2{ 2u };
+    const SceneId consumerScene1{ 3u };
+    const SceneId consumerScene2{ 4u };
 
-    const DataSlotHandle consumerSlot1;
-    const DataSlotHandle consumerSlot2;
+    const DataSlotHandle consumerSlot1{ 5u };
+    const DataSlotHandle consumerSlot2{ 6u };
 };
 
-TEST_F(ABufferLinks, reportsNoLinksInitially)
+TYPED_TEST_SUITE(ABufferLinks, BufferTypes);
+
+TYPED_TEST(ABufferLinks, reportsNoLinksInitially)
 {
-    expectNoLinks();
+    this->expectNoLinks();
 }
 
-TEST_F(ABufferLinks, canAddLink)
+TYPED_TEST(ABufferLinks, canAddLink)
 {
-    sceneLinks.addLink(providerBuffer1, consumerScene1, consumerSlot1);
-    expectLink(providerBuffer1, consumerScene1, consumerSlot1);
-    expectLinkCount(providerBuffer1, 1u);
-    expectLinkCount(consumerScene1, 1u);
+    this->sceneLinks.addLink(this->providerBuffer1, this->consumerScene1, this->consumerSlot1);
+    this->expectLink(this->providerBuffer1, this->consumerScene1, this->consumerSlot1);
+    this->expectLinkCount(this->providerBuffer1, 1u);
+    this->expectLinkCount(this->consumerScene1, 1u);
 }
 
-TEST_F(ABufferLinks, canAddAndRemoveLink)
+TYPED_TEST(ABufferLinks, canAddAndRemoveLink)
 {
-    sceneLinks.addLink(providerBuffer1, consumerScene1, consumerSlot1);
-    sceneLinks.removeLink(consumerScene1, consumerSlot1);
-    expectNoLinks();
+    this->sceneLinks.addLink(this->providerBuffer1, this->consumerScene1, this->consumerSlot1);
+    this->sceneLinks.removeLink(this->consumerScene1, this->consumerSlot1);
+    this->expectNoLinks();
 }
 
-TEST_F(ABufferLinks, canAddAndRemoveMultipleLinks)
+TYPED_TEST(ABufferLinks, canAddAndRemoveMultipleLinks)
 {
-    sceneLinks.addLink(providerBuffer1, consumerScene1, consumerSlot1);
-    sceneLinks.addLink(providerBuffer1, consumerScene1, consumerSlot2);
-    sceneLinks.addLink(providerBuffer1, consumerScene2, consumerSlot1);
-    sceneLinks.addLink(providerBuffer2, consumerScene2, consumerSlot2);
+    this->sceneLinks.addLink(this->providerBuffer1, this->consumerScene1, this->consumerSlot1);
+    this->sceneLinks.addLink(this->providerBuffer1, this->consumerScene1, this->consumerSlot2);
+    this->sceneLinks.addLink(this->providerBuffer1, this->consumerScene2, this->consumerSlot1);
+    this->sceneLinks.addLink(this->providerBuffer2, this->consumerScene2, this->consumerSlot2);
 
-    expectLink(providerBuffer1, consumerScene1, consumerSlot1);
-    expectLink(providerBuffer1, consumerScene1, consumerSlot2);
-    expectLink(providerBuffer1, consumerScene2, consumerSlot1);
-    expectLink(providerBuffer2, consumerScene2, consumerSlot2);
+    this->expectLink(this->providerBuffer1, this->consumerScene1, this->consumerSlot1);
+    this->expectLink(this->providerBuffer1, this->consumerScene1, this->consumerSlot2);
+    this->expectLink(this->providerBuffer1, this->consumerScene2, this->consumerSlot1);
+    this->expectLink(this->providerBuffer2, this->consumerScene2, this->consumerSlot2);
 
-    expectLinkCount(providerBuffer1, 3u);
-    expectLinkCount(consumerScene1, 2u);
-    expectLinkCount(consumerScene2, 2u);
+    this->expectLinkCount(this->providerBuffer1, 3u);
+    this->expectLinkCount(this->consumerScene1, 2u);
+    this->expectLinkCount(this->consumerScene2, 2u);
 
-    sceneLinks.removeLink(consumerScene1, consumerSlot1);
-    sceneLinks.removeLink(consumerScene1, consumerSlot2);
-    sceneLinks.removeLink(consumerScene2, consumerSlot1);
-    sceneLinks.removeLink(consumerScene2, consumerSlot2);
-    expectNoLinks();
+    this->sceneLinks.removeLink(this->consumerScene1, this->consumerSlot1);
+    this->sceneLinks.removeLink(this->consumerScene1, this->consumerSlot2);
+    this->sceneLinks.removeLink(this->consumerScene2, this->consumerSlot1);
+    this->sceneLinks.removeLink(this->consumerScene2, this->consumerSlot2);
+    this->expectNoLinks();
 }
 
-TEST_F(ABufferLinks, removingLinkDoesNotAffectOtherLinks)
+TYPED_TEST(ABufferLinks, removingLinkDoesNotAffectOtherLinks)
 {
-    sceneLinks.addLink(providerBuffer1, consumerScene1, consumerSlot1);
-    sceneLinks.addLink(providerBuffer1, consumerScene1, consumerSlot2);
-    sceneLinks.removeLink(consumerScene1, consumerSlot1);
+    this->sceneLinks.addLink(this->providerBuffer1, this->consumerScene1, this->consumerSlot1);
+    this->sceneLinks.addLink(this->providerBuffer1, this->consumerScene1, this->consumerSlot2);
+    this->sceneLinks.removeLink(this->consumerScene1, this->consumerSlot1);
 
-    expectLink(providerBuffer1, consumerScene1, consumerSlot2);
-    expectLinkCount(providerBuffer1, 1u);
-    expectLinkCount(consumerScene1, 1u);
+    this->expectLink(this->providerBuffer1, this->consumerScene1, this->consumerSlot2);
+    this->expectLinkCount(this->providerBuffer1, 1u);
+    this->expectLinkCount(this->consumerScene1, 1u);
 
-    sceneLinks.removeLink(consumerScene1, consumerSlot2);
-    expectNoLinks();
+    this->sceneLinks.removeLink(this->consumerScene1, this->consumerSlot2);
+    this->expectNoLinks();
 }

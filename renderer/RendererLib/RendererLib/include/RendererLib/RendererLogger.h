@@ -91,6 +91,7 @@ namespace ramses_internal
         static const SceneLinks& GetSceneLinks(const SceneLinksManager& linkManager, const EDataSlotType type);
         static EDataType GetDataTypeForSlot(const RendererCachedScene& scene, const DataSlotHandle slotHandle);
         static OffscreenBufferHandle GetOffscreenBufferLinkedToConsumer(const RendererScenes& scenes, SceneId consumerScene, DataSlotHandle consumerSlot);
+        static StreamBufferHandle GetStreamBufferLinkedToConsumer(const RendererScenes& scenes, SceneId consumerScene, DataSlotHandle consumerSlot);
 
         static void StartSection(const String& name, RendererLogContext& context);
         static void EndSection(const String& name, RendererLogContext& context);

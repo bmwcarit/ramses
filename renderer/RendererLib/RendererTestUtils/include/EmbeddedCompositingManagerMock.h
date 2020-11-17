@@ -22,18 +22,17 @@ namespace ramses_internal
     {
     public:
         EmbeddedCompositingManagerMock();
-        MOCK_METHOD(void, uploadStreamTexture, (StreamTextureHandle handle, StreamTextureSourceId source, SceneId sceneId), (override));
-        MOCK_METHOD(void, deleteStreamTexture, (StreamTextureHandle handle, StreamTextureSourceId source, SceneId sceneId), (override));
-        MOCK_METHOD(void, dispatchStateChangesOfStreamTexturesAndSources, (SceneStreamTextures& updatedStreamTextures, StreamTextureSourceIdVector& newStreams, StreamTextureSourceIdVector& obsoleteStreams), (override));
+        MOCK_METHOD(void, refStream, (StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId), (override));
+        MOCK_METHOD(void, unrefStream, (StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId), (override));
+        MOCK_METHOD(void, refStream, (WaylandIviSurfaceId source), (override));
+        MOCK_METHOD(void, unrefStream, (WaylandIviSurfaceId source), (override));
+        MOCK_METHOD(void, dispatchStateChangesOfStreamTexturesAndSources, (SceneStreamTextures& updatedStreamTextures, WaylandIviSurfaceIdVector& newStreams, WaylandIviSurfaceIdVector& obsoleteStreams), (override));
         MOCK_METHOD(void, processClientRequests, (), (override));
         MOCK_METHOD(bool, hasUpdatedContentFromStreamSourcesToUpload, (), (const, override));
         MOCK_METHOD(void, uploadResourcesAndGetUpdates, (UpdatedSceneIdSet& updatedScenes, StreamTextureBufferUpdates& updatedStreamTextures), (override));
         MOCK_METHOD(void, notifyClients, (), (override));
-        MOCK_METHOD(DeviceResourceHandle, getCompositedTextureDeviceHandleForStreamTexture, (StreamTextureSourceId source), (const, override));
-        MOCK_METHOD(bool, hasRealCompositor, (), (const, override)); //TODO Mohamed: remove this as soon as EC dummy is removed
+        MOCK_METHOD(DeviceResourceHandle, getCompositedTextureDeviceHandleForStreamTexture, (WaylandIviSurfaceId source), (const, override));
+        MOCK_METHOD(bool, hasRealCompositor, (), (const, override));
     };
-
-    typedef ::testing::NiceMock<EmbeddedCompositingManagerMock> EmbeddedCompositingManagerMockNiceMock;
-    typedef ::testing::StrictMock<EmbeddedCompositingManagerMock> EmbeddedCompositingManagerMockStrictMock;
 }
 #endif

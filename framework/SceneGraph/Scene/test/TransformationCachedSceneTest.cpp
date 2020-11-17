@@ -34,12 +34,12 @@ namespace ramses_internal
 
         void expectCorrectMatrices(const NodeHandle nodeToCheck, const Matrix44f& worldMatrix, const Matrix44f& objectMatrix) const
         {
-            EXPECT_TRUE(matrixFloatEquals(worldMatrix, this->scene.updateMatrixCache(ETransformationMatrixType_World, nodeToCheck)));
-            EXPECT_TRUE(matrixFloatEquals(objectMatrix, this->scene.updateMatrixCache(ETransformationMatrixType_Object, nodeToCheck)));
+            expectMatrixFloatEqual(worldMatrix, this->scene.updateMatrixCache(ETransformationMatrixType_World, nodeToCheck));
+            expectMatrixFloatEqual(objectMatrix, this->scene.updateMatrixCache(ETransformationMatrixType_Object, nodeToCheck));
 
             // should also work when state is clean (after first update)
-            EXPECT_TRUE(matrixFloatEquals(worldMatrix, this->scene.updateMatrixCache(ETransformationMatrixType_World, nodeToCheck)));
-            EXPECT_TRUE(matrixFloatEquals(objectMatrix, this->scene.updateMatrixCache(ETransformationMatrixType_Object, nodeToCheck)));
+            expectMatrixFloatEqual(worldMatrix, this->scene.updateMatrixCache(ETransformationMatrixType_World, nodeToCheck));
+            expectMatrixFloatEqual(objectMatrix, this->scene.updateMatrixCache(ETransformationMatrixType_Object, nodeToCheck));
         }
 
         TransformationCachedScene scene;
@@ -74,16 +74,56 @@ namespace ramses_internal
     {
         this->scene.setTranslation(this->transform, Vector3(0.5f));
 
-        this->expectCorrectMatrices(this->nodeWithTransform, Matrix44f::Translation(0.5f, 0.5f, 0.5f), Matrix44f::Translation(-0.5f, -0.5f, -0.5f));
+        this->expectCorrectMatrices(this->nodeWithTransform, Matrix44f::Translation({ 0.5f, 0.5f, 0.5f }), Matrix44f::Translation({ -0.5f, -0.5f, -0.5f }));
     }
 
     TEST_F(ATransformationCachedScene, GivesCorrectValueWhenTransformOfNodeIsRotated)
     {
-        this->scene.setRotation(this->transform, Vector3(0.5f, 0.0f, 0.0f));
+        this->scene.setRotation(this->transform, Vector3(0.5f, 0.0f, 0.0f), ERotationConvention::Legacy_ZYX);
 
         this->expectCorrectMatrices(this->nodeWithTransform,
-            Matrix44f::RotationEulerZYX(0.5f, 0.f, 0.f),
-            Matrix44f::RotationEulerZYX(-0.5f, 0.f, 0.f));
+            Matrix44f::RotationEuler({ 0.5f, 0.f, 0.f }, ERotationConvention::Legacy_ZYX),
+            Matrix44f::RotationEuler({ -0.5f, 0.f, 0.f }, ERotationConvention::Legacy_ZYX));
+    }
+
+    TEST_F(ATransformationCachedScene, GivesCorrectValueWhenRotationConventionIsSet)
+    {
+        const Vector3 rotation{ 5.f, 10.0f, 150.0f };
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::ZYX);
+
+        this->expectCorrectMatrices(this->nodeWithTransform,
+            Matrix44f::RotationEuler(rotation, ERotationConvention::ZYX),
+            Matrix44f::RotationEuler(-1 * rotation, ERotationConvention::XYZ));
+
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::YZX);
+
+        this->expectCorrectMatrices(this->nodeWithTransform,
+            Matrix44f::RotationEuler(rotation, ERotationConvention::YZX),
+            Matrix44f::RotationEuler(-1 * rotation, ERotationConvention::XZY));
+    }
+
+    TEST_F(ATransformationCachedScene, GivesCorrectValueWhenRotationConventionIsSetDifferentFromParent)
+    {
+        // add parent with transform
+        const NodeHandle childNode = this->scene.allocateNode();
+        const TransformHandle childTransform = this->scene.allocateTransform(childNode);
+        this->scene.addChildToNode(this->nodeWithTransform, childNode);
+
+        this->expectIdentityMatrices(nodeWithoutTransform);
+        this->expectIdentityMatrices(childNode);
+
+        const Vector3 rotationParent{ 60.f, 0.f, 0.f }; //rotate only in X-Axis
+        this->scene.setRotation(this->transform, rotationParent, ERotationConvention::YXZ);
+
+        const Vector3 rotationChild{ 0.f, 30.f, 0.f }; //rotate only in Y-Axis
+        this->scene.setRotation(childTransform, rotationChild, ERotationConvention::ZYX); //use different convention
+
+        const auto expectedChildRotation = rotationChild + rotationParent; //because both rotate only on 1 axis this is still possible
+        const Matrix44f expectedWorldMatrix = Matrix44f::RotationEuler(expectedChildRotation, ERotationConvention::XYZ); //Child rotate around Y, then parent rotate around X
+        const Matrix44f expectedObjectMatrix = Matrix44f::RotationEuler(-1 * expectedChildRotation, ERotationConvention::ZYX); //invert angle AND convention
+        this->expectCorrectMatrices(childNode, expectedWorldMatrix, expectedObjectMatrix);
+
+        this->scene.setRotation(this->transform, rotationParent, ERotationConvention::XYZ);
     }
 
     TEST_F(ATransformationCachedScene, UpdatesMatrixCacheAfterAddingParentWithTransform)
@@ -144,6 +184,32 @@ namespace ramses_internal
         const Matrix44f expectedObjectMatrix = Matrix44f::Translation(Vector3(-0.1f, -0.2f, -1));
         this->expectCorrectMatrices(childLeft, expectedWorldMatrix, expectedObjectMatrix);
         this->expectCorrectMatrices(childRight, expectedWorldMatrix, expectedObjectMatrix);
+    }
+
+    TEST_F(ATransformationCachedScene, PropagatesMatricesToMultipleChildNodeWhenRotationConventionIsSet)
+    {
+        // add parent with transform
+        const NodeHandle childLeft = this->scene.allocateNode();
+        const NodeHandle childRight = this->scene.allocateNode();
+        this->scene.addChildToNode(this->nodeWithTransform, childLeft);
+        this->scene.addChildToNode(this->nodeWithTransform, childRight);
+
+        this->expectIdentityMatrices(nodeWithoutTransform);
+        const Vector3 rotation{ 60.f, 30.f, 30.f };
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::ZYX);
+
+        const Matrix44f expectedWorldMatrix = Matrix44f::RotationEuler(rotation, ERotationConvention::ZYX);
+        const Matrix44f expectedObjectMatrix = Matrix44f::RotationEuler(-1 * rotation, ERotationConvention::XYZ); //invert input angles AND convention
+        this->expectCorrectMatrices(nodeWithTransform, expectedWorldMatrix, expectedObjectMatrix);
+        this->expectCorrectMatrices(childLeft, expectedWorldMatrix, expectedObjectMatrix);
+        this->expectCorrectMatrices(childRight, expectedWorldMatrix, expectedObjectMatrix);
+
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::XYZ);
+
+        const Matrix44f expectedWorldMatrixUpdated = Matrix44f::RotationEuler(rotation, ERotationConvention::XYZ);
+        const Matrix44f expectedObjectMatrixUpdated = Matrix44f::RotationEuler(-1 * rotation, ERotationConvention::ZYX); //invert input angles AND convention
+        this->expectCorrectMatrices(childLeft, expectedWorldMatrixUpdated, expectedObjectMatrixUpdated);
+        this->expectCorrectMatrices(childRight, expectedWorldMatrixUpdated, expectedObjectMatrixUpdated);
     }
 
     TEST_F(ATransformationCachedScene, confidenceTest_UpdatesMatricesOfMultipleChildNodesWithTransform)
@@ -212,17 +278,17 @@ namespace ramses_internal
         const Vector3 rotation(4, 5, 6);
         const Vector3 scaling(7, 8, 9);
 
-        this->scene.setRotation(this->transform, rotation);
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::Legacy_ZYX);
         this->scene.setTranslation(this->transform, translation);
         this->scene.setScaling(this->transform, scaling);
 
         const Matrix44f expectedWorldMatrix =
             Matrix44f::Translation(translation) *
             Matrix44f::Scaling(scaling) *
-            Matrix44f::RotationEulerZYX(rotation);
+            Matrix44f::RotationEuler(rotation, ERotationConvention::Legacy_ZYX);
 
         const Matrix44f expectedObjectMatrix =
-            Matrix44f::RotationEulerZYX(rotation).transpose() *
+            Matrix44f::RotationEuler(rotation, ERotationConvention::Legacy_ZYX).transpose() *
             Matrix44f::Scaling(scaling.inverse()) *
             Matrix44f::Translation(-translation);
 
@@ -252,8 +318,8 @@ namespace ramses_internal
             Matrix44f::Translation(childTranslation);
 
         // force cache update
-        EXPECT_TRUE(matrixFloatEquals(expectedParentWorldMatrix, this->scene.updateMatrixCache(ETransformationMatrixType_World, parent)));
-        EXPECT_TRUE(matrixFloatEquals(expectedChildWorldMatrix, this->scene.updateMatrixCache(ETransformationMatrixType_World, child)));
+        expectMatrixFloatEqual(expectedParentWorldMatrix, this->scene.updateMatrixCache(ETransformationMatrixType_World, parent));
+        expectMatrixFloatEqual(expectedChildWorldMatrix, this->scene.updateMatrixCache(ETransformationMatrixType_World, child));
 
         this->scene.addChildToNode(parent, child);
 

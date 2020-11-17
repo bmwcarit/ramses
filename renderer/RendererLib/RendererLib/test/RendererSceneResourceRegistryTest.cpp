@@ -114,7 +114,7 @@ TEST_F(ARendererSceneResourceRegistry, canAddAndRemoveBlitPass)
 TEST_F(ARendererSceneResourceRegistry, canAddAndRemoveStreamTexture)
 {
     const StreamTextureHandle st(13u);
-    const StreamTextureSourceId source(666u);
+    const WaylandIviSurfaceId source(666u);
     registry.addStreamTexture(st, source);
 
     StreamTextureHandleVector sts;
@@ -131,7 +131,7 @@ TEST_F(ARendererSceneResourceRegistry, canAddAndRemoveStreamTexture)
 TEST_F(ARendererSceneResourceRegistry, canGetStreamTextureData)
 {
     const StreamTextureHandle st(13u);
-    const StreamTextureSourceId source(666u);
+    const WaylandIviSurfaceId source(666u);
     registry.addStreamTexture(st, source);
     EXPECT_EQ(source, registry.getStreamTextureSourceId(st));
     registry.removeStreamTexture(st);

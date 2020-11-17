@@ -17,7 +17,6 @@ namespace ramses_internal
     enum EConnectionStatus
     {
         EConnectionStatus_NotConnected = 0,
-        EConnectionStatus_Connecting,
         EConnectionStatus_Connected
     };
 
@@ -27,8 +26,6 @@ namespace ramses_internal
         {
             case EConnectionStatus_NotConnected:
                 return "Not connected";
-            case EConnectionStatus_Connecting:
-                return "Connecting";
             case EConnectionStatus_Connected:
                 return "Connected";
             default:

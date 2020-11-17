@@ -61,6 +61,7 @@ def main():
         r'\.jar$',
         r'\.rgba_astc$',
         r'\.dds$',
+        r'\.mdzip$',
     }
 
     # These files are not checked at all
@@ -71,6 +72,7 @@ def main():
         r'gitconfig$',
         r'\.clang-format$',
         r'\.clang-tidy$',
+        r'/id_rsa[^\\]*$',
         # Protobuffer files
         r'\.pb.h$',
         r'\.pb.cc$',

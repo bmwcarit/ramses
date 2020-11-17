@@ -74,6 +74,8 @@ class Target:
             self.systemMonitor = targetInfo.systemMonitorClassname(resultDir)
         self.logLevel = logLevel
 
+        self.currentTestId = None
+
     def setup(self, transfer_binaries=True):
         return False #can be overwritten by sub-classes
 
@@ -170,6 +172,8 @@ class Target:
         extendedArgs += " -l " + str(self.logLevel) +" --enableSmokeTestContext " + " --enableProtocolVersionOffset "
         #use custom daemon port for all ramses applications to avoid connections to other applications running on the system (e.g. the HMI)
         extendedArgs += " -p {}".format(CUSTOM_DAEMON_PORT)
+        if self.currentTestId:
+            extendedArgs += " --executionIdentifier '{}'".format(self.currentTestId)
         env['DISABLE_CONSOLE_COLORS'] = '1'
         env['DISABLE_RAMSH_INTERACTIVE_MODE'] = '1'
         application = self.start_application(applicationName, extendedArgs, binaryDirectoryOnTarget, nameExtension, env, dltAppID)

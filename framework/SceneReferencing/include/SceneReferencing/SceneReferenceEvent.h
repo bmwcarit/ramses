@@ -45,7 +45,7 @@ namespace ramses_internal
         SceneVersionTag tag = SceneVersionTag::Invalid();
         bool status = false;
 
-        constexpr static size_t serializedSize =
+        static constexpr size_t serializedSize =
             sizeof(ERendererToClientEventType) +
             sizeof(SceneReferenceEventType) +
             sizeof(SceneId) +

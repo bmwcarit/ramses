@@ -86,10 +86,20 @@ namespace ramses
         GeometryBinding& geom = this->createValidGeometry(effect);
         if (DataTypeUtils::IsValidIndicesType(this->dataBuffer.getDataType()))
             EXPECT_EQ(StatusOK, geom.setIndices(RamsesObjectTypeUtils::ConvertTo<ArrayBuffer>(this->dataBuffer)));
+        else if (EDataType::ByteBlob == getCreationDataType())
+        {
+            AttributeInput attrInput1;
+            effect->findAttributeInput("a_position", attrInput1);
+            AttributeInput attrInput2;
+            effect->findAttributeInput("a_vec2", attrInput2);
+            constexpr uint16_t nonZeroStride = 56u;
+            EXPECT_EQ(StatusOK, geom.setInputBuffer(attrInput1, RamsesObjectTypeUtils::ConvertTo<ArrayBuffer>(this->dataBuffer), 0u, nonZeroStride));
+            EXPECT_EQ(StatusOK, geom.setInputBuffer(attrInput2, RamsesObjectTypeUtils::ConvertTo<ArrayBuffer>(this->dataBuffer), sizeof(float), nonZeroStride) );
+        }
         else
         {
             const char* validInputName = nullptr;
-            switch (GetParam())
+            switch (getCreationDataType())
             {
             case EDataType::Float:
                 validInputName = "a_position";
@@ -156,6 +166,39 @@ namespace ramses
         EXPECT_EQ(13u, this->dataBuffer.impl.getElementCount());
     }
 
+    TEST_P(ADataBuffer, CanGetElementSize)
+    {
+        uint32_t expectedSize = 0u;
+        switch (getCreationDataType())
+        {
+        case EDataType::UInt16:
+            expectedSize = sizeof(uint16_t);
+            break;
+        case EDataType::UInt32:
+            expectedSize = sizeof(uint32_t);
+            break;
+        case EDataType::Float:
+            expectedSize = sizeof(float);
+            break;
+        case EDataType::Vector2F:
+            expectedSize = 2 * sizeof(float);
+            break;
+        case EDataType::Vector3F:
+            expectedSize = 3 * sizeof(float);
+            break;
+        case EDataType::Vector4F:
+            expectedSize = 4 * sizeof(float);
+            break;
+        case EDataType::ByteBlob:
+            expectedSize = 1u;
+            break;
+        default:
+            assert(false);
+        }
+
+        EXPECT_EQ(expectedSize, this->elementSizeInBytes);
+    }
+
     TEST_P(ADataBuffer, CanGetUsedSize)
     {
         EXPECT_EQ(StatusOK, this->dataBuffer.updateData(0u, 1u, singleElementData.data()));
@@ -186,5 +229,5 @@ namespace ramses
     }
 
     INSTANTIATE_TEST_SUITE_P(ADataBufferTest, ADataBuffer,
-        ::testing::Values(EDataType::UInt16, EDataType::UInt32, EDataType::Float, EDataType::Vector2F, EDataType::Vector3F, EDataType::Vector4F));
+        ::testing::Values(EDataType::UInt16, EDataType::UInt32, EDataType::Float, EDataType::Vector2F, EDataType::Vector3F, EDataType::Vector4F, EDataType::ByteBlob));
 }

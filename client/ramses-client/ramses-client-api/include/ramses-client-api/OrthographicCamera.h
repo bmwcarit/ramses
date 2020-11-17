@@ -9,16 +9,16 @@
 #ifndef RAMSES_ORTHOGRAPHICCAMERA_H
 #define RAMSES_ORTHOGRAPHICCAMERA_H
 
-#include "ramses-client-api/LocalCamera.h"
+#include "ramses-client-api/Camera.h"
 
 namespace ramses
 {
     /**
     * @brief   The OrthographicCamera is a local camera which defines an orthographic view into the scene.
-    * @details A valid camera for rendering must have viewport and frustum set, see #ramses::LocalCamera
+    * @details A valid camera for rendering must have viewport and frustum set, see #ramses::Camera
     *          for ways to set these parameters.
     */
-    class RAMSES_API OrthographicCamera : public LocalCamera
+    class RAMSES_API OrthographicCamera : public Camera
     {
     protected:
         /**

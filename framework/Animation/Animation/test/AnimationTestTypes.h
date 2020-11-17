@@ -29,16 +29,16 @@ namespace ramses_internal
     template < typename ContainerType, typename EDataType, typename HandleType, typename HandleType2>
     class AnimationDataBind;
 
-    typedef SplineKeyTangents<Vector3> SplineKeyVec3;
-    typedef Spline<SplineKeyTangents, Vector3> SplineVec3;
-    typedef SplineSolver<SplineKeyTangents, Vector3> SplineSolverVec3;
-    typedef SplineInitializer<Vector3, 10> SplineInitializerVec3_Small;
-    typedef SplineInitializer<Vector3, 100> SplineInitializerVec3_Medium;
-    typedef SplineInitializer<Vector3, 1000> SplineInitializerVec3_Large;
+    using SplineKeyVec3 = SplineKeyTangents<Vector3>;
+    using SplineVec3 = Spline<SplineKeyTangents, Vector3>;
+    using SplineSolverVec3 = SplineSolver<SplineKeyTangents, Vector3>;
+    using SplineInitializerVec3_Small = SplineInitializer<Vector3, 10>;
+    using SplineInitializerVec3_Medium = SplineInitializer<Vector3, 100>;
+    using SplineInitializerVec3_Large = SplineInitializer<Vector3, 1000>;
 
-    typedef AnimationDataBindTestContainer<Vector3> ContainerType;
-    typedef AnimationDataBind<ContainerType, Vector3, MemoryHandle> DataBindType;
-    typedef AnimationDataBind<ContainerType, Vector3, MemoryHandle, MemoryHandle> DataBindType2Handles;
+    using ContainerType = AnimationDataBindTestContainer<Vector3>;
+    using DataBindType = AnimationDataBind<ContainerType, Vector3, MemoryHandle>;
+    using DataBindType2Handles = AnimationDataBind<ContainerType, Vector3, MemoryHandle, MemoryHandle>;
 }
 
 #endif

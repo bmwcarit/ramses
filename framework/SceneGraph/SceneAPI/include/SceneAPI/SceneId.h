@@ -19,9 +19,9 @@
 namespace ramses_internal
 {
     struct SceneIdTag {};
-    typedef StronglyTypedValue<UInt64, 0, SceneIdTag> SceneId;
+    using SceneId = StronglyTypedValue<UInt64, 0, SceneIdTag>;
 
-    typedef std::vector<SceneId> SceneIdVector;
+    using SceneIdVector = std::vector<SceneId>;
 
     struct SceneInfo
     {
@@ -46,7 +46,7 @@ namespace ramses_internal
         String friendlyName;
         EScenePublicationMode publicationMode = EScenePublicationMode_Unpublished;
     };
-    typedef std::vector<SceneInfo> SceneInfoVector;
+    using SceneInfoVector = std::vector<SceneInfo>;
 }
 
 MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::SceneId, ramses::sceneId_t)

@@ -81,6 +81,30 @@ TextLayoutDemo::~TextLayoutDemo()
     m_framework.disconnect();
 }
 
+ramses::GlyphMetricsVector::const_iterator TextLayoutDemo::FindFittingSubstring(ramses::GlyphMetricsVector::const_iterator first, ramses::GlyphMetricsVector::const_iterator last, uint32_t maxWidth)
+{
+    if (first >= last)
+        return last;
+
+    int32_t xmax = std::numeric_limits<int32_t>::min();
+    int32_t totalAdvance = 0;
+
+    for (; first != last; ++first)
+    {
+        // glyphs with no bitmap data always fit, take only their advance
+        if (first->width > 0u && first->height > 0u)
+        {
+            xmax = std::max<int32_t>(xmax, totalAdvance + first->posX + first->width);
+            if (xmax > int(maxWidth))
+                break;
+        }
+
+        totalAdvance += first->advance;
+    }
+
+    return first;
+}
+
 void TextLayoutDemo::addColoredBox(ramses::Node& parent, float x, float y, float width, float height, float r, float g, float b, int32_t renderOrder)
 {
     ramses::GeometryBinding* geometry = m_scene.createGeometryBinding(m_colorQuadEffect, "quad geometry");
@@ -130,7 +154,7 @@ void TextLayoutDemo::layoutTextInABox(const std::u32string& string, const ramses
         while (itLineBegin != glyphs.cend() && isSpace(itLineBegin))
             ++itLineBegin;
 
-        auto itLineEnd = ramses::LayoutUtils::FindFittingSubstring(itLineBegin, glyphs.cend(), static_cast<uint32_t>(boxWidth));
+        auto itLineEnd = FindFittingSubstring(itLineBegin, glyphs.cend(), static_cast<uint32_t>(boxWidth));
 
         // check if we had to cut the line
         if (itLineEnd != glyphs.cend())
@@ -191,10 +215,10 @@ ramses::Effect& TextLayoutDemo::createTextEffect()
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-layout-demo-red-text.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-layout-demo-red-text.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
-    effectDesc.setAttributeSemantic("a_position", ramses::EEffectAttributeSemantic_TextPositions);
-    effectDesc.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
-    effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic_TextTexture);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
+    effectDesc.setAttributeSemantic("a_position", ramses::EEffectAttributeSemantic::TextPositions);
+    effectDesc.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic::TextTextureCoordinates);
+    effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic::TextTexture);
 
     return *m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "text effect");
 }
@@ -204,7 +228,7 @@ ramses::Effect& TextLayoutDemo::createColorQuadEffect()
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-layout-demo-colored-quad.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-layout-demo-colored-quad.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     return *m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "quad effect");
 }

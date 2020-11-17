@@ -17,7 +17,7 @@
 
 namespace ramses_internal
 {
-    typedef String RamshArgumentData;
+    using RamshArgumentData = String;
 }
 
 #define DEFINE_INT_CONVERTER(TYPE) \

@@ -63,17 +63,22 @@ void flushAllScenes(SceneVector& scenes)
     }
 }
 
+static constexpr uint32_t DefaultViewportWidth = 1280u;
+static constexpr uint32_t DefaultViewportHeight = 480u;
+
 template <typename INTEGRATIONSCENE>
 IntegrationScenePtr createSceneAndSetState(
     ramses::RamsesClient& ramses,
     std::vector<ramses::Scene*>& scenes,
     ramses_internal::UInt32 testState,
     ramses::sceneId_t sceneId,
-    const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f)
+    const ramses_internal::Vector3& cameraPosition = ramses_internal::Vector3(0.0f),
+    uint32_t vpWidth = DefaultViewportWidth,
+    uint32_t vpHeight = DefaultViewportHeight
     )
 {
     ramses::Scene& scene = addAndReturnScene(ramses, scenes, sceneId);
-    IntegrationScenePtr integrationScene(new INTEGRATIONSCENE(scene, testState, cameraPosition));
+    IntegrationScenePtr integrationScene(new INTEGRATIONSCENE(scene, testState, cameraPosition, vpWidth, vpHeight));
     scene.flush();
 
     return integrationScene;
@@ -197,7 +202,7 @@ int main(int argc, const char* argv[])
     {
         ramses_internal::ArgumentString folderArgument(parser, "folder", "folder", ".");
         const ramses::sceneId_t sceneId(37u);
-        ramses_internal::FileLoadingScene fileLoadingScene(*ramses, testState, sceneId, cameraPosParam, folderArgument, ramses::RamsesFrameworkConfig(argc, argv));
+        ramses_internal::FileLoadingScene fileLoadingScene(*ramses, testState, sceneId, cameraPosParam, folderArgument, ramses::RamsesFrameworkConfig(argc, argv), DefaultViewportWidth, DefaultViewportHeight);
         scenes.push_back(fileLoadingScene.getCreatedScene());
         break;
     }
@@ -227,6 +232,27 @@ int main(int argc, const char* argv[])
         ramses_internal::ArgumentString fileNameArgument(parser, "fileName", "fileName", ".");
         ramses_internal::SceneFromPath sceneFromPath(*ramses, folderArgument, fileNameArgument);
         scenes.push_back(sceneFromPath.getCreatedScene());
+        break;
+    }
+    case 20:
+    {
+        // for IVI layer test with custom resolution
+        auto integrationScene = createSceneAndSetState<ramses_internal::HierarchicalRedTrianglesScene>(*ramses, scenes, testState, ramses::sceneId_t(25u), cameraPosParam, 640u, 480u);
+        integrationScenes.push_back(std::move(integrationScene));
+        break;
+    }
+    case 21:
+    {
+        // for IVI layer test with custom resolution
+        auto integrationScene = createSceneAndSetState<ramses_internal::MultipleTrianglesScene>(*ramses, scenes, testState, ramses::sceneId_t(26u), cameraPosParam, 640u, 480u);
+        integrationScenes.push_back(std::move(integrationScene));
+        break;
+    }
+    case 22:
+    {
+        // for SC test with custom resolution
+        auto integrationScene = createSceneAndSetState<ramses_internal::StreamTextureScene>(*ramses, scenes, testState, ramses::sceneId_t(34u), cameraPosParam, 150u, 200u);
+        integrationScenes.push_back(std::move(integrationScene));
         break;
     }
     }

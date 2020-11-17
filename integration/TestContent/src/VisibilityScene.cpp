@@ -15,8 +15,8 @@
 
 namespace ramses_internal
 {
-    VisibilityScene::VisibilityScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    VisibilityScene::VisibilityScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
         ramses::Triangle triangle1(m_scene, *effect, ramses::TriangleAppearance::EColor_Red, 1.f, ramses::TriangleGeometry::EVerticesOrder_CCW);

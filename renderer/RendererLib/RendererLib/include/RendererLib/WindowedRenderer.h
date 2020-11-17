@@ -57,7 +57,7 @@ namespace ramses_internal
         WindowedRenderer(
             RendererCommandBuffer& commandBuffer,
             IRendererSceneEventSender& rendererSceneSender,
-            IPlatformFactory& platformFactory,
+            IPlatform& platform,
             RendererStatistics& m_rendererStatistics,
             const String& monitorFilename = String());
 

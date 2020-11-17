@@ -28,7 +28,6 @@ namespace ramses
     class AnimationSystemRealTime;
     class Node;
     class MeshNode;
-    class RemoteCamera;
     class PerspectiveCamera;
     class OrthographicCamera;
     class Effect;
@@ -69,6 +68,7 @@ namespace ramses
     class RenderPass;
     class BlitPass;
     class TextureSampler;
+    class TextureSamplerMS;
     class RenderBuffer;
     class RenderTarget;
     class RenderGroup;
@@ -116,8 +116,8 @@ namespace ramses
         AnimationSystem* m_animationSystem;
         RamsesClient* m_ramsesClient;
 
-        typedef std::pair<RamsesClient*, ramses::RamsesFramework*> ClientAndFramework;
-        typedef std::vector<ClientAndFramework> RamsesClientAndFrameworkComponentVector;
+        using ClientAndFramework = std::pair<RamsesClient *, ramses::RamsesFramework *>;
+        using RamsesClientAndFrameworkComponentVector = std::vector<ClientAndFramework>;
         RamsesClientAndFrameworkComponentVector m_allocatedClientAndFrameworkComponents;
         std::vector<SceneObject*> m_additionalAllocatedSceneObjects;
         sceneId_t m_lastReferencedSceneId{ 123u };
@@ -130,7 +130,6 @@ namespace ramses
     template <> AnimationSystemRealTime*   CreationHelper::createObjectOfType<AnimationSystemRealTime  >(const char* name);
     template <> Node*                      CreationHelper::createObjectOfType<Node                     >(const char* name);
     template <> MeshNode*                  CreationHelper::createObjectOfType<MeshNode                 >(const char* name);
-    template <> RemoteCamera*              CreationHelper::createObjectOfType<RemoteCamera             >(const char* name);
     template <> PerspectiveCamera*         CreationHelper::createObjectOfType<PerspectiveCamera        >(const char* name);
     template <> OrthographicCamera*        CreationHelper::createObjectOfType<OrthographicCamera       >(const char* name);
     template <> Effect*                    CreationHelper::createObjectOfType<Effect                   >(const char* name);
@@ -171,6 +170,7 @@ namespace ramses
     template <> RenderPass*                CreationHelper::createObjectOfType<RenderPass               >(const char* name);
     template <> BlitPass*                  CreationHelper::createObjectOfType<BlitPass                 >(const char* name);
     template <> TextureSampler*            CreationHelper::createObjectOfType<TextureSampler           >(const char* name);
+    template <> TextureSamplerMS*            CreationHelper::createObjectOfType<TextureSamplerMS       >(const char* name);
     template <> RenderBuffer*              CreationHelper::createObjectOfType<RenderBuffer             >(const char* name);
     template <> RenderTarget*              CreationHelper::createObjectOfType<RenderTarget             >(const char* name);
     template <> GeometryBinding*           CreationHelper::createObjectOfType<GeometryBinding          >(const char* name);

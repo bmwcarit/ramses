@@ -11,6 +11,11 @@ ACME_MODULE(
     #==========================================================================
     # general module information
     #==========================================================================
+    # Attention: extra care is needed in case of renaming this module
+    # The name of this module (and all CONCRETE platform modules) must align with
+    # the postfix of generated RAMSES libs' names. The platform name is used in
+    # cmake modules and templates for the mentioned purposes.
+    # The module naming convention is broken here knowledgeably
     NAME                    platform-wayland-ivi-egl-es-3-0
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
@@ -24,37 +29,6 @@ ACME_MODULE(
     #==========================================================================
     # dependencies
     #==========================================================================
-    DEPENDENCIES            PlatformFactory_Wayland_IVI_EGL
+    DEPENDENCIES            Platform_Wayland_IVI_EGL
                             Device_GL
-)
-
-# TODO: Michael Move EmbeddedCompositor_Wayland_Test to EmbeddedCompositor_Wayland
-#       directory where it belongs. It is here because of dependency to
-#       platform-wayland-ivi-egl-es-3-0 and order of module evaluation
-
-ACME_MODULE(
-
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    EmbeddedCompositor_Wayland_Test
-    TYPE                    TEST
-    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
-    ENABLE_INSTALL          ON
-
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_SOURCE            ../EmbeddedCompositor_Wayland/test/*.cpp
-                            ../EmbeddedCompositor_Wayland/test/*.h
-
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    # TODO: Michael fix dependencies for these tests, e.g. WaylandEGLExtensionProcs.h
-    DEPENDENCIES            EmbeddedCompositor_Wayland
-                            RendererTestUtils
-                            WaylandTestUtils
-                            platform-wayland-ivi-egl-es-3-0
-                            WaylandUtilities
 )

@@ -36,12 +36,12 @@ namespace ramses_internal
         assert(warpingMeshData.getTextureCoordinates().size() == vertexCount);
 
         const ArrayResource vertexArrayRes(EResourceType_VertexArray, vertexCount, EDataType::Vector3F, warpingMeshData.getVertexPositions().data(), ResourceCacheFlag_DoNotCache, String());
-        m_vertexBufferResource = m_device.allocateVertexBuffer(vertexArrayRes.getElementType(), vertexArrayRes.getDecompressedDataSize());
+        m_vertexBufferResource = m_device.allocateVertexBuffer(vertexArrayRes.getDecompressedDataSize());
         assert(m_vertexBufferResource.isValid());
         m_device.uploadVertexBufferData(m_vertexBufferResource, vertexArrayRes.getResourceData().data(), vertexArrayRes.getDecompressedDataSize());
 
         const ArrayResource texcoordArrayRes(EResourceType_VertexArray, vertexCount, EDataType::Vector2F, warpingMeshData.getTextureCoordinates().data(), ResourceCacheFlag_DoNotCache, String());
-        m_texcoordBufferResource = m_device.allocateVertexBuffer(texcoordArrayRes.getElementType(), texcoordArrayRes.getDecompressedDataSize());
+        m_texcoordBufferResource = m_device.allocateVertexBuffer(texcoordArrayRes.getDecompressedDataSize());
         assert(m_texcoordBufferResource.isValid());
         m_device.uploadVertexBufferData(m_texcoordBufferResource, texcoordArrayRes.getResourceData().data(), texcoordArrayRes.getDecompressedDataSize());
 
@@ -83,12 +83,11 @@ namespace ramses_internal
         EffectInputInformation a_position;
         a_position.inputName = "a_position";
         a_position.dataType = EDataType::Vector3Buffer;
-        a_position.semantics = EFixedSemantics_VertexPositionAttribute;
 
         EffectInputInformation a_texcoord;
         a_texcoord.inputName = "a_texcoord";
         a_texcoord.dataType = EDataType::Vector2Buffer;
-        a_texcoord.semantics = EFixedSemantics_Invalid;
+        a_texcoord.semantics = EFixedSemantics::Invalid;
 
         EffectInputInformationVector attributeInputs;
         attributeInputs.push_back(a_position);
@@ -97,7 +96,7 @@ namespace ramses_internal
         EffectInputInformation u_texture;
         u_texture.inputName = "u_texture";
         u_texture.dataType = EDataType::TextureSampler2D;
-        u_texture.semantics = EFixedSemantics_Invalid;
+        u_texture.semantics = EFixedSemantics::Invalid;
 
         EffectInputInformationVector uniformInputs;
         uniformInputs.push_back(u_texture);
@@ -128,8 +127,8 @@ namespace ramses_internal
             EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp, ESamplingMethod::Linear, ESamplingMethod::Linear, isotropicFilteringLevel);
 
         m_device.activateIndexBuffer(m_indexBufferResource);
-        m_device.activateVertexBuffer(m_vertexBufferResource, m_vertexPositionField, 0u, 0u);
-        m_device.activateVertexBuffer(m_texcoordBufferResource, m_texcoordField, 0u, 0u);
+        m_device.activateVertexBuffer(m_vertexBufferResource, m_vertexPositionField, 0u, 0u, EDataType::Vector3Buffer, 0u, 0u);
+        m_device.activateVertexBuffer(m_texcoordBufferResource, m_texcoordField, 0u, 0u, EDataType::Vector2Buffer, 0u, 0u);
         m_device.drawIndexedTriangles(0, m_indexCount, 1u);
     }
 }

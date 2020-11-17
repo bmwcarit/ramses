@@ -40,7 +40,7 @@ namespace ramses_internal
         case EResourceType_VertexArray:
         {
             const ArrayResource* vertArray = resourceObject.convertTo<ArrayResource>();
-            const DeviceResourceHandle deviceHandle = device.allocateVertexBuffer(vertArray->getElementType(), vertArray->getDecompressedDataSize());
+            const DeviceResourceHandle deviceHandle = device.allocateVertexBuffer(vertArray->getDecompressedDataSize());
             device.uploadVertexBufferData(deviceHandle, vertArray->getResourceData().data(), vertArray->getDecompressedDataSize());
             return deviceHandle;
         }

@@ -21,8 +21,8 @@
 
 namespace ramses_internal
 {
-    StreamTextureScene::StreamTextureScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    StreamTextureScene::StreamTextureScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_effect(nullptr)
     {
         m_effect = getTestEffect("ramses-test-client-textured");

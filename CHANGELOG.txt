@@ -1,3 +1,82 @@
+27.0.2
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Added static RamsesFramework::SetConsoleLogLevel that takes new RamsesFrameworkType ELogLevel and applies it immediately.
+
+27.0.1
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - IMPORTANT: Scene::flush will now fail, if resources are missing and scene is therefore invalid.
+            - Flush acts as aborted and scene state isn't altered by the failed flush
+            - Readding resources will make subsequent flushes work again
+            - Make sure your code handles a flush fail!
+        - Implement Node:setRotation(float, float, float, ERotationConvention) and Node::getRotation(float&, float&, float&, ERotationConvention&)
+        - Mark Node::setRotation(float, float, float), Node::rotate(float, float, float) and Node::getRotation(float&, float&, float&) as deprecated
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fixed crash on creation of multiple instances of dcsm provider tool
+
+27.0.0
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Removed deprecated ResourceDataPool functions
+        - Added SceneObject::getSceneId() to retrieve scene id object belongs to
+        - Add support for interleaved vertex attributes for dynamic and static resources
+            - Added EDataType::ByteBlob
+            - Added GeometryBinding::setInput(const AttributeInput&, const ArrayBuffer&, uint8_t, uint8_t) and GeometryBinding::setInput(const AttributeInput&, const ArrayResource&, uint8_t, uint8_t)
+        - Removed LayoutUtils::FindFittingSubstring
+        - Add non-const version of RenderPass::getCamera()
+        - Removed CarCameraPlaneMetadata, DcsmMetadataUpdate::hasCarCameraPlanes, DcsmMetadataUpdate::getCarCameraPlanes
+          and DcsmMetadataCreator::setCarCameraPlanes, the nearPlane and farPlane parameters were moved into CarModelViewMetadata
+        - DCSMContentControl::addContentCategory and DCSMContentControl::removeContentCategory are no longer static, but can instead be called on the object itself
+        - API concerning the adding of content categories to DcsmContentControl has been simplified
+            - DCSMContentControlConfig is removed. DCSMContentControl::addContentCategory is now the only way to add content category.
+            - Renaming all affected functions from CategorySize and SafeAreaSize to CategoryRect and SafeRect on CategoryInfoUpdate (e.g. setCategoryRect).
+            - Constructor of CategoryInfoUpdate takes now all 3 category infos (RenderSize, CategoryRect, SafeRect) while SafeRect is non-mandatory argument and set to 0 by default.
+            - DCSMContentControl::addContentCategory now takes a Category, a displayId_t and a CategoryInfoUpdate as arguments. At least RenderSize and CategoryRect have to be set
+              on the CategoryInfoUpdate (width and height cannot be 0) or else the function will fail and return error status. Also if a category that was already added before is given
+              as argument the call fails and returns error status. For changing the category info of an existing category DCSMContentControl::setCategoryInfo is used.
+        - Enabled support for MSAA for offscreen buffers:
+            - Addition of optional parameter to RamsesRenderer::createOffscreenBuffer to set sample count used for MSAA.
+            - New EDataType TextureSampler2DMS for reading from multisampled Texture in shader
+            - Added support for Read/Write RenderBuffers.
+            - RamsesScene::createTextureSampler fails with multisampled RenderBuffer.
+            - New RamsesObject TextureSamplerMS for sampling multisampled Texture. Takes a Read/Write Renderbuffer and name as arguments for creation.
+            - Only API is implemented for reading from TextureSamplerMS yet. Attempt will always fail.
+        - Change of RendererSceneState::Unavailable and RendererSceneState::Available semantics
+            - Unavailable: Scene not available, no scene control possible.
+            - Available: Scene available, but user not interested, scene not guaranteed to be locally in memory.
+            - SceneReference and Renderer side data links now need scenes to be in Ready state.
+            - Removed scenePublished callback from IRendererSceneControlEventHandler, use sceneStateChanged instead
+        - Add possibility to set and get Euler angle rotation using a right-handed coordinate system
+            - Added Node::setRotation(float x, float y, float z, ERotationConvention rotationConvention) and Node::getRotation(float& x, float& y, float& z, ERotationConvention& rotationConvention)
+            - The functionality is not implemented yet so those API calls will always fail
+        - Removed RemoteCamera and the concept of using a camera defined by renderer/consumer side
+            - every camera in scene must be fully specified as ortho or perspective with frustum and viewport
+            - LocalCamera base class was merged into Camera base class
+            - to port RemoteCamera in legacy code use PerspectiveCamera with FOV=19, nearPlane=0.1, farPlane=1500
+              and viewport+aspectRatio matching desired renderer display resolution
+            - removed all DisplayConfig methods setting and getting projection or transformation of a remote camera on renderer,
+              all corresponding command line arguments were removed as well
+        - Cleaned up obsolete effect input semantics
+            - EEffectUniformSemantic and EEffectAttributeSemantic are enum class
+            - EEffectUniformSemantic_RendererViewMatrix and EEffectUniformSemantic_CameraViewMatrix merged into EEffectUniformSemantic::ViewMatrix
+              (consequence of removal of RemoteCamera)
+            - EEffectUniformSemantic_RendererScreenResolution renamed to more fitting EEffectUniformSemantic::DisplayBufferResolution
+        - Removed setMaximumTotalBytesAllowedForAsyncResourceLoading from RamsesFrameworkConfig as resources are no longer loaded indirectly
+        - DCSMContentControl now usable for wayland ivi surfaces (API only at the moment)
+            - added DcsmContentControl::linkContentToTextureConsumer to link wayland content as a texture (similar to offscreen buffers)
+            - new event IDcsmContentControlEventHandler::contentLinkedToTextureConsumer to inform about status of linking
+            - IDcsmConsumerEventHandler: ETechnicalContentType argument moved from contentDescription to offerContent
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - PerspectiveCamera and OrthographicCamera are no longer invalid when loaded from file if saved as valid
+
 26.0.6
 -------------------
         General changes

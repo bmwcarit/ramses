@@ -31,6 +31,7 @@ namespace ramses
         EEffectInputDataType_Matrix33F,      ///< Matrix3x3 data type
         EEffectInputDataType_Matrix44F,      ///< Matrix4x4 data type
         EEffectInputDataType_TextureSampler2D,  ///< 2D Texture sampler data type
+        EEffectInputDataType_TextureSampler2DMS,  ///< 2D Texture sampler multi sampled data type
         EEffectInputDataType_TextureSampler3D,  ///< 3D Texture sampler data type
         EEffectInputDataType_TextureSamplerCube  ///< Cube Texture sampler data type
     };

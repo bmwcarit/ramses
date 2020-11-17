@@ -26,7 +26,7 @@ namespace ramses_internal
         ClientScene* releaseScene(SceneId id);
 
     private:
-        typedef HashMap<SceneId, ClientScene*> SceneMap;
+        using SceneMap = HashMap<SceneId, ClientScene *>;
         SceneMap m_scenes;
 
     };

@@ -57,9 +57,9 @@ namespace ramses_internal
 
     TYPED_TEST(AScene, SemanticCanBeSetAndRetrieved)
     {
-        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType::Float), DataFieldInfo(EDataType::Matrix33F, 1u, EFixedSemantics_ModelViewMatrix33) }, ResourceContentHash(123u, 0u));
+        const DataLayoutHandle dataLayout = this->m_scene.allocateDataLayout({ DataFieldInfo(EDataType::Float), DataFieldInfo(EDataType::Matrix33F, 1u, EFixedSemantics::ModelViewMatrix33) }, ResourceContentHash(123u, 0u));
 
-        EXPECT_EQ(EFixedSemantics_Invalid, this->m_scene.getDataLayout(dataLayout).getField(DataFieldHandle(0u)).semantics);
-        EXPECT_EQ(EFixedSemantics_ModelViewMatrix33, this->m_scene.getDataLayout(dataLayout).getField(DataFieldHandle(1u)).semantics);
+        EXPECT_EQ(EFixedSemantics::Invalid, this->m_scene.getDataLayout(dataLayout).getField(DataFieldHandle(0u)).semantics);
+        EXPECT_EQ(EFixedSemantics::ModelViewMatrix33, this->m_scene.getDataLayout(dataLayout).getField(DataFieldHandle(1u)).semantics);
     }
 }

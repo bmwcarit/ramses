@@ -52,6 +52,9 @@ private:
         DisplayTest_RemapSceneToWarpedDisplay,
         DisplayTest_ResubscribeScene
     };
+
+    static constexpr uint32_t DisplayWidth = 128u;
+    static constexpr uint32_t DisplayHeight = 64u;
 };
 
 #endif

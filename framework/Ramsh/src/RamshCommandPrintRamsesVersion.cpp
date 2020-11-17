@@ -9,20 +9,19 @@
 #include "Ramsh/RamshCommandPrintRamsesVersion.h"
 #include "Ramsh/Ramsh.h"
 #include "Utils/LogMacros.h"
+#include "ramses-sdk-build-config.h"
 
 namespace ramses_internal
 {
-    RamshCommandPrintRamsesVersion::RamshCommandPrintRamsesVersion(const char* const versionString)
-        : m_versionString(versionString)
+    RamshCommandPrintRamsesVersion::RamshCommandPrintRamsesVersion()
     {
         registerKeyword("ramsesVersion");
         description = "print RAMSES version";
     }
 
-    bool RamshCommandPrintRamsesVersion::executeInput(const RamshInput& input)
+    bool RamshCommandPrintRamsesVersion::executeInput(const RamshInput& /*input*/)
     {
-        UNUSED(input);
-        LOG_INFO(CONTEXT_RAMSH, m_versionString);
+        LOG_INFO(CONTEXT_RAMSH, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING);
         return true;
     }
 

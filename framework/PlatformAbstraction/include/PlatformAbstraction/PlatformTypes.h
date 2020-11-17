@@ -15,22 +15,22 @@
 
 namespace ramses_internal
 {
-    typedef int8_t   Int8;
-    typedef int16_t  Int16;
-    typedef int32_t  Int32;
-    typedef int64_t  Int64;
-    typedef uint8_t  UInt8;
-    typedef uint16_t UInt16;
-    typedef uint32_t UInt32;
-    typedef uint64_t UInt64;
-    typedef std::uintptr_t UInt;
-    typedef std::intptr_t  Int;
-    typedef unsigned char  UChar;
-    typedef float  Float;
-    typedef double Double;
-    typedef char   Char;
-    typedef bool   Bool;
-    typedef unsigned char Byte;
+    using Int8 = int8_t;
+    using Int16 = int16_t;
+    using Int32 = int32_t;
+    using Int64 = int64_t;
+    using UInt8 = uint8_t;
+    using UInt16 = uint16_t;
+    using UInt32 = uint32_t;
+    using UInt64 = uint64_t;
+    using UInt = std::uintptr_t;
+    using Int = std::intptr_t;
+    using UChar = unsigned char;
+    using Float = float;
+    using Double = double;
+    using Char = char;
+    using Bool = bool;
+    using Byte = unsigned char;
 }
 
 #endif

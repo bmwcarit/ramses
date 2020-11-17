@@ -18,14 +18,6 @@ namespace ramses_internal
     {
     }
 
-    ResourceConsumerComponentMock::ResourceConsumerComponentMock()
-    {
-    }
-
-    ResourceConsumerComponentMock::~ResourceConsumerComponentMock()
-    {
-    }
-
     SceneGraphProviderComponentMock::SceneGraphProviderComponentMock()
     {
     }

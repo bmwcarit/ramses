@@ -42,11 +42,6 @@ namespace ramses_internal
         virtual IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() override;
         virtual IConnectionStatusUpdateNotifier& getDcsmConnectionStatusUpdateNotifier() override;
 
-        // resource
-        virtual bool sendRequestResources(const Guid& to, const ResourceContentHashVector& resources) override;
-        virtual bool sendResourcesNotAvailable(const Guid& to, const ResourceContentHashVector& resources) override;
-        virtual bool sendResources(const Guid& to, const ISceneUpdateSerializer& serializer) override;
-
         // scene
         virtual bool broadcastNewScenesAvailable(const SceneInfoVector& newScenes) override;
         virtual bool broadcastScenesBecameUnavailable(const SceneInfoVector& unavailableScenes) override;
@@ -61,9 +56,9 @@ namespace ramses_internal
         virtual bool sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data) override;
 
         // dcsm client -> renderer
-        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category, const std::string& friendlyName) override;
-        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category, const std::string& friendlyName) override;
-        virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
+        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName) override;
+        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName) override;
+        virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor) override;
         virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID) override;
         virtual bool sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
         virtual bool sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
@@ -76,8 +71,6 @@ namespace ramses_internal
         virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo& si, AnimationInformation ai) override;
 
         // set service handlers
-        void setResourceProviderServiceHandler(IResourceProviderServiceHandler* handler) override;
-        void setResourceConsumerServiceHandler(IResourceConsumerServiceHandler* handler) override;
         void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) override;
         void setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler) override;
         void setDcsmProviderServiceHandler(IDcsmProviderServiceHandler* handler) override;
@@ -103,19 +96,21 @@ namespace ramses_internal
             PureDaemon
         };
 
-        enum class EQueueType
-        {
-            Normal,
-            Priority
-        };
-
         struct OutMessage
         {
             OutMessage(const Guid& to_, EMessageId messageType_)
+                : OutMessage(std::vector<Guid>({to_}), messageType_)
+            {
+                assert(to_.isValid());
+            }
+
+            OutMessage(const std::vector<Guid>& to_, EMessageId messageType_)
                 : to(to_)
                 , messageType(messageType_)
             {
-                stream << static_cast<uint32_t>(0) << static_cast<uint32_t>(messageType);
+                stream << static_cast<uint32_t>(0)  // fill in size later
+                       << static_cast<uint32_t>(0)  // fill in protocol version later
+                       << static_cast<uint32_t>(messageType);
             }
 
             // TODO(tobias) make move only in c++14
@@ -123,7 +118,7 @@ namespace ramses_internal
             OutMessage(const OutMessage&) = default;
             OutMessage& operator=(const OutMessage&) = default;
 
-            Guid to;
+            std::vector<Guid> to;
             EMessageId messageType;
             BinaryOutputStream stream;
         };
@@ -138,8 +133,7 @@ namespace ramses_internal
             asio::ip::tcp::socket socket;
             asio::steady_timer connectTimer;
 
-            std::deque<OutMessage> outQueueNormal;
-            std::deque<OutMessage> outQueuePrio;
+            std::deque<OutMessage> outQueue;
             std::vector<Byte> currentOutBuffer;
 
             uint32_t lengthReceiveBuffer;
@@ -181,9 +175,10 @@ namespace ramses_internal
         void addNewParticipantByAddress(const NetworkParticipantAddress& address);
         void initializeNewlyConnectedParticipant(const ParticipantPtr& pp);
         void handleReceivedMessage(const ParticipantPtr& pp);
-        bool postMessageForSending(OutMessage msg, bool hasPrio);
+        bool postMessageForSending(OutMessage msg);
         void updateLastReceivedTime(const ParticipantPtr& pp);
         void sendConnectorAddressExchangeMessagesForNewParticipant(const ParticipantPtr& newPp);
+        void triggerConnectionUpdateNotification(Guid participant, EConnectionStatus status);
 
         void handleConnectionDescriptionMessage(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleConnectorAddressExchange(const ParticipantPtr& pp, BinaryInputStream& stream);
@@ -195,17 +190,14 @@ namespace ramses_internal
         void handlePublishScene(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleUnpublishScene(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleSceneNotAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleRequestResources(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleTransferResources(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleResourcesNotAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleRendererEvent(const ParticipantPtr& pp, BinaryInputStream& stream);
 
         void handleDcsmCanvasSizeChange(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmContentStatusChange(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream, size_t size);
+        void handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmContentDescription(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream, size_t size);
+        void handleDcsmCategoryContentSwitchRequest(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmRequestUnregisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmForceStopOfferContent(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmUpdateContentMetadata(const ParticipantPtr& pp, BinaryInputStream& stream);
@@ -228,9 +220,8 @@ namespace ramses_internal
 
         ConnectionStatusUpdateNotifier m_ramsesConnectionStatusUpdateNotifier;
         ConnectionStatusUpdateNotifier m_dcsmConnectionStatusUpdateNotifier;
+        std::vector<Guid> m_connectedParticipantsForBroadcasts;
 
-        IResourceConsumerServiceHandler* m_resourceConsumerHandler;
-        IResourceProviderServiceHandler* m_resourceProviderHandler;
         ISceneProviderServiceHandler* m_sceneProviderHandler;
         ISceneRendererServiceHandler* m_sceneRendererHandler;
         IDcsmProviderServiceHandler* m_dcsmProviderHandler;

@@ -8,7 +8,6 @@
 
 #include "RendererFramework/RendererFrameworkLogic.h"
 #include "Components/ISceneGraphConsumerComponent.h"
-#include "Components/IResourceConsumerComponent.h"
 #include "RendererLib/RendererCommandBuffer.h"
 #include "Math3d/CameraMatrixHelper.h"
 #include "Utils/LogMacros.h"
@@ -21,13 +20,11 @@
 namespace ramses_internal
 {
     RendererFrameworkLogic::RendererFrameworkLogic(
-        IResourceConsumerComponent& res,
         ISceneGraphConsumerComponent& sgc,
         RendererCommandBuffer& rendererCommandBuffer,
         PlatformLock& frameworkLock)
         : m_frameworkLock(frameworkLock)
         , m_sceneGraphConsumerComponent(sgc)
-        , m_resourceComponent(res)
         , m_rendererCommands(rendererCommandBuffer)
     {
         m_sceneGraphConsumerComponent.setSceneRendererHandler(this);
@@ -66,35 +63,6 @@ namespace ramses_internal
 
         assert(m_sceneClients.contains(sceneInfo.sceneID));
         m_rendererCommands.receiveScene(sceneInfo);
-    }
-
-    void RendererFrameworkLogic::requestResourceAsyncronouslyFromFramework(const ResourceContentHashVector& ids, const ResourceRequesterID& requesterID, const SceneId& sceneId)
-    {
-        PlatformGuard guard(m_frameworkLock);
-
-        const std::pair<Guid, String> *sceneIdToProviderID = m_sceneClients.get(sceneId);
-        if (nullptr != sceneIdToProviderID)
-        {
-            const Guid providerID = sceneIdToProviderID->first;
-            m_resourceComponent.requestResourceAsynchronouslyFromFramework(ids, requesterID, providerID);
-        }
-        else
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererFrameworkLogic::requestResourceAsyncronouslyFromFramework:  could not request resources because sceneid" << sceneId
-                << " was not mappable to a provider");
-        }
-    }
-
-    void RendererFrameworkLogic::cancelResourceRequest(const ResourceContentHash& resourceHash, const ResourceRequesterID& requesterID)
-    {
-        PlatformGuard guard(m_frameworkLock);
-        m_resourceComponent.cancelResourceRequest(resourceHash, requesterID);
-    }
-
-    ManagedResourceVector RendererFrameworkLogic::popArrivedResources(const ResourceRequesterID& requesterID)
-    {
-        PlatformGuard guard(m_frameworkLock);
-        return m_resourceComponent.popArrivedResources(requesterID);
     }
 
     void RendererFrameworkLogic::handleSceneUpdate(const SceneId& sceneId, SceneUpdate&& sceneUpdate, const Guid& /*providerID*/)

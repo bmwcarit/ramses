@@ -48,139 +48,45 @@ namespace ramses_internal
             Float data[16];
         };
 
-        /// Identity matrix
         static const Matrix44f Identity;
-
-        /// Zero matrix
         static const Matrix44f Empty;
 
         static constexpr Matrix44f Translation(const Vector3& translation);
-        static constexpr Matrix44f Translation(const Float x, const Float y, const Float z);
-        static Matrix44f RotationEulerZYX(const Vector3& rotationXYZ);
-        static Matrix44f RotationEulerZYX(const Float x, const Float y, const Float z);
+        static Matrix44f RotationEuler(const Vector3& rotation, ERotationConvention rotationConvention);
         static constexpr Matrix44f Scaling(const Vector3& scaling);
-        static constexpr Matrix44f Scaling(const Float x, const Float y, const Float z);
         static constexpr Matrix44f Scaling(const Float uniScale);
 
         constexpr Matrix44f();
-        /**
-         * Constructor for initialize matrix with 16 single values
-         */
         constexpr Matrix44f(  const Float _m11, const Float _m12, const Float _m13, const Float _m14,
                     const Float _m21, const Float _m22, const Float _m23, const Float _m24,
                     const Float _m31, const Float _m32, const Float _m33, const Float _m34,
                     const Float _m41, const Float _m42, const Float _m43, const Float _m44);
-
-        /**
-        * Constructor for initialize matrix with 16 values array (row-wise)
-        */
         explicit constexpr Matrix44f(const float (&matrixElements)[16]);
-
-        /**
-         * Constructor to initialize matrix with one vector for each row
-         * @param v1 Vector4 for first row
-         * @param v2 Vector4 for second row
-         * @param v3 Vector4 for third row
-         * @param v4 Vector4 for forth row
-         */
         constexpr Matrix44f(const Vector4& v1, const Vector4& v2, const Vector4& v3, const Vector4& v4);
-
         constexpr Matrix44f(const Matrix44f& other) = default;
         constexpr Matrix44f(Matrix44f&& other) noexcept = default;
+        explicit constexpr Matrix44f(const Matrix33f& otherMat33);
+
         constexpr Matrix44f& operator=(const Matrix44f& other);
         constexpr Matrix44f& operator=(Matrix44f&& other) noexcept = default;
 
-        /**
-         * Constructor to create Matrix44 from other matrix33.
-         * Initializes element m44 with 1.f, all the rest untouched elements with 0.f
-         * @param other Matrix33 to copy data from
-         */
-        explicit constexpr Matrix44f(const Matrix33f& otherMat33);
-
-        /**
-         * Sets matrix elements to the given values
-         */
         constexpr void set(     const Float _m11, const Float _m12, const Float _m13, const Float _m14
                     , const Float _m21, const Float _m22, const Float _m23, const Float _m24
                     , const Float _m31, const Float _m32, const Float _m33, const Float _m34
                     , const Float _m41, const Float _m42, const Float _m43, const Float _m44);
-
-        /**
-         *  Sets all matrix elements to the given value
-         */
         constexpr void set(const Float val);
 
-        /**
-         * Multiplies the matrix with the given Vector
-         * @param vec Vector4 to multiply with the matrix
-         * @return the resulting Vector4
-         */
         Vector4 operator*(const Vector4& vec) const;
-
-        /**
-         * Multiplies the matrix with another matrix
-         * @param mat Matrix44 to multiply with the matrix
-         * @return the resulting Matrix44
-         */
         constexpr Matrix44f operator*(const Matrix44f& mat) const;
-
-        /**
-         * Multiplies the matrix with another matrix and assigns the result
-         * @param mat Matrix44 to multiply with the matrix
-         */
         constexpr void operator*=(const Matrix44f& mat);
-
-        /**
-         * Check if two matrices are equal
-         * @param other Matrix44 to compare with
-         * @return true if matrices are equal false otherwise
-         */
         constexpr bool operator==(const Matrix44f& other) const;
-
-        /**
-         * Check if two matrices are not equal
-         * @param other Matrix44 to compare with
-         * @return true if matrices are equal false otherwise
-         */
         constexpr bool operator!=(const Matrix44f& other) const;
 
-        /**
-         * Returns a pointer to the row specified by index
-         * @param the index of the row to return
-         * @return a pointer to the row specified by index
-         */
         constexpr Float& m(const UInt32 i, const UInt32 j);
-
-        /**
-         * Returns a const pointer to the row specified by index
-         * @param the index of the row to return
-         * @return a pointer to the row specified by index
-         */
         constexpr const Float& m(const UInt32 i, const UInt32 j) const;
-
-        /**
-         * Transposes and returns a matrix
-         * @return A transposed version of the current Matrix
-         */
         constexpr Matrix44f transpose() const;
-
-        /**
-         * Computes the determinant of the matrix
-         * @ return the determinant of the matrix
-         */
         constexpr Float determinant() const;
-
-        /**
-         * Computes the inverse matrix and returns it as result
-         * @ return the inverse matrix
-         */
         constexpr Matrix44f inverse() const;
-
-        /**
-         * Rotates the given point with the rotation information from upper 3x3 matrix
-         * @param point Reference to the point which should be rotated
-         * @return The rotated point
-         */
         Vector3 rotate(const Vector3& point) const;
     };
 
@@ -459,15 +365,9 @@ namespace ramses_internal
     }
 
     inline
-    Matrix44f Matrix44f::RotationEulerZYX(const Vector3& rotationXYZ)
+    Matrix44f Matrix44f::RotationEuler(const Vector3& rotation, ERotationConvention rotationConvention)
     {
-        return Matrix44f(Matrix33f::RotationEulerZYX(rotationXYZ));
-    }
-
-    inline
-    Matrix44f Matrix44f::RotationEulerZYX(const Float x, const Float y, const Float z)
-    {
-        return RotationEulerZYX(Vector3(x, y, z));
+        return Matrix44f(Matrix33f::RotationEuler(rotation, rotationConvention));
     }
 
     constexpr inline
@@ -502,12 +402,6 @@ namespace ramses_internal
     }
 
     constexpr inline
-    Matrix44f Matrix44f::Translation(const Float x, const Float y, const Float z)
-    {
-        return Translation(Vector3(x, y, z));
-    }
-
-    constexpr inline
     Matrix44f Matrix44f::Scaling(const Vector3& scaling)
     {
         return Matrix44f(
@@ -515,12 +409,6 @@ namespace ramses_internal
             0.0f,       scaling.y,  0.0f,       0.0f,
             0.0f,       0.0f,       scaling.z,  0.0f,
             0.0f,       0.0f,       0.0f,       1.0f);
-    }
-
-    constexpr inline
-    Matrix44f Matrix44f::Scaling(const Float x, const Float y, const Float z)
-    {
-        return Scaling(Vector3(x, y, z));
     }
 
     constexpr inline

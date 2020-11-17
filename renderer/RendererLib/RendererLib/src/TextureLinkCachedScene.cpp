@@ -70,6 +70,17 @@ namespace ramses_internal
         setRenderableResourcesDirtyByTextureSampler(sampler);
     }
 
+    void TextureLinkCachedScene::setTextureSamplerContentSource(TextureSamplerHandle sampler, StreamBufferHandle streamBuffer)
+    {
+        assert(sampler.isValid() && isTextureSamplerAllocated(sampler));
+        assert(m_fallbackTextureSamplers.contains(sampler));
+        TextureSampler& samplerData = getTextureSamplerInternal(sampler);
+        samplerData.contentType = TextureSampler::ContentType::StreamBuffer;
+        samplerData.textureResource = ResourceContentHash::Invalid();
+        samplerData.contentHandle = streamBuffer.asMemoryHandle();
+        setRenderableResourcesDirtyByTextureSampler(sampler);
+    }
+
     void TextureLinkCachedScene::restoreTextureSamplerFallbackValue(TextureSamplerHandle sampler)
     {
         assert(sampler.isValid() && isTextureSamplerAllocated(sampler));

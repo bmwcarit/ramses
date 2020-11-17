@@ -375,8 +375,8 @@ TEST_F(AGlslEffect, canParseShaderInputs)
             )SHADER";
 
     HashMap<String, EFixedSemantics> semantics;
-    semantics.put("uniformWithSemantic", EFixedSemantics_ModelViewProjectionMatrix);
-    semantics.put("attributeWithSemantic", EFixedSemantics_CameraWorldPosition);
+    semantics.put("uniformWithSemantic", EFixedSemantics::ModelViewProjectionMatrix);
+    semantics.put("attributeWithSemantic", EFixedSemantics::CameraWorldPosition);
 
     GlslEffect ge(vertexShader, fragmentShader, geometryShader, emptyCompilerDefines, semantics, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
@@ -386,18 +386,18 @@ TEST_F(AGlslEffect, canParseShaderInputs)
     const EffectInputInformationVector& attributes = res->getAttributeInputs();
 
     ASSERT_EQ(8u, uniforms.size());
-    EXPECT_EQ(EffectInputInformation("uniformWithSemantic", 1, EDataType::Matrix44F, EFixedSemantics_ModelViewProjectionMatrix), uniforms[0]);
-    EXPECT_EQ(EffectInputInformation("matrix3x3", 1, EDataType::Matrix33F, EFixedSemantics_Invalid), uniforms[1]);
-    EXPECT_EQ(EffectInputInformation("matrix2x2", 1, EDataType::Matrix22F, EFixedSemantics_Invalid), uniforms[2]);
-    EXPECT_EQ(EffectInputInformation("uniformSampler", 1, EDataType::TextureSampler2D, EFixedSemantics_Invalid), uniforms[3]);
-    EXPECT_EQ(EffectInputInformation("uniformVec", 1, EDataType::Vector4F, EFixedSemantics_Invalid), uniforms[4]);
-    EXPECT_EQ(EffectInputInformation("uniformGeomFloat", 1, EDataType::Float, EFixedSemantics_Invalid), uniforms[5]);
-    EXPECT_EQ(EffectInputInformation("uniformGeomVec", 1, EDataType::Vector4F, EFixedSemantics_Invalid), uniforms[6]);
-    EXPECT_EQ(EffectInputInformation("uniformGeomSampler", 1, EDataType::TextureSampler2D, EFixedSemantics_Invalid), uniforms[7]);
+    EXPECT_EQ(EffectInputInformation("uniformWithSemantic", 1, EDataType::Matrix44F, EFixedSemantics::ModelViewProjectionMatrix), uniforms[0]);
+    EXPECT_EQ(EffectInputInformation("matrix3x3", 1, EDataType::Matrix33F, EFixedSemantics::Invalid), uniforms[1]);
+    EXPECT_EQ(EffectInputInformation("matrix2x2", 1, EDataType::Matrix22F, EFixedSemantics::Invalid), uniforms[2]);
+    EXPECT_EQ(EffectInputInformation("uniformSampler", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid), uniforms[3]);
+    EXPECT_EQ(EffectInputInformation("uniformVec", 1, EDataType::Vector4F, EFixedSemantics::Invalid), uniforms[4]);
+    EXPECT_EQ(EffectInputInformation("uniformGeomFloat", 1, EDataType::Float, EFixedSemantics::Invalid), uniforms[5]);
+    EXPECT_EQ(EffectInputInformation("uniformGeomVec", 1, EDataType::Vector4F, EFixedSemantics::Invalid), uniforms[6]);
+    EXPECT_EQ(EffectInputInformation("uniformGeomSampler", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid), uniforms[7]);
 
     ASSERT_EQ(2u, attributes.size());
-    EXPECT_EQ(EffectInputInformation("attributeWithSemantic", 1, EDataType::Vector3Buffer, EFixedSemantics_CameraWorldPosition), attributes[0]);
-    EXPECT_EQ(EffectInputInformation("attributeFloat", 1, EDataType::FloatBuffer, EFixedSemantics_Invalid), attributes[1]);
+    EXPECT_EQ(EffectInputInformation("attributeWithSemantic", 1, EDataType::Vector3Buffer, EFixedSemantics::CameraWorldPosition), attributes[0]);
+    EXPECT_EQ(EffectInputInformation("attributeFloat", 1, EDataType::FloatBuffer, EFixedSemantics::Invalid), attributes[1]);
 }
 
 TEST_F(AGlslEffect, canParseSamplerInputsGLSLES2)
@@ -425,8 +425,8 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES2)
     const EffectInputInformationVector& uniforms = res->getUniformInputs();
 
     ASSERT_EQ(2u, uniforms.size());
-    EXPECT_EQ(EffectInputInformation("s2d", 1, EDataType::TextureSampler2D, EFixedSemantics_Invalid), uniforms[0]);
-    EXPECT_EQ(EffectInputInformation("sc", 1, EDataType::TextureSamplerCube, EFixedSemantics_Invalid), uniforms[1]);
+    EXPECT_EQ(EffectInputInformation("s2d", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid), uniforms[0]);
+    EXPECT_EQ(EffectInputInformation("sc", 1, EDataType::TextureSamplerCube, EFixedSemantics::Invalid), uniforms[1]);
 }
 
 TEST_F(AGlslEffect, canParseSamplerInputsGLSLES3)
@@ -459,10 +459,48 @@ TEST_F(AGlslEffect, canParseSamplerInputsGLSLES3)
     const EffectInputInformationVector& uniforms = res->getUniformInputs();
 
     ASSERT_EQ(3u, uniforms.size());
-    EXPECT_EQ(EffectInputInformation("s2d", 1, EDataType::TextureSampler2D, EFixedSemantics_Invalid), uniforms[0]);
-    EXPECT_EQ(EffectInputInformation("s3d", 1, EDataType::TextureSampler3D, EFixedSemantics_Invalid), uniforms[1]);
-    EXPECT_EQ(EffectInputInformation("sc", 1, EDataType::TextureSamplerCube, EFixedSemantics_Invalid), uniforms[2]);
+    EXPECT_EQ(EffectInputInformation("s2d", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid), uniforms[0]);
+    EXPECT_EQ(EffectInputInformation("s3d", 1, EDataType::TextureSampler3D, EFixedSemantics::Invalid), uniforms[1]);
+    EXPECT_EQ(EffectInputInformation("sc", 1, EDataType::TextureSamplerCube, EFixedSemantics::Invalid), uniforms[2]);
 }
+
+TEST_F(AGlslEffect, canParseSamplerInputsGLSLES31)
+{
+    const char* vertexShader =
+        "#version 310 es\n"
+        "precision highp float;"
+        "void main(void)\n"
+        "{\n"
+        "    gl_Position = vec4(0.0);\n"
+        "}\n";
+    const char* fragmentShader =
+        "#version 310 es\n"
+        "precision highp float;"
+        "uniform sampler2D s2d;\n"
+        "uniform highp sampler2DMS s2dMS;"
+        "uniform highp sampler3D s3d;\n"
+        "uniform samplerCube sc;\n"
+        "out vec4 color;\n"
+        "void main(void)\n"
+        "{\n"
+        "    color = vec4(0.0);\n"
+        "}\n";
+    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
+    std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
+
+    ASSERT_TRUE(res);
+
+    EXPECT_EQ(0u, res->getAttributeInputs().size());
+
+    const EffectInputInformationVector& uniforms = res->getUniformInputs();
+
+    ASSERT_EQ(4u, uniforms.size());
+    EXPECT_EQ(EffectInputInformation("s2d", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid), uniforms[0]);
+    EXPECT_EQ(EffectInputInformation("s2dMS", 1, EDataType::TextureSampler2DMS, EFixedSemantics::Invalid), uniforms[1]);
+    EXPECT_EQ(EffectInputInformation("s3d", 1, EDataType::TextureSampler3D, EFixedSemantics::Invalid), uniforms[2]);
+    EXPECT_EQ(EffectInputInformation("sc", 1, EDataType::TextureSamplerCube, EFixedSemantics::Invalid), uniforms[3]);
+}
+
 
 TEST_F(AGlslEffect, canParseArrayInputs)
 {
@@ -490,9 +528,9 @@ TEST_F(AGlslEffect, canParseArrayInputs)
     const EffectInputInformationVector& uniforms = res->getUniformInputs();
 
     ASSERT_EQ(3u, uniforms.size());
-    EXPECT_EQ(EffectInputInformation("v", 4, EDataType::Vector3F, EFixedSemantics_Invalid), uniforms[0]);
-    EXPECT_EQ(EffectInputInformation("m", 2, EDataType::Matrix44F, EFixedSemantics_Invalid), uniforms[1]);
-    EXPECT_EQ(EffectInputInformation("i", 2, EDataType::Int32, EFixedSemantics_Invalid), uniforms[2]);
+    EXPECT_EQ(EffectInputInformation("v", 4, EDataType::Vector3F, EFixedSemantics::Invalid), uniforms[0]);
+    EXPECT_EQ(EffectInputInformation("m", 2, EDataType::Matrix44F, EFixedSemantics::Invalid), uniforms[1]);
+    EXPECT_EQ(EffectInputInformation("i", 2, EDataType::Int32, EFixedSemantics::Invalid), uniforms[2]);
 }
 
 TEST_F(AGlslEffect, failsWithWrongSemanticForType)
@@ -511,7 +549,7 @@ TEST_F(AGlslEffect, failsWithWrongSemanticForType)
         "}\n";
 
     HashMap<String, EFixedSemantics> semantics;
-    semantics.put("uniformWithWrongSemantic", EFixedSemantics_ModelViewProjectionMatrix);
+    semantics.put("uniformWithWrongSemantic", EFixedSemantics::ModelViewProjectionMatrix);
 
     GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, semantics, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));

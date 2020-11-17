@@ -22,7 +22,7 @@ public:
         EXPECT_CALL(device, uploadShader(_));
         EXPECT_CALL(device, allocateIndexBuffer(_, _));
         EXPECT_CALL(device, uploadIndexBufferData(_, _, _));
-        EXPECT_CALL(device, allocateVertexBuffer(_, _)).Times(2);
+        EXPECT_CALL(device, allocateVertexBuffer(_)).Times(2);
         EXPECT_CALL(device, uploadVertexBufferData(_, _, _)).Times(2);
 
         ramses_internal::WarpingMeshData meshData;
@@ -56,7 +56,7 @@ TEST_F(AWarpingPass, ValidRenderBackendCallsOnExecute)
     EXPECT_CALL(device, setTextureSampling(Ne(DataFieldHandle::Invalid()), EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp, ESamplingMethod::Linear, ESamplingMethod::Linear, isotropicFilteringLevel));
 
     EXPECT_CALL(device, activateIndexBuffer(Ne(DeviceResourceHandle::Invalid())));
-    EXPECT_CALL(device, activateVertexBuffer(Ne(DeviceResourceHandle::Invalid()), Ne(DataFieldHandle::Invalid()), 0u, 0u)).Times(2);
+    EXPECT_CALL(device, activateVertexBuffer(Ne(DeviceResourceHandle::Invalid()), Ne(DataFieldHandle::Invalid()), 0u, 0u, _, 0u, 0u)).Times(2);
     EXPECT_CALL(device, drawIndexedTriangles(0, 6, 1u)); // element count for default WarpingMeshData
 
     pass->execute(inputColorBuffer);

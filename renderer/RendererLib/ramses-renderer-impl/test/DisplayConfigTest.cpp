@@ -25,41 +25,6 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
     const ramses_internal::DisplayConfig defaultDisplayConfig;
     const ramses_internal::DisplayConfig& displayConfig = config.impl.getInternalDisplayConfig();
 
-    const ramses_internal::Vector3& defaultCamPos = defaultDisplayConfig.getCameraPosition();
-    float camPosX = 0.f;
-    float camPosY = 0.f;
-    float camPosZ = 0.f;
-    EXPECT_EQ(ramses::StatusOK, config.getViewPosition(camPosX, camPosY, camPosZ));
-    EXPECT_FLOAT_EQ(defaultCamPos.x, camPosX);
-    EXPECT_FLOAT_EQ(defaultCamPos.y, camPosY);
-    EXPECT_FLOAT_EQ(defaultCamPos.z, camPosZ);
-
-    const ramses_internal::Vector3& camPos = displayConfig.getCameraPosition();
-    EXPECT_FLOAT_EQ(defaultCamPos.x, camPos.x);
-    EXPECT_FLOAT_EQ(defaultCamPos.y, camPos.y);
-    EXPECT_FLOAT_EQ(defaultCamPos.z, camPos.z);
-
-    const ramses_internal::Vector3& defaultCamRot = defaultDisplayConfig.getCameraRotation();
-    const ramses_internal::Vector3& camRot = displayConfig.getCameraRotation();
-    EXPECT_FLOAT_EQ(defaultCamRot.x, camRot.x);
-    EXPECT_FLOAT_EQ(defaultCamRot.y, camRot.y);
-    EXPECT_FLOAT_EQ(defaultCamRot.z, camRot.z);
-
-    float camRotX = 0.f;
-    float camRotY = 0.f;
-    float camRotZ = 0.f;
-    EXPECT_EQ(ramses::StatusOK, config.getViewRotation(camRotX, camRotY, camRotZ));
-    EXPECT_FLOAT_EQ(defaultCamPos.x, camRotX);
-    EXPECT_FLOAT_EQ(defaultCamPos.y, camRotY);
-    EXPECT_FLOAT_EQ(defaultCamPos.z, camRotZ);
-
-    EXPECT_FLOAT_EQ(defaultDisplayConfig.getProjectionParams().leftPlane,   displayConfig.getProjectionParams().leftPlane);
-    EXPECT_FLOAT_EQ(defaultDisplayConfig.getProjectionParams().rightPlane,  displayConfig.getProjectionParams().rightPlane);
-    EXPECT_FLOAT_EQ(defaultDisplayConfig.getProjectionParams().bottomPlane, displayConfig.getProjectionParams().bottomPlane);
-    EXPECT_FLOAT_EQ(defaultDisplayConfig.getProjectionParams().topPlane,    displayConfig.getProjectionParams().topPlane);
-    EXPECT_FLOAT_EQ(defaultDisplayConfig.getProjectionParams().nearPlane,   displayConfig.getProjectionParams().nearPlane);
-    EXPECT_FLOAT_EQ(defaultDisplayConfig.getProjectionParams().farPlane,    displayConfig.getProjectionParams().farPlane);
-
     EXPECT_EQ(defaultDisplayConfig.getWindowPositionX(), displayConfig.getWindowPositionX());
     EXPECT_EQ(defaultDisplayConfig.getWindowPositionY(), displayConfig.getWindowPositionY());
     EXPECT_EQ(defaultDisplayConfig.getDesiredWindowWidth(), displayConfig.getDesiredWindowWidth());
@@ -131,34 +96,6 @@ TEST_F(ADisplayConfig, failsToSetInvalidWindowRect)
     EXPECT_EQ(2u, config.impl.getInternalDisplayConfig().getDesiredWindowHeight());
 }
 
-TEST_F(ADisplayConfig, setsAndGetsViewPosition)
-{
-    EXPECT_EQ(ramses::StatusOK, config.setViewPosition(1, 2, 3));
-    EXPECT_EQ(ramses_internal::Vector3(1, 2, 3), config.impl.getInternalDisplayConfig().getCameraPosition());
-
-    float camPosX = 0.f;
-    float camPosY = 0.f;
-    float camPosZ = 0.f;
-    EXPECT_EQ(ramses::StatusOK, config.getViewPosition(camPosX, camPosY, camPosZ));
-    EXPECT_FLOAT_EQ(1, camPosX);
-    EXPECT_FLOAT_EQ(2, camPosY);
-    EXPECT_FLOAT_EQ(3, camPosZ);
-}
-
-TEST_F(ADisplayConfig, setsAndGetsViewRotation)
-{
-    EXPECT_EQ(ramses::StatusOK, config.setViewRotation(1, 2, 3));
-    EXPECT_EQ(ramses_internal::Vector3(1, 2, 3), config.impl.getInternalDisplayConfig().getCameraRotation());
-
-    float rotX = 1.f;
-    float rotY = 2.f;
-    float rotZ = 3.f;
-    EXPECT_EQ(ramses::StatusOK, config.getViewRotation(rotX, rotY, rotZ));
-    EXPECT_FLOAT_EQ(1, rotX);
-    EXPECT_FLOAT_EQ(2, rotY);
-    EXPECT_FLOAT_EQ(3, rotZ);
-}
-
 TEST_F(ADisplayConfig, failsToSetUnsupportedMultisampling)
 {
     EXPECT_NE(ramses::StatusOK, config.setMultiSampling(0u));
@@ -226,153 +163,9 @@ TEST_F(ADisplayConfig, setsAndGetsWaylandIviLayerId)
     EXPECT_EQ(ramses_internal::WaylandIviLayerId(36), config.impl.getInternalDisplayConfig().getWaylandIviLayerID());
 }
 
-TEST_F(ADisplayConfig, setsPerspectiveProjection)
-{
-    const ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Perspective(30.f, 1.f, 1.f, 10.f);
-    EXPECT_EQ(ramses::StatusOK, config.setPerspectiveProjection(30.f, 1.f, 1.f, 10.f));
-    EXPECT_EQ(projParams, config.impl.getInternalDisplayConfig().getProjectionParams());
-}
-
-TEST_F(ADisplayConfig, setsAlternativePerspectiveProjection)
-{
-    const ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Frustum(ramses_internal::ECameraProjectionType::Perspective,
-        0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f);
-    EXPECT_EQ(ramses::StatusOK, config.setPerspectiveProjection(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f));
-    EXPECT_EQ(projParams, config.impl.getInternalDisplayConfig().getProjectionParams());
-}
-
-TEST_F(ADisplayConfig, doesNotChangeAspectRatioIfViewportIsSet)
-{
-    config.setWindowRectangle(0, 0, 400u, 200u);
-
-    const ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Perspective(30.f, 1.f, 1.f, 10.f);
-    EXPECT_EQ(ramses::StatusOK, config.setPerspectiveProjection(30.f, 1.f, 1.f, 10.f));
-    EXPECT_EQ(projParams, config.impl.getInternalDisplayConfig().getProjectionParams());
-
-    config.setWindowRectangle(0, 0, 200u, 400u);
-    EXPECT_EQ(projParams, config.impl.getInternalDisplayConfig().getProjectionParams());
-}
-
-TEST_F(ADisplayConfig, setsOrthographicProjection)
-{
-    const ramses_internal::ProjectionParams projParams = ramses_internal::ProjectionParams::Frustum(ramses_internal::ECameraProjectionType::Orthographic,
-        30.f, 40.f, 10.f, 100.f, 0.1f, 1.f);
-    EXPECT_EQ(ramses::StatusOK, config.setOrthographicProjection(30.f, 40.f, 10.f, 100.f, 0.1f, 1.f));
-    EXPECT_EQ(projParams, config.impl.getInternalDisplayConfig().getProjectionParams());
-}
-
 TEST_F(ADisplayConfig, IsValidUponConstruction)
 {
     EXPECT_EQ(ramses::StatusOK, config.validate());
-}
-
-TEST_F(ADisplayConfig, doesNearFarPlaneValidationOnSetting)
-{
-    EXPECT_NE(ramses::StatusOK, config.setPerspectiveProjection(30.f, 1.f, 0.0f, 1.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_NE(ramses::StatusOK, config.setPerspectiveProjection(30.f, 1.f, 10.f, 10.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_NE(ramses::StatusOK, config.setPerspectiveProjection(30.f, 1.f, 10.f, 1.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_EQ(ramses::StatusOK, config.setPerspectiveProjection(30.f, 1.f, 1.f, 10.f));
-    EXPECT_EQ(ramses::StatusOK, config.validate());
-}
-
-TEST_F(ADisplayConfig, doesFovYAndAspectRatioValidationOnSetting)
-{
-    EXPECT_NE(ramses::StatusOK, config.setPerspectiveProjection(0.f, 1.f, 1.f, 10.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_NE(ramses::StatusOK, config.setPerspectiveProjection(180.f, 1.0f, 1.f, 10.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_NE(ramses::StatusOK, config.setPerspectiveProjection(-45.f, 1.f, 1.f, 10.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_NE(ramses::StatusOK, config.setPerspectiveProjection(-195.f, 1.f, 1.f, 10.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_NE(ramses::StatusOK, config.setPerspectiveProjection(30.f, 0.f, 1.f, 10.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_NE(ramses::StatusOK, config.setPerspectiveProjection(30.f, -0.5f, 1.f, 10.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_EQ(ramses::StatusOK, config.setPerspectiveProjection(30.f, 1.f, 1.f, 10.f));
-    EXPECT_EQ(ramses::StatusOK, config.validate());
-}
-
-TEST_F(ADisplayConfig, doesOrthoProjectionParamsValidationOnSetting)
-{
-    EXPECT_NE(ramses::StatusOK, config.setOrthographicProjection(40.f, 40.f, 10.f, 100.f, 0.1f, 1.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_NE(ramses::StatusOK, config.setOrthographicProjection(10.f, 40.f, 100.f, 100.f, 0.1f, 1.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_NE(ramses::StatusOK, config.setOrthographicProjection(10.f, 40.f, 100.f, 10.f, 0.1f, 1.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_EQ(ramses::StatusOK, config.setOrthographicProjection(10.f, 40.f, 10.f, 100.f, 0.1f, 1.f));
-    EXPECT_EQ(ramses::StatusOK, config.validate());
-}
-
-TEST_F(ADisplayConfig, doesPerspectiveProjectionParamsValidationOnSetting)
-{
-    EXPECT_NE(ramses::StatusOK, config.setPerspectiveProjection(40.f, 40.f, 10.f, 100.f, 0.1f, 1.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_NE(ramses::StatusOK, config.setPerspectiveProjection(10.f, 40.f, 100.f, 100.f, 0.1f, 1.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_NE(ramses::StatusOK, config.setPerspectiveProjection(10.f, 40.f, 100.f, 10.f, 0.1f, 1.f));
-    EXPECT_NE(ramses::StatusOK, config.validate());
-
-    EXPECT_EQ(ramses::StatusOK, config.setPerspectiveProjection(10.f, 40.f, 10.f, 100.f, 0.1f, 1.f));
-    EXPECT_EQ(ramses::StatusOK, config.validate());
-}
-
-TEST_F(ADisplayConfig, failsValidationIfCLIParamsForPerspectiveCameraAreInvalid)
-{
-    const char *args[] = { "renderer", "-fov", "-45.4" };
-    ramses::DisplayConfig cliConfig(3u, args);
-
-    EXPECT_NE(ramses::StatusOK, cliConfig.validate());
-}
-
-TEST_F(ADisplayConfig, failsValidationIfNoCLIParamsForOrthoCameraAreGiven)
-{
-    const char *args[] = { "renderer", "-ortho" };
-    ramses::DisplayConfig cliConfig(2u, args);
-
-    EXPECT_NE(ramses::StatusOK, cliConfig.validate());
-}
-
-TEST_F(ADisplayConfig, failsValidationIfCLIParamsForOrthoCameraAreInvalid)
-{
-    const char *args[] = { "renderer", "-ortho", "-leftPlane", "2", "-rightPlane", "1", "-bottomPlane", "-1", "-topPlane", "1", "-np", "0.1", "-fp", "1990" };
-    ramses::DisplayConfig cliConfig(14u, args);
-
-    EXPECT_NE(ramses::StatusOK, cliConfig.validate());
-}
-
-TEST_F(ADisplayConfig, passValidationIfCLIParamsForPerspectiveCameraAreValid)
-{
-    const char *args[] = { "renderer", "-fov", "45.4" };
-    ramses::DisplayConfig cliConfig(3u, args);
-
-    EXPECT_EQ(ramses::StatusOK, cliConfig.validate());
-}
-
-TEST_F(ADisplayConfig, passValidationIfCLIParamsForOrthoCameraAreValid)
-{
-    const char *args[] = { "renderer", "-ortho", "-leftPlane", "-1", "-rightPlane", "1", "-bottomPlane", "-1", "-topPlane", "1", "-np", "0.1", "-fp", "1990" };
-    ramses::DisplayConfig cliConfig(14u, args);
-
-    EXPECT_EQ(ramses::StatusOK, cliConfig.validate());
 }
 
 TEST_F(ADisplayConfig, canBeCopyConstructed)

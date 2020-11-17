@@ -19,7 +19,6 @@
 #include "SceneAPI/EDataBufferType.h"
 #include "Components/ManagedResource.h"
 #include "Resource/ResourceInfo.h"
-#include "RendererFramework/IResourceProvider.h"
 #include "Utils/LogMacros.h"
 #include "Utils/TextureMathUtils.h"
 #include "Math3d/Vector4.h"
@@ -27,20 +26,16 @@
 namespace ramses_internal
 {
     RendererResourceManager::RendererResourceManager(
-        IResourceProvider& resourceProvider,
         IResourceUploader& uploader,
         IRenderBackend& renderBackend,
         IEmbeddedCompositingManager& embeddedCompositingManager,
-        ResourceRequesterID requesterId,
         Bool keepEffects,
         const FrameTimer& frameTimer,
         RendererStatistics& stats,
-        UInt64 clientResourceCacheSize)
-        : m_id(requesterId)
-        , m_resourceProvider(resourceProvider)
-        , m_renderBackend(renderBackend)
+        UInt64 gpuCacheSize)
+        : m_renderBackend(renderBackend)
         , m_embeddedCompositingManager(embeddedCompositingManager)
-        , m_resourceUploadingManager(m_clientResourceRegistry, uploader, renderBackend, keepEffects, frameTimer, stats, clientResourceCacheSize)
+        , m_resourceUploadingManager(m_resourceRegistry, uploader, renderBackend, keepEffects, frameTimer, stats, gpuCacheSize)
         , m_stats(stats)
     {
     }
@@ -49,73 +44,41 @@ namespace ramses_internal
     {
         assert(m_sceneResourceRegistryMap.size() == 0u);
 
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::~RendererResourceManager Destroying offscreen buffers");
-        for (OffscreenBufferHandle handle(0u); handle < m_offscreenBuffers.getTotalCount(); ++handle)
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager::~RendererResourceManager Destroying offscreen buffers");
+        for (OffscreenBufferHandle handle{ 0u }; handle < m_offscreenBuffers.getTotalCount(); ++handle)
         {
             if (m_offscreenBuffers.isAllocated(handle))
                 unloadOffscreenBuffer(handle);
         }
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager::~RendererResourceManager Destroying stream buffers");
+        for (StreamBufferHandle handle{ 0u }; handle < m_streamBuffers.getTotalCount(); ++handle)
+        {
+            if (m_streamBuffers.isAllocated(handle))
+                unloadStreamBuffer(handle);
+        }
 
-        for(const auto& resDesc : m_clientResourceRegistry.getAllResourceDescriptors())
+        for (const auto& resDesc : m_resourceRegistry.getAllResourceDescriptors())
         {
             UNUSED(resDesc);
             assert(resDesc.value.sceneUsage.empty());
         }
     }
 
-    const ResourceRequesterID& RendererResourceManager::getRequesterID() const
-    {
-        return m_id;
-    }
-
-    void RendererResourceManager::referenceClientResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources)
+    void RendererResourceManager::referenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources)
     {
         for (const auto& resHash : resources)
         {
-            if (!m_clientResourceRegistry.containsResource(resHash))
-            {
-                m_clientResourceRegistry.registerResource(resHash);
-            }
-            m_clientResourceRegistry.addResourceRef(resHash, sceneId);
+            if (!m_resourceRegistry.containsResource(resHash))
+                m_resourceRegistry.registerResource(resHash);
+
+            m_resourceRegistry.addResourceRef(resHash, sceneId);
         }
     }
 
-    void RendererResourceManager::unreferenceClientResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources)
+    void RendererResourceManager::unreferenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources)
     {
         for (const auto& resHash : resources)
-        {
-            m_clientResourceRegistry.removeResourceRef(resHash, sceneId);
-        }
-    }
-
-    void RendererResourceManager::groupResourcesBySceneId(const ResourceContentHashVector& resources, ResourcesPerSceneMap& resourcesPerScene) const
-    {
-        for (const auto& resHash : resources)
-        {
-            const ResourceDescriptor& resDesc = m_clientResourceRegistry.getResourceDescriptor(resHash);
-            for(const auto& sceneUsage : resDesc.sceneUsage)
-            {
-                auto& resList = resourcesPerScene[sceneUsage];
-                if (!contains_c(resList, resHash))
-                    resList.push_back(resHash);
-            }
-        }
-    }
-
-    void RendererResourceManager::requestResourcesFromProvider(const ResourceContentHashVector& resources)
-    {
-        if (!resources.empty())
-        {
-            LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::requestAndUnrequestPendingResources Requesting " << resources.size() << " resources from resource provider");
-
-            ResourcesPerSceneMap resourcesPerScene;
-            groupResourcesBySceneId(resources, resourcesPerScene);
-
-            for(const auto& res : resourcesPerScene)
-            {
-                m_resourceProvider.requestResourceAsyncronouslyFromFramework(res.value, m_id, res.key);
-            }
-        }
+            m_resourceRegistry.removeResourceRef(resHash, sceneId);
     }
 
     RendererSceneResourceRegistry& RendererResourceManager::getSceneResourceRegistry(SceneId sceneId)
@@ -125,91 +88,6 @@ namespace ramses_internal
             m_sceneResourceRegistryMap.put(sceneId, RendererSceneResourceRegistry());
         }
         return *m_sceneResourceRegistryMap.get(sceneId);
-    }
-
-    void RendererResourceManager::getRequestedResourcesAlreadyInCache(const IRendererResourceCache* cache)
-    {
-        if (!cache)
-        {
-            return;
-        }
-
-        const ResourceContentHashVector resourcesToBeRequested = m_clientResourceRegistry.getAllRegisteredResources();
-
-        for (auto res : resourcesToBeRequested)
-        {
-            UInt32 resourceSize = 0;
-            if (cache->hasResource(res, resourceSize))
-            {
-                ManagedResource newResource = RendererResourceManagerUtils::TryLoadResource(res, resourceSize, cache);
-
-                if (!newResource)
-                {
-                    assert(false);
-                    LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::getRequestedResourcesAlreadyInCache. Failed to deserialize data from cache: #" << res);
-                    return;
-                }
-
-                // Mimic the same state changes as if the resource had been requested and received over network
-                m_clientResourceRegistry.setResourceStatus(res, EResourceStatus_Requested);
-                m_clientResourceRegistry.setResourceData(res, newResource, DeviceResourceHandle::Invalid(), newResource->getTypeID());
-                m_clientResourceRegistry.setResourceStatus(res, EResourceStatus_Provided);
-            }
-        }
-    }
-
-    void RendererResourceManager::requestAndUnrequestPendingClientResources()
-    {
-        // TODO vaclav/tobias find better solution - either resend or delay destruction of resources on client side that are pending on renderer
-        // Workaround to avoid waiting for resources forever.
-        // In case client destroys a resource before a request comes from renderer, it will report resource as unavailable
-        // and renderer might get stuck in case of mapping state or sync flush waiting for this resource.
-        // If the client creates the resource again there is currently no mechanism to let the renderer know or send the resource
-        // to the renderer waiting for it.
-        // Therefore pending resources are re-requested when they haven't arrived for N frames
-        ++m_frameCounter;
-
-        // collect resources to re-request
-        ResourceContentHashVector resourcesToBeRequested;
-        resourcesToBeRequested.reserve(m_clientResourceRegistry.getAllRequestedResources().size());
-        for (const auto& hash : m_clientResourceRegistry.getAllRequestedResources())
-        {
-            const UInt64 frameOfLastRequest = m_clientResourceRegistry.getResourceDescriptor(hash).lastRequestFrameIdx;
-            if (frameOfLastRequest + m_numberOfFramesToRerequestResource <= m_frameCounter)
-            {
-                resourcesToBeRequested.push_back(hash);
-            }
-        }
-
-        // add newly registered resources
-        const ResourceContentHashVector& registeredResources = m_clientResourceRegistry.getAllRegisteredResources();
-        resourcesToBeRequested.insert(resourcesToBeRequested.end(), registeredResources.begin(), registeredResources.end());
-        if (!resourcesToBeRequested.empty())
-        {
-            requestResourcesFromProvider(resourcesToBeRequested);
-
-            for (const auto& hash : resourcesToBeRequested)
-            {
-                m_clientResourceRegistry.setResourceStatus(hash, EResourceStatus_Requested, m_frameCounter);
-            }
-        }
-
-        const ResourceContentHashVector& unusedResources = m_clientResourceRegistry.getAllResourcesNotInUseByScenesAndNotUploaded();
-        while(!unusedResources.empty())
-        {
-            const ResourceContentHash hash = unusedResources.front();
-            const ResourceDescriptor& rd = m_clientResourceRegistry.getResourceDescriptor(hash);
-
-            if (rd.status == EResourceStatus_Requested)
-            {
-                LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::requestAndUnrequestPendingResources Canceling request for resource" << hash);
-                m_resourceProvider.cancelResourceRequest(hash, m_id);
-            }
-
-            assert(rd.status != EResourceStatus_Uploaded);
-            LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::requestAndUnrequestPendingResources Removing resource descriptor for resource #" << hash);
-            m_clientResourceRegistry.unregisterResource(hash);
-        }
     }
 
     void RendererResourceManager::unloadAllSceneResourcesForScene(SceneId sceneId)
@@ -264,109 +142,57 @@ namespace ramses_internal
         }
     }
 
-    void RendererResourceManager::unreferenceAllClientResourcesForScene(SceneId sceneId)
+    void RendererResourceManager::unreferenceAllResourcesForScene(SceneId sceneId)
     {
-        for (const auto& resDesc : m_clientResourceRegistry.getAllResourceDescriptors())
+        if (m_resourceRegistry.getResourcesInUseByScene(sceneId))
         {
-            while (contains_c(resDesc.value.sceneUsage, sceneId))
-                m_clientResourceRegistry.removeResourceRef(resDesc.key, sceneId);
-        }
-    }
-
-    void RendererResourceManager::processArrivedClientResources(IRendererResourceCache* cache)
-    {
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::checkForArrivedResources Checking for arrived resources");
-
-        //take arrived resources
-        const ManagedResourceVector arrivedResources = m_resourceProvider.popArrivedResources(m_id);
-        for (const ManagedResource& current : arrivedResources)
-        {
-            const IResource* resourceObject = current.get();
-            const ResourceContentHash resHash = resourceObject->getHash();
-
-            if (m_clientResourceRegistry.containsResource(resHash))
+            // make copy as it will be modified while iterating
+            const ResourceContentHashVector usedResources = *m_resourceRegistry.getResourcesInUseByScene(sceneId);
+            for (const auto& res : usedResources)
             {
-                if (m_clientResourceRegistry.getResourceStatus(resHash) == EResourceStatus_Requested)
-                {
-                    m_clientResourceRegistry.setResourceData(resHash, current, DeviceResourceHandle::Invalid(), resourceObject->getTypeID());
-                    m_clientResourceRegistry.setResourceStatus(resHash, EResourceStatus_Provided);
-                    m_clientResourceRegistry.setResourceSize(resHash, resourceObject->getCompressedDataSize(), resourceObject->getDecompressedDataSize());
-
-                    // Update local resource cache with the received resource
-                    if (cache)
-                    {
-                        // The resource should be requested by one or more scenes
-                        if (!m_clientResourceRegistry.getResourceDescriptor(resHash).sceneUsage.empty())
-                        {
-                            // There might be multiple scenes using the same resource. We have no way
-                            // of knowing which one the user meant, so we just pick the first one.
-                            const SceneId sceneId(m_clientResourceRegistry.getResourceDescriptor(resHash).sceneUsage.front());
-                            RendererResourceManagerUtils::StoreResource(cache, resourceObject, sceneId);
-                        }
-                    }
-                }
-                else
-                {
-                    // update status information
-                    ++m_numberOfArrivedResourcesInWrongStatus;
-                    UInt32 resSize = resourceObject->isCompressedAvailable() ? resourceObject->getCompressedDataSize() : resourceObject->getDecompressedDataSize();
-                    m_sizeOfArrivedResourcesInWrongStatus += resSize;
-
-                    // This might indicate that the resource status is messed up - indicates a logic error
-                    LOG_WARN(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::checkForArrivedResources Wrong status of arrived resource #" << resHash <<
-                             "; Status: " << EnumToString(m_clientResourceRegistry.getResourceStatus(resHash)) << "; resourceSize: " << resSize <<
-                             "; numberWrongStatus: " << m_numberOfArrivedResourcesInWrongStatus << "; sumSizeWrongStatus: " << m_sizeOfArrivedResourcesInWrongStatus);
-                }
-            }
-            else
-            {
-                // This can be useful for resource prefetching when client sends them ahead of scene.
-                // Slight conceptual change would be required that would allow to manage a resource
-                // without being used by any scene. If the resource is never actually used, it will become
-                // a zombie that is only released at destruction time.
-
-                // This indicates error - resource either arrived before the scene itself (or was prefetches)
-                // OR resource was unrequested, but still arrived from network
-                LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager[" << m_id << "]::checkForArrivedResources Descriptor for arrived resource " << resHash << " does not exist");
+                while (m_resourceRegistry.containsResource(res) && contains_c(m_resourceRegistry.getResourceDescriptor(res).sceneUsage, sceneId))
+                    m_resourceRegistry.removeResourceRef(res, sceneId);
             }
         }
     }
 
-    Bool RendererResourceManager::hasClientResourcesToBeUploaded() const
+    const ResourceContentHashVector* RendererResourceManager::getResourcesInUseByScene(SceneId sceneId) const
+    {
+        return m_resourceRegistry.getResourcesInUseByScene(sceneId);
+    }
+
+    void RendererResourceManager::provideResourceData(const ManagedResource& mr)
+    {
+        const ResourceContentHash resHash = mr->getHash();
+        assert(m_resourceRegistry.containsResource(resHash));
+
+        if (m_resourceRegistry.getResourceStatus(resHash) == EResourceStatus::Registered)
+            m_resourceRegistry.setResourceData(resHash, mr);
+    }
+
+    Bool RendererResourceManager::hasResourcesToBeUploaded() const
     {
         return m_resourceUploadingManager.hasAnythingToUpload();
     }
 
-    void RendererResourceManager::uploadAndUnloadPendingClientResources()
+    void RendererResourceManager::uploadAndUnloadPendingResources()
     {
         m_resourceUploadingManager.uploadAndUnloadPendingResources();
     }
 
-    EResourceStatus RendererResourceManager::getClientResourceStatus(const ResourceContentHash& hash) const
+    EResourceStatus RendererResourceManager::getResourceStatus(const ResourceContentHash& hash) const
     {
-        if (m_clientResourceRegistry.containsResource(hash))
-            return m_clientResourceRegistry.getResourceStatus(hash);
-        else
-        {
-            LOG_FATAL(CONTEXT_RENDERER, "RendererResourceManager::getClientResourceStatus: resource with hash " << hash << " is not registered");
-            return EResourceStatus::EResourceStatus_Unknown;
-        }
+        return m_resourceRegistry.getResourceStatus(hash);
     }
 
-    EResourceType RendererResourceManager::getClientResourceType(const ResourceContentHash& hash) const
+    EResourceType RendererResourceManager::getResourceType(const ResourceContentHash& hash) const
     {
-        if (m_clientResourceRegistry.containsResource(hash))
-            return m_clientResourceRegistry.getResourceDescriptor(hash).type;
-        else
-        {
-            LOG_FATAL(CONTEXT_RENDERER, "RendererResourceManager::getClientResourceType: resource with hash " << hash << " is not registered");
-            return EResourceType::EResourceType_Invalid;
-        }
+        return m_resourceRegistry.getResourceDescriptor(hash).type;
     }
 
-    DeviceResourceHandle RendererResourceManager::getClientResourceDeviceHandle(const ResourceContentHash& hash) const
+    DeviceResourceHandle RendererResourceManager::getResourceDeviceHandle(const ResourceContentHash& hash) const
     {
-        return m_clientResourceRegistry.getResourceDescriptor(hash).deviceHandle;
+        return m_resourceRegistry.getResourceDescriptor(hash).deviceHandle;
     }
 
     DeviceResourceHandle RendererResourceManager::getRenderTargetDeviceHandle(RenderTargetHandle handle, SceneId sceneId) const
@@ -414,6 +240,14 @@ namespace ramses_internal
         }
 
         return OffscreenBufferHandle::Invalid();
+    }
+
+    DeviceResourceHandle RendererResourceManager::getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const
+    {
+        assert(m_streamBuffers.isAllocated(bufferHandle));
+        const auto surfaceId = *m_streamBuffers.getMemory(bufferHandle);
+
+        return m_embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(surfaceId);
     }
 
     void RendererResourceManager::uploadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer)
@@ -474,7 +308,7 @@ namespace ramses_internal
         sceneResources.removeRenderTarget(renderTarget);
     }
 
-    void RendererResourceManager::uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, Bool isDoubleBuffered)
+    void RendererResourceManager::uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered)
     {
         assert(!m_offscreenBuffers.isAllocated(bufferHandle));
         IDevice& device = m_renderBackend.getDevice();
@@ -482,9 +316,10 @@ namespace ramses_internal
         m_offscreenBuffers.allocate(bufferHandle);
         OffscreenBufferDescriptor& offscreenBufferDesc = *m_offscreenBuffers.getMemory(bufferHandle);
 
-        offscreenBufferDesc.m_colorBufferHandle[0] = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u));
-        offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 0u));
-        offscreenBufferDesc.m_estimatedVRAMUsage = width * height * ((isDoubleBuffered ? 2u : 1u) * GetTexelSizeFromFormat(ETextureFormat::RGBA8) + GetTexelSizeFromFormat(ETextureFormat::Depth24_Stencil8));
+        offscreenBufferDesc.m_colorBufferHandle[0] = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, sampleCount));
+        offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, sampleCount));
+        const UInt32 sampleMultiplier = (sampleCount == 0) ? 1u : sampleCount;
+        offscreenBufferDesc.m_estimatedVRAMUsage = width * height * ((isDoubleBuffered ? 2u : 1u) * GetTexelSizeFromFormat(ETextureFormat::RGBA8) * sampleMultiplier + GetTexelSizeFromFormat(ETextureFormat::Depth24_Stencil8) * sampleMultiplier);
 
         DeviceHandleVector bufferDeviceHandles;
         bufferDeviceHandles.push_back(offscreenBufferDesc.m_colorBufferHandle[0]);
@@ -493,7 +328,7 @@ namespace ramses_internal
 
         if (isDoubleBuffered)
         {
-            offscreenBufferDesc.m_colorBufferHandle[1] = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u));
+            offscreenBufferDesc.m_colorBufferHandle[1] = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, sampleCount));
 
             DeviceHandleVector bufferDeviceHandles2;
             bufferDeviceHandles2.push_back(offscreenBufferDesc.m_colorBufferHandle[1]);
@@ -544,23 +379,41 @@ namespace ramses_internal
         m_offscreenBuffers.release(bufferHandle);
     }
 
-    void RendererResourceManager::uploadStreamTexture(StreamTextureHandle handle, StreamTextureSourceId source, SceneId sceneId)
+    void RendererResourceManager::uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId)
+    {
+        assert(!m_streamBuffers.isAllocated(bufferHandle));
+        m_streamBuffers.allocate(bufferHandle);
+        *m_streamBuffers.getMemory(bufferHandle) = surfaceId;
+
+        m_embeddedCompositingManager.refStream(surfaceId);
+    }
+
+    void RendererResourceManager::unloadStreamBuffer(StreamBufferHandle bufferHandle)
+    {
+        assert(m_streamBuffers.isAllocated(bufferHandle));
+        const auto surfaceId = *m_streamBuffers.getMemory(bufferHandle);
+        m_streamBuffers.release(bufferHandle);
+
+        m_embeddedCompositingManager.unrefStream(surfaceId);
+    }
+
+    void RendererResourceManager::uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId)
     {
         assert(handle.isValid());
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
         sceneResources.addStreamTexture(handle, source);
 
-        m_embeddedCompositingManager.uploadStreamTexture(handle, source, sceneId);
+        m_embeddedCompositingManager.refStream(handle, source, sceneId);
     }
 
     void RendererResourceManager::unloadStreamTexture(StreamTextureHandle handle, SceneId sceneId)
     {
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
-        const StreamTextureSourceId source = sceneResources.getStreamTextureSourceId(handle);
+        const WaylandIviSurfaceId source = sceneResources.getStreamTextureSourceId(handle);
         sceneResources.removeStreamTexture(handle);
 
-        m_embeddedCompositingManager.deleteStreamTexture(handle, source, sceneId);
+        m_embeddedCompositingManager.unrefStream(handle, source, sceneId);
     }
 
     void RendererResourceManager::uploadBlitPassRenderTargets(BlitPassHandle blitPass, RenderBufferHandle sourceRenderBuffer, RenderBufferHandle destinationRenderBuffer, SceneId sceneId)
@@ -615,7 +468,7 @@ namespace ramses_internal
             deviceHandle = device.allocateIndexBuffer(dataType, dataSizeInBytes);
             break;
         case EDataBufferType::VertexBuffer:
-            deviceHandle = device.allocateVertexBuffer(dataType, dataSizeInBytes);
+            deviceHandle = device.allocateVertexBuffer(dataSizeInBytes);
             break;
         default:
             LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::uploadDataBuffer: can not upload data buffer with invalid type!");

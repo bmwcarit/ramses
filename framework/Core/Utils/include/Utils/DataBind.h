@@ -14,7 +14,7 @@
 
 namespace ramses_internal
 {
-    typedef void* TypeNone;
+    using TypeNone = void *;
 
     // Forward declaration
     template <typename ContainerType, typename EDataType, typename HandleType = TypeNone, typename HandleType2 = TypeNone>
@@ -33,10 +33,10 @@ namespace ramses_internal
         TDataBindID  getBindID() const;
 
     private:
-        typedef typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType GetSetType;
-        typedef GetSetType(ContainerType::*TGetterFunc)();
-        typedef void (ContainerType::*TSetterFunc)(GetSetType);
-        typedef bool(ContainerType::*TCheckerFunc)();
+        using GetSetType = typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType;
+        using TGetterFunc = GetSetType (ContainerType::*)();
+        using TSetterFunc = void (ContainerType::*)(GetSetType);
+        using TCheckerFunc = bool (ContainerType::*)();
 
         ContainerType& m_instance;
         const TDataBindID m_bindID;
@@ -60,10 +60,10 @@ namespace ramses_internal
         HandleType  getHandle() const;
 
     private:
-        typedef typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType GetSetType;
-        typedef GetSetType(ContainerType::*TGetterFunc)(HandleType);
-        typedef void (ContainerType::*TSetterFunc)(HandleType, GetSetType);
-        typedef bool(ContainerType::*TCheckerFunc)(HandleType);
+        using GetSetType = typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType;
+        using TGetterFunc = GetSetType (ContainerType::*)(HandleType);
+        using TSetterFunc = void (ContainerType::*)(HandleType, GetSetType);
+        using TCheckerFunc = bool (ContainerType::*)(HandleType);
 
         ContainerType& m_instance;
         const TDataBindID m_bindID;
@@ -89,10 +89,10 @@ namespace ramses_internal
         HandleType2 getHandle2() const;
 
     private:
-        typedef typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType GetSetType;
-        typedef GetSetType(ContainerType::*TGetterFunc)(HandleType, HandleType2);
-        typedef void (ContainerType::*TSetterFunc)(HandleType, HandleType2, GetSetType);
-        typedef bool(ContainerType::*TCheckerFunc)(HandleType); // checker func has always maximum 1 handle accessor
+        using GetSetType = typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType;
+        using TGetterFunc = GetSetType (ContainerType::*)(HandleType, HandleType2);
+        using TSetterFunc = void (ContainerType::*)(HandleType, HandleType2, GetSetType);
+        using TCheckerFunc = bool (ContainerType::*)(HandleType); // checker func has always maximum 1 handle accessor
 
         ContainerType& m_instance;
         const TDataBindID m_bindID;

@@ -44,8 +44,8 @@ namespace ramses_internal
         SplineTimeStamp key2Time,
         Float segmentTime)
     {
-        typedef AnimatableTypeTraits<EDataType> TypeTraits;
-        typedef AnimatableTypeTraits<typename TypeTraits::CorrespondingFloatType> TypeFloatTraits;
+        using TypeTraits = AnimatableTypeTraits<EDataType>;
+        using TypeFloatTraits = AnimatableTypeTraits<typename TypeTraits::CorrespondingFloatType>;
 
         const typename TypeTraits::CorrespondingFloatType key1f = TypeTraits::ToCorrespondingFloatType(key1.m_value);
         const typename TypeTraits::CorrespondingFloatType key2f = TypeTraits::ToCorrespondingFloatType(key2.m_value);

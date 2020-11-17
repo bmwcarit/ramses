@@ -42,7 +42,7 @@ namespace ramses_internal
             && a.providerId == b.providerId;
     }
 
-    typedef std::vector<SceneReferenceAction> SceneReferenceActionVector;
+    using SceneReferenceActionVector = std::vector<SceneReferenceAction>;
 
     class SceneReferenceActionUtils
     {

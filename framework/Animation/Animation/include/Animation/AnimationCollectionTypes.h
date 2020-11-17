@@ -16,10 +16,10 @@ namespace ramses_internal
 {
     class AnimationDataBindBase;
 
-    typedef std::vector<SplineTimeStamp> SplineTimeStampVector;
-    typedef std::vector<DataBindHandle> DataBindHandleVector;
-    typedef std::vector<AnimationHandle> AnimationHandleVector;
-    typedef std::vector<const AnimationDataBindBase*> ConstDataBindVector;
+    using SplineTimeStampVector = std::vector<SplineTimeStamp>;
+    using DataBindHandleVector = std::vector<DataBindHandle>;
+    using AnimationHandleVector = std::vector<AnimationHandle>;
+    using ConstDataBindVector = std::vector<const AnimationDataBindBase *>;
 }
 
 #endif

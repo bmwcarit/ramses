@@ -13,7 +13,7 @@
 
 namespace ramses_internal
 {
-    typedef const void* RamshTypeInfo;
+    using RamshTypeInfo = const void *;
 
     template<typename T>
     struct RamshStaticTypeId

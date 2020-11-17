@@ -183,9 +183,9 @@ namespace ramses_internal
         m_logContext << "set texture sampling for texture " << field << " : [wrapU: " << EnumToString(wrapU) << "; wrapV: " << EnumToString(wrapV) << "; wrapR: " << EnumToString(wrapR) << "; min sampling: " << EnumToString(minSampling) << "; mag sampling: " << EnumToString(magSampling) << "; anisotropyLevel: " << anisotropyLevel << "]" << RendererLogContext::NewLine;
     }
 
-    DeviceResourceHandle LoggingDevice::allocateVertexBuffer(EDataType dataType, UInt32 sizeInBytes)
+    DeviceResourceHandle LoggingDevice::allocateVertexBuffer(UInt32 totalSizeInBytes)
     {
-        m_logContext << "allocate vertex buffer [type: " << EnumToString(dataType) << " size: " << sizeInBytes << "]" << RendererLogContext::NewLine;
+        m_logContext << "allocate vertex buffer [total size: " << totalSizeInBytes << "]" << RendererLogContext::NewLine;
         return DeviceResourceHandle::Invalid();
     }
 
@@ -199,7 +199,7 @@ namespace ramses_internal
         m_logContext << "delete vertex buffer [handle: " << handle << "]" << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::activateVertexBuffer(DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 offset)
+    void LoggingDevice::activateVertexBuffer(DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 startVertex, EDataType bufferDataType, UInt16 offsetWithinElement, UInt16 stride)
     {
         if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
         {
@@ -211,7 +211,10 @@ namespace ramses_internal
             }
 
             m_logContext << " divisor: " << instancingDivisor;
-            m_logContext << " offset: " << offset << "]";
+            m_logContext << " startVertex: " << startVertex;
+            m_logContext << " bufferDataType: " << bufferDataType;
+            m_logContext << " offsetWithinElement: " << offsetWithinElement;
+            m_logContext << " stride: " << stride;
 
             m_logContext << RendererLogContext::NewLine;
         }

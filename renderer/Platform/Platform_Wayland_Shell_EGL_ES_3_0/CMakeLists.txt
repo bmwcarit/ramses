@@ -11,6 +11,11 @@ ACME_MODULE(
     #==========================================================================
     # general module information
     #==========================================================================
+    # Attention: extra care is needed in case of renaming this module
+    # The name of this module (and all CONCRETE platform modules) must align with
+    # the postfix of generated RAMSES libs' names. The platform name is used in
+    # cmake modules and templates for the mentioned purposes.
+    # The module naming convention is broken here knowledgeably
     NAME                    platform-wayland-shell-egl-es-3-0
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
@@ -24,6 +29,6 @@ ACME_MODULE(
     #==========================================================================
     # dependencies
     #==========================================================================
-    DEPENDENCIES            PlatformFactory_Wayland_Shell_EGL
+    DEPENDENCIES            Platform_Wayland_Shell_EGL
                             Device_GL
 )

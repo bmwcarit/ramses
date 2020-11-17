@@ -40,13 +40,13 @@ namespace ramses_internal
         template<typename T1, typename T2, typename T3, typename T4, typename T5>
         struct SelectType<0, T1, T2, T3, T4, T5>
         {
-            typedef T1 type;
+            using type = T1;
         };
 
         template<Int32 N, typename T1, typename T2, typename T3, typename T4, typename T5>
         struct SelectType
         {
-            typedef typename SelectType<N - 1, T2, T3, T4, T5>::type type;
+            using type = typename SelectType<N - 1, T2, T3, T4, T5>::type;
         };
     }
 }

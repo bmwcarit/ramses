@@ -17,6 +17,7 @@
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/EResourceStatus.h"
 #include "Components/ManagedResource.h"
+#include <unordered_map>
 
 namespace ramses_internal{
 
@@ -26,37 +27,39 @@ public:
     RendererResourceManagerMock();
 
     // IResourceDeviceHandleAccessor
-    MOCK_METHOD(DeviceResourceHandle, getClientResourceDeviceHandle, (const ResourceContentHash&), (const, override));
+    MOCK_METHOD(DeviceResourceHandle, getResourceDeviceHandle, (const ResourceContentHash&), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getRenderTargetDeviceHandle, (RenderTargetHandle, SceneId), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getRenderTargetBufferDeviceHandle, (RenderBufferHandle, SceneId), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getOffscreenBufferDeviceHandle, (OffscreenBufferHandle), (const, override));
     MOCK_METHOD(OffscreenBufferHandle, getOffscreenBufferHandle, (DeviceResourceHandle), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getOffscreenBufferColorBufferDeviceHandle, (OffscreenBufferHandle), (const, override));
+    MOCK_METHOD(DeviceResourceHandle, getStreamBufferDeviceHandle, (StreamBufferHandle bufferHandle), (const, override));
     MOCK_METHOD(void, getBlitPassRenderTargetsDeviceHandle, (BlitPassHandle, SceneId, DeviceResourceHandle&, DeviceResourceHandle&), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getDataBufferDeviceHandle, (DataBufferHandle, SceneId), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getTextureBufferDeviceHandle, (TextureBufferHandle, SceneId), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getTextureSamplerDeviceHandle, (TextureSamplerHandle, SceneId), (const, override));
     // IRendererResourceManager
-    MOCK_METHOD(EResourceStatus, getClientResourceStatus, (const ResourceContentHash& hash), (const, override));
-    MOCK_METHOD(EResourceType, getClientResourceType, (const ResourceContentHash& hash), (const, override));
-    MOCK_METHOD(void, referenceClientResourcesForScene, (SceneId sceneId, const ResourceContentHashVector& resources), (override));
-    MOCK_METHOD(void, unreferenceClientResourcesForScene, (SceneId sceneId, const ResourceContentHashVector& resources), (override));
-    MOCK_METHOD(void, getRequestedResourcesAlreadyInCache, (const IRendererResourceCache* cache), (override));
-    MOCK_METHOD(void, requestAndUnrequestPendingClientResources, (), (override));
+    MOCK_METHOD(EResourceStatus, getResourceStatus, (const ResourceContentHash& hash), (const, override));
+    MOCK_METHOD(EResourceType, getResourceType, (const ResourceContentHash& hash), (const, override));
+    MOCK_METHOD(void, referenceResourcesForScene, (SceneId sceneId, const ResourceContentHashVector& resources), (override));
+    MOCK_METHOD(void, unreferenceResourcesForScene, (SceneId sceneId, const ResourceContentHashVector& resources), (override));
     MOCK_METHOD(void, unloadAllSceneResourcesForScene, (SceneId sceneId), (override));
-    MOCK_METHOD(void, unreferenceAllClientResourcesForScene, (SceneId sceneId), (override));
-    MOCK_METHOD(void, processArrivedClientResources, (IRendererResourceCache* cache), (override));
-    MOCK_METHOD(bool, hasClientResourcesToBeUploaded, (), (const, override));
-    MOCK_METHOD(void, uploadAndUnloadPendingClientResources, (), (override));
+    MOCK_METHOD(void, unreferenceAllResourcesForScene, (SceneId sceneId), (override));
+    MOCK_METHOD(const ResourceContentHashVector*, getResourcesInUseByScene, (SceneId sceneId), (const, override));
+    MOCK_METHOD(void, provideResourceData, (const ManagedResource& mr), (override));
+    MOCK_METHOD(bool, hasResourcesToBeUploaded, (), (const, override));
+    MOCK_METHOD(void, uploadAndUnloadPendingResources, (), (override));
     MOCK_METHOD(void, uploadRenderTargetBuffer, (RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer), (override));
     MOCK_METHOD(void, unloadRenderTargetBuffer, (RenderBufferHandle renderBufferHandle, SceneId sceneId), (override));
     MOCK_METHOD(void, uploadRenderTarget, (RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId), (override));
     MOCK_METHOD(void, unloadRenderTarget, (RenderTargetHandle renderTarget, SceneId sceneId), (override));
-    MOCK_METHOD(void, uploadOffscreenBuffer, (OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, bool isDoubleBuffered), (override));
+    MOCK_METHOD(void, uploadOffscreenBuffer, (OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, bool isDoubleBuffered), (override));
     MOCK_METHOD(void, unloadOffscreenBuffer, (OffscreenBufferHandle bufferHandle), (override));
+    MOCK_METHOD(void, uploadStreamBuffer, (StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId), (override));
+    MOCK_METHOD(void, unloadStreamBuffer, (StreamBufferHandle bufferHandle), (override));
     MOCK_METHOD(void, uploadTextureSampler, (TextureSamplerHandle bufferHandle, SceneId sceneId, const TextureSamplerStates& states), (override));
     MOCK_METHOD(void, unloadTextureSampler, (TextureSamplerHandle bufferHandle, SceneId sceneId), (override));
-    MOCK_METHOD(void, uploadStreamTexture, (StreamTextureHandle bufferHandle, StreamTextureSourceId source, SceneId sceneId), (override));
+    MOCK_METHOD(void, uploadStreamTexture, (StreamTextureHandle bufferHandle, WaylandIviSurfaceId source, SceneId sceneId), (override));
     MOCK_METHOD(void, unloadStreamTexture, (StreamTextureHandle bufferHandle, SceneId sceneId), (override));
     MOCK_METHOD(void, uploadBlitPassRenderTargets, (BlitPassHandle, RenderBufferHandle, RenderBufferHandle, SceneId), (override));
     MOCK_METHOD(void, unloadBlitPassRenderTargets, (BlitPassHandle, SceneId), (override));
@@ -68,5 +71,25 @@ public:
     MOCK_METHOD(void, unloadTextureBuffer, (TextureBufferHandle textureBufferHandle, SceneId sceneId), (override));
     MOCK_METHOD(void, updateTextureBuffer, (TextureBufferHandle textureBufferHandle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data, SceneId sceneId), (override));
 };
+
+class RendererResourceManagerRefCountMock : public RendererResourceManagerMock
+{
+public:
+    virtual ~RendererResourceManagerRefCountMock();
+
+    virtual void referenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
+    virtual void unreferenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
+    virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const override;
+    virtual void unreferenceAllResourcesForScene(SceneId sceneId) override;
+
+    void expectNoResourceReferencesForScene(SceneId sceneId) const;
+    void expectNoResourceReferences() const;
+    int getResourceRefCount(ResourceContentHash resource) const;
+
+private:
+    std::unordered_map<SceneId, std::unordered_map<ResourceContentHash, int>> m_refCounts;
+    mutable ResourceContentHashVector m_tempUsedResources;
+};
+
 }
 #endif

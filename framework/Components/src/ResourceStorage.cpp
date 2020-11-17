@@ -8,7 +8,6 @@
 
 #include "Components/ResourceStorage.h"
 #include "Components/ResourceDeleterCallingCallback.h"
-#include "Components/IResourceStorageChangeListener.h"
 #include "Utils/StringUtils.h"
 #include "Utils/LogMacros.h"
 
@@ -23,11 +22,6 @@ namespace ramses_internal
     ResourceStorage::~ResourceStorage()
     {
         assert(m_resourceMap.size() == 0);  //all ManagedResources have be destructed before ResourceStorage is destructed
-    }
-
-    void ResourceStorage::setListener(IResourceStorageChangeListener& listener)
-    {
-        m_listener = &listener;
     }
 
     ResourceInfoVector ResourceStorage::getAllResourceInfo() const
@@ -161,7 +155,6 @@ namespace ramses_internal
             {
                 entry->resource = &resource;
                 entry->resourceInfo = ResourceInfo(&resource);
-                m_bytesCurrentlyUsedByResourcesInMemory += resource.getDecompressedDataSize();
                 m_statistics.statResourcesCreated.incCounter(1);
             }
             else
@@ -189,7 +182,6 @@ namespace ramses_internal
             newEntry.hash = new ResourceContentHash(hash);
             resourceToReturn = &resource;
             m_resourceMap.put(hash, newEntry);
-            m_bytesCurrentlyUsedByResourcesInMemory += resourceToReturn->getDecompressedDataSize();
             m_statistics.statResourcesCreated.incCounter(1);
         }
 
@@ -208,11 +200,6 @@ namespace ramses_internal
         --entry->hashUsages;
         checkForDeletion(*entry, hash);
         m_resourceMapLock.unlock();
-    }
-
-    uint64_t ResourceStorage::getBytesUsedByResourcesInMemory() const
-    {
-        return m_bytesCurrentlyUsedByResourcesInMemory;
     }
 
     void ResourceStorage::managedResourceDeleted(const IResource& resourceToRemove)
@@ -241,19 +228,6 @@ namespace ramses_internal
                 const IResource* internalResource = entry.resource;
                 if (internalResource)
                 {
-                    const UInt32 decompressedSize = internalResource->getDecompressedDataSize();
-                    assert(decompressedSize > 0);
-                    assert(decompressedSize <= m_bytesCurrentlyUsedByResourcesInMemory);
-                    if (m_bytesCurrentlyUsedByResourcesInMemory >= decompressedSize)
-                    {
-                        m_bytesCurrentlyUsedByResourcesInMemory -= decompressedSize;
-                    }
-                    else
-                    {
-                        LOG_ERROR(CONTEXT_FRAMEWORK, "ResourceStorage::checkForDeletion:: prevented underflow of m_bytesCurrentlyUsedByResourcesInMemory (" << m_bytesCurrentlyUsedByResourcesInMemory << " bytes) from releasing resource: " << internalResource->getHash() << " (" << decompressedSize << " bytes)");
-                        m_bytesCurrentlyUsedByResourcesInMemory = 0;
-                    }
-
                     delete internalResource;
                     entry.resource = nullptr;
                     m_statistics.statResourcesDestroyed.incCounter(1);
@@ -265,10 +239,6 @@ namespace ramses_internal
                     ResourceContentHash* hashObject = entry.hash;
                     m_resourceMap.remove(hash);
                     delete hashObject;
-                }
-                if (nullptr != m_listener)
-                {
-                    m_listener->onBytesNeededByStorageDecreased(m_bytesCurrentlyUsedByResourcesInMemory);
                 }
             }
         }

@@ -10,18 +10,16 @@
 #define RAMSES_RENDERERRESOURCEMANAGER_H
 
 #include "IRendererResourceManager.h"
-#include "RendererLib/RendererClientResourceRegistry.h"
+#include "RendererLib/RendererResourceRegistry.h"
 #include "RendererLib/RendererSceneResourceRegistry.h"
-#include "RendererLib/ClientResourceUploadingManager.h"
+#include "RendererLib/ResourceUploadingManager.h"
 #include "RendererResourceManagerUtils.h"
 #include "Collections/HashMap.h"
 #include "Collections/Vector.h"
 #include "Utils/MemoryPool.h"
-#include "Components/ResourceRequesterID.h"
 
 namespace ramses_internal
 {
-    class IResourceProvider;
     class IRenderBackend;
     class IEmbeddedCompositingManager;
     class IResourceUploader;
@@ -33,30 +31,26 @@ namespace ramses_internal
     {
     public:
         RendererResourceManager(
-            IResourceProvider& resourceProvider,
             IResourceUploader& uploader,
             IRenderBackend& renderBackend,
             IEmbeddedCompositingManager& embeddedCompositingManager,
-            ResourceRequesterID requesterId,
             Bool keepEffects,
             const FrameTimer& frameTimer,
             RendererStatistics& stats,
-            UInt64 clientResourceCacheSize = 0u);
+            UInt64 gpuCacheSize = 0u);
         virtual ~RendererResourceManager();
 
-        // Client resources
-        virtual void                 referenceClientResourcesForScene     (SceneId sceneId, const ResourceContentHashVector& resources) override;
-        virtual void                 unreferenceClientResourcesForScene   (SceneId sceneId, const ResourceContentHashVector& resources) override;
+        // Immutable resources
+        virtual void                 referenceResourcesForScene     (SceneId sceneId, const ResourceContentHashVector& resources) override;
+        virtual void                 unreferenceResourcesForScene   (SceneId sceneId, const ResourceContentHashVector& resources) override;
 
-        virtual void                 getRequestedResourcesAlreadyInCache(const IRendererResourceCache* cache) override;
-        virtual void                 requestAndUnrequestPendingClientResources() override;
-        virtual void                 processArrivedClientResources(IRendererResourceCache* cache) override;
-        virtual Bool                 hasClientResourcesToBeUploaded() const override;
-        virtual void                 uploadAndUnloadPendingClientResources() override;
+        virtual void                 provideResourceData(const ManagedResource& mr) override;
+        virtual Bool                 hasResourcesToBeUploaded() const override;
+        virtual void                 uploadAndUnloadPendingResources() override;
 
-        virtual DeviceResourceHandle getClientResourceDeviceHandle(const ResourceContentHash& hash) const override;
-        virtual EResourceStatus      getClientResourceStatus(const ResourceContentHash& hash) const override;
-        virtual EResourceType        getClientResourceType(const ResourceContentHash& hash) const override;
+        virtual DeviceResourceHandle getResourceDeviceHandle(const ResourceContentHash& hash) const override;
+        virtual EResourceStatus      getResourceStatus(const ResourceContentHash& hash) const override;
+        virtual EResourceType        getResourceType(const ResourceContentHash& hash) const override;
 
         // Scene resources
         virtual DeviceResourceHandle getRenderTargetDeviceHandle(RenderTargetHandle, SceneId sceneId) const override;
@@ -69,14 +63,17 @@ namespace ramses_internal
         virtual void                 uploadRenderTarget(RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId) override;
         virtual void                 unloadRenderTarget(RenderTargetHandle renderTarget, SceneId sceneId) override;
 
-        virtual void                 uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, Bool isDoubleBuffered) override;
+        virtual void                 uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered) override;
         virtual void                 unloadOffscreenBuffer(OffscreenBufferHandle bufferHandle) override;
+
+        virtual void                 uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId) override;
+        virtual void                 unloadStreamBuffer(StreamBufferHandle bufferHandle) override;
 
         virtual void                 uploadTextureSampler(TextureSamplerHandle handle, SceneId sceneId, const TextureSamplerStates& states) override;
         virtual void                 unloadTextureSampler(TextureSamplerHandle handle, SceneId sceneId) override;
         virtual DeviceResourceHandle getTextureSamplerDeviceHandle(TextureSamplerHandle textureBufferHandle, SceneId sceneId) const override;
 
-        virtual void                 uploadStreamTexture(StreamTextureHandle handle, StreamTextureSourceId source, SceneId sceneId) override;
+        virtual void                 uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId) override;
         virtual void                 unloadStreamTexture(StreamTextureHandle handle, SceneId sceneId) override;
 
         virtual void                 uploadBlitPassRenderTargets(BlitPassHandle blitPass, RenderBufferHandle sourceRenderBuffer, RenderBufferHandle destinationRenderBuffer, SceneId sceneId) override;
@@ -93,21 +90,18 @@ namespace ramses_internal
         virtual DeviceResourceHandle getTextureBufferDeviceHandle(TextureBufferHandle textureBufferHandle, SceneId sceneId) const override;
 
         virtual void                 unloadAllSceneResourcesForScene(SceneId sceneId) override;
-        virtual void                 unreferenceAllClientResourcesForScene(SceneId sceneId) override;
+        virtual void                 unreferenceAllResourcesForScene(SceneId sceneId) override;
+        virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const override;
 
         // Renderer resources
         virtual DeviceResourceHandle getOffscreenBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const override;
         virtual DeviceResourceHandle getOffscreenBufferColorBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const override;
         virtual OffscreenBufferHandle getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const override;
-
-        const ResourceRequesterID& getRequesterID() const;
+        virtual DeviceResourceHandle getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const override;
 
     private:
-        typedef HashMap<SceneId, ResourceContentHashVector> ResourcesPerSceneMap;
-        typedef HashMap<SceneId, RendererSceneResourceRegistry> SceneResourceRegistryMap;
+        using SceneResourceRegistryMap = HashMap<SceneId, RendererSceneResourceRegistry>;
 
-        void groupResourcesBySceneId(const ResourceContentHashVector& resources, ResourcesPerSceneMap& resourcesPerScene) const;
-        void requestResourcesFromProvider(const ResourceContentHashVector& resources);
         RendererSceneResourceRegistry& getSceneResourceRegistry(SceneId sceneId);
 
         struct OffscreenBufferDescriptor
@@ -119,23 +113,17 @@ namespace ramses_internal
             UInt32 m_estimatedVRAMUsage;
         };
         using OffscreenBufferMap = MemoryPool<OffscreenBufferDescriptor, OffscreenBufferHandle>;
+        using StreamBufferMap = MemoryPool<WaylandIviSurfaceId, StreamBufferHandle>;
 
-        const ResourceRequesterID m_id;
-
-        IResourceProvider&             m_resourceProvider;
         IRenderBackend&                m_renderBackend;
         IEmbeddedCompositingManager&   m_embeddedCompositingManager;
 
         OffscreenBufferMap             m_offscreenBuffers;
-        RendererClientResourceRegistry m_clientResourceRegistry;
+        StreamBufferMap                m_streamBuffers;
+        RendererResourceRegistry       m_resourceRegistry;
         SceneResourceRegistryMap       m_sceneResourceRegistryMap;
-        ClientResourceUploadingManager m_resourceUploadingManager;
+        ResourceUploadingManager       m_resourceUploadingManager;
         RendererStatistics&            m_stats;
-
-        const UInt64 m_numberOfFramesToRerequestResource = 90u;  // 1.5s at 60fps, less than 2s force apply for remote content (assuming 30 flushes/s)
-        UInt64 m_frameCounter = 0u;
-        UInt64 m_numberOfArrivedResourcesInWrongStatus = 0u;
-        UInt64 m_sizeOfArrivedResourcesInWrongStatus = 0u;
 
         friend class RendererLogger;
         // TODO Violin remove this after KPI monitor is reworked

@@ -50,10 +50,10 @@ namespace ramses_internal
         virtual void setViewport(UInt32 x, UInt32 y, UInt32 width, UInt32 height) override;
         virtual void setTextureSampling(DataFieldHandle field, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel) override;
 
-        virtual DeviceResourceHandle allocateVertexBuffer(EDataType dataType, UInt32 sizeInBytes) override;
+        virtual DeviceResourceHandle allocateVertexBuffer(UInt32 totalSizeInBytes) override;
         virtual void uploadVertexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) override;
         virtual void deleteVertexBuffer(DeviceResourceHandle handle) override;
-        virtual void activateVertexBuffer(DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 offset) override;
+        virtual void activateVertexBuffer(DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 startVertex, EDataType bufferDataType, UInt16 offsetWithinElement, UInt16 stride) override;
         virtual DeviceResourceHandle allocateIndexBuffer(EDataType dataType, UInt32 sizeInBytes) override;
         virtual void uploadIndexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) override;
         virtual void deleteIndexBuffer(DeviceResourceHandle handle) override;

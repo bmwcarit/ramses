@@ -25,6 +25,9 @@ namespace ramses
     {
         LOG_INFO(ramses_internal::CONTEXT_RENDERER, "RendererSceneControl::setSceneState: scene " << sceneId << " " << EnumToString(state));
 
+        if (state == RendererSceneState::Unavailable)
+            return addErrorEntry("RendererSceneControl::setSceneState: Can not set scene state Unavailable. In order to release the scene from renderer set Available state.");
+
         auto& sceneInfo = m_sceneInfos[sceneId];
         if (state >= RendererSceneState::Ready && !sceneInfo.mappingSet)
             return addErrorEntry("RendererSceneControl::setSceneState: cannot get scene to ready/rendered without mapping info, set mapping info via RendererSceneControl::setSceneMapping first!");
@@ -119,9 +122,6 @@ namespace ramses
         {
             switch (event.eventType)
             {
-            case ramses_internal::ERendererEventType_ScenePublished:
-                eventHandler.scenePublished(sceneId_t{ event.sceneId.getValue() });
-                break;
             case ramses_internal::ERendererEventType_SceneStateChanged:
             {
                 const sceneId_t sceneId{ event.sceneId.getValue() };
@@ -138,10 +138,18 @@ namespace ramses
                 // TODO vaclav - decide if needed, does not have callback atm
                 break;
             case ramses_internal::ERendererEventType_SceneDataBufferLinked:
-                eventHandler.offscreenBufferLinked(displayBufferId_t{ event.offscreenBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, true);
+                assert(event.offscreenBuffer.isValid() != event.streamBuffer.isValid());
+                if (event.offscreenBuffer.isValid())
+                    eventHandler.offscreenBufferLinked(displayBufferId_t{ event.offscreenBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, true);
+                //else
+                    //TODO vaclav streamBufferLinked
                 break;
             case ramses_internal::ERendererEventType_SceneDataBufferLinkFailed:
-                eventHandler.offscreenBufferLinked(displayBufferId_t{ event.offscreenBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, false);
+                assert(event.offscreenBuffer.isValid() != event.streamBuffer.isValid());
+                if (event.offscreenBuffer.isValid())
+                    eventHandler.offscreenBufferLinked(displayBufferId_t { event.offscreenBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, false);
+                //else
+                    //TODO vaclav streamBufferLinked
                 break;
             case ramses_internal::ERendererEventType_SceneDataLinked:
                 eventHandler.dataLinked(sceneId_t(event.providerSceneId.getValue()), dataProviderId_t(event.providerdataId.getValue()), sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), true);
@@ -196,6 +204,7 @@ namespace ramses
                 eventHandler.streamAvailabilityChanged(ramses::waylandIviSurfaceId_t(event.streamSourceId.getValue()), false);
                 break;
 
+            case ramses_internal::ERendererEventType_ScenePublished:
             case ramses_internal::ERendererEventType_SceneUnpublished:
             case ramses_internal::ERendererEventType_SceneSubscribed:
             case ramses_internal::ERendererEventType_SceneSubscribeFailed:
@@ -212,7 +221,7 @@ namespace ramses
             case ramses_internal::ERendererEventType_SceneHidden:
             case ramses_internal::ERendererEventType_SceneHiddenIndirect:
             case ramses_internal::ERendererEventType_SceneHideFailed:
-                // these events are emitted from internal renderer all the way here to support legacy scene control
+                // these events are emitted from internal renderer and processed by scene control logic
                 break;
 
             default:

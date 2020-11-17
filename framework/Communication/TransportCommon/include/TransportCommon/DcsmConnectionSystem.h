@@ -29,12 +29,12 @@ namespace ramses_internal
 
         ~DcsmConnectionSystem() override;
 
-        bool sendBroadcastOfferContent(ContentID content, Category category, const std::string& friendlyName, uint32_t sortOrder);
-        bool sendOfferContent(const Guid& to, ContentID content, Category category, const std::string& friendlyName, uint32_t sortOrder);
+        bool sendBroadcastOfferContent(ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, uint32_t sortOrder);
+        bool sendOfferContent(const Guid& to, ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, uint32_t sortOrder);
         bool sendBroadcastRequestStopOfferContent(ContentID content, bool forceStopOffer);
 
         bool sendCanvasSizeChange(const Guid& to, ContentID content, const CategoryInfo& categoryInfo, uint16_t dpi, const AnimationInformation& animation);
-        bool sendContentDescription(const Guid& to, ContentID content, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor);
+        bool sendContentDescription(const Guid& to, ContentID content, TechnicalContentDescriptor technicalContentDescriptor);
         bool sendContentReady(const Guid& to, ContentID content);
         bool sendContentStateChange(const Guid& to, ContentID content, EDcsmState state, const CategoryInfo& categoryInfo, const AnimationInformation& animation);
         bool sendContentEnableFocusRequest(const Guid& to, ContentID content, int32_t focusRequest);
@@ -53,12 +53,12 @@ namespace ramses_internal
                              std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow);
 
         // from ISomeIPDcsmCallbacks
-        virtual void handleOfferContent(const SomeIPMsgHeader& header, ContentID content, Category category, const std::string& friendlyName, uint32_t sortOrder) override;
+        virtual void handleOfferContent(const SomeIPMsgHeader& header, ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, uint32_t sortOrder) override;
         virtual void handleRequestStopOfferContent(const SomeIPMsgHeader& header, ContentID content, bool forceStopOffer) override;
         virtual void handleUpdateContentMetadata(const SomeIPMsgHeader& header, ContentID content, absl::Span<const Byte> metadata) override;
 
         virtual void handleCanvasSizeChange(const SomeIPMsgHeader& header, ContentID content, const CategoryInfo& categoryInfo, uint16_t dpi, const AnimationInformation& animation) override;
-        virtual void handleContentDescription(const SomeIPMsgHeader& header, ContentID content, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
+        virtual void handleContentDescription(const SomeIPMsgHeader& header, ContentID content, TechnicalContentDescriptor technicalContentDescriptor) override;
         virtual void handleContentReady(const SomeIPMsgHeader& header, ContentID content) override;
         virtual void handleContentStateChange(const SomeIPMsgHeader& header, ContentID content, EDcsmState state, const CategoryInfo& categoryInfo, const AnimationInformation& animation) override;
         virtual void handleContentEnableFocusRequest(const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest) override;

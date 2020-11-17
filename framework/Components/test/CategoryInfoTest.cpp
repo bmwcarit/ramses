@@ -18,9 +18,9 @@ namespace ramses_internal
     public:
         ACategoryInfo()
         {
-            filled.setCategorySize(12, 34, 56, 78);
+            filled.setCategoryRect(12, 34, 56, 78);
             filled.setRenderSize(88,99);
-            filled.setSafeArea(4,3,2,1);
+            filled.setSafeRect(4,3,2,1);
         }
 
         CategoryInfo serializeDeserialize(const CategoryInfo& ref)
@@ -39,7 +39,7 @@ namespace ramses_internal
         CategoryInfo defaultConstructed;
         CategoryInfo explicitZero(0u, 0u);
         CategoryInfo explicitValuesSet;
-        explicitValuesSet.setCategorySize(0, 0, 3, 4);
+        explicitValuesSet.setCategoryRect(0, 0, 3, 4);
         CategoryInfo explicitValuesConstructor{ 3, 4 };
 
         EXPECT_FALSE(defaultConstructed == explicitZero); // zero 'has value'
@@ -47,7 +47,7 @@ namespace ramses_internal
         EXPECT_TRUE(explicitValuesSet == explicitValuesConstructor);
         EXPECT_FALSE(explicitValuesSet != explicitValuesConstructor);
 
-        explicitValuesSet.setCategorySize(1, 2, 3, 4);
+        explicitValuesSet.setCategoryRect(1, 2, 3, 4);
         EXPECT_FALSE(explicitValuesSet == explicitValuesConstructor);
     }
 
@@ -58,41 +58,41 @@ namespace ramses_internal
         EXPECT_EQ(0u, value.getCategoryY());
         EXPECT_EQ(0u, value.getCategoryWidth());
         EXPECT_EQ(0u, value.getCategoryHeight());
-        EXPECT_FALSE(value.hasCategorySizeChange());
-        EXPECT_EQ(0u, value.getSafeAreaX());
-        EXPECT_EQ(0u, value.getSafeAreaY());
-        EXPECT_EQ(0u, value.getSafeAreaWidth());
-        EXPECT_EQ(0u, value.getSafeAreaHeight());
-        EXPECT_FALSE(value.hasSafeAreaSizeChange());
+        EXPECT_FALSE(value.hasCategoryRectChange());
+        EXPECT_EQ(0u, value.getSafeRectX());
+        EXPECT_EQ(0u, value.getSafeRectY());
+        EXPECT_EQ(0u, value.getSafeRectWidth());
+        EXPECT_EQ(0u, value.getSafeRectHeight());
+        EXPECT_FALSE(value.hasSafeRectChange());
         EXPECT_EQ(0u, value.getRenderSizeWidth());
         EXPECT_EQ(0u, value.getRenderSizeHeight());
         EXPECT_FALSE(value.hasRenderSizeChange());
     }
 
-    TEST(CategoryInfo, setCategorySize)
+    TEST(CategoryInfo, setCategoryRect)
     {
         CategoryInfo value;
-        EXPECT_FALSE(value.hasCategorySizeChange());
+        EXPECT_FALSE(value.hasCategoryRectChange());
 
-        value.setCategorySize(1, 2, 3, 4);
-        EXPECT_TRUE(value.hasCategorySizeChange());
+        value.setCategoryRect(1, 2, 3, 4);
+        EXPECT_TRUE(value.hasCategoryRectChange());
         EXPECT_EQ(1u, value.getCategoryX());
         EXPECT_EQ(2u, value.getCategoryY());
         EXPECT_EQ(3u, value.getCategoryWidth());
         EXPECT_EQ(4u, value.getCategoryHeight());
     }
 
-    TEST(CategoryInfo, setSafeAreaSize)
+    TEST(CategoryInfo, setSafeRect)
     {
         CategoryInfo value;
-        EXPECT_FALSE(value.hasSafeAreaSizeChange());
+        EXPECT_FALSE(value.hasSafeRectChange());
 
-        value.setSafeArea(1, 2, 3, 4);
-        EXPECT_TRUE(value.hasSafeAreaSizeChange());
-        EXPECT_EQ(1u, value.getSafeAreaX());
-        EXPECT_EQ(2u, value.getSafeAreaY());
-        EXPECT_EQ(3u, value.getSafeAreaWidth());
-        EXPECT_EQ(4u, value.getSafeAreaHeight());
+        value.setSafeRect(1, 2, 3, 4);
+        EXPECT_TRUE(value.hasSafeRectChange());
+        EXPECT_EQ(1u, value.getSafeRectX());
+        EXPECT_EQ(2u, value.getSafeRectY());
+        EXPECT_EQ(3u, value.getSafeRectWidth());
+        EXPECT_EQ(4u, value.getSafeRectHeight());
     }
 
     TEST(CategoryInfo, setRenderSize)
@@ -163,9 +163,9 @@ namespace ramses_internal
     TEST_F(ACategoryInfo, canSerializeDeserializeSomeSet)
     {
         CategoryInfo ci;
-        ci.setCategorySize(4,3,2,1);
+        ci.setCategoryRect(4,3,2,1);
         ci.setRenderSize(5,6);
-        ci.setSafeArea(7,8,9,0);
+        ci.setSafeRect(7,8,9,0);
         EXPECT_EQ(ci, serializeDeserialize(ci));
     }
 
@@ -180,7 +180,7 @@ namespace ramses_internal
             << static_cast<uint64_t>(2) // unknown data
             << static_cast<uint64_t>(3)
 
-            << static_cast<uint32_t>(1) // category size change type
+            << static_cast<uint32_t>(1) // category rect change type
             << static_cast<uint32_t>(2) // x
             << static_cast<uint32_t>(2) // y
             << static_cast<uint32_t>(2) // size
@@ -188,7 +188,7 @@ namespace ramses_internal
             << static_cast<uint32_t>(123); // height
 
         CategoryInfo ci(os.release());
-        EXPECT_TRUE(ci.hasCategorySizeChange());
+        EXPECT_TRUE(ci.hasCategoryRectChange());
         EXPECT_EQ(2u, ci.getCategoryWidth());
         EXPECT_EQ(123u, ci.getCategoryHeight());
     }
@@ -205,7 +205,7 @@ namespace ramses_internal
             << static_cast<uint32_t>(2) // width
             << static_cast<uint8_t>(123); // height
         CategoryInfo ci(os.release());
-        EXPECT_FALSE(ci.hasCategorySizeChange());
+        EXPECT_FALSE(ci.hasCategoryRectChange());
     }
 
 }

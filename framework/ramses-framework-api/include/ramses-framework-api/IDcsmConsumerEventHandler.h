@@ -29,18 +29,18 @@ namespace ramses
          *
          * @param contentID newly available content
          * @param category content category
+         * @param contentType what kind of content
          */
-        virtual void contentOffered(ramses::ContentID contentID, ramses::Category category) = 0;
+        virtual void contentOffered(ramses::ContentID contentID, ramses::Category category, ramses::ETechnicalContentType contentType) = 0;
 
         /**
          * @brief Provides the content description. It will be triggered by provider after the content is assigned
          *        to consumer. It will always be called before the contentReady callback.
          *
          * @param contentID described content
-         * @param contentType what kind of content
          * @param contentDescriptor descriptor/id of this content
          */
-        virtual void contentDescription(ramses::ContentID contentID, ramses::ETechnicalContentType contentType, ramses::TechnicalContentDescriptor contentDescriptor) = 0;
+        virtual void contentDescription(ramses::ContentID contentID, ramses::TechnicalContentDescriptor contentDescriptor) = 0;
 
         /**
          * @brief Provider made content ready and available to use. This is an answer to DcsmConsumer::sendContentStatusChange with

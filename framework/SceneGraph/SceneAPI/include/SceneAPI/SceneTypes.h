@@ -42,7 +42,7 @@ namespace ramses_internal
     using TextureSamplerHandleVector =  std::vector<TextureSamplerHandle>;
 
     struct PickableObjectIdTag {};
-    typedef StronglyTypedValue<UInt32, std::numeric_limits<uint32_t>::max(), PickableObjectIdTag> PickableObjectId;
+    using PickableObjectId = StronglyTypedValue<UInt32, std::numeric_limits<uint32_t>::max(), PickableObjectIdTag>;
     using PickableObjectIds = std::vector<PickableObjectId>;
 }
 

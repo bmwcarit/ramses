@@ -46,10 +46,13 @@ class IntegrationTest(unittest.TestCase):
         log.separator("=")
 
         log.default_file_logger = log.FileLogger(os.path.join(self._get_result_dir(), "test.log"))
-
+        self.class_setup()
         self.impl_setUp()
 
     def impl_setUp(self):
+        pass
+
+    def class_setup(self):
         pass
 
     def testRun(self):
@@ -60,10 +63,14 @@ class IntegrationTest(unittest.TestCase):
 
     def tearDown(self):
         self.impl_tearDown()
+        self.class_teardown()
         log.default_file_logger.close()
         log.default_file_logger = None
 
     def impl_tearDown(self):
+        pass
+
+    def class_teardown(self):
         pass
 
     def name_test_run(self):
@@ -98,6 +105,12 @@ class OneConnectionTest(IntegrationTest):
         """ __str__ is overwritten to add name of target """
         orig = unittest.TestCase.__str__(self)
         return orig + " (target:" + self.target.name + ")"
+
+    def class_setup(self):
+        self.target.currentTestId = self.id()
+
+    def class_teardown(self):
+        self.target.currentTestId = None
 
     def validateScreenshot(self, renderer, imageName, displayNumber=0, useSystemCompositorForScreenshot=False, compareForEquality = True):
         log.info("Validating test via screenshot comparison")
@@ -153,6 +166,14 @@ class MultipleConnectionsTest(IntegrationTest):
         """ id is overwritten to add name of targets """
         orig = unittest.TestCase.__str__(self)
         return orig + " (targets:" + self._targetNames() + ")"
+
+    def class_setup(self):
+        for t in self.targets:
+            t.currentTestId = self.id()
+
+    def class_teardown(self):
+        for t in self.targets:
+            t.currentTestId = None
 
     def _targetNames(self):
         targetNames = ""

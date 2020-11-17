@@ -17,7 +17,7 @@
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/RemoteCamera.h"
+#include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/AnimationSystem.h"
@@ -32,8 +32,9 @@
 
 namespace ramses_internal
 {
-    FileLoadingScene::FileLoadingScene(ramses::RamsesClient& clientForLoading, UInt32 state, ramses::sceneId_t sceneId, const Vector3& cameraPosition, const String& folder, const ramses::RamsesFrameworkConfig& config)
-        : m_createdScene(nullptr)
+    FileLoadingScene::FileLoadingScene(ramses::RamsesClient& clientForLoading, UInt32 state, ramses::sceneId_t sceneId, const Vector3& cameraPosition, const String& folder, const ramses::RamsesFrameworkConfig& config, uint32_t vpWidth, uint32_t vpHeight)
+        : m_viewportWidth(vpWidth)
+        , m_viewportHeight(vpHeight)
     {
         switch (state)
         {
@@ -65,7 +66,9 @@ namespace ramses_internal
 
         ramses::Node* cameraTranslation = scene->createNode("cameraPosition");
         cameraTranslation->setTranslation(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-        ramses::Camera* camera = scene->createRemoteCamera("my camera");
+        auto camera = scene->createPerspectiveCamera("fileLoading camera");
+        camera->setViewport(0, 0, m_viewportWidth, m_viewportHeight);
+        camera->setFrustum(19.f, float(m_viewportWidth) / m_viewportHeight, 0.1f, 1500.f);
         camera->setParent(*cameraTranslation);
         ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
         renderPass->setClearFlags(ramses::EClearFlags_None);
@@ -94,7 +97,7 @@ namespace ramses_internal
         ramses::EffectDescription effectDesc;
         effectDesc.setVertexShaderFromFile("res/ramses-test-client-file-loading-texturing.vert");
         effectDesc.setFragmentShaderFromFile("res/ramses-test-client-file-loading-texturing.frag");
-        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
         ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
 
@@ -142,7 +145,7 @@ namespace ramses_internal
         ramses::EffectDescription effectDesc;
         effectDesc.setVertexShaderFromFile("res/ramses-test-client-file-loading-basic.vert");
         effectDesc.setFragmentShaderFromFile("res/ramses-test-client-file-loading-red.frag");
-        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
         ramses::Effect* effect = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader anim");
         ramses::Appearance* appearance = scene.createAppearance(*effect, "triangle appearance anim");

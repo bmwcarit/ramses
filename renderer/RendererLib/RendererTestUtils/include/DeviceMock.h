@@ -65,10 +65,10 @@ namespace ramses_internal
         MOCK_METHOD(void, setViewport, (UInt32, UInt32, UInt32, UInt32), (override));
         MOCK_METHOD(void, setTextureSampling, (DataFieldHandle, EWrapMethod, EWrapMethod, EWrapMethod, ESamplingMethod, ESamplingMethod, UInt32), (override));
 
-        MOCK_METHOD(DeviceResourceHandle, allocateVertexBuffer, (EDataType, UInt32), (override));
+        MOCK_METHOD(DeviceResourceHandle, allocateVertexBuffer, (UInt32), (override));
         MOCK_METHOD(void, uploadVertexBufferData, (DeviceResourceHandle, const Byte*, UInt32), (override));
         MOCK_METHOD(void, deleteVertexBuffer, (DeviceResourceHandle), (override));
-        MOCK_METHOD(void, activateVertexBuffer, (DeviceResourceHandle, DataFieldHandle, UInt32, UInt32), (override));
+        MOCK_METHOD(void, activateVertexBuffer, (DeviceResourceHandle, DataFieldHandle, UInt32, UInt32, EDataType, UInt16, UInt16), (override));
         MOCK_METHOD(DeviceResourceHandle, allocateIndexBuffer, (EDataType, UInt32), (override));
         MOCK_METHOD(void, uploadIndexBufferData, (DeviceResourceHandle, const Byte*, UInt32), (override));
         MOCK_METHOD(void, deleteIndexBuffer, (DeviceResourceHandle), (override));

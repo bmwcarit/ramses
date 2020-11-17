@@ -11,6 +11,7 @@
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/TextureSampler.h"
+#include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "ramses-client-api/RenderTarget.h"
@@ -19,7 +20,6 @@
 #include "ramses-client-api/AnimatedProperty.h"
 #include "ramses-client-api/Animation.h"
 #include "ramses-client-api/AnimationSequence.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/GeometryBinding.h"
@@ -82,7 +82,7 @@
 #include "RamsesObjectTestTypes.h"
 #include "ramses-client-api/UniformInput.h"
 #include "Scene/ESceneActionId.h"
-#include "Scene/SceneResourceChanges.h"
+#include "Scene/ResourceChanges.h"
 #include "Scene/SceneActionApplier.h"
 #include "ramses-hmi-utils.h"
 
@@ -114,16 +114,6 @@ namespace ramses
         ASSERT_TRUE(nullptr != animationSystemLoaded);
     }
 
-    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteARemoteCamera)
-    {
-        Camera* camera = this->m_scene.createRemoteCamera("my cam");
-
-        doWriteReadCycle();
-
-        const Camera* loadedCamera = this->getObjectForTesting<Camera>("my cam");
-        EXPECT_EQ(camera->impl.getCameraHandle(), loadedCamera->impl.getCameraHandle());
-    }
-
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAPerspectiveCamera)
     {
         PerspectiveCamera* camera = this->m_scene.createPerspectiveCamera("my cam");
@@ -145,6 +135,8 @@ namespace ramses
         EXPECT_EQ(-2, loadedCamera->getViewportY());
         EXPECT_EQ(3u, loadedCamera->getViewportWidth());
         EXPECT_EQ(4u, loadedCamera->getViewportHeight());
+
+        EXPECT_EQ(StatusOK, loadedCamera->validate());
 
         m_sceneLoaded->destroy(*loadedCamera);
     }
@@ -195,6 +187,8 @@ namespace ramses
         EXPECT_EQ(3u, loadedCamera->getViewportWidth());
         EXPECT_EQ(4u, loadedCamera->getViewportHeight());
 
+        EXPECT_EQ(StatusOK, loadedCamera->validate());
+
         m_sceneLoaded->destroy(*loadedCamera);
     }
 
@@ -232,7 +226,7 @@ namespace ramses
         const GeometryBinding& geometryLoaded = RamsesObjectTypeUtils::ConvertTo<GeometryBinding>(*this->m_scene.findObjectById(geometryIdBeforeSaveAndLoad));
         EXPECT_EQ(geometryIdBeforeSaveAndLoad, geometryLoaded.getSceneObjectId());
 
-        const Camera* camera = this->m_scene.createRemoteCamera("camera");
+        const Camera* camera = this->m_scene.createOrthographicCamera("camera");
         EXPECT_NE(appearanceIdBeforeSaveAndLoad, camera->getSceneObjectId());
         EXPECT_NE(geometryIdBeforeSaveAndLoad, camera->getSceneObjectId());
     }
@@ -523,8 +517,10 @@ namespace ramses
     {
         RenderPass* renderPass = this->m_scene.createRenderPass("a renderpass");
 
-        Camera* camera = this->m_scene.createRemoteCamera("camera");
-        renderPass->setCamera(*camera);
+        PerspectiveCamera* perspCam = this->m_scene.createPerspectiveCamera("camera");
+        perspCam->setFrustum(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f);
+        perspCam->setViewport(0, 0, 100, 200);
+        renderPass->setCamera(*perspCam);
 
         doWriteReadCycle();
 
@@ -534,6 +530,7 @@ namespace ramses
         EXPECT_STREQ(renderPass->getName(), loadedRenderPass->getName());
         EXPECT_EQ(renderPass->getSceneObjectId(), loadedRenderPass->getSceneObjectId());
         EXPECT_EQ(loadedCamera, loadedRenderPass->getCamera());
+        EXPECT_EQ(StatusOK, loadedCamera->validate());
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteARenderPassWhichHasRenderGroups)
@@ -716,6 +713,7 @@ namespace ramses
         EXPECT_EQ(loadedRenderTarget, loadedRenderPass->getRenderTarget());
         EXPECT_EQ(loadedCamera, loadedRenderPass->getCamera());
         EXPECT_EQ(StatusOK, loadedRenderTarget->validate());
+        EXPECT_EQ(StatusOK, loadedCamera->validate());
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteRenderTarget)
@@ -1001,6 +999,21 @@ namespace ramses
         EXPECT_EQ(8u, loadedSampler->getAnisotropyLevel());
         EXPECT_EQ(texture->impl.getLowlevelResourceHash(), this->m_sceneLoaded->impl.getIScene().getTextureSampler(loadedSampler->impl.getTextureSamplerHandle()).textureResource);
         EXPECT_EQ(ERamsesObjectType_Texture2D, loadedSampler->impl.getTextureType());
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteATextureSamplerMS)
+    {
+        RenderBuffer* renderBuffer = m_scene.createRenderBuffer(4u, 4u, ERenderBufferType_Color, ERenderBufferFormat_RGB8, ERenderBufferAccessMode_ReadWrite, 4u);
+
+        TextureSamplerMS* sampler = this->m_scene.createTextureSamplerMS(*renderBuffer, "sampler");
+        ASSERT_TRUE(nullptr != sampler);
+
+        doWriteReadCycle();
+
+        TextureSamplerMS* loadedSampler = getObjectForTesting<TextureSamplerMS>("sampler");
+        ASSERT_TRUE(nullptr != loadedSampler);
+
+        EXPECT_EQ(ERamsesObjectType_RenderBuffer, loadedSampler->impl.getTextureType());
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteSceneId)

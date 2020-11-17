@@ -22,6 +22,8 @@
 #include "SceneAPI/MipMapSize.h"
 #include "SceneAPI/Renderable.h"
 #include "SceneAPI/RendererSceneState.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
+#include "SceneAPI/ERotationConvention.h"
 
 #include "Collections/HashMap.h"
 #include "Collections/Vector.h"
@@ -42,8 +44,6 @@ namespace ramses_internal
     struct SceneSizeInformation;
     struct PixelRectangle;
     struct Camera;
-    struct Viewport;
-    struct Frustum;
     struct RenderPass;
     struct RenderGroup;
     struct TextureSampler;
@@ -55,15 +55,13 @@ namespace ramses_internal
     struct BlitPass;
     struct PickableObject;
     struct SceneReference;
+    struct TopologyTransform;
 
     class IScene
     {
     public:
-        virtual ~IScene()
-        {
-        }
-
         IScene() = default;
+        virtual ~IScene() = default;
 
         // scene should never be copied or moved
         IScene(const IScene&) = delete;
@@ -134,9 +132,11 @@ namespace ramses_internal
         virtual NodeHandle                  getTransformNode                (TransformHandle handle) const = 0;
         virtual const Vector3&              getTranslation                  (TransformHandle handle) const = 0;
         virtual const Vector3&              getRotation                     (TransformHandle handle) const = 0;
+        virtual ERotationConvention         getRotationConvention           (TransformHandle handle) const = 0;
         virtual const Vector3&              getScaling                      (TransformHandle handle) const = 0;
         virtual void                        setTranslation                  (TransformHandle handle, const Vector3& translation) = 0;
-        virtual void                        setRotation                     (TransformHandle handle, const Vector3& rotation) = 0;
+        virtual void                        setRotation                     (TransformHandle handle, const Vector3& rotation, ERotationConvention convention) = 0;
+        virtual void                        setRotationForAnimation         (TransformHandle handle, const Vector3& rotation) = 0;
         virtual void                        setScaling                      (TransformHandle handle, const Vector3& scaling) = 0;
 
         virtual DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid()) = 0;
@@ -178,7 +178,7 @@ namespace ramses_internal
         virtual void                        setDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data) = 0;
         virtual void                        setDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data) = 0;
         virtual void                        setDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data) = 0;
-        virtual void                        setDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor) = 0;
+        virtual void                        setDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) = 0;
         virtual void                        setDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) = 0;
         virtual void                        setDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef) = 0;
 
@@ -281,7 +281,7 @@ namespace ramses_internal
         virtual const RenderBuffer&         getRenderBuffer                 (RenderBufferHandle handle) const = 0;
 
         // Stream textures
-        virtual StreamTextureHandle         allocateStreamTexture           (uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) = 0;
+        virtual StreamTextureHandle         allocateStreamTexture           (WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) = 0;
         virtual void                        releaseStreamTexture            (StreamTextureHandle streamTextureHandle) = 0;
         virtual bool                        isStreamTextureAllocated        (StreamTextureHandle streamTextureHandle) const = 0;
         virtual UInt32                      getStreamTextureCount           () const = 0;

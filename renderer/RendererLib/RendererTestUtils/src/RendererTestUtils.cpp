@@ -57,6 +57,7 @@ bool RendererTestUtils::CompareBitmapToImageInFile(const Image& actualBitmap, co
     {
         printf("Screenshot comparison failed: size of expected image %u/%u does not match size of actual image %u/%u\n",
             expectedBitmap.getWidth(), expectedBitmap.getHeight(), actualBitmap.getWidth(), actualBitmap.getHeight());
+
         return false;
     }
     const Image diff = expectedBitmap.createDiffTo(actualBitmap);
@@ -85,7 +86,6 @@ bool RendererTestUtils::CompareBitmapToImageInFile(const Image& actualBitmap, co
         printf(" - number of pixels different by 255 (one or more color channels): %u\n", diff.getNumberOfNonBlackPixels(254));
 
         const String screenShotPath = String("./res/diffs");
-
         File diffDirectory(screenShotPath);
         diffDirectory.createDirectory();
 

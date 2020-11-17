@@ -34,7 +34,7 @@ namespace ramses_internal
         initRenderingPass(state);
         initBlittingPass(state);
         initRenderPassFromBlittingResult(state);
-        addRenderPassUsingRenderBufferAsQuadTexture(m_blittingColorBuffer);
+        addRenderPassUsingRenderBufferAsQuadTexture(createQuadWithTexture(m_blittingColorBuffer));
     }
 
     ramses::RenderTarget& BlitPassScene::createRenderTarget(UInt32 state)

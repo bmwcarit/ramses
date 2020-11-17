@@ -46,7 +46,6 @@ namespace ramses_internal
         Bool checkIfCanBeSubscribed           (SceneId sceneId) const;
         Bool checkIfCanBeUnsubscribed         (SceneId sceneId) const;
         Bool checkIfCanBeMapRequested         (SceneId sceneId, DisplayHandle handle) const;
-        Bool checkIfCanBeMappingAndUploading  (SceneId sceneId) const;
         Bool checkIfCanBeMapped               (SceneId sceneId) const;
         Bool checkIfCanBeUnmapped             (SceneId sceneId) const;
         Bool checkIfCanBeRenderedRequested    (SceneId sceneId) const;

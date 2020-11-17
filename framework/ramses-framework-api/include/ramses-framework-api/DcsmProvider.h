@@ -138,6 +138,11 @@ namespace ramses
          *        handler (see dispatchEvents).
          *        markContentReady shall be called after that.
          *
+         *        When a previously marked ready content is released by the consumer
+         *        the ready state is automatically reset. Should this or another
+         *        consumer request the content ready again, this function has to be
+         *        called again for this content to indicate renewed readiness.
+         *
          * @param contentID The ID of the content to be marked ready
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().

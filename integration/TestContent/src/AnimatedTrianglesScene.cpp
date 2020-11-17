@@ -28,8 +28,8 @@ namespace ramses_internal
 {
     const UInt64 AnimatedTrianglesScene::StopTime[NUM_STATES] = { 2000u, 3000u, 4000u, 5000u, 6000u, 60000u };
 
-    AnimatedTrianglesScene::AnimatedTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    AnimatedTrianglesScene::AnimatedTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
         state = state % NUM_STATES;
 

@@ -19,6 +19,8 @@
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/GeometryBinding.h"
+#include "ramses-client-api/EffectDescription.h"
+#include "Math3d/Vector3.h"
 #include <cassert>
 
 namespace ramses_internal
@@ -27,11 +29,17 @@ namespace ramses_internal
         : CommonRenderBufferTestScene(scene, cameraPosition)
         , m_colorBufferMsaa2(*scene.createRenderBuffer(2u, 2u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_WriteOnly, 2u))
         , m_colorBufferMsaa4(*scene.createRenderBuffer(2u, 2u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_WriteOnly, 4u))
+        , m_colorBufferMsaa4ReadWrite(*scene.createRenderBuffer(2u, 2u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite, 4u))
         , m_blittingColorBuffer(*scene.createRenderBuffer(2u, 2u, ramses::ERenderBufferType_Color, ramses::ERenderBufferFormat_RGBA8, ramses::ERenderBufferAccessMode_ReadWrite))
     {
-        initRenderingPass(state);
-        initBlittingPass(state);
-        addRenderPassUsingRenderBufferAsQuadTexture(m_blittingColorBuffer);
+        initRenderPass(state);
+        if (state != SAMPLE_COUNT_4_TEXEL_FETCH)
+        {
+            initBlittingPass(state);
+            addRenderPassUsingRenderBufferAsQuadTexture(createQuadWithTexture(m_blittingColorBuffer));
+        }
+        else
+            addRenderPassUsingRenderBufferAsQuadTexture(createQuadWithTextureMS(m_colorBufferMsaa4ReadWrite));
     }
 
     ramses::RenderTarget& MsaaRenderBufferScene::createRenderTarget(UInt32 state)
@@ -40,12 +48,15 @@ namespace ramses_internal
 
         switch (state)
         {
-        case SAMPLE_COUNT_2:
+        case SAMPLE_COUNT_2_BLIT:
             rtDesc.addRenderBuffer(m_colorBufferMsaa2);
             break;
-        case SAMPLE_COUNT_4:
+        case SAMPLE_COUNT_4_BLIT:
             rtDesc.addRenderBuffer(m_colorBufferMsaa4);
             break;
+        case SAMPLE_COUNT_4_TEXEL_FETCH:
+            rtDesc.addRenderBuffer(m_colorBufferMsaa4ReadWrite);
+            break;
         default:
             assert(false);
             break;
@@ -54,23 +65,7 @@ namespace ramses_internal
         return *m_scene.createRenderTarget(rtDesc);
     }
 
-    ramses::RenderTarget& MsaaRenderBufferScene::createBlittingRenderTarget(UInt32 state)
-    {
-        ramses::RenderTargetDescription rtDesc;
-        switch (state)
-        {
-        case SAMPLE_COUNT_2:
-        case SAMPLE_COUNT_4:
-            rtDesc.addRenderBuffer(m_blittingColorBuffer);
-            break;
-        default:
-            assert(false);
-            break;
-        }
-        return *m_scene.createRenderTarget(rtDesc);
-    }
-
-    void MsaaRenderBufferScene::initRenderingPass(UInt32 state)
+    void MsaaRenderBufferScene::initRenderPass(UInt32 state)
     {
         ramses::MeshNode& meshNode = createMesh();
 
@@ -100,10 +95,10 @@ namespace ramses_internal
         ramses::BlitPass* blitPass = nullptr;
         switch (state)
         {
-        case SAMPLE_COUNT_2:
+        case SAMPLE_COUNT_2_BLIT:
             blitPass = m_scene.createBlitPass(m_colorBufferMsaa2, m_blittingColorBuffer);
             break;
-        case SAMPLE_COUNT_4:
+        case SAMPLE_COUNT_4_BLIT:
             blitPass = m_scene.createBlitPass(m_colorBufferMsaa4, m_blittingColorBuffer);
             break;
         default:
@@ -132,5 +127,58 @@ namespace ramses_internal
         meshNode.getGeometryBinding()->setInputBuffer(positionsInput, *vertexPositions);
 
         return meshNode;
+    }
+
+    const ramses::MeshNode& MsaaRenderBufferScene::createQuadWithTextureMS(const ramses::RenderBuffer& renderBuffer)
+    {
+        const ramses::Effect& effect = *getTestEffect("ramses-test-client-render-one-buffer-ms");
+
+        const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
+        const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
+
+        const float vertexPositionsArray[] =
+        {
+            -1.f, -1.f, 0.f,
+            1.f, -1.f, 0.f,
+            -1.f, 1.f, 0.f,
+            1.f, 1.f, 0.f
+        };
+        const ramses::ArrayResource* vertexPositions = m_scene.createArrayResource(ramses::EDataType::Vector3F, 4, vertexPositionsArray);
+
+        const float textureCoordsArray[] = { 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 1.f };
+        const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
+
+        ramses::Appearance* appearance = m_scene.createAppearance(effect, "appearance");
+
+        ramses::AttributeInput positionsInput;
+        ramses::AttributeInput texCoordsInput;
+        effect.findAttributeInput("a_position", positionsInput);
+        effect.findAttributeInput("a_texcoord", texCoordsInput);
+
+        // set vertex positions directly in geometry
+        ramses::GeometryBinding* geometry = m_scene.createGeometryBinding(effect, "quad geometry");
+        geometry->setIndices(*indices);
+        geometry->setInputBuffer(positionsInput, *vertexPositions);
+        geometry->setInputBuffer(texCoordsInput, *textureCoords);
+
+        ramses::TextureSamplerMS* sampler = m_scene.createTextureSamplerMS(renderBuffer, "MSAA sampler");
+
+        ramses::UniformInput textureInput;
+        effect.findUniformInput("textureSampler", textureInput);
+        appearance->setInputTexture(textureInput, *sampler);
+
+        ramses::UniformInput sampleCountInput;
+        effect.findUniformInput("sampleCount", sampleCountInput);
+        appearance->setInputValueInt32(sampleCountInput, 4u);
+
+        ramses::MeshNode* meshNode = m_scene.createMeshNode("quad");
+        meshNode->setAppearance(*appearance);
+        meshNode->setGeometryBinding(*geometry);
+
+        ramses::Node* transNode = m_scene.createNode();
+        transNode->setTranslation(0.0f, 0.f, -8.f);
+        meshNode->setParent(*transNode);
+
+        return *meshNode;
     }
 }

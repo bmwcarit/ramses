@@ -64,7 +64,7 @@
 #include "ramses-client-api/RenderTargetDescription.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/PickableObject.h"
-#include "ramses-client-api/LocalCamera.h"
+#include "ramses-client-api/Camera.h"
 #include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 
@@ -164,10 +164,6 @@ namespace ramses
     template <> MeshNode* CreationHelper::createObjectOfType<MeshNode>(const char* name)
     {
         return m_scene->createMeshNode(name);
-    }
-    template <> RemoteCamera* CreationHelper::createObjectOfType<RemoteCamera>(const char* name)
-    {
-        return m_scene->createRemoteCamera(name);
     }
     template <> PerspectiveCamera* CreationHelper::createObjectOfType<PerspectiveCamera>(const char* name)
     {
@@ -355,9 +351,14 @@ namespace ramses
         Texture2D* texture = m_scene->createTexture2D(ETextureFormat::RGBA8, 1u, 1u, 1, &mipLevelData, false, {}, ResourceCacheFlag_DoNotCache, "texture");
         return m_scene->createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Mirror, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Nearest, *texture, 1u, name);
     }
+    template <> TextureSamplerMS* CreationHelper::createObjectOfType<TextureSamplerMS>(const char* name)
+    {
+        RenderBuffer* renderBuffer = m_scene->createRenderBuffer(16, 16, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 4u, "renderBuffer");
+        return m_scene->createTextureSamplerMS(*renderBuffer, name);
+    }
     template <> RenderBuffer* CreationHelper::createObjectOfType<RenderBuffer>(const char* name)
     {
-        return m_scene->createRenderBuffer(600, 400, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u, name);
+        return m_scene->createRenderBuffer(16, 16, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 0u, name);
     }
     template <> RenderTarget* CreationHelper::createObjectOfType<RenderTarget>(const char* name)
     {

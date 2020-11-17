@@ -49,30 +49,30 @@ namespace ramses
         explicit SceneDumper(const ramses::SceneImpl& scene);
         void dumpUnrequiredObjects(ramses_internal::StringOutputStream& output);
     private:
-        typedef ramses_internal::HashSet<const GeometryBindingImpl*> GeometryBindingSet;
-        typedef ramses_internal::HashSet<const TextureSamplerImpl*>  TextureSamplerSet;
-        typedef ramses_internal::HashSet<const StreamTextureImpl*>   StreamTextureSet;
-        typedef ramses_internal::HashSet<const RenderTargetImpl*>    RenderTargetSet;
-        typedef ramses_internal::HashSet<const RenderBufferImpl*>    RenderBufferSet;
-        typedef ramses_internal::HashSet<const RenderGroupImpl*>     RenderGroupSet;
-        typedef ramses_internal::HashSet<const RenderPassImpl*>      RenderPassSet;
-        typedef ramses_internal::HashSet<const AppearanceImpl*>      AppearanceSet;
-        typedef ramses_internal::HashSet<const CameraNodeImpl*>      CameraNodeSet;
-        typedef ramses_internal::HashSet<const MeshNodeImpl*>        MeshNodeSet;
-        typedef ramses_internal::HashSet<const NodeImpl*>            NodeSet;
+        using GeometryBindingSet = ramses_internal::HashSet<const GeometryBindingImpl *>;
+        using TextureSamplerSet = ramses_internal::HashSet<const TextureSamplerImpl *>;
+        using StreamTextureSet = ramses_internal::HashSet<const StreamTextureImpl *>;
+        using RenderTargetSet = ramses_internal::HashSet<const RenderTargetImpl *>;
+        using RenderBufferSet = ramses_internal::HashSet<const RenderBufferImpl *>;
+        using RenderGroupSet = ramses_internal::HashSet<const RenderGroupImpl *>;
+        using RenderPassSet = ramses_internal::HashSet<const RenderPassImpl *>;
+        using AppearanceSet = ramses_internal::HashSet<const AppearanceImpl *>;
+        using CameraNodeSet = ramses_internal::HashSet<const CameraNodeImpl *>;
+        using MeshNodeSet = ramses_internal::HashSet<const MeshNodeImpl *>;
+        using NodeSet = ramses_internal::HashSet<const NodeImpl *>;
 
-        typedef ramses_internal::HashSet<ramses_internal::ResourceContentHash> ResourceContentHashSet;
-        typedef ramses_internal::HashSet<ramses_internal::RenderBufferHandle>  RenderBufferHandleSet;
-        typedef ramses_internal::HashSet<RamsesObject*>                        RamsesObjectSet;
+        using ResourceContentHashSet = ramses_internal::HashSet<ramses_internal::ResourceContentHash>;
+        using RenderBufferHandleSet = ramses_internal::HashSet<ramses_internal::RenderBufferHandle>;
+        using RamsesObjectSet = ramses_internal::HashSet<RamsesObject *>;
 
 
-        typedef ramses_internal::HashMap<ramses_internal::TextureSamplerHandle, const TextureSamplerImpl*> TextureSamplerHandleToObjectMap;
-        typedef ramses_internal::HashMap<ramses_internal::TextureBufferHandle, const Texture2DBufferImpl*> TextureBufferHandleToObjectMap;
-        typedef ramses_internal::HashMap<ramses_internal::StreamTextureHandle, const StreamTextureImpl*> StreamTextureHandleToObjectMap;
-        typedef ramses_internal::HashMap<ramses_internal::RenderBufferHandle, const RenderBufferImpl*> RenderBufferHandleToObjectMap;
-        typedef ramses_internal::HashMap<ramses_internal::RenderBufferHandle, RenderBufferSet> RenderBufferHandleRenderBufferSetMap;
-        typedef ramses_internal::HashMap<ramses_internal::ResourceContentHash, const ResourceImpl*> ResourceContentHashToObjectMap;
-        typedef ramses_internal::HashMap<ramses_internal::RenderBufferHandle, RenderPassSet> RenderBufferHandleRenderPassSetMap;
+        using TextureSamplerHandleToObjectMap = ramses_internal::HashMap<ramses_internal::TextureSamplerHandle, const TextureSamplerImpl *>;
+        using TextureBufferHandleToObjectMap = ramses_internal::HashMap<ramses_internal::TextureBufferHandle, const Texture2DBufferImpl *>;
+        using StreamTextureHandleToObjectMap = ramses_internal::HashMap<ramses_internal::StreamTextureHandle, const StreamTextureImpl *>;
+        using RenderBufferHandleToObjectMap = ramses_internal::HashMap<ramses_internal::RenderBufferHandle, const RenderBufferImpl *>;
+        using RenderBufferHandleRenderBufferSetMap = ramses_internal::HashMap<ramses_internal::RenderBufferHandle, RenderBufferSet>;
+        using ResourceContentHashToObjectMap = ramses_internal::HashMap<ramses_internal::ResourceContentHash, const ResourceImpl *>;
+        using RenderBufferHandleRenderPassSetMap = ramses_internal::HashMap<ramses_internal::RenderBufferHandle, RenderPassSet>;
 
         void setupMaps();
 

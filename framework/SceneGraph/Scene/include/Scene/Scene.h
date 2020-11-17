@@ -40,8 +40,8 @@ namespace ramses_internal
     template <template<typename, typename> class MEMORYPOOL>
     class SceneT;
 
-    typedef SceneT<MemoryPool> Scene;
-    typedef SceneT<MemoryPoolExplicit> SceneWithExplicitMemory;
+    using Scene = SceneT<MemoryPool>;
+    using SceneWithExplicitMemory = SceneT<MemoryPoolExplicit>;
 
     template <template<typename, typename> class MEMORYPOOL>
     class SceneT : public IScene
@@ -138,9 +138,11 @@ namespace ramses_internal
         virtual NodeHandle                  getTransformNode                (TransformHandle handle) const override final;
         virtual const Vector3&              getTranslation                  (TransformHandle handle) const override final;
         virtual const Vector3&              getRotation                     (TransformHandle handle) const override final;
+        virtual ERotationConvention         getRotationConvention           (TransformHandle handle) const override final;
         virtual const Vector3&              getScaling                      (TransformHandle handle) const override final;
         virtual void                        setTranslation                  (TransformHandle handle, const Vector3& translation) override;
-        virtual void                        setRotation                     (TransformHandle handle, const Vector3& rotation) override;
+        virtual void                        setRotation                     (TransformHandle handle, const Vector3& rotation, ERotationConvention convention) override;
+        virtual void                        setRotationForAnimation         (TransformHandle handle, const Vector3& rotation) override final;
         virtual void                        setScaling                      (TransformHandle handle, const Vector3& scaling) override;
         const TransformMemoryPool&              getTransforms                   () const;
 
@@ -184,7 +186,7 @@ namespace ramses_internal
         virtual void                        setDataMatrix22fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data) override;
         virtual void                        setDataMatrix33fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix33f* data) override;
         virtual void                        setDataMatrix44fArray           (DataInstanceHandle containerHandle, DataFieldHandle field, UInt32 elementCount, const Matrix44f* data) override;
-        virtual void                        setDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor) override;
+        virtual void                        setDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) override;
         virtual void                        setDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
         virtual void                        setDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef) override;
 
@@ -301,13 +303,13 @@ namespace ramses_internal
         const RenderBufferMemoryPool&   getRenderBuffers                () const;
 
         // Stream textures
-        virtual StreamTextureHandle     allocateStreamTexture           (uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
+        virtual StreamTextureHandle     allocateStreamTexture           (WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle = StreamTextureHandle::Invalid()) override;
         virtual void                    releaseStreamTexture            (StreamTextureHandle streamTextureHandle) override;
         virtual bool                    isStreamTextureAllocated        (StreamTextureHandle streamTextureHandle) const override final;
         virtual UInt32                  getStreamTextureCount           () const override final;
         virtual void                    setForceFallbackImage           (StreamTextureHandle streamTextureHandle, bool forceFallbackImage) override;
         virtual const StreamTexture&    getStreamTexture                (StreamTextureHandle streamTextureHandle) const override final;
-        const StreamTextureMemoryPool&      getStreamTextures               () const;
+        const StreamTextureMemoryPool&  getStreamTextures               () const;
 
         // Data buffers
         virtual DataBufferHandle        allocateDataBuffer              (EDataBufferType dataBufferType, EDataType dataType, UInt32 maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid()) override;
@@ -316,7 +318,7 @@ namespace ramses_internal
         virtual void                    updateDataBuffer                (DataBufferHandle handle, UInt32 offsetInBytes, UInt32 dataSizeInBytes, const Byte* data) override;
         virtual bool                    isDataBufferAllocated           (DataBufferHandle handle) const override final;
         virtual const GeometryDataBuffer& getDataBuffer                 (DataBufferHandle handle) const override final;
-        const DataBufferMemoryPool&         getDataBuffers                  () const;
+        const DataBufferMemoryPool&      getDataBuffers                  () const;
 
         //Texture buffers
         virtual TextureBufferHandle     allocateTextureBuffer           (ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle = TextureBufferHandle::Invalid()) override;
@@ -352,6 +354,7 @@ namespace ramses_internal
         TextureSampler&                 getTextureSamplerInternal       (TextureSamplerHandle handle);
         RenderPass&                     getRenderPassInternal           (RenderPassHandle handle);
         RenderGroup&                    getRenderGroupInternal          (RenderGroupHandle handle);
+        const TopologyTransform&        getTransform                    (TransformHandle handle) const;
 
     private:
         template <typename TYPE>
@@ -691,6 +694,90 @@ namespace ramses_internal
     const typename SceneT<MEMORYPOOL>::SceneReferenceMemoryPool& SceneT<MEMORYPOOL>::getSceneReferences() const
     {
         return m_sceneReferences;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline const Float* SceneT<MEMORYPOOL>::getDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return getInstanceDataInternal<Float>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline const Matrix22f* SceneT<MEMORYPOOL>::getDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return getInstanceDataInternal<Matrix22f>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline const Matrix33f* SceneT<MEMORYPOOL>::getDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return getInstanceDataInternal<Matrix33f>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline const Matrix44f* SceneT<MEMORYPOOL>::getDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return getInstanceDataInternal<Matrix44f>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline const Vector2* SceneT<MEMORYPOOL>::getDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return getInstanceDataInternal<Vector2>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline const Vector3* SceneT<MEMORYPOOL>::getDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return getInstanceDataInternal<Vector3>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline const Vector4* SceneT<MEMORYPOOL>::getDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return getInstanceDataInternal<Vector4>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline const Int32* SceneT<MEMORYPOOL>::getDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return getInstanceDataInternal<Int32>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline const Vector2i* SceneT<MEMORYPOOL>::getDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return getInstanceDataInternal<Vector2i>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline const Vector3i* SceneT<MEMORYPOOL>::getDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return getInstanceDataInternal<Vector3i>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline const Vector4i* SceneT<MEMORYPOOL>::getDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return getInstanceDataInternal<Vector4i>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline TextureSamplerHandle SceneT<MEMORYPOOL>::getDataTextureSamplerHandle(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return *getInstanceDataInternal<TextureSamplerHandle>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline DataInstanceHandle SceneT<MEMORYPOOL>::getDataReference(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return *getInstanceDataInternal<DataInstanceHandle>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline const ResourceField& SceneT<MEMORYPOOL>::getDataResource(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return *getInstanceDataInternal<ResourceField>(containerHandle, fieldId);
     }
 }
 

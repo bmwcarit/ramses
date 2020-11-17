@@ -41,7 +41,6 @@ namespace ramses
         {
             m_oldLogLevel = ramses_internal::CONTEXT_HLAPI_CLIENT.getLogLevel();
             ramses_internal::CONTEXT_HLAPI_CLIENT.setLogLevel(ramses_internal::ELogLevel::Trace);
-            client.impl.setClientResourceCacheTimeout(std::chrono::milliseconds(0));
         }
         ~AResourceTestClient() {
             ramses_internal::CONTEXT_HLAPI_CLIENT.setLogLevel(m_oldLogLevel);
@@ -1071,6 +1070,48 @@ namespace ramses
         EXPECT_TRUE(nullptr == a);
     }
 
+
+    TEST_F(AResourceTestClient, createByteBlobArray)
+    {
+        const float data[2] = {};
+        const auto a = m_scene.createArrayResource(EDataType::ByteBlob, 2, data);
+        ASSERT_TRUE(nullptr != a);
+        EXPECT_EQ(a->getNumberOfElements(), 2u);
+        EXPECT_EQ(a->getDataType(), EDataType::ByteBlob);
+    }
+
+    TEST_F(AResourceTestClient, createByteBlobArrayHashIsValid)
+    {
+        const float data[2] = {};
+        auto a = m_scene.createArrayResource(EDataType::ByteBlob, 2, data);
+        ASSERT_TRUE(nullptr != a);
+
+        const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
+        EXPECT_TRUE(hash.isValid());
+    }
+
+    TEST_F(AResourceTestClient, createByteBlobArrayHashIsUnique)
+    {
+        float data[2] = {};
+        data[0] = 4;
+        auto a = m_scene.createArrayResource(EDataType::ByteBlob, sizeof(data), data);
+
+        const ramses_internal::ResourceContentHash hash = a->impl.getLowlevelResourceHash();
+
+        float data2[2] = {};
+        data2[0] = 42.0f;
+        auto a2 = m_scene.createArrayResource(EDataType::ByteBlob, 2, data2);
+
+        const ramses_internal::ResourceContentHash hash2 = a2->impl.getLowlevelResourceHash();
+        EXPECT_TRUE(hash != hash2);
+    }
+
+    TEST_F(AResourceTestClient, createEmptyByteBlobArrayFails)
+    {
+        auto a = m_scene.createArrayResource(EDataType::ByteBlob, 0, nullptr);
+        EXPECT_TRUE(nullptr == a);
+    }
+
     TEST_F(AResourceTestClient, createAndDestroyEffect)
     {
         EffectDescription effectDesc;
@@ -1164,7 +1205,6 @@ namespace ramses
         this->getFramework().impl.getStatisticCollection().nextTimeInterval(); //statResourcesNumber is updated by nextTimeInterval()
         EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesNumber.getCounterValue());
 
-        this->client.impl.setClientResourceCacheTimeout(std::chrono::milliseconds(0));
         this->getScene().destroy(*res);
         EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
 
@@ -1240,7 +1280,7 @@ namespace ramses
         EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
         EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
         {
-            auto managedRes = client.impl.getClientApplication().forceLoadResource(res2->impl.getLowlevelResourceHash());
+            auto managedRes = client.impl.getClientApplication().loadResource(res2->impl.getLowlevelResourceHash());
             EXPECT_EQ(1u, this->getFramework().impl.getStatisticCollection().statResourcesCreated.getCounterValue());
             EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesDestroyed.getCounterValue());
 
@@ -1273,38 +1313,5 @@ namespace ramses
 
         this->getFramework().impl.getStatisticCollection().nextTimeInterval();
         EXPECT_EQ(0u, this->getFramework().impl.getStatisticCollection().statResourcesNumber.getCounterValue());
-    }
-
-    TEST_F(AResourceTestClient, destroyedResourceKeptInCache)
-    {
-        client.impl.setClientResourceCacheTimeout(std::chrono::milliseconds(5000));
-
-        const float data[2 * 2] = { 1, 2, 3, 4 };
-        auto res = m_scene.createArrayResource(EDataType::Vector2F, 2, data);
-        ramses_internal::ResourceContentHash resHash = res->impl.getLowlevelResourceHash(); //store hash as resource object gets destroyed
-        const ramses_internal::IResource* internalRes = client.impl.getFramework().getResourceComponent().getResource(resHash).get();
-
-        m_scene.destroy(*res);
-        {
-            //updateClientResourceCache is not called so resource still has to be alive
-            ramses_internal::ManagedResource resourceFromResourceComponent = client.impl.getFramework().getResourceComponent().getResource(resHash);
-            EXPECT_EQ(resourceFromResourceComponent.get(), internalRes);
-        }
-
-        client.impl.setClientResourceCacheTimeout(std::chrono::milliseconds{ 1u });
-        const std::chrono::milliseconds sleepDuration{ 10u };
-        const auto timeBeforeSleep = std::chrono::steady_clock::now();
-        // make sure timeout is over because on some platforms (e.g. the NUCs) are unstable with small time periods of sleep
-        do
-        {
-            std::this_thread::sleep_for(sleepDuration);
-        } while (std::chrono::steady_clock::now() - timeBeforeSleep < sleepDuration);
-        //trigger updateClientResourceCache by scene flush
-        m_scene.flush();
-
-        {
-            ramses_internal::ManagedResource resourceFromResourceComponent = client.impl.getFramework().getResourceComponent().getResource(resHash);
-            EXPECT_FALSE(resourceFromResourceComponent);
-        }
     }
 }

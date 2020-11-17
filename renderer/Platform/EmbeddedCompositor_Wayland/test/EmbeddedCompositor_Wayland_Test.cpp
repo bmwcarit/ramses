@@ -11,9 +11,8 @@
 #include "RendererLib/RendererConfig.h"
 #include "EmbeddedCompositor_Wayland/EmbeddedCompositor_Wayland.h"
 #include "ContextMock.h"
-#include "PlatformFactoryMock.h"
-#include "Platform_Base/PlatformFactory_Base.h"
-#include "Platform_Wayland_IVI_EGL_ES_3_0/Platform_Wayland_IVI_EGL_ES_3_0.h"
+#include "PlatformMock.h"
+#include "Platform_Base/Platform_Base.h"
 #include "WaylandUtilities/UnixDomainSocket.h"
 #include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "PlatformAbstraction/PlatformThread.h"
@@ -149,9 +148,9 @@ namespace ramses_internal
         };
     }
 
-    IPlatformFactory* PlatformFactory_Base::CreatePlatformFactory(const RendererConfig&)
+    IPlatform* Platform_Base::CreatePlatform(const RendererConfig&)
     {
-        return new ::testing::NiceMock<PlatformFactoryNiceMock>();
+        return new ::testing::NiceMock<PlatformNiceMock>();
     }
 
     class AEmbeddedCompositor_Wayland : public TestWithWaylandEnvironment
@@ -405,9 +404,9 @@ namespace ramses_internal
 
         embeddedCompositor->addToUpdatedStreamTextureSourceIds(surfaceIVIId);
 
-        StreamTextureSourceIdSet streamTextureSourceIds =  embeddedCompositor->dispatchUpdatedStreamTextureSourceIds();
+        WaylandIviSurfaceIdSet streamTextureSourceIds = embeddedCompositor->dispatchUpdatedStreamTextureSourceIds();
         EXPECT_EQ(1u, streamTextureSourceIds.size());
-        EXPECT_TRUE(streamTextureSourceIds.contains(surfaceIVIId));
+        EXPECT_TRUE(streamTextureSourceIds.count(surfaceIVIId) > 0);
         EXPECT_FALSE(embeddedCompositor->hasUpdatedStreamTextureSources());
     }
 

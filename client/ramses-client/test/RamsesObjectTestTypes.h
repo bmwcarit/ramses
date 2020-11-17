@@ -17,7 +17,6 @@ namespace ramses
     class Scene;
     class Appearance;
     class Camera;
-    class RemoteCamera;
     class PerspectiveCamera;
     class OrthographicCamera;
     class Appearance;
@@ -46,6 +45,7 @@ namespace ramses
     class DataVector4i;
     class BlitPass;
     class TextureSampler;
+    class TextureSamplerMS;
     class StreamTexture;
     class Texture2D;
     class Texture3D;
@@ -84,34 +84,27 @@ namespace ramses
     class ArrayResource;
 
     // Objects derived from Node class
-    typedef ::testing::Types
-        <
+    using NodeTypes = ::testing::Types<
         Node,
         MeshNode,
-        RemoteCamera,
         PerspectiveCamera,
         OrthographicCamera,
-        PickableObject
-        > NodeTypes;
+        PickableObject>;
 
     // Objects derived from Resource class
-    typedef ::testing::Types
-        <
+    using ResourceTypes = ::testing::Types<
         ArrayResource,
         Texture2D,
         Texture3D,
         TextureCube,
-        Effect
-        > ResourceTypes;
+        Effect>;
 
     // Objects owned by Scene
-    typedef ::testing::Types
-        <
+    using SceneObjectTypes = ::testing::Types<
         AnimationSystem,
         AnimationSystemRealTime,
         Node,
         MeshNode,
-        RemoteCamera,
         PerspectiveCamera,
         OrthographicCamera,
         Appearance,
@@ -120,6 +113,7 @@ namespace ramses
         RenderPass,
         BlitPass,
         TextureSampler,
+        TextureSamplerMS,
         RenderBuffer,
         RenderTarget,
         DataFloat,
@@ -142,12 +136,10 @@ namespace ramses
         Texture3D,
         TextureCube,
         ArrayResource,
-        Effect
-        > SceneObjectTypes;
+        Effect>;
 
     // Objects owned by AnimationSystem
-    typedef ::testing::Types
-        <
+    using AnimationObjectTypes = ::testing::Types<
         AnimatedProperty,
         Animation,
         AnimationSequence,
@@ -175,25 +167,19 @@ namespace ramses
         SplineBezierVector4f,
         SplineBezierVector2i,
         SplineBezierVector3i,
-        SplineBezierVector4i
-        > AnimationObjectTypes;
+        SplineBezierVector4i>;
 
     // Objects owned by client
-    typedef ::testing::Types
-        <
-        Scene
-        > ClientObjectTypes;
+    using ClientObjectTypes = ::testing::Types<Scene>;
 
     // All Ramses objects - set #1
-    typedef ::testing::Types
-        <
+    using RamsesObjectTypes1 = ::testing::Types<
         RamsesClient,
         Scene,
         AnimationSystem,
         AnimationSystemRealTime,
         Node,
         MeshNode,
-        RemoteCamera,
         PerspectiveCamera,
         OrthographicCamera,
         Effect,
@@ -228,17 +214,16 @@ namespace ramses
         Texture2D,
         Texture3D,
         TextureCube,
-        StreamTexture
-        > RamsesObjectTypes1;
+        StreamTexture>;
 
     // All Ramses objects - set #2
-    typedef ::testing::Types
-        <
+    using RamsesObjectTypes2 = ::testing::Types<
         ArrayResource,
         RenderGroup,
         RenderPass,
         BlitPass,
         TextureSampler,
+        TextureSamplerMS,
         RenderBuffer,
         RenderTarget,
         ArrayBuffer,
@@ -256,12 +241,10 @@ namespace ramses
         DataVector3i,
         DataVector4i,
         PickableObject,
-        SceneReference
-        > RamsesObjectTypes2;
+        SceneReference>;
 
     // Spline types
-    typedef ::testing::Types
-        <
+    using SplineTypes = ::testing::Types<
         SplineStepBool,
         SplineStepFloat,
         SplineStepInt32,
@@ -286,8 +269,7 @@ namespace ramses
         SplineBezierVector4f,
         SplineBezierVector2i,
         SplineBezierVector3i,
-        SplineBezierVector4i
-        > SplineTypes;
+        SplineBezierVector4i>;
 }
 
 #endif

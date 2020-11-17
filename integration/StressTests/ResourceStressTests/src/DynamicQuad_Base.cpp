@@ -110,7 +110,7 @@ namespace ramses_internal
     ramses::Effect& DynamicQuad_Base::CreateTestEffect(ramses::Scene& scene)
     {
         ramses::EffectDescription effectDesc;
-        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
         effectDesc.setVertexShaderFromFile("res/ramses-test-client-textured.vert");
         effectDesc.setFragmentShaderFromFile("res/ramses-test-client-textured.frag");
         ramses::Effect* effect = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);

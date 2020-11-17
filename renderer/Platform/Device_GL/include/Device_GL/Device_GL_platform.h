@@ -16,6 +16,7 @@
 
 #elif defined(__linux__)
 #include <GLES3/gl3.h>
+#include <GLES3/gl31.h>
 // deprecated
 #include <GLES3/gl3ext.h>
 // should always include that file as well, since gl3ext doesn't define ANY extensions, see http://www.khronos.org/registry/gles/#headers
@@ -23,6 +24,7 @@
 
 #elif defined(__ghs__)
 #include <GLES3/gl3.h>
+#include <GLES3/gl31.h>
 // deprecated
 #include <GLES3/gl3ext_REL.h>
 // should always include that file as well, since gl3ext doesn't define ANY extensions, see http://www.khronos.org/registry/gles/#headers

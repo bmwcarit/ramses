@@ -12,7 +12,6 @@
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/RenderGroup.h"
 #include "ramses-client-api/RenderTarget.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/UniformInput.h"
@@ -97,8 +96,7 @@ namespace ramses
 
     TEST_F(ARenderPass, canValidate)
     {
-        Camera* camera = m_scene.createRemoteCamera();
-        renderpass.setCamera(*camera);
+        renderpass.setCamera(*createDummyPerspectiveCamera());
 
         MeshNode& mesh = createValidMeshNode();
         RenderGroup* renderGroup = m_scene.createRenderGroup();
@@ -119,9 +117,7 @@ namespace ramses
 
     TEST_F(ARenderPass, failsValidationIfNoRenderGroupWasAdded)
     {
-        Camera* camera = m_scene.createRemoteCamera();
-        renderpass.setCamera(*camera);
-
+        renderpass.setCamera(*createDummyOrthoCamera());
         EXPECT_NE(StatusOK, renderpass.validate());
     }
 
@@ -287,7 +283,7 @@ namespace ramses
 
     TEST_F(ARenderPass, returnsTheSameCameraWhichWasSet)
     {
-        Camera* camera = m_scene.createRemoteCamera();
+        Camera* camera = createDummyPerspectiveCamera();
 
         EXPECT_EQ(StatusOK, renderpass.setCamera(*camera));
 
@@ -297,7 +293,10 @@ namespace ramses
     TEST_F(ARenderPass, reportsErrorWhenSetCameraFromAnotherScene)
     {
         Scene& anotherScene = *client.createScene(sceneId_t(12u));
-        Camera* camera = anotherScene.createRemoteCamera();
+        // create valid camera from another scene
+        auto camera = anotherScene.createOrthographicCamera();
+        camera->setFrustum(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f);
+        camera->setViewport(0, 0, 100, 200);
 
         EXPECT_NE(StatusOK, renderpass.setCamera(*camera));
     }
@@ -341,8 +340,8 @@ namespace ramses
 
     TEST_F(ARenderPass, confidence_setsCameraMulitpleTimesAndChecksInScene)
     {
-        Camera* camera = m_scene.createRemoteCamera();
-        Camera* camera2 = m_scene.createRemoteCamera();
+        Camera* camera = createDummyPerspectiveCamera();
+        Camera* camera2 = createDummyOrthoCamera();
 
         EXPECT_EQ(StatusOK, renderpass.setCamera(*camera));
         EXPECT_EQ(camera, renderpass.getCamera());
@@ -402,15 +401,6 @@ namespace ramses
         EXPECT_NE(StatusOK, renderpass.setRenderTarget(renderTarget));
         EXPECT_NE(renderTarget->impl.getRenderTargetHandle(), m_scene.impl.getIScene().getRenderPass(renderpass.impl.getRenderPassHandle()).renderTarget);
         EXPECT_NE(renderTarget, renderpass.getRenderTarget());
-    }
-
-    TEST_F(ARenderPass, canNotBeAssignedRenderTargetIfCameraIsRemoteCamera)
-    {
-        RenderTarget* renderTarget = createRenderTarget();
-        const RemoteCamera* remoteCamera = m_scene.createRemoteCamera();
-        ASSERT_EQ(StatusOK, renderpass.setCamera(*remoteCamera));
-
-        EXPECT_NE(StatusOK, renderpass.setRenderTarget(renderTarget));
     }
 
     TEST_F(ARenderPass, canBeAssignedRenderTargetWithOrthoCamera)

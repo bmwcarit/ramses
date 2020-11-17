@@ -42,8 +42,8 @@ namespace ramses
         virtual status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
         virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 
-        status_t setInputBuffer(const EffectInputImpl& input, const ArrayResourceImpl& bufferResource, uint32_t instancingDivisor = 0);
-        status_t setInputBuffer(const EffectInputImpl& input, const ArrayBufferImpl& dataBuffer, uint32_t instancingDivisor = 0);
+        status_t setInputBuffer(const EffectInputImpl& input, const ArrayResourceImpl& bufferResource, uint32_t instancingDivisor, uint16_t offset, uint16_t stride);
+        status_t setInputBuffer(const EffectInputImpl& input, const ArrayBufferImpl& dataBuffer, uint32_t instancingDivisor, uint16_t offset, uint16_t stride);
         status_t setIndices(const ArrayResourceImpl& arrayResource);
         status_t setIndices(const ArrayBufferImpl& dataBuffer);
 

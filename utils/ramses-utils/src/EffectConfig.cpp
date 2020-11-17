@@ -109,7 +109,7 @@ bool EffectConfig::parseUniformSemantic(int lineNumber, const ramses_internal::S
     const ramses_internal::String& inputName = tokens[1];
     const ramses_internal::String& semanticStr = tokens[2];
     ramses::EEffectUniformSemantic semantic = getUniformSemanticFromString(semanticStr);
-    if (semantic == ramses::EEffectUniformSemantic_Invalid)
+    if (semantic == ramses::EEffectUniformSemantic::Invalid)
     {
         printErrorInLine(lineNumber, line);
         PRINT_INFO("invalid key word for Uniform Semantic: {}\n", semanticStr);
@@ -140,7 +140,7 @@ bool EffectConfig::parseAttributeSemantic(int lineNumber, const ramses_internal:
     const ramses_internal::String& inputName = tokens[1];
     const ramses_internal::String& semanticStr = tokens[2];
     ramses::EEffectAttributeSemantic semantic = getAttributeSemanticFromString(semanticStr);
-    if (semantic == ramses::EEffectAttributeSemantic_Invalid)
+    if (semantic == ramses::EEffectAttributeSemantic::Invalid)
     {
         printErrorInLine(lineNumber, line);
         PRINT_INFO("invalid key word for Attribute Semantic: {}\n", semanticStr);
@@ -237,7 +237,7 @@ ramses::EEffectUniformSemantic EffectConfig::getUniformSemanticFromString(const 
     UniformSemanticNameTable::Iterator iter = m_uniformSemanticNameTable.find(str);
     if (iter == m_uniformSemanticNameTable.end())
     {
-        return ramses::EEffectUniformSemantic_Invalid;
+        return ramses::EEffectUniformSemantic::Invalid;
     }
 
     return iter->value;
@@ -248,7 +248,7 @@ ramses::EEffectAttributeSemantic EffectConfig::getAttributeSemanticFromString(co
     AttributeSemanticNameTable::Iterator iter = m_attributeSemanticNameTable.find(str);
     if (iter == m_attributeSemanticNameTable.end())
     {
-        return ramses::EEffectAttributeSemantic_Invalid;
+        return ramses::EEffectAttributeSemantic::Invalid;
     }
 
     return iter->value;
@@ -281,24 +281,22 @@ void EffectConfig::printUniformSemanticList() const
 
 void EffectConfig::initUniformSemanticNameTable()
 {
-    m_uniformSemanticNameTable.put("EEffectUniformSemantic_ProjectionMatrix", ramses::EEffectUniformSemantic_ProjectionMatrix);
-    m_uniformSemanticNameTable.put("EEffectUniformSemantic_ModelMatrix", ramses::EEffectUniformSemantic_ModelMatrix);
-    m_uniformSemanticNameTable.put("EEffectUniformSemantic_RendererViewMatrix", ramses::EEffectUniformSemantic_RendererViewMatrix);
-    m_uniformSemanticNameTable.put("EEffectUniformSemantic_CameraViewMatrix", ramses::EEffectUniformSemantic_CameraViewMatrix);
-    m_uniformSemanticNameTable.put("EEffectUniformSemantic_CameraWorldPosition", ramses::EEffectUniformSemantic_CameraWorldPosition);
-    m_uniformSemanticNameTable.put("EEffectUniformSemantic_ViewMatrix", ramses::EEffectUniformSemantic_ViewMatrix);
-    m_uniformSemanticNameTable.put("EEffectUniformSemantic_ModelViewMatrix", ramses::EEffectUniformSemantic_ModelViewMatrix);
-    m_uniformSemanticNameTable.put("EEffectUniformSemantic_ModelViewMatrix33", ramses::EEffectUniformSemantic_ModelViewMatrix33);
-    m_uniformSemanticNameTable.put("EEffectUniformSemantic_ModelViewProjectionMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
-    m_uniformSemanticNameTable.put("EEffectUniformSemantic_NormalMatrix", ramses::EEffectUniformSemantic_NormalMatrix);
-    m_uniformSemanticNameTable.put("EEffectUniformSemantic_RendererScreenResolution", ramses::EEffectUniformSemantic_RendererScreenResolution);
-    m_uniformSemanticNameTable.put("EEffectUniformSemantic_TextTexture", ramses::EEffectUniformSemantic_TextTexture);
+    m_uniformSemanticNameTable.put("EEffectUniformSemantic_ProjectionMatrix", ramses::EEffectUniformSemantic::ProjectionMatrix);
+    m_uniformSemanticNameTable.put("EEffectUniformSemantic_ModelMatrix", ramses::EEffectUniformSemantic::ModelMatrix);
+    m_uniformSemanticNameTable.put("EEffectUniformSemantic_CameraWorldPosition", ramses::EEffectUniformSemantic::CameraWorldPosition);
+    m_uniformSemanticNameTable.put("EEffectUniformSemantic_ViewMatrix", ramses::EEffectUniformSemantic::ViewMatrix);
+    m_uniformSemanticNameTable.put("EEffectUniformSemantic_ModelViewMatrix", ramses::EEffectUniformSemantic::ModelViewMatrix);
+    m_uniformSemanticNameTable.put("EEffectUniformSemantic_ModelViewMatrix33", ramses::EEffectUniformSemantic::ModelViewMatrix33);
+    m_uniformSemanticNameTable.put("EEffectUniformSemantic_ModelViewProjectionMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
+    m_uniformSemanticNameTable.put("EEffectUniformSemantic_NormalMatrix", ramses::EEffectUniformSemantic::NormalMatrix);
+    m_uniformSemanticNameTable.put("EEffectUniformSemantic_DisplayBufferResolution", ramses::EEffectUniformSemantic::DisplayBufferResolution);
+    m_uniformSemanticNameTable.put("EEffectUniformSemantic_TextTexture", ramses::EEffectUniformSemantic::TextTexture);
 }
 
 void EffectConfig::initAttributeSemanticNameTable()
 {
-    m_attributeSemanticNameTable.put("EEffectAttributeSemantic_TextPositions", ramses::EEffectAttributeSemantic_TextPositions);
-    m_attributeSemanticNameTable.put("EEffectAttributeSemantic_TextTextureCoordinates", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
+    m_attributeSemanticNameTable.put("EEffectAttributeSemantic_TextPositions", ramses::EEffectAttributeSemantic::TextPositions);
+    m_attributeSemanticNameTable.put("EEffectAttributeSemantic_TextTextureCoordinates", ramses::EEffectAttributeSemantic::TextTextureCoordinates);
 }
 
 void EffectConfig::clear()

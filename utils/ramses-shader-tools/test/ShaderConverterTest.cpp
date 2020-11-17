@@ -170,9 +170,9 @@ TEST_F(AShaderConverter, generateHashFileWithLowLevelHash)
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-shader-tools-test.vertexshader");
     effectDesc.setFragmentShaderFromFile("res/ramses-shader-tools-test.fragmentshader");
-    effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic_ModelViewMatrix);
-    effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
-    effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic_TextPositions);
+    effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic::ModelViewMatrix);
+    effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic::TextTexture);
+    effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic::TextPositions);
     ramses::Effect* fromOutputEffect = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ASSERT_TRUE(fromOutputEffect != nullptr);
 
@@ -204,9 +204,9 @@ TEST_F(AShaderConverter, generateHashFileWithHighLevelHash)
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-shader-tools-test.vertexshader");
     effectDesc.setFragmentShaderFromFile("res/ramses-shader-tools-test.fragmentshader");
-    effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic_ModelViewMatrix);
-    effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
-    effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic_TextPositions);
+    effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic::ModelViewMatrix);
+    effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic::TextTexture);
+    effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic::TextPositions);
     ramses::Effect* fromOutputEffect = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ASSERT_TRUE(fromOutputEffect != nullptr);
 
@@ -239,9 +239,9 @@ TEST_F(AShaderConverter, generateHashFileWithHighLevelHashWithCorrectEffectName)
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-shader-tools-test.vertexshader");
     effectDesc.setFragmentShaderFromFile("res/ramses-shader-tools-test.fragmentshader");
-    effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic_ModelViewMatrix);
-    effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic_TextTexture);
-    effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic_TextPositions);
+    effectDesc.setUniformSemantic("matrix44fInput", ramses::EEffectUniformSemantic::ModelViewMatrix);
+    effectDesc.setUniformSemantic("texture2dInput", ramses::EEffectUniformSemantic::TextTexture);
+    effectDesc.setAttributeSemantic("vec2fArrayInput", ramses::EEffectAttributeSemantic::TextPositions);
     ramses::Effect* fromOutputEffect = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "otherName");
     ASSERT_TRUE(fromOutputEffect != nullptr);
 

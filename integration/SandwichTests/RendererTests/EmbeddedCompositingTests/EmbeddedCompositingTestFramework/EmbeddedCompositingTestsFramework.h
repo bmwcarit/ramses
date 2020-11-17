@@ -15,6 +15,7 @@
 #include "TestApplicationSurfaceId.h"
 #include "TestApplicationShellSurfaceId.h"
 #include "WaylandOutputTestParams.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 
 namespace ramses_internal
 {
@@ -38,11 +39,11 @@ namespace ramses_internal
         void                            setEnvironmentVariableWaylandDisplay();
 
         //wait for events
-        void                            waitForContentOnStreamTexture(StreamTextureSourceId sourceId);
-        void                            waitForUnavailablilityOfContentOnStreamTexture(StreamTextureSourceId sourceId);
-        void                            waitForSurfaceAvailableForStreamTexture(StreamTextureSourceId sourceId);
-        void                            waitForSurfaceUnavailableForStreamTexture(StreamTextureSourceId sourceId);
-        bool                            waitForStreamSurfaceAvailabilityChange(StreamTextureSourceId streamSource, bool available);
+        void                            waitForContentOnStreamTexture(WaylandIviSurfaceId sourceId);
+        void                            waitForUnavailablilityOfContentOnStreamTexture(WaylandIviSurfaceId sourceId);
+        void                            waitForSurfaceAvailableForStreamTexture(WaylandIviSurfaceId sourceId);
+        void                            waitForSurfaceUnavailableForStreamTexture(WaylandIviSurfaceId sourceId);
+        bool                            waitForStreamSurfaceAvailabilityChange(WaylandIviSurfaceId streamSource, bool available);
         Bool                            waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId waylandSurfaceId, UInt64 numberOfComittedBuffers, UInt32 timeoutMilliseconds = std::numeric_limits<ramses_internal::UInt32>::max());
         void                            waitForBufferAttachedToIviSurface(WaylandIviSurfaceId waylandSurfaceId);
         void                            waitForNoBufferAttachedToIviSurface(WaylandIviSurfaceId waylandSurfaceId);

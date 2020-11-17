@@ -50,7 +50,7 @@ namespace ramses
          *
          * Creates a string with characters removed or replaced according to given FontInstance. Additionally creates FontInstanceOffsets
          * specifying the font instance to use for all returned characters.
-         * Intended to be used in conjuction with @ref TextCache::getPositionedGlyphs.
+         * Intended to be used in conjunction with @ref TextCache::getPositionedGlyphs.
          *
          * @param[in] fontCascade the font cascade used to process str
          * @param[in] str the character string to process

@@ -12,6 +12,7 @@
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/TextureSampler.h"
+#include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/Texture2D.h"
 #include "ramses-client-api/Texture3D.h"
@@ -21,7 +22,6 @@
 #include "ramses-client-api/RenderPass.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/AnimationSystemEnums.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/Appearance.h"
@@ -247,9 +247,6 @@ namespace ramses
             case ERamsesObjectType_MeshNode:
                 status = createAndDeserializeObjectImpls<MeshNode, MeshNodeImpl>(inStream, serializationContext, count);
                 break;
-            case ERamsesObjectType_RemoteCamera:
-                status = createAndDeserializeObjectImpls<RemoteCamera, CameraNodeImpl>(inStream, serializationContext, count);
-                break;
             case ERamsesObjectType_PerspectiveCamera:
                 status = createAndDeserializeObjectImpls<PerspectiveCamera, CameraNodeImpl>(inStream, serializationContext, count);
                 break;
@@ -294,6 +291,9 @@ namespace ramses
                 break;
             case ERamsesObjectType_TextureSampler:
                 status = createAndDeserializeObjectImpls<TextureSampler, TextureSamplerImpl>(inStream, serializationContext, count);
+                break;
+            case ERamsesObjectType_TextureSamplerMS:
+                status = createAndDeserializeObjectImpls<TextureSamplerMS, TextureSamplerImpl>(inStream, serializationContext, count);
                 break;
             case ERamsesObjectType_DataFloat:
                 status = createAndDeserializeObjectImpls<DataFloat, DataObjectImpl>(inStream, serializationContext, count);
@@ -417,16 +417,6 @@ namespace ramses
         return status;
     }
 
-    RemoteCamera* SceneImpl::createRemoteCamera(const char* name)
-    {
-        CameraNodeImpl& pimpl = *new CameraNodeImpl(*this, ERamsesObjectType_RemoteCamera, name);
-        pimpl.initializeFrameworkData();
-        RemoteCamera* newCamera = new RemoteCamera(pimpl);
-        registerCreatedObject(*newCamera);
-
-        return newCamera;
-    }
-
     PerspectiveCamera* SceneImpl::createPerspectiveCamera(const char* name)
     {
         CameraNodeImpl& pimpl = *new CameraNodeImpl(*this, ERamsesObjectType_PerspectiveCamera, name);
@@ -513,7 +503,6 @@ namespace ramses
         case ERamsesObjectType_RenderTarget:
             returnStatus = destroyRenderTarget(RamsesObjectTypeUtils::ConvertTo<RenderTarget>(object));
             break;
-        case ERamsesObjectType_RemoteCamera:
         case ERamsesObjectType_OrthographicCamera:
         case ERamsesObjectType_PerspectiveCamera:
             returnStatus = destroyCamera(RamsesObjectTypeUtils::ConvertTo<Camera>(object));
@@ -547,6 +536,9 @@ namespace ramses
             break;
         case ERamsesObjectType_TextureSampler:
             destroyTextureSampler(RamsesObjectTypeUtils::ConvertTo<TextureSampler>(object));
+            break;
+        case ERamsesObjectType_TextureSamplerMS:
+            destroyTextureSampler(RamsesObjectTypeUtils::ConvertTo<TextureSamplerMS>(object));
             break;
         case ERamsesObjectType_Appearance:
         case ERamsesObjectType_GeometryBinding:
@@ -659,7 +651,8 @@ namespace ramses
         return destroyObject(dataObject);
     }
 
-    status_t SceneImpl::destroyTextureSampler(TextureSampler& sampler)
+    template <typename SAMPLER>
+    status_t SceneImpl::destroyTextureSampler(SAMPLER& sampler)
     {
         const ramses_internal::TextureSamplerHandle& samplerHandle = sampler.impl.getTextureSamplerHandle();
         const uint32_t slotHandleCount = m_scene.getDataSlotCount();
@@ -681,8 +674,6 @@ namespace ramses
         const bool found = removeResourceWithIdFromResources(resId, resource);
         if (!found)
             assert(false);
-
-        getClientImpl().onResourceDestroyed(resource);
 
         return destroyObject(resource);
     }
@@ -862,12 +853,6 @@ namespace ramses
             return nullptr;
         }
 
-        if (ERenderBufferAccessMode_WriteOnly != accessMode && 0u != sampleCount)
-        {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createRenderBuffer failed: can not create render buffer with read/write access mode and MSAA sampleCount other than Zero!");
-            return nullptr;
-        }
-
         RenderBufferImpl& pimpl = *new RenderBufferImpl(*this, name);
         pimpl.initializeFrameworkData(width, height, bufferType, bufferFormat, accessMode, sampleCount);
         RenderBuffer* buffer = new RenderBuffer(pimpl);
@@ -977,6 +962,12 @@ namespace ramses
         const RenderBuffer& renderBuffer,
         const char* name)
     {
+        if (renderBuffer.getSampleCount() > 0)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, cannot create this type of TextureSampler with multisampled RenderBuffer.");
+            return nullptr;
+        }
+
         if (!containsSceneObject(renderBuffer.impl))
         {
             LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, render buffer is not from this scene.");
@@ -1045,6 +1036,33 @@ namespace ramses
             name);
     }
 
+    ramses::TextureSamplerMS* SceneImpl::createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name)
+    {
+        if (!containsSceneObject(renderBuffer.impl))
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, render buffer is not from this scene.");
+            return nullptr;
+        }
+
+        if (ERenderBufferAccessMode_WriteOnly == renderBuffer.impl.getAccessMode())
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createTextureSampler failed, render buffer has access mode write only.");
+            return nullptr;
+        }
+
+        TextureSamplerImpl& samplerImpl = *new TextureSamplerImpl(*this, ERamsesObjectType_TextureSamplerMS, name);
+        samplerImpl.initializeFrameworkData(
+            {},
+            ERamsesObjectType_RenderBuffer,
+            ramses_internal::TextureSampler::ContentType::RenderBufferMS,
+            ramses_internal::ResourceContentHash::Invalid(),
+            renderBuffer.impl.getRenderBufferHandle().asMemoryHandle());
+
+        TextureSamplerMS* sampler = new TextureSamplerMS(samplerImpl);
+        registerCreatedObject(*sampler);
+        return sampler;
+    }
+
     ramses::TextureSampler* SceneImpl::createTextureSamplerImpl(
         ETextureAddressMode wrapUMode,
         ETextureAddressMode wrapVMode,
@@ -1079,7 +1097,7 @@ namespace ramses
             anisotropyLevel
             );
 
-        TextureSamplerImpl& samplerImpl = *new TextureSamplerImpl(*this, name);
+        TextureSamplerImpl& samplerImpl = *new TextureSamplerImpl(*this, ERamsesObjectType_TextureSampler, name);
         samplerImpl.initializeFrameworkData(samplerStates, samplerType, contentType, textureResourceHash, contentHandle);
 
         TextureSampler* sampler = new TextureSampler(samplerImpl);
@@ -1344,14 +1362,25 @@ namespace ramses
 
     status_t SceneImpl::createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t id)
     {
+        if (sampler.impl.getTextureType() != ERamsesObjectType_Texture2D)
+        {
+            return addErrorEntry("Scene::createTextureConsumer failed, only texture sampler using 2D texture can be used for linking..");
+        }
+
+        return createTextureConsumerImpl(sampler, id);
+    }
+
+    status_t SceneImpl::createTextureConsumer(const TextureSamplerMS& sampler, dataConsumerId_t id)
+    {
+        return createTextureConsumerImpl(sampler, id);
+    }
+
+    template <typename SAMPLER>
+    status_t SceneImpl::createTextureConsumerImpl(const SAMPLER& sampler, dataConsumerId_t id)
+    {
         if (!containsSceneObject(sampler.impl))
         {
             return addErrorEntry("Scene::createTextureConsumer failed, texture sampler is not from this scene.");
-        }
-
-        if (sampler.impl.getTextureType() != ERamsesObjectType_Texture2D)
-        {
-            return addErrorEntry("Scene::createTextureConsumer failed, only texture sampler using 2D texture can be used for linking.");
         }
 
         const ramses_internal::DataSlotId internalDataSlotId(id.getValue());
@@ -1400,10 +1429,8 @@ namespace ramses
         const auto timestampOfFlushCall = ramses_internal::FlushTime::Clock::now();
         const ramses_internal::FlushTimeInformation flushTimeInfo { m_expirationTimestamp, timestampOfFlushCall, ramses_internal::FlushTime::Clock::getClockType() };
 
-        getClientImpl().getClientApplication().flush(m_scene.getSceneId(), flushTimeInfo, sceneVersionInternal);
-
-        getClientImpl().updateClientResourceCache();
-
+        if (!getClientImpl().getClientApplication().flush(m_scene.getSceneId(), flushTimeInfo, sceneVersionInternal))
+            return addErrorEntry("Scene::flush: Flushing scene failed, consult logs for more details.");
         getStatisticCollection().statFlushesTriggered.incCounter(1);
 
         return StatusOK;
@@ -1748,11 +1775,11 @@ namespace ramses
             (consumerReference && consumerReference->impl.getSceneImpl().getSceneId() != getSceneId()))
             return addErrorEntry("Scene::linkData: can't link to object of a scene reference with a different master scene");
 
-        if (providerReference && providerReference->impl.getReportedState() < RendererSceneState::Available)
-            return addErrorEntry("Scene::linkData: Provider SceneReference state has to be at least Available");
+        if (providerReference && providerReference->impl.getReportedState() < RendererSceneState::Ready)
+            return addErrorEntry("Scene::linkData: Provider SceneReference state has to be at least Ready");
 
-        if (consumerReference && consumerReference->impl.getReportedState() < RendererSceneState::Available)
-            return addErrorEntry("Scene::linkData: Consumer SceneReference state has to be at least Available");
+        if (consumerReference && consumerReference->impl.getReportedState() < RendererSceneState::Ready)
+            return addErrorEntry("Scene::linkData: Consumer SceneReference state has to be at least Ready");
 
         const auto providerScene = (providerReference ? providerReference->impl.getSceneReferenceHandle() : ramses_internal::SceneReferenceHandle{});
         const auto consumerScene = (consumerReference ? consumerReference->impl.getSceneReferenceHandle() : ramses_internal::SceneReferenceHandle{});

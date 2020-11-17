@@ -106,6 +106,7 @@
 #define glDrawArraysInstanced(...)      glDrawArraysInstancedNative(__VA_ARGS__)
 #define glVertexAttribDivisor(...)      glVertexAttribDivisorNative(__VA_ARGS__)
 #define glTexStorage2D(...)             glTexStorage2DNative(__VA_ARGS__)
+#define glTexStorage2DMultisample(...)  glTexStorage2DMultisampleNative(__VA_ARGS__)
 #define glTexStorage3D(...)             glTexStorage3DNative(__VA_ARGS__)
 #define glTexSubImage3D(...)            glTexSubImage3DNative(__VA_ARGS__)
 #define glCompressedTexSubImage2D(...)  glCompressedTexSubImage2DNative(__VA_ARGS__)
@@ -190,6 +191,7 @@ DECLARE_API_PROC(PFNGLDRAWELEMENTSINSTANCEDPROC, glDrawElementsInstanced);      
 DECLARE_API_PROC(PFNGLDRAWARRAYSINSTANCEDPROC, glDrawArraysInstanced);                          \
 DECLARE_API_PROC(PFNGLVERTEXATTRIBDIVISORPROC, glVertexAttribDivisor);                          \
 DECLARE_API_PROC(PFNGLTEXSTORAGE2DPROC, glTexStorage2D);                                        \
+DECLARE_API_PROC(PFNGLTEXSTORAGE2DMULTISAMPLEPROC, glTexStorage2DMultisample);                  \
 DECLARE_API_PROC(PFNGLTEXSTORAGE3DPROC, glTexStorage3D);                                        \
 DECLARE_API_PROC(PFNGLTEXSUBIMAGE3DPROC, glTexSubImage3D);                                      \
 DECLARE_API_PROC(PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC, glCompressedTexSubImage2D);                  \
@@ -274,6 +276,7 @@ LOAD_API_PROC(CONTEXT, PFNGLDRAWELEMENTSINSTANCEDPROC, glDrawElementsInstanced);
 LOAD_API_PROC(CONTEXT, PFNGLDRAWARRAYSINSTANCEDPROC, glDrawArraysInstanced);                      \
 LOAD_API_PROC(CONTEXT, PFNGLVERTEXATTRIBDIVISORPROC, glVertexAttribDivisor);                      \
 LOAD_API_PROC(CONTEXT, PFNGLTEXSTORAGE2DPROC, glTexStorage2D);                                    \
+LOAD_API_PROC(CONTEXT, PFNGLTEXSTORAGE2DMULTISAMPLEPROC, glTexStorage2DMultisample);                                    \
 LOAD_API_PROC(CONTEXT, PFNGLTEXSTORAGE3DPROC, glTexStorage3D);                                    \
 LOAD_API_PROC(CONTEXT, PFNGLTEXSUBIMAGE3DPROC, glTexSubImage3D);                                  \
 LOAD_API_PROC(CONTEXT, PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC, glCompressedTexSubImage2D);              \
@@ -359,6 +362,7 @@ DEFINE_API_PROC(PFNGLDRAWELEMENTSINSTANCEDPROC, glDrawElementsInstanced);       
 DEFINE_API_PROC(PFNGLDRAWARRAYSINSTANCEDPROC, glDrawArraysInstanced);                          \
 DEFINE_API_PROC(PFNGLVERTEXATTRIBDIVISORPROC, glVertexAttribDivisor);                          \
 DEFINE_API_PROC(PFNGLTEXSTORAGE2DPROC, glTexStorage2D);                                        \
+DEFINE_API_PROC(PFNGLTEXSTORAGE2DMULTISAMPLEPROC, glTexStorage2DMultisample);                                        \
 DEFINE_API_PROC(PFNGLTEXSTORAGE3DPROC, glTexStorage3D);                                        \
 DEFINE_API_PROC(PFNGLTEXSUBIMAGE3DPROC, glTexSubImage3D);                                      \
 DEFINE_API_PROC(PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC, glCompressedTexSubImage2D);                  \

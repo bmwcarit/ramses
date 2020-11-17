@@ -98,12 +98,23 @@ namespace ramses_internal
             pushToSceneControlEventQueue(std::move(event));
         }
 
-        void addOBLinkEvent(ERendererEventType eventType, OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
+        void addBufferLinkEvent(ERendererEventType eventType, OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " bufferHandle=" << providerBuffer);
+            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " offscreenBufferHandle=" << providerBuffer);
 
             RendererEvent event(eventType);
             event.offscreenBuffer = providerBuffer;
+            event.consumerSceneId = consumerSceneId;
+            event.consumerdataId = consumerdataId;
+            pushToSceneControlEventQueue(std::move(event));
+        }
+
+        void addBufferLinkEvent(ERendererEventType eventType, StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
+        {
+            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " streamBufferHandle=" << providerBuffer);
+
+            RendererEvent event(eventType);
+            event.streamBuffer = providerBuffer;
             event.consumerSceneId = consumerSceneId;
             event.consumerdataId = consumerdataId;
             pushToSceneControlEventQueue(std::move(event));
@@ -130,14 +141,13 @@ namespace ramses_internal
             pushToSceneControlEventQueue(std::move(event));
         }
 
-        void addSceneFlushEvent(ERendererEventType eventType, SceneId sceneId, SceneVersionTag sceneVersionTag, EResourceStatus resourceStatus)
+        void addSceneFlushEvent(ERendererEventType eventType, SceneId sceneId, SceneVersionTag sceneVersionTag)
         {
-            LOG_TRACE(CONTEXT_RENDERER, EnumToString(eventType) << " sceneId=" << sceneId.getValue() << " sceneVersionTag=" << sceneVersionTag.getValue() << " resourceStatus=" << EnumToString(resourceStatus));
+            LOG_TRACE(CONTEXT_RENDERER, EnumToString(eventType) << " sceneId=" << sceneId.getValue() << " sceneVersionTag=" << sceneVersionTag.getValue());
 
             RendererEvent event(eventType);
             event.sceneId = sceneId;
             event.sceneVersionTag = sceneVersionTag;
-            event.resourceStatus = resourceStatus;
             pushToSceneControlEventQueue(std::move(event));
         }
 
@@ -173,9 +183,9 @@ namespace ramses_internal
             pushToRendererEventQueue(std::move(event));
         }
 
-        void addStreamSourceEvent(ERendererEventType eventType, StreamTextureSourceId streamSourceId)
+        void addStreamSourceEvent(ERendererEventType eventType, WaylandIviSurfaceId streamSourceId)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " streamSourceId=" << streamSourceId.getValue());
+            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " streamSourceId=" << streamSourceId);
 
             RendererEvent event(eventType);
             event.streamSourceId = streamSourceId;

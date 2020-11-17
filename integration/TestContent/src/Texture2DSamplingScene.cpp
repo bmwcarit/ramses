@@ -78,8 +78,8 @@ namespace ramses_internal
     void Texture2DSamplingScene::createOrthoCamera()
     {
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
-        orthoCamera->setFrustum(0.0f, static_cast<Float>(DefaultDisplayWidth), 0.0f, static_cast<Float>(DefaultDisplayHeight), 0.1f, 10.f);
-        orthoCamera->setViewport(0, 0, DefaultDisplayWidth, DefaultDisplayHeight);
+        orthoCamera->setFrustum(0.0f, static_cast<Float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<Float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
+        orthoCamera->setViewport(0, 0, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         setCameraToDefaultRenderPass(orthoCamera);
     }
 
@@ -260,8 +260,8 @@ namespace ramses_internal
         };
 
         const float y = 0.0f;
-        const float w = static_cast<float>(DefaultDisplayWidth) / 2.0f;
-        const float h = static_cast<float>(DefaultDisplayHeight);
+        const float w = static_cast<float>(IntegrationScene::DefaultViewportWidth) / 2.0f;
+        const float h = static_cast<float>(IntegrationScene::DefaultViewportHeight);
 
         const float x2 = w;
         const float y2 = 0.0f;
@@ -339,10 +339,10 @@ namespace ramses_internal
 
         const float x = 0.0f;
         const float y = 0.0f;
-        const float w = static_cast<float>(DefaultDisplayWidth) * 0.35f;
-        const float h = static_cast<float>(DefaultDisplayHeight);
+        const float w = static_cast<float>(IntegrationScene::DefaultViewportWidth) * 0.35f;
+        const float h = static_cast<float>(IntegrationScene::DefaultViewportHeight);
 
-        const float x2 = static_cast<float>(DefaultDisplayWidth) - w;
+        const float x2 = static_cast<float>(IntegrationScene::DefaultViewportWidth) - w;
         const float y2 = 0.0f;
         const float w2 = w;
         const float h2 = h;
@@ -352,7 +352,7 @@ namespace ramses_internal
         // One pixel covers 3 level-0 texel, midpoint has to be moved half a texel left, which is 1/6 in geometry.
 
         const float y3 = 0.0f;
-        const float w3 = static_cast<float>(DefaultDisplayWidth) * 0.3f;
+        const float w3 = static_cast<float>(IntegrationScene::DefaultViewportWidth) * 0.3f;
         const float h3 = h;
 
         const float vertexPositionsArray[] = {

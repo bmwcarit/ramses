@@ -6,6 +6,12 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+# Use like this with find_package:
+# find_package(ramses-shared-lib <RAMSES-VERSION> [REQUIRED] COMPONENTS <SYSTEM> [GL_VERSION])
+# <SYSTEM> must be one of: WINDOWS, LINUX-X11, LINUX-WAYLAND, ANDROID
+# GL_VERSION can be one of: GL4.2, GL4.5, GLES3.0
+# GL_VERSION is overridden for some systems
+
 INCLUDE(FindPackageHandleStandardArgs)
 SET(ramses-shared-lib_VERSION @RAMSES_VERSION@)
 
@@ -91,7 +97,7 @@ ELSEIF("${RENDERER_PLATFORM}" STREQUAL "ANDROID")
     )
 
 ELSE()
-    MESSAGE("please use component syntax, choose one of WINDOWS, LINUX-X11, LINUX-WAYLAND, ANDROID")
+    MESSAGE(FATAL_ERROR "please use component syntax, choose one of WINDOWS, LINUX-X11, LINUX-WAYLAND, ANDROID")
 ENDIF()
 
 

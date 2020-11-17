@@ -128,8 +128,8 @@ namespace ramses_internal
         /**
          * Iterator for hashsets
          */
-        typedef HashSetIterator< typename HashMap<T, char>::Iterator >        Iterator;
-        typedef HashSetIterator< typename HashMap<T, char>::ConstIterator >   ConstIterator;
+        using Iterator = HashSetIterator<typename HashMap<T, char>::Iterator>;
+        using ConstIterator = HashSetIterator<typename HashMap<T, char>::ConstIterator>;
 
         using value_type = T;
 

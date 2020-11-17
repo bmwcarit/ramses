@@ -14,7 +14,7 @@
 namespace ramses
 {
     class ArrayBuffer;
-    class LocalCamera;
+    class Camera;
 
     /**
     * @brief PickableObject provides a way to specify a 'pickable' area.
@@ -58,7 +58,7 @@ namespace ramses
         * @return The PickableObject's camera, nullptr if no camera assigned.
         *
         **/
-        const LocalCamera* getCamera() const;
+        const Camera* getCamera() const;
 
         /**
         *
@@ -72,7 +72,7 @@ namespace ramses
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         **/
-        status_t setCamera(const LocalCamera& camera);
+        status_t setCamera(const Camera& camera);
 
         /**
         *

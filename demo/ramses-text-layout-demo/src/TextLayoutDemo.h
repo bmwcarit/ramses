@@ -13,6 +13,7 @@
 #include "ramses-text-api/FontRegistry.h"
 #include "ramses-text-api/FontInstanceOffsets.h"
 #include "ramses-text-api/TextCache.h"
+#include "ramses-text-api/GlyphMetrics.h"
 
 /// Text sample application visualizing font metrics in RAMSES text API.
 /** Creates a font, text style, text node and inserts a single text object into the node.
@@ -35,6 +36,8 @@ private:
         const std::u32string& string,
         const ramses::FontInstanceOffsets& fonts,
         float boxX, float boxY, float boxWidth, float boxHeight);
+
+    static ramses::GlyphMetricsVector::const_iterator FindFittingSubstring(ramses::GlyphMetricsVector::const_iterator first, ramses::GlyphMetricsVector::const_iterator last, uint32_t maxWidth);
 
     ramses::RamsesFramework m_framework;
     ramses::RamsesClient& m_client;

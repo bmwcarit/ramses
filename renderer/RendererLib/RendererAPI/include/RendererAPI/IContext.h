@@ -20,6 +20,9 @@ namespace ramses_internal
     public:
         virtual ~IContext(){}
 
+        virtual bool swapBuffers() = 0;
+        virtual bool enable() = 0;
+        virtual bool disable() = 0;
         virtual DeviceResourceMapper& getResources() = 0;
 
         // TODO Violin this should be removed - provides access to platform-specific data

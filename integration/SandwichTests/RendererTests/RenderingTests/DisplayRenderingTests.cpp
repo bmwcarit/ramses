@@ -20,16 +20,13 @@ using namespace ramses_internal;
 void DisplayRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
 {
     ramses::DisplayConfig displayConfig1 = RendererTestUtils::CreateTestDisplayConfig(0);
-    displayConfig1.setWindowRectangle(0, 0, 128u, 64u);
-    displayConfig1.setPerspectiveProjection(19.f, 128.f / 64.f, 0.1f, 1500.f);
+    displayConfig1.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
 
     ramses::DisplayConfig displayConfig2 = RendererTestUtils::CreateTestDisplayConfig(1);
-    displayConfig2.setWindowRectangle(0, 0, 128u, 64u);
-    displayConfig2.setPerspectiveProjection(19.f, 128.f / 64.f, 0.1f, 1500.f);
+    displayConfig2.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
 
     ramses::DisplayConfig displayConfig3 = RendererTestUtils::CreateTestDisplayConfig(2);
-    displayConfig3.setWindowRectangle(0, 0, 128u, 64u);
-    displayConfig3.setPerspectiveProjection(19.f, 128.f / 64.f, 0.1f, 1500.f);
+    displayConfig3.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
     displayConfig3.enableWarpingPostEffect();
 
     testFramework.createTestCase(DisplayTest_TwoScenes, *this, "DisplayRendererTest_TwoScenes").m_displayConfigs.push_back(displayConfig1);
@@ -115,9 +112,9 @@ bool DisplayRenderingTests::run(RendererTestsFramework& testFramework, const Ren
 bool DisplayRenderingTests::runTwoScenesTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES,
-        ramses_internal::Vector3(2.0f, 0.0f, 5.0f));
+        ramses_internal::Vector3(2.0f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
     const ramses::sceneId_t otherId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::SUBTRACTIVE_BLENDING,
-        ramses_internal::Vector3(-2.5f, -0.5f, 5.0f));
+        ramses_internal::Vector3(-2.5f, -0.5f, 5.0f), DisplayWidth, DisplayHeight);
 
     testFramework.publishAndFlushScene(sceneId);
     testFramework.publishAndFlushScene(otherId);
@@ -130,9 +127,9 @@ bool DisplayRenderingTests::runTwoScenesTest(RendererTestsFramework& testFramewo
 bool DisplayRenderingTests::runUnpublishTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES,
-        ramses_internal::Vector3(2.0f, 0.0f, 5.0f));
+        ramses_internal::Vector3(2.0f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
     const ramses::sceneId_t otherId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::SUBTRACTIVE_BLENDING,
-        ramses_internal::Vector3(-2.5f, -0.5f, 5.0f));
+        ramses_internal::Vector3(-2.5f, -0.5f, 5.0f), DisplayWidth, DisplayHeight);
 
     testFramework.publishAndFlushScene(sceneId);
     testFramework.publishAndFlushScene(otherId);
@@ -150,9 +147,9 @@ bool DisplayRenderingTests::runUnpublishTest(RendererTestsFramework& testFramewo
 bool DisplayRenderingTests::runHideTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES,
-        ramses_internal::Vector3(2.0f, 0.0f, 5.0f));
+        ramses_internal::Vector3(2.0f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
     const ramses::sceneId_t otherId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::SUBTRACTIVE_BLENDING,
-        ramses_internal::Vector3(-2.5f, -0.5f, 5.0f));
+        ramses_internal::Vector3(-2.5f, -0.5f, 5.0f), DisplayWidth, DisplayHeight);
 
     testFramework.publishAndFlushScene(sceneId);
     testFramework.publishAndFlushScene(otherId);
@@ -170,9 +167,9 @@ bool DisplayRenderingTests::runHideTest(RendererTestsFramework& testFramework)
 bool DisplayRenderingTests::runSceneRenderOrderTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::ALPHA_BLENDING,
-        ramses_internal::Vector3(0.5f, 0.5f, 5.0f));
+        ramses_internal::Vector3(0.5f, 0.5f, 5.0f), DisplayWidth, DisplayHeight);
     const ramses::sceneId_t otherId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES,
-        ramses_internal::Vector3(-0.5f, 0.0f, 5.0f));
+        ramses_internal::Vector3(-0.5f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
 
     testFramework.publishAndFlushScene(sceneId);
     testFramework.publishAndFlushScene(otherId);
@@ -187,9 +184,9 @@ bool DisplayRenderingTests::runSceneRenderOrderTest(RendererTestsFramework& test
 bool DisplayRenderingTests::runSceneRenderOrderInversedTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::ALPHA_BLENDING,
-        ramses_internal::Vector3(0.5f, 0.5f, 5.0f));
+        ramses_internal::Vector3(0.5f, 0.5f, 5.0f), DisplayWidth, DisplayHeight);
     const ramses::sceneId_t otherId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES,
-        ramses_internal::Vector3(-0.5f, 0.0f, 5.0f));
+        ramses_internal::Vector3(-0.5f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
 
     testFramework.publishAndFlushScene(sceneId);
     testFramework.publishAndFlushScene(otherId);
@@ -254,7 +251,7 @@ bool DisplayRenderingTests::runSubimageTest(RendererTestsFramework& testFramewor
 bool DisplayRenderingTests::runRemapSceneTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES,
-        ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
+        ramses_internal::Vector3(0.0f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
     testFramework.publishAndFlushScene(sceneId);
     testFramework.getSceneToRendered(sceneId, 0u);
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererInstance_Three_Triangles", 0u);
@@ -273,9 +270,9 @@ bool DisplayRenderingTests::runRemapSceneTest(RendererTestsFramework& testFramew
 bool DisplayRenderingTests::runSwapScenesTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId1 = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES,
-        ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
+        ramses_internal::Vector3(0.0f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
     const ramses::sceneId_t sceneId2 = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED,
-        ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
+        ramses_internal::Vector3(0.0f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
 
     testFramework.publishAndFlushScene(sceneId1);
     testFramework.publishAndFlushScene(sceneId2);
@@ -303,7 +300,7 @@ bool DisplayRenderingTests::runSwapScenesTest(RendererTestsFramework& testFramew
 bool DisplayRenderingTests::runRemapSceneWithRenderTargetTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::RenderTargetScene>(ramses_internal::RenderTargetScene::PERSPECTIVE_PROJECTION,
-        ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
+        ramses_internal::Vector3(0.0f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
     testFramework.publishAndFlushScene(sceneId);
     testFramework.getSceneToRendered(sceneId, 0u);
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererDisplays_RenderTarget", 0u);
@@ -322,7 +319,7 @@ bool DisplayRenderingTests::runRemapSceneWithRenderTargetTest(RendererTestsFrame
 bool DisplayRenderingTests::runRemapSceneWithTextTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::TextScene>(ramses_internal::TextScene::EState_INITIAL_128_BY_64_VIEWPORT,
-        ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
+        ramses_internal::Vector3(0.0f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
     testFramework.publishAndFlushScene(sceneId);
     testFramework.getSceneToRendered(sceneId);
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererInstance_SimpleText", 0u);
@@ -340,7 +337,7 @@ bool DisplayRenderingTests::runRemapSceneWithTextTest(RendererTestsFramework& te
 bool DisplayRenderingTests::runRemapSceneToWarpedDisplayTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::RenderTargetScene>(ramses_internal::RenderTargetScene::PERSPECTIVE_PROJECTION,
-        ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
+        ramses_internal::Vector3(0.0f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
     testFramework.publishAndFlushScene(sceneId);
     testFramework.getSceneToRendered(sceneId);
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererDisplays_RenderTarget", 0u);
@@ -358,9 +355,9 @@ bool DisplayRenderingTests::runRemapSceneToWarpedDisplayTest(RendererTestsFramew
 bool DisplayRenderingTests::runRemapSceneWithChangedContentTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId1 = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES,
-        ramses_internal::Vector3(2.0f, 0.0f, 5.0f));
+        ramses_internal::Vector3(2.0f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
     const ramses::sceneId_t sceneId2 = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::TRIANGLES_REORDERED,
-        ramses_internal::Vector3(-2.5f, -0.5f, 5.0f));
+        ramses_internal::Vector3(-2.5f, -0.5f, 5.0f), DisplayWidth, DisplayHeight);
 
     testFramework.publishAndFlushScene(sceneId1);
     testFramework.publishAndFlushScene(sceneId2);
@@ -398,12 +395,12 @@ bool DisplayRenderingTests::runRemapSceneWithChangedContentTest(RendererTestsFra
 bool DisplayRenderingTests::runResubscribeSceneTest(RendererTestsFramework& testFramework)
 {
     const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::THREE_TRIANGLES,
-        ramses_internal::Vector3(0.0f, 0.0f, 5.0f));
+        ramses_internal::Vector3(0.0f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
     testFramework.publishAndFlushScene(sceneId);
     testFramework.getSceneToRendered(sceneId);
     bool testResult = testFramework.renderAndCompareScreenshot("ARendererInstance_Three_Triangles", 0u);
 
-    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Unavailable);
+    testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Available);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererDisplays_Black", 0u);
 
     testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);

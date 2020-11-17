@@ -36,30 +36,6 @@ namespace ramses
     {
     }
 
-    status_t DisplayConfig::setViewPosition(float x, float y, float z)
-    {
-        const status_t status = impl.setViewPosition(x, y, z);
-        LOG_HL_RENDERER_API3(status, x, y, z);
-        return status;
-    }
-
-    status_t DisplayConfig::getViewPosition(float& x, float& y, float& z) const
-    {
-        return impl.getViewPosition(x, y, z);
-    }
-
-    status_t DisplayConfig::setViewRotation(float x, float y, float z)
-    {
-        const status_t status = impl.setViewRotation(x, y, z);
-        LOG_HL_RENDERER_API3(status, x, y, z);
-        return status;
-    }
-
-    status_t DisplayConfig::getViewRotation(float& x, float& y, float& z) const
-    {
-        return impl.getViewRotation(x, y, z);
-    }
-
     status_t DisplayConfig::setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
         const status_t status = impl.setWindowRectangle(x, y, width, height);
@@ -88,27 +64,6 @@ namespace ramses
     {
         const status_t status = impl.setBorderless(borderless);
         LOG_HL_RENDERER_API1(status, borderless);
-        return status;
-    }
-
-    status_t DisplayConfig::setPerspectiveProjection(float fieldOfViewY, float aspectRatio, float nearPlane, float farPlane)
-    {
-        const status_t status = impl.setPerspectiveProjection(fieldOfViewY, aspectRatio, nearPlane, farPlane);
-        LOG_HL_RENDERER_API4(status, fieldOfViewY, aspectRatio, nearPlane, farPlane);
-        return status;
-    }
-
-    status_t DisplayConfig::setPerspectiveProjection(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane)
-    {
-        const status_t status = impl.setProjection(leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane, false);
-        LOG_HL_RENDERER_API6(status, leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane);
-        return status;
-    }
-
-    status_t DisplayConfig::setOrthographicProjection(float leftPlane, float rightPlane, float bottomPlane, float topPlane, float nearPlane, float farPlane)
-    {
-        const status_t status = impl.setProjection(leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane, true);
-        LOG_HL_RENDERER_API6(status, leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane);
         return status;
     }
 

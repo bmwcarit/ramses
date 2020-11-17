@@ -19,7 +19,7 @@ namespace ramses_internal
 {
     namespace LogHelper
     {
-        typedef std::pair<ELogLevel, String> ContextFilter;
+        using ContextFilter = std::pair<ELogLevel, String>;
 
         bool StringToLogLevel(String str, ELogLevel& logLevel);
         ELogLevel GetLoglevelFromInt(Int32 logLevelInt);

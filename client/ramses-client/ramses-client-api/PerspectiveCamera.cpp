@@ -15,7 +15,7 @@
 namespace ramses
 {
     PerspectiveCamera::PerspectiveCamera(CameraNodeImpl& pimpl)
-        : LocalCamera(pimpl)
+        : Camera(pimpl)
     {
     }
 

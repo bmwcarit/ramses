@@ -36,9 +36,17 @@ namespace ramses_internal
             removeDataLink(link.consumerSceneId, link.consumerSlot);
         }
 
-        OffscreenBufferLinkVector bufferLinks;
-        m_offscreenBufferLinks.getLinkedProviders(sceneId, bufferLinks);
-        for (const auto& link : bufferLinks)
+        OffscreenBufferLinkVector obLinks;
+        m_offscreenBufferLinks.getLinkedProviders(sceneId, obLinks);
+        for (const auto& link : obLinks)
+        {
+            assert(link.consumerSceneId == sceneId);
+            removeDataLink(link.consumerSceneId, link.consumerSlot);
+        }
+
+        StreamBufferLinkVector sbLinks;
+        m_streamBufferLinks.getLinkedProviders(sceneId, sbLinks);
+        for (const auto& link : sbLinks)
         {
             assert(link.consumerSceneId == sceneId);
             removeDataLink(link.consumerSceneId, link.consumerSlot);
@@ -48,21 +56,15 @@ namespace ramses_internal
         LinkManagerBase::removeSceneLinks(sceneId);
     }
 
-    Bool TextureLinkManager::createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
+    bool TextureLinkManager::createDataLink(SceneId providerSceneId, DataSlotHandle providerSlotHandle, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
     {
         assert(EDataSlotType_TextureProvider == DataLinkUtils::GetDataSlot(providerSceneId, providerSlotHandle, m_scenes).type);
         assert(EDataSlotType_TextureConsumer == DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_scenes).type);
-
-        if (m_offscreenBufferLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle))
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: consumer slot " << consumerSlotHandle << " already has an offscreen buffer link assigned! (consumer scene: " << consumerSceneId << ")");
-            return false;
-        }
+        assert(!m_offscreenBufferLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle));
+        assert(!m_streamBufferLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle));
 
         if (!LinkManagerBase::createDataLink(providerSceneId, providerSlotHandle, consumerSceneId, consumerSlotHandle))
-        {
             return false;
-        }
 
         const TextureSamplerHandle consumerSampler = storeConsumerSlot(consumerSceneId, consumerSlotHandle);
         m_scenes.getScene(consumerSceneId).setTextureSamplerContentSource(consumerSampler, getLinkedTexture(consumerSceneId, consumerSampler));
@@ -70,36 +72,40 @@ namespace ramses_internal
         return true;
     }
 
-    Bool TextureLinkManager::createBufferLink(OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
+    void TextureLinkManager::createBufferLink(OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
+    {
+        createBufferLinkInternal(providerBuffer, consumerSceneId, consumerSlotHandle, m_offscreenBufferLinks);
+    }
+
+    void TextureLinkManager::createBufferLink(StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)
+    {
+        createBufferLinkInternal(providerBuffer, consumerSceneId, consumerSlotHandle, m_streamBufferLinks);
+    }
+
+    template <typename BUFFERHANDLE>
+    void TextureLinkManager::createBufferLinkInternal(BUFFERHANDLE providerBuffer, SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, BufferLinks<BUFFERHANDLE>& links)
     {
         assert(EDataSlotType_TextureConsumer == DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_scenes).type);
+        assert(!getSceneLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle));
+        assert(!links.hasLinkedProvider(consumerSceneId, consumerSlotHandle));
 
-        if (getSceneLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle))
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: consumer slot already has a data link assigned! (consumer scene: " << consumerSceneId << ")");
-            return false;
-        }
-
-        if (m_offscreenBufferLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle))
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: consumer slot already has a buffer link assigned! (consumer scene: " << consumerSceneId << ")");
-            return false;
-        }
-
-        m_offscreenBufferLinks.addLink(providerBuffer, consumerSceneId, consumerSlotHandle);
+        links.addLink(providerBuffer, consumerSceneId, consumerSlotHandle);
 
         const TextureSamplerHandle consumerSampler = storeConsumerSlot(consumerSceneId, consumerSlotHandle);
         m_scenes.getScene(consumerSceneId).setTextureSamplerContentSource(consumerSampler, providerBuffer);
-
-        return true;
     }
 
-    Bool TextureLinkManager::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut)
+    bool TextureLinkManager::removeDataLink(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle, SceneId* providerSceneIdOut)
     {
-        Bool removed = false;
+        bool removed = false;
         if (m_offscreenBufferLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle))
         {
             m_offscreenBufferLinks.removeLink(consumerSceneId, consumerSlotHandle);
+            removed = true;
+        }
+        else if (m_streamBufferLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle))
+        {
+            m_streamBufferLinks.removeLink(consumerSceneId, consumerSlotHandle);
             removed = true;
         }
         else
@@ -123,7 +129,7 @@ namespace ramses_internal
         return removed;
     }
 
-    Bool TextureLinkManager::hasLinkedTexture(SceneId consumerSceneId, TextureSamplerHandle sampler) const
+    bool TextureLinkManager::hasLinkedTexture(SceneId consumerSceneId, TextureSamplerHandle sampler) const
     {
         const DataSlotHandle consumerSlotHandle = getDataSlotForSampler(consumerSceneId, sampler);
         if (consumerSlotHandle.isValid())
@@ -148,13 +154,11 @@ namespace ramses_internal
         return providerScene.getDataSlot(link.providerSlot).attachedTexture;
     }
 
-    Bool TextureLinkManager::hasLinkedOffscreenBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const
+    bool TextureLinkManager::hasLinkedOffscreenBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const
     {
         const DataSlotHandle consumerSlotHandle = getDataSlotForSampler(consumerSceneId, sampler);
         if (consumerSlotHandle.isValid())
-        {
             return m_offscreenBufferLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle);
-        }
 
         return false;
     }
@@ -171,9 +175,35 @@ namespace ramses_internal
         return link.providerBuffer;
     }
 
+    bool TextureLinkManager::hasLinkedStreamBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const
+    {
+        const DataSlotHandle consumerSlotHandle = getDataSlotForSampler(consumerSceneId, sampler);
+        if (consumerSlotHandle.isValid())
+            return m_streamBufferLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle);
+
+        return false;
+    }
+
+    StreamBufferHandle TextureLinkManager::getLinkedStreamBuffer(SceneId consumerSceneId, TextureSamplerHandle sampler) const
+    {
+        const DataSlotHandle consumerSlotHandle = getDataSlotForSampler(consumerSceneId, sampler);
+        assert(consumerSlotHandle.isValid());
+
+        const auto& link = m_streamBufferLinks.getLinkedProvider(consumerSceneId, consumerSlotHandle);
+        assert(link.consumerSceneId == consumerSceneId);
+        assert(link.consumerSlot == consumerSlotHandle);
+
+        return link.providerBuffer;
+    }
+
     const OffscreenBufferLinks& TextureLinkManager::getOffscreenBufferLinks() const
     {
         return m_offscreenBufferLinks;
+    }
+
+    const StreamBufferLinks& TextureLinkManager::getStreamBufferLinks() const
+    {
+        return m_streamBufferLinks;
     }
 
     TextureSamplerHandle TextureLinkManager::storeConsumerSlot(SceneId consumerSceneId, DataSlotHandle consumerSlotHandle)

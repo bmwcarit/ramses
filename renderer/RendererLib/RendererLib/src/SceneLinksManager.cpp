@@ -27,14 +27,14 @@ namespace ramses_internal
     {
         if (!m_rendererScenes.hasScene(providerSceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: provider scene " << providerSceneId << " is not known to the renderer!");
+            LOG_ERROR(CONTEXT_RENDERER, "SceneLinksManager::createDataLink failed: provider scene " << providerSceneId << " is not known to the renderer!");
             m_rendererEventCollector.addDataLinkEvent(ERendererEventType_SceneDataLinkFailed, providerSceneId, consumerSceneId, providerId, consumerId);
             return;
         }
 
         if (!m_rendererScenes.hasScene(consumerSceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: consumer scene " << consumerSceneId << " is not known to the renderer!");
+            LOG_ERROR(CONTEXT_RENDERER, "SceneLinksManager::createDataLink failed: consumer scene " << consumerSceneId << " is not known to the renderer!");
             m_rendererEventCollector.addDataLinkEvent(ERendererEventType_SceneDataLinkFailed, providerSceneId, consumerSceneId, providerId, consumerId);
             return;
         }
@@ -44,14 +44,14 @@ namespace ramses_internal
 
         if (!providerSlotHandle.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: provider data id " << providerId << " is invalid! (Provider scene: " << providerSceneId << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "SceneLinksManager::createDataLink failed: provider data id " << providerId << " is invalid! (Provider scene: " << providerSceneId << ")");
             m_rendererEventCollector.addDataLinkEvent(ERendererEventType_SceneDataLinkFailed, providerSceneId, consumerSceneId, providerId, consumerId);
             return;
         }
 
         if (!consumerSlotHandle.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: consumer data id " << consumerId << " is invalid! (Consumer scene: " << consumerSceneId << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "SceneLinksManager::createDataLink failed: consumer data id " << consumerId << " is invalid! (Consumer scene: " << consumerSceneId << ")");
             m_rendererEventCollector.addDataLinkEvent(ERendererEventType_SceneDataLinkFailed, providerSceneId, consumerSceneId, providerId, consumerId);
             return;
         }
@@ -77,50 +77,55 @@ namespace ramses_internal
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: data slot type mismatch, provider and consumer slot types must match! (Provider scene: " << providerSceneId << ", consumer scene: " << consumerSceneId << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "SceneLinksManager::createDataLink failed: data slot type mismatch, provider and consumer slot types must match! (Provider scene: " << providerSceneId << ", consumer scene: " << consumerSceneId << ")");
         }
 
         m_rendererEventCollector.addDataLinkEvent((linkSuccess ? ERendererEventType_SceneDataLinked : ERendererEventType_SceneDataLinkFailed), providerSceneId, consumerSceneId, providerId, consumerId);
     }
 
+    void SceneLinksManager::createBufferLink(StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerId)
+    {
+        createBufferLinkInternal(providerBuffer, consumerSceneId, consumerId);
+    }
+
     void SceneLinksManager::createBufferLink(OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerId)
     {
-        if (!m_rendererScenes.hasScene(consumerSceneId))
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createBufferLink failed: consumer scene " << consumerSceneId << " is not known to the renderer!");
-            m_rendererEventCollector.addOBLinkEvent(ERendererEventType_SceneDataBufferLinkFailed, providerBuffer, consumerSceneId, consumerId);
-            return;
-        }
+        createBufferLinkInternal(providerBuffer, consumerSceneId, consumerId);
+    }
+
+    template <typename BUFFERHANDLE>
+    void SceneLinksManager::createBufferLinkInternal(BUFFERHANDLE providerBuffer, SceneId consumerSceneId, DataSlotId consumerId)
+    {
+        assert(m_rendererScenes.hasScene(consumerSceneId));
 
         const DataSlotHandle consumerSlotHandle = DataLinkUtils::GetDataSlotHandle(consumerSceneId, consumerId, m_rendererScenes);
         if (!consumerSlotHandle.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createBufferLink failed: consumer data id is invalid! (consumer scene: " << consumerSceneId << ")");
-            m_rendererEventCollector.addOBLinkEvent(ERendererEventType_SceneDataBufferLinkFailed, providerBuffer, consumerSceneId, consumerId);
+            LOG_ERROR(CONTEXT_RENDERER, "SceneLinksManager::createBufferLink failed: consumer data id is invalid! (consumer scene: " << consumerSceneId << ")");
+            m_rendererEventCollector.addBufferLinkEvent(ERendererEventType_SceneDataBufferLinkFailed, providerBuffer, consumerSceneId, consumerId);
             return;
         }
 
         const EDataSlotType consumerSlotType = DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_rendererScenes).type;
         if (consumerSlotType != EDataSlotType_TextureConsumer)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createBufferLink failed: consumer data " << consumerId << " refers to a slot that is not of texture type! (consumer scene: " << consumerSceneId << ")");
-            m_rendererEventCollector.addOBLinkEvent(ERendererEventType_SceneDataBufferLinkFailed, providerBuffer, consumerSceneId, consumerId);
+            LOG_ERROR(CONTEXT_RENDERER, "SceneLinksManager::createBufferLink failed: consumer data " << consumerId << " refers to a slot that is not of texture type! (consumer scene: " << consumerSceneId << ")");
+            m_rendererEventCollector.addBufferLinkEvent(ERendererEventType_SceneDataBufferLinkFailed, providerBuffer, consumerSceneId, consumerId);
             return;
         }
 
         // remove any existing data link to establish a new one
         removeAnyDataLinkFromConsumer(consumerSceneId, consumerSlotHandle);
 
-        const Bool linkSuccess = m_textureLinkManager.createBufferLink(providerBuffer, consumerSceneId, consumerSlotHandle);
-
-        m_rendererEventCollector.addOBLinkEvent((linkSuccess ? ERendererEventType_SceneDataBufferLinked : ERendererEventType_SceneDataBufferLinkFailed), providerBuffer, consumerSceneId, consumerId);
+        m_textureLinkManager.createBufferLink(providerBuffer, consumerSceneId, consumerSlotHandle);
+        m_rendererEventCollector.addBufferLinkEvent(ERendererEventType_SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerId);
     }
 
     void SceneLinksManager::removeDataLink(SceneId consumerSceneId, DataSlotId consumerId)
     {
         if (!m_rendererScenes.hasScene(consumerSceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: consumer scene " << consumerSceneId << " is not known to the renderer!");
+            LOG_ERROR(CONTEXT_RENDERER, "SceneLinksManager::removeDataLink failed: consumer scene " << consumerSceneId << " is not known to the renderer!");
             m_rendererEventCollector.addDataLinkEvent(ERendererEventType_SceneDataUnlinkFailed, SceneId(0u), consumerSceneId, DataSlotId(0u), consumerId);
             return;
         }
@@ -129,7 +134,7 @@ namespace ramses_internal
 
         if (!consumerSlotHandle.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::removeDataLink failed: consumer data id " << consumerId << " is invalid!");
+            LOG_ERROR(CONTEXT_RENDERER, "SceneLinksManager::removeDataLink failed: consumer data id " << consumerId << " is invalid!");
             m_rendererEventCollector.addDataLinkEvent(ERendererEventType_SceneDataUnlinkFailed, SceneId(0u), consumerSceneId, DataSlotId(0u), consumerId);
             return;
         }
@@ -152,7 +157,7 @@ namespace ramses_internal
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::removeDataLink failed: given slot " << consumerSlotHandle << " is not a consumer slot or there was no link!");
+            LOG_ERROR(CONTEXT_RENDERER, "SceneLinksManager::removeDataLink failed: given slot " << consumerSlotHandle << " is not a consumer slot or there was no link!");
             m_rendererEventCollector.addDataLinkEvent(ERendererEventType_SceneDataUnlinkFailed, SceneId(0u), consumerSceneId, DataSlotId(0u), consumerId);
             return;
         }
@@ -241,7 +246,8 @@ namespace ramses_internal
 
         case EDataSlotType_TextureConsumer:
             if (m_textureLinkManager.getSceneLinks().hasLinkedProvider(sceneId, dataSlotHandle) ||
-                m_textureLinkManager.getOffscreenBufferLinks().hasLinkedProvider(sceneId, dataSlotHandle))
+                m_textureLinkManager.getOffscreenBufferLinks().hasLinkedProvider(sceneId, dataSlotHandle) ||
+                m_textureLinkManager.getStreamBufferLinks().hasLinkedProvider(sceneId, dataSlotHandle))
             {
                 if (m_textureLinkManager.removeDataLink(sceneId, dataSlotHandle))
                 {
@@ -261,6 +267,17 @@ namespace ramses_internal
     {
         OffscreenBufferLinkVector links;
         m_textureLinkManager.getOffscreenBufferLinks().getLinkedConsumers(providerBuffer, links);
+        for (const auto& link : links)
+        {
+            assert(link.providerBuffer == providerBuffer);
+            m_textureLinkManager.removeDataLink(link.consumerSceneId, link.consumerSlot);
+        }
+    }
+
+    void SceneLinksManager::handleBufferDestroyed(StreamBufferHandle providerBuffer)
+    {
+        StreamBufferLinkVector links;
+        m_textureLinkManager.getStreamBufferLinks().getLinkedConsumers(providerBuffer, links);
         for (const auto& link : links)
         {
             assert(link.providerBuffer == providerBuffer);
@@ -298,8 +315,9 @@ namespace ramses_internal
         {
             m_dataReferenceLinkManager.removeDataLink(consumerSceneId, consumerSlotHandle);
         }
-        else if (m_textureLinkManager.getSceneLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle)
-            || m_textureLinkManager.getOffscreenBufferLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle))
+        else if (m_textureLinkManager.getSceneLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle) ||
+            m_textureLinkManager.getOffscreenBufferLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle) ||
+            m_textureLinkManager.getStreamBufferLinks().hasLinkedProvider(consumerSceneId, consumerSlotHandle))
         {
             m_textureLinkManager.removeDataLink(consumerSceneId, consumerSlotHandle);
         }

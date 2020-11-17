@@ -20,13 +20,12 @@
 #include "WarpingMeshDataImpl.h"
 #include "RendererSceneControlImpl.h"
 #include "DcsmContentControlImpl.h"
-#include "DcsmContentControlConfigImpl.h"
 #include "DcsmConsumerImpl.h"
 #include "RamsesFrameworkTypesImpl.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/Handles.h"
 #include "Utils/LogMacros.h"
-#include "Platform_Base/PlatformFactory_Base.h"
+#include "Platform_Base/Platform_Base.h"
 #include "RendererAPI/ISystemCompositorController.h"
 #include "BinaryShaderCacheProxy.h"
 #include "RendererResourceCacheProxy.h"
@@ -38,17 +37,17 @@ namespace ramses
 {
     static const bool rendererRegisterSuccess = RendererFactory::RegisterRendererFactory();
 
-    RamsesRendererImpl::RamsesRendererImpl(RamsesFrameworkImpl& framework, const RendererConfig& config, ramses_internal::IPlatformFactory* platformFactory)
+    RamsesRendererImpl::RamsesRendererImpl(RamsesFrameworkImpl& framework, const RendererConfig& config, ramses_internal::IPlatform* platform)
         : StatusObjectImpl()
         , m_framework(framework)
         , m_internalConfig(config.impl.getInternalRendererConfig())
         , m_binaryShaderCache(config.impl.getBinaryShaderCache() ? new BinaryShaderCacheProxy(*(config.impl.getBinaryShaderCache())) : nullptr)
         , m_rendererResourceCache(config.impl.getRendererResourceCache() ? new RendererResourceCacheProxy(*(config.impl.getRendererResourceCache())) : nullptr)
         , m_pendingRendererCommands()
-        , m_rendererFrameworkLogic(framework.getResourceComponent(), framework.getScenegraphComponent(), m_rendererCommandBuffer, framework.getFrameworkLock())
-        , m_platformFactory(platformFactory != nullptr ? platformFactory : ramses_internal::PlatformFactory_Base::CreatePlatformFactory(m_internalConfig))
+        , m_rendererFrameworkLogic(framework.getScenegraphComponent(), m_rendererCommandBuffer, framework.getFrameworkLock())
+        , m_platform(platform != nullptr ? platform : ramses_internal::Platform_Base::CreatePlatform(m_internalConfig))
         , m_resourceUploader(m_rendererStatistics, m_binaryShaderCache.get())
-        , m_renderer(new ramses_internal::WindowedRenderer(m_rendererCommandBuffer, m_rendererFrameworkLogic, *m_platformFactory, m_rendererStatistics, m_internalConfig.getKPIFileName()))
+        , m_renderer(new ramses_internal::WindowedRenderer(m_rendererCommandBuffer, m_rendererFrameworkLogic, *m_platform, m_rendererStatistics, m_internalConfig.getKPIFileName()))
         , m_systemCompositorEnabled(m_internalConfig.getSystemCompositorControlEnabled())
         , m_loopMode(ramses_internal::ELoopMode::UpdateAndRender)
         , m_rendererLoopThreadWatchdog(framework.getThreadWatchdogConfig().getWatchdogNotificationInterval(ERamsesThreadIdentifier_Renderer), ERamsesThreadIdentifier_Renderer, framework.getThreadWatchdogConfig().getCallBack())
@@ -114,7 +113,7 @@ namespace ramses
         m_displayFramebuffers.insert({ displayId, m_nextDisplayBufferId });
         m_nextDisplayBufferId.getReference() = m_nextDisplayBufferId.getValue() + 1;
 
-        m_pendingRendererCommands.createDisplay(config.impl.getInternalDisplayConfig(), m_rendererFrameworkLogic, m_resourceUploader, ramses_internal::DisplayHandle(displayId.getValue()));
+        m_pendingRendererCommands.createDisplay(config.impl.getInternalDisplayConfig(), m_resourceUploader, ramses_internal::DisplayHandle(displayId.getValue()));
 
         return displayId;
     }
@@ -166,7 +165,7 @@ namespace ramses
         return m_sceneControlAPI.get();
     }
 
-    DcsmContentControl* RamsesRendererImpl::createDcsmContentControl(const DcsmContentControlConfig& config)
+    DcsmContentControl* RamsesRendererImpl::createDcsmContentControl()
     {
         if (m_dcsmContentControl || m_sceneControlAPI)
         {
@@ -180,7 +179,7 @@ namespace ramses
         assert(sceneControlAPI != nullptr);
 
         LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesRenderer: intstantiating DcsmContentControl");
-        m_dcsmContentControl = UniquePtrWithDeleter<DcsmContentControl>{ new DcsmContentControl(*new DcsmContentControlImpl(config, m_framework.createDcsmConsumer()->impl, sceneControlAPI->impl)), [](DcsmContentControl* api) { delete api; } };
+        m_dcsmContentControl = UniquePtrWithDeleter<DcsmContentControl>{ new DcsmContentControl(*new DcsmContentControlImpl(m_framework.createDcsmConsumer()->impl, sceneControlAPI->impl)), [](DcsmContentControl* api) { delete api; } };
         return m_dcsmContentControl.get();
     }
 
@@ -213,7 +212,7 @@ namespace ramses
         return StatusOK;
     }
 
-    displayBufferId_t RamsesRendererImpl::createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, bool interruptible)
+    displayBufferId_t RamsesRendererImpl::createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount, bool interruptible)
     {
         if (width < 1u || width > 4096u ||
             height < 1u || height > 4096u)
@@ -227,7 +226,7 @@ namespace ramses
         const ramses_internal::OffscreenBufferHandle bufferHandle(bufferId.getValue());
         m_nextDisplayBufferId.getReference() = m_nextDisplayBufferId.getValue() + 1;
 
-        m_pendingRendererCommands.createOffscreenBuffer(bufferHandle, displayHandle, width, height, interruptible);
+        m_pendingRendererCommands.createOffscreenBuffer(bufferHandle, displayHandle, width, height, sampleCount, interruptible);
 
         return bufferId;
     }

@@ -303,6 +303,11 @@ namespace ramses_internal
         return m_scene.getRotation(handle);
     }
 
+    ERotationConvention ActionTestScene::getRotationConvention(TransformHandle handle) const
+    {
+        return m_scene.getRotationConvention(handle);
+    }
+
     const Vector3& ActionTestScene::getScaling(TransformHandle handle) const
     {
         return m_scene.getScaling(handle);
@@ -314,10 +319,15 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setRotation(TransformHandle handle, const Vector3& rotation)
+    void ActionTestScene::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
     {
-        m_actionCollector.setRotation(handle, rotation);
+        m_actionCollector.setRotation(handle, rotation, convention);
         flushPendingSceneActions();
+    }
+
+    void ActionTestScene::setRotationForAnimation(TransformHandle, const Vector3&)
+    {
+        assert(false && "Should only be called from Animations without creation of any scene actions");
     }
 
     void ActionTestScene::setScaling(TransformHandle handle, const Vector3& scaling)
@@ -573,9 +583,9 @@ namespace ramses_internal
         flushPendingSceneActions();
     }
 
-    void ActionTestScene::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor)
+    void ActionTestScene::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride)
     {
-        m_actionCollector.setDataResource(containerHandle, field, hash, dataBuffer, instancingDivisor);
+        m_actionCollector.setDataResource(containerHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
         flushPendingSceneActions();
     }
 
@@ -861,7 +871,7 @@ namespace ramses_internal
         return m_scene.getRenderBuffer(handle);
     }
 
-    StreamTextureHandle ActionTestScene::allocateStreamTexture(uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle)
+    StreamTextureHandle ActionTestScene::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle)
     {
         const StreamTextureHandle handle = m_actionCollector.allocateStreamTexture(streamSource, fallbackTextureHash, streamTextureHandle);
         flushPendingSceneActions();

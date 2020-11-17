@@ -74,11 +74,13 @@ public:
         ramses::SceneConfig conf;
         conf.setPublicationMode(ramses::EScenePublicationMode_LocalOnly);
         m_scene = m_ramsesClient.createScene(sceneId, conf);
-        m_camera = m_scene->createRemoteCamera("my camera");
-        m_camera->setTranslation(0.0f, 0.0f, 5.0f);
+        auto camera = m_scene->createPerspectiveCamera("my camera");
+        camera->setViewport(0, 0, 1280u, 480u);
+        camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
+        camera->setTranslation(0.0f, 0.0f, 5.0f);
         m_renderPass = m_scene->createRenderPass("my render pass");
         m_renderPass->setClearFlags(ramses::EClearFlags_None);
-        m_renderPass->setCamera(*m_camera);
+        m_renderPass->setCamera(*camera);
         m_renderGroup = m_scene->createRenderGroup();
         m_renderPass->addRenderGroup(*m_renderGroup);
 
@@ -182,7 +184,6 @@ private:
     ramses::RamsesClient& m_ramsesClient;
 
     ramses::Scene* m_scene                          = nullptr;
-    ramses::Camera* m_camera                        = nullptr;
     ramses::RenderPass* m_renderPass                = nullptr;
     ramses::RenderGroup* m_renderGroup              = nullptr;
     const ramses::ArrayResource* m_vertexPositions  = nullptr;
@@ -228,20 +229,20 @@ public:
     {
     }
 
-    virtual void contentOffered(ramses::ContentID contentID, ramses::Category /*category*/) override
-    {
-        ramses::CategoryInfoUpdate update({ 1,1 });
-        m_dcsmConsumer.assignContentToConsumer(contentID, update);
-        m_dcsmConsumer.contentStateChange(contentID, ramses::EDcsmState::Ready, ramses::AnimationInformation());
-    }
-
-
-    virtual void contentDescription(ramses::ContentID contentID, ramses::ETechnicalContentType contentType, ramses::TechnicalContentDescriptor contentDescriptor) override
+    virtual void contentOffered(ramses::ContentID contentID, ramses::Category /*category*/, ramses::ETechnicalContentType contentType) override
     {
         if (contentType == ramses::ETechnicalContentType::WaylandIviSurfaceID)
         {
-            contentToWaylandSurfaceIdMap[contentID] = ramses::waylandIviSurfaceId_t(static_cast<uint32_t>(contentDescriptor.getValue()));
+            ramses::CategoryInfoUpdate update{ { 1,1 }, { 0,0,1,1 } };
+            m_dcsmConsumer.assignContentToConsumer(contentID, update);
+            m_dcsmConsumer.contentStateChange(contentID, ramses::EDcsmState::Ready, ramses::AnimationInformation());
         }
+    }
+
+
+    virtual void contentDescription(ramses::ContentID contentID, ramses::TechnicalContentDescriptor contentDescriptor) override
+    {
+        contentToWaylandSurfaceIdMap[contentID] = ramses::waylandIviSurfaceId_t(static_cast<uint32_t>(contentDescriptor.getValue()));
     }
 
 

@@ -30,7 +30,7 @@ namespace ramses_internal
     class RendererCachedScene;
     class ISystemCompositorController;
     class DisplayConfig;
-    class IPlatformFactory;
+    class IPlatform;
     class IWindowEventsPollingManager;
     class RendererScenes;
     class DisplayEventHandler;
@@ -45,7 +45,7 @@ namespace ramses_internal
         friend class RendererLogger;
 
     public:
-        Renderer(IPlatformFactory& platformFactory, const RendererScenes& rendererScenes, RendererEventCollector& eventCollector, const FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, RendererStatistics& rendererStatistics);
+        Renderer(IPlatform& platform, const RendererScenes& rendererScenes, RendererEventCollector& eventCollector, const FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, RendererStatistics& rendererStatistics);
         virtual ~Renderer();
 
         void                        registerOffscreenBuffer    (DisplayHandle display, DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, Bool isInterruptible);
@@ -130,7 +130,7 @@ namespace ramses_internal
         };
         using Displays = std::map<DisplayHandle, DisplayInfo>;
 
-        IPlatformFactory&                      m_platformFactory;
+        IPlatform&                             m_platform;
 
         ISystemCompositorController*           m_systemCompositorController;
         const IWindowEventsPollingManager*     m_windowEventsPollingManager;

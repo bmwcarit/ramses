@@ -18,6 +18,7 @@ namespace ramses_internal
     enum EEffectInputTextureType
     {
         EEffectInputTextureType_Texture2D = 0,
+        EEffectInputTextureType_Texture2DMS,
         EEffectInputTextureType_Texture3D,
         EEffectInputTextureType_TextureCube,
 
@@ -29,6 +30,7 @@ namespace ramses_internal
         switch (dataType)
         {
             case EDataType::TextureSampler2D: return EEffectInputTextureType_Texture2D;
+            case EDataType::TextureSampler2DMS: return EEffectInputTextureType_Texture2DMS;
             case EDataType::TextureSampler3D: return EEffectInputTextureType_Texture3D;
             case EDataType::TextureSamplerCube: return EEffectInputTextureType_TextureCube;
             default: break;
@@ -50,13 +52,13 @@ namespace ramses_internal
         EFixedSemantics semantics;
     };
 
-    typedef std::vector<EffectInputInformation> EffectInputInformationVector;
+    using EffectInputInformationVector = std::vector<EffectInputInformation>;
 
 
     EffectInputInformation::EffectInputInformation()
         : elementCount(1)
         , dataType(EDataType::Invalid)
-        , semantics(EFixedSemantics_Invalid)
+        , semantics(EFixedSemantics::Invalid)
     {
     }
 

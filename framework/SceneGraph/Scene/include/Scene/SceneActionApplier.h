@@ -19,7 +19,7 @@ namespace ramses_internal
 {
     class IScene;
     class AnimationSystemFactory;
-    struct SceneResourceChanges;
+    struct ResourceChanges;
     struct SceneSizeInformation;
     class IResource;
     struct FlushTimeInformation;
@@ -30,15 +30,6 @@ namespace ramses_internal
         using ResourceVector = std::vector<std::unique_ptr<IResource>>;
 
         static void ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions, AnimationSystemFactory* animSystemFactory = nullptr);
-        static void ReadParameterForFlushAction(
-            SceneActionCollection::SceneActionReader action,
-            UInt64& flushIndex,
-            bool& hasSizeInfo,
-            SceneSizeInformation& sizeInfo,
-            SceneResourceChanges& resourceChanges,
-            SceneReferenceActionVector& sceneReferenceActions,
-            FlushTimeInformation& flushTimeInfo,
-            SceneVersionTag& versionTag);
 
     private:
         static void GetSceneSizeInformation(SceneActionCollection::SceneActionReader& action, SceneSizeInformation& sizeInfo);

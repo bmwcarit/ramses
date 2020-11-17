@@ -41,5 +41,29 @@ if (TARGET EmbeddedCompositor_Wayland)
     endif()
 endif()
 
-# For the test module see
-# renderer/Platform/Platform_Wayland_IVI_EGL_ES_3_0/CMakeLists.txt
+ACME_MODULE(
+
+    #==========================================================================
+    # general module information
+    #==========================================================================
+    NAME                    EmbeddedCompositor_Wayland_Test
+    TYPE                    TEST
+    TEST_SUFFIX             RNDSANDWICHTEST_SWRAST
+    ENABLE_INSTALL          ON
+
+    #==========================================================================
+    # files of this module
+    #==========================================================================
+    FILES_SOURCE            ../EmbeddedCompositor_Wayland/test/*.cpp
+                            ../EmbeddedCompositor_Wayland/test/*.h
+
+    #==========================================================================
+    # dependencies
+    #==========================================================================
+    DEPENDENCIES            EmbeddedCompositor_Wayland
+                            wayland-client
+                            Device_GL
+                            RendererTestUtils
+                            WaylandTestUtils
+                            WaylandUtilities
+)

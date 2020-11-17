@@ -27,7 +27,9 @@ int main(int argc, char* argv[])
     ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "geometry instancing scene");
 
     // every scene needs a render pass with camera
-    ramses::Camera* camera = scene->createRemoteCamera("my camera");
+    auto* camera = scene->createPerspectiveCamera("my camera");
+    camera->setViewport(0, 0, 1280u, 480u);
+    camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     camera->setTranslation(0.0f, 0.0f, 5.0f);
     ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
@@ -50,7 +52,7 @@ int main(int argc, char* argv[])
     ramses::EffectDescription effectDescUniform;
     effectDescUniform.setVertexShaderFromFile("res/ramses-example-geometry-instancing-uniform.vert");
     effectDescUniform.setFragmentShaderFromFile("res/ramses-example-geometry-instancing-uniform.frag");
-    effectDescUniform.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDescUniform.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     const ramses::Effect* uniformEffect = scene->createEffect(effectDescUniform, ramses::ResourceCacheFlag_DoNotCache, "uniform-instancing");
     ramses::Appearance* uniformAppearance = scene->createAppearance(*uniformEffect, "triangle_uniforms");
@@ -85,7 +87,7 @@ int main(int argc, char* argv[])
     ramses::EffectDescription effectDescVertex;
     effectDescVertex.setVertexShaderFromFile("res/ramses-example-geometry-instancing-vertex.vert");
     effectDescVertex.setFragmentShaderFromFile("res/ramses-example-geometry-instancing-vertex.frag");
-    effectDescVertex.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDescVertex.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     const ramses::Effect* vertexEffect = scene->createEffect(effectDescVertex, ramses::ResourceCacheFlag_DoNotCache, "vertex-instancing");
     ramses::Appearance* vertexAppearance = scene->createAppearance(*vertexEffect, "triangle_uniforms");

@@ -51,10 +51,10 @@ class TestMultipleIVILayers(test_classes.OnSelectedTargetsTest):
             self.checkThatApplicationWasStarted(self.rendererRight)
             self.addCleanup(self.target.kill_application, self.rendererRight)
             self.rendererRight.send_ramsh_command("skipUnmodifiedBuffers 0", waitForRendererConfirmation=True)
-            self.testClient3Triangles = self.target.start_client("ramses-test-client", "-tn 5 -ts 0 -cz 5")
+            self.testClient3Triangles = self.target.start_client("ramses-test-client", "-tn 21 -ts 0 -cz 5")
             self.checkThatApplicationWasStarted(self.testClient3Triangles)
             self.addCleanup(self.target.kill_application, self.testClient3Triangles)
-            self.testClientRedTriangles = self.target.start_client("ramses-test-client", "-tn 4 -ts 0 -cz 5")
+            self.testClientRedTriangles = self.target.start_client("ramses-test-client", "-tn 20 -ts 0 -cz 5")
             self.checkThatApplicationWasStarted(self.testClientRedTriangles)
             self.addCleanup(self.target.kill_application, self.testClientRedTriangles)
 

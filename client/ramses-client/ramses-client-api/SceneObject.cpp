@@ -28,4 +28,9 @@ namespace ramses
     {
         return impl.getSceneObjectId();
     }
+
+    sceneId_t SceneObject::getSceneId() const
+    {
+        return impl.getSceneId();
+    }
 }

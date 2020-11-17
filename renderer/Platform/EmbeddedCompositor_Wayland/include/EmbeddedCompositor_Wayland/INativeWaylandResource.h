@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-typedef void(*IWaylandResourceDestroyFuncT) (struct wl_resource *resource);
+using IWaylandResourceDestroyFuncT = void (*)(struct wl_resource *);
 
 struct wl_listener;
 struct wl_resource;

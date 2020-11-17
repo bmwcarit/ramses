@@ -1,2 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.bmwgroup.ramses" />
+          package="com.bmwgroup.ramses">
+
+  <uses-sdk android:minSdkVersion="21" />
+
+</manifest>

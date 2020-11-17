@@ -44,13 +44,13 @@ int main(int argc, char* argv[])
     ramses::EffectDescription triangleEffectDesc;
     triangleEffectDesc.setVertexShaderFromFile("res/ramses-example-renderonce-simple-color.vert");
     triangleEffectDesc.setFragmentShaderFromFile("res/ramses-example-renderonce-simple-color.frag");
-    triangleEffectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    triangleEffectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
     const ramses::Effect* triangleEffect = scene->createEffect(triangleEffectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
 
     ramses::EffectDescription quadEffectDesc;
     quadEffectDesc.setVertexShaderFromFile("res/ramses-example-renderonce-texturing.vert");
     quadEffectDesc.setFragmentShaderFromFile("res/ramses-example-renderonce-texturing.frag");
-    quadEffectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    quadEffectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
     const ramses::Effect* quadEffect = scene->createEffect(quadEffectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
 
     // every render pass needs a camera to define rendering parameters
@@ -62,8 +62,10 @@ int main(int argc, char* argv[])
     // we want to render to the full extent of render target which has the resolution 64x64 (created later)
     cameraA->setViewport(0u, 0u, RTSize, RTSize);
 
-    // usage of global renderer camera for the resolving render pass
-    ramses::Camera* cameraB = scene->createRemoteCamera("camera of renderpass B");
+    // use another camera for the resolving render pass
+    auto* cameraB = scene->createPerspectiveCamera("camera of renderpass B");
+    cameraB->setViewport(0, 0, 1280u, 480u);
+    cameraB->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     cameraB->setParent(*cameraTranslate);
 
     /// [Render Once Example Setup]

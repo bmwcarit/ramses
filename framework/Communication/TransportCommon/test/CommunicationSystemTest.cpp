@@ -39,9 +39,6 @@ namespace ramses_internal
     {
         Guid to(5);
         auto csw = std::make_unique<CommunicationSystemTestWrapper>(*state);
-        EXPECT_FALSE(csw->commSystem->sendRequestResources(to, ResourceContentHashVector()));
-        EXPECT_FALSE(csw->commSystem->sendResourcesNotAvailable(to, ResourceContentHashVector()));
-        EXPECT_FALSE(csw->commSystem->sendResources(to, SceneUpdateSerializer(SceneUpdate())));
         EXPECT_FALSE(csw->commSystem->broadcastNewScenesAvailable(SceneInfoVector()));
         EXPECT_FALSE(csw->commSystem->broadcastScenesBecameUnavailable(SceneInfoVector()));
         EXPECT_FALSE(csw->commSystem->sendScenesAvailable(to, SceneInfoVector()));
@@ -49,8 +46,8 @@ namespace ramses_internal
         EXPECT_FALSE(csw->commSystem->sendUnsubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendInitializeScene(to, SceneId()));
         EXPECT_FALSE(csw->commSystem->sendSceneUpdate(to, SceneId(123), SceneUpdateSerializer(SceneUpdate())));
-        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}, ""));
-        EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}, ""));
+        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}, ETechnicalContentType::Invalid, ""));
+        EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}, ETechnicalContentType::Invalid, ""));
         EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmContentEnableFocusRequest(to, ContentID{}, 32));
         EXPECT_FALSE(csw->commSystem->sendDcsmContentDisableFocusRequest(to, ContentID{}, 32));
@@ -67,9 +64,6 @@ namespace ramses_internal
         csw->commSystem->connectServices();
         csw->commSystem->disconnectServices();
 
-        EXPECT_FALSE(csw->commSystem->sendRequestResources(to, ResourceContentHashVector()));
-        EXPECT_FALSE(csw->commSystem->sendResourcesNotAvailable(to, ResourceContentHashVector()));
-        EXPECT_FALSE(csw->commSystem->sendResources(to, SceneUpdateSerializer(SceneUpdate())));
         EXPECT_FALSE(csw->commSystem->broadcastNewScenesAvailable(SceneInfoVector()));
         EXPECT_FALSE(csw->commSystem->broadcastScenesBecameUnavailable(SceneInfoVector()));
         EXPECT_FALSE(csw->commSystem->sendScenesAvailable(to, SceneInfoVector()));
@@ -77,8 +71,8 @@ namespace ramses_internal
         EXPECT_FALSE(csw->commSystem->sendUnsubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendInitializeScene(to, SceneId()));
         EXPECT_FALSE(csw->commSystem->sendSceneUpdate(to, SceneId(123), SceneUpdateSerializer(SceneUpdate())));
-        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}, ""));
-        EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}, ""));
+        EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}, ETechnicalContentType::Invalid, ""));
+        EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}, ETechnicalContentType::Invalid, ""));
         EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}));
         EXPECT_FALSE(csw->commSystem->sendDcsmContentEnableFocusRequest(to, ContentID{}, 32));
         EXPECT_FALSE(csw->commSystem->sendDcsmContentDisableFocusRequest(to, ContentID{}, 32));

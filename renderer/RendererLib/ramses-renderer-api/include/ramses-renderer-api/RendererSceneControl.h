@@ -144,7 +144,7 @@ namespace ramses
         *          #ramses::IRendererSceneControlEventHandler::dataLinked will be emitted after the link is established.
         *          The link will fail (reported via callback result argument) if either the provider or consumer does not exist
         *          or their data type does not match.
-        *          For some types of data links (texture linking) both the scenes have to be in state #RendererSceneState::Ready.
+        *          Both scenes have to be in state #RendererSceneState::Ready.
         *          If successful the operation can be assumed to be effective in the next frame consumer scene is rendered after flushed.
         *          If the data consumer is already linked to a provider (data or offscreen buffer), the old link will be discarded,
         *          however if the new link fails it is undefined whether previous link was discarded or not.

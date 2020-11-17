@@ -13,10 +13,6 @@
 
 namespace ramses_internal
 {
-    WaylandApplicationWithRamsesRendererTests::WaylandApplicationWithRamsesRendererTests()
-    {
-    }
-
     void WaylandApplicationWithRamsesRendererTests::setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework)
     {
         testFramework.createTestCaseWithDefaultDisplay(CanRunRamsesRendererWithinExistingWaylandApplication, *this, "CanRunRamsesRendererWithinExistingWaylandApplication");
@@ -32,7 +28,7 @@ namespace ramses_internal
         {
         case CanRunRamsesRendererWithinExistingWaylandApplication:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
 
             //start test application
             testFramework.startTestApplicationAndWaitUntilConnected();

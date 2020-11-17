@@ -14,7 +14,6 @@
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/Camera.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/EffectDescription.h"
 #include "ramses-client-api/MeshNode.h"

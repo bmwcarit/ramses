@@ -15,8 +15,8 @@
 
 namespace ramses_internal
 {
-    typedef std::vector<String>  StringVector;
-    typedef HashSet<String> StringSet;
+    using StringVector = std::vector<String>;
+    using StringSet = HashSet<String>;
     struct ResourceContentHash;
 
     class StringUtils

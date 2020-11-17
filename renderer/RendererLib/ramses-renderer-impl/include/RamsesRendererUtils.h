@@ -20,7 +20,6 @@ namespace ramses
     class RamsesRendererUtils
     {
     public:
-        static ESceneResourceStatus GetResourceStatus(ramses_internal::EResourceStatus resourceStatus);
         static EMouseEvent          GetMouseEvent(    ramses_internal::EMouseEventType type);
         static EKeyEvent            GetKeyEvent(      ramses_internal::EKeyEventType   type);
         static EKeyCode             GetKeyCode(       ramses_internal::EKeyCode        keyCode);

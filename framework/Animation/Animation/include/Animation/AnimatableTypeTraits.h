@@ -39,9 +39,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = true;
         static const UInt32 NumComponents = 1u;
-        typedef bool DataType;
-        typedef bool ComponentType;
-        typedef Float CorrespondingFloatType;
+        using DataType = bool;
+        using ComponentType = bool;
+        using CorrespondingFloatType = Float;
 
         static ComponentType GetComponent(const DataType& val, EVectorComponent compIdx)
         {
@@ -71,9 +71,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = true;
         static const UInt32 NumComponents = 1u;
-        typedef Int32 DataType;
-        typedef Int32 ComponentType;
-        typedef Float CorrespondingFloatType;
+        using DataType = Int32;
+        using ComponentType = Int32;
+        using CorrespondingFloatType = Float;
 
         static ComponentType GetComponent(const DataType& val, EVectorComponent compIdx)
         {
@@ -103,9 +103,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = true;
         static const UInt32 NumComponents = 1u;
-        typedef Int64 DataType;
-        typedef Int64 ComponentType;
-        typedef Float CorrespondingFloatType;
+        using DataType = Int64;
+        using ComponentType = Int64;
+        using CorrespondingFloatType = Float;
 
         static ComponentType GetComponent(const DataType& val, EVectorComponent compIdx)
         {
@@ -135,9 +135,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = true;
         static const UInt32 NumComponents = 1u;
-        typedef UInt32 DataType;
-        typedef UInt32 ComponentType;
-        typedef Float CorrespondingFloatType;
+        using DataType = UInt32;
+        using ComponentType = UInt32;
+        using CorrespondingFloatType = Float;
 
         static ComponentType GetComponent(const DataType& val, EVectorComponent compIdx)
         {
@@ -167,9 +167,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = true;
         static const UInt32 NumComponents = 1u;
-        typedef UInt64 DataType;
-        typedef UInt64 ComponentType;
-        typedef Float CorrespondingFloatType;
+        using DataType = UInt64;
+        using ComponentType = UInt64;
+        using CorrespondingFloatType = Float;
 
         static ComponentType GetComponent(const DataType& val, EVectorComponent compIdx)
         {
@@ -199,9 +199,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = false;
         static const UInt32 NumComponents = 1u;
-        typedef Float DataType;
-        typedef Float ComponentType;
-        typedef Float CorrespondingFloatType;
+        using DataType = Float;
+        using ComponentType = Float;
+        using CorrespondingFloatType = Float;
 
         static ComponentType GetComponent(const DataType& val, EVectorComponent compIdx)
         {
@@ -231,9 +231,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = false;
         static const UInt32 NumComponents = 1u;
-        typedef Double DataType;
-        typedef Double ComponentType;
-        typedef Float CorrespondingFloatType;
+        using DataType = Double;
+        using ComponentType = Double;
+        using CorrespondingFloatType = Float;
 
         static ComponentType GetComponent(const DataType& val, EVectorComponent compIdx)
         {
@@ -263,9 +263,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = false;
         static const Int32 NumComponents = 2;
-        typedef Vector2 DataType;
-        typedef Float ComponentType;
-        typedef Vector2 CorrespondingFloatType;
+        using DataType = Vector2;
+        using ComponentType = Float;
+        using CorrespondingFloatType = Vector2;
 
         static ComponentType GetComponent(const Vector2& vec, EVectorComponent compIdx)
         {
@@ -302,9 +302,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = false;
         static const Int32 NumComponents = 3;
-        typedef Vector3 DataType;
-        typedef Float ComponentType;
-        typedef Vector3 CorrespondingFloatType;
+        using DataType = Vector3;
+        using ComponentType = Float;
+        using CorrespondingFloatType = Vector3;
 
         static ComponentType GetComponent(const Vector3& vec, EVectorComponent compIdx)
         {
@@ -350,9 +350,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = false;
         static const Int32 NumComponents = 4;
-        typedef Vector4 DataType;
-        typedef Float ComponentType;
-        typedef Vector4 CorrespondingFloatType;
+        using DataType = Vector4;
+        using ComponentType = Float;
+        using CorrespondingFloatType = Vector4;
 
         static ComponentType GetComponent(const Vector4& vec, EVectorComponent compIdx)
         {
@@ -402,9 +402,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = true;
         static const Int32 NumComponents = 2;
-        typedef Vector2i DataType;
-        typedef Int32 ComponentType;
-        typedef Vector2 CorrespondingFloatType;
+        using DataType = Vector2i;
+        using ComponentType = Int32;
+        using CorrespondingFloatType = Vector2;
 
         static ComponentType GetComponent(const Vector2i& vec, EVectorComponent compIdx)
         {
@@ -441,9 +441,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = true;
         static const Int32 NumComponents = 3;
-        typedef Vector3i DataType;
-        typedef Int32 ComponentType;
-        typedef Vector3 CorrespondingFloatType;
+        using DataType = Vector3i;
+        using ComponentType = Int32;
+        using CorrespondingFloatType = Vector3;
 
         static ComponentType GetComponent(const Vector3i& vec, EVectorComponent compIdx)
         {
@@ -489,9 +489,9 @@ namespace ramses_internal
     public:
         static const bool IsIntegralType = true;
         static const Int32 NumComponents = 4;
-        typedef Vector4i DataType;
-        typedef Int32 ComponentType;
-        typedef Vector4 CorrespondingFloatType;
+        using DataType = Vector4i;
+        using ComponentType = Int32;
+        using CorrespondingFloatType = Vector4;
 
         static ComponentType GetComponent(const Vector4i& vec, EVectorComponent compIdx)
         {

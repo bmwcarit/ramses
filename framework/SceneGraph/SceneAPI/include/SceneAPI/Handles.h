@@ -15,67 +15,67 @@ namespace ramses_internal
 {
     // Topology handles
     struct NodeHandleTag {};
-    typedef TypedMemoryHandle<NodeHandleTag> NodeHandle;
+    using NodeHandle = TypedMemoryHandle<NodeHandleTag>;
 
     struct RenderableHandleTag {};
-    typedef TypedMemoryHandle<RenderableHandleTag> RenderableHandle;
+    using RenderableHandle = TypedMemoryHandle<RenderableHandleTag>;
 
     struct TransformHandleTag {};
-    typedef TypedMemoryHandle<TransformHandleTag> TransformHandle;
+    using TransformHandle = TypedMemoryHandle<TransformHandleTag>;
 
     struct DataLayoutHandleTag {};
-    typedef TypedMemoryHandle<DataLayoutHandleTag> DataLayoutHandle;
+    using DataLayoutHandle = TypedMemoryHandle<DataLayoutHandleTag>;
 
     struct DataInstanceHandleTag {};
-    typedef TypedMemoryHandle<DataInstanceHandleTag> DataInstanceHandle;
+    using DataInstanceHandle = TypedMemoryHandle<DataInstanceHandleTag>;
 
     struct CameraHandleTag {};
-    typedef TypedMemoryHandle<CameraHandleTag> CameraHandle;
+    using CameraHandle = TypedMemoryHandle<CameraHandleTag>;
 
     struct TextureSamplerHandleTag {};
-    typedef TypedMemoryHandle<TextureSamplerHandleTag> TextureSamplerHandle;
+    using TextureSamplerHandle = TypedMemoryHandle<TextureSamplerHandleTag>;
 
     struct StateHandleTag {};
-    typedef TypedMemoryHandle<StateHandleTag> RenderStateHandle;
+    using RenderStateHandle = TypedMemoryHandle<StateHandleTag>;
 
     struct RenderGroupHandleTag {};
-    typedef TypedMemoryHandle<RenderGroupHandleTag> RenderGroupHandle;
+    using RenderGroupHandle = TypedMemoryHandle<RenderGroupHandleTag>;
 
     struct RenderPassHandleTag {};
-    typedef TypedMemoryHandle<RenderPassHandleTag> RenderPassHandle;
+    using RenderPassHandle = TypedMemoryHandle<RenderPassHandleTag>;
 
     struct BlitPassHandleTag {};
-    typedef TypedMemoryHandle<BlitPassHandleTag> BlitPassHandle;
+    using BlitPassHandle = TypedMemoryHandle<BlitPassHandleTag>;
 
     struct PickableObjectTag {};
-    typedef TypedMemoryHandle<PickableObjectTag> PickableObjectHandle;
+    using PickableObjectHandle = TypedMemoryHandle<PickableObjectTag>;
 
     struct RenderTargetHandleTag {};
-    typedef TypedMemoryHandle<RenderTargetHandleTag> RenderTargetHandle;
+    using RenderTargetHandle = TypedMemoryHandle<RenderTargetHandleTag>;
 
     struct RenderBufferHandleTag {};
-    typedef TypedMemoryHandle<RenderBufferHandleTag> RenderBufferHandle;
+    using RenderBufferHandle = TypedMemoryHandle<RenderBufferHandleTag>;
 
     struct DataSlotHandleTag {};
-    typedef TypedMemoryHandle<DataSlotHandleTag> DataSlotHandle;
+    using DataSlotHandle = TypedMemoryHandle<DataSlotHandleTag>;
 
     struct StreamTextureTag {};
-    typedef TypedMemoryHandle<StreamTextureTag> StreamTextureHandle;
+    using StreamTextureHandle = TypedMemoryHandle<StreamTextureTag>;
 
     struct DataBufferHandleTag {};
-    typedef TypedMemoryHandle<DataBufferHandleTag> DataBufferHandle;
+    using DataBufferHandle = TypedMemoryHandle<DataBufferHandleTag>;
 
     struct AnimationSystemHandleTag {};
-    typedef TypedMemoryHandle<AnimationSystemHandleTag> AnimationSystemHandle;
+    using AnimationSystemHandle = TypedMemoryHandle<AnimationSystemHandleTag>;
 
     struct TextureBufferHandleTag {};
-    typedef TypedMemoryHandle<TextureBufferHandleTag> TextureBufferHandle;
+    using TextureBufferHandle = TypedMemoryHandle<TextureBufferHandleTag>;
 
     struct DataFieldHandleTag {};
-    typedef TypedMemoryHandle<DataFieldHandleTag> DataFieldHandle;
+    using DataFieldHandle = TypedMemoryHandle<DataFieldHandleTag>;
 
     struct SceneReferenceHandleTag {};
-    typedef TypedMemoryHandle<SceneReferenceHandleTag> SceneReferenceHandle;
+    using SceneReferenceHandle = TypedMemoryHandle<SceneReferenceHandleTag>;
 }
 
 #endif

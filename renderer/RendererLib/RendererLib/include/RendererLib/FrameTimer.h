@@ -17,7 +17,7 @@ namespace ramses_internal
 {
     enum class EFrameTimerSectionBudget
     {
-        ClientResourcesUpload = 0,
+        ResourcesUpload = 0,
         SceneResourcesUpload,
         OffscreenBufferRender,
 

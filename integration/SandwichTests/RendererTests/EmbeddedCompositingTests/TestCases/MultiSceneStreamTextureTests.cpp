@@ -14,19 +14,10 @@
 
 namespace ramses_internal
 {
-    MultiSceneStreamTextureTests::MultiSceneStreamTextureTests()
-    {
-    }
-
     void MultiSceneStreamTextureTests::setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework)
     {
-        const UInt32 displayWidth = ramses_internal::IntegrationScene::DefaultDisplayWidth * 2;
-        const UInt32 displayHeight = ramses_internal::IntegrationScene::DefaultDisplayHeight;
-        const float aspectRatio = static_cast<float>(displayWidth) / displayHeight;
-
         ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0, true);
-        displayConfig.setWindowRectangle(0, 0, displayWidth, displayHeight);
-        displayConfig.setPerspectiveProjection(19.f, aspectRatio, 0.1f, 1500.f);
+        displayConfig.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
 
         testFramework.createTestCase(CanUseTwoStreamTexturesWithSameSourceIdAndSameFallbackTextureFromTwoScenes, *this, "CanUseTwoStreamTexturesWithSameSourceIdAndSameFallbackTextureFromTwoScenes").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(CanUseTwoStreamTexturesWithSameSourceIdAndDifferentFallbackTextureFromTwoScenes, *this, "CanUseTwoStreamTexturesWithSameSourceIdAndDifferentFallbackTextureFromTwoScenes").m_displayConfigs.push_back(displayConfig);
@@ -37,8 +28,8 @@ namespace ramses_internal
     {
         Bool testResultValue = true;
 
-        const StreamTextureSourceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
-        const StreamTextureSourceId secondStreamTextureSourceId(EmbeddedCompositorScene::GetSecondStreamTextureSourceId());
+        const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
+        const WaylandIviSurfaceId secondStreamTextureSourceId(EmbeddedCompositorScene::GetSecondStreamTextureSourceId());
 
         testFramework.setEnvironmentVariableWaylandDisplay();
 
@@ -46,8 +37,8 @@ namespace ramses_internal
         {
         case CanUseTwoStreamTexturesWithSameSourceIdAndSameFallbackTextureFromTwoScenes:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_ON_THE_LEFT);
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_ON_THE_RIGHT_WITH_FALLBACK_FROM_LEFT_SCENE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_ON_THE_LEFT, DisplayWidth, DisplayHeight);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_ON_THE_RIGHT_WITH_FALLBACK_FROM_LEFT_SCENE, DisplayWidth, DisplayHeight);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_Fallback1_Left_Fallback1_Right");
 
             testFramework.startTestApplicationAndWaitUntilConnected();
@@ -61,8 +52,8 @@ namespace ramses_internal
 
         case CanUseTwoStreamTexturesWithSameSourceIdAndDifferentFallbackTextureFromTwoScenes:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_ON_THE_LEFT);
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_ON_THE_RIGHT);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_ON_THE_LEFT, DisplayWidth, DisplayHeight);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_ON_THE_RIGHT, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_Fallback1_Left_Fallback2_Right");
 
@@ -75,8 +66,8 @@ namespace ramses_internal
         }
         case CanUseTwoStreamTexturesWithDifferentSourceIdAndSameFallbackTextureFromTwoScenes:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_ON_THE_LEFT);
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_ON_THE_RIGHT_WITH_SECOND_SOURCE_ID_AND_FALLBACK_FROM_LEFT_SCENE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_ON_THE_LEFT, DisplayWidth, DisplayHeight);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE_ON_THE_RIGHT_WITH_SECOND_SOURCE_ID_AND_FALLBACK_FROM_LEFT_SCENE, DisplayWidth, DisplayHeight);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_Fallback1_Left_Fallback1_Right");
 
             testFramework.startTestApplicationAndWaitUntilConnected();

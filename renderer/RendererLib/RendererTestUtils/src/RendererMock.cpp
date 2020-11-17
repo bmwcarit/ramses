@@ -18,9 +18,9 @@ using namespace testing;
 
 const FrameTimer RendererMock::FrameTimerInstance;
 
-RendererMock::RendererMock(const IPlatformFactory& platformFactory, const RendererScenes& rendererScenes,
+RendererMock::RendererMock(const IPlatform& platform, const RendererScenes& rendererScenes,
     const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics)
-    : Renderer(const_cast<IPlatformFactory&>(platformFactory), const_cast<RendererScenes&>(rendererScenes),
+    : Renderer(const_cast<IPlatform&>(platform), const_cast<RendererScenes&>(rendererScenes),
         const_cast<RendererEventCollector&>(eventCollector), FrameTimerInstance, const_cast<SceneExpirationMonitor&>(expirationMonitor), const_cast<RendererStatistics&>(statistics))
 {
     // by default do not track modified scenes, concrete tests will override
@@ -32,9 +32,9 @@ RendererMock::RendererMock(const IPlatformFactory& platformFactory, const Render
 RendererMock::~RendererMock() = default;
 
 template <template<typename> class MOCK_TYPE>
-RendererMockWithMockDisplay<MOCK_TYPE>::RendererMockWithMockDisplay(const IPlatformFactory& platformFactory, const RendererScenes& rendererScenes,
+RendererMockWithMockDisplay<MOCK_TYPE>::RendererMockWithMockDisplay(const IPlatform& platform, const RendererScenes& rendererScenes,
     const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics)
-    : RendererMock(const_cast<IPlatformFactory&>(platformFactory), const_cast<RendererScenes&>(rendererScenes),
+    : RendererMock(const_cast<IPlatform&>(platform), const_cast<RendererScenes&>(rendererScenes),
         const_cast<RendererEventCollector&>(eventCollector), const_cast<SceneExpirationMonitor&>(expirationMonitor), const_cast<RendererStatistics&>(statistics))
 {
 }

@@ -9,13 +9,13 @@
 #ifndef RAMSES_PLATFORM_INTEGRITY_RGL_EGL_ES_3_0_H
 #define RAMSES_PLATFORM_INTEGRITY_RGL_EGL_ES_3_0_H
 
-#include "Platform_Base/PlatformFactory_Base.h"
+#include "Platform_Base/Platform_Base.h"
 
 #include "Context_EGL/Context_EGL.h"
 
 namespace ramses_internal
 {
-    class Platform_Integrity_RGL_EGL_ES_3_0 : public PlatformFactory_Base
+    class Platform_Integrity_RGL_EGL_ES_3_0 : public Platform_Base
     {
     public:
         Platform_Integrity_RGL_EGL_ES_3_0(const RendererConfig& rendererConfig);
@@ -25,7 +25,6 @@ namespace ramses_internal
         IWindow*    createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) final;
         IContext*   createContext(IWindow& window) final;
         IDevice*    createDevice(IContext& context) final;
-        ISurface*   createSurface(IWindow& window, IContext& context) final;
         IEmbeddedCompositor* createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) final;
 
     private:

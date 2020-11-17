@@ -43,7 +43,7 @@ namespace ramses_internal
                 // In that case, glGlenerateMipMaps would be called only once!
                 // Here, transparency parameter is used to generate different texture content.
                 ramses::TextureSampler* sampler = createTexture2DSampler(256u, 2048u, i * 20);
-                createMesh(*sampler, i * DefaultDisplayWidth * 0.1f, 0.5f);
+                createMesh(*sampler, i * IntegrationScene::DefaultViewportWidth * 0.1f, 0.5f);
             }
             break;
         default:
@@ -55,8 +55,8 @@ namespace ramses_internal
     void Texture2DGenerateMipMapScene::createOrthoCamera()
     {
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
-        orthoCamera->setFrustum(0.0f, static_cast<Float>(DefaultDisplayWidth), 0.0f, static_cast<Float>(DefaultDisplayHeight), 0.1f, 10.f);
-        orthoCamera->setViewport(0, 0, DefaultDisplayWidth, DefaultDisplayHeight);
+        orthoCamera->setFrustum(0.0f, static_cast<Float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<Float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
+        orthoCamera->setViewport(0, 0, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         setCameraToDefaultRenderPass(orthoCamera);
     }
 
@@ -105,8 +105,8 @@ namespace ramses_internal
 
         const float x = 0.0f;
         const float y = 0.0f;
-        const float w = static_cast<float>(DefaultDisplayWidth) * 0.5f;
-        const float h = static_cast<float>(DefaultDisplayHeight);
+        const float w = float(IntegrationScene::DefaultViewportWidth) * 0.5f;
+        const float h = float(IntegrationScene::DefaultViewportHeight);
 
         const float x2 = w;
         const float y2 = 0.0f;

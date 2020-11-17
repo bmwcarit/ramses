@@ -12,7 +12,7 @@
 namespace ramses
 {
     OrthographicCamera::OrthographicCamera(CameraNodeImpl& pimpl)
-        : LocalCamera(pimpl)
+        : Camera(pimpl)
     {
     }
 

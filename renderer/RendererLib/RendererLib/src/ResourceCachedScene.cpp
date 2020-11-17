@@ -80,7 +80,11 @@ namespace ramses_internal
             assert(indexIntoCache < m_deviceHandleCacheForVertexAttributes.size());
             auto& vtxCache = m_deviceHandleCacheForVertexAttributes[indexIntoCache];
             vtxCache.resize(fieldCount);
-            std::fill(vtxCache.begin(), vtxCache.end(), DeviceResourceHandle::Invalid());
+            for (DataFieldHandle field{ 0 }; field < fieldCount; ++field)
+            {
+                vtxCache[field.asMemoryHandle()].deviceHandle = DeviceResourceHandle::Invalid();
+                vtxCache[field.asMemoryHandle()].dataType = layout.getField(field).dataType;
+            }
         }
 
         setDataInstanceDirtyFlag(dataInstance, true);
@@ -129,18 +133,18 @@ namespace ramses_internal
         setRenderableResourcesDirtyFlag(renderableHandle, true);
     }
 
-    void ResourceCachedScene::setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor)
+    void ResourceCachedScene::setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride)
     {
-        DataReferenceLinkCachedScene::setDataResource(dataInstanceHandle, field, hash, dataBuffer, instancingDivisor);
+        DataReferenceLinkCachedScene::setDataResource(dataInstanceHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
 
         const UInt32 indexIntoCache = dataInstanceHandle.asMemoryHandle();
         assert(indexIntoCache < m_deviceHandleCacheForVertexAttributes.size());
 
         //TODO violin this is too implicit
-        DeviceHandleVector& instanceDeviceCache = m_deviceHandleCacheForVertexAttributes[indexIntoCache];
+        auto& instanceDeviceCache = m_deviceHandleCacheForVertexAttributes[indexIntoCache];
         const UInt32 indexIntoBufferCache = field.asMemoryHandle();
         assert(indexIntoBufferCache < instanceDeviceCache.size());
-        instanceDeviceCache[indexIntoBufferCache] = DeviceResourceHandle::Invalid();
+        instanceDeviceCache[indexIntoBufferCache].deviceHandle = DeviceResourceHandle::Invalid();
         setDataInstanceDirtyFlag(dataInstanceHandle, true);
     }
 
@@ -207,9 +211,10 @@ namespace ramses_internal
         return m_effectDeviceHandleCache[renderableAsIndex];
     }
 
-    const DeviceHandleCache& ResourceCachedScene::getCachedHandlesForVertexAttributes() const
+    const DataInstanceVertexAttribs& ResourceCachedScene::getCachedHandlesForVertexAttributes(DataInstanceHandle dataInstance) const
     {
-        return m_deviceHandleCacheForVertexAttributes;
+        assert(dataInstance.asMemoryHandle() < m_deviceHandleCacheForVertexAttributes.size());
+        return m_deviceHandleCacheForVertexAttributes[dataInstance.asMemoryHandle()];
     }
 
     const DeviceHandleVector& ResourceCachedScene::getCachedHandlesForTextureSamplers() const
@@ -231,7 +236,7 @@ namespace ramses_internal
     {
         deviceHandleInOut = DeviceResourceHandle::Invalid();
         if (resourceHash.isValid())
-            deviceHandleInOut = resourceAccessor.getClientResourceDeviceHandle(resourceHash);
+            deviceHandleInOut = resourceAccessor.getResourceDeviceHandle(resourceHash);
 
         return deviceHandleInOut.isValid();
     }
@@ -240,7 +245,7 @@ namespace ramses_internal
     {
         deviceHandleInOut = DeviceResourceHandle::Invalid();
         if (resourceHash.isValid())
-            deviceHandleInOut = resourceAccessor.getClientResourceDeviceHandle(resourceHash);
+            deviceHandleInOut = resourceAccessor.getResourceDeviceHandle(resourceHash);
         else if (dataBufferHandle.isValid())
             deviceHandleInOut = resourceAccessor.getDataBufferDeviceHandle(dataBufferHandle, sceneId);
 
@@ -299,11 +304,11 @@ namespace ramses_internal
         assert(geometryLayoutHandle.isValid());
         const DataLayout& geometryLayout = getDataLayout(geometryLayoutHandle);
 
-        DeviceHandleVector& vertexAttributesCache = m_deviceHandleCacheForVertexAttributes[dataInstance.asMemoryHandle()];
+        auto& vertexAttributesCache = m_deviceHandleCacheForVertexAttributes[dataInstance.asMemoryHandle()];
 
         // there has to be always at least indices field in geometry data layout
         static const DataFieldHandle indicesDataField(0u);
-        assert(EFixedSemantics_Indices == geometryLayout.getField(indicesDataField).semantics);
+        assert(EFixedSemantics::Indices == geometryLayout.getField(indicesDataField).semantics);
         assert(EDataType::Indices == geometryLayout.getField(indicesDataField).dataType);
 
         const UInt32 numberOfGeometryFields = geometryLayout.getFieldCount();
@@ -325,11 +330,9 @@ namespace ramses_internal
                 continue;
             }
 
-            const bool deviceHandleValid = CheckAndUpdateBufferDeviceHandle(resourceAccessor, vertexAttributesCache[attributeField.asMemoryHandle()], dataResource.hash, sceneId, dataResource.dataBuffer);
+            const bool deviceHandleValid = CheckAndUpdateBufferDeviceHandle(resourceAccessor, vertexAttributesCache[attributeField.asMemoryHandle()].deviceHandle, dataResource.hash, sceneId, dataResource.dataBuffer);
             if (!deviceHandleValid)
-            {
                 return false;
-            }
         }
 
         return true;
@@ -397,16 +400,22 @@ namespace ramses_internal
         case TextureSampler::ContentType::TextureBuffer:
             return updateTextureSamplerResourceAsTextureBuffer(resourceAccessor, TextureBufferHandle(samplerData.contentHandle), m_deviceHandleCacheForTextures[sampler.asMemoryHandle()]);
         case TextureSampler::ContentType::RenderBuffer:
+        case TextureSampler::ContentType::RenderBufferMS:
             return updateTextureSamplerResourceAsRenderBuffer(resourceAccessor, RenderBufferHandle(samplerData.contentHandle), m_deviceHandleCacheForTextures[sampler.asMemoryHandle()]);
         case TextureSampler::ContentType::StreamTexture:
             return updateTextureSamplerResourceAsStreamTexture(resourceAccessor, embeddedCompositingManager, StreamTextureHandle(samplerData.contentHandle), m_deviceHandleCacheForTextures[sampler.asMemoryHandle()]);
         case TextureSampler::ContentType::OffscreenBuffer:
             m_deviceHandleCacheForTextures[sampler.asMemoryHandle()] = resourceAccessor.getOffscreenBufferColorBufferDeviceHandle(OffscreenBufferHandle(samplerData.contentHandle));
             return true;
-        default:
-            assert(false);
-            return false;
+        case TextureSampler::ContentType::StreamBuffer:
+            m_deviceHandleCacheForTextures[sampler.asMemoryHandle()] = resourceAccessor.getStreamBufferDeviceHandle(StreamBufferHandle{ samplerData.contentHandle });
+            return true;
+        case TextureSampler::ContentType::None:
+            break;
         }
+
+        assert(false);
+        return false;
     }
 
     Bool ResourceCachedScene::updateTextureSamplerResourceAsRenderBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const RenderBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut)
@@ -430,24 +439,24 @@ namespace ramses_internal
     {
         assert(isStreamTextureAllocated(streamTextureHandle));
         const StreamTexture& streamTexture = getStreamTexture(streamTextureHandle);
-        const StreamTextureSourceId source(streamTexture.source);
+        const WaylandIviSurfaceId source(streamTexture.source);
         const DeviceResourceHandle streamTextureDeviceHandle = embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(source);
         if (streamTexture.forceFallbackTexture)
         {
             LOG_INFO(CONTEXT_RENDERER, "ResourceCachedScene::updateTextureSamplerResourceAsStreamTexture(): using fallback texture for stream texture :" << streamTextureHandle.asMemoryHandle()
-                      << " with source id :" << source.getValue() << " because force fallback is set");
+                      << " with source id :" << source << " because force fallback is set");
             return CheckAndUpdateDeviceHandle(resourceAccessor, deviceHandleInOut, streamTexture.fallbackTexture);
         }
         else if (!streamTextureDeviceHandle.isValid())
         {
             LOG_INFO(CONTEXT_RENDERER, "ResourceCachedScene::updateTextureSamplerResourceAsStreamTexture(): using fallback texture for stream texture :" << streamTextureHandle.asMemoryHandle()
-                      << " with source id :" << source.getValue() << " because stream source not available");
+                      << " with source id :" << source << " because stream source not available");
             return CheckAndUpdateDeviceHandle(resourceAccessor, deviceHandleInOut, streamTexture.fallbackTexture);
         }
         else
         {
             LOG_INFO(CONTEXT_RENDERER, "ResourceCachedScene::updateTextureSamplerResourceAsStreamTexture(): using composited texture for stream texture :" << streamTextureHandle.asMemoryHandle()
-                      << " with source id :" << source.getValue());
+                      << " with source id :" << source);
         }
 
 
@@ -649,10 +658,9 @@ namespace ramses_internal
         std::fill(m_renderTargetCache.begin(), m_renderTargetCache.end(), DeviceResourceHandle::Invalid());
         std::fill(m_blitPassCache.begin(), m_blitPassCache.end(), DeviceResourceHandle::Invalid());
 
-        for(auto& it : m_deviceHandleCacheForVertexAttributes)
-        {
-            std::fill(it.begin(), it.end(), DeviceResourceHandle::Invalid());
-        }
+        for (auto& vtxCache : m_deviceHandleCacheForVertexAttributes)
+            for (auto& attribCache : vtxCache)
+                attribCache.deviceHandle = DeviceResourceHandle::Invalid();
 
         m_renderTargetsDirty = !m_renderTargetCache.empty();
         m_blitPassesDirty = !m_blitPassCache.empty();

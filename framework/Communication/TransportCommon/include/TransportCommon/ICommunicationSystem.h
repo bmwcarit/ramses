@@ -35,12 +35,6 @@ namespace ramses_internal
         virtual IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() = 0;
         virtual IConnectionStatusUpdateNotifier& getDcsmConnectionStatusUpdateNotifier() = 0;
 
-
-        // resource
-        virtual bool sendRequestResources(const Guid& to, const ResourceContentHashVector& resources) = 0;
-        virtual bool sendResourcesNotAvailable(const Guid& to, const ResourceContentHashVector& resources) = 0;
-        virtual bool sendResources(const Guid& to, const ISceneUpdateSerializer& serializer) = 0;
-
         // scene
         virtual bool broadcastNewScenesAvailable(const SceneInfoVector& newScenes) = 0;
         virtual bool broadcastScenesBecameUnavailable(const SceneInfoVector& unavailableScenes) = 0;
@@ -55,9 +49,9 @@ namespace ramses_internal
         virtual bool sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data) = 0;
 
         // dcsm provider -> consumer
-        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category, const std::string& friendlyName) = 0;
-        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category, const std::string& friendlyName) = 0;
-        virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) = 0;
+        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName) = 0;
+        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName) = 0;
+        virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor) = 0;
         virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID) = 0;
         virtual bool sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) = 0;
         virtual bool sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) = 0;
@@ -71,8 +65,6 @@ namespace ramses_internal
 
 
         // set service handlers
-        virtual void setResourceProviderServiceHandler(IResourceProviderServiceHandler* handler) = 0;
-        virtual void setResourceConsumerServiceHandler(IResourceConsumerServiceHandler* handler) = 0;
         virtual void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) = 0;
         virtual void setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler) = 0;
 

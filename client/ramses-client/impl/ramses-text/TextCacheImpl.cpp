@@ -72,9 +72,9 @@ namespace ramses
         UniformInput texInput;
         AttributeInput posInput;
         AttributeInput texCoordInput;
-        effect.findUniformInput(EEffectUniformSemantic_TextTexture, texInput);
-        effect.findAttributeInput(EEffectAttributeSemantic_TextPositions, posInput);
-        effect.findAttributeInput(EEffectAttributeSemantic_TextTextureCoordinates, texCoordInput);
+        effect.findUniformInput(EEffectUniformSemantic::TextTexture, texInput);
+        effect.findAttributeInput(EEffectAttributeSemantic::TextPositions, posInput);
+        effect.findAttributeInput(EEffectAttributeSemantic::TextTextureCoordinates, texCoordInput);
         if (!texInput.isValid() || !posInput.isValid() || !texCoordInput.isValid())
         {
             LOG_ERROR(CONTEXT_TEXT, "TextCache::createTextLine failed - text appearance effect must provide inputs for positions and coordinates attributes and a texture uniform");

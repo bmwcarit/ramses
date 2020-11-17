@@ -24,6 +24,11 @@ namespace ramses_internal
         ~ContextMock() override;
 
         MOCK_METHOD(Bool, init, ()); // Does not exist in IContext, needed for only for testing
+
+        MOCK_METHOD(bool,  swapBuffers, (), (override));
+        MOCK_METHOD(bool,  enable, (), (override));
+        MOCK_METHOD(bool,  disable, (), (override));
+
         MOCK_METHOD(DeviceResourceMapper&, getResources, (), (override));
         MOCK_METHOD(void*, getProcAddress, (const Char*), (const, override));
     };

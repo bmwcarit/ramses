@@ -42,19 +42,19 @@ namespace ramses_internal
 
         virtual void handleRequestsFromClients() override;
         virtual Bool hasUpdatedStreamTextureSources() const override;
-        virtual StreamTextureSourceIdSet dispatchUpdatedStreamTextureSourceIds() override;
-        virtual StreamTextureSourceIdSet dispatchNewStreamTextureSourceIds() override;
-        virtual StreamTextureSourceIdSet dispatchObsoleteStreamTextureSourceIds() override;
+        virtual WaylandIviSurfaceIdSet dispatchUpdatedStreamTextureSourceIds() override;
+        virtual WaylandIviSurfaceIdSet dispatchNewStreamTextureSourceIds() override;
+        virtual WaylandIviSurfaceIdSet dispatchObsoleteStreamTextureSourceIds() override;
         virtual void endFrame(Bool notifyClients) override;
-        virtual UInt32 uploadCompositingContentForStreamTexture(StreamTextureSourceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter) override;
+        virtual UInt32 uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter) override;
 
-        virtual Bool isContentAvailableForStreamTexture(StreamTextureSourceId streamTextureSourceId) const override;
+        virtual Bool isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
 
         virtual UInt64 getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(WaylandIviSurfaceId waylandSurfaceId) const override;
         virtual Bool isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
         virtual UInt32 getNumberOfCompositorConnections() const override;
-        virtual Bool hasSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const override;
-        virtual const IWaylandSurface& findSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const final;
+        virtual Bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
+        virtual const IWaylandSurface& findSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const final;
         virtual String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
         virtual void logInfos(RendererLogContext& context) const override;
 
@@ -101,20 +101,20 @@ namespace ramses_internal
         WaylandIVIApplicationGlobal m_iviApplicationGlobal;
         LinuxDmabufGlobal           m_linuxDmabufGlobal;
 
-        typedef std::vector<IWaylandSurface*> WaylandSurfaces;
+        using WaylandSurfaces = std::vector<IWaylandSurface *>;
         WaylandSurfaces m_surfaces;
-        StreamTextureSourceIdSet m_knownStreamTextureSoruceIds;
-        StreamTextureSourceIdSet m_updatedStreamTextureSourceIds;
-        StreamTextureSourceIdSet m_newStreamTextureSourceIds;
-        StreamTextureSourceIdSet m_obsoleteStreamTextureSourceIds;
+        WaylandIviSurfaceIdSet m_knownStreamTextureSoruceIds;
+        WaylandIviSurfaceIdSet m_updatedStreamTextureSourceIds;
+        WaylandIviSurfaceIdSet m_newStreamTextureSourceIds;
+        WaylandIviSurfaceIdSet m_obsoleteStreamTextureSourceIds;
 
-        typedef HashSet<IWaylandBuffer*> WaylandBuffers;
+        using WaylandBuffers = HashSet<IWaylandBuffer *>;
         WaylandBuffers m_waylandBuffers;
 
-        typedef HashSet<IWaylandCompositorConnection*> WaylandCompositorConnections;
+        using WaylandCompositorConnections = HashSet<IWaylandCompositorConnection *>;
         WaylandCompositorConnections m_compositorConnections;
 
-        typedef HashSet<IWaylandRegion*> WaylandRegions;
+        using WaylandRegions = HashSet<IWaylandRegion *>;
         WaylandRegions m_regions;
     };
 }

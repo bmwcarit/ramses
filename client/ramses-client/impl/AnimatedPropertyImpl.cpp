@@ -14,6 +14,10 @@
 #include "Animation/AnimationInstance.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
+#include "Scene/SceneDataBinding.h"
+#include "SceneObjectImpl.h"
+#include "Scene/Scene.h"
+#include "Scene/ClientScene.h"
 
 namespace ramses
 {
@@ -75,10 +79,25 @@ namespace ramses
         status_t status = AnimationObjectImpl::validate(indent, visitedObjects);
         indent += IndentationStep;
 
-        if (!getIAnimationSystem().getDataBinding(m_dataBindHandle)->isPropertyValid())
+        const auto& dataBind = *getIAnimationSystem().getDataBinding(m_dataBindHandle);
+        if (!dataBind.isPropertyValid())
         {
             addValidationMessage(EValidationSeverity_Error, indent, "property to animate does not exist in scene");
             status = getValidationErrorStatus();
+        }
+        else
+        {
+            using ContainerTraitsClass = ramses_internal::DataBindContainerToTraitsSelector<ramses_internal::IScene>::ContainerTraitsClassType;
+            if (dataBind.getBindID() == ContainerTraitsClass::TransformNode_Rotation)
+            {
+                const ramses_internal::TransformHandle transformHandle = static_cast<ramses_internal::TransformHandle>(dataBind.getHandle());
+
+                if (getIScene().getRotationConvention(transformHandle) != ramses_internal::ERotationConvention::Legacy_ZYX)
+                {
+                    addValidationMessage(EValidationSeverity_Error, indent, "trying to animate rotation for node that does not use legacy rotation convention");
+                    status = getValidationErrorStatus();
+                }
+            }
         }
 
         // find all animations using this property

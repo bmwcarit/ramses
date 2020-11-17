@@ -76,7 +76,7 @@ namespace ramses
             ramses::EffectDescription effectDesc;
             effectDesc.setVertexShader(vertexShader);
             effectDesc.setFragmentShader(fragmentShader);
-            effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+            effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
             ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache);
             ramses::Appearance* appearance = scene->createAppearance(*effectTex);

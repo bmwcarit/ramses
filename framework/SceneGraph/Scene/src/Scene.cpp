@@ -214,7 +214,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    StreamTextureHandle SceneT<MEMORYPOOL>::allocateStreamTexture(uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle handle /*= StreamTextureHandle::Invalid()*/)
+    StreamTextureHandle SceneT<MEMORYPOOL>::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle handle /*= StreamTextureHandle::Invalid()*/)
     {
         const StreamTextureHandle streamTextureHandle = m_streamTextures.allocate(handle);
         StreamTexture* streamTexture = m_streamTextures.getMemory(streamTextureHandle);
@@ -860,91 +860,6 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    const Float* SceneT<MEMORYPOOL>::getDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return getInstanceDataInternal<Float>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const Matrix22f* SceneT<MEMORYPOOL>::getDataMatrix22fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return getInstanceDataInternal<Matrix22f>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const Matrix33f* SceneT<MEMORYPOOL>::getDataMatrix33fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return getInstanceDataInternal<Matrix33f>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const Matrix44f* SceneT<MEMORYPOOL>::getDataMatrix44fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return getInstanceDataInternal<Matrix44f>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const Vector2* SceneT<MEMORYPOOL>::getDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return getInstanceDataInternal<Vector2>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const Vector3* SceneT<MEMORYPOOL>::getDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return getInstanceDataInternal<Vector3>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const Vector4* SceneT<MEMORYPOOL>::getDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return getInstanceDataInternal<Vector4>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const Int32* SceneT<MEMORYPOOL>::getDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return getInstanceDataInternal<Int32>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const Vector2i* SceneT<MEMORYPOOL>::getDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return getInstanceDataInternal<Vector2i>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const Vector3i* SceneT<MEMORYPOOL>::getDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return getInstanceDataInternal<Vector3i>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const Vector4i* SceneT<MEMORYPOOL>::getDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return getInstanceDataInternal<Vector4i>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    TextureSamplerHandle SceneT<MEMORYPOOL>::getDataTextureSamplerHandle(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return *getInstanceDataInternal<TextureSamplerHandle>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    DataInstanceHandle SceneT<MEMORYPOOL>::getDataReference(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        return *getInstanceDataInternal<DataInstanceHandle>(containerHandle, fieldId);
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
-    const ResourceField& SceneT<MEMORYPOOL>::getDataResource(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
-    {
-        const ResourceField* resourceField = getInstanceDataInternal<ResourceField>(containerHandle, fieldId);
-        return *resourceField;
-    }
-
-    template <template<typename, typename> class MEMORYPOOL>
     void SceneT<MEMORYPOOL>::setDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Float* newValue)
     {
         setInstanceDataInternal<Float>(containerHandle, fieldId, elementCount, newValue);
@@ -1011,7 +926,7 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle fieldId, const ResourceContentHash& newHashValue, DataBufferHandle dataBuffer, UInt32 instancingDivisor)
+    void SceneT<MEMORYPOOL>::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle fieldId, const ResourceContentHash& newHashValue, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride)
     {
         //one and only one (xor) of newHashValue and dataBuffer must be valid
         assert(!newHashValue.isValid() ^ !dataBuffer.isValid());
@@ -1020,6 +935,8 @@ namespace ramses_internal
         newField.hash = newHashValue;
         newField.dataBuffer = dataBuffer;
         newField.instancingDivisor = instancingDivisor;
+        newField.offsetWithinElementInBytes = offsetWithinElementInBytes;
+        newField.stride = stride;
         setInstanceDataInternal<ResourceField>(containerHandle, fieldId, 1, &newField);
     }
 
@@ -1053,6 +970,7 @@ namespace ramses_internal
             switch (fieldDataType)
             {
             case EDataType::TextureSampler2D:
+            case EDataType::TextureSampler2DMS:
             case EDataType::TextureSampler3D:
             case EDataType::TextureSamplerCube:
             {
@@ -1073,7 +991,7 @@ namespace ramses_internal
             case EDataType::Vector3Buffer:
             case EDataType::Vector4Buffer:
             {
-                const ResourceField resourceField{ ResourceContentHash::Invalid(), DataBufferHandle::Invalid(), 0u };
+                const ResourceField resourceField{ ResourceContentHash::Invalid(), DataBufferHandle::Invalid(), 0u , 0u, 0u };
                 instance->setTypedData<ResourceField>(layout.getFieldOffset(i), 1, &resourceField);
                 break;
             }
@@ -1226,6 +1144,12 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
+    ERotationConvention SceneT<MEMORYPOOL>::getRotationConvention(TransformHandle handle) const
+    {
+        return m_transforms.getMemory(handle)->rotationConvention;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
     const Vector3& SceneT<MEMORYPOOL>::getScaling(TransformHandle handle) const
     {
         return m_transforms.getMemory(handle)->scaling;
@@ -1238,15 +1162,35 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRotation(TransformHandle handle, const Vector3& rotation)
+    void SceneT<MEMORYPOOL>::setRotation(TransformHandle handle, const Vector3& rotation, ERotationConvention convention)
     {
-        m_transforms.getMemory(handle)->rotation = rotation;
+        auto transformMemory = m_transforms.getMemory(handle);
+        transformMemory->rotation = rotation;
+        transformMemory->rotationConvention = convention;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::setRotationForAnimation(TransformHandle handle, const Vector3& rotation)
+    {
+        if(m_transforms.getMemory(handle)->rotationConvention != ERotationConvention::Legacy_ZYX)
+        {
+            LOG_ERROR(CONTEXT_FRAMEWORK, "Scene::setRotationForAnimation: failed to animate rotation for node :" << getTransformNode(handle) << " that does not use legacy rotation convention.");
+            return;
+        }
+
+        setRotation(handle, rotation, ERotationConvention::Legacy_ZYX);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
     void SceneT<MEMORYPOOL>::setScaling(TransformHandle handle, const Vector3& scaling)
     {
         m_transforms.getMemory(handle)->scaling = scaling;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    const TopologyTransform& SceneT<MEMORYPOOL>::getTransform(TransformHandle handle) const
+    {
+        return *m_transforms.getMemory(handle);
     }
 
     template <template<typename, typename> class MEMORYPOOL>

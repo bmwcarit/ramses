@@ -13,29 +13,16 @@
 
 namespace ramses_internal
 {
-    // compares two matrices based on google test's float comparison
+
     template <typename MATRIXTYPE>
     inline
-        ::testing::AssertionResult matrixFloatEquals(const MATRIXTYPE& expected, const MATRIXTYPE& actual)
+    void expectMatrixFloatEqual(const MATRIXTYPE& expected, const MATRIXTYPE& actual)
     {
-        ::testing::AssertionResult result = ::testing::AssertionFailure();
-        bool isOK = true;
-        static const UInt32 NumElements = sizeof(MATRIXTYPE) / sizeof(Float);
-        for (UInt32 index = 0; index < NumElements; index++)
+        constexpr auto elementCount = sizeof(MATRIXTYPE) / sizeof(float);
+        for (uint32_t i = 0u; i < elementCount; i++)
         {
-            const ::testing::internal::FloatingPoint<Float> lhs(expected.data[index]);
-            const ::testing::internal::FloatingPoint<Float> rhs(actual.data[index]);
-            if (!lhs.AlmostEquals(rhs))
-            {
-                result << " " << expected.data[index] << " != " << actual.data[index] << " @ " << index << ", ";
-                isOK = false;
-            }
+            EXPECT_NEAR(expected.data[i], actual.data[i], 1.0e-6f);
         }
-        if (!isOK)
-        {
-            return result;
-        }
-        return ::testing::AssertionSuccess();
     }
 }
 

@@ -151,14 +151,14 @@ namespace ramses_internal
         EXPECT_EQ(String("-arg"), result1[2]);
         EXPECT_EQ(String(), result1[3]);
 
-        String in2 = "  \"te-' 'st \" abc' ' 'def'a   ";
+        String in2 = R"(  "te-' 'st " abc' ' 'def'a   )";
         RamshInput result2 = RamshTools::parseCommandString(in2);
         EXPECT_EQ(String("te-' 'st "), result2[0]);
         EXPECT_EQ(String("abc'"), result2[1]);
         EXPECT_EQ(String("'"), result2[2]);
         EXPECT_EQ(String("'def'a"), result2[3]);
 
-        String in3 = "abc -arg \"test argument\" 'test argument' 'test \"argument\"' \"test 'argument'\"";
+        String in3 = R"(abc -arg "test argument" 'test argument' 'test "argument"' "test 'argument'")";
         RamshInput result3 = RamshTools::parseCommandString(in3);
         EXPECT_EQ(String("abc"), result3[0]);
         EXPECT_EQ(String("-arg"), result3[1]);

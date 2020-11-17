@@ -18,7 +18,7 @@ namespace ramses_internal
     {
     public:
         explicit SetFrameTimeLimits(FrameTimer& frametimer);
-        virtual Bool execute(UInt32& limitForClientResourcesUploadMicrosec, UInt32& limitForOffscreenBufferRenderMicrosec) const override;
+        virtual Bool execute(UInt32& limitForResourcesUploadMicrosec, UInt32& limitForOffscreenBufferRenderMicrosec) const override;
 
     private:
         FrameTimer& m_frametimer;

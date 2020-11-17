@@ -22,7 +22,6 @@
 #include "ramses-client-api/Effect.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/DataObject.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/GeometryBinding.h"
@@ -54,6 +53,7 @@
 #include "Utils/StringUtils.h"
 #include "RamsesFrameworkTypesImpl.h"
 #include "RamsesClientTypesImpl.h"
+#include "ramses-client-api/TextureSamplerMS.h"
 
 namespace ramses
 {
@@ -65,13 +65,6 @@ namespace ramses
 
     Scene::~Scene()
     {
-    }
-
-    RemoteCamera* Scene::createRemoteCamera(const char* name)
-    {
-        RemoteCamera* remoteCamera = impl.createRemoteCamera(name);
-        LOG_HL_CLIENT_API1(LOG_API_RAMSESOBJECT_PTR_STRING(remoteCamera), name);
-        return remoteCamera;
     }
 
     PerspectiveCamera* Scene::createPerspectiveCamera(const char* name)
@@ -369,6 +362,13 @@ namespace ramses
         return texSampler;
     }
 
+    TextureSamplerMS* Scene::createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name)
+    {
+        TextureSamplerMS* texSampler = impl.createTextureSamplerMS(renderBuffer, name);
+        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(texSampler), LOG_API_RAMSESOBJECT_STRING(renderBuffer), name);
+        return texSampler;
+    }
+
     status_t Scene::createTransformationDataProvider(const Node& node, dataProviderId_t dataId)
     {
         status_t status = impl.createTransformationDataProvider(node, dataId);
@@ -412,6 +412,13 @@ namespace ramses
     }
 
     status_t Scene::createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t dataId)
+    {
+        status_t status = impl.createTextureConsumer(sampler, dataId);
+        LOG_HL_CLIENT_API2(status, LOG_API_RAMSESOBJECT_STRING(sampler), dataId);
+        return status;
+    }
+
+    status_t Scene::createTextureConsumer(const TextureSamplerMS& sampler, dataConsumerId_t dataId)
     {
         status_t status = impl.createTextureConsumer(sampler, dataId);
         LOG_HL_CLIENT_API2(status, LOG_API_RAMSESOBJECT_STRING(sampler), dataId);

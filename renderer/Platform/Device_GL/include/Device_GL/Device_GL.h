@@ -68,10 +68,10 @@ namespace ramses_internal
 
         virtual void readPixels(UInt8* buffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height) override;
 
-        virtual DeviceResourceHandle    allocateVertexBuffer  (EDataType dataType, UInt32 sizeInBytes) override;
+        virtual DeviceResourceHandle    allocateVertexBuffer  (UInt32 totalSizeInBytes) override;
         virtual void                    uploadVertexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) override;
         virtual void                    deleteVertexBuffer    (DeviceResourceHandle handle) override;
-        virtual void                    activateVertexBuffer  (DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 offset) override;
+        virtual void                    activateVertexBuffer  (DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 startVertex, EDataType bufferDataType, UInt16 offsetWithinElement, UInt16 stride) override;
 
         virtual DeviceResourceHandle    allocateIndexBuffer   (EDataType dataType, UInt32 sizeInBytes) override;
         virtual void                    uploadIndexBufferData (DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) override;
@@ -152,9 +152,9 @@ namespace ramses_internal
 
         Bool allBuffersHaveTheSameSize(const DeviceHandleVector& renderBuffers) const;
         void bindRenderBufferToRenderTarget(const RenderBufferGPUResource& renderBufferGpuResource, const UInt32 colorBufferSlot);
-        void bindReadWriteRenderBufferToRenderTarget(const ERenderBufferType bufferType, const UInt32 colorBufferSlot, const GLHandle bufferGLHandle);
+        void bindReadWriteRenderBufferToRenderTarget(const ERenderBufferType bufferType, const UInt32 colorBufferSlot, const GLHandle bufferGLHandle, const bool multiSample);
         void bindWriteOnlyRenderBufferToRenderTarget(const ERenderBufferType bufferType, const UInt32 colorBufferSlot, const GLHandle bufferGLHandle);
-        GLHandle createTexture(UInt32 width, UInt32 height, ETextureFormat storageFormat) const;
+        GLHandle createTexture(UInt32 width, UInt32 height, ETextureFormat storageFormat, UInt32 sampleCount) const;
         GLHandle createRenderBuffer(UInt32 width, UInt32 height, ETextureFormat format, UInt32 sampleCount);
 
         GLHandle generateAndBindTexture(GLenum target) const;
@@ -162,7 +162,7 @@ namespace ramses_internal
 
         void fillGLInternalTextureInfo(GLenum target, UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, GLTextureInfo& texInfoOut) const;
 
-        void allocateTextureStorage(const GLTextureInfo& texInfo, UInt32 mipLevels) const;
+        void allocateTextureStorage(const GLTextureInfo& texInfo, UInt32 mipLevels, UInt32 sampleCount = 0) const;
         void uploadTextureMipMapData(UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const GLTextureInfo& texInfo, const UInt8 *pData, UInt32 dataSize) const;
 
         Bool isApiExtensionAvailable(const String& extensionName) const;

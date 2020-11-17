@@ -18,7 +18,7 @@ namespace ramses
     class ArrayBufferImpl;
     class ArrayBuffer;
     class CameraNodeImpl;
-    class LocalCamera;
+    class Camera;
 
     class PickableObjectImpl final : public NodeImpl
     {
@@ -36,7 +36,7 @@ namespace ramses
         const ArrayBuffer& getGeometryBuffer() const;
 
         status_t setCamera(const CameraNodeImpl& cameraImpl);
-        const LocalCamera* getCamera() const;
+        const Camera* getCamera() const;
 
         status_t setPickableObjectId(pickableObjectId_t id);
         pickableObjectId_t getPickableObjectId() const;

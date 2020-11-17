@@ -55,7 +55,7 @@ namespace ramses
     TEST_F(AnEffect, hasProperNumberOfInputs)
     {
         const Effect* effect = sharedTestState->effect;
-        EXPECT_EQ(25u, effect->getUniformInputCount());
+        EXPECT_EQ(26u, effect->getUniformInputCount());
         EXPECT_EQ(4u, effect->getAttributeInputCount());
     }
 
@@ -95,7 +95,7 @@ namespace ramses
     {
         const Effect* effect = sharedTestState->effect;
         UniformInput input;
-        EXPECT_NE(StatusOK, effect->findUniformInput(ramses::EEffectUniformSemantic_NormalMatrix, input));
+        EXPECT_NE(StatusOK, effect->findUniformInput(ramses::EEffectUniformSemantic::NormalMatrix, input));
         EXPECT_FALSE(input.isValid());
     }
 
@@ -103,7 +103,7 @@ namespace ramses
     {
         const Effect* effect = sharedTestState->effect;
         AttributeInput input;
-        EXPECT_NE(StatusOK, effect->findAttributeInput(ramses::EEffectAttributeSemantic_Invalid, input));
+        EXPECT_NE(StatusOK, effect->findAttributeInput(ramses::EEffectAttributeSemantic::Invalid, input));
         EXPECT_FALSE(input.isValid());
     }
 
@@ -118,8 +118,8 @@ namespace ramses
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
         EXPECT_EQ(EEffectInputDataType_Vector3F, input.getDataType());
         EXPECT_EQ(ramses_internal::EDataType::Vector3F, input.impl.getDataType());
-        EXPECT_EQ(ramses_internal::EFixedSemantics_Invalid, input.impl.getSemantics());
-        EXPECT_EQ(EEffectUniformSemantic_Invalid, input.getSemantics());
+        EXPECT_EQ(ramses_internal::EFixedSemantics::Invalid, input.impl.getSemantics());
+        EXPECT_EQ(EEffectUniformSemantic::Invalid, input.getSemantics());
         EXPECT_EQ(5u, input.impl.getInputIndex());
         EXPECT_TRUE(input.isValid());
     }
@@ -128,15 +128,15 @@ namespace ramses
     {
         const Effect* effect = sharedTestState->effect;
         UniformInput input;
-        EXPECT_EQ(StatusOK, effect->findUniformInput(ramses::EEffectUniformSemantic_ModelViewMatrix, input));
+        EXPECT_EQ(StatusOK, effect->findUniformInput(ramses::EEffectUniformSemantic::ModelViewMatrix, input));
 
         EXPECT_STREQ("matrix44fInput", input.getName());
         EXPECT_EQ(1u, input.getElementCount());
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
         EXPECT_EQ(EEffectInputDataType_Matrix44F, input.getDataType());
         EXPECT_EQ(ramses_internal::EDataType::Matrix44F, input.impl.getDataType());
-        EXPECT_EQ(ramses_internal::EFixedSemantics_ModelViewMatrix, input.impl.getSemantics());
-        EXPECT_EQ(EEffectUniformSemantic_ModelViewMatrix, input.getSemantics());
+        EXPECT_EQ(ramses_internal::EFixedSemantics::ModelViewMatrix, input.impl.getSemantics());
+        EXPECT_EQ(EEffectUniformSemantic::ModelViewMatrix, input.getSemantics());
         EXPECT_TRUE(input.isValid());
     }
 
@@ -150,8 +150,8 @@ namespace ramses
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
         EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
         EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getDataType());
-        EXPECT_EQ(ramses_internal::EFixedSemantics_Invalid, input.impl.getSemantics());
-        EXPECT_EQ(EEffectAttributeSemantic_Invalid, input.getSemantics());
+        EXPECT_EQ(ramses_internal::EFixedSemantics::Invalid, input.impl.getSemantics());
+        EXPECT_EQ(EEffectAttributeSemantic::Invalid, input.getSemantics());
         EXPECT_EQ(1u, input.impl.getInputIndex());
         EXPECT_TRUE(input.isValid());
     }
@@ -166,8 +166,8 @@ namespace ramses
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
         EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
         EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getDataType());
-        EXPECT_EQ(ramses_internal::EFixedSemantics_TextPositionsAttribute, input.impl.getSemantics());
-        EXPECT_EQ(EEffectAttributeSemantic_TextPositions, input.getSemantics());
+        EXPECT_EQ(ramses_internal::EFixedSemantics::TextPositionsAttribute, input.impl.getSemantics());
+        EXPECT_EQ(EEffectAttributeSemantic::TextPositions, input.getSemantics());
         EXPECT_EQ(1u, input.impl.getInputIndex());
         EXPECT_TRUE(input.isValid());
     }
@@ -176,14 +176,14 @@ namespace ramses
     {
         const Effect* effect = sharedTestState->effect;
         AttributeInput input;
-        EXPECT_EQ(StatusOK, effect->getAttributeInput(ramses::EEffectAttributeSemantic_TextPositions, input));
+        EXPECT_EQ(StatusOK, effect->findAttributeInput(ramses::EEffectAttributeSemantic::TextPositions, input));
 
         EXPECT_STREQ("vec2fArrayInput", input.getName());
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
         EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
         EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getDataType());
-        EXPECT_EQ(ramses_internal::EFixedSemantics_TextPositionsAttribute, input.impl.getSemantics());
-        EXPECT_EQ(EEffectAttributeSemantic_TextPositions, input.getSemantics());
+        EXPECT_EQ(ramses_internal::EFixedSemantics::TextPositionsAttribute, input.impl.getSemantics());
+        EXPECT_EQ(EEffectAttributeSemantic::TextPositions, input.getSemantics());
         EXPECT_TRUE(input.isValid());
     }
 
@@ -198,8 +198,8 @@ namespace ramses
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
         EXPECT_EQ(EEffectInputDataType_Vector3F, input.getDataType());
         EXPECT_EQ(ramses_internal::EDataType::Vector3F, input.impl.getDataType());
-        EXPECT_EQ(ramses_internal::EFixedSemantics_Invalid, input.impl.getSemantics());
-        EXPECT_EQ(EEffectUniformSemantic_Invalid, input.getSemantics());
+        EXPECT_EQ(ramses_internal::EFixedSemantics::Invalid, input.impl.getSemantics());
+        EXPECT_EQ(EEffectUniformSemantic::Invalid, input.getSemantics());
         EXPECT_EQ(5u, input.impl.getInputIndex());
         EXPECT_TRUE(input.isValid());
     }
@@ -232,8 +232,8 @@ namespace ramses
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
         EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
         EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getDataType());
-        EXPECT_EQ(ramses_internal::EFixedSemantics_Invalid, input.impl.getSemantics());
-        EXPECT_EQ(EEffectAttributeSemantic_Invalid, input.getSemantics());
+        EXPECT_EQ(ramses_internal::EFixedSemantics::Invalid, input.impl.getSemantics());
+        EXPECT_EQ(EEffectAttributeSemantic::Invalid, input.getSemantics());
         EXPECT_EQ(1u, input.impl.getInputIndex());
         EXPECT_TRUE(input.isValid());
     }
@@ -248,8 +248,8 @@ namespace ramses
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
         EXPECT_EQ(EEffectInputDataType_Vector2F, input.getDataType());
         EXPECT_EQ(ramses_internal::EDataType::Vector2Buffer, input.impl.getDataType());
-        EXPECT_EQ(ramses_internal::EFixedSemantics_TextPositionsAttribute, input.impl.getSemantics());
-        EXPECT_EQ(EEffectAttributeSemantic_TextPositions, input.getSemantics());
+        EXPECT_EQ(ramses_internal::EFixedSemantics::TextPositionsAttribute, input.impl.getSemantics());
+        EXPECT_EQ(EEffectAttributeSemantic::TextPositions, input.getSemantics());
         EXPECT_EQ(1u, input.impl.getInputIndex());
         EXPECT_TRUE(input.isValid());
     }
@@ -264,8 +264,8 @@ namespace ramses
         EXPECT_EQ(effect->impl.getLowlevelResourceHash(), input.impl.getEffectHash());
         EXPECT_EQ(EEffectInputDataType_TextureSampler2D, input.getDataType());
         EXPECT_EQ(ramses_internal::EDataType::TextureSampler2D, input.impl.getDataType());
-        EXPECT_EQ(ramses_internal::EFixedSemantics_TextTextureUniform, input.impl.getSemantics());
-        EXPECT_EQ(EEffectUniformSemantic_TextTexture, input.getSemantics());
+        EXPECT_EQ(ramses_internal::EFixedSemantics::TextTexture, input.impl.getSemantics());
+        EXPECT_EQ(EEffectUniformSemantic::TextTexture, input.getSemantics());
         EXPECT_EQ(22u, input.impl.getInputIndex());
         EXPECT_TRUE(input.isValid());
     }
@@ -290,7 +290,7 @@ namespace ramses
         /// Can create ...
         EXPECT_NE(static_cast<Effect*>(nullptr), sharedTestState->getScene().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
 
-        effectDesc.setAttributeSemantic("a_position", EEffectAttributeSemantic_TextPositions);
+        effectDesc.setAttributeSemantic("a_position", EEffectAttributeSemantic::TextPositions);
 
         /// Can not create ...
         EXPECT_EQ(static_cast<Effect*>(nullptr), sharedTestState->getScene().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
@@ -375,7 +375,7 @@ namespace ramses
         /// Can create ...
         EXPECT_NE(static_cast<Effect*>(nullptr), sharedTestState->getScene().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
 
-        effectDesc.setAttributeSemantic("a_texcoord", EEffectAttributeSemantic_TextTextureCoordinates);
+        effectDesc.setAttributeSemantic("a_texcoord", EEffectAttributeSemantic::TextTextureCoordinates);
 
         /// Can not create ...
         EXPECT_EQ(static_cast<Effect*>(nullptr), sharedTestState->getScene().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
@@ -401,7 +401,7 @@ namespace ramses
         /// Can create ...
         EXPECT_NE(static_cast<Effect*>(nullptr), sharedTestState->getScene().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
 
-        effectDesc.setUniformSemantic("u_texture", EEffectUniformSemantic_TextTexture);
+        effectDesc.setUniformSemantic("u_texture", EEffectUniformSemantic::TextTexture);
 
         /// Can not create ...
         EXPECT_EQ(static_cast<Effect*>(nullptr), sharedTestState->getScene().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));

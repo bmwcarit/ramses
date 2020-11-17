@@ -59,7 +59,7 @@ namespace ramses_internal
         }
     };
 
-    typedef std::vector<ResourceInfo> ResourceInfoVector;
+    using ResourceInfoVector = std::vector<ResourceInfo>;
 }
 
 #endif

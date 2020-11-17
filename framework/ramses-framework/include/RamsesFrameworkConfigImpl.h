@@ -20,8 +20,6 @@
 
 namespace ramses
 {
-    const uint32_t MAXIMUM_BYTES_FOR_ASYNC_RESOURCE_LOADING = 20 * 1024 * 1024;
-
     class RamsesFrameworkConfigImpl : public StatusObjectImpl
     {
     public:
@@ -47,8 +45,6 @@ namespace ramses
 
         status_t setRequestedRamsesShellType(ERamsesShellType shellType);
 
-        void setMaximumTotalBytesAllowedForAsyncResourceLoading(uint32_t maximumTotalBytesForAsynResourceLoading);
-        uint32_t getMaximumTotalBytesForAsyncResourceLoading() const;
         ramses_internal::EConnectionProtocol getUsedProtocol() const;
         uint32_t getSomeipCommunicationUserID() const;
         uint32_t getWatchdogNotificationInterval(ERamsesThreadIdentifier thread) const;
@@ -77,7 +73,6 @@ namespace ramses
         bool m_enableDltApplicationRegistration = true;
         ramses_internal::String m_dltAppID;
         ramses_internal::String m_dltAppDescription;
-        uint32_t m_maximumTotalBytesForAsyncResourceLoading;
         bool m_enableProtocolVersionOffset;
         ramses_internal::Guid m_userProvidedGuid;
     };

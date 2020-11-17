@@ -62,8 +62,8 @@ namespace ramses_internal
     void Texture2DCompressedMipMapScene::createOrthoCamera()
     {
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
-        orthoCamera->setFrustum(0.0f, static_cast<Float>(DefaultDisplayWidth), 0.0f, static_cast<Float>(DefaultDisplayHeight), 0.1f, 10.f);
-        orthoCamera->setViewport(0, 0, DefaultDisplayWidth, DefaultDisplayHeight);
+        orthoCamera->setFrustum(0.0f, static_cast<Float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<Float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
+        orthoCamera->setViewport(0, 0, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         setCameraToDefaultRenderPass(orthoCamera);
     }
 
@@ -107,8 +107,8 @@ namespace ramses_internal
         std::vector<float> textureCoords;
 
         const float x = 0.0f;
-        const float w = static_cast<float>(DefaultDisplayWidth);
-        const float h = static_cast<float>(DefaultDisplayHeight) / numberStripes;
+        const float w = static_cast<float>(IntegrationScene::DefaultViewportWidth);
+        const float h = static_cast<float>(IntegrationScene::DefaultViewportHeight) / numberStripes;
 
         float s = w / m_textureWidth;
         float t = h / m_textureHeight;

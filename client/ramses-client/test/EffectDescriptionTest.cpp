@@ -24,7 +24,7 @@ namespace ramses
             ramses_internal::EFixedSemantics* internalSemantic = effectDesc.impl.getSemanticsMap().get(inputName);
             if (internalSemantic == nullptr)
             {
-                return EEffectUniformSemantic_Invalid;
+                return EEffectUniformSemantic::Invalid;
             }
 
             return EffectInputSemanticUtils::GetEffectUniformSemanticFromInternal(*internalSemantic);
@@ -35,7 +35,7 @@ namespace ramses
             ramses_internal::EFixedSemantics* internalSemantic = effectDesc.impl.getSemanticsMap().get(inputName);
             if (internalSemantic == nullptr)
             {
-                return EEffectAttributeSemantic_Invalid;
+                return EEffectAttributeSemantic::Invalid;
             }
 
             return EffectInputSemanticUtils::GetEffectAttributeSemanticFromInternal(*internalSemantic);
@@ -120,7 +120,7 @@ namespace ramses
 
     TEST_F(EffectDescriptionTest, addSemanticNameAsNULLReportsError)
     {
-        EXPECT_NE(StatusOK, effectDesc.setUniformSemantic(nullptr, EEffectUniformSemantic_CameraViewMatrix));
+        EXPECT_NE(StatusOK, effectDesc.setUniformSemantic(nullptr, EEffectUniformSemantic::ViewMatrix));
         EXPECT_EQ(0u, effectDesc.impl.getSemanticsMap().size());
     }
 
@@ -129,9 +129,9 @@ namespace ramses
         const char* semantic1 = "my_semantic";
         const char* semantic2 = "my_semantic2";
         const char* semantic3 = "my_semantic3";
-        const EEffectUniformSemantic semanticType1 = EEffectUniformSemantic_CameraViewMatrix;
-        const EEffectUniformSemantic semanticType2 = EEffectUniformSemantic_CameraViewMatrix;
-        const EEffectAttributeSemantic semanticType3 = EEffectAttributeSemantic_TextPositions;
+        const EEffectUniformSemantic semanticType1 = EEffectUniformSemantic::ViewMatrix;
+        const EEffectUniformSemantic semanticType2 = EEffectUniformSemantic::ViewMatrix;
+        const EEffectAttributeSemantic semanticType3 = EEffectAttributeSemantic::TextPositions;
 
         EXPECT_EQ(StatusOK, effectDesc.setUniformSemantic(semantic1, semanticType1));
         EXPECT_EQ(semanticType1, getSemanticForUniform(semantic1));
@@ -152,7 +152,7 @@ namespace ramses
     TEST_F(EffectDescriptionTest, retrievesUnknownTypeForSemanticNotAdded)
     {
         const char* semantic1 = "my_semantic";
-        EXPECT_EQ(EEffectUniformSemantic_Invalid, getSemanticForUniform(semantic1));
+        EXPECT_EQ(EEffectUniformSemantic::Invalid, getSemanticForUniform(semantic1));
     }
 
     TEST_F(EffectDescriptionTest, setVertexShaderFromFile)

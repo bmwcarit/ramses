@@ -35,7 +35,7 @@ namespace ramses_internal
         {
         }
 
-        constexpr static ResourceContentHash Invalid()
+        static constexpr ResourceContentHash Invalid()
         {
             return ResourceContentHash();
         }
@@ -109,6 +109,20 @@ struct fmt::formatter<ramses_internal::ResourceContentHash> : public ramses_inte
             typeShortString = "inv";
         }
         return fmt::format_to(ctx.out(), "{}_{:016X}{:016X}", typeShortString, res.highPart, res.lowPart);
+    }
+};
+
+template <>
+struct fmt::formatter<ramses_internal::ResourceContentHashVector> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses_internal::ResourceContentHashVector& hashes, FormatContext& ctx)
+    {
+        fmt::format_to(ctx.out(), "[{} resources:", hashes.size());
+        for (auto const& hash : hashes)
+            fmt::format_to(ctx.out(), " {}", hash);
+
+        return fmt::format_to(ctx.out(), "]");
     }
 };
 

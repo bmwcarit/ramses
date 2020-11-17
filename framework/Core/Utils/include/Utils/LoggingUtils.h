@@ -34,12 +34,13 @@
     /* ensure that nameArray have the same number of elements as the enum types */                                                                 \
     static_assert(static_cast<std::size_t>(oneAfterLastElement) == sizeof(nameArray) / sizeof(nameArray[0]), "number of elements does not match"); \
     static_assert(std::is_enum<type>::value && !std::is_convertible<type, int>::value, "Must use with enum class");                                \
+    static_assert(sizeof(type) <= sizeof(size_t), #type " type may not be larger than size_t"); \
     template <> struct fmt::formatter<type> : public ramses_internal::SimpleFormatterBase                                                          \
     {                                                                                                                                              \
         template <typename FormatContext> auto format(type index, FormatContext& ctx)                                                              \
         {                                                                                                                                          \
-            const auto value = static_cast<std::underlying_type_t<type>>(index);                                                                   \
-            if (value < 0 || value >= static_cast<std::underlying_type_t<type>>(oneAfterLastElement))                                                           \
+            const auto value = static_cast<std::size_t>(index);                                                                   \
+            if (value >= static_cast<std::size_t>(oneAfterLastElement))                                                           \
                 return fmt::format_to(ctx.out(), "<INVALID " #type " {}>", value);                                                                        \
             return fmt::format_to(ctx.out(), "{}", nameArray[value]);                                                                              \
         }                                                                                                                                          \
@@ -49,13 +50,14 @@
     /* ensure that nameArray have the same number of elements as the enum types */                                  \
     static_assert(static_cast<std::size_t>(lastEnumElement)+1 == sizeof(nameArray) / sizeof(nameArray[0]), "number of elements does not match"); \
     static_assert(std::is_enum<type>::value && !std::is_convertible<type, int>::value, "Must use with enum class"); \
+    static_assert(sizeof(type) <= sizeof(size_t), #type " type may not be larger than size_t"); \
     template <> struct fmt::formatter<type> : public ramses_internal::SimpleFormatterBase                           \
     {                                                                                                               \
-        static constexpr const auto lastValue = static_cast<std::underlying_type_t<type>>(lastEnumElement); \
+        static constexpr const auto lastValue = static_cast<std::size_t>(lastEnumElement); \
         template <typename FormatContext> auto format(type index, FormatContext& ctx)                               \
         {                                                                                                           \
-            const auto value = static_cast<std::underlying_type_t<type>>(index);                                    \
-            if (value < 0 || value > lastValue) \
+            const auto value = static_cast<std::size_t>(index);               \
+            if (value > lastValue) \
                 return fmt::format_to(ctx.out(), "<INVALID " #type " {}>", value);                                  \
             return fmt::format_to(ctx.out(), "{}", nameArray[value]);                                               \
         }                                                                                                           \

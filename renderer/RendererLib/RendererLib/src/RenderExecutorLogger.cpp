@@ -14,15 +14,15 @@
 
 namespace ramses_internal
 {
-    RenderExecutorLogger::RenderExecutorLogger(IDevice& device, const FrameBufferInfo& frameBuffer, RendererLogContext& context)
-        : RenderExecutor(device, frameBuffer)
+    RenderExecutorLogger::RenderExecutorLogger(IDevice& device, const TargetBufferInfo& bufferInfo, RendererLogContext& context)
+        : RenderExecutor(device, bufferInfo)
         , m_logContext(context)
     {
     }
 
-    void RenderExecutorLogger::logScene(const RendererCachedScene& scene, const Matrix44f& rendererViewMatrix) const
+    void RenderExecutorLogger::logScene(const RendererCachedScene& scene) const
     {
-        setGlobalInternalStates(scene, rendererViewMatrix);
+        setGlobalInternalStates(scene);
 
         m_logContext << RendererLogContext::NewLine << "Scene [id: " << scene.getSceneId() << "]" << RendererLogContext::NewLine;
         m_logContext.indent();

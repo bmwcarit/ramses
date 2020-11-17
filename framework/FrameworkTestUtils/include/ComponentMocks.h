@@ -20,7 +20,6 @@
 #include "Components/ISceneGraphConsumerComponent.h"
 #include "Components/IResourceProviderComponent.h"
 #include "Components/ResourceTableOfContents.h"
-#include "Components/IResourceConsumerComponent.h"
 #include "Components/ISceneProviderEventConsumer.h"
 #include "SceneReferencing/SceneReferenceEvent.h"
 #include "Components/ResourceAvailabilityEvent.h"
@@ -36,28 +35,16 @@ namespace ramses_internal
         virtual ~ResourceProviderComponentMock() override;
 
         MOCK_METHOD(ManagedResource, manageResource, (const IResource& resource, bool deletionAllowed), (override));
-        MOCK_METHOD(ManagedResourceVector, getResources, (), (override));
         MOCK_METHOD(ManagedResource, getResource, (ResourceContentHash hash), (override));
-        MOCK_METHOD(ManagedResource, forceLoadResource, (const ResourceContentHash&), (override));
+        MOCK_METHOD(ManagedResource, loadResource, (const ResourceContentHash&), (override));
         MOCK_METHOD(ResourceHashUsage, getResourceHashUsage, (const ResourceContentHash&), (override));
         MOCK_METHOD(void, addResourceFile, (ResourceFileInputStreamSPtr resourceFileStream, const ResourceTableOfContents& toc), (override));
         MOCK_METHOD(bool, hasResourceFile, (const String&), (const, override));
         MOCK_METHOD(void, removeResourceFile, (const String& resourceFileName), (override));
-        MOCK_METHOD(void, forceLoadFromResourceFile, (const String& resourceFileName), (override));
+        MOCK_METHOD(void, loadResourceFromFile, (const String& resourceFileName), (override));
         virtual void reserveResourceCount(uint32_t) override {};
         MOCK_METHOD(ManagedResourceVector, resolveResources, (ResourceContentHashVector& vec), (override));
 
-    };
-
-    class ResourceConsumerComponentMock : public IResourceConsumerComponent
-    {
-    public:
-        ResourceConsumerComponentMock();
-        virtual ~ResourceConsumerComponentMock() override;
-
-        MOCK_METHOD(void, requestResourceAsynchronouslyFromFramework, (const ResourceContentHashVector& ids, const ResourceRequesterID& requesterID, const Guid& providerID), (override));
-        MOCK_METHOD(void, cancelResourceRequest, (const ResourceContentHash& resourceHash, const ResourceRequesterID& requesterID), (override));
-        MOCK_METHOD(ManagedResourceVector, popArrivedResources, (const ResourceRequesterID& requesterID), (override));
     };
 
     class SceneGraphProviderComponentMock : public ISceneGraphProviderComponent
@@ -69,7 +56,7 @@ namespace ramses_internal
         MOCK_METHOD(void, handleCreateScene, (ClientScene& scene, bool enableLocalOnlyOptimization, ISceneProviderEventConsumer& consumer), (override));
         MOCK_METHOD(void, handlePublishScene, (SceneId sceneId, EScenePublicationMode publicationMode), (override));
         MOCK_METHOD(void, handleUnpublishScene, (SceneId sceneId), (override));
-        MOCK_METHOD(void, handleFlush, (SceneId sceneId, const FlushTimeInformation&, SceneVersionTag), (override));
+        MOCK_METHOD(bool, handleFlush, (SceneId sceneId, const FlushTimeInformation&, SceneVersionTag), (override));
         MOCK_METHOD(void, handleRemoveScene, (SceneId sceneId), (override));
     };
 

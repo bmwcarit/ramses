@@ -28,7 +28,7 @@ void initializeAnimationContent(ramses::Scene& scene, ramses::RenderGroup& rende
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-basic-file-loading-basic.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-file-loading-red.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     ramses::Effect* effect = scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader anim");
     ramses::Appearance* appearance = scene.createAppearance(*effect, "triangle appearance anim");
@@ -109,7 +109,9 @@ int main(int argc, char* argv[])
         ramses::RamsesClient& ramses(*framework.createClient("ramses-example-file-loading"));
         ramses::Scene* scene = ramses.createScene(ramses::sceneId_t(123u), ramses::SceneConfig(), "basic scene loading from file");
         // every scene needs a render pass with camera
-        ramses::Camera* camera = scene->createRemoteCamera("my camera");
+        auto* camera = scene->createPerspectiveCamera("my camera");
+        camera->setViewport(0, 0, 1280u, 480u);
+        camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
         camera->setTranslation(0.0f, 0.0f, 5.0f);
         ramses::RenderPass* renderPass = scene->createRenderPass("my render pass");
         renderPass->setClearFlags(ramses::EClearFlags_None);
@@ -137,7 +139,7 @@ int main(int argc, char* argv[])
         ramses::EffectDescription effectDesc;
         effectDesc.setVertexShaderFromFile("res/ramses-example-basic-file-loading-texturing.vert");
         effectDesc.setFragmentShaderFromFile("res/ramses-example-basic-file-loading-texturing.frag");
-        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
         ramses::Effect* effectTex = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
 

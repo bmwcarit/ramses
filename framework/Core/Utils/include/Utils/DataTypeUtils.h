@@ -128,73 +128,73 @@ namespace ramses_internal
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Boolean >
     {
-        typedef bool DataType;
+        using DataType = bool;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Int32 >
     {
-        typedef Int32 DataType;
+        using DataType = Int32;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Float >
     {
-        typedef Float DataType;
+        using DataType = Float;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Vector2f >
     {
-        typedef Vector2 DataType;
+        using DataType = Vector2;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Vector3f >
     {
-        typedef Vector3 DataType;
+        using DataType = Vector3;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Vector4f >
     {
-        typedef Vector4 DataType;
+        using DataType = Vector4;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Matrix22f >
     {
-        typedef Matrix22f DataType;
+        using DataType = Matrix22f;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Matrix33f >
     {
-        typedef Matrix33f DataType;
+        using DataType = Matrix33f;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Matrix44f >
     {
-        typedef Matrix44f DataType;
+        using DataType = Matrix44f;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Vector2i >
     {
-        typedef Vector2i DataType;
+        using DataType = Vector2i;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Vector3i >
     {
-        typedef Vector3i DataType;
+        using DataType = Vector3i;
     };
 
     template <>
     struct DataIDToDataTypeSelector < EDataTypeID_Vector4i >
     {
-        typedef Vector4i DataType;
+        using DataType = Vector4i;
     };
 }
 

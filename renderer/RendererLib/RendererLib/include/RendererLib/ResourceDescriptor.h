@@ -21,20 +21,18 @@ namespace ramses_internal
 {
     struct ResourceDescriptor
     {
-        EResourceStatus status = EResourceStatus_Unknown;
+        EResourceStatus status = EResourceStatus::Registered;
         EResourceType type = EResourceType_Invalid;
         DeviceResourceHandle deviceHandle;
         ResourceContentHash hash;
         SceneIdVector sceneUsage;
         ManagedResource resource;
-        UInt64 lastRequestFrameIdx = 0;
-        UInt64 lastStatusChangeFrameIdx = 0;
         UInt32 compressedSize = 0;
         UInt32 decompressedSize = 0;
         UInt32 vramSize = 0;
     };
 
-    typedef HashMap<ResourceContentHash, ResourceDescriptor> ResourceDescriptors;
+    using ResourceDescriptors = HashMap<ResourceContentHash, ResourceDescriptor>;
 }
 
 #endif

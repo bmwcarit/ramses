@@ -55,38 +55,6 @@ namespace ramses
         return resourceId;
     }
 
-    // TODO REMOVE
-    ramses::resourceId_t ResourceDataPool::addArrayResourceData(uint32_t numElements, EDataType type, const void* arrayData, resourceCacheFlag_t cacheFlag /*= ResourceCacheFlag_DoNotCache*/, const char* name /*= nullptr*/)
-    {
-        auto resourceId = impl.addArrayResourceData(type, numElements, arrayData, cacheFlag, name);
-        LOG_HL_CLIENT_API5(type, resourceId, numElements, LOG_API_GENERIC_PTR_STRING(arrayData), cacheFlag, name);
-        return resourceId;
-    }
-
-    //// TODO REMOVE
-    ramses::resourceId_t ResourceDataPool::addTexture2DData(uint32_t width, uint32_t height, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain /*= false*/, const TextureSwizzle& swizzle /*= {}*/, resourceCacheFlag_t cacheFlag /*= ResourceCacheFlag_DoNotCache*/, const char* name /*= nullptr*/)
-    {
-        auto resourceId = impl.addTexture2DData(format, width, height, mipMapCount, mipLevelData, generateMipChain, swizzle, cacheFlag, name);
-        LOG_HL_CLIENT_API9(getTextureFormatString(format), resourceId, width, height, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, swizzle, cacheFlag, name);
-        return resourceId;
-    }
-
-    //// TODO REMOVE
-    ramses::resourceId_t ResourceDataPool::addTexture3DData(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain /*= false*/, resourceCacheFlag_t cacheFlag /*= ResourceCacheFlag_DoNotCache*/, const char* name /*= nullptr*/)
-    {
-        auto resourceId = impl.addTexture3DData(format, width, height, depth, mipMapCount, mipLevelData, generateMipChain, cacheFlag, name);
-        LOG_HL_CLIENT_API9(getTextureFormatString(format), resourceId, width, height, depth, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, cacheFlag, name);
-        return resourceId;
-    }
-
-    //// TODO REMOVE
-    ramses::resourceId_t ResourceDataPool::addTextureCubeData(uint32_t size, ETextureFormat format, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain /*= false*/, const TextureSwizzle& swizzle /*= {}*/, resourceCacheFlag_t cacheFlag /*= ResourceCacheFlag_DoNotCache*/, const char* name /*= nullptr*/)
-    {
-        auto resourceId = impl.addTextureCubeData(format, size, mipMapCount, mipLevelData, generateMipChain, swizzle, cacheFlag, name);
-        LOG_HL_CLIENT_API8(getTextureFormatString(format), resourceId, size, mipMapCount, LOG_API_GENERIC_PTR_STRING(mipLevelData), generateMipChain, swizzle, cacheFlag, name);
-        return resourceId;
-    }
-
     ramses::resourceId_t ResourceDataPool::addEffectData(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag /*= ResourceCacheFlag_DoNotCache*/, const char* name /*= nullptr*/)
     {
         auto resourceId = impl.addEffectData(effectDesc, cacheFlag, name);

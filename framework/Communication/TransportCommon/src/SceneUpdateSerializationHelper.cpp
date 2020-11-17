@@ -89,6 +89,7 @@ namespace ramses_internal
 
     namespace FlushInformationSerialization
     {
+        constexpr uint8_t FlushBits_HasSizeInfo = 1u;
         absl::Span<const Byte> SerializeInfos(const FlushInformation& flushInfos, std::vector<Byte>& workingMemory)
         {
             const UInt estimatedDataSize =
@@ -103,8 +104,7 @@ namespace ramses_internal
             workingMemory.reserve(workingMemory.size() + estimatedDataSize);
 
             VectorBinaryOutputStream os(workingMemory);
-            const uint8_t flushFlags =
-                (flushInfos.hasSizeInfo ? ESceneActionFlushBits_HasSizeInfo : 0u);
+            const uint8_t flushFlags = flushInfos.hasSizeInfo ? FlushBits_HasSizeInfo : 0u;
 
             os << flushInfos.containsValidInformation;
             os << flushInfos.flushCounter;
@@ -132,8 +132,8 @@ namespace ramses_internal
                 os << flushInfos.sizeInfo.pickableObjectCount;
                 os << flushInfos.sizeInfo.sceneReferenceCount;
             }
-            putDataArray(os, flushInfos.resourceChanges.m_addedClientResourceRefs);
-            putDataArray(os, flushInfos.resourceChanges.m_removedClientResourceRefs);
+            putDataArray(os, flushInfos.resourceChanges.m_resourcesAdded);
+            putDataArray(os, flushInfos.resourceChanges.m_resourcesRemoved);
             putDataArray(os, flushInfos.resourceChanges.m_sceneResourceActions);
 
             os << uint32_t(flushInfos.sceneReferences.size());
@@ -165,7 +165,7 @@ namespace ramses_internal
             is >> infos.flushCounter;
             uint8_t flushFlags = 0u;
             is >> flushFlags;
-            infos.hasSizeInfo = (flushFlags & ESceneActionFlushBits_HasSizeInfo) != 0;
+            infos.hasSizeInfo = (flushFlags & FlushBits_HasSizeInfo) != 0;
             if (infos.hasSizeInfo)
             {
                 is >> infos.sizeInfo.nodeCount;
@@ -189,8 +189,8 @@ namespace ramses_internal
                 is >> infos.sizeInfo.pickableObjectCount;
                 is >> infos.sizeInfo.sceneReferenceCount;
             }
-            getDataArray(is, infos.resourceChanges.m_addedClientResourceRefs);
-            getDataArray(is, infos.resourceChanges.m_removedClientResourceRefs);
+            getDataArray(is, infos.resourceChanges.m_resourcesAdded);
+            getDataArray(is, infos.resourceChanges.m_resourcesRemoved);
             getDataArray(is, infos.resourceChanges.m_sceneResourceActions);
             uint32_t count = 0;
             is >> count;

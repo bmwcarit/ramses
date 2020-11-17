@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "renderer_common_gmock_header.h"
-#include "ResourceProviderMock.h"
+#include "ResourceDeviceHandleAccessorMock.h"
 #include "RendererMock.h"
 #include "DisplayControllerMock.h"
 #include "RenderBackendMock.h"
@@ -95,8 +95,8 @@ public:
     {
         static const DisplayConfig dummyConfig;
         const DisplayHandle displayHandle(m_renderer.getDisplayControllerCount());
-        EXPECT_CALL(m_sceneUpdater, createResourceManager(Ref(m_resourceProvider), Ref(m_resourceUploader), _, _, displayHandle, _, _));
-        m_commandBuffer.createDisplay(dummyConfig, m_resourceProvider, m_resourceUploader, displayHandle);
+        EXPECT_CALL(m_sceneUpdater, createResourceManager(Ref(m_resourceUploader), _, _, displayHandle, _, _));
+        m_commandBuffer.createDisplay(dummyConfig, m_resourceUploader, displayHandle);
         doCommandExecutorLoop();
 
         const RendererEventVector events = consumeRendererEvents();
@@ -106,13 +106,10 @@ public:
 
         EXPECT_CALL(getDisplayControllerMock(displayHandle), getRenderBackend()).Times(AnyNumber());
         EXPECT_CALL(getRenderBackendMock(displayHandle).surfaceMock, enable()).Times(AnyNumber());
-        EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], getRequestedResourcesAlreadyInCache(_)).Times(AnyNumber());
-        EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], requestAndUnrequestPendingClientResources()).Times(AnyNumber());
-        EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], processArrivedClientResources(_)).Times(AnyNumber());
-        EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], hasClientResourcesToBeUploaded()).Times(AnyNumber());
-        EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], referenceClientResourcesForScene(_, _)).Times(AnyNumber());
+        EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], hasResourcesToBeUploaded()).Times(AnyNumber());
+        EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], referenceResourcesForScene(_, _)).Times(AnyNumber());
         EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], unloadAllSceneResourcesForScene(_)).Times(AnyNumber());
-        EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], unreferenceAllClientResourcesForScene(_)).Times(AnyNumber());
+        EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], unreferenceAllResourcesForScene(_)).Times(AnyNumber());
 
         return displayHandle;
     }
@@ -137,14 +134,13 @@ public:
         //receive initial flush
         SceneUpdate sceneUpdate;
         SceneActionCollectionCreator creator(sceneUpdate.actions);
-        creator.flush(1u, false);
         sceneUpdate.flushInfos.flushCounter = 1u;
         sceneUpdate.flushInfos.containsValidInformation = true;
         SceneActionCollection sceneActionCopy = sceneUpdate.actions.copy();
         m_commandBuffer.enqueueActionsForScene(sceneId, std::move(sceneUpdate));
 
         EXPECT_CALL(m_sceneEventSender, sendSubscribeScene(sceneId));
-        EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneId, Field(&SceneUpdate::actions, Eq(ByRef(sceneActionCopy)))));
+        EXPECT_CALL(m_sceneUpdater, handleSceneUpdate(sceneId, Field(&SceneUpdate::actions, Eq(ByRef(sceneActionCopy)))));
         doCommandExecutorLoop();
     }
 
@@ -176,12 +172,12 @@ public:
 
     void createOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle displayHandle, bool interruptible = false)
     {
-        m_commandBuffer.createOffscreenBuffer(buffer, displayHandle, 1u, 1u, interruptible);
+        m_commandBuffer.createOffscreenBuffer(buffer, displayHandle, 1u, 1u, 4u, interruptible);
 
         // there is check if OB already uploaded before creation, make sure to report it is not
         InSequence seq;
         EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
-        EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], uploadOffscreenBuffer(buffer, 1u, 1u, interruptible));
+        EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], uploadOffscreenBuffer(buffer, 1u, 1u, 4u, interruptible));
         EXPECT_CALL(*m_sceneUpdater.m_resourceManagerMocks[displayHandle], getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceMock::FakeRenderTargetDeviceHandle));
         doCommandExecutorLoop();
 
@@ -257,7 +253,7 @@ public:
     }
 
 protected:
-    StrictMock<PlatformFactoryStrictMock>         m_platformFactoryMock;
+    StrictMock<PlatformStrictMock>         m_platformFactoryMock;
     RendererEventCollector                        m_rendererEventCollector;
     RendererScenes                                m_rendererScenes;
     SceneExpirationMonitor                        m_expirationMonitor;
@@ -272,7 +268,6 @@ protected:
     StrictMock<RendererSceneControlLogicMock>     m_sceneControlLogic;
     RendererCommandExecutor                       m_commandExecutor;
 
-    StrictMock<ResourceProviderMock> m_resourceProvider;
     ResourceUploader m_resourceUploader;
 
     const RenderableHandle m_renderable;
@@ -434,7 +429,7 @@ TEST_P(ARendererCommandExecutor, failsToCreateOffscreenBufferAndGeneratesFailEve
     const OffscreenBufferHandle buffer(1u);
     const DisplayHandle invalidDisplay(2u);
 
-    m_commandBuffer.createOffscreenBuffer(buffer, invalidDisplay, 1u, 1u, false);
+    m_commandBuffer.createOffscreenBuffer(buffer, invalidDisplay, 1u, 1u, 0u, false);
     doCommandExecutorLoop();
 
     const RendererEventVector events = consumeRendererEvents();
@@ -635,11 +630,10 @@ TEST_P(ARendererCommandExecutor, createsAndDestroysDisplay)
 {
     const DisplayHandle displayHandle(33u);
     const DisplayConfig displayConfig;
-    ResourceProviderMock resourceProvider;
     NiceMock<ResourceUploaderMock> resourceUploader;
 
-    m_commandBuffer.createDisplay(displayConfig, resourceProvider, resourceUploader, displayHandle);
-    EXPECT_CALL(m_sceneUpdater, createResourceManager(Ref(resourceProvider), Ref(resourceUploader), _, _, displayHandle, _, _));
+    m_commandBuffer.createDisplay(displayConfig, resourceUploader, displayHandle);
+    EXPECT_CALL(m_sceneUpdater, createResourceManager(Ref(resourceUploader), _, _, displayHandle, _, _));
     doCommandExecutorLoop();
 
     EXPECT_EQ(1u, m_renderer.getDisplayControllerCount());
@@ -670,7 +664,6 @@ TEST_P(ARendererCommandExecutor, linksTransformDataSlots)
     const DataSlotHandle providerSlot(3u);
     providerCreator.allocateNode(0u, providerNode);
     providerCreator.allocateDataSlot({ EDataSlotType_TransformationProvider, providerSlotId, providerNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, providerSlot);
-    providerCreator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     providerSceneActions.flushInfos.flushCounter = 1u;
     providerSceneActions.flushInfos.containsValidInformation = true;
     providerSceneActions.flushInfos.hasSizeInfo = true;
@@ -684,7 +677,6 @@ TEST_P(ARendererCommandExecutor, linksTransformDataSlots)
     const DataSlotHandle consumerSlot(3u);
     consumerCreator.allocateNode(0u, consumerNode);
     consumerCreator.allocateDataSlot({ EDataSlotType_TransformationConsumer, consumerSlotId, consumerNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, consumerSlot);
-    consumerCreator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     consumerSceneActions.flushInfos.flushCounter = 1u;
     consumerSceneActions.flushInfos.containsValidInformation = true;
     consumerSceneActions.flushInfos.hasSizeInfo = true;
@@ -692,8 +684,8 @@ TEST_P(ARendererCommandExecutor, linksTransformDataSlots)
     m_commandBuffer.enqueueActionsForScene(sceneConsumerId, std::move(consumerSceneActions));
 
     // handle the previous generated events before the link event
-    EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneConsumerId, _));
-    EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneProviderId, _));
+    EXPECT_CALL(m_sceneUpdater, handleSceneUpdate(sceneConsumerId, _));
+    EXPECT_CALL(m_sceneUpdater, handleSceneUpdate(sceneProviderId, _));
     doCommandExecutorLoop();
 
     updateScenes();
@@ -727,7 +719,6 @@ TEST_P(ARendererCommandExecutor, unlinksTransformDataSlots)
     const DataSlotHandle providerSlot(3u);
     providerCreator.allocateNode(0u, providerNode);
     providerCreator.allocateDataSlot({ EDataSlotType_TransformationProvider, providerSlotId, providerNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, providerSlot);
-    providerCreator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     providerSceneActions.flushInfos.flushCounter = 1u;
     providerSceneActions.flushInfos.containsValidInformation = true;
     providerSceneActions.flushInfos.hasSizeInfo = true;
@@ -741,15 +732,14 @@ TEST_P(ARendererCommandExecutor, unlinksTransformDataSlots)
     const DataSlotHandle consumerSlot(3u);
     consumerCreator.allocateNode(0u, consumerNode);
     consumerCreator.allocateDataSlot({ EDataSlotType_TransformationConsumer, consumerSlotId, consumerNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, consumerSlot);
-    consumerCreator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     consumerSceneActions.flushInfos.flushCounter = 1u;
     consumerSceneActions.flushInfos.containsValidInformation = true;
     consumerSceneActions.flushInfos.hasSizeInfo = true;
     consumerSceneActions.flushInfos.sizeInfo = SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u);
     m_commandBuffer.enqueueActionsForScene(sceneConsumerId, std::move(consumerSceneActions));
 
-    EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneConsumerId, _));
-    EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneProviderId, _));
+    EXPECT_CALL(m_sceneUpdater, handleSceneUpdate(sceneConsumerId, _));
+    EXPECT_CALL(m_sceneUpdater, handleSceneUpdate(sceneProviderId, _));
     doCommandExecutorLoop();
     updateScenes();
 
@@ -779,16 +769,11 @@ TEST_P(ARendererCommandExecutor, processesSceneActions)
     SceneUpdate actions;
     SceneActionCollectionCreator creator(actions.actions);
     creator.allocateNode(0u, node);
-    creator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
-    creator.flush(1u, false);
-    creator.flush(1u, false);
-    creator.flush(1u, false);
-    creator.flush(1u, false);
     actions.flushInfos.flushCounter = 1u;
     actions.flushInfos.containsValidInformation = true;
     m_commandBuffer.enqueueActionsForScene(sceneId, std::move(actions));
 
-    EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneId, _));
+    EXPECT_CALL(m_sceneUpdater, handleSceneUpdate(sceneId, _));
     doCommandExecutorLoop();
 }
 
@@ -806,7 +791,6 @@ TEST_P(ARendererCommandExecutor, executionClearsSceneActionsRegardlessOfStateOfT
     SceneActionCollectionCreator creator(actions.actions);
     SceneUpdate copy;
     creator.allocateNode(0u, NodeHandle(1u));
-    creator.flush(1u, true, SceneSizeInformation(10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u, 10u));
     actions.flushInfos.flushCounter = 1u;
     actions.flushInfos.containsValidInformation = true;
     actions.flushInfos.hasSizeInfo = true;
@@ -819,8 +803,8 @@ TEST_P(ARendererCommandExecutor, executionClearsSceneActionsRegardlessOfStateOfT
     m_commandBuffer.enqueueActionsForScene(sceneSubscribedId, std::move(copy));
     m_commandBuffer.enqueueActionsForScene(sceneNotSubscribedId, std::move(actions));
 
-    EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneSubscribedId, _));
-    EXPECT_CALL(m_sceneUpdater, handleSceneActions(sceneNotSubscribedId, _));
+    EXPECT_CALL(m_sceneUpdater, handleSceneUpdate(sceneSubscribedId, _));
+    EXPECT_CALL(m_sceneUpdater, handleSceneUpdate(sceneNotSubscribedId, _));
     doCommandExecutorLoop();
 
     RendererCommandContainer cmds;
@@ -970,14 +954,14 @@ TEST_P(ARendererCommandExecutor, setFrameTimerLimits)
 {
     //default values
     ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload));
-    ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload));
+    ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ResourcesUpload));
     ASSERT_EQ(PlatformTime::InfiniteDuration, m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender));
 
     m_commandBuffer.setFrameTimerLimits(4u, 1u, 3u);
     doCommandExecutorLoop();
 
     EXPECT_EQ(std::chrono::microseconds(4u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload));
-    EXPECT_EQ(std::chrono::microseconds(1u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ClientResourcesUpload));
+    EXPECT_EQ(std::chrono::microseconds(1u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ResourcesUpload));
     EXPECT_EQ(std::chrono::microseconds(3u), m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender));
 }
 

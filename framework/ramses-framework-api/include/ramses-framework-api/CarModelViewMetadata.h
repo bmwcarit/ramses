@@ -32,7 +32,9 @@ namespace ramses
                 origin_x == rhs.origin_x &&
                 origin_y == rhs.origin_y &&
                 origin_z == rhs.origin_z &&
-                cameraFOV == rhs.cameraFOV;
+                cameraFOV == rhs.cameraFOV &&
+                nearPlane == rhs.nearPlane &&
+                farPlane == rhs.farPlane;
         }
 
         /**
@@ -57,8 +59,12 @@ namespace ramses
         float origin_y;
         /// The z value of the origin
         float origin_z;
-        /// the fov of the camera
+        /// The vertical FOV of the camera
         float cameraFOV;
+        /// Camera frustum near plane
+        float nearPlane;
+        /// Camera frustum far plane
+        float farPlane;
     };
 }
 

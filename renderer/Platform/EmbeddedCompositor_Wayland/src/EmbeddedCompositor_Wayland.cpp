@@ -105,24 +105,24 @@ namespace ramses_internal
         return 0u != m_updatedStreamTextureSourceIds.size();
     }
 
-    StreamTextureSourceIdSet EmbeddedCompositor_Wayland::dispatchUpdatedStreamTextureSourceIds()
+    WaylandIviSurfaceIdSet EmbeddedCompositor_Wayland::dispatchUpdatedStreamTextureSourceIds()
     {
         LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::dispatchUpdatedStreamTextureSourceIds(): count of pending updates for dispatching :" << m_updatedStreamTextureSourceIds.size());
-        StreamTextureSourceIdSet result = m_updatedStreamTextureSourceIds;
+        WaylandIviSurfaceIdSet result = m_updatedStreamTextureSourceIds;
         m_updatedStreamTextureSourceIds.clear();
         return result;
     }
 
-    StreamTextureSourceIdSet EmbeddedCompositor_Wayland::dispatchNewStreamTextureSourceIds()
+    WaylandIviSurfaceIdSet EmbeddedCompositor_Wayland::dispatchNewStreamTextureSourceIds()
     {
-        const auto result = m_newStreamTextureSourceIds;
+        auto result = m_newStreamTextureSourceIds;
         m_newStreamTextureSourceIds.clear();
         return result;
     }
 
-    StreamTextureSourceIdSet EmbeddedCompositor_Wayland::dispatchObsoleteStreamTextureSourceIds()
+    WaylandIviSurfaceIdSet EmbeddedCompositor_Wayland::dispatchObsoleteStreamTextureSourceIds()
     {
-        const auto result = m_obsoleteStreamTextureSourceIds;
+        auto result = m_obsoleteStreamTextureSourceIds;
         m_obsoleteStreamTextureSourceIds.clear();
         return result;
     }
@@ -200,7 +200,7 @@ namespace ramses_internal
         m_serverDisplay.flushClients();
     }
 
-    UInt32 EmbeddedCompositor_Wayland::uploadCompositingContentForStreamTexture(StreamTextureSourceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter)
+    UInt32 EmbeddedCompositor_Wayland::uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter)
     {
         assert(streamTextureSourceId.isValid());
         IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(streamTextureSourceId);
@@ -250,7 +250,7 @@ namespace ramses_internal
         }
     }
 
-    Bool EmbeddedCompositor_Wayland::isContentAvailableForStreamTexture(StreamTextureSourceId streamTextureSourceId) const
+    Bool EmbeddedCompositor_Wayland::isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
         const IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(streamTextureSourceId);
         if(waylandClientSurface)
@@ -292,7 +292,7 @@ namespace ramses_internal
         return m_compositorConnections.size();
     }
 
-    Bool EmbeddedCompositor_Wayland::hasSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const
+    Bool EmbeddedCompositor_Wayland::hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
         for (const auto surface: m_surfaces)
         {
@@ -305,7 +305,7 @@ namespace ramses_internal
         return false;
     }
 
-    const IWaylandSurface& EmbeddedCompositor_Wayland::findSurfaceForStreamTexture(StreamTextureSourceId streamTextureSourceId) const
+    const IWaylandSurface& EmbeddedCompositor_Wayland::findSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
         const auto it = absl::c_find_if(m_surfaces, [&](const auto surface){ return surface->getIviSurfaceId() == streamTextureSourceId;});
         return **it;
@@ -377,28 +377,28 @@ namespace ramses_internal
 
     void EmbeddedCompositor_Wayland::removeFromUpdatedStreamTextureSourceIds(WaylandIviSurfaceId id)
     {
-        if(m_newStreamTextureSourceIds.contains(id))
+        if (m_newStreamTextureSourceIds.count(id))
         {
-            m_newStreamTextureSourceIds.remove(id);
+            m_newStreamTextureSourceIds.erase(id);
         }
-        else if (m_knownStreamTextureSoruceIds.contains(id))
+        else if (m_knownStreamTextureSoruceIds.count(id))
         {
-            m_obsoleteStreamTextureSourceIds.put(id);
+            m_obsoleteStreamTextureSourceIds.insert(id);
         }
 
-        m_updatedStreamTextureSourceIds.remove(id);
-        m_knownStreamTextureSoruceIds.remove(id);
+        m_updatedStreamTextureSourceIds.erase(id);
+        m_knownStreamTextureSoruceIds.erase(id);
     }
 
     void EmbeddedCompositor_Wayland::addToUpdatedStreamTextureSourceIds(WaylandIviSurfaceId id)
     {
         LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addToUpdatedStreamTextureSourceIds: new texture data for stream texture with source id " << id);
-        m_updatedStreamTextureSourceIds.put(id);
+        m_updatedStreamTextureSourceIds.insert(id);
 
-        if(!m_knownStreamTextureSoruceIds.contains(id))
+        if(!m_knownStreamTextureSoruceIds.count(id))
         {
-            m_newStreamTextureSourceIds.put(id);
-            m_knownStreamTextureSoruceIds.put(id);
+            m_newStreamTextureSourceIds.insert(id);
+            m_knownStreamTextureSoruceIds.insert(id);
         }
     }
 

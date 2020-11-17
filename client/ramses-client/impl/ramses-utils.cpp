@@ -369,11 +369,10 @@ namespace ramses
 #include "ramses-client-api/Appearance.h"
 #include "ramses-client-api/Camera.h"
 #include "ramses-client-api/GeometryBinding.h"
-#include "ramses-client-api/LocalCamera.h"
+#include "ramses-client-api/Camera.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/OrthographicCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/BlitPass.h"
 #include "ramses-client-api/DataFloat.h"
@@ -423,6 +422,7 @@ namespace ramses
 #include "ramses-client-api/Texture3D.h"
 #include "ramses-client-api/TextureCube.h"
 #include "ramses-client-api/TextureSampler.h"
+#include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/ArrayBuffer.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/ArrayResource.h"
@@ -442,8 +442,6 @@ INSTANTIATE_CONVERT_TEMPLATE(AnimationSystemRealTime)
 INSTANTIATE_CONVERT_TEMPLATE(Node)
 INSTANTIATE_CONVERT_TEMPLATE(MeshNode)
 INSTANTIATE_CONVERT_TEMPLATE(Camera)
-INSTANTIATE_CONVERT_TEMPLATE(RemoteCamera)
-INSTANTIATE_CONVERT_TEMPLATE(LocalCamera)
 INSTANTIATE_CONVERT_TEMPLATE(PerspectiveCamera)
 INSTANTIATE_CONVERT_TEMPLATE(OrthographicCamera)
 INSTANTIATE_CONVERT_TEMPLATE(Effect)
@@ -488,6 +486,7 @@ INSTANTIATE_CONVERT_TEMPLATE(RenderGroup)
 INSTANTIATE_CONVERT_TEMPLATE(RenderPass)
 INSTANTIATE_CONVERT_TEMPLATE(BlitPass)
 INSTANTIATE_CONVERT_TEMPLATE(TextureSampler)
+INSTANTIATE_CONVERT_TEMPLATE(TextureSamplerMS)
 INSTANTIATE_CONVERT_TEMPLATE(RenderBuffer)
 INSTANTIATE_CONVERT_TEMPLATE(RenderTarget)
 INSTANTIATE_CONVERT_TEMPLATE(DataObject)

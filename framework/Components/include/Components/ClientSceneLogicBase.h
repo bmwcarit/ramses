@@ -20,6 +20,7 @@ namespace ramses_internal
     class StatisticCollectionScene;
     struct FlushTimeInformation;
     class IResourceProviderComponent;
+    struct SceneUpdate;
 
     class ClientSceneLogicBase
     {
@@ -35,7 +36,7 @@ namespace ramses_internal
 
         std::vector<Guid> getWaitingAndActiveSubscribers() const;
 
-        virtual void flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) = 0;
+        virtual bool flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) = 0;
 
         const char* getSceneStateString() const;
 
@@ -43,7 +44,7 @@ namespace ramses_internal
         virtual void postAddSubscriber() {};
         void sendSceneToWaitingSubscribers(const IScene& scene, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag);
         void printFlushInfo(StringOutputStream& sos, const char* name, const SceneActionCollection& collection) const;
-        void updateResourceChanges(bool hasNewActions);
+        bool verifyAndGetResourceChanges(SceneUpdate& sceneUpdate, bool hasNewActions);
 
         ISceneGraphSender&     m_scenegraphSender;
         IResourceProviderComponent& m_resourceComponent;
@@ -51,7 +52,7 @@ namespace ramses_internal
         const SceneId          m_sceneId;
         ClientScene&           m_scene;
 
-        typedef std::vector<Guid> AddressVector;
+        using AddressVector = std::vector<Guid>;
         AddressVector  m_subscribersActive;
         AddressVector  m_subscribersWaitingForScene;
         EScenePublicationMode m_scenePublicationMode;
@@ -59,8 +60,8 @@ namespace ramses_internal
         UInt64                 m_flushCounter = 0u;
         ResourceContentHashVector m_lastFlushClientResourcesInUse;
 
-        SceneResourceChanges m_resourceChanges; // keep container memory allocated
-        ResourceContentHashVector m_newClientResources; // keep container memory allocated
+        ResourceChanges m_resourceChanges; // keep container memory allocated
+        ResourceContentHashVector m_newResources; // keep container memory allocated
         AnimationSystemFactory m_animationSystemFactory;
     };
 }

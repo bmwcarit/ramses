@@ -52,9 +52,10 @@ protected:
 
     void publishAndExpectToGetToState(ramses::RendererSceneState state, bool expectConfirmation = false)
     {
+        assert(state != ramses::RendererSceneState::Available);
         EXPECT_FALSE(isSceneShown());
 
-        rendererMateEventHandler.scenePublished(sceneId);
+        rendererMateEventHandler.sceneStateChanged(sceneId, ramses::RendererSceneState::Available);
         if (state != ramses::RendererSceneState::Unavailable)
             rendererMateEventHandler.sceneStateChanged(sceneId, state);
 
@@ -134,7 +135,7 @@ TEST_F(ARendererMate, reportsCorrectSceneShowState)
 
 TEST_F(ARendererMate, continuesToShowSceneAndLogsConfirmationAfterReconnect)
 {
-    rendererMateEventHandler.scenePublished(sceneId);
+    rendererMateEventHandler.sceneStateChanged(sceneId, ramses::RendererSceneState::Available);
     rendererMate.setSceneState(sceneId, ramses::RendererSceneState::Rendered, "scene is shown now");
 
     rendererMateEventHandler.sceneStateChanged(sceneId, ramses::RendererSceneState::Available);
@@ -155,8 +156,8 @@ TEST_F(ARendererMate, canBeCalledFromAnotherThread)
 
     constexpr ramses::sceneId_t sceneId1{ 10123 };
     constexpr ramses::sceneId_t sceneId2{ 10124 };
-    rendererMateEventHandler.scenePublished(sceneId1);
-    rendererMateEventHandler.scenePublished(sceneId2);
+    rendererMateEventHandler.sceneStateChanged(sceneId1, ramses::RendererSceneState::Available);
+    rendererMateEventHandler.sceneStateChanged(sceneId2, ramses::RendererSceneState::Available);
 
     auto executeMethods = [&](ramses::sceneId_t sId)
     {

@@ -117,9 +117,21 @@ namespace ramses
         return status;
     }
 
+    status_t Node::setRotation(float x, float y, float z, ERotationConvention rotationConvention)
+    {
+        const status_t status = impl.setRotation(x, y, z, rotationConvention);
+        LOG_HL_CLIENT_API4(status, x, y, z, rotationConvention);
+        return status;
+    }
+
     ramses::status_t Node::getRotation(float& x, float& y, float& z) const
     {
         return impl.getRotation(x, y, z);
+    }
+
+    ramses::status_t Node::getRotation(float& x, float& y, float& z, ERotationConvention& rotationConvention) const
+    {
+        return impl.getRotation(x, y, z, rotationConvention);
     }
 
     ramses::status_t Node::translate(float x, float y, float z)

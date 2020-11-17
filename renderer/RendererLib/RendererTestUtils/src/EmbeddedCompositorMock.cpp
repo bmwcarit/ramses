@@ -14,20 +14,16 @@ namespace ramses_internal
 {
     EmbeddedCompositorMock::EmbeddedCompositorMock()
     {
-        ON_CALL(*this, dispatchUpdatedStreamTextureSourceIds()).WillByDefault(Return(StreamTextureSourceIdSet()));
-        ON_CALL(*this, dispatchNewStreamTextureSourceIds()).WillByDefault(Return(StreamTextureSourceIdSet()));
-        ON_CALL(*this, dispatchObsoleteStreamTextureSourceIds()).WillByDefault(Return(StreamTextureSourceIdSet()));
+        ON_CALL(*this, dispatchUpdatedStreamTextureSourceIds()).WillByDefault(Return(WaylandIviSurfaceIdSet()));
+        ON_CALL(*this, dispatchNewStreamTextureSourceIds()).WillByDefault(Return(WaylandIviSurfaceIdSet()));
+        ON_CALL(*this, dispatchObsoleteStreamTextureSourceIds()).WillByDefault(Return(WaylandIviSurfaceIdSet()));
 
         EXPECT_CALL(*this, isRealCompositor()).Times(AnyNumber()).WillRepeatedly(Return(true));
     }
 
-    EmbeddedCompositorMock::~EmbeddedCompositorMock()
-    {
-    }
+    EmbeddedCompositorMock::~EmbeddedCompositorMock() = default;
 
-    EmbeddedCompositorMockWithDestructor::EmbeddedCompositorMockWithDestructor()
-    {
-    }
+    EmbeddedCompositorMockWithDestructor::EmbeddedCompositorMockWithDestructor() = default;
 
     EmbeddedCompositorMockWithDestructor::~EmbeddedCompositorMockWithDestructor()
     {

@@ -42,7 +42,7 @@ namespace ramses_internal
         EXPECT_CALL(*this, getTextureAddress(_)).Times(AnyNumber());
 
         // fake uploads
-        ON_CALL(*this, allocateVertexBuffer(_, _)).WillByDefault(Return(FakeVertexBufferDeviceHandle));
+        ON_CALL(*this, allocateVertexBuffer(_)).WillByDefault(Return(FakeVertexBufferDeviceHandle));
         ON_CALL(*this, allocateIndexBuffer(_, _)).WillByDefault(Return(FakeIndexBufferDeviceHandle));
         ON_CALL(*this, uploadShader(_)).WillByDefault(Return(FakeShaderDeviceHandle));
         ON_CALL(*this, uploadBinaryShader(_, _, _, _)).WillByDefault(Return(FakeShaderDeviceHandle));

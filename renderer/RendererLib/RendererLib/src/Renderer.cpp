@@ -21,15 +21,15 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DisplayEventHandler.h"
 #include "RendererLib/SceneExpirationMonitor.h"
-#include "Platform_Base/PlatformFactory_Base.h"
+#include "Platform_Base/Platform_Base.h"
 #include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
     const Vector4 Renderer::DefaultClearColor = { 0.f, 0.f, 0.f, 1.f };
 
-    Renderer::Renderer(IPlatformFactory& platformFactory, const RendererScenes& rendererScenes, RendererEventCollector& eventCollector, const FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, RendererStatistics& rendererStatistics)
-        : m_platformFactory(platformFactory)
+    Renderer::Renderer(IPlatform& platform, const RendererScenes& rendererScenes, RendererEventCollector& eventCollector, const FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, RendererStatistics& rendererStatistics)
+        : m_platform(platform)
         , m_systemCompositorController(nullptr)
         , m_rendererScenes(rendererScenes)
         , m_displayHandlerManager(eventCollector)
@@ -37,15 +37,15 @@ namespace ramses_internal
         , m_frameTimer(frameTimer)
         , m_expirationMonitor(expirationMonitor)
     {
-        m_platformFactory.createPerRendererComponents();
-        m_systemCompositorController = platformFactory.getSystemCompositorController();
-        m_windowEventsPollingManager = platformFactory.getWindowEventsPollingManager();
+        m_platform.createPerRendererComponents();
+        m_systemCompositorController = platform.getSystemCompositorController();
+        m_windowEventsPollingManager = platform.getWindowEventsPollingManager();
     }
 
     Renderer::~Renderer()
     {
         assert(m_displays.empty());
-        m_platformFactory.destroyPerRendererComponents();
+        m_platform.destroyPerRendererComponents();
     }
 
     void Renderer::registerOffscreenBuffer(DisplayHandle display, DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, Bool isInterruptible)
@@ -149,7 +149,7 @@ namespace ramses_internal
         }
 
         delete &displayController;
-        m_platformFactory.destroyRenderBackend(renderBackend);
+        m_platform.destroyRenderBackend(renderBackend);
         m_displayHandlerManager.destroyHandler(display);
     }
 
@@ -701,7 +701,7 @@ namespace ramses_internal
 
     IDisplayController* Renderer::createDisplayControllerFromConfig(const DisplayConfig& config, DisplayEventHandler& displayEventHandler)
     {
-        IRenderBackend* renderBackend = m_platformFactory.createRenderBackend(config, displayEventHandler);
+        IRenderBackend* renderBackend = m_platform.createRenderBackend(config, displayEventHandler);
         if (nullptr == renderBackend)
         {
             return nullptr;
@@ -727,15 +727,8 @@ namespace ramses_internal
 
         const UInt32 postProcessorEffects = config.isWarpingEnabled() ? EPostProcessingEffect_Warping : EPostProcessingEffect_None;
         const UInt32 numSamples = (config.getAntialiasingMethod() == EAntiAliasingMethod_MultiSampling) ? config.getAntialiasingSampleCount() : 1u;
-        IDisplayController* displayController = new DisplayController(*renderBackend, numSamples, postProcessorEffects);
 
-        displayController->setViewPosition(config.getCameraPosition());
-        displayController->setViewRotation(config.getCameraRotation());
-
-        const ProjectionParams& params = config.getProjectionParams();
-        displayController->setProjectionParams(params);
-
-        return displayController;
+        return new DisplayController(*renderBackend, numSamples, postProcessorEffects);
     }
 
     void Renderer::setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor)

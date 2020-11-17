@@ -23,7 +23,7 @@ namespace ramses_internal
     class TypedMemoryHandle final
     {
     public:
-        typedef MemoryHandle Type;
+        using Type = MemoryHandle;
 
         static constexpr TypedMemoryHandle Invalid()
         {

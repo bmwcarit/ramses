@@ -50,21 +50,7 @@ namespace ramses_internal
     struct DisplayCommandLineArguments
     {
         explicit DisplayCommandLineArguments(const DisplayConfig& config)
-            : cameraPositionX("cpx", "cameraPositionX", config.getCameraPosition().x, "set x position of camera")
-            , cameraPositionY("cpy", "cameraPositionY", config.getCameraPosition().y, "set y position of camera")
-            , cameraPositionZ("cpz", "cameraPositionZ", config.getCameraPosition().z, "set z position of camera")
-            , cameraRotationX("crx", "cameraRotationX", config.getCameraRotation().x, "set x value of camera rotation")
-            , cameraRotationY("cry", "cameraRotationY", config.getCameraRotation().y, "set y value of camera rotation")
-            , cameraRotationZ("crz", "cameraRotationZ", config.getCameraRotation().z, "set z value of camera rotation")
-            , orthographicProjection("ortho", "orthographic-projection", "enable orthographic projection mode")
-            , fov("fov", "camera-field-of-view", ramses_internal::ProjectionParams::GetPerspectiveFovY(config.getProjectionParams()), "set camera field of view")
-            , nearPlane("np", "camera-near-plane", config.getProjectionParams().nearPlane, "set camera near plane")
-            , farPlane("fp", "camera-far-plane", config.getProjectionParams().farPlane, "set camera far plane")
-            , leftPlane("leftPlane", "camera-left-plane", 0.f, "set camera left plane")
-            , rightPlane("rightPlane", "camera-right-plane", 0.f, "set camera right plane")
-            , topPlane("topPlane", "camera-top-plane", 0.f, "set camera top plane")
-            , bottomPlane("bottomPlane", "camera-bottom-plane", 0.f, "set camera bottom plane")
-            , windowPositionX("x", "position-x", config.getWindowPositionX(), "set x position of window")
+            : windowPositionX("x", "position-x", config.getWindowPositionX(), "set x position of window")
             , windowPositionY("y", "position-y", config.getWindowPositionY(), "set y position of window")
             , windowWidth("w", "width", config.getDesiredWindowWidth(), "set window width")
             , windowHeight("h", "height", config.getDesiredWindowHeight(), "set window height")
@@ -86,20 +72,6 @@ namespace ramses_internal
         {
         }
 
-        ArgumentFloat cameraPositionX;
-        ArgumentFloat cameraPositionY;
-        ArgumentFloat cameraPositionZ;
-        ArgumentFloat cameraRotationX;
-        ArgumentFloat cameraRotationY;
-        ArgumentFloat cameraRotationZ;
-        ArgumentBool orthographicProjection;
-        ArgumentFloat fov;
-        ArgumentFloat nearPlane;
-        ArgumentFloat farPlane;
-        ArgumentFloat leftPlane;
-        ArgumentFloat rightPlane;
-        ArgumentFloat topPlane;
-        ArgumentFloat bottomPlane;
         ArgumentInt32 windowPositionX;
         ArgumentInt32 windowPositionY;
         ArgumentInt32 windowWidth;
@@ -121,25 +93,10 @@ namespace ramses_internal
         ArgumentFloat clearColorB;
         ArgumentFloat clearColorA;
 
-
         void print(Bool onlyExposedArgs = false)
         {
             LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) {
                         sos << "\nDisplay arguments:\n";
-                        sos << cameraPositionX.getHelpString();
-                        sos << cameraPositionY.getHelpString();
-                        sos << cameraPositionZ.getHelpString();
-                        sos << cameraRotationX.getHelpString();
-                        sos << cameraRotationY.getHelpString();
-                        sos << cameraRotationZ.getHelpString();
-                        sos << orthographicProjection.getHelpString();
-                        sos << fov.getHelpString();
-                        sos << nearPlane.getHelpString();
-                        sos << farPlane.getHelpString();
-                        sos << leftPlane.getHelpString();
-                        sos << rightPlane.getHelpString();
-                        sos << topPlane.getHelpString();
-                        sos << bottomPlane.getHelpString();
                         sos << windowPositionX.getHelpString();
                         sos << windowPositionY.getHelpString();
                         sos << windowWidth.getHelpString();
@@ -192,45 +149,6 @@ namespace ramses_internal
         config.setDesiredWindowHeight(rendererArgs.windowHeight.parseValueFromCmdLine(parser));
         config.setWindowPositionX(rendererArgs.windowPositionX.parseValueFromCmdLine(parser));
         config.setWindowPositionY(rendererArgs.windowPositionY.parseValueFromCmdLine(parser));
-
-        const Vector3 cameraPosition = Vector3(
-            rendererArgs.cameraPositionX.parseValueFromCmdLine(parser),
-            rendererArgs.cameraPositionY.parseValueFromCmdLine(parser),
-            rendererArgs.cameraPositionZ.parseValueFromCmdLine(parser));
-        if (rendererArgs.cameraPositionX.wasDefined() || rendererArgs.cameraPositionY.wasDefined() || rendererArgs.cameraPositionZ.wasDefined())
-        {
-            config.setCameraPosition(cameraPosition);
-        }
-
-        const Vector3 cameraRotation = Vector3(
-            rendererArgs.cameraRotationX.parseValueFromCmdLine(parser),
-            rendererArgs.cameraRotationY.parseValueFromCmdLine(parser),
-            rendererArgs.cameraRotationZ.parseValueFromCmdLine(parser));
-        config.setCameraRotation(cameraRotation);
-
-        const Float nearPlane(rendererArgs.nearPlane.parseValueFromCmdLine(parser));
-        const Float farPlane(rendererArgs.farPlane.parseValueFromCmdLine(parser));
-
-        const Bool orthographicProjection = rendererArgs.orthographicProjection.parseFromCmdLine(parser);
-        if (orthographicProjection)
-        {
-            const Float leftPlane(rendererArgs.leftPlane.parseValueFromCmdLine(parser));
-            const Float rightPlane(rendererArgs.rightPlane.parseValueFromCmdLine(parser));
-            const Float topPlane(rendererArgs.topPlane.parseValueFromCmdLine(parser));
-            const Float bottomPlane(rendererArgs.bottomPlane.parseValueFromCmdLine(parser));
-
-            const ProjectionParams projParams = ProjectionParams::Frustum(ECameraProjectionType::Orthographic,
-                leftPlane, rightPlane, bottomPlane, topPlane, nearPlane, farPlane);
-            config.setProjectionParams(projParams);
-        }
-        else
-        {
-            const Float fieldOfView(rendererArgs.fov.parseValueFromCmdLine(parser));
-            const Float aspectRatio = static_cast<Float>(config.getDesiredWindowWidth()) / config.getDesiredWindowHeight();
-
-            const ProjectionParams projParams = ProjectionParams::Perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
-            config.setProjectionParams(projParams);
-        }
 
         const UInt8 sampleCount = static_cast<UInt8>(rendererArgs.antialiasingSampleCount.parseValueFromCmdLine(parser));
         if (rendererArgs.antialiasingSampleCount.wasDefined())

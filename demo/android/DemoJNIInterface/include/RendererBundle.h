@@ -40,7 +40,7 @@ public:
     public:
         SceneStateAutoShowEventHandler(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId);
 
-        virtual void scenePublished(ramses::sceneId_t sceneId) override;
+        virtual void sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state) override;
 
     private:
         ramses::RendererSceneControl& m_sceneControlAPI;

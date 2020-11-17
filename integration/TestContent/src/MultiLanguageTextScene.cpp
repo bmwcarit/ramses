@@ -24,10 +24,10 @@ namespace ramses_internal
         effectDesc.setVertexShaderFromFile("res/ramses-test-client-text.vert");
         effectDesc.setFragmentShaderFromFile("res/ramses-test-client-text.frag");
 
-        effectDesc.setAttributeSemantic("a_position", ramses::EEffectAttributeSemantic_TextPositions);
-        effectDesc.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic_TextTextureCoordinates);
-        effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic_TextTexture);
-        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+        effectDesc.setAttributeSemantic("a_position", ramses::EEffectAttributeSemantic::TextPositions);
+        effectDesc.setAttributeSemantic("a_texcoord", ramses::EEffectAttributeSemantic::TextTextureCoordinates);
+        effectDesc.setUniformSemantic("u_texture", ramses::EEffectUniformSemantic::TextTexture);
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
         ramses::Effect* effect = scene.createEffect(effectDesc);
         ramses::UniformInput colorInput;

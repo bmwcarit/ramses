@@ -11,7 +11,6 @@
 #include "ComponentMocks.h"
 #include "Components/ManagedResource.h"
 #include "ResourceMock.h"
-#include "Components/IResourceStorageChangeListener.h"
 #include "DummyResource.h"
 #include "Utils/StatisticCollection.h"
 
@@ -19,12 +18,6 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    class IStorageChangeListenerMock : public IResourceStorageChangeListener
-    {
-    public:
-        MOCK_METHOD(void, onBytesNeededByStorageDecreased, (uint64_t bytesNowUsed), (override));
-    };
-
     class AResourceStorage : public testing::Test
     {
     public:
@@ -63,64 +56,6 @@ namespace ramses_internal
 
         Mock::VerifyAndClearExpectations(resource); //to make sure the dynamically allocated mock resource is destroyed (Die() is called)
     }
-
-    TEST_F(AResourceStorage, ReturnsNumberOfBytesUsedByRegisteredResources)
-    {
-        DummyResource* resource = new DummyResource(ResourceContentHash(456, 0), EResourceType_Invalid);
-        DummyResource* resource2 = new DummyResource(ResourceContentHash(789, 0), EResourceType_Invalid);
-        const uint32_t sizeOfDummyResources = resource->getDecompressedDataSize();
-
-        ManagedResource managed = storage.manageResource(*resource);
-
-        EXPECT_EQ(sizeOfDummyResources, storage.getBytesUsedByResourcesInMemory());
-
-        ManagedResource managed2 = storage.manageResource(*resource2);
-        EXPECT_EQ(sizeOfDummyResources * 2, storage.getBytesUsedByResourcesInMemory());
-
-        managed = ManagedResource();
-        managed2 = ManagedResource();
-        EXPECT_EQ(0u, storage.getBytesUsedByResourcesInMemory());
-    }
-
-    TEST_F(AResourceStorage, ManageSameResourceContentMultipleTimesCountsBytescorrectly)
-    {
-        DummyResource* resource = new DummyResource(ResourceContentHash(789, 0), EResourceType_Invalid);
-        DummyResource* resource2 = new DummyResource(ResourceContentHash(789, 0), EResourceType_Invalid);
-
-        const uint32_t sizeOfDummyResource = resource->getDecompressedDataSize();
-
-        ManagedResource managed = storage.manageResource(*resource);
-
-        EXPECT_EQ(sizeOfDummyResource, storage.getBytesUsedByResourcesInMemory());
-
-        ManagedResource managed2 = storage.manageResource(*resource2);
-        EXPECT_EQ(sizeOfDummyResource, storage.getBytesUsedByResourcesInMemory());
-
-        managed = ManagedResource();
-        EXPECT_EQ(sizeOfDummyResource, storage.getBytesUsedByResourcesInMemory());
-        managed2 = ManagedResource();
-        EXPECT_EQ(0u, storage.getBytesUsedByResourcesInMemory());
-    }
-
-    TEST_F(AResourceStorage, CanInformListenerHowManyBytesAreCurrentlyUsed)
-    {
-        IStorageChangeListenerMock listener;
-
-        DummyResource* resource = new DummyResource(ResourceContentHash(456, 0), EResourceType_Invalid);
-        DummyResource* resource2 = new DummyResource(ResourceContentHash(789, 0), EResourceType_Invalid);
-        const uint32_t sizeOfDummyResources = resource->getDecompressedDataSize();
-
-        storage.setListener(listener);
-        ManagedResource managed = storage.manageResource(*resource);
-        ManagedResource managed2 = storage.manageResource(*resource2);
-
-        EXPECT_CALL(listener, onBytesNeededByStorageDecreased(sizeOfDummyResources));
-        managed2 = ManagedResource();
-
-        EXPECT_CALL(listener, onBytesNeededByStorageDecreased(0u));
-        managed = ManagedResource();
-    }
-
 
     TEST_F(AResourceStorage, DoesNotDeleteResourceWhenManagedResourceGoesOutOfScopeUntilHashUsageIsAlsoGone)
     {

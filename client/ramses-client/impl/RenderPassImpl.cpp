@@ -170,16 +170,7 @@ namespace ramses
     status_t RenderPassImpl::setCamera(const CameraNodeImpl& cameraImpl)
     {
         if (!isFromTheSameSceneAs(cameraImpl))
-        {
             return addErrorEntry("RenderPass::setCamera failed - camera is not from the same scene as this RenderPass");
-        }
-
-        if (cameraImpl.isOfType(ERamsesObjectType_RemoteCamera) && nullptr != m_renderTargetImpl)
-        {
-            // This is supposed to prevent accidental use of the wrong camera type. "Remote" camera will overwrite the camera settings with the renderer's camera
-            // which is probably not desired behavior
-            return addErrorEntry("RenderPass::setCamera failed - can't render into render target with a remote camera. Use perspective or orthographic camera instead.");
-        }
 
         StatusObjectSet visitedObjects;
         const status_t cameraValidity = cameraImpl.validate(0u, visitedObjects);
@@ -206,6 +197,12 @@ namespace ramses
         }
 
         return nullptr;
+    }
+
+    Camera* RenderPassImpl::getCamera()
+    {
+        // non-const version of getCamera cast to its const version to avoid duplicating code
+        return const_cast<Camera*>((const_cast<const RenderPassImpl&>(*this)).getCamera());
     }
 
     status_t RenderPassImpl::setClearColor(const ramses_internal::Vector4& clearColor)
@@ -319,23 +316,16 @@ namespace ramses
     status_t RenderPassImpl::setRenderTarget(RenderTargetImpl* renderTargetImpl)
     {
         if (renderTargetImpl == m_renderTargetImpl)
-        {
             return StatusOK;
-        }
 
         ramses_internal::RenderTargetHandle rtHandle(ramses_internal::RenderTargetHandle::Invalid());
         if (nullptr != renderTargetImpl)
         {
-            if (nullptr == m_cameraImpl || !m_cameraImpl->isOfType(ERamsesObjectType_LocalCamera))
-            {
-                //(Violin) This error message is supposed to prevent the user from rendering into a render target with a remote camera (renderer's camera)
+            if (nullptr == m_cameraImpl)
                 return addErrorEntry("RenderPass::setRenderTarget failed - must explicitly assign a custom camera (perspective or orthographic) before rendering to render terget.");
-            }
 
             if (!isFromTheSameSceneAs(*renderTargetImpl))
-            {
                 return addErrorEntry("RenderPass::setRenderTarget failed - renderTarget is not from the same scene as this RenderPass.");
-            }
 
             rtHandle = renderTargetImpl->getRenderTargetHandle();
         }

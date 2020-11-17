@@ -32,8 +32,7 @@ namespace ramses_internal
             WidgetCarModelView = 7,
             WidgetCarModelVisibility = 8,
             WidgetExclusiveBackground = 9,
-            WidgetStreamID = 10,
-            WidgetCarCameraPlanes = 11,
+            WidgetStreamID = 10
         };
 
         constexpr const uint32_t CurrentMetadataVersion = 1;
@@ -53,7 +52,6 @@ namespace ramses_internal
             !m_hasWidgetHUDLineID &&
             !m_hasCarModel &&
             !m_hasCarModelView &&
-            !m_hasCarCameraPlanes &&
             !m_hasCarModelVisibility &&
             !m_hasExclusiveBackground &&
             !m_hasStreamID;
@@ -70,7 +68,6 @@ namespace ramses_internal
             (m_hasWidgetHUDLineID ? 1 : 0) +
             (m_hasCarModel ? 1 : 0) +
             (m_hasCarModelView ? 1 : 0) +
-            (m_hasCarCameraPlanes ? 1 : 0) +
             (m_hasCarModelVisibility ? 1 : 0) +
             (m_hasExclusiveBackground ? 1 : 0) +
             (m_hasStreamID ? 1 : 0);
@@ -122,7 +119,7 @@ namespace ramses_internal
         }
         if (m_hasCarModelView)
         {
-            constexpr size_t numberOfViewValues = 7; // pitch, yaw, distance, x,y,z of origin, fov
+            constexpr size_t numberOfViewValues = 9; // pitch, yaw, distance, x,y,z of origin, fov, near, far
             constexpr size_t sizeData = sizeof(float) * numberOfViewValues;
             static_assert(sizeData==sizeof(ramses::CarModelViewMetadata), "size mismatch of CarModelViewMetadata");
             constexpr size_t sizeTiming = sizeof(uint64_t) * 2;
@@ -136,17 +133,10 @@ namespace ramses_internal
                << m_carModelView.origin_y
                << m_carModelView.origin_z
                << m_carModelView.cameraFOV
+               << m_carModelView.nearPlane
+               << m_carModelView.farPlane
                << m_carModelViewTiming.startTimeStamp
                << m_carModelViewTiming.finishedTimeStamp;
-        }
-        if (m_hasCarCameraPlanes)
-        {
-            const uint32_t size = static_cast<uint32_t>(sizeof(m_carCameraPlanes));
-            static_assert(size == sizeof(float)*2, "size mismatch of CarCameraPlaneMetadata");
-            os << DcsmMetadataType::WidgetCarCameraPlanes
-               << size
-               << m_carCameraPlanes.nearPlane
-               << m_carCameraPlanes.farPlane;
         }
         if (m_hasCarModelVisibility)
         {
@@ -241,14 +231,10 @@ namespace ramses_internal
                 is >> m_carModelView.origin_y;
                 is >> m_carModelView.origin_z;
                 is >> m_carModelView.cameraFOV;
+                is >> m_carModelView.nearPlane;
+                is >> m_carModelView.farPlane;
                 is >> m_carModelViewTiming.startTimeStamp;
                 is >> m_carModelViewTiming.finishedTimeStamp;
-                break;
-
-            case DcsmMetadataType::WidgetCarCameraPlanes:
-                m_hasCarCameraPlanes = true;
-                is >> m_carCameraPlanes.nearPlane;
-                is >> m_carCameraPlanes.farPlane;
                 break;
 
             case DcsmMetadataType::WidgetCarModelVisibility:
@@ -320,11 +306,6 @@ namespace ramses_internal
             m_hasCarModelView = true;
             m_carModelView = other.m_carModelView;
             m_carModelViewTiming = other.m_carModelViewTiming;
-        }
-        if (other.m_hasCarCameraPlanes)
-        {
-            m_hasCarCameraPlanes = true;
-            m_carCameraPlanes = other.m_carCameraPlanes;
         }
         if (other.m_hasCarModelVisibility)
         {
@@ -430,20 +411,11 @@ namespace ramses_internal
 
     bool DcsmMetadata::setCarModelView(const ramses::CarModelViewMetadata& values, const AnimationInformation& timingInfo)
     {
-        LOG_INFO_P(CONTEXT_DCSM, "DcsmMetadata::setCarModelview: {}, {}, {}, {}, {}, {}, {}, {}, {}", values.pitch, values.yaw, values.distance, values.origin_x, values.origin_y, values.origin_z, values.cameraFOV, timingInfo.startTimeStamp, timingInfo.finishedTimeStamp);
+        LOG_INFO_P(CONTEXT_DCSM, "DcsmMetadata::setCarModelview: {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}", values.pitch, values.yaw, values.distance, values.origin_x, values.origin_y, values.origin_z, values.cameraFOV, values.nearPlane, values.farPlane, timingInfo.startTimeStamp, timingInfo.finishedTimeStamp);
 
         m_carModelView = values;
         m_carModelViewTiming = timingInfo;
         m_hasCarModelView = true;
-        return true;
-    }
-
-    bool DcsmMetadata::setCarCameraPlanes(const ramses::CarCameraPlaneMetadata& values)
-    {
-        LOG_INFO_P(CONTEXT_DCSM, "DcsmMetadata::setCarCameraPlanes: near {}, far {}", values.nearPlane, values.farPlane);
-
-        m_carCameraPlanes = values;
-        m_hasCarCameraPlanes = true;
         return true;
     }
 
@@ -509,11 +481,6 @@ namespace ramses_internal
         return m_hasCarModelView;
     }
 
-    bool DcsmMetadata::hasCarCameraPlanes() const
-    {
-        return m_hasCarCameraPlanes;
-    }
-
     bool DcsmMetadata::hasCarModelVisibility() const
     {
         return m_hasCarModelVisibility;
@@ -569,11 +536,6 @@ namespace ramses_internal
         return m_carModelViewTiming;
     }
 
-    ramses::CarCameraPlaneMetadata DcsmMetadata::getCarCameraPlanes() const
-    {
-        return m_carCameraPlanes;
-    }
-
     bool DcsmMetadata::getCarModelVisibility() const
     {
         return m_carModelVisibility;
@@ -606,8 +568,6 @@ namespace ramses_internal
             m_hasCarModelView == other.m_hasCarModelView &&
             m_carModelView == other.m_carModelView &&
             m_carModelViewTiming == other.m_carModelViewTiming &&
-            m_hasCarCameraPlanes == other.m_hasCarCameraPlanes &&
-            m_carCameraPlanes == other.m_carCameraPlanes &&
             m_hasCarModelVisibility == other.m_hasCarModelVisibility &&
             m_carModelVisibility == other.m_carModelVisibility &&
             m_hasExclusiveBackground == other.m_hasExclusiveBackground &&

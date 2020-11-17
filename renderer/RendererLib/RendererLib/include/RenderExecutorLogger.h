@@ -18,10 +18,10 @@ namespace ramses_internal
     class RenderExecutorLogger : public RenderExecutor
     {
     public:
-        RenderExecutorLogger(IDevice& device, const FrameBufferInfo& frameBuffer, RendererLogContext& context);
+        RenderExecutorLogger(IDevice& device, const TargetBufferInfo& bufferInfo, RendererLogContext& context);
 
         // Equivalent to RenderExecutor::executeScene(), but logs instead of rendering
-        void logScene(const RendererCachedScene& scene, const Matrix44f& rendererViewMatrix) const;
+        void logScene(const RendererCachedScene& scene) const;
 
     private:
         void logDirtyResources(const RendererCachedScene& scene, RenderableHandle renderable) const;

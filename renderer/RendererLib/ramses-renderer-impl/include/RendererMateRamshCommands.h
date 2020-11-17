@@ -42,17 +42,10 @@ namespace ramses_internal
         virtual bool execute(uint64_t& sceneId) const override;
     };
 
-    class UnmapScene final : public RamshCommandArgs < uint64_t >, public RendererMateRamshCommand
+    class ReleaseScene final : public RamshCommandArgs < uint64_t >, public RendererMateRamshCommand
     {
     public:
-        explicit UnmapScene(ramses::RendererMate& rendererMate);
-        virtual bool execute(uint64_t& sceneId) const override;
-    };
-
-    class UnsubscribeScene final : public RamshCommandArgs < uint64_t >, public RendererMateRamshCommand
-    {
-    public:
-        explicit UnsubscribeScene(ramses::RendererMate& rendererMate);
+        explicit ReleaseScene(ramses::RendererMate& rendererMate);
         virtual bool execute(uint64_t& sceneId) const override;
     };
 

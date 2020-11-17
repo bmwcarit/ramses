@@ -14,10 +14,6 @@
 
 namespace ramses_internal
 {
-    StreamTextureRendererEventTests::StreamTextureRendererEventTests()
-    {
-    }
-
     void StreamTextureRendererEventTests::setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework)
     {
         testFramework.createTestCaseWithDefaultDisplay(SurfaceAvailableEventGeneratedWhenBufferAttached, *this, "SurfaceAvailableEventGeneratedWhenBufferAttached");
@@ -37,7 +33,7 @@ namespace ramses_internal
         const bool testResult = runTestCase(testFramework, testCase);
 
         //get rid of any renderer events still lingering from running the test case
-        renderAndGetSurfaceAvailabilityChangeEvents(testFramework, StreamTextureSourceId(0u));
+        renderAndGetSurfaceAvailabilityChangeEvents(testFramework, WaylandIviSurfaceId(0u));
 
         return testResult;
     }
@@ -45,7 +41,7 @@ namespace ramses_internal
     bool StreamTextureRendererEventTests::runTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase)
     {
         Bool testResultValue = true;
-        const StreamTextureSourceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
+        const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
 
         testFramework.setEnvironmentVariableWaylandDisplay();
 
@@ -53,7 +49,7 @@ namespace ramses_internal
         {
         case SurfaceAvailableEventGeneratedWhenBufferAttached:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             testResultValue &= renderAndExpectNoStreamSurfaceAvailabilityChanged(testFramework, streamTextureSourceId);
 
@@ -73,7 +69,7 @@ namespace ramses_internal
 
         case SurfaceUnavailableEventGeneratedWhenBufferDetached:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -92,7 +88,7 @@ namespace ramses_internal
 
         case SurfaceUnavailableEventGeneratedWhenSurfaceDestroyed:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -111,7 +107,7 @@ namespace ramses_internal
 
         case SurfaceUnavailableEventGeneratedWhenIviSurfaceDestroyed:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -131,7 +127,7 @@ namespace ramses_internal
 
         case SurfaceUnavailableEventGeneratedWhenClientIsKilled:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -148,7 +144,7 @@ namespace ramses_internal
 
         case NoSurfaceEventGeneratedWhenBufferAttachedAndDetachedInSameLoop:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -167,7 +163,7 @@ namespace ramses_internal
 
         case SurfaceAvailableAndUnavailableEventsGeneratedWhenBufferAttachedAndDetachedInDifferentLoops:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -193,7 +189,7 @@ namespace ramses_internal
 
         case SurfaceAvailableEventsGeneratedTwiceWhenBufferReattached:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -265,17 +261,17 @@ namespace ramses_internal
         return testResultValue;
     }
 
-    bool StreamTextureRendererEventTests::renderAndExpectNoStreamSurfaceAvailabilityChanged(EmbeddedCompositingTestsFramework& testFramework, StreamTextureSourceId streamSourceId)
+    bool StreamTextureRendererEventTests::renderAndExpectNoStreamSurfaceAvailabilityChanged(EmbeddedCompositingTestsFramework& testFramework, WaylandIviSurfaceId streamSourceId)
     {
         return 0u == renderAndGetSurfaceAvailabilityChangeEvents(testFramework, streamSourceId).size();
     }
 
-    BoolVector StreamTextureRendererEventTests::renderAndGetSurfaceAvailabilityChangeEvents(EmbeddedCompositingTestsFramework& testFramework, StreamTextureSourceId streamSourceId)
+    BoolVector StreamTextureRendererEventTests::renderAndGetSurfaceAvailabilityChangeEvents(EmbeddedCompositingTestsFramework& testFramework, WaylandIviSurfaceId streamSourceId)
     {
         class StreamAvailabilityChangeEventHandler : public ramses::RendererSceneControlEventHandlerEmpty
         {
         public:
-            explicit StreamAvailabilityChangeEventHandler(StreamTextureSourceId targetStreamSourceId)
+            explicit StreamAvailabilityChangeEventHandler(WaylandIviSurfaceId targetStreamSourceId)
                 : m_targetStreamSourceId(targetStreamSourceId)
             {
             }
@@ -294,7 +290,7 @@ namespace ramses_internal
             }
 
         private:
-            const StreamTextureSourceId m_targetStreamSourceId;
+            const WaylandIviSurfaceId m_targetStreamSourceId;
             BoolVector m_streamAvailabilityChangeEvents;
         };
 

@@ -114,22 +114,6 @@ namespace ramses
         const char* getDLTApplicationDescription() const;
 
         /**
-        * @brief Sets the maximum bytes (heap) that will be used during asynchronous resource loading
-        *
-        * During loading of resources from assets, resources are loaded from file to cpu memory, then
-        * uploaded to GPU and then deleted from main memory again. To speed up this process resource loading to CPU
-        * memory and uploading to GPU happens at the same time (with different resources of course). The value given
-        * to this function determines the maximum number of bytes that will be used by this system before waiting for GPU
-        * uploads and therefore memory becoming available again. Basically higher value means higher peak heap usage, but
-        * highest maximum parallelism for loading resources from files into GPU.
-        *
-        * The default value is 20 * 1024 * 1024 (20MB). If your resource files are larger you can benefit from a higher value.
-        *
-        * @param[in] maximumTotalBytesForAsynResourceLoading Maximum resource size in bytes
-        */
-        void setMaximumTotalBytesAllowedForAsyncResourceLoading(uint32_t maximumTotalBytesForAsynResourceLoading);
-
-        /**
         * @brief Enables or disables the periodic log messages provided by the Ramses framework
         *
         * If enabled the Ramses framework periodically logs information about the Ramses version, connected participants, scene states etc.

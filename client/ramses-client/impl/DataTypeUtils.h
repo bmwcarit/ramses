@@ -35,6 +35,8 @@ namespace ramses
                 return EDataType::Vector3F;
             case ramses_internal::EDataType::Vector4F:
                 return EDataType::Vector4F;
+            case ramses_internal::EDataType::ByteBlob:
+                return EDataType::ByteBlob;
             default:
                 assert(false);
                 return EDataType::UInt16;
@@ -57,6 +59,8 @@ namespace ramses
                 return ramses_internal::EDataType::Vector3F;
             case EDataType::Vector4F:
                 return ramses_internal::EDataType::Vector4F;
+            case EDataType::ByteBlob:
+                return ramses_internal::EDataType::ByteBlob;
             }
             assert(false);
             return ramses_internal::EDataType::UInt16;
@@ -73,6 +77,7 @@ namespace ramses
             case ramses::EDataType::Vector2F:
             case ramses::EDataType::Vector3F:
             case ramses::EDataType::Vector4F:
+            case ramses::EDataType::ByteBlob:
                 return ramses_internal::EResourceType_VertexArray;
             }
             assert(false);
@@ -90,6 +95,7 @@ namespace ramses
             case ramses::EDataType::Vector2F:
             case ramses::EDataType::Vector3F:
             case ramses::EDataType::Vector4F:
+            case ramses::EDataType::ByteBlob:
                 return ramses_internal::EDataBufferType::VertexBuffer;
             }
             assert(false);
@@ -107,7 +113,8 @@ namespace ramses
             return type == EDataType::Float ||
                 type == EDataType::Vector2F ||
                 type == EDataType::Vector3F ||
-                type == EDataType::Vector4F;
+                type == EDataType::Vector4F ||
+                type == EDataType::ByteBlob;
         }
     };
 }

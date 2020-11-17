@@ -32,11 +32,6 @@ namespace ramses_internal
 
         Alive,
 
-        // resources
-        TransferResources,
-        RequestResources,
-        ResourcesNotAvailable,
-
         // scene
         CreateScene,
 
@@ -67,9 +62,6 @@ namespace ramses_internal
         "EMessageId::SendSceneUpdate",
         "EMessageId::RendererEvent",
         "EMessageId::Alive",
-        "EMessageId::TransferResources",
-        "EMessageId::RequestResources",
-        "EMessageId::ResourcesNotAvailable",
         "EMessageId::CreateScene",
         "EMessageId::DcsmRegisterContent",
         "EMessageId::DcsmCanvasSizeChange",

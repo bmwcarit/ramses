@@ -11,7 +11,6 @@
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererLib/IResourceUploader.h"
-#include "RendererFramework/IResourceProvider.h"
 
 namespace ramses_internal
 {
@@ -41,20 +40,25 @@ namespace ramses_internal
     {
     }
 
-    void RendererSceneUpdaterFacade::handleSceneActions(SceneId sceneId, SceneUpdate&& update)
+    void RendererSceneUpdaterFacade::handleSceneUpdate(SceneId sceneId, SceneUpdate&& update)
     {
         SceneUpdate copyOfActionsForScene;
         copyOfActionsForScene.actions = update.actions.copy();
         copyOfActionsForScene.resources = update.resources;
         copyOfActionsForScene.flushInfos = update.flushInfos.copy();
-        RendererSceneUpdaterMock::handleSceneActions(sceneId, std::move(update));
-        RendererSceneUpdater::handleSceneActions(sceneId, std::move(copyOfActionsForScene)); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater
+        RendererSceneUpdaterMock::handleSceneUpdate(sceneId, std::move(update));
+        RendererSceneUpdater::handleSceneUpdate(sceneId, std::move(copyOfActionsForScene)); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater
+    }
+
+    void RendererSceneUpdaterFacade::handlePickEvent(SceneId sceneId, Vector2 coords)
+    {
+        RendererSceneUpdaterMock::handlePickEvent(sceneId, coords);
+        RendererSceneUpdater::handlePickEvent(sceneId, coords); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater
     }
 
     RendererSceneUpdaterFacade::~RendererSceneUpdaterFacade() = default;
 
     std::unique_ptr<IRendererResourceManager> RendererSceneUpdaterFacade::createResourceManager(
-        IResourceProvider& resourceProvider,
         IResourceUploader& resourceUploader,
         IRenderBackend& renderBackend,
         IEmbeddedCompositingManager& embeddedCompositingManager,
@@ -62,8 +66,8 @@ namespace ramses_internal
         bool keepEffectsUploaded,
         uint64_t gpuCacheSize)
     {
-        RendererSceneUpdaterMock::createResourceManager(resourceProvider, resourceUploader, renderBackend, embeddedCompositingManager, display, keepEffectsUploaded, gpuCacheSize);
-        testing::StrictMock<RendererResourceManagerMock>* resMgrMock = new testing::StrictMock<RendererResourceManagerMock>;
+        RendererSceneUpdaterMock::createResourceManager(resourceUploader, renderBackend, embeddedCompositingManager, display, keepEffectsUploaded, gpuCacheSize);
+        testing::StrictMock<RendererResourceManagerRefCountMock>* resMgrMock = new testing::StrictMock<RendererResourceManagerRefCountMock>;
         assert(!m_resourceManagerMocks.count(display));
         m_resourceManagerMocks[display] = resMgrMock;
         return std::unique_ptr<IRendererResourceManager>{ resMgrMock };

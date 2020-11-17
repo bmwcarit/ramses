@@ -15,7 +15,7 @@
 namespace ramses
 {
     struct RamsesObjectHandleTag {};
-    typedef ramses_internal::TypedMemoryHandle<RamsesObjectHandleTag> RamsesObjectHandle;
+    using RamsesObjectHandle = ramses_internal::TypedMemoryHandle<RamsesObjectHandleTag>;
 }
 
 #endif

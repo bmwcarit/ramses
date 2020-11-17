@@ -40,17 +40,8 @@ namespace ramses_internal
         MOCK_TYPE<WindowMock>  windowMock;
     };
 
-    class SurfaceMockWithDestructor : public SurfaceMock< ::testing::StrictMock>
-    {
-    public:
-        SurfaceMockWithDestructor();
-        ~SurfaceMockWithDestructor();
-
-        MOCK_METHOD(void, Die, ());
-    };
-
-    typedef SurfaceMock< ::testing::NiceMock> SurfaceNiceMock;
-    typedef SurfaceMock< ::testing::StrictMock> SurfaceStrictMock;
+    using SurfaceNiceMock = SurfaceMock< ::testing::NiceMock>;
+    using SurfaceStrictMock = SurfaceMock< ::testing::StrictMock>;
 }
 
 #endif

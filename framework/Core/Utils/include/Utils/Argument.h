@@ -149,12 +149,12 @@ namespace ramses_internal
         return m_valueFound;
     }
 
-    typedef Argument<Float>     ArgumentFloat;
-    typedef Argument<Int32>     ArgumentInt32;
-    typedef Argument<String>    ArgumentString;
-    typedef Argument<UInt16>    ArgumentUInt16;
-    typedef Argument<UInt32>    ArgumentUInt32;
-    typedef Argument<Vector3>   ArgumentVec3;
+    using ArgumentFloat = Argument<Float>;
+    using ArgumentInt32 = Argument<Int32>;
+    using ArgumentString = Argument<String>;
+    using ArgumentUInt16 = Argument<UInt16>;
+    using ArgumentUInt32 = Argument<UInt32>;
+    using ArgumentVec3 = Argument<Vector3>;
 
     template<>
     inline void Argument<Float>::interpretValue(const String& valueString)

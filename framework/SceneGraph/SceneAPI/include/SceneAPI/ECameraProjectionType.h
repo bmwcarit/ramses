@@ -17,19 +17,17 @@ namespace ramses_internal
     enum class ECameraProjectionType
     {
         Perspective = 0,
-        Orthographic,
-        Renderer
+        Orthographic
     };
 
     static constexpr const char* const ECameraProjectionTypeNames[] = {
         "ECameraProjectionType::Perspective",
-        "ECameraProjectionType::Orthographic",
-        "ECameraProjectionType::Renderer",
+        "ECameraProjectionType::Orthographic"
     };
 }
 
 MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::ECameraProjectionType,
                                         ramses_internal::ECameraProjectionTypeNames,
-                                        ramses_internal::ECameraProjectionType::Renderer);
+                                        ramses_internal::ECameraProjectionType::Orthographic);
 
 #endif

@@ -45,7 +45,7 @@ class TestMoveBetweenIVILayers(test_classes.OnSelectedTargetsTest):
         self.rendererbackground = self.target.start_default_renderer("--waylandIviLayerId {0} --waylandIviSurfaceID {1} --wayland-socket-embedded wayland-12 -w 640".format(self.backgroundRendererLayerIviId, self.backgroundRendererSurfaceIviId), nameExtension='background')
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)
-        self.testClient3Triangles = self.target.start_client("ramses-test-client", "-tn 5 -ts 0 -cz 5")
+        self.testClient3Triangles = self.target.start_client("ramses-test-client", "-tn 21 -ts 0 -cz 5")
         self.checkThatApplicationWasStarted(self.testClient3Triangles)
         self.addCleanup(self.target.kill_application, self.testClient3Triangles)
 

@@ -56,6 +56,9 @@ namespace ramses
         *          therefore the request cannot fail but it might never happen.
         *          It is application's responsibility to implement a timeout logic if needed.
         *
+        *          It is not allowed to request state Unavailable, as this state can only be the result
+        *          of external conditions.
+        *
         * @param[in] requestedState
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
@@ -83,6 +86,8 @@ namespace ramses
         *        update loop the #ramses::IClientEventHandler::sceneReferenceFlushed callback might be triggered twice
         *        reporting the same version, however the order of reporting is always strictly kept and matching order
         *        of flushes applied.
+        *
+        *        Scene reference has to be in Ready state to be able to receive scene version tag notifications.
         *
         * @param[in] flag enable/disable notifications for this scene
         * @return StatusOK for success, otherwise the returned status can be used

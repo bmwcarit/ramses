@@ -67,11 +67,6 @@ namespace ramses
         return impl.getDLTApplicationDescription();
     }
 
-    void RamsesFrameworkConfig::setMaximumTotalBytesAllowedForAsyncResourceLoading(uint32_t maximumTotalBytesForAsynResourceLoading)
-    {
-        impl.setMaximumTotalBytesAllowedForAsyncResourceLoading(maximumTotalBytesForAsynResourceLoading);
-    }
-
     void RamsesFrameworkConfig::setPeriodicLogsEnabled(bool enabled)
     {
         impl.setPeriodicLogsEnabled(enabled);

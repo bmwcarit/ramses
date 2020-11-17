@@ -28,7 +28,7 @@
 namespace ramses_internal
 {
     class RendererConfig;
-    class IPlatformFactory;
+    class IPlatform;
     class IBinaryShaderCache;
 }
 
@@ -43,7 +43,7 @@ namespace ramses
     class RamsesRendererImpl : public StatusObjectImpl
     {
     public:
-        RamsesRendererImpl(RamsesFrameworkImpl& framework, const RendererConfig& config, ramses_internal::IPlatformFactory* platformFactory = nullptr);
+        RamsesRendererImpl(RamsesFrameworkImpl& framework, const RendererConfig& config, ramses_internal::IPlatform* platform = nullptr);
         virtual ~RamsesRendererImpl();
 
         status_t doOneLoop();
@@ -57,9 +57,9 @@ namespace ramses
         ramses_internal::WindowedRenderer& getRenderer();
 
         RendererSceneControl* getSceneControlAPI();
-        DcsmContentControl* createDcsmContentControl(const DcsmContentControlConfig& config);
+        DcsmContentControl* createDcsmContentControl();
 
-        displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, bool interruptible);
+        displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount, bool interruptible);
         status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
         status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
 
@@ -108,7 +108,7 @@ namespace ramses
         ramses_internal::RendererCommands                                           m_pendingRendererCommands;
         ramses_internal::RendererCommandBuffer                                      m_rendererCommandBuffer;
         ramses_internal::RendererFrameworkLogic                                     m_rendererFrameworkLogic;
-        std::unique_ptr<ramses_internal::IPlatformFactory>                          m_platformFactory;
+        std::unique_ptr<ramses_internal::IPlatform>                                 m_platform;
         ramses_internal::ResourceUploader                                           m_resourceUploader;
         std::unique_ptr<ramses_internal::WindowedRenderer>                          m_renderer;
 

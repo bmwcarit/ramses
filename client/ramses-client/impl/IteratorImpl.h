@@ -17,7 +17,7 @@ namespace ramses
     class IteratorImpl
     {
     public:
-        typedef std::vector<T> ObjectVector;
+        using ObjectVector = std::vector<T>;
 
         IteratorImpl()
         {

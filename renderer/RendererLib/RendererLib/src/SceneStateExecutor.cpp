@@ -283,18 +283,6 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeMappingAndUploading(SceneId sceneId) const
-    {
-        if (!canBeMappingAndUploading(sceneId))
-        {
-            m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneMapFailed, sceneId);
-            LOG_ERROR(CONTEXT_RENDERER, "Failed map for scene with id :" << sceneId << " because scene is not in map requested state (state is " << EnumToString(getSceneState(sceneId)) << ")!");
-            return false;
-        }
-
-        return true;
-    }
-
     Bool SceneStateExecutor::checkIfCanBeMapped(SceneId sceneId) const
     {
         if (!canBeMapped(sceneId))

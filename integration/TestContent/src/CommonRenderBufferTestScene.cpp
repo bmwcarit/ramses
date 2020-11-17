@@ -10,7 +10,6 @@
 #include "TestScenes/Triangle.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"
@@ -23,8 +22,8 @@
 
 namespace ramses_internal
 {
-    CommonRenderBufferTestScene::CommonRenderBufferTestScene(ramses::Scene& scene, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    CommonRenderBufferTestScene::CommonRenderBufferTestScene(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
     }
 
@@ -48,7 +47,7 @@ namespace ramses_internal
         return camera;
     }
 
-    const ramses::MeshNode& CommonRenderBufferTestScene::createQuadWithTexture(const ramses::RenderBuffer& renderBuffer, const Vector3& translation)
+    const ramses::MeshNode& CommonRenderBufferTestScene::createQuadWithTexture(const ramses::RenderBuffer& renderBuffer)
     {
         const ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
 
@@ -75,7 +74,7 @@ namespace ramses_internal
         effect->findAttributeInput("a_texcoord", texCoordsInput);
 
         // set vertex positions directly in geometry
-        ramses::GeometryBinding* geometry = m_scene.createGeometryBinding(*effect, "triangle geometry");
+        ramses::GeometryBinding* geometry = m_scene.createGeometryBinding(*effect, "quad geometry");
         geometry->setIndices(*indices);
         geometry->setInputBuffer(positionsInput, *vertexPositions);
         geometry->setInputBuffer(texCoordsInput, *textureCoords);
@@ -96,7 +95,7 @@ namespace ramses_internal
         meshNode->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
-        transNode->setTranslation(translation.x, translation.y, translation.z);
+        transNode->setTranslation(0.0f, 0.f, -8.f);
         meshNode->setParent(*transNode);
 
         return *meshNode;
@@ -113,15 +112,13 @@ namespace ramses_internal
         return meshNode;
     }
 
-    ramses::RenderPass* CommonRenderBufferTestScene::addRenderPassUsingRenderBufferAsQuadTexture(ramses::RenderBuffer& sourceRenderBuffer)
+    ramses::RenderPass* CommonRenderBufferTestScene::addRenderPassUsingRenderBufferAsQuadTexture(const ramses::MeshNode& quad)
     {
-        const ramses::MeshNode& quad = createQuadWithTexture(sourceRenderBuffer, Vector3(0.0f, 0.f, -8.f));
-
-        ramses::Camera *camera = m_scene.createRemoteCamera();
-        camera->setParent(getDefaultCameraTranslationNode());
+        auto& camera = createCameraWithDefaultParameters();
+        camera.setParent(getDefaultCameraTranslationNode());
         ramses::RenderPass* renderPass = m_scene.createRenderPass();
         renderPass->setRenderOrder(100);
-        renderPass->setCamera(*camera);
+        renderPass->setCamera(camera);
         ramses::RenderGroup* renderGroup = m_scene.createRenderGroup();
         renderPass->addRenderGroup(*renderGroup);
         renderGroup->addMeshNode(quad);

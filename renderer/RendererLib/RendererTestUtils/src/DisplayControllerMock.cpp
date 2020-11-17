@@ -19,8 +19,6 @@ DisplayControllerMock::DisplayControllerMock()
     ON_CALL(*this, getDisplayBuffer()).WillByDefault(Return(FakeFrameBufferHandle));
     ON_CALL(*this, getDisplayWidth()).WillByDefault(Return(WindowMock::FakeWidth));
     ON_CALL(*this, getDisplayHeight()).WillByDefault(Return(WindowMock::FakeHeight));
-    ON_CALL(*this, getProjectionParams()).WillByDefault(ReturnRef(FakeProjectionParams));
-    ON_CALL(*this, getViewMatrix()).WillByDefault(ReturnRef(Matrix44f::Identity));
     ON_CALL(*this, renderScene(_, _, _, _, _)).WillByDefault(Return(SceneRenderExecutionIterator()));
 }
 

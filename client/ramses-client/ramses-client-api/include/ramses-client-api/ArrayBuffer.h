@@ -18,12 +18,18 @@ namespace ramses
      * @brief The ArrayBuffer is a data object used to provide vertex or index data to #ramses::GeometryBinding::setInputBuffer
      *        and #ramses::GeometryBinding::setIndices. The buffer data of an ArrayBuffer is not filled initially and can be fully
      *        or partially updated in between scene flushes.
+     *
+     * @details If an #ArrayBuffer object is created with type #ramses::EDataType::ByteBlob then an element
+     *          is defined as one byte, rather than a logical vertex element. Hence, all functions of #ArrayBuffer
+     *          referring to element refer to a single byte within byte array.
      */
     class RAMSES_API ArrayBuffer : public SceneObject
     {
     public:
         /**
         * @brief Update data of the ArrayBuffer object.
+        *
+        * @details For #ArrayBuffer objects of type #ramses::EDataType::ByteBlob an element is defined as 1 byte.
         *
         * @param firstElement       The element index at which data update should begin.
         * @param numElements        The number of elements to be updated.
@@ -40,7 +46,10 @@ namespace ramses
         status_t updateData(uint32_t firstElement, uint32_t numElements, const void* bufferData);
 
         /**
-        * @brief Returns the maximum number of data elements that can be stored in the data buffer
+        * @brief Returns the maximum number of data elements that can be stored in the data buffer.
+        *
+        * @details For #ArrayBuffer objects of type #ramses::EDataType::ByteBlob this function returns the maximum
+        *          size of buffer data in bytes.
         *
         * @return Maximum number of elements
         */
@@ -48,7 +57,10 @@ namespace ramses
 
         /**
         * @brief Returns the used number of data elements.
-        *        If data buffer fully set by #updateData, then used and maximum number of elements are equal.
+        *
+        * @details If data buffer fully set by #updateData, then used and maximum number of elements are equal. For #ArrayBuffer objects
+        *          of type #ramses::EDataType::ByteBlob this function returns the used size of buffer data in bytes becuase element is defined
+        *          as byte for this type.
         *
         * @return Used size in number of elements
         */
@@ -66,7 +78,8 @@ namespace ramses
         * be sufficiently large to hold the data for the whole data buffer
         *
         * @param[out] buffer The buffer where the buffer data will be copied into
-        * @param[in] numElements The number of elements to copy.
+        * @param[in] numElements The number of elements to copy. For #ArrayBuffer objects of type #ramses::EDataType::ByteBlob this
+        *                        is the size in bytes of the data to copy.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */

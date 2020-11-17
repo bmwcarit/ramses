@@ -12,7 +12,7 @@
 #include "renderer_common_gmock_header.h"
 #include "RendererLib/Renderer.h"
 #include "RendererLib/FrameTimer.h"
-#include "PlatformFactoryMock.h"
+#include "PlatformMock.h"
 #include "DisplayControllerMock.h"
 #include "RenderBackendMock.h"
 #include "EmbeddedCompositingManagerMock.h"
@@ -34,7 +34,7 @@ struct DisplayMockInfo
 class RendererMock : public ramses_internal::Renderer
 {
 public:
-    RendererMock(const ramses_internal::IPlatformFactory& platformFactory, const RendererScenes& rendererScenes,
+    RendererMock(const ramses_internal::IPlatform& platform, const RendererScenes& rendererScenes,
         const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics);
     virtual ~RendererMock() override;
 
@@ -48,7 +48,7 @@ template <template<typename> class MOCK_TYPE>
 class RendererMockWithMockDisplay : public RendererMock
 {
 public:
-    RendererMockWithMockDisplay(const ramses_internal::IPlatformFactory& platformFactory, const RendererScenes& rendererScenes,
+    RendererMockWithMockDisplay(const ramses_internal::IPlatform& platform, const RendererScenes& rendererScenes,
         const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics);
     virtual ~RendererMockWithMockDisplay() override;
 
@@ -66,10 +66,10 @@ private:
     HashMap< DisplayHandle, DisplayMockInfo<MOCK_TYPE> > m_displayControllers;
 };
 
-typedef RendererMockWithMockDisplay< ::testing::NiceMock >   RendererMockWithNiceMockDisplay;
-typedef RendererMockWithMockDisplay< ::testing::StrictMock > RendererMockWithStrictMockDisplay;
+using RendererMockWithNiceMockDisplay = RendererMockWithMockDisplay< ::testing::NiceMock>;
+using RendererMockWithStrictMockDisplay = RendererMockWithMockDisplay< ::testing::StrictMock>;
 
-typedef DisplayMockInfo< ::testing::NiceMock >   DisplayNiceMockInfo;
-typedef DisplayMockInfo< ::testing::StrictMock > DisplayStrictMockInfo;
+using DisplayNiceMockInfo = DisplayMockInfo< ::testing::NiceMock>;
+using DisplayStrictMockInfo = DisplayMockInfo< ::testing::StrictMock>;
 }
 #endif

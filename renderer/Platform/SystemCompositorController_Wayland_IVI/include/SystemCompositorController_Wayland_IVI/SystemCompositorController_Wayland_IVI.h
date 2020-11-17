@@ -76,9 +76,9 @@ namespace ramses_internal
         wl_registry*    m_registry   = nullptr;
         ivi_controller* m_controller = nullptr;
 
-        typedef HashSet<IVIControllerScreen*>  ControllerScreens;
-        typedef HashSet<IVIControllerSurface*> ControllerSurfaces;
-        typedef HashSet<WaylandOutput*> WaylandOutputs;
+        using ControllerScreens = HashSet<IVIControllerScreen *>;
+        using ControllerSurfaces = HashSet<IVIControllerSurface *>;
+        using WaylandOutputs = HashSet<WaylandOutput *>;
 
         ControllerScreens  m_controllerScreens;
         ControllerSurfaces m_controllerSurfaces;

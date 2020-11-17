@@ -31,7 +31,7 @@ namespace ramses_internal
     template <typename T>
     struct DataBindContainerToTraitsSelector
     {
-        typedef T ContainerTraitsClassType;
+        using ContainerTraitsClassType = T;
     };
 
     // Maps registered container to its ID
@@ -51,91 +51,91 @@ namespace ramses_internal
     template <typename T>
     struct DataTypeReferenceSelector
     {
-        typedef T PossibleReferenceType;
+        using PossibleReferenceType = T;
     };
 
     template <>
     struct DataTypeReferenceSelector < bool >
     {
-        typedef bool PossibleReferenceType;
+        using PossibleReferenceType = bool;
     };
 
     template <>
     struct DataTypeReferenceSelector < Int32 >
     {
-        typedef Int32 PossibleReferenceType;
+        using PossibleReferenceType = Int32;
     };
 
     template <>
     struct DataTypeReferenceSelector < Int64 >
     {
-        typedef Int64 PossibleReferenceType;
+        using PossibleReferenceType = Int64;
     };
 
     template <>
     struct DataTypeReferenceSelector < UInt32 >
     {
-        typedef UInt32 PossibleReferenceType;
+        using PossibleReferenceType = UInt32;
     };
 
     template <>
     struct DataTypeReferenceSelector < UInt64 >
     {
-        typedef UInt64 PossibleReferenceType;
+        using PossibleReferenceType = UInt64;
     };
 
     template <>
     struct DataTypeReferenceSelector < Float >
     {
-        typedef Float PossibleReferenceType;
+        using PossibleReferenceType = Float;
     };
 
     template <>
     struct DataTypeReferenceSelector < Double >
     {
-        typedef Double PossibleReferenceType;
+        using PossibleReferenceType = Double;
     };
 
     template <>
     struct DataTypeReferenceSelector < Vector2 >
     {
-        typedef const Vector2& PossibleReferenceType;
+        using PossibleReferenceType = const Vector2 &;
     };
 
     template <>
     struct DataTypeReferenceSelector < Vector3 >
     {
-        typedef const Vector3& PossibleReferenceType;
+        using PossibleReferenceType = const Vector3 &;
     };
 
     template <>
     struct DataTypeReferenceSelector < Vector4 >
     {
-        typedef const Vector4& PossibleReferenceType;
+        using PossibleReferenceType = const Vector4 &;
     };
 
     template <>
     struct DataTypeReferenceSelector < Matrix44f >
     {
-        typedef const Matrix44f& PossibleReferenceType;
+        using PossibleReferenceType = const Matrix44f &;
     };
 
     template <>
     struct DataTypeReferenceSelector < Vector2i >
     {
-        typedef const Vector2i& PossibleReferenceType;
+        using PossibleReferenceType = const Vector2i &;
     };
 
     template <>
     struct DataTypeReferenceSelector < Vector3i >
     {
-        typedef const Vector3i& PossibleReferenceType;
+        using PossibleReferenceType = const Vector3i &;
     };
 
     template <>
     struct DataTypeReferenceSelector < Vector4i >
     {
-        typedef const Vector4i& PossibleReferenceType;
+        using PossibleReferenceType = const Vector4i &;
     };
 }
 

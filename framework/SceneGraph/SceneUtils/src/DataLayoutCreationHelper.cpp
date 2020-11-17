@@ -50,7 +50,7 @@ namespace ramses_internal
     bool DataLayoutCreationHelper::IsBindableInput(const EffectInputInformation& inputInfo)
     {
         // Only inputs with plain data type, non-array, with no semantics can be bound to data reference
-        return (inputInfo.semantics == EFixedSemantics_Invalid)
+        return (inputInfo.semantics == EFixedSemantics::Invalid)
             && !IsTextureSamplerType(inputInfo.dataType)
             && !IsBufferDataType(inputInfo.dataType)
             && (inputInfo.elementCount == 1u);

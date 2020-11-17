@@ -95,7 +95,9 @@ TriangleSceneInfo* createTriangleSceneContent(ramses::RamsesClient& client, rams
     sceneInfo->scene = client.createScene(sceneId, ramses::SceneConfig(), "triangle scene");
 
     // every scene needs a render pass with camera
-    ramses::Camera* camera = sceneInfo->scene->createRemoteCamera("my camera");
+    auto* camera = sceneInfo->scene->createPerspectiveCamera("my camera");
+    camera->setViewport(0, 0, 1280u, 480u);
+    camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     ramses::RenderPass* renderPass = sceneInfo->scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -112,7 +114,7 @@ TriangleSceneInfo* createTriangleSceneContent(ramses::RamsesClient& client, rams
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-local-datalink.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-local-datalink.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     ramses::Effect* effect = sceneInfo->scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = sceneInfo->scene->createAppearance(*effect, "triangle appearance");
@@ -162,7 +164,9 @@ QuadSceneInfo* createQuadSceneContent(ramses::RamsesClient& client, ramses::scen
     sceneInfo->scene = client.createScene(sceneId, ramses::SceneConfig(), "quad scene");
 
     // every scene needs a render pass with camera
-    ramses::Camera* camera = sceneInfo->scene->createRemoteCamera("my camera");
+    auto* camera = sceneInfo->scene->createPerspectiveCamera("my camera");
+    camera->setViewport(0, 0, 1280u, 480u);
+    camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
     ramses::RenderPass* renderPass = sceneInfo->scene->createRenderPass("my render pass");
     renderPass->setClearFlags(ramses::EClearFlags_None);
     renderPass->setCamera(*camera);
@@ -187,7 +191,7 @@ QuadSceneInfo* createQuadSceneContent(ramses::RamsesClient& client, ramses::scen
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-local-datalink-texturing.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-local-datalink-texturing.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
     ramses::Effect* effect = sceneInfo->scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
     ramses::Appearance* appearance = sceneInfo->scene->createAppearance(*effect, "quad appearance");

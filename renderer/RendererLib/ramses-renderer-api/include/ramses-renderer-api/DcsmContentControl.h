@@ -12,13 +12,11 @@
 #include "ramses-framework-api/StatusObject.h"
 #include "ramses-framework-api/DcsmApiTypes.h"
 #include "ramses-framework-api/CategoryInfoUpdate.h"
-#include "DcsmContentControlConfig.h"
 
 namespace ramses
 {
     class RamsesRenderer;
     class RamsesFramework;
-    class DcsmContentControlConfig;
     class IDcsmContentControlEventHandler;
     class IRendererEventHandler;
 
@@ -71,22 +69,22 @@ namespace ramses
     {
     public:
         /** @brief Add a content category
-        * @details Adds a content category for receiving content offers
+        * @details Adds a content category for receiving content offers. At least RenderSize and CategoryRect have to be set (width or height cannot be 0) on the
+        *          CategoryInfoUpdate or else the category will not be added and error status will be returned.
         *
-        * @param control DcsmContentControl object to call function on. Added this way for binary backward compatibility.
         * @param category Category to add
+        * @param display display that category should be mapped to
         * @param categoryInformation information about the category being added
         */
-        static status_t addContentCategory(DcsmContentControl& control, Category category, DcsmContentControlConfig::CategoryInfo categoryInformation);
+        status_t addContentCategory(Category category, displayId_t display, const CategoryInfoUpdate& categoryInformation);
 
         /** @brief Remove a content category
         * @details Removes a content category. No more offers will be received for this category, any content assigned to this category will
         *          be dropped (Hide, Release)
         *
-        * @param control DcsmContentControl object to call function on. Added this way for binary backward compatibility.
         * @param category Category to remove
         */
-        static status_t removeContentCategory(DcsmContentControl& control, Category category);
+        status_t removeContentCategory(Category category);
 
         /** @brief Requests that the provided content is ready to show.
         * @details This involves a corresponding Dcsm message sent to content provider and also request to map the content's scene to the display defined in its category.
@@ -161,19 +159,19 @@ namespace ramses
         */
         status_t releaseContent(ContentID contentID, AnimationInformation timingInfo);
 
-        /** @brief Sets new size for given category.
+        /** @brief Sets new category info for given category.
         * @details Timing information is sent immediately via Dcsm to consumer to be able to react in time to this change.
-        *          In case there is a new content offered for this category after this call, it will receive the new size
+        *          In case there is a new content offered for this category after this call, it will receive the new info
         *          regardless of given timing information. The timing information is assumed to be used for transition only
         *          and therefore in the rare case of new content being offered at the same time it should be configured
-        *          for the new size right away.
-        * @param categoryId Unique ID of the category to change size.
-        * @param size New category size.
+        *          for the new info right away.
+        * @param categoryId Unique ID of the category to change info.
+        * @param categoryInfo New category info.
         * @param timingInfo Timing to be sent to provider, see above for details.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
-        status_t setCategorySize(Category categoryId, const CategoryInfoUpdate& size, AnimationInformation timingInfo);
+        status_t setCategoryInfo(Category categoryId, const CategoryInfoUpdate& categoryInfo, AnimationInformation timingInfo);
 
         /** @brief Stops using given content and accepts the request from provider.
         * @details The Dcsm message is sent immediately to provider with given timing information.
@@ -234,6 +232,27 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t linkOffscreenBuffer(displayBufferId_t offscreenBufferId, ContentID consumerContentID, dataConsumerId_t consumerId);
+
+        /** @brief Creates a data link between given content as texture and a consumer data slot defined in Ramses scene.
+        * @details When linked, the content can be used as a texture input on the consumer side (see #ramses::Scene::createTextureConsumer).
+        *          This can only be done if
+        *          - content comes from a ramses scene and has been assigned to on offscreen buffer before.
+        *          - content comes from a wayland surface
+        *          Content can be linked to multiple consumer slots.
+        *          The consumer data slot type must be of type texture consumer (see #ramses::Scene::createTextureConsumer)
+        *          in order to successfully link them. Also the consumer content must be ready (#ramses::DcsmContentControl::requestContentReady).
+        *          This call results in an event which can be dispatched via #ramses::IDcsmContentControlEventHandler::contentLinkedToTextureConsumer.
+        *          If the data consumer is already linked to a provider, the old link will be discarded,
+        *          however if the new link fails it is undefined whether previous link was discarded or not.
+        *          This method is more generic and powerful than #ramses::DcsmContentControl::linkOffscreenBuffer and supercedes it.
+        *
+        * @param contentID Content to be linked as a texture
+        * @param consumerContentID Content with scene containing data consumer with given \c consumerId.
+        * @param consumerId Scene's data consumer ID.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t linkContentToTextureConsumer(ContentID contentID, ContentID consumerContentID, dataConsumerId_t consumerId);
 
         /** @brief Creates a data link between data slots defined in Ramses scene.
         * @details The purpose of data linking is to provide data from one content's scene to another content's scene.

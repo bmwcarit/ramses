@@ -43,5 +43,5 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         self.validateScreenshot(self.renderer, "testClient_threeTriangles.png")
 
         #unmap scene, nothing is visible
-        self.renderer.send_ramsh_command("unmapScene -sceneId 26", waitForRendererConfirmation=True)
+        self.renderer.send_ramsh_command("releaseScene -sceneId 26", waitForRendererConfirmation=True)
         self.validateScreenshot(self.renderer, "black.png")

@@ -8,7 +8,7 @@
 
 /**
 
-@page Examples Exemplary API snippets
+@page CodeExamples Exemplary API snippets
 
 # RAMSES API Usage by Example
 Note: The following example code snippets
@@ -148,8 +148,10 @@ Linking together:
 @snippet ramses-example-local-viewport-link/src/main.cpp Viewport Link Example
 
 ## Offscreen Buffer
-This code creates a scene with a triangle and a texture consumer, then creates a second scene and renders it into an offscreen buffer.
-The offscreen buffer is then linked to the first scene so that it is used as a texture on the triangle.
+This code creates a consumer scene with two quads next to each other and two texture consumers. Then a provider scene with a quad is created twice while one is rendered into an offscreen buffer and the other one into
+a multisampled offscreen buffer.
+The two offscreen buffers are then linked to the consumer scene so that they are used as textures on the two quads and the difference between multisampled and regular offscreen buffer becomes visible.
+On top the offscreen buffers are periodically linked and unlinked from their consumers so the fallback Texture/RenderBuffer is shown.
 @snippet ramses-example-local-offscreenbuffer/src/main.cpp Offscreen Buffer Example
 
 ## Pick Handling

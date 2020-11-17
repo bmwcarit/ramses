@@ -29,20 +29,20 @@ TEST(AnEffectConfig, canLoadCorrectlyWhenAllLinesAreValid)
     EXPECT_TRUE(contains_c(defines, "dummy"));
     EXPECT_TRUE(contains_c(defines, "dummy1"));
 
-    typedef ramses::EffectDescriptionImpl::SemanticsMap SemanticsMap;
+    using SemanticsMap = ramses::EffectDescriptionImpl::SemanticsMap;
     const SemanticsMap& semantics = descriptionImpl.getSemanticsMap();
 
     SemanticsMap::Iterator semanticIter = semantics.find("matrix44fInput");
     ASSERT_TRUE(semanticIter != semantics.end());
-    EXPECT_TRUE(ramses::EEffectUniformSemantic_ModelViewMatrix == ramses::EffectInputSemanticUtils::GetEffectUniformSemanticFromInternal(semanticIter->value));
+    EXPECT_TRUE(ramses::EEffectUniformSemantic::ModelViewMatrix == ramses::EffectInputSemanticUtils::GetEffectUniformSemanticFromInternal(semanticIter->value));
 
     semanticIter = semantics.find("texture2dInput");
     ASSERT_TRUE(semanticIter != semantics.end());
-    EXPECT_TRUE(ramses::EEffectUniformSemantic_TextTexture == ramses::EffectInputSemanticUtils::GetEffectUniformSemanticFromInternal(semanticIter->value));
+    EXPECT_TRUE(ramses::EEffectUniformSemantic::TextTexture == ramses::EffectInputSemanticUtils::GetEffectUniformSemanticFromInternal(semanticIter->value));
 
     semanticIter = semantics.find("vec2fArrayInput");
     ASSERT_TRUE(semanticIter != semantics.end());
-    EXPECT_TRUE(ramses::EEffectAttributeSemantic_TextPositions == ramses::EffectInputSemanticUtils::GetEffectAttributeSemanticFromInternal(semanticIter->value));
+    EXPECT_TRUE(ramses::EEffectAttributeSemantic::TextPositions == ramses::EffectInputSemanticUtils::GetEffectAttributeSemanticFromInternal(semanticIter->value));
 }
 
 TEST(AnEffectConfig, isFineToLoadValidFiles)

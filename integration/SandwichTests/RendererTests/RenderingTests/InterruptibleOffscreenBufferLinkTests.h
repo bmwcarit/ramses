@@ -31,9 +31,14 @@ private:
         InterruptibleOffscreenBufferLinkTest_RerendersSceneIfItGetsModifiedWhileAnotherSceneIsBeingRendered_SameBuffer,
     };
 
+    template <typename INTEGRATION_SCENE>
+    ramses::sceneId_t createAndShowScene(RendererTestsFramework& testFramework, uint32_t sceneState, const ramses_internal::Vector3& camPos = { 0, 0, 0 }, uint32_t vpWidth = ramses_internal::IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = ramses_internal::IntegrationScene::DefaultViewportHeight);
     bool renderAndCompareScreenshot(RendererTestsFramework& testFramework, const ramses_internal::String& expectedImage, uint32_t numFramesToRender = 1u);
 
     const ramses_internal::Vector3 m_cameraMid{ 0.f, 0.f, 8.f };
+
+    static constexpr uint32_t OBWidth = 256u;
+    static constexpr uint32_t OBHeight = 256u;
 };
 
 #endif

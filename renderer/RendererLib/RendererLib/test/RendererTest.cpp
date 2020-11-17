@@ -9,8 +9,7 @@
 #include "renderer_common_gmock_header.h"
 #include "RendererLib/RendererConfig.h"
 #include "RenderBackendMock.h"
-#include "ResourceProviderMock.h"
-#include "PlatformFactoryMock.h"
+#include "PlatformMock.h"
 #include "RendererLib/RendererCommandBuffer.h"
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererLib/DisplayController.h"
@@ -229,7 +228,7 @@ public:
     }
 
 protected:
-    StrictMock<PlatformFactoryStrictMock>       platformFactoryMock;
+    StrictMock<PlatformStrictMock>       platformFactoryMock;
     RendererCommandBuffer                       rendererCommandBuffer;
     RendererEventCollector                      rendererEventCollector;
     RendererScenes                              rendererScenes;

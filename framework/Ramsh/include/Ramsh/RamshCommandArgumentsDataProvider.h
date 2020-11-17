@@ -18,13 +18,13 @@
 namespace ramses_internal
 {
     class RamshArgumentBase;
-    typedef std::vector<RamshArgumentBase*> ArgumentVector;
+    using ArgumentVector = std::vector<RamshArgumentBase *>;
 
     template<typename = void> class RamshArgument;
 
     struct RamshArgumentDataProvider;
 
-    typedef std::vector<const RamshArgumentData*> ArgumentDataVector;
+    using ArgumentDataVector = std::vector<const RamshArgumentData *>;
 
     template<typename T> struct ArgumentConverterProxy;
 

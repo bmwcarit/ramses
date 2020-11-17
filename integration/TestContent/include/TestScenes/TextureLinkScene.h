@@ -25,7 +25,7 @@ namespace ramses_internal
     class TextureLinkScene : public IntegrationScene
     {
     public:
-        TextureLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        TextureLinkScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
         enum
         {
@@ -33,7 +33,8 @@ namespace ramses_internal
             DATA_PROVIDER_LARGE,
             DATA_CONSUMER,
             DATA_CONSUMER_AND_PROVIDER_LARGE,
-            DATA_CONSUMER_AND_PROVIDER
+            DATA_CONSUMER_AND_PROVIDER,
+            DATA_CONSUMER_MS
         };
 
         static constexpr const ramses::dataProviderId_t DataProviderId{151u};

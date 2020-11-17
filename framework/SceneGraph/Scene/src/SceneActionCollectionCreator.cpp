@@ -15,6 +15,8 @@
 #include "SceneAPI/Viewport.h"
 #include "SceneAPI/TextureSampler.h"
 #include "SceneAPI/RenderBuffer.h"
+#include "SceneAPI/ERotationConvention.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Math3d/Vector2.h"
 #include "Math3d/Vector3.h"
 #include "Math3d/Vector4.h"
@@ -43,12 +45,14 @@ namespace ramses_internal
         putSceneSizeInformation(sizeInfo);
     }
 
-    void SceneActionCollectionCreator::setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, const Vector3& newValue)
+    void SceneActionCollectionCreator::setTransformComponent(ETransformPropertyType propertyChanged, TransformHandle node, const Vector3& newValue, ERotationConvention rotationConvention)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetTransformComponent);
         collection.write(static_cast<UInt32>(propertyChanged));
         collection.write(node);
         collection.write(newValue.data);
+        if (propertyChanged == ETransformPropertyType_Rotation)
+            collection.write(rotationConvention);
     }
 
     void SceneActionCollectionCreator::allocateRenderable(NodeHandle nodeHandle, RenderableHandle handle)
@@ -64,7 +68,7 @@ namespace ramses_internal
         collection.write(renderableHandle);
     }
 
-    void SceneActionCollectionCreator::setDataResource(DataInstanceHandle handle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor)
+    void SceneActionCollectionCreator::setDataResource(DataInstanceHandle handle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride)
     {
         collection.beginWriteSceneAction(ESceneActionId::SetDataResource);
         collection.write(handle);
@@ -72,6 +76,8 @@ namespace ramses_internal
         collection.write(hash);
         collection.write(dataBuffer);
         collection.write(instancingDivisor);
+        collection.write(offsetWithinElementInBytes);
+        collection.write(stride);
     }
 
     void SceneActionCollectionCreator::setDataMatrix22fArray(DataInstanceHandle handle, DataFieldHandle field, UInt32 elementCount, const Matrix22f* data)
@@ -706,7 +712,7 @@ namespace ramses_internal
         collection.write(handle);
     }
 
-    void SceneActionCollectionCreator::allocateStreamTexture(uint32_t streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle)
+    void SceneActionCollectionCreator::allocateStreamTexture(WaylandIviSurfaceId streamSource, const ResourceContentHash& fallbackTextureHash, StreamTextureHandle streamTextureHandle)
     {
         collection.beginWriteSceneAction(ESceneActionId::AllocateStreamTexture);
         collection.write(streamTextureHandle);
@@ -1234,42 +1240,6 @@ namespace ramses_internal
         collection.write(rs.colorWriteMask);
     }
 
-    void SceneActionCollectionCreator::flush(
-        UInt64 flushIndex,
-        bool addSizeInfo,
-        const SceneSizeInformation& sizeInfo,
-        const SceneResourceChanges& resourceChanges,
-        const SceneReferenceActionVector& sceneReferences,
-        const FlushTimeInformation& flushTimeInfo,
-        SceneVersionTag versionTag)
-    {
-        const uint8_t flushFlags =
-            (addSizeInfo ? ESceneActionFlushBits_HasSizeInfo : 0u);
-
-        const UInt estimatedDataSize = sizeof(flushIndex) + sizeof(flushFlags) +
-            (addSizeInfo ? sizeof(SceneSizeInformation) : 0) +
-            resourceChanges.getPutSizeEstimate() +
-            SceneReferenceActionUtils::GetSizeEstimate(sceneReferences) +
-            2 * sizeof(UInt64);
-        collection.reserveAdditionalCapacity(estimatedDataSize, 1u);
-
-        collection.beginWriteSceneAction(ESceneActionId::Flush);
-        collection.write(flushIndex);
-        collection.write(flushFlags);
-        if (addSizeInfo)
-        {
-            putSceneSizeInformation(sizeInfo);
-        }
-        resourceChanges.putToSceneAction(collection);
-        SceneReferenceActionUtils::WriteToCollection(sceneReferences, collection);
-
-        collection.write(static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushTimeInfo.expirationTimestamp).time_since_epoch().count()));
-        collection.write(static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(flushTimeInfo.internalTimestamp).time_since_epoch().count()));
-        collection.write(static_cast<uint32_t>(FlushTime::Clock::getClockType()));
-
-        collection.write(versionTag);
-    }
-
     void SceneActionCollectionCreator::putSceneSizeInformation(const SceneSizeInformation& sizeInfo)
     {
         collection.write(sizeInfo.nodeCount);
@@ -1293,4 +1263,5 @@ namespace ramses_internal
         collection.write(sizeInfo.pickableObjectCount);
         collection.write(sizeInfo.sceneReferenceCount);
     }
+
 }

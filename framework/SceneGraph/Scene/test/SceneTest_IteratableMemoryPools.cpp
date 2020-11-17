@@ -202,7 +202,7 @@ namespace ramses_internal
 
     TYPED_TEST(AnIteratableScene, CanIterateOverStreamTextures)
     {
-        auto allocateF = std::bind(&TypeParam::allocateStreamTexture, &this->m_scene, 1u, ResourceContentHash{}, StreamTextureHandle{});
+        auto allocateF = std::bind(&TypeParam::allocateStreamTexture, &this->m_scene, WaylandIviSurfaceId{1u}, ResourceContentHash{}, StreamTextureHandle{});
         auto releaseF = std::bind(&TypeParam::releaseStreamTexture, &this->m_scene, std::placeholders::_1);
         this->runTest(allocateF, releaseF, this->m_scene.getStreamTextures());
     }

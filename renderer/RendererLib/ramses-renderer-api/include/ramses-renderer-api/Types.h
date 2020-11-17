@@ -15,17 +15,12 @@
 namespace ramses
 {
     /**
-    * @brief Specifies the state of resources belonging to a scene update
+    * @deprecated This enum is not used and will be removed.
     */
     enum ESceneResourceStatus
     {
-        ESceneResourceStatus_Pending = 0, // resources are still processed
-        ESceneResourceStatus_Ready  // resources are ready to be renderered
-        /* Possible future values:
-         *
-         * ESceneResourceState_Downloading // -> when in scene state "Subscribed"
-         * ESceneResourceState_Uploading  // -> when in scene state "Mapped"
-         */
+        ESceneResourceStatus_Pending = 0, ///< @deprecated
+        ESceneResourceStatus_Ready        ///< @deprecated
     };
 
     /**

@@ -17,8 +17,8 @@
 
 namespace ramses_internal
 {
-    MultipleTrianglesScene::MultipleTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    MultipleTrianglesScene::MultipleTrianglesScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_Effect(getTestEffect("ramses-test-client-basic"))
         , m_meshNode1(nullptr)
         , m_meshNode2(nullptr)
@@ -62,39 +62,8 @@ namespace ramses_internal
         addMeshNodeToDefaultRenderGroup(*m_meshNode2);
         addMeshNodeToDefaultRenderGroup(*m_meshNode3);
 
-        m_meshNode1->setGeometryBinding(m_redTriangle.GetGeometry());
-        m_meshNode2->setGeometryBinding(m_greenTriangle.GetGeometry());
-        m_meshNode3->setGeometryBinding(m_blueTriangle.GetGeometry());
-        m_meshNode4->setGeometryBinding(m_whiteQuad.GetGeometry());
-        m_meshNode5->setGeometryBinding(m_yellowLine.GetGeometry());
-        m_meshNode6->setGeometryBinding(m_triangleFan.GetGeometry());
-        m_meshNode7->setGeometryBinding(m_lineStrip.GetGeometry());
-
-        ramses::Node* transNode1 = m_scene.createNode();
-        ramses::Node* transNode2 = m_scene.createNode();
-        ramses::Node* transNode3 = m_scene.createNode();
-        ramses::Node* transNode4 = m_scene.createNode();
-        ramses::Node* transNode5 = m_scene.createNode();
-        ramses::Node* transNode6 = m_scene.createNode();
-        ramses::Node* transNode7 = m_scene.createNode();
-
-        transNode1->setTranslation(0.f, -0.2f, -12.f);
-        transNode2->setTranslation(-0.2f, 0.f, -11.f);
-        transNode3->setTranslation(0.2f, 0.2f, -10.f);
-        transNode4->setTranslation(-0.2f, -0.2f, -9.f);
-        transNode5->setTranslation(-0.3f, -0.2f, -8.f);
-        transNode6->setTranslation(2.0f, -0.6f, -12.f);
-        transNode7->setTranslation(1.0f, 0.6f, -12.f);
-
-        m_meshNode1->setParent(*transNode1);
-        m_meshNode2->setParent(*transNode2);
-        m_meshNode3->setParent(*transNode3);
-        m_meshNode4->setParent(*transNode4);
-        m_meshNode5->setParent(*transNode5);
-        m_meshNode6->setParent(*transNode6);
-        m_meshNode7->setParent(*transNode7);
-
-
+        setGeometries(state);
+        setTransformations(state);
         setState(state);
     }
 
@@ -369,6 +338,105 @@ namespace ramses_internal
             colorData->setValue(0.f, 1.f, 0.f, 1.f);
         }
             break;
+        case EULER_ROTATION_CONVENTIONS:
+            m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
+            m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
+            m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
+            m_meshNode4->setAppearance(m_whiteTriangle.GetAppearance());
+            m_meshNode5->setAppearance(m_redTransparentTriangle.GetAppearance());
+            m_meshNode6->setAppearance(m_greenTransparentTriangle.GetAppearance());
+
+            addMeshNodeToDefaultRenderGroup(*m_meshNode4);
+            addMeshNodeToDefaultRenderGroup(*m_meshNode5);
+            addMeshNodeToDefaultRenderGroup(*m_meshNode6);
+            break;
+        }
+    }
+
+    void MultipleTrianglesScene::setGeometries(uint32_t state)
+    {
+        if (state == EULER_ROTATION_CONVENTIONS)
+        {
+            //use same geometry for all meshes
+            m_meshNode1->setGeometryBinding(m_redTriangle.GetGeometry());
+            m_meshNode2->setGeometryBinding(m_redTriangle.GetGeometry());
+            m_meshNode3->setGeometryBinding(m_redTriangle.GetGeometry());
+            m_meshNode4->setGeometryBinding(m_redTriangle.GetGeometry());
+            m_meshNode5->setGeometryBinding(m_redTriangle.GetGeometry());
+            m_meshNode6->setGeometryBinding(m_redTriangle.GetGeometry());
+            m_meshNode7->setGeometryBinding(m_redTriangle.GetGeometry());
+        }
+        else
+        {
+            m_meshNode1->setGeometryBinding(m_redTriangle.GetGeometry());
+            m_meshNode2->setGeometryBinding(m_greenTriangle.GetGeometry());
+            m_meshNode3->setGeometryBinding(m_blueTriangle.GetGeometry());
+            m_meshNode4->setGeometryBinding(m_whiteQuad.GetGeometry());
+            m_meshNode5->setGeometryBinding(m_yellowLine.GetGeometry());
+            m_meshNode6->setGeometryBinding(m_triangleFan.GetGeometry());
+            m_meshNode7->setGeometryBinding(m_lineStrip.GetGeometry());
+        }
+    }
+
+    void MultipleTrianglesScene::setTransformations(uint32_t state)
+    {
+        ramses::Node* transNode1 = m_scene.createNode();
+        ramses::Node* transNode2 = m_scene.createNode();
+        ramses::Node* transNode3 = m_scene.createNode();
+        ramses::Node* transNode4 = m_scene.createNode();
+        ramses::Node* transNode5 = m_scene.createNode();
+        ramses::Node* transNode6 = m_scene.createNode();
+
+        if (state == EULER_ROTATION_CONVENTIONS)
+        {
+            transNode1->setTranslation(-1.f, -1.f, -15.f);
+            transNode2->setTranslation(-1.f, 0.f , -15.f);
+            transNode3->setTranslation(-1.f, 1.f , -15.f);
+            transNode4->setTranslation(1.f , -1.f, -15.f);
+            transNode5->setTranslation(1.f , 0.f , -15.f);
+            transNode6->setTranslation(1.f , 1.f , -15.f);
+
+            transNode1->setRotation(0.f , 0.f, 45.f, ramses::ERotationConvention::XYZ);
+            transNode2->setRotation(0.f , 60.f, 45.f, ramses::ERotationConvention::XYZ);
+            transNode3->setRotation(60.f, 60.f, 45.f, ramses::ERotationConvention::XYZ);
+            transNode4->setRotation(45.f, 60.f, 45.f, ramses::ERotationConvention::ZYZ);
+
+            ramses::Node* transNode5Child = m_scene.createNode();
+            transNode5->addChild(*transNode5Child);
+            transNode5->setRotation(60.f, 0.f, 0.f, ramses::ERotationConvention::ZYX);
+            transNode5Child->setRotation(0.f, 60.f, 45.f, ramses::ERotationConvention::YZX);
+
+            ramses::Node* transNode6Child = m_scene.createNode();
+            transNode6->addChild(*transNode6Child);
+            transNode6->setRotation(-80.f, -60.f, -45.f, ramses::ERotationConvention::ZYX);
+            transNode6Child->setRotation(80.f, 60.f, 45.f, ramses::ERotationConvention::XYZ);
+
+            m_meshNode1->setParent(*transNode1);
+            m_meshNode2->setParent(*transNode2);
+            m_meshNode3->setParent(*transNode3);
+            m_meshNode4->setParent(*transNode4);
+            m_meshNode5->setParent(*transNode5Child);
+            m_meshNode6->setParent(*transNode6Child);
+        }
+        else
+        {
+            transNode1->setTranslation(0.f, -0.2f, -12.f);
+            transNode2->setTranslation(-0.2f, 0.f, -11.f);
+            transNode3->setTranslation(0.2f, 0.2f, -10.f);
+            transNode4->setTranslation(-0.2f, -0.2f, -9.f);
+            transNode5->setTranslation(-0.3f, -0.2f, -8.f);
+            transNode6->setTranslation(2.0f, -0.6f, -12.f);
+
+            ramses::Node* transNode7 = m_scene.createNode();
+            transNode7->setTranslation(1.0f, 0.6f, -12.f);
+
+            m_meshNode1->setParent(*transNode1);
+            m_meshNode2->setParent(*transNode2);
+            m_meshNode3->setParent(*transNode3);
+            m_meshNode4->setParent(*transNode4);
+            m_meshNode5->setParent(*transNode5);
+            m_meshNode6->setParent(*transNode6);
+            m_meshNode7->setParent(*transNode7);
         }
     }
 }

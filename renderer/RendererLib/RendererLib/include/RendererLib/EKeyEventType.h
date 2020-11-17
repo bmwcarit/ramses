@@ -23,7 +23,7 @@ namespace ramses_internal
         EKeyEventType_NUMBER_OF_ELEMENTS
     };
 
-    static const Char* KeyEventTypeNames[] =
+    static const char* KeyEventTypeNames[] =
     {
         "EKeyEventType_Invalid",
         "EKeyEventType_Pressed",

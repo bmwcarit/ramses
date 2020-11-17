@@ -103,17 +103,34 @@ namespace ramses_internal
         EXPECT_EQ(consumerdataId, resultEvents[0].consumerdataId);
     }
 
-    TEST_F(ARendererEventCollector, CanAddRendererEventWithBufferLinkInfo)
+    TEST_F(ARendererEventCollector, CanAddRendererEventWithBufferLinkInfo_OB)
     {
         const OffscreenBufferHandle providerBuffer(11u);
         const SceneId consumerSceneId(1u);
         const DataSlotId consumerdataId(3u);
 
-        m_rendererEventCollector.addOBLinkEvent(ERendererEventType_SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerdataId);
+        m_rendererEventCollector.addBufferLinkEvent(ERendererEventType_SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerdataId);
         const RendererEventVector resultEvents = consumeSceneControlEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(ERendererEventType_SceneDataBufferLinked, resultEvents[0].eventType);
+        EXPECT_FALSE(resultEvents[0].streamBuffer.isValid());
         EXPECT_EQ(providerBuffer, resultEvents[0].offscreenBuffer);
+        EXPECT_EQ(consumerSceneId, resultEvents[0].consumerSceneId);
+        EXPECT_EQ(consumerdataId, resultEvents[0].consumerdataId);
+    }
+
+    TEST_F(ARendererEventCollector, CanAddRendererEventWithBufferLinkInfo_SB)
+    {
+        const StreamBufferHandle providerBuffer(11u);
+        const SceneId consumerSceneId(1u);
+        const DataSlotId consumerdataId(3u);
+
+        m_rendererEventCollector.addBufferLinkEvent(ERendererEventType_SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerdataId);
+        const RendererEventVector resultEvents = consumeSceneControlEvents();
+        ASSERT_EQ(1u, resultEvents.size());
+        EXPECT_EQ(ERendererEventType_SceneDataBufferLinked, resultEvents[0].eventType);
+        EXPECT_FALSE(resultEvents[0].offscreenBuffer.isValid());
+        EXPECT_EQ(providerBuffer, resultEvents[0].streamBuffer);
         EXPECT_EQ(consumerSceneId, resultEvents[0].consumerSceneId);
         EXPECT_EQ(consumerdataId, resultEvents[0].consumerdataId);
     }
@@ -156,15 +173,13 @@ namespace ramses_internal
     {
         const SceneId sceneId(123u);
         const SceneVersionTag sceneVersionTag(345u);
-        const EResourceStatus resourceStatus(EResourceStatus_Uploaded);
 
-        m_rendererEventCollector.addSceneFlushEvent(ERendererEventType_SceneFlushed, sceneId, sceneVersionTag, resourceStatus);
+        m_rendererEventCollector.addSceneFlushEvent(ERendererEventType_SceneFlushed, sceneId, sceneVersionTag);
         const RendererEventVector resultEvents = consumeSceneControlEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(ERendererEventType_SceneFlushed, resultEvents[0].eventType);
         EXPECT_EQ(sceneId, resultEvents[0].sceneId);
         EXPECT_EQ(sceneVersionTag, resultEvents[0].sceneVersionTag);
-        EXPECT_EQ(resourceStatus, resultEvents[0].resourceStatus);
     }
 
     TEST_F(ARendererEventCollector, CanAddKeyPressEvent)
@@ -214,7 +229,7 @@ namespace ramses_internal
 
     TEST_F(ARendererEventCollector, CanAddStreamSurfaceAvailableEvent)
     {
-        const StreamTextureSourceId streamId(294u);
+        const WaylandIviSurfaceId streamId(294u);
 
         m_rendererEventCollector.addStreamSourceEvent(ERendererEventType_StreamSurfaceAvailable, streamId);
         const RendererEventVector resultEvents = consumeSceneControlEvents();
@@ -226,7 +241,7 @@ namespace ramses_internal
 
     TEST_F(ARendererEventCollector, CanAddStreamSurfaceUnavailableEvent)
     {
-        const StreamTextureSourceId streamId(794u);
+        const WaylandIviSurfaceId streamId(794u);
 
         m_rendererEventCollector.addStreamSourceEvent(ERendererEventType_StreamSurfaceUnavailable, streamId);
         const RendererEventVector resultEvents = consumeSceneControlEvents();

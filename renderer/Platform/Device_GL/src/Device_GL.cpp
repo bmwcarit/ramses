@@ -11,7 +11,6 @@
 #include "Platform_Base/RenderTargetGpuResource.h"
 #include "Platform_Base/RenderBufferGPUResource.h"
 #include "Platform_Base/IndexBufferGPUResource.h"
-#include "Platform_Base/VertexBufferGPUResource.h"
 #include "Platform_Base/TextureSamplerGPUResource.h"
 
 #include "Device_GL/Device_GL_platform.h"
@@ -355,14 +354,14 @@ namespace ramses_internal
         glViewport(x, y, width, height);
     }
 
-    GLHandle Device_GL::createTexture(UInt32 width, UInt32 height, ETextureFormat storageFormat) const
+    GLHandle Device_GL::createTexture(UInt32 width, UInt32 height, ETextureFormat storageFormat, UInt32 sampleCount) const
     {
         LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::createTexture:  creating a new texture (texture render target)");
 
-        const GLHandle texID = generateAndBindTexture(GL_TEXTURE_2D);
+        const GLHandle texID = generateAndBindTexture((sampleCount) ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D);
         GLTextureInfo texInfo;
-        fillGLInternalTextureInfo(GL_TEXTURE_2D, width, height, 1u, storageFormat, {ETextureChannelColor::Red, ETextureChannelColor::Green, ETextureChannelColor::Blue, ETextureChannelColor::Alpha}, texInfo);
-        allocateTextureStorage(texInfo, 1u);
+        fillGLInternalTextureInfo((sampleCount) ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, width, height, 1u, storageFormat, {ETextureChannelColor::Red, ETextureChannelColor::Green, ETextureChannelColor::Blue, ETextureChannelColor::Alpha}, texInfo);
+        allocateTextureStorage(texInfo, 1u, sampleCount);
 
         return texID;
     }
@@ -634,8 +633,9 @@ namespace ramses_internal
         glTexInfoOut.uploadParams.swizzle = swizzle;
     }
 
-    void Device_GL::allocateTextureStorage(const GLTextureInfo& texInfo, UInt32 mipLevels) const
+    void Device_GL::allocateTextureStorage(const GLTextureInfo& texInfo, UInt32 mipLevels, UInt32 sampleCount) const
     {
+        assert(!(sampleCount && mipLevels > 1));
         glPixelStorei(GL_UNPACK_ALIGNMENT, texInfo.uploadParams.byteAlignment);
 
         static_assert(decltype(texInfo.uploadParams.swizzle)().size() == 4, "Wrong size of texture swizzle array");
@@ -650,6 +650,9 @@ namespace ramses_internal
         case GL_TEXTURE_2D:
         case GL_TEXTURE_CUBE_MAP:
             glTexStorage2D(texInfo.target, mipLevels, texInfo.uploadParams.sizedInternalFormat, texInfo.width, texInfo.height);
+            break;
+        case GL_TEXTURE_2D_MULTISAMPLE:
+            glTexStorage2DMultisample(texInfo.target, sampleCount, texInfo.uploadParams.sizedInternalFormat, texInfo.width, texInfo.height, true);
             break;
         case GL_TEXTURE_3D:
             glTexStorage3D(texInfo.target, mipLevels, texInfo.uploadParams.sizedInternalFormat, texInfo.width, texInfo.height, texInfo.depth);
@@ -708,8 +711,7 @@ namespace ramses_internal
         switch (buffer.accessMode)
         {
         case ERenderBufferAccessMode_ReadWrite:
-            assert(0u == buffer.sampleCount);
-            bufferGLHandle = createTexture(buffer.width, buffer.height, buffer.format);
+            bufferGLHandle = createTexture(buffer.width, buffer.height, buffer.format, buffer.sampleCount);
             break;
         case ERenderBufferAccessMode_WriteOnly:
             bufferGLHandle = createRenderBuffer(buffer.width, buffer.height, buffer.format, buffer.sampleCount);
@@ -720,7 +722,7 @@ namespace ramses_internal
 
         if (bufferGLHandle != InvalidGLHandle)
         {
-            const GPUResource& bufferGPUResource = *new RenderBufferGPUResource(bufferGLHandle, buffer.width, buffer.height, buffer.type, buffer.format, buffer.accessMode);
+            const GPUResource& bufferGPUResource = *new RenderBufferGPUResource(bufferGLHandle, buffer.width, buffer.height, buffer.type, buffer.format, buffer.sampleCount, buffer.accessMode);
             return m_resourceMapper.registerResource(bufferGPUResource);
         }
 
@@ -857,7 +859,7 @@ namespace ramses_internal
             bindWriteOnlyRenderBufferToRenderTarget(renderBufferGpuResource.getType(), colorBufferSlot, renderBufferGpuResource.getGPUAddress());
             break;
         case ramses_internal::ERenderBufferAccessMode_ReadWrite:
-            bindReadWriteRenderBufferToRenderTarget(renderBufferGpuResource.getType(), colorBufferSlot, renderBufferGpuResource.getGPUAddress());
+            bindReadWriteRenderBufferToRenderTarget(renderBufferGpuResource.getType(), colorBufferSlot, renderBufferGpuResource.getGPUAddress(), renderBufferGpuResource.getSampleCount() != 0);
             break;
         default:
             assert(false && "invalid render buffer access mode");
@@ -865,19 +867,20 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::bindReadWriteRenderBufferToRenderTarget(const ERenderBufferType bufferType, const UInt32 colorBufferSlot, const GLHandle bufferGLHandle)
+    void Device_GL::bindReadWriteRenderBufferToRenderTarget(const ERenderBufferType bufferType, const UInt32 colorBufferSlot, const GLHandle bufferGLHandle, const bool multiSample)
     {
+        const int texTarget = (multiSample) ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
         switch (bufferType)
         {
         case ERenderBufferType_DepthBuffer:
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, bufferGLHandle, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texTarget, bufferGLHandle, 0);
             break;
         case ERenderBufferType_DepthStencilBuffer:
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, bufferGLHandle, 0);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, bufferGLHandle, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texTarget, bufferGLHandle, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, texTarget, bufferGLHandle, 0);
             break;
         case ERenderBufferType_ColorBuffer:
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorBufferSlot, GL_TEXTURE_2D, bufferGLHandle, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorBufferSlot, texTarget, bufferGLHandle, 0);
             break;
         case ERenderBufferType_InvalidBuffer:
         default:
@@ -1022,13 +1025,13 @@ namespace ramses_internal
         setTextureFiltering(target, wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel);
     }
 
-    DeviceResourceHandle Device_GL::allocateVertexBuffer(EDataType dataType, UInt32 sizeInBytes)
+    DeviceResourceHandle Device_GL::allocateVertexBuffer(UInt32 totalSizeInBytes)
     {
         GLHandle glAddress = InvalidGLHandle;
         glGenBuffers(1, &glAddress);
         assert(glAddress != InvalidGLHandle);
 
-        return m_resourceMapper.registerResource(*new VertexBufferGPUResource(glAddress, sizeInBytes, EnumToNumComponents(dataType)));
+        return m_resourceMapper.registerResource(*new GPUResource(glAddress, totalSizeInBytes));
     }
 
     void Device_GL::uploadVertexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize)
@@ -1047,22 +1050,26 @@ namespace ramses_internal
         m_resourceMapper.deleteResource(handle);
     }
 
-    void Device_GL::activateVertexBuffer(DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 offset)
+    void Device_GL::activateVertexBuffer(DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 startVertex, EDataType bufferDataType, UInt16 offsetWithinElement, UInt16 stride)
     {
+        assert(IsBufferDataType(bufferDataType));
+
         GLInputLocation vertexInputAddress;
         if (getAttributeLocation(field, vertexInputAddress))
         {
             assert(m_activeShader != nullptr);
-            const VertexBufferGPUResource& arrayResource = m_resourceMapper.getResourceAs<VertexBufferGPUResource>(handle);
+            const GPUResource& arrayResource = m_resourceMapper.getResource(handle);
 
-            const auto numComponents = arrayResource.getNumComponentsPerElement();
-            const UInt offsetInBytes = offset * numComponents * EnumToSize(EDataType::Float);
+            const auto attributeDataType = BufferTypeToElementType(bufferDataType);
+            const auto elementSize = (stride != 0u ? stride : EnumToSize(attributeDataType));
+
+            const std::intptr_t offsetInBytes = startVertex * elementSize + offsetWithinElement ;
             const void* offsetAsPointer = reinterpret_cast<const void*>(offsetInBytes);
+            const auto attributeNumComponents = EnumToNumComponents(attributeDataType);
 
             glBindBuffer(GL_ARRAY_BUFFER, arrayResource.getGPUAddress());
             glEnableVertexAttribArray(vertexInputAddress.getValue());
-
-            glVertexAttribPointer(vertexInputAddress.getValue(), numComponents, GL_FLOAT, GL_FALSE, 0, offsetAsPointer);
+            glVertexAttribPointer(vertexInputAddress.getValue(), attributeNumComponents, GL_FLOAT, GL_FALSE, stride, offsetAsPointer);
 
             glVertexAttribDivisor(vertexInputAddress.getValue(), instancingDivisor);
         }

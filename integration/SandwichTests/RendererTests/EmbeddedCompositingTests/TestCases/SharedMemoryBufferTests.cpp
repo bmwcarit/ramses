@@ -26,12 +26,8 @@ namespace ramses_internal
         testFramework.createTestCaseWithDefaultDisplay(SwitchBetweenBufferTypes_ShmThenDestroyShmThenEgl, *this, "SwitchBetweenBufferTypes_ShmThenDestroyShmThenEgl");
         testFramework.createTestCaseWithDefaultDisplay(SwitchBetweenBufferTypes_ConfidenceTest, *this, "SwitchBetweenBufferTypes_ConfidenceTest");
 
-        const UInt32 displayWidthForTwoStreams = ramses_internal::IntegrationScene::DefaultDisplayWidth * 2;
-        const UInt32 displayHeight = ramses_internal::IntegrationScene::DefaultDisplayHeight;
-        const float aspectRatioForTwoStreams = static_cast<float>(displayWidthForTwoStreams) / displayHeight;
         ramses::DisplayConfig displayConfigForTwoStreams = RendererTestUtils::CreateTestDisplayConfig(0, true);
-        displayConfigForTwoStreams.setWindowRectangle(0, 0, displayWidthForTwoStreams, displayHeight);
-        displayConfigForTwoStreams.setPerspectiveProjection(19.f, aspectRatioForTwoStreams, 0.1f, 1500.f);
+        displayConfigForTwoStreams.setWindowRectangle(0, 0, DisplayWidthTwoStreams, DisplayHeight);
 
         testFramework.createTestCase(ShowSameBufferOnTwoStreamTextures, *this, "ShowSameBufferOnTwoStreamTextures").m_displayConfigs.push_back(displayConfigForTwoStreams);
         testFramework.createTestCase(TestCorrectBufferRelease, *this, "TestCorrectBufferRelease").m_displayConfigs.push_back(displayConfigForTwoStreams);
@@ -42,8 +38,8 @@ namespace ramses_internal
     bool SharedMemoryBufferTests::runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase)
     {
         Bool testResultValue = true;
-        const StreamTextureSourceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
-        const StreamTextureSourceId secondStreamTextureSourceId(EmbeddedCompositorScene::GetSecondStreamTextureSourceId());
+        const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
+        const WaylandIviSurfaceId secondStreamTextureSourceId(EmbeddedCompositorScene::GetSecondStreamTextureSourceId());
 
         testFramework.setEnvironmentVariableWaylandDisplay();
 
@@ -52,7 +48,7 @@ namespace ramses_internal
         case ShowSharedMemoryStreamTexture:
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight);
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithoutEGLContextToTestApplication(255, 255);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
 
@@ -78,7 +74,7 @@ namespace ramses_internal
         case ShowFallbackTextureWhenBufferIsDetachedFromSurface:
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight);
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
             testFramework.sendRenderOneFrameToSharedMemoryBufferToTestApplication(surfaceId);
@@ -93,7 +89,7 @@ namespace ramses_internal
         case ShowFallbackTextureWhenBufferIsDetachedFromSurfaceAndLastFrameNotUsedForRendering:
         {
             testFramework.startTestApplicationAndWaitUntilConnected();
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight);
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
             testFramework.sendRenderOneFrameToSharedMemoryBufferToTestApplication(surfaceId);
@@ -118,7 +114,7 @@ namespace ramses_internal
         }
         case SwitchBetweenBufferTypes_ShmThenEgl:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -139,7 +135,7 @@ namespace ramses_internal
         }
         case SwitchBetweenBufferTypes_EglThenShmThenEgl:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -165,7 +161,7 @@ namespace ramses_internal
         }
         case SwitchBetweenBufferTypes_EglThenShmThenDestroyShmThenEgl:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -197,7 +193,7 @@ namespace ramses_internal
 
         case SwitchBetweenBufferTypes_ShmAttachedWithoutCommitThenEgl:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -220,7 +216,7 @@ namespace ramses_internal
         }
         case SwitchBetweenBufferTypes_ShmAttachedWithoutCommitThenDestroyedThenEgl:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -247,7 +243,7 @@ namespace ramses_internal
         }
         case SwitchBetweenBufferTypes_ShmThenDestroyShmThenEgl:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -273,7 +269,7 @@ namespace ramses_internal
         }
         case SwitchBetweenBufferTypes_ConfidenceTest:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
@@ -321,7 +317,7 @@ namespace ramses_internal
         }
         case SwitchBetweenBufferTypes_ConfidenceTest_TwoStreams:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE, DisplayWidthTwoStreams, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId1 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1u);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId1, streamTextureSourceId);
@@ -382,7 +378,7 @@ namespace ramses_internal
         }
         case SwitchBetweenBufferTypes_ConfidenceTest_SwizzledFallbackTextures:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SWIZZLED_FALLBACK_TEXTURES);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SWIZZLED_FALLBACK_TEXTURES, DisplayWidthTwoStreams, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId1 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1u);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId1, streamTextureSourceId);
@@ -437,7 +433,7 @@ namespace ramses_internal
         }
         case ShowSameBufferOnTwoStreamTextures:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE, DisplayWidthTwoStreams, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId1 = testFramework.sendCreateSurfaceWithoutEGLContextToTestApplication(384, 384);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId1, streamTextureSourceId);
@@ -454,7 +450,7 @@ namespace ramses_internal
         }
         case TestCorrectBufferRelease:
         {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE);
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::TWO_STREAM_TEXTURES_WITH_DIFFERENT_SOURCE_ID_AND_SAME_FALLBACK_TEXTURE, DisplayWidthTwoStreams, DisplayHeight);
             testFramework.startTestApplicationAndWaitUntilConnected();
             TestApplicationSurfaceId surfaceId1 = testFramework.sendCreateSurfaceWithoutEGLContextToTestApplication(384, 384);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId1, streamTextureSourceId);
@@ -520,7 +516,7 @@ namespace ramses_internal
         return testResultValue;
     }
 
-    bool SharedMemoryBufferTests::renderAndCheckOneSharedMemoryFrame(EmbeddedCompositingTestsFramework& testFramework,  TestApplicationSurfaceId testSurfaceId, ETriangleColor color, StreamTextureSourceId streamTextureSourceId, UInt32& frameCount, const String& expectedImageName)
+    bool SharedMemoryBufferTests::renderAndCheckOneSharedMemoryFrame(EmbeddedCompositingTestsFramework& testFramework,  TestApplicationSurfaceId testSurfaceId, ETriangleColor color, WaylandIviSurfaceId streamTextureSourceId, UInt32& frameCount, const String& expectedImageName)
     {
         testFramework.sendSetTriangleColorToTestApplication(color);
         testFramework.sendRenderOneFrameToSharedMemoryBufferToTestApplication(testSurfaceId, true);

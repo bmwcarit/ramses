@@ -60,7 +60,7 @@ namespace ramses_internal
         }
         else
         {
-            typedef AnimatableTypeTraits<EDataType> TypeTraits;
+            using TypeTraits = AnimatableTypeTraits<EDataType>;
             const typename TypeTraits::ComponentType offsetComponentValue = TypeTraits::GetComponent(offsetValue, m_processData.m_dataComponent);
             const typename TypeTraits::ComponentType finalComponentValue = getInterpolatedValue(offsetComponentValue);
             finalValue = dataBind.getValue();

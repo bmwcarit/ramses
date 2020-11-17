@@ -31,6 +31,13 @@ namespace ramses
         */
         sceneObjectId_t getSceneObjectId() const;
 
+        /**
+        * @brief Returns sceneid to which this object belongs to
+        *
+        * @return Scene id this object belongs to
+        */
+        sceneId_t getSceneId() const;
+
     protected:
         /**
         * @brief Constructor for SceneObject.

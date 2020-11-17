@@ -11,6 +11,7 @@
 #include "ClientTestUtils.h"
 #include "CreationHelper.h"
 #include "ramses-client-api/TextureSampler.h"
+#include "ramses-client-api/TextureSamplerMS.h"
 #include "ramses-client-api/RenderBuffer.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/Texture2D.h"
@@ -133,6 +134,36 @@ namespace ramses
         ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
         EXPECT_EQ(ramses_internal::TextureSampler::ContentType::RenderBuffer, m_internalScene.getTextureSampler(samplerHandle).contentType);
         EXPECT_EQ(renderBufferHandle.asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
+    }
+
+    TEST_F(TextureSamplerTest, createSamplerMS)
+    {
+        const RenderBuffer& renderBuffer = createObject<RenderBuffer>();
+        TextureSamplerMS* sampler = this->m_scene.createTextureSamplerMS(renderBuffer, "renderBuffer");
+
+        ASSERT_NE(static_cast<TextureSamplerMS*>(nullptr), sampler);
+
+        const ramses_internal::TextureSamplerHandle samplerHandle = sampler->impl.getTextureSamplerHandle();
+        const ramses_internal::RenderBufferHandle renderBufferHandle = renderBuffer.impl.getRenderBufferHandle();
+        ASSERT_TRUE(m_internalScene.isTextureSamplerAllocated(samplerHandle));
+        EXPECT_EQ(ramses_internal::TextureSampler::ContentType::RenderBufferMS, m_internalScene.getTextureSampler(samplerHandle).contentType);
+        EXPECT_EQ(renderBufferHandle.asMemoryHandle(), m_internalScene.getTextureSampler(samplerHandle).contentHandle);
+    }
+
+    TEST_F(TextureSamplerTest, cannotCreateSamplerForRenderBufferWithSamples)
+    {
+        const RenderBuffer& renderBuffer = *m_scene.createRenderBuffer(4u, 4u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_ReadWrite, 4u);
+        TextureSampler* sampler = this->m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, renderBuffer, 16u);
+
+        EXPECT_EQ(nullptr, sampler);
+    }
+
+    TEST_F(TextureSamplerTest, cannotCreateSamplerMSForWriteOnlyRenderBuffer)
+    {
+        const RenderBuffer& renderBuffer = *m_scene.createRenderBuffer(4u, 4u, ERenderBufferType_Color, ERenderBufferFormat_RGBA8, ERenderBufferAccessMode_WriteOnly, 4u);
+        TextureSamplerMS* sampler = this->m_scene.createTextureSamplerMS(renderBuffer, "renderBuffer");
+
+        EXPECT_EQ(nullptr, sampler);
     }
 
     TEST_F(TextureSamplerTest, createSamplerForStreamTexture)

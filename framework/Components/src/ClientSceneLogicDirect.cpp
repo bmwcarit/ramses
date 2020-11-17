@@ -28,15 +28,21 @@ namespace ramses_internal
     {
     }
 
-    void ClientSceneLogicDirect::flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
+    bool ClientSceneLogicDirect::flushSceneActions(const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag)
     {
+        const bool hasNewActions = !m_scene.getSceneActionCollection().empty();
+
+        SceneUpdate sceneUpdate;
+        if (!verifyAndGetResourceChanges(sceneUpdate, hasNewActions))
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "ClientSceneLogicDirect::flushSceneActions: At least one resource can't be loaded, Scene can't be rendered. Consult log and run Scene::validate() for more information");
+            return false;
+        }
+
         const SceneSizeInformation sceneSizes(m_scene.getSceneSizeInformation());
 
         // swap out of ClientScene and reserve new memory there
-        SceneUpdate sceneUpdate;
         sceneUpdate.actions.swap(m_scene.getSceneActionCollection());
-
-        const bool hasNewActions = !sceneUpdate.actions.empty();
 
         if (m_flushCounter == 0)
         {
@@ -55,23 +61,12 @@ namespace ramses_internal
 
         ++m_flushCounter;
 
-        updateResourceChanges(hasNewActions);
-
         if (isPublished())
         {
             SceneActionCollectionCreator creator(sceneUpdate.actions);
-            creator.flush(
-                m_flushCounter,
-                sceneSizes > m_previousSceneSizes,
-                sceneSizes,
-                m_resourceChanges,
-                m_scene.getSceneReferenceActions(),
-                flushTimeInfo,
-                versionTag);
-            sceneUpdate.flushInfos = { m_flushCounter, versionTag, sceneSizes, m_resourceChanges, m_scene.getSceneReferenceActions(), flushTimeInfo, sceneSizes > m_previousSceneSizes, true};
+            const bool addSizeInfo = sceneSizes > m_previousSceneSizes;
+            sceneUpdate.flushInfos = { m_flushCounter, versionTag, addSizeInfo?sceneSizes: SceneSizeInformation(), m_resourceChanges, m_scene.getSceneReferenceActions(), flushTimeInfo, addSizeInfo, true};
             m_previousSceneSizes = sceneSizes;
-            // TODO vaclav re-enable sending resources after renderer side can use them
-            //sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChanges.m_addedClientResourceRefs);
         }
 
         // reserve memory in ClientScene after flush because flush might add a lot of data
@@ -98,5 +93,7 @@ namespace ramses_internal
         {
             sendSceneToWaitingSubscribers(m_scene, flushTimeInfo, versionTag);
         }
+
+        return true;
     }
 }

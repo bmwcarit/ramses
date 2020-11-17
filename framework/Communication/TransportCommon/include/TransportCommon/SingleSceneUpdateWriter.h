@@ -29,8 +29,8 @@ namespace ramses_internal
             FlushInfos            = 12,
         };
 
-        constexpr static const uint32_t hasMorePacketsFlag = 0xCA;
-        constexpr static const uint32_t lastPacketFlag = 0xFE;
+        static constexpr const uint32_t hasMorePacketsFlag = 0xCA;
+        static constexpr const uint32_t lastPacketFlag = 0xFE;
 
     private:
         void initializePacket();

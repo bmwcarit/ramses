@@ -17,7 +17,7 @@ namespace ramses_internal
 {
     struct DataFieldInfo
     {
-        explicit DataFieldInfo(EDataType dataType_ = EDataType::Invalid, UInt32 elementCount_ = 1u, EFixedSemantics semantics_ = EFixedSemantics_Invalid)
+        explicit DataFieldInfo(EDataType dataType_ = EDataType::Invalid, UInt32 elementCount_ = 1u, EFixedSemantics semantics_ = EFixedSemantics::Invalid)
             : dataType(dataType_)
             , elementCount(elementCount_)
             , semantics(semantics_)
@@ -41,7 +41,7 @@ namespace ramses_internal
         EFixedSemantics semantics;
     };
 
-    typedef std::vector<DataFieldInfo> DataFieldInfoVector;
+    using DataFieldInfoVector = std::vector<DataFieldInfo>;
 }
 
 #endif

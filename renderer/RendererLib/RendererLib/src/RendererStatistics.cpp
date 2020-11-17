@@ -50,10 +50,10 @@ namespace ramses_internal
         m_displayStatistics[display].numFrameBufferSwapped++;
     }
 
-    void RendererStatistics::clientResourceUploaded(UInt byteSize)
+    void RendererStatistics::resourceUploaded(UInt byteSize)
     {
-        m_clientResourcesUploaded++;
-        m_clientResourcesBytesUploaded += byteSize;
+        m_resourcesUploaded++;
+        m_resourcesBytesUploaded += byteSize;
     }
 
     void RendererStatistics::sceneResourceUploaded(SceneId sceneId, UInt byteSize)
@@ -63,7 +63,7 @@ namespace ramses_internal
         sceneStats.sceneResourcesBytesUploaded += byteSize;
     }
 
-    void RendererStatistics::streamTextureUpdated(StreamTextureSourceId sourceId, UInt numUpdates)
+    void RendererStatistics::streamTextureUpdated(WaylandIviSurfaceId sourceId, UInt numUpdates)
     {
         auto& strTexStat = m_streamTextureStatistics[sourceId];
         strTexStat.numUpdates += numUpdates;
@@ -87,7 +87,7 @@ namespace ramses_internal
         }
     }
 
-    void RendererStatistics::trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedClientResources, UInt numRemovedClientResources, UInt numSceneResourceActions, std::chrono::milliseconds latency)
+    void RendererStatistics::trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedResources, UInt numRemovedResources, UInt numSceneResourceActions, std::chrono::milliseconds latency)
     {
         auto& sceneStats = m_sceneStatistics[sceneId];
         sceneStats.numFlushesArrived++;
@@ -98,8 +98,8 @@ namespace ramses_internal
         }
 
         sceneStats.numSceneActionsPerFlush.update(numSceneActions);
-        sceneStats.numClientResourcesAddedPerFlush.update(numAddedClientResources);
-        sceneStats.numClientResourcesRemovedPerFlush.update(numRemovedClientResources);
+        sceneStats.numResourcesAddedPerFlush.update(numAddedResources);
+        sceneStats.numResourcesRemovedPerFlush.update(numRemovedResources);
         sceneStats.numSceneResourceActionsPerFlush.update(numSceneResourceActions);
         sceneStats.flushLatency.update(static_cast<int64_t>(latency.count()));
     }
@@ -140,7 +140,7 @@ namespace ramses_internal
         m_displayStatistics[displayHandle].offscreenBufferStatistics.erase(offscreenBuffer);
     }
 
-    void RendererStatistics::untrackStreamTexture(StreamTextureSourceId sourceId)
+    void RendererStatistics::untrackStreamTexture(WaylandIviSurfaceId sourceId)
     {
         m_streamTextureStatistics.erase(sourceId);
     }
@@ -180,8 +180,8 @@ namespace ramses_internal
         m_drawCalls = 0u;
         m_frameDurationMin = std::numeric_limits<UInt32>::max();
         m_frameDurationMax = 0u;
-        m_clientResourcesUploaded = 0u;
-        m_clientResourcesBytesUploaded = 0u;
+        m_resourcesUploaded = 0u;
+        m_resourcesBytesUploaded = 0u;
         m_shadersCompiled = 0u;
         m_microsecondsForShaderCompilation = 0u;
         m_maximumDurationShaderName = "";
@@ -202,8 +202,8 @@ namespace ramses_internal
             sceneStat.lastFrameFlushApplied = -1; // treat as if applied in previous period's last frame (ie. do not measure 'apply gaps' across periods)
             sceneStat.lastFrameFlushBlocked = std::numeric_limits<Int32>::min(); // treat as if previous period did not end with blocked flush (ie. do not measure 'consecutive blocks' across periods)
             sceneStat.numSceneActionsPerFlush.reset();
-            sceneStat.numClientResourcesAddedPerFlush.reset();
-            sceneStat.numClientResourcesRemovedPerFlush.reset();
+            sceneStat.numResourcesAddedPerFlush.reset();
+            sceneStat.numResourcesRemovedPerFlush.reset();
             sceneStat.numSceneResourceActionsPerFlush.reset();
             sceneStat.flushLatency.reset();
             sceneStat.sceneResourcesUploaded = 0u;
@@ -241,8 +241,8 @@ namespace ramses_internal
             ", maxFrameTime " << m_frameDurationMax << "us]" <<
             ", drawcallsPerFrame " << getDrawCallsPerFrame() <<
             ", numFrames " << m_frameNumber;
-        if (m_clientResourcesUploaded > 0u)
-            str << ", clientResUploaded " << m_clientResourcesUploaded << " (" << m_clientResourcesBytesUploaded << " B)";
+        if (m_resourcesUploaded > 0u)
+            str << ", resUploaded " << m_resourcesUploaded << " (" << m_resourcesBytesUploaded << " B)";
         if (m_shadersCompiled > 0u)
         {
             str << ", shadersCompiled " << m_shadersCompiled << " for total ms:" << m_microsecondsForShaderCompilation / 1000;
@@ -267,8 +267,8 @@ namespace ramses_internal
         {
             const auto& sceneStats = sceneStatsIt.second;
             const auto& numSceneActionsPerFlush = sceneStats.numSceneActionsPerFlush;
-            const auto& numClientResourcesAddedPerFlush = sceneStats.numClientResourcesAddedPerFlush;
-            const auto& numClientResourcesRemovedPerFlush = sceneStats.numClientResourcesRemovedPerFlush;
+            const auto& numResourcesAddedPerFlush = sceneStats.numResourcesAddedPerFlush;
+            const auto& numResourcesRemovedPerFlush = sceneStats.numResourcesRemovedPerFlush;
             const auto& numSceneResourceActionsPerFlush = sceneStats.numSceneResourceActionsPerFlush;
             const auto& flushLatency = sceneStats.flushLatency;
 
@@ -285,8 +285,8 @@ namespace ramses_internal
             {
                 str << ", actions/F (" << numSceneActionsPerFlush.minValue << "/" << numSceneActionsPerFlush.maxValue << "/" << static_cast<float>(numSceneActionsPerFlush.sum) / sceneStats.numFlushesArrived << ")";
                 str << ", dt/F (" << flushLatency.minValue << "/" << flushLatency.maxValue << "/" << static_cast<float>(flushLatency.sum) / sceneStats.numFlushesArrived << ")";
-                str << ", RC+/F (" << numClientResourcesAddedPerFlush.minValue << "/" << numClientResourcesAddedPerFlush.maxValue << "/" << static_cast<float>(numClientResourcesAddedPerFlush.sum) / sceneStats.numFlushesArrived << ")";
-                str << ", RC-/F (" << numClientResourcesRemovedPerFlush.minValue << "/" << numClientResourcesRemovedPerFlush.maxValue << "/" << static_cast<float>(numClientResourcesRemovedPerFlush.sum) / sceneStats.numFlushesArrived << ")";
+                str << ", RC+/F (" << numResourcesAddedPerFlush.minValue << "/" << numResourcesAddedPerFlush.maxValue << "/" << static_cast<float>(numResourcesAddedPerFlush.sum) / sceneStats.numFlushesArrived << ")";
+                str << ", RC-/F (" << numResourcesRemovedPerFlush.minValue << "/" << numResourcesRemovedPerFlush.maxValue << "/" << static_cast<float>(numResourcesRemovedPerFlush.sum) / sceneStats.numFlushesArrived << ")";
                 str << ", RS/F (" << numSceneResourceActionsPerFlush.minValue << "/" << numSceneResourceActionsPerFlush.maxValue << "/" << static_cast<float>(numSceneResourceActionsPerFlush.sum) / sceneStats.numFlushesArrived << ")";
             }
             if (sceneStats.sceneResourcesUploaded > 0u)

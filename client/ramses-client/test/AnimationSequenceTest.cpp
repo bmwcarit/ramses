@@ -64,7 +64,7 @@ namespace ramses
             m_sequence->addAnimation(*animation5, 9999u);
         }
 
-        typedef std::vector<sequenceTimeStamp_t> AnimationSequenceTimes;
+        using AnimationSequenceTimes = std::vector<sequenceTimeStamp_t>;
         static AnimationSequenceTimes GetStartAndStopTimesWithinSequence(const AnimationVector& animations, const AnimationSequence& sequence)
         {
             AnimationSequenceTimes times;

@@ -31,11 +31,6 @@ namespace ramses_internal
         virtual IConnectionStatusUpdateNotifier& getRamsesConnectionStatusUpdateNotifier() override;
         virtual IConnectionStatusUpdateNotifier& getDcsmConnectionStatusUpdateNotifier() override;
 
-        // resource
-        virtual bool sendRequestResources(const Guid& to, const ResourceContentHashVector& resources) override;
-        virtual bool sendResourcesNotAvailable(const Guid& to, const ResourceContentHashVector& resources) override;
-        virtual bool sendResources(const Guid& to, const ISceneUpdateSerializer& serializer) override;
-
         // scene
         virtual bool broadcastNewScenesAvailable(const SceneInfoVector& newScenes) override;
         virtual bool broadcastScenesBecameUnavailable(const SceneInfoVector& unavailableScenes) override;
@@ -50,9 +45,9 @@ namespace ramses_internal
         virtual bool sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<Byte>& data) override;
 
         // dcsm provider -> consumer
-        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category, const std::string& friendlyName) override;
-        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category, const std::string& friendlyName) override;
-        virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, ETechnicalContentType technicalContentType, TechnicalContentDescriptor technicalContentDescriptor) override;
+        virtual bool sendDcsmBroadcastOfferContent(ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName) override;
+        virtual bool sendDcsmOfferContent(const Guid& to, ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName) override;
+        virtual bool sendDcsmContentDescription(const Guid& to, ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor) override;
         virtual bool sendDcsmContentReady(const Guid& to, ContentID contentID) override;
         virtual bool sendDcsmContentEnableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
         virtual bool sendDcsmContentDisableFocusRequest(const Guid& to, ContentID contentID, int32_t focusRequest) override;
@@ -66,8 +61,6 @@ namespace ramses_internal
 
 
         // set service handlers
-        virtual void setResourceProviderServiceHandler(IResourceProviderServiceHandler* handler) override;
-        virtual void setResourceConsumerServiceHandler(IResourceConsumerServiceHandler* handler) override;
         virtual void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) override;
         virtual void setSceneRendererServiceHandler(ISceneRendererServiceHandler* handler) override;
 

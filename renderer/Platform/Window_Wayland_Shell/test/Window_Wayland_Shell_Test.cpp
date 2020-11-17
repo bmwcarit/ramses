@@ -9,17 +9,17 @@
 #include "Window_Wayland_Test/AWindowWaylandWithEventHandling.h"
 #include "Window_Wayland_Test/TestCases.h"
 #include "Window_Wayland_Shell/Window_Wayland_Shell.h"
-#include "PlatformFactoryMock.h"
-#include "Platform_Base/PlatformFactory_Base.h"
+#include "PlatformMock.h"
+#include "Platform_Base/Platform_Base.h"
 
 namespace ramses_internal
 {
-    NiceMock<PlatformFactoryNiceMock>* gPlatformFactoryMock = nullptr;
+    NiceMock<PlatformNiceMock>* gPlatformMock = nullptr;
 
-    ramses_internal::IPlatformFactory* ramses_internal::PlatformFactory_Base::CreatePlatformFactory(const ramses_internal::RendererConfig&)
+    ramses_internal::IPlatform* ramses_internal::Platform_Base::CreatePlatform(const ramses_internal::RendererConfig&)
     {
-        gPlatformFactoryMock = new ::testing::NiceMock<PlatformFactoryNiceMock>();
-        return gPlatformFactoryMock;
+        gPlatformMock = new ::testing::NiceMock<PlatformNiceMock>();
+        return gPlatformMock;
     }
 
     INSTANTIATE_TYPED_TEST_SUITE_P(Window_Wayland_Shell_Test, AWindowWayland, Window_Wayland_Shell);

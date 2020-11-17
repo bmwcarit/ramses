@@ -151,13 +151,13 @@ namespace ramses_internal
         m_renderer->doOneLoop();
     }
 
-    ramses::displayBufferId_t TestRenderer::createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptible)
+    ramses::displayBufferId_t TestRenderer::createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount)
     {
         ramses::displayBufferId_t offscreenBufferId;
         if (interruptible)
             offscreenBufferId = m_renderer->createInterruptibleOffscreenBuffer(displayId, width, height);
         else
-            offscreenBufferId = m_renderer->createOffscreenBuffer(displayId, width, height);
+            offscreenBufferId = m_renderer->createOffscreenBuffer(displayId, width, height, sampleCount);
         m_renderer->flush();
 
         ramses::RendererAndSceneTestEventHandler eventHandler(*m_renderer);

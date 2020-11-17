@@ -11,6 +11,11 @@ ACME_MODULE(
     #==========================================================================
     # general module information
     #==========================================================================
+    # Attention: extra care is needed in case of renaming this module
+    # The name of this module (and all CONCRETE platform modules) must align with
+    # the postfix of generated RAMSES libs' names. The platform name is used in
+    # cmake modules and templates for the mentioned purposes.
+    # The module naming convention is broken here knowledgeably
     NAME                    platform-x11-egl-es-3-0
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
@@ -25,10 +30,8 @@ ACME_MODULE(
     # dependencies
     #==========================================================================
     DEPENDENCIES            X11
-                            EGL
-                            Context_EGL
+                            Platform_EGL
                             Device_GL
-                            ramses-renderer-lib
 )
 
 ACME_MODULE(

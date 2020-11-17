@@ -26,7 +26,7 @@ namespace ramses
     class EffectDescriptionImpl : public StatusObjectImpl
     {
     public:
-        typedef ramses_internal::HashMap<ramses_internal::String, ramses_internal::EFixedSemantics> SemanticsMap;
+        using SemanticsMap = ramses_internal::HashMap<ramses_internal::String, ramses_internal::EFixedSemantics>;
 
         EffectDescriptionImpl();
         virtual ~EffectDescriptionImpl();

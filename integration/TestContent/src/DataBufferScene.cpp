@@ -23,8 +23,8 @@
 namespace ramses_internal
 {
 
-    DataBufferScene::DataBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    DataBufferScene::DataBufferScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_effect(*createEffect(state))
     {
         ramses::Appearance* appearance = m_scene.createAppearance(m_effect);
@@ -67,6 +67,24 @@ namespace ramses_internal
             m_scene.flush();
             break;
         }
+        case UPDATE_INTERLEAVED_VERTEX_DATA_BUFFER:
+        {
+            assert(nullptr != m_vertexDataBufferInterleaved);
+
+            //new vertices values
+            //{
+            //     3.f /*updated*/    , 0.f               , 0.f, 1.0f,
+            //     0.f                , 0.f /*updated*/   , 0.f, 1.0f,
+            //     3.f /*updated*/    , -3.f              , 0.f, 1.0f,
+            //};
+            const float val3p0 = 3.f;
+            const float valZero = 0.f;
+            m_vertexDataBufferInterleaved->updateData(0u                , sizeof(float), &val3p0);
+            m_vertexDataBufferInterleaved->updateData(5 * sizeof(float) , sizeof(float), &valZero);
+            m_vertexDataBufferInterleaved->updateData(8 * sizeof(float) , sizeof(float), &val3p0);
+            m_scene.flush();
+            break;
+        }
         case VERTEX_ARRAY_BUFFER_VECTOR4F:
         {
             createVertexArrayBufferVector4F();
@@ -95,11 +113,16 @@ namespace ramses_internal
             return getTestEffect("ramses-test-client-data-buffers-vec2");
         case INDEX_DATA_BUFFER_UINT16:
         case VERTEX_DATA_BUFFER_VECTOR3F:
+        case VERTEX_DATA_BUFFER_INTERLEAVED_SINGLE_ATTRIB:
             return getTestEffect("ramses-test-client-data-buffers-vec3");
         case INDEX_DATA_BUFFER_UINT32:
         case VERTEX_DATA_BUFFER_VECTOR4F:
         case VERTEX_ARRAY_BUFFER_VECTOR4F:
             return getTestEffect("ramses-test-client-data-buffers-vec4");
+        case VERTEX_DATA_BUFFER_INTERLEAVED:
+        case VERTEX_DATA_BUFFER_INTERLEAVED_TWO_STRIDES:
+        case VERTEX_DATA_BUFFER_INTERLEAVED_START_VERTEX:
+            return getTestEffect("ramses-test-client-data-buffers-interleaved");
         default:
             assert(false);
         }
@@ -140,6 +163,23 @@ namespace ramses_internal
         case VERTEX_ARRAY_BUFFER_VECTOR4F:
             createIndexDataBufferUInt32();
             createVertexArrayBufferVector4F();
+            break;
+        case VERTEX_DATA_BUFFER_INTERLEAVED:
+            createIndexDataBufferUInt32();
+            createVertexArrayBufferInterleaved();
+            break;
+        case VERTEX_DATA_BUFFER_INTERLEAVED_TWO_STRIDES:
+            createIndexDataBufferUInt32();
+            createVertexArrayBufferInterleavedTwoStrides();
+            break;
+        case VERTEX_DATA_BUFFER_INTERLEAVED_SINGLE_ATTRIB:
+            createIndexDataBufferUInt32();
+            createVertexArrayBufferInterleavedSingleAttrib();
+            break;
+        case VERTEX_DATA_BUFFER_INTERLEAVED_START_VERTEX:
+            createIndexDataBufferUInt32();
+            createVertexArrayBufferInterleavedStartVertex();
+            m_meshNode->setStartVertex(1);
             break;
         default:
             assert(false);
@@ -279,5 +319,111 @@ namespace ramses_internal
         ramses::AttributeInput input;
         m_effect.findAttributeInput("a_position", input);
         m_geometry->setInputBuffer(input, *arrayBuffer);
+    }
+
+    void DataBufferScene::createVertexArrayBufferInterleaved()
+    {
+        static const float vertices[] =
+        {
+            0.f,  0.f,  0.f, 1.0f,
+            0.f, -3.f,  0.f, 1.0f,
+            3.f, -3.f,  0.f, 1.0f,
+        };
+
+        ramses::ArrayBuffer* arrayBuffer = m_scene.createArrayBuffer(ramses::EDataType::ByteBlob, sizeof(vertices));
+        arrayBuffer->updateData(0u, sizeof(vertices), vertices);
+
+        constexpr uint16_t stride = 4 * sizeof(float);
+        ramses::AttributeInput inputX;
+        m_effect.findAttributeInput("a_positionX", inputX);
+        ramses::AttributeInput inputYZ;
+        m_effect.findAttributeInput("a_positionYZ", inputYZ);
+        ramses::AttributeInput inputW;
+        m_effect.findAttributeInput("a_positionW", inputW);
+        m_geometry->setInputBuffer(inputX   , *arrayBuffer, 0u                , stride);
+        m_geometry->setInputBuffer(inputYZ  , *arrayBuffer, sizeof(float)     , stride);
+        m_geometry->setInputBuffer(inputW   , *arrayBuffer, 3 * sizeof(float) , stride);
+
+        m_vertexDataBufferInterleaved = arrayBuffer;
+    }
+
+    static constexpr float UNUSEDVALUE = std::numeric_limits<float>::max();
+
+    void DataBufferScene::createVertexArrayBufferInterleavedTwoStrides()
+    {
+        //Create vertices for a triangle where the attributes for X and W components use different stride from
+        //the attribute for YZ component. For clarify values which should be ignored will be filled with "UNUSEDVALUE"
+        static const float vertices[] =
+        {
+            0.f         ,  0.f,  0.f                    , UNUSEDVALUE   , //x0, yz0 , _
+            UNUSEDVALUE , -3.f,  0.f                    , 1.0f          , //_ , yz1 , w0
+            0.f         , -3.f,  0.f                    , UNUSEDVALUE   , //x1, yz2 , _
+            UNUSEDVALUE , UNUSEDVALUE   , UNUSEDVALUE   , 1.0f          , //_ , _ _ , w1
+            3.f         , UNUSEDVALUE   , UNUSEDVALUE   , UNUSEDVALUE   , //x2, _ _ , _
+            UNUSEDVALUE , UNUSEDVALUE   , UNUSEDVALUE   , 1.0f            //_ , _ _ , w2
+        };
+
+        ramses::ArrayBuffer* arrayBuffer = m_scene.createArrayBuffer(ramses::EDataType::ByteBlob, sizeof(vertices));
+        arrayBuffer->updateData(0u, sizeof(vertices), vertices);
+
+        constexpr uint16_t strideXAndW = 8 * sizeof(float);
+        constexpr uint16_t strideYZ = 4 * sizeof(float);
+
+        ramses::AttributeInput inputX;
+        m_effect.findAttributeInput("a_positionX", inputX);
+        ramses::AttributeInput inputYZ;
+        m_effect.findAttributeInput("a_positionYZ", inputYZ);
+        ramses::AttributeInput inputW;
+        m_effect.findAttributeInput("a_positionW", inputW);
+        m_geometry->setInputBuffer(inputX, *arrayBuffer, 0u                 , strideXAndW);
+        m_geometry->setInputBuffer(inputYZ, *arrayBuffer, sizeof(float)     , strideYZ);
+        m_geometry->setInputBuffer(inputW, *arrayBuffer, 7 * sizeof(float)  , strideXAndW);
+    }
+
+    void DataBufferScene::createVertexArrayBufferInterleavedSingleAttrib()
+    {
+        static const float vertices[] =
+        {
+            UNUSEDVALUE, 0.f,  0.f,  0.f,
+            UNUSEDVALUE, 0.f, -3.f,  0.f,
+            UNUSEDVALUE, 3.f, -3.f,  0.f,
+        };
+
+        ramses::ArrayBuffer* arrayBuffer = m_scene.createArrayBuffer(ramses::EDataType::ByteBlob, sizeof(vertices));
+        arrayBuffer->updateData(0u, sizeof(vertices), vertices);
+
+        constexpr uint16_t stride = 4 * sizeof(float);
+        ramses::AttributeInput input;
+        m_effect.findAttributeInput("a_position", input);
+        m_geometry->setInputBuffer(input, *arrayBuffer, sizeof(float), stride);
+
+        m_vertexDataBufferInterleaved = arrayBuffer;
+    }
+
+    void DataBufferScene::createVertexArrayBufferInterleavedStartVertex()
+    {
+        static const float vertices[] =
+        {
+            UNUSEDVALUE, UNUSEDVALUE, UNUSEDVALUE, UNUSEDVALUE,
+            0.f,  0.f,  0.f, 1.0f,
+            0.f, -3.f,  0.f, 1.0f,
+            3.f, -3.f,  0.f, 1.0f,
+        };
+
+        ramses::ArrayBuffer* arrayBuffer = m_scene.createArrayBuffer(ramses::EDataType::ByteBlob, sizeof(vertices));
+        arrayBuffer->updateData(0u, sizeof(vertices), vertices);
+
+        constexpr uint16_t stride = 4 * sizeof(float);
+        ramses::AttributeInput inputX;
+        m_effect.findAttributeInput("a_positionX", inputX);
+        ramses::AttributeInput inputYZ;
+        m_effect.findAttributeInput("a_positionYZ", inputYZ);
+        ramses::AttributeInput inputW;
+        m_effect.findAttributeInput("a_positionW", inputW);
+        m_geometry->setInputBuffer(inputX, *arrayBuffer, 0u, stride);
+        m_geometry->setInputBuffer(inputYZ, *arrayBuffer, sizeof(float), stride);
+        m_geometry->setInputBuffer(inputW, *arrayBuffer, 3 * sizeof(float), stride);
+
+        m_vertexDataBufferInterleaved = arrayBuffer;
     }
 }

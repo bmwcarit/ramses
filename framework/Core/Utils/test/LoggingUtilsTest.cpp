@@ -65,7 +65,5 @@ namespace ramses_internal
         EXPECT_EQ("Y", fmt::to_string(LogTestBarNoLast::Y));
         const LogTestBarNoLast invalidAbove = static_cast<LogTestBarNoLast>(2);
         EXPECT_EQ("<INVALID ramses_internal::LogTestBarNoLast 2>", fmt::to_string(invalidAbove));
-        const LogTestBarNoLast invalidBelow = static_cast<LogTestBarNoLast>(-1);
-        EXPECT_EQ("<INVALID ramses_internal::LogTestBarNoLast -1>", fmt::to_string(invalidBelow));
     }
 }

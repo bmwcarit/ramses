@@ -20,19 +20,21 @@ namespace ramses_internal
 
         enum
         {
-            SAMPLE_COUNT_2 = 0,
-            SAMPLE_COUNT_4
+            SAMPLE_COUNT_2_BLIT = 0,
+            SAMPLE_COUNT_4_BLIT,
+            SAMPLE_COUNT_4_TEXEL_FETCH
         };
 
     private:
         ramses::RenderTarget&   createRenderTarget(UInt32 state);
-        ramses::RenderTarget&   createBlittingRenderTarget(UInt32 state);
-        void                    initRenderingPass(UInt32 state);
+        void                    initRenderPass(UInt32 state);
         void                    initBlittingPass(UInt32 state);
         ramses::MeshNode&       createMesh();
+        const ramses::MeshNode& createQuadWithTextureMS(const ramses::RenderBuffer& renderBuffer);
 
         ramses::RenderBuffer& m_colorBufferMsaa2;
         ramses::RenderBuffer& m_colorBufferMsaa4;
+        ramses::RenderBuffer& m_colorBufferMsaa4ReadWrite;
         ramses::RenderBuffer& m_blittingColorBuffer;
     };
 }

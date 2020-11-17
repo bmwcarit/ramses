@@ -39,18 +39,10 @@ public:
     MOCK_METHOD(void, executePostProcessing, (), (override));
     MOCK_METHOD(DeviceResourceHandle, getDisplayBuffer, (), (const, override));
     MOCK_METHOD(void, readPixels, (DeviceResourceHandle framebufferHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut), (override));
-    MOCK_METHOD(void, setProjectionParams, (const ProjectionParams& params), (override));
     MOCK_METHOD(bool, isWarpingEnabled, (), (const, override));
     MOCK_METHOD(void, setWarpingMeshData, (const WarpingMeshData& meshData), (override));
-    MOCK_METHOD(const ProjectionParams&, getProjectionParams, (), (const, override));
-    MOCK_METHOD(void, setViewPosition, (const Vector3& position), (override));
-    MOCK_METHOD(void, setViewRotation, (const Vector3& rotation), (override));
-    MOCK_METHOD(const Vector3&, getViewPosition, (), (const, override));
-    MOCK_METHOD(const Vector3&, getViewRotation, (), (const, override));
-    MOCK_METHOD(const Matrix44f&, getViewMatrix, (), (const, override));
     MOCK_METHOD(UInt32, getDisplayWidth, (), (const, override));
     MOCK_METHOD(UInt32, getDisplayHeight, (), (const, override));
-    MOCK_METHOD(void, resetView, (), (const, override));
     MOCK_METHOD(IRenderBackend&, getRenderBackend, (), (const, override));
     MOCK_METHOD(IEmbeddedCompositingManager&, getEmbeddedCompositingManager, (), (override));
     MOCK_METHOD(void, validateRenderingStatusHealthy, (), (const, override));

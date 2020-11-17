@@ -50,7 +50,7 @@ namespace ramses_internal
         void unpublishScene(SceneId sceneId);
         Bool isScenePublished(SceneId sceneId) const;
 
-        void flush(SceneId sceneId, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag);
+        bool flush(SceneId sceneId, const FlushTimeInformation& timeInfo, SceneVersionTag versionTag);
         void removeScene(SceneId sceneId);
 
         virtual void handleSceneReferenceEvent(SceneReferenceEvent const& event, const Guid& rendererId) override;
@@ -59,12 +59,11 @@ namespace ramses_internal
         // Resource handling
         ManagedResource         addResource(const IResource* resource);
         ManagedResource         getResource(ResourceContentHash hash) const;
-        ManagedResource         forceLoadResource(const ResourceContentHash& hash) const;
+        ManagedResource         loadResource(const ResourceContentHash& hash) const;
         ResourceHashUsage       getHashUsage(const ResourceContentHash& hash) const;
-        ManagedResourceVector   getResources() const;
         void                    addResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ResourceTableOfContents& toc);
         void                    removeResourceFile(const String& resourceFileName);
-        void                    forceLoadFromResourceFile(const String& resourceFileName);
+        void                    loadResourceFromFile(const String& resourceFileName);
         bool                    hasResourceFile(const String& resourceFileName) const;
         void                    reserveResourceCount(uint32_t totalCount);
 

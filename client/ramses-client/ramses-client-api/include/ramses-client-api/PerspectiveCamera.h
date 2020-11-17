@@ -9,31 +9,31 @@
 #ifndef RAMSES_PERSPECTIVECAMERA_H
 #define RAMSES_PERSPECTIVECAMERA_H
 
-#include "ramses-client-api/LocalCamera.h"
+#include "ramses-client-api/Camera.h"
 
 namespace ramses
 {
     /**
     * @brief   The #PerspectiveCamera is a local camera which defines a perspective view into the scene.
     * @details A valid camera for rendering must have viewport and frustum set.
-    *          Frustum planes can be set using #ramses::LocalCamera::setFrustum or #ramses::PerspectiveCamera::setFrustum,
+    *          Frustum planes can be set using #ramses::Camera::setFrustum or #ramses::PerspectiveCamera::setFrustum,
     *          depending if input is concrete frustum planes or field of view and aspect ratio.
     */
-    class RAMSES_API PerspectiveCamera : public LocalCamera
+    class RAMSES_API PerspectiveCamera : public Camera
     {
     public:
         /**
-        * @copydoc ramses::LocalCamera::setFrustum
+        * @copydoc ramses::Camera::setFrustum
         */
-        using LocalCamera::setFrustum;
+        using Camera::setFrustum;
 
         /**
-        * @brief   An alternative method (see #ramses::LocalCamera::setFrustum) to set the perspective view frustum
+        * @brief   An alternative method (see #ramses::Camera::setFrustum) to set the perspective view frustum
         *          of the camera by providing opening angle and aspect ratio.
         * @details When using this method the field of view and aspect ratio are internally converted to six frustum planes,
-        *          therefore this is just a convenience wrapper for #ramses::LocalCamera::setFrustum.
+        *          therefore this is just a convenience wrapper for #ramses::Camera::setFrustum.
         *
-        *          Important note: if frustum planes data is bound (see #ramses::LocalCamera::bindFrustumPlanes)
+        *          Important note: if frustum planes data is bound (see #ramses::Camera::bindFrustumPlanes)
         *          the values set here will not be effective until unbound again, bound values are always overridden by values
         *          from bound data object. Bound values can only be modified via the #ramses::DataObject bound to them.
         *          See #ramses::RamsesUtils::SetPerspectiveCameraFrustumToDataObjects providing way to conveniently
@@ -53,7 +53,7 @@ namespace ramses
 
         /**
         * @brief Gets the vertical field of view opening angle in degrees.
-        * @details If frustum planes data is bound (#ramses::LocalCamera::bindFrustumPlanes) the value returned here represents
+        * @details If frustum planes data is bound (#ramses::Camera::bindFrustumPlanes) the value returned here represents
         *          the effective value used, i.e. the one from bound #ramses::DataObject, not the one set via #setFrustum.
         *
         * @return Vertical field of view of this camera.
@@ -62,7 +62,7 @@ namespace ramses
 
         /**
         * @brief Gets the aspect ratio between camera frustum width and height (set via #setFrustum, not viewport).
-        * @details If frustum planes data is bound (#ramses::LocalCamera::bindFrustumPlanes) the value returned here represents
+        * @details If frustum planes data is bound (#ramses::Camera::bindFrustumPlanes) the value returned here represents
         *          the effective value used, i.e. the one from bound #ramses::DataObject, not the one set via #setFrustum.
         *
         * @return Aspect ratio of this camera.

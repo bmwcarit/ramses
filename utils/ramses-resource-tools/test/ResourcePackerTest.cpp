@@ -106,10 +106,10 @@ namespace ramses
                 "  gl_FragColor = vec4(u_color.x, u_color.y, u_color.z, a); \n"
                 "}\n");
 
-            effectDesc.setAttributeSemantic("a_position", EEffectAttributeSemantic_TextPositions);
-            effectDesc.setAttributeSemantic("a_texcoord", EEffectAttributeSemantic_TextTextureCoordinates);
-            effectDesc.setUniformSemantic("u_texture", EEffectUniformSemantic_TextTexture);
-            effectDesc.setUniformSemantic("mvpMatrix", EEffectUniformSemantic_ModelViewProjectionMatrix);
+            effectDesc.setAttributeSemantic("a_position", EEffectAttributeSemantic::TextPositions);
+            effectDesc.setAttributeSemantic("a_texcoord", EEffectAttributeSemantic::TextTextureCoordinates);
+            effectDesc.setUniformSemantic("u_texture", EEffectUniformSemantic::TextTexture);
+            effectDesc.setUniformSemantic("mvpMatrix", EEffectUniformSemantic::ModelViewProjectionMatrix);
 
             m_effect = m_scene.createEffect(effectDesc);
 
@@ -165,19 +165,19 @@ namespace ramses
     {
         UniformInput mvpMatrixInput;
         EXPECT_TRUE(StatusOK == loadedEffect.findUniformInput("mvpMatrix", mvpMatrixInput));
-        EXPECT_TRUE(EEffectUniformSemantic_ModelViewProjectionMatrix == mvpMatrixInput.getSemantics());
+        EXPECT_TRUE(EEffectUniformSemantic::ModelViewProjectionMatrix == mvpMatrixInput.getSemantics());
 
         UniformInput textureInput;
         EXPECT_TRUE(StatusOK == loadedEffect.findUniformInput("u_texture", textureInput));
-        EXPECT_TRUE(EEffectUniformSemantic_TextTexture == textureInput.getSemantics());
+        EXPECT_TRUE(EEffectUniformSemantic::TextTexture == textureInput.getSemantics());
 
         AttributeInput positionInput;
         EXPECT_TRUE(StatusOK == loadedEffect.findAttributeInput("a_position", positionInput));
-        EXPECT_TRUE(EEffectAttributeSemantic_TextPositions == positionInput.getSemantics());
+        EXPECT_TRUE(EEffectAttributeSemantic::TextPositions == positionInput.getSemantics());
 
         AttributeInput texcoordInput;
         EXPECT_TRUE(StatusOK == loadedEffect.findAttributeInput("a_texcoord", texcoordInput));
-        EXPECT_TRUE(EEffectAttributeSemantic_TextTextureCoordinates == texcoordInput.getSemantics());
+        EXPECT_TRUE(EEffectAttributeSemantic::TextTextureCoordinates == texcoordInput.getSemantics());
 
         EXPECT_EQ(m_effect->impl.getLowlevelResourceHash(), loadedEffect.impl.getLowlevelResourceHash());
     }

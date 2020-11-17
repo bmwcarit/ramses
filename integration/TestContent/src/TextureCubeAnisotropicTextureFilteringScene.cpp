@@ -117,10 +117,10 @@ namespace ramses_internal
         : IntegrationScene(scene, cameraPosition)
     {
         createOrthoCamera();
-        /// Horizontally, 2 texel map to one pixel => DefaultDisplayWidth * 2 texels needed.
-        /// Vertically, 1 texel map to one pixel => DefaultDisplayHeight texels needed.
+        /// Horizontally, 2 texel map to one pixel => IntegrationScene::DefaultViewportWidth * 2 texels needed.
+        /// Vertically, 1 texel map to one pixel => IntegrationScene::DefaultViewportHeight texels needed.
         /// Cube map textures are of square size, so take larger value.
-        const uint32_t numberOfMipLevels = GetNextLargerPowerOf2Exponent(std::max(DefaultDisplayWidth * 2, DefaultDisplayHeight)) + 1;
+        const uint32_t numberOfMipLevels = GetNextLargerPowerOf2Exponent(std::max(IntegrationScene::DefaultViewportWidth * 2, uint32_t(IntegrationScene::DefaultViewportHeight))) + 1;
         ramses::CubeMipLevelData* mipLevelData = new ramses::CubeMipLevelData[numberOfMipLevels];
 
         const uint32_t textureResolution = 1u << (numberOfMipLevels - 1);
@@ -148,8 +148,8 @@ namespace ramses_internal
 
         const float x = 0.0f;
         const float y = 0.0f;
-        const float w = static_cast<float>(DefaultDisplayWidth);
-        const float h = static_cast<float>(DefaultDisplayHeight) * 0.5f;
+        const float w = static_cast<float>(IntegrationScene::DefaultViewportWidth);
+        const float h = static_cast<float>(IntegrationScene::DefaultViewportHeight) * 0.5f;
         const float z = -1.0f;
 
         float vertexPositionsArray[] = {
@@ -220,8 +220,8 @@ namespace ramses_internal
     void TextureCubeAnisotropicTextureFilteringScene::createOrthoCamera()
     {
         ramses::OrthographicCamera* orthoCamera(m_scene.createOrthographicCamera());
-        orthoCamera->setFrustum(0.0f, static_cast<Float>(DefaultDisplayWidth), 0.0f, static_cast<Float>(DefaultDisplayHeight), 0.1f, 10.f);
-        orthoCamera->setViewport(0, 0, DefaultDisplayWidth, DefaultDisplayHeight);
+        orthoCamera->setFrustum(0.0f, static_cast<Float>(IntegrationScene::DefaultViewportWidth), 0.0f, static_cast<Float>(IntegrationScene::DefaultViewportHeight), 0.1f, 10.f);
+        orthoCamera->setViewport(0, 0, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
         setCameraToDefaultRenderPass(orthoCamera);
     }
 

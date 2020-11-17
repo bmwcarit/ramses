@@ -50,8 +50,9 @@ private:
         RenderBuffer_OneColorBufferNoDepthOrStencil,
         RenderBuffer_OneColorBufferWithWriteOnlyDepthBuffer,
         RenderBuffer_OneColorBufferWithWriteOnlyDepthStencilBuffer,
-        RenderBuffer_MsaaSampleCount2,
-        RenderBuffer_MsaaSampleCount4
+        RenderBuffer_MsaaSampleCount2Blit,
+        RenderBuffer_MsaaSampleCount4Blit,
+        RenderBuffer_MsaaSampleCount4TexelFetch
     };
 };
 

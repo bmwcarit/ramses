@@ -26,7 +26,7 @@ namespace ramses_internal
     class MultipleRenderTargetScene : public CommonRenderBufferTestScene
     {
     public:
-        MultipleRenderTargetScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition);
+        MultipleRenderTargetScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
         enum
         {

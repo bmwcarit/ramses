@@ -169,9 +169,9 @@ namespace ramses_internal
         EXPECT_EQ(1.0f, identity.m44);
     }
 
-    TEST_F(Matrix44Test, EulerRotationMatrixZYX)
+    TEST_F(Matrix44Test, EulerRotationMatrixLegacyZYX)
     {
-        Matrix44f noRotation = Matrix44f::RotationEulerZYX(0, 0, 0);
+        Matrix44f noRotation = Matrix44f::RotationEuler({ 0, 0, 0 }, ERotationConvention::Legacy_ZYX);
 
         EXPECT_NEAR(1.0f, noRotation.m11, 0.00001f);
         EXPECT_NEAR(0.0f, noRotation.m12, 0.00001f);
@@ -191,9 +191,9 @@ namespace ramses_internal
         EXPECT_NEAR(1.0f, noRotation.m44, 0.00001f);
     }
 
-    TEST_F(Matrix44Test, EulerRotationXMatrixZYX)
+    TEST_F(Matrix44Test, EulerRotationXMatrixLegacyZYX)
     {
-        Matrix44f rotationX90 = Matrix44f::RotationEulerZYX(90, 0, 0);
+        Matrix44f rotationX90 = Matrix44f::RotationEuler({ 90, 0, 0 }, ERotationConvention::Legacy_ZYX);
 
         EXPECT_NEAR(1.0f, rotationX90.m11, 0.00001f);
         EXPECT_NEAR(0.0f, rotationX90.m12, 0.00001f);
@@ -212,7 +212,7 @@ namespace ramses_internal
         EXPECT_NEAR(0.0f, rotationX90.m43, 0.00001f);
         EXPECT_NEAR(1.0f, rotationX90.m44, 0.00001f);
 
-        Matrix44f rotationX135 = Matrix44f::RotationEulerZYX(135, 0, 0);
+        Matrix44f rotationX135 = Matrix44f::RotationEuler({ 135, 0, 0 }, ERotationConvention::Legacy_ZYX);
 
         EXPECT_NEAR(1.0f, rotationX135.m11, 0.00001f);
         EXPECT_NEAR(0.0f, rotationX135.m12, 0.00001f);
@@ -232,9 +232,9 @@ namespace ramses_internal
         EXPECT_NEAR(1.0f, rotationX135.m44, 0.00001f);
     }
 
-    TEST_F(Matrix44Test, EulerRotationYMatrixZYX)
+    TEST_F(Matrix44Test, EulerRotationYMatrixLegacyZYX)
     {
-        Matrix44f rotationY90 = Matrix44f::RotationEulerZYX(0, 90, 0);
+        Matrix44f rotationY90 = Matrix44f::RotationEuler({ 0, 90, 0 }, ERotationConvention::Legacy_ZYX);
 
         EXPECT_NEAR(0.0f, rotationY90.m11, 0.00001f);
         EXPECT_NEAR(0.0f, rotationY90.m12, 0.00001f);
@@ -253,7 +253,7 @@ namespace ramses_internal
         EXPECT_NEAR(0.0f, rotationY90.m43, 0.00001f);
         EXPECT_NEAR(1.0f, rotationY90.m44, 0.00001f);
 
-        Matrix44f rotationY135 = Matrix44f::RotationEulerZYX(0, 135, 0);
+        Matrix44f rotationY135 = Matrix44f::RotationEuler({ 0, 135, 0 }, ERotationConvention::Legacy_ZYX);
 
         EXPECT_NEAR(-0.70710676f, rotationY135.m11, 0.00001f);
         EXPECT_NEAR(0.0f, rotationY135.m12, 0.00001f);
@@ -273,9 +273,9 @@ namespace ramses_internal
         EXPECT_NEAR(1.0f, rotationY135.m44, 0.00001f);
     }
 
-    TEST_F(Matrix44Test, EulerRotationZMatrixZYX)
+    TEST_F(Matrix44Test, EulerRotationZMatrixLegacyZYX)
     {
-        Matrix44f rotationZ90 = Matrix44f::RotationEulerZYX(0, 0, 90);
+        Matrix44f rotationZ90 = Matrix44f::RotationEuler({ 0, 0, 90 }, ERotationConvention::Legacy_ZYX);
 
         EXPECT_NEAR(0.0f, rotationZ90.m11, 0.00001f);
         EXPECT_NEAR(1.0f, rotationZ90.m12, 0.00001f);
@@ -294,7 +294,7 @@ namespace ramses_internal
         EXPECT_NEAR(0.0f, rotationZ90.m43, 0.00001f);
         EXPECT_NEAR(1.0f, rotationZ90.m44, 0.00001f);
 
-        Matrix44f rotationZ135 = Matrix44f::RotationEulerZYX(0, 0, 135);
+        Matrix44f rotationZ135 = Matrix44f::RotationEuler({ 0, 0, 135 }, ERotationConvention::Legacy_ZYX);
 
         EXPECT_NEAR(-0.70710676f, rotationZ135.m11, 0.00001f);
         EXPECT_NEAR(0.70710676f, rotationZ135.m12, 0.00001f);
@@ -624,7 +624,7 @@ namespace ramses_internal
         Float factorX = 0.25f;
         Float factorY = 0.33f;
         Float factorZ = 0.5f;
-        Matrix44f scale = Matrix44f::Scaling(factorX, factorY, factorZ);
+        Matrix44f scale = Matrix44f::Scaling({ factorX, factorY, factorZ });
 
         EXPECT_FLOAT_EQ(factorX, scale.m11);
         EXPECT_EQ(0.0f, scale.m12);
@@ -644,9 +644,9 @@ namespace ramses_internal
         EXPECT_EQ(1.0f, scale.m44);
     }
 
-    TEST_F(Matrix44Test, RotateUsingMatrix44ZYX)
+    TEST_F(Matrix44Test, RotateUsingMatrix44LegacyZYX)
     {
-        Matrix44f rotationZ90 = Matrix44f::RotationEulerZYX(0, 0, 90);
+        Matrix44f rotationZ90 = Matrix44f::RotationEuler({ 0, 0, 90 }, ERotationConvention::Legacy_ZYX);
         Vector3 vec(1.f, 1.f, 0.f);
 
         Vector3 rotated = rotationZ90.rotate(vec);

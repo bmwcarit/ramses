@@ -12,10 +12,11 @@
 #include "Math3d/Vector3.h"
 #include "Math3d/CameraMatrixHelper.h"
 #include "SceneAPI/Handles.h"
+#include "SceneAPI/Viewport.h"
 #include "RendererAPI/SceneRenderExecutionIterator.h"
+#include "RendererAPI/Types.h"
 #include "RendererLib/FrameTimer.h"
 #include "RenderExecutorInternalRenderStates.h"
-#include "FrameBufferInfo.h"
 
 namespace ramses_internal
 {
@@ -63,23 +64,27 @@ namespace ramses_internal
         Bool      m_changed;
     };
 
+    struct TargetBufferInfo
+    {
+        DeviceResourceHandle deviceHandle;
+        uint32_t width;
+        uint32_t height;
+    };
+
     // RenderExecutor is _stateless_, this only keeps an internal state during execution
     // to avoid copying it around
     class RenderExecutorInternalState
     {
     public:
-        RenderExecutorInternalState(IDevice& device, const FrameBufferInfo& frameBuffer, const SceneRenderExecutionIterator& renderFrom = {}, const FrameTimer* frameTimer = nullptr);
+        RenderExecutorInternalState(IDevice& device, const TargetBufferInfo& bufferInfo, const SceneRenderExecutionIterator& renderFrom = {}, const FrameTimer* frameTimer = nullptr);
 
         IDevice&                   getDevice() const;
 
         void                       setScene(const RendererCachedScene& scene);
         const RendererCachedScene& getScene() const;
-        const FrameBufferInfo&     getFrameBufferInfo() const;
+        const TargetBufferInfo&    getTargetBufferInfo() const;
 
         const Matrix44f&           getProjectionMatrix() const;
-        void                       setRendererViewMatrix(const Matrix44f& matrix);
-        const Matrix44f&           getRendererViewMatrix() const;
-        const Matrix44f&           getCameraViewMatrix() const;
         const Vector3&             getCameraWorldPosition() const;
         const Matrix44f&           getViewMatrix() const;
         const Matrix44f&           getModelMatrix() const;
@@ -91,10 +96,7 @@ namespace ramses_internal
         void                       setRenderable(RenderableHandle renderable);
         RenderableHandle           getRenderable() const;
 
-        Bool hasExceededTimeBudgetForRendering() const
-        {
-            return m_frameTimer != nullptr ? m_frameTimer->isTimeBudgetExceededForSection(EFrameTimerSectionBudget::OffscreenBufferRender) : false;
-        }
+        Bool hasExceededTimeBudgetForRendering() const;
 
         CachedState < DeviceResourceHandle >    shaderDeviceHandle;
         CachedState < DeviceResourceHandle >    indexBufferDeviceHandle;
@@ -111,13 +113,11 @@ namespace ramses_internal
     private:
         IDevice&                    m_device;
         const RendererCachedScene*  m_scene;
-        const FrameBufferInfo       m_frameBuffer;
+        const TargetBufferInfo      m_targetBufferInfo;
 
         RenderableHandle            m_renderable;
 
-        Matrix44f                   m_rendererVirtualViewMatrix;
         Matrix44f                   m_projectionMatrix;
-        Matrix44f                   m_cameraViewMatrix;
         Matrix44f                   m_viewMatrix;
         Matrix44f                   m_modelMatrix;
         Matrix44f                   m_modelViewMatrix;
@@ -128,6 +128,67 @@ namespace ramses_internal
 
         const FrameTimer* const            m_frameTimer;
     };
+
+    inline RenderableHandle RenderExecutorInternalState::getRenderable() const
+    {
+        return m_renderable;
+    }
+
+    inline IDevice& RenderExecutorInternalState::getDevice() const
+    {
+        return m_device;
+    }
+
+    inline void RenderExecutorInternalState::setScene(const RendererCachedScene& scene)
+    {
+        m_scene = &scene;
+    }
+
+    inline const RendererCachedScene& RenderExecutorInternalState::getScene() const
+    {
+        assert(nullptr != m_scene);
+        return *m_scene;
+    }
+
+    inline const TargetBufferInfo& RenderExecutorInternalState::getTargetBufferInfo() const
+    {
+        return m_targetBufferInfo;
+    }
+
+    inline const Matrix44f& RenderExecutorInternalState::getProjectionMatrix() const
+    {
+        return m_projectionMatrix;
+    }
+
+    inline const Vector3& RenderExecutorInternalState::getCameraWorldPosition() const
+    {
+        return m_cameraWorldPosition;
+    }
+
+    inline const Matrix44f& RenderExecutorInternalState::getViewMatrix() const
+    {
+        return m_viewMatrix;
+    }
+
+    inline const Matrix44f& RenderExecutorInternalState::getModelMatrix() const
+    {
+        return m_modelMatrix;
+    }
+
+    inline const Matrix44f& RenderExecutorInternalState::getModelViewMatrix() const
+    {
+        return m_modelViewMatrix;
+    }
+
+    inline const Matrix44f& RenderExecutorInternalState::getModelViewProjectionMatrix() const
+    {
+        return m_modelViewProjectionMatrix;
+    }
+
+    inline bool RenderExecutorInternalState::hasExceededTimeBudgetForRendering() const
+    {
+        return m_frameTimer != nullptr ? m_frameTimer->isTimeBudgetExceededForSection(EFrameTimerSectionBudget::OffscreenBufferRender) : false;
+    }
 }
 
 #endif

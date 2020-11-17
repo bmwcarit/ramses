@@ -27,7 +27,7 @@ namespace ramses_internal
     {
         initClearPass(state);
         initRenderingPass(state);
-        addRenderPassUsingRenderBufferAsQuadTexture(m_readWriteColorRenderBuffer);
+        addRenderPassUsingRenderBufferAsQuadTexture(createQuadWithTexture(m_readWriteColorRenderBuffer));
     }
 
     ramses::RenderTarget& RenderBufferScene::createRenderTarget(UInt32 state)

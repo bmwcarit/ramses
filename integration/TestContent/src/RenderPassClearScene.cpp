@@ -8,7 +8,6 @@
 
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/Effect.h"
-#include "ramses-client-api/RemoteCamera.h"
 #include "ramses-client-api/PerspectiveCamera.h"
 #include "ramses-client-api/RenderTarget.h"
 #include "ramses-client-api/RenderGroup.h"

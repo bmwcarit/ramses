@@ -447,6 +447,8 @@ namespace ramses_internal
             return GL_TEXTURE_CUBE_MAP;
         case EEffectInputTextureType_Texture2D:
             return GL_TEXTURE_2D;
+        case EEffectInputTextureType_Texture2DMS:
+            return GL_TEXTURE_2D_MULTISAMPLE;
         case EEffectInputTextureType_Texture3D:
             return GL_TEXTURE_3D;
         default:

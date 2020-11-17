@@ -23,10 +23,10 @@
 
 namespace ramses_internal
 {
-    const StreamTextureSourceId EmbeddedCompositorScene::EmbeddedSurfaceStreamTextureSourceId = StreamTextureSourceId(10123u);
+    const WaylandIviSurfaceId EmbeddedCompositorScene::EmbeddedSurfaceStreamTextureSourceId = WaylandIviSurfaceId{ 10123u };
 
-    EmbeddedCompositorScene::EmbeddedCompositorScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition)
-        : IntegrationScene(scene, cameraPosition)
+    EmbeddedCompositorScene::EmbeddedCompositorScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
+        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
         , m_effect(createTestEffect(state))
         , m_textureCoords(createTextureCoordinates(state))
     {
@@ -94,19 +94,19 @@ namespace ramses_internal
         }
     }
 
-    StreamTextureSourceId EmbeddedCompositorScene::GetStreamTextureSourceId()
+    WaylandIviSurfaceId EmbeddedCompositorScene::GetStreamTextureSourceId()
     {
         return EmbeddedSurfaceStreamTextureSourceId;
     }
 
-    StreamTextureSourceId EmbeddedCompositorScene::GetSecondStreamTextureSourceId()
+    WaylandIviSurfaceId EmbeddedCompositorScene::GetSecondStreamTextureSourceId()
     {
-        return StreamTextureSourceId(EmbeddedSurfaceStreamTextureSourceId.getValue() + 1u);
+        return WaylandIviSurfaceId(EmbeddedSurfaceStreamTextureSourceId.getValue() + 1u);
     }
 
-    StreamTextureSourceId EmbeddedCompositorScene::GetThirdStreamTextureSourceId()
+    WaylandIviSurfaceId EmbeddedCompositorScene::GetThirdStreamTextureSourceId()
     {
-        return StreamTextureSourceId(EmbeddedSurfaceStreamTextureSourceId.getValue() + 2u);
+        return WaylandIviSurfaceId(EmbeddedSurfaceStreamTextureSourceId.getValue() + 2u);
     }
 
     void EmbeddedCompositorScene::createQuad(float x, float y, float w, float h, ramses::Appearance& appearance)
@@ -187,7 +187,7 @@ namespace ramses_internal
             break;
         }
 
-        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic_ModelViewProjectionMatrix);
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
 
         const ramses::Effect* effect = m_scene.createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
         assert(nullptr != effect);

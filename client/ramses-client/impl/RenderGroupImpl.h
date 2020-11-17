@@ -18,8 +18,8 @@ namespace ramses
     class MeshNodeImpl;
     class RenderGroupImpl;
 
-    typedef std::vector<const MeshNodeImpl*>  MeshNodeImplVector;
-    typedef std::vector<const RenderGroupImpl*>    RenderGroupImplVector;
+    using MeshNodeImplVector = std::vector<const MeshNodeImpl *>;
+    using RenderGroupImplVector = std::vector<const RenderGroupImpl *>;
 
     class RenderGroupImpl final : public SceneObjectImpl
     {

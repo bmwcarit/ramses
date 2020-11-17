@@ -10,8 +10,8 @@
 #define RAMSES_DISPLAYCONFIG_H
 
 #include "RendererAPI/Types.h"
-#include "Math3d/Vector3.h"
-#include "Math3d/CameraMatrixHelper.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
+#include "Math3d/Vector4.h"
 
 namespace ramses_internal
 {
@@ -43,15 +43,6 @@ namespace ramses_internal
 
         Int32 getWindowPositionY() const;
         void setWindowPositionY(Int32 posy);
-
-        const Vector3& getCameraRotation() const;
-        void setCameraPosition(const Vector3& position);
-
-        const Vector3& getCameraPosition() const;
-        void setCameraRotation(const Vector3& rotation);
-
-        void setProjectionParams(const ProjectionParams& params);
-        const ProjectionParams& getProjectionParams() const;
 
         WaylandIviLayerId getWaylandIviLayerID() const;
         void setWaylandIviLayerID(WaylandIviLayerId waylandIviLayerID);
@@ -102,9 +93,6 @@ namespace ramses_internal
         UInt32 m_desiredWindowHeight = 480;
         Int32 m_windowPositionX = 0;
         Int32 m_windowPositionY = 0;
-        Vector3 m_cameraPosition{ 0.f, 0.f, 0.f };
-        Vector3 m_cameraRotation{ 0.f, 0.f, 0.f };
-        ProjectionParams m_projectionParams{ ProjectionParams::Perspective(19.f, 1280.f / 480.f, 0.1f, 1500.f) };
 
         WaylandIviLayerId m_waylandIviLayerID;
         WaylandIviSurfaceId m_waylandIviSurfaceID;

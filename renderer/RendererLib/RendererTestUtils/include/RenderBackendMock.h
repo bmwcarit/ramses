@@ -39,7 +39,7 @@ namespace ramses_internal
         TextureUploadingAdapter_Base                  textureUploadingAdapter = TextureUploadingAdapter_Base(deviceMock);
     };
 
-    typedef RenderBackendMock< ::testing::NiceMock>   RenderBackendNiceMock;
-    typedef RenderBackendMock< ::testing::StrictMock> RenderBackendStrictMock;
+    using RenderBackendNiceMock = RenderBackendMock< ::testing::NiceMock>;
+    using RenderBackendStrictMock = RenderBackendMock< ::testing::StrictMock>;
 }
 #endif

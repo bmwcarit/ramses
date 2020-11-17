@@ -23,7 +23,7 @@ namespace ramses_internal
         virtual void                    removeChildFromNode(NodeHandle parent, NodeHandle child) override;
 
         virtual void                    setTranslation(TransformHandle transform, const Vector3& translation) override;
-        virtual void                    setRotation(TransformHandle transform, const Vector3& rotation) override;
+        virtual void                    setRotation(TransformHandle transform, const Vector3& rotation, ERotationConvention convention) override;
         virtual void                    setScaling(TransformHandle transform, const Vector3& scaling) override;
 
         virtual void                    releaseDataSlot(DataSlotHandle handle) override;

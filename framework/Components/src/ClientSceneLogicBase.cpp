@@ -12,7 +12,7 @@
 #include "Scene/SceneDescriber.h"
 #include "Scene/SceneActionApplier.h"
 #include "Scene/SceneActionCollectionCreator.h"
-#include "Scene/SceneResourceUtils.h"
+#include "SceneUtils/ResourceUtils.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"
@@ -29,7 +29,7 @@ namespace ramses_internal
         , m_scene(scene)
         , m_scenePublicationMode(EScenePublicationMode_Unpublished)
         , m_resourceChanges()
-        , m_newClientResources()
+        , m_newResources()
         , m_animationSystemFactory(ramses_internal::EAnimationSystemOwner_Scenemanager)
     {
     }
@@ -120,26 +120,18 @@ namespace ramses_internal
 
         m_resourceChanges.clear();
         size_t sceneResourcesSize = 0u;
-        SceneResourceUtils::GetAllSceneResourcesFromScene(m_resourceChanges.m_sceneResourceActions, scene, sceneResourcesSize);
+        ResourceUtils::GetAllSceneResourcesFromScene(m_resourceChanges.m_sceneResourceActions, scene, sceneResourcesSize);
 
-        m_resourceChanges.m_addedClientResourceRefs = m_lastFlushClientResourcesInUse;
+        m_resourceChanges.m_resourcesAdded = m_lastFlushClientResourcesInUse;
 
         // flush asynchronously & check if there already was a named flush
-        creator.flush(
-            m_flushCounter,
-            true,
-            scene.getSceneSizeInformation(),
-            m_resourceChanges,
-            {}, // scene reference actions are transient, not sent to new subscribers
-            flushTimeInfo,
-            versionTag);
-        // TODO vaclav re-enable sending resources after renderer side can use them
-        //sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChanges.m_addedClientResourceRefs);
-
+        if (!m_resourceChanges.m_resourcesAdded.empty())
+            sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChanges.m_resourcesAdded);
+        assert(sceneUpdate.resources.size() == m_resourceChanges.m_resourcesAdded.size());
         sceneUpdate.flushInfos = { m_flushCounter, versionTag, scene.getSceneSizeInformation(), m_resourceChanges, {}, flushTimeInfo, true, true };
         LOG_INFO(CONTEXT_CLIENT, "Sending scene " << scene.getSceneId() << " to " << m_subscribersWaitingForScene.size() << " subscribers, " <<
             sceneUpdate.actions.numberOfActions() << " scene actions (" << sceneUpdate.actions.collectionData().size() << " bytes)" <<
-            m_resourceChanges.m_addedClientResourceRefs.size() << " client resources, " <<
+            m_resourceChanges.m_resourcesAdded.size() << " client resources, " <<
             m_resourceChanges.m_sceneResourceActions.size() << " scene resource actions (" << sceneResourcesSize << " bytes in total used by scene resources)");
 
         for(const auto& subscriber : m_subscribersWaitingForScene)
@@ -203,22 +195,32 @@ namespace ramses_internal
         }
     }
 
-    void ClientSceneLogicBase::updateResourceChanges(bool hasNewActions)
+    bool ClientSceneLogicBase::verifyAndGetResourceChanges(SceneUpdate& sceneUpdate, bool hasNewActions)
     {
         m_resourceChanges.clear();
 
         // optimization: early out if nothing changed in the scene
         if (!hasNewActions)
-            return;
+            return true;
 
-        if (m_scene.getClientResourcesChanged())
+        if (m_scene.haveResourcesChanged())
         {
-            m_newClientResources.clear();
-            SceneResourceUtils::GetAllClientResourcesFromScene(m_newClientResources, m_scene);
-            SceneResourceUtils::DiffClientResources(m_lastFlushClientResourcesInUse, m_newClientResources, m_resourceChanges);
-            m_lastFlushClientResourcesInUse.swap(m_newClientResources);
+            m_newResources.clear();
+            ResourceUtils::GetAllResourcesFromScene(m_newResources, m_scene);
+            ResourceUtils::DiffResources(m_lastFlushClientResourcesInUse, m_newResources, m_resourceChanges);
+
+            if (!m_resourceChanges.m_resourcesAdded.empty())
+            {
+                sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChanges.m_resourcesAdded);
+                if (sceneUpdate.resources.size() != m_resourceChanges.m_resourcesAdded.size())
+                    return false;
+            }
+
+            m_lastFlushClientResourcesInUse.swap(m_newResources);
         }
 
         m_resourceChanges.m_sceneResourceActions = m_scene.getSceneResourceActions();
+
+        return true;
     }
 }

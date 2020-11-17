@@ -13,6 +13,7 @@
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneTypes.h"
 #include "SceneAPI/TextureEnums.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Collections/HashMap.h"
 
 namespace ramses_internal
@@ -51,9 +52,9 @@ namespace ramses_internal
         void                            getBlitPassDeviceHandles    (BlitPassHandle handle, DeviceResourceHandle& srcRenderTargetDeviceHandle, DeviceResourceHandle& dstRenderTargetDeviceHandle) const;
         void                            getAllBlitPasses            (BlitPassHandleVector& blitPasses) const;
 
-        void                            addStreamTexture            (StreamTextureHandle handle, StreamTextureSourceId source);
+        void                            addStreamTexture            (StreamTextureHandle handle, WaylandIviSurfaceId source);
         void                            removeStreamTexture         (StreamTextureHandle handle);
-        StreamTextureSourceId           getStreamTextureSourceId    (StreamTextureHandle handle) const;
+        WaylandIviSurfaceId             getStreamTextureSourceId    (StreamTextureHandle handle) const;
         void                            getAllStreamTextures        (StreamTextureHandleVector& streamTextures) const;
 
         void                            addDataBuffer               (DataBufferHandle handle, DeviceResourceHandle deviceHandle, EDataBufferType dataBufferType, UInt32 size);
@@ -77,26 +78,11 @@ namespace ramses_internal
         UInt32                          getSceneResourceMemoryUsage(ESceneResourceType resourceType) const;
 
     private:
-        struct StreamTextureEntry
-        {
-            StreamTextureSourceId id;
-        };
-
-        struct RenderTargetEntry
-        {
-            DeviceResourceHandle deviceHandle;
-        };
-
         struct TextureBufferEntry
         {
             DeviceResourceHandle deviceHandle;
             UInt32 size;
             ETextureFormat format;
-        };
-
-        struct TextureSamplerEntry
-        {
-            DeviceResourceHandle deviceHandle;
         };
 
         struct RenderBufferEntry
@@ -119,13 +105,13 @@ namespace ramses_internal
             EDataBufferType dataBufferType;
         };
 
-        using StreamTextureSourceMap = HashMap<StreamTextureHandle,  StreamTextureEntry>;
+        using StreamTextureSourceMap = HashMap<StreamTextureHandle,  WaylandIviSurfaceId>;
         using RenderBufferMap        = HashMap<RenderBufferHandle,   RenderBufferEntry>;
-        using RenderTargetMap        = HashMap<RenderTargetHandle,   RenderTargetEntry>;
+        using RenderTargetMap        = HashMap<RenderTargetHandle,   DeviceResourceHandle>;
         using BlitPassMap            = HashMap<BlitPassHandle,       BlitPassEntry>;
         using DataBufferMap          = HashMap<DataBufferHandle,     DataBufferEntry>;
         using TextureBufferMap       = HashMap<TextureBufferHandle,  TextureBufferEntry>;
-        using TextureSamplerMap      = HashMap<TextureSamplerHandle, TextureSamplerEntry>;
+        using TextureSamplerMap      = HashMap<TextureSamplerHandle, DeviceResourceHandle>;
 
         RenderBufferMap        m_renderBuffers;
         RenderTargetMap        m_renderTargets;

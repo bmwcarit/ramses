@@ -34,14 +34,11 @@ namespace ramses_internal
         rendererConfig.setWaylandEmbeddedCompositingSocketGroup("");
         rendererConfig.setWaylandEmbeddedCompositingSocketFD(socket.createBoundFileDescriptor());
 
-        const UInt32 displayWidth = ramses_internal::IntegrationScene::DefaultDisplayWidth;
-        const UInt32 displayHeight = ramses_internal::IntegrationScene::DefaultDisplayHeight;
-        const float aspectRatio = static_cast<float>(displayWidth) / displayHeight;
+        const UInt32 displayWidth = ramses_internal::IntegrationScene::DefaultViewportWidth;
+        const UInt32 displayHeight = ramses_internal::IntegrationScene::DefaultViewportHeight;
 
         ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0, true);
-
         displayConfig.setWindowRectangle(0, 0, displayWidth, displayHeight);
-        displayConfig.setPerspectiveProjection(19.f, aspectRatio, 0.1f, 1500.f);
 
         switch(testCase.m_id)
         {

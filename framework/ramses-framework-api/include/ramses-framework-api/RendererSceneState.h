@@ -17,10 +17,10 @@ namespace ramses
     /// or #ramses::SceneReference
     enum class RendererSceneState : uint8_t
     {
-        Unavailable,  ///< Scene is unavailable (renderer is not subscribed to scene data), scene can be either unpublished or published
-        Available,    ///< Scene is available and can be requested to be ready or rendered
-        Ready,        ///< Scene is ready to start rendering (its resources are uploaded)
-        Rendered      ///< Scene is being rendered
+        Unavailable,  ///< Scene is unavailable, no scene control possible.
+        Available,    ///< Scene is available, but not prepared for rendering. Can be requested to be ready or rendered.
+        Ready,        ///< Scene is ready to start rendering (its resources are uploaded).
+        Rendered      ///< Scene is being rendered.
     };
 }
 

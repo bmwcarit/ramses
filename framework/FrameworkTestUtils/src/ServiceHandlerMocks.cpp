@@ -10,22 +10,6 @@
 
 namespace ramses_internal
 {
-    ResourceConsumerServiceHandlerMock::ResourceConsumerServiceHandlerMock()
-    {
-    }
-
-    ResourceConsumerServiceHandlerMock::~ResourceConsumerServiceHandlerMock()
-    {
-    }
-
-    ResourceProviderServiceHandlerMock::ResourceProviderServiceHandlerMock()
-    {
-    }
-
-    ResourceProviderServiceHandlerMock::~ResourceProviderServiceHandlerMock()
-    {
-    }
-
     SceneProviderServiceHandlerMock::SceneProviderServiceHandlerMock()
     {
     }

@@ -66,7 +66,7 @@ namespace ramses_internal
     template <typename EDataType>
     EDataType Interpolator::InterpolateLinear(const EDataType& startValue, const EDataType& endValue, Float fraction)
     {
-        typedef AnimatableTypeTraits<EDataType> TypeTraits;
+        using TypeTraits = AnimatableTypeTraits<EDataType>;
         const typename TypeTraits::CorrespondingFloatType valDiff = TypeTraits::ToCorrespondingFloatType(endValue) - TypeTraits::ToCorrespondingFloatType(startValue);
         const typename TypeTraits::CorrespondingFloatType result = TypeTraits::ToCorrespondingFloatType(startValue) + valDiff * fraction;
         return TypeTraits::FromCorrespondingFloatType(result);
@@ -80,7 +80,7 @@ namespace ramses_internal
         const EDataType& p3,
         Float fraction)
     {
-        typedef AnimatableTypeTraits<EDataType> TypeTraits;
+        using TypeTraits = AnimatableTypeTraits<EDataType>;
         typename TypeTraits::CorrespondingFloatType coeffA;
         typename TypeTraits::CorrespondingFloatType coeffB;
         typename TypeTraits::CorrespondingFloatType coeffC;

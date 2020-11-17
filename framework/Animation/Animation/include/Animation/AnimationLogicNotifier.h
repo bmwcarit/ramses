@@ -32,7 +32,7 @@ namespace ramses_internal
         void notifyAnimationPropertiesChanged(AnimationHandle handle);
         void notifyTimeChanged(const AnimationTime& time);
 
-        typedef std::vector<AnimationLogicListener*> AnimationListenerVector;
+        using AnimationListenerVector = std::vector<AnimationLogicListener *>;
 
         AnimationListenerVector m_observers;
     };

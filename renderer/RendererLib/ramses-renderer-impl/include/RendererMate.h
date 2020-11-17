@@ -52,7 +52,7 @@ namespace ramses
 
         struct SceneInfo
         {
-            RendererSceneState currentState = RendererSceneState::Unavailable;
+            RendererSceneState currentState = RendererSceneState::Available;
             std::string renderedStateConfirmationText;
         };
 
@@ -81,9 +81,13 @@ namespace ramses
         {
         }
 
-        virtual void scenePublished(sceneId_t sceneId) override
+        virtual void sceneStateChanged(sceneId_t sceneId, RendererSceneState state) override
         {
-            if (m_autoShow)
+            const auto it = m_oldState.find(sceneId);
+            const bool scenePublished = (it == m_oldState.end()) || (it->second == RendererSceneState::Unavailable);
+            m_oldState[sceneId] = state;
+
+            if (m_autoShow && scenePublished && state == RendererSceneState::Available)
             {
                 m_dm.setSceneMapping(sceneId, m_display);
                 m_dm.setSceneState(sceneId, RendererSceneState::Rendered);
@@ -94,6 +98,7 @@ namespace ramses
         RendererMate& m_dm;
         bool m_autoShow;
         displayId_t m_display;
+        std::unordered_map<sceneId_t, RendererSceneState> m_oldState;
     };
 }
 
