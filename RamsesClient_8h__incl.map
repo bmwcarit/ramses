@@ -1,15 +1,20 @@
 <map id="/home/q479079/sources/ramses&#45;oss/client/ramses&#45;client/ramses&#45;client&#45;api/include/ramses&#45;client&#45;api/RamsesClient.h" name="/home/q479079/sources/ramses&#45;oss/client/ramses&#45;client/ramses&#45;client&#45;api/include/ramses&#45;client&#45;api/RamsesClient.h">
-<area shape="rect" id="node2" href="$RamsesObject_8h.html" title="ramses&#45;client&#45;api/Ramses\lObject.h" alt="" coords="439,228,614,269"/>
-<area shape="rect" id="node13" href="$SceneConfig_8h.html" title="ramses&#45;client&#45;api/SceneConfig.h" alt="" coords="95,235,305,262"/>
-<area shape="rect" id="node16" href="$RamsesFramework_8h.html" title="ramses&#45;framework&#45;api\l/RamsesFramework.h" alt="" coords="663,139,814,180"/>
-<area shape="rect" id="node3" href="$StatusObject_8h.html" title="ramses&#45;framework&#45;api\l/StatusObject.h" alt="" coords="579,317,730,359"/>
-<area shape="rect" id="node12" href="$RamsesObjectTypes_8h.html" title="ramses&#45;client&#45;api/Ramses\lObjectTypes.h" alt="" coords="381,317,555,359"/>
-<area shape="rect" id="node4" href="$RamsesFrameworkTypes_8h.html" title="ramses&#45;framework&#45;api\l/RamsesFrameworkTypes.h" alt="" coords="380,407,567,448"/>
-<area shape="rect" id="node6" href="$APIExport_8h.html" title="ramses&#45;framework&#45;api\l/APIExport.h" alt="" coords="750,585,901,627"/>
-<area shape="rect" id="node11" href="$EValidationSeverity_8h.html" title="EValidationSeverity.h" alt="" coords="591,414,737,441"/>
-<area shape="rect" id="node5" href="$StronglyTypedValue_8h.html" title="ramses&#45;framework&#45;api\l/StronglyTypedValue.h" alt="" coords="399,496,553,537"/>
-<area shape="rect" id="node14" href="$EScenePublicationMode_8h.html" title="ramses&#45;client&#45;api/EScene\lPublicationMode.h" alt="" coords="5,317,176,359"/>
-<area shape="rect" id="node15" href="$EVisibilityMode_8h.html" title="ramses&#45;client&#45;api/EVisibility\lMode.h" alt="" coords="122,407,305,448"/>
-<area shape="rect" id="node17" href="$RamsesFrameworkConfig_8h.html" title="RamsesFrameworkConfig.h" alt="" coords="806,235,991,262"/>
-<area shape="rect" id="node18" href="$IThreadWatchdogNotification_8h.html" title="ramses&#45;framework&#45;api\l/IThreadWatchdogNotification.h" alt="" coords="863,407,1070,448"/>
+<area shape="rect" id="node1" title=" " alt="" coords="473,5,666,91"/>
+<area shape="rect" id="node2" href="$RamsesObject_8h.html" title=" " alt="" coords="473,228,665,269"/>
+<area shape="rect" id="node13" href="$SceneConfig_8h.html" title=" " alt="" coords="100,235,332,262"/>
+<area shape="rect" id="node16" href="$RamsesFramework_8h.html" title=" " alt="" coords="715,139,885,180"/>
+<area shape="rect" id="node3" href="$StatusObject_8h.html" title=" " alt="" coords="623,317,793,359"/>
+<area shape="rect" id="node12" href="$RamsesObjectTypes_8h.html" title=" " alt="" coords="407,317,599,359"/>
+<area shape="rect" id="node4" href="$RamsesFrameworkTypes_8h.html" title=" " alt="" coords="409,407,609,448"/>
+<area shape="rect" id="node6" href="$APIExport_8h.html" title=" " alt="" coords="796,585,967,627"/>
+<area shape="rect" id="node11" href="$EValidationSeverity_8h.html" title=" " alt="" coords="634,414,793,441"/>
+<area shape="rect" id="node5" href="$StronglyTypedValue_8h.html" title=" " alt="" coords="427,496,597,537"/>
+<area shape="rect" id="node9" title=" " alt="" coords="331,503,402,530"/>
+<area shape="rect" id="node10" title=" " alt="" coords="621,503,680,530"/>
+<area shape="rect" id="node7" title=" " alt="" coords="411,593,498,619"/>
+<area shape="rect" id="node8" title=" " alt="" coords="522,593,614,619"/>
+<area shape="rect" id="node14" href="$EScenePublicationMode_8h.html" title=" " alt="" coords="5,317,192,359"/>
+<area shape="rect" id="node15" href="$EVisibilityMode_8h.html" title=" " alt="" coords="127,407,332,448"/>
+<area shape="rect" id="node17" href="$RamsesFrameworkConfig_8h.html" title=" " alt="" coords="868,235,1068,262"/>
+<area shape="rect" id="node18" href="$IThreadWatchdogNotification_8h.html" title=" " alt="" coords="919,407,1145,448"/>
 </map>

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['localandremote',['LocalAndRemote',['../namespaceramses.html#a5c6768ac12230d47013c798237d1c738a12b19f250930ff2f9899dff1a263bc8a',1,'ramses']]],
-  ['localonly',['LocalOnly',['../namespaceramses.html#a5c6768ac12230d47013c798237d1c738a4750cc207381749aa40657c50f76f3e0',1,'ramses']]]
+  ['green_3599',['Green',['../namespaceramses.html#a22611cf71a488b9027b4d9a8c8fcbc9dad382816a3cbeed082c9e216e7392eed1',1,'ramses']]]
 ];

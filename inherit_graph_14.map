@@ -1,3 +1,4 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$structramses_1_1GlyphKey.html" title="GlyphKey identifies a glyph with a specific font instance. " alt="" coords="5,5,136,32"/>
+<area shape="rect" id="node1" href="$classramses_1_1IBinaryShaderCache.html" title="An interface used to exchange Binary Shader Cache with the RamsesRenderer. The RamsesRenderer will no..." alt="" coords="5,5,215,32"/>
+<area shape="rect" id="node2" href="$classramses_1_1BinaryShaderCache.html" title="Provide default implementation for IBinaryShaderCache interface, to be used in RamsesRenderer by sett..." alt="" coords="263,5,468,32"/>
 </map>

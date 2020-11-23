@@ -1,13 +1,18 @@
 <map id="/home/q479079/sources/ramses&#45;oss/client/ramses&#45;client/ramses&#45;client&#45;api/include/ramses&#45;client&#45;api/Animation.h" name="/home/q479079/sources/ramses&#45;oss/client/ramses&#45;client/ramses&#45;client&#45;api/include/ramses&#45;client&#45;api/Animation.h">
-<area shape="rect" id="node2" href="$AnimationObject_8h.html" title="ramses&#45;client&#45;api/Animation\lObject.h" alt="" coords="203,139,385,180"/>
-<area shape="rect" id="node16" href="$AnimationTypes_8h.html" title="ramses&#45;client&#45;api/Animation\lTypes.h" alt="" coords="5,228,188,269"/>
-<area shape="rect" id="node3" href="$SceneObject_8h.html" title="ramses&#45;client&#45;api/SceneObject.h" alt="" coords="213,235,423,262"/>
-<area shape="rect" id="node4" href="$ClientObject_8h.html" title="ramses&#45;client&#45;api/Client\lObject.h" alt="" coords="239,317,397,359"/>
-<area shape="rect" id="node5" href="$RamsesObject_8h.html" title="ramses&#45;client&#45;api/Ramses\lObject.h" alt="" coords="231,407,405,448"/>
-<area shape="rect" id="node6" href="$StatusObject_8h.html" title="ramses&#45;framework&#45;api\l/StatusObject.h" alt="" coords="333,496,484,537"/>
-<area shape="rect" id="node15" href="$RamsesObjectTypes_8h.html" title="ramses&#45;client&#45;api/Ramses\lObjectTypes.h" alt="" coords="135,496,309,537"/>
-<area shape="rect" id="node7" href="$RamsesFrameworkTypes_8h.html" title="ramses&#45;framework&#45;api\l/RamsesFrameworkTypes.h" alt="" coords="94,585,281,627"/>
-<area shape="rect" id="node9" href="$APIExport_8h.html" title="ramses&#45;framework&#45;api\l/APIExport.h" alt="" coords="340,764,491,805"/>
-<area shape="rect" id="node14" href="$EValidationSeverity_8h.html" title="EValidationSeverity.h" alt="" coords="446,593,593,619"/>
-<area shape="rect" id="node8" href="$StronglyTypedValue_8h.html" title="ramses&#45;framework&#45;api\l/StronglyTypedValue.h" alt="" coords="205,675,359,716"/>
+<area shape="rect" id="node1" title=" " alt="" coords="133,5,327,91"/>
+<area shape="rect" id="node2" href="$AnimationObject_8h.html" title=" " alt="" coords="223,139,429,180"/>
+<area shape="rect" id="node16" href="$AnimationTypes_8h.html" title=" " alt="" coords="5,228,212,269"/>
+<area shape="rect" id="node3" href="$SceneObject_8h.html" title=" " alt="" coords="236,235,469,262"/>
+<area shape="rect" id="node4" href="$ClientObject_8h.html" title=" " alt="" coords="263,317,442,359"/>
+<area shape="rect" id="node5" href="$RamsesObject_8h.html" title=" " alt="" coords="257,407,449,448"/>
+<area shape="rect" id="node6" href="$StatusObject_8h.html" title=" " alt="" coords="362,496,533,537"/>
+<area shape="rect" id="node15" href="$RamsesObjectTypes_8h.html" title=" " alt="" coords="146,496,338,537"/>
+<area shape="rect" id="node7" href="$RamsesFrameworkTypes_8h.html" title=" " alt="" coords="106,585,306,627"/>
+<area shape="rect" id="node9" href="$APIExport_8h.html" title=" " alt="" coords="370,764,541,805"/>
+<area shape="rect" id="node14" href="$EValidationSeverity_8h.html" title=" " alt="" coords="485,593,644,619"/>
+<area shape="rect" id="node8" href="$StronglyTypedValue_8h.html" title=" " alt="" coords="225,675,395,716"/>
+<area shape="rect" id="node12" title=" " alt="" coords="47,682,117,709"/>
+<area shape="rect" id="node13" title=" " alt="" coords="142,682,201,709"/>
+<area shape="rect" id="node10" title=" " alt="" coords="259,771,345,798"/>
+<area shape="rect" id="node11" title=" " alt="" coords="143,771,235,798"/>
 </map>

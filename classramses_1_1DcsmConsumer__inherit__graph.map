@@ -1,3 +1,4 @@
 <map id="ramses::DcsmConsumer" name="ramses::DcsmConsumer">
-<area shape="rect" id="node2" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="15,5,164,32"/>
+<area shape="rect" id="node1" title="Class representing DCSM consumer side." alt="" coords="5,80,187,107"/>
+<area shape="rect" id="node2" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling." alt="" coords="15,5,177,32"/>
 </map>

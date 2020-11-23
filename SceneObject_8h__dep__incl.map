@@ -1,101 +1,102 @@
 <map id="/home/q479079/sources/ramses&#45;oss/client/ramses&#45;client/ramses&#45;client&#45;api/include/ramses&#45;client&#45;api/SceneObject.h" name="/home/q479079/sources/ramses&#45;oss/client/ramses&#45;client/ramses&#45;client&#45;api/include/ramses&#45;client&#45;api/SceneObject.h">
-<area shape="rect" id="node2" href="$AnimationObject_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/AnimationObject.h" alt="" coords="5117,139,5293,224"/>
-<area shape="rect" id="node4" href="$AnimationSystem_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/AnimationSystem.h" alt="" coords="5141,405,5317,491"/>
-<area shape="rect" id="node63" href="$Appearance_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/Appearance.h" alt="" coords="9885,539,10061,624"/>
-<area shape="rect" id="node64" href="$ArrayBuffer_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/ArrayBuffer.h" alt="" coords="5764,272,5940,357"/>
-<area shape="rect" id="node65" href="$BlitPass_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/BlitPass.h" alt="" coords="6695,272,6871,357"/>
-<area shape="rect" id="node66" href="$DataObject_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/DataObject.h" alt="" coords="6631,405,6807,491"/>
-<area shape="rect" id="node78" href="$GeometryBinding_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/GeometryBinding.h" alt="" coords="10136,539,10312,624"/>
-<area shape="rect" id="node79" href="$Node_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api/Node.h" alt="" coords="9315,146,9531,217"/>
-<area shape="rect" id="node87" href="$RenderBuffer_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/RenderBuffer.h" alt="" coords="7381,405,7557,491"/>
-<area shape="rect" id="node88" href="$RenderGroup_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/RenderGroup.h" alt="" coords="10336,539,10512,624"/>
-<area shape="rect" id="node89" href="$RenderPass_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/RenderPass.h" alt="" coords="10536,539,10712,624"/>
-<area shape="rect" id="node90" href="$RenderTarget_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/RenderTarget.h" alt="" coords="7651,139,7827,224"/>
-<area shape="rect" id="node91" href="$Resource_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/Resource.h" alt="" coords="7957,405,8133,491"/>
-<area shape="rect" id="node97" href="$SceneReference_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SceneReference.h" alt="" coords="9973,672,10149,757"/>
-<area shape="rect" id="node98" href="$StreamTexture_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/StreamTexture.h" alt="" coords="8008,139,8184,224"/>
-<area shape="rect" id="node99" href="$Texture2DBuffer_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/Texture2DBuffer.h" alt="" coords="8208,139,8384,224"/>
-<area shape="rect" id="node100" href="$TextureSampler_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/TextureSampler.h" alt="" coords="8408,139,8584,224"/>
-<area shape="rect" id="node3" href="$AnimatedProperty_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/AnimatedProperty.h" alt="" coords="5117,272,5293,357"/>
-<area shape="rect" id="node35" href="$Animation_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/Animation.h" alt="" coords="4917,272,5093,357"/>
-<area shape="rect" id="node36" href="$AnimationSequence_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/AnimationSequence.h" alt="" coords="5317,272,5493,357"/>
-<area shape="rect" id="node37" href="$Spline_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/Spline.h" alt="" coords="2505,405,2681,491"/>
-<area shape="rect" id="node6" href="$ramses-client_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client.h" alt="" coords="5731,679,5907,750"/>
-<area shape="rect" id="node5" href="$AnimationSystemRealTime_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/AnimationSystemRealTime.h" alt="" coords="5107,539,5303,624"/>
-<area shape="rect" id="node7" href="$ramses-example-basic-animation-realtime_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;basic\l&#45;animation&#45;realtime/src\l/main.cpp" alt="" coords="7225,805,7386,891"/>
-<area shape="rect" id="node8" href="$ramses-example-basic-animation_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;basic\l&#45;animation/src/main.cpp" alt="" coords="7410,813,7571,883"/>
-<area shape="rect" id="node9" href="$ramses-example-basic-blending_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;basic\l&#45;blending/src/main.cpp" alt="" coords="7595,813,7757,883"/>
-<area shape="rect" id="node10" href="$ramses-example-basic-compositing_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;basic\l&#45;compositing/src/main.cpp" alt="" coords="7781,813,7955,883"/>
-<area shape="rect" id="node11" href="$ramses-example-basic-effect-from-glsl_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;basic\l&#45;effect&#45;from&#45;glsl/src/main.cpp" alt="" coords="7980,813,8172,883"/>
-<area shape="rect" id="node12" href="$ramses-example-basic-file-loading_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;basic\l&#45;file&#45;loading/src/main.cpp" alt="" coords="3507,813,3674,883"/>
-<area shape="rect" id="node13" href="$ramses-example-basic-geometry_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;basic\l&#45;geometry/src/main.cpp" alt="" coords="3698,813,3859,883"/>
-<area shape="rect" id="node14" href="$ramses-example-basic-rendergroups_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;basic\l&#45;rendergroups/src/main.cpp" alt="" coords="3883,813,4063,883"/>
-<area shape="rect" id="node15" href="$ramses-example-basic-renderpasses_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;basic\l&#45;renderpasses/src/main.cpp" alt="" coords="4087,813,4270,883"/>
-<area shape="rect" id="node16" href="$ramses-example-basic-rendertarget_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;basic\l&#45;rendertarget/src/main.cpp" alt="" coords="4294,813,4469,883"/>
-<area shape="rect" id="node17" href="$ramses-example-basic-scenegraph_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;basic\l&#45;scenegraph/src/main.cpp" alt="" coords="9687,813,9859,883"/>
-<area shape="rect" id="node18" href="$ramses-example-basic-texturing_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;basic\l&#45;texturing/src/main.cpp" alt="" coords="4493,813,4654,883"/>
-<area shape="rect" id="node19" href="$ramses-example-data-buffers-texture_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;data&#45;buffers\l&#45;texture/src/main.cpp" alt="" coords="4679,813,4873,883"/>
-<area shape="rect" id="node20" href="$ramses-example-data-buffers-vertices_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;data&#45;buffers\l&#45;vertices/src/main.cpp" alt="" coords="4897,813,5092,883"/>
-<area shape="rect" id="node21" href="$ramses-example-dcsm-provider_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;dcsm&#45;provider\l/src/main.cpp" alt="" coords="5116,813,5324,883"/>
-<area shape="rect" id="node22" href="$ramses-example-geometry-instancing_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;geometry\l&#45;instancing/src/main.cpp" alt="" coords="5349,813,5529,883"/>
-<area shape="rect" id="node23" href="$ramses-example-local-client_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;local\l&#45;client/src/main.cpp" alt="" coords="5553,813,5714,883"/>
-<area shape="rect" id="node24" href="$ramses-example-local-datalink_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;local\l&#45;datalink/src/main.cpp" alt="" coords="8319,813,8481,883"/>
-<area shape="rect" id="node25" href="$ramses-example-local-displays_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;local\l&#45;displays/src/main.cpp" alt="" coords="5738,813,5899,883"/>
-<area shape="rect" id="node26" href="$ramses-example-local-geometry-shaders_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;local\l&#45;geometry&#45;shaders/src/main.cpp" alt="" coords="5923,813,6133,883"/>
-<area shape="rect" id="node27" href="$ramses-example-local-offscreenbuffer_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;local\l&#45;offscreenbuffer/src/main.cpp" alt="" coords="6157,813,6349,883"/>
-<area shape="rect" id="node28" href="$ramses-example-local-pick-handling_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;local\l&#45;pick&#45;handling/src/main.cpp" alt="" coords="9232,813,9413,883"/>
-<area shape="rect" id="node29" href="$ramses-example-local-scene-referencing_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;local\l&#45;scene&#45;referencing/src\l/main.cpp" alt="" coords="9470,805,9631,891"/>
-<area shape="rect" id="node30" href="$ramses-example-local-viewport-link_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;local\l&#45;viewport&#45;link/src/main.cpp" alt="" coords="8768,813,8947,883"/>
-<area shape="rect" id="node31" href="$ramses-example-minimal_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;minimal\l/src/main.cpp" alt="" coords="6373,813,6544,883"/>
-<area shape="rect" id="node32" href="$ramses-example-renderonce_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;renderonce\l/src/main.cpp" alt="" coords="6569,813,6759,883"/>
-<area shape="rect" id="node33" href="$ramses-example-text-basic_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;text&#45;basic\l/src/main.cpp" alt="" coords="6783,813,6966,883"/>
-<area shape="rect" id="node34" href="$ramses-example-text-languages_2src_2main_8cpp.html" title="/home/q479079/sources\l/ramses&#45;oss/examples\l/ramses&#45;example&#45;text&#45;languages\l/src/main.cpp" alt="" coords="6991,813,7201,883"/>
-<area shape="rect" id="node38" href="$SplineBezierFloat_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineBezierFloat.h" alt="" coords="805,539,981,624"/>
-<area shape="rect" id="node39" href="$SplineBezierInt32_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineBezierInt32.h" alt="" coords="1005,539,1181,624"/>
-<area shape="rect" id="node40" href="$SplineBezierVector2f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineBezierVector2f.h" alt="" coords="1205,539,1381,624"/>
-<area shape="rect" id="node41" href="$SplineBezierVector2i_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineBezierVector2i.h" alt="" coords="1405,539,1581,624"/>
-<area shape="rect" id="node42" href="$SplineBezierVector3f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineBezierVector3f.h" alt="" coords="1605,539,1781,624"/>
-<area shape="rect" id="node43" href="$SplineBezierVector3i_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineBezierVector3i.h" alt="" coords="1805,539,1981,624"/>
-<area shape="rect" id="node44" href="$SplineBezierVector4f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineBezierVector4f.h" alt="" coords="2005,539,2181,624"/>
-<area shape="rect" id="node45" href="$SplineBezierVector4i_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineBezierVector4i.h" alt="" coords="2205,539,2381,624"/>
-<area shape="rect" id="node46" href="$SplineLinearFloat_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineLinearFloat.h" alt="" coords="2405,539,2581,624"/>
-<area shape="rect" id="node47" href="$SplineLinearInt32_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineLinearInt32.h" alt="" coords="2605,539,2781,624"/>
-<area shape="rect" id="node48" href="$SplineLinearVector2f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineLinearVector2f.h" alt="" coords="2805,539,2981,624"/>
-<area shape="rect" id="node49" href="$SplineLinearVector2i_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineLinearVector2i.h" alt="" coords="3005,539,3181,624"/>
-<area shape="rect" id="node50" href="$SplineLinearVector3f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineLinearVector3f.h" alt="" coords="3205,539,3381,624"/>
-<area shape="rect" id="node51" href="$SplineLinearVector3i_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineLinearVector3i.h" alt="" coords="3405,539,3581,624"/>
-<area shape="rect" id="node52" href="$SplineLinearVector4f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineLinearVector4f.h" alt="" coords="3605,539,3781,624"/>
-<area shape="rect" id="node53" href="$SplineLinearVector4i_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineLinearVector4i.h" alt="" coords="3805,539,3981,624"/>
-<area shape="rect" id="node54" href="$SplineStepBool_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineStepBool.h" alt="" coords="4005,539,4181,624"/>
-<area shape="rect" id="node55" href="$SplineStepFloat_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineStepFloat.h" alt="" coords="4205,539,4381,624"/>
-<area shape="rect" id="node56" href="$SplineStepInt32_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineStepInt32.h" alt="" coords="4405,539,4581,624"/>
-<area shape="rect" id="node57" href="$SplineStepVector2f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineStepVector2f.h" alt="" coords="4605,539,4781,624"/>
-<area shape="rect" id="node58" href="$SplineStepVector2i_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineStepVector2i.h" alt="" coords="4805,539,4981,624"/>
-<area shape="rect" id="node59" href="$SplineStepVector3f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineStepVector3f.h" alt="" coords="5,539,181,624"/>
-<area shape="rect" id="node60" href="$SplineStepVector3i_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineStepVector3i.h" alt="" coords="205,539,381,624"/>
-<area shape="rect" id="node61" href="$SplineStepVector4f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineStepVector4f.h" alt="" coords="405,539,581,624"/>
-<area shape="rect" id="node62" href="$SplineStepVector4i_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/SplineStepVector4i.h" alt="" coords="605,539,781,624"/>
-<area shape="rect" id="node67" href="$DataFloat_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/DataFloat.h" alt="" coords="5731,539,5907,624"/>
-<area shape="rect" id="node68" href="$DataInt32_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/DataInt32.h" alt="" coords="5931,539,6107,624"/>
-<area shape="rect" id="node69" href="$DataMatrix22f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/DataMatrix22f.h" alt="" coords="6131,539,6307,624"/>
-<area shape="rect" id="node70" href="$DataMatrix33f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/DataMatrix33f.h" alt="" coords="6331,539,6507,624"/>
-<area shape="rect" id="node71" href="$DataMatrix44f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/DataMatrix44f.h" alt="" coords="6531,539,6707,624"/>
-<area shape="rect" id="node72" href="$DataVector2f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/DataVector2f.h" alt="" coords="6731,539,6907,624"/>
-<area shape="rect" id="node73" href="$DataVector2i_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/DataVector2i.h" alt="" coords="6931,539,7107,624"/>
-<area shape="rect" id="node74" href="$DataVector3f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/DataVector3f.h" alt="" coords="7131,539,7307,624"/>
-<area shape="rect" id="node75" href="$DataVector3i_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/DataVector3i.h" alt="" coords="7331,539,7507,624"/>
-<area shape="rect" id="node76" href="$DataVector4f_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/DataVector4f.h" alt="" coords="8435,539,8611,624"/>
-<area shape="rect" id="node77" href="$DataVector4i_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/DataVector4i.h" alt="" coords="5531,539,5707,624"/>
-<area shape="rect" id="node80" href="$Camera_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/Camera.h" alt="" coords="9335,272,9511,357"/>
-<area shape="rect" id="node85" href="$MeshNode_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/MeshNode.h" alt="" coords="9685,539,9861,624"/>
-<area shape="rect" id="node86" href="$PickableObject_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/PickableObject.h" alt="" coords="9364,672,9540,757"/>
-<area shape="rect" id="node81" href="$LocalCamera_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/LocalCamera.h" alt="" coords="9235,405,9411,491"/>
-<area shape="rect" id="node84" href="$RemoteCamera_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/RemoteCamera.h" alt="" coords="9435,539,9611,624"/>
-<area shape="rect" id="node82" href="$OrthographicCamera_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/OrthographicCamera.h" alt="" coords="8635,539,8811,624"/>
-<area shape="rect" id="node83" href="$PerspectiveCamera_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/PerspectiveCamera.h" alt="" coords="9235,539,9411,624"/>
-<area shape="rect" id="node92" href="$ArrayResource_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/ArrayResource.h" alt="" coords="9035,539,9211,624"/>
-<area shape="rect" id="node93" href="$Effect_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/Effect.h" alt="" coords="8835,539,9011,624"/>
-<area shape="rect" id="node94" href="$Texture2D_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/Texture2D.h" alt="" coords="7632,539,7808,624"/>
-<area shape="rect" id="node95" href="$Texture3D_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/Texture3D.h" alt="" coords="7832,539,8008,624"/>
-<area shape="rect" id="node96" href="$TextureCube_8h.html" title="/home/q479079/sources\l/ramses&#45;oss/client/ramses\l&#45;client/ramses&#45;client&#45;api\l/include/ramses&#45;client&#45;api\l/TextureCube.h" alt="" coords="8032,539,8208,624"/>
+<area shape="rect" id="node1" title=" " alt="" coords="9217,5,9411,91"/>
+<area shape="rect" id="node2" href="$AnimationObject_8h.html" title=" " alt="" coords="2917,139,3111,224"/>
+<area shape="rect" id="node4" href="$AnimationSystem_8h.html" title=" " alt="" coords="701,405,895,491"/>
+<area shape="rect" id="node64" href="$Appearance_8h.html" title=" " alt="" coords="10776,539,10969,624"/>
+<area shape="rect" id="node65" href="$ArrayBuffer_8h.html" title=" " alt="" coords="5,272,199,357"/>
+<area shape="rect" id="node66" href="$BlitPass_8h.html" title=" " alt="" coords="1345,272,1539,357"/>
+<area shape="rect" id="node67" href="$DataObject_8h.html" title=" " alt="" coords="1576,405,1769,491"/>
+<area shape="rect" id="node79" href="$GeometryBinding_8h.html" title=" " alt="" coords="10993,539,11187,624"/>
+<area shape="rect" id="node80" href="$Node_8h.html" title=" " alt="" coords="9959,279,10200,350"/>
+<area shape="rect" id="node86" href="$RenderBuffer_8h.html" title=" " alt="" coords="8192,272,8385,357"/>
+<area shape="rect" id="node87" href="$RenderGroup_8h.html" title=" " alt="" coords="11211,539,11404,624"/>
+<area shape="rect" id="node88" href="$RenderPass_8h.html" title=" " alt="" coords="10507,539,10700,624"/>
+<area shape="rect" id="node89" href="$RenderTarget_8h.html" title=" " alt="" coords="8673,139,8867,224"/>
+<area shape="rect" id="node90" href="$Resource_8h.html" title=" " alt="" coords="8915,405,9108,491"/>
+<area shape="rect" id="node96" href="$SceneReference_8h.html" title=" " alt="" coords="10635,672,10828,757"/>
+<area shape="rect" id="node97" href="$StreamTexture_8h.html" title=" " alt="" coords="9109,139,9303,224"/>
+<area shape="rect" id="node98" href="$Texture2DBuffer_8h.html" title=" " alt="" coords="9327,139,9520,224"/>
+<area shape="rect" id="node99" href="$TextureSampler_8h.html" title=" " alt="" coords="9544,139,9737,224"/>
+<area shape="rect" id="node100" href="$TextureSamplerMS_8h.html" title=" " alt="" coords="9761,139,9955,224"/>
+<area shape="rect" id="node3" href="$AnimatedProperty_8h.html" title=" " alt="" coords="2648,272,2841,357"/>
+<area shape="rect" id="node36" href="$Animation_8h.html" title=" " alt="" coords="2783,405,2976,491"/>
+<area shape="rect" id="node37" href="$AnimationSequence_8h.html" title=" " alt="" coords="2917,272,3111,357"/>
+<area shape="rect" id="node38" href="$Spline_8h.html" title=" " alt="" coords="5424,405,5617,491"/>
+<area shape="rect" id="node6" href="$ramses-client_8h.html" title=" " alt="" coords="5968,679,6161,750"/>
+<area shape="rect" id="node5" href="$AnimationSystemRealTime_8h.html" title=" " alt="" coords="141,539,357,624"/>
+<area shape="rect" id="node7" href="$ramses-example-basic-animation-realtime_2src_2main_8cpp.html" title=" " alt="" coords="5465,805,5643,891"/>
+<area shape="rect" id="node8" href="$ramses-example-basic-animation_2src_2main_8cpp.html" title=" " alt="" coords="5667,813,5847,883"/>
+<area shape="rect" id="node9" href="$ramses-example-basic-blending_2src_2main_8cpp.html" title=" " alt="" coords="5871,813,6048,883"/>
+<area shape="rect" id="node10" href="$ramses-example-basic-compositing_2src_2main_8cpp.html" title=" " alt="" coords="6073,813,6267,883"/>
+<area shape="rect" id="node11" href="$ramses-example-basic-effect-from-glsl_2src_2main_8cpp.html" title=" " alt="" coords="6292,813,6507,883"/>
+<area shape="rect" id="node12" href="$ramses-example-basic-file-loading_2src_2main_8cpp.html" title=" " alt="" coords="6531,813,6718,883"/>
+<area shape="rect" id="node13" href="$ramses-example-basic-geometry_2src_2main_8cpp.html" title=" " alt="" coords="6743,813,6920,883"/>
+<area shape="rect" id="node14" href="$ramses-example-basic-rendergroups_2src_2main_8cpp.html" title=" " alt="" coords="6945,813,7145,883"/>
+<area shape="rect" id="node15" href="$ramses-example-basic-renderpasses_2src_2main_8cpp.html" title=" " alt="" coords="7169,813,7371,883"/>
+<area shape="rect" id="node16" href="$ramses-example-basic-rendertarget_2src_2main_8cpp.html" title=" " alt="" coords="7395,813,7590,883"/>
+<area shape="rect" id="node17" href="$ramses-example-basic-scenegraph_2src_2main_8cpp.html" title=" " alt="" coords="10493,813,10682,883"/>
+<area shape="rect" id="node18" href="$ramses-example-basic-texturing_2src_2main_8cpp.html" title=" " alt="" coords="7615,813,7792,883"/>
+<area shape="rect" id="node19" href="$ramses-example-data-buffers-texture_2src_2main_8cpp.html" title=" " alt="" coords="7816,813,8036,883"/>
+<area shape="rect" id="node20" href="$ramses-example-data-buffers-vertices_2src_2main_8cpp.html" title=" " alt="" coords="8060,813,8280,883"/>
+<area shape="rect" id="node21" href="$ramses-example-dcsm-provider_2src_2main_8cpp.html" title=" " alt="" coords="8305,813,8539,883"/>
+<area shape="rect" id="node22" href="$ramses-example-geometry-instancing_2src_2main_8cpp.html" title=" " alt="" coords="8564,813,8768,883"/>
+<area shape="rect" id="node23" href="$ramses-example-interleaved-vertex-buffers_2src_2main_8cpp.html" title=" " alt="" coords="3379,813,3593,883"/>
+<area shape="rect" id="node24" href="$ramses-example-local-client_2src_2main_8cpp.html" title=" " alt="" coords="3617,813,3795,883"/>
+<area shape="rect" id="node25" href="$ramses-example-local-datalink_2src_2main_8cpp.html" title=" " alt="" coords="2455,813,2632,883"/>
+<area shape="rect" id="node26" href="$ramses-example-local-displays_2src_2main_8cpp.html" title=" " alt="" coords="3819,813,3996,883"/>
+<area shape="rect" id="node27" href="$ramses-example-local-geometry-shaders_2src_2main_8cpp.html" title=" " alt="" coords="4020,813,4253,883"/>
+<area shape="rect" id="node28" href="$ramses-example-local-offscreenbuffer_2src_2main_8cpp.html" title=" " alt="" coords="4277,813,4489,883"/>
+<area shape="rect" id="node29" href="$ramses-example-local-pick-handling_2src_2main_8cpp.html" title=" " alt="" coords="10015,813,10218,883"/>
+<area shape="rect" id="node30" href="$ramses-example-local-scene-referencing_2src_2main_8cpp.html" title=" " alt="" coords="10275,805,10452,891"/>
+<area shape="rect" id="node31" href="$ramses-example-local-viewport-link_2src_2main_8cpp.html" title=" " alt="" coords="9345,813,9544,883"/>
+<area shape="rect" id="node32" href="$ramses-example-minimal_2src_2main_8cpp.html" title=" " alt="" coords="4514,813,4709,883"/>
+<area shape="rect" id="node33" href="$ramses-example-renderonce_2src_2main_8cpp.html" title=" " alt="" coords="4733,813,4948,883"/>
+<area shape="rect" id="node34" href="$ramses-example-text-basic_2src_2main_8cpp.html" title=" " alt="" coords="4972,813,5179,883"/>
+<area shape="rect" id="node35" href="$ramses-example-text-languages_2src_2main_8cpp.html" title=" " alt="" coords="5203,813,5441,883"/>
+<area shape="rect" id="node39" href="$SplineBezierFloat_8h.html" title=" " alt="" coords="7055,539,7248,624"/>
+<area shape="rect" id="node40" href="$SplineBezierInt32_8h.html" title=" " alt="" coords="7272,539,7465,624"/>
+<area shape="rect" id="node41" href="$SplineBezierVector2f_8h.html" title=" " alt="" coords="7489,539,7683,624"/>
+<area shape="rect" id="node42" href="$SplineBezierVector2i_8h.html" title=" " alt="" coords="7707,539,7900,624"/>
+<area shape="rect" id="node43" href="$SplineBezierVector3f_8h.html" title=" " alt="" coords="7924,539,8117,624"/>
+<area shape="rect" id="node44" href="$SplineBezierVector3i_8h.html" title=" " alt="" coords="8141,539,8335,624"/>
+<area shape="rect" id="node45" href="$SplineBezierVector4f_8h.html" title=" " alt="" coords="2925,539,3119,624"/>
+<area shape="rect" id="node46" href="$SplineBezierVector4i_8h.html" title=" " alt="" coords="3143,539,3336,624"/>
+<area shape="rect" id="node47" href="$SplineLinearFloat_8h.html" title=" " alt="" coords="3360,539,3553,624"/>
+<area shape="rect" id="node48" href="$SplineLinearInt32_8h.html" title=" " alt="" coords="3577,539,3771,624"/>
+<area shape="rect" id="node49" href="$SplineLinearVector2f_8h.html" title=" " alt="" coords="3795,539,3988,624"/>
+<area shape="rect" id="node50" href="$SplineLinearVector2i_8h.html" title=" " alt="" coords="4012,539,4205,624"/>
+<area shape="rect" id="node51" href="$SplineLinearVector3f_8h.html" title=" " alt="" coords="4229,539,4423,624"/>
+<area shape="rect" id="node52" href="$SplineLinearVector3i_8h.html" title=" " alt="" coords="4447,539,4640,624"/>
+<area shape="rect" id="node53" href="$SplineLinearVector4f_8h.html" title=" " alt="" coords="4664,539,4857,624"/>
+<area shape="rect" id="node54" href="$SplineLinearVector4i_8h.html" title=" " alt="" coords="4881,539,5075,624"/>
+<area shape="rect" id="node55" href="$SplineStepBool_8h.html" title=" " alt="" coords="5099,539,5292,624"/>
+<area shape="rect" id="node56" href="$SplineStepFloat_8h.html" title=" " alt="" coords="5316,539,5509,624"/>
+<area shape="rect" id="node57" href="$SplineStepInt32_8h.html" title=" " alt="" coords="5533,539,5727,624"/>
+<area shape="rect" id="node58" href="$SplineStepVector2f_8h.html" title=" " alt="" coords="5751,539,5944,624"/>
+<area shape="rect" id="node59" href="$SplineStepVector2i_8h.html" title=" " alt="" coords="5968,539,6161,624"/>
+<area shape="rect" id="node60" href="$SplineStepVector3f_8h.html" title=" " alt="" coords="6185,539,6379,624"/>
+<area shape="rect" id="node61" href="$SplineStepVector3i_8h.html" title=" " alt="" coords="6403,539,6596,624"/>
+<area shape="rect" id="node62" href="$SplineStepVector4f_8h.html" title=" " alt="" coords="6620,539,6813,624"/>
+<area shape="rect" id="node63" href="$SplineStepVector4i_8h.html" title=" " alt="" coords="6837,539,7031,624"/>
+<area shape="rect" id="node68" href="$DataFloat_8h.html" title=" " alt="" coords="1251,539,1444,624"/>
+<area shape="rect" id="node69" href="$DataInt32_8h.html" title=" " alt="" coords="1468,539,1661,624"/>
+<area shape="rect" id="node70" href="$DataMatrix22f_8h.html" title=" " alt="" coords="1685,539,1879,624"/>
+<area shape="rect" id="node71" href="$DataMatrix33f_8h.html" title=" " alt="" coords="1903,539,2096,624"/>
+<area shape="rect" id="node72" href="$DataMatrix44f_8h.html" title=" " alt="" coords="2120,539,2313,624"/>
+<area shape="rect" id="node73" href="$DataVector2f_8h.html" title=" " alt="" coords="2337,539,2531,624"/>
+<area shape="rect" id="node74" href="$DataVector2i_8h.html" title=" " alt="" coords="2555,539,2748,624"/>
+<area shape="rect" id="node75" href="$DataVector3f_8h.html" title=" " alt="" coords="599,539,792,624"/>
+<area shape="rect" id="node76" href="$DataVector3i_8h.html" title=" " alt="" coords="816,539,1009,624"/>
+<area shape="rect" id="node77" href="$DataVector4f_8h.html" title=" " alt="" coords="381,539,575,624"/>
+<area shape="rect" id="node78" href="$DataVector4i_8h.html" title=" " alt="" coords="1033,539,1227,624"/>
+<area shape="rect" id="node81" href="$Camera_8h.html" title=" " alt="" coords="9983,405,10176,491"/>
+<area shape="rect" id="node84" href="$MeshNode_8h.html" title=" " alt="" coords="10289,539,10483,624"/>
+<area shape="rect" id="node85" href="$PickableObject_8h.html" title=" " alt="" coords="10155,672,10348,757"/>
+<area shape="rect" id="node82" href="$OrthographicCamera_8h.html" title=" " alt="" coords="9803,539,9996,624"/>
+<area shape="rect" id="node83" href="$PerspectiveCamera_8h.html" title=" " alt="" coords="10020,539,10213,624"/>
+<area shape="rect" id="node91" href="$ArrayResource_8h.html" title=" " alt="" coords="9113,539,9307,624"/>
+<area shape="rect" id="node92" href="$Effect_8h.html" title=" " alt="" coords="9331,539,9524,624"/>
+<area shape="rect" id="node93" href="$Texture2D_8h.html" title=" " alt="" coords="8461,539,8655,624"/>
+<area shape="rect" id="node94" href="$Texture3D_8h.html" title=" " alt="" coords="8679,539,8872,624"/>
+<area shape="rect" id="node95" href="$TextureCube_8h.html" title=" " alt="" coords="8896,539,9089,624"/>
 </map>

@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['off',['Off',['../namespaceramses.html#a06ae4b5bd3d52d290b4cfc9ecc09affead15305d7a4e34e02489c74a5ef542f36',1,'ramses']]],
-  ['offered',['Offered',['../namespaceramses.html#aee996152a40d451bbbefff0ae96c66d3afcf32928038737c4751802aeabc44d43',1,'ramses']]],
-  ['ok',['OK',['../namespaceramses.html#a13204af9843f00290458e63296b0fb05ae0aa021e21dddbd6d8cecec71e9cf564',1,'ramses']]],
-  ['one',['One',['../namespaceramses.html#a22611cf71a488b9027b4d9a8c8fcbc9da06c2cea18679d64399783748fa367bdd',1,'ramses']]]
+  ['localandremote_3603',['LocalAndRemote',['../namespaceramses.html#a5c6768ac12230d47013c798237d1c738a12b19f250930ff2f9899dff1a263bc8a',1,'ramses']]],
+  ['localonly_3604',['LocalOnly',['../namespaceramses.html#a5c6768ac12230d47013c798237d1c738a4750cc207381749aa40657c50f76f3e0',1,'ramses']]]
 ];

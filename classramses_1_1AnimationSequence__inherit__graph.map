@@ -1,7 +1,8 @@
 <map id="ramses::AnimationSequence" name="ramses::AnimationSequence">
-<area shape="rect" id="node2" href="$classramses_1_1AnimationObject.html" title="The AnimationObject is a base class for all client API objects owned by an AnimationSystem. " alt="" coords="15,304,185,331"/>
-<area shape="rect" id="node3" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene. " alt="" coords="26,229,174,256"/>
-<area shape="rect" id="node4" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="27,155,173,181"/>
-<area shape="rect" id="node5" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="20,80,180,107"/>
-<area shape="rect" id="node6" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="25,5,175,32"/>
+<area shape="rect" id="node1" title="The AnimationSequence is a container for multiple animations. AnimationSequence has its own virtual t..." alt="" coords="5,379,213,405"/>
+<area shape="rect" id="node2" href="$classramses_1_1AnimationObject.html" title="The AnimationObject is a base class for all client API objects owned by an AnimationSystem." alt="" coords="16,304,203,331"/>
+<area shape="rect" id="node3" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene." alt="" coords="30,229,189,256"/>
+<area shape="rect" id="node4" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient." alt="" coords="30,155,189,181"/>
+<area shape="rect" id="node5" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework." alt="" coords="23,80,195,107"/>
+<area shape="rect" id="node6" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling." alt="" coords="29,5,190,32"/>
 </map>

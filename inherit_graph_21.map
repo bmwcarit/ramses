@@ -1,4 +1,4 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classramses_1_1IFontAccessor.html" title="Interface for getting font instances using font instance ids. " alt="" coords="5,5,164,32"/>
-<area shape="rect" id="node2" href="$classramses_1_1FontRegistry.html" title="Font registry can be used to load Freetype2 fonts and create font instances (optionally with Harfbuzz..." alt="" coords="212,5,360,32"/>
+<area shape="rect" id="node1" href="$classramses_1_1IRendererEventHandler.html" title="Provides an interface for handling the result of renderer events. Implementation of this interface mu..." alt="" coords="5,13,235,39"/>
+<area shape="rect" id="node2" href="$classramses_1_1RendererEventHandlerEmpty.html" title="Convenience empty implementation of IRendererEventHandler that can be used to derive from when only s..." alt="" coords="283,5,508,47"/>
 </map>

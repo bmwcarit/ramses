@@ -1,15 +1,20 @@
 <map id="/home/q479079/sources/ramses&#45;oss/client/ramses&#45;client/ramses&#45;client&#45;api/include/ramses&#45;client&#45;api/Texture2D.h" name="/home/q479079/sources/ramses&#45;oss/client/ramses&#45;client/ramses&#45;client&#45;api/include/ramses&#45;client&#45;api/Texture2D.h">
-<area shape="rect" id="node2" href="$Resource_8h.html" title="ramses&#45;client&#45;api/Resource.h" alt="" coords="289,139,481,165"/>
-<area shape="rect" id="node7" href="$RamsesFrameworkTypes_8h.html" title="ramses&#45;framework&#45;api\l/RamsesFrameworkTypes.h" alt="" coords="421,556,608,597"/>
-<area shape="rect" id="node16" href="$TextureEnums_8h.html" title="TextureEnums.h" alt="" coords="537,295,655,322"/>
-<area shape="rect" id="node17" href="$MipLevelData_8h.html" title="MipLevelData.h" alt="" coords="734,474,847,501"/>
-<area shape="rect" id="node18" href="$TextureSwizzle_8h.html" title="TextureSwizzle.h" alt="" coords="485,213,608,240"/>
-<area shape="rect" id="node3" href="$SceneObject_8h.html" title="ramses&#45;client&#45;api/SceneObject.h" alt="" coords="251,213,461,240"/>
-<area shape="rect" id="node4" href="$ClientObject_8h.html" title="ramses&#45;client&#45;api/Client\lObject.h" alt="" coords="277,288,435,329"/>
-<area shape="rect" id="node5" href="$RamsesObject_8h.html" title="ramses&#45;client&#45;api/Ramses\lObject.h" alt="" coords="269,377,443,419"/>
-<area shape="rect" id="node6" href="$StatusObject_8h.html" title="ramses&#45;framework&#45;api\l/StatusObject.h" alt="" coords="207,467,358,508"/>
-<area shape="rect" id="node15" href="$RamsesObjectTypes_8h.html" title="ramses&#45;client&#45;api/Ramses\lObjectTypes.h" alt="" coords="382,467,557,508"/>
-<area shape="rect" id="node9" href="$APIExport_8h.html" title="ramses&#45;framework&#45;api\l/APIExport.h" alt="" coords="393,735,543,776"/>
-<area shape="rect" id="node14" href="$EValidationSeverity_8h.html" title="EValidationSeverity.h" alt="" coords="251,563,397,590"/>
-<area shape="rect" id="node8" href="$StronglyTypedValue_8h.html" title="ramses&#45;framework&#45;api\l/StronglyTypedValue.h" alt="" coords="21,645,176,687"/>
+<area shape="rect" id="node1" title=" " alt="" coords="592,5,785,91"/>
+<area shape="rect" id="node2" href="$Resource_8h.html" title=" " alt="" coords="285,139,497,165"/>
+<area shape="rect" id="node7" href="$RamsesFrameworkTypes_8h.html" title=" " alt="" coords="451,556,651,597"/>
+<area shape="rect" id="node16" href="$TextureEnums_8h.html" title=" " alt="" coords="575,295,701,322"/>
+<area shape="rect" id="node17" href="$MipLevelData_8h.html" title=" " alt="" coords="777,474,901,501"/>
+<area shape="rect" id="node18" href="$TextureSwizzle_8h.html" title=" " alt="" coords="521,139,651,165"/>
+<area shape="rect" id="node3" href="$SceneObject_8h.html" title=" " alt="" coords="275,213,508,240"/>
+<area shape="rect" id="node4" href="$ClientObject_8h.html" title=" " alt="" coords="302,288,481,329"/>
+<area shape="rect" id="node5" href="$RamsesObject_8h.html" title=" " alt="" coords="295,377,487,419"/>
+<area shape="rect" id="node6" href="$StatusObject_8h.html" title=" " alt="" coords="214,467,385,508"/>
+<area shape="rect" id="node15" href="$RamsesObjectTypes_8h.html" title=" " alt="" coords="409,467,601,508"/>
+<area shape="rect" id="node9" href="$APIExport_8h.html" title=" " alt="" coords="418,735,589,776"/>
+<area shape="rect" id="node14" href="$EValidationSeverity_8h.html" title=" " alt="" coords="268,563,427,590"/>
+<area shape="rect" id="node8" href="$StronglyTypedValue_8h.html" title=" " alt="" coords="22,645,193,687"/>
+<area shape="rect" id="node12" title=" " alt="" coords="461,653,532,679"/>
+<area shape="rect" id="node13" title=" " alt="" coords="557,653,615,679"/>
+<area shape="rect" id="node10" title=" " alt="" coords="121,742,208,769"/>
+<area shape="rect" id="node11" title=" " alt="" coords="5,742,97,769"/>
 </map>
