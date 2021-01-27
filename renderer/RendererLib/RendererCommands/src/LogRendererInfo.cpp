@@ -34,54 +34,35 @@ namespace ramses_internal
 
     Bool LogRendererInfo::execute(String& topic, Bool& verbose, MemoryHandle& nodeHandleFilter) const
     {
-        ERendererLogTopic etopic = GetRendererTopic(topic);
-        if (etopic == ERendererLogTopic_NUMBER_OF_ELEMENTS)
-        {
+        const ERendererLogTopic etopic = GetRendererTopic(topic);
+        if (etopic == ERendererLogTopic::COUNT)
             return false;
-        }
-        m_rendererCommandBuffer.logRendererInfo(etopic, verbose, NodeHandle(nodeHandleFilter));
+
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::LogInfo{ etopic, verbose, NodeHandle(nodeHandleFilter) });
         return true;
     }
 
     ERendererLogTopic LogRendererInfo::GetRendererTopic(const String& topicName)
     {
         if (topicName == String("display"))
-        {
-            return ERendererLogTopic_Displays;
-        }
+            return ERendererLogTopic::Displays;
         if (topicName == String("scene"))
-        {
-            return ERendererLogTopic_SceneStates;
-        }
+            return ERendererLogTopic::SceneStates;
         if (topicName == String("stream"))
-        {
-            return ERendererLogTopic_StreamTextures;
-        }
+            return ERendererLogTopic::StreamTextures;
         if (topicName == String("res"))
-        {
-            return ERendererLogTopic_Resources;
-        }
+            return ERendererLogTopic::Resources;
         if (topicName == String("queue"))
-        {
-            return ERendererLogTopic_RenderQueue;
-        }
+            return ERendererLogTopic::RenderQueue;
         if (topicName == String("links"))
-        {
-            return ERendererLogTopic_Links;
-        }
+            return ERendererLogTopic::Links;
         if (topicName == String("ec"))
-        {
-            return ERendererLogTopic_EmbeddedCompositor;
-        }
+            return ERendererLogTopic::EmbeddedCompositor;
         if (topicName == String("events"))
-        {
-            return ERendererLogTopic_EventQueue;
-        }
+            return ERendererLogTopic::EventQueue;
         if (topicName == String("all"))
-        {
-            return ERendererLogTopic_All;
-        }
-        return ERendererLogTopic_NUMBER_OF_ELEMENTS;
-    }
+            return ERendererLogTopic::All;
 
+        return ERendererLogTopic::COUNT;
+    }
 }

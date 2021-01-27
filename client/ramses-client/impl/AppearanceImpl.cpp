@@ -658,7 +658,7 @@ namespace ramses
     {
         const uint32_t inputIndex = input.getInputIndex();
         const BindableInput* bindableInput = m_bindableInputs.get(inputIndex);
-        return (bindableInput != nullptr) && bindableInput->externallyBoundDataObject;
+        return (bindableInput != nullptr) && bindableInput->externallyBoundDataObject != nullptr;
     }
 
     status_t AppearanceImpl::setInputTextureInternal(const EffectInputImpl& input, const TextureSamplerImpl& textureSampler)

@@ -10,6 +10,7 @@
 #define RAMSES_GUID_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
+#include "PlatformAbstraction/Macros.h"
 #include "Collections/String.h"
 #include "Collections/IOutputStream.h"
 #include "Collections/IInputStream.h"
@@ -40,13 +41,13 @@ namespace ramses_internal
 
         String toString() const;
 
-        constexpr uint64_t get() const;
+        RNODISCARD constexpr uint64_t get() const;
 
-        constexpr bool isInvalid() const;
-        constexpr bool isValid() const;
+        RNODISCARD constexpr bool isInvalid() const;
+        RNODISCARD constexpr bool isValid() const;
 
-        constexpr bool operator==(const Guid& other) const;
-        constexpr bool operator!=(const Guid& other) const;
+        RNODISCARD constexpr bool operator==(const Guid& other) const;
+        RNODISCARD constexpr bool operator!=(const Guid& other) const;
 
     private:
         uint64_t getFromString(const char* guid, size_t len) const;

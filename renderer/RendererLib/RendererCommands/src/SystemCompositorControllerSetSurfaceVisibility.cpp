@@ -24,7 +24,7 @@ namespace ramses_internal
 
     Bool SystemCompositorControllerSetSurfaceVisibility::execute(Int32& surfaceId, Int32& visibility) const
     {
-        m_rendererCommandBuffer.systemCompositorControllerSetIviSurfaceVisibility(WaylandIviSurfaceId(surfaceId), visibility != 0);
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCSetIviSurfaceVisibility{ WaylandIviSurfaceId(surfaceId), visibility != 0 });
         return true;
     }
 }

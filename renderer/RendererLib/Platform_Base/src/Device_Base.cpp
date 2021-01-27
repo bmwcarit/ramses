@@ -7,11 +7,14 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_Base/Device_Base.h"
+#include "Platform_Base/DeviceResourceMapper.h"
+#include "RendererAPI/IContext.h"
 
 namespace ramses_internal
 {
-    Device_Base::Device_Base()
-        : m_drawCalls(0)
+    Device_Base::Device_Base(IContext& context)
+        : m_context(context)
+        , m_resourceMapper(context.getResources())
     {
     }
 
@@ -33,13 +36,15 @@ namespace ramses_internal
         ++m_drawCalls;
     }
 
-    UInt32 Device_Base::getDrawCallCount() const
+    uint32_t Device_Base::getGPUHandle(DeviceResourceHandle deviceHandle) const
     {
-        return m_drawCalls;
+        return m_resourceMapper.getResource(deviceHandle).getGPUAddress();
     }
 
-    void Device_Base::resetDrawCallCount()
+    uint32_t Device_Base::getAndResetDrawCallCount()
     {
-        m_drawCalls = 0;
+        const auto dc = m_drawCalls;
+        m_drawCalls = 0u;
+        return dc;
     }
 }

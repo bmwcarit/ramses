@@ -38,6 +38,10 @@ This code creates a simple animation of a color of an appearance.
 This code creates a simple realtime animation sequence with three triangles.
 @snippet ramses-example-basic-animation-realtime/src/main.cpp Basic Realtime Animation Example
 
+## Basic Texturing
+This code creates a simple scene demonstrating basic usage of textures.
+@snippet ramses-example-basic-texturing/src/main.cpp Basic Texturing Example
+
 ## Basic Blending
 This code creates a simple scene consisting of three triangles with alpha blending.
 @snippet ramses-example-basic-blending/src/main.cpp Basic Blending Example
@@ -123,6 +127,18 @@ or with low frequency and the result in form of a render buffer is used every fr
 @snippet ramses-example-renderonce/src/main.cpp Render Once Example Setup
 @snippet ramses-example-renderonce/src/main.cpp Render Once Example Retrigger
 
+## Geometry Instancing
+This code demonstrates usage of geometry instancing via ramses apis.
+@snippet ramses-example-geometry-instancing/src/main.cpp Basic Geometry Instancing Example
+
+## Geometry Shaders
+This code demonstrates usage of geometry shaders in ramses.
+@snippet ramses-example-local-geometry-shaders/src/main.cpp Geometry Shaders Example
+
+## Interleaved vertex attributes
+This code demonstrates usage of interleaved vertex attributes via ramses apis.
+@snippet ramses-example-interleaved-vertex-buffers/src/main.cpp Interleaved Vertex Buffers Example
+
 ## Multiple Displays
 This code creates a renderer with two displays and shows how a scene can be mapped to a display.
 @snippet ramses-example-local-displays/src/main.cpp Displays Example
@@ -165,10 +181,23 @@ When the user clicks on either of the two triangles in the renderer window the t
 This code creates a basic text using a text API.
 @snippet ramses-example-text-basic/src/main.cpp Basic Text Example
 
+## Text with multiple languages
+This code creates a text using a text API containing several languages.
+@snippet ramses-example-text-languages/src/main.cpp Languages Text Example
+
+## Local rendering of scenes
+This code demonstrates creating a scene and rendering it locally via ramses apis.
+See example code in examples/ramses-example-local-client/src/main.cpp
+
+## Local rendering of scenes via DCSM
+This code demonstrates creating a scene and rendering it locally via dcsm (on top of ramses apis)
+See example code in examples/ramses-example-local-client-dcsm/src/main.cpp
+
 ## DCSM Provider
 This code offers a small scene via DCSM and is able to resize it and run a hide/show animation. A renderer side application which
 is supposed to work with this example properly needs to understand the DCSM protocol. For the standalone renderer this can be enabled
 with the "-dcsm" command line parameter.
+@snippet ramses-example-dcsm-provider/src/main.cpp DCSM Provider Example
 
 ## Scene referencing
 This code creates two scenes with content and a master scene. The master scene is only used to control position and size

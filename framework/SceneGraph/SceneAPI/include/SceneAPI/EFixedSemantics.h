@@ -40,20 +40,20 @@ namespace ramses_internal
 
     static constexpr const char* const EFixedSemanticsNames[] =
     {
-        "EFixedSemantics_Invalid",
-        "EFixedSemantics_ProjectionMatrix",
-        "EFixedSemantics_ViewMatrix",
-        "EFixedSemantics_ModelMatrix",
-        "EFixedSemantics_ModelViewMatrix",
-        "EFixedSemantics_ModelViewMatrix33",
-        "EFixedSemantics_ModelViewProjectionMatrix",
-        "EFixedSemantics_NormalMatrix",
-        "EFixedSemantics_CameraWorldPosition",
-        "EFixedSemantics_DisplayBufferResolution",
-        "EFixedSemantics_Indices",
-        "EFixedSemantics_TextTexture",
-        "EFixedSemantics_TextPositionsAttribute",
-        "EFixedSemantics_TextTextureCoordinatesAttribute"
+        "Invalid",
+        "ProjectionMatrix",
+        "ViewMatrix",
+        "ModelMatrix",
+        "ModelViewMatrix",
+        "ModelViewMatrix33",
+        "ModelViewProjectionMatrix",
+        "NormalMatrix",
+        "CameraWorldPosition",
+        "DisplayBufferResolution",
+        "Indices",
+        "TextTexture",
+        "TextPositionsAttribute",
+        "TextTextureCoordinatesAttribute"
     };
 
     inline bool IsSemanticCompatibleWithDataType(EFixedSemantics semantics, EDataType dataType)
@@ -91,7 +91,8 @@ namespace ramses_internal
 }
 
 MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::EFixedSemantics,
-    ramses_internal::EFixedSemanticsNames,
-    ramses_internal::EFixedSemantics::TextTextureCoordinatesAttribute);
+                                        "EFixedSemantics",
+                                        ramses_internal::EFixedSemanticsNames,
+                                        ramses_internal::EFixedSemantics::TextTextureCoordinatesAttribute);
 
 #endif

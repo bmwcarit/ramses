@@ -8,11 +8,14 @@
 
 
 from __future__ import print_function
+from builtins import object
+from builtins import range
 import unittest
 import os
 import time
 import re
 import random
+from future.utils import itervalues
 
 from ramses_test_framework import helper
 from ramses_test_framework import log
@@ -20,7 +23,7 @@ from ramses_test_framework import test_classes
 from ramses_test_framework.argparser import AdaptedArgParser
 
 
-class CoreImpl:
+class CoreImpl(object):
     def __init__(self, config):
         self.config = config
         self.targets = {}
@@ -43,12 +46,12 @@ class CoreImpl:
     def setupTargets(self, transfer_binaries):
         setupSuccessful = True
 
-        for target in self.bridgeTargets.values():
+        for target in itervalues(self.bridgeTargets):
             # target setup (connection)
             log.info("setup bridge target {}".format(target.name))
             setupSuccessful &= target.setup(False)
 
-        for target in self.targets.values():
+        for target in itervalues(self.targets):
             # target setup (connection, transfer binaries etc.)
             log.info("setup target {}".format(target.name))
             setupSuccessful &= target.setup(transfer_binaries)
@@ -77,7 +80,7 @@ class CoreImpl:
 
         #filter if given
         if self.filter is not None:
-            testList = filter(lambda t: re.search(self.filter, t.id(), re.IGNORECASE), testList)
+            testList = [t for t in testList if re.search(self.filter, t.id(), re.IGNORECASE)]
 
         # add to final test suite
         filteredSuite = unittest.TestSuite()
@@ -98,7 +101,7 @@ class CoreImpl:
         result = runner.run(filteredSuite)
         self._post_process_test_results()
 
-        for target in self.targets.values():
+        for target in itervalues(self.targets):
             target.tests_finished()
 
         return len(result.errors) == 0 and len(result.failures) == 0
@@ -111,7 +114,7 @@ class CoreImpl:
 
     def tear_down(self, shutdownTargets):
         anyTargetWasConnected = False
-        for target in self.targets.values():
+        for target in itervalues(self.targets):
             anyTargetWasConnected |= target.isConnected
             target.target_specific_tear_down(shutdown=shutdownTargets)
 
@@ -121,13 +124,13 @@ class CoreImpl:
                 # wait time till all targets should have finished shutdown properly
                 time.sleep(60)
 
-            for target in self.targets.values():
+            for target in itervalues(self.targets):
                 if target.powerDevice is not None:
                     target.powerDevice.switch(target.powerOutletNr, False)
 
         #tear-down and shutdown bridges after test targets (otherwise connection will be lost)
         anyBridgeTargetWasConnected = False
-        for target in self.bridgeTargets.values():
+        for target in itervalues(self.bridgeTargets):
             anyBridgeTargetWasConnected |= target.isConnected
             target.target_specific_tear_down(shutdown=shutdownTargets)
 
@@ -137,7 +140,7 @@ class CoreImpl:
                 #wait time till all bridgeTargets should have finished shutdown properly
                 time.sleep(60)
 
-            for target in self.bridgeTargets.values():
+            for target in itervalues(self.bridgeTargets):
                 if target.powerDevice is not None:
                     target.powerDevice.switch(target.powerOutletNr, False)
 
@@ -212,7 +215,7 @@ class LocalCoreImpl(CoreImpl):
         return unittest.TextTestRunner(verbosity=2)
 
     def _expand_test(self, test, expandedSuite):
-        for target in self.targets.values():
+        for target in list(itervalues(self.targets)):
             if isinstance(test, test_classes.OneConnectionTest) or isinstance(test, test_classes.OnSelectedTargetsTest):
                 test.target = target
             if isinstance(test, test_classes.MultipleConnectionsTest):

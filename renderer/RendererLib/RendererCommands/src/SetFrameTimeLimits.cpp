@@ -8,22 +8,20 @@
 
 #include "RendererCommands/SetFrameTimeLimits.h"
 #include "Ramsh/RamshInput.h"
+#include "RendererLib/RendererCommandBuffer.h"
 
 namespace ramses_internal
 {
-    SetFrameTimeLimits::SetFrameTimeLimits(FrameTimer& frametimer)
-        : m_frametimer(frametimer)
+    SetFrameTimeLimits::SetFrameTimeLimits(RendererCommandBuffer& rendererCommandBuffer)
+        : m_rendererCommandBuffer(rendererCommandBuffer)
     {
-        description = "change values (us): limitForResourcesUpload limitForSceneActionsApply limitForOffscreenBufferRender";
+        description = "change values (us): limitForDynamicResourcesUpload limitForStaticResourcesUpload limitForOffscreenBufferRender";
         registerKeyword("limits");
     }
 
-    Bool SetFrameTimeLimits::execute(UInt32& limitForResourcesUploadMicrosec, UInt32& limitForOffscreenBufferRenderMicrosec) const
+    Bool SetFrameTimeLimits::execute(uint32_t& limitForDynamicResourcesUploadMicrosec, uint32_t& limitForStaticResourcesUploadMicrosec, uint32_t& limitForOffscreenBufferRenderMicrosec) const
     {
-        m_frametimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, limitForResourcesUploadMicrosec);
-        m_frametimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, limitForOffscreenBufferRenderMicrosec);
-
-        LOG_INFO(CONTEXT_RENDERER, "Changed limiting values:" << limitForResourcesUploadMicrosec <<  "/" << limitForOffscreenBufferRenderMicrosec);
+        m_rendererCommandBuffer.enqueueCommand(RendererCommand::SetLimits_FrameBudgets{ limitForDynamicResourcesUploadMicrosec, limitForStaticResourcesUploadMicrosec, limitForOffscreenBufferRenderMicrosec });
         return true;
     }
 }

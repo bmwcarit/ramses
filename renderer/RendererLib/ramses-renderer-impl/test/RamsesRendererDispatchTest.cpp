@@ -28,9 +28,9 @@ namespace ramses_internal
 {
     using namespace testing;
 
+    // ugly hack to replace platform with mock via overriding a static factory helper
     NiceMock<PlatformNiceMock>* gPlatformMock = nullptr;
-
-    ramses_internal::IPlatform* ramses_internal::Platform_Base::CreatePlatform(const ramses_internal::RendererConfig&)
+    IPlatform* Platform_Base::CreatePlatform(const RendererConfig&)
     {
         gPlatformMock = new ::testing::NiceMock<PlatformNiceMock>();
         return gPlatformMock;
@@ -57,18 +57,18 @@ namespace ramses_internal
             return m_renderer.createDisplay(displayConfig);
         }
 
-        ramses::displayId_t createDisplayAndExpectResult(ramses::ERendererEventResult expectedResult = ramses::ERendererEventResult_OK)
+        ramses::displayId_t createDisplayAndExpectResult()
         {
             const ramses::displayId_t displayId = addDisplay();
             updateAndDispatch(m_handler);
-            m_handler.expectDisplayCreated(displayId, expectedResult);
+            m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult::ERendererEventResult_OK);
 
             return displayId;
         }
 
         void doUpdateLoop()
         {
-            m_renderer.impl.getRenderer().doOneLoop(ramses_internal::ELoopMode::UpdateOnly);
+            m_renderer.impl.getDisplayDispatcher().doOneLoop(ramses_internal::ELoopMode::UpdateOnly);
         }
 
         void updateAndDispatch(RendererEventTestHandler& eventHandler, uint32_t loops = 1u)
@@ -92,8 +92,12 @@ namespace ramses_internal
 
     TEST_F(ARamsesRendererDispatch, generatesFAILEventForDisplayCreation)
     {
-        ON_CALL(*gPlatformMock, createRenderBackend(_, _)).WillByDefault(Return(static_cast<ramses_internal::IRenderBackend*>(nullptr)));
-        createDisplayAndExpectResult(ramses::ERendererEventResult_FAIL);
+        constexpr ramses::displayId_t displayId{ 123u };
+        RendererEvent evt{ ramses_internal::ERendererEventType::DisplayCreateFailed };
+        evt.displayHandle = DisplayHandle{ displayId.getValue() };
+        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
+        updateAndDispatch(m_handler);
+        m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult::ERendererEventResult_FAIL);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForDisplayDestruction)
@@ -204,77 +208,66 @@ namespace ramses_internal
 
     TEST_F(ARamsesRendererDispatch, generatesEventForWindowClosed)
     {
-        const ramses::displayId_t displayId = createDisplayAndExpectResult();
-        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onClose();
+        ramses_internal::RendererEvent evt{ ramses_internal::ERendererEventType::WindowClosed };
+        evt.displayHandle = DisplayHandle{ 2u };
+        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
-        m_handler.expectWindowClosed(displayId);
+        m_handler.expectWindowClosed(ramses::displayId_t{ 2u });
     }
-
     TEST_F(ARamsesRendererDispatch, generatesEventForWindowResized)
     {
-        const ramses::displayId_t displayId = createDisplayAndExpectResult();
-        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onResize(100, 200);
+        ramses_internal::RendererEvent evt{ ramses_internal::ERendererEventType::WindowResizeEvent };
+        evt.displayHandle = DisplayHandle{ 2u };
+        evt.resizeEvent.width = 100;
+        evt.resizeEvent.height = 200;
+        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
-        m_handler.expectWindowResized(displayId, 100, 200);
+        m_handler.expectWindowResized(ramses::displayId_t{ 2u }, 100, 200);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForWindowMoved)
     {
-        const ramses::displayId_t displayId = createDisplayAndExpectResult();
-        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onWindowMove(100, 200);
+        ramses_internal::RendererEvent evt{ ramses_internal::ERendererEventType::WindowMoveEvent };
+        evt.displayHandle = DisplayHandle{ 2u };
+        evt.moveEvent.posX = 100;
+        evt.moveEvent.posY = 200;
+        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
-        m_handler.expectWindowMoved(displayId, 100, 200);
+        m_handler.expectWindowMoved(ramses::displayId_t{ 2u }, 100, 200);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForKeyPressed)
     {
-        const ramses::displayId_t displayId = createDisplayAndExpectResult();
-        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onKeyEvent(ramses_internal::EKeyEventType_Pressed,
-            ramses_internal::EKeyModifier_Ctrl | ramses_internal::EKeyModifier_Shift, ramses_internal::EKeyCode_E);
+        ramses_internal::RendererEvent evt{ ramses_internal::ERendererEventType::WindowKeyEvent };
+        evt.displayHandle = DisplayHandle{ 2u };
+        evt.keyEvent.type = ramses_internal::EKeyEventType_Pressed;
+        evt.keyEvent.modifier = ramses_internal::EKeyModifier_Ctrl | ramses_internal::EKeyModifier_Shift;
+        evt.keyEvent.keyCode = ramses_internal::EKeyCode_E;
+        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
-        m_handler.expectKeyEvent(displayId, ramses::EKeyEvent_Pressed, ramses::EKeyModifier_Ctrl | ramses::EKeyModifier_Shift, ramses::EKeyCode_E);
+        m_handler.expectKeyEvent(ramses::displayId_t{ 2u }, ramses::EKeyEvent_Pressed, ramses::EKeyModifier_Ctrl | ramses::EKeyModifier_Shift, ramses::EKeyCode_E);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventForKeyReleased)
     {
-        const ramses::displayId_t displayId = createDisplayAndExpectResult();
-        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onKeyEvent(ramses_internal::EKeyEventType_Released,
-            ramses_internal::EKeyModifier_Ctrl | ramses_internal::EKeyModifier_Shift, ramses_internal::EKeyCode_F);
+        ramses_internal::RendererEvent evt{ ramses_internal::ERendererEventType::WindowKeyEvent };
+        evt.displayHandle = DisplayHandle{ 2u };
+        evt.keyEvent.type = ramses_internal::EKeyEventType_Released;
+        evt.keyEvent.modifier = ramses_internal::EKeyModifier_Ctrl | ramses_internal::EKeyModifier_Shift;
+        evt.keyEvent.keyCode = ramses_internal::EKeyCode_F;
+        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
-        m_handler.expectKeyEvent(displayId, ramses::EKeyEvent_Released, ramses::EKeyModifier_Ctrl | ramses::EKeyModifier_Shift, ramses::EKeyCode_F);
+        m_handler.expectKeyEvent(ramses::displayId_t{ 2u }, ramses::EKeyEvent_Released, ramses::EKeyModifier_Ctrl | ramses::EKeyModifier_Shift, ramses::EKeyCode_F);
     }
 
     TEST_F(ARamsesRendererDispatch, generatesEventsForMouseActionsOnDisplay)
     {
-        const ramses::displayId_t displayId = createDisplayAndExpectResult();
-        const ramses_internal::DisplayHandle displayHandle(displayId.getValue());
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_RightButtonDown, 20, 30);
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_RightButtonUp, 21, 31);
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_LeftButtonDown, 22, 32);
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_LeftButtonUp, 23, 33);
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_MiddleButtonDown, 24, 34);
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_MiddleButtonUp, 25, 35);
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_WheelDown, 26, 36);
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_WheelUp, 27, 37);
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_Move, 28, 38);
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_WindowEnter, 29, 39);
-        m_renderer.impl.getRenderer().getRenderer().getDisplayEventHandler(displayHandle).onMouseEvent(ramses_internal::EMouseEventType_WindowLeave, 30, 40);
+        ramses_internal::RendererEvent evt{ ramses_internal::ERendererEventType::WindowMouseEvent };
+        evt.displayHandle = DisplayHandle{ 2u };
+        evt.mouseEvent.type = ramses_internal::EMouseEventType_RightButtonDown;
+        evt.mouseEvent.pos = { 20, 30 };
+        m_renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(evt));
         updateAndDispatch(m_handler);
-        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_RightButtonDown, 20, 30);
-        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_RightButtonUp, 21, 31);
-        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_LeftButtonDown, 22, 32);
-        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_LeftButtonUp, 23, 33);
-        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_MiddleButtonDown, 24, 34);
-        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_MiddleButtonUp, 25, 35);
-        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_WheelDown, 26, 36);
-        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_WheelUp, 27, 37);
-        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_Move, 28, 38);
-        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_WindowEnter, 29, 39);
-        m_handler.expectMouseEvent(displayId, ramses::EMouseEvent_WindowLeave, 30, 40);
+        m_handler.expectMouseEvent(ramses::displayId_t{ 2u }, ramses::EMouseEvent_RightButtonDown, 20, 30);
     }
 }

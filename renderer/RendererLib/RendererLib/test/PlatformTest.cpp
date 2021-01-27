@@ -11,6 +11,7 @@
 #include "RendererLib/DisplayConfig.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "WindowEventHandlerMock.h"
+#include "RenderBackendMock.h"
 
 using namespace testing;
 
@@ -27,7 +28,7 @@ namespace ramses_internal
             EXPECT_CALL(platform, createWindow(_, _));
             EXPECT_CALL(*platform.window, init()).WillOnce(Return(true));
 
-            EXPECT_CALL(platform, createContext(Ref(*platform.window)));
+            EXPECT_CALL(platform, createContext(Ref(*platform.window), nullptr));
             EXPECT_CALL(*platform.context, init()).WillOnce(Return(true));
 
             EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
@@ -41,6 +42,25 @@ namespace ramses_internal
             EXPECT_CALL(platform, createTextureUploadingAdapter(Ref(*platform.device), Ref(*platform.embeddedCompositor), Ref(*platform.window)));
 
             return platform.createRenderBackend(displayConfig, windowEventHandlerMock);
+        }
+
+        IResourceUploadRenderBackend* createResourceUploadRenderBackend(Platform_BaseMock& platform, RenderBackendStrictMock& mainRenderBackendMock)
+        {
+            platform.createRenderBackendMockObjects();
+
+            InSequence s;
+            EXPECT_CALL(mainRenderBackendMock, getSurface());
+            EXPECT_CALL(mainRenderBackendMock.surfaceMock, getWindow());
+            EXPECT_CALL(mainRenderBackendMock, getSurface());
+            EXPECT_CALL(mainRenderBackendMock.surfaceMock, getContext());
+
+            EXPECT_CALL(platform, createContext(Ref(mainRenderBackendMock.surfaceMock.windowMock), &mainRenderBackendMock.surfaceMock.contextMock));
+            EXPECT_CALL(*platform.context, init()).WillOnce(Return(true));
+            EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
+            EXPECT_CALL(platform, createDevice(Ref(*platform.context)));
+            EXPECT_CALL(*platform.device, init()).WillOnce(Return(true));
+
+            return platform.createResourceUploadRenderBackend(mainRenderBackendMock);
         }
 
         void createPerRendererComponents(Platform_BaseMock& platform, Bool initSystemCompositorControllerSucess = true)
@@ -94,6 +114,27 @@ namespace ramses_internal
             platform.embeddedCompositor      = nullptr;
         }
 
+        void destroyResourceUploadRenderBackend(Platform_BaseMock& platform, IResourceUploadRenderBackend& renderBackend)
+        {
+            InSequence s;
+            EXPECT_CALL(*platform.device, Die());
+            EXPECT_CALL(*platform.context, disable());
+            EXPECT_CALL(*platform.context, Die());
+
+            platform.destroyResourceUploadRenderBackend(renderBackend);
+
+            verifyAndClearExpectationsOnRenderBackendMockObjects(platform);
+
+            //delete the rest of un-used mock objects
+            EXPECT_CALL(static_cast<WindowMockWithDestructor&>(*platform.window), Die());
+            EXPECT_CALL(static_cast<EmbeddedCompositorMockWithDestructor&>(*platform.embeddedCompositor), Die());
+            delete platform.window;
+            delete platform.embeddedCompositor;
+
+            platform.window = nullptr;
+            platform.embeddedCompositor = nullptr;
+        }
+
         void destroyPerRendererComponents(Platform_BaseMock& platform)
         {
             EXPECT_CALL(static_cast<SystemCompositorControllerMockWithDestructor&>(*platform.systemCompositorController), Die());
@@ -116,6 +157,16 @@ namespace ramses_internal
         ASSERT_TRUE(nullptr != renderBackend);
 
         destroyRenderBackend(platform, *renderBackend);
+    }
+
+    TEST_F(APlatformTest, CanCreateAndDestroyResourceUploadRenderBackend)
+    {
+        StrictMock<Platform_BaseMock> platform(rendererConfig);
+        RenderBackendStrictMock mainRenderBackendMock;
+        IResourceUploadRenderBackend* renderBackend = createResourceUploadRenderBackend(platform, mainRenderBackendMock);
+        ASSERT_TRUE(nullptr != renderBackend);
+
+        destroyResourceUploadRenderBackend(platform, *renderBackend);
     }
 
     TEST_F(APlatformTest, RenderBackendCreationFailsIfWindowFailsInitialization)
@@ -157,7 +208,7 @@ namespace ramses_internal
             EXPECT_CALL(platform, createWindow(_, _));
             EXPECT_CALL(*platform.window, init()).WillOnce(Return(true));
 
-            EXPECT_CALL(platform, createContext(Ref(*platform.window)));
+            EXPECT_CALL(platform, createContext(Ref(*platform.window), nullptr));
             EXPECT_CALL(*platform.context, init()).WillOnce(Return(false)); //context fails init
             //destructors gets called
             EXPECT_CALL(static_cast<ContextMockWithDestructor&>(*platform.context), Die());
@@ -187,7 +238,7 @@ namespace ramses_internal
             EXPECT_CALL(platform, createWindow(_, _));
             EXPECT_CALL(*platform.window, init()).WillOnce(Return(true));
 
-            EXPECT_CALL(platform, createContext(Ref(*platform.window)));
+            EXPECT_CALL(platform, createContext(Ref(*platform.window), nullptr));
             EXPECT_CALL(*platform.context, init()).WillOnce(Return(true));
 
             EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
@@ -224,7 +275,7 @@ namespace ramses_internal
             EXPECT_CALL(platform, createWindow(_, _));
             EXPECT_CALL(*platform.window, init()).WillOnce(Return(true));
 
-            EXPECT_CALL(platform, createContext(Ref(*platform.window)));
+            EXPECT_CALL(platform, createContext(Ref(*platform.window), nullptr));
             EXPECT_CALL(*platform.context, init()).WillOnce(Return(true));
 
             EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
@@ -247,6 +298,79 @@ namespace ramses_internal
 
             verifyAndClearExpectationsOnRenderBackendMockObjects(platform);
         }
+    }
+
+    TEST_F(APlatformTest, ResourceUploadRenderBackendCreationFailsIfContextFailsInitialization)
+    {
+        StrictMock<Platform_BaseMock> platform(rendererConfig);
+        RenderBackendStrictMock mainRenderBackendMock;
+
+        platform.createRenderBackendMockObjects();
+
+        {
+            InSequence s;
+            EXPECT_CALL(mainRenderBackendMock, getSurface());
+            EXPECT_CALL(mainRenderBackendMock.surfaceMock, getWindow());
+            EXPECT_CALL(mainRenderBackendMock, getSurface());
+            EXPECT_CALL(mainRenderBackendMock.surfaceMock, getContext());
+
+            EXPECT_CALL(platform, createContext(Ref(mainRenderBackendMock.surfaceMock.windowMock), &mainRenderBackendMock.surfaceMock.contextMock));
+            EXPECT_CALL(*platform.context, init()).WillOnce(Return(false)); //context fails init
+
+            //destructor gets called
+            EXPECT_CALL(static_cast<ContextMockWithDestructor&>(*platform.context), Die());
+
+            IResourceUploadRenderBackend* renderBackend = platform.createResourceUploadRenderBackend(mainRenderBackendMock);
+            EXPECT_EQ(nullptr, renderBackend);
+
+            verifyAndClearExpectationsOnRenderBackendMockObjects(platform);
+        }
+
+        //delete the rest of un-used mock objects
+        EXPECT_CALL(static_cast<EmbeddedCompositorMockWithDestructor&>(*platform.embeddedCompositor), Die());
+        EXPECT_CALL(static_cast<DeviceMockWithDestructor&>(*platform.device), Die());
+        EXPECT_CALL(static_cast<WindowMockWithDestructor&>(*platform.window), Die());
+        delete platform.window;
+        delete platform.device;
+        delete platform.embeddedCompositor;
+    }
+
+    TEST_F(APlatformTest, ResourceUploadRenderBackendCreationFailsIfDeviceFailsInitialization)
+    {
+        StrictMock<Platform_BaseMock> platform(rendererConfig);
+        RenderBackendStrictMock mainRenderBackendMock;
+
+        platform.createRenderBackendMockObjects();
+
+        {
+            InSequence s;
+            EXPECT_CALL(mainRenderBackendMock, getSurface());
+            EXPECT_CALL(mainRenderBackendMock.surfaceMock, getWindow());
+            EXPECT_CALL(mainRenderBackendMock, getSurface());
+            EXPECT_CALL(mainRenderBackendMock.surfaceMock, getContext());
+
+            EXPECT_CALL(platform, createContext(Ref(mainRenderBackendMock.surfaceMock.windowMock), &mainRenderBackendMock.surfaceMock.contextMock));
+            EXPECT_CALL(*platform.context, init()).WillOnce(Return(true));
+            EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
+            EXPECT_CALL(platform, createDevice(Ref(*platform.context)));
+            EXPECT_CALL(*platform.device, init()).WillOnce(Return(false)); //device fails init
+
+            //destructor gets called
+            EXPECT_CALL(static_cast<DeviceMockWithDestructor&>(*platform.device), Die());
+            EXPECT_CALL(static_cast<ContextMockWithDestructor&>(*platform.context), disable());
+            EXPECT_CALL(static_cast<ContextMockWithDestructor&>(*platform.context), Die());
+
+            IResourceUploadRenderBackend* renderBackend = platform.createResourceUploadRenderBackend(mainRenderBackendMock);
+            EXPECT_EQ(nullptr, renderBackend);
+
+            verifyAndClearExpectationsOnRenderBackendMockObjects(platform);
+        }
+
+        //delete the rest of un-used mock objects
+        EXPECT_CALL(static_cast<EmbeddedCompositorMockWithDestructor&>(*platform.embeddedCompositor), Die());
+        EXPECT_CALL(static_cast<WindowMockWithDestructor&>(*platform.window), Die());
+        delete platform.window;
+        delete platform.embeddedCompositor;
     }
 
     TEST_F(APlatformTest, CanCreateAndDestroyPerRendererComponents_WithoutSystemCompositorController)

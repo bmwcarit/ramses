@@ -12,6 +12,7 @@
 #include "Collections/Vector.h"
 #include "SceneAPI/EDataType.h"
 #include "SceneAPI/EFixedSemantics.h"
+#include "Collections/String.h"
 
 namespace ramses_internal
 {

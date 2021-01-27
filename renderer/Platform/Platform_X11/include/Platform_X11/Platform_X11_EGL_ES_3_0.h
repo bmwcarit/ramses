@@ -18,11 +18,9 @@ namespace ramses_internal
     public:
         explicit Platform_X11_EGL_ES_3_0(const RendererConfig& rendererConfig);
 
-        virtual IDevice*      createDevice(IContext& context) override final;
-
     protected:
-        virtual void getContextAttributes(std::vector<EGLint>& attributes) const override final;
-        virtual void getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const override final;
+        virtual uint32_t getSwapInterval() const override final;
+        virtual std::vector<EGLint> getSurfaceAttributes(UInt32 msaaSampleCount) const override final;
     };
 }
 

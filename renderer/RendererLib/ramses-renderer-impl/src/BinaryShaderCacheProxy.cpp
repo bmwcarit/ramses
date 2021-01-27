@@ -18,6 +18,7 @@ namespace ramses
 
     void BinaryShaderCacheProxy::deviceSupportsBinaryShaderFormats(const std::vector<ramses_internal::BinaryShaderFormatID>& supportedFormats)
     {
+        // called only once before any other call to binary shader cache, no need to lock
         std::vector<binaryShaderFormatId_t> formats;
         formats.reserve(supportedFormats.size());
         std::transform(supportedFormats.cbegin(), supportedFormats.cend(), std::back_inserter(formats),
@@ -25,51 +26,51 @@ namespace ramses
         m_cache.deviceSupportsBinaryShaderFormats(formats.data(), uint32_t(formats.size()));
     }
 
-    ramses_internal::Bool BinaryShaderCacheProxy::hasBinaryShader(ramses_internal::ResourceContentHash effectHash) const
+    bool BinaryShaderCacheProxy::hasBinaryShader(ramses_internal::ResourceContentHash effectHash) const
     {
-        const effectId_t effectId = getEffectIdFromEffectHash(effectHash);
-        return m_cache.hasBinaryShader(effectId);
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_cache.hasBinaryShader({ effectHash.lowPart, effectHash.highPart });
     }
 
-    ramses_internal::UInt32 BinaryShaderCacheProxy::getBinaryShaderSize(ramses_internal::ResourceContentHash effectHash) const
+    uint32_t BinaryShaderCacheProxy::getBinaryShaderSize(ramses_internal::ResourceContentHash effectHash) const
     {
-        const effectId_t effectId = getEffectIdFromEffectHash(effectHash);
-        return m_cache.getBinaryShaderSize(effectId);
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_cache.getBinaryShaderSize({ effectHash.lowPart, effectHash.highPart });
     }
 
     ramses_internal::BinaryShaderFormatID BinaryShaderCacheProxy::getBinaryShaderFormat(ramses_internal::ResourceContentHash effectHash) const
     {
-        const effectId_t effectId = getEffectIdFromEffectHash(effectHash);
-        return ramses_internal::BinaryShaderFormatID{ m_cache.getBinaryShaderFormat(effectId).getValue() };
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return ramses_internal::BinaryShaderFormatID{ m_cache.getBinaryShaderFormat({ effectHash.lowPart, effectHash.highPart }).getValue() };
     }
 
-    ramses_internal::Bool BinaryShaderCacheProxy::shouldBinaryShaderBeCached(ramses_internal::ResourceContentHash effectHash, ramses_internal::SceneId sceneId) const
+    bool BinaryShaderCacheProxy::shouldBinaryShaderBeCached(ramses_internal::ResourceContentHash effectHash, ramses_internal::SceneId sceneId) const
     {
-        const effectId_t effectId = getEffectIdFromEffectHash(effectHash);
-        return m_cache.shouldBinaryShaderBeCached(effectId, sceneId_t(sceneId.getValue()));
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_cache.shouldBinaryShaderBeCached({ effectHash.lowPart, effectHash.highPart }, sceneId_t(sceneId.getValue()));
     }
 
     void BinaryShaderCacheProxy::getBinaryShaderData(ramses_internal::ResourceContentHash effectHash, ramses_internal::UInt8* buffer, ramses_internal::UInt32 bufferSize) const
     {
-        const effectId_t effectId = getEffectIdFromEffectHash(effectHash);
-        m_cache.getBinaryShaderData(effectId, buffer, bufferSize);
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_cache.getBinaryShaderData({ effectHash.lowPart, effectHash.highPart }, buffer, bufferSize);
     }
 
-    void BinaryShaderCacheProxy::storeBinaryShader(ramses_internal::ResourceContentHash effectHash, ramses_internal::SceneId sceneId, const ramses_internal::UInt8* binaryShaderData, ramses_internal::UInt32 binaryShaderDataSize, ramses_internal::BinaryShaderFormatID binaryShaderFormat)
+    void BinaryShaderCacheProxy::storeBinaryShader(ramses_internal::ResourceContentHash effectHash, ramses_internal::SceneId sceneId, const uint8_t* binaryShaderData, uint32_t binaryShaderDataSize, ramses_internal::BinaryShaderFormatID binaryShaderFormat)
     {
-        const effectId_t effectId = getEffectIdFromEffectHash(effectHash);
-        m_cache.storeBinaryShader(effectId, sceneId_t{ sceneId.getValue() }, binaryShaderData, binaryShaderDataSize, binaryShaderFormatId_t{ binaryShaderFormat.getValue() });
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_cache.storeBinaryShader({ effectHash.lowPart, effectHash.highPart }, sceneId_t{ sceneId.getValue() }, binaryShaderData, binaryShaderDataSize, binaryShaderFormatId_t{ binaryShaderFormat.getValue() });
     }
 
     void BinaryShaderCacheProxy::binaryShaderUploaded(ramses_internal::ResourceContentHash effectHash, bool success) const
     {
-        const effectId_t effectId = getEffectIdFromEffectHash(effectHash);
-        m_cache.binaryShaderUploaded(effectId, success);
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_cache.binaryShaderUploaded({ effectHash.lowPart, effectHash.highPart }, success);
     }
 
-    ramses::effectId_t BinaryShaderCacheProxy::getEffectIdFromEffectHash(const ramses_internal::ResourceContentHash& effectHash)
+    std::once_flag& BinaryShaderCacheProxy::binaryShaderFormatsReported()
     {
-        const effectId_t effectId = { effectHash.lowPart, effectHash.highPart };
-        return effectId;
+        return m_supportedFormatsReported;
     }
+
 }

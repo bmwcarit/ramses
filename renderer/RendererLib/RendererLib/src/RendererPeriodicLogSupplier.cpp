@@ -26,6 +26,6 @@ namespace ramses_internal
 
     void RendererPeriodicLogSupplier::triggerLogMessageForPeriodicLog()
     {
-        m_commandBuffer.logRendererInfo(ERendererLogTopic_PeriodicLog, false, ramses_internal::NodeHandle::Invalid());
+        m_commandBuffer.enqueueCommand(RendererCommand::LogInfo{ ERendererLogTopic::PeriodicLog, false, {} });
     }
 }

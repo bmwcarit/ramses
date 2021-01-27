@@ -17,6 +17,7 @@
 #include "Math3d/Vector3.h"
 #include "InplaceStringTokenizer.h"
 #include "Utils/ArgumentBool.h"
+#include "PlatformAbstraction/Macros.h"
 
 namespace ramses_internal
 {
@@ -27,11 +28,11 @@ namespace ramses_internal
         Argument(const CommandLineParser& parser, const char* shortName, const char* longName, const T& default_value, const char* description = "");
         Argument(const char* shortName, const char* longName, const T& default_value, const char* description = "");
 
-        bool wasDefined() const;
-        bool hasValue() const;
+        RNODISCARD bool wasDefined() const;
+        RNODISCARD bool hasValue() const;
         T parseValueFromCmdLine(const CommandLineParser& parser);
-        String getHelpString() const;
-        bool next();
+        RNODISCARD std::string getHelpString() const;
+        RNODISCARD bool next();
 
         operator T() const  // NOLINT(google-explicit-constructor) implicit conversion is a (questionable) feature
         {
@@ -128,13 +129,13 @@ namespace ramses_internal
     }
 
     template<typename T>
-    inline String ramses_internal::Argument<T>::getHelpString() const
+    inline std::string ramses_internal::Argument<T>::getHelpString() const
     {
         StringOutputStream stream;
         stream << "-" << m_shortName << ", --" << m_longName;
         stream << " <value>";
         stream << " \t" << m_description << " (default: " << m_defaultValue << ")\n";
-        return stream.c_str();
+        return stream.release();
     }
 
     template<typename T>
@@ -202,7 +203,7 @@ namespace ramses_internal
             auto withoutBrackets = valueString.substr(1, valueString.size() - 2);
 
             size_t componentsFound = 0;
-            float components[3];
+            float components[3] = { 0.f };
             auto putComponentsToVector = [&](const char* vectorComponentAsString) {
                 if(componentsFound < 3)
                     components[componentsFound] = static_cast<Float>(atof(vectorComponentAsString));

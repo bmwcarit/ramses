@@ -31,7 +31,6 @@ ACME_MODULE(
     #==========================================================================
     DEPENDENCIES            X11
                             Platform_EGL
-                            Device_GL
 )
 
 ACME_MODULE(

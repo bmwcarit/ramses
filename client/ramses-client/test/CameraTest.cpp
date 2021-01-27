@@ -33,11 +33,11 @@ namespace ramses
         CameraType* camera;
     };
 
-    typedef ::testing::Types
+    using CameraTypes = ::testing::Types
         <
         PerspectiveCamera,
         OrthographicCamera
-        > CameraTypes;
+        >;
 
     TYPED_TEST_SUITE(ACamera, CameraTypes);
 

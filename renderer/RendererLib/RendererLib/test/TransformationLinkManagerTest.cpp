@@ -42,9 +42,9 @@ public:
         consumerSceneAllocator.allocateNode(0u, consumerNode);
 
         providerSceneAllocator.allocateDataSlot({ EDataSlotType_TransformationProvider, providerId, providerNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, providerSlotHandle);
-        expectRendererEvent(ERendererEventType_SceneDataSlotProviderCreated, providerSceneId, providerId, SceneId(0u), DataSlotId(0u));
+        expectRendererEvent(ERendererEventType::SceneDataSlotProviderCreated, providerSceneId, providerId, SceneId(0u), DataSlotId(0u));
         consumerSceneAllocator.allocateDataSlot({ EDataSlotType_TransformationConsumer, consumerId, consumerNode, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, consumerSlotHandle);
-        expectRendererEvent(ERendererEventType_SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId);
+        expectRendererEvent(ERendererEventType::SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId);
     }
 
 protected:
@@ -91,14 +91,14 @@ protected:
 
         UInt32 eventIdx = 0u;
 
-        EXPECT_EQ(ERendererEventType_SceneDataUnlinkedAsResultOfClientSceneChange, events[eventIdx].eventType);
+        EXPECT_EQ(ERendererEventType::SceneDataUnlinkedAsResultOfClientSceneChange, events[eventIdx].eventType);
         EXPECT_EQ(consumerSId, events[eventIdx].consumerSceneId);
         EXPECT_EQ(cId, events[eventIdx].consumerdataId);
 
         if (hasTwoLinksRemoved)
         {
             ++eventIdx;
-            EXPECT_EQ(ERendererEventType_SceneDataUnlinkedAsResultOfClientSceneChange, events[eventIdx].eventType);
+            EXPECT_EQ(ERendererEventType::SceneDataUnlinkedAsResultOfClientSceneChange, events[eventIdx].eventType);
             EXPECT_EQ(consumerSceneId2, events[eventIdx].consumerSceneId);
             EXPECT_EQ(consumerId2, events[eventIdx].consumerdataId);
         }
@@ -106,13 +106,13 @@ protected:
         ++eventIdx;
         if (destroyedSlotType == EDataSlotType_TransformationProvider)
         {
-            EXPECT_EQ(ERendererEventType_SceneDataSlotProviderDestroyed, events[eventIdx].eventType);
+            EXPECT_EQ(ERendererEventType::SceneDataSlotProviderDestroyed, events[eventIdx].eventType);
             EXPECT_EQ(sceneIdOfDestroyedSlot, events[eventIdx].providerSceneId);
             EXPECT_EQ(destroyedSlotId, events[eventIdx].providerdataId);
         }
         else
         {
-            EXPECT_EQ(ERendererEventType_SceneDataSlotConsumerDestroyed, events[eventIdx].eventType);
+            EXPECT_EQ(ERendererEventType::SceneDataSlotConsumerDestroyed, events[eventIdx].eventType);
             EXPECT_EQ(sceneIdOfDestroyedSlot, events[eventIdx].consumerSceneId);
             EXPECT_EQ(destroyedSlotId, events[eventIdx].consumerdataId);
         }
@@ -249,7 +249,7 @@ TEST_F(ATransformationLinkManager, createsTwoLinksSameProviderDifferentConsumers
     const DataSlotHandle slotHandle(43u);
 
     consumerSceneAllocator.allocateDataSlot({ EDataSlotType_TransformationConsumer, consumerId2, consumerNode2, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, slotHandle);
-    expectRendererEvent(ERendererEventType_SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId2);
 
     EXPECT_TRUE(transformationLinkManager.createDataLink(providerSceneId, providerSlotHandle, consumerSceneId, consumerSlotHandle));
     EXPECT_TRUE(transformationLinkManager.createDataLink(providerSceneId, providerSlotHandle, consumerSceneId, slotHandle));
@@ -263,7 +263,7 @@ TEST_F(ATransformationLinkManager, removesAllLinksToProviderOnProviderSlotDestru
     const DataSlotId consumerId2(999u);
     const DataSlotHandle slotHandle(43u);
     consumerSceneAllocator.allocateDataSlot({ EDataSlotType_TransformationConsumer, consumerId2, consumerNode2, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, slotHandle);
-    expectRendererEvent(ERendererEventType_SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId2);
 
     EXPECT_TRUE(transformationLinkManager.createDataLink(providerSceneId, providerSlotHandle, consumerSceneId, consumerSlotHandle));
     EXPECT_TRUE(transformationLinkManager.createDataLink(providerSceneId, providerSlotHandle, consumerSceneId, slotHandle));
@@ -281,13 +281,13 @@ TEST_F(ATransformationLinkManager, removingAllLinksToProviderOnProviderSlotDestr
     const DataSlotId providerId2(999u);
     const DataSlotHandle slotHandle(43u);
     providerSceneAllocator.allocateDataSlot({ EDataSlotType_TransformationProvider, providerId2, providerNode2, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, slotHandle);
-    expectRendererEvent(ERendererEventType_SceneDataSlotProviderCreated, providerSceneId, providerId2, SceneId(0u), DataSlotId(0u));
+    expectRendererEvent(ERendererEventType::SceneDataSlotProviderCreated, providerSceneId, providerId2, SceneId(0u), DataSlotId(0u));
 
     const NodeHandle consumerNode2 = consumerSceneAllocator.allocateNode();
     const DataSlotId consumerId2(888u);
     const DataSlotHandle slotHandle2(654u);
     consumerSceneAllocator.allocateDataSlot({ EDataSlotType_TransformationConsumer, consumerId2, consumerNode2, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, slotHandle2);
-    expectRendererEvent(ERendererEventType_SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId2);
 
     EXPECT_TRUE(transformationLinkManager.createDataLink(providerSceneId, providerSlotHandle, consumerSceneId, consumerSlotHandle));
     EXPECT_TRUE(transformationLinkManager.createDataLink(providerSceneId, slotHandle, consumerSceneId, slotHandle2));
@@ -340,7 +340,7 @@ TEST_F(ATransformationLinkManager, doesNotPropagateTransformationDirtinessToCons
     const DataSlotId consumerId2(888u);
     const DataSlotHandle slotHandle2(654u);
     consumerSceneAllocator.allocateDataSlot({ EDataSlotType_TransformationConsumer, consumerId2, consumerNode2, DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), TextureSamplerHandle() }, slotHandle2);
-    expectRendererEvent(ERendererEventType_SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId2);
 
     EXPECT_FALSE(transformationLinkManager.removeDataLink(consumerSceneId, slotHandle2));
     EXPECT_FALSE(consumerScene.isMatrixCacheDirty(ETransformationMatrixType_World, consumerNode));

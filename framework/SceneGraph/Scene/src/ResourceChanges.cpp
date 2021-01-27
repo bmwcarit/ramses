@@ -8,7 +8,6 @@
 
 #include "Scene/ResourceChanges.h"
 #include "PlatformAbstraction/PlatformMemory.h"
-#include "Collections/StringOutputStream.h"
 
 namespace ramses_internal
 {
@@ -82,52 +81,5 @@ namespace ramses_internal
         return estimatePutDataArraySize(m_resourcesAdded) +
             estimatePutDataArraySize(m_resourcesRemoved) +
             estimatePutDataArraySize(m_sceneResourceActions);
-    }
-
-    const char* SceneResourceActionNames[ESceneResourceAction_NUMBER_OF_ELEMENTS] =
-    {
-        "Invalid",
-        "CreateRenderBuffer",
-        "DestroyRenderBuffer",
-        "CreateRenderTarget",
-        "DestroyRenderTarget",
-        "CreateStreamTexture",
-        "DestroyStreamTexture",
-        "CreateBlitPass",
-        "DestroyBlitPass",
-        "CreateDataBuffer",
-        "UpdateDataBuffer",
-        "DestroyDataBuffer",
-        "CreateTextureBuffer",
-        "UpdateTextureBuffer",
-        "DestroyTextureBuffer"
-    };
-    ENUM_TO_STRING(ESceneResourceAction, SceneResourceActionNames, ESceneResourceAction_NUMBER_OF_ELEMENTS);
-
-    String ResourceChanges::asString() const
-    {
-        StringOutputStream str;
-        str << "\n[ new client resources:";
-        for (const auto& res : m_resourcesAdded)
-        {
-            str << " " << res;
-        }
-        str << "]";
-
-        str << "\n[ obsolete client resources:";
-        for (const auto& res : m_resourcesRemoved)
-        {
-            str << " " << res;
-        }
-        str << "]";
-
-        str << "\n[ scene resource actions:";
-        for (const auto& res : m_sceneResourceActions)
-        {
-            str << " " << EnumToString(res.action) << ":" << res.handle;
-        }
-        str << "]";
-
-        return str.release();
     }
 }

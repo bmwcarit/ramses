@@ -8,21 +8,23 @@
 
 
 from __future__ import print_function
+from builtins import object
+from builtins import range
 import platform
 import os
 
 #some color enumeration for text printing
-black, red, green, orange, blue, purple, cyan, light_gray, gray, light_red, light_green, yellow, light_blue, light_cyan = range(14)
+black, red, green, orange, blue, purple, cyan, light_gray, gray, light_red, light_green, yellow, light_blue, light_cyan = list(range(14))
 
 enableLogColors = platform.system() != "Windows"
 
 #internal class for text unit codes
-class text:
+class text(object):
     endc = '\033[0m'
     bold = '\033[1m'
 
     #foreground
-    class fg:
+    class fg(object):
         black = '\033[30m'
         red = '\033[31m'
         green = '\033[32m'
@@ -40,7 +42,7 @@ class text:
         light_cyan = '\033[96m'
 
     #background
-    class bg:
+    class bg(object):
         black = '\033[40m'
         red = '\033[41m'
         green = '\033[42m'
@@ -61,7 +63,7 @@ class text:
     background = [bg.black, bg.red, bg.green, bg.orange, bg.blue, bg.purple, fg.cyan, bg.light_grey, bg.grey, bg.light_red, bg.light_green, bg.yellow, bg.light_blue, bg.light_cyan]
 
 
-class FileLogger:
+class FileLogger(object):
     def __init__(self, pathToFile):
         dirName = os.path.dirname(pathToFile)
         if not os.path.exists(dirName):

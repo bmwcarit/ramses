@@ -196,7 +196,7 @@ public:
     AClientSceneLogic_Direct() {}
 };
 
-typedef ::testing::Types<ClientSceneLogicShadowCopy, ClientSceneLogicDirect> ClientSceneLogicTypes;
+using ClientSceneLogicTypes = ::testing::Types<ClientSceneLogicShadowCopy, ClientSceneLogicDirect>;
 TYPED_TEST_SUITE(AClientSceneLogic_All, ClientSceneLogicTypes);
 
 

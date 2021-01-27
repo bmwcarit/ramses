@@ -45,7 +45,7 @@ namespace ramses_internal
 
         void addDisplayEvent(ERendererEventType eventType, DisplayHandle displayHandle, const DisplayConfig& config = {})
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " display=" << displayHandle);
+            LOG_INFO(CONTEXT_RENDERER, eventType << " display=" << displayHandle);
 
             RendererEvent event(eventType);
             event.displayHandle = displayHandle;
@@ -55,7 +55,7 @@ namespace ramses_internal
 
         void addReadPixelsEvent(ERendererEventType eventType, DisplayHandle displayHandle, OffscreenBufferHandle offscreenBufferHandle, UInt8Vector&& pixelData)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " display=" << displayHandle);
+            LOG_INFO(CONTEXT_RENDERER, eventType << " display=" << displayHandle);
 
             RendererEvent event(eventType);
             event.displayHandle = displayHandle;
@@ -79,7 +79,7 @@ namespace ramses_internal
 
         void addSceneExpirationEvent(ERendererEventType eventType, SceneId sceneId)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " sceneId=" << sceneId);
+            LOG_INFO(CONTEXT_RENDERER, eventType << " sceneId=" << sceneId);
 
             RendererEvent event(eventType);
             event.sceneId = sceneId;
@@ -88,7 +88,7 @@ namespace ramses_internal
 
         void addDataLinkEvent(ERendererEventType eventType, SceneId providerSceneId, SceneId consumerSceneId, DataSlotId providerdataId, DataSlotId consumerdataId)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " providerSceneId=" << providerSceneId << " providerDataId=" << providerdataId.getValue() << " consumerSceneId=" << consumerSceneId << " consumerDataId=" << consumerdataId.getValue());
+            LOG_INFO(CONTEXT_RENDERER, eventType << " providerSceneId=" << providerSceneId << " providerDataId=" << providerdataId.getValue() << " consumerSceneId=" << consumerSceneId << " consumerDataId=" << consumerdataId.getValue());
 
             RendererEvent event(eventType);
             event.providerSceneId = providerSceneId;
@@ -100,7 +100,7 @@ namespace ramses_internal
 
         void addBufferLinkEvent(ERendererEventType eventType, OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " offscreenBufferHandle=" << providerBuffer);
+            LOG_INFO(CONTEXT_RENDERER, eventType << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " offscreenBufferHandle=" << providerBuffer);
 
             RendererEvent event(eventType);
             event.offscreenBuffer = providerBuffer;
@@ -111,7 +111,7 @@ namespace ramses_internal
 
         void addBufferLinkEvent(ERendererEventType eventType, StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " streamBufferHandle=" << providerBuffer);
+            LOG_INFO(CONTEXT_RENDERER, eventType << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " streamBufferHandle=" << providerBuffer);
 
             RendererEvent event(eventType);
             event.streamBuffer = providerBuffer;
@@ -122,7 +122,7 @@ namespace ramses_internal
 
         void addOBEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " display=" << display << " bufferHandle=" << buffer);
+            LOG_INFO(CONTEXT_RENDERER, eventType << " display=" << display << " bufferHandle=" << buffer);
 
             RendererEvent event(eventType);
             event.offscreenBuffer = buffer;
@@ -130,20 +130,9 @@ namespace ramses_internal
             pushToRendererEventQueue(std::move(event));
         }
 
-        void addSceneAssignEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display, SceneId scene)
-        {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " sceneId=" << scene.getValue() << " display=" << display << " bufferHandle=" << buffer);
-
-            RendererEvent event(eventType);
-            event.displayHandle = display;
-            event.offscreenBuffer = buffer;
-            event.sceneId = scene;
-            pushToSceneControlEventQueue(std::move(event));
-        }
-
         void addSceneFlushEvent(ERendererEventType eventType, SceneId sceneId, SceneVersionTag sceneVersionTag)
         {
-            LOG_TRACE(CONTEXT_RENDERER, EnumToString(eventType) << " sceneId=" << sceneId.getValue() << " sceneVersionTag=" << sceneVersionTag.getValue());
+            LOG_TRACE(CONTEXT_RENDERER, eventType << " sceneId=" << sceneId.getValue() << " sceneVersionTag=" << sceneVersionTag.getValue());
 
             RendererEvent event(eventType);
             event.sceneId = sceneId;
@@ -185,7 +174,7 @@ namespace ramses_internal
 
         void addStreamSourceEvent(ERendererEventType eventType, WaylandIviSurfaceId streamSourceId)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " streamSourceId=" << streamSourceId);
+            LOG_INFO(CONTEXT_RENDERER, eventType << " streamSourceId=" << streamSourceId);
 
             RendererEvent event(eventType);
             event.streamSourceId = streamSourceId;
@@ -202,7 +191,7 @@ namespace ramses_internal
 
         void addRenderStatsEvent(ERendererEventType eventType, std::chrono::microseconds maximumLoopTimeInPeriod, std::chrono::microseconds renderthreadAverageLooptime)
         {
-            LOG_INFO(CONTEXT_RENDERER, EnumToString(eventType) << " max loop time=" << maximumLoopTimeInPeriod.count() << "microsec, avg loop time=" << renderthreadAverageLooptime.count() << "microsec");
+            LOG_INFO(CONTEXT_RENDERER, eventType << " max loop time=" << maximumLoopTimeInPeriod.count() << "microsec, avg loop time=" << renderthreadAverageLooptime.count() << "microsec");
             RendererEvent event(eventType);
             event.renderThreadLoopTimes.maximumLoopTimeWithinPeriod = maximumLoopTimeInPeriod;
             event.renderThreadLoopTimes.averageLoopTimeWithinPeriod = renderthreadAverageLooptime;

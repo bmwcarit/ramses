@@ -51,8 +51,7 @@ public:
 
     void logReport()
     {
-        const ramses_internal::String reportStr = m_testFramework.generateReport();
-        printf("%s\n", reportStr.c_str());
+        fmt::print("{}\n", m_testFramework.generateReport());
     }
 
 protected:

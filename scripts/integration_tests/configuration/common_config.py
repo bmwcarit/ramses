@@ -6,9 +6,10 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from builtins import object
 import os
 
-class Config:
+class Config(object):
     def __init__(self):
         self.scriptDir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 

@@ -17,7 +17,7 @@ namespace ramses_internal
         m_keywords.push_back(keyword);
     }
 
-    ramses_internal::String RamshCommand::keywordString() const
+    String RamshCommand::keywordString() const
     {
         StringOutputStream ss;
         StringVector::const_iterator iter = m_keywords.begin();
@@ -32,7 +32,7 @@ namespace ramses_internal
                 ss << " | ";
             }
         }
-        return ss.release();
+        return String(ss.release());
     }
 
     const StringVector& RamshCommand::keywords() const

@@ -43,7 +43,7 @@ namespace ramses_internal
         template <typename T>
         void updateFallbackValue(DataInstanceHandle containerHandle, const T* data);
 
-        typedef MemoryPool<DataInstanceValueVariant, DataInstanceHandle> FallbackValuePool;
+        using FallbackValuePool = MemoryPool<DataInstanceValueVariant, DataInstanceHandle>;
         FallbackValuePool m_fallbackValues;
     };
 }

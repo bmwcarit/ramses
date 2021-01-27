@@ -31,7 +31,6 @@ namespace ramses_internal
 
         const EGLNativeDisplayType    getNativeDisplayHandle() const;
         const EGLNativeWindowType     getNativeWindowHandle() const;
-        const EGLint*                 getSurfaceAttributes() const;
 
         bool hasTitle() const override final;
 

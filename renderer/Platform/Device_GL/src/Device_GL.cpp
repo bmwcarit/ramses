@@ -37,11 +37,15 @@
 #include "Utils/TextureMathUtils.h"
 #include "PlatformAbstraction/PlatformStringUtils.h"
 
-#include "Platform_Base/GpuResource.h"
 #include "PlatformAbstraction/Macros.h"
 
 namespace ramses_internal
 {
+    static constexpr GLboolean ToGLboolean(bool b)
+    {
+        return b ? GL_TRUE : GL_FALSE;
+    }
+
     // TODO Violin move again to other files, once GL headers are consolidated
     struct GLTextureInfo
     {
@@ -66,9 +70,7 @@ namespace ramses_internal
     };
 
     Device_GL::Device_GL(IContext& context, UInt8 majorApiVersion, UInt8 minorApiVersion, bool isEmbedded)
-        : Device_Base()
-        , m_context(context)
-        , m_resourceMapper(context.getResources())
+        : Device_Base(context)
         , m_activeShader(nullptr)
         , m_activePrimitiveDrawMode(EDrawMode::Triangles)
         , m_activeIndexArrayElementSizeBytes(2u)
@@ -140,8 +142,7 @@ namespace ramses_internal
         loadOpenGLExtensions();
         queryDeviceDependentFeatures();
 
-        const RenderTargetGPUResource& framebufferRenderTarget = *new RenderTargetGPUResource(0);
-        m_framebufferRenderTarget = m_resourceMapper.registerResource(framebufferRenderTarget);
+        m_framebufferRenderTarget = m_resourceMapper.registerResource(std::make_unique<RenderTargetGPUResource>(0));
 
 // This is required for proper smoothing of cube sides. This feature is enabled by default on ES 3.0,
 // but needs explicit enabling for Desktop GL
@@ -231,7 +232,10 @@ namespace ramses_internal
 
     void Device_GL::colorMask(Bool r, Bool g, Bool b, Bool a)
     {
-        glColorMask(r, g, b, a);
+        glColorMask(ToGLboolean(r),
+                    ToGLboolean(g),
+                    ToGLboolean(b),
+                    ToGLboolean(a));
     }
 
     void Device_GL::clearDepth(Float d)
@@ -260,7 +264,7 @@ namespace ramses_internal
 
     void Device_GL::depthWrite(EDepthWrite flag)
     {
-        glDepthMask(flag == EDepthWrite::Enabled);
+        glDepthMask(ToGLboolean(flag == EDepthWrite::Enabled));
     }
 
     void Device_GL::scissorTest(EScissorTest state, const RenderState::ScissorRegion& region)
@@ -495,7 +499,7 @@ namespace ramses_internal
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniformMatrix2fv(uniformLocation.getValue(), count, false, value[0].data);
+            glUniformMatrix2fv(uniformLocation.getValue(), count, ToGLboolean(false), value[0].data);
         }
     }
 
@@ -505,7 +509,7 @@ namespace ramses_internal
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniformMatrix3fv(uniformLocation.getValue(), count, false, value[0].data);
+            glUniformMatrix3fv(uniformLocation.getValue(), count, ToGLboolean(false), value[0].data);
         }
     }
 
@@ -515,7 +519,7 @@ namespace ramses_internal
         if (getUniformLocation(field, uniformLocation))
         {
             assert(nullptr != value);
-            glUniformMatrix4fv(uniformLocation.getValue(), count, false, value[0].data);
+            glUniformMatrix4fv(uniformLocation.getValue(), count, ToGLboolean(false), value[0].data);
         }
     }
 
@@ -526,8 +530,7 @@ namespace ramses_internal
         fillGLInternalTextureInfo(GL_TEXTURE_2D, width, height, 1u, textureFormat, swizzle, texInfo);
         allocateTextureStorage(texInfo, mipLevelCount);
 
-        const GPUResource& gpuResource = *new TextureGPUResource_GL(texInfo, texID, totalSizeInBytes);
-        return m_resourceMapper.registerResource(gpuResource);
+        return m_resourceMapper.registerResource(std::make_unique<TextureGPUResource_GL>(texInfo, texID, totalSizeInBytes));
     }
 
     DeviceResourceHandle Device_GL::allocateTexture3D(UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
@@ -537,8 +540,7 @@ namespace ramses_internal
         fillGLInternalTextureInfo(GL_TEXTURE_3D, width, height, depth, textureFormat, DefaultTextureSwizzleArray, texInfo);
         allocateTextureStorage(texInfo, mipLevelCount);
 
-        const GPUResource& gpuResource = *new TextureGPUResource_GL(texInfo, texID, totalSizeInBytes);
-        return m_resourceMapper.registerResource(gpuResource);
+        return m_resourceMapper.registerResource(std::make_unique<TextureGPUResource_GL>(texInfo, texID, totalSizeInBytes));
     }
 
     DeviceResourceHandle Device_GL::allocateTextureCube(UInt32 faceSize, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
@@ -548,8 +550,7 @@ namespace ramses_internal
         fillGLInternalTextureInfo(GL_TEXTURE_CUBE_MAP, faceSize, faceSize, 1u, textureFormat, swizzle, texInfo);
         allocateTextureStorage(texInfo, mipLevelCount);
 
-        const GPUResource& gpuResource = *new TextureGPUResource_GL(texInfo, texID, totalSizeInBytes);
-        return m_resourceMapper.registerResource(gpuResource);
+        return m_resourceMapper.registerResource(std::make_unique<TextureGPUResource_GL>(texInfo, texID, totalSizeInBytes));
     }
 
     void Device_GL::bindTexture(DeviceResourceHandle handle)
@@ -586,9 +587,8 @@ namespace ramses_internal
             assert(data == nullptr);
             GLHandle texID = InvalidGLHandle;
             glGenTextures(1, &texID);
-            const GPUResource& gpuResource = *new GPUResource(texID, 0u);
 
-            return m_resourceMapper.registerResource(gpuResource);
+            return m_resourceMapper.registerResource(std::make_unique<GPUResource>(texID, 0u));
         }
         else
         {
@@ -652,7 +652,7 @@ namespace ramses_internal
             glTexStorage2D(texInfo.target, mipLevels, texInfo.uploadParams.sizedInternalFormat, texInfo.width, texInfo.height);
             break;
         case GL_TEXTURE_2D_MULTISAMPLE:
-            glTexStorage2DMultisample(texInfo.target, sampleCount, texInfo.uploadParams.sizedInternalFormat, texInfo.width, texInfo.height, true);
+            glTexStorage2DMultisample(texInfo.target, sampleCount, texInfo.uploadParams.sizedInternalFormat, texInfo.width, texInfo.height, ToGLboolean(true));
             break;
         case GL_TEXTURE_3D:
             glTexStorage3D(texInfo.target, mipLevels, texInfo.uploadParams.sizedInternalFormat, texInfo.width, texInfo.height, texInfo.depth);
@@ -721,10 +721,7 @@ namespace ramses_internal
         }
 
         if (bufferGLHandle != InvalidGLHandle)
-        {
-            const GPUResource& bufferGPUResource = *new RenderBufferGPUResource(bufferGLHandle, buffer.width, buffer.height, buffer.type, buffer.format, buffer.sampleCount, buffer.accessMode);
-            return m_resourceMapper.registerResource(bufferGPUResource);
-        }
+            return m_resourceMapper.registerResource(std::make_unique<RenderBufferGPUResource>(bufferGLHandle, buffer.width, buffer.height, buffer.type, buffer.format, buffer.sampleCount, buffer.accessMode));
 
         return DeviceResourceHandle::Invalid();
     }
@@ -756,8 +753,7 @@ namespace ramses_internal
 
         setTextureFiltering(sampler, wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel);
 
-        const GPUResource& textureSamplerGPUResource = *new TextureSamplerGPUResource(wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel, sampler, 0);
-        return m_resourceMapper.registerResource(textureSamplerGPUResource);
+        return m_resourceMapper.registerResource(std::make_unique<TextureSamplerGPUResource>(wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel, sampler, 0));
     }
 
     void Device_GL::deleteTextureSampler(DeviceResourceHandle handle)
@@ -836,8 +832,7 @@ namespace ramses_internal
         }
         glDrawBuffers(colorBufferSlot, drawBuffers);
 
-        const RenderTargetGPUResource& fboGpuResource = *new RenderTargetGPUResource(fboAddress);
-        const DeviceResourceHandle fboHandle = m_resourceMapper.registerResource(fboGpuResource);
+        const DeviceResourceHandle fboHandle = m_resourceMapper.registerResource(std::make_unique<RenderTargetGPUResource>(fboAddress));
         return fboHandle;
     }
 
@@ -956,7 +951,10 @@ namespace ramses_internal
 
         glTexParameteri(target, GL_TEXTURE_WRAP_S, wrappingModeU);
         glTexParameteri(target, GL_TEXTURE_WRAP_T, wrappingModeV);
-        glTexParameteri(target, GL_TEXTURE_WRAP_R, wrappingModeR);
+        if (target == GL_TEXTURE_3D)
+        {
+            glTexParameteri(target, GL_TEXTURE_WRAP_R, wrappingModeR);
+        }
 
         switch (minSampling)
         {
@@ -1031,7 +1029,7 @@ namespace ramses_internal
         glGenBuffers(1, &glAddress);
         assert(glAddress != InvalidGLHandle);
 
-        return m_resourceMapper.registerResource(*new GPUResource(glAddress, totalSizeInBytes));
+        return m_resourceMapper.registerResource(std::make_unique<GPUResource>(glAddress, totalSizeInBytes));
     }
 
     void Device_GL::uploadVertexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize)
@@ -1082,7 +1080,7 @@ namespace ramses_internal
         assert(glAddress != InvalidGLHandle);
         assert(dataType == EDataType::UInt16 || dataType == EDataType::UInt32);
 
-        return m_resourceMapper.registerResource(*new IndexBufferGPUResource(glAddress, sizeInBytes, dataType == EDataType::UInt16 ? 2 : 4));
+        return m_resourceMapper.registerResource(std::make_unique<IndexBufferGPUResource>(glAddress, sizeInBytes, dataType == EDataType::UInt16 ? 2 : 4));
     }
 
     void Device_GL::uploadIndexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize)
@@ -1111,22 +1109,24 @@ namespace ramses_internal
         assert(m_activeIndexArrayElementSizeBytes == 2 || m_activeIndexArrayElementSizeBytes == 4);
     }
 
-    DeviceResourceHandle Device_GL::uploadShader(const EffectResource& effect)
+    std::unique_ptr<const GPUResource> Device_GL::uploadShader(const EffectResource& effect)
     {
         ShaderProgramInfo programInfo;
         String debugErrorLog;
         const Bool uploadSuccessful = ShaderUploader_GL::UploadShaderProgramFromSource(effect, programInfo, debugErrorLog);
 
         if (uploadSuccessful)
-        {
-            const ShaderGPUResource_GL& shaderGpuResource = *new ShaderGPUResource_GL(effect, programInfo);
-            return m_resourceMapper.registerResource(shaderGpuResource);
-        }
+            return std::make_unique<const ShaderGPUResource_GL>(effect, programInfo);
         else
         {
             LOG_ERROR(CONTEXT_RENDERER, "Device_GL::uploadShader: shader upload failed: " << debugErrorLog);
-            return DeviceResourceHandle::Invalid();
+            return nullptr;
         }
+    }
+
+    DeviceResourceHandle Device_GL::registerShader(std::unique_ptr<const GPUResource> shaderResource)
+    {
+        return m_resourceMapper.registerResource(std::move(shaderResource));
     }
 
     DeviceResourceHandle Device_GL::uploadBinaryShader(const EffectResource& effect, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat)
@@ -1138,8 +1138,7 @@ namespace ramses_internal
         if (uploadSuccessful)
         {
             LOG_INFO(CONTEXT_SMOKETEST, "Device_GL::uploadShader: renderer successfully uploaded binary shader for effect " << effect.getName());
-            const ShaderGPUResource_GL& shaderGpuResource = *new ShaderGPUResource_GL(effect, programInfo);
-            return m_resourceMapper.registerResource(shaderGpuResource);
+            return m_resourceMapper.registerResource(std::make_unique<ShaderGPUResource_GL>(effect, programInfo));
         }
         else
         {

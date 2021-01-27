@@ -7,13 +7,13 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/RendererSceneControlLogic.h"
-#include "RendererLib/IRendererSceneControl.h"
+#include "RendererLib/IRendererSceneStateControl.h"
 #include "RendererLib/RendererEvent.h"
 #include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
-    RendererSceneControlLogic::RendererSceneControlLogic(IRendererSceneControl& sceneStateControl)
+    RendererSceneControlLogic::RendererSceneControlLogic(IRendererSceneStateControl& sceneStateControl)
         : m_sceneStateControl(sceneStateControl)
     {
     }
@@ -436,55 +436,55 @@ namespace ramses_internal
     {
         switch (evt.type)
         {
-        case ERendererEventType_ScenePublished:
+        case ERendererEventType::ScenePublished:
             scenePublished(evt.sceneId);
             break;
-        case ERendererEventType_SceneUnpublished:
+        case ERendererEventType::SceneUnpublished:
             sceneUnpublished(evt.sceneId);
             break;
-        case ERendererEventType_SceneSubscribed:
+        case ERendererEventType::SceneSubscribed:
             sceneSubscribed(evt.sceneId, RendererSceneControlLogic::EventResult::OK);
             break;
-        case ERendererEventType_SceneSubscribeFailed:
+        case ERendererEventType::SceneSubscribeFailed:
             sceneSubscribed(evt.sceneId, RendererSceneControlLogic::EventResult::Failed);
             break;
-        case ERendererEventType_SceneUnsubscribed:
+        case ERendererEventType::SceneUnsubscribed:
             sceneUnsubscribed(evt.sceneId, RendererSceneControlLogic::EventResult::OK);
             break;
-        case ERendererEventType_SceneUnsubscribedIndirect:
+        case ERendererEventType::SceneUnsubscribedIndirect:
             sceneUnsubscribed(evt.sceneId, RendererSceneControlLogic::EventResult::Indirect);
             break;
-        case ERendererEventType_SceneUnsubscribeFailed:
+        case ERendererEventType::SceneUnsubscribeFailed:
             sceneUnsubscribed(evt.sceneId, RendererSceneControlLogic::EventResult::Failed);
             break;
-        case ERendererEventType_SceneMapped:
+        case ERendererEventType::SceneMapped:
             sceneMapped(evt.sceneId, RendererSceneControlLogic::EventResult::OK);
             break;
-        case ERendererEventType_SceneMapFailed:
+        case ERendererEventType::SceneMapFailed:
             sceneMapped(evt.sceneId, RendererSceneControlLogic::EventResult::Failed);
             break;
-        case ERendererEventType_SceneUnmapped:
+        case ERendererEventType::SceneUnmapped:
             sceneUnmapped(evt.sceneId, RendererSceneControlLogic::EventResult::OK);
             break;
-        case ERendererEventType_SceneUnmappedIndirect:
+        case ERendererEventType::SceneUnmappedIndirect:
             sceneUnmapped(evt.sceneId, RendererSceneControlLogic::EventResult::Indirect);
             break;
-        case ERendererEventType_SceneUnmapFailed:
+        case ERendererEventType::SceneUnmapFailed:
             sceneUnmapped(evt.sceneId, RendererSceneControlLogic::EventResult::Failed);
             break;
-        case ERendererEventType_SceneShown:
+        case ERendererEventType::SceneShown:
             sceneShown(evt.sceneId, RendererSceneControlLogic::EventResult::OK);
             break;
-        case ERendererEventType_SceneShowFailed:
+        case ERendererEventType::SceneShowFailed:
             sceneShown(evt.sceneId, RendererSceneControlLogic::EventResult::Failed);
             break;
-        case ERendererEventType_SceneHidden:
+        case ERendererEventType::SceneHidden:
             sceneHidden(evt.sceneId, RendererSceneControlLogic::EventResult::OK);
             break;
-        case ERendererEventType_SceneHiddenIndirect:
+        case ERendererEventType::SceneHiddenIndirect:
             sceneHidden(evt.sceneId, RendererSceneControlLogic::EventResult::Indirect);
             break;
-        case ERendererEventType_SceneHideFailed:
+        case ERendererEventType::SceneHideFailed:
             sceneHidden(evt.sceneId, RendererSceneControlLogic::EventResult::Failed);
             break;
         default:

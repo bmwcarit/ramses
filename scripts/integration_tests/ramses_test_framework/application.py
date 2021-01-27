@@ -6,12 +6,14 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from builtins import object
+from builtins import bytes
 import sys
 from ramses_test_framework.asynchronousreader import AsynchronousPipeReader
 from ramses_test_framework.buffer import Buffer, BufferWatcher
 from ramses_test_framework import log
 
-class Application:
+class Application(object):
 
     DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT = 60
 

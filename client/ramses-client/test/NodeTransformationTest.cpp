@@ -26,7 +26,7 @@ namespace ramses
     class NodeTransformationTest : public LocalTestClientWithScene, public testing::Test
     {
     protected:
-        virtual void SetUp()
+        virtual void SetUp() override
         {
             m_node = &this->template createObject<T>("node");
         }
@@ -217,7 +217,7 @@ namespace ramses
     class NodeTransformationTestWithPublishedScene : public LocalTestClientWithScene, public testing::Test
     {
     protected:
-        virtual void SetUp()
+        virtual void SetUp() override
         {
             const ramses_internal::IScene& iscene = this->m_scene.impl.getIScene();
             ramses_internal::SceneInfo info(iscene.getSceneId(), iscene.getName());
@@ -228,7 +228,7 @@ namespace ramses
             m_node = &this->template createObject<T>("node");
         }
 
-        virtual void TearDown()
+        virtual void TearDown() override
         {
             EXPECT_CALL(this->sceneActionsCollector, handleSceneBecameUnavailable(ramses_internal::SceneId(this->m_scene.impl.getSceneId().getValue()), _));
             EXPECT_EQ(StatusOK, m_scene.unpublish());

@@ -47,7 +47,7 @@ namespace ramses_internal
 
         ShaderProgramInfo m_shaderProgramInfo;
 
-        typedef HashMap<DataFieldHandle, TextureSlotInfo> BufferSlotMap;
+        using BufferSlotMap = HashMap<DataFieldHandle, TextureSlotInfo>;
         using InputLocationMap = std::vector<GLInputLocation>;
 
         BufferSlotMap    m_bufferSlots;

@@ -139,9 +139,8 @@ namespace ramses_internal
             embeddedCompositingManager.processClientRequests();
             if (doResourceUpdate)
             {
-                UpdatedSceneIdSet updatedScenes;
-                StreamTextureBufferUpdates unused;
-                embeddedCompositingManager.uploadResourcesAndGetUpdates(updatedScenes, unused);
+                StreamSourceUpdates unused;
+                embeddedCompositingManager.uploadResourcesAndGetUpdates(unused);
                 embeddedCompositingManager.notifyClients();
             }
         }

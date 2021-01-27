@@ -25,20 +25,20 @@ namespace ramses_internal
 
     TEST_F(AConnectionStatusUpdateNotifier, doesNotNotifyAnyoneIfNooneRegistered)
     {
-        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
+        ConnectionStatusUpdateNotifier notifier(std::string(), std::string(), lock);
         notifier.triggerNotification(Guid(123), EConnectionStatus_Connected);
     }
 
     TEST_F(AConnectionStatusUpdateNotifier, doesNotNotifyListenerOfNooneConnected)
     {
-        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
+        ConnectionStatusUpdateNotifier notifier(std::string(), std::string(), lock);
         notifier.registerForConnectionUpdates(&listener);
         notifier.unregisterForConnectionUpdates(&listener);
     }
 
     TEST_F(AConnectionStatusUpdateNotifier, notifiesAboutAllCurrentlyConnectedParticipants)
     {
-        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
+        ConnectionStatusUpdateNotifier notifier(std::string(), std::string(), lock);
         Guid p1(1);
         Guid p2(2);
         notifier.triggerNotification(p1, EConnectionStatus_Connected);
@@ -51,7 +51,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionStatusUpdateNotifier, notifiesAboutNewlyConnectedParticipants)
     {
-        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
+        ConnectionStatusUpdateNotifier notifier(std::string(), std::string(), lock);
         notifier.registerForConnectionUpdates(&listener);
 
         Guid p1(3);
@@ -61,7 +61,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionStatusUpdateNotifier, doesNotNotifyAfterUnregister)
     {
-        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
+        ConnectionStatusUpdateNotifier notifier(std::string(), std::string(), lock);
         notifier.registerForConnectionUpdates(&listener);
         notifier.unregisterForConnectionUpdates(&listener);
 
@@ -71,7 +71,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionStatusUpdateNotifier, notifiesAboutDisconnectingParticipants)
     {
-        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
+        ConnectionStatusUpdateNotifier notifier(std::string(), std::string(), lock);
 
         Guid p(5);
         EXPECT_CALL(listener, newParticipantHasConnected(p));
@@ -85,7 +85,7 @@ namespace ramses_internal
 
     TEST_F(AConnectionStatusUpdateNotifier, doesNotNotifyForAlreadyDisconnectedParticipants)
     {
-        ConnectionStatusUpdateNotifier notifier(String(), String(), lock);
+        ConnectionStatusUpdateNotifier notifier(std::string(), std::string(), lock);
 
         Guid p(6);
         notifier.triggerNotification(p, EConnectionStatus_Connected);

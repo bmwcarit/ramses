@@ -113,7 +113,8 @@ namespace ramses_internal
         assert(m_texcoordField.isValid());
 
         // upload
-        m_shaderResource = m_device.uploadShader(effect);
+        auto shaderResource = m_device.uploadShader(effect);
+        m_shaderResource = m_device.registerShader(std::move(shaderResource));
         assert(m_shaderResource.isValid());
     }
 

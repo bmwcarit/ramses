@@ -20,6 +20,7 @@ public:
     AWarpingPass()
     {
         EXPECT_CALL(device, uploadShader(_));
+        EXPECT_CALL(device, registerShader(_));
         EXPECT_CALL(device, allocateIndexBuffer(_, _));
         EXPECT_CALL(device, uploadIndexBufferData(_, _, _));
         EXPECT_CALL(device, allocateVertexBuffer(_)).Times(2);

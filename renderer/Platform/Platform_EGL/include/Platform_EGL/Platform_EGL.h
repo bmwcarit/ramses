@@ -12,6 +12,7 @@
 #include "Platform_Base/Platform_Base.h"
 #include "RendererLib/RendererConfig.h"
 #include "Context_EGL/Context_EGL.h"
+#include "Device_GL/Device_GL.h"
 
 namespace ramses_internal
 {
@@ -24,30 +25,55 @@ namespace ramses_internal
         {
         }
 
-        virtual IContext* createContext(IWindow& window) override final
+        virtual IContext* createContext(IWindow& window, IContext* sharedContext) override final
         {
             WindowT* platformWindow = getPlatformWindow<WindowT>(window);
             assert(nullptr != platformWindow);
 
-            std::vector<EGLint> contextAttributes;
-            getContextAttributes(contextAttributes);
-            std::vector<EGLint> surfaceAttributes;
-            getSurfaceAttributes(platformWindow->getMSAASampleCount(), surfaceAttributes);
+            const auto swapInterval = getSwapInterval();
+            const std::vector<EGLint> contextAttributes = getContextAttributes();
+            const std::vector<EGLint> surfaceAttributes = getSurfaceAttributes(platformWindow->getMSAASampleCount());
+            Context_EGL* platformSharedContext = nullptr;
+
+            if(sharedContext)
+            {
+                platformSharedContext = getPlatformContext<Context_EGL>(*sharedContext);
+                assert(platformSharedContext);
+            }
+
 
             Context_EGL* platformContext = new Context_EGL(
                         platformWindow->getNativeDisplayHandle(),
                         reinterpret_cast<Context_EGL::Generic_EGLNativeWindowType>(platformWindow->getNativeWindowHandle()),
-                        &contextAttributes[0],
-                        &surfaceAttributes[0],
+                        contextAttributes.data(),
+                        surfaceAttributes.data(),
                         nullptr,
-                        1,
-                        nullptr);
+                        swapInterval,
+                        platformSharedContext);
 
             return addPlatformContext(platformContext);
         }
 
-        virtual void getContextAttributes(std::vector<EGLint>& attributes) const = 0;
-        virtual void getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const = 0;
+        virtual IDevice* createDevice(IContext& context) override final
+        {
+            Context_EGL* platformContext = getPlatformContext<Context_EGL>(context);
+            assert(nullptr != platformContext);
+            Device_GL* device = new Device_GL(*platformContext, 3, 0, true);
+            return addPlatformDevice(device);
+        }
+
+        std::vector<EGLint> getContextAttributes() const
+        {
+            return {
+                EGL_CONTEXT_CLIENT_VERSION,
+                3,
+
+                EGL_NONE
+            };
+        }
+
+        virtual uint32_t getSwapInterval() const = 0;
+        virtual std::vector<EGLint> getSurfaceAttributes(UInt32 msaaSampleCount) const = 0;
     };
 }
 

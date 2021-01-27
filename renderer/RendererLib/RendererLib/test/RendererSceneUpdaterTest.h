@@ -18,7 +18,6 @@
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/RendererSceneUpdater.h"
 #include "RendererLib/SceneStateExecutor.h"
-#include "RendererLib/ResourceUploader.h"
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DisplayEventHandlerManager.h"
@@ -37,7 +36,7 @@
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Collections/Pair.h"
 #include "RendererSceneEventSenderMock.h"
-#include "RendererSceneUpdaterMock.h"
+#include "RendererSceneUpdaterFacade.h"
 #include <unordered_set>
 #include <memory>
 #include "Components/SceneUpdate.h"
@@ -51,9 +50,8 @@ public:
         : rendererScenes(rendererEventCollector)
         , expirationMonitor(rendererScenes, rendererEventCollector)
         , renderer(platformFactoryMock, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
-        , resourceUploader(renderer.getStatistics())
         , sceneStateExecutor(renderer, sceneEventSender, rendererEventCollector)
-        , rendererSceneUpdater(new RendererSceneUpdaterFacade(renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor, &rendererResourceCacheMock))
+        , rendererSceneUpdater(new RendererSceneUpdaterFacade(platformFactoryMock, renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor, &rendererResourceCacheMock))
     {
         rendererSceneUpdater->setSceneReferenceLogicHandler(sceneReferenceLogic);
         frameTimer.startFrame();
@@ -101,7 +99,7 @@ protected:
         const SceneId sceneId = getSceneId(sceneIndex);
         rendererSceneUpdater->handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote);
         EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState::Published);
-        expectInternalSceneStateEvent(ERendererEventType_ScenePublished);
+        expectInternalSceneStateEvent(ERendererEventType::ScenePublished);
     }
 
     void requestSceneSubscription(UInt32 sceneIndex = 0u)
@@ -134,7 +132,7 @@ protected:
             //receive initial flush
             performFlush(sceneIndex);
             EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState::Subscribed);
-            expectInternalSceneStateEvent(ERendererEventType_SceneSubscribed);
+            expectInternalSceneStateEvent(ERendererEventType::SceneSubscribed);
         }
 
         return sceneIndex;
@@ -217,7 +215,7 @@ protected:
         requestMapScene(sceneIndex, displayHandle);
         update(); // will set from map requested to being mapped and uploaded (if all pending flushes applied)
         update(); // will set to mapped (if all resources uploaded)
-        expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
+        expectInternalSceneStateEvent(ERendererEventType::SceneMapped);
     }
 
     bool assignSceneToDisplayBuffer(UInt32 sceneIndex, OffscreenBufferHandle buffer = {}, Int32 renderOrder = 0)
@@ -233,14 +231,14 @@ protected:
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         rendererSceneUpdater->handleSceneShowRequest(sceneId);
         update();
-        expectInternalSceneStateEvent(ERendererEventType_SceneShown);
+        expectInternalSceneStateEvent(ERendererEventType::SceneShown);
     }
 
     void hideScene(UInt32 sceneIndex = 0u)
     {
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         rendererSceneUpdater->handleSceneHideRequest(sceneId);
-        expectInternalSceneStateEvent(ERendererEventType_SceneHidden);
+        expectInternalSceneStateEvent(ERendererEventType::SceneHidden);
     }
 
     void unmapScene(UInt32 sceneIndex = 0u, DisplayHandle display = DisplayHandle1, bool expectResourcesUnload = true)
@@ -253,7 +251,7 @@ protected:
         }
 
         rendererSceneUpdater->handleSceneUnmappingRequest(sceneId);
-        expectInternalSceneStateEvent(ERendererEventType_SceneUnmapped);
+        expectInternalSceneStateEvent(ERendererEventType::SceneUnmapped);
         expectNoResourceReferencedByScene(sceneIndex, display);
     }
 
@@ -279,7 +277,7 @@ protected:
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(sceneId));
         rendererSceneUpdater->handleSceneUnpublished(sceneId);
-        expectInternalSceneStateEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
+        expectInternalSceneStateEvents({ ERendererEventType::SceneMapFailed, ERendererEventType::SceneUnsubscribedIndirect, ERendererEventType::SceneUnpublished });
         EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
     }
 
@@ -290,7 +288,7 @@ protected:
         expectUnloadOfSceneResources(sceneIndex, display);
         EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(sceneId));
         rendererSceneUpdater->handleSceneUnpublished(sceneId);
-        expectInternalSceneStateEvents({ ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
+        expectInternalSceneStateEvents({ ERendererEventType::SceneUnmappedIndirect, ERendererEventType::SceneUnsubscribedIndirect, ERendererEventType::SceneUnpublished });
         EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
     }
 
@@ -299,7 +297,7 @@ protected:
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(sceneId));
         rendererSceneUpdater->handleSceneUnpublished(sceneId);
-        expectInternalSceneStateEvents({ ERendererEventType_SceneHiddenIndirect, ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished });
+        expectInternalSceneStateEvents({ ERendererEventType::SceneHiddenIndirect, ERendererEventType::SceneUnmappedIndirect, ERendererEventType::SceneUnsubscribedIndirect, ERendererEventType::SceneUnpublished });
 
         EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
     }
@@ -309,7 +307,7 @@ protected:
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         rendererSceneUpdater->handleSceneUnsubscriptionRequest(sceneId, true);
 
-        expectInternalSceneStateEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect });
+        expectInternalSceneStateEvents({ ERendererEventType::SceneMapFailed, ERendererEventType::SceneUnsubscribedIndirect });
 
         EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
     }
@@ -319,7 +317,7 @@ protected:
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         rendererSceneUpdater->handleSceneUnsubscriptionRequest(sceneId, true);
 
-        expectInternalSceneStateEvents({ ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect });
+        expectInternalSceneStateEvents({ ERendererEventType::SceneUnmappedIndirect, ERendererEventType::SceneUnsubscribedIndirect });
 
         EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
     }
@@ -329,7 +327,7 @@ protected:
         const SceneId sceneId = stagingScene[sceneIndex]->getSceneId();
         rendererSceneUpdater->handleSceneUnsubscriptionRequest(sceneId, true);
 
-        expectInternalSceneStateEvents({ ERendererEventType_SceneHiddenIndirect, ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect });
+        expectInternalSceneStateEvents({ ERendererEventType::SceneHiddenIndirect, ERendererEventType::SceneUnmappedIndirect, ERendererEventType::SceneUnsubscribedIndirect });
         EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
     }
 
@@ -365,9 +363,9 @@ protected:
             EXPECT_EQ(event.displayHandle, std::get<0>(expectedEvent));
             EXPECT_EQ(event.offscreenBuffer, std::get<1>(expectedEvent));
             if (std::get<2>(expectedEvent))
-                EXPECT_EQ(event.eventType, ERendererEventType_ReadPixelsFromFramebuffer);
+                EXPECT_EQ(event.eventType, ERendererEventType::ReadPixelsFromFramebuffer);
             else
-                EXPECT_EQ(event.eventType, ERendererEventType_ReadPixelsFromFramebufferFailed);
+                EXPECT_EQ(event.eventType, ERendererEventType::ReadPixelsFromFramebufferFailed);
         }
 
     }
@@ -411,10 +409,11 @@ protected:
 
     void createDisplayAndExpectSuccess(DisplayHandle displayHandle = DisplayHandle1, const DisplayConfig& displayConfig = DisplayConfig())
     {
-        EXPECT_CALL(*rendererSceneUpdater, createResourceManager(Ref(resourceUploader), _, _, displayHandle, _, _));
-        rendererSceneUpdater->createDisplayContext(displayConfig, resourceUploader, displayHandle);
+        EXPECT_CALL(*rendererSceneUpdater, createResourceManager(_, _, _, displayHandle, _, _, _));
+        EXPECT_CALL(platformFactoryMock, createResourceUploadRenderBackend(_));
+        rendererSceneUpdater->createDisplayContext(displayConfig, displayHandle, nullptr);
         EXPECT_TRUE(renderer.hasDisplayController(displayHandle));
-        expectEvent(ERendererEventType_DisplayCreated);
+        expectEvent(ERendererEventType::DisplayCreated);
 
         // no offscreen buffers reported uploaded by default
         ON_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getOffscreenBufferDeviceHandle(_)).WillByDefault(Return(DeviceResourceHandle::Invalid()));
@@ -438,18 +437,19 @@ protected:
     {
         if (!expectFail)
         {
+            EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
             rendererSceneUpdater->m_resourceManagerMocks[displayHandle]->expectNoResourceReferences();
             expectContextEnable(displayHandle);
         }
         rendererSceneUpdater->destroyDisplayContext(displayHandle);
         if (expectFail)
         {
-            expectEvent(ERendererEventType_DisplayDestroyFailed);
+            expectEvent(ERendererEventType::DisplayDestroyFailed);
         }
         else
         {
             EXPECT_FALSE(renderer.hasDisplayController(displayHandle));
-            expectEvent(ERendererEventType_DisplayDestroyed);
+            expectEvent(ERendererEventType::DisplayDestroyed);
         }
     }
 
@@ -615,6 +615,18 @@ protected:
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getOffscreenBufferDeviceHandle(buffer)).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
     }
 
+    void expectStreamBufferUploaded(StreamBufferHandle buffer, WaylandIviSurfaceId source, DisplayHandle displayHandle = DisplayHandle1, DeviceResourceHandle rtDeviceHandleToReturn = DeviceMock::FakeRenderTargetDeviceHandle)
+    {
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], uploadStreamBuffer(buffer, source));
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getStreamBufferDeviceHandle(buffer)).Times(AnyNumber()).WillRepeatedly(Return(rtDeviceHandleToReturn));
+    }
+
+    void expectStreamBufferDeleted(StreamBufferHandle buffer, DisplayHandle displayHandle = DisplayHandle1)
+    {
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], unloadStreamBuffer(buffer));
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[displayHandle], getStreamBufferDeviceHandle(buffer)).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
+    }
+
     void expectBlitPassUploaded()
     {
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadRenderTargetBuffer(_, getSceneId(0u), _)).Times(2);
@@ -711,7 +723,7 @@ protected:
         performFlush(providerSceneIdx);
         performFlush(consumerSceneIdx);
         update();
-        expectSceneEvents({ ERendererEventType_SceneDataSlotConsumerCreated, ERendererEventType_SceneDataSlotProviderCreated });
+        expectSceneEvents({ ERendererEventType::SceneDataSlotConsumerCreated, ERendererEventType::SceneDataSlotProviderCreated });
 
         return{ providerId, consumerId };
     }
@@ -745,7 +757,7 @@ protected:
         performFlush(providerSceneIdx);
         performFlush(consumerSceneIdx);
         update();
-        expectSceneEvents({ ERendererEventType_SceneDataSlotConsumerCreated, ERendererEventType_SceneDataSlotProviderCreated });
+        expectSceneEvents({ ERendererEventType::SceneDataSlotConsumerCreated, ERendererEventType::SceneDataSlotProviderCreated });
 
         return{ providerId, consumerId };
     }
@@ -765,15 +777,16 @@ protected:
 
         performFlush(sceneIndex);
         update();
-        expectSceneEvent(ERendererEventType_SceneDataSlotConsumerCreated);
+        expectSceneEvent(ERendererEventType::SceneDataSlotConsumerCreated);
 
         return consumerId;
     }
 
-    void createBufferLink(OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId, bool expectFail = false)
+    template <typename BUFFERHANDLE>
+    void createBufferLink(BUFFERHANDLE buffer, SceneId consumerSceneId, DataSlotId consumerId, bool expectFail = false)
     {
         rendererSceneUpdater->handleBufferToSceneDataLinkRequest(buffer, consumerSceneId, consumerId);
-        expectSceneEvent(expectFail ? ERendererEventType_SceneDataBufferLinkFailed : ERendererEventType_SceneDataBufferLinked);
+        expectSceneEvent(expectFail ? ERendererEventType::SceneDataBufferLinkFailed : ERendererEventType::SceneDataBufferLinked);
     }
 
     void updateProviderTextureSlot(UInt32 sceneIdx, DataSlotHandle providerDataSlot, ResourceContentHash newProvidedValue)
@@ -803,7 +816,7 @@ protected:
         performFlush(providerSceneIdx);
         performFlush(consumerSceneIdx);
         update();
-        expectSceneEvents({ ERendererEventType_SceneDataSlotConsumerCreated, ERendererEventType_SceneDataSlotProviderCreated });
+        expectSceneEvents({ ERendererEventType::SceneDataSlotConsumerCreated, ERendererEventType::SceneDataSlotProviderCreated });
 
         return { providerId, consumerId };
     }
@@ -817,19 +830,19 @@ protected:
     void linkProviderToConsumer(SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId, bool expectSuccess = true)
     {
         rendererSceneUpdater->handleSceneDataLinkRequest(providerSceneId, providerId, consumerSceneId, consumerId);
-        expectSceneEvent(expectSuccess ? ERendererEventType_SceneDataLinked : ERendererEventType_SceneDataLinkFailed);
+        expectSceneEvent(expectSuccess ? ERendererEventType::SceneDataLinked : ERendererEventType::SceneDataLinkFailed);
     }
 
     void unlinkConsumer(SceneId consumerSceneId, DataSlotId consumerId)
     {
         rendererSceneUpdater->handleDataUnlinkRequest(consumerSceneId, consumerId);
-        expectSceneEvent(ERendererEventType_SceneDataUnlinked);
+        expectSceneEvent(ERendererEventType::SceneDataUnlinked);
     }
 
     void destroySceneUpdater()
     {
         rendererSceneUpdater.reset();
-        expectEvent(ERendererEventType_DisplayDestroyed);
+        expectEvent(ERendererEventType::DisplayDestroyed);
     }
 
     void expectRenderableResourcesClean(UInt32 sceneIndex = 0u)
@@ -873,7 +886,7 @@ protected:
         animationSystem->setSplineKeyBasicVector3f(splineHandle1, 0u, Vector3(111.f, -999.f, 66.f));
         animationSystem->setSplineKeyBasicVector3f(splineHandle1, 100000u, Vector3(11.f, -99.f, 666.f));
 
-        typedef DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType ContainerTraitsClass;
+        using ContainerTraitsClass = DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType;
         const DataBindHandle dataBindHandle1 = animationSystem->allocateDataBinding(scene, ContainerTraitsClass::TransformNode_Rotation, transHandle1.asMemoryHandle(), InvalidMemoryHandle);
 
         const AnimationInstanceHandle animInstHandle1 = animationSystem->allocateAnimationInstance(splineHandle1, EInterpolationType_Linear, EVectorComponent_All);
@@ -1015,7 +1028,7 @@ protected:
     static constexpr UInt ForceUnsubscribeFlushLimit = 20u;
 
     StrictMock<RendererResourceCacheMock> rendererResourceCacheMock;
-    StrictMock<PlatformStrictMock> platformFactoryMock;
+    StrictMock<PlatformStrictMockWithPerRendererComponents> platformFactoryMock;
     RendererEventCollector rendererEventCollector;
     RendererScenes rendererScenes;
     SceneExpirationMonitor expirationMonitor;
@@ -1024,7 +1037,6 @@ protected:
     StrictMock<RendererMockWithStrictMockDisplay> renderer;
     StrictMock<RendererSceneEventSenderMock> sceneEventSender;
     FrameTimer frameTimer;
-    ResourceUploader resourceUploader;
     SceneStateExecutor sceneStateExecutor;
     std::unique_ptr<RendererSceneUpdaterFacade> rendererSceneUpdater;
 

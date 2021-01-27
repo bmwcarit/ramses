@@ -30,7 +30,7 @@ protected:
         const auto events = m_eventCollector.getRendererEvents();
         if (events.size() <= index)
         {
-            return RendererEvent(ERendererEventType_Invalid);
+            return RendererEvent(ERendererEventType::Invalid);
         }
         return events[index];
     }
@@ -47,7 +47,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnKeyPressEvent)
     EKeyEventType keyEventType = EKeyEventType_Pressed;
     m_displayEventHandler.onKeyEvent(keyEventType, modifier, keyCode);
     const RendererEvent event = getRendererEvent(0u);
-    EXPECT_EQ(ERendererEventType_WindowKeyEvent, event.eventType);
+    EXPECT_EQ(ERendererEventType::WindowKeyEvent, event.eventType);
     EXPECT_EQ(m_displayHandle, event.displayHandle);
     EXPECT_EQ(keyEventType, event.keyEvent.type);
     EXPECT_EQ(modifier, event.keyEvent.modifier);
@@ -61,7 +61,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnKeyReleasedEvent)
     EKeyEventType keyEventType = EKeyEventType_Released;
     m_displayEventHandler.onKeyEvent(keyEventType, modifier, keyCode);
     const RendererEvent event = getRendererEvent(0u);
-    EXPECT_EQ(ERendererEventType_WindowKeyEvent, event.eventType);
+    EXPECT_EQ(ERendererEventType::WindowKeyEvent, event.eventType);
     EXPECT_EQ(m_displayHandle, event.displayHandle);
     EXPECT_EQ(keyEventType, event.keyEvent.type);
     EXPECT_EQ(modifier, event.keyEvent.modifier);
@@ -73,7 +73,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnMouseMoveEvent)
     const Vector2i mousePos(5, 20);
     m_displayEventHandler.onMouseEvent(EMouseEventType_Move, mousePos.x, mousePos.y);
     const RendererEvent event = getRendererEvent(0u);
-    EXPECT_EQ(ERendererEventType_WindowMouseEvent, event.eventType);
+    EXPECT_EQ(ERendererEventType::WindowMouseEvent, event.eventType);
     EXPECT_EQ(m_displayHandle, event.displayHandle);
     EXPECT_EQ(EMouseEventType_Move, event.mouseEvent.type);
     EXPECT_EQ(mousePos, event.mouseEvent.pos);
@@ -87,7 +87,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventAndInvokesTouchHandlerOnMouseEv
 
     // check renderer event collector
     const RendererEvent event = getRendererEvent(0u);
-    EXPECT_EQ(ERendererEventType_WindowMouseEvent, event.eventType);
+    EXPECT_EQ(ERendererEventType::WindowMouseEvent, event.eventType);
     EXPECT_EQ(m_displayHandle, event.displayHandle);
     EXPECT_EQ(mouseEventType, event.mouseEvent.type);
     EXPECT_EQ(mousePosition, event.mouseEvent.pos);
@@ -97,7 +97,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnMouseEventWindowEnter)
 {
     m_displayEventHandler.onMouseEvent(EMouseEventType_WindowEnter, 5, 10);
     const RendererEvent event = getRendererEvent(0u);
-    EXPECT_EQ(ERendererEventType_WindowMouseEvent, event.eventType);
+    EXPECT_EQ(ERendererEventType::WindowMouseEvent, event.eventType);
     EXPECT_EQ(m_displayHandle, event.displayHandle);
     EXPECT_EQ(EMouseEventType_WindowEnter, event.mouseEvent.type);
     EXPECT_EQ(Vector2i(5, 10), event.mouseEvent.pos);
@@ -107,7 +107,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnMouseEventWindowLeave)
 {
     m_displayEventHandler.onMouseEvent(EMouseEventType_WindowLeave, 10, 20);
     const RendererEvent event = getRendererEvent(0u);
-    EXPECT_EQ(ERendererEventType_WindowMouseEvent, event.eventType);
+    EXPECT_EQ(ERendererEventType::WindowMouseEvent, event.eventType);
     EXPECT_EQ(m_displayHandle, event.displayHandle);
     EXPECT_EQ(EMouseEventType_WindowLeave, event.mouseEvent.type);
     EXPECT_EQ(Vector2i(10, 20), event.mouseEvent.pos);
@@ -118,7 +118,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnWindowClosedEvent)
     m_displayEventHandler.onClose();
 
     const RendererEvent event = getRendererEvent(0u);
-    EXPECT_EQ(ERendererEventType_WindowClosed, event.eventType);
+    EXPECT_EQ(ERendererEventType::WindowClosed, event.eventType);
     EXPECT_EQ(m_displayHandle, event.displayHandle);
 }
 
@@ -127,7 +127,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnWindowResizeEvent)
     m_displayEventHandler.onResize(1280u, 480u);
 
     const RendererEvent event = getRendererEvent(0u);
-    EXPECT_EQ(ERendererEventType_WindowResizeEvent, event.eventType);
+    EXPECT_EQ(ERendererEventType::WindowResizeEvent, event.eventType);
     EXPECT_EQ(m_displayHandle, event.displayHandle);
     EXPECT_EQ(1280u, event.resizeEvent.width);
     EXPECT_EQ(480u, event.resizeEvent.height);
@@ -138,7 +138,7 @@ TEST_F(ADisplayEventHandler, createsRendererEventOnWindowMoveEvent)
     m_displayEventHandler.onWindowMove(1280, 480);
 
     const RendererEvent event = getRendererEvent(0u);
-    EXPECT_EQ(ERendererEventType_WindowMoveEvent, event.eventType);
+    EXPECT_EQ(ERendererEventType::WindowMoveEvent, event.eventType);
     EXPECT_EQ(m_displayHandle, event.displayHandle);
     EXPECT_EQ(1280, event.moveEvent.posX);
     EXPECT_EQ(480, event.moveEvent.posY);

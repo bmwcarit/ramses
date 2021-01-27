@@ -35,7 +35,7 @@ namespace ramses_internal
     public:
         AWindowWaylandWithEventHandling() {}
 
-        virtual void SetUp()
+        virtual void SetUp() override
         {
             openInputDevices();
             setupWaylandWindow();
@@ -53,7 +53,7 @@ namespace ramses_internal
             processAllEvents();
         }
 
-        virtual void TearDown()
+        virtual void TearDown() override
         {
             closeOpenGLContext();
             m_windowEventsPollingManager.removeWindow(this->m_window);

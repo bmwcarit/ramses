@@ -26,7 +26,7 @@ namespace ramses_internal
 
     Bool SetClearColor::execute(UInt32& displayId, Float& red, Float& green, Float& blue, Float& alpha) const
     {
-        m_rendererCommandBuffer.setClearColor(DisplayHandle(displayId), {}, Vector4(red, green, blue, alpha));
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SetClearColor{ DisplayHandle{displayId}, {}, Vector4{red, green, blue, alpha} });
         return true;
     }
 }

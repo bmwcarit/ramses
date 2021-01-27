@@ -20,11 +20,13 @@ namespace ramses_internal
     class IResource
     {
     public:
-        enum class CompressionLevel : Int8
+
+        // ordered from least/fastest compression to best/slowest compression
+        enum class CompressionLevel
         {
-            NONE = 0,
-            REALTIME,
-            OFFLINE,
+            None,
+            Realtime,
+            Offline,
         };
 
         IResource() {}
@@ -36,12 +38,12 @@ namespace ramses_internal
 
         virtual ~IResource(){};
         virtual const ResourceBlob& getResourceData() const = 0;
-        virtual const CompressedResouceBlob& getCompressedResourceData() const = 0;
+        virtual const CompressedResourceBlob& getCompressedResourceData() const = 0;
         virtual UInt32 getDecompressedDataSize() const = 0;
         virtual UInt32 getCompressedDataSize() const = 0;
         virtual void setResourceData(ResourceBlob data) = 0;
         virtual void setResourceData(ResourceBlob data, const ResourceContentHash& hash) = 0;
-        virtual void setCompressedResourceData(CompressedResouceBlob compressedData, uint32_t uncompressedSize, const ResourceContentHash& hash) = 0;
+        virtual void setCompressedResourceData(CompressedResourceBlob compressedData, CompressionLevel compressionLevel, uint32_t uncompressedSize, const ResourceContentHash& hash) = 0;
         virtual EResourceType getTypeID() const = 0;
         virtual const ResourceContentHash& getHash() const = 0;
         virtual void compress(CompressionLevel level) const = 0;

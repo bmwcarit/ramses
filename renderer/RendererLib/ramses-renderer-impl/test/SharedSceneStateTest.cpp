@@ -16,38 +16,38 @@ namespace ramses
     class ASharedSceneState : public Test
     {
     protected:
-        const ContentID m_contentID1{ 321 };
-        const ContentID m_contentID2{ 322 };
-        const ContentID m_contentID3{ 323 };
-        const ContentID m_contentID4{ 324 };
+        const ContentIdentifier m_contentID1{ ContentID{ 321 }, true };
+        const ContentIdentifier m_contentID2{ ContentID{ 322 }, false };
+        const ContentIdentifier m_contentID3{ ContentID{ 323 }, false };
+        const ContentIdentifier m_contentID4{ ContentID{ 323 }, true };
 
         SharedSceneState m_sharedSceneState;
     };
 
     TEST_F(ASharedSceneState, reportsUnavailableStateInitially)
     {
-        EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getActualState());
+        EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getReportedState());
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getConsolidatedDesiredState());
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
     }
 
     TEST_F(ASharedSceneState, reportsPreviouslySetActualStateRegardlessOfDesiredStates)
     {
-        m_sharedSceneState.setActualState(RendererSceneState::Ready);
-        EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getActualState());
+        m_sharedSceneState.setReportedState(RendererSceneState::Ready);
+        EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getReportedState());
         m_sharedSceneState.setDesiredState(m_contentID1, RendererSceneState::Unavailable);
         m_sharedSceneState.setDesiredState(m_contentID2, RendererSceneState::Available);
         m_sharedSceneState.setDesiredState(m_contentID3, RendererSceneState::Ready);
         m_sharedSceneState.setDesiredState(m_contentID4, RendererSceneState::Rendered);
-        EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getActualState());
+        EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getReportedState());
 
-        m_sharedSceneState.setActualState(RendererSceneState::Rendered);
-        EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getActualState());
+        m_sharedSceneState.setReportedState(RendererSceneState::Rendered);
+        EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getReportedState());
         m_sharedSceneState.setDesiredState(m_contentID1, RendererSceneState::Unavailable);
         m_sharedSceneState.setDesiredState(m_contentID2, RendererSceneState::Available);
         m_sharedSceneState.setDesiredState(m_contentID3, RendererSceneState::Ready);
         m_sharedSceneState.setDesiredState(m_contentID4, RendererSceneState::Rendered);
-        EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getActualState());
+        EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getReportedState());
     }
 
     TEST_F(ASharedSceneState, reportsConsolidatedDesiredStateAlwaysAsHighestOfDesiredStates)
@@ -65,9 +65,9 @@ namespace ramses
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getConsolidatedDesiredState());
 
         // not affected by actual state
-        m_sharedSceneState.setActualState(RendererSceneState::Rendered);
+        m_sharedSceneState.setReportedState(RendererSceneState::Rendered);
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getConsolidatedDesiredState());
-        m_sharedSceneState.setActualState(RendererSceneState::Ready);
+        m_sharedSceneState.setReportedState(RendererSceneState::Ready);
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getConsolidatedDesiredState());
     }
 
@@ -80,19 +80,19 @@ namespace ramses
         m_sharedSceneState.setDesiredState(m_contentID1, RendererSceneState::Available);
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
 
-        m_sharedSceneState.setActualState(RendererSceneState::Available);
+        m_sharedSceneState.setReportedState(RendererSceneState::Available);
         EXPECT_EQ(RendererSceneState::Available, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
 
         m_sharedSceneState.setDesiredState(m_contentID1, RendererSceneState::Ready);
         EXPECT_EQ(RendererSceneState::Available, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
 
-        m_sharedSceneState.setActualState(RendererSceneState::Ready);
+        m_sharedSceneState.setReportedState(RendererSceneState::Ready);
         EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
 
         m_sharedSceneState.setDesiredState(m_contentID1, RendererSceneState::Rendered);
         EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
 
-        m_sharedSceneState.setActualState(RendererSceneState::Rendered);
+        m_sharedSceneState.setReportedState(RendererSceneState::Rendered);
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
 
         // going back to nothing
@@ -100,19 +100,19 @@ namespace ramses
         m_sharedSceneState.setDesiredState(m_contentID1, RendererSceneState::Ready);
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
 
-        m_sharedSceneState.setActualState(RendererSceneState::Ready);
+        m_sharedSceneState.setReportedState(RendererSceneState::Ready);
         EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
 
         m_sharedSceneState.setDesiredState(m_contentID1, RendererSceneState::Available);
         EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
 
-        m_sharedSceneState.setActualState(RendererSceneState::Available);
+        m_sharedSceneState.setReportedState(RendererSceneState::Available);
         EXPECT_EQ(RendererSceneState::Available, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
 
         m_sharedSceneState.setDesiredState(m_contentID1, RendererSceneState::Unavailable);
         EXPECT_EQ(RendererSceneState::Available, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
 
-        m_sharedSceneState.setActualState(RendererSceneState::Unavailable);
+        m_sharedSceneState.setReportedState(RendererSceneState::Unavailable);
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
     }
 
@@ -121,7 +121,7 @@ namespace ramses
         // both contents get to rendered
         m_sharedSceneState.setDesiredState(m_contentID1, RendererSceneState::Rendered);
         m_sharedSceneState.setDesiredState(m_contentID2, RendererSceneState::Rendered);
-        m_sharedSceneState.setActualState(RendererSceneState::Rendered);
+        m_sharedSceneState.setReportedState(RendererSceneState::Rendered);
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
 
@@ -144,7 +144,7 @@ namespace ramses
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
 
         // only now when actual state reaches ready, content2's state is reported as ready
-        m_sharedSceneState.setActualState(RendererSceneState::Ready);
+        m_sharedSceneState.setReportedState(RendererSceneState::Ready);
         EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
         EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
     }
@@ -154,7 +154,7 @@ namespace ramses
         // both contents get to rendered
         m_sharedSceneState.setDesiredState(m_contentID1, RendererSceneState::Rendered);
         m_sharedSceneState.setDesiredState(m_contentID2, RendererSceneState::Rendered);
-        m_sharedSceneState.setActualState(RendererSceneState::Rendered);
+        m_sharedSceneState.setReportedState(RendererSceneState::Rendered);
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
 
@@ -177,7 +177,7 @@ namespace ramses
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
 
         // only now when actual state reaches ready, content1's state is reported as ready
-        m_sharedSceneState.setActualState(RendererSceneState::Ready);
+        m_sharedSceneState.setReportedState(RendererSceneState::Ready);
         EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
         EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
     }
@@ -187,7 +187,7 @@ namespace ramses
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
 
-        m_sharedSceneState.setActualState(RendererSceneState::Available);
+        m_sharedSceneState.setReportedState(RendererSceneState::Available);
 
         // content1 requests rendered
         m_sharedSceneState.setDesiredState(m_contentID1, RendererSceneState::Rendered);
@@ -199,12 +199,12 @@ namespace ramses
         EXPECT_EQ(RendererSceneState::Available, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
         EXPECT_EQ(RendererSceneState::Available, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
 
-        m_sharedSceneState.setActualState(RendererSceneState::Ready);
+        m_sharedSceneState.setReportedState(RendererSceneState::Ready);
 
         EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
         EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
 
-        m_sharedSceneState.setActualState(RendererSceneState::Rendered);
+        m_sharedSceneState.setReportedState(RendererSceneState::Rendered);
 
         // content1 is rendered
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
@@ -233,7 +233,7 @@ namespace ramses
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
         EXPECT_EQ(RendererSceneState::Rendered, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
 
-        m_sharedSceneState.setActualState(RendererSceneState::Ready);
+        m_sharedSceneState.setReportedState(RendererSceneState::Ready);
 
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
         EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
@@ -242,7 +242,7 @@ namespace ramses
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
         EXPECT_EQ(RendererSceneState::Ready, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
 
-        m_sharedSceneState.setActualState(RendererSceneState::Available);
+        m_sharedSceneState.setReportedState(RendererSceneState::Available);
 
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
         EXPECT_EQ(RendererSceneState::Available, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
@@ -251,9 +251,28 @@ namespace ramses
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
         EXPECT_EQ(RendererSceneState::Available, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
 
-        m_sharedSceneState.setActualState(RendererSceneState::Unavailable);
+        m_sharedSceneState.setReportedState(RendererSceneState::Unavailable);
 
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getCurrentStateForContent(m_contentID1));
         EXPECT_EQ(RendererSceneState::Unavailable, m_sharedSceneState.getCurrentStateForContent(m_contentID2));
+    }
+
+    TEST_F(ASharedSceneState, reportsUnavailableRequestedStateInitially)
+    {
+        EXPECT_EQ(m_sharedSceneState.getRequestedState(), RendererSceneState::Unavailable);
+    }
+
+    TEST_F(ASharedSceneState, getsLastSetRequestedState)
+    {
+        m_sharedSceneState.setRequestedState(RendererSceneState::Available);
+        EXPECT_EQ(m_sharedSceneState.getRequestedState(), RendererSceneState::Available);
+
+        m_sharedSceneState.setRequestedState(RendererSceneState::Rendered);
+        m_sharedSceneState.setRequestedState(RendererSceneState::Ready);
+        EXPECT_EQ(m_sharedSceneState.getRequestedState(), RendererSceneState::Ready);
+
+        m_sharedSceneState.setRequestedState(RendererSceneState::Available);
+        m_sharedSceneState.setRequestedState(RendererSceneState::Rendered);
+        EXPECT_EQ(m_sharedSceneState.getRequestedState(), RendererSceneState::Rendered);
     }
 }

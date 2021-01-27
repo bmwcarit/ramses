@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
     meshNode->setAppearance(*appearance);
     meshNode->setIndexCount(3);
     meshNode->setGeometryBinding(*geometry);
-
+    /// [Interleaved Vertex Buffers Example]
     // mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered
     renderGroup->addMeshNode(*meshNode);
     /// [Interleaved vertex buffers Example]

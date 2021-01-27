@@ -10,7 +10,6 @@
 #include "Platform_Wayland_EGL/Logger_Wayland.h"
 #include "RendererLib/DisplayConfig.h"
 #include "RendererLib/RendererConfig.h"
-#include "Window_Wayland/Window_Wayland.h"
 #include "Platform_Base/EmbeddedCompositor_Dummy.h"
 #include "EmbeddedCompositor_Wayland/EmbeddedCompositor_Wayland.h"
 #include "EmbeddedCompositor_Wayland/TextureUploadingAdapter_Wayland.h"
@@ -24,7 +23,7 @@ namespace ramses_internal
     }
 
     Platform_Wayland_EGL::Platform_Wayland_EGL(const RendererConfig& rendererConfig)
-        : Platform_Base(rendererConfig)
+        : Platform_EGL<Window_Wayland>(rendererConfig)
         , m_windowEventsPollingManager(m_rendererConfig.getFrameCallbackMaxPollTime())
     {
         Logger_Wayland::RedirectToRamsesLogger();
@@ -32,34 +31,6 @@ namespace ramses_internal
 
     Platform_Wayland_EGL::~Platform_Wayland_EGL()
     {
-    }
-
-    IContext* Platform_Wayland_EGL::createContext(IWindow& window)
-    {
-        Window_Wayland* platformWindow = getPlatformWindow<Window_Wayland>(window);
-        assert(nullptr != platformWindow);
-
-        std::vector<EGLint> contextAttributes;
-        getContextAttributes(contextAttributes);
-        std::vector<EGLint> surfaceAttributes;
-        getSurfaceAttributes(platformWindow->getMSAASampleCount(), surfaceAttributes);
-
-        // if we do offscreen rendering, single buffer should be enough
-        std::vector<EGLint> windowSurfaceAttributes;
-        windowSurfaceAttributes.push_back(EGL_NONE);
-
-        // Use swap interval of 0 so the renderer does not block due invisible surfaces
-        const EGLint swapInterval = 0;
-
-        Context_EGL* platformContext = new Context_EGL(
-                    reinterpret_cast<EGLNativeDisplayType>(platformWindow->getNativeDisplayHandle()),
-                    reinterpret_cast<Context_EGL::Generic_EGLNativeWindowType>(platformWindow->getNativeWindowHandle()),
-                    &contextAttributes[0],
-                    &surfaceAttributes[0],
-                    &windowSurfaceAttributes[0],
-                    swapInterval,
-                    nullptr);
-        return addPlatformContext(platformContext);
     }
 
     Bool Platform_Wayland_EGL::isCreatingWaylandEmbeddedCompositorRequired() const
@@ -109,4 +80,8 @@ namespace ramses_internal
         }
     }
 
+    uint32_t Platform_Wayland_EGL::getSwapInterval() const
+    {
+        return 0u;
+    }
 }

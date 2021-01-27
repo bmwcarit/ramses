@@ -33,7 +33,7 @@ namespace ramses_internal
 
     inline void PrintTo(const CategoryInfo& categoryInfo, ::std::ostream* os)
     {
-        *os << "ri:CategoryInfo" << StringOutputStream::ToString(categoryInfo).stdRef();
+        *os << "ri:CategoryInfo" << fmt::to_string(categoryInfo);
     }
 
     inline void PrintTo(const AnimationInformation& ai, ::std::ostream* os)
@@ -43,12 +43,12 @@ namespace ramses_internal
 
     inline void PrintTo(const EDcsmState& state, ::std::ostream* os)
     {
-        *os << "ri:" << EnumToString(state);
+        *os << "ri:" << fmt::to_string(state);
     }
 
     inline void PrintTo(const DcsmMetadata& metadata, ::std::ostream* os)
     {
-        *os << "ri:DcsmMetadata" << StringOutputStream::ToString(metadata).stdRef();
+        *os << "ri:DcsmMetadata" << fmt::to_string(metadata);
     }
 }
 
@@ -81,7 +81,7 @@ namespace ramses
 
     inline void PrintTo(const ramses::CategoryInfoUpdate& categoryInfo, ::std::ostream* os)
     {
-        *os << "r:CategoryInfoUpdate" << ramses_internal::StringOutputStream::ToString(categoryInfo.impl.getCategoryInfo()).stdRef();
+        *os << "r:CategoryInfoUpdate" << fmt::to_string(categoryInfo.impl.getCategoryInfo());
     }
 }
 

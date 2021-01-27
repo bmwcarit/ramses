@@ -8,8 +8,9 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-import sys, re, string
-from common_modules.common import *
+import sys
+import re
+from common_modules import common
 
 
 def check_enum_style(filename, clean_file_contents):
@@ -30,27 +31,28 @@ def check_enum_style(filename, clean_file_contents):
         g = enum_match.groups()
         is_enum_class = g[0] is not None
         enum_name = g[1]
-        enum_values = [l for l in [l.strip() for l in g[2].split('\n')] if l is not '']
+        enum_values = [m for m in [n.strip() for n in g[2].split('\n')] if m != '']
 
         # old enum must start with an 'E'
         if not is_enum_class and not enum_name.startswith('E'):
-            log_warning("check_enum_style", filename, line_number, "enum must begin with 'E': " + enum_name)
+            common.log_warning("check_enum_style", filename, line_number, "enum must begin with 'E': " + enum_name)
         # must be camel case
         if enum_name.upper() == enum_name:
-            log_warning("check_enum_style", filename, line_number, "enum must be CamelCase: " + enum_name)
+            common.log_warning("check_enum_style", filename, line_number, "enum must be CamelCase: " + enum_name)
 
         # old enum has prefix on values, enum class does NOT have name prefix
         for v in enum_values:
             if is_enum_class:
                 if v.startswith(enum_name):
-                    log_warning("check_enum_style", filename, line_number, "enum class value may not begin with " + enum_name + ": " + v)
+                    common.log_warning("check_enum_style", filename, line_number, "enum class value may not begin with " + enum_name + ": " + v)
             else:
                 if not v.startswith(enum_name):
-                    log_warning("check_enum_style", filename, line_number, "enum value must begin with " + enum_name + "_ : " + v)
+                    common.log_warning("check_enum_style", filename, line_number, "enum value must begin with " + enum_name + "_ : " + v)
+
 
 if __name__ == "__main__":
     targets = sys.argv[1:]
-    targets = get_all_files(targets)
+    targets = common.get_all_files(targets)
 
     if len(targets) == 0:
         print("""
@@ -62,5 +64,5 @@ if __name__ == "__main__":
         exit(0)
 
     for t in targets:
-        clean_file_contents, _ = clean_file_content(read_file(t)[0])
+        clean_file_contents, _ = common.clean_file_content(common.read_file(t)[0])
         check_enum_style(t, clean_file_contents)

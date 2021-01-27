@@ -141,9 +141,7 @@ namespace ramses
             delete &RamsesObjectTypeUtils::ConvertTo<SceneObject>(*it);
         }
 
-        // hl resources are gone, so close file and therefor release unneeded ll resources
-        if (!m_sceneFilename.empty())
-            getClientImpl().getClientApplication().removeResourceFile(m_sceneFilename.c_str());
+        closeSceneFile();
 
         getClientImpl().getFramework().getPeriodicLogger().removeStatisticCollectionScene(m_scene.getSceneId());
     }
@@ -1362,9 +1360,9 @@ namespace ramses
 
     status_t SceneImpl::createTextureConsumer(const TextureSampler& sampler, dataConsumerId_t id)
     {
-        if (sampler.impl.getTextureType() != ERamsesObjectType_Texture2D)
+        if (sampler.impl.getTextureType() != ERamsesObjectType_Texture2D && sampler.impl.getTextureType() != ERamsesObjectType_StreamTexture)
         {
-            return addErrorEntry("Scene::createTextureConsumer failed, only texture sampler using 2D texture can be used for linking..");
+            return addErrorEntry("Scene::createTextureConsumer failed, only texture sampler using 2D texture or StreamTexture can be used for linking..");
         }
 
         return createTextureConsumerImpl(sampler, id);
@@ -1747,7 +1745,7 @@ namespace ramses
         const auto scenes = getClientImpl().getListOfScenes();
         for (const auto scene : scenes)
         {
-            if (getClientImpl().findSceneReference(scene->getSceneId(), referencedScene))
+            if (getClientImpl().findSceneReference(scene->getSceneId(), referencedScene) != nullptr)
             {
                 LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene::createSceneReference: there is already a SceneReference with sceneId "
                     << referencedScene << " in master scene " << scene->getSceneId() << ", cannot create another one");
@@ -1771,8 +1769,8 @@ namespace ramses
         if (consumerReference == providerReference)
             return addErrorEntry("Scene::linkData: can't link an object to another object in the same scene reference");
 
-        if ((providerReference && providerReference->impl.getSceneImpl().getSceneId() != getSceneId()) ||
-            (consumerReference && consumerReference->impl.getSceneImpl().getSceneId() != getSceneId()))
+        if ((providerReference != nullptr && providerReference->impl.getSceneImpl().getSceneId() != getSceneId()) ||
+            (consumerReference != nullptr && consumerReference->impl.getSceneImpl().getSceneId() != getSceneId()))
             return addErrorEntry("Scene::linkData: can't link to object of a scene reference with a different master scene");
 
         if (providerReference && providerReference->impl.getReportedState() < RendererSceneState::Ready)
@@ -1790,7 +1788,7 @@ namespace ramses
 
     status_t SceneImpl::unlinkData(SceneReference* consumerReference, dataConsumerId_t consumerId)
     {
-        if (consumerReference && consumerReference->impl.getSceneImpl().getSceneId() != getSceneId())
+        if (consumerReference != nullptr && consumerReference->impl.getSceneImpl().getSceneId() != getSceneId())
             return addErrorEntry("Scene::unlinkData: can't unlink object of a scene reference with a different master scene");
 
         const auto consumerScene = (consumerReference ? consumerReference->impl.getSceneReferenceHandle() : ramses_internal::SceneReferenceHandle{});
@@ -2055,6 +2053,15 @@ namespace ramses
     void SceneImpl::setSceneFileName(std::string const& sceneFilename)
     {
         m_sceneFilename = sceneFilename;
+    }
+
+    void SceneImpl::closeSceneFile()
+    {
+        if (m_sceneFilename.empty())
+            return;
+
+        getClientImpl().getClientApplication().removeResourceFile(m_sceneFilename.c_str());
+        m_sceneFilename.clear();
     }
 
     bool SceneImpl::removeResourceWithIdFromResources(resourceId_t const& id, Resource& resource)

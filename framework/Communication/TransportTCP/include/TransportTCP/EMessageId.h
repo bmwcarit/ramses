@@ -50,28 +50,28 @@ namespace ramses_internal
     };
 
     static constexpr const char* const EMessageIdNames[] = {
-        "EMessageId::INVALID_0",  // needed because EMessageId starts at 1
+        "INVALID_0",  // needed because EMessageId starts at 1
 
-        "EMessageId::PublishScene",
-        "EMessageId::UnpublishScene",
-        "EMessageId::SubscribeScene",
-        "EMessageId::UnsubscribeScene",
-        "EMessageId::ConnectionDescriptionMessage",
-        "EMessageId::ConnectorAddressExchange",
-        "EMessageId::InputEvent",
-        "EMessageId::SendSceneUpdate",
-        "EMessageId::RendererEvent",
-        "EMessageId::Alive",
-        "EMessageId::CreateScene",
-        "EMessageId::DcsmRegisterContent",
-        "EMessageId::DcsmCanvasSizeChange",
-        "EMessageId::DcsmContentStatusChange",
-        "EMessageId::DcsmContentAvailable",
-        "EMessageId::DcsmContentDescription",
-        "EMessageId::DcsmCategoryContentSwitchRequest",
-        "EMessageId::DcsmRequestUnregisterContent",
-        "EMessageId::DcsmForceUnregisterContent",
-        "EMessageId::DcsmUpdateContentMetadata",
+        "PublishScene",
+        "UnpublishScene",
+        "SubscribeScene",
+        "UnsubscribeScene",
+        "ConnectionDescriptionMessage",
+        "ConnectorAddressExchange",
+        "InputEvent",
+        "SendSceneUpdate",
+        "RendererEvent",
+        "Alive",
+        "CreateScene",
+        "DcsmRegisterContent",
+        "DcsmCanvasSizeChange",
+        "DcsmContentStatusChange",
+        "DcsmContentAvailable",
+        "DcsmContentDescription",
+        "DcsmCategoryContentSwitchRequest",
+        "DcsmRequestUnregisterContent",
+        "DcsmForceUnregisterContent",
+        "DcsmUpdateContentMetadata",
     };
 
     inline IOutputStream& operator<<(IOutputStream& outputStream, EMessageId messageId)
@@ -89,6 +89,7 @@ namespace ramses_internal
 }
 
 MAKE_ENUM_CLASS_PRINTABLE(ramses_internal::EMessageId,
+                          "EMessageId",
                           ramses_internal::EMessageIdNames,
                           ramses_internal::EMessageId::NUM_ELEMENTS);
 

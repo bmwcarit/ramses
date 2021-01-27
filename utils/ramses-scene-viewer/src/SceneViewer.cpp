@@ -112,7 +112,7 @@ namespace ramses_internal
 
     void SceneViewer::printUsage() const
     {
-        const String argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_validationUnrequiredObjectsDirectoryArgument.getHelpString() + m_screenshotFile.getHelpString();
+        const std::string argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_validationUnrequiredObjectsDirectoryArgument.getHelpString() + m_screenshotFile.getHelpString();
         const String& programName = m_parser.getProgramName();
         LOG_INFO(CONTEXT_CLIENT,
                 "\nUsage: " << programName << " [options] -s <sceneFileName>\n"

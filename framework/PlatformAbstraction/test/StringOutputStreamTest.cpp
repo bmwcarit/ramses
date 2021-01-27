@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "Collections/StringOutputStream.h"
+#include "Collections/String.h"
 #include "framework_common_gmock_header.h"
 #include "gmock/gmock.h"
 
@@ -32,7 +33,7 @@ namespace ramses_internal
     {
         StringOutputStream outputStream;
         outputStream << 0.f;
-        EXPECT_EQ("0.0", outputStream.data());
+        EXPECT_EQ("0", outputStream.data());
     }
 
     TEST(AStringOutputStream, WriteFloatSmallestNegative)
@@ -136,20 +137,6 @@ namespace ramses_internal
         EXPECT_EQ("4711", outputStream.data());
     }
 
-    TEST(AStringOutputStream, Clear)
-    {
-        StringOutputStream outputStream;
-        outputStream << "Some data";
-        outputStream.clear();
-        EXPECT_STREQ("", outputStream.c_str());
-        EXPECT_EQ(0u, outputStream.size());
-
-        outputStream << "Some data";
-        outputStream.clear();
-        EXPECT_STREQ("", outputStream.c_str());
-        EXPECT_EQ(0u, outputStream.size());
-    }
-
     TEST(AStringOutputStream, AutoFlush)
     {
         StringOutputStream outputStream;
@@ -232,25 +219,11 @@ namespace ramses_internal
         EXPECT_EQ(3u, stream.size());
     }
 
-    TEST(AStringOutputStream, ToStringWorksForStreamableTypes)
-    {
-        EXPECT_EQ("-123", StringOutputStream::ToString(-123));
-        EXPECT_EQ("true", StringOutputStream::ToString(true));
-        EXPECT_EQ("foobar", StringOutputStream::ToString(std::string("foobar")));
-    }
-
     TEST(AStringOutputStream, CanGetUnderlayingString)
     {
         StringOutputStream stream;
         stream << "foo";
         EXPECT_EQ("foo", stream.data());
-        stream << "bar";
-        EXPECT_EQ("foobar", stream.data());
-    }
-
-    TEST(AStringOutputStream, CanConstructWithString)
-    {
-        StringOutputStream stream(String("foo"));
         stream << "bar";
         EXPECT_EQ("foobar", stream.data());
     }

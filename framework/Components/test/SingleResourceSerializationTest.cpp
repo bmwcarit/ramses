@@ -55,7 +55,7 @@ namespace ramses_internal
     TYPED_TEST(ASingleResourceSerializationTyped, canSerializeCompressedResourceAndResultsInSameResourceAfterDecompression)
     {
         std::unique_ptr<IResource> res(ResourceSerializationTestHelper::CreateTestResource<TypeParam>(3000));  // must be large enough to trigger compression
-        res->compress(IResource::CompressionLevel::REALTIME);
+        res->compress(IResource::CompressionLevel::Realtime);
         EXPECT_TRUE(res->isCompressedAvailable());
 
         std::unique_ptr<IResource> deserRes = SerializeDeserializeCycle(*res, res->getHash());

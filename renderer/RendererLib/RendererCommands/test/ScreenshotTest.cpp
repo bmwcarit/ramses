@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "RendererCommands/Screenshot.h"
 #include "RendererLib/RendererCommandBuffer.h"
+#include "RendererCommandVisitorMock.h"
 
 using namespace ramses_internal;
 using namespace ::testing;
@@ -26,14 +27,9 @@ public:
 protected:
     void expectScreenshotCommand(const String& filename, const DisplayHandle& displayHandle = DisplayHandle(0u), bool autoSize = true)
     {
-        RendererCommandContainer commands;
-        m_rendererCommandBuffer.swapCommandContainer(commands);
-        EXPECT_EQ(1u, commands.getTotalCommandCount());
-        EXPECT_EQ(ERendererCommand_ReadPixels, commands.getCommandType(0u));
-        const ReadPixelsCommand& command = commands.getCommandData<ReadPixelsCommand>(0u);
-        EXPECT_EQ(filename, command.filename);
-        EXPECT_EQ(command.displayHandle, displayHandle);
-        EXPECT_EQ(autoSize, command.fullScreen);
+        StrictMock<RendererCommandVisitorMock> cmdVisitor;
+        EXPECT_CALL(cmdVisitor, handleReadPixels(displayHandle, OffscreenBufferHandle::Invalid(), _, _, _, _, autoSize, filename));
+        cmdVisitor.visit(m_rendererCommandBuffer);
     }
 
     const String          m_defaultFilename;

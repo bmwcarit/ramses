@@ -8,8 +8,10 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-import re, string
-from common_modules.common import *
+import sys
+import re
+import os
+from common_modules import common
 
 
 G_PROP_FILES = [
@@ -23,9 +25,9 @@ G_RE_LICENSE_TEMPLATE_OPEN = re.compile(r"""(?://|::|#)  -----------------------
 (?://|::|#)  License, v\. 2\.0\. If a copy of the MPL was not distributed with this
 (?://|::|#)  file, You can obtain one at https://mozilla\.org/MPL/2\.0/\.
 (?://|::|#)  -------------------------------------------------------------------------
-""", re.MULTILINE)
+""", re.MULTILINE)  # noqa E501 allow long lines here
 
-G_RE_LICENSE_TEMPLATE_PROP =  re.compile(r"""(?://|::|#)  -------------------------------------------------------------------------
+G_RE_LICENSE_TEMPLATE_PROP = re.compile(r"""(?://|::|#)  -------------------------------------------------------------------------
 (?://|::|#)  Copyright \(C\) 2\d{3}(?:-2\d{3})? (BMW AG|BMW Car IT GmbH)
 (?://|::|#)  All rights reserved\.
 (?://|::|#)  -------------------------------------------------------------------------
@@ -66,12 +68,12 @@ def check_license_for_file(file_name, file_contents, solution_path):
             break
 
     if not check_specific_license_in_file(file_name, file_contents, license_re):
-        log_warning("check_license_in_file", file_name, 1, "no valid license found")
+        common.log_warning("check_license_in_file", file_name, 1, "no valid license found")
 
 
 def main():
     targets = sys.argv[1:]
-    targets = get_all_files(targets)
+    targets = common.get_all_files(targets)
 
     if len(targets) == 0:
         print("""
@@ -84,8 +86,9 @@ def main():
 
     path = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", ".."))
     for t in targets:
-        file_contents, _ = read_file(t)
+        file_contents, _ = common.read_file(t)
         check_license_for_file(t, file_contents, path)
+
 
 if __name__ == "__main__":
     main()

@@ -10,12 +10,13 @@
 #define RAMSES_RESOURCEUPLOADINGMANAGER_H
 
 #include "RendererLib/ResourceDescriptor.h"
+#include "RendererLib/IResourceUploader.h"
+#include "RendererLib/AsyncEffectUploader.h"
 #include "Collections/HashMap.h"
 
 namespace ramses_internal
 {
     class RendererResourceRegistry;
-    class IResourceUploader;
     class IRenderBackend;
     struct RenderBuffer;
     class FrameTimer;
@@ -26,8 +27,9 @@ namespace ramses_internal
     public:
         ResourceUploadingManager(
             RendererResourceRegistry& resources,
-            IResourceUploader& uploader,
+            std::unique_ptr<IResourceUploader> uploader,
             IRenderBackend& renderBackend,
+            AsyncEffectUploader& asyncEffectUploader,
             Bool keepEffects,
             const FrameTimer& frameTimer,
             RendererStatistics& stats,
@@ -43,6 +45,7 @@ namespace ramses_internal
     private:
         void unloadResources(const ResourceContentHashVector& resourcesToUnload);
         void uploadResources(const ResourceContentHashVector& resourcesToUpload);
+        void syncEffects();
         void uploadResource(const ResourceDescriptor& rd);
         void unloadResource(const ResourceDescriptor& rd);
         void getResourcesToUnloadNext(ResourceContentHashVector& resourcesToUnload, Bool keepEffects, UInt64 sizeToBeFreed) const;
@@ -50,8 +53,11 @@ namespace ramses_internal
         UInt64 getAmountOfMemoryToBeFreedForNewResources(UInt64 sizeToUpload) const;
 
         RendererResourceRegistry& m_resources;
-        IResourceUploader&              m_uploader;
+        std::unique_ptr<IResourceUploader> m_uploader;
         IRenderBackend&                 m_renderBackend;
+        AsyncEffectUploader&            m_asyncEffectUploader;
+        EffectsRawResources             m_effectsToUpload;
+        EffectsGpuResources             m_effectsUploadedTemp; //to avoid re-allocation each frame
 
         const Bool   m_keepEffects;
         const FrameTimer& m_frameTimer;

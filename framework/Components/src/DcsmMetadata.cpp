@@ -387,7 +387,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::setWidgetBackgroundID: " << widgetBackgroundID);
 
         m_widgetBackgroundID = widgetBackgroundID;
-        m_hasWidgetBackgroundID = widgetBackgroundID;
+        m_hasWidgetBackgroundID = true;
         return true;
     }
 

@@ -545,7 +545,7 @@ namespace ramses_internal
     template <typename VectorData>
     void AnimationProcessingTest::AnimateSingleComponentDataTest(EVectorComponent component, EVectorComponent maxTypeComponent)
     {
-        typedef AnimatableTypeTraits<VectorData> TypeTraits;
+        using TypeTraits = AnimatableTypeTraits<VectorData>;
         using ComponentType = typename TypeTraits::ComponentType;
         using SplineInitializerComponent = SplineInitializer<ComponentType, 10U>;
         using ContainerVec = AnimationDataBindTestContainer<VectorData>;

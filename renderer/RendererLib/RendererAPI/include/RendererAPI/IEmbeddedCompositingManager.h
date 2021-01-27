@@ -10,32 +10,26 @@
 #define RAMSES_IEMBEDDEDCOMPOSITINGMANAGER_H
 
 #include "Types.h"
-#include "SceneAPI/SceneId.h"
 #include "SceneAPI/WaylandIviSurfaceId.h"
-#include "Collections/HashMap.h"
+#include <vector>
 
 namespace ramses_internal
 {
     using StreamTextureHandleVector = std::vector<StreamTextureHandle>;
-    using SceneStreamTextures = HashMap<SceneId, StreamTextureHandleVector>;
-    using UpdatedSceneIdSet = HashSet<SceneId>;
-
-    using StreamTextureBufferUpdates = HashMap<WaylandIviSurfaceId, UInt32>;
+    using StreamSourceUpdates = std::vector< std::pair<WaylandIviSurfaceId, uint32_t> >;
 
     class IEmbeddedCompositingManager
     {
     public:
         virtual ~IEmbeddedCompositingManager(){}
 
-        virtual void refStream(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId) = 0;
-        virtual void unrefStream(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId) = 0;
         virtual void refStream(WaylandIviSurfaceId source) = 0;
         virtual void unrefStream(WaylandIviSurfaceId source) = 0;
 
-        virtual void dispatchStateChangesOfStreamTexturesAndSources(SceneStreamTextures& streamTexturesWithStateChange, WaylandIviSurfaceIdVector& newStreams, WaylandIviSurfaceIdVector& obsoleteStreams) = 0;
+        virtual void dispatchStateChangesOfSources(WaylandIviSurfaceIdVector& streamsWithAvailabilityChanged, WaylandIviSurfaceIdVector& newStreams, WaylandIviSurfaceIdVector& obsoleteStreams) = 0;
         virtual void processClientRequests() = 0;
         virtual Bool hasUpdatedContentFromStreamSourcesToUpload() const = 0;
-        virtual void uploadResourcesAndGetUpdates(UpdatedSceneIdSet& updatedScenes, StreamTextureBufferUpdates& bufferUpdates) = 0;
+        virtual void uploadResourcesAndGetUpdates(StreamSourceUpdates& updatedStreams) = 0;
         virtual void notifyClients() = 0;
         virtual DeviceResourceHandle getCompositedTextureDeviceHandleForStreamTexture(WaylandIviSurfaceId source) const = 0;
 

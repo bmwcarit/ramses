@@ -204,7 +204,7 @@ namespace ramses_internal
         stream << '.';
         stream << fieldName;
 
-        return stream.release();
+        return String(stream.release());
     }
 
     bool GlslToEffectConverter::createEffectInputType(const glslang::TType& type, const String& inputName, uint32_t elementCount, EffectInputInformationVector& outputVector) const

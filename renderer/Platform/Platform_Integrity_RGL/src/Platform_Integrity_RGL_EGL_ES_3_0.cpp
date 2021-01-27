@@ -7,11 +7,9 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_Integrity_RGL/Platform_Integrity_RGL_EGL_ES_3_0.h"
-#include "Platform_Integrity_RGL/Window_Integrity_RGL.h"
-#include "Context_EGL/Context_EGL.h"
-#include "Device_GL/Device_GL.h"
 #include "Platform_Base/EmbeddedCompositor_Dummy.h"
 #include "RendererLib/DisplayConfig.h"
+#include <EGL/eglext.h>
 
 namespace ramses_internal
 {
@@ -21,19 +19,31 @@ namespace ramses_internal
     }
 
     Platform_Integrity_RGL_EGL_ES_3_0::Platform_Integrity_RGL_EGL_ES_3_0(const RendererConfig& rendererConfig)
-        : Platform_Base(rendererConfig)
+        : Platform_EGL<Window_Integrity_RGL>(rendererConfig)
     {
     }
 
-    const EGLint* Platform_Integrity_RGL_EGL_ES_3_0::getContextAttributes() const
+    uint32_t Platform_Integrity_RGL_EGL_ES_3_0::getSwapInterval() const
     {
-        static const EGLint contextAttributes[] =
+        return 1u;
+    }
+
+    std::vector<EGLint> Platform_Integrity_RGL_EGL_ES_3_0::getSurfaceAttributes(UInt32 msaaSampleCount) const
+    {
+        UNUSED(msaaSampleCount);
+
+        return std::vector<EGLint>
         {
-            EGL_CONTEXT_CLIENT_VERSION, 3,
+            EGL_BUFFER_SIZE,          32,
+            EGL_ALPHA_SIZE,           8,
+            EGL_BLUE_SIZE,            8,
+            EGL_GREEN_SIZE,           8,
+            EGL_RED_SIZE,             8,
+            EGL_DEPTH_SIZE,           8,
+            EGL_SURFACE_TYPE,         EGL_WINDOW_BIT,
+            EGL_RENDERABLE_TYPE,      EGL_OPENGL_ES3_BIT_KHR,
             EGL_NONE
         };
-
-        return contextAttributes;
     }
 
     ISystemCompositorController* Platform_Integrity_RGL_EGL_ES_3_0::createSystemCompositorController()
@@ -45,27 +55,6 @@ namespace ramses_internal
     {
         Window_Integrity_RGL* platformWindow = new Window_Integrity_RGL(displayConfig, windowEventHandler);
         return addPlatformWindow(platformWindow);
-    }
-
-    IContext* Platform_Integrity_RGL_EGL_ES_3_0::createContext(IWindow& window)
-    {
-        Window_Integrity_RGL* platformWindow = getPlatformWindow<Window_Integrity_RGL>(window);
-        assert(0 != platformWindow);
-
-        Context_EGL* platformContext = new Context_EGL(static_cast<Context_EGL::Generic_EGLNativeDisplayType>(platformWindow->getNativeDisplayHandle()),
-                                                       platformWindow->getNativeWindowHandle(),
-                                                       getContextAttributes(),
-                                                       platformWindow->getSurfaceAttributes(),
-                                                       nullptr, 1, 0);
-        return addPlatformContext(platformContext);
-    }
-
-    IDevice* Platform_Integrity_RGL_EGL_ES_3_0::createDevice(IContext& context)
-    {
-        Context_EGL* platformContext = getPlatformContext<Context_EGL>(context);
-        assert(0 != platformContext);
-        Device_GL* device = new Device_GL(*platformContext, 3, 0, true);
-        return addPlatformDevice(device);
     }
 
     IEmbeddedCompositor* Platform_Integrity_RGL_EGL_ES_3_0::createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context)

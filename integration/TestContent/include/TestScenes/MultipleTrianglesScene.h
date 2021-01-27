@@ -51,7 +51,6 @@ namespace ramses_internal
             THREE_TRIANGLES_WITH_UNSHARED_COLOR,
             EULER_ROTATION_CONVENTIONS,
         };
-
     private:
         void setGeometries(uint32_t state);
         void setTransformations(uint32_t state);

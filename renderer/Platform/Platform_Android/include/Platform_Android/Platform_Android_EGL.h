@@ -9,24 +9,23 @@
 #ifndef RAMSES_PLATFORM_ANDROID_EGL_H
 #define RAMSES_PLATFORM_ANDROID_EGL_H
 
-#include "Platform_Base/Platform_Base.h"
 
+#include "Platform_Android/Window_Android.h"
+#include "Platform_EGL/Platform_EGL.h"
 #include "Context_EGL/Context_EGL.h"
 
 namespace ramses_internal
 {
-    class Platform_Android_EGL : public Platform_Base
+    class Platform_Android_EGL : public Platform_EGL<Window_Android>
     {
     protected:
         Platform_Android_EGL(const RendererConfig& rendererConfig);
 
         ISystemCompositorController* createSystemCompositorController() override final;
         IWindow*    createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
-        IContext*   createContext(IWindow& window) override final;
         IEmbeddedCompositor*    createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) override;
 
-        virtual void getContextAttributes(std::vector<EGLint>& attributes) const = 0;
-        virtual void getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const = 0;
+        virtual uint32_t getSwapInterval() const override;
     };
 }
 

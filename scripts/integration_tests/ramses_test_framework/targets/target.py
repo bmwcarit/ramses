@@ -6,6 +6,10 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from builtins import object
+from builtins import str
+from builtins import range
+from builtins import map
 import os
 import posixpath
 import time
@@ -14,6 +18,7 @@ import random
 import string
 from PIL import Image
 from abc import ABCMeta, abstractmethod
+from future.utils import with_metaclass
 
 from ramses_test_framework import helper
 from ramses_test_framework import log
@@ -23,9 +28,7 @@ CUSTOM_DAEMON_PORT = 6001
 DEFAULT_TEST_LAYER = 1000000
 DEFAULT_TEST_SURFACE = 1000000
 
-class Target:
-    __metaclass__ = ABCMeta
-
+class Target(with_metaclass(ABCMeta)):
     def __init__(self, targetInfo, ramsesInstallDir, resultDir, imagesDesiredDirs, imageDiffScaleFactor, logLevel):
         """ To use no password for the authentication (key-based) leave password to None!
             If a empty string is passed as password it will be used as password """
@@ -301,7 +304,7 @@ class Target:
         if isinstance(value, int):
             optionString += " -{0} {1}".format(ramshOptionName,value)
         if isinstance(value, list):
-            optionString += " -" + ramshOptionName + " " + " ".join(map(str,value))
+            optionString += " -" + ramshOptionName + " " + " ".join(list(map(str,value)))
         return optionString
 
     def _take_renderer_screenshot(self, screenshotName, renderer, displayNumber):
@@ -378,6 +381,6 @@ class Target:
         pass
 
 
-class BridgedTarget():
+class BridgedTarget(object):
     def __init__(self, bridgeTarget):
         self.bridgeTarget = bridgeTarget

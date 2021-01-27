@@ -24,7 +24,7 @@ namespace ramses_internal
 
     Bool SystemCompositorControllerAddSurfaceToLayer::execute(UInt32& surfaceId, UInt32& layerId) const
     {
-        m_rendererCommandBuffer.systemCompositorControllerAddIviSurfaceToIviLayer(WaylandIviSurfaceId(surfaceId), WaylandIviLayerId(layerId));
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCAddIviSurfaceToIviLayer{ WaylandIviSurfaceId(surfaceId), WaylandIviLayerId(layerId) });
         return true;
     }
 }

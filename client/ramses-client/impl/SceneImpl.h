@@ -286,6 +286,7 @@ namespace ramses
         status_t createAndDeserializeObjectImpls(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext, uint32_t count);
 
         void setSceneFileName(std::string const& sceneFilename);
+        void closeSceneFile();
 
         void updateResourceId(resourceId_t const& oldId, Resource& resourceWithNewId);
 
@@ -333,7 +334,7 @@ namespace ramses
         status_t destroyResource(Resource& resource);
         status_t destroyObject(SceneObject& object);
 
-        typedef std::pair<NodeImpl*, EVisibilityMode> NodeVisibilityPair;
+        using NodeVisibilityPair = std::pair<NodeImpl*, EVisibilityMode>;
         using NodeVisibilityInfoVector = std::vector<NodeVisibilityPair>;
 
         void applyVisibilityToSubtree(NodeImpl& node, EVisibilityMode visibilityToApply);

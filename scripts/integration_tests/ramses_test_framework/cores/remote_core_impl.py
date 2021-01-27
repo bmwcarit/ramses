@@ -12,6 +12,7 @@ import paramiko
 import os
 import xmlrunner
 import itertools
+from future.utils import itervalues
 
 from ramses_test_framework import helper
 from ramses_test_framework import log
@@ -96,7 +97,7 @@ class RemoteCoreImpl(CoreImpl):
         paramiko.util.log_to_file(os.path.join(self.fullResultsDirPath, 'paramiko.log'))
         self.createTargets()
         log.info("turning on all power outlets...")
-        for target in itertools.chain(self.bridgeTargets.values(), self.targets.values()):
+        for target in itertools.chain(list(itervalues(self.bridgeTargets)), list(itervalues(self.targets))):
             if target.powerDevice is not None:
                 if not target.powerDevice.switch(target.powerOutletNr, True):
                     log.info("Could not turn on power outlet for target {0} because the power outlet is not available".format(target.name))
@@ -105,10 +106,10 @@ class RemoteCoreImpl(CoreImpl):
         return self.setupTargets(transfer_binaries and (not self.noTransfer))
 
     def reconnectTargets(self):
-        for target in self.bridgeTargets.values():
+        for target in itervalues(self.bridgeTargets):
             log.info("reconnect bridge target {}".format(target.name))
             target.connect(error_on_fail=False)
-        for target in self.targets.values():
+        for target in itervalues(self.targets):
             if isinstance(target, BridgedTarget) and not target.bridgeTarget.isConnected:
                 log.info("skip target {} because bridge not connected".format(target.name))
             else:

@@ -69,7 +69,7 @@ namespace ramses_internal
 
         static bool isAnimationTimeRangeValid(const AnimationProperties& animProps);
 
-        typedef HashMap<AnimationHandle, AnimationProperties> AnimationPropertiesMap;
+        using AnimationPropertiesMap = HashMap<AnimationHandle, AnimationProperties>;
 
         AnimationData& m_animationData;
 

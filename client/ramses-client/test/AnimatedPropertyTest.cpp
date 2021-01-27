@@ -64,7 +64,7 @@ namespace ramses
     class AnimatedPropertyTest : public testing::Test
     {
     public:
-        typedef std::vector<EAnimatedPropertyComponent> ComponentVector;
+        using ComponentVector = std::vector<EAnimatedPropertyComponent>;
         using PropertyComponentVector = std::vector<ComponentVector>;
         using PropertyVector = std::vector<EAnimatedProperty>;
 
@@ -81,7 +81,7 @@ namespace ramses
             sharedEffectCreator = nullptr;
         }
 
-        void SetUp()
+        void SetUp() override
         {
             EXPECT_TRUE(sharedEffectCreator != nullptr);
             EXPECT_TRUE(sharedAnimationSystem != nullptr);

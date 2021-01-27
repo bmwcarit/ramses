@@ -9,13 +9,12 @@
 #ifndef RAMSES_PLATFORM_INTEGRITY_RGL_EGL_ES_3_0_H
 #define RAMSES_PLATFORM_INTEGRITY_RGL_EGL_ES_3_0_H
 
-#include "Platform_Base/Platform_Base.h"
-
-#include "Context_EGL/Context_EGL.h"
+#include "Platform_Integrity_RGL/Window_Integrity_RGL.h"
+#include "Platform_EGL/Platform_EGL.h"
 
 namespace ramses_internal
 {
-    class Platform_Integrity_RGL_EGL_ES_3_0 : public Platform_Base
+    class Platform_Integrity_RGL_EGL_ES_3_0 : public Platform_EGL<Window_Integrity_RGL>
     {
     public:
         Platform_Integrity_RGL_EGL_ES_3_0(const RendererConfig& rendererConfig);
@@ -23,12 +22,10 @@ namespace ramses_internal
     protected:
         ISystemCompositorController* createSystemCompositorController() override final;
         IWindow*    createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) final;
-        IContext*   createContext(IWindow& window) final;
-        IDevice*    createDevice(IContext& context) final;
         IEmbeddedCompositor* createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) final;
 
-    private:
-        const EGLint* getContextAttributes() const;
+        virtual uint32_t getSwapInterval() const override;
+        virtual std::vector<EGLint> getSurfaceAttributes(UInt32 msaaSampleCount) const override final;
     };
 }
 

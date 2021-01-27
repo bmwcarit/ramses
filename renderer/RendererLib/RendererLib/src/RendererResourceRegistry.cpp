@@ -44,6 +44,7 @@ namespace ramses_internal
             return;
         }
 
+        assert(rd.status != EResourceStatus::ScheduledForUpload);
         updateCachedLists(hash, rd.status, EResourceStatus::Registered);
 
         m_resources.remove(hash);
@@ -102,8 +103,8 @@ namespace ramses_internal
 
         updateListOfResourcesNotInUseByScenes(hash);
 
-        // unregister resource if not used by any scene (if uploaded it has to wait to be unloaded first)
-        if (rd.sceneUsage.empty() && rd.status != EResourceStatus::Uploaded)
+        // unregister resource if not used by any scene (if scheduled for upload or uploaded it has to wait to be unloaded first)
+        if (rd.sceneUsage.empty() && rd.status != EResourceStatus::Uploaded && rd.status != EResourceStatus::ScheduledForUpload)
             unregisterResource(hash);
     }
 
@@ -131,6 +132,14 @@ namespace ramses_internal
         rd.decompressedSize = resourceObject->getDecompressedDataSize();
 
         setResourceStatus(hash, EResourceStatus::Provided);
+    }
+
+    void RendererResourceRegistry::setResourceScheduledForUpload(const ResourceContentHash& hash)
+    {
+        assert(m_resources.contains(hash));
+        assert(!m_resources.get(hash)->deviceHandle.isValid());
+
+        setResourceStatus(hash, EResourceStatus::ScheduledForUpload);
     }
 
     void RendererResourceRegistry::setResourceUploaded(const ResourceContentHash& hash, DeviceResourceHandle deviceHandle, UInt32 vramSize)
@@ -193,6 +202,11 @@ namespace ramses_internal
         return it != m_resourcesUsedInScenes.cend() ? &it->second : nullptr;
     }
 
+    bool RendererResourceRegistry::hasAnyResourcesScheduledForUpload() const
+    {
+        return m_countResourcesScheduledForUpload > 0u;
+    }
+
     void RendererResourceRegistry::updateCachedLists(const ResourceContentHash& hash, EResourceStatus currentStatus, EResourceStatus newStatus)
     {
         if (currentStatus == EResourceStatus::Provided)
@@ -200,12 +214,19 @@ namespace ramses_internal
             assert(contains_c(m_providedResources, hash));
             m_providedResources.erase(find_c(m_providedResources, hash));
         }
+        else if (currentStatus == EResourceStatus::ScheduledForUpload)
+        {
+            assert(m_countResourcesScheduledForUpload > 0u);
+            --m_countResourcesScheduledForUpload;
+        }
 
         if (newStatus == EResourceStatus::Provided)
         {
             assert(!contains_c(m_providedResources, hash));
             m_providedResources.push_back(hash);
         }
+        else if (newStatus == EResourceStatus::ScheduledForUpload)
+            ++m_countResourcesScheduledForUpload;
     }
 
     void RendererResourceRegistry::updateListOfResourcesNotInUseByScenes(const ResourceContentHash& hash)
@@ -242,6 +263,8 @@ namespace ramses_internal
             return currentStatus == EResourceStatus::Registered;
         case EResourceStatus::Uploaded:
         case EResourceStatus::Broken:
+            return currentStatus == EResourceStatus::Provided || currentStatus == EResourceStatus::ScheduledForUpload;
+        case EResourceStatus::ScheduledForUpload:
             return currentStatus == EResourceStatus::Provided;
         case EResourceStatus::Registered:
             return false;

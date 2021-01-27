@@ -12,6 +12,7 @@
 #include "Utils/Warnings.h"
 #include "PlatformAbstraction/Hash.h"
 #include "Collections/StringOutputStream.h"
+#include "PlatformAbstraction/Macros.h"
 #include <type_traits>
 #include <functional>
 
@@ -38,27 +39,27 @@ namespace ramses_internal
         {
         }
 
-        constexpr BaseType getValue() const
+        RNODISCARD constexpr BaseType getValue() const
         {
             return m_value;
         }
 
-        constexpr BaseType& getReference()
+        RNODISCARD constexpr BaseType& getReference()
         {
             return m_value;
         }
 
-        constexpr bool operator==(const StronglyTypedValue& other) const
+        RNODISCARD constexpr bool operator==(const StronglyTypedValue& other) const
         {
             return m_value == other.m_value;
         }
 
-        constexpr bool operator!=(const StronglyTypedValue& other) const
+        RNODISCARD constexpr bool operator!=(const StronglyTypedValue& other) const
         {
             return m_value != other.m_value;
         }
 
-        constexpr bool isValid() const
+        RNODISCARD constexpr bool isValid() const
         {
             return m_value != _invalid;
         }

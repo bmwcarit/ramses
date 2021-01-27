@@ -164,9 +164,13 @@ namespace ramses_internal
         m_stackedTimingLineEffect = new EffectResource(StackedTimingLineVertexShader, IndexedColorFragmentShader, "", iuniforms, iAttributes, "overlayShader", ResourceCacheFlag_DoNotCache);
 
 
-        m_singleColorShaderHandle = m_device->uploadShader(*m_singleColorEffect);
-        m_timingLineShaderHandle = m_device->uploadShader(*m_timingLineEffect);
-        m_stackedTimingLineShaderHandle = m_device->uploadShader(*m_stackedTimingLineEffect);
+        auto singleColorShaderResource = m_device->uploadShader(*m_singleColorEffect);
+        auto timingLineShaderResource = m_device->uploadShader(*m_timingLineEffect);
+        auto stackedTimingLineShaderResource = m_device->uploadShader(*m_stackedTimingLineEffect);
+
+        m_singleColorShaderHandle = m_device->registerShader(std::move(singleColorShaderResource));
+        m_timingLineShaderHandle = m_device->registerShader(std::move(timingLineShaderResource));
+        m_stackedTimingLineShaderHandle = m_device->registerShader(std::move(stackedTimingLineShaderResource));
     }
 
     void FrameProfileRenderer::destroyEffects()

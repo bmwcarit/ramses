@@ -96,13 +96,6 @@ namespace ramses_internal
         ResourceContentHash effect_hash(0x0123456789abcdef, 0x6edcba9876543210);
         ResourceContentHash vertex_array_hash(0x0123456789abcdef, 0x1edcba9876543210);
 
-        EXPECT_EQ("inv_00000000000000000000000000000000", StringOutputStream::ToString(zero_hash));
-        EXPECT_EQ("inv_000000000000000000000000000018C6", StringOutputStream::ToString(small_hash));
-        EXPECT_EQ("inv_FEDCBA98765432100123456789ABCDEF", StringOutputStream::ToString(big_hash));
-        EXPECT_EQ("tx2_3EDCBA98765432100123456789ABCDEF", StringOutputStream::ToString(texture2d_hash));
-        EXPECT_EQ("eff_6EDCBA98765432100123456789ABCDEF", StringOutputStream::ToString(effect_hash));
-        EXPECT_EQ("vtx_1EDCBA98765432100123456789ABCDEF", StringOutputStream::ToString(vertex_array_hash));
-
         EXPECT_EQ("inv_00000000000000000000000000000000", fmt::to_string(zero_hash));
         EXPECT_EQ("inv_000000000000000000000000000018C6", fmt::to_string(small_hash));
         EXPECT_EQ("inv_FEDCBA98765432100123456789ABCDEF", fmt::to_string(big_hash));

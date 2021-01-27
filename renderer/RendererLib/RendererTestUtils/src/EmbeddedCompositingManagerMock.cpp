@@ -13,7 +13,7 @@ namespace ramses_internal
 {
     EmbeddedCompositingManagerMock::EmbeddedCompositingManagerMock()
     {
-        EXPECT_CALL(*this, dispatchStateChangesOfStreamTexturesAndSources(_, _, _)).Times(AnyNumber());
+        EXPECT_CALL(*this, dispatchStateChangesOfSources(_, _, _)).Times(AnyNumber());
         EXPECT_CALL(*this, processClientRequests()).Times(AnyNumber());
         EXPECT_CALL(*this, hasUpdatedContentFromStreamSourcesToUpload()).Times(AnyNumber()).WillRepeatedly(Return(false));
         EXPECT_CALL(*this, hasRealCompositor()).Times(AnyNumber()).WillRepeatedly(Return(true));

@@ -9,85 +9,107 @@
 #include "Collections/HeapArray.h"
 #include "gtest/gtest.h"
 
+
 namespace ramses_internal
 {
-    TEST(AHeapArray, DefaultCtorCreatesEmpty)
+    template <typename T>
+    class AHeapArray : public testing::Test
     {
-        HeapArray<Byte> a;
+    };
+
+    using TypesToTest = ::testing::Types<uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t>;
+    TYPED_TEST_SUITE(AHeapArray, TypesToTest);
+
+    TYPED_TEST(AHeapArray, DefaultCtorCreatesEmpty)
+    {
+        HeapArray<TypeParam> a;
         EXPECT_TRUE(a.data() == nullptr);
         EXPECT_EQ(0u, a.size());
     }
 
-    TEST(AHeapArray, CanCreateWithSize)
+    TYPED_TEST(AHeapArray, CanCreateWithSize)
     {
-        HeapArray<Byte> a(4);
+        HeapArray<TypeParam> a(4);
         EXPECT_TRUE(a.data() != nullptr);
         EXPECT_EQ(4u, a.size());
     }
 
-    TEST(AHeapArray, CanCreateWithSizeAndData)
+    TYPED_TEST(AHeapArray, CanCreateWithSizeAndData)
     {
-        Byte data[4] = {1, 2, 3, 4};
-        HeapArray<Byte> a(4, data);
+        TypeParam data[4] = {1, 2, 3, 4};
+        HeapArray<TypeParam> a(4, data);
         EXPECT_TRUE(a.data() != nullptr);
         ASSERT_EQ(4u, a.size());
-        EXPECT_EQ(0, PlatformMemory::Compare(a.data(), data, 4));
+        EXPECT_EQ(data, a.span());
     }
 
-    TEST(AHeapArray, CanGetConstData)
+    TYPED_TEST(AHeapArray, CanGetConstData)
     {
-        HeapArray<Byte> a(4);
+        HeapArray<TypeParam> a(4);
         const auto& ca = a;
         EXPECT_EQ(a.data(), ca.data());
     }
 
-    TEST(AHeapArray, IsZeroAfterSetZero)
+    TYPED_TEST(AHeapArray, IsZeroAfterSetZero)
     {
-        Byte data[4] = {1, 2, 3, 4};
-        Byte zero[4] = {0, 0, 0, 0};
+        TypeParam data[4] = {1, 2, 3, 4};
+        TypeParam zero[4] = {0, 0, 0, 0};
 
-        HeapArray<Byte> a(4, data);
+        HeapArray<TypeParam> a(4, data);
         a.setZero();
 
         ASSERT_EQ(4u, a.size());
-        EXPECT_EQ(0, PlatformMemory::Compare(a.data(), zero, 4));
+        EXPECT_EQ(zero, a.span());
     }
 
-    TEST(AHeapArray, CanMoveConstruct)
+    TYPED_TEST(AHeapArray, CanMoveConstruct)
     {
-        Byte data[4] = {1, 2, 3, 4};
-        HeapArray<Byte> a(4, data);
-        HeapArray<Byte> b(std::move(a));
+        TypeParam data[4] = {1, 2, 3, 4};
+        HeapArray<TypeParam> a(4, data);
+        HeapArray<TypeParam> b(std::move(a));
 
         EXPECT_TRUE(b.data() != nullptr);
         ASSERT_EQ(4u, b.size());
-        EXPECT_EQ(0, PlatformMemory::Compare(b.data(), data, 4));
+        EXPECT_EQ(data, b.span());
     }
 
-    TEST(AHeapArray, CanMoveAssign)
+    TYPED_TEST(AHeapArray, CanMoveAssign)
     {
-        Byte data[4] = {1, 2, 3, 4};
-        HeapArray<Byte> a(4, data);
-        HeapArray<Byte> b;
+        TypeParam data[4] = {1, 2, 3, 4};
+        HeapArray<TypeParam> a(4, data);
+        HeapArray<TypeParam> b;
         b = std::move(a);
 
         EXPECT_TRUE(b.data() != nullptr);
         ASSERT_EQ(4u, b.size());
-        EXPECT_EQ(0, PlatformMemory::Compare(b.data(), data, 4));
+        EXPECT_EQ(data, b.span());
     }
 
-    TEST(AHeapArray, canBeStronglyTyped)
+    TYPED_TEST(AHeapArray, canBeStronglyTyped)
     {
-        using STHeapArray = HeapArray<Byte, struct SomeTag>;
+        using STHeapArray = HeapArray<TypeParam, struct SomeTag>;
         STHeapArray a(10);
         STHeapArray b;
         b = std::move(a);
     }
 
-    TEST(AHeapArray, canBeReconstructedWithOtherSize)
+    TYPED_TEST(AHeapArray, canBeReconstructedWithOtherSize)
     {
-        HeapArray<Byte> a(4);
-        HeapArray<Byte> b(2, std::move(a));
+        HeapArray<TypeParam> a(4);
+        HeapArray<TypeParam> b(2, std::move(a));
         EXPECT_EQ(2u, b.size());
+    }
+
+    TYPED_TEST(AHeapArray, canGetAsSpan)
+    {
+        TypeParam data[4] = {1, 2, 3, 4};
+        HeapArray<TypeParam> a(4, data);
+        EXPECT_EQ(absl::MakeSpan(data), a.span());
+    }
+
+    TYPED_TEST(AHeapArray, canGetEmptyAsSpan)
+    {
+        HeapArray<TypeParam> a;
+        EXPECT_EQ(absl::Span<const TypeParam>(), a.span());
     }
 }

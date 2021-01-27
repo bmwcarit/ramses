@@ -70,7 +70,7 @@ namespace ramses_internal
         m_animSystemSource.setSplineKeyTangentsFloat(splineHandle2, 11u, 55.f, Vector2(111.f, -999.f), Vector2(11.f, -99.f));
         m_animSystemSource.setSplineKeyTangentsFloat(splineHandle2, 99u, -88.f, Vector2(11.f, -99.f), Vector2(111.f, -999.f));
 
-        typedef DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType ContainerTraitsClass;
+        using ContainerTraitsClass = DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType;
         const DataBindHandle dataBindHandle1 = m_animSystemSource.allocateDataBinding(m_scene, ContainerTraitsClass::TransformNode_Rotation, transHandle1.asMemoryHandle(), InvalidMemoryHandle, DataBindHandle{ 7u });
         const DataBindHandle dataBindHandle2 = m_animSystemSource.allocateDataBinding(m_scene, ContainerTraitsClass::TransformNode_Translation, transHandle2.asMemoryHandle(), InvalidMemoryHandle, DataBindHandle{ 8u });
 

@@ -53,7 +53,7 @@ namespace ramses
     template<> struct CLASS_OF_RAMSES_OBJECT_TYPE < _id > \
         { \
         /** Corresponding RamsesObject class */ \
-        typedef _className ClassType; \
+        using ClassType = _className; \
         /** Type of closest base class */ \
         static const ERamsesObjectType BaseTypeID = _baseTypeId; \
         /** Can be instantiated */ \

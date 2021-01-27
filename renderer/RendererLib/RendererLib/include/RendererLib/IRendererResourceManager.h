@@ -18,12 +18,20 @@
 #include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Resource/ResourceTypes.h"
 #include "Components/ManagedResource.h"
+#include <unordered_map>
+#include <vector>
 
 namespace ramses_internal
 {
     struct RenderTarget;
     class IRendererResourceCache;
     enum class EDataBufferType : UInt8;
+
+    struct StreamUsage
+    {
+        std::unordered_map<SceneId, StreamTextureHandleVector> sceneUsages;
+        std::vector<StreamBufferHandle> streamBufferUsages;
+    };
 
     class IRendererResourceManager : public IResourceDeviceHandleAccessor
     {
@@ -72,6 +80,8 @@ namespace ramses_internal
 
         virtual void             uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId) = 0;
         virtual void             unloadStreamBuffer(StreamBufferHandle bufferHandle) = 0;
+
+        virtual const StreamUsage& getStreamUsage(WaylandIviSurfaceId source) const = 0;
     };
 }
 #endif

@@ -146,7 +146,7 @@ namespace ramses
 
     AnimatedPropertyImpl* AnimatedPropertyFactory::createAnimatedPropertyImpl(ramses_internal::MemoryHandle handle1, ramses_internal::MemoryHandle handle2, EAnimatedPropertyComponent ePropertyComponent, ramses_internal::TDataBindID bindID, const char* name)
     {
-        typedef ramses_internal::DataBindContainerToTraitsSelector<ramses_internal::IScene>::ContainerTraitsClassType ContainerTraitsClass;
+        using ContainerTraitsClass = ramses_internal::DataBindContainerToTraitsSelector<ramses_internal::IScene>::ContainerTraitsClassType;
         const ramses_internal::DataBindContainerTraits<ramses_internal::IScene>& containerTraits = ContainerTraitsClass::m_dataBindTraits[bindID];
         const ramses_internal::TDataBindID dataBindID = bindID;
         const ramses_internal::EVectorComponent vectorComponent = AnimatedPropertyUtils::getVectorComponentFromProperty(ePropertyComponent);

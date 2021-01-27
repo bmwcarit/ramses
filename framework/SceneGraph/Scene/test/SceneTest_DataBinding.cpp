@@ -20,7 +20,7 @@ namespace ramses_internal
     TEST(SceneDataBinding, canCreateDataBindToScene)
     {
         Scene scene;
-        typedef DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType BindTraits;
+        using BindTraits = DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType;
 
         DataBind<IScene, Vector3,   NodeHandle> dataBind0 (scene, NodeHandle::Invalid(), BindTraits::TransformNode_Translation);
         DataBind<IScene, Vector3,   NodeHandle> dataBind1 (scene, NodeHandle::Invalid(), BindTraits::TransformNode_Rotation);

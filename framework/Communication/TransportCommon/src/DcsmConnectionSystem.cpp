@@ -57,7 +57,7 @@ namespace ramses_internal
     // public send functions
     bool DcsmConnectionSystem::sendBroadcastOfferContent(ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, uint32_t sortOrder)
     {
-        LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendBroadcastOfferContent: content " << content << ", category " << category << ", technicalContentType " << EnumToString(technicalContentType) << ", name " << friendlyName << ", sortOrder " << sortOrder);
+        LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendBroadcastOfferContent: content " << content << ", category " << category << ", technicalContentType " << technicalContentType << ", name " << friendlyName << ", sortOrder " << sortOrder);
         return sendBroadcast("sendBroadcastOfferContent", [&](DcsmInstanceId iid, SomeIPMsgHeader hdr) {
             return m_stack->sendOfferContent(iid, hdr, content, category, technicalContentType, friendlyName, sortOrder);
         });
@@ -65,7 +65,7 @@ namespace ramses_internal
 
     bool DcsmConnectionSystem::sendOfferContent(const Guid& to, ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, uint32_t sortOrder)
     {
-        LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendOfferContent: to " << to << ", content " << content << ", category " << category << ", technicalContentType " << EnumToString(technicalContentType) << ", name " << friendlyName << ", sortOrder " << sortOrder);
+        LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendOfferContent: to " << to << ", content " << content << ", category " << category << ", technicalContentType " << technicalContentType << ", name " << friendlyName << ", sortOrder " << sortOrder);
         return sendUnicast("sendOfferContent", to, [&](DcsmInstanceId iid, SomeIPMsgHeader hdr) {
             return m_stack->sendOfferContent(iid, hdr, content, category, technicalContentType, friendlyName, sortOrder);
         });
@@ -107,7 +107,7 @@ namespace ramses_internal
 
     bool DcsmConnectionSystem::sendContentStateChange(const Guid& to, ContentID content, EDcsmState state, const CategoryInfo& categoryInfo, const AnimationInformation& animation)
     {
-        LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendContentStateChange: to " << to << ", content " << content << ", state " << EnumToString(state) <<
+        LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendContentStateChange: to " << to << ", content " << content << ", state " << state <<
                  ", " << categoryInfo << ", animation [" << animation.startTimeStamp << "; " << animation.finishedTimeStamp << "]");
         return sendUnicast("sendContentStateChange", to, [&](DcsmInstanceId iid, SomeIPMsgHeader hdr) {
             return m_stack->sendContentStateChange(iid, hdr, content, state, categoryInfo, animation);

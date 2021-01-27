@@ -9,13 +9,13 @@
 import telnetlib
 import time
 from abc import ABCMeta, abstractmethod
+from future.utils import with_metaclass
+import sys
 
 from ramses_test_framework import log
 
 
-class PowerDevice:
-    __metaclass__ = ABCMeta
-
+class PowerDevice(with_metaclass(ABCMeta)):
     def __init__(self, url, username, password):
         self.url = url
         self.username = username
@@ -48,17 +48,24 @@ class NETIOPowerDevice(PowerDevice):
         if not telnet_conn:
             return False
 
-        assert(telnet_conn)
-        telnet_conn.write("login {0} {1}\n".format(self.username, self.password))
+        self._write(telnet_conn, "login {0} {1}\n".format(self.username, self.password))
 
         #turn power outlet on or off
         status = 0
         if on:
             status = 1
-        telnet_conn.write("port {0} {1}\n".format(outletNr, status))
+        self._write(telnet_conn, "port {0} {1}\n".format(outletNr, status))
 
-        telnet_conn.write("quit\n")
+        self._write(telnet_conn, "quit\n")
         time.sleep(1)
         log.info(telnet_conn.read_eager())
 
         return True
+
+    def _write(self, conn, command):
+        assert(conn)
+        if sys.version_info < (3, 0):
+            command = bytes(command)
+        else:
+            command = bytes(command, 'utf8')
+        conn.write(command)

@@ -29,7 +29,7 @@ namespace ramses
         {
         }
 
-        void TearDown()
+        void TearDown() override
         {
             framework.destroyDcsmConsumer(consumer);
             framework.destroyDcsmProvider(provider);

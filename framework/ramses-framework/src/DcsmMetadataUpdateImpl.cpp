@@ -55,7 +55,7 @@ namespace ramses
 
     bool DcsmMetadataUpdateImpl::hasWidgetHUDLineID() const
     {
-        return m_metadata.getWidgetHUDLineID();
+        return m_metadata.hasWidgetHUDLineID();
     }
 
     int32_t DcsmMetadataUpdateImpl::getWidgetHUDLineID() const

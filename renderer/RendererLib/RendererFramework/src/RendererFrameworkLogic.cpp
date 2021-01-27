@@ -45,7 +45,7 @@ namespace ramses_internal
             return;
         }
         m_sceneClients.put(newScene.sceneID, std::make_pair(providerID, newScene.friendlyName));
-        m_rendererCommands.publishScene(newScene.sceneID, newScene.publicationMode);
+        m_rendererCommands.enqueueCommand(RendererCommand::ScenePublished{ newScene.sceneID, newScene.publicationMode });
     }
 
     void RendererFrameworkLogic::handleSceneBecameUnavailable(const SceneId& sceneId, const Guid& providerID)
@@ -54,20 +54,20 @@ namespace ramses_internal
 
         assert(m_sceneClients.contains(sceneId));
         m_sceneClients.remove(sceneId);
-        m_rendererCommands.unpublishScene(sceneId);
+        m_rendererCommands.enqueueCommand(RendererCommand::SceneUnpublished{ sceneId });
     }
 
     void RendererFrameworkLogic::handleInitializeScene(const SceneInfo& sceneInfo, const Guid& providerID)
     {
-        LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleInitializeScene: scene unpublished: " << sceneInfo.sceneID << " by " << providerID);
+        LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleInitializeScene: " << sceneInfo.sceneID << " by " << providerID);
 
         assert(m_sceneClients.contains(sceneInfo.sceneID));
-        m_rendererCommands.receiveScene(sceneInfo);
+        m_rendererCommands.enqueueCommand(RendererCommand::ReceiveScene{ sceneInfo });
     }
 
     void RendererFrameworkLogic::handleSceneUpdate(const SceneId& sceneId, SceneUpdate&& sceneUpdate, const Guid& /*providerID*/)
     {
-        m_rendererCommands.enqueueActionsForScene(sceneId, std::move(sceneUpdate));
+        m_rendererCommands.enqueueCommand(RendererCommand::UpdateScene{ sceneId, std::move(sceneUpdate) });
     }
 
     void RendererFrameworkLogic::sendSubscribeScene(SceneId sceneId)

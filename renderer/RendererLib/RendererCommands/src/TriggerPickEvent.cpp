@@ -26,7 +26,7 @@ namespace ramses_internal
 
     Bool TriggerPickEvent::execute(UInt64& sceneId, Float& pickCoordX, Float& pickCoordY) const
     {
-        m_rendererCommandBuffer.handlePickEvent(SceneId(sceneId), Vector2(pickCoordX, pickCoordY));
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::PickEvent{ SceneId{sceneId}, Vector2{pickCoordX, pickCoordY} });
         return true;
     }
 }

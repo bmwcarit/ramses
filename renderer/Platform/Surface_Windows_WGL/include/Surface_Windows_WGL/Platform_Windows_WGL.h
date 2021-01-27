@@ -20,7 +20,7 @@ namespace ramses_internal
         Platform_Windows_WGL(const RendererConfig& rendererConfig);
         ISystemCompositorController* createSystemCompositorController() override final;
         IWindow*    createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
-        IContext*   createContext(IWindow& window) override;
+        IContext*   createContext(IWindow& window, IContext* sharedContext) override;
         IEmbeddedCompositor*    createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) override;
 
         WglExtensions m_wglExtensions;

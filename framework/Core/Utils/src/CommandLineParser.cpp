@@ -18,7 +18,7 @@ namespace ramses_internal
             m_programName = argv[0];
             for (Int index = 1; index < argc; ++index)
             {
-                const bool startsWithDash = (argv[index] && argv[index][0] == '-');
+                const bool startsWithDash = (argv[index] != nullptr && argv[index][0] == '-');
 
                 CommandLineArgument cmdLineArg;
                 cmdLineArg.setName(startsWithDash ? StringUtils::Trim(argv[index]) : argv[index]);
@@ -31,7 +31,7 @@ namespace ramses_internal
                     const Double unusedValue = strtod(nextElement.c_str(), &endptr);
                     UNUSED(unusedValue);
 
-                    const bool isNumber = endptr && (*endptr == 0);
+                    const bool isNumber = endptr != nullptr && (*endptr == 0);
                     const bool doesNotStartWithDash = (nextElement.at(0) != '-');
 
                     if (doesNotStartWithDash || isNumber)

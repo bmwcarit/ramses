@@ -19,6 +19,7 @@
 #include "Collections/HashMap.h"
 #include "Collections/Guid.h"
 #include "Utils/IPeriodicLogSupplier.h"
+#include "Collections/HashSet.h"
 #include <unordered_map>
 
 
@@ -138,7 +139,7 @@ namespace ramses_internal
             CategoryInfo               categoryInfo;
             AnimationInformation       animation  {0, 0};
             DcsmMetadata               metadata;
-            int32_t                    focusRequest;
+            int32_t                    focusRequest = 0;
             Guid                       from;
         };
 

@@ -12,6 +12,7 @@ import os
 import stat
 import common_modules.common as cc
 
+
 def check_file_attributes(filename):
     """ Check for unwanted file attributes """
 

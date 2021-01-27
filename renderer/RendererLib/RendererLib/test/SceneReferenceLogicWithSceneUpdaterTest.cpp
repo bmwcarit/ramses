@@ -13,9 +13,9 @@
 #include "RendererLib/SceneExpirationMonitor.h"
 #include "RendererLib/SceneStateExecutor.h"
 #include "RendererLib/FrameTimer.h"
-#include "RendererLib/ResourceUploader.h"
+#include "RendererLib/SceneReferenceOwnership.h"
 #include "Scene/SceneActionCollectionCreator.h"
-#include "RendererSceneControlMock.h"
+#include "RendererSceneStateControlMock.h"
 #include "RendererSceneControlLogicMock.h"
 #include "RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
@@ -39,11 +39,10 @@ namespace ramses_internal
             : m_scenes(m_eventCollector)
             , m_expirationMonitor(m_scenes, m_eventCollector)
             , m_renderer(m_platform, m_scenes, m_eventCollector, m_expirationMonitor, m_rendererStatistics)
-            , m_resourceUploader(m_rendererStatistics)
             , m_sceneStateExecutor(m_renderer, m_sceneEventSenderFromSceneUpdater, m_eventCollector)
-            , m_sceneUpdater(m_renderer, m_scenes, m_sceneStateExecutor, m_eventCollector, m_frameTimer, m_expirationMonitor)
+            , m_sceneUpdater(m_platform, m_renderer, m_scenes, m_sceneStateExecutor, m_eventCollector, m_frameTimer, m_expirationMonitor)
             , m_sceneLogic(m_sceneUpdater)
-            , m_sceneRefLogic(m_scenes, m_sceneLogic, m_sceneUpdater, m_sceneEventSenderFromSceneRefLogic)
+            , m_sceneRefLogic(m_scenes, m_sceneLogic, m_sceneUpdater, m_sceneEventSenderFromSceneRefLogic, m_sceneRefOwnership)
         {
             m_sceneUpdater.setSceneReferenceLogicHandler(m_sceneRefLogic);
         }
@@ -51,7 +50,7 @@ namespace ramses_internal
         virtual void SetUp() override
         {
             // get master scene to ready state
-            m_sceneUpdater.createDisplayContext({}, m_resourceUploader, DisplayId);
+            m_sceneUpdater.createDisplayContext({}, DisplayId, nullptr);
             m_sceneLogic.setSceneMapping(MasterSceneId, DisplayId);
             m_sceneLogic.setSceneState(MasterSceneId, RendererSceneState::Ready);
             publishScene(MasterSceneId);
@@ -105,7 +104,7 @@ namespace ramses_internal
             RendererSceneControlLogic::Events outSceneEvents;
             m_sceneLogic.consumeEvents(outSceneEvents);
             for (const auto& evt : outSceneEvents)
-                m_eventCollector.addSceneEvent(ERendererEventType_SceneStateChanged, evt.sceneId, evt.state);
+                m_eventCollector.addSceneEvent(ERendererEventType::SceneStateChanged, evt.sceneId, evt.state);
         }
 
         void update()
@@ -129,7 +128,6 @@ namespace ramses_internal
         SceneExpirationMonitor m_expirationMonitor;
         RendererStatistics m_rendererStatistics;
         NiceMock<RendererMockWithNiceMockDisplay> m_renderer;
-        ResourceUploader m_resourceUploader;
 
         NiceMock<RendererSceneEventSenderMock> m_sceneEventSenderFromSceneUpdater;
         StrictMock<RendererSceneEventSenderMock> m_sceneEventSenderFromSceneRefLogic;
@@ -138,6 +136,7 @@ namespace ramses_internal
         RendererSceneUpdater m_sceneUpdater;
 
         RendererSceneControlLogic m_sceneLogic;
+        SceneReferenceOwnership m_sceneRefOwnership;
         SceneReferenceLogic m_sceneRefLogic;
 
         static constexpr SceneId MasterSceneId{ 123 };

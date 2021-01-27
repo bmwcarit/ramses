@@ -24,7 +24,7 @@ TEST(AnEffectConfig, canLoadCorrectlyWhenAllLinesAreValid)
     const uint32_t numCompilerDefines = descriptionImpl.getNumberOfCompilerDefines();
     EXPECT_EQ(2u, numCompilerDefines);
 
-    typedef ramses_internal::StringVector StringVector;
+    using StringVector = ramses_internal::StringVector;
     const StringVector& defines = descriptionImpl.getCompilerDefines();
     EXPECT_TRUE(contains_c(defines, "dummy"));
     EXPECT_TRUE(contains_c(defines, "dummy1"));

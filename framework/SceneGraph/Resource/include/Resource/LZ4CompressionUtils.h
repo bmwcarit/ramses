@@ -22,8 +22,8 @@ namespace ramses_internal
             High
         };
 
-        CompressedResouceBlob compress(const ResourceBlob& plainBuffer, CompressionLevel level);
-        ResourceBlob decompress(const CompressedResouceBlob& compressedData, uint32_t uncompressedSize);
+        CompressedResourceBlob compress(const ResourceBlob& plainBuffer, CompressionLevel level);
+        ResourceBlob decompress(const CompressedResourceBlob& compressedData, uint32_t uncompressedSize);
     }
 }
 #endif

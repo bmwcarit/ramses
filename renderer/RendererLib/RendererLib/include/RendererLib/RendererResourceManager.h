@@ -21,18 +21,21 @@
 namespace ramses_internal
 {
     class IRenderBackend;
+    class AsyncEffectUploader;
     class IEmbeddedCompositingManager;
-    class IResourceUploader;
     class IRendererResourceCache;
     class FrameTimer;
     class RendererStatistics;
+    class IBinaryShaderCache;
+    class IResourceUploader;
 
     class RendererResourceManager : public IRendererResourceManager
     {
     public:
         RendererResourceManager(
-            IResourceUploader& uploader,
             IRenderBackend& renderBackend,
+            std::unique_ptr<IResourceUploader> resourceUploader,
+            AsyncEffectUploader& asyncEffectUploader,
             IEmbeddedCompositingManager& embeddedCompositingManager,
             Bool keepEffects,
             const FrameTimer& frameTimer,
@@ -66,7 +69,7 @@ namespace ramses_internal
         virtual void                 uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered) override;
         virtual void                 unloadOffscreenBuffer(OffscreenBufferHandle bufferHandle) override;
 
-        virtual void                 uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId) override;
+        virtual void                 uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId source) override;
         virtual void                 unloadStreamBuffer(StreamBufferHandle bufferHandle) override;
 
         virtual void                 uploadTextureSampler(TextureSamplerHandle handle, SceneId sceneId, const TextureSamplerStates& states) override;
@@ -99,6 +102,10 @@ namespace ramses_internal
         virtual OffscreenBufferHandle getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const override;
         virtual DeviceResourceHandle getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const override;
 
+        virtual const StreamUsage& getStreamUsage(WaylandIviSurfaceId source) const override;
+
+        const RendererResourceRegistry& getRendererResourceRegistry() const;
+
     private:
         using SceneResourceRegistryMap = HashMap<SceneId, RendererSceneResourceRegistry>;
 
@@ -124,6 +131,8 @@ namespace ramses_internal
         SceneResourceRegistryMap       m_sceneResourceRegistryMap;
         ResourceUploadingManager       m_resourceUploadingManager;
         RendererStatistics&            m_stats;
+
+        std::unordered_map<WaylandIviSurfaceId, StreamUsage> m_streamUsages;
 
         friend class RendererLogger;
         // TODO Violin remove this after KPI monitor is reworked

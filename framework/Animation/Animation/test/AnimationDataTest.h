@@ -30,7 +30,7 @@ namespace ramses_internal
         template <typename EDataType>
         void testAnimationManagerDataBindingTypes(MemoryHandle handle, const EDataType constainerInitVal, const EDataType setVal)
         {
-            typedef AnimationDataBind<AnimationDataBindTestContainer<EDataType>, EDataType, MemoryHandle> DataBindTypeLocal;
+            using DataBindTypeLocal = AnimationDataBind<AnimationDataBindTestContainer<EDataType>, EDataType, MemoryHandle>;
             AnimationDataBindTestContainer<EDataType> container;
             DataBindTypeLocal dataBind(container, handle, EDataBindAccessorType_Handles_1);
 

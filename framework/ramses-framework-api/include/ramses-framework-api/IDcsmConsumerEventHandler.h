@@ -17,7 +17,7 @@ namespace ramses
     class DcsmMetadataUpdate;
 
     /**
-    * @brief Callback interface for recived DCSM consumer side events. Used with DcsmConsumer::dispatchEvents().
+    * @brief Callback interface for received DCSM consumer side events. Used with DcsmConsumer::dispatchEvents().
     */
     class RAMSES_API IDcsmConsumerEventHandler
     {

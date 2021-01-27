@@ -7,6 +7,7 @@
 #  -------------------------------------------------------------------------
 
 from __future__ import print_function
+from builtins import str
 import time
 import paramiko
 import socket
@@ -151,6 +152,7 @@ class RemoteTarget(Target):
                 if shutdown:
                     self._shutdown()
                 self.sshClient.close()
+                self.isConnected = False
         except SSHException as e:
             log.warning('Paramiko exception during target_specific_tear_down: ' + str(e))
 

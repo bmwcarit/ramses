@@ -20,8 +20,9 @@ namespace ramses_internal
 {
     class RendererScenes;
     class IRendererSceneControlLogic;
-    class IRendererSceneControl;
+    class IRendererSceneUpdater;
     class IRendererSceneEventSender;
+    class SceneReferenceOwnership;
 
     class ISceneReferenceLogic
     {
@@ -35,7 +36,7 @@ namespace ramses_internal
     class SceneReferenceLogic : public ISceneReferenceLogic
     {
     public:
-        SceneReferenceLogic(const RendererScenes& scenes, IRendererSceneControlLogic& sceneLogicIRendererSceneControl, IRendererSceneControl& sceneControl, IRendererSceneEventSender& sender);
+        SceneReferenceLogic(const RendererScenes& scenes, IRendererSceneControlLogic& sceneLogicIRendererSceneControl, IRendererSceneUpdater& sceneUpdater, IRendererSceneEventSender& sender, SceneReferenceOwnership& sharedOwnership);
 
         virtual void addActions(SceneId masterScene, const SceneReferenceActionVector& actions) override;
         virtual void update() override;
@@ -49,7 +50,6 @@ namespace ramses_internal
         void cleanupReleasedReferences();
         void executePendingActions();
         void consolidateExpirationState(SceneId masterSceneId, RendererEventVector& events);
-
         SceneId findMasterSceneForReferencedScene(SceneId sceneId) const;
 
         enum class ExpirationState
@@ -78,9 +78,12 @@ namespace ramses_internal
         // for state change requests
         IRendererSceneControlLogic& m_sceneLogic;
         // for direct control (scene reference actions)
-        IRendererSceneControl& m_sceneControl;
+        IRendererSceneUpdater& m_sceneUpdater;
 
         IRendererSceneEventSender& m_eventSender;
+        // Additional thread-safe storage of ref-master relation can be queried outside of display thread.
+        // It is used to write only on change so need for locking is minimal.
+        SceneReferenceOwnership& m_sharedOwnership;
 
         std::vector<SceneId> m_masterScenesWithChangedExpirationState;
     };

@@ -52,7 +52,7 @@ graphical content is available on the consumer side. Getting to the Ready state 
 may fail, depending on how the graphical content is being made available.
 
 <b>Shown</b><br>
-The Content is currently shown. For the Provider this may mean, that it needs to keep the Contents graphical content updated.
+The Content is currently shown. For the Provider this may mean, that it needs to keep the graphical content updated.
 
 <b>AcceptStopOffer</b><br>
 This not a real state, but it is used in a ContentStateChange message to allow a Provider to stop offering a Content currently in use by

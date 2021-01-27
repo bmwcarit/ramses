@@ -10,15 +10,18 @@
 #define RAMSES_RENDERERSCENEUPDATER_H
 
 #include "RendererAPI/Types.h"
+#include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "SceneAPI/SceneId.h"
 #include "Collections/HashMap.h"
 #include "Animation/AnimationSystemFactory.h"
 #include "RendererLib/StagingInfo.h"
 #include "RendererLib/BufferLinks.h"
 #include "RendererLib/FrameTimer.h"
-#include "RendererLib/IRendererSceneControl.h"
+#include "RendererLib/IRendererSceneStateControl.h"
+#include "RendererLib/IRendererSceneUpdater.h"
 #include "RendererLib/IRendererResourceManager.h"
 #include "Scene/EScenePublicationMode.h"
+#include "AsyncEffectUploader.h"
 #include <unordered_map>
 
 namespace ramses_internal
@@ -26,7 +29,7 @@ namespace ramses_internal
     class RendererCachedScene;
     class Renderer;
     class SceneStateExecutor;
-    class IResourceUploader;
+    class IBinaryShaderCache;
     class IRendererResourceCache;
     class RendererEventCollector;
     class RendererScenes;
@@ -38,9 +41,9 @@ namespace ramses_internal
     class TextureLinkManager;
     class ISceneReferenceLogic;
     class IRenderBackend;
-    class IEmbeddedCompositingManager;
+    class IPlatform;
 
-    class RendererSceneUpdater : public IRendererSceneControl
+    class RendererSceneUpdater : public IRendererSceneUpdater, public IRendererSceneStateControl
     {
         friend class RendererLogger;
         //TODO (Violin) remove this after KPI Monitor is reworked
@@ -48,6 +51,7 @@ namespace ramses_internal
 
     public:
         RendererSceneUpdater(
+            IPlatform& platform,
             Renderer& renderer,
             RendererScenes& rendererScenes,
             SceneStateExecutor& sceneStateExecutor,
@@ -57,14 +61,30 @@ namespace ramses_internal
             IRendererResourceCache* rendererResourceCache = nullptr);
         virtual ~RendererSceneUpdater();
 
-        virtual void handleSceneUpdate(SceneId sceneId, SceneUpdate&& sceneUpdate);
+        // IRendererSceneUpdater
+        virtual void handleSceneUpdate(SceneId sceneId, SceneUpdate&& sceneUpdate) override;
+        virtual void createDisplayContext(const DisplayConfig& displayConfig, DisplayHandle handle, IBinaryShaderCache* binaryShaderCache) override;
+        virtual void destroyDisplayContext(DisplayHandle handle) override;
+        virtual void handleScenePublished(SceneId sceneId, EScenePublicationMode mode) override;
+        virtual void handleSceneUnpublished(SceneId sceneId) override;
+        virtual void handleSceneReceived(const SceneInfo& sceneInfo) override;
+        virtual bool handleBufferCreateRequest(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered) override;
+        virtual bool handleBufferDestroyRequest(OffscreenBufferHandle buffer, DisplayHandle display) override;
+        virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, DisplayHandle display, WaylandIviSurfaceId source) override;
+        virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer, DisplayHandle display) override;
+        virtual bool setStreamBufferState(StreamBufferHandle buffer, DisplayHandle display, bool newState) override;
+        virtual void handleSetClearColor(DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor) override;
+        virtual void handleReadPixels(DisplayHandle display, OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo) override;
+        virtual void handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize) override;
+        virtual void handleSceneDataLinkRequest(SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId) override;
+        virtual void handleBufferToSceneDataLinkRequest(OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;
+        virtual void handleBufferToSceneDataLinkRequest(StreamBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;
+        virtual void handleDataUnlinkRequest(SceneId consumerSceneId, DataSlotId consumerId) override;
+        virtual void setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply) override;
+        virtual void setLimitFlushesForceUnsubscribe(UInt limitForPendingFlushesForceUnsubscribe) override;
+        virtual void logRendererInfo(ERendererLogTopic topic, bool verbose, NodeHandle nodeFilter) const override;
 
-        void createDisplayContext(const DisplayConfig& displayConfig, IResourceUploader& resourceUploader, DisplayHandle handle);
-        void destroyDisplayContext(DisplayHandle handle);
-        void updateScenes();
-        void processScreenshotResults();
-
-        // IRendererSceneControl
+        // IRendererSceneStateControl
         virtual void handleSceneSubscriptionRequest     (SceneId sceneId) override;
         virtual void handleSceneUnsubscriptionRequest   (SceneId sceneId, bool indirect) override;
         virtual void handleSceneMappingRequest          (SceneId sceneId, DisplayHandle handle) override;
@@ -72,34 +92,22 @@ namespace ramses_internal
         virtual void handleSceneShowRequest             (SceneId sceneId) override;
         virtual void handleSceneHideRequest             (SceneId sceneId) override;
         virtual bool handleSceneDisplayBufferAssignmentRequest(SceneId sceneId, OffscreenBufferHandle buffer, int32_t sceneRenderOrder) override;
-        virtual void handleSceneDataLinkRequest         (SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId) override;
-        virtual void handleBufferToSceneDataLinkRequest (OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;
-        virtual void handleDataUnlinkRequest            (SceneId consumerSceneId, DataSlotId consumerId) override;
 
-        void handleScenePublished               (SceneId sceneId, EScenePublicationMode mode);
-        void handleSceneUnpublished             (SceneId sceneId);
-        void handleSceneReceived                (const SceneInfo& sceneInfo);
-        Bool handleBufferCreateRequest          (OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered);
-        Bool handleBufferDestroyRequest         (OffscreenBufferHandle buffer, DisplayHandle display);
-        void handleSetClearColor                (DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor);
-        void handleReadPixels                   (DisplayHandle display, OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo);
-        virtual void handlePickEvent            (SceneId sceneId, Vector2 coordsNormalizedToBufferSize);
+        void updateScenes();
 
-        Bool hasPendingFlushes(SceneId sceneId) const;
-
-        void setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply);
-        void setLimitFlushesForceUnsubscribe(UInt limitForPendingFlushesForceUnsubscribe);
-
+        void processScreenshotResults();
+        bool hasPendingFlushes(SceneId sceneId) const;
         void setSceneReferenceLogicHandler(ISceneReferenceLogic& sceneRefLogic);
 
     protected:
         virtual std::unique_ptr<IRendererResourceManager> createResourceManager(
-            IResourceUploader& resourceUploader,
             IRenderBackend& renderBackend,
+            AsyncEffectUploader& asyncEffectUploader,
             IEmbeddedCompositingManager& embeddedCompositingManager,
             DisplayHandle display,
             bool keepEffectsUploaded,
-            uint64_t gpuCacheSize);
+            uint64_t gpuCacheSize,
+            IBinaryShaderCache* binaryShaderCache);
 
     private:
         void destroyScene(SceneId sceneID);
@@ -111,18 +119,17 @@ namespace ramses_internal
         UInt32 applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
         void processStagedResourceChanges(SceneId sceneID, StagingInfo& stagingInfo, DisplayHandle& activeDisplay);
 
-        Bool areResourcesFromPendingFlushesUploaded(SceneId sceneId) const;
-        Bool areClientResourcesInUseUploaded(SceneId sceneId) const;
+        bool areResourcesFromPendingFlushesUploaded(SceneId sceneId) const;
 
         void logTooManyFlushesAndUnsubscribeIfRemoteScene(SceneId sceneId, std::size_t numPendingFlushes);
         void consolidatePendingSceneActions(SceneId sceneID, SceneUpdate&& sceneUpdate);
         void consolidateResourceDataForMapping(SceneId sceneID);
         void referenceAndProvidePendingResourceData(SceneId sceneID, DisplayHandle display);
         void requestAndUploadAndUnloadResources(DisplayHandle& activeDisplay);
-        void updateEmbeddedCompositingResources(DisplayHandle& activeDisplay);
+        void uploadUpdatedECStreams(DisplayHandle& activeDisplay);
         void tryToApplyPendingFlushes();
         void processStagedResourceChangesFromAppliedFlushes(DisplayHandle& activeDisplay);
-        void updateSceneStreamTexturesDirtiness();
+        void handleECStreamAvailabilityChanges();
         void updateScenesResourceCache();
         void updateScenesRealTimeAnimationSystems();
         void updateScenesTransformationCache();
@@ -138,6 +145,7 @@ namespace ramses_internal
         void logMissingResources(const PendingData& pendingData, SceneId sceneId) const;
         void logMissingResources(const ResourceContentHashVector& neededResources, SceneId sceneId) const;
 
+        IPlatform&                                        m_platform;
         Renderer&                                         m_renderer;
         RendererScenes&                                   m_rendererScenes;
         SceneStateExecutor&                               m_sceneStateExecutor;
@@ -150,6 +158,7 @@ namespace ramses_internal
         AnimationSystemFactory                            m_animationSystemFactory;
 
         std::unordered_map<DisplayHandle, std::unique_ptr<IRendererResourceManager>> m_displayResourceManagers;
+        std::unordered_map<DisplayHandle, std::unique_ptr<AsyncEffectUploader>> m_asyncEffectUploaders;
 
         struct SceneMapRequest
         {
@@ -170,6 +179,9 @@ namespace ramses_internal
 
         UInt m_maximumPendingFlushes = 60u;
         UInt m_maximumPendingFlushesToKillScene = 5 * 60u;
+
+        // keep as members to avoid reallocs
+        StreamSourceUpdates m_streamUpdates;
     };
 }
 

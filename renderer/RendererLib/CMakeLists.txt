@@ -67,7 +67,6 @@ ACME_MODULE(
     #==========================================================================
     DEPENDENCIES            ramses-renderer-api
                             ramses-framework
-                            imgui
 )
 
 INSTALL(DIRECTORY ramses-renderer-api/include/ DESTINATION "${PROJECT_INSTALL_HEADER}" COMPONENT ramses-sdk-devel)

@@ -14,13 +14,13 @@ namespace ramses_internal
 {
     namespace LZ4CompressionUtils
     {
-        CompressedResouceBlob compress(const ResourceBlob& plainBuffer, CompressionLevel level)
+        CompressedResourceBlob compress(const ResourceBlob& plainBuffer, CompressionLevel level)
         {
             const int plainSize = static_cast<int>(plainBuffer.size());
             if (!plainSize)
-                return CompressedResouceBlob();
+                return CompressedResourceBlob();
 
-            CompressedResouceBlob compressedBuffer(LZ4_compressBound(plainSize));
+            CompressedResourceBlob compressedBuffer(LZ4_compressBound(plainSize));
             int realCompressedSize = 0;
 
             if (level == CompressionLevel::Fast)
@@ -41,13 +41,13 @@ namespace ramses_internal
             }
 
             if (realCompressedSize <= 0)
-                return CompressedResouceBlob();
+                return CompressedResourceBlob();
 
             // compressedBuffer size might be too large, create properly sized result
-            return CompressedResouceBlob(realCompressedSize, std::move(compressedBuffer));
+            return CompressedResourceBlob(realCompressedSize, std::move(compressedBuffer));
         }
 
-        ResourceBlob decompress(const CompressedResouceBlob& compressedData, uint32_t uncompressedSize)
+        ResourceBlob decompress(const CompressedResourceBlob& compressedData, uint32_t uncompressedSize)
         {
             if (!compressedData.size() || !uncompressedSize)
                 return ResourceBlob();

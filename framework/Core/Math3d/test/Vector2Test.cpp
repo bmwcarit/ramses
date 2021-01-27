@@ -196,8 +196,7 @@ TEST_F(Vector2Test, Normalize)
 
 TEST_F(Vector2Test, CanPrintToString)
 {
-    EXPECT_EQ("[1.0 2.0]", fmt::to_string(vec1));
-    EXPECT_EQ("[1.0 2.0]", ramses_internal::StringOutputStream::ToString(vec1));
+    EXPECT_EQ("[1 2]", fmt::to_string(vec1));
 }
 
 TEST_F(Vector2Test, canBinarySerializeDeserialize)

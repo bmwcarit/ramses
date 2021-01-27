@@ -39,7 +39,8 @@ namespace ramses
         /**
          * @brief Add ArrayResource data to the pool. The pool is taking ownership of the given range of data of a certain type and keeps it
          *        to instantiate resource from it later via createResourceForScene. See #ramses::ArrayResource for more details.
-         *        Readding the same resource data again will return the previous resource id, but not recreate the resource data.
+         *        Readding the same resource data again will return the previous resource id, but not recreate the resource data. Readding
+         *        a same resource requires removing it again with removeResourceData.
          *
          * @param[in] type The data type of the array elements.
          * @param[in] numElements The number of elements of the given data type to use for the resource.
@@ -59,7 +60,8 @@ namespace ramses
         * @brief Add Texture2D data to the pool. It is taking ownership of the given range of texture data in the specified pixel format
         *        and keeps it to instantiate resource from it later via createResourceForScene. See #ramses::Texture2D for more details.
         *
-        *        Readding the same resource data again will return the previous resource id, but not recreate the resource data.
+        *        Readding the same resource data again will return the previous resource id, but not recreate the resource data. Readding
+        *        a same resource requires removing it again with removeResourceData.
         *
         * @param[in] format Pixel format of the Texture2D data.
         * @param[in] width Width of the texture (mipmap level 0).
@@ -90,7 +92,8 @@ namespace ramses
         /**
         * @brief Add Texture3D data to the pool. It is taking ownership of the given range of texture data in the specified pixel format
         *        and keeps it to instantiate resource from it later via createResourceForScene. See #ramses::Texture3D for more details.
-        *        Readding the same resource data again will return the previous resource id, but not recreate the resource data.
+        *        Readding the same resource data again will return the previous resource id, but not recreate the resource data. Readding
+        *        a same resource requires removing it again with removeResourceData.
         *
         * @param[in] format Pixel format of the Texture3D data.
         * @param[in] width Width of the texture (mipmap level 0).
@@ -122,7 +125,8 @@ namespace ramses
         * @brief Add Cube Texture data to the pool. It is taking ownership of the given range of texture data in the specified pixel format
         *        and keeps it to instantiate resource from it later via createResourceForScene. All texel values are initially initialized to 0.
         *        See #ramses::TextureCube for more details.
-        *        Readding the same resource data again will return the previous resource id, but not recreate the resource data.
+        *        Readding the same resource data again will return the previous resource id, but not recreate the resource data. Readding
+        *        a same resource requires removing it again with removeResourceData.
         *
         * @param[in] format Pixel format of the Cube Texture data.
         * @param[in] size edge length of one quadratic cube face, belonging to the texture.
@@ -151,7 +155,8 @@ namespace ramses
         * @brief Add Effect data to the pool by parsing a GLSL shader described by an EffectDescription instance. The data can be used to
         *        instantiate a resource via createResourceForScene. Refer to RamsesClient::getLastEffectErrorMessages in case of parsing error.
         *        See #ramses::Effect for more details.
-        *        Readding the same resource data again will return the previous resource id, but not recreate the resource data.
+        *        Readding the same resource data again will return the previous resource id, but not recreate the resource data. Readding
+        *        a same resource requires removing it again with removeResourceData.
         *
         * @param[in] effectDesc Effect description.
         * @param[in] cacheFlag The optional flag sent to the renderer. The value describes how the cache implementation should handle the resource.
@@ -171,8 +176,9 @@ namespace ramses
         std::string getLastEffectErrorMessages() const;
 
         /**
-        * @brief Removes data which was added to the pool. The provided resource id can then not be used anymore
-        *        to instantiate a resource via createResourceForScene. Already instantiated resources will not be affected by this.
+        * @brief Removes data which was added to the pool. The provided resource id might not be used anymore to instantiate a
+        *        resource via createResourceForScene, depending on how many times corresponding addResourceData was called before.
+        *        Already instantiated resources will not be affected by removeResourceData.
         *
         * @param[in] id The resource id of the previously added resource data.
         * @return true for success.

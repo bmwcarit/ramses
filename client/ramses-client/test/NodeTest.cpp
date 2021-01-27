@@ -448,6 +448,34 @@ namespace ramses
         EXPECT_NE(ramses::StatusOK, node.getRotation(x, y, z, convention));
     }
 
+    TYPED_TEST(NodeTest, getRotationReturnsDefaultValuesWithoutSetBefore)
+    {
+        Node& node = this->createNode("node");
+
+        float x;
+        float y;
+        float z;
+        EXPECT_EQ(ramses::StatusOK, node.getRotation(x, y, z));
+        EXPECT_EQ(0.f, x);
+        EXPECT_EQ(0.f, y);
+        EXPECT_EQ(0.f, z);
+    }
+
+    TYPED_TEST(NodeTest, getRotationWithConventionReturnsDefaultValuesWithoutSetBefore)
+    {
+        Node& node = this->createNode("node");
+
+        float x;
+        float y;
+        float z;
+        ERotationConvention convention;
+        EXPECT_EQ(ramses::StatusOK, node.getRotation(x, y, z, convention));
+        EXPECT_EQ(0.f, x);
+        EXPECT_EQ(0.f, y);
+        EXPECT_EQ(0.f, z);
+        EXPECT_EQ(ERotationConvention::XYZ, convention);
+    }
+
     TYPED_TEST(NodeTest, rotateFailsWhenNonLegacyRotationIsSet)
     {
         Node& node = this->createNode("node");

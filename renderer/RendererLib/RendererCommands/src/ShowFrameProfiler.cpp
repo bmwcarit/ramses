@@ -43,7 +43,7 @@ namespace ramses_internal
             auto argName = input[i].c_str();
             if (argName == String("fp"))
             {
-                m_commandBuffer.toggleFrameProfilerVisibility(numArgStrings == 1);
+                m_commandBuffer.enqueueCommand(ramses_internal::RendererCommand::FrameProfiler_Toggle{ numArgStrings == 1 });
             }
             else if (argName == String("-ch"))
             {
@@ -73,7 +73,7 @@ namespace ramses_internal
                     const auto newHeight = atoi(argName);
                     if (newHeight > 0)
                     {
-                        m_commandBuffer.setFrameProfilerCounterGraphHeight(newHeight);
+                        m_commandBuffer.enqueueCommand(ramses_internal::RendererCommand::FrameProfiler_CounterGraphHeight{ static_cast<uint32_t>(newHeight) });
                     }
                     else
                     {
@@ -87,7 +87,7 @@ namespace ramses_internal
                     const auto newHeight = atoi(argName);
                     if (newHeight > 0)
                     {
-                        m_commandBuffer.setFrameProfilerTimingGraphHeight(newHeight);
+                        m_commandBuffer.enqueueCommand(ramses_internal::RendererCommand::FrameProfiler_TimingGraphHeight{ static_cast<uint32_t>(newHeight) });
                     }
                     else
                     {
@@ -102,7 +102,7 @@ namespace ramses_internal
                     if (regionFlags >= 0)
                     {
                         // regionFlags of 0 enable all regions
-                        m_commandBuffer.setFrameProfilerFilteredRegionFlags((regionFlags == 0) ? ~0u : regionFlags);
+                        m_commandBuffer.enqueueCommand(ramses_internal::RendererCommand::FrameProfiler_RegionFilterFlags{ (regionFlags == 0) ? ~0u : regionFlags });
                     }
                     else
                     {

@@ -30,52 +30,28 @@ public:
         EXPECT_CALL(deviceMock, deleteTexture(textureDeviceHandle));
     }
 
-    void addSceneReferenceToStreamTexture(SceneId scene, StreamTextureHandle streamTextureHandle, WaylandIviSurfaceId sourceId, DeviceResourceHandle textureDeviceHandle, bool expectTextureUpload = true)
-    {
-        if (expectTextureUpload)
-            expectStreamTexUpload(sourceId, textureDeviceHandle);
-        embeddedCompositingManager.refStream(streamTextureHandle, sourceId, scene);
-    }
-
-    void removeSceneReferenceToStreamTexture(SceneId scene, StreamTextureHandle streamTextureHandle, WaylandIviSurfaceId sourceId, DeviceResourceHandle textureDeviceHandle, bool expectTextureUnload = true)
-    {
-        if (expectTextureUnload)
-            expectStreamTexUnload(textureDeviceHandle);
-        embeddedCompositingManager.unrefStream(streamTextureHandle, sourceId, scene);
-    }
-
-    void addStreamBufferReferenceToStreamTexture(WaylandIviSurfaceId sourceId, DeviceResourceHandle textureDeviceHandle = compositedTextureDeviceHandle, bool expectTextureUpload = true)
+    void addStreamReference(WaylandIviSurfaceId sourceId, DeviceResourceHandle textureDeviceHandle = compositedTextureDeviceHandle, bool expectTextureUpload = true)
     {
         if (expectTextureUpload)
             expectStreamTexUpload(sourceId, textureDeviceHandle);
         embeddedCompositingManager.refStream(sourceId);
     }
 
-    void removeStreamBufferReferenceToStreamTexture(WaylandIviSurfaceId sourceId, DeviceResourceHandle textureDeviceHandle = compositedTextureDeviceHandle, bool expectTextureUnload = true)
+    void removeStreamReference(WaylandIviSurfaceId sourceId, DeviceResourceHandle textureDeviceHandle = compositedTextureDeviceHandle, bool expectTextureUnload = true)
     {
         if (expectTextureUnload)
             expectStreamTexUnload(textureDeviceHandle);
         embeddedCompositingManager.unrefStream(sourceId);
     }
 
-    void expectNoStreamTextureChangedState()
+    void expectStreamTextureChangedState(const WaylandIviSurfaceIdVector& expectedStreamsWithStateChange, const WaylandIviSurfaceIdVector& expectedNewStreams, const WaylandIviSurfaceIdVector& expectedObsoleteStreams)
     {
-        SceneStreamTextures updatedStreamTexturesPerScene;
+        WaylandIviSurfaceIdVector streamsWithStateChange;
         WaylandIviSurfaceIdVector newStreams;
         WaylandIviSurfaceIdVector obsoleteStreams;
-        embeddedCompositingManager.dispatchStateChangesOfStreamTexturesAndSources(updatedStreamTexturesPerScene, newStreams, obsoleteStreams);
+        embeddedCompositingManager.dispatchStateChangesOfSources(streamsWithStateChange, newStreams, obsoleteStreams);
 
-        EXPECT_EQ(0u, newStreams.size());
-        EXPECT_EQ(0u, obsoleteStreams.size());
-    }
-
-    void expectStreamTextureChangedState(const WaylandIviSurfaceIdVector& expectedNewStreams, const WaylandIviSurfaceIdVector& expectedObsoleteStreams)
-    {
-        SceneStreamTextures updatedStreamTexturesPerScene;
-        WaylandIviSurfaceIdVector newStreams;
-        WaylandIviSurfaceIdVector obsoleteStreams;
-        embeddedCompositingManager.dispatchStateChangesOfStreamTexturesAndSources(updatedStreamTexturesPerScene, newStreams, obsoleteStreams);
-
+        EXPECT_EQ(expectedStreamsWithStateChange, streamsWithStateChange);
         EXPECT_EQ(expectedNewStreams, newStreams);
         EXPECT_EQ(expectedObsoleteStreams, obsoleteStreams);
     }
@@ -87,32 +63,19 @@ protected:
     EmbeddedCompositingManager embeddedCompositingManager       = EmbeddedCompositingManager(deviceMock, embeddedCompositorMock, textureUploadingAdapter);
     const WaylandIviSurfaceId streamTextureSourceId             = WaylandIviSurfaceId(11u);
     const WaylandIviSurfaceId streamTextureSourceId2            = WaylandIviSurfaceId(12u);
-    const SceneId sceneId                                       = SceneId(30u);
-    const SceneId sceneId2                                      = SceneId(31u);
-    const StreamTextureHandle streamTexture                     = StreamTextureHandle(22u);
-    const StreamTextureHandle streamTexture2                    = StreamTextureHandle(23u);
 
     static constexpr DeviceResourceHandle compositedTextureDeviceHandle{ 111u };
 };
 
 constexpr DeviceResourceHandle AnEmbeddedCompositingManager::compositedTextureDeviceHandle;
 
-TEST_F(AnEmbeddedCompositingManager, CanUploadAndDeleteStreamTexture_scene)
+TEST_F(AnEmbeddedCompositingManager, CanUploadAndDeleteStreamTexture)
 {
-    addSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
+    addStreamReference(streamTextureSourceId);
     EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
     EXPECT_EQ(compositedTextureDeviceHandle, embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamTextureSourceId));
 
-    removeSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
-}
-
-TEST_F(AnEmbeddedCompositingManager, CanUploadAndDeleteStreamTexture_streamBuffer)
-{
-    addStreamBufferReferenceToStreamTexture(streamTextureSourceId);
-    EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
-    EXPECT_EQ(compositedTextureDeviceHandle, embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamTextureSourceId));
-
-    removeStreamBufferReferenceToStreamTexture(streamTextureSourceId);
+    removeStreamReference(streamTextureSourceId);
 }
 
 TEST_F(AnEmbeddedCompositingManager, ReturnsInvalidDeviceResourceHandleForInvalidStreamSourceId)
@@ -124,9 +87,9 @@ TEST_F(AnEmbeddedCompositingManager, ReturnsInvalidDeviceResourceHandleForInvali
     EXPECT_EQ(DeviceResourceHandle::Invalid(), embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(fakeId));
 }
 
-TEST_F(AnEmbeddedCompositingManager, CanGetCorrectDeviceHandleForValidStreamTextureId_scene)
+TEST_F(AnEmbeddedCompositingManager, CanGetCorrectDeviceHandleForValidStreamTextureId)
 {
-    addSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
+    addStreamReference(streamTextureSourceId);
 
     //simulate compositing content is available
     EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
@@ -138,47 +101,43 @@ TEST_F(AnEmbeddedCompositingManager, CanGetCorrectDeviceHandleForValidStreamText
     //expect invalid texture handle
     EXPECT_EQ(DeviceResourceHandle::Invalid(), embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamTextureSourceId));
 
-    removeSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
-}
-
-TEST_F(AnEmbeddedCompositingManager, CanGetCorrectDeviceHandleForValidStreamTextureId_streamBuffer)
-{
-    addStreamBufferReferenceToStreamTexture(streamTextureSourceId);
-
-    //simulate compositing content is available
-    EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
-    //expect composited texture
-    EXPECT_EQ(compositedTextureDeviceHandle, embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamTextureSourceId));
-
-    //simulate compositing content is NOT available
-    EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(false));
-    //expect invalid texture handle
-    EXPECT_EQ(DeviceResourceHandle::Invalid(), embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamTextureSourceId));
-
-    removeStreamBufferReferenceToStreamTexture(streamTextureSourceId);
+    removeStreamReference(streamTextureSourceId);
 }
 
 TEST_F(AnEmbeddedCompositingManager, CanUpdateCompositingResources)
 {
-    const WaylandIviSurfaceIdSet fakeUpdatedStreamTextureSourceIds{ streamTextureSourceId };
+    const WaylandIviSurfaceIdSet fakeUpdatedStreamTextureSourceIds{ streamTextureSourceId, streamTextureSourceId2 };
 
-    addSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
+    addStreamReference(streamTextureSourceId);
+    addStreamReference(streamTextureSourceId2);
 
-    InSequence s;
-    EXPECT_CALL(embeddedCompositorMock, handleRequestsFromClients());
-    EXPECT_CALL(embeddedCompositorMock, endFrame(false));
-    embeddedCompositingManager.processClientRequests();
+    {
+        InSequence s;
+        EXPECT_CALL(embeddedCompositorMock, handleRequestsFromClients());
+        EXPECT_CALL(embeddedCompositorMock, endFrame(false));
+        embeddedCompositingManager.processClientRequests();
 
-    EXPECT_CALL(embeddedCompositorMock, hasUpdatedStreamTextureSources()).WillOnce(Return(true));
-    EXPECT_TRUE(embeddedCompositingManager.hasUpdatedContentFromStreamSourcesToUpload());
+        EXPECT_CALL(embeddedCompositorMock, hasUpdatedStreamTextureSources()).WillOnce(Return(true));
+        EXPECT_TRUE(embeddedCompositingManager.hasUpdatedContentFromStreamSourcesToUpload());
 
-    UpdatedSceneIdSet updatedScenes;
-    EXPECT_CALL(embeddedCompositorMock, dispatchUpdatedStreamTextureSourceIds()).WillOnce(Return(fakeUpdatedStreamTextureSourceIds));
-    EXPECT_CALL(embeddedCompositorMock, uploadCompositingContentForStreamTexture(streamTextureSourceId, _, _));
-    StreamTextureBufferUpdates updates;
-    embeddedCompositingManager.uploadResourcesAndGetUpdates(updatedScenes, updates);
-    ASSERT_EQ(1u, updatedScenes.size());
-    EXPECT_EQ(sceneId, *updatedScenes.begin());
+        EXPECT_CALL(embeddedCompositorMock, dispatchUpdatedStreamTextureSourceIds()).WillOnce(Return(fakeUpdatedStreamTextureSourceIds));
+    }
+
+    // these expectations don't necessarily come in same order
+    EXPECT_CALL(embeddedCompositorMock, uploadCompositingContentForStreamTexture(streamTextureSourceId, _, _)).WillOnce(Return(13u));
+    EXPECT_CALL(embeddedCompositorMock, uploadCompositingContentForStreamTexture(streamTextureSourceId2, _, _)).WillOnce(Return(6u));
+    StreamSourceUpdates updates;
+    embeddedCompositingManager.uploadResourcesAndGetUpdates(updates);
+    ASSERT_EQ(2u, updates.size());
+    int idx1 = 0;
+    int idx2 = 1;
+    // updates might come in different order
+    if (updates.front().first != streamTextureSourceId)
+        std::swap(idx1, idx2);
+    EXPECT_EQ(streamTextureSourceId, updates[idx1].first);
+    EXPECT_EQ(13u, updates[idx1].second);
+    EXPECT_EQ(streamTextureSourceId2, updates[idx2].first);
+    EXPECT_EQ(6u, updates[idx2].second);
 }
 
 TEST_F(AnEmbeddedCompositingManager, CanNotifyClients)
@@ -188,43 +147,23 @@ TEST_F(AnEmbeddedCompositingManager, CanNotifyClients)
     embeddedCompositingManager.notifyClients();
 }
 
-TEST_F(AnEmbeddedCompositingManager, UploadsOneCompositedTextureForTwoEqualStreamTexturesSourceIds_scene)
+TEST_F(AnEmbeddedCompositingManager, UploadsOneCompositedTextureForTwoEqualStreamTexturesSourceIds)
 {
-    addSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
-    addSceneReferenceToStreamTexture(sceneId, streamTexture2, streamTextureSourceId, compositedTextureDeviceHandle, false);
+    addStreamReference(streamTextureSourceId, compositedTextureDeviceHandle);
+    addStreamReference(streamTextureSourceId, compositedTextureDeviceHandle, false);
 
     //make sure it returns the composited texture device handle for the stream textures id
     EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillRepeatedly(Return(true));
     EXPECT_EQ(compositedTextureDeviceHandle, embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamTextureSourceId));
 }
 
-TEST_F(AnEmbeddedCompositingManager, UploadsOneCompositedTextureForTwoEqualStreamTexturesSourceIds_streamBuffer)
+TEST_F(AnEmbeddedCompositingManager, UploadsTwoCompositedTextureForTwoDifferentStreamTextureSourceIds)
 {
-    addStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle);
-    addStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle, false);
-
-    //make sure it returns the composited texture device handle for the stream textures id
-    EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillRepeatedly(Return(true));
-    EXPECT_EQ(compositedTextureDeviceHandle, embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamTextureSourceId));
-}
-
-TEST_F(AnEmbeddedCompositingManager, UploadsOneCompositedTextureForTwoEqualStreamTexturesSourceIds_referencedBySceneAndStreamBuffer)
-{
-    addSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
-    addStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle, false);
-
-    //make sure it returns the composited texture device handle for the stream textures id
-    EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillRepeatedly(Return(true));
-    EXPECT_EQ(compositedTextureDeviceHandle, embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamTextureSourceId));
-}
-
-TEST_F(AnEmbeddedCompositingManager, UploadsTwoCompositedTextureForTwoDifferentStreamTextureSourceIds_scene)
-{
-    addSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
+    addStreamReference(streamTextureSourceId, compositedTextureDeviceHandle);
 
     const WaylandIviSurfaceId secondStreamTextureSourceId(22);
     const DeviceResourceHandle secondCompositedTextureDeviceHandle(222);
-    addSceneReferenceToStreamTexture(sceneId, streamTexture2, secondStreamTextureSourceId, secondCompositedTextureDeviceHandle);
+    addStreamReference(secondStreamTextureSourceId, secondCompositedTextureDeviceHandle);
 
     //make sure it returns a different composited texture device handle for each stream texture source id
     EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
@@ -234,81 +173,16 @@ TEST_F(AnEmbeddedCompositingManager, UploadsTwoCompositedTextureForTwoDifferentS
     EXPECT_EQ(secondCompositedTextureDeviceHandle, embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(secondStreamTextureSourceId));
 }
 
-TEST_F(AnEmbeddedCompositingManager, UploadsTwoCompositedTextureForTwoDifferentStreamTextureSourceIds_streamBuffer)
+TEST_F(AnEmbeddedCompositingManager, DeletesCompositedTextureOnlyAfterAllReferencesRemoved)
 {
-    addStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle);
+    addStreamReference(streamTextureSourceId, compositedTextureDeviceHandle);
+    addStreamReference(streamTextureSourceId, compositedTextureDeviceHandle, false);
 
-    const WaylandIviSurfaceId secondStreamTextureSourceId(22);
-    const DeviceResourceHandle secondCompositedTextureDeviceHandle(222);
-    addStreamBufferReferenceToStreamTexture(secondStreamTextureSourceId, secondCompositedTextureDeviceHandle);
-
-    //make sure it returns a different composited texture device handle for each stream texture source id
-    EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
-    EXPECT_EQ(compositedTextureDeviceHandle, embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamTextureSourceId));
-
-    EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(secondStreamTextureSourceId)).WillOnce(Return(true));
-    EXPECT_EQ(secondCompositedTextureDeviceHandle, embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(secondStreamTextureSourceId));
+    removeStreamReference(streamTextureSourceId, compositedTextureDeviceHandle, false);
+    removeStreamReference(streamTextureSourceId, compositedTextureDeviceHandle);
 }
 
-TEST_F(AnEmbeddedCompositingManager, DeletesCompositedTextureOnlyAfterAllReferencesRemoved_scene)
-{
-    addSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
-    addSceneReferenceToStreamTexture(sceneId, streamTexture2, streamTextureSourceId, compositedTextureDeviceHandle, false);
-
-    removeSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle, false);
-    removeSceneReferenceToStreamTexture(sceneId, streamTexture2, streamTextureSourceId, compositedTextureDeviceHandle);
-}
-
-TEST_F(AnEmbeddedCompositingManager, DeletesCompositedTextureOnlyAfterAllReferencesRemoved_streamBuffer)
-{
-    addStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle);
-    addStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle, false);
-
-    removeStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle, false);
-    removeStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle);
-}
-
-TEST_F(AnEmbeddedCompositingManager, DeletesCompositedTextureOnlyAfterAllReferencesRemoved_referencedBySceneAndStreamBuffer)
-{
-    addSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
-    addSceneReferenceToStreamTexture(sceneId, streamTexture2, streamTextureSourceId, compositedTextureDeviceHandle, false);
-    addStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle, false);
-    addStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle, false);
-
-    removeSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle, false);
-    removeSceneReferenceToStreamTexture(sceneId, streamTexture2, streamTextureSourceId, compositedTextureDeviceHandle, false);
-    removeStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle, false);
-    removeStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle);
-}
-
-TEST_F(AnEmbeddedCompositingManager, DeletesCompositedTextureOnlyAfterAllReferencesRemoved_referencedByStreamBufferAndScene)
-{
-    addStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle);
-    addSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle, false);
-    addStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle, false);
-    addSceneReferenceToStreamTexture(sceneId, streamTexture2, streamTextureSourceId, compositedTextureDeviceHandle, false);
-
-    removeStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle, false);
-    removeSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle, false);
-    removeStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle, false);
-    removeSceneReferenceToStreamTexture(sceneId, streamTexture2, streamTextureSourceId, compositedTextureDeviceHandle);
-}
-
-TEST_F(AnEmbeddedCompositingManager, CanUploadAndDeleteStreamTextureWithAvailableContent_scene)
-{
-    EXPECT_CALL(deviceMock, uploadStreamTexture2D(_, _, _, _, _, _)).WillOnce(Return(compositedTextureDeviceHandle));
-    EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
-    EXPECT_CALL(embeddedCompositorMock, uploadCompositingContentForStreamTexture(streamTextureSourceId, _, _));
-
-    embeddedCompositingManager.refStream(streamTexture, streamTextureSourceId, sceneId);
-
-    EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
-    EXPECT_EQ(compositedTextureDeviceHandle, embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamTextureSourceId));
-
-    removeSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
-}
-
-TEST_F(AnEmbeddedCompositingManager, CanUploadAndDeleteStreamTextureWithAvailableContent_streamBuffer)
+TEST_F(AnEmbeddedCompositingManager, CanUploadAndDeleteStreamTextureWithAvailableContent)
 {
     EXPECT_CALL(deviceMock, uploadStreamTexture2D(_, _, _, _, _, _)).WillOnce(Return(compositedTextureDeviceHandle));
     EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
@@ -319,56 +193,55 @@ TEST_F(AnEmbeddedCompositingManager, CanUploadAndDeleteStreamTextureWithAvailabl
     EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
     EXPECT_EQ(compositedTextureDeviceHandle, embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(streamTextureSourceId));
 
-    removeStreamBufferReferenceToStreamTexture(streamTextureSourceId, compositedTextureDeviceHandle);
+    removeStreamReference(streamTextureSourceId, compositedTextureDeviceHandle);
 }
 
-TEST_F(AnEmbeddedCompositingManager, CanDispatchrStreamTexturesStateChange_NoChange)
+TEST_F(AnEmbeddedCompositingManager, CanDispatchStreamTexturesStateChange_NoChange)
 {
     const WaylandIviSurfaceIdSet empty;
     EXPECT_CALL(embeddedCompositorMock, dispatchNewStreamTextureSourceIds()).WillOnce(Return(empty));
     EXPECT_CALL(embeddedCompositorMock, dispatchObsoleteStreamTextureSourceIds()).WillOnce(Return(empty));
 
-    expectNoStreamTextureChangedState();
+    expectStreamTextureChangedState({}, {}, {});
 }
 
-TEST_F(AnEmbeddedCompositingManager, CanDispatchrStreamTexturesStateChange_IfStreamSourceBecomesAvailable)
+TEST_F(AnEmbeddedCompositingManager, CanDispatchStreamTexturesStateChange_IfStreamSourceBecomesAvailable)
 {
     const WaylandIviSurfaceIdSet empty;
     const WaylandIviSurfaceIdSet newStreams{ streamTextureSourceId };
     EXPECT_CALL(embeddedCompositorMock, dispatchNewStreamTextureSourceIds()).WillOnce(Return(newStreams));
     EXPECT_CALL(embeddedCompositorMock, dispatchObsoleteStreamTextureSourceIds()).WillOnce(Return(empty));
 
-    expectStreamTextureChangedState({ streamTextureSourceId }, {});
+    expectStreamTextureChangedState({}, { streamTextureSourceId }, {});
 }
 
-TEST_F(AnEmbeddedCompositingManager, CanDispatchrStreamTexturesStateChange_EmptyAfterDispatching)
+TEST_F(AnEmbeddedCompositingManager, CanDispatchStreamTexturesStateChange_EmptyAfterDispatching)
 {
     const WaylandIviSurfaceIdSet empty;
     const WaylandIviSurfaceIdSet newStreams{ streamTextureSourceId };
     EXPECT_CALL(embeddedCompositorMock, dispatchNewStreamTextureSourceIds()).WillOnce(Return(newStreams));
     EXPECT_CALL(embeddedCompositorMock, dispatchObsoleteStreamTextureSourceIds()).WillOnce(Return(empty));
-
-    expectStreamTextureChangedState({ streamTextureSourceId }, {});
+    expectStreamTextureChangedState({}, { streamTextureSourceId }, {});
 
     EXPECT_CALL(embeddedCompositorMock, dispatchNewStreamTextureSourceIds()).WillOnce(Return(empty));
     EXPECT_CALL(embeddedCompositorMock, dispatchObsoleteStreamTextureSourceIds()).WillOnce(Return(empty));
-    expectNoStreamTextureChangedState();
+    expectStreamTextureChangedState({}, {}, {});
 }
 
-TEST_F(AnEmbeddedCompositingManager, CanDispatchrStreamTexturesStateChange_IfStreamSourceBecomesUnavailable)
+TEST_F(AnEmbeddedCompositingManager, CanDispatchStreamTexturesStateChange_IfStreamSourceBecomesUnavailable)
 {
     const WaylandIviSurfaceIdSet empty;
     const WaylandIviSurfaceIdSet obsoleteStreams{ streamTextureSourceId };
     EXPECT_CALL(embeddedCompositorMock, dispatchNewStreamTextureSourceIds()).WillOnce(Return(empty));
     EXPECT_CALL(embeddedCompositorMock, dispatchObsoleteStreamTextureSourceIds()).WillOnce(Return(obsoleteStreams));
 
-    expectStreamTextureChangedState({}, { streamTextureSourceId });
+    expectStreamTextureChangedState({}, {}, { streamTextureSourceId });
 }
 
-TEST_F(AnEmbeddedCompositingManager, CanDispatchrStreamTexturesStateChange_MultipleStreamTexturesInSameScene)
+TEST_F(AnEmbeddedCompositingManager, CanDispatchStreamTexturesStateChange_multipleRefs)
 {
-    addSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
-    addSceneReferenceToStreamTexture(sceneId, streamTexture2, streamTextureSourceId, compositedTextureDeviceHandle, false);
+    addStreamReference(streamTextureSourceId, compositedTextureDeviceHandle);
+    addStreamReference(streamTextureSourceId, compositedTextureDeviceHandle, false);
 
     const WaylandIviSurfaceIdSet empty;
     const WaylandIviSurfaceIdSet newStreams{ streamTextureSourceId };
@@ -376,51 +249,21 @@ TEST_F(AnEmbeddedCompositingManager, CanDispatchrStreamTexturesStateChange_Multi
     EXPECT_CALL(embeddedCompositorMock, dispatchObsoleteStreamTextureSourceIds()).WillOnce(Return(empty));
     EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
 
-    SceneStreamTextures updatedStreamTexturesPerScene;
-    WaylandIviSurfaceIdVector newStreamsResult;
-    WaylandIviSurfaceIdVector obsoleteStreamsResult;
-    embeddedCompositingManager.dispatchStateChangesOfStreamTexturesAndSources(updatedStreamTexturesPerScene, newStreamsResult, obsoleteStreamsResult);
-
-    ASSERT_EQ(1u, updatedStreamTexturesPerScene.size());
-    ASSERT_TRUE(updatedStreamTexturesPerScene.contains(sceneId));
-    EXPECT_EQ(streamTexture, (*updatedStreamTexturesPerScene.get(sceneId))[0]);
-    EXPECT_EQ(streamTexture2, (*updatedStreamTexturesPerScene.get(sceneId))[1]);
-
-    ASSERT_EQ(1u, newStreamsResult.size());
-    EXPECT_EQ(streamTextureSourceId, newStreamsResult[0]);
-    EXPECT_EQ(0u, obsoleteStreamsResult.size());
+    expectStreamTextureChangedState({ streamTextureSourceId }, { streamTextureSourceId }, {});
 }
 
-TEST_F(AnEmbeddedCompositingManager, CanDispatchrStreamTexturesStateChange_MultipleStreamTexturesInMultipleScenes)
+TEST_F(AnEmbeddedCompositingManager, CanDispatchStreamTexturesStateChange_multipleSources)
 {
-    addSceneReferenceToStreamTexture(sceneId, streamTexture, streamTextureSourceId, compositedTextureDeviceHandle);
-    addSceneReferenceToStreamTexture(sceneId, streamTexture2, streamTextureSourceId2, compositedTextureDeviceHandle);
-
-    addSceneReferenceToStreamTexture(sceneId2, streamTexture, streamTextureSourceId2, compositedTextureDeviceHandle, false);
-    addSceneReferenceToStreamTexture(sceneId2, streamTexture2, streamTextureSourceId, compositedTextureDeviceHandle, false);
-
+    addStreamReference(streamTextureSourceId, compositedTextureDeviceHandle);
+    addStreamReference(streamTextureSourceId2, compositedTextureDeviceHandle);
 
     const WaylandIviSurfaceIdSet empty;
-    const WaylandIviSurfaceIdSet newStreams{ streamTextureSourceId, streamTextureSourceId2 };
+    const WaylandIviSurfaceIdSet newStreams{ streamTextureSourceId };
     EXPECT_CALL(embeddedCompositorMock, dispatchNewStreamTextureSourceIds()).WillOnce(Return(newStreams));
     EXPECT_CALL(embeddedCompositorMock, dispatchObsoleteStreamTextureSourceIds()).WillOnce(Return(empty));
     EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId)).WillOnce(Return(true));
-    EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId2)).WillOnce(Return(false));
+    EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(streamTextureSourceId2)).WillOnce(Return(true));
 
-    SceneStreamTextures updatedStreamTexturesPerScene;
-    WaylandIviSurfaceIdVector newStreamsResult;
-    WaylandIviSurfaceIdVector obsoleteStreamsResult;
-    embeddedCompositingManager.dispatchStateChangesOfStreamTexturesAndSources(updatedStreamTexturesPerScene, newStreamsResult, obsoleteStreamsResult);
-
-    ASSERT_EQ(2u, updatedStreamTexturesPerScene.size());
-    ASSERT_TRUE(updatedStreamTexturesPerScene.contains(sceneId));
-    EXPECT_EQ(streamTexture, (*updatedStreamTexturesPerScene.get(sceneId))[0]);
-
-    ASSERT_TRUE(updatedStreamTexturesPerScene.contains(sceneId2));
-    EXPECT_EQ(streamTexture2, (*updatedStreamTexturesPerScene.get(sceneId2))[0]);
-
-    ASSERT_EQ(2u, newStreamsResult.size());
-    EXPECT_NE(newStreamsResult.end(), find_c(newStreamsResult, streamTextureSourceId));
-    EXPECT_NE(newStreamsResult.end(), find_c(newStreamsResult, streamTextureSourceId2));
-    EXPECT_EQ(0u, obsoleteStreamsResult.size());
+    // order changed due to hashmap, not important for test
+    expectStreamTextureChangedState({ streamTextureSourceId2, streamTextureSourceId }, { streamTextureSourceId }, {});
 }

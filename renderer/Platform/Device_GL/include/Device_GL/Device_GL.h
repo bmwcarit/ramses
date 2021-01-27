@@ -78,7 +78,8 @@ namespace ramses_internal
         virtual void                    deleteIndexBuffer     (DeviceResourceHandle handle) override;
         virtual void                    activateIndexBuffer   (DeviceResourceHandle handle) override;
 
-        virtual DeviceResourceHandle    uploadShader        (const EffectResource& shader) override;
+        virtual std::unique_ptr<const GPUResource> uploadShader(const EffectResource& shader) override;
+        virtual DeviceResourceHandle    registerShader      (std::unique_ptr<const GPUResource> shaderResource) override;
         virtual DeviceResourceHandle    uploadBinaryShader  (const EffectResource& shader, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat) override;
         virtual Bool                    getBinaryShader     (DeviceResourceHandle handleconst, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) override;
         virtual void                    deleteShader        (DeviceResourceHandle handle) override;
@@ -122,8 +123,6 @@ namespace ramses_internal
         virtual void                    finish() override;
 
     private:
-        const IContext&             m_context;
-        DeviceResourceMapper&       m_resourceMapper;
         DeviceResourceHandle        m_framebufferRenderTarget;
 
         struct RenderTargetPair
@@ -144,7 +143,7 @@ namespace ramses_internal
         const UInt8                 m_minorApiVersion;
         const bool                  m_isEmbedded;
         DebugOutput                 m_debugOutput;
-        StringSet                   m_apiExtensions;
+        HashSet<String>             m_apiExtensions;
         std::vector<GLint>          m_supportedBinaryProgramFormats;
 
         Bool getUniformLocation(DataFieldHandle field, GLInputLocation& location) const;

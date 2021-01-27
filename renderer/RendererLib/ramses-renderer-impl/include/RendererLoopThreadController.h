@@ -17,12 +17,12 @@
 namespace ramses_internal
 {
     class PlatformWatchdog;
-    class WindowedRenderer;
+    class DisplayDispatcher;
 
     class RendererLoopThreadController : public Runnable
     {
     public:
-        RendererLoopThreadController(WindowedRenderer& windowedRenderer, PlatformWatchdog& watchdog, std::chrono::milliseconds loopCountPeriod);
+        RendererLoopThreadController(DisplayDispatcher& displayDispatcher, PlatformWatchdog& watchdog, std::chrono::milliseconds loopCountPeriod);
         ~RendererLoopThreadController();
 
         Bool startRendering();
@@ -41,7 +41,7 @@ namespace ramses_internal
 
         std::chrono::milliseconds sleepToControlFramerate(std::chrono::microseconds loopDuration, std::chrono::microseconds minimumFrameDuration);
 
-        WindowedRenderer* m_windowedRenderer;
+        DisplayDispatcher* m_displayDispatcher;
         PlatformWatchdog& m_watchdog;
         PlatformThread m_thread;
         mutable std::mutex m_lock;

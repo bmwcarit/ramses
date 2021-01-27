@@ -9,27 +9,25 @@
 #ifndef RAMSES_PLATFORM_WAYLAND_EGL_H
 #define RAMSES_PLATFORM_WAYLAND_EGL_H
 
-#include "Platform_Base/Platform_Base.h"
-#include "Context_EGL/Context_EGL.h"
+#include "Window_Wayland/Window_Wayland.h"
+#include "Platform_EGL/Platform_EGL.h"
 #include "Window_Wayland/WindowEventsPollingManager_Wayland.h"
 
 namespace ramses_internal
 {
-    class Platform_Wayland_EGL : public Platform_Base
+    class Platform_Wayland_EGL : public Platform_EGL<Window_Wayland>
     {
     public:
         const IWindowEventsPollingManager* getWindowEventsPollingManager() const override final;
 
     protected:
         explicit Platform_Wayland_EGL(const RendererConfig& rendererConfig);
-        ~Platform_Wayland_EGL();
+        virtual ~Platform_Wayland_EGL();
 
-        IContext*   createContext(IWindow& window) override final;
         IEmbeddedCompositor*         createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) override final;
         ITextureUploadingAdapter*    createTextureUploadingAdapter(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window) override final;
 
-        virtual void getContextAttributes(std::vector<EGLint>& attributes) const = 0;
-        virtual void getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const = 0;
+        virtual uint32_t getSwapInterval() const override final;
 
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
         Bool isCreatingWaylandEmbeddedCompositorRequired() const;

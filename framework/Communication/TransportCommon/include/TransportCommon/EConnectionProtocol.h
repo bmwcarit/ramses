@@ -32,6 +32,9 @@ namespace ramses_internal
     };
 }
 
-MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::EConnectionProtocol, ramses_internal::ConectionProtocolNames, ramses_internal::EConnectionProtocol::Invalid);
+MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::EConnectionProtocol,
+                                        "EConnectionProtocol",
+                                        ramses_internal::ConectionProtocolNames,
+                                        ramses_internal::EConnectionProtocol::Invalid);
 
 #endif

@@ -34,11 +34,11 @@ namespace ramses_internal
         return m_memoryUsage >> 10;
     }
 
-    DeviceResourceHandle DeviceResourceMapper::registerResource(const GPUResource& resource)
+    DeviceResourceHandle DeviceResourceMapper::registerResource(std::unique_ptr<const GPUResource> resource)
     {
         const DeviceResourceHandle handle = m_resources.allocate();
-        *m_resources.getMemory(handle) = &resource;
-        m_memoryUsage += resource.getTotalSizeInBytes();
+        m_memoryUsage += resource->getTotalSizeInBytes();
+        *m_resources.getMemory(handle) = resource.release();
 
         return handle;
     }

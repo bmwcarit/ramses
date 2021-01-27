@@ -12,11 +12,10 @@
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/RendererConfig.h"
 #include "ramses-renderer-api/DisplayConfig.h"
-#include "RendererLib/RendererCommandContainer.h"
 #include "RendererLib/RendererCommands.h"
-#include "RendererLib/RendererCommandTypes.h"
 #include "RamsesRendererImpl.h"
 #include "Utils/ThreadBarrier.h"
+#include "RendererCommandVisitorMock.h"
 
 using namespace ramses_internal;
 using namespace testing;
@@ -31,17 +30,20 @@ public:
         , rendererMateEventHandler(rendererMate)
     {
         rendererMate.setSceneMapping(sceneId, displayId);
+
+        displayId = renderer.createDisplay({});
+        StrictMock<RendererCommandVisitorMock> visitor;
+        EXPECT_CALL(visitor, createDisplayContext(_, _, _));
+        visitor.visit(renderer.impl.getPendingCommands());
+        clearCommands();
     }
 
 protected:
     void expectLogConfirmationCommand()
     {
-        const ramses_internal::RendererCommandContainer& cmds = renderer.impl.getPendingCommands().getCommands();
-        bool found = false;
-        for (uint32_t i = 0; i < cmds.getTotalCommandCount(); ++i)
-            if (cmds.getCommandType(i) == ERendererCommand_ConfirmationEcho)
-                found = true;
-        EXPECT_TRUE(found) << "expected confirmation echo command";
+        StrictMock<RendererCommandVisitorMock> visitor;
+        EXPECT_CALL(visitor, handleConfirmationEcho(_));
+        visitor.visit(renderer.impl.getPendingCommands());
         clearCommands();
     }
 
@@ -70,11 +72,6 @@ protected:
         return rendererMate.getLastReportedSceneState(sceneId) == ramses::RendererSceneState::Rendered;
     }
 
-    void doRenderLoop()
-    {
-        renderer.doOneLoop();
-    }
-
 private:
     ramses::RamsesFramework ramsesFramework;
     ramses::RamsesRenderer& renderer; // restrict access to renderer, acts only as dummy for RendererMate and to create (dummy) displays
@@ -85,7 +82,7 @@ protected:
     ramses::IRendererSceneControlEventHandler& rendererMateEventHandler;
 
     const ramses::sceneId_t sceneId{ 33 };
-    const ramses::displayId_t displayId{ 1 };
+    ramses::displayId_t displayId;
     const ramses::displayBufferId_t offscreenBufferId{ 2 };
 };
 

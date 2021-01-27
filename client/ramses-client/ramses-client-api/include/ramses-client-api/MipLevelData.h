@@ -16,7 +16,9 @@ namespace ramses
 {
 
     /**
-    * @brief Struct containing information about one mip-map level
+    * @brief Struct containing information about one mip-map level of a texture.
+    *
+    * NOTE: the texel data is stored according to OpenGL convention (first byte is from the bottom texel row). See docs of glTexImage2D for more info.
     */
     struct MipLevelData
     {
@@ -30,7 +32,10 @@ namespace ramses
         }
 
         /**
-        * @brief Constructs a MipLevelData
+        * @brief Constructs a MipLevelData. The texel data must be stored according to OpenGL conventions.
+        * Texel rows are stored bottom-to-top, so that first byte in the data array represents the first texel from the bottom texel row.
+        * See docs of glTexImage2D for more info.
+        *
         * @param size Size of mipmap data in bytes
         * @param data Pointer to raw bytes data of mipmap level
         */
@@ -48,7 +53,8 @@ namespace ramses
 
 
     /**
-    * @brief Struct containing information about one mip-map level for cube textures
+    * @brief Struct containing information about one mip-map level of a cube texture. All faces of the cube
+    * texture must have the same size!
     */
     struct CubeMipLevelData
     {
@@ -67,8 +73,11 @@ namespace ramses
         }
 
         /**
-        * @brief Default constructor
-        * @param[in] size Size of data in bytes of single cube face
+        * @brief Constructs a MipLevelData. The texel data must be stored according to OpenGL conventions.
+        * Texel rows are stored bottom-to-top, so that first byte in the data array represents the first texel from the bottom texel row.
+        * See docs of glTexImage2D for more info.
+        *
+        * @param[in] size Size of data in bytes of all cube faces
         * @param[in] dataPX Data for face in positive X direction
         * @param[in] dataNX Data for face in negative X direction
         * @param[in] dataPY Data for face in positive Y direction
@@ -90,8 +99,8 @@ namespace ramses
         {
         }
 
-        /// size of mip-level data of one face in Bytes,
-        /// assuming that all faces have the same data size
+        /// size of mip-level data of all faces in Bytes,
+        /// all faces must have the same data size
         uint32_t m_faceDataSize;
 
         /// Data for face in positive X direction

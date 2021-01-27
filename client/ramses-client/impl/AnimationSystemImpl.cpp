@@ -149,7 +149,7 @@ namespace ramses
             {
                 ramses_internal::StringOutputStream msg;
                 msg << "Number of " << RamsesObjectTypeUtils::GetRamsesObjectTypeName(type) << " instances: " << objectCount[i];
-                addValidationMessage(EValidationSeverity_Info, indent, msg.release());
+                addValidationMessage(EValidationSeverity_Info, indent, ramses_internal::String(msg.release()));
             }
         }
 
@@ -330,7 +330,7 @@ namespace ramses
 
     AnimatedProperty* AnimationSystemImpl::createAnimatedProperty(const NodeImpl& propertyOwner, EAnimatedProperty property, EAnimatedPropertyComponent propertyComponent, const char* name)
     {
-        typedef ramses_internal::DataBindContainerToTraitsSelector<ramses_internal::IScene>::ContainerTraitsClassType ContainerTraitsClass;
+        using ContainerTraitsClass = ramses_internal::DataBindContainerToTraitsSelector<ramses_internal::IScene>::ContainerTraitsClassType;
         ramses_internal::TDataBindID dataBindID(std::numeric_limits<ramses_internal::TDataBindID>::max());
         switch (property)
         {

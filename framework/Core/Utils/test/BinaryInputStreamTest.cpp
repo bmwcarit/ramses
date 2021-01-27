@@ -6,10 +6,12 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#include "Utils/BinaryInputStream.h"
 #include "framework_common_gmock_header.h"
 #include "gtest/gtest.h"
-#include "Utils/BinaryInputStream.h"
 #include "Math3d/Matrix44f.h"
+#include "PlatformAbstraction/PlatformMemory.h"
+#include "Collections/String.h"
 
 namespace ramses_internal
 {

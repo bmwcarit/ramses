@@ -43,7 +43,7 @@ namespace ramses
 
     private:
 
-        typedef std::vector<uint8_t> ByteVector;
+        using ByteVector = std::vector<uint8_t>;
 
         bool storeResourceInternal(rendererResourceId_t resourceId, ByteVector& data);
         void clear();

@@ -212,8 +212,7 @@ namespace ramses_internal
 
     TEST_F(Matrix33fTest, CanPrintToString)
     {
-        EXPECT_EQ("[1.0 2.0 3.0; 4.0 5.0 6.0; 7.0 8.0 9.0]", fmt::to_string(mat1));
-        EXPECT_EQ("[1.0 2.0 3.0; 4.0 5.0 6.0; 7.0 8.0 9.0]", StringOutputStream::ToString(mat1));
+        EXPECT_EQ("[1 2 3; 4 5 6; 7 8 9]", fmt::to_string(mat1));
     }
 
     class Matrix33fParamTest : public Matrix33fTest, public ::testing::WithParamInterface<Vector3>

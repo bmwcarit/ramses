@@ -23,7 +23,7 @@ namespace ramses_internal
 
     Bool UnlinkSceneData::execute(UInt32& consumerSceneId, UInt32& consumerDataSlotId) const
     {
-        m_rendererCommandBuffer.unlinkSceneData(SceneId(consumerSceneId), DataSlotId(consumerDataSlotId));
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::UnlinkData{ SceneId{consumerSceneId}, DataSlotId{consumerDataSlotId} });
         return true;
     }
 }

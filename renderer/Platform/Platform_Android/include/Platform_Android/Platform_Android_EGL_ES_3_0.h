@@ -18,11 +18,8 @@ namespace ramses_internal
     public:
         Platform_Android_EGL_ES_3_0(const RendererConfig& rendererConfig);
 
-        virtual IDevice*      createDevice(IContext& context) override final;
-
     protected:
-        void getContextAttributes(std::vector<EGLint>& attributes) const override final;
-        void getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const override final;
+        std::vector<EGLint> getSurfaceAttributes(UInt32 msaaSampleCount) const override final;
     };
 }
 

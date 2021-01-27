@@ -27,7 +27,7 @@ namespace ramses_internal
 
     Bool SystemCompositorControllerSetSurfaceDestRectangle::execute(Int32& surfaceId, Int32& x, Int32& y, Int32& width, Int32& height) const
     {
-        m_rendererCommandBuffer.systemCompositorControllerSetIviSurfaceDestRectangle(WaylandIviSurfaceId(surfaceId), x, y, width ,height);
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCSetIviSurfaceDestRectangle{ WaylandIviSurfaceId(surfaceId), x, y, width ,height });
         return true;
     }
 }

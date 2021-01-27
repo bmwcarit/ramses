@@ -23,19 +23,19 @@ ELSE()
         # try to find libs and includes
         FIND_LIBRARY(boost_system_LIBRARY
             boost_system
-            PATHS ${Boost_BASE_PATH}/lib/)
+            HINTS ${Boost_BASE_PATH}/lib/)
         FIND_LIBRARY(boost_thread_LIBRARY
             boost_thread
-            PATHS ${Boost_BASE_PATH}/lib/)
+            HINTS ${Boost_BASE_PATH}/lib/)
         FIND_LIBRARY(boost_filesystem_LIBRARY
             boost_filesystem
-            PATHS ${Boost_BASE_PATH}/lib/)
+            HINTS ${Boost_BASE_PATH}/lib/)
         FIND_LIBRARY(boost_log_LIBRARY
             boost_log
-            PATHS ${Boost_BASE_PATH}/lib/)
+            HINTS ${Boost_BASE_PATH}/lib/)
         FIND_PATH(Boost_INCLUDE_DIR
             boost/asio/steady_timer.hpp
-            PATHS ${Boost_BASE_PATH}/include)
+            HINTS ${Boost_BASE_PATH}/include)
 
         # do the checking
         FIND_PACKAGE_HANDLE_STANDARD_ARGS(Boost
@@ -110,15 +110,20 @@ IF (Boost_FOUND)
     ENDIF()
 
     IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        # add defines/libs depending on shared or static library found
         LIST(GET Boost_LIBRARIES 0 Boost_SOME_LIBRARY)
-        GET_FILENAME_COMPONENT(Boost_SOME_LIBRARY_SUFFIX ${Boost_SOME_LIBRARY} EXT)
 
-        IF (${Boost_SOME_LIBRARY_SUFFIX} STREQUAL ${CMAKE_SHARED_LIBRARY_SUFFIX})
+        if (TARGET ${Boost_SOME_LIBRARY})
+            # modern target based find script
             SET(Boost_HAS_SHARED_LIBS TRUE)
-        ELSE()
-            SET(Boost_HAS_SHARED_LIBS FALSE)
-        ENDIF()
+        else()
+            # add defines/libs depending on shared or static library found
+            GET_FILENAME_COMPONENT(Boost_SOME_LIBRARY_SUFFIX ${Boost_SOME_LIBRARY} EXT)
+            IF (${Boost_SOME_LIBRARY_SUFFIX} STREQUAL ${CMAKE_SHARED_LIBRARY_SUFFIX})
+                SET(Boost_HAS_SHARED_LIBS TRUE)
+            ELSE()
+                SET(Boost_HAS_SHARED_LIBS FALSE)
+            ENDIF()
+        endif()
     ELSE()
         SET(Boost_HAS_SHARED_LIBS FALSE)
     ENDIF()

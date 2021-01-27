@@ -21,7 +21,7 @@ namespace ramses
     class NodeLazyTransformTest : public LocalTestClientWithScene, public testing::Test
     {
     protected:
-        virtual void SetUp()
+        virtual void SetUp() override
         {
             m_node = &this->template createObject<T>("node");
         }

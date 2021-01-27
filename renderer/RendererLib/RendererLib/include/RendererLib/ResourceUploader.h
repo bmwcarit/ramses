@@ -9,9 +9,8 @@
 #ifndef RAMSES_RESOURCEUPLOADER_H
 #define RAMSES_RESOURCEUPLOADER_H
 
-#include "IResourceUploader.h"
+#include "RendererLib/IResourceUploader.h"
 #include "Components/ManagedResource.h"
-#include "SceneAPI/SceneId.h"
 
 namespace ramses_internal
 {
@@ -19,26 +18,24 @@ namespace ramses_internal
     class TextureResource;
     class EffectResource;
     class IDevice;
-    class RendererStatistics;
     struct ResourceDescriptor;
 
     class ResourceUploader : public IResourceUploader
     {
     public:
-        explicit ResourceUploader(RendererStatistics& stats, IBinaryShaderCache* binaryShaderCache = nullptr);
+        explicit ResourceUploader(IBinaryShaderCache* binaryShaderCache = nullptr);
 
-        virtual DeviceResourceHandle uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& resourceObject, UInt32& outVRAMSize) override;
+        virtual absl::optional<DeviceResourceHandle> uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& resourceObject, UInt32& outVRAMSize) override;
         virtual void                 unloadResource(IRenderBackend& renderBackend, EResourceType type, ResourceContentHash hash, DeviceResourceHandle handle) override;
+        void                         storeShaderInBinaryShaderCache(IRenderBackend& renderBackend, DeviceResourceHandle deviceHandle, const ResourceContentHash& hash, SceneId sceneid) override;
 
     private:
         DeviceResourceHandle uploadTexture(IDevice& device, const TextureResource& texture, UInt32& vramSize);
-        DeviceResourceHandle queryBinaryShaderCacheAndUploadEffect(IRenderBackend& renderBackend, const EffectResource& effect, ResourceContentHash hash, SceneId sceneid);
+        DeviceResourceHandle queryBinaryShaderCache(IRenderBackend& renderBackend, const EffectResource& effect, ResourceContentHash hash);
 
         static UInt32 EstimateGPUAllocatedSizeOfTexture(const TextureResource& texture, UInt32 numMipLevelsToAllocate);
 
         IBinaryShaderCache* const m_binaryShaderCache;
-        bool m_supportedFormatsReported = false;
-        RendererStatistics& m_stats;
     };
 }
 

@@ -31,17 +31,6 @@ namespace ramses_internal
         Invalid
     };
 
-    inline const char* EnumToString(ETechnicalContentType val)
-    {
-        switch (val)
-        {
-        case ETechnicalContentType::RamsesSceneID: return "ETechnicalContentType::RamsesSceneID";
-        case ETechnicalContentType::WaylandIviSurfaceID: return "ETechnicalContentType::WaylandIviSurfaceID";
-        case ETechnicalContentType::Invalid: return "ETechnicalContentType::Invalid";
-        }
-        return "ETechnicalContentType::<UNKNOWN>";
-    }
-
     struct TechnicalContentDescriptorTag;
     using TechnicalContentDescriptor = StronglyTypedValue<uint64_t, 0, TechnicalContentDescriptorTag>;
 
@@ -54,19 +43,6 @@ namespace ramses_internal
         AcceptStopOffer,
     };
 
-    inline const char* EnumToString(EDcsmState val)
-    {
-        switch (val)
-        {
-        case EDcsmState::Offered: return "EDcsmState::Offered";
-        case EDcsmState::Assigned: return "EDcsmState::Assigned";
-        case EDcsmState::Ready: return "EDcsmState::Ready";
-        case EDcsmState::Shown: return "EDcsmState::Shown";
-        case EDcsmState::AcceptStopOffer: return "EDcsmState::AcceptStopOffer";
-        }
-        return "EDcsmState::<UNKNOWN>";
-    }
-
     struct AnimationInformation
     {
         uint64_t startTimeStamp;
@@ -77,6 +53,24 @@ namespace ramses_internal
             return startTimeStamp == rhs.startTimeStamp && finishedTimeStamp == rhs.finishedTimeStamp;
         }
     };
+
+
+    // enum names
+    static const char* TechnicalContentTypeNames[] =
+    {
+        "RamsesSceneID",
+        "WaylandIviSurfaceID",
+        "Invalid",
+    };
+
+    static const char* DcsmStateNames[] =
+    {
+        "Offered",
+        "Assigned",
+        "Ready",
+        "Shown",
+        "AcceptStopOffer",
+    };
 }
 
 MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::ContentID, ramses::ContentID)
@@ -84,5 +78,14 @@ MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::Category, ramses::Cat
 
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::ProviderID)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::TechnicalContentDescriptor)
+
+MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::ETechnicalContentType,
+                                        "ETechnicalContentType",
+                                        ramses_internal::TechnicalContentTypeNames,
+                                        ramses_internal::ETechnicalContentType::Invalid);
+MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::EDcsmState,
+                                        "EDcsmState",
+                                        ramses_internal::DcsmStateNames,
+                                        ramses_internal::EDcsmState::AcceptStopOffer);
 
 #endif

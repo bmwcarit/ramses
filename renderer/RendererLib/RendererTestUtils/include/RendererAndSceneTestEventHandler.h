@@ -144,18 +144,16 @@ namespace ramses
             const std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + m_timeout;
             while (!conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)
             {
-                if (m_renderer.impl.isThreaded())
-                    std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });  // will give the renderer time to process changes
-                else
-                    m_renderer.impl.getRenderer().doOneLoop(ramses_internal::ELoopMode::UpdateOnly);
+                if (!m_renderer.impl.isThreaded())
+                    m_renderer.impl.getDisplayDispatcher().doOneLoop(ramses_internal::ELoopMode::UpdateOnly);
+
+                std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });  // will give the renderer time to process changes
+
                 m_renderer.dispatchEvents(*this);
                 m_renderer.getSceneControlAPI()->dispatchEvents(*this);
             }
 
-            const bool res = conditionFunction();
-            assert(res);
-
-            return res;
+            return conditionFunction();
         }
 
         std::unordered_set<displayId_t> m_displays;

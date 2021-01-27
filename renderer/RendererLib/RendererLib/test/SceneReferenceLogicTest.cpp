@@ -9,8 +9,10 @@
 #include "gmock/gmock.h"
 #include "RendererLib/SceneReferenceLogic.h"
 #include "RendererLib/RendererScenes.h"
-#include "RendererSceneControlMock.h"
+#include "RendererLib/SceneReferenceOwnership.h"
+#include "RendererSceneStateControlMock.h"
 #include "RendererSceneControlLogicMock.h"
+#include "RendererSceneUpdaterMock.h"
 #include "RendererSceneEventSenderMock.h"
 #include "RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
@@ -24,7 +26,7 @@ namespace ramses_internal
     public:
         ASceneReferenceLogic()
             : m_scenes(m_eventCollector)
-            , m_logic(m_scenes, m_sceneLogic, m_sceneControl, m_eventSender)
+            , m_logic(m_scenes, m_sceneLogic, m_sceneUpdater, m_eventSender, m_ownership)
         {
         }
 
@@ -42,7 +44,7 @@ namespace ramses_internal
             m_scenes.createScene(SceneInfo{ RefSceneId21 });
             m_scenes.createScene(SceneInfo{ RefSceneId22 });
 
-            // ignore this unless overriden by test
+            // ignore this unless overridden by test
             EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; });
         }
 
@@ -51,7 +53,7 @@ namespace ramses_internal
         {
             m_logic.update();
             Mock::VerifyAndClearExpectations(&m_sceneLogic);
-            Mock::VerifyAndClearExpectations(&m_sceneControl);
+            Mock::VerifyAndClearExpectations(&m_sceneUpdater);
 
             // ignore this unless overridden by test
             EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; });
@@ -60,8 +62,9 @@ namespace ramses_internal
         RendererEventCollector m_eventCollector;
         RendererScenes m_scenes;
         StrictMock<RendererSceneControlLogicMock> m_sceneLogic;
-        StrictMock<RendererSceneControlMock> m_sceneControl;
+        StrictMock<RendererSceneUpdaterMock> m_sceneUpdater;
         StrictMock<RendererSceneEventSenderMock> m_eventSender;
+        SceneReferenceOwnership m_ownership;
         SceneReferenceLogic m_logic;
 
         static constexpr SceneId MasterSceneId1{ 123 };
@@ -97,6 +100,18 @@ namespace ramses_internal
         EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId22, _, _, _, _));
         updateLogicAndVerifyExpectations();
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
+        EXPECT_EQ(MasterSceneId1, m_ownership.getSceneOwner(RefSceneId11));
+        EXPECT_EQ(MasterSceneId1, m_ownership.getSceneOwner(RefSceneId12));
+        EXPECT_EQ(MasterSceneId2, m_ownership.getSceneOwner(RefSceneId21));
+        EXPECT_EQ(MasterSceneId2, m_ownership.getSceneOwner(RefSceneId22));
+    }
+
+    TEST_F(ASceneReferenceLogic, cannotFindMasterAfterRefSceneReleased)
+    {
+        m_scenes.getScene(MasterSceneId1).releaseSceneReference(RefSceneHandle12);
+        EXPECT_FALSE(m_ownership.getSceneOwner(RefSceneId12).isValid());
+        m_scenes.getScene(MasterSceneId1).releaseSceneReference(RefSceneHandle11);
+        EXPECT_FALSE(m_ownership.getSceneOwner(RefSceneId11).isValid());
     }
 
     TEST_F(ASceneReferenceLogic, executesActionForMasterScene)
@@ -104,7 +119,7 @@ namespace ramses_internal
         static constexpr SceneReferenceAction linkAction1{ SceneReferenceActionType::LinkData, {}, DataSlotId{1}, RefSceneHandle11, DataSlotId{2} };
         m_logic.addActions(MasterSceneId1, { linkAction1 });
 
-        EXPECT_CALL(m_sceneControl, handleSceneDataLinkRequest(RefSceneId11, linkAction1.providerId, MasterSceneId1, linkAction1.consumerId));
+        EXPECT_CALL(m_sceneUpdater, handleSceneDataLinkRequest(RefSceneId11, linkAction1.providerId, MasterSceneId1, linkAction1.consumerId));
         updateLogicAndVerifyExpectations();
     }
 
@@ -117,11 +132,11 @@ namespace ramses_internal
         m_logic.addActions(MasterSceneId1, { linkAction1, linkAction2, unlinkAction1 });
         m_logic.addActions(MasterSceneId2, { unlinkAction1, unlinkAction2 });
 
-        EXPECT_CALL(m_sceneControl, handleSceneDataLinkRequest(RefSceneId11, linkAction1.providerId, MasterSceneId1, linkAction1.consumerId));
-        EXPECT_CALL(m_sceneControl, handleSceneDataLinkRequest(MasterSceneId1, linkAction2.providerId, RefSceneId12, linkAction2.consumerId));
-        EXPECT_CALL(m_sceneControl, handleDataUnlinkRequest(MasterSceneId1, unlinkAction1.consumerId));
-        EXPECT_CALL(m_sceneControl, handleDataUnlinkRequest(MasterSceneId2, unlinkAction1.consumerId));
-        EXPECT_CALL(m_sceneControl, handleDataUnlinkRequest(RefSceneId22, unlinkAction2.consumerId));
+        EXPECT_CALL(m_sceneUpdater, handleSceneDataLinkRequest(RefSceneId11, linkAction1.providerId, MasterSceneId1, linkAction1.consumerId));
+        EXPECT_CALL(m_sceneUpdater, handleSceneDataLinkRequest(MasterSceneId1, linkAction2.providerId, RefSceneId12, linkAction2.consumerId));
+        EXPECT_CALL(m_sceneUpdater, handleDataUnlinkRequest(MasterSceneId1, unlinkAction1.consumerId));
+        EXPECT_CALL(m_sceneUpdater, handleDataUnlinkRequest(MasterSceneId2, unlinkAction1.consumerId));
+        EXPECT_CALL(m_sceneUpdater, handleDataUnlinkRequest(RefSceneId22, unlinkAction2.consumerId));
         updateLogicAndVerifyExpectations();
 
         // actions cleared, no more expectations
@@ -558,6 +573,8 @@ namespace ramses_internal
         masterScene1.allocateSceneReference(RefSceneId11, RefSceneHandle11);
         masterScene1.allocateSceneReference(RefSceneId12, RefSceneHandle12);
         updateLogicAndVerifyExpectations();
+        EXPECT_EQ(MasterSceneId1, m_ownership.getSceneOwner(RefSceneId11));
+        EXPECT_EQ(MasterSceneId1, m_ownership.getSceneOwner(RefSceneId12));
 
         // simulate master scene Available
         EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
@@ -585,13 +602,13 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
-        RendererEvent event{ ERendererEventType_ScenePublished };
+        RendererEvent event{ ERendererEventType::ScenePublished };
         event.sceneId = RefSceneId12;
         RendererEventVector events{ event };
 
         m_logic.extractAndSendSceneReferenceEvents(events);
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_ScenePublished, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::ScenePublished, events[0].eventType);
         EXPECT_EQ(RefSceneId12, events[0].sceneId);
     }
 
@@ -600,7 +617,7 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
-        RendererEventVector events{ { ERendererEventType_DisplayCreated }, { ERendererEventType_WindowKeyEvent }, { ERendererEventType_ReadPixelsFromFramebuffer } };
+        RendererEventVector events{ { ERendererEventType::DisplayCreated }, { ERendererEventType::WindowKeyEvent }, { ERendererEventType::ReadPixelsFromFramebuffer } };
         RendererEventVector eventsOriginal = events;
 
         m_logic.extractAndSendSceneReferenceEvents(events);
@@ -616,9 +633,9 @@ namespace ramses_internal
 
         RendererEventVector events
         {
-            { ERendererEventType_SceneAssignedToDisplayBuffer }, { ERendererEventType_SceneAssignedToDisplayBufferFailed }, { ERendererEventType_SceneDataSlotProviderCreated },
-            { ERendererEventType_DisplayCreated }, // will be kept
-            { ERendererEventType_SceneDataSlotProviderDestroyed }, { ERendererEventType_SceneDataSlotConsumerCreated }, { ERendererEventType_SceneDataSlotConsumerDestroyed }
+            { ERendererEventType::SceneDataSlotProviderCreated },
+            { ERendererEventType::DisplayCreated }, // will be kept
+            { ERendererEventType::SceneDataSlotProviderDestroyed }, { ERendererEventType::SceneDataSlotConsumerCreated }, { ERendererEventType::SceneDataSlotConsumerDestroyed }
         };
         // all of them 'belong' to ref scene
         for (auto& evt : events)
@@ -629,7 +646,7 @@ namespace ramses_internal
 
         // display creation event was the only one kept
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_DisplayCreated, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::DisplayCreated, events[0].eventType);
     }
 
     TEST_F(ASceneReferenceLogic, extractsButDoesNotSendSceneRefEventsOfUnusedDataLinkingTypes)
@@ -639,9 +656,9 @@ namespace ramses_internal
 
         RendererEventVector events
         {
-            { ERendererEventType_SceneDataBufferLinked },
-            { ERendererEventType_SceneDataBufferLinkFailed }, { ERendererEventType_SceneDataUnlinkedAsResultOfClientSceneChange },
-            { ERendererEventType_DisplayCreated }, // will be kept
+            { ERendererEventType::SceneDataBufferLinked },
+            { ERendererEventType::SceneDataBufferLinkFailed }, { ERendererEventType::SceneDataUnlinkedAsResultOfClientSceneChange },
+            { ERendererEventType::DisplayCreated }, // will be kept
         };
         // all of them have ref scene as consumer scene
         for (auto& evt : events)
@@ -652,7 +669,7 @@ namespace ramses_internal
 
         // display creation event was the only one kept
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_DisplayCreated, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::DisplayCreated, events[0].eventType);
     }
 
     TEST_F(ASceneReferenceLogic, extractsAndSendsEventOfReferencedScene_SceneStateChange)
@@ -661,7 +678,7 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         RendererEventVector events;
-        RendererEvent event{ ERendererEventType_SceneStateChanged };
+        RendererEvent event{ ERendererEventType::SceneStateChanged };
         event.sceneId = RefSceneId21;
         event.state = RendererSceneState::Ready;
         events.push_back(event);
@@ -676,7 +693,7 @@ namespace ramses_internal
 
         // non-ref scene event will is kept
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneStateChanged, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneStateChanged, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
         EXPECT_EQ(RendererSceneState::Ready, events[0].state);
     }
@@ -692,7 +709,7 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
 
         RendererEventVector events;
-        RendererEvent event{ ERendererEventType_SceneStateChanged };
+        RendererEvent event{ ERendererEventType::SceneStateChanged };
         event.sceneId = RefSceneId21;
         event.state = RendererSceneState::Ready;
         events.push_back(event);
@@ -710,7 +727,7 @@ namespace ramses_internal
 
         constexpr SceneVersionTag version{ 123 };
         RendererEventVector events;
-        RendererEvent event{ ERendererEventType_SceneFlushed };
+        RendererEvent event{ ERendererEventType::SceneFlushed };
         event.sceneId = RefSceneId21;
         event.sceneVersionTag = version;
         events.push_back(event);
@@ -725,7 +742,7 @@ namespace ramses_internal
 
         // non-ref scene event will is kept
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneFlushed, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneFlushed, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
         EXPECT_EQ(version, events[0].sceneVersionTag);
     }
@@ -741,7 +758,7 @@ namespace ramses_internal
 
         constexpr SceneVersionTag version{ 123 };
         RendererEventVector events;
-        RendererEvent event{ ERendererEventType_SceneFlushed };
+        RendererEvent event{ ERendererEventType::SceneFlushed };
         event.sceneId = RefSceneId21;
         event.sceneVersionTag = version;
         events.push_back(event);
@@ -763,7 +780,7 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         RendererEventVector events;
-        RendererEvent event{ ERendererEventType_SceneDataLinked };
+        RendererEvent event{ ERendererEventType::SceneDataLinked };
         // master -> ref
         event.providerSceneId = MasterSceneId1;
         event.consumerSceneId = RefSceneId11;
@@ -800,7 +817,7 @@ namespace ramses_internal
 
         // only master -> master event was kept
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneDataLinked, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneDataLinked, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].providerSceneId);
         EXPECT_EQ(DataSlotId{ 7 }, events[0].providerdataId);
         EXPECT_EQ(MasterSceneId2, events[0].consumerSceneId);
@@ -813,7 +830,7 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         RendererEventVector events;
-        RendererEvent event{ ERendererEventType_SceneDataLinkFailed };
+        RendererEvent event{ ERendererEventType::SceneDataLinkFailed };
         // master -> ref
         event.providerSceneId = MasterSceneId1;
         event.consumerSceneId = RefSceneId11;
@@ -850,7 +867,7 @@ namespace ramses_internal
 
         // only master -> master event was kept
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneDataLinkFailed, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneDataLinkFailed, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].providerSceneId);
         EXPECT_EQ(DataSlotId{ 7 }, events[0].providerdataId);
         EXPECT_EQ(MasterSceneId2, events[0].consumerSceneId);
@@ -863,7 +880,7 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         RendererEventVector events;
-        RendererEvent event{ ERendererEventType_SceneDataUnlinked };
+        RendererEvent event{ ERendererEventType::SceneDataUnlinked };
         // master -> ref
         event.providerSceneId = MasterSceneId1;
         event.consumerSceneId = RefSceneId11;
@@ -896,7 +913,7 @@ namespace ramses_internal
 
         // only master -> master event was kept
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneDataUnlinked, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneDataUnlinked, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].providerSceneId);
         EXPECT_EQ(MasterSceneId2, events[0].consumerSceneId);
         EXPECT_EQ(DataSlotId{ 8 }, events[0].consumerdataId);
@@ -908,7 +925,7 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         RendererEventVector events;
-        RendererEvent event{ ERendererEventType_SceneDataUnlinkFailed };
+        RendererEvent event{ ERendererEventType::SceneDataUnlinkFailed };
         // master -> ref
         event.providerSceneId = MasterSceneId1;
         event.consumerSceneId = RefSceneId11;
@@ -941,7 +958,7 @@ namespace ramses_internal
 
         // only master -> master event was kept
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneDataUnlinkFailed, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneDataUnlinkFailed, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].providerSceneId);
         EXPECT_EQ(MasterSceneId2, events[0].consumerSceneId);
         EXPECT_EQ(DataSlotId{ 8 }, events[0].consumerdataId);
@@ -952,11 +969,11 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
-        RendererEventVector events{ { ERendererEventType_SceneExpirationMonitoringEnabled, RefSceneId11 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpirationMonitoringEnabled, RefSceneId11 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
 
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
     }
 
@@ -965,14 +982,14 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
-        RendererEventVector events{ { ERendererEventType_SceneExpired, RefSceneId11 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpired, RefSceneId11 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
 
         ASSERT_EQ(2u, events.size());
         // expiration enabled will come first as master was not yet reported as enabled
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
-        EXPECT_EQ(ERendererEventType_SceneExpired, events[1].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpired, events[1].eventType);
         EXPECT_EQ(MasterSceneId1, events[1].sceneId);
     }
 
@@ -981,11 +998,11 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
-        RendererEventVector events{ { ERendererEventType_SceneExpirationMonitoringEnabled, MasterSceneId1 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpirationMonitoringEnabled, MasterSceneId1 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
 
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
     }
 
@@ -994,14 +1011,14 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
-        RendererEventVector events{ { ERendererEventType_SceneExpired, MasterSceneId1 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpired, MasterSceneId1 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
 
         ASSERT_EQ(2u, events.size());
         // expiration enabled will come first as master was not yet reported as enabled
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
-        EXPECT_EQ(ERendererEventType_SceneExpired, events[1].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpired, events[1].eventType);
         EXPECT_EQ(MasterSceneId1, events[1].sceneId);
     }
 
@@ -1010,17 +1027,17 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
-        RendererEventVector events{ { ERendererEventType_SceneExpired, RefSceneId11 }, { ERendererEventType_SceneExpired, RefSceneId12 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpired, RefSceneId11 }, { ERendererEventType::SceneExpired, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
 
         ASSERT_EQ(2u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
-        EXPECT_EQ(ERendererEventType_SceneExpired, events[1].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpired, events[1].eventType);
         EXPECT_EQ(MasterSceneId1, events[1].sceneId);
 
         // simulate more expired scenes from same master
-        events = RendererEventVector{ { ERendererEventType_SceneExpired, RefSceneId11 }, { ERendererEventType_SceneExpired, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpired, RefSceneId11 }, { ERendererEventType::SceneExpired, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
 
         // no more expirations reported
@@ -1032,17 +1049,17 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
-        RendererEventVector events{ { ERendererEventType_SceneExpired, MasterSceneId1 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpired, MasterSceneId1 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
 
         ASSERT_EQ(2u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
-        EXPECT_EQ(ERendererEventType_SceneExpired, events[1].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpired, events[1].eventType);
         EXPECT_EQ(MasterSceneId1, events[1].sceneId);
 
         // simulate more expired ref scenes from same master
-        events = RendererEventVector{ { ERendererEventType_SceneExpired, RefSceneId11 }, { ERendererEventType_SceneExpired, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpired, RefSceneId11 }, { ERendererEventType::SceneExpired, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
 
         // no more expirations reported
@@ -1055,15 +1072,15 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         // simulate expired first
-        RendererEventVector events{ { ERendererEventType_SceneExpired, RefSceneId11 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpired, RefSceneId11 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         EXPECT_EQ(2u, events.size());
 
-        events = RendererEventVector{ { ERendererEventType_SceneRecoveredFromExpiration, RefSceneId11 } };
+        events = RendererEventVector{ { ERendererEventType::SceneRecoveredFromExpiration, RefSceneId11 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
 
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneRecoveredFromExpiration, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneRecoveredFromExpiration, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
     }
 
@@ -1073,15 +1090,15 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         // simulate expired first
-        RendererEventVector events{ { ERendererEventType_SceneExpired, MasterSceneId1 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpired, MasterSceneId1 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         EXPECT_EQ(2u, events.size());
 
-        events = RendererEventVector{ { ERendererEventType_SceneRecoveredFromExpiration, MasterSceneId1 } };
+        events = RendererEventVector{ { ERendererEventType::SceneRecoveredFromExpiration, MasterSceneId1 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
 
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneRecoveredFromExpiration, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneRecoveredFromExpiration, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
     }
 
@@ -1091,29 +1108,29 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         // simulate ref1 expired
-        RendererEventVector events{ { ERendererEventType_SceneExpired, RefSceneId11 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpired, RefSceneId11 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         ASSERT_EQ(2u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
-        EXPECT_EQ(ERendererEventType_SceneExpired, events[1].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpired, events[1].eventType);
 
         // simulate ref2 expired
-        events = RendererEventVector{ { ERendererEventType_SceneExpired, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpired, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         // already expired, no event
         ASSERT_TRUE(events.empty());
 
         // ref2 recovered
-        events = RendererEventVector{ { ERendererEventType_SceneRecoveredFromExpiration, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneRecoveredFromExpiration, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         // ref1 still expired, no event
         EXPECT_TRUE(events.empty());
 
-        events = RendererEventVector{ { ERendererEventType_SceneRecoveredFromExpiration, RefSceneId11 } };
+        events = RendererEventVector{ { ERendererEventType::SceneRecoveredFromExpiration, RefSceneId11 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         // only now both refs recovered
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneRecoveredFromExpiration, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneRecoveredFromExpiration, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
     }
 
@@ -1123,29 +1140,29 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         // simulate master expired
-        RendererEventVector events{ { ERendererEventType_SceneExpired, MasterSceneId1 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpired, MasterSceneId1 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         ASSERT_EQ(2u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
-        EXPECT_EQ(ERendererEventType_SceneExpired, events[1].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpired, events[1].eventType);
 
         // simulate ref2 expired
-        events = RendererEventVector{ { ERendererEventType_SceneExpired, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpired, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         // already expired, no event
         ASSERT_TRUE(events.empty());
 
         // ref2 recovered
-        events = RendererEventVector{ { ERendererEventType_SceneRecoveredFromExpiration, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneRecoveredFromExpiration, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         // ref1 still expired, no event
         EXPECT_TRUE(events.empty());
 
-        events = RendererEventVector{ { ERendererEventType_SceneRecoveredFromExpiration, MasterSceneId1 } };
+        events = RendererEventVector{ { ERendererEventType::SceneRecoveredFromExpiration, MasterSceneId1 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         // only now both ref and master recovered
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneRecoveredFromExpiration, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneRecoveredFromExpiration, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
     }
 
@@ -1155,40 +1172,40 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         // simulate master enabled for monitoring
-        RendererEventVector events{ { ERendererEventType_SceneExpirationMonitoringEnabled, MasterSceneId1 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpirationMonitoringEnabled, MasterSceneId1 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
 
         // simulate ref2 expired
-        events = RendererEventVector{ { ERendererEventType_SceneExpired, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpired, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         // report expired
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpired, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpired, events[0].eventType);
 
         // simulate master disabled for monitoring
-        events = RendererEventVector{ { ERendererEventType_SceneExpirationMonitoringDisabled, MasterSceneId1 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpirationMonitoringDisabled, MasterSceneId1 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         // does not affect consolidated state, one of refs still expired
         EXPECT_TRUE(events.empty());
 
         // ref2 recovered
-        events = RendererEventVector{ { ERendererEventType_SceneRecoveredFromExpiration, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneRecoveredFromExpiration, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
 
         // report recovered
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneRecoveredFromExpiration, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneRecoveredFromExpiration, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
 
         // ref2 disabled for monitoring
-        events = RendererEventVector{ { ERendererEventType_SceneExpirationMonitoringDisabled, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpirationMonitoringDisabled, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
 
         // report disabled as all disabled for monitoring now
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringDisabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringDisabled, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
     }
 
@@ -1198,20 +1215,20 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         // simulate ref1 expired
-        RendererEventVector events{ { ERendererEventType_SceneExpired, RefSceneId11 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpired, RefSceneId11 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         ASSERT_EQ(2u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
-        EXPECT_EQ(ERendererEventType_SceneExpired, events[1].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpired, events[1].eventType);
 
         // simulate ref2 expired
-        events = RendererEventVector{ { ERendererEventType_SceneExpired, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpired, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         // already expired, no event
         ASSERT_TRUE(events.empty());
 
         // ref2 unavailable
-        RendererEvent evt{ ERendererEventType_SceneStateChanged, RefSceneId12 };
+        RendererEvent evt{ ERendererEventType::SceneStateChanged, RefSceneId12 };
         evt.state = RendererSceneState::Unavailable;
         events = { evt };
         EXPECT_CALL(m_eventSender, sendSceneStateChanged(MasterSceneId1, RefSceneId12, _));
@@ -1226,7 +1243,7 @@ namespace ramses_internal
         m_logic.extractAndSendSceneReferenceEvents(events);
         // both refs gone, master reported as disabled for monitoring
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringDisabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringDisabled, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
     }
 
@@ -1236,25 +1253,25 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         // simulate master enabled for monitoring
-        RendererEventVector events{ { ERendererEventType_SceneExpirationMonitoringEnabled, MasterSceneId1 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpirationMonitoringEnabled, MasterSceneId1 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
 
         // simulate ref1 expired
-        events = RendererEventVector{ { ERendererEventType_SceneExpired, RefSceneId11 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpired, RefSceneId11 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpired, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpired, events[0].eventType);
 
         // simulate ref2 expired
-        events = RendererEventVector{ { ERendererEventType_SceneExpired, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpired, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         // already expired, no event
         ASSERT_TRUE(events.empty());
 
         // ref2 unavailable
-        RendererEvent evt{ ERendererEventType_SceneStateChanged, RefSceneId12 };
+        RendererEvent evt{ ERendererEventType::SceneStateChanged, RefSceneId12 };
         evt.state = RendererSceneState::Unavailable;
         events = { evt };
         EXPECT_CALL(m_eventSender, sendSceneStateChanged(MasterSceneId1, RefSceneId12, _));
@@ -1269,7 +1286,7 @@ namespace ramses_internal
         m_logic.extractAndSendSceneReferenceEvents(events);
         // both refs gone, master reported as recovered, master itself is still enabled for monitoring
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneRecoveredFromExpiration, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneRecoveredFromExpiration, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
     }
 
@@ -1279,15 +1296,15 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         // simulate ref1 expired
-        RendererEventVector events{ { ERendererEventType_SceneExpired, RefSceneId11 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpired, RefSceneId11 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         ASSERT_EQ(2u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
-        EXPECT_EQ(ERendererEventType_SceneExpired, events[1].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpired, events[1].eventType);
         updateLogicAndVerifyExpectations();
 
         // simulate ref2 expired
-        events = RendererEventVector{ { ERendererEventType_SceneExpired, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpired, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         // already expired, no event
         ASSERT_TRUE(events.empty());
@@ -1299,6 +1316,7 @@ namespace ramses_internal
         m_logic.extractAndSendSceneReferenceEvents(events);
         // ref1 still expired, no event
         EXPECT_TRUE(events.empty());
+        EXPECT_FALSE(m_ownership.getSceneOwner(RefSceneId12).isValid());
 
         // release expired ref1
         m_scenes.getScene(MasterSceneId1).releaseSceneReference(RefSceneHandle11);
@@ -1306,8 +1324,9 @@ namespace ramses_internal
         m_logic.extractAndSendSceneReferenceEvents(events);
         // both expired refs gone, there is nothing monitored anymore, master reported as disabled
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringDisabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringDisabled, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
+        EXPECT_FALSE(m_ownership.getSceneOwner(RefSceneId11).isValid());
     }
 
     TEST_F(ASceneReferenceLogic, reportsMasterAsRecoveredIfExpiredRefsReleased_withMasterEnabled)
@@ -1316,21 +1335,21 @@ namespace ramses_internal
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
         // enable master monitoring
-        RendererEventVector events{ { ERendererEventType_SceneExpirationMonitoringEnabled, MasterSceneId1 } };
+        RendererEventVector events{ { ERendererEventType::SceneExpirationMonitoringEnabled, MasterSceneId1 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpirationMonitoringEnabled, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpirationMonitoringEnabled, events[0].eventType);
         updateLogicAndVerifyExpectations();
 
         // simulate ref1 expired
-        events = RendererEventVector{ { ERendererEventType_SceneExpired, RefSceneId11 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpired, RefSceneId11 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneExpired, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneExpired, events[0].eventType);
         updateLogicAndVerifyExpectations();
 
         // simulate ref2 expired
-        events = RendererEventVector{ { ERendererEventType_SceneExpired, RefSceneId12 } };
+        events = RendererEventVector{ { ERendererEventType::SceneExpired, RefSceneId12 } };
         m_logic.extractAndSendSceneReferenceEvents(events);
         // already expired, no event
         ASSERT_TRUE(events.empty());
@@ -1349,7 +1368,7 @@ namespace ramses_internal
         m_logic.extractAndSendSceneReferenceEvents(events);
         // both expired refs gone, master reported as recovered - it is still enabled
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneRecoveredFromExpiration, events[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneRecoveredFromExpiration, events[0].eventType);
         EXPECT_EQ(MasterSceneId1, events[0].sceneId);
     }
 
@@ -1361,10 +1380,10 @@ namespace ramses_internal
         // both refs enabled, expired, recovered and disabled at same time
         RendererEventVector events
         {
-            { ERendererEventType_SceneExpirationMonitoringEnabled, RefSceneId11 }, { ERendererEventType_SceneExpirationMonitoringEnabled, RefSceneId12 },
-            { ERendererEventType_SceneExpired, RefSceneId11 }, { ERendererEventType_SceneExpired, RefSceneId12 },
-            { ERendererEventType_SceneRecoveredFromExpiration, RefSceneId11 }, { ERendererEventType_SceneRecoveredFromExpiration, RefSceneId12 },
-            { ERendererEventType_SceneExpirationMonitoringDisabled, RefSceneId11 }, { ERendererEventType_SceneExpirationMonitoringDisabled, RefSceneId12 }
+            { ERendererEventType::SceneExpirationMonitoringEnabled, RefSceneId11 }, { ERendererEventType::SceneExpirationMonitoringEnabled, RefSceneId12 },
+            { ERendererEventType::SceneExpired, RefSceneId11 }, { ERendererEventType::SceneExpired, RefSceneId12 },
+            { ERendererEventType::SceneRecoveredFromExpiration, RefSceneId11 }, { ERendererEventType::SceneRecoveredFromExpiration, RefSceneId12 },
+            { ERendererEventType::SceneExpirationMonitoringDisabled, RefSceneId11 }, { ERendererEventType::SceneExpirationMonitoringDisabled, RefSceneId12 }
         };
         m_logic.extractAndSendSceneReferenceEvents(events);
         EXPECT_TRUE(events.empty());
@@ -1473,6 +1492,7 @@ namespace ramses_internal
         // ref scene is now under new master which did not request any state for it yet, i.e. default is available
         EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId11, RendererSceneState::Available));
         m_logic.update();
+        EXPECT_EQ(MasterSceneId2, m_ownership.getSceneOwner(RefSceneId11));
 
         // simulate new master Ready
         EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
@@ -1523,6 +1543,7 @@ namespace ramses_internal
 
         // expect nothing, i.e. ref stays in READY
         m_logic.update();
+        EXPECT_EQ(MasterSceneId2, m_ownership.getSceneOwner(RefSceneId11));
 
         // request another state for ref from new master now
         m_scenes.getScene(MasterSceneId2).requestSceneReferenceState(otherRefHandle, RendererSceneState::Available);
@@ -1618,7 +1639,7 @@ namespace ramses_internal
         m_scenes.getScene(MasterSceneId1).releaseSceneReference(RefSceneHandle11);
 
         // only action remaining is for the ref that was not released, others are ignored as its ref does not have owner anymore
-        EXPECT_CALL(m_sceneControl, handleSceneDataLinkRequest(MasterSceneId1, DataSlotId{2}, RefSceneId12, DataSlotId{1}));
+        EXPECT_CALL(m_sceneUpdater, handleSceneDataLinkRequest(MasterSceneId1, DataSlotId{2}, RefSceneId12, DataSlotId{1}));
         m_logic.update();
 
         // re-reference by new master

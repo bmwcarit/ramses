@@ -24,7 +24,7 @@ namespace ramses_internal
 
     Bool SystemCompositorControllerScreenshot::execute(String& fileName, int32_t& screenIviId) const
     {
-        m_rendererCommandBuffer.systemCompositorControllerScreenshot(fileName, screenIviId);
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCScreenshot{ screenIviId, fileName });
         return true;
     }
 }

@@ -22,13 +22,13 @@ namespace ramses_internal
     };
 
     static constexpr const char* EStatusNames[] = {
-        "EStatus::Ok",
-        "EStatus::Error",
-        "EStatus::NotExist",
-        "EStatus::Eof"
+        "Ok",
+        "Error",
+        "NotExist",
+        "Eof"
     };
 }
 
-MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::EStatus, ramses_internal::EStatusNames, ramses_internal::EStatus::Eof);
+MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::EStatus, "EStatus", ramses_internal::EStatusNames, ramses_internal::EStatus::Eof);
 
 #endif

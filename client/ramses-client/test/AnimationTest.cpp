@@ -25,7 +25,7 @@ namespace ramses
     class AnimationTest : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
     {
     public:
-        virtual void SetUp()
+        virtual void SetUp() override
         {
             m_animatedNode = this->m_scene.createNode();
 

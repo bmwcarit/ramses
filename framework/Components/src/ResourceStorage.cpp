@@ -268,7 +268,7 @@ namespace ramses_internal
         RefCntResource* entry = m_resourceMap.get(hash);
         // we expect entry to exist as well as one hash usage being taken by resource file
         assert(entry);
-        return entry->hashUsages > 1 || entry->refCount;
+        return entry->hashUsages > 1 || entry->refCount != 0;
     }
 
 }

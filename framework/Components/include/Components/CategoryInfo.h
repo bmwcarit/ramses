@@ -13,6 +13,7 @@
 #include "Utils/StringOutputSpecialWrapper.h"
 #include "ramses-framework-api/CategoryInfoUpdate.h"
 #include "absl/types/span.h"
+#include <vector>
 
 namespace ramses_internal
 {

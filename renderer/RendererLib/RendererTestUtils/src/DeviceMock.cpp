@@ -44,7 +44,8 @@ namespace ramses_internal
         // fake uploads
         ON_CALL(*this, allocateVertexBuffer(_)).WillByDefault(Return(FakeVertexBufferDeviceHandle));
         ON_CALL(*this, allocateIndexBuffer(_, _)).WillByDefault(Return(FakeIndexBufferDeviceHandle));
-        ON_CALL(*this, uploadShader(_)).WillByDefault(Return(FakeShaderDeviceHandle));
+        ON_CALL(*this, uploadShader(_)).WillByDefault(Invoke([](const auto&){return std::make_unique<const GPUResource>(1u, 2u);}));
+        ON_CALL(*this, registerShader(_)).WillByDefault(Return(FakeShaderDeviceHandle));
         ON_CALL(*this, uploadBinaryShader(_, _, _, _)).WillByDefault(Return(FakeShaderDeviceHandle));
         ON_CALL(*this, allocateTexture2D(_, _, _, _, _, _)).WillByDefault(Return(FakeTextureDeviceHandle));
         ON_CALL(*this, uploadRenderBuffer(_)).WillByDefault(Return(FakeRenderBufferDeviceHandle));

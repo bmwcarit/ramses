@@ -22,12 +22,12 @@ using namespace testing;
 
 namespace ramses_internal
 {
-    typedef ::testing::Types<
+    using IteratableSceneTypes = ::testing::Types<
         Scene,
         TransformationCachedScene,
         ActionCollectingScene,
         ResourceChangeCollectingScene
-    > IteratableSceneTypes;
+    >;
 
     template <typename SCENE>
     class AnIteratableScene : public testing::Test

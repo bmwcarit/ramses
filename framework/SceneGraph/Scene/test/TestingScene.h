@@ -184,7 +184,7 @@ namespace ramses_internal
             scene.addAnimationSystem(&animationSystem, animSystem);
             animationSystem.allocateSpline(ESplineKeyType_Basic, EDataTypeID_Vector3f, spline);
             animationSystem.setSplineKeyBasicVector3f(spline, 99u, Vector3(111.f, -999.f, 66.f));
-            typedef DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType ContainerTraitsClass;
+            using ContainerTraitsClass = DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType;
             animationSystem.allocateDataBinding(scene, ContainerTraitsClass::TransformNode_Rotation, t1.asMemoryHandle(), InvalidMemoryHandle, dataBind);
             animationSystem.allocateAnimationInstance(spline, EInterpolationType_Linear, EVectorComponent_All, animInstance);
             animationSystem.addDataBindingToAnimationInstance(animInstance, dataBind);

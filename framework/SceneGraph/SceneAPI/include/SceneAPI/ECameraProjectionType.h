@@ -21,12 +21,13 @@ namespace ramses_internal
     };
 
     static constexpr const char* const ECameraProjectionTypeNames[] = {
-        "ECameraProjectionType::Perspective",
-        "ECameraProjectionType::Orthographic"
+        "Perspective",
+        "Orthographic"
     };
 }
 
 MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::ECameraProjectionType,
+                                        "ECameraProjectionType",
                                         ramses_internal::ECameraProjectionTypeNames,
                                         ramses_internal::ECameraProjectionType::Orthographic);
 

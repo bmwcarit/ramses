@@ -40,7 +40,7 @@ namespace
     const UInt32 startVertex = 14u;
 }
 
-typedef std::pair<DataInstanceHandle, DataInstanceHandle> DataInstances;
+using DataInstances = std::pair<DataInstanceHandle, DataInstanceHandle>;
 
 // This Matrix comparison matcher is needed to compare the MVP etc matrices. It must allow
 // a relatively high error because heavy optimizations on some platforms may lead to significant

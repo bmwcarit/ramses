@@ -89,7 +89,7 @@ namespace ramses_internal
 
             //calling poll() sets the .revents field of every pollfd struct to a bitmask of
             //the received events on that fd
-            const Bool dispatchNewEventsFromDisplayFD = (m_fileDescriptors[i].revents & POLLIN);
+            const Bool dispatchNewEventsFromDisplayFD = (m_fileDescriptors[i].revents & POLLIN) != 0;
             window.dispatchWaylandDisplayEvents(dispatchNewEventsFromDisplayFD);
         }
     }

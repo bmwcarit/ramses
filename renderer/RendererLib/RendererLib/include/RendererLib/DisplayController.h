@@ -21,7 +21,6 @@ namespace ramses_internal
 {
     class RendererConfig;
     class IRenderBackend;
-    class UpdateScene;
     class RendererCachedScene;
     class VirtualUpdateScene;
     class IDevice;

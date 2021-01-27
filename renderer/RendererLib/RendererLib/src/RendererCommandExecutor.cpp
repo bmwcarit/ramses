@@ -9,10 +9,12 @@
 #include "RendererLib/RendererCommandExecutor.h"
 #include "RendererLib/RendererCommandBuffer.h"
 #include "RendererLib/Renderer.h"
-#include "RendererLib/RendererSceneUpdater.h"
+#include "RendererLib/IRendererSceneUpdater.h"
 #include "RendererLib/SceneLinksManager.h"
 #include "RendererLib/RendererSceneControlLogic.h"
 #include "RendererLib/FrameTimer.h"
+#include "RendererLib/RendererSceneUpdater.h"
+#include "RendererLib/RendererCommandUtils.h"
 #include "RendererAPI/IDisplayController.h"
 #include "RendererEventCollector.h"
 #include "Utils/Image.h"
@@ -20,9 +22,9 @@
 
 namespace ramses_internal
 {
-    RendererCommandExecutor::RendererCommandExecutor(Renderer& renderer, RendererCommandBuffer& rendererCommandBuffer, RendererSceneUpdater& rendererSceneUpdater, IRendererSceneControlLogic& sceneControlLogic, RendererEventCollector& rendererEventCollector, FrameTimer& frameTimer)
+    RendererCommandExecutor::RendererCommandExecutor(Renderer& renderer, RendererCommandBuffer& rendererCommandBuffer, IRendererSceneUpdater& sceneUpdater, IRendererSceneControlLogic& sceneControlLogic, RendererEventCollector& rendererEventCollector, FrameTimer& frameTimer)
         : m_renderer(renderer)
-        , m_rendererSceneUpdater(rendererSceneUpdater)
+        , m_sceneUpdater(sceneUpdater)
         , m_sceneControlLogic(sceneControlLogic)
         , m_rendererCommandBuffer(rendererCommandBuffer)
         , m_rendererEventCollector(rendererEventCollector)
@@ -32,380 +34,292 @@ namespace ramses_internal
 
     void RendererCommandExecutor::executePendingCommands()
     {
-        FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::RendererCommands);
+        FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::ExecuteRendererCommands);
 
-        LOG_TRACE(CONTEXT_PROFILING, "  RendererCommandExecutor::executePendingCommands swap out commands");
+        m_tmpCommands.clear();
+        m_rendererCommandBuffer.swapCommands(m_tmpCommands);
 
-        m_executedCommands.clear();
-        m_rendererCommandBuffer.swapCommandContainer(m_executedCommands);
+        const auto numCommandsToLog = std::count_if(m_tmpCommands.cbegin(), m_tmpCommands.cend(), [](const auto& cmd) {
+            return !absl::holds_alternative<RendererCommand::UpdateScene>(cmd);
+        });
+        if (numCommandsToLog > 0)
+            LOG_INFO_P(CONTEXT_RENDERER, "RendererCommandExecutor executing {} commands, {} commands will be logged, rest is flush/sceneupdate commands", m_tmpCommands.size(), numCommandsToLog);
 
-        LOG_TRACE(CONTEXT_PROFILING, "  RendererCommandExecutor::executePendingCommands start executing commands");
-        const auto numCommands = m_executedCommands.getTotalCommandCount();
-
-        // log commands only if there are other than 'scene update' commands to minimize log spam
-        UInt32 numUnloggedCmds = 0u;
-        for (UInt32 i = 0; i < numCommands; ++i)
-            numUnloggedCmds += (m_executedCommands.getCommandType(i) == ERendererCommand_SceneUpdate ||
-                                m_executedCommands.getCommandType(i) == ERendererCommand_LogRendererInfo) ?
-                1 : 0;
-        if (numCommands > numUnloggedCmds)
-            LOG_INFO(CONTEXT_RENDERER, "RendererCommandExecutor executing " << numCommands - numUnloggedCmds << " renderer commands:");
-
-        for (UInt32 i = 0; i < numCommands; ++i)
-        {
-            const ERendererCommand commandType = m_executedCommands.getCommandType(i);
-            LOG_TRACE(CONTEXT_PROFILING, "    RendererCommandExecutor::executePendingCommands executing command of type " << static_cast<UInt32>(commandType));
-            switch (commandType)
-            {
-            case ERendererCommand_PublishedScene:
-            {
-                const SceneInfoCommand& command = m_executedCommands.getCommandData<SceneInfoCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneInformation.sceneID);
-                m_rendererSceneUpdater.handleScenePublished(command.sceneInformation.sceneID, command.sceneInformation.publicationMode);
-                break;
-            }
-            case ERendererCommand_UnpublishedScene:
-            {
-                const SceneInfoCommand& command = m_executedCommands.getCommandData<SceneInfoCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneInformation.sceneID);
-                m_rendererSceneUpdater.handleSceneUnpublished(command.sceneInformation.sceneID);
-                break;
-            }
-            case ERendererCommand_ReceivedScene:
-            {
-                const SceneInfoCommand& command = m_executedCommands.getCommandData<SceneInfoCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneInformation.sceneID);
-                m_rendererSceneUpdater.handleSceneReceived(command.sceneInformation);
-                break;
-            }
-            case ERendererCommand_SetSceneState:
-            {
-                const auto& command = m_executedCommands.getCommandData<SceneStateCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneId << " state " << EnumToString(command.state));
-                m_sceneControlLogic.setSceneState(command.sceneId, command.state);
-                break;
-            }
-            case ERendererCommand_SetSceneMapping:
-            {
-                const auto& command = m_executedCommands.getCommandData<SceneMappingCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneId << " display " << command.displayHandle);
-                m_sceneControlLogic.setSceneMapping(command.sceneId, command.displayHandle);
-                break;
-            }
-            case ERendererCommand_SetSceneDisplayBufferAssignment:
-            {
-                const auto& command = m_executedCommands.getCommandData<SceneMappingCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneId << " displayBuffer " << command.offscreenBuffer << " renderOrder " << command.sceneRenderOrder);
-                m_sceneControlLogic.setSceneDisplayBufferAssignment(command.sceneId, command.offscreenBuffer, command.sceneRenderOrder);
-                break;
-            }
-            case ERendererCommand_SubscribeScene:
-            {
-                const SceneInfoCommand& command = m_executedCommands.getCommandData<SceneInfoCommand>(i);
-                const SceneId sceneId = command.sceneInformation.sceneID;
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << sceneId);
-                m_rendererSceneUpdater.handleSceneSubscriptionRequest(sceneId);
-                break;
-            }
-            case ERendererCommand_UnsubscribeScene:
-            {
-                const SceneInfoCommand& command = m_executedCommands.getCommandData<SceneInfoCommand>(i);
-                const SceneId sceneId = command.sceneInformation.sceneID;
-                const bool indirect = command.indirect;
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << sceneId << " indirect " << indirect);
-                m_rendererSceneUpdater.handleSceneUnsubscriptionRequest(sceneId, indirect);
-                break;
-            }
-            case ERendererCommand_CreateDisplay:
-            {
-                const DisplayCommand& command = m_executedCommands.getCommandData<DisplayCommand>(i);
-                const DisplayHandle displayHandle = command.displayHandle;
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << displayHandle);
-                m_rendererSceneUpdater.createDisplayContext(command.displayConfig, *command.resourceUploader, displayHandle);
-                break;
-            }
-            case ERendererCommand_DestroyDisplay:
-            {
-                const DisplayCommand& command = m_executedCommands.getCommandData<DisplayCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << command.displayHandle);
-                m_rendererSceneUpdater.destroyDisplayContext(command.displayHandle);
-                break;
-            }
-            case ERendererCommand_MapSceneToDisplay:
-            {
-                const SceneMappingCommand& command = m_executedCommands.getCommandData<SceneMappingCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneId << " displayId " << command.displayHandle);
-                m_rendererSceneUpdater.handleSceneMappingRequest(command.sceneId, command.displayHandle);
-                break;
-            }
-            case ERendererCommand_UnmapSceneFromDisplays:
-            {
-                const SceneMappingCommand& command = m_executedCommands.getCommandData<SceneMappingCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneId);
-                m_rendererSceneUpdater.handleSceneUnmappingRequest(command.sceneId);
-                break;
-            }
-            case ERendererCommand_ShowScene:
-            {
-                const SceneStateCommand& command = m_executedCommands.getCommandData<SceneStateCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneId);
-                m_rendererSceneUpdater.handleSceneShowRequest(command.sceneId);
-                break;
-            }
-            case ERendererCommand_HideScene:
-            {
-                const SceneStateCommand& command = m_executedCommands.getCommandData<SceneStateCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneId);
-                m_rendererSceneUpdater.handleSceneHideRequest(command.sceneId);
-                break;
-            }
-            case ERendererCommand_UpdateWarpingData:
-            {
-                const WarpingDataCommand& command = m_executedCommands.getCommandData<WarpingDataCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << command.displayHandle);
-                if (m_renderer.hasDisplayController(command.displayHandle) && m_renderer.getDisplayController(command.displayHandle).isWarpingEnabled())
-                {
-                    m_renderer.getDisplayController(command.displayHandle).enableContext();
-                    m_renderer.setWarpingMeshData(command.displayHandle, command.warpingData);
-                    m_rendererEventCollector.addDisplayEvent(ERendererEventType_WarpingDataUpdated, command.displayHandle);
-                }
-                else
-                {
-                    m_rendererEventCollector.addDisplayEvent(ERendererEventType_WarpingDataUpdateFailed, command.displayHandle);
-                }
-                break;
-            }
-            case ERendererCommand_ReadPixels:
-            {
-                const ReadPixelsCommand& command = m_executedCommands.getCommandData<ReadPixelsCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << command.displayHandle);
-                ScreenshotInfo screenshot;
-                screenshot.rectangle = { command.x, command.y, command.width, command.height };
-                screenshot.filename = command.filename;
-                screenshot.sendViaDLT = command.sendViaDLT;
-                screenshot.fullScreen = command.fullScreen;
-                m_rendererSceneUpdater.handleReadPixels(command.displayHandle, command.offscreenBufferHandle, std::move(screenshot));
-                break;
-            }
-            case ERendererCommand_SetClearColor:
-            {
-                const auto& command = m_executedCommands.getCommandData<SetClearColorCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << command.displayHandle << " obHandle " << command.obHandle);
-                m_rendererSceneUpdater.handleSetClearColor(command.displayHandle, command.obHandle, command.clearColor);
-                break;
-            }
-            case ERendererCommand_LinkSceneData:
-            {
-                const DataLinkCommand& command = m_executedCommands.getCommandData<DataLinkCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " providerScene " << command.providerScene << " providerData " << command.providerData << " consumerScene " << command.consumerScene << " consumerData " << command.consumerData);
-                m_rendererSceneUpdater.handleSceneDataLinkRequest(command.providerScene, command.providerData, command.consumerScene, command.consumerData);
-                break;
-            }
-            case ERendererCommand_LinkBufferToSceneData:
-            {
-                const DataLinkCommand& command = m_executedCommands.getCommandData<DataLinkCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " providerBuffer " << command.providerBuffer << " consumerScene " << command.consumerScene << " consumerData " << command.consumerData);
-                m_rendererSceneUpdater.handleBufferToSceneDataLinkRequest(command.providerBuffer, command.consumerScene, command.consumerData);
-                break;
-            }
-            case ERendererCommand_UnlinkSceneData:
-            {
-                const DataLinkCommand& command = m_executedCommands.getCommandData<DataLinkCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " consumerScene " << command.consumerScene << " consumerData " << command.consumerData);
-                m_rendererSceneUpdater.handleDataUnlinkRequest(command.consumerScene, command.consumerData);
-                break;
-            }
-            case ERendererCommand_CreateOffscreenBuffer:
-            {
-                const OffscreenBufferCommand& command = m_executedCommands.getCommandData<OffscreenBufferCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << command.displayHandle << " bufferHandle " << command.bufferHandle);
-                const Bool succeeded = m_rendererSceneUpdater.handleBufferCreateRequest(command.bufferHandle, command.displayHandle, command.bufferWidth, command.bufferHeight, command.bufferSampleCount, command.interruptible);
-                m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType_OffscreenBufferCreated : ERendererEventType_OffscreenBufferCreateFailed), command.bufferHandle, command.displayHandle);
-                break;
-            }
-            case ERendererCommand_DestroyOffscreenBuffer:
-            {
-                const OffscreenBufferCommand& command = m_executedCommands.getCommandData<OffscreenBufferCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " displayId " << command.displayHandle << " bufferHandle " << command.bufferHandle);
-                const Bool succeeded = m_rendererSceneUpdater.handleBufferDestroyRequest(command.bufferHandle, command.displayHandle);
-                m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType_OffscreenBufferDestroyed : ERendererEventType_OffscreenBufferDestroyFailed), command.bufferHandle, command.displayHandle);
-                break;
-            }
-            case ERendererCommand_AssignSceneToDisplayBuffer:
-            {
-                const auto& command = m_executedCommands.getCommandData<SceneMappingCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneId " << command.sceneId << " bufferHandle " << command.offscreenBuffer);
-                const Bool succeeded = m_rendererSceneUpdater.handleSceneDisplayBufferAssignmentRequest(command.sceneId, command.offscreenBuffer, command.sceneRenderOrder);
-                m_rendererEventCollector.addSceneAssignEvent((succeeded ? ERendererEventType_SceneAssignedToDisplayBuffer : ERendererEventType_SceneAssignedToDisplayBufferFailed), command.offscreenBuffer,
-                    m_renderer.getDisplaySceneIsAssignedTo(command.sceneId), command.sceneId);
-                break;
-            }
-            case ERendererCommand_LogRendererInfo:
-            {
-                const LogCommand& command = m_executedCommands.getCommandData<LogCommand>(i);
-                RendererLogger::LogTopic(m_rendererSceneUpdater, command.topic, command.verbose, command.nodeHandleFilter);
-                break;
-            }
-            case ERendererCommand_LogRendererStatistics:
-            {
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) { m_renderer.getStatistics().writeStatsToStream(sos); }));
-                LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) { m_renderer.getProfilerStatistics().writeLongestFrameTimingsToStream(sos); }));
-                break;
-            }
-            case ERendererCommand_SystemCompositorControllerListIviSurfaces:
-            {
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                m_renderer.systemCompositorListIviSurfaces();
-                break;
-            }
-            case ERendererCommand_SystemCompositorControllerSetIviSurfaceVisibility:
-            {
-                const CompositorCommand& command = m_executedCommands.getCommandData<CompositorCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " surfaceId " << command.waylandIviSurfaceId);
-                m_renderer.systemCompositorSetIviSurfaceVisibility(command.waylandIviSurfaceId, command.visibility);
-                break;
-            }
-            case ERendererCommand_SystemCompositorControllerSetIviSurfaceOpacity:
-            {
-                const CompositorCommand& command = m_executedCommands.getCommandData<CompositorCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " surfaceId " << command.waylandIviSurfaceId);
-                m_renderer.systemCompositorSetIviSurfaceOpacity(command.waylandIviSurfaceId, command.opacity);
-                break;
-            }
-            case ERendererCommand_SystemCompositorControllerSetIviSurfaceDestRectangle:
-            {
-                const CompositorCommand& command = m_executedCommands.getCommandData<CompositorCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " surfaceId " << command.waylandIviSurfaceId);
-                m_renderer.systemCompositorSetIviSurfaceDestRectangle(command.waylandIviSurfaceId, command.x, command.y, command.width, command.height);
-                break;
-            }
-            case ERendererCommand_SystemCompositorControllerAddIviSurfaceToIviLayer:
-            {
-                const CompositorCommand& command = m_executedCommands.getCommandData<CompositorCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " surfaceId " << command.waylandIviSurfaceId << " layerId " << command.waylandIviLayerId);
-                m_renderer.systemCompositorAddIviSurfaceToIviLayer(command.waylandIviSurfaceId, command.waylandIviLayerId);
-                break;
-            }
-            case ERendererCommand_SystemCompositorControllerSetIviLayerVisibility:
-            {
-                const CompositorCommand& command = m_executedCommands.getCommandData<CompositorCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " layerId " << command.waylandIviLayerId);
-                m_renderer.systemCompositorSetIviLayerVisibility(command.waylandIviLayerId, command.visibility);
-                break;
-            }
-            case ERendererCommand_SystemCompositorControllerRemoveIviSurfaceFromIviLayer:
-            {
-                const CompositorCommand& command = m_executedCommands.getCommandData<CompositorCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " surfaceId " << command.waylandIviSurfaceId << " layerId " << command.waylandIviLayerId);
-                m_renderer.systemCompositorRemoveIviSurfaceFromIviLayer(command.waylandIviSurfaceId, command.waylandIviLayerId);
-                break;
-            }
-            case ERendererCommand_SystemCompositorControllerDestroyIviSurface:
-            {
-                const CompositorCommand& command = m_executedCommands.getCommandData<CompositorCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " surfaceId " << command.waylandIviSurfaceId);
-                m_renderer.systemCompositorDestroyIviSurface(command.waylandIviSurfaceId);
-                break;
-            }
-            case ERendererCommand_SystemCompositorControllerScreenshot:
-            {
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                const CompositorCommand& command = m_executedCommands.getCommandData<CompositorCommand>(i);
-                m_renderer.systemCompositorScreenshot(command.fileName, command.screenIviId);
-                break;
-            }
-            case ERendererCommand_ConfirmationEcho:
-            {
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                const ConfirmationEchoCommand& command = m_executedCommands.getCommandData<ConfirmationEchoCommand>(i);
-                LOG_INFO(CONTEXT_RAMSH, "confirmation: " << command.text);
-                break;
-            }
-            case ERendererCommand_FrameProfiler_Toggle:
-            {
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                const auto& command = m_executedCommands.getCommandData<UpdateFrameProfilerCommand>(i);
-                FrameProfileRenderer::ForAllFrameProfileRenderer(m_renderer,
-                    [&](FrameProfileRenderer& renderer) { renderer.enable(command.toggleVisibility ? !renderer.isEnabled() : true); });
-                break;
-            }
-            case ERendererCommand_FrameProfiler_TimingGraphHeight:
-            {
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                const auto& command = m_executedCommands.getCommandData<UpdateFrameProfilerCommand>(i);
-                FrameProfileRenderer::ForAllFrameProfileRenderer(m_renderer,
-                    [&](FrameProfileRenderer& renderer) { renderer.setTimingGraphHeight(command.newTimingGraphHeight); });
-                break;
-            }
-            case ERendererCommand_FrameProfiler_CounterGraphHeight:
-            {
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                const auto& command = m_executedCommands.getCommandData<UpdateFrameProfilerCommand>(i);
-                FrameProfileRenderer::ForAllFrameProfileRenderer(m_renderer,
-                    [&](FrameProfileRenderer& renderer) { renderer.setCounterGraphHeight(command.newCounterGraphHeight); });
-                break;
-            }
-            case ERendererCommand_FrameProfiler_RegionFilterFlags:
-            {
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType));
-                const auto& command = m_executedCommands.getCommandData<UpdateFrameProfilerCommand>(i);
-                m_renderer.getProfilerStatistics().setFilteredRegionFlags(command.newRegionFilterFlags);
-                break;
-            }
-            case ERendererCommand_SceneUpdate:
-            {
-                SceneUpdateCommand& command = m_executedCommands.getCommandData<SceneUpdateCommand>(i);
-                const SceneId sceneId = command.sceneId;
-                SceneUpdate& sceneUpdate = command.sceneUpdate;
-                m_rendererSceneUpdater.handleSceneUpdate(sceneId, std::move(sceneUpdate));
-                break;
-            }
-            case ERendererCommand_SetFrameTimerLimits:
-            {
-                const SetFrameTimerLimitsCommmand& command = m_executedCommands.getCommandData<SetFrameTimerLimitsCommmand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " sceneResUpload " << command.limitForSceneResourcesUploadMicrosec << " resUpload " << command.limitForResourcesUploadMicrosec << " render " << command.limitForOffscreenBufferRenderMicrosec);
-                m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneResourcesUpload, command.limitForSceneResourcesUploadMicrosec);
-                m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, command.limitForResourcesUploadMicrosec);
-                m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, command.limitForOffscreenBufferRenderMicrosec);
-                break;
-            }
-            case ERendererCommand_SetLimits_FlushesForceApply:
-            {
-                const SetFrameTimerLimitsCommmand& command = m_executedCommands.getCommandData<SetFrameTimerLimitsCommmand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " max flushes before force apply: " << command.limitForPendingFlushesForceApply);
-                m_rendererSceneUpdater.setLimitFlushesForceApply(command.limitForPendingFlushesForceApply);
-                break;
-            }
-            case ERendererCommand_SetLimits_FlushesForceUnsubscribe:
-            {
-                const SetFrameTimerLimitsCommmand& command = m_executedCommands.getCommandData<SetFrameTimerLimitsCommmand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " max flushes before force unsubscribe: " << command.limitForPendingFlushesForceUnsubscribe);
-                m_rendererSceneUpdater.setLimitFlushesForceUnsubscribe(command.limitForPendingFlushesForceUnsubscribe);
-                break;
-            }
-            case ERendererCommand_SetSkippingOfUnmodifiedBuffers:
-            {
-                const SetFeatureCommand& command = m_executedCommands.getCommandData<SetFeatureCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " enable=" << command.enable);
-                m_renderer.setSkippingOfUnmodifiedBuffers(command.enable);
-                break;
-            }
-            case ERendererCommand_PickEvent:
-            {
-                const PickingCommand& command = m_executedCommands.getCommandData<PickingCommand>(i);
-                LOG_INFO(CONTEXT_RENDERER, " - executing " << EnumToString(commandType) << " xCoordNormalizedToBufferSize=" << command.coordsNormalizedToBufferSize.x << " yCoordNormalizedToBufferSize=" << command.coordsNormalizedToBufferSize.y);
-                m_rendererSceneUpdater.handlePickEvent(command.sceneId, command.coordsNormalizedToBufferSize);
-                break;
-            }
-            default:
-                LOG_ERROR(CONTEXT_RENDERER, "RendererCommandExecutor::executePendingCommands failed, unknown renderer command type!");
-                assert(false);
-                break;
-            }
-        }
-
-        LOG_TRACE(CONTEXT_PROFILING, "  RendererCommandExecutor::executePendingCommands finished executing commands");
+        for (auto& cmd : m_tmpCommands)
+            absl::visit(*this, cmd);
     }
 
+    void RendererCommandExecutor::operator()(const RendererCommand::ScenePublished& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleScenePublished(cmd.scene, cmd.publicationMode);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SceneUnpublished& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleSceneUnpublished(cmd.scene);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::ReceiveScene& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleSceneReceived(cmd.info);
+    }
+
+    void RendererCommandExecutor::operator()(RendererCommand::UpdateScene& cmd)
+    {
+        // log debug only to reduce spam
+        LOG_DEBUG(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleSceneUpdate(cmd.scene, std::move(cmd.updateData));
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SetSceneState& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneControlLogic.setSceneState(cmd.scene, cmd.state);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SetSceneMapping& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneControlLogic.setSceneMapping(cmd.scene, cmd.display);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SetSceneDisplayBufferAssignment& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneControlLogic.setSceneDisplayBufferAssignment(cmd.scene, cmd.buffer, cmd.renderOrder);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::LinkData& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleSceneDataLinkRequest(cmd.providerScene, cmd.providerData, cmd.consumerScene, cmd.consumerData);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::LinkOffscreenBuffer& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleBufferToSceneDataLinkRequest(cmd.providerBuffer, cmd.consumerScene, cmd.consumerData);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::LinkStreamBuffer& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleBufferToSceneDataLinkRequest(cmd.providerBuffer, cmd.consumerScene, cmd.consumerData);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::UnlinkData& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleDataUnlinkRequest(cmd.consumerScene, cmd.consumerData);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::PickEvent& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handlePickEvent(cmd.scene, cmd.coordsNormalizedToBufferSize);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::CreateDisplay& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.createDisplayContext(cmd.config, cmd.display, cmd.binaryShaderCache);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::DestroyDisplay& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.destroyDisplayContext(cmd.display);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::CreateOffscreenBuffer& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        const bool succeeded = m_sceneUpdater.handleBufferCreateRequest(cmd.offscreenBuffer, cmd.display, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible);
+        m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType::OffscreenBufferCreated : ERendererEventType::OffscreenBufferCreateFailed), cmd.offscreenBuffer, cmd.display);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::DestroyOffscreenBuffer& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        const bool succeeded = m_sceneUpdater.handleBufferDestroyRequest(cmd.offscreenBuffer, cmd.display);
+        m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType::OffscreenBufferDestroyed : ERendererEventType::OffscreenBufferDestroyFailed), cmd.offscreenBuffer, cmd.display);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::CreateStreamBuffer& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleBufferCreateRequest(cmd.streamBuffer, cmd.display, cmd.source);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::DestroyStreamBuffer& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleBufferDestroyRequest(cmd.streamBuffer, cmd.display);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SetStreamBufferState& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.setStreamBufferState(cmd.streamBuffer, cmd.display, cmd.newState);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SetClearColor& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleSetClearColor(cmd.display, cmd.offscreenBuffer, cmd.clearColor);
+    }
+
+    void RendererCommandExecutor::operator()(RendererCommand::UpdateWarpingData& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        if (m_renderer.hasDisplayController(cmd.display) && m_renderer.getDisplayController(cmd.display).isWarpingEnabled())
+        {
+            // TODO vaclav REMOVE THIS when display thread done
+            m_renderer.getDisplayController(cmd.display).enableContext();
+            m_renderer.setWarpingMeshData(cmd.display, std::move(cmd.data));
+            m_rendererEventCollector.addDisplayEvent(ERendererEventType::WarpingDataUpdated, cmd.display);
+        }
+        else
+            m_rendererEventCollector.addDisplayEvent(ERendererEventType::WarpingDataUpdateFailed, cmd.display);
+    }
+
+    void RendererCommandExecutor::operator()(RendererCommand::ReadPixels& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        ScreenshotInfo screenshot;
+        screenshot.rectangle = { cmd.offsetX, cmd.offsetY, cmd.width, cmd.height };
+        screenshot.filename = std::move(cmd.filename);
+        screenshot.sendViaDLT = cmd.sendViaDLT;
+        screenshot.fullScreen = cmd.fullScreen;
+        m_sceneUpdater.handleReadPixels(cmd.display, cmd.offscreenBuffer, std::move(screenshot));
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SetSkippingOfUnmodifiedBuffers& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_renderer.setSkippingOfUnmodifiedBuffers(cmd.enable);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::LogStatistics& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) { m_renderer.getStatistics().writeStatsToStream(sos); }));
+        LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) { m_renderer.getProfilerStatistics().writeLongestFrameTimingsToStream(sos); }));
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::LogInfo& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.logRendererInfo(cmd.topic, cmd.verbose, cmd.nodeFilter);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SCListIviSurfaces& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_renderer.systemCompositorListIviSurfaces();
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SCSetIviSurfaceVisibility& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_renderer.systemCompositorSetIviSurfaceVisibility(cmd.surface, cmd.visibility);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SCSetIviSurfaceOpacity& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_renderer.systemCompositorSetIviSurfaceOpacity(cmd.surface, cmd.opacity);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SCSetIviSurfaceDestRectangle& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_renderer.systemCompositorSetIviSurfaceDestRectangle(cmd.surface, cmd.x, cmd.y, cmd.width, cmd.height);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SCScreenshot& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_renderer.systemCompositorScreenshot(cmd.filename, cmd.screenId);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SCAddIviSurfaceToIviLayer& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_renderer.systemCompositorAddIviSurfaceToIviLayer(cmd.surface, cmd.layer);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SCSetIviLayerVisibility& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_renderer.systemCompositorSetIviLayerVisibility(cmd.layer, cmd.visibility);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SCRemoveIviSurfaceFromIviLayer& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_renderer.systemCompositorRemoveIviSurfaceFromIviLayer(cmd.surface, cmd.layer);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SCDestroyIviSurface& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_renderer.systemCompositorDestroyIviSurface(cmd.surface);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SetLimits_FrameBudgets& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneResourcesUpload, cmd.limitForSceneResourcesUploadMicrosec);
+        m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, cmd.limitForResourcesUploadMicrosec);
+        m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, cmd.limitForOffscreenBufferRenderMicrosec);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SetLimits_FlushesForceApply& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.setLimitFlushesForceApply(cmd.limitForPendingFlushesForceApply);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::SetLimits_FlushesForceUnsubscribe& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.setLimitFlushesForceUnsubscribe(cmd.limitForPendingFlushesForceUnsubscribe);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::FrameProfiler_Toggle& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        FrameProfileRenderer::ForAllFrameProfileRenderer(m_renderer,
+            [&](FrameProfileRenderer& renderer) { renderer.enable(cmd.toggle ? !renderer.isEnabled() : true); });
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::FrameProfiler_TimingGraphHeight& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        FrameProfileRenderer::ForAllFrameProfileRenderer(m_renderer,
+            [&](FrameProfileRenderer& renderer) { renderer.setTimingGraphHeight(cmd.height); });
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::FrameProfiler_CounterGraphHeight& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        FrameProfileRenderer::ForAllFrameProfileRenderer(m_renderer,
+            [&](FrameProfileRenderer& renderer) { renderer.setCounterGraphHeight(cmd.height); });
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::FrameProfiler_RegionFilterFlags& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_renderer.getProfilerStatistics().setFilteredRegionFlags(cmd.flags);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::ConfirmationEcho& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RAMSH, "confirmation: " << cmd.text);
+    }
 }

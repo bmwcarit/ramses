@@ -185,7 +185,7 @@ namespace ramses_internal
         if (m_X11WindowData.window && m_X11WindowData.display)
         {
             XDestroyWindow(m_X11WindowData.display, m_X11WindowData.window);
-            XSync(m_X11WindowData.display, true);
+            XSync(m_X11WindowData.display, static_cast<int>(true));
 
             LOG_DEBUG(CONTEXT_RENDERER, "Window_X11::destroyLastInstance XCloseDisplay");
             XCloseDisplay(m_X11WindowData.display);

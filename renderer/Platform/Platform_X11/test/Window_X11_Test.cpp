@@ -24,7 +24,7 @@ namespace ramses_internal
         {
         }
 
-        virtual void SetUp()
+        virtual void SetUp() override
         {
             ASSERT_TRUE(window.init());
             proceseAllEvents();
@@ -62,7 +62,7 @@ namespace ramses_internal
             event.xkey.type = KeyRelease;
             XSendEvent(display, winFocus, True, KeyPressMask, &event);
 
-            XSync(display, false);
+            XSync(display, static_cast<int>(false));
         }
 
         void sendMouseMoveEvent(int posX, int posY)
@@ -88,7 +88,7 @@ namespace ramses_internal
             event.xmotion.type = MotionNotify;
             XSendEvent(display, winFocus, True, PointerMotionMask, &event);
 
-            XSync(display, false);
+            XSync(display, static_cast<int>(false));
         }
 
         void sendCrossingEvent(Bool enterEvent, int posX, int posY)
@@ -112,11 +112,11 @@ namespace ramses_internal
             event.xcrossing.mode = NotifyNormal;
             event.xcrossing.detail = 0;
             event.xcrossing.state = 0;
-            event.xcrossing.focus = false;
+            event.xcrossing.focus = static_cast<int>(false);
             event.xcrossing.type = enterEvent ? EnterNotify : LeaveNotify;
             XSendEvent(display, winFocus, True, enterEvent ? EnterWindowMask : LeaveWindowMask, &event);
 
-            XSync(display, false);
+            XSync(display, static_cast<int>(false));
         }
 
         void sendMouseButtonEvent(int posX, int posY, int buttonType, Bool pressed)
@@ -142,7 +142,7 @@ namespace ramses_internal
             event.xbutton.type = pressed ? ButtonPress : ButtonRelease;
             XSendEvent(display, winFocus, True, pressed ? ButtonPressMask : ButtonReleaseMask, &event);
 
-            XSync(display, false);
+            XSync(display, static_cast<int>(false));
         }
 
         void testKeyCode(UInt32 virtualKeyCode, EKeyCode expectedRamesKeyCode, UInt32 expectedModifier = EKeyModifier_NoModifier)

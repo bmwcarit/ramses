@@ -33,6 +33,7 @@ file(GLOB_RECURSE
 set(DOXYGEN_LOGO           "${CMAKE_CURRENT_SOURCE_DIR}/doxygen/ramses_small.png")
 set(DOXYGEN_TARGET_DIR     "${CMAKE_BINARY_DIR}/doc")
 set(DOXYGEN_EXAMPLE_PATH   "${PROJECT_SOURCE_DIR}/examples")
+set(DOXYGEN_LAYOUT         "${CMAKE_CURRENT_SOURCE_DIR}/doxygen/DoxygenLayout.xml")
 
 string(REPLACE ";" " " DOXYGEN_INPUT  "${DOXYGEN_INPUT_LIST}")
 string(REPLACE ";" " " DOXYGEN_IMAGE_PATH  "${DOXYGEN_IMAGE_PATH_LIST}")

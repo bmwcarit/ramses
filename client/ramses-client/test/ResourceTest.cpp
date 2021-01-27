@@ -257,7 +257,7 @@ namespace ramses
         ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
         ASSERT_EQ(sizeof(data), res->getDecompressedDataSize());
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, res->getResourceData().data(), sizeof(data)));
+        EXPECT_EQ(data, res->getResourceData().span());
     }
 
     TEST_F(AResourceTestClient, createTextureRGB_AndCheckTexels)
@@ -270,7 +270,7 @@ namespace ramses
         ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
         ASSERT_EQ(sizeof(data), res->getDecompressedDataSize());
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, res->getResourceData().data(), sizeof(data)));
+        EXPECT_EQ(data, res->getResourceData().span());
     }
 
     TEST_F(AResourceTestClient, createTextureRGBWithMips_AndCheckTexels)
@@ -284,8 +284,8 @@ namespace ramses
         const ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
         ASSERT_EQ(sizeof(data0) + sizeof(data1), res->getDecompressedDataSize());
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0, res->getResourceData().data(), sizeof(data0)));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1, res->getResourceData().data() + sizeof(data0), sizeof(data1)));
+        EXPECT_EQ(data0, res->getResourceData().span().subspan(0, sizeof(data0)));
+        EXPECT_EQ(data1, res->getResourceData().span().subspan(sizeof(data0)));
     }
 
     //##############################################################
@@ -395,12 +395,8 @@ namespace ramses
         ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
         ASSERT_EQ(sizeof(data) * 6u, res->getDecompressedDataSize());
-        auto resData = res->getResourceData().data();
         for (uint32_t i = 0u; i < 6u; ++i)
-        {
-            EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, resData, sizeof(data)));
-            resData += sizeof(data);
-        }
+            EXPECT_EQ(data, res->getResourceData().span().subspan(i*sizeof(data), sizeof(data)));
     }
 
     TEST_F(AResourceTestClient, createCubeTextureRGB_AndCheckTexels)
@@ -412,12 +408,8 @@ namespace ramses
         ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
         ASSERT_EQ(sizeof(data) * 6u, res->getDecompressedDataSize());
-        auto resData = res->getResourceData().data();
         for (uint32_t i = 0u; i < 6u; ++i)
-        {
-            EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, resData, sizeof(data)));
-            resData += sizeof(data);
-        }
+            EXPECT_EQ(data, res->getResourceData().span().subspan(i*sizeof(data), sizeof(data)));
     }
 
     TEST_F(AResourceTestClient, createCubeTextureRGBWithPerFaceDataAndMips_AndCheckTexels)
@@ -449,35 +441,35 @@ namespace ramses
 
         // mips are bundled together per face:
         // - facePX mip0, facePX mip1 .. face PX mipN, face NX mips, face PY .. face NZ
-        auto resData = res->getResourceData().data();
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0px, resData, sizeof(data0px)));
-        resData += sizeof(data0px);
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1px, resData, sizeof(data1px)));
-        resData += sizeof(data1px);
+        size_t dataStart = 0;
+        EXPECT_EQ(data0px, res->getResourceData().span().subspan(dataStart, sizeof(data0px)));
+        dataStart += sizeof(data0px);
+        EXPECT_EQ(data1px, res->getResourceData().span().subspan(dataStart, sizeof(data1px)));
+        dataStart += sizeof(data1px);
 
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0nx, resData, sizeof(data0nx)));
-        resData += sizeof(data0nx);
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1nx, resData, sizeof(data1nx)));
-        resData += sizeof(data1nx);
+        EXPECT_EQ(data0nx, res->getResourceData().span().subspan(dataStart, sizeof(data0nx)));
+        dataStart += sizeof(data0nx);
+        EXPECT_EQ(data1nx, res->getResourceData().span().subspan(dataStart, sizeof(data1nx)));
+        dataStart += sizeof(data1nx);
 
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0py, resData, sizeof(data0py)));
-        resData += sizeof(data0py);
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1py, resData, sizeof(data1py)));
-        resData += sizeof(data1py);
+        EXPECT_EQ(data0py, res->getResourceData().span().subspan(dataStart, sizeof(data0py)));
+        dataStart += sizeof(data0py);
+        EXPECT_EQ(data1py, res->getResourceData().span().subspan(dataStart, sizeof(data1py)));
+        dataStart += sizeof(data1py);
 
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0ny, resData, sizeof(data0ny)));
-        resData += sizeof(data0ny);
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1ny, resData, sizeof(data1ny)));
-        resData += sizeof(data1ny);
+        EXPECT_EQ(data0ny, res->getResourceData().span().subspan(dataStart, sizeof(data0ny)));
+        dataStart += sizeof(data0ny);
+        EXPECT_EQ(data1ny, res->getResourceData().span().subspan(dataStart, sizeof(data1ny)));
+        dataStart += sizeof(data1ny);
 
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0pz, resData, sizeof(data0pz)));
-        resData += sizeof(data0pz);
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1pz, resData, sizeof(data1pz)));
-        resData += sizeof(data1pz);
+        EXPECT_EQ(data0pz, res->getResourceData().span().subspan(dataStart, sizeof(data0pz)));
+        dataStart += sizeof(data0pz);
+        EXPECT_EQ(data1pz, res->getResourceData().span().subspan(dataStart, sizeof(data1pz)));
+        dataStart += sizeof(data1pz);
 
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0nz, resData, sizeof(data0nz)));
-        resData += sizeof(data0nz);
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1nz, resData, sizeof(data1nz)));
+        EXPECT_EQ(data0nz, res->getResourceData().span().subspan(dataStart, sizeof(data0nz)));
+        dataStart += sizeof(data0nz);
+        EXPECT_EQ(data1nz, res->getResourceData().span().subspan(dataStart, sizeof(data1nz)));
     }
 
     TEST_F(AResourceTestClient, createTextureCubeWithProvidedMipsButNotFullChain)
@@ -661,7 +653,7 @@ namespace ramses
         ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
         ASSERT_EQ(sizeof(data), res->getDecompressedDataSize());
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, res->getResourceData().data(), sizeof(data)));
+        EXPECT_EQ(data, res->getResourceData().span());
     }
 
     TEST_F(AResourceTestClient, create3DTextureRGB_AndCheckTexels)
@@ -674,7 +666,7 @@ namespace ramses
         ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
         ASSERT_EQ(sizeof(data), res->getDecompressedDataSize());
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data, res->getResourceData().data(), sizeof(data)));
+        EXPECT_EQ(data, res->getResourceData().span());
     }
 
     TEST_F(AResourceTestClient, create3DTextureRGBWithMips_AndCheckTexels)
@@ -688,8 +680,8 @@ namespace ramses
         const ramses_internal::ManagedResource res = getCreatedResource(texture->impl.getLowlevelResourceHash());
 
         ASSERT_EQ(sizeof(data0) + sizeof(data1), res->getDecompressedDataSize());
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data0, res->getResourceData().data(), sizeof(data0)));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(data1, res->getResourceData().data() + sizeof(data0), sizeof(data1)));
+        EXPECT_EQ(data0, res->getResourceData().span().subspan(0, sizeof(data0)));
+        EXPECT_EQ(data1, res->getResourceData().span().subspan(sizeof(data0)));
     }
 
     TEST_F(AResourceTestClient, createTexture3DWithProvidedMipsButNotFullChain)
@@ -820,8 +812,7 @@ namespace ramses
 
         m_scene.destroy(*b);
         ramses_internal::ManagedResource aRes = client.impl.getResource(a->impl.getLowlevelResourceHash());
-        const uint8_t* rawResourceData = aRes->getResourceData().data();
-        ASSERT_EQ(0, ramses_internal::PlatformMemory::Compare(data, rawResourceData, sizeof(float)* 4));
+        EXPECT_EQ(absl::MakeSpan(reinterpret_cast<const uint8_t*>(data), sizeof(data)), aRes->getResourceData().span());
     }
 
     TEST_F(AResourceTestClient, createFloatArray)

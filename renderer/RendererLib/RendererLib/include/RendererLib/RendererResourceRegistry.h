@@ -23,6 +23,7 @@ namespace ramses_internal
         Bool                       containsResource     (const ResourceContentHash& hash) const;
 
         void                       setResourceData      (const ResourceContentHash& hash, const ManagedResource& resourceObject);
+        void                       setResourceScheduledForUpload(const ResourceContentHash& hash);
         void                       setResourceUploaded  (const ResourceContentHash& hash, DeviceResourceHandle deviceHandle, UInt32 vramSize);
         void                       setResourceBroken    (const ResourceContentHash& hash);
 
@@ -36,6 +37,7 @@ namespace ramses_internal
         const ResourceContentHashVector& getAllProvidedResources() const;
         const ResourceContentHashVector& getAllResourcesNotInUseByScenes() const;
         const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const;
+        bool hasAnyResourcesScheduledForUpload() const;
 
     private:
         void setResourceStatus(const ResourceContentHash& hash, EResourceStatus status);
@@ -49,6 +51,7 @@ namespace ramses_internal
         ResourceContentHashVector m_providedResources;
         ResourceContentHashVector m_resourcesNotInUseByScenes;
         std::unordered_map<SceneId, ResourceContentHashVector> m_resourcesUsedInScenes;
+        uint32_t m_countResourcesScheduledForUpload = 0u;
 
         // For logging purposes only
         friend class RendererLogger;

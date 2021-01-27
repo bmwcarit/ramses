@@ -23,6 +23,6 @@ SetSkippingOfUnmodifiedBuffers::SetSkippingOfUnmodifiedBuffers(RendererCommandBu
 
 Bool SetSkippingOfUnmodifiedBuffers::execute(UInt32& enableSkipping) const
 {
-    m_rendererCommandBuffer.setSkippingOfUnmodifiedBuffers( enableSkipping > 0u );
+    m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SetSkippingOfUnmodifiedBuffers{ enableSkipping > 0u });
     return true;
 }

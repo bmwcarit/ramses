@@ -135,7 +135,7 @@ namespace ramses_internal
         {
             result << "#define " << defineString << "\n";
         }
-        return result.release();
+        return String(result.release());
     }
 
     bool GlslEffect::createShaderParts(ShaderParts& outParts, const String& defineString, const String& userShader) const
@@ -168,7 +168,7 @@ namespace ramses_internal
     {
         StringOutputStream str;
         str << shaderParts.version << shaderParts.defines << shaderParts.userCode;
-        return str.release();
+        return String(str.release());
     }
 
     bool GlslEffect::parseShader(glslang::TShader& tShader, const TBuiltInResource& glslCompilationResources, const ShaderParts& shaderParts, const String& shaderName)

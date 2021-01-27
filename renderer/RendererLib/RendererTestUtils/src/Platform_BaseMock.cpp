@@ -17,7 +17,7 @@ namespace ramses_internal
     {
         ON_CALL(*this, createSystemCompositorController()).WillByDefault(Invoke(this, &Platform_BaseMock::createSystemCompositorController_fake));
         ON_CALL(*this, createWindow(_, _)).WillByDefault(Invoke(this, &Platform_BaseMock::createWindow_fake));
-        ON_CALL(*this, createContext(_)).WillByDefault(Invoke(this, &Platform_BaseMock::createContext_fake));
+        ON_CALL(*this, createContext(_, _)).WillByDefault(Invoke(this, &Platform_BaseMock::createContext_fake));
         ON_CALL(*this, createDevice(_)).WillByDefault(Invoke(this, &Platform_BaseMock::createDevice_fake));
         ON_CALL(*this, createEmbeddedCompositor(_, _)).WillByDefault(Invoke(this, &Platform_BaseMock::createEmbeddedCompositor_fake));
         ON_CALL(*this, createTextureUploadingAdapter(_, _, _)).WillByDefault(Invoke(this, &Platform_BaseMock::createTextureUploadingAdapter_fake));

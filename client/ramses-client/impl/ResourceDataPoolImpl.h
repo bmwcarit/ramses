@@ -61,6 +61,7 @@ namespace ramses
         {
             ramses_internal::ManagedResource managedResource;
             std::string name;
+            int refCount = 0;
         };
 
         struct ResourceFileAddress

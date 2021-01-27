@@ -10,7 +10,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 SET(RAMSES_VERSION_MAJOR 27)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 2)
+SET(RAMSES_VERSION_PATCH 5)
 SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
@@ -176,17 +176,15 @@ ACME2_PROJECT(
 
                                 # Surface Components
                                 AUTO renderer/Platform/Surface_Windows_WGL
-                                AUTO renderer/Platform/Platform_Wayland_EGL
-                                AUTO renderer/Platform/Platform_Wayland_IVI_EGL
-                                AUTO renderer/Platform/Platform_Wayland_Shell_EGL
 
                                 # Platforms
                                 AUTO renderer/Platform/Platform_Windows_WGL_4_2_core
                                 AUTO renderer/Platform/Platform_Windows_WGL_4_5
                                 AUTO renderer/Platform/Platform_Windows_WGL_ES_3_0
                                 AUTO renderer/Platform/Platform_EGL
-                                AUTO renderer/Platform/Platform_Wayland_IVI_EGL_ES_3_0
-                                AUTO renderer/Platform/Platform_Wayland_Shell_EGL_ES_3_0
+                                AUTO renderer/Platform/Platform_Wayland_EGL
+                                AUTO renderer/Platform/Platform_Wayland_IVI_EGL
+                                AUTO renderer/Platform/Platform_Wayland_Shell_EGL
                                 AUTO renderer/Platform/Platform_X11
                                 AUTO renderer/Platform/Platform_Integrity_RGL
                                 AUTO renderer/Platform/Platform_Android

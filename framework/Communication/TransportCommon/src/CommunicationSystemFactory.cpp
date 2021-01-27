@@ -78,9 +78,9 @@ namespace ramses_internal
             {
 #if defined(HAS_TCP_COMM)
                 constructedDaemon = std::make_unique<TcpDiscoveryDaemon>(config, frameworkLock, statisticCollection, optionalRamsh);
-                break;
 #endif
             }
+                break;
 
             case EConnectionProtocol::Fake:
                 constructedDaemon = std::make_unique<FakeDiscoveryDaemon>();

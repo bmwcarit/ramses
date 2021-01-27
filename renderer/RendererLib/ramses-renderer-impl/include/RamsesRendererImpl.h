@@ -15,11 +15,8 @@
 #include "StatusObjectImpl.h"
 #include "RendererLoopThreadController.h"
 #include "RendererLib/RendererCommandBuffer.h"
-#include "RendererLib/WindowedRenderer.h"
-#include "RendererLib/ResourceUploader.h"
-#include "RendererLib/RendererConfig.h"
+#include "RendererLib/DisplayDispatcher.h"
 #include "RendererLib/RendererPeriodicLogSupplier.h"
-#include "RendererLib/RendererStatistics.h"
 #include "RendererAPI/ELoopMode.h"
 #include "RendererFramework/RendererFrameworkLogic.h"
 #include "Watchdog/PlatformWatchdog.h"
@@ -28,7 +25,6 @@
 namespace ramses_internal
 {
     class RendererConfig;
-    class IPlatform;
     class IBinaryShaderCache;
 }
 
@@ -43,7 +39,7 @@ namespace ramses
     class RamsesRendererImpl : public StatusObjectImpl
     {
     public:
-        RamsesRendererImpl(RamsesFrameworkImpl& framework, const RendererConfig& config, ramses_internal::IPlatform* platform = nullptr);
+        RamsesRendererImpl(RamsesFrameworkImpl& framework, const RendererConfig& config);
         virtual ~RamsesRendererImpl();
 
         status_t doOneLoop();
@@ -53,8 +49,8 @@ namespace ramses
         status_t    destroyDisplay(displayId_t displayId);
         displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
 
-        const ramses_internal::WindowedRenderer& getRenderer() const;
-        ramses_internal::WindowedRenderer& getRenderer();
+        const ramses_internal::DisplayDispatcher& getDisplayDispatcher() const;
+        ramses_internal::DisplayDispatcher& getDisplayDispatcher();
 
         RendererSceneControl* getSceneControlAPI();
         DcsmContentControl* createDcsmContentControl();
@@ -62,6 +58,10 @@ namespace ramses
         displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount, bool interruptible);
         status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
         status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
+
+        streamBufferId_t createStreamBuffer(displayId_t display, waylandIviSurfaceId_t source);
+        status_t destroyStreamBuffer(displayId_t display, streamBufferId_t streamBuffer);
+        status_t setStreamBufferState(displayId_t display, streamBufferId_t streamBufferId, bool state);
 
         status_t readPixels(displayId_t displayId, displayBufferId_t displayBuffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
         status_t updateWarpingMeshData(displayId_t displayId, const WarpingMeshData& newWarpingMeshData);
@@ -92,28 +92,24 @@ namespace ramses
         status_t setSkippingOfUnmodifiedBuffers(bool enable);
 
         const ramses_internal::RendererCommands& getPendingCommands() const;
-        void submitRendererCommands(const ramses_internal::RendererCommands& cmds);
+        void pushAndConsumeRendererCommands(ramses_internal::RendererCommands& cmds);
 
         using DisplayFrameBufferMap = std::unordered_map<displayId_t, displayBufferId_t>;
         const DisplayFrameBufferMap& getDisplayFrameBuffers() const;
 
     private:
         RamsesFrameworkImpl&                                                        m_framework;
-        const ramses_internal::RendererConfig                                       m_internalConfig;
         std::unique_ptr<ramses_internal::IBinaryShaderCache>                        m_binaryShaderCache;
         std::unique_ptr<ramses_internal::IRendererResourceCache>                    m_rendererResourceCache;
-
-        ramses_internal::RendererStatistics                                         m_rendererStatistics;
 
         ramses_internal::RendererCommands                                           m_pendingRendererCommands;
         ramses_internal::RendererCommandBuffer                                      m_rendererCommandBuffer;
         ramses_internal::RendererFrameworkLogic                                     m_rendererFrameworkLogic;
-        std::unique_ptr<ramses_internal::IPlatform>                                 m_platform;
-        ramses_internal::ResourceUploader                                           m_resourceUploader;
-        std::unique_ptr<ramses_internal::WindowedRenderer>                          m_renderer;
+        std::unique_ptr<ramses_internal::DisplayDispatcher>                         m_displayDispatcher;
 
         displayId_t                                                                 m_nextDisplayId{ 0u };
         displayBufferId_t                                                           m_nextDisplayBufferId{ 0u };
+        streamBufferId_t                                                            m_nextStreamBufferId{ 0u };
         DisplayFrameBufferMap                                                       m_displayFramebuffers;
         bool                                                                        m_systemCompositorEnabled;
         ramses_internal::ELoopMode                                                  m_loopMode;

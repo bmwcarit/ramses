@@ -8,7 +8,6 @@
 
 #include "TransportTCP/TCPConnectionSystem.h"
 
-#include "Components/ResourceStreamSerialization.h"
 #include "Scene/SceneActionCollection.h"
 #include "Utils/BinaryInputStream.h"
 #include "Utils/RawBinaryOutputStream.h"
@@ -47,8 +46,8 @@ namespace ramses_internal
         , m_frameworkLock(frameworkLock)
         , m_thread("R_TCP_ConnSys")
         , m_statisticCollection(statisticCollection)
-        , m_ramsesConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName(), "ramses", frameworkLock)
-        , m_dcsmConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName(), "dcsm", frameworkLock)
+        , m_ramsesConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName().stdRef(), "ramses", frameworkLock)
+        , m_dcsmConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName().stdRef(), "dcsm", frameworkLock)
         , m_sceneProviderHandler(nullptr)
         , m_sceneRendererHandler(nullptr)
         , m_dcsmProviderHandler(nullptr)
@@ -1509,6 +1508,7 @@ namespace ramses_internal
         : address(address_)
         , socket(io_)
         , connectTimer(io_)
+        , lengthReceiveBuffer(0)
         , sendAliveTimer(io_)
         , checkReceivedAliveTimer(io_)
         , type(type_)

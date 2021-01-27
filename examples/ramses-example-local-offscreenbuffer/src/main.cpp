@@ -100,7 +100,7 @@ private:
         ramses::sceneVersionTag_t version = ramses::InvalidSceneVersionTag;
     };
 
-    typedef std::unordered_map<ramses::sceneId_t, SceneInfo> SceneSet;
+    using SceneSet = std::unordered_map<ramses::sceneId_t, SceneInfo>;
     using DataConsumerSet = std::unordered_set<ramses::dataConsumerId_t>;
     using OffscreenBufferSet = std::unordered_set<ramses::displayBufferId_t>;
 

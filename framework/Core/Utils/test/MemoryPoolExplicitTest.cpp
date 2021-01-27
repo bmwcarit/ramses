@@ -33,10 +33,10 @@ namespace ramses_internal
         static const UInt32 InitialSize = 100u;
     };
 
-    typedef ::testing::Types <
+    using MemoryPoolTypes = ::testing::Types <
         MemoryPoolExplicit<int, UInt32>,
         MemoryPoolExplicit<int, UInt16>
-    > MemoryPoolTypes;
+    >;
 
     TYPED_TEST_SUITE(AMemoryPoolExplicit, MemoryPoolTypes);
 

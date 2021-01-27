@@ -29,9 +29,6 @@ ACME_MODULE(
     #==========================================================================
     # dependencies
     #==========================================================================
-    DEPENDENCIES            EGL
-                            Context_EGL
-                            Device_GL
-                            ramses-renderer-lib
+    DEPENDENCIES            Platform_EGL
                             AndroidSDK
 )

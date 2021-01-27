@@ -154,7 +154,7 @@ namespace ramses_internal
         TestWaylandWindow& getWindow(TestApplicationSurfaceId surfaceId) const;
         wl_shell_surface& getShellSurface(TestApplicationShellSurfaceId shellSurfaceId) const;
 
-        typedef HashMap<TestApplicationSurfaceId, TestWaylandWindow*> WindowsHashMap;
+        using WindowsHashMap = HashMap<TestApplicationSurfaceId, TestWaylandWindow*>;
         using ShellSurfacesHashMap = HashMap<TestApplicationShellSurfaceId, wl_shell_surface *>;
 
         EGLDisplay egldisplay = EGL_NO_DISPLAY;

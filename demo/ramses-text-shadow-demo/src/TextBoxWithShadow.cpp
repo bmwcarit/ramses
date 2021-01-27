@@ -18,11 +18,11 @@ TextBoxWithShadow::TextBoxWithShadow(const std::u32string&  string,
                                      int32_t                renderOrder)
     : GraphicalItem(scene, renderGroup)
 {
-    m_textBox = new TextBox(string, textCache, fontInstance, lineHeight, scene, nullptr, -3);
+    m_textBox = std::make_unique<TextBox>(string, textCache, fontInstance, lineHeight, scene, nullptr, -3);
     ramses::RenderBuffer& textRenderBuffer = *m_textBox->getOutputBuffer();
 
-    m_gaussFilterH = new GaussFilter(textRenderBuffer, GaussFilter::EDirection_Horizontal, scene, -2);
-    m_gaussFilterV = new GaussFilter(*m_gaussFilterH->getOutputBuffer(), GaussFilter::EDirection_Vertical, scene, -1);
+    m_gaussFilterH = std::make_unique<GaussFilter>(textRenderBuffer, GaussFilter::EDirection_Horizontal, scene, -2);
+    m_gaussFilterV = std::make_unique<GaussFilter>(*m_gaussFilterH->getOutputBuffer(), GaussFilter::EDirection_Vertical, scene, -1);
 
     ramses::RenderBuffer& blurredTextRenderBuffer = *m_gaussFilterV->getOutputBuffer();
 
@@ -38,24 +38,24 @@ TextBoxWithShadow::TextBoxWithShadow(const std::u32string&  string,
                                                                               ramses::ETextureSamplingMethod_Nearest,
                                                                               blurredTextRenderBuffer);
 
-    m_imageBoxShadow = new ImageBox(*textureSamplerShadow,
-                                    0.0f,
-                                    0.0f,
-                                    0.0f,
-                                    blurredTextRenderBuffer.getWidth(),
-                                    blurredTextRenderBuffer.getHeight(),
-                                    true,
-                                    m_scene,
-                                    m_renderGroup,
-                                    renderOrder);
+    m_imageBoxShadow = std::make_unique<ImageBox>(*textureSamplerShadow,
+                                                  0.0f,
+                                                  0.0f,
+                                                  0.0f,
+                                                  blurredTextRenderBuffer.getWidth(),
+                                                  blurredTextRenderBuffer.getHeight(),
+                                                  true,
+                                                  m_scene,
+                                                  m_renderGroup,
+                                                  renderOrder);
 
-    m_imageBoxText = new ImageBox(*textureSamplerText,
-                                  textRenderBuffer.getWidth(),
-                                  textRenderBuffer.getHeight(),
-                                  true,
-                                  m_scene,
-                                  m_renderGroup,
-                                  renderOrder + 1);
+    m_imageBoxText = std::make_unique<ImageBox>(*textureSamplerText,
+                                                textRenderBuffer.getWidth(),
+                                                textRenderBuffer.getHeight(),
+                                                true,
+                                                m_scene,
+                                                m_renderGroup,
+                                                renderOrder + 1);
 
 
     m_textToShadowOffsetX = -(static_cast<int32_t>(blurredTextRenderBuffer.getWidth()) -

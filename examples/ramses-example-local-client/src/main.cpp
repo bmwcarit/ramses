@@ -36,8 +36,6 @@ int main(int argc, char* argv[])
     const ramses::displayId_t display = renderer.createDisplay(displayConfig);
     renderer.flush();
 
-    framework.connect();
-
     //client scene
     const ramses::sceneId_t sceneId(1u);
     ramses::Scene* clientScene = client.createScene(sceneId, ramses::SceneConfig(), "local client example scene");
@@ -111,7 +109,7 @@ int main(int argc, char* argv[])
 
     appearance->setInputValueVector4f(colorInput, 1.0f, 0.0f, 0.3f, 1.0f);
 
-    clientScene->publish();
+    clientScene->publish(ramses::EScenePublicationMode_LocalOnly);
     clientScene->flush();
 
     // show the scene on the renderer

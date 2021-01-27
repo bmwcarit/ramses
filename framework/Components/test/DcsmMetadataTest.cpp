@@ -357,6 +357,28 @@ namespace ramses_internal
         EXPECT_EQ(123, dm.getWidgetBackgroundID());
     }
 
+    TEST_F(ADcsmMetadata, zeroValueStillIsValue)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setWidgetBackgroundID(0));
+        EXPECT_TRUE(dm.hasWidgetBackgroundID());
+
+        EXPECT_TRUE(dm.setPreviewDescription({}));
+        EXPECT_TRUE(dm.hasPreviewDescription());
+
+        EXPECT_TRUE(dm.setWidgetOrder(0));
+        EXPECT_TRUE(dm.hasWidgetOrder());
+
+        EXPECT_TRUE(dm.setWidgetHUDLineID(0));
+        EXPECT_TRUE(dm.hasWidgetHUDLineID());
+
+        EXPECT_TRUE(dm.setCarModel(0));
+        EXPECT_TRUE(dm.hasCarModel());
+
+        EXPECT_TRUE(dm.setStreamID(0));
+        EXPECT_TRUE(dm.hasStreamID());
+    }
+
     TEST_F(ADcsmMetadata, canSetWidgetHUDlineIDToNewValue)
     {
         DcsmMetadata dm;
@@ -614,29 +636,29 @@ namespace ramses_internal
 
     TEST_F(ADcsmMetadata, canUseInLogs)
     {
-        EXPECT_TRUE(StringOutputStream::ToString(emptyDm).size() > 0);
-        EXPECT_TRUE(StringOutputStream::ToString(filledDm).size() > 0);
+        EXPECT_TRUE(fmt::to_string(emptyDm).size() > 0);
+        EXPECT_TRUE(fmt::to_string(filledDm).size() > 0);
     }
 
     TEST_F(ADcsmMetadata, containsStreamIDwhenLogged)
     {
         // ensure log contains streamid
-        String s = StringOutputStream::ToString(filledDm);
-        EXPECT_TRUE(s.find("49") >= 0);
+        const std::string s = fmt::to_string(filledDm);
+        EXPECT_NE(s.find("49"), std::string::npos);
     }
 
     TEST_F(ADcsmMetadata, containsFullSetOfCarviewWhenLogged)
     {
-        // ensure log contains streamid
-        String s = StringOutputStream::ToString(filledDm);
-        EXPECT_TRUE(s.find("1") >= 0);//pitch
-        EXPECT_TRUE(s.find("2") >= 0);//yaw
-        EXPECT_TRUE(s.find("3") >= 0);//distance
-        EXPECT_TRUE(s.find("4") >= 0);//x
-        EXPECT_TRUE(s.find("5") >= 0);//y
-        EXPECT_TRUE(s.find("6") >= 0);//z
-        EXPECT_TRUE(s.find("7") >= 0);//fov
-        EXPECT_TRUE(s.find("8") >= 0);//animation start
-        EXPECT_TRUE(s.find("9") >= 0);//animation end
+        // ensure log contains expected values
+        const std::string s = fmt::to_string(filledDm);
+        EXPECT_NE(s.find('1'), std::string::npos);  //pitch
+        EXPECT_NE(s.find('2'), std::string::npos);  //yaw
+        EXPECT_NE(s.find('3'), std::string::npos);  //distance
+        EXPECT_NE(s.find('4'), std::string::npos);  //x
+        EXPECT_NE(s.find('5'), std::string::npos);  //y
+        EXPECT_NE(s.find('6'), std::string::npos);  //z
+        EXPECT_NE(s.find('7'), std::string::npos);  //fov
+        EXPECT_NE(s.find('8'), std::string::npos);  //animation start
+        EXPECT_NE(s.find('9'), std::string::npos);  //animation end
     }
 }

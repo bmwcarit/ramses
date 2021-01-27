@@ -32,23 +32,24 @@ namespace ramses_internal
     };
 
     static constexpr const char* const ERotationConventionNames[] = {
-        "LEGACY_EULER_ROTATION_ZYX",
-        "EULER_ROTATION_XYZ",
-        "EULER_ROTATION_XZY",
-        "EULER_ROTATION_YXZ",
-        "EULER_ROTATION_YZX",
-        "EULER_ROTATION_ZXY",
-        "EULER_ROTATION_ZYX",
-        "EULER_ROTATION_XYX",
-        "EULER_ROTATION_XZX",
-        "EULER_ROTATION_YXY",
-        "EULER_ROTATION_YZY",
-        "EULER_ROTATION_ZXZ",
-        "EULER_ROTATION_ZYZ",
+        "LEGACY_ZYX",
+        "XYZ",
+        "XZY",
+        "YXZ",
+        "YZX",
+        "ZXY",
+        "ZYX",
+        "XYX",
+        "XZX",
+        "YXY",
+        "YZY",
+        "ZXZ",
+        "ZYZ",
     };
 }
 
 MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::ERotationConvention,
+                                        "ERotationConvention",
                                         ramses_internal::ERotationConventionNames,
                                         ramses_internal::ERotationConvention::ZYZ);
 

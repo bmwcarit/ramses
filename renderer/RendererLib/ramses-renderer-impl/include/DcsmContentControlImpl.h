@@ -22,6 +22,8 @@
 #include <vector>
 #include "Components/CategoryInfo.h"
 #include "Components/DcsmTypes.h"
+#include "RendererSceneControlImpl.h"
+#include <map>
 
 namespace ramses
 {
@@ -29,7 +31,7 @@ namespace ramses
     class IRendererSceneControl;
     class CategoryInfoUpdate;
 
-    class DcsmContentControlImpl final : public StatusObjectImpl, public IDcsmConsumerEventHandler, public IRendererSceneControlEventHandler
+    class DcsmContentControlImpl final : public StatusObjectImpl, public IDcsmConsumerEventHandler, public IRendererSceneControlEventHandler, public IRendererSceneControlEventHandler_SpecialForWayland
     {
     public:
         DcsmContentControlImpl(IDcsmConsumerImpl& dcsmConsumer, IRendererSceneControl& sceneControl);
@@ -77,6 +79,9 @@ namespace ramses
         virtual void sceneExpired(sceneId_t sceneId) override;
         virtual void sceneRecoveredFromExpiration(sceneId_t sceneId) override;
         virtual void streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available) override;
+        // todo (jonathan) cleanup with next major version
+        // IRendererSceneControlEventHandler_SpecialForWayland
+        virtual void streamBufferLinked(streamBufferId_t streamBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId, bool success) override;
 
         void executePendingCommands();
         void dispatchPendingEvents(IDcsmContentControlEventHandler& eventHandler);
@@ -84,13 +89,15 @@ namespace ramses
         void requestSceneState(ContentID contentID, RendererSceneState state);
         void handleContentStateChange(ContentID contentID, ContentState lastState);
         void removeContent(ContentID contentID);
-        void scheduleSceneStateChange(ContentID contentThatTrigerredChange, RendererSceneState sceneState, uint64_t ts);
-        ContentState getCurrentState(ContentID contentID) const;
+        void scheduleHideAnimation(ContentID contentID, AnimationInformation animTime, RendererSceneState targetState);
+        ContentState determineCurrentContentState(ContentID contentID) const;
         void processTimedOutRequests();
 
-        sceneId_t findSceneAssociatedWithContent(ContentID contentID) const;
+        TechnicalContentDescriptor findTechnicaIdentifierAssociatedWithContent(ContentID contentID) const;
+        sceneId_t getSceneAssociatedWithContent(ContentID contentID) const;
         std::vector<ContentID> findContentsAssociatingScene(sceneId_t sceneId) const;
 
+        void goToConsolidatedDesiredSceneState(sceneId_t sceneId);
 
         IRendererSceneControl& m_sceneControl;
         IDcsmConsumerImpl& m_dcsmConsumer;
@@ -105,13 +112,21 @@ namespace ramses
         };
         std::unordered_map<Category, CategoryData> m_categories;
 
+        enum class ContentDcsmState
+        {
+            Assigned,
+            ReadyRequested,
+            Ready,
+            Shown
+        };
+
         struct ContentInfo
         {
             Category category;
             ETechnicalContentType contentType;
-
-            bool readyRequested = false;
-            bool dcsmReady = false;
+            ContentDcsmState dcsmState = ContentDcsmState::Assigned;
+            TechnicalContentDescriptor descriptor;
+            displayBufferId_t displayBufferAssignment;
             uint64_t readyRequestTimeOut = std::numeric_limits<uint64_t>::max();
         };
         std::unordered_map<ContentID, ContentInfo> m_contents;
@@ -127,25 +142,18 @@ namespace ramses
         struct SceneInfo
         {
             SharedSceneState sharedState;
+            displayId_t display;
             std::unordered_set<ContentID> associatedContents;
         };
         std::unordered_map<sceneId_t, SceneInfo> m_scenes;
 
-        enum class CommandType
+        struct SceneStateChangeCommand
         {
-            SceneStateChange,
-            RemoveContent
-        };
-
-        struct Command
-        {
-            CommandType type;
             uint64_t timePoint;
-
-            ContentID contentId{ 0 };
+            sceneId_t sceneId;
             RendererSceneState sceneState = RendererSceneState::Unavailable;
         };
-        std::vector<Command> m_pendingCommands;
+        std::map<ContentIdentifier, SceneStateChangeCommand> m_pendingSceneStateChangeCommands;
 
         enum class EventType
         {

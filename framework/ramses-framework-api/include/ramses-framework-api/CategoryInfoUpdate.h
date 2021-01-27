@@ -62,6 +62,11 @@ namespace ramses
         /**
          * @brief Set new category rect.
          *
+         * Defined as rectangle inside render size (offsetX, offsetY, width, height).
+         * The offset is relative to lower left corner of render size.
+         * This is the area where the content should be. It is OK if you render content outside of category rect,
+         * but such content will not be visible in the rendered result (except potentially during layout size transition).
+         *
          * @param rect rectangle describing the new category dimensions
          * @return StatusOK for success, otherwise the returned status can be used
         *          to resolve error message using getStatusMessage().
@@ -85,6 +90,9 @@ namespace ramses
 
         /**
          * @brief Set new render size.
+         *
+         * Defined as width and height.
+         * This can be thought of as the 'canvas' (display or offscreen render target) where content will be rendered.
          *
          * @param sizeInfo the new render size
          * @return StatusOK for success, otherwise the returned status can be used
@@ -111,8 +119,14 @@ namespace ramses
          * @brief Set new safe rect.
          *
          * @param rect rectangle describing the new safe dimensions
+         *
+         * Defined as rectangle relative to render size (offsetX, offsetY, width, height).
+         * The offset is relative to lower left corner of render size.
+         * This is just a hint from consumer which gives some guarantee that safe rect is not covered
+         * by any other UI element on the display (if content actively shown).
+         *
          * @return StatusOK for success, otherwise the returned status can be used
-        *          to resolve error message using getStatusMessage().
+         *          to resolve error message using getStatusMessage().
          */
         status_t setSafeRect(Rect rect);
 

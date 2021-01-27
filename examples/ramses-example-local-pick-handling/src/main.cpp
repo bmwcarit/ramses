@@ -226,7 +226,6 @@ int main(int argc, char* argv[])
         // signal the scene it is in a state that can be rendered
         clientScene->flush();
         sceneControlAPI.flush();
-        renderer.flush();
         /// [Pick Handling Example]
     }
 }

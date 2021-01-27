@@ -7,6 +7,9 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from builtins import object
+from builtins import range
+from builtins import str
 import threading
 import time
 import copy
@@ -15,7 +18,7 @@ import re
 from ramses_test_framework import log
 
 
-class Buffer():
+class Buffer(object):
     def __init__(self):
         self.internalBuffer = []
         self.lock = threading.Lock()
@@ -44,7 +47,7 @@ class Buffer():
         return content
 
 
-class BufferWatcher():
+class BufferWatcher(object):
     def __init__(self, buffer):
         self.buffer = buffer
         self.watchStartPositions = dict()

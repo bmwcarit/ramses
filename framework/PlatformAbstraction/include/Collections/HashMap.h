@@ -13,6 +13,7 @@
 #include "PlatformAbstraction/PlatformError.h"
 #include "PlatformAbstraction/Hash.h"
 #include "PlatformAbstraction/PlatformMemory.h"
+#include "PlatformAbstraction/Macros.h"
 #include <cmath>
 #include <functional>
 #include <new>
@@ -330,7 +331,7 @@ namespace ramses_internal
         Iterator put(const Key& key, const T& value);
 
         EStatus get(const Key& key, T& value) const;
-        T*      get(const Key& key) const;
+        RNODISCARD T*      get(const Key& key) const;
 
         /**
          * Tries to find an element in the Hash Table.
@@ -341,7 +342,7 @@ namespace ramses_internal
          * @return iterator pointing to the Hash Table entry where the key got found
          *         iterator pointing to the end() element otherwise
          */
-        Iterator find(const Key& key);
+        RNODISCARD Iterator find(const Key& key);
 
         /**
          * Tries to find an element in read only Hash Table.
@@ -352,7 +353,7 @@ namespace ramses_internal
          * @return ConstIterator pointing to the Hash Table entry where the key got found
          *         ConstIterator pointing to the end() element otherwise
          */
-        ConstIterator find(const Key& key) const;
+        RNODISCARD ConstIterator find(const Key& key) const;
 
         /**
          * Checks weather the given key is present in the table.
@@ -362,7 +363,7 @@ namespace ramses_internal
          * @param key The key.
          * @return True if the key is present, false otherwise.
          */
-        bool contains(const Key& key) const;
+        RNODISCARD bool contains(const Key& key) const;
 
         /**
          * Removes the value associated with key in the hashtable.
@@ -390,7 +391,7 @@ namespace ramses_internal
          * Returns count of the hashtable.
          * @return number of elements in hash table
          */
-        size_t size() const;
+        RNODISCARD size_t size() const;
 
         /**
          * Clears all keys and values of the hashtable.
@@ -401,25 +402,25 @@ namespace ramses_internal
          * Returns an iterator for iterating over the key and values in the map.
          * @return Iterator
          */
-        Iterator begin();
+        RNODISCARD Iterator begin();
 
         /**
          * Returns a ConstIterator for iterating over the key and values in the map.
          * @return ConstIterator
          */
-        ConstIterator begin() const;
+        RNODISCARD ConstIterator begin() const;
 
         /**
          * returns an iterator pointing after the last element of the list
          * @return iterator
          */
-        Iterator end();
+        RNODISCARD Iterator end();
 
         /**
          * returns a ConstIterator pointing after the last element of the list
          * @return ConstIterator
          */
-        ConstIterator end() const;
+        RNODISCARD ConstIterator end() const;
 
         /**
          * Reserve space for given number of bits elements. Does nothing if the
@@ -427,7 +428,7 @@ namespace ramses_internal
          */
         void reserve(size_t capacity);
 
-        size_t capacity() const;
+        RNODISCARD size_t capacity() const;
 
         /**
          * Assignment operator for HashMap

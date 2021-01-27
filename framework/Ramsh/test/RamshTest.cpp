@@ -48,7 +48,7 @@ namespace ramses_internal
 
         using RamshCommandArgs<T1, T2, T3, T4>::getArgument;
 
-        bool execute(T1& arg1, T2& arg2, T3& arg3, T4& arg4) const
+        bool execute(T1& arg1, T2& arg2, T3& arg3, T4& arg4) const override
         {
             data->a1 = arg1;
             data->a2 = arg2;

@@ -8,8 +8,9 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-import sys, re, string
-from common_modules.common import *
+import sys
+import re
+from common_modules import common
 
 
 def check_curly_braces_alone_on_line(filename, file_contents, clean_file_contents, file_lines, clean_file_lines):
@@ -38,20 +39,25 @@ def check_curly_braces_alone_on_line(filename, file_contents, clean_file_content
         line = clean_file_lines[i]
 
         if re_if.search(line):
-            log_warning("check_curly_braces_alone_on_line", filename, i + 1, "curly brace or statement on same line with if", file_lines[i].strip(" "))
+            common.log_warning("check_curly_braces_alone_on_line", filename, i + 1,
+                               "curly brace or statement on same line with if", file_lines[i].strip(" "))
         elif re_else.search(line):
-            log_warning("check_curly_braces_alone_on_line", filename, i + 1, "curly brace on same line with else", file_lines[i].strip(" "))
+            common.log_warning("check_curly_braces_alone_on_line", filename, i + 1,
+                               "curly brace on same line with else", file_lines[i].strip(" "))
         elif re_switch.search(line):
-            log_warning("check_curly_braces_alone_on_line", filename, i + 1, "curly brace or statement on same line with switch", file_lines[i].strip(" "))
+            common.log_warning("check_curly_braces_alone_on_line", filename, i + 1,
+                               "curly brace or statement on same line with switch", file_lines[i].strip(" "))
         elif re_while.search(line):
-            log_warning("check_curly_braces_alone_on_line", filename, i + 1, "curly brace after while", file_lines[i].strip(" "))
+            common.log_warning("check_curly_braces_alone_on_line", filename, i + 1,
+                               "curly brace after while", file_lines[i].strip(" "))
         elif re_for.search(line):
-            log_warning("check_curly_braces_alone_on_line", filename, i + 1, "curly brace or statement on same line with for", file_lines[i].strip(" "))
+            common.log_warning("check_curly_braces_alone_on_line", filename, i + 1,
+                               "curly brace or statement on same line with for", file_lines[i].strip(" "))
 
 
 if __name__ == "__main__":
     targets = sys.argv[1:]
-    targets = get_all_files(targets)
+    targets = common.get_all_files(targets)
 
     if len(targets) == 0:
         print("""
@@ -64,6 +70,6 @@ if __name__ == "__main__":
 
     for t in targets:
         if t[-2:] == ".h" or t[-4:] == ".cpp" or t[-2] == ".c":
-            file_contents, file_lines = read_file(t)
-            clean_file_contents, clean_file_lines = clean_file_content(file_contents)
+            file_contents, file_lines = common.read_file(t)
+            clean_file_contents, clean_file_lines = common.clean_file_content(file_contents)
             check_curly_braces_alone_on_line(t, file_contents, clean_file_contents, file_lines, clean_file_lines)

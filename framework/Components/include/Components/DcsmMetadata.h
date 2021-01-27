@@ -116,27 +116,21 @@ struct fmt::formatter<ramses_internal::DcsmMetadata> : public ramses_internal::S
     template <typename FormatContext>
     auto format(const ramses_internal::DcsmMetadata& dm, FormatContext& ctx)
     {
-        fmt::format_to(ctx.out(), "[png:");
+        fmt::format_to(ctx.out(), "[");
         if (dm.hasPreviewImagePng())
-            fmt::format_to(ctx.out(), "{}",  dm.m_previewImagePng.size());
-        fmt::format_to(ctx.out(), "; desc:");
+            fmt::format_to(ctx.out(), "png:{}; ",  dm.m_previewImagePng.size());
         if (dm.hasPreviewDescription())
-            fmt::format_to(ctx.out(), "{}", dm.m_previewDescription.size());
-        fmt::format_to(ctx.out(), "; order:");
+            fmt::format_to(ctx.out(), "desc:{}; ", dm.m_previewDescription.size());
         if (dm.hasWidgetOrder())
-            fmt::format_to(ctx.out(), "{}", dm.m_widgetOrder);
-        fmt::format_to(ctx.out(), "; bkgr:");
+            fmt::format_to(ctx.out(), "order:{}; ", dm.m_widgetOrder);
         if (dm.hasWidgetBackgroundID())
-            fmt::format_to(ctx.out(), "{}", dm.m_widgetBackgroundID);
-        fmt::format_to(ctx.out(), "; hudline:");
+            fmt::format_to(ctx.out(), "bkgr:{}; ", dm.m_widgetBackgroundID);
         if (dm.hasWidgetHUDLineID())
-            fmt::format_to(ctx.out(), "{}", dm.m_widgetHUDLineID);
-        fmt::format_to(ctx.out(), "; car:");
+            fmt::format_to(ctx.out(), "hudline:{}; ", dm.m_widgetHUDLineID);
         if (dm.hasCarModel())
-            fmt::format_to(ctx.out(), "{}", dm.m_carModel);
-        fmt::format_to(ctx.out(), "; carView:");
+            fmt::format_to(ctx.out(), "car:{}; ", dm.m_carModel);
         if (dm.hasCarModelView())
-            fmt::format_to(ctx.out(), "{},{},{},{},{},{},{},{},{}",
+            fmt::format_to(ctx.out(), "carView:{},{},{},{},{},{},{},{},{},{},{}; ",
                            dm.m_carModelView.pitch,
                            dm.m_carModelView.yaw,
                            dm.m_carModelView.distance,
@@ -144,18 +138,16 @@ struct fmt::formatter<ramses_internal::DcsmMetadata> : public ramses_internal::S
                            dm.m_carModelView.origin_y,
                            dm.m_carModelView.origin_z,
                            dm.m_carModelView.cameraFOV,
+                           dm.m_carModelView.nearPlane,
+                           dm.m_carModelView.farPlane,
                            dm.m_carModelViewTiming.startTimeStamp,
                            dm.m_carModelViewTiming.finishedTimeStamp);
-        fmt::format_to(ctx.out(), "; carVis:");
         if (dm.hasCarModelVisibility())
-            fmt::format_to(ctx.out(), "{}", dm.m_carModelVisibility);
-        fmt::format_to(ctx.out(), "; exclBG:");
+            fmt::format_to(ctx.out(), "carVis:{}; ", dm.m_carModelVisibility);
         if (dm.hasExclusiveBackground())
-            fmt::format_to(ctx.out(), "{}", dm.m_exclusiveBackground);
-        fmt::format_to(ctx.out(), "; streamID:");
+            fmt::format_to(ctx.out(), "exclBG:{}; ", dm.m_exclusiveBackground);
         if (dm.hasStreamID())
-            fmt::format_to(ctx.out(), "{}", dm.m_streamID);
-        fmt::format_to(ctx.out(), "; focReq:");
+            fmt::format_to(ctx.out(), "streamID:{}; ", dm.m_streamID);
         return fmt::format_to(ctx.out(), "]");
     }
 };

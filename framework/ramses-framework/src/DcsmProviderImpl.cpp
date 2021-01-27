@@ -204,7 +204,7 @@ namespace ramses
     void DcsmProviderImpl::contentStateChange(ContentID contentID, ramses_internal::EDcsmState state, const CategoryInfoUpdate& categoryInfo, AnimationInformation anim)
     {
         LOG_INFO(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStateChange: contentID " << contentID
-            << ", status " << EnumToString(state) << ", " << categoryInfo << ", ai[" << anim.startTime << ", " << anim.finishTime << "]");
+            << ", status " << state << ", " << categoryInfo << ", ai[" << anim.startTime << ", " << anim.finishTime << "]");
 
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())

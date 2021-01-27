@@ -200,7 +200,7 @@ namespace ramses_internal
 
         if (pfd.revents & POLLIN)
         {
-            return wl_display_dispatch(wayland.display);
+            return wl_display_dispatch(wayland.display) != 0;
         }
 
         return true;

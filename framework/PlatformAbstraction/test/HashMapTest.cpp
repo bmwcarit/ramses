@@ -369,7 +369,7 @@ TEST_F(HashMapTest, find)
     EXPECT_EQ(5, (*newmap.find(1)).value);
 }
 
-typedef HashMap<int32_t, SomeClass> SomeHashMap;
+using SomeHashMap = HashMap<int32_t, SomeClass>;
 TEST_F(HashMapTest, operator_subscript_read)
 {
     HashMap<int32_t, int32_t> newmap;

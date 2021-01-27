@@ -31,7 +31,12 @@ namespace ramses
          * @brief Assigns a ramses scene ID to a contentID and category and offers
          *        that content to listening consumers. Should only be called if content
          *        could and should currently be shown.
-         *        The ramses scene belonging to the scene ID must not exist yet.
+         *        The ramses scene belonging to the scene ID does not have to exist yet.
+         *
+         *        A content must only be offered in a way that one scene is not associated with
+         *        two categories which get assigned to different ramses displays on the
+         *        renderer/consumer side. Otherwise contents might never be able to
+         *        reach ready state.
          *
          *        A failing offerContent call might trigger a stopOfferAccepted event,
          *        which can be safely ignored.

@@ -6,16 +6,12 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "renderer_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "RendererLib/RendererCommandBuffer.h"
-#include "RendererLib/DisplayConfig.h"
-#include "RendererCommands/Screenshot.h"
-#include "Ramsh/RamshTools.h"
-#include "ResourceDeviceHandleAccessorMock.h"
-#include "ResourceUploaderMock.h"
-#include "Math3d/Vector2i.h"
-#include "Scene/SceneActionCollectionCreator.h"
+#include "RendererCommandVisitorMock.h"
+#include "Utils/ThreadBarrier.h"
+#include <thread>
+#include <future>
 
 namespace ramses_internal {
 using namespace testing;
@@ -23,152 +19,228 @@ using namespace testing;
 class ARendererCommandBuffer : public ::testing::Test
 {
 protected:
-    RendererCommandBuffer queue;
-};
+    void fillBufferWithCommands(RendererCommandBuffer& buffer);
+    void expectFilledBufferVisits();
 
-TEST_F(ARendererCommandBuffer, gracefullyHandlesSceneActionsArrivingAfterUnsubscribe)
-{
-    const SceneId sceneId(12u);
+    StrictMock<RendererCommandVisitorMock> visitor;
 
-    queue.publishScene(sceneId, EScenePublicationMode_LocalAndRemote);
-    queue.receiveScene(SceneInfo(sceneId));
-
-    queue.unsubscribeScene(sceneId, false);
-
-    SceneUpdate update;
-    update.actions.addRawSceneActionInformation(ESceneActionId::AddChildToNode, 0);
-    update.actions.addRawSceneActionInformation(ESceneActionId::RemoveRenderableFromRenderGroup, 0);
-    queue.enqueueActionsForScene(sceneId, std::move(update));
-}
-
-TEST_F(ARendererCommandBuffer, parsesCommandsForScreenshotPrintingWithFilename)
-{
-    String in("screenshot -filename bla");
-    RamshInput input = RamshTools::parseCommandString(in);
-
-    Screenshot screenshotCommand(queue);
-    screenshotCommand.executeInput(input);
-
-    RendererCommandContainer commands;
-    queue.swapCommandContainer(commands);
-    EXPECT_EQ(1u, commands.getTotalCommandCount());
-    ASSERT_EQ(ERendererCommand_ReadPixels, commands.getCommandType(0));
-    EXPECT_EQ(String("bla"), commands.getCommandData<ReadPixelsCommand>(0).filename);
-    EXPECT_EQ(DisplayHandle(0u), commands.getCommandData<ReadPixelsCommand>(0).displayHandle);
-    EXPECT_FALSE(commands.getCommandData<ReadPixelsCommand>(0).offscreenBufferHandle.isValid());
-}
-
-TEST_F(ARendererCommandBuffer, parsesCommandsForScreenshotPrintingWithDisplayIDs)
-{
-    String in("screenshot -filename bla -displayId 2");
-    RamshInput input = RamshTools::parseCommandString(in);
-
-    Screenshot screenshotCommand(queue);
-    screenshotCommand.executeInput(input);
-
-    RendererCommandContainer commands;
-    queue.swapCommandContainer(commands);
-    EXPECT_EQ(1u, commands.getTotalCommandCount());
-    EXPECT_EQ(ERendererCommand_ReadPixels, commands.getCommandType(0));
-    EXPECT_EQ(String("bla"), commands.getCommandData<ReadPixelsCommand>(0).filename);
-    EXPECT_EQ(DisplayHandle(2u), commands.getCommandData<ReadPixelsCommand>(0).displayHandle);
-}
-
-TEST_F(ARendererCommandBuffer, canFetchAllTypesOfRendererCommands)
-{
-    RendererCommands queueToFetch;
-
-    const SceneId sceneId(12u);
-    const SceneInfo sceneInfo(sceneId, "testScene");
+    const SceneId sceneId{ 12u };
+    const SceneInfo sceneInfo{ sceneId, "testScene" };
     const WarpingMeshData warpingData;
-    const DisplayHandle displayHandle(1u);
+    const DisplayHandle displayHandle{ 1u };
     const DisplayConfig displayConfig;
     const OffscreenBufferHandle obHandle{ 6u };
-    NiceMock<ResourceUploaderMock> resourceUploader;
-
     const SceneId providerSceneId;
     const SceneId consumerSceneId;
-    const DataSlotId providerId(1);
-    const DataSlotId consumerId(2);
-    SceneIdVector scenes;
-    scenes.push_back(sceneId);
-    Vector4 clearColor(1.f, 0.f, 0.5f, 0.2f);
+    const DataSlotId providerId{ 1 };
+    const DataSlotId consumerId{ 2 };
+    const Vector4 clearColor{ 1.f, 0.f, 0.5f, 0.2f };
+    const StreamBufferHandle streamBuffer{ 7u };
+    const WaylandIviSurfaceId source{ 8u };
+    const WaylandIviLayerId layer{ 9u };
+    IBinaryShaderCache* dummyBinaryShaderCache = reinterpret_cast<IBinaryShaderCache*>(std::uintptr_t{ 0x1 });
+};
 
-    //fill queue which is to be fetched by the RendererCommandBuffer
-    queueToFetch.publishScene(sceneId, EScenePublicationMode_LocalAndRemote);
-    queueToFetch.unpublishScene(sceneId);
-    queueToFetch.receiveScene(sceneInfo);
-    queueToFetch.setSceneState(sceneId, RendererSceneState::Rendered);
-    queueToFetch.setSceneMapping(sceneId, displayHandle);
-    queueToFetch.setSceneDisplayBufferAssignment(sceneId, obHandle, -13);
-    queueToFetch.subscribeScene(sceneId);
-    queueToFetch.unsubscribeScene(sceneId, false);
-    queueToFetch.createDisplay(displayConfig, resourceUploader, displayHandle);
-    queueToFetch.destroyDisplay(displayHandle);
-    queueToFetch.mapSceneToDisplay(sceneId, displayHandle);
-    queueToFetch.assignSceneToDisplayBuffer(sceneId, obHandle, 11);
-    queueToFetch.unmapScene(sceneId);
-    queueToFetch.showScene(sceneId);
-    queueToFetch.hideScene(sceneId);
-    queueToFetch.updateWarpingData(displayHandle, warpingData);
-    queueToFetch.readPixels(displayHandle, obHandle, "testImage", false, 0, 0, 64, 64);
-    queueToFetch.linkSceneData(providerSceneId, providerId, consumerSceneId, consumerId);
-    queueToFetch.unlinkSceneData(consumerSceneId, consumerId);
-    queueToFetch.logStatistics();
-    queueToFetch.systemCompositorControllerListIviSurfaces();
-    queueToFetch.systemCompositorControllerSetIviSurfaceVisibility(WaylandIviSurfaceId(6), true);
-    queueToFetch.systemCompositorControllerSetIviSurfaceOpacity(WaylandIviSurfaceId(7), 0.5f);
-    queueToFetch.systemCompositorControllerSetIviSurfaceDestRectangle(WaylandIviSurfaceId(8), 0, 0, 64, 128);
-    queueToFetch.systemCompositorControllerScreenshot("testScreenshot.png", -1);
-    queueToFetch.systemCompositorControllerSetIviLayerVisibility(WaylandIviLayerId(19), true);
-    queueToFetch.systemCompositorControllerAddIviSurfaceToIviLayer(WaylandIviSurfaceId(9u), WaylandIviLayerId(831u));
-    queueToFetch.systemCompositorControllerRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId(25u), WaylandIviLayerId(921u));
-    queueToFetch.systemCompositorControllerDestroyIviSurface(WaylandIviSurfaceId(51u));
-    queueToFetch.confirmationEcho("testEcho");
-    queueToFetch.logRendererInfo(ERendererLogTopic_All, true, NodeHandle::Invalid());
-    queueToFetch.setClearColor(displayHandle, obHandle, clearColor);
-    queueToFetch.setFrameTimerLimits(4u, 1u, 3u);
+void ARendererCommandBuffer::fillBufferWithCommands(RendererCommandBuffer& buffer)
+{
+    buffer.enqueueCommand(RendererCommand::ScenePublished{ sceneId, EScenePublicationMode_LocalAndRemote });
+    buffer.enqueueCommand(RendererCommand::SceneUnpublished{ sceneId });
+    buffer.enqueueCommand(RendererCommand::ReceiveScene{ sceneInfo });
+    buffer.enqueueCommand(RendererCommand::SetSceneState{ sceneId, RendererSceneState::Rendered });
+    buffer.enqueueCommand(RendererCommand::SetSceneMapping{ sceneId, displayHandle });
+    buffer.enqueueCommand(RendererCommand::SetSceneDisplayBufferAssignment{ sceneId, obHandle, -13 });
+    buffer.enqueueCommand(RendererCommand::CreateDisplay{ displayHandle, displayConfig, dummyBinaryShaderCache });
+    buffer.enqueueCommand(RendererCommand::DestroyDisplay{ displayHandle });
+    buffer.enqueueCommand(RendererCommand::LinkData{ providerSceneId, providerId, consumerSceneId, consumerId });
+    buffer.enqueueCommand(RendererCommand::UnlinkData{ consumerSceneId, consumerId });
+    buffer.enqueueCommand(RendererCommand::SetClearColor{ displayHandle, obHandle, clearColor });
+    buffer.enqueueCommand(RendererCommand::CreateStreamBuffer{ displayHandle, streamBuffer, source });
+    buffer.enqueueCommand(RendererCommand::DestroyStreamBuffer{ displayHandle, streamBuffer });
+    buffer.enqueueCommand(RendererCommand::SetStreamBufferState{ displayHandle, streamBuffer, true});
+    buffer.enqueueCommand(RendererCommand::LinkStreamBuffer{ streamBuffer, consumerSceneId, consumerId });
+    buffer.enqueueCommand(RendererCommand::SCListIviSurfaces{});
+    buffer.enqueueCommand(RendererCommand::SCSetIviSurfaceVisibility{ source, true });
+    buffer.enqueueCommand(RendererCommand::SCSetIviSurfaceOpacity{ source, 0.5f });
+    buffer.enqueueCommand(RendererCommand::SCSetIviLayerVisibility{ layer, true });
+    buffer.enqueueCommand(RendererCommand::SCAddIviSurfaceToIviLayer{ source, layer });
+    buffer.enqueueCommand(RendererCommand::SCRemoveIviSurfaceFromIviLayer{ source, layer });
+    buffer.enqueueCommand(RendererCommand::SCDestroyIviSurface{ source });
+}
 
-    EXPECT_EQ(33u, queueToFetch.getCommands().getTotalCommandCount());
+void ARendererCommandBuffer::expectFilledBufferVisits()
+{
+    InSequence seq;
+    EXPECT_CALL(visitor, handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote));
+    EXPECT_CALL(visitor, handleSceneUnpublished(sceneId));
+    EXPECT_CALL(visitor, handleSceneReceived(sceneInfo));
+    EXPECT_CALL(visitor, setSceneState(sceneId, RendererSceneState::Rendered));
+    EXPECT_CALL(visitor, setSceneMapping(sceneId, displayHandle));
+    EXPECT_CALL(visitor, setSceneDisplayBufferAssignment(sceneId, obHandle, -13));
+    EXPECT_CALL(visitor, createDisplayContext(displayConfig, displayHandle, dummyBinaryShaderCache));
+    EXPECT_CALL(visitor, destroyDisplayContext(displayHandle));
+    EXPECT_CALL(visitor, handleSceneDataLinkRequest(providerSceneId, providerId, consumerSceneId, consumerId));
+    EXPECT_CALL(visitor, handleDataUnlinkRequest(consumerSceneId, consumerId));
+    EXPECT_CALL(visitor, handleSetClearColor(displayHandle, obHandle, clearColor));
+    EXPECT_CALL(visitor, handleBufferCreateRequest(streamBuffer, displayHandle, source));
+    EXPECT_CALL(visitor, handleBufferDestroyRequest(streamBuffer, displayHandle));
+    EXPECT_CALL(visitor, setStreamBufferState(streamBuffer, displayHandle, true));
+    EXPECT_CALL(visitor, handleBufferToSceneDataLinkRequest(streamBuffer, consumerSceneId, consumerId));
+    EXPECT_CALL(visitor, systemCompositorListIviSurfaces());
+    EXPECT_CALL(visitor, systemCompositorSetIviSurfaceVisibility(source, true));
+    EXPECT_CALL(visitor, systemCompositorSetIviSurfaceOpacity(source, 0.5f));
+    EXPECT_CALL(visitor, systemCompositorSetIviLayerVisibility(layer, true));
+    EXPECT_CALL(visitor, systemCompositorAddIviSurfaceToIviLayer(source, layer));
+    EXPECT_CALL(visitor, systemCompositorRemoveIviSurfaceFromIviLayer(source, layer));
+    EXPECT_CALL(visitor, systemCompositorDestroyIviSurface(source));
+}
 
-    queue.addCommands(queueToFetch); //fetchRendererCommands
-    queueToFetch.clear(); //clear fetched command queue
+TEST_F(ARendererCommandBuffer, canEnqueueCommands)
+{
+    RendererCommandBuffer buffer;
+    fillBufferWithCommands(buffer);
 
-    RendererCommandContainer commands;
-    queue.swapCommandContainer(commands);
+    expectFilledBufferVisits();
+    visitor.visit(buffer);
+}
 
-    EXPECT_EQ(0u, queueToFetch.getCommands().getTotalCommandCount());
-    EXPECT_EQ(33u, commands.getTotalCommandCount());
+TEST_F(ARendererCommandBuffer, canAddCommandsFromCommandsContainer)
+{
+    RendererCommandBuffer buffer;
+    fillBufferWithCommands(buffer);
+    RendererCommands cmds;
+    buffer.swapCommands(cmds);
 
-    //check some details of the fetched commands
-    EXPECT_EQ(ERendererCommand_PublishedScene, commands.getCommandType(0));
-    const SceneInfoCommand& sceneCmd = commands.getCommandData<SceneInfoCommand>(0);
-    EXPECT_EQ(sceneId, sceneCmd.sceneInformation.sceneID);
+    RendererCommandBuffer destinationContainer;
+    destinationContainer.addAndConsumeCommandsFrom(cmds);
 
-    const auto& sceneStateCmd = commands.getCommandData<SceneStateCommand>(3);
-    EXPECT_EQ(sceneId, sceneStateCmd.sceneId);
-    EXPECT_EQ(RendererSceneState::Rendered, sceneStateCmd.state);
+    // expect no visits
+    visitor.visit(buffer);
 
-    EXPECT_EQ(ERendererCommand_CreateDisplay, commands.getCommandType(8));
-    const DisplayCommand& dispCmd = commands.getCommandData<DisplayCommand>(8);
-    EXPECT_EQ(displayHandle, dispCmd.displayHandle);
-    EXPECT_EQ(displayConfig, dispCmd.displayConfig);
-    EXPECT_EQ(static_cast<IResourceUploader*>(&resourceUploader), dispCmd.resourceUploader);
+    expectFilledBufferVisits();
+    visitor.visit(destinationContainer);
+}
 
-    EXPECT_EQ(ERendererCommand_AssignSceneToDisplayBuffer, commands.getCommandType(11));
-    const auto& assignCmd = commands.getCommandData<SceneMappingCommand>(11);
-    EXPECT_EQ(sceneId, assignCmd.sceneId);
-    EXPECT_EQ(obHandle, assignCmd.offscreenBuffer);
-    EXPECT_EQ(11, assignCmd.sceneRenderOrder);
+TEST_F(ARendererCommandBuffer, canAddCommandsFromTwoContainers)
+{
+    RendererCommandBuffer destinationContainer;
 
-    EXPECT_EQ(ERendererCommand_ConfirmationEcho, commands.getCommandType(29));
-    const ConfirmationEchoCommand& echoCmd = commands.getCommandData<ConfirmationEchoCommand>(29);
-    EXPECT_TRUE(echoCmd.text == ramses_internal::String("testEcho"));
+    RendererCommandBuffer buffer;
+    RendererCommands cmds;
+    fillBufferWithCommands(buffer);
+    buffer.swapCommands(cmds);
+    destinationContainer.addAndConsumeCommandsFrom(cmds);
 
-    EXPECT_EQ(ERendererCommand_SetClearColor, commands.getCommandType(31));
-    const auto& clearColorCmd = commands.getCommandData<SetClearColorCommand>(31);
-    EXPECT_EQ(displayHandle, clearColorCmd.displayHandle);
-    EXPECT_EQ(obHandle, clearColorCmd.obHandle);
-    EXPECT_EQ(clearColor, clearColorCmd.clearColor);
+    // expect no visits on consumed buffer
+    visitor.visit(buffer);
+
+    fillBufferWithCommands(buffer);
+    buffer.swapCommands(cmds);
+    destinationContainer.addAndConsumeCommandsFrom(cmds);
+
+    // expect no visits on consumed buffer
+    visitor.visit(buffer);
+
+    InSequence seq;
+    expectFilledBufferVisits();
+    expectFilledBufferVisits();
+    visitor.visit(destinationContainer);
+}
+
+TEST_F(ARendererCommandBuffer, addCommandsFromVariousContainersToContainerInAnotherThread)
+{
+    // 2 threads providing commands (e.g. scene control and renderer HL cmd queues)
+    // 1 thread consuming those and adding to destContainer (e.g. dispatcher queue)
+    // 1 thread consuming destContainer and adding to finalContainer (e.g. executor in displaythread)
+
+    RendererCommandBuffer destContainer;
+    RendererCommandBuffer finalContainer;
+
+    ThreadBarrier initBarrier{ 4 };
+    ThreadBarrier producersDoneBarrier{ 4 };
+    ThreadBarrier consumerProducerDoneBarrier{ 2 };
+    ThreadBarrier allDoneBarrier{ 4 };
+
+    std::thread cmdProducer1{ [&]()
+    {
+        initBarrier.wait();
+        RendererCommandBuffer buffer;
+        {
+            buffer.enqueueCommand(RendererCommand::ScenePublished{ sceneId, EScenePublicationMode_LocalAndRemote });
+            buffer.enqueueCommand(RendererCommand::SceneUnpublished{ sceneId });
+        }
+        RendererCommands cmds;
+        buffer.swapCommands(cmds);
+        destContainer.addAndConsumeCommandsFrom(cmds);
+        producersDoneBarrier.wait();
+        allDoneBarrier.wait();
+    } };
+
+    std::thread cmdProducer2{ [&]()
+    {
+        initBarrier.wait();
+        RendererCommandBuffer buffer;
+        {
+            buffer.enqueueCommand(RendererCommand::ReceiveScene{ sceneInfo });
+            buffer.enqueueCommand(RendererCommand::SetSceneState{ sceneId, RendererSceneState::Rendered });
+        }
+        RendererCommands cmds;
+        buffer.swapCommands(cmds);
+        destContainer.addAndConsumeCommandsFrom(cmds);
+        producersDoneBarrier.wait();
+        allDoneBarrier.wait();
+    } };
+
+    std::thread cmdConsumerAndProducer{ [&]()
+    {
+        initBarrier.wait();
+        RendererCommandBuffer buffer;
+        {
+            buffer.enqueueCommand(RendererCommand::SetSceneMapping{ sceneId, displayHandle });
+            buffer.enqueueCommand(RendererCommand::SetSceneDisplayBufferAssignment{ sceneId, obHandle, -13 });
+        }
+        RendererCommands cmds;
+        buffer.swapCommands(cmds);
+        destContainer.addAndConsumeCommandsFrom(cmds);
+        producersDoneBarrier.wait();
+
+        destContainer.swapCommands(cmds);
+        finalContainer.addAndConsumeCommandsFrom(cmds);
+        {
+            buffer.enqueueCommand(RendererCommand::CreateDisplay{ displayHandle, displayConfig, dummyBinaryShaderCache });
+            buffer.enqueueCommand(RendererCommand::DestroyDisplay{ displayHandle });
+        }
+        buffer.swapCommands(cmds);
+        finalContainer.addAndConsumeCommandsFrom(cmds);
+        consumerProducerDoneBarrier.wait();
+        allDoneBarrier.wait();
+    } };
+
+    std::thread cmdConsumer{ [&]()
+    {
+        initBarrier.wait();
+        producersDoneBarrier.wait();
+        consumerProducerDoneBarrier.wait();
+
+        Sequence s1;
+        Sequence s2;
+        Sequence s3;
+        Sequence s4;
+        EXPECT_CALL(visitor, handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote)).InSequence(s1);
+        EXPECT_CALL(visitor, handleSceneUnpublished(sceneId)).InSequence(s1);
+        EXPECT_CALL(visitor, handleSceneReceived(sceneInfo)).InSequence(s2);
+        EXPECT_CALL(visitor, setSceneState(sceneId, RendererSceneState::Rendered)).InSequence(s2);
+        EXPECT_CALL(visitor, setSceneMapping(sceneId, displayHandle)).InSequence(s3);
+        EXPECT_CALL(visitor, setSceneDisplayBufferAssignment(sceneId, obHandle, -13)).InSequence(s3);
+        EXPECT_CALL(visitor, createDisplayContext(displayConfig, displayHandle, dummyBinaryShaderCache)).InSequence(s4);
+        EXPECT_CALL(visitor, destroyDisplayContext(displayHandle)).InSequence(s4);
+        visitor.visit(finalContainer);
+
+        allDoneBarrier.wait();
+    } };
+
+    cmdProducer1.join();
+    cmdProducer2.join();
+    cmdConsumerAndProducer.join();
+    cmdConsumer.join();
 }
 }

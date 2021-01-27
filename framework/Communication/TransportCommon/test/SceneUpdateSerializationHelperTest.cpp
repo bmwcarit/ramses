@@ -93,7 +93,7 @@ namespace ramses_internal
     TEST_F(AResourceSerialization, canSerializeDeserializeCompressedResource)
     {
         const std::unique_ptr<IResource> res(ResourceSerializationTestHelper::CreateTestResource<ArrayResource>(10000));
-        res->compress(IResource::CompressionLevel::REALTIME);
+        res->compress(IResource::CompressionLevel::Realtime);
         ASSERT_TRUE(res->isCompressedAvailable());
 
         std::unique_ptr<IResource> deserRes(this->SerializeDeserialize(*res));

@@ -8,7 +8,6 @@
 
 #include "renderer_common_gmock_header.h"
 #include "RendererLib/ResourceUploader.h"
-#include "RendererLib/RendererStatistics.h"
 #include "RendererAPI/IBinaryShaderCache.h"
 #include "RenderBackendMock.h"
 #include "ResourceMock.h"
@@ -18,6 +17,8 @@
 #include "Resource/ArrayResource.h"
 #include "RendererLib/ResourceDescriptor.h"
 #include "Components/ResourceDeleterCallingCallback.h"
+#include "Utils/ThreadBarrier.h"
+#include <thread>
 
 using namespace ramses_internal;
 
@@ -32,6 +33,7 @@ public:
     MOCK_METHOD(void, getBinaryShaderData, (ResourceContentHash, UInt8*, UInt32), (const, override));
     MOCK_METHOD(void, storeBinaryShader, (ResourceContentHash, SceneId, const UInt8*, UInt32, BinaryShaderFormatID), (override));
     MOCK_METHOD(void, binaryShaderUploaded, (ResourceContentHash, ramses_internal::Bool), (const, override));
+    MOCK_METHOD(std::once_flag&, binaryShaderFormatsReported, (), (override));
 };
 
 class BinaryShaderProviderFake final : public StrictMock<BinaryShaderProviderMock>
@@ -44,6 +46,7 @@ public:
     , m_binaryShaderFormat(0)
     {
         ON_CALL(*this, shouldBinaryShaderBeCached(_,_)).WillByDefault(Return(true));
+        ON_CALL(*this, binaryShaderFormatsReported()).WillByDefault(ReturnRef(m_binaryShaderFormatReported));
     }
 
     virtual ramses_internal::Bool hasBinaryShader(ResourceContentHash effectHash) const override
@@ -78,19 +81,18 @@ public:
     const UInt8* m_binaryShaderData;
     UInt32 m_binaryShaderDataSize;
     BinaryShaderFormatID m_binaryShaderFormat;
+    std::once_flag m_binaryShaderFormatReported;
 };
 
 class AResourceUploader : public ::testing::Test
 {
 public:
     AResourceUploader()
-        : uploader(stats)
-        , dummyManagedResourceCallback(managedResourceDeleter)
+        : dummyManagedResourceCallback(managedResourceDeleter)
     {
     }
 
     StrictMock<RenderBackendStrictMock> renderer;
-    RendererStatistics stats;
     ResourceUploader uploader;
 
     StrictMock<ManagedResourceDeleterCallbackMock> managedResourceDeleter;
@@ -250,65 +252,87 @@ TEST_F(AResourceUploader, uploadsTextureCubeResourceWithMipGen)
     EXPECT_EQ(6u * (4 * 4 + 2 * 2 + 1), vramSize);
 }
 
-TEST_F(AResourceUploader, uploadsEffectResourceWithoutBinaryShaderCache)
+TEST_F(AResourceUploader, canStoreBinaryShader)
 {
     EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
-    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
-    ResourceDescriptor resourceObject;
-    resourceObject.resource = managedRes;
-    EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
+    const SceneId sceneUsingResource(14);
 
-    EXPECT_CALL(renderer.deviceMock, uploadShader(_)).WillOnce(Return(DeviceResourceHandle(123)));
-    EXPECT_EQ(123u, uploader.uploadResource(renderer, resourceObject, vramSize));
-    EXPECT_EQ(res.getDecompressedDataSize(), vramSize);
+    BinaryShaderProviderFake binaryShaderProvider;
+    EXPECT_CALL(binaryShaderProvider, shouldBinaryShaderBeCached(res.getHash(), _)).WillOnce(Return(true));
+    EXPECT_CALL(renderer.deviceMock, getBinaryShader(DeviceMock::FakeShaderDeviceHandle, _, _)).WillOnce(DoAll(SetArgReferee<1>(UInt8Vector(10)), Return(true)));
+    EXPECT_CALL(binaryShaderProvider, storeBinaryShader(_, sceneUsingResource, _, _, _));
+
+    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
+    uploaderWithBinaryProvider.storeShaderInBinaryShaderCache(renderer, DeviceMock::FakeShaderDeviceHandle, res.getHash(), sceneUsingResource);
+}
+
+TEST_F(AResourceUploader, doesNoStoreBinaryShaderIfFailedToGetBinaryShaderFromDevice)
+{
+    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    const SceneId sceneUsingResource(14);
+
+    BinaryShaderProviderFake binaryShaderProvider;
+
+    EXPECT_CALL(binaryShaderProvider, shouldBinaryShaderBeCached(res.getHash(), _)).WillOnce(Return(true));
+    EXPECT_CALL(renderer.deviceMock, getBinaryShader(DeviceMock::FakeShaderDeviceHandle, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(binaryShaderProvider, storeBinaryShader(_, sceneUsingResource, _, _, _)).Times(0);
+
+    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
+    uploaderWithBinaryProvider.storeShaderInBinaryShaderCache(renderer, DeviceMock::FakeShaderDeviceHandle, res.getHash(), sceneUsingResource);
 }
 
 TEST_F(AResourceUploader, ifShaderShouldNotBeCachedNoDownloadWillHappen)
 {
+    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    const SceneId sceneUsingResource(14);
+
     BinaryShaderProviderFake binaryShaderProvider;
-    ResourceUploader uploaderWithBinaryProvider(stats, &binaryShaderProvider);
+    EXPECT_CALL(binaryShaderProvider, shouldBinaryShaderBeCached(res.getHash(), _)).WillOnce(Return(false));
+    EXPECT_CALL(renderer.deviceMock, getBinaryShader(DeviceMock::FakeShaderDeviceHandle, _, _)).Times(0);
+    EXPECT_CALL(binaryShaderProvider, storeBinaryShader(_, sceneUsingResource, _, _, _)).Times(0);
+
+    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
+    uploaderWithBinaryProvider.storeShaderInBinaryShaderCache(renderer, DeviceMock::FakeShaderDeviceHandle, res.getHash(), sceneUsingResource);
+}
+
+TEST_F(AResourceUploader, doesNotTryToStoreBinaryShaderIfNoBinaryShaderCacheAvailable)
+{
+    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    const SceneId sceneUsingResource(14);
+
+    EXPECT_CALL(renderer.deviceMock, getBinaryShader(_, _, _)).Times(0);
+    uploader.storeShaderInBinaryShaderCache(renderer, DeviceMock::FakeShaderDeviceHandle, res.getHash(), sceneUsingResource);
+}
+
+TEST_F(AResourceUploader, doesNotReturnDeviceHandleForEffectResourceWithoutBinaryShaderCache)
+{
+    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
+    ResourceDescriptor resourceObject;
+    resourceObject.resource = managedRes;
+    EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
+    EXPECT_FALSE(uploader.uploadResource(renderer, resourceObject, vramSize).has_value());
+}
+
+TEST_F(AResourceUploader, doesNotReturnDeviceHandleIfShaderIsNotCached)
+{
+    BinaryShaderProviderFake binaryShaderProvider;
+    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
 
     EffectResource res("", "","", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
 
+    EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported());
     EXPECT_CALL(binaryShaderProvider, deviceSupportsBinaryShaderFormats(std::vector<BinaryShaderFormatID>{ DeviceMock::FakeSupportedBinaryShaderFormat }));
-    EXPECT_CALL(binaryShaderProvider, hasBinaryShader(res.getHash()));
-    EXPECT_CALL(binaryShaderProvider, shouldBinaryShaderBeCached(res.getHash(),_)).WillOnce(Return(false));
-    EXPECT_CALL(binaryShaderProvider, storeBinaryShader(_, _, _, _, _)).Times(0);
-    EXPECT_CALL(renderer.deviceMock, uploadShader(_)).WillOnce(Return(DeviceResourceHandle(123)));
-    EXPECT_CALL(renderer.deviceMock, getBinaryShader(_, _, _)).Times(0);
-    EXPECT_CALL(binaryShaderProvider, binaryShaderUploaded(_, _)).Times(0); // This should only be called when attempting to upload from cache
+    EXPECT_CALL(binaryShaderProvider, hasBinaryShader(res.getHash())).WillOnce(Return(false));
 
     ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
-    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, resourceObject, vramSize));
+    EXPECT_FALSE(uploaderWithBinaryProvider.uploadResource(renderer, resourceObject, vramSize).has_value());
 }
 
-TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheMissingAndCachingSupported)
-{
-    BinaryShaderProviderFake binaryShaderProvider;
-    ResourceUploader uploaderWithBinaryProvider(stats, &binaryShaderProvider);
-
-    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
-    EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
-
-    EXPECT_CALL(binaryShaderProvider, deviceSupportsBinaryShaderFormats(std::vector<BinaryShaderFormatID>{ DeviceMock::FakeSupportedBinaryShaderFormat }));
-    EXPECT_CALL(binaryShaderProvider, hasBinaryShader(res.getHash()));
-    EXPECT_CALL(binaryShaderProvider, shouldBinaryShaderBeCached(res.getHash(),_)).WillOnce(Return(true));
-    EXPECT_CALL(binaryShaderProvider, storeBinaryShader(res.getHash(), _, _, _, _));
-    EXPECT_CALL(renderer.deviceMock, uploadShader(_)).WillOnce(Return(DeviceResourceHandle(123)));
-    EXPECT_CALL(renderer.deviceMock, getBinaryShader(_, _, _)).
-        WillOnce(DoAll(SetArgReferee<1>(std::vector<UInt8>(1)), Return(true)));
-    EXPECT_CALL(binaryShaderProvider, binaryShaderUploaded(_, _)).Times(0); // This should only be called when attempting to upload from cache
-
-    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
-    ResourceDescriptor resourceObject;
-    resourceObject.resource = managedRes;
-    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, resourceObject, vramSize));
-}
-
-TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheHit)
+TEST_F(AResourceUploader, uploadsEffectResourceFromBinaryShaderCacheWhenCacheHit)
 {
     EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     ManagedResource managedRes{ &res, dummyManagedResourceCallback };
@@ -323,6 +347,7 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheHit
 
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
 
+    EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported());
     EXPECT_CALL(binaryShaderProvider, deviceSupportsBinaryShaderFormats(std::vector<BinaryShaderFormatID>{ DeviceMock::FakeSupportedBinaryShaderFormat }));
     EXPECT_CALL(binaryShaderProvider, hasBinaryShader(res.getHash()));
     EXPECT_CALL(binaryShaderProvider, getBinaryShaderSize(res.getHash()));
@@ -332,13 +357,13 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBinaryShaderCacheWhenCacheHit
 
     EXPECT_CALL(renderer.deviceMock, uploadBinaryShader(_, _, _, _)).WillOnce(Return(DeviceResourceHandle(123)));
 
-    ResourceUploader uploaderWithBinaryProvider(stats, &binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, resourceObject, vramSize));
 }
 
-TEST_F(AResourceUploader, uploadsEffectResourceWithBrokenBinaryShaderCache)
+TEST_F(AResourceUploader, doesNotReturnDeviceHandleForEffectResourceWithBrokenBinaryShaderCache)
 {
     EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     ManagedResource managedRes{ &res, dummyManagedResourceCallback };
@@ -355,6 +380,7 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBrokenBinaryShaderCache)
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
 
     // Set up so it looks like there is a valid binary shader cache
+    EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported());
     EXPECT_CALL(binaryShaderProvider, deviceSupportsBinaryShaderFormats(std::vector<BinaryShaderFormatID>{ DeviceMock::FakeSupportedBinaryShaderFormat }));
     EXPECT_CALL(binaryShaderProvider, hasBinaryShader(res.getHash()));
     EXPECT_CALL(binaryShaderProvider, getBinaryShaderSize(res.getHash()));
@@ -365,54 +391,25 @@ TEST_F(AResourceUploader, uploadsEffectResourceWithBrokenBinaryShaderCache)
     EXPECT_CALL(renderer.deviceMock, uploadBinaryShader(_, _, _, _)).WillOnce(Return(DeviceResourceHandle::Invalid()));
     EXPECT_CALL(binaryShaderProvider, binaryShaderUploaded(_, false)).Times(1);
 
-    // Expect fallback to compiling from source and storing in the cache
-    EXPECT_CALL(renderer.deviceMock, uploadShader(_)).WillOnce(Return(DeviceResourceHandle(123)));
-    EXPECT_CALL(binaryShaderProvider, shouldBinaryShaderBeCached(_, sceneUsingResource));
-    EXPECT_CALL(renderer.deviceMock, getBinaryShader(_, _, _)).WillOnce(DoAll(SetArgReferee<1>(UInt8Vector(10)), Return(true)));
-    EXPECT_CALL(binaryShaderProvider, storeBinaryShader(_, sceneUsingResource, _, _, _)).Times(1);
-
-    ResourceUploader uploaderWithBinaryProvider(stats, &binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     resourceObject.sceneUsage = { sceneUsingResource };
-    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, resourceObject, vramSize));
-}
-
-TEST_F(AResourceUploader, doesNotTryToGetBinaryShaderFromDeviceIfEffectDidNotCompile)
-{
-    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
-    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
-
-    StrictMock<BinaryShaderProviderMock> binaryShaderProvider;
-
-    EXPECT_CALL(binaryShaderProvider, deviceSupportsBinaryShaderFormats(std::vector<BinaryShaderFormatID>{ DeviceMock::FakeSupportedBinaryShaderFormat }));
-    EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
-    EXPECT_CALL(binaryShaderProvider, hasBinaryShader(res.getHash())).Times(1);
-    EXPECT_CALL(renderer.deviceMock, uploadShader(_)).Times(1);
-    EXPECT_CALL(binaryShaderProvider, binaryShaderUploaded(_, _)).Times(0);
-
-    ON_CALL(binaryShaderProvider, hasBinaryShader(_)).WillByDefault(Return(false));
-    ON_CALL(renderer.deviceMock, uploadShader(_)).WillByDefault(Return(DeviceResourceHandle::Invalid()));
-
-    ResourceUploader uploaderWithBinaryProvider(stats, &binaryShaderProvider);
-    ResourceDescriptor resourceObject;
-    resourceObject.resource = managedRes;
-    EXPECT_FALSE(uploaderWithBinaryProvider.uploadResource(renderer, resourceObject, vramSize).isValid());
+    EXPECT_FALSE(uploaderWithBinaryProvider.uploadResource(renderer, resourceObject, vramSize).has_value());
 }
 
 TEST_F(AResourceUploader, providesSupportedBinaryShaderFormatsOnlyOnce)
 {
     BinaryShaderProviderFake binaryShaderProvider;
-    ResourceUploader uploaderWithBinaryProvider(stats, &binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
 
     EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(3);
 
+    EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported()).Times(3);
     EXPECT_CALL(binaryShaderProvider, deviceSupportsBinaryShaderFormats(std::vector<BinaryShaderFormatID>{ DeviceMock::FakeSupportedBinaryShaderFormat })).Times(1);
 
     EXPECT_CALL(binaryShaderProvider, hasBinaryShader(res.getHash())).Times(3);
-    EXPECT_CALL(binaryShaderProvider, shouldBinaryShaderBeCached(res.getHash(), _)).Times(3).WillRepeatedly(Return(false));
-    EXPECT_CALL(renderer.deviceMock, uploadShader(_)).Times(3).WillRepeatedly(Return(DeviceResourceHandle(123)));
 
     ResourceDescriptor resourceObject1;
     resourceObject1.resource = ManagedResource{ &res, dummyManagedResourceCallback };
@@ -422,10 +419,67 @@ TEST_F(AResourceUploader, providesSupportedBinaryShaderFormatsOnlyOnce)
     ResourceDescriptor resourceObject3 = resourceObject1;
     resourceObject3.resource = ManagedResource{ &res, dummyManagedResourceCallback };
 
-    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, resourceObject1, vramSize));
-    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, resourceObject2, vramSize));
-    EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, resourceObject3, vramSize));
+    EXPECT_FALSE(uploaderWithBinaryProvider.uploadResource(renderer, resourceObject1, vramSize).has_value());
+    EXPECT_FALSE(uploaderWithBinaryProvider.uploadResource(renderer, resourceObject2, vramSize).has_value());
+    EXPECT_FALSE(uploaderWithBinaryProvider.uploadResource(renderer, resourceObject3, vramSize).has_value());
 }
+
+TEST_F(AResourceUploader, providesSupportedBinaryShaderFormatsOnlyOnceFromMultipleThreadsBeforeFirstHasBinaryShader)
+{
+    BinaryShaderProviderFake binaryShaderProvider;
+
+    ResourceUploader uploaderWithBinaryProvider1(&binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider2(&binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider3(&binaryShaderProvider);
+
+    EffectResource res1("1", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res2("2", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res3("3", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(3);
+    EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported()).Times(3);
+
+    {
+        InSequence inseq; // it would be wrong if any hasBinaryShader from "the other two" threads get called before deviceSupportsBinaryShaderFormats
+        EXPECT_CALL(binaryShaderProvider, deviceSupportsBinaryShaderFormats(std::vector<BinaryShaderFormatID>{ DeviceMock::FakeSupportedBinaryShaderFormat })).Times(1).WillOnce(
+            [](auto) { std::this_thread::sleep_for(std::chrono::milliseconds(2)); });
+        EXPECT_CALL(binaryShaderProvider, hasBinaryShader(_)).Times(3);
+    }
+
+    ResourceDescriptor resourceObject1;
+    ResourceDeleterCallingCallback dummyManagedResourceCallback1(managedResourceDeleter);
+    resourceObject1.resource = ManagedResource{ &res1, dummyManagedResourceCallback1 };
+    resourceObject1.sceneUsage = { SceneId{1u} };
+    ResourceDescriptor resourceObject2;
+    ResourceDeleterCallingCallback dummyManagedResourceCallback2(managedResourceDeleter);
+    resourceObject2.resource = ManagedResource{ &res2, dummyManagedResourceCallback2 };
+    resourceObject2.sceneUsage = { SceneId{2u} };
+    ResourceDescriptor resourceObject3;
+    ResourceDeleterCallingCallback dummyManagedResourceCallback3(managedResourceDeleter);
+    resourceObject3.resource = ManagedResource{ &res3, dummyManagedResourceCallback3 };
+    resourceObject3.sceneUsage = { SceneId{3u} };
+
+    ThreadBarrier startBarrier(3);
+    std::thread t1([&]() {
+            startBarrier.wait();
+            uint32_t ramSize = 0;
+            EXPECT_FALSE(uploaderWithBinaryProvider1.uploadResource(renderer, resourceObject1, ramSize).has_value());
+        });
+    std::thread t2([&]() {
+            startBarrier.wait();
+            uint32_t ramSize = 0;
+            EXPECT_FALSE(uploaderWithBinaryProvider2.uploadResource(renderer, resourceObject2, ramSize).has_value());
+        });
+    std::thread t3([&]() {
+            startBarrier.wait();
+            uint32_t ramSize = 0;
+            EXPECT_FALSE(uploaderWithBinaryProvider3.uploadResource(renderer, resourceObject3, ramSize).has_value());
+        });
+
+    t1.join();
+    t2.join();
+    t3.join();
+}
+
 
 TEST_F(AResourceUploader, unloadsVertexArrayResource)
 {

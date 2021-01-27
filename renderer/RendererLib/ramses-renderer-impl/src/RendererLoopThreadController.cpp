@@ -11,12 +11,12 @@
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Watchdog/PlatformWatchdog.h"
 #include "RamsesRendererUtils.h"
-#include "RendererLib/WindowedRenderer.h"
+#include "RendererLib/DisplayDispatcher.h"
 
 namespace ramses_internal
 {
-    RendererLoopThreadController::RendererLoopThreadController(WindowedRenderer& windowedRenderer, PlatformWatchdog& watchdog, std::chrono::milliseconds loopCountPeriod)
-        : m_windowedRenderer(&windowedRenderer)
+    RendererLoopThreadController::RendererLoopThreadController(DisplayDispatcher& displayDispatcher, PlatformWatchdog& watchdog, std::chrono::milliseconds loopCountPeriod)
+        : m_displayDispatcher(&displayDispatcher)
         , m_watchdog(watchdog)
         , m_thread("R_RendererThrd")
         , m_lock()
@@ -100,8 +100,8 @@ namespace ramses_internal
             if (destroyRenderer)
             {
                 std::lock_guard<std::mutex> guard(m_lock);
-                delete m_windowedRenderer;
-                m_windowedRenderer = nullptr;
+                delete m_displayDispatcher;
+                m_displayDispatcher = nullptr;
                 m_destroyRenderer = false;
                 m_rendererDestroyedCondVar.notify_one();
             }
@@ -112,8 +112,8 @@ namespace ramses_internal
             }
             else
             {
-                assert(m_windowedRenderer != nullptr);
-                m_windowedRenderer->doOneLoop(loopMode, lastLoopSleepTime);
+                assert(m_displayDispatcher != nullptr);
+                m_displayDispatcher->doOneLoop(loopMode, lastLoopSleepTime);
 
                 const UInt64 loopEndTime = PlatformTime::GetMicrosecondsMonotonic();
                 assert(loopEndTime >= loopStartTime);
@@ -138,7 +138,10 @@ namespace ramses_internal
 
             if (loopEndTime >= m_lastPeriodLoopCountReportingTimeMicroseconds + std::chrono::microseconds(m_loopCountPeriod).count())
             {
-                m_windowedRenderer->fireLoopTimingReportRendererEvent(m_maximumLoopTimeInPeriod, std::chrono::microseconds(m_sumOfLoopTimeInPeriod.count() / m_numberOfLoopsInPeriod));
+                RendererEvent reportEvt{ ramses_internal::ERendererEventType::RenderThreadPeriodicLoopTimes };
+                reportEvt.renderThreadLoopTimes.averageLoopTimeWithinPeriod = std::chrono::microseconds(m_sumOfLoopTimeInPeriod.count() / m_numberOfLoopsInPeriod);
+                reportEvt.renderThreadLoopTimes.maximumLoopTimeWithinPeriod = m_maximumLoopTimeInPeriod;
+                m_displayDispatcher->injectRendererEvent(std::move(reportEvt));
                 m_sumOfLoopTimeInPeriod = std::chrono::microseconds(0);
                 m_numberOfLoopsInPeriod = 0;
                 m_maximumLoopTimeInPeriod = std::chrono::microseconds(0);
@@ -189,6 +192,6 @@ namespace ramses_internal
         std::unique_lock<std::mutex> l(m_lock);
         m_destroyRenderer = true;
         m_sleepConditionVar.notify_one();
-        m_rendererDestroyedCondVar.wait(l, [&]() { return !m_windowedRenderer; });
+        m_rendererDestroyedCondVar.wait(l, [&]() { return m_displayDispatcher == nullptr; });
     }
 }

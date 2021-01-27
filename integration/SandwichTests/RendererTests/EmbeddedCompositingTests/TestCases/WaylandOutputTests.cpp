@@ -115,10 +115,10 @@ namespace ramses_internal
     {
         bool success = true;
 
-        const bool geometryActuallyReceived = waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_GeometryReceived;
-        const bool modeActuallyReceived = waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_ModeReceived;
-        const bool scaleActuallyReceived = waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_ScaleReceived;
-        const bool doneActuallyReceived = waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_DoneReceived;
+        const bool geometryActuallyReceived = (waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_GeometryReceived) != 0;
+        const bool modeActuallyReceived = (waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_ModeReceived) != 0;
+        const bool scaleActuallyReceived = (waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_ScaleReceived) != 0;
+        const bool doneActuallyReceived = (waylandOutputParams.m_waylandOutputReceivedFlags & WaylandOutputTestParams::WaylandOutput_DoneReceived) != 0;
 
         if(!geometryActuallyReceived)
         {
@@ -156,7 +156,7 @@ namespace ramses_internal
         if(expectScale && !checkWaylandOutputScale(waylandOutputParams))
             success = false;
 
-        return success ;
+        return success;
     }
 
     bool WaylandOutputTests::checkWaylandOutputGeometry(const WaylandOutputTestParams& waylandOutputParams)

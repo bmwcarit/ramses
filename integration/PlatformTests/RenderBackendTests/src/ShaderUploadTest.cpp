@@ -201,7 +201,8 @@ namespace ramses_internal
         ASSERT_TRUE(testDevice != nullptr);
 
         const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResource());
-        const DeviceResourceHandle handle = testDevice->uploadShader(*testEffect);
+        auto shaderGpuResource = testDevice->uploadShader(*testEffect);
+        const DeviceResourceHandle handle = testDevice->registerShader(std::move(shaderGpuResource));
         EXPECT_TRUE(handle.isValid());
 
         testDevice->deleteShader(handle);
@@ -217,8 +218,8 @@ namespace ramses_internal
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);
-        const DeviceResourceHandle handle = testDevice->uploadShader(invalidEffect);
-        EXPECT_FALSE(handle.isValid());
+        const auto shaderGpuResource = testDevice->uploadShader(invalidEffect);
+        EXPECT_EQ(nullptr, shaderGpuResource);
     }
 
     TEST_F(ADevice, RefusesToUploadEffectWithInvalidFragmentShader)
@@ -231,8 +232,8 @@ namespace ramses_internal
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);
-        const DeviceResourceHandle handle = testDevice->uploadShader(invalidEffect);
-        EXPECT_FALSE(handle.isValid());
+        const auto shaderGpuResource = testDevice->uploadShader(invalidEffect);
+        EXPECT_EQ(nullptr, shaderGpuResource);
     }
 
     TEST_F(ADevice, RefusesToUploadEffectWithUnlinkableShaders)
@@ -258,8 +259,8 @@ namespace ramses_internal
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);
-        const DeviceResourceHandle handle = testDevice->uploadShader(invalidEffect);
-        EXPECT_FALSE(handle.isValid());
+        const auto shaderGpuResource = testDevice->uploadShader(invalidEffect);
+        EXPECT_EQ(nullptr, shaderGpuResource);
     }
 
     TEST_F(ADevice, SetsConstantsForAllPossibleDataTypesOnShader)
@@ -312,7 +313,9 @@ namespace ramses_internal
             uniformInputs,
             templateEffect->getAttributeInputs(),
             "uniform test effect", ResourceCacheFlag_DoNotCache);
-        const DeviceResourceHandle handle = testDevice->uploadShader(testEffect);
+        auto shaderGpuResource = testDevice->uploadShader(testEffect);
+        ASSERT_NE(nullptr, shaderGpuResource);
+        const DeviceResourceHandle handle = testDevice->registerShader(std::move(shaderGpuResource));
         ASSERT_TRUE(handle.isValid());
 
         testDevice->activateShader(handle);
@@ -374,7 +377,9 @@ namespace ramses_internal
             templateEffect->getAttributeInputs(),
             "test effect", ResourceCacheFlag_DoNotCache);
 
-        const DeviceResourceHandle handle = testDevice->uploadShader(testEffect);
+        auto shaderGpuResource = testDevice->uploadShader(testEffect);
+        ASSERT_NE(nullptr, shaderGpuResource);
+        const DeviceResourceHandle handle = testDevice->registerShader(std::move(shaderGpuResource));
         EXPECT_TRUE(handle.isValid());
 
         testDevice->activateShader(handle);
@@ -395,7 +400,9 @@ namespace ramses_internal
     TEST_F(ADeviceSupportingBinaryShaders, DownloadsBinaryDataForUploadedShader)
     {
         const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResource());
-        const DeviceResourceHandle handle = testDevice->uploadShader(*testEffect);
+        auto shaderGpuResource = testDevice->uploadShader(*testEffect);
+        ASSERT_NE(nullptr, shaderGpuResource);
+        const DeviceResourceHandle handle = testDevice->registerShader(std::move(shaderGpuResource));
         EXPECT_TRUE(handle.isValid());
 
         UInt8Vector binaryShader;
@@ -410,7 +417,9 @@ namespace ramses_internal
     TEST_F(ADeviceSupportingBinaryShaders, UploadsShaderFromBinaryData)
     {
         const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResource());
-        const DeviceResourceHandle handle = testDevice->uploadShader(*testEffect);
+        auto shaderGpuResource = testDevice->uploadShader(*testEffect);
+        ASSERT_NE(nullptr, shaderGpuResource);
+        const DeviceResourceHandle handle = testDevice->registerShader(std::move(shaderGpuResource));
         EXPECT_TRUE(handle.isValid());
 
         UInt8Vector binaryShader;
@@ -440,7 +449,9 @@ namespace ramses_internal
     TEST_F(ADeviceSupportingBinaryShaders, Confidence_SetsDataOnBinaryShader)
     {
         const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResource());
-        const DeviceResourceHandle handle = testDevice->uploadShader(*testEffect);
+        auto shaderGpuResource = testDevice->uploadShader(*testEffect);
+        ASSERT_NE(nullptr, shaderGpuResource);
+        const DeviceResourceHandle handle = testDevice->registerShader(std::move(shaderGpuResource));
         ASSERT_TRUE(handle.isValid());
 
         UInt8Vector binaryShader;
@@ -470,7 +481,9 @@ namespace ramses_internal
         ASSERT_TRUE(testDevice != nullptr);
 
         const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResourceWithGeometryShader());
-        const DeviceResourceHandle handle = testDevice->uploadShader(*testEffect);
+        auto shaderGpuResource = testDevice->uploadShader(*testEffect);
+        ASSERT_NE(nullptr, shaderGpuResource);
+        const DeviceResourceHandle handle = testDevice->registerShader(std::move(shaderGpuResource));
         EXPECT_TRUE(handle.isValid());
 
         testDevice->deleteShader(handle);
@@ -486,8 +499,8 @@ namespace ramses_internal
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);
-        const DeviceResourceHandle handle = testDevice->uploadShader(invalidEffect);
-        EXPECT_FALSE(handle.isValid());
+        const auto shaderGpuResource = testDevice->uploadShader(invalidEffect);
+        EXPECT_EQ(nullptr, shaderGpuResource);
     }
 
     TEST_F(ADeviceSupportingGeometryShaders, RefusesToUploadEffectWithUnlinkableShaders)
@@ -517,8 +530,8 @@ namespace ramses_internal
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);
-        const DeviceResourceHandle handle = testDevice->uploadShader(invalidEffect);
-        EXPECT_FALSE(handle.isValid());
+        const auto shaderGpuResource = testDevice->uploadShader(invalidEffect);
+        EXPECT_EQ(nullptr, shaderGpuResource);
     }
 
     TEST_F(ADeviceSupportingGeometryShaders, SetsConstantsOnShader)
@@ -526,7 +539,9 @@ namespace ramses_internal
         ASSERT_TRUE(testDevice != nullptr);
 
         const std::unique_ptr<EffectResource> testEffect(CreateTestEffectResourceWithGeometryShader());
-        const DeviceResourceHandle handle = testDevice->uploadShader(*testEffect);
+        auto shaderGpuResource = testDevice->uploadShader(*testEffect);
+        ASSERT_NE(nullptr, shaderGpuResource);
+        const DeviceResourceHandle handle = testDevice->registerShader(std::move(shaderGpuResource));
         EXPECT_TRUE(handle.isValid());
 
         testDevice->activateShader(handle);

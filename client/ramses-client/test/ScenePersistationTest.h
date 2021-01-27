@@ -34,7 +34,7 @@ namespace ramses
         {
         }
 
-        typedef ramses_internal::HashMap< ERamsesObjectType, uint32_t > ObjectTypeHistogram;
+        using ObjectTypeHistogram = ramses_internal::HashMap< ERamsesObjectType, uint32_t >;
 
 
         void fillObjectTypeHistorgramFromObjectVector(ObjectTypeHistogram& counter, const RamsesObjectVector& objects)

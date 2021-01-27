@@ -16,7 +16,7 @@
 namespace ramses_internal
 {
     using ResourceBlob = HeapArray<Byte, struct ResourceBlobTag>;
-    using CompressedResouceBlob = HeapArray<Byte, struct CompressedResourceBlobTag>;
+    using CompressedResourceBlob = HeapArray<Byte, struct CompressedResourceBlobTag>;
 
     struct ResourceCacheFlagTag {};
     using ResourceCacheFlag = StronglyTypedValue<UInt32, static_cast<UInt32>(-1), ResourceCacheFlagTag>;

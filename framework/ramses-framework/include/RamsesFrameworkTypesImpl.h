@@ -22,6 +22,8 @@
 MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses::ContentID, ramses::ContentID);
 MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses::Category, ramses::Category);
 MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses::sceneId_t, ramses::sceneId_t);
+MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses::dataConsumerId_t, ramses::dataConsumerId_t);
+MAKE_SPECIAL_STRONGLYTYPEDVALUE_PRINTABLE(ramses::dataProviderId_t, ramses::dataProviderId_t);
 
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::TechnicalContentDescriptor);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::pickableObjectId_t);
@@ -29,8 +31,6 @@ MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::displayId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::displayBufferId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::resourceCacheFlag_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::binaryShaderFormatId_t);
-MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::dataProviderId_t);
-MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::dataConsumerId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::waylandIviSurfaceId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::waylandIviLayerId_t);
 

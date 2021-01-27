@@ -60,7 +60,7 @@ namespace ramses
     FontId FontRegistryImpl::createFreetype2Font(const char* fontPath)
     {
         // basic checks
-        if (!fontPath || !ramses_internal::File(fontPath).exists())
+        if (fontPath == nullptr || !ramses_internal::File(fontPath).exists())
         {
             LOG_ERROR(CONTEXT_TEXT, "FontRegistry::createFreetype2Font: Font file not found " << fontPath);
             return {};

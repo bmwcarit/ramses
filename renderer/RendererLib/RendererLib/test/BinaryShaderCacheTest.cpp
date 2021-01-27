@@ -274,3 +274,16 @@ TEST_F(ABinaryShaderCache, reportsFailOnInvalidFileVersion)
     corruptVersionInTestFile();
     EXPECT_FALSE(m_cache.loadFromFile(m_binaryShaderFilePath.c_str()));
 }
+
+TEST_F(ABinaryShaderCache, handlesDoubleStoreProperly)
+{
+    UInt8 shaderData[] = { 12u, 34u, 56u, 78u };
+    const UInt32 shaderDataSize = sizeof(shaderData) / sizeof(UInt8);
+    const ramses::binaryShaderFormatId_t format{ 123u };
+    const ramses::effectId_t effectHash1 = { 11u, 0 };
+    m_cache.storeBinaryShader(effectHash1, ramses::sceneId_t(1u), shaderData, shaderDataSize, format);
+    m_cache.deviceSupportsBinaryShaderFormats(&format, 1u);
+    EXPECT_TRUE(m_cache.hasBinaryShader(effectHash1));
+    m_cache.storeBinaryShader(effectHash1, ramses::sceneId_t(1u), shaderData, shaderDataSize, format);
+    EXPECT_TRUE(m_cache.hasBinaryShader(effectHash1));
+}

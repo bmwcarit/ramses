@@ -188,7 +188,7 @@ namespace ramses_internal
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
-        EXPECT_EQ(0, PlatformMemory::Compare(staticBuffer, readBuffer, sizeof(staticBuffer)));
+        EXPECT_EQ(absl::MakeSpan(staticBuffer), readBuffer);
     }
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetArray)
@@ -206,8 +206,7 @@ namespace ramses_internal
         EXPECT_EQ(expectedSize, collection.collectionData().size());
         EXPECT_EQ(expectedSize, collection[0].size());
 
-        ASSERT_EQ(bufferSize, size);
-        EXPECT_EQ(0, PlatformMemory::Compare(buffer.data(), data, size));
+        EXPECT_EQ(buffer, absl::MakeSpan(data, size));
     }
 
     TEST_F(ASceneActionCollectionComplexTypes, WriteAndGetEmptyArray)
@@ -271,8 +270,7 @@ namespace ramses_internal
         UInt32 size;
         reader.readWithoutCopy(data, size);
 
-        ASSERT_EQ(bufferSize, size);
-        EXPECT_EQ(0, PlatformMemory::Compare(buffer.data(), data, size));
+        EXPECT_EQ(buffer, absl::MakeSpan(data, size));
 
         String readStr2;
         reader.read(readStr2);

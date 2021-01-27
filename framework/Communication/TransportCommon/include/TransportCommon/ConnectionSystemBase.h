@@ -203,7 +203,7 @@ namespace ramses_internal
         , m_serviceTypeName(serviceTypeName)
         , m_frameworkLock(frameworkLock)
         , m_statisticCollection(statisticCollection)
-        , m_connectionStatusUpdateNotifier(StringOutputStream::ToString(m_communicationUserID), serviceTypeName, frameworkLock)
+        , m_connectionStatusUpdateNotifier(fmt::to_string(m_communicationUserID), serviceTypeName.stdRef(), frameworkLock)
         , m_stack(std::move(stack))
         , m_thread(String(fmt::format("R_CONN_{}", serviceTypeName)))
     {
@@ -520,6 +520,17 @@ namespace ramses_internal
     template <typename Callbacks>
     void ConnectionSystemBase<Callbacks>::handleServiceAvailable(InstanceIdType iid)
     {
+        if (iid == InstanceIdType())
+        {
+            LOG_ERROR(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleServiceAvailable: for invalid iid");
+            return;
+        }
+        if (iid == m_serviceIID)
+        {
+            LOG_ERROR(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleServiceAvailable: for own iid " << iid);
+            return;
+        }
+
         // check for duplicate callback
         if (m_availableInstances.contains(iid))
             return;

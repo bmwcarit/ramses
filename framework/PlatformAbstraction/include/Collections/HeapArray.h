@@ -12,6 +12,7 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "PlatformAbstraction/Macros.h"
+#include "absl/types/span.h"
 #include <memory>
 
 namespace ramses_internal
@@ -31,9 +32,10 @@ namespace ramses_internal
         HeapArray(HeapArray&&) noexcept;
         HeapArray& operator=(HeapArray&&) noexcept;
 
-        UInt size() const;
-        T* data();
-        const T* data() const;
+        RNODISCARD UInt size() const;
+        RNODISCARD T* data();
+        RNODISCARD const T* data() const;
+        RNODISCARD absl::Span<const T> span() const;
 
         void setZero();
 
@@ -50,7 +52,7 @@ namespace ramses_internal
     {
         if (m_data && data)
         {
-            PlatformMemory::Copy(m_data.get(), data, size);
+            PlatformMemory::Copy(m_data.get(), data, size * sizeof(T));
         }
     }
 
@@ -110,11 +112,18 @@ namespace ramses_internal
 
     template <typename T, typename _uniqueId>
     inline
+    absl::Span<const T> HeapArray<T, _uniqueId>::span() const
+    {
+        return {m_data.get(), m_size};
+    }
+
+    template <typename T, typename _uniqueId>
+    inline
     void HeapArray<T, _uniqueId>::setZero()
     {
         if (m_data)
         {
-            PlatformMemory::Set(m_data.get(), 0, m_size);
+            PlatformMemory::Set(m_data.get(), 0, m_size * sizeof(T));
         }
     }
 }

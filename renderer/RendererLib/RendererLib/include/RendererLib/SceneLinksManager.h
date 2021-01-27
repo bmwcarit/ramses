@@ -34,7 +34,7 @@ namespace ramses_internal
         void handleDataSlotCreated(SceneId sceneId, DataSlotHandle dataSlotHandle);
         void handleDataSlotDestroyed(SceneId sceneId, DataSlotHandle dataSlotHandle);
         void handleBufferDestroyed(OffscreenBufferHandle providerBuffer);
-        void handleBufferDestroyed(StreamBufferHandle providerBuffer);
+        void handleBufferDestroyedOrSourceUnavailable(StreamBufferHandle providerBuffer);
 
         const TransformationLinkManager& getTransformationLinkManager() const;
         const DataReferenceLinkManager&  getDataReferenceLinkManager() const;

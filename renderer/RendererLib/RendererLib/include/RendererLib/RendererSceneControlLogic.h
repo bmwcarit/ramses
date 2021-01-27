@@ -15,7 +15,7 @@
 
 namespace ramses_internal
 {
-    class IRendererSceneControl;
+    class IRendererSceneStateControl;
     struct InternalSceneStateEvent;
 
     class IRendererSceneControlLogic
@@ -32,7 +32,7 @@ namespace ramses_internal
     class RendererSceneControlLogic : public IRendererSceneControlLogic
     {
     public:
-        explicit RendererSceneControlLogic(IRendererSceneControl& sceneStateControl);
+        explicit RendererSceneControlLogic(IRendererSceneStateControl& sceneStateControl);
 
         virtual void setSceneState(SceneId sceneId, RendererSceneState state) override;
         virtual void setSceneMapping(SceneId sceneId, DisplayHandle displayId) override;
@@ -107,7 +107,7 @@ namespace ramses_internal
         static RendererSceneState GetSceneStateFromInternal(ESceneStateInternal internalState);
         static ESceneStateInternal GetInternalSceneState(RendererSceneState state);
 
-        IRendererSceneControl& m_sceneStateControl;
+        IRendererSceneStateControl& m_sceneStateControl;
         std::unordered_map<SceneId, SceneInfo> m_scenesInfo;
 
         Events m_pendingEvents;

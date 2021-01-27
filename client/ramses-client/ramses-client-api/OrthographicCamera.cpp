@@ -16,7 +16,5 @@ namespace ramses
     {
     }
 
-    OrthographicCamera::~OrthographicCamera()
-    {
-    }
+    OrthographicCamera::~OrthographicCamera() = default;
 }

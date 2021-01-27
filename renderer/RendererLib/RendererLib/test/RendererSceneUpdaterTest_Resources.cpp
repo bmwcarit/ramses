@@ -390,6 +390,7 @@ TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByMappedSceneWhenUpdater
     setRenderableResources();
     update();
 
+    EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
     expectContextEnable(DisplayHandle1, 2u);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
@@ -419,10 +420,14 @@ TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_SingleScene)
     update();
     expectRenderableResourcesClean();
 
-    SceneStreamTextures mockUpdatedStreamTextures;
-    mockUpdatedStreamTextures.put(getSceneId(), { streamTextureHandle });
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfStreamTexturesAndSources(_, _, _)).WillRepeatedly(SetArgReferee<0>(mockUpdatedStreamTextures));
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    constexpr WaylandIviSurfaceId source{ 12u };
+    const StreamUsage fakeStreamUsage{ { {getSceneId(0u), {streamTextureHandle}} }, {} };
+
+    const WaylandIviSurfaceIdVector changedSources{ source };
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillRepeatedly(SetArgReferee<0>(changedSources));
+    // getCompositedTextureDeviceHandleForStreamTexture is always queried once for checking if stream became unavailable
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).Times(2).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
     update();
     expectRenderableResourcesDirty();
 
@@ -453,12 +458,58 @@ TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_MultipleScenes)
     expectRenderableResourcesClean(0u);
     expectRenderableResourcesClean(1u);
 
-    StreamTextureHandleVector mockUpdatedStreamTexturesForScene({ streamTextureHandle });
-    SceneStreamTextures mockUpdatedStreamTextures;
-    mockUpdatedStreamTextures.put(getSceneId(0u), mockUpdatedStreamTexturesForScene);
-    mockUpdatedStreamTextures.put(getSceneId(1u), mockUpdatedStreamTexturesForScene);
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfStreamTexturesAndSources(_, _, _)).WillRepeatedly(SetArgReferee<0>(mockUpdatedStreamTextures));
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).Times(2).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
+    constexpr WaylandIviSurfaceId source{ 12u };
+    const StreamUsage fakeStreamUsage{ { {getSceneId(0u), {streamTextureHandle}}, {getSceneId(1u), {streamTextureHandle}} }, {} };
+
+    const WaylandIviSurfaceIdVector changedSources{ source };
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillRepeatedly(SetArgReferee<0>(changedSources));
+    // getCompositedTextureDeviceHandleForStreamTexture is always queried once for checking if stream became unavailable
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).Times(3).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
+    update();
+    expectRenderableResourcesDirty(0u);
+    expectRenderableResourcesDirty(1u);
+
+    hideScene(0u);
+    hideScene(1u);
+    unmapScene(0u);
+    unmapScene(1u);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_MultipleScenes_MultipleSources)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene();
+    mapScene(0u);
+    mapScene(1u);
+    showScene(0u);
+    showScene(1u);
+
+    createRenderableAndResourcesWithStreamTexture(0u);
+    expectContextEnable();
+    expectStreamTextureUploaded();
+    update();
+
+    expectContextEnable();
+    createRenderableAndResourcesWithStreamTexture(1u);
+    update();
+
+    expectRenderableResourcesClean(0u);
+    expectRenderableResourcesClean(1u);
+
+    constexpr WaylandIviSurfaceId source1{ 12u };
+    constexpr WaylandIviSurfaceId source2{ 13u };
+    const StreamUsage fakeStreamUsage1{ { {getSceneId(0u), {streamTextureHandle}} }, {} };
+    const StreamUsage fakeStreamUsage2{ { {getSceneId(1u), {streamTextureHandle}} }, {} };
+
+    const WaylandIviSurfaceIdVector changedSources{ source1, source2 };
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillRepeatedly(SetArgReferee<0>(changedSources));
+    // getCompositedTextureDeviceHandleForStreamTexture is always queried once per source for checking if stream became unavailable
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).Times(4).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source1)).WillOnce(ReturnRef(fakeStreamUsage1));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source2)).WillOnce(ReturnRef(fakeStreamUsage2));
     update();
     expectRenderableResourcesDirty(0u);
     expectRenderableResourcesDirty(1u);
@@ -540,13 +591,14 @@ TEST_F(ARendererSceneUpdater, appliesPendingFlushesAtOnceAndInOrderWhenUnblocked
     RendererEventVector dummy;
     rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
     ASSERT_EQ(3u, events.size());
-    EXPECT_EQ(ERendererEventType_SceneFlushed, events[0].eventType);
-    EXPECT_EQ(ERendererEventType_SceneFlushed, events[1].eventType);
-    EXPECT_EQ(ERendererEventType_SceneFlushed, events[2].eventType);
+    EXPECT_EQ(ERendererEventType::SceneFlushed, events[0].eventType);
+    EXPECT_EQ(ERendererEventType::SceneFlushed, events[1].eventType);
+    EXPECT_EQ(ERendererEventType::SceneFlushed, events[2].eventType);
     EXPECT_EQ(version1.getValue(), events[0].sceneVersionTag.getValue());
     EXPECT_EQ(version2.getValue(), events[1].sceneVersionTag.getValue());
     EXPECT_EQ(version3.getValue(), events[2].sceneVersionTag.getValue());
 
+    EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
     expectContextEnable(DisplayHandle1, 2u);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
@@ -595,13 +647,14 @@ TEST_F(ARendererSceneUpdater, appliesPendingFlushesAtOnceAndInOrderWhenUnblocked
     RendererEventVector dummy;
     rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
     ASSERT_EQ(3u, events.size());
-    EXPECT_EQ(ERendererEventType_SceneFlushed, events[0].eventType);
-    EXPECT_EQ(ERendererEventType_SceneFlushed, events[1].eventType);
-    EXPECT_EQ(ERendererEventType_SceneFlushed, events[2].eventType);
+    EXPECT_EQ(ERendererEventType::SceneFlushed, events[0].eventType);
+    EXPECT_EQ(ERendererEventType::SceneFlushed, events[1].eventType);
+    EXPECT_EQ(ERendererEventType::SceneFlushed, events[2].eventType);
     EXPECT_EQ(version1.getValue(), events[0].sceneVersionTag.getValue());
     EXPECT_EQ(version2.getValue(), events[1].sceneVersionTag.getValue());
     EXPECT_EQ(version3.getValue(), events[2].sceneVersionTag.getValue());
 
+    EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
     expectContextEnable(DisplayHandle1, 2u);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
@@ -806,6 +859,7 @@ TEST_F(ARendererSceneUpdater, canRemapScene)
     mapScene();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
+    EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
     expectContextEnable(DisplayHandle1, 2u);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
@@ -834,6 +888,7 @@ TEST_F(ARendererSceneUpdater, canRemapSceneWithUnusedTextureSampler)
     mapScene();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
+    EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
     expectContextEnable(DisplayHandle1, 2u);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
@@ -863,6 +918,7 @@ TEST_F(ARendererSceneUpdater, mappedSceneWithBlockingFlushGetsUnmappedAndRemappe
     mapScene();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
+    EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
     expectContextEnable(DisplayHandle1, 2u);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
@@ -1197,7 +1253,7 @@ TEST_F(ARendererSceneUpdater, onlyMapsASceneIfAllNeededResourcesAreUploaded)
 
     update();
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
-    expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
+    expectInternalSceneStateEvent(ERendererEventType::SceneMapped);
 
     update();
 
@@ -1241,7 +1297,7 @@ TEST_F(ARendererSceneUpdater, onlyMapsASceneIfAllNeededResourcesAreUploaded_With
     // only now is scene mapped
     update();
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
-    expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
+    expectInternalSceneStateEvent(ERendererEventType::SceneMapped);
 
     update();
 
@@ -1258,7 +1314,7 @@ TEST_F(ARendererSceneUpdater, canUnmapSceneWhenSceneIsMapRequestedWithMapFailedE
     EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
 
     rendererSceneUpdater->handleSceneUnmappingRequest(getSceneId());
-    expectInternalSceneStateEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnmapped });
+    expectInternalSceneStateEvents({ ERendererEventType::SceneMapFailed, ERendererEventType::SceneUnmapped });
     EXPECT_EQ(ESceneState::Subscribed, sceneStateExecutor.getSceneState(getSceneId()));
 
     destroyDisplay();
@@ -1278,7 +1334,7 @@ TEST_F(ARendererSceneUpdater, canUnmapSceneWhenSceneIsMappingAndUploadingWithMap
     expectContextEnable();
     expectUnloadOfSceneResources();
     rendererSceneUpdater->handleSceneUnmappingRequest(getSceneId());
-    expectInternalSceneStateEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnmapped });
+    expectInternalSceneStateEvents({ ERendererEventType::SceneMapFailed, ERendererEventType::SceneUnmapped });
     EXPECT_EQ(ESceneState::Subscribed, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
@@ -1310,7 +1366,7 @@ TEST_F(ARendererSceneUpdater, unmappingSceneWhenSceneIsMappingAndUploadingWillUn
     expectContextEnable();
     expectUnloadOfSceneResources();
     rendererSceneUpdater->handleSceneUnmappingRequest(getSceneId());
-    expectInternalSceneStateEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnmapped });
+    expectInternalSceneStateEvents({ ERendererEventType::SceneMapFailed, ERendererEventType::SceneUnmapped });
     EXPECT_EQ(ESceneState::Subscribed, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
@@ -1347,7 +1403,7 @@ TEST_F(ARendererSceneUpdater, renderTargetIsUploadedWhenSceneMappingAndUploading
 
     update();
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
-    expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
+    expectInternalSceneStateEvent(ERendererEventType::SceneMapped);
 
     update();
 
@@ -1396,7 +1452,7 @@ TEST_F(ARendererSceneUpdater, confidenceTest_renderTargetIsUploadedInCorrectOrde
 
     update();
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
-    expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
+    expectInternalSceneStateEvent(ERendererEventType::SceneMapped);
 
     //////////////////
     // unmap scene will unload render target, invalid resources is still in 'to be unreferenced' list
@@ -1418,7 +1474,7 @@ TEST_F(ARendererSceneUpdater, confidenceTest_renderTargetIsUploadedInCorrectOrde
     performFlush(0u);
     update();
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
-    expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
+    expectInternalSceneStateEvent(ERendererEventType::SceneMapped);
     // request show scene
     showScene();
 
@@ -1647,7 +1703,7 @@ TEST_F(ARendererSceneUpdater, willMapSceneAfterMaximumNumberOfPendingFlushesReac
     }
     // expect force mapped
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
-    expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
+    expectInternalSceneStateEvent(ERendererEventType::SceneMapped);
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
     update();
@@ -1881,7 +1937,7 @@ TEST_F(ARendererSceneUpdater, nonBlockingFlushesGetAppliedEvenIfSceneIsBlockedTo
     // unblock also effect
     reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
     update();
-    expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
+    expectInternalSceneStateEvent(ERendererEventType::SceneMapped);
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
@@ -1923,7 +1979,7 @@ TEST_F(ARendererSceneUpdater, canUnmapSceneWithPendingFlushAndRequestMapInSingle
     // unblock effect
     reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
     update();
-    expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
+    expectInternalSceneStateEvent(ERendererEventType::SceneMapped);
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
@@ -1986,7 +2042,7 @@ TEST_F(ARendererSceneUpdater, canUnmapSceneWithPendingFlushAndRequestMapAndAddAn
     // unblock indices2
     reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Uploaded);
     update();
-    expectInternalSceneStateEvent(ERendererEventType_SceneMapped);
+    expectInternalSceneStateEvent(ERendererEventType::SceneMapped);
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
@@ -2026,7 +2082,7 @@ TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceed
 
     expectUnloadOfSceneResources();
     update();
-    expectInternalSceneStateEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect });
+    expectInternalSceneStateEvents({ ERendererEventType::SceneMapFailed, ERendererEventType::SceneUnsubscribedIndirect });
 
     update();
     expectNoEvent();
@@ -2072,7 +2128,7 @@ TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceed
 
     expectUnloadOfSceneResources(sceneIdx2);
     update();
-    expectInternalSceneStateEvents({ ERendererEventType_SceneMapFailed, ERendererEventType_SceneUnsubscribedIndirect });
+    expectInternalSceneStateEvents({ ERendererEventType::SceneMapFailed, ERendererEventType::SceneUnsubscribedIndirect });
 
     update();
     expectNoEvent();

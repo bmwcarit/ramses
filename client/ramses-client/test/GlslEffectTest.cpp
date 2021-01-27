@@ -277,7 +277,7 @@ TEST_F(AGlslEffect, acceptsGLSLESShaders_Version310esWithGeometryShaderExtension
             }
             )SHADER";
 
-    GlslEffect ge(vertexShader, fragmentShader, "", emptyCompilerDefines, emptySemanticInputs, "");
+    GlslEffect ge(vertexShader, fragmentShader, geometryShader, emptyCompilerDefines, emptySemanticInputs, "");
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
 
     EXPECT_TRUE(res);
@@ -742,7 +742,7 @@ public:
     {
     }
 
-    virtual void run()
+    virtual void run() override
     {
         const std::vector<ramses_internal::String> defs;
         const ramses_internal::HashMap<ramses_internal::String, ramses_internal::EFixedSemantics> sems;

@@ -19,9 +19,10 @@
 
 #include "RamsesRendererImpl.h"
 #include "RendererSceneControlImpl.h"
-#include "RendererSceneControlEventHandlerMock.h"
 #include "RendererEventCollector.h"
 #include "RendererLib/RendererCommands.h"
+#include "RendererSceneControlEventHandlerMock.h"
+#include "RendererCommandVisitorMock.h"
 #include <thread>
 
 using namespace testing;
@@ -35,21 +36,28 @@ namespace ramses
             : m_renderer(*m_framework.createRenderer({}))
             , m_sceneControlAPI(*m_renderer.getSceneControlAPI())
             , m_pendingCommands(m_sceneControlAPI.impl.getPendingCommands())
-            , m_eventsFromRenderer(m_renderer.impl.getRenderer().getEventCollector())
             , m_displayId(m_renderer.createDisplay(DisplayConfig{}))
         {
             m_renderer.setLoopMode(ELoopMode_UpdateOnly);
         }
 
-        void expectCommand(uint32_t index, ramses_internal::ERendererCommand commandType)
+        void simulateSceneEventFromRenderer(ramses_internal::ERendererEventType eventType, ramses_internal::SceneId sceneId, ramses_internal::RendererSceneState state)
         {
-            ASSERT_LT(index, m_pendingCommands.getCommands().getTotalCommandCount());
-            EXPECT_EQ(commandType, m_pendingCommands.getCommands().getCommandType(index));
+            ramses_internal::RendererEvent event{ eventType };
+            event.sceneId = sceneId;
+            event.state = state;
+            m_renderer.impl.getDisplayDispatcher().injectSceneControlEvent(std::move(event));
         }
 
-        void expectCommandCount(uint32_t count)
+        void submitEventsFromRenderer()
         {
-            ASSERT_EQ(count, m_pendingCommands.getCommands().getTotalCommandCount());
+            ramses_internal::RendererEventVector rendererEvts;
+            ramses_internal::RendererEventVector sceneEvts;
+            m_eventsFromRenderer.appendAndConsumePendingEvents(rendererEvts, sceneEvts);
+            for (auto&& evt : rendererEvts)
+                m_renderer.impl.getDisplayDispatcher().injectSceneControlEvent(std::move(evt));
+            for (auto&& evt : sceneEvts)
+                m_renderer.impl.getDisplayDispatcher().injectSceneControlEvent(std::move(evt));
         }
 
         void dispatchSceneControlEvents()
@@ -63,35 +71,31 @@ namespace ramses
         RamsesFramework m_framework;
         RamsesRenderer& m_renderer;
         RendererSceneControl& m_sceneControlAPI;
+        ramses_internal::RendererEventCollector m_eventsFromRenderer; // to simulate events coming from internal renderer (alternative to mock)
         StrictMock<RendererSceneControlEventHandlerMock> m_eventHandler;
         const ramses_internal::RendererCommands& m_pendingCommands;
-        ramses_internal::RendererEventCollector& m_eventsFromRenderer; // to simulate input from internal renderer
         const displayId_t m_displayId;
+        StrictMock<ramses_internal::RendererCommandVisitorMock> m_cmdVisitor;
     };
 
     TEST_F(ARendererSceneControl, hasNoCommandsOnStartUp)
     {
-        expectCommandCount(0u);
+        m_cmdVisitor.visit(m_pendingCommands);
     }
 
     TEST_F(ARendererSceneControl, clearsAllPendingCommandsWhenCallingFlush)
     {
         EXPECT_EQ(StatusOK, m_sceneControlAPI.setSceneState(sceneId_t{ 1u }, RendererSceneState::Available));
-        expectCommandCount(1u);
         m_sceneControlAPI.flush();
-        expectCommandCount(0u);
+        m_cmdVisitor.visit(m_pendingCommands);
     }
 
     TEST_F(ARendererSceneControl, createsCommandMakeSceneAvailable)
     {
         constexpr sceneId_t scene{ 1u };
         EXPECT_EQ(StatusOK, m_sceneControlAPI.setSceneState(scene, RendererSceneState::Available));
-        expectCommandCount(1u);
-        expectCommand(0u, ramses_internal::ERendererCommand_SetSceneState);
-
-        const auto& cmd = m_pendingCommands.getCommands().getCommandData<ramses_internal::SceneStateCommand>(0);
-        EXPECT_EQ(scene.getValue(), cmd.sceneId.getValue());
-        EXPECT_EQ(ramses_internal::RendererSceneState::Available, cmd.state);
+        EXPECT_CALL(m_cmdVisitor, setSceneState(ramses_internal::SceneId{ scene.getValue() }, ramses_internal::RendererSceneState::Available));
+        m_cmdVisitor.visit(m_pendingCommands);
     }
 
     TEST_F(ARendererSceneControl, createsCommandMakeSceneRendered)
@@ -101,12 +105,8 @@ namespace ramses
         m_sceneControlAPI.setSceneMapping(scene, displayId_t{ 2 });
         m_sceneControlAPI.flush();
         EXPECT_EQ(StatusOK, m_sceneControlAPI.setSceneState(scene, RendererSceneState::Rendered));
-        expectCommandCount(1u);
-        expectCommand(0u, ramses_internal::ERendererCommand_SetSceneState);
-
-        const auto& cmd = m_pendingCommands.getCommands().getCommandData<ramses_internal::SceneStateCommand>(0);
-        EXPECT_EQ(scene.getValue(), cmd.sceneId.getValue());
-        EXPECT_EQ(ramses_internal::RendererSceneState::Rendered, cmd.state);
+        EXPECT_CALL(m_cmdVisitor, setSceneState(ramses_internal::SceneId{ scene.getValue() }, ramses_internal::RendererSceneState::Rendered));
+        m_cmdVisitor.visit(m_pendingCommands);
     }
 
     TEST_F(ARendererSceneControl, createsCommandForDataLink)
@@ -117,14 +117,12 @@ namespace ramses
         constexpr dataConsumerId_t consumerId{ 4u };
 
         EXPECT_EQ(StatusOK, m_sceneControlAPI.linkData(scene1, providerId, scene2, consumerId));
-        expectCommandCount(1u);
-        expectCommand(0u, ramses_internal::ERendererCommand_LinkSceneData);
-
-        const auto& cmd = m_pendingCommands.getCommands().getCommandData<ramses_internal::DataLinkCommand>(0);
-        EXPECT_EQ(scene1.getValue(), cmd.providerScene.getValue());
-        EXPECT_EQ(providerId.getValue(), cmd.providerData.getValue());
-        EXPECT_EQ(scene2.getValue(), cmd.consumerScene.getValue());
-        EXPECT_EQ(consumerId.getValue(), cmd.consumerData.getValue());
+        EXPECT_CALL(m_cmdVisitor, handleSceneDataLinkRequest(
+            ramses_internal::SceneId{ scene1.getValue() },
+            ramses_internal::DataSlotId{ providerId.getValue() },
+            ramses_internal::SceneId{ scene2.getValue() },
+            ramses_internal::DataSlotId{ consumerId.getValue() }));
+        m_cmdVisitor.visit(m_pendingCommands);
     }
 
     TEST_F(ARendererSceneControl, createsComandForUnlinkData)
@@ -133,20 +131,20 @@ namespace ramses
         constexpr dataConsumerId_t consumerId{ 4u };
 
         m_sceneControlAPI.unlinkData(scene, consumerId);
-        expectCommandCount(1u);
-        expectCommand(0u, ramses_internal::ERendererCommand_UnlinkSceneData);
-
-        const auto& cmd = m_pendingCommands.getCommands().getCommandData<ramses_internal::DataLinkCommand>(0);
-        EXPECT_EQ(scene.getValue(), cmd.consumerScene.getValue());
-        EXPECT_EQ(consumerId.getValue(), cmd.consumerData.getValue());
+        EXPECT_CALL(m_cmdVisitor, handleDataUnlinkRequest(
+            ramses_internal::SceneId{ scene.getValue() },
+            ramses_internal::DataSlotId{ consumerId.getValue() }));
+        m_cmdVisitor.visit(m_pendingCommands);
     }
 
     TEST_F(ARendererSceneControl, createsCommandForHandlePickEvent)
     {
         constexpr ramses::sceneId_t scene(0u);
         EXPECT_EQ(ramses::StatusOK, m_sceneControlAPI.handlePickEvent(scene, 1, 2));
-        expectCommandCount(1u);
-        expectCommand(0u, ramses_internal::ERendererCommand_PickEvent);
+        EXPECT_CALL(m_cmdVisitor, handlePick(
+            ramses_internal::SceneId{ scene.getValue() },
+            ramses_internal::Vector2{ 1, 2 }));
+        m_cmdVisitor.visit(m_pendingCommands);
     }
 
     TEST_F(ARendererSceneControl, createsCommandForAssignSceneToOffscreenBuffer)
@@ -156,16 +154,11 @@ namespace ramses
 
         // must set mapping before assigning to display buffer
         EXPECT_EQ(StatusOK, m_sceneControlAPI.setSceneMapping(scene, m_displayId));
-
         EXPECT_EQ(StatusOK, m_sceneControlAPI.setSceneDisplayBufferAssignment(scene, ob, 11));
-        expectCommandCount(2u);
-        expectCommand(0u, ramses_internal::ERendererCommand_SetSceneMapping);
-        expectCommand(1u, ramses_internal::ERendererCommand_SetSceneDisplayBufferAssignment);
-
-        const auto& cmd = m_pendingCommands.getCommands().getCommandData<ramses_internal::SceneMappingCommand>(1);
-        EXPECT_EQ(scene.getValue(), cmd.sceneId.getValue());
-        EXPECT_EQ(ob.getValue(), cmd.offscreenBuffer.asMemoryHandle());
-        EXPECT_EQ(11, cmd.sceneRenderOrder);
+        InSequence seq;
+        EXPECT_CALL(m_cmdVisitor, setSceneMapping(ramses_internal::SceneId{ scene.getValue() }, ramses_internal::DisplayHandle{ m_displayId.getValue() }));
+        EXPECT_CALL(m_cmdVisitor, setSceneDisplayBufferAssignment(ramses_internal::SceneId{ scene.getValue() }, ramses_internal::OffscreenBufferHandle{ ob.getValue() }, 11));
+        m_cmdVisitor.visit(m_pendingCommands);
     }
 
     TEST_F(ARendererSceneControl, createsCommandForAssignSceneToFramebufferUsingInvalidDisplayBufferId)
@@ -174,16 +167,11 @@ namespace ramses
 
         // must set mapping before assigning to display buffer
         EXPECT_EQ(StatusOK, m_sceneControlAPI.setSceneMapping(scene, m_displayId));
-
         EXPECT_EQ(StatusOK, m_sceneControlAPI.setSceneDisplayBufferAssignment(scene, {}, 11));
-        expectCommandCount(2u);
-        expectCommand(0u, ramses_internal::ERendererCommand_SetSceneMapping);
-        expectCommand(1u, ramses_internal::ERendererCommand_SetSceneDisplayBufferAssignment);
-
-        const auto& cmd = m_pendingCommands.getCommands().getCommandData<ramses_internal::SceneMappingCommand>(1);
-        EXPECT_EQ(scene.getValue(), cmd.sceneId.getValue());
-        EXPECT_FALSE(cmd.offscreenBuffer.isValid());
-        EXPECT_EQ(11, cmd.sceneRenderOrder);
+        InSequence seq;
+        EXPECT_CALL(m_cmdVisitor, setSceneMapping(ramses_internal::SceneId{ scene.getValue() }, ramses_internal::DisplayHandle{ m_displayId.getValue() }));
+        EXPECT_CALL(m_cmdVisitor, setSceneDisplayBufferAssignment(ramses_internal::SceneId{ scene.getValue() }, ramses_internal::OffscreenBufferHandle{}, 11));
+        m_cmdVisitor.visit(m_pendingCommands);
     }
 
     TEST_F(ARendererSceneControl, failsToAssignSceneWithNoMappingInfo)
@@ -191,7 +179,7 @@ namespace ramses
         constexpr sceneId_t sceneWithoutMapping{ 11 };
         EXPECT_NE(StatusOK, m_sceneControlAPI.setSceneDisplayBufferAssignment(sceneWithoutMapping, m_renderer.getDisplayFramebuffer(m_displayId)));
         EXPECT_NE(StatusOK, m_sceneControlAPI.setSceneDisplayBufferAssignment(sceneWithoutMapping, displayBufferId_t{ 123 }));
-        expectCommandCount(0u);
+        m_cmdVisitor.visit(m_pendingCommands);
     }
 
     TEST_F(ARendererSceneControl, createsCommandForOffscreenBufferLink)
@@ -201,13 +189,25 @@ namespace ramses
         constexpr dataConsumerId_t dataConsumer{ 3u };
 
         EXPECT_EQ(StatusOK, m_sceneControlAPI.linkOffscreenBuffer(bufferId, consumerScene, dataConsumer));
-        expectCommandCount(1u);
-        expectCommand(0u, ramses_internal::ERendererCommand_LinkBufferToSceneData);
+        EXPECT_CALL(m_cmdVisitor, handleBufferToSceneDataLinkRequest(
+            ramses_internal::OffscreenBufferHandle{ bufferId.getValue() },
+            ramses_internal::SceneId{ consumerScene.getValue() },
+            ramses_internal::DataSlotId{ dataConsumer.getValue() }));
+        m_cmdVisitor.visit(m_pendingCommands);
+    }
 
-        const auto& cmd = m_pendingCommands.getCommands().getCommandData<ramses_internal::DataLinkCommand>(0);
-        EXPECT_EQ(bufferId.getValue(), cmd.providerBuffer.asMemoryHandle());
-        EXPECT_EQ(consumerScene.getValue(), cmd.consumerScene.getValue());
-        EXPECT_EQ(dataConsumer.getValue(), cmd.consumerData.getValue());
+    TEST_F(ARendererSceneControl, createsCommandForStreamBufferLink)
+    {
+        constexpr streamBufferId_t bufferId{ 1u };
+        constexpr sceneId_t consumerScene{ 2u };
+        constexpr dataConsumerId_t dataConsumer{ 3u };
+
+        EXPECT_EQ(StatusOK, m_sceneControlAPI.impl.linkStreamBuffer(bufferId, consumerScene, dataConsumer));
+        EXPECT_CALL(m_cmdVisitor, handleBufferToSceneDataLinkRequest(
+            ramses_internal::StreamBufferHandle{ bufferId.getValue() },
+            ramses_internal::SceneId{ consumerScene.getValue() },
+            ramses_internal::DataSlotId{ dataConsumer.getValue() }));
+        m_cmdVisitor.visit(m_pendingCommands);
     }
 
     TEST_F(ARendererSceneControl, failsToMakeSceneReadyOrRenderedIfNoMappingSet)
@@ -230,9 +230,9 @@ namespace ramses
         EXPECT_EQ(StatusOK, m_sceneControlAPI.flush());
 
         EXPECT_CALL(m_eventHandler, sceneStateChanged(scene, RendererSceneState::Available));
-        m_eventsFromRenderer.addSceneEvent(ramses_internal::ERendererEventType_SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Available);
+        simulateSceneEventFromRenderer(ramses_internal::ERendererEventType::SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Available);
         EXPECT_CALL(m_eventHandler, sceneStateChanged(scene, RendererSceneState::Ready));
-        m_eventsFromRenderer.addSceneEvent(ramses_internal::ERendererEventType_SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Ready);
+        simulateSceneEventFromRenderer(ramses_internal::ERendererEventType::SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Ready);
         dispatchSceneControlEvents();
 
         // scene is now in ready state and will fail to change mapping
@@ -241,7 +241,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, m_sceneControlAPI.setSceneState(scene, RendererSceneState::Rendered));
         EXPECT_EQ(StatusOK, m_sceneControlAPI.flush());
         EXPECT_CALL(m_eventHandler, sceneStateChanged(scene, RendererSceneState::Rendered));
-        m_eventsFromRenderer.addSceneEvent(ramses_internal::ERendererEventType_SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Rendered);
+        simulateSceneEventFromRenderer(ramses_internal::ERendererEventType::SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Rendered);
         dispatchSceneControlEvents();
 
         // scene is now in rendered state and will fail to change mapping
@@ -336,11 +336,11 @@ namespace ramses
 
         // from published to rendered
         EXPECT_CALL(m_eventHandler, sceneStateChanged(scene, RendererSceneState::Available));
-        m_eventsFromRenderer.addSceneEvent(ramses_internal::ERendererEventType_SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Available);
+        simulateSceneEventFromRenderer(ramses_internal::ERendererEventType::SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Available);
         EXPECT_CALL(m_eventHandler, sceneStateChanged(scene, RendererSceneState::Ready));
-        m_eventsFromRenderer.addSceneEvent(ramses_internal::ERendererEventType_SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Ready);
+        simulateSceneEventFromRenderer(ramses_internal::ERendererEventType::SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Ready);
         EXPECT_CALL(m_eventHandler, sceneStateChanged(scene, RendererSceneState::Rendered));
-        m_eventsFromRenderer.addSceneEvent(ramses_internal::ERendererEventType_SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Rendered);
+        simulateSceneEventFromRenderer(ramses_internal::ERendererEventType::SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Rendered);
 
         dispatchSceneControlEvents();
 
@@ -348,9 +348,9 @@ namespace ramses
         EXPECT_EQ(StatusOK, m_sceneControlAPI.setSceneState(scene, RendererSceneState::Available));
         EXPECT_EQ(StatusOK, m_sceneControlAPI.flush());
         EXPECT_CALL(m_eventHandler, sceneStateChanged(scene, RendererSceneState::Ready));
-        m_eventsFromRenderer.addSceneEvent(ramses_internal::ERendererEventType_SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Ready);
+        simulateSceneEventFromRenderer(ramses_internal::ERendererEventType::SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Ready);
         EXPECT_CALL(m_eventHandler, sceneStateChanged(scene, RendererSceneState::Available));
-        m_eventsFromRenderer.addSceneEvent(ramses_internal::ERendererEventType_SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Available);
+        simulateSceneEventFromRenderer(ramses_internal::ERendererEventType::SceneStateChanged, sceneInternal, ramses_internal::RendererSceneState::Available);
 
         dispatchSceneControlEvents();
     }
@@ -366,11 +366,12 @@ namespace ramses
 
         InSequence seq;
         EXPECT_CALL(m_eventHandler, offscreenBufferLinked(offscreenBufferId, consumerScene, consumerId, true));
-        m_eventsFromRenderer.addBufferLinkEvent(ramses_internal::ERendererEventType_SceneDataBufferLinked, obInternal, consumerSceneInternal, consumerIdInternal);
+        m_eventsFromRenderer.addBufferLinkEvent(ramses_internal::ERendererEventType::SceneDataBufferLinked, obInternal, consumerSceneInternal, consumerIdInternal);
 
         EXPECT_CALL(m_eventHandler, offscreenBufferLinked(offscreenBufferId, consumerScene, consumerId, false));
-        m_eventsFromRenderer.addBufferLinkEvent(ramses_internal::ERendererEventType_SceneDataBufferLinkFailed, obInternal, consumerSceneInternal, consumerIdInternal);
+        m_eventsFromRenderer.addBufferLinkEvent(ramses_internal::ERendererEventType::SceneDataBufferLinkFailed, obInternal, consumerSceneInternal, consumerIdInternal);
 
+        submitEventsFromRenderer();
         dispatchSceneControlEvents();
     }
 
@@ -387,11 +388,12 @@ namespace ramses
 
         InSequence seq;
         EXPECT_CALL(m_eventHandler, dataLinked(providerScene, providerId, consumerScene, consumerId, true));
-        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataLinked, providerSceneInternal, consumerSceneInternal, providerIdInternal, consumerIdInternal);
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType::SceneDataLinked, providerSceneInternal, consumerSceneInternal, providerIdInternal, consumerIdInternal);
 
         EXPECT_CALL(m_eventHandler, dataLinked(providerScene, providerId, consumerScene, consumerId, false));
-        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataLinkFailed, providerSceneInternal, consumerSceneInternal, providerIdInternal, consumerIdInternal);
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType::SceneDataLinkFailed, providerSceneInternal, consumerSceneInternal, providerIdInternal, consumerIdInternal);
 
+        submitEventsFromRenderer();
         dispatchSceneControlEvents();
     }
 
@@ -404,14 +406,15 @@ namespace ramses
 
         InSequence seq;
         EXPECT_CALL(m_eventHandler, dataUnlinked(consumerScene, consumerId, true));
-        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataUnlinked, {}, consumerSceneInternal, {}, consumerIdInternal);
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType::SceneDataUnlinked, {}, consumerSceneInternal, {}, consumerIdInternal);
 
         EXPECT_CALL(m_eventHandler, dataUnlinked(consumerScene, consumerId, false));
-        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataUnlinkFailed, {}, consumerSceneInternal, {}, consumerIdInternal);
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType::SceneDataUnlinkFailed, {}, consumerSceneInternal, {}, consumerIdInternal);
 
         // this event is ignored and will be removed
-        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataUnlinkedAsResultOfClientSceneChange, {}, consumerSceneInternal, {}, consumerIdInternal);
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType::SceneDataUnlinkedAsResultOfClientSceneChange, {}, consumerSceneInternal, {}, consumerIdInternal);
 
+        submitEventsFromRenderer();
         dispatchSceneControlEvents();
     }
 
@@ -431,8 +434,9 @@ namespace ramses
             for (uint32_t i = 0u; i < pickedObjectsCount; ++i)
                 EXPECT_EQ(pickableObjects[i], pickedObjects[i]);
         }));
-        m_eventsFromRenderer.addPickedEvent(ramses_internal::ERendererEventType_ObjectsPicked, providerSceneInternal, {pickable1Internal, pickable2Internal});
+        m_eventsFromRenderer.addPickedEvent(ramses_internal::ERendererEventType::ObjectsPicked, providerSceneInternal, {pickable1Internal, pickable2Internal});
 
+        submitEventsFromRenderer();
         dispatchSceneControlEvents();
     }
 
@@ -442,8 +446,9 @@ namespace ramses
         constexpr sceneVersionTag_t tag{ 4 };
 
         EXPECT_CALL(m_eventHandler, sceneFlushed(scene, tag));
-        m_eventsFromRenderer.addSceneFlushEvent(ramses_internal::ERendererEventType_SceneFlushed, ramses_internal::SceneId{ scene.getValue() }, ramses_internal::SceneVersionTag{ tag });
+        m_eventsFromRenderer.addSceneFlushEvent(ramses_internal::ERendererEventType::SceneFlushed, ramses_internal::SceneId{ scene.getValue() }, ramses_internal::SceneVersionTag{ tag });
 
+        submitEventsFromRenderer();
         dispatchSceneControlEvents();
     }
 
@@ -453,17 +458,18 @@ namespace ramses
 
         InSequence seq;
         EXPECT_CALL(m_eventHandler, sceneExpirationMonitoringEnabled(scene));
-        m_eventsFromRenderer.addSceneExpirationEvent(ramses_internal::ERendererEventType_SceneExpirationMonitoringEnabled, ramses_internal::SceneId{ scene.getValue() });
+        m_eventsFromRenderer.addSceneExpirationEvent(ramses_internal::ERendererEventType::SceneExpirationMonitoringEnabled, ramses_internal::SceneId{ scene.getValue() });
 
         EXPECT_CALL(m_eventHandler, sceneExpired(scene));
-        m_eventsFromRenderer.addSceneExpirationEvent(ramses_internal::ERendererEventType_SceneExpired, ramses_internal::SceneId{ scene.getValue() });
+        m_eventsFromRenderer.addSceneExpirationEvent(ramses_internal::ERendererEventType::SceneExpired, ramses_internal::SceneId{ scene.getValue() });
 
         EXPECT_CALL(m_eventHandler, sceneRecoveredFromExpiration(scene));
-        m_eventsFromRenderer.addSceneExpirationEvent(ramses_internal::ERendererEventType_SceneRecoveredFromExpiration, ramses_internal::SceneId{ scene.getValue() });
+        m_eventsFromRenderer.addSceneExpirationEvent(ramses_internal::ERendererEventType::SceneRecoveredFromExpiration, ramses_internal::SceneId{ scene.getValue() });
 
         EXPECT_CALL(m_eventHandler, sceneExpirationMonitoringDisabled(scene));
-        m_eventsFromRenderer.addSceneExpirationEvent(ramses_internal::ERendererEventType_SceneExpirationMonitoringDisabled, ramses_internal::SceneId{ scene.getValue() });
+        m_eventsFromRenderer.addSceneExpirationEvent(ramses_internal::ERendererEventType::SceneExpirationMonitoringDisabled, ramses_internal::SceneId{ scene.getValue() });
 
+        submitEventsFromRenderer();
         dispatchSceneControlEvents();
     }
 
@@ -473,11 +479,12 @@ namespace ramses
 
         InSequence seq;
         EXPECT_CALL(m_eventHandler, streamAvailabilityChanged(stream, true));
-        m_eventsFromRenderer.addStreamSourceEvent(ramses_internal::ERendererEventType_StreamSurfaceAvailable, ramses_internal::WaylandIviSurfaceId{ stream.getValue() });
+        m_eventsFromRenderer.addStreamSourceEvent(ramses_internal::ERendererEventType::StreamSurfaceAvailable, ramses_internal::WaylandIviSurfaceId{ stream.getValue() });
 
         EXPECT_CALL(m_eventHandler, streamAvailabilityChanged(stream, false));
-        m_eventsFromRenderer.addStreamSourceEvent(ramses_internal::ERendererEventType_StreamSurfaceUnavailable, ramses_internal::WaylandIviSurfaceId{ stream.getValue() });
+        m_eventsFromRenderer.addStreamSourceEvent(ramses_internal::ERendererEventType::StreamSurfaceUnavailable, ramses_internal::WaylandIviSurfaceId{ stream.getValue() });
 
+        submitEventsFromRenderer();
         dispatchSceneControlEvents();
     }
 
@@ -485,17 +492,18 @@ namespace ramses
     {
         InSequence seq;
         EXPECT_CALL(m_eventHandler, dataProviderCreated(sceneId_t{ 123u }, dataProviderId_t{ 1u }));
-        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataSlotProviderCreated, ramses_internal::SceneId{ 123u }, {}, ramses_internal::DataSlotId{ 1u }, {});
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType::SceneDataSlotProviderCreated, ramses_internal::SceneId{ 123u }, {}, ramses_internal::DataSlotId{ 1u }, {});
 
         EXPECT_CALL(m_eventHandler, dataProviderDestroyed(sceneId_t{ 124u }, dataProviderId_t{ 2u }));
-        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataSlotProviderDestroyed, ramses_internal::SceneId{ 124u }, {}, ramses_internal::DataSlotId{ 2u }, {});
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType::SceneDataSlotProviderDestroyed, ramses_internal::SceneId{ 124u }, {}, ramses_internal::DataSlotId{ 2u }, {});
 
         EXPECT_CALL(m_eventHandler, dataConsumerCreated(sceneId_t{ 125u }, dataConsumerId_t{ 3u }));
-        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataSlotConsumerCreated, {}, ramses_internal::SceneId{ 125u }, {}, ramses_internal::DataSlotId{ 3u });
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType::SceneDataSlotConsumerCreated, {}, ramses_internal::SceneId{ 125u }, {}, ramses_internal::DataSlotId{ 3u });
 
         EXPECT_CALL(m_eventHandler, dataConsumerDestroyed(sceneId_t{ 126u }, dataConsumerId_t{ 4u }));
-        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType_SceneDataSlotConsumerDestroyed, {}, ramses_internal::SceneId{ 126u }, {}, ramses_internal::DataSlotId{ 4u });
+        m_eventsFromRenderer.addDataLinkEvent(ramses_internal::ERendererEventType::SceneDataSlotConsumerDestroyed, {}, ramses_internal::SceneId{ 126u }, {}, ramses_internal::DataSlotId{ 4u });
 
+        submitEventsFromRenderer();
         dispatchSceneControlEvents();
     }
 
@@ -504,9 +512,8 @@ namespace ramses
         class RecursiveEventTestHandler final : public RendererSceneControlEventHandlerEmpty
         {
         public:
-            RecursiveEventTestHandler(RendererSceneControl& sceneControl, ramses_internal::RendererEventCollector& collector, RamsesRenderer& renderer)
+            RecursiveEventTestHandler(RendererSceneControl& sceneControl, RamsesRenderer& renderer)
                 : m_sceneControl(sceneControl)
-                , m_eventsFromRenderer(collector)
                 , m_renderer(renderer)
             {
                 m_renderer.setLoopMode(ELoopMode_UpdateOnly);
@@ -522,12 +529,12 @@ namespace ramses
                     EXPECT_EQ(StatusOK, m_sceneControl.setSceneMapping(sceneId, displayId_t{ 1 }));
                     EXPECT_EQ(StatusOK, m_sceneControl.setSceneState(sceneId, RendererSceneState::Ready));
                     EXPECT_EQ(StatusOK, m_sceneControl.flush());
-                    m_eventsFromRenderer.addSceneEvent(ramses_internal::ERendererEventType_SceneStateChanged, ramses_internal::SceneId{ sceneId.getValue() }, ramses_internal::RendererSceneState::Ready);
+                    simulateSceneEventFromRenderer(ramses_internal::ERendererEventType::SceneStateChanged, ramses_internal::SceneId{ sceneId.getValue() }, ramses_internal::RendererSceneState::Ready);
                     break;
                 case RendererSceneState::Ready:
                     EXPECT_EQ(StatusOK, m_sceneControl.setSceneState(sceneId, RendererSceneState::Rendered));
                     EXPECT_EQ(StatusOK, m_sceneControl.flush());
-                    m_eventsFromRenderer.addSceneEvent(ramses_internal::ERendererEventType_SceneStateChanged, ramses_internal::SceneId{ sceneId.getValue() }, ramses_internal::RendererSceneState::Rendered);
+                    simulateSceneEventFromRenderer(ramses_internal::ERendererEventType::SceneStateChanged, ramses_internal::SceneId{ sceneId.getValue() }, ramses_internal::RendererSceneState::Rendered);
                     break;
                 case RendererSceneState::Rendered:
                     m_reachedRenderedState = true;
@@ -547,8 +554,15 @@ namespace ramses
                 return m_reachedRenderedState;
             }
 
+            void simulateSceneEventFromRenderer(ramses_internal::ERendererEventType eventType, ramses_internal::SceneId sceneId, ramses_internal::RendererSceneState state)
+            {
+                ramses_internal::RendererEvent event{ eventType };
+                event.sceneId = sceneId;
+                event.state = state;
+                m_renderer.impl.getDisplayDispatcher().injectSceneControlEvent(std::move(event));
+            }
+
             RendererSceneControl& m_sceneControl;
-            ramses_internal::RendererEventCollector& m_eventsFromRenderer;
             RamsesRenderer& m_renderer;
             bool m_reachedRenderedState = false;
         };
@@ -556,9 +570,9 @@ namespace ramses
         // actual commands ending up at renderer will fail but that is not the purpose of this test
         // we simulate responses from renderer
 
-        RecursiveEventTestHandler handler(m_sceneControlAPI, m_eventsFromRenderer, m_renderer);
+        RecursiveEventTestHandler handler(m_sceneControlAPI, m_renderer);
 
-        m_eventsFromRenderer.addSceneEvent(ramses_internal::ERendererEventType_SceneStateChanged, ramses_internal::SceneId{ 123 }, ramses_internal::RendererSceneState::Available);
+        simulateSceneEventFromRenderer(ramses_internal::ERendererEventType::SceneStateChanged, ramses_internal::SceneId{ 123 }, ramses_internal::RendererSceneState::Available);
         EXPECT_TRUE(handler.waitForRenderedStateReached());
     }
 }

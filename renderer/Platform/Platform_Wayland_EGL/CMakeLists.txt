@@ -25,9 +25,7 @@ ACME_MODULE(
     # dependencies
     #==========================================================================
     DEPENDENCIES            Window_Wayland
-                            Context_EGL
-                            Window_Wayland
-                            ramses-renderer-lib
+                            Platform_EGL
                             EmbeddedCompositor_Wayland
 )
 

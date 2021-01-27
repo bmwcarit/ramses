@@ -43,7 +43,7 @@ namespace ramses_internal
         }
     };
 
-    typedef ::testing::Types<EnqueueOnlyOneAtATimeQueue, TaskForwardingQueue> TestedQueues;
+    using TestedQueues = ::testing::Types<EnqueueOnlyOneAtATimeQueue, TaskForwardingQueue>;
     TYPED_TEST_SUITE(TaskForwardingQueuesTest, TestedQueues);
 
     TYPED_TEST(TaskForwardingQueuesTest, EnqueueCorrrectNumberOfTasksAtATime)

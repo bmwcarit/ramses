@@ -24,7 +24,7 @@ namespace ramses
     *          (replaces #ramses::RendererSceneControl).
     *
     * @details DcsmContentControl's main purpose is to simplify the handling of combination of Dcsm content state
-    *          and state of a its renderer scene, which can become rather complicated if dealt with separately.
+    *          and state of its renderer scene, which can become rather complicated if dealt with separately.
     *          DcsmContentControl presents an alternative to #ramses::RendererSceneControl together with a layer
     *          on top of #ramses::DcsmConsumer. It unifies control of content state in Dcsm context and content's
     *          scene state in renderer context.
@@ -71,6 +71,9 @@ namespace ramses
         /** @brief Add a content category
         * @details Adds a content category for receiving content offers. At least RenderSize and CategoryRect have to be set (width or height cannot be 0) on the
         *          CategoryInfoUpdate or else the category will not be added and error status will be returned.
+        *
+        *          Be aware that assigning categories to different displays will disable their contents ability to share the same
+        *          technical content with each other, since technical content can only be shown on one display at a time.
         *
         * @param category Category to add
         * @param display display that category should be mapped to
@@ -178,8 +181,8 @@ namespace ramses
         *          In addition to that there is a content's scene state change scheduled at finishTime
         *          to hide and unload the scene.
         *          This allows a fade out effect to be executed if needed.
-        *          The content becomes unknown at AnimationInformation::finishTime
-        *          and cannot be used until offered again (#ramses::IDcsmContentControlEventHandler::contentAvailable).
+        *          The content becomes unknown immediately and cannot be used until
+        *          offered again (#ramses::IDcsmContentControlEventHandler::contentAvailable).
         *          Any attempt to change state of the content between calling this and finishTime is undefined,
         *          it is however possible to call this method again if timing needs to be adjusted.
         *          See \ref TimingInformation for more details.
@@ -205,6 +208,7 @@ namespace ramses
         *
         *          The assignment will fail if content unknown or not ready (at least DCSM ready reported by DCSM provider),
         *          if trying to assign to a display buffer that does not exist or does not belong to the display associated with content's category.
+        *          Assignment must be repeated if content state drops to available or unknown and becomes ready again.
         *
         * @param[in] contentID Id of content that should be assigned to the display buffer.
         * @param[in] displayBuffer Id of display buffer (framebuffer or offscreen buffer) the content should be assigned to.
@@ -240,7 +244,8 @@ namespace ramses
         *          - content comes from a wayland surface
         *          Content can be linked to multiple consumer slots.
         *          The consumer data slot type must be of type texture consumer (see #ramses::Scene::createTextureConsumer)
-        *          in order to successfully link them. Also the consumer content must be ready (#ramses::DcsmContentControl::requestContentReady).
+        *          in order to successfully link them.
+        *          Both the consumer content and provider content must at least ready (#ramses::DcsmContentControl::requestContentReady).
         *          This call results in an event which can be dispatched via #ramses::IDcsmContentControlEventHandler::contentLinkedToTextureConsumer.
         *          If the data consumer is already linked to a provider, the old link will be discarded,
         *          however if the new link fails it is undefined whether previous link was discarded or not.
@@ -265,7 +270,9 @@ namespace ramses
         *          Only data slot marked as provider/consumer can be used as source/destination respectively. A provider slot
         *          can be linked to multiple consumer slots, a consumer slot can be linked to exactly one provider.
         *          The data link type and underlying data type must match in order to successfully link them.
-        *          Also both the contents must be known, i.e. it was made ready (#ramses::DcsmContentControl::requestContentReady) at least once.
+        *          Both provider content's and consumer content's categories have to be mapped to the same display
+        *          with #ramses::DcsmContentControl::addContentCategory. Also both the contents must be known,
+        *          i.e. it was made ready (#ramses::DcsmContentControl::requestContentReady) at least once.
         *          This call results in an event which can be dispatched via ##ramses::IDcsmContentControlEventHandler::dataLinked.
         *          If the data consumer is already linked to a provider (data or offscreen buffer), the old link will be discarded,
         *          however if the new link fails it is undefined whether previous link was discarded or not.

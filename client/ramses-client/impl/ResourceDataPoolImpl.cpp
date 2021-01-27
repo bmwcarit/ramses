@@ -42,9 +42,16 @@ namespace ramses
 
         auto id = ResourceImpl::CreateResourceHash(res->getHash(), name, type);
 
-        assert(!m_resourcePoolData.contains(id) || res == m_resourcePoolData.find(id)->value.managedResource);
+        auto it = m_resourcePoolData.find(id);
+        if (it != m_resourcePoolData.end())
+        {
+            assert(res == it->value.managedResource);
+            assert(it->value.refCount > 0);
+            it->value.refCount++;
+        }
+        else
+            m_resourcePoolData.put(id, { res, name ? name : "", 1 });
 
-        m_resourcePoolData[id] = { res, name ? name : "" };
         return id;
     }
 
@@ -85,7 +92,17 @@ namespace ramses
 
     bool ResourceDataPoolImpl::removeResourceData(resourceId_t const& id)
     {
-        return m_resourcePoolData.remove(id);
+        auto it = m_resourcePoolData.find(id);
+        if (it != m_resourcePoolData.end())
+        {
+            assert(it->value.refCount > 0);
+            if (--it->value.refCount == 0)
+                m_resourcePoolData.remove(it);
+
+            return true;
+        }
+        else
+            return false;
     }
 
     bool ResourceDataPoolImpl::addResourceDataFile(std::string const& filename)

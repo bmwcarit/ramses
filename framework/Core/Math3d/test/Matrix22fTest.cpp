@@ -142,7 +142,7 @@ namespace ramses_internal
 
     TEST_F(Matrix22fTest, CanPrintToString)
     {
-        EXPECT_EQ("[1.0 2.0; 4.0 5.0]", fmt::to_string(mat1));
-        EXPECT_EQ("[1.0 2.0; 4.0 5.0]", StringOutputStream::ToString(mat1));
+        mat1.m11 = 1.1f;
+        EXPECT_EQ("[1.1 2; 4 5]", fmt::to_string(mat1));
     }
 }

@@ -372,5 +372,25 @@ namespace ramses
         EXPECT_FALSE(this->client.impl.getClientApplication().getResource(llhash));
     }
 
+    TYPED_TEST(AResourceDataPoolTyped, canAddResourceMultipleTimesAndThenAllowsRemovingExactlyAsOften)
+    {
+        auto id = this->template createResourceData<TypeParam>();
+        auto id2 = this->template createResourceData<TypeParam>();
+        ASSERT_EQ(id, id2);
+        EXPECT_TRUE(this->rdp.removeResourceData(id));
+        EXPECT_TRUE(this->rdp.removeResourceData(id));
+        EXPECT_FALSE(this->rdp.removeResourceData(id));
 
+        this->template createResourceData<TypeParam>();
+        EXPECT_TRUE(this->rdp.removeResourceData(id));
+        EXPECT_FALSE(this->rdp.removeResourceData(id));
+
+        this->template createResourceData<TypeParam>();
+        this->template createResourceData<TypeParam>();
+        EXPECT_TRUE(this->rdp.removeResourceData(id));
+        this->template createResourceData<TypeParam>();
+        EXPECT_TRUE(this->rdp.removeResourceData(id));
+        EXPECT_TRUE(this->rdp.removeResourceData(id));
+        EXPECT_FALSE(this->rdp.removeResourceData(id));
+    }
 }

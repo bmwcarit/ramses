@@ -36,7 +36,7 @@ namespace ramses_internal
             return m_data;
         }
 
-        virtual const CompressedResouceBlob& getCompressedResourceData() const final override
+        virtual const CompressedResourceBlob& getCompressedResourceData() const final override
         {
             assert(m_compressedData.data());
             return m_compressedData;
@@ -47,7 +47,8 @@ namespace ramses_internal
             assert(data.size() > 0);
             m_data = std::move(data);
             m_uncompressedSize = static_cast<uint32_t>(m_data.size());
-            m_compressedData = CompressedResouceBlob();
+            m_compressedData = CompressedResourceBlob();
+            m_currentCompression = CompressionLevel::None;
             m_hash = ResourceContentHash::Invalid();
         }
 
@@ -56,16 +57,18 @@ namespace ramses_internal
             assert(data.size() > 0);
             m_data = std::move(data);
             m_uncompressedSize = static_cast<uint32_t>(m_data.size());
-            m_compressedData = CompressedResouceBlob();
+            m_compressedData = CompressedResourceBlob();
+            m_currentCompression = CompressionLevel::None;
             m_hash = hash;
         }
 
-        virtual void setCompressedResourceData(CompressedResouceBlob compressedData, uint32_t uncompressedSize, const ResourceContentHash& hash) final override
+        virtual void setCompressedResourceData(CompressedResourceBlob compressedData, CompressionLevel compressionLevel, uint32_t uncompressedSize, const ResourceContentHash& hash) final override
         {
             assert(compressedData.size() > 0);
             assert(uncompressedSize > 0);
             m_data = ResourceBlob();
             m_compressedData = std::move(compressedData);
+            m_currentCompression = compressionLevel;
             m_uncompressedSize = uncompressedSize;
             m_hash = hash;
         }
@@ -96,12 +99,12 @@ namespace ramses_internal
 
         bool isCompressedAvailable() const final override
         {
-            return m_compressedData.data();
+            return m_compressedData.data() != nullptr;
         }
 
         bool isDeCompressedAvailable() const final override
         {
-            return m_data.data();
+            return m_data.data() != nullptr;
         }
 
         ResourceCacheFlag getCacheFlag() const final override
@@ -125,7 +128,8 @@ namespace ramses_internal
     private:
         const EResourceType m_typeID;
         mutable ResourceBlob m_data;
-        mutable CompressedResouceBlob m_compressedData;
+        mutable CompressedResourceBlob m_compressedData;
+        mutable CompressionLevel m_currentCompression = CompressionLevel::None;
         mutable ResourceContentHash m_hash;
         uint32_t m_uncompressedSize = 0;
         ResourceCacheFlag m_cacheFlag;

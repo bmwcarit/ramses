@@ -58,11 +58,16 @@ public:
     MOCK_METHOD(status_t, setSceneMapping, (sceneId_t, displayId_t), (override));
     MOCK_METHOD(status_t, setSceneDisplayBufferAssignment, (sceneId_t, displayBufferId_t, int32_t), (override));
     MOCK_METHOD(status_t, linkOffscreenBuffer, (displayBufferId_t, sceneId_t, dataConsumerId_t), (override));
+    MOCK_METHOD(status_t, linkStreamBuffer, (streamBufferId_t, sceneId_t, dataConsumerId_t), (override));
     MOCK_METHOD(status_t, linkData, (sceneId_t, dataProviderId_t, sceneId_t, dataConsumerId_t), (override));
     MOCK_METHOD(status_t, unlinkData, (sceneId_t, dataConsumerId_t), (override));
     MOCK_METHOD(status_t, handlePickEvent, (sceneId_t, float, float), (override));
     MOCK_METHOD(status_t, flush, (), (override));
     MOCK_METHOD(status_t, dispatchEvents, (IRendererSceneControlEventHandler&), (override));
+    MOCK_METHOD(status_t, dispatchSpecialEvents, (IRendererSceneControlEventHandler_SpecialForWayland& eventHandler), (override));
+    MOCK_METHOD(streamBufferId_t, createStreamBuffer,(displayId_t display, waylandIviSurfaceId_t source), (override));
+    MOCK_METHOD(status_t, destroyStreamBuffer,(displayId_t display, streamBufferId_t streamBuffer), (override));
+    MOCK_METHOD(status_t, setStreamBufferState, (displayId_t display, streamBufferId_t streamBufferId, bool state), (override));
 };
 
 class ADcsmContentControl : public Test
@@ -72,9 +77,11 @@ public:
         : m_dcsmContentControl(m_dcsmConsumerMock, m_sceneControlMock)
         , m_dcsmHandler(m_dcsmContentControl)
         , m_sceneControlHandler(m_dcsmContentControl)
+        , m_sceneControlHandlerWayland(m_dcsmContentControl)
     {
         m_dcsmContentControl.addContentCategory(m_categoryID1, m_displayId, m_CategoryInfoUpdate1);
         m_dcsmContentControl.addContentCategory(m_categoryID2, m_displayId, m_CategoryInfoUpdate2);
+        EXPECT_CALL(m_sceneControlMock, dispatchSpecialEvents(_)).Times(AnyNumber());
     }
 
     virtual void TearDown() override
@@ -87,39 +94,39 @@ public:
     {
         EXPECT_CALL(m_dcsmConsumerMock, dispatchEvents(_));
         EXPECT_CALL(m_sceneControlMock, dispatchEvents(_));
+        EXPECT_CALL(m_sceneControlMock, dispatchSpecialEvents(_));
         EXPECT_CALL(m_sceneControlMock, flush());
         EXPECT_EQ(StatusOK, m_dcsmContentControl.update(timeStamp, m_eventHandlerMock));
         m_lastUpdateTS = timeStamp;
     }
 
-    void makeDcsmContentReady(ContentID contentID, Category categoryID, sceneId_t sceneId = SceneId1, bool alreadyAssignedToOtherContent = false)
+    void makeDcsmContentReady(ContentID contentID, Category categoryID, sceneId_t sceneId = SceneId1, bool alreadyAssignedToOtherContentAndRequestedReady = false)
     {
         // offered
         EXPECT_CALL(m_eventHandlerMock, contentAvailable(contentID, categoryID));
         EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(contentID,_)).WillOnce([&](const auto&, const auto& infoupdate){
-            EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+            if (categoryID==m_categoryID1)
+                EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+            else
+                EXPECT_EQ(m_CategoryInfoUpdate2, infoupdate);
             return StatusOK;
         });
         m_dcsmHandler.contentOffered(contentID, categoryID, ETechnicalContentType::RamsesSceneID);
         update(m_lastUpdateTS);
 
         // provider sends content description right after assign
-        if (!alreadyAssignedToOtherContent)
-            EXPECT_CALL(m_sceneControlMock, setSceneState(sceneId, RendererSceneState::Available));
-        else
+        m_dcsmHandler.contentDescription(contentID, TechnicalContentDescriptor{ sceneId.getValue() });
+        update(m_lastUpdateTS);
+        if (!alreadyAssignedToOtherContentAndRequestedReady)
+            m_sceneControlHandler.sceneStateChanged(sceneId, RendererSceneState::Available);
+
+        // request ready
+        EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(contentID, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+        if (!alreadyAssignedToOtherContentAndRequestedReady)
         {
             EXPECT_CALL(m_sceneControlMock, setSceneMapping(sceneId, m_displayId));
             EXPECT_CALL(m_sceneControlMock, setSceneState(sceneId, RendererSceneState::Ready));
         }
-        m_dcsmHandler.contentDescription(contentID, TechnicalContentDescriptor{ sceneId.getValue() });
-        update(m_lastUpdateTS);
-        if (!alreadyAssignedToOtherContent)
-            m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
-
-        // request ready
-        EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(contentID, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
-        EXPECT_CALL(m_sceneControlMock, setSceneMapping(sceneId, m_displayId));
-        EXPECT_CALL(m_sceneControlMock, setSceneState(sceneId, RendererSceneState::Ready));
         EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(contentID, 0));
         update(m_lastUpdateTS);
 
@@ -140,15 +147,16 @@ protected:
     const ContentID m_contentID3{ 323 };
     const ContentID m_contentID4{ 324 };
     const displayId_t m_displayId{ 0 };
-    CategoryInfoUpdate m_CategoryInfoUpdate1{{ 16, 16 }, { 0, 0, 16, 16 }};
-    CategoryInfoUpdate m_CategoryInfoUpdate2{{ 32, 32 }, { 0, 0, 32, 32 }};
-    CategoryInfoUpdate m_CategoryInfoUpdate3{{ 64, 64 }, { 0, 0, 64, 64 }};
+    CategoryInfoUpdate m_CategoryInfoUpdate1{{ 16, 16 }, { 2, 3, 16, 16 }, {1, 3, 6, 8}};
+    CategoryInfoUpdate m_CategoryInfoUpdate2{{ 32, 32 }, { 1, 6, 32, 32 }, {9, 2, 4, 7}};
+    CategoryInfoUpdate m_CategoryInfoUpdate3{{ 64, 64 }, { 4, 7, 64, 64 }, {5, 3, 2, 4}};
 
     StrictMock<DcsmConsumerMock> m_dcsmConsumerMock;
     StrictMock<RendererSceneControlMock> m_sceneControlMock;
     DcsmContentControlImpl m_dcsmContentControl;
     IDcsmConsumerEventHandler& m_dcsmHandler;
     IRendererSceneControlEventHandler& m_sceneControlHandler;
+    IRendererSceneControlEventHandler_SpecialForWayland& m_sceneControlHandlerWayland;
     StrictMock<DcsmContentControlEventHandlerMock> m_eventHandlerMock;
     uint64_t m_lastUpdateTS = 0;
 };
@@ -204,6 +212,91 @@ TEST_F(ADcsmContentControl, handlesDcsmOffered)
     update();
 }
 
+TEST_F(ADcsmContentControl, handleRequestContentReadyFails)
+{
+    // offer
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    update();
+    // stop offer
+    EXPECT_CALL(m_eventHandlerMock, contentStopOfferRequested(m_contentID1));
+    m_dcsmHandler.contentStopOfferRequest(m_contentID1);
+    update();
+    // let changing state on dcsmConsumer fail
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, _, _)).WillRepeatedly(Return(2));
+    // causes requestContentReady to return error
+    EXPECT_NE(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 500));
+    update();
+    // no further events even when time progresses
+    update(1000);
+    update(1010);
+    update(1020);
+    update(1020);
+    update(1020);
+    update(1020);
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+    Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
+
+    // can get content to ready if offered again
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    makeDcsmContentReady(m_contentID1, m_categoryID1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    update(1050);
+    update(1070);
+
+}
+
+TEST_F(ADcsmContentControl, stopOfferRequestWhileWaitingForReadyWithTimeout)
+{
+    // offer
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    update();
+
+    // requestReady with timeout
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, _));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 500));
+    update(200);
+
+    // stop offer
+    EXPECT_CALL(m_eventHandlerMock, contentStopOfferRequested(m_contentID1));
+    m_dcsmHandler.contentStopOfferRequest(m_contentID1);
+    update(300);
+
+    // accept stopoffer
+    EXPECT_CALL(m_dcsmConsumerMock, acceptStopOffer(m_contentID1, _));
+    m_dcsmContentControl.acceptStopOffer(m_contentID1, {});
+
+    // no further events even when time progresses
+    update(1000);
+    update(1010);
+    update(1020);
+    Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+    Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
+
+    // can get content to ready if offered again
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    makeDcsmContentReady(m_contentID1, m_categoryID1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    update(1050);
+    update(1070);
+}
+
+TEST_F(ADcsmContentControl, contentDoesNotBecomeAvailableIfAssigningFails)
+{
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1)).Times(0);
+    // let assignContent fail
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto&) {
+        return 1;
+        });
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    update();
+    m_dcsmHandler.contentStopOfferRequest(m_contentID1);
+    update();
+}
+
 TEST_F(ADcsmContentControl, handlesDcsmContentDescription)
 {
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
@@ -212,8 +305,6 @@ TEST_F(ADcsmContentControl, handlesDcsmContentDescription)
         });
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
-
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
 
     update();
@@ -248,8 +339,6 @@ TEST_F(ADcsmContentControl, handlesDcsmOfferedForMultipleContentsAndCategories)
     m_dcsmHandler.contentOffered(m_contentID3, m_categoryID2, ETechnicalContentType::RamsesSceneID);
     update();
 
-    // there is no mechanism to track if same state for same scene already requested because it is not needed, therefore 3 times
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available)).Times(3);
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_dcsmHandler.contentDescription(m_contentID2, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_dcsmHandler.contentDescription(m_contentID3, TechnicalContentDescriptor{ SceneId1.getValue() });
@@ -301,9 +390,8 @@ TEST_F(ADcsmContentControl, categoryAddedLater_canBeReadified)
     m_dcsmContentControl.addContentCategory(m_categoryAddedLater, m_displayId, m_CategoryInfoUpdate3);
     update();
 
-    //content description will come as answer to assigning
-    EXPECT_CALL(m_sceneControlMock, setSceneState(_, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID3, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
 
     // request ready
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID3, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
@@ -431,8 +519,8 @@ TEST_F(ADcsmContentControl, requestsContentReady)
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
 
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
 
     // request ready
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
@@ -456,6 +544,8 @@ TEST_F(ADcsmContentControl, canAlreadyRequestReadyBeforeDescriptionComes)
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
     update();
+
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
 
     // needs to wait for description message
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
@@ -488,22 +578,8 @@ TEST_F(ADcsmContentControl, handlesContentAndSceneReadyForMultipleContentsSharin
     update();
 
     // now request content3 ready
-    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID3, m_categoryID2));
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID3, _)).WillOnce([&](const auto&, const auto& infoupdate) {
-        EXPECT_EQ(m_CategoryInfoUpdate2, infoupdate);
-        return StatusOK;
-        });
-    m_dcsmHandler.contentOffered(m_contentID3, m_categoryID2, ETechnicalContentType::RamsesSceneID);
-    update();
-
-    // provider sends content description right after assign
-    m_dcsmHandler.contentDescription(m_contentID3, TechnicalContentDescriptor{ SceneId1.getValue() });
-    update();
-
-    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID3, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
-    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID3, 0));
-    m_dcsmHandler.contentReady(m_contentID3);
     EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID3, DcsmContentControlEventResult::OK));
+    makeDcsmContentReady(m_contentID3, m_categoryID2, SceneId1, true);
     update();
 }
 
@@ -579,10 +655,9 @@ TEST_F(ADcsmContentControl, canGetContentRenderedAndThenHiddenAtGivenTime)
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, timing2));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.hideContent(m_contentID1, timing2));
 
+    // content ready event is emitted immediately, but scene is still shown
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
     update(30);
-    // state still rendered because scene is still rendered...
-
-    //...till finish time
     update(100);
     update(120);
 
@@ -590,9 +665,7 @@ TEST_F(ADcsmContentControl, canGetContentRenderedAndThenHiddenAtGivenTime)
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
     update(150);
 
-    // only after scene really hidden content state changes
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
-    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
     update(200);
 }
 
@@ -621,8 +694,9 @@ TEST_F(ADcsmContentControl, hideContentAtGivenTimeAndThenOverrideWithEarlierTimi
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, timing));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.hideContent(m_contentID1, timing));
 
+    // content ready event is emitted immediately, but scene is still shown
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
     update(110);
-    // still rendering to allow fade out animation
 
     // now request hiding at earlier point
     const AnimationInformation timing2{ 100, 120 };
@@ -638,7 +712,6 @@ TEST_F(ADcsmContentControl, hideContentAtGivenTimeAndThenOverrideWithEarlierTimi
 
     // only after scene really hidden content state changes
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
-    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
     update(121);
 }
 
@@ -667,6 +740,8 @@ TEST_F(ADcsmContentControl, hideContentAtGivenTimeAndThenOverrideWithLaterTiming
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, timing));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.hideContent(m_contentID1, timing));
 
+    // content ready event is emitted immediately, but scene is still shown
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
     update(110);
     // still rendering to allow fade out animation
 
@@ -685,7 +760,6 @@ TEST_F(ADcsmContentControl, hideContentAtGivenTimeAndThenOverrideWithLaterTiming
 
     // only after scene really hidden content state changes
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
-    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
     update(181);
 }
 
@@ -724,7 +798,6 @@ TEST_F(ADcsmContentControl, canGetContentRenderedAndThenSwitchToAnotherContentAt
     update(30);
     // announce new content's description
     const sceneId_t otherScene{ SceneId1.getValue() + 10 };
-    EXPECT_CALL(m_sceneControlMock, setSceneState(otherScene, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID2, TechnicalContentDescriptor{ otherScene.getValue() });
     update(30);
     m_sceneControlHandler.sceneStateChanged(otherScene, RendererSceneState::Available);
@@ -738,7 +811,8 @@ TEST_F(ADcsmContentControl, canGetContentRenderedAndThenSwitchToAnotherContentAt
     update(30);
 
     // announce original content not needed at 1000 and start provider transition animation (if any) immediately
-    // scene is still shown within this period
+    // scene is still shown within this period, but content reports as assigned
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, _));
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 1000 }));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 1000 }));
 
@@ -767,13 +841,13 @@ TEST_F(ADcsmContentControl, canGetContentRenderedAndThenSwitchToAnotherContentAt
 
     // now reaching time 1000 original content's scene can be safely hidden - desired state was offered
     // content states already reached their final states
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
     update(1000);
 
-    // only after scene 'downgraded' to available original content's state changes
-    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
-    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, _));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
     update(1100);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
 }
 
 TEST_F(ADcsmContentControl, canGetContentRenderedAndThenSwitchToAnotherContentAtGivenTime_sharingScene)
@@ -820,6 +894,7 @@ TEST_F(ADcsmContentControl, canGetContentRenderedAndThenSwitchToAnotherContentAt
     // scene is still shown within this period
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 1000 }));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 1000 }));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, _));
 
     // bit later new content should become ready
     m_dcsmHandler.contentReady(m_contentID2);
@@ -840,8 +915,7 @@ TEST_F(ADcsmContentControl, canGetContentRenderedAndThenSwitchToAnotherContentAt
 
     ///////
 
-    // actual scene state is kept rendered but scheduled state change came into effect and original content state reached its target
-    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, _));
+    // actual scene state was being kept rendered and scheduled state change comes into effect, but no content change here
     update(1000);
     update(1100);
 }
@@ -936,14 +1010,108 @@ TEST_F(ADcsmContentControl, stopOfferRequestCanBeAccepted)
     update();
 
     EXPECT_CALL(m_dcsmConsumerMock, acceptStopOffer(m_contentID1, AnimationInformation{ 10, 20 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.acceptStopOffer(m_contentID1, AnimationInformation{ 10, 20 }));
     update(15);
-
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     update(100);
 
     // content is now unknown and cannot be used
     EXPECT_NE(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+}
+
+TEST_F(ADcsmContentControl, canReofferWhileStillShowingSceneAfterAcceptStopOffer_SlowHide)
+{
+    // show content
+    makeDcsmContentReady(m_contentID1, m_categoryID1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{ 0, 0 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.showContent(m_contentID1, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Rendered));
+    update();
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Rendered);
+    EXPECT_CALL(m_eventHandlerMock, contentShown(m_contentID1));
+    update();
+
+    EXPECT_CALL(m_dcsmConsumerMock, acceptStopOffer(m_contentID1, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.acceptStopOffer(m_contentID1, AnimationInformation{ 0, 0 }));
+    update();
+
+    // sudden reoffer while scene is still showing
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    update();
+
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+    update();
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+    update();
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    update();
+}
+
+TEST_F(ADcsmContentControl, canReofferWhileStillShowingSceneAfterAcceptStopOffer_FastHide)
+{
+    // show content
+    makeDcsmContentReady(m_contentID1, m_categoryID1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{ 0, 0 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.showContent(m_contentID1, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Rendered));
+    update();
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Rendered);
+    EXPECT_CALL(m_eventHandlerMock, contentShown(m_contentID1));
+    update();
+
+    EXPECT_CALL(m_dcsmConsumerMock, acceptStopOffer(m_contentID1, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.acceptStopOffer(m_contentID1, AnimationInformation{ 0, 0 }));
+    update();
+
+    // scene is reported hidden (and continues to unsubscribe)
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+
+    // sudden reoffer while scene is still showing
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    update();
+
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+    update();
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+    update();
+
+    // dcsm goes back to ready and our scene state is still ready, but no event here, because scene is unsubscribing!
+    m_dcsmHandler.contentReady(m_contentID1);
+    update();
+
+    // full reramp up of scene
+    EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId1, _));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
+    update();
+
+    // finally at our requested ready state, emit event
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    update();
 }
 
 TEST_F(ADcsmContentControl, scheduleContentHideBeforeAcceptingStopOfferRequest)
@@ -972,13 +1140,14 @@ TEST_F(ADcsmContentControl, scheduleContentHideBeforeAcceptingStopOfferRequest)
     // and accept stop offer with same timing
     EXPECT_CALL(m_dcsmConsumerMock, acceptStopOffer(m_contentID1, AnimationInformation{ 20, 100 }));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.acceptStopOffer(m_contentID1, AnimationInformation{ 20, 100 }));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, _));
 
     update(10);
     update(50);
 
     // 2 scene state change requests were scheduled - one for hide request, one as result of accepted stop offer
     // the latter overrides the first
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
     update(100);
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Unavailable);
     update(110);
@@ -1007,10 +1176,10 @@ TEST_F(ADcsmContentControl, contentCanBeReofferedAfterStopOfferRequestAccepted)
     update();
 
     EXPECT_CALL(m_dcsmConsumerMock, acceptStopOffer(m_contentID1, AnimationInformation{ 10, 20 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.acceptStopOffer(m_contentID1, AnimationInformation{ 10, 20 }));
 
     update(10);
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     update(20);
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Unavailable);
     update(21);
@@ -1133,12 +1302,12 @@ TEST_F(ADcsmContentControl, failsToShowAfterReleasingContent)
 
     // release content to some time point
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 100 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 100 }));
 
     // attempt to show content now fails
     EXPECT_NE(StatusOK, m_dcsmContentControl.showContent(m_contentID1, { 0, 0 }));
 
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, _));
     update(100);
 }
@@ -1160,27 +1329,60 @@ TEST_F(ADcsmContentControl, canRequestReadyAgainAfterReleasingContent)
 
     // release content to some time point
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 100 }));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, _));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 100 }));
     update(10);
 
-    // cannot request ready till content released at animation finish
-    EXPECT_NE(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
-
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
     update(100);
-    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
-    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, _));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
     update(110);
 
     // request ready again
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
-    EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId1, m_displayId));
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
     update(110);
 
+    EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId1, m_displayId));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
+
     m_dcsmHandler.contentReady(m_contentID1);
     update(120);
+}
+
+TEST_F(ADcsmContentControl, canRequestReadyAgainWhileReleasingContent)
+{
+    // show content
+    makeDcsmContentReady(m_contentID1, m_categoryID1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{ 0, 0 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.showContent(m_contentID1, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Rendered));
+    update();
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Rendered);
+    EXPECT_CALL(m_eventHandlerMock, contentShown(m_contentID1));
+    update();
+
+    // release content to some time point
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 100 }));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, _));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 100 }));
+    update(10);
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+    update(50);
+
+    m_dcsmHandler.contentReady(m_contentID1);
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, _));
+    update(100);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    update(110);
 }
 
 TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeReadyConfirmedFromDcsmProvider)
@@ -1194,7 +1396,6 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeReadyConfirmedFromDcs
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     update();
 
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     update();
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
@@ -1210,6 +1411,9 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeReadyConfirmedFromDcs
     // release content
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 10 }));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 10 }));
+    update();
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
     update();
 
     // simulate Dcsm just became ready, nothing expected
@@ -1237,7 +1441,6 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeReadyConfirmedFromRen
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
     // provider sends content description right after assign
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update();
@@ -1255,15 +1458,15 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeReadyConfirmedFromRen
 
     // release content
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 10 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 10 }));
     update();
 
-    // simulate scene just became ready from renderer, nothing expected
+    // simulate scene just became ready from renderer
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
     update();
 
     // no change reported but internally will set scene state to available because it got ready from renderer
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     update(10);
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update(10);
@@ -1284,7 +1487,6 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeDcsmReadyConfirmedAnd
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
     // provider sends content description right after assign
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update();
@@ -1300,6 +1502,9 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeDcsmReadyConfirmedAnd
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 10 }));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 10 }));
     update();
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    update();
 
     // simulate Dcsm just became ready, nothing expected
     m_dcsmHandler.contentReady(m_contentID1);
@@ -1309,6 +1514,7 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeDcsmReadyConfirmedAnd
 
     // simulate Dcsm became ready again, nothing expected
     m_dcsmHandler.contentReady(m_contentID1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
 
     update(100);
 
@@ -1336,7 +1542,6 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeRendererReadyConfirme
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
     // provider sends content description right after assign
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update();
@@ -1354,15 +1559,15 @@ TEST_F(ADcsmContentControl, canRequestReadyButReleaseBeforeRendererReadyConfirme
 
     // release content
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 10 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 10 }));
     update();
 
-    // simulate scene just became ready from renderer, nothing expected
+    // simulate scene just became ready from renderer
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
     update();
 
     // no change reported but internally will set scene state to available because it got ready from renderer
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     update(10);
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update(10);
@@ -1393,7 +1598,6 @@ TEST_F(ADcsmContentControl, willNotTryToMapSceneIfReadyRequestedButForcedStopOff
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
     // provider sends content description right after assign
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update();
@@ -1435,7 +1639,6 @@ TEST_F(ADcsmContentControl, willNotTryToMapSceneIfReadyRequestedButAcceptedStopO
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update();
     // provider sends content description right after assign
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update();
@@ -1456,6 +1659,12 @@ TEST_F(ADcsmContentControl, willNotTryToMapSceneIfReadyRequestedButAcceptedStopO
     EXPECT_EQ(StatusOK, m_dcsmContentControl.acceptStopOffer(m_contentID1, AnimationInformation{ 0, 0 }));
     // no scene state change requested, stays at Available
     update();
+
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    update();
+
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
 
     // simulate Dcsm just became ready, nothing expected
     m_dcsmHandler.contentReady(m_contentID1);
@@ -1482,7 +1691,6 @@ TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedDcsmReady
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update(100); // set initial time
     // provider sends content description right after assign
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update(100);
@@ -1493,6 +1701,7 @@ TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedDcsmReady
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 50)); // give 50 time units for timeout
     update(111);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
 
     // dcsm ready does not come
     update(121);
@@ -1501,14 +1710,14 @@ TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedDcsmReady
 
     // will explicitly request state back to DCSM assigned
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 0 }));
-    // will not set anything on renderer side because nothing was requested from renderer yet
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available)).Times(0);
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::TimedOut));
     update(151);
 
     // simulate race - dcsm ready arrives right after timeout before dcsm set state back to assigned
     m_dcsmHandler.contentReady(m_contentID1);
     // nothing expected
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
 
     // request ready again
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
@@ -1525,7 +1734,7 @@ TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedDcsmReady
     update(200);
 }
 
-TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedRendererReady)
+TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedRendererReadyInTime)
 {
     // offered
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
@@ -1533,7 +1742,6 @@ TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedRendererR
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     update(100); // set initial time
     // provider sends content description right after assign
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update(100);
@@ -1567,6 +1775,109 @@ TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedRendererR
     // due to race renderer actually reached ready state and will change state back to available which was requested when timed out
     m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update(200);
+
+    // request ready again
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId1, m_displayId));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+    update(200);
+    // handle dcsm ready
+    m_dcsmHandler.contentReady(m_contentID1);
+    update(200);
+    // handle new scene ready
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update(200);
+}
+
+TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedRendererReadyEver)
+{
+    // offered
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    update(100); // set initial time
+    // provider sends content description right after assign
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
+    update(100);
+
+    // request ready
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId1, m_displayId));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 50)); // give 50 time units for timeout
+    update(111);
+
+    // handle dcsm ready
+    update(121);
+    m_dcsmHandler.contentReady(m_contentID1);
+
+    // renderer ready does not come
+    update(131);
+    update(141);
+
+    // will explicitly request state back to DCSM assigned
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 0 }));
+    // will set scene state back to available on renderer side
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::TimedOut));
+    update(151);
+
+    // nothing expected
+    update(200);
+
+    // request ready again
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId1, m_displayId));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+    update(200);
+    // handle dcsm ready
+    m_dcsmHandler.contentReady(m_contentID1);
+    update(200);
+    // handle new scene ready
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update(200);
+}
+
+TEST_F(ADcsmContentControl, handlesTimeOutWhenRequestReadyButNotReachedDcsmAndRendererReady)
+{
+    // offered
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
+    update(100); // set initial time
+    // provider sends content description right after assign
+    m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
+    update(100);
+
+    // request ready
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId1, m_displayId));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 50)); // give 50 time units for timeout
+    update(111);
+
+    // dcsm ready does not come
+    update(121);
+    update(131);
+    update(141);
+
+    // will explicitly request state back to DCSM assigned
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 0 }));
+    // will set scene state back to available on renderer side
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::TimedOut));
+    update(151);
+
+    // nothing expected
 
     // request ready again
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
@@ -1874,8 +2185,8 @@ TEST_F(ADcsmContentControl, reportsObjectsPickedWithCorrectContents)
     m_dcsmHandler.contentOffered(m_contentID2, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID2, m_categoryID1));
     update();
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId2, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID2, TechnicalContentDescriptor{ SceneId2.getValue() });
+    m_sceneControlHandler.sceneStateChanged(SceneId2, RendererSceneState::Available);
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID2, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
     EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId2, m_displayId));
     EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId2, RendererSceneState::Ready));
@@ -1928,7 +2239,6 @@ TEST_F(ADcsmContentControl, handlesDcsmMetadataUpdate)
     EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     update();
 
@@ -1977,8 +2287,8 @@ TEST_F(ADcsmContentControl, failsToAssignNotReadyContentToDisplayBuffer)
     m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
     EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
     update();
-    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
     m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
     update();
 
     // request ready
@@ -2021,6 +2331,167 @@ TEST_F(ADcsmContentControl, failsToOffscreenBufferLinkConsumerContentWithUnknown
     update();
 
     EXPECT_NE(StatusOK, m_dcsmContentControl.linkOffscreenBuffer(obId, m_contentID1, consumerId));
+}
+
+
+TEST_F(ADcsmContentControl, linkContentWithoutReadyGivesError)
+{
+    //make consumer ready but not actual content
+    makeDcsmContentReady(m_contentID2, m_categoryID1, SceneId2);
+    m_sceneControlHandler.sceneStateChanged(SceneId2, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID2, DcsmContentControlEventResult::OK));
+    update();
+    //fail because content not ready
+    EXPECT_NE(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, m_contentID2, dataConsumerId_t{13}));
+}
+
+TEST_F(ADcsmContentControl, linkContentWithoutConsumerReadyGivesError)
+{
+    // make content ready but not consumer
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+    // fail because consumer not ready
+    EXPECT_NE(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, m_contentID2, dataConsumerId_t{13}));
+}
+
+TEST_F(ADcsmContentControl, linkContentWithoutOBAssignmentGivesErrorforRamsesContent)
+{
+    constexpr dataConsumerId_t consumerId{ 13 };
+
+    //make consumer ready
+    makeDcsmContentReady(m_contentID2, m_categoryID1, SceneId2);
+    m_sceneControlHandler.sceneStateChanged(SceneId2, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID2, DcsmContentControlEventResult::OK));
+    update();
+    // make provider scene ready but not assigned to OB
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+
+    EXPECT_NE(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, m_contentID2, consumerId));
+}
+
+TEST_F(ADcsmContentControl, linkContentLinksOBInternallyForRamsesType)
+{
+    constexpr displayBufferId_t obId{ 12 };
+    constexpr dataConsumerId_t consumerId{ 13 };
+    constexpr int renderOrder = 123;
+    auto& contentid = m_contentID1;
+    auto& consumerContentID = m_contentID2;
+
+    //make content and consumer ready
+    makeDcsmContentReady(contentid, m_categoryID1, SceneId1);
+    makeDcsmContentReady(consumerContentID, m_categoryID1, SceneId2);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    m_sceneControlHandler.sceneStateChanged(SceneId2, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(contentid, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(consumerContentID, DcsmContentControlEventResult::OK));
+    update();
+    // mandatory assign to OB
+    EXPECT_CALL(m_sceneControlMock, setSceneDisplayBufferAssignment(SceneId1, obId, renderOrder));
+    m_dcsmContentControl.assignContentToDisplayBuffer(contentid, obId, renderOrder);
+
+    // calls offscreenbuffer linking targeting previously assigned display buffer
+    EXPECT_CALL(m_sceneControlMock, linkOffscreenBuffer(obId, SceneId2, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(contentid, consumerContentID, consumerId));
+}
+
+TEST_F(ADcsmContentControl, mustReassignToDisplayBufferAfterReleaseForlinkContent)
+{
+    constexpr displayBufferId_t obId{ 12 };
+    constexpr dataConsumerId_t consumerId{ 13 };
+    constexpr int renderOrder = 123;
+
+    //make everything ready
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    makeDcsmContentReady(m_contentID2, m_categoryID1, SceneId2);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    m_sceneControlHandler.sceneStateChanged(SceneId2, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID2, DcsmContentControlEventResult::OK));
+    update();
+    //assign
+    EXPECT_CALL(m_sceneControlMock, setSceneDisplayBufferAssignment(SceneId1, obId, renderOrder));
+    m_dcsmContentControl.assignContentToDisplayBuffer(m_contentID1, obId, renderOrder);
+
+    //sucessfully link
+    EXPECT_CALL(m_sceneControlMock, linkOffscreenBuffer(obId, SceneId2, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, m_contentID2, consumerId));
+
+    // ramp down content
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, _));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    m_dcsmContentControl.releaseContent(m_contentID1, {});
+    update();
+    // renderer ramps down as reaction
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Available);
+    Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
+
+    // make/request ready again
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, _));
+    EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId1, m_displayId));
+    EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+    update(m_lastUpdateTS);
+    m_dcsmHandler.contentReady(m_contentID1);
+    update(m_lastUpdateTS);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    update();
+
+    // must reassign first, therefore error
+    EXPECT_NE(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, m_contentID2, consumerId));
+
+    // assign again
+    EXPECT_CALL(m_sceneControlMock, setSceneDisplayBufferAssignment(SceneId1, obId, renderOrder));
+    m_dcsmContentControl.assignContentToDisplayBuffer(m_contentID1, obId, renderOrder);
+
+    // successfully linkContent
+    EXPECT_CALL(m_sceneControlMock, linkOffscreenBuffer(obId, SceneId2, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, m_contentID2, consumerId));
+}
+
+TEST_F(ADcsmContentControl, assignTwoContentsWithSameUnderlyingScene_sameOB)
+{
+    constexpr displayBufferId_t obId{ 12 };
+    constexpr int renderOrder = 123;
+
+    //make everything ready
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    makeDcsmContentReady(m_contentID2, m_categoryID1, SceneId1, true);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    //m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID2, DcsmContentControlEventResult::OK));
+    update();
+    //assign
+    EXPECT_CALL(m_sceneControlMock, setSceneDisplayBufferAssignment(SceneId1, obId, renderOrder)).Times(2);
+    m_dcsmContentControl.assignContentToDisplayBuffer(m_contentID1, obId, renderOrder);
+    m_dcsmContentControl.assignContentToDisplayBuffer(m_contentID2, obId, renderOrder);
+}
+
+TEST_F(ADcsmContentControl, assignTwoContentsWithSameUnderlyingScene_separateOBs_lastAssignWins)
+{
+    constexpr displayBufferId_t obId{ 12 };
+    constexpr displayBufferId_t obIdB{ 13 };
+    constexpr int renderOrder = 123;
+
+    //make everything ready
+    makeDcsmContentReady(m_contentID1, m_categoryID1, SceneId1);
+    makeDcsmContentReady(m_contentID2, m_categoryID1, SceneId1, true);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID2, DcsmContentControlEventResult::OK));
+    update();
+    //assign
+    EXPECT_CALL(m_sceneControlMock, setSceneDisplayBufferAssignment(SceneId1, obId, renderOrder));
+    m_dcsmContentControl.assignContentToDisplayBuffer(m_contentID1, obId, renderOrder);
+    EXPECT_CALL(m_sceneControlMock, setSceneDisplayBufferAssignment(SceneId1, obIdB, renderOrder));
+    m_dcsmContentControl.assignContentToDisplayBuffer(m_contentID2, obIdB, renderOrder);
 }
 
 TEST_F(ADcsmContentControl, requestsOffscreenBufferLink)

@@ -147,7 +147,7 @@ FOREACH(DEPENDENCY ${ACME_DEPENDENCIES})
 
         # link includes and libs from vars
         if (${DEPENDENCY}_INCLUDE_DIRS)
-            target_include_directories(${ACME_NAME} PUBLIC ${${DEPENDENCY}_INCLUDE_DIRS})
+            target_include_directories(${ACME_NAME} SYSTEM PUBLIC ${${DEPENDENCY}_INCLUDE_DIRS})
         endif()
 
         if(${DEPENDENCY}_LIBRARIES)

@@ -58,6 +58,7 @@ int main(int argc, char* argv[])
     uint16_t indicesArray[] = { 0, 1, 2 };
     const ramses::ArrayResource* indices = clientScene->createArrayResource(ramses::EDataType::UInt16, 3, indicesArray);
 
+    /// [Geometry Shaders Example]
     // create an appearance for red triangle
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-example-local-geometry-shaders.vert");
@@ -79,6 +80,8 @@ int main(int argc, char* argv[])
 
     ramses::UniformInput xMultiplierInput;
     effect->findUniformInput("x_multiplier", xMultiplierInput);
+
+    /// [Geometry Shaders Example]
 
     // create a mesh node to define the triangle with chosen appearance
     ramses::MeshNode* meshNode = clientScene->createMeshNode("triangle mesh node");

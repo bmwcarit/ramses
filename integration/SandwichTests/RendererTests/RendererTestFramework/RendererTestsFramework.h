@@ -53,10 +53,13 @@ public:
     bool getSceneToRendered(ramses::sceneId_t sceneId, uint32_t testDisplayIdx = 0);
 
     void dispatchRendererEvents(ramses::IRendererEventHandler& eventHandler, ramses::IRendererSceneControlEventHandler& sceneControlEventHandler);
-    ramses::displayBufferId_t   createOffscreenBuffer       (uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount = 0u);
-    void                        destroyOffscreenBuffer      (uint32_t testDisplayIdx, ramses::displayBufferId_t buffer);
+    ramses::displayBufferId_t   createOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount = 0u);
+    void                        destroyOffscreenBuffer(uint32_t testDisplayIdx, ramses::displayBufferId_t buffer);
+    ramses::streamBufferId_t    createStreamBuffer(uint32_t testDisplayIdx, ramses::waylandIviSurfaceId_t source);
+    void                        destroyStreamBuffer(uint32_t testDisplayIdx, ramses::streamBufferId_t buffer);
     void assignSceneToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t buffer, int32_t renderOrder = 0);
     void createBufferDataLink(ramses::displayBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
+    void createBufferDataLink(ramses::streamBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
     void createDataLink(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerTag, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
     void removeDataLink(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
     void setWarpingMeshData(const ramses::WarpingMeshData& meshData, uint32_t testDisplayIdx = 0u);
@@ -70,7 +73,7 @@ public:
     void filterTestCases(const ramses_internal::StringVector& filterIn, const ramses_internal::StringVector& filterOut);
 
     bool runAllTests();
-    ramses_internal::String generateReport() const;
+    std::string generateReport() const;
 
     static bool NameMatchesFilter(const ramses_internal::String& name, const ramses_internal::StringVector& filter);
 
@@ -96,13 +99,13 @@ public:
     }
 
 protected:
-    using OffscreenBufferVector = std::vector<ramses::displayBufferId_t>;
     struct TestDisplayInfo
-        {
-            ramses::displayId_t displayId;
-            ramses::DisplayConfig config;
-            OffscreenBufferVector offscreenBuffers;
-        };
+    {
+        ramses::displayId_t displayId;
+        ramses::DisplayConfig config;
+        std::vector<ramses::displayBufferId_t> offscreenBuffers;
+        std::vector<ramses::streamBufferId_t> streamBuffers;
+    };
 
     using TestDisplays = std::vector<TestDisplayInfo>;
     const TestDisplays& getDisplays() const;
@@ -123,7 +126,7 @@ private:
     bool currentDisplaySetupMatchesTestCase(const RenderingTestCase& testCase) const;
     bool applyRendererAndDisplaysConfigurationForTest(const RenderingTestCase& testCase);
     void destroyScenes();
-    void destroyOffscreenBuffers();
+    void destroyBuffers();
     bool runTestCase(RenderingTestCase& testCase);
 
     const bool                      m_generateScreenshots;

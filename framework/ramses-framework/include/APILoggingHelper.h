@@ -16,7 +16,7 @@ namespace ramses_internal
     class APILoggingHelper
     {
     public:
-        static String MakeLoggingString(int32_t argc, char const* const* argv)
+        static std::string MakeLoggingString(int32_t argc, char const* const* argv)
         {
             StringOutputStream argumentsStream;
             argumentsStream << argc << " arguments: [ ";
@@ -25,8 +25,7 @@ namespace ramses_internal
                 argumentsStream << (i != 0 ? " ; " : "") << argv[i];
             }
             argumentsStream << " ]";
-            String argString = argumentsStream.c_str();
-            return argString;
+            return argumentsStream.release();
         }
     };
 }

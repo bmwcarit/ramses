@@ -18,7 +18,7 @@
 namespace ramses
 {
     /**
-    * @brief Texture represents a texture resource
+    * @brief Texture represents a 2-D texture resource.
     */
     class RAMSES_API Texture2D : public Resource
     {

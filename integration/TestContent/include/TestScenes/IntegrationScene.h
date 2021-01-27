@@ -34,6 +34,7 @@ namespace ramses_internal
     public:
         IntegrationScene(ramses::Scene& scene, const Vector3& cameraPosition, uint32_t vpWidth = DefaultViewportWidth, uint32_t vpHeight = DefaultViewportHeight);
         virtual ~IntegrationScene();
+        virtual void dispatchHandler(){};
 
         static constexpr uint32_t DefaultViewportWidth = 200u;
         static constexpr uint32_t DefaultViewportHeight = 200u;

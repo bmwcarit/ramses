@@ -86,6 +86,37 @@ namespace ramses_internal
     using ScreenshotInfoVector = std::vector<ScreenshotInfo>;
 
     using BinaryShaderFormatID = StronglyTypedValue<UInt32, 0, struct BinaryShaderFormatIDTag>;
+
+    enum class ERendererLogTopic
+    {
+        Displays = 0,
+        SceneStates,
+        StreamTextures,
+        Resources,
+        MissingResources,
+        RenderQueue,
+        Links,
+        EmbeddedCompositor,
+        EventQueue,
+        All,
+        PeriodicLog,
+        COUNT
+    };
+
+    static const char* RendererLogTopicNames[] =
+    {
+        "Displays",
+        "SceneStates",
+        "StreamTextures",
+        "Resources",
+        "MissingResources",
+        "RenderQueue",
+        "Links",
+        "EmbeddedCompositor",
+        "EventQueue",
+        "All",
+        "PeriodicLog"
+    };
 }
 
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WaylandIviLayerId)
@@ -93,5 +124,6 @@ MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::IntegrityRGLDeviceUnit)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WindowsWindowHandle)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::AndroidNativeWindowPtr)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::BinaryShaderFormatID)
+MAKE_ENUM_CLASS_PRINTABLE(ramses_internal::ERendererLogTopic, "ERendererLogTopic", ramses_internal::RendererLogTopicNames, ramses_internal::ERendererLogTopic::COUNT);
 
 #endif

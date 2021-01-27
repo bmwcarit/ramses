@@ -41,8 +41,14 @@ namespace ramses_internal
     }
 }
 
-MAKE_ENUM_CLASS_PRINTABLE(ramses_internal::LogTestBar, ramses_internal::LogTestBarNames, ramses_internal::LogTestBar::Last);
-MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::LogTestBarNoLast, ramses_internal::LogTestBarNames, ramses_internal::LogTestBarNoLast::Y);
+MAKE_ENUM_CLASS_PRINTABLE(ramses_internal::LogTestBar,
+                          "LogTestBar",
+                          ramses_internal::LogTestBarNames,
+                          ramses_internal::LogTestBar::Last);
+MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::LogTestBarNoLast,
+                                          "LogTestBarNoLast",
+                                          ramses_internal::LogTestBarNames,
+                                          ramses_internal::LogTestBarNoLast::Y);
 
 namespace ramses_internal
 {
@@ -54,15 +60,19 @@ namespace ramses_internal
 
     TEST(ALoggingUtils, CanUseEnumClassFormatter)
     {
-        EXPECT_EQ("X", fmt::to_string(LogTestBar::X));
-        EXPECT_EQ("Y", fmt::to_string(LogTestBar::Y));
+        EXPECT_EQ("LogTestBar::X", fmt::format("{}", LogTestBar::X));
+        EXPECT_EQ("LogTestBar::Y", fmt::format("{}", LogTestBar::Y));
+        EXPECT_EQ("X", fmt::format("{:s}", LogTestBar::X));
+        EXPECT_EQ("Y", fmt::format("{:s}", LogTestBar::Y));
         EXPECT_EQ("<INVALID ramses_internal::LogTestBar 2>", fmt::to_string(LogTestBar::Last));
     }
 
     TEST(ALoggingUtils, CanUsEnumClassFormatterShortSyntax)
     {
-        EXPECT_EQ("X", fmt::to_string(LogTestBarNoLast::X));
-        EXPECT_EQ("Y", fmt::to_string(LogTestBarNoLast::Y));
+        EXPECT_EQ("LogTestBarNoLast::X", fmt::format("{}", LogTestBarNoLast::X));
+        EXPECT_EQ("LogTestBarNoLast::Y", fmt::format("{}", LogTestBarNoLast::Y));
+        EXPECT_EQ("X", fmt::format("{:s}", LogTestBarNoLast::X));
+        EXPECT_EQ("Y", fmt::format("{:s}", LogTestBarNoLast::Y));
         const LogTestBarNoLast invalidAbove = static_cast<LogTestBarNoLast>(2);
         EXPECT_EQ("<INVALID ramses_internal::LogTestBarNoLast 2>", fmt::to_string(invalidAbove));
     }

@@ -13,6 +13,9 @@ namespace ramses
 {
     /**
      * Specifies the mode of scene publication.
+     *
+     * When using localOnly publication it is possible to render the scene locally without calling
+     * #ramses::RamsesFramework::connect.
     */
     enum EScenePublicationMode
     {

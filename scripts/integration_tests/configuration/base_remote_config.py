@@ -8,8 +8,8 @@
 
 from __future__ import print_function
 import re
+from future.utils import iteritems
 from configuration.local_config import Config
-
 
 class BaseRemoteConfig(Config):
     def __init__(self):
@@ -51,7 +51,7 @@ class BaseRemoteConfig(Config):
         # filter testTotargetConfig
         filtered_testToTargetConfig = {}
         all_targets_set = set(self.allTargetsList)
-        for target, configs in self.testToTargetConfig.items():
+        for target, configs in iteritems(self.testToTargetConfig):
             filtered_configs = [c for c in configs if len(set(c) - all_targets_set) == 0]
             if len(filtered_configs) > 0:
                 filtered_testToTargetConfig[target] = filtered_configs

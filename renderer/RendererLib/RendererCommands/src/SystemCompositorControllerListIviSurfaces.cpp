@@ -22,7 +22,7 @@ namespace ramses_internal
     Bool SystemCompositorControllerListIviSurfaces::executeInput(const RamshInput& input)
     {
         UNUSED(input);
-        m_rendererCommandBuffer.systemCompositorControllerListIviSurfaces();
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCListIviSurfaces{});
         return true;
     }
 }

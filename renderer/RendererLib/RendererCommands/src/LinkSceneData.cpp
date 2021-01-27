@@ -25,7 +25,8 @@ namespace ramses_internal
 
     Bool LinkSceneData::execute(UInt32& providerSceneId, UInt32& providerDataSlotId, UInt32& consumerSceneId, UInt32& consumerDataSlotId) const
     {
-        m_rendererCommandBuffer.linkSceneData(SceneId(providerSceneId), DataSlotId(providerDataSlotId), SceneId(consumerSceneId), DataSlotId(consumerDataSlotId));
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::LinkData{
+            SceneId{providerSceneId}, DataSlotId{providerDataSlotId}, SceneId{consumerSceneId}, DataSlotId{consumerDataSlotId} });
         return true;
     }
 }

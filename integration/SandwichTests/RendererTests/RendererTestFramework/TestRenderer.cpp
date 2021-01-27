@@ -8,11 +8,12 @@
 
 #include "TestRenderer.h"
 #include "ramses-renderer-api/RendererConfig.h"
-#include "RendererAPI/IRenderBackend.h"
-#include "RamsesRendererImpl.h"
-#include "RendererAndSceneTestEventHandler.h"
 #include "ramses-renderer-api/WarpingMeshData.h"
+#include "RendererAPI/IRenderBackend.h"
 #include "RendererLib/FrameProfileRenderer.h"
+#include "RamsesRendererImpl.h"
+#include "RendererSceneControlImpl.h"
+#include "RendererAndSceneTestEventHandler.h"
 
 namespace ramses_internal
 {
@@ -187,9 +188,29 @@ namespace ramses_internal
         m_renderer->flush();
     }
 
+    ramses::streamBufferId_t TestRenderer::createStreamBuffer(ramses::displayId_t displayId, ramses::waylandIviSurfaceId_t source)
+    {
+        const auto bufferId = m_renderer->impl.createStreamBuffer(displayId, source);
+        m_renderer->flush();
+
+        return bufferId;
+    }
+
+    void TestRenderer::destroyStreamBuffer(ramses::displayId_t displayId, ramses::streamBufferId_t buffer)
+    {
+        m_renderer->impl.destroyStreamBuffer(displayId, buffer);
+        m_renderer->flush();
+    }
+
     void TestRenderer::createBufferDataLink(ramses::displayBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag)
     {
         m_sceneControlAPI->linkOffscreenBuffer(providerBuffer, consumerScene, consumerTag);
+        m_sceneControlAPI->flush();
+    }
+
+    void TestRenderer::createBufferDataLink(ramses::streamBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag)
+    {
+        m_sceneControlAPI->impl.linkStreamBuffer(providerBuffer, consumerScene, consumerTag);
         m_sceneControlAPI->flush();
     }
 
@@ -245,20 +266,9 @@ namespace ramses_internal
 
     void TestRenderer::toggleRendererFrameProfiler()
     {
-        FrameProfileRenderer::ForAllFrameProfileRenderer(
-            m_renderer->impl.getRenderer().getRenderer(),
-            [](FrameProfileRenderer& renderer) { renderer.enable(!renderer.isEnabled()); });
-    }
-
-    IEmbeddedCompositingManager& TestRenderer::getEmbeddedCompositorManager(ramses::displayId_t displayId)
-    {
-        IDisplayController& displayController = m_renderer->impl.getRenderer().getRenderer().getDisplayController(DisplayHandle(displayId.getValue()));
-        return displayController.getEmbeddedCompositingManager();
-    }
-
-    void TestRenderer::setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility)
-    {
-        m_renderer->impl.getRenderer().getRenderer().systemCompositorSetIviSurfaceVisibility(surfaceId, visibility);
+        RendererCommands cmds;
+        cmds.push_back(RendererCommand::FrameProfiler_Toggle{ true });
+        m_renderer->impl.pushAndConsumeRendererCommands(cmds);
     }
 
     void TestRenderer::readPixels(ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
@@ -266,18 +276,25 @@ namespace ramses_internal
         m_renderer->readPixels(displayId, {}, x, y, width, height);
     }
 
-    IEmbeddedCompositor& TestRenderer::getEmbeddedCompositor(ramses::displayId_t displayId)
-    {
-        return m_renderer->impl.getRenderer().getRenderer().getDisplayController(DisplayHandle(displayId.getValue())).getRenderBackend().getEmbeddedCompositor();
-    }
-
     void TestRenderer::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender)
     {
         m_renderer->setFrameTimerLimits(0u, limitForClientResourcesUpload, limitForOffscreenBufferRender);
     }
 
-    bool TestRenderer::hasSystemCompositorController() const
+    void TestRenderer::setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility)
     {
-        return m_renderer->impl.getRenderer().getRenderer().hasSystemCompositorController();
+        RendererCommands cmds;
+        cmds.push_back(RendererCommand::SCSetIviSurfaceVisibility{ surfaceId, visibility });
+        m_renderer->impl.pushAndConsumeRendererCommands(cmds);
+    }
+
+    IEmbeddedCompositor& TestRenderer::getEmbeddedCompositor(ramses::displayId_t displayId)
+    {
+        return m_renderer->impl.getDisplayDispatcher().getEC(ramses_internal::DisplayHandle{ displayId.getValue() });
+    }
+
+    IEmbeddedCompositingManager& TestRenderer::getEmbeddedCompositorManager(ramses::displayId_t displayId)
+    {
+        return m_renderer->impl.getDisplayDispatcher().getECManager(ramses_internal::DisplayHandle{ displayId.getValue() });
     }
 }

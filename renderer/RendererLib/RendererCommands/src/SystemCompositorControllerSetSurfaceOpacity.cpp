@@ -24,7 +24,7 @@ namespace ramses_internal
 
     Bool SystemCompositorControllerSetSurfaceOpacity::execute(Int32& surfaceId, Float& opacity) const
     {
-        m_rendererCommandBuffer.systemCompositorControllerSetIviSurfaceOpacity(WaylandIviSurfaceId(surfaceId), opacity);
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCSetIviSurfaceOpacity{ WaylandIviSurfaceId(surfaceId), opacity });
         return true;
     }
 }

@@ -23,7 +23,7 @@ namespace ramses_internal
 
     Bool PrintStatistics::executeInput(const RamshInput& /*input*/)
     {
-        m_rendererCommandBuffer.logStatistics();
+        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::LogStatistics{});
         return true;
     }
 

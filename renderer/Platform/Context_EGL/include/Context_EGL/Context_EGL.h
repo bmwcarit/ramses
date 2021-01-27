@@ -67,6 +67,8 @@ namespace ramses_internal
         EGLDisplay getEglDisplay() const;
 
     private:
+        bool isInitialized() const;
+
         EglSurfaceData m_eglSurfaceData;
         Generic_EGLNativeDisplayType m_nativeDisplay;
         Generic_EGLNativeWindowType m_nativeWindow;

@@ -133,7 +133,7 @@ ramses::RendererConfig RendererTestUtils::CreateTestRendererConfig()
     ramses::RendererConfig rendererConfig(static_cast<int32_t>(CommandLineArgs.size()), CommandLineArgs.data());
     ramses_internal::RendererConfig& internalRendererConfig = const_cast<ramses_internal::RendererConfig&>(rendererConfig.impl.getInternalRendererConfig());
 
-    if(WaylandDisplayForSystemCompositorController.size() > 0)
+    if (HasSystemCompositorEnabled())
     {
         internalRendererConfig.enableSystemCompositorControl();
         internalRendererConfig.setWaylandDisplayForSystemCompositorController(WaylandDisplayForSystemCompositorController);
@@ -147,6 +147,11 @@ ramses::RendererConfig RendererTestUtils::CreateTestRendererConfig()
 void RendererTestUtils::SetWaylandDisplayForSystemCompositorController(const ramses_internal::String& wd)
 {
     WaylandDisplayForSystemCompositorController = wd;
+}
+
+bool RendererTestUtils::HasSystemCompositorEnabled()
+{
+    return !WaylandDisplayForSystemCompositorController.empty();
 }
 
 void RendererTestUtils::SetCommandLineParams(const int argc, char const* const* argv)
@@ -205,14 +210,24 @@ Image RendererTestUtils::ReadPixelData(
     UNUSED(status);
     renderer.flush();
 
+    constexpr std::chrono::seconds timeoutTime{ 10u };
+    const auto startTime = std::chrono::steady_clock::now();
     ReadPixelCallbackHandler callbackHandler;
-    while (!callbackHandler.m_pixelDataRead)
+    while (true)
     {
-        if (renderer.impl.isThreaded())
-            std::this_thread::sleep_for(std::chrono::milliseconds{10});
-        else
+        if (!renderer.impl.isThreaded())
             renderer.doOneLoop();
+
         renderer.dispatchEvents(callbackHandler);
+        if (callbackHandler.m_pixelDataRead)
+            break;
+
+        if ((std::chrono::steady_clock::now() - startTime) > timeoutTime)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererTestUtils::ReadPixelData: ran out of time!");
+            return Image{};
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
     }
 
     assert(callbackHandler.m_pixelData.size() == width * height * 4u);

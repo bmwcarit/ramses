@@ -58,6 +58,8 @@ on renderer they can be linked together.
 
 Data links are dynamic so any change to provider data (including animations) will be reflected to all its consumers.
 
+Data links of any kind can only be established if provider scene and consumer scene are mapped to the same display via #ramses::RendererSceneControl::setSceneMapping or - in case of DCSM contents - the contents' categories are mapped to the same display via #ramses::DcsmContentControl::addContentCategory.
+
 ### Transformation Linking
 
 For transformation data linking the provided scene content is the transformation matrix of a scenegraph node (any #ramses::Node typed object in scene),
@@ -71,8 +73,7 @@ As long as data type is matched a data value stored in a ramses::DataObject of o
 
 ### Texture Linking
 
-Texture resources can be tagged as data providers and can be consumed in another scene by #ramses::TextureSampler. In order to be able to successfully link
-textures both the provider and consumer scenes have to be mapped to the same display as they are going to share a GPU resource.
+Texture resources can be tagged as data providers and can be consumed in another scene by #ramses::TextureSampler.
 
 # Renderer API calls & Events
 

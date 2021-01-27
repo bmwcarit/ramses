@@ -10,7 +10,7 @@
 #define RAMSES_SCENESIZEINFORMATION_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
-#include "Collections/StringOutputStream.h"
+#include "PlatformAbstraction/FmtBase.h"
 
 namespace ramses_internal
 {
@@ -113,35 +113,6 @@ namespace ramses_internal
                 || (textureBufferCount > other.textureBufferCount);
         }
 
-        String asString() const
-        {
-            StringOutputStream str;
-            str << "[";
-            str << " node=" << nodeCount;
-            str << " camera=" << cameraCount;
-            str << " transform=" << transformCount;
-            str << " renderable=" << renderableCount;
-            str << " state=" << renderStateCount;
-            str << " datalayout=" << datalayoutCount;
-            str << " datainstance=" << datainstanceCount;
-            str << " renderGroup=" << renderGroupCount;
-            str << " renderPass=" << renderPassCount;
-            str << " blitPass=" << blitPassCount;
-            str << " renderTarget=" << renderTargetCount;
-            str << " renderBuffer=" << renderBufferCount;
-            str << " textureSampler=" << textureSamplerCount;
-            str << " streamTexture=" << streamTextureCount;
-            str << " dataSlot=" << dataSlotCount;
-            str << " dataBuffer=" << dataBufferCount;
-            str << " animationSystem=" << animationSystemCount;
-            str << " textureBuffer=" << textureBufferCount;
-            str << " pickableObjectCount=" << pickableObjectCount;
-            str << " sceneReferenceCount=" << sceneReferenceCount;
-            str << " ]";
-
-            return str.c_str();
-        }
-
         UInt32 nodeCount            = 0u;
         UInt32 cameraCount          = 0u;
         UInt32 transformCount       = 0u;
@@ -164,5 +135,39 @@ namespace ramses_internal
         UInt32 sceneReferenceCount  = 0u;
     };
 }
+
+template <>
+struct fmt::formatter<ramses_internal::SceneSizeInformation> : public ramses_internal::SimpleFormatterBase
+{
+    template<typename FormatContext>
+    auto format(const ramses_internal::SceneSizeInformation& si, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(),
+                              "[node={} camera={} transform={} renderable={} state={} datalayout={} datainstance={} renderGroup={} renderPass={} blitPass={} "
+                              "renderTarget={} renderBuffer={} textureSampler={} streamTexture={} dataSlot={} dataBuffer={} animationSystem={} textureBuffer={} "
+                              "pickableObjectCount={} sceneReferenceCount={}]",
+                              si.nodeCount,
+                              si.cameraCount,
+                              si.transformCount,
+                              si.renderableCount,
+                              si.renderStateCount,
+                              si.datalayoutCount,
+                              si.datainstanceCount,
+                              si.renderGroupCount,
+                              si.renderPassCount,
+                              si.blitPassCount,
+                              si.renderTargetCount,
+                              si.renderBufferCount,
+                              si.textureSamplerCount,
+                              si.streamTextureCount,
+                              si.dataSlotCount,
+                              si.dataBufferCount,
+                              si.animationSystemCount,
+                              si.textureBufferCount,
+                              si.pickableObjectCount,
+                              si.sceneReferenceCount);
+    }
+};
+
 
 #endif

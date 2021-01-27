@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
     effectDesc.setVertexShaderFromFile("res/ramses-example-text-languages-effect.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-example-text-languages-effect.frag");
     const ramses::Effect* textEffect = scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "simpleTextShader");
-
+    /// [Languages Text Example]
     // create font instances
     const ramses::FontId hebrewFont   = fontRegistry.createFreetype2Font("res/ramses-example-text-languages-Arimo-Regular.ttf");
     const ramses::FontId japaneseFont = fontRegistry.createFreetype2Font("res/ramses-example-text-languages-WenQuanYiMicroHei.ttf");
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
     const ramses::TextLineId textId3 = textCache.createTextLine(textCache.getPositionedGlyphs(hebrewString, hebrewFontInst), *textEffect);
     const ramses::TextLineId textId4 = textCache.createTextLine(textCache.getPositionedGlyphs(arabicString, arabicFontInst), *textEffect);
     const ramses::TextLineId textId5 = textCache.createTextLine(textCache.getPositionedGlyphs(arabicString, arabicFontInst_shaped), *textEffect);
-
+    /// [Languages Text Example]
     // position meshes for each text line on screen
     ramses::TextLine* textLine1 = textCache.getTextLine(textId1);
     ramses::TextLine* textLine2 = textCache.getTextLine(textId2);

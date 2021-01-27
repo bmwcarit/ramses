@@ -17,21 +17,24 @@ namespace ramses_internal
     {
         Registered = 0,   ///< Resource is known to renderer but there is no information/data available
         Provided,         ///< Resource is registered and data has been provided, not uploaded yet
+        ScheduledForUpload, ///< Resource is marked for upload asynchronously
         Uploaded,         ///< Resource has been uploaded and is ready for rendering
         Broken            ///< Resource failed to be uploaded, it is freed from system memory and will not be attempted to upload again
     };
 
     static constexpr const char* ResourceStatusNames[] =
     {
-        "EResourceStatus_Registered",
-        "EResourceStatus_Provided",
-        "EResourceStatus_Uploaded",
-        "EResourceStatus_Broken"
+        "Registered",
+        "Provided",
+        "ScheduledForUpload",
+        "Uploaded",
+        "Broken"
     };
 }
 
 MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses_internal::EResourceStatus,
-    ramses_internal::ResourceStatusNames,
-    ramses_internal::EResourceStatus::Broken);
+                                        "EResourceStatus",
+                                        ramses_internal::ResourceStatusNames,
+                                        ramses_internal::EResourceStatus::Broken);
 
 #endif

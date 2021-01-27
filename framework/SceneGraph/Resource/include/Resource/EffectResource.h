@@ -46,7 +46,6 @@ namespace ramses_internal
 
         const EffectInputInformationVector m_uniformInputs;
         const EffectInputInformationVector m_attributeInputs;
-        const String m_name;
         const UInt32 m_fragmentShaderOffset;
         const UInt32 m_geometryShaderOffset;
     };

@@ -686,7 +686,7 @@ namespace ramses_internal
 
         const Guid& to = getContentProviderID(contentID);
         LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentStateChange: to " << to << ", ContentID " << contentID <<
-                 ", EDcsmStatus " << ramses_internal::EnumToString(state) << ", ai [" << ai.startTimeStamp << ", " << ai.finishedTimeStamp << "]");
+                 ", EDcsmStatus " << state << ", ai [" << ai.startTimeStamp << ", " << ai.finishedTimeStamp << "]");
 
         if (!m_localConsumerAvailable)
         {
@@ -711,7 +711,7 @@ namespace ramses_internal
 
         if ((ci.state != ContentState::Offered || state != EDcsmState::Assigned) && categoryInfo != CategoryInfo{})
         {
-            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentStateChange: unexpected non-zero CategoryInfo for " << EnumToString(ci.state) << " -> " << ramses_internal::EnumToString(state) << " transition");
+            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentStateChange: unexpected non-zero CategoryInfo for " << EnumToString(ci.state) << " -> " << state << " transition");
             return false;
         }
 
@@ -723,7 +723,7 @@ namespace ramses_internal
                                               m_myID == to);
 
         LOG_INFO_F(CONTEXT_DCSM, ([&](ramses_internal::StringOutputStream& sos) {
-            sos << "DcsmComponent(" << m_myID << ")::sendContentStateChange: state change " << EnumToString(ci.state) << " -> " << ramses_internal::EnumToString(state) << " -> " << EnumToString(newState);
+            sos << "DcsmComponent(" << m_myID << ")::sendContentStateChange: state change " << EnumToString(ci.state) << " -> " << state << " -> " << EnumToString(newState);
             if (mustSendCachedDataLocally)
             {
                 if (!ci.metadata.empty())
@@ -880,25 +880,25 @@ namespace ramses_internal
         switch (cmd)
         {
         case EDcsmCommandType::OfferContent:
-            return "EDcsmCommandType::OfferContent";
+            return "OfferContent";
         case EDcsmCommandType::ContentDescription:
-            return "EDcsmCommandType::ContentDescription";
+            return "ContentDescription";
         case EDcsmCommandType::ContentReady:
-            return "EDcsmCommandType::ContentReady";
+            return "ContentReady";
         case EDcsmCommandType::ContentStateChange:
-            return "EDcsmCommandType::ContentStateChange";
+            return "ContentStateChange";
         case EDcsmCommandType::CanvasSizeChange:
-            return "EDcsmCommandType::CanvasSizeChange";
+            return "CanvasSizeChange";
         case EDcsmCommandType::ContentEnableFocusRequest:
-            return "EDcsmCommandType::ContentEnableFocusRequest";
+            return "ContentEnableFocusRequest";
         case EDcsmCommandType::ContentDisableFocusRequest:
-            return "EDcsmCommandType::ContentDisableFocusRequest";
+            return "ContentDisableFocusRequest";
         case EDcsmCommandType::StopOfferContentRequest:
-            return "EDcsmCommandType::StopOfferContentRequest";
+            return "StopOfferContentRequest";
         case EDcsmCommandType::ForceStopOfferContent:
-            return "EDcsmCommandType::ForceStopOfferContent";
+            return "ForceStopOfferContent";
         case EDcsmCommandType::UpdateContentMetadata:
-            return "EDcsmCommandType::UpdateContentMetadata";
+            return "UpdateContentMetadata";
         }
         return "<Invalid EDcsmCommandType>";
     }
@@ -908,19 +908,19 @@ namespace ramses_internal
         switch(val)
         {
         case ContentState::Unknown:
-            return "ContentState::Unknown";
+            return "Unknown";
         case ContentState::Offered:
-            return "ContentState::Offered";
+            return "Offered";
         case ContentState::Assigned:
-            return "ContentState::Assigned";
+            return "Assigned";
         case ContentState::ReadyRequested:
-            return "ContentState::ReadyRequested";
+            return "ReadyRequested";
         case ContentState::Ready:
-            return "ContentState::Ready";
+            return "Ready";
         case ContentState::Shown:
-            return "ContentState::Shown";
+            return "Shown";
         case ContentState::StopOfferRequested:
-            return "ContentState::StopOfferRequested";
+            return "StopOfferRequested";
         }
         return "<Invalid ContentState>";
     }
@@ -978,7 +978,7 @@ namespace ramses_internal
     void DcsmComponent::handleContentStateChange(ContentID contentID, EDcsmState state, const CategoryInfo& categoryInfo, AnimationInformation ai, const Guid& consumerID)
     {
         LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleContentStateChange: from " << consumerID << ", ContentID " << contentID <<
-                 ", EDcsmStatus " << ramses_internal::EnumToString(state) << ", ai [" << ai.startTimeStamp << ", " << ai.finishedTimeStamp << "]");
+                 ", EDcsmStatus " << state << ", ai [" << ai.startTimeStamp << ", " << ai.finishedTimeStamp << "]");
 
         const char* methodName = "handleContentStateChange";
         if (!isAllowedToReceiveFrom(methodName, consumerID))
@@ -1020,7 +1020,7 @@ namespace ramses_internal
 
         const bool mustSendCachedData = (ci->state == ContentState::Offered && newState == ContentState::Assigned);
         LOG_INFO_F(CONTEXT_DCSM, ([&](ramses_internal::StringOutputStream& sos) {
-            sos << "DcsmComponent(" << m_myID << ")::handleContentStateChange: state change " << EnumToString(ci->state) << " -> " << ramses_internal::EnumToString(state) << " -> " << EnumToString(newState);
+            sos << "DcsmComponent(" << m_myID << ")::handleContentStateChange: state change " << EnumToString(ci->state) << " -> " << state << " -> " << EnumToString(newState);
             if (mustSendCachedData)
             {
                 if (!ci->metadata.empty())
@@ -1065,7 +1065,7 @@ namespace ramses_internal
     void DcsmComponent::handleOfferContent(ContentID contentID, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, const Guid& providerID)
     {
         LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleOfferContent: from " << providerID << ", ContentID " << contentID
-            << ", Category " << category << ", ETechnicalContentType " << ramses_internal::EnumToString(technicalContentType)
+            << ", Category " << category << ", ETechnicalContentType " << technicalContentType
             << ", Name '" << friendlyName << "', hasLocalConsumer " << m_localConsumerAvailable);
 
         const char* methodName = "handleOfferContent";
@@ -1670,7 +1670,7 @@ namespace ramses_internal
             }
         }
         assert(ci.state == newState);
-        LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::" << callerMethod << ": invalid state transiton from " << EnumToString(ci.state) << " with " << ramses_internal::EnumToString(transition));
+        LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::" << callerMethod << ": invalid state transiton from " << EnumToString(ci.state) << " with " << transition);
         return false;
     }
 
@@ -1726,7 +1726,7 @@ namespace ramses_internal
                 for (const auto& focusRequest : ci.m_currentFocusRequests)
                     sos << focusRequest << "," ;
                 sos << "\n"
-                    << "    ContentType       " << ramses_internal::EnumToString(ci.contentType) << "\n"
+                    << "    ContentType       " << ci.contentType << "\n"
                     << "    ContentDescriptor " << ci.contentDescriptor << "\n";
             }
         }));
@@ -1738,38 +1738,39 @@ namespace ramses_internal
         // {C|NC} LP <local provider state> LC <local consumer state> CP[<connected participants>] C[<contentId>,<category>,<state>,<provider|->,<consumer|->,<techType:descriptor|-:->,<localonly>,<active focus requests|->; ...]
 
         PlatformGuard guard(m_frameworkLock);
-        LOG_INFO_F(CONTEXT_PERIODIC, ([&](StringOutputStream& sos) {
-            sos << "Dcsm(" << m_myID << ") " << (m_connected ? "C" : "NC") << " LP:" << m_localProviderAvailable << " LC:" << m_localConsumerAvailable
-                << " CP[";
-            for (const auto& p : m_connectedParticipants)
-                sos << p << ";";
-            sos << "] C[";
-            for (const auto& p : m_contentRegistry)
-            {
-                const auto& ci = p.value;
-                sos << ci.content << "," << ci.category << ",'" << ci.friendlyName << "'," << EnumToString(ci.state);
-                if (!ci.providerID.isInvalid())
-                    sos << "," << ci.providerID;
-                else
-                    sos << ",-";
-                if (!ci.consumerID.isInvalid())
-                    sos << "," << ci.consumerID;
-                else
-                    sos << ",-";
-                if (ci.contentDescriptor.isValid())
-                    sos << ", " << ramses_internal::EnumToString(ci.contentType) << ":" << ci.contentDescriptor;
-                else
-                    sos << ",-:-";
-                sos << "," << ci.localOnly;
-                if (!ci.m_currentFocusRequests.empty())
-                    for (auto& focusRequest : ci.m_currentFocusRequests)
-                        sos << focusRequest << "|";
-                else
-                    sos << "-";
-                sos << ",";
-                sos << "; ";
-            }
-            sos << "]";
-        }));
+        LOG_INFO_PF(CONTEXT_PERIODIC, ([&](auto& out) {
+                fmt::format_to(out, "Dcsm({}) {} LP:{} LC:{} CP[", m_myID, (m_connected ? "C" : "NC"), m_localProviderAvailable, m_localConsumerAvailable);
+                for (const auto& p : m_connectedParticipants)
+                    fmt::format_to(out, "{};", p);
+                fmt::format_to(out, "] C[");
+                for (const auto& p : m_contentRegistry)
+                {
+                    const auto& ci = p.value;
+                    fmt::format_to(out, "{},{},'{}',{}", ci.content, ci.category, ci.friendlyName, EnumToString(ci.state));
+                    if (!ci.providerID.isInvalid())
+                        fmt::format_to(out, ",{}", ci.providerID);
+                    else
+                        fmt::format_to(out, ",-");
+                    if (!ci.consumerID.isInvalid())
+                        fmt::format_to(out, ",{}", ci.consumerID);
+                    else
+                        fmt::format_to(out, ",-");
+                    if (ci.contentDescriptor.isValid())
+                        fmt::format_to(out, ",{:s}:{}", ci.contentType, ci.contentDescriptor);
+                    else
+                        fmt::format_to(out, ",-");
+                    if (ci.localOnly)
+                        fmt::format_to(out, ",local");
+                    if (!ci.m_currentFocusRequests.empty())
+                    {
+                        fmt::format_to(out, ",");
+                        for (auto& focusRequest : ci.m_currentFocusRequests)
+                            fmt::format_to(out, "{}|", focusRequest);
+                    }
+                    else
+                        fmt::format_to(out, ",-");
+                }
+                fmt::format_to(out, "]");
+            }));
     }
 }

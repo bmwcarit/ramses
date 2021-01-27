@@ -54,12 +54,12 @@ protected:
     const DataSlotHandle consumerSlotHandle;
 };
 
-typedef ::testing::Types <
+using ManagerTypes = ::testing::Types <
     LinkManagerBase,
     TransformationLinkManager,
     DataReferenceLinkManager,
     TextureLinkManager
-> ManagerTypes;
+>;
 
 TYPED_TEST_SUITE(ALinkManager, ManagerTypes);
 

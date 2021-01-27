@@ -14,10 +14,10 @@
 
 namespace ramses_internal
 {
-    typedef ::testing::Types<
+    using SceneTypes = ::testing::Types<
         ClientScene,
         TransformationCachedSceneWithExplicitMemory
-    > SceneTypes;
+    >;
 
     template <typename SCENE>
     class AResourceUtils : public testing::Test

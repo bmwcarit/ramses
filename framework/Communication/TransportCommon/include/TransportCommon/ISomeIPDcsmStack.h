@@ -12,6 +12,7 @@
 #include "Components/DcsmTypes.h"
 #include "TransportCommon/SomeIPStackCommon.h"
 #include "absl/types/span.h"
+#include <vector>
 #include <cstdint>
 
 namespace ramses_internal

@@ -10,6 +10,7 @@
 #define RAMSES_COLLECTIONS_HASHSET_H
 
 #include "PlatformAbstraction/Hash.h"
+#include "PlatformAbstraction/Macros.h"
 #include "Collections/HashMap.h"
 
 namespace ramses_internal
@@ -193,13 +194,13 @@ namespace ramses_internal
          *         false otherwise
          *
          */
-        bool contains(const T& value) const;
+        RNODISCARD bool contains(const T& value) const;
 
         /**
          * Returns count of the hash set.
          * @return number of element in hash set
          */
-        size_t size() const;
+        RNODISCARD size_t size() const;
 
         /**
          * Clear all values of the hash set.
@@ -210,37 +211,37 @@ namespace ramses_internal
          * Return iterator for iterating key value tuples.
          * @return Iterator
          */
-        Iterator begin();
+        RNODISCARD Iterator begin();
 
         /**
          * Return ConstIterator for iterating read only key value tuples.
          * @return ConstIterator
          */
-        ConstIterator begin() const;
+        RNODISCARD ConstIterator begin() const;
 
         /**
          * returns an iterator pointing after the last element of the list
          * @return iterator
          */
-        Iterator end();
+        RNODISCARD Iterator end();
 
         /**
          * returns a ConstIterator pointing after the last element of the list
          * @return ConstIterator
          */
-        ConstIterator end() const;
+        RNODISCARD ConstIterator end() const;
 
         /**
         * returns an iterator pointing to given element in set, if not contained pass-the-end iterator (end) is returned
         * @return iterator
         */
-        Iterator find(const T& value);
+        RNODISCARD Iterator find(const T& value);
 
         /**
         * returns a const iterator pointing to given element in set, if not contained pass-the-end iterator (end) is returned
         * @return ConstIterator
         */
-        ConstIterator find(const T& value) const;
+        RNODISCARD ConstIterator find(const T& value) const;
 
         void insert(std::initializer_list<T> ilist);
         template <typename InputIt>
@@ -253,7 +254,7 @@ namespace ramses_internal
          */
         void reserve(size_t requestedCapacity);
 
-        size_t capacity() const;
+        RNODISCARD size_t capacity() const;
 
         /**
         * Swap this HashSet with another

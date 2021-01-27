@@ -54,6 +54,7 @@ void RendererMockWithMockDisplay<MOCK_TYPE>::createDisplayContext(const DisplayC
     EXPECT_CALL(*displayController, getDisplayBuffer()).Times(AnyNumber());
     EXPECT_CALL(*displayController, getRenderBackend()).Times(AnyNumber());
     EXPECT_CALL(*displayController, getEmbeddedCompositingManager()).Times(AnyNumber());
+    EXPECT_CALL(renderBackend->surfaceMock, disable()).Times(AtMost(1));
     ON_CALL(*displayController, getRenderBackend()).WillByDefault(ReturnRef(*renderBackend));
     ON_CALL(*displayController, getEmbeddedCompositingManager()).WillByDefault(ReturnRef(*embeddedCompositingManager));
 

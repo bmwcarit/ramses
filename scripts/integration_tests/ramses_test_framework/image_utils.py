@@ -6,6 +6,8 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from __future__ import division
+from builtins import range
 from PIL import ImageChops
 from PIL import ImageEnhance
 import os.path

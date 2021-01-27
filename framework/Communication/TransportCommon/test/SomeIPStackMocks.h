@@ -31,7 +31,7 @@ namespace ramses_internal
     {
         StringOutputStream sos;
         sos << hdr;
-        *os << sos.release().stdRef();
+        *os << sos.release();
     }
 
     class SomeIPDcsmStackCallbacksMock : public ISomeIPDcsmStackCallbacks

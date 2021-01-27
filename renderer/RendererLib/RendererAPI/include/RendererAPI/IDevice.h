@@ -15,6 +15,8 @@
 #include "SceneAPI/RenderState.h"
 #include "SceneAPI/EDataType.h"
 #include "Resource/TextureMetaInfo.h"
+#include "Platform_Base/GpuResource.h"
+#include <memory>
 
 namespace ramses_internal
 {
@@ -88,7 +90,8 @@ namespace ramses_internal
         virtual void                    deleteIndexBuffer           (DeviceResourceHandle handle) = 0;
         virtual void                    activateIndexBuffer         (DeviceResourceHandle handle) = 0;
 
-        virtual DeviceResourceHandle    uploadShader                (const EffectResource& effect) = 0;
+        virtual std::unique_ptr<const GPUResource> uploadShader     (const EffectResource& effect) = 0;
+        virtual DeviceResourceHandle    registerShader              (std::unique_ptr<const GPUResource> shaderResource) = 0;
         virtual DeviceResourceHandle    uploadBinaryShader          (const EffectResource& effect, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat) = 0;
         virtual Bool                    getBinaryShader             (DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) = 0;
         virtual void                    deleteShader                (DeviceResourceHandle handle) = 0;
@@ -128,13 +131,14 @@ namespace ramses_internal
         // read back data, statistics, info
         virtual void readPixels(UInt8* buffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height) = 0;
 
-        virtual UInt32  getTotalGpuMemoryUsageInKB() const = 0;
-        virtual UInt32  getDrawCallCount() const = 0;
-        virtual void    resetDrawCallCount() = 0;
+        virtual uint32_t getTotalGpuMemoryUsageInKB() const = 0;
+        virtual uint32_t getAndResetDrawCallCount() = 0;
 
         virtual void    validateDeviceStatusHealthy() const = 0;
-        virtual Bool    isDeviceStatusHealthy() const = 0;
+        virtual bool    isDeviceStatusHealthy() const = 0;
         virtual void    getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>& formats) const = 0;
+
+        virtual uint32_t getGPUHandle(DeviceResourceHandle deviceHandle) const = 0;
     };
 }
 

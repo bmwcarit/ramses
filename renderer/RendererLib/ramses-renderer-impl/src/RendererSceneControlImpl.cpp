@@ -33,7 +33,8 @@ namespace ramses
             return addErrorEntry("RendererSceneControl::setSceneState: cannot get scene to ready/rendered without mapping info, set mapping info via RendererSceneControl::setSceneMapping first!");
         sceneInfo.targetState = state;
 
-        m_pendingRendererCommands.setSceneState(ramses_internal::SceneId{ sceneId.getValue() }, static_cast<ramses_internal::RendererSceneState>(state));
+        ramses_internal::RendererCommand::SetSceneState cmd{ ramses_internal::SceneId{ sceneId.getValue() }, static_cast<ramses_internal::RendererSceneState>(state) };
+        m_pendingRendererCommands.push_back(std::move(cmd));
 
         return StatusOK;
     }
@@ -48,7 +49,8 @@ namespace ramses
                 " Set scene state to AVAILABLE first, adjust mapping properties and then it can be made READY/RENDERED with new mapping properties.");
         sceneInfo.mappingSet = true;
 
-        m_pendingRendererCommands.setSceneMapping(ramses_internal::SceneId{ sceneId.getValue() }, ramses_internal::DisplayHandle{ displayId.getValue() });
+        ramses_internal::RendererCommand::SetSceneMapping cmd{ ramses_internal::SceneId{ sceneId.getValue() }, ramses_internal::DisplayHandle{ displayId.getValue() } };
+        m_pendingRendererCommands.push_back(std::move(cmd));
 
         return StatusOK;
     }
@@ -66,7 +68,8 @@ namespace ramses
         if (std::any_of(frameBuffers.cbegin(), frameBuffers.cend(), [displayBuffer](const auto& d) { return d.second == displayBuffer; }))
             bufferHandle = ramses_internal::OffscreenBufferHandle::Invalid();
 
-        m_pendingRendererCommands.setSceneDisplayBufferAssignment(ramses_internal::SceneId{ sceneId.getValue() }, bufferHandle, sceneRenderOrder);
+        ramses_internal::RendererCommand::SetSceneDisplayBufferAssignment cmd{ ramses_internal::SceneId{ sceneId.getValue() }, bufferHandle, sceneRenderOrder };
+        m_pendingRendererCommands.push_back(std::move(cmd));
 
         return StatusOK;
     }
@@ -75,7 +78,18 @@ namespace ramses
     {
         const ramses_internal::OffscreenBufferHandle providerBuffer{ offscreenBufferId.getValue() };
         const ramses_internal::SceneId internalConsumerSceneId{ consumerSceneId.getValue() };
-        m_pendingRendererCommands.linkBufferToSceneData(providerBuffer, internalConsumerSceneId, ramses_internal::DataSlotId{ consumerDataSlotId.getValue() });
+        ramses_internal::RendererCommand::LinkOffscreenBuffer cmd{ providerBuffer, internalConsumerSceneId, ramses_internal::DataSlotId{ consumerDataSlotId.getValue() } };
+        m_pendingRendererCommands.push_back(std::move(cmd));
+
+        return StatusOK;
+    }
+
+    status_t RendererSceneControlImpl::linkStreamBuffer(streamBufferId_t streamBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId)
+    {
+        const ramses_internal::StreamBufferHandle providerBuffer{ streamBufferId.getValue() };
+        const ramses_internal::SceneId internalConsumerSceneId{ consumerSceneId.getValue() };
+        ramses_internal::RendererCommand::LinkStreamBuffer cmd{ providerBuffer, internalConsumerSceneId, ramses_internal::DataSlotId{ consumerDataSlotId.getValue() } };
+        m_pendingRendererCommands.push_back(std::move(cmd));
 
         return StatusOK;
     }
@@ -87,14 +101,19 @@ namespace ramses
 
         const ramses_internal::SceneId internalConsumerSceneId{ consumerSceneId.getValue() };
         const ramses_internal::SceneId internalProviderSceneId{ providerSceneId.getValue() };
-        m_pendingRendererCommands.linkSceneData(internalProviderSceneId, ramses_internal::DataSlotId{ providerId.getValue() }, internalConsumerSceneId, ramses_internal::DataSlotId{ consumerId.getValue() });
+        const ramses_internal::DataSlotId providerSlot{ providerId.getValue() };
+        const ramses_internal::DataSlotId consumerSlot{ consumerId.getValue() };
+        ramses_internal::RendererCommand::LinkData cmd{ internalProviderSceneId, providerSlot, internalConsumerSceneId, consumerSlot };
+        m_pendingRendererCommands.push_back(std::move(cmd));
 
         return StatusOK;
     }
 
     status_t RendererSceneControlImpl::unlinkData(sceneId_t consumerSceneId, dataConsumerId_t consumerId)
     {
-        m_pendingRendererCommands.unlinkSceneData(ramses_internal::SceneId{ consumerSceneId.getValue() }, ramses_internal::DataSlotId{ consumerId.getValue() });
+        const ramses_internal::SceneId internalConsumerSceneId{ consumerSceneId.getValue() };
+        const ramses_internal::DataSlotId consumerSlot{ consumerId.getValue() };
+        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::UnlinkData{ internalConsumerSceneId, consumerSlot });
         return StatusOK;
     }
 
@@ -102,27 +121,26 @@ namespace ramses
     {
         const ramses_internal::Vector2 coords(bufferNormalizedCoordX, bufferNormalizedCoordY);
         const ramses_internal::SceneId sceneId(scene.getValue());
-        m_pendingRendererCommands.handlePickEvent(sceneId, coords);
+        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::PickEvent{ sceneId, coords });
         return StatusOK;
     }
 
     status_t RendererSceneControlImpl::flush()
     {
-        m_renderer.submitRendererCommands(m_pendingRendererCommands);
-        m_pendingRendererCommands.clear();
+        m_renderer.pushAndConsumeRendererCommands(m_pendingRendererCommands);
         return StatusOK;
     }
 
     status_t RendererSceneControlImpl::dispatchEvents(IRendererSceneControlEventHandler& eventHandler)
     {
         m_tempRendererEvents.clear();
-        m_renderer.getRenderer().dispatchSceneControlEvents(m_tempRendererEvents);
+        m_renderer.getDisplayDispatcher().dispatchSceneControlEvents(m_tempRendererEvents);
 
         for (const auto& event : m_tempRendererEvents)
         {
             switch (event.eventType)
             {
-            case ramses_internal::ERendererEventType_SceneStateChanged:
+            case ramses_internal::ERendererEventType::SceneStateChanged:
             {
                 const sceneId_t sceneId{ event.sceneId.getValue() };
                 const auto state = static_cast<RendererSceneState>(event.state);
@@ -133,97 +151,72 @@ namespace ramses
                 eventHandler.sceneStateChanged(sceneId, state);
                 break;
             }
-            case ramses_internal::ERendererEventType_SceneAssignedToDisplayBuffer:
-            case ramses_internal::ERendererEventType_SceneAssignedToDisplayBufferFailed:
-                // TODO vaclav - decide if needed, does not have callback atm
-                break;
-            case ramses_internal::ERendererEventType_SceneDataBufferLinked:
+            case ramses_internal::ERendererEventType::SceneDataBufferLinked:
                 assert(event.offscreenBuffer.isValid() != event.streamBuffer.isValid());
                 if (event.offscreenBuffer.isValid())
                     eventHandler.offscreenBufferLinked(displayBufferId_t{ event.offscreenBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, true);
-                //else
-                    //TODO vaclav streamBufferLinked
+                if (event.streamBuffer.isValid())
+                    m_waylandEvents.push_back(event);
                 break;
-            case ramses_internal::ERendererEventType_SceneDataBufferLinkFailed:
+            case ramses_internal::ERendererEventType::SceneDataBufferLinkFailed:
                 assert(event.offscreenBuffer.isValid() != event.streamBuffer.isValid());
                 if (event.offscreenBuffer.isValid())
                     eventHandler.offscreenBufferLinked(displayBufferId_t { event.offscreenBuffer.asMemoryHandle() }, sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() }, false);
-                //else
-                    //TODO vaclav streamBufferLinked
+                if (event.streamBuffer.isValid())
+                    m_waylandEvents.push_back(event);
                 break;
-            case ramses_internal::ERendererEventType_SceneDataLinked:
+            case ramses_internal::ERendererEventType::SceneDataLinked:
                 eventHandler.dataLinked(sceneId_t(event.providerSceneId.getValue()), dataProviderId_t(event.providerdataId.getValue()), sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), true);
                 break;
-            case ramses_internal::ERendererEventType_SceneDataLinkFailed:
+            case ramses_internal::ERendererEventType::SceneDataLinkFailed:
                 eventHandler.dataLinked(sceneId_t(event.providerSceneId.getValue()), dataProviderId_t(event.providerdataId.getValue()), sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), false);
                 break;
-            case ramses_internal::ERendererEventType_SceneDataUnlinked:
+            case ramses_internal::ERendererEventType::SceneDataUnlinked:
                 eventHandler.dataUnlinked(sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), true);
                 break;
-            case ramses_internal::ERendererEventType_SceneDataUnlinkedAsResultOfClientSceneChange:
+            case ramses_internal::ERendererEventType::SceneDataUnlinkedAsResultOfClientSceneChange:
                 // TODO vaclav remove this event, not useful
                 break;
-            case ramses_internal::ERendererEventType_SceneDataUnlinkFailed:
+            case ramses_internal::ERendererEventType::SceneDataUnlinkFailed:
                 eventHandler.dataUnlinked(sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), false);
                 break;
-            case ramses_internal::ERendererEventType_SceneDataSlotProviderCreated:
+            case ramses_internal::ERendererEventType::SceneDataSlotProviderCreated:
                 eventHandler.dataProviderCreated(sceneId_t{ event.providerSceneId.getValue() }, dataProviderId_t{ event.providerdataId.getValue() });
                 break;
-            case ramses_internal::ERendererEventType_SceneDataSlotProviderDestroyed:
+            case ramses_internal::ERendererEventType::SceneDataSlotProviderDestroyed:
                 eventHandler.dataProviderDestroyed(sceneId_t{ event.providerSceneId.getValue() }, dataProviderId_t{ event.providerdataId.getValue() });
                 break;
-            case ramses_internal::ERendererEventType_SceneDataSlotConsumerCreated:
+            case ramses_internal::ERendererEventType::SceneDataSlotConsumerCreated:
                 eventHandler.dataConsumerCreated(sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() });
                 break;
-            case ramses_internal::ERendererEventType_SceneDataSlotConsumerDestroyed:
+            case ramses_internal::ERendererEventType::SceneDataSlotConsumerDestroyed:
                 eventHandler.dataConsumerDestroyed(sceneId_t{ event.consumerSceneId.getValue() }, dataConsumerId_t{ event.consumerdataId.getValue() });
                 break;
-            case ramses_internal::ERendererEventType_ObjectsPicked:
+            case ramses_internal::ERendererEventType::ObjectsPicked:
                 static_assert(sizeof(ramses::pickableObjectId_t) == sizeof(std::remove_pointer<decltype(event.pickedObjectIds.data())>::type), "");
                 eventHandler.objectsPicked(ramses::sceneId_t(event.sceneId.getValue()), reinterpret_cast<const ramses::pickableObjectId_t*>(event.pickedObjectIds.data()), static_cast<uint32_t>(event.pickedObjectIds.size()));
                 break;
-            case ramses_internal::ERendererEventType_SceneFlushed:
+            case ramses_internal::ERendererEventType::SceneFlushed:
                 eventHandler.sceneFlushed(sceneId_t(event.sceneId.getValue()), event.sceneVersionTag.getValue());
                 break;
-            case ramses_internal::ERendererEventType_SceneExpirationMonitoringEnabled:
+            case ramses_internal::ERendererEventType::SceneExpirationMonitoringEnabled:
                 eventHandler.sceneExpirationMonitoringEnabled(sceneId_t(event.sceneId.getValue()));
                 break;
-            case ramses_internal::ERendererEventType_SceneExpirationMonitoringDisabled:
+            case ramses_internal::ERendererEventType::SceneExpirationMonitoringDisabled:
                 eventHandler.sceneExpirationMonitoringDisabled(sceneId_t(event.sceneId.getValue()));
                 break;
-            case ramses_internal::ERendererEventType_SceneExpired:
+            case ramses_internal::ERendererEventType::SceneExpired:
                 eventHandler.sceneExpired(sceneId_t(event.sceneId.getValue()));
                 break;
-            case ramses_internal::ERendererEventType_SceneRecoveredFromExpiration:
+            case ramses_internal::ERendererEventType::SceneRecoveredFromExpiration:
                 eventHandler.sceneRecoveredFromExpiration(sceneId_t(event.sceneId.getValue()));
                 break;
-            case ramses_internal::ERendererEventType_StreamSurfaceAvailable:
+            case ramses_internal::ERendererEventType::StreamSurfaceAvailable:
                 eventHandler.streamAvailabilityChanged(ramses::waylandIviSurfaceId_t(event.streamSourceId.getValue()), true);
                 break;
-            case ramses_internal::ERendererEventType_StreamSurfaceUnavailable:
+            case ramses_internal::ERendererEventType::StreamSurfaceUnavailable:
                 eventHandler.streamAvailabilityChanged(ramses::waylandIviSurfaceId_t(event.streamSourceId.getValue()), false);
                 break;
-
-            case ramses_internal::ERendererEventType_ScenePublished:
-            case ramses_internal::ERendererEventType_SceneUnpublished:
-            case ramses_internal::ERendererEventType_SceneSubscribed:
-            case ramses_internal::ERendererEventType_SceneSubscribeFailed:
-            case ramses_internal::ERendererEventType_SceneUnsubscribed:
-            case ramses_internal::ERendererEventType_SceneUnsubscribedIndirect:
-            case ramses_internal::ERendererEventType_SceneUnsubscribeFailed:
-            case ramses_internal::ERendererEventType_SceneMapped:
-            case ramses_internal::ERendererEventType_SceneMapFailed:
-            case ramses_internal::ERendererEventType_SceneUnmapped:
-            case ramses_internal::ERendererEventType_SceneUnmappedIndirect:
-            case ramses_internal::ERendererEventType_SceneUnmapFailed:
-            case ramses_internal::ERendererEventType_SceneShown:
-            case ramses_internal::ERendererEventType_SceneShowFailed:
-            case ramses_internal::ERendererEventType_SceneHidden:
-            case ramses_internal::ERendererEventType_SceneHiddenIndirect:
-            case ramses_internal::ERendererEventType_SceneHideFailed:
-                // these events are emitted from internal renderer and processed by scene control logic
-                break;
-
             default:
                 assert(false);
                 break;
@@ -233,8 +226,45 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t RendererSceneControlImpl::dispatchSpecialEvents(IRendererSceneControlEventHandler_SpecialForWayland& eventHandler)
+    {
+        for (const auto& event : m_waylandEvents)
+        {
+            switch (event.eventType)
+            {
+                case ramses_internal::ERendererEventType::SceneDataBufferLinked:
+                    eventHandler.streamBufferLinked(streamBufferId_t(event.streamBuffer.asMemoryHandle()), sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), true);
+                    break;
+                case ramses_internal::ERendererEventType::SceneDataBufferLinkFailed:
+                    eventHandler.streamBufferLinked(streamBufferId_t(event.streamBuffer.asMemoryHandle()), sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), false);
+                    break;
+                default:
+                    LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlImpl::dispatchSpecialEvents: skipping unknown type" );
+            }
+
+        }
+        m_waylandEvents.clear();
+        return StatusOK;
+    }
+
     const ramses_internal::RendererCommands& RendererSceneControlImpl::getPendingCommands() const
     {
         return m_pendingRendererCommands;
     }
+
+    ramses::streamBufferId_t RendererSceneControlImpl::createStreamBuffer(displayId_t display, waylandIviSurfaceId_t source)
+    {
+        return m_renderer.createStreamBuffer(display, source);
+    }
+
+    ramses::status_t RendererSceneControlImpl::destroyStreamBuffer(displayId_t display, streamBufferId_t streamBuffer)
+    {
+        return m_renderer.destroyStreamBuffer(display, streamBuffer);
+    }
+
+    ramses::status_t RendererSceneControlImpl::setStreamBufferState(displayId_t display, streamBufferId_t streamBufferId, bool state)
+    {
+        return m_renderer.setStreamBufferState(display, streamBufferId, state);
+    }
+
 }

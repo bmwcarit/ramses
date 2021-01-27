@@ -9,7 +9,6 @@
 #include "Platform_Integrity_RGL/Window_Integrity_RGL.h"
 #include "RendererLib/DisplayConfig.h"
 #include "Utils/LogMacros.h"
-#include <EGL/eglext.h>
 
 namespace ramses_internal
 {
@@ -142,23 +141,6 @@ namespace ramses_internal
     const EGLNativeWindowType Window_Integrity_RGL::getNativeWindowHandle() const
     {
         return reinterpret_cast<EGLNativeWindowType>(const_cast<r_wm_Window_t*>(&m_rglWindow));
-    }
-
-    const EGLint* Window_Integrity_RGL::getSurfaceAttributes() const
-    {
-        static const EGLint surfaceAttributes[] =
-        {
-            EGL_BUFFER_SIZE,          32,
-            EGL_ALPHA_SIZE,           8,
-            EGL_BLUE_SIZE,            8,
-            EGL_GREEN_SIZE,           8,
-            EGL_RED_SIZE,             8,
-            EGL_DEPTH_SIZE,           8,
-            EGL_SURFACE_TYPE,         EGL_WINDOW_BIT,
-            EGL_RENDERABLE_TYPE,      EGL_OPENGL_ES3_BIT_KHR,
-            EGL_NONE
-        };
-        return surfaceAttributes;
     }
 
     bool Window_Integrity_RGL::hasTitle() const

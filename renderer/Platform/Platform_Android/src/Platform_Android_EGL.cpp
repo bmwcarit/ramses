@@ -7,16 +7,14 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_Android/Platform_Android_EGL.h"
-#include "Utils/LogMacros.h"
 #include "RendererLib/RendererConfig.h"
-#include "Platform_Android/Window_Android.h"
 #include "Context_EGL/Context_EGL.h"
 #include "Platform_Base/EmbeddedCompositor_Dummy.h"
 
 namespace ramses_internal
 {
     Platform_Android_EGL::Platform_Android_EGL(const RendererConfig& rendererConfig)
-        : Platform_Base(rendererConfig)
+        : Platform_EGL<Window_Android>(rendererConfig)
     {
     }
 
@@ -31,33 +29,16 @@ namespace ramses_internal
         return addPlatformWindow(platformWindow);
     }
 
-    IContext* Platform_Android_EGL::createContext(IWindow& window)
-    {
-        Window_Android* platformWindow = getPlatformWindow<Window_Android>(window);
-        assert(0 != platformWindow);
-
-        std::vector<EGLint> contextAttributes;
-        getContextAttributes(contextAttributes);
-        std::vector<EGLint> surfaceAttributes;
-        getSurfaceAttributes(platformWindow->getMSAASampleCount(), surfaceAttributes);
-
-        Context_EGL* platformContext = new Context_EGL(
-                    platformWindow->getNativeDisplayHandle(),
-                    platformWindow->getNativeWindowHandle(),
-                    &contextAttributes[0],
-                    &surfaceAttributes[0],
-                    nullptr,
-                    1,
-                    0);
-
-        return addPlatformContext(platformContext);
-    }
-
     IEmbeddedCompositor* Platform_Android_EGL::createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context)
     {
         UNUSED(displayConfig);
         UNUSED(context);
         EmbeddedCompositor_Dummy* compositor = new EmbeddedCompositor_Dummy();
         return addEmbeddedCompositor(compositor);
+    }
+
+    uint32_t Platform_Android_EGL::getSwapInterval() const
+    {
+        return 1u;
     }
 }

@@ -19,6 +19,7 @@
 #include "EmbeddedCompositingTestsWithFD.h"
 #include "WaylandOutputTests.h"
 #include "SharedMemoryBufferTests.h"
+#include "StreamBufferTests.h"
 
 namespace ramses_internal
 {
@@ -40,6 +41,7 @@ namespace ramses_internal
             m_embeddedCompositingTestsWithFD.setUpEmbeddedCompositingTestCases(m_testFramework);
             m_waylandOutputTests.setUpEmbeddedCompositingTestCases(m_testFramework);
             m_sharedMemoryBufferTests.setUpEmbeddedCompositingTestCases(m_testFramework);
+            m_streamBufferTests.setUpEmbeddedCompositingTestCases(m_testFramework);
 
             m_testFramework.filterTestCases(filterIn, filterOut);
         }
@@ -51,8 +53,7 @@ namespace ramses_internal
 
         void logReport()
         {
-            const String reportStr = m_testFramework.generateReport();
-            printf("%s\n", reportStr.c_str());
+            fmt::print("{}\n", m_testFramework.generateReport());
         }
 
     protected:
@@ -67,6 +68,7 @@ namespace ramses_internal
         EmbeddedCompositingTestsWithFD              m_embeddedCompositingTestsWithFD;
         WaylandOutputTests                          m_waylandOutputTests;
         SharedMemoryBufferTests                     m_sharedMemoryBufferTests;
+        StreamBufferTests                           m_streamBufferTests;
     };
 }
 

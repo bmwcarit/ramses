@@ -41,7 +41,7 @@ namespace ramses_internal
                 cmdStream << *iter << " ";
             }
         }
-        return cmdStream.release();
+        return String(cmdStream.release());
     }
 
     const ramses_internal::String& RamshInput::operator[](const UInt index) const

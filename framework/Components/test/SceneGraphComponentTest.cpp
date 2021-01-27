@@ -710,8 +710,8 @@ TEST_F(ASceneGraphComponent, forwardsEventsToCorrectHandler)
 
 TEST(AERendererToClientEventType, canBePrinted)
 {
-    EXPECT_EQ("ERendererToClientEventType::SceneReferencingEvent", StringOutputStream::ToString(ERendererToClientEventType::SceneReferencingEvent));
-    EXPECT_EQ("ERendererToClientEventType::ResourcesAvailableAtRendererEvent", StringOutputStream::ToString(ERendererToClientEventType::ResourcesAvailableAtRendererEvent));
+    EXPECT_EQ("ERendererToClientEventType::SceneReferencingEvent", fmt::to_string(ERendererToClientEventType::SceneReferencingEvent));
+    EXPECT_EQ("ERendererToClientEventType::ResourcesAvailableAtRendererEvent", fmt::to_string(ERendererToClientEventType::ResourcesAvailableAtRendererEvent));
 }
 
 TEST_F(ASceneGraphComponent, forwardsPublishFromRemoteToConsumer)

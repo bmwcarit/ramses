@@ -33,15 +33,15 @@ namespace ramses
 {
     static const char* DataTypeNames[] =
     {
-        "DATATYPE_UINT16",
-        "DATATYPE_UINT32",
-        "DATATYPE_FLOAT",
-        "DATATYPE_VECTOR2F",
-        "DATATYPE_VECTOR3F",
-        "DATATYPE_VECTOR4F",
+        "UINT16",
+        "UINT32",
+        "FLOAT",
+        "VECTOR2F",
+        "VECTOR3F",
+        "VECTOR4F",
     };
 }
 
-MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses::EDataType, ramses::DataTypeNames, ramses::EDataType::Vector4F)
+MAKE_ENUM_CLASS_PRINTABLE_NO_EXTRA_LAST(ramses::EDataType, "EDataType", ramses::DataTypeNames, ramses::EDataType::Vector4F)
 
 #endif

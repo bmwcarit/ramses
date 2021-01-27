@@ -52,7 +52,7 @@ namespace ramses_internal
     template<> const SceneReferenceHandle      ASceneActionCollectionBasicTypes<SceneReferenceHandle>::m_value = SceneReferenceHandle();
 
     // types to test
-    typedef ::testing::Types <
+    using SceneActionCollectionBasicTypes = ::testing::Types <
         Int8,
         UInt8,
         Int16,
@@ -80,7 +80,7 @@ namespace ramses_internal
         DataFieldHandle,
         SceneVersionTag,
         SceneReferenceHandle
-    > SceneActionCollectionBasicTypes;
+    >;
 
 
     TYPED_TEST_SUITE(ASceneActionCollectionBasicTypes, SceneActionCollectionBasicTypes);

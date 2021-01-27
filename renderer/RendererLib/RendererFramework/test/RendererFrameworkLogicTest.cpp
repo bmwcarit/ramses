@@ -12,6 +12,8 @@
 #include "ComponentMocks.h"
 #include "ResourceMock.h"
 #include "MockConnectionStatusUpdateNotifier.h"
+#include "RendererCommandVisitorMock.h"
+#include "MockResourceHash.h"
 
 using namespace testing;
 
@@ -21,12 +23,7 @@ namespace ramses_internal
     {
     public:
         ARendererFrameworkLogic()
-            : testing::Test()
-            , fixture(
-            sceneGraphConsumerComponent,
-            rendererCommandBuffer,
-            frameworkLock
-            )
+            : fixture(sceneGraphConsumerComponent, rendererCommandBuffer, frameworkLock)
             , providerID(20)
             , sceneId(33u)
             , sceneName("scene")
@@ -34,12 +31,9 @@ namespace ramses_internal
         }
 
     protected:
-        void expectSceneCommand(ERendererCommand commandType)
+        void visitPendingCommands()
         {
-            RendererCommandContainer commands;
-            rendererCommandBuffer.swapCommandContainer(commands);
-            ASSERT_EQ(1u, commands.getTotalCommandCount());
-            EXPECT_EQ(commandType, commands.getCommandType(0u));
+            cmdVisitor.visit(rendererCommandBuffer);
         }
 
         SceneActionCollection createFakeSceneActionCollectionFromTypes(const std::vector<ESceneActionId>& types)
@@ -53,10 +47,10 @@ namespace ramses_internal
         }
 
         StrictMock<SceneGraphConsumerComponentMock> sceneGraphConsumerComponent;
-
         RendererCommandBuffer rendererCommandBuffer;
         PlatformLock frameworkLock;
         RendererFrameworkLogic fixture;
+        StrictMock<RendererCommandVisitorMock> cmdVisitor;
 
         const Guid providerID;
         const SceneId sceneId;
@@ -67,49 +61,66 @@ namespace ramses_internal
     TEST_F(ARendererFrameworkLogic, generatesPublishedRendererCommand)
     {
         fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode_LocalAndRemote), providerID);
-        expectSceneCommand(ERendererCommand_PublishedScene);
+        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote));
+        visitPendingCommands();
     }
 
     TEST_F(ARendererFrameworkLogic, generatesReceiveRendererCommand)
     {
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode_LocalAndRemote), providerID);
-        expectSceneCommand(ERendererCommand_PublishedScene);
-        fixture.handleInitializeScene(SceneInfo(sceneId, sceneName, EScenePublicationMode_LocalAndRemote), providerID);
-        expectSceneCommand(ERendererCommand_ReceivedScene);
+        const SceneInfo sceneInfo{ sceneId, sceneName, EScenePublicationMode_LocalAndRemote };
+        fixture.handleNewSceneAvailable(sceneInfo, providerID);
+        fixture.handleInitializeScene(sceneInfo, providerID);
+
+        InSequence seq;
+        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote));
+        EXPECT_CALL(cmdVisitor, handleSceneReceived(sceneInfo));
+        visitPendingCommands();
     }
 
     TEST_F(ARendererFrameworkLogic, generatesUnpublishRendererCommand)
     {
         fixture.handleNewSceneAvailable(SceneInfo(sceneId, "", EScenePublicationMode_LocalAndRemote), providerID);
-        expectSceneCommand(ERendererCommand_PublishedScene);
         fixture.handleSceneBecameUnavailable(sceneId, providerID);
-        expectSceneCommand(ERendererCommand_UnpublishedScene);
+
+        InSequence seq;
+        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote));
+        EXPECT_CALL(cmdVisitor, handleSceneUnpublished(sceneId));
+        visitPendingCommands();
     }
 
     TEST_F(ARendererFrameworkLogic, ignoresSecondPublishFromDifferentProvider)
     {
         fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode_LocalAndRemote), providerID);
         fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode_LocalAndRemote), Guid(30));
-        expectSceneCommand(ERendererCommand_PublishedScene);
+
+        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote));
+        visitPendingCommands();
     }
 
     TEST_F(ARendererFrameworkLogic, handlesSceneUpdateWithFlush)
     {
         fixture.handleNewSceneAvailable(SceneInfo(sceneId, "", EScenePublicationMode_LocalAndRemote), providerID);
-        expectSceneCommand(ERendererCommand_PublishedScene);
+        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote));
+        visitPendingCommands();
 
         SceneUpdate sceneUpdate;
         sceneUpdate.actions = createFakeSceneActionCollectionFromTypes({ ESceneActionId::AddChildToNode });
+        sceneUpdate.resources.push_back(MockResourceHash::GetManagedResource(MockResourceHash::EffectHash));
+        // copy before move
+        SceneUpdate expectedData;
+        expectedData.actions = sceneUpdate.actions.copy();
+        expectedData.resources = sceneUpdate.resources;
+        expectedData.flushInfos = sceneUpdate.flushInfos.copy();
+
         fixture.handleSceneUpdate(sceneId, std::move(sceneUpdate), providerID);
 
-        RendererCommandContainer commands;
-        rendererCommandBuffer.swapCommandContainer(commands);
-        ASSERT_EQ(1u, commands.getTotalCommandCount());
-        EXPECT_EQ(ERendererCommand_SceneUpdate, commands.getCommandType(0u));
-        const SceneUpdateCommand& cmd = commands.getCommandData<SceneUpdateCommand>(0u);
-        EXPECT_EQ(sceneId, cmd.sceneId);
-        EXPECT_EQ(1u, cmd.sceneUpdate.actions.numberOfActions());
-        EXPECT_EQ(ESceneActionId::AddChildToNode, cmd.sceneUpdate.actions[0].type());
+        EXPECT_CALL(cmdVisitor, handleSceneUpdate(sceneId, _)).WillOnce(Invoke([&](auto, const SceneUpdate& data)
+        {
+            EXPECT_EQ(expectedData.actions, data.actions);
+            EXPECT_EQ(expectedData.resources, data.resources);
+            EXPECT_EQ(expectedData.flushInfos, data.flushInfos);
+        }));
+        visitPendingCommands();
     }
 
     TEST_F(ARendererFrameworkLogic, willNotSendSubscribeMessageWhenProviderUnknown)

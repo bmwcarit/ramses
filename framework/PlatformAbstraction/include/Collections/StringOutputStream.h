@@ -9,8 +9,9 @@
 #ifndef RAMSES_RAMSES_STRINGOUTPUTSTREAM_H
 #define RAMSES_RAMSES_STRINGOUTPUTSTREAM_H
 
-#include "Collections/String.h"
-#include "Utils/StringUtils.h"
+#include "PlatformAbstraction/Macros.h"
+#include "fmt/format.h"
+#include <string>
 #include <inttypes.h>
 
 namespace ramses_internal
@@ -18,11 +19,10 @@ namespace ramses_internal
     class StringOutputStream final
     {
     public:
-        explicit StringOutputStream(UInt initialCapacity = 16);
-        explicit StringOutputStream(String initialContent);
+        explicit StringOutputStream(size_t initialCapacity = 160);
         explicit StringOutputStream(std::string initialContent);
 
-        StringOutputStream& operator<<(const Char* value);
+        StringOutputStream& operator<<(const char* value);
 
         template <typename T, typename = decltype(::fmt::to_string(std::declval<T>()))>
         StringOutputStream& operator<<(const T& value)
@@ -32,34 +32,23 @@ namespace ramses_internal
             return *this;
         }
 
-        void clear();
+        void reserve(size_t capacity);
+        RNODISCARD size_t capacity() const;
 
-        void reserve(UInt capacity);
-        UInt capacity() const;
+        RNODISCARD const char* c_str() const;
+        RNODISCARD size_t size() const;
 
-        const Char* c_str() const;
-        UInt32 size() const;
-
-        String release();
-        const std::string& data() const;
-
-        template <typename T>
-        static String ToString(const T& value);
+        RNODISCARD std::string release();
+        RNODISCARD const std::string& data() const;
 
     private:
         std::string m_buffer;
     };
 
     inline
-    StringOutputStream::StringOutputStream(UInt initialCapacity)
+    StringOutputStream::StringOutputStream(size_t initialCapacity)
     {
         m_buffer.reserve(initialCapacity);
-    }
-
-    inline
-    StringOutputStream::StringOutputStream(String initialContent)
-        : m_buffer(std::move(initialContent.stdRef()))
-    {
     }
 
     inline
@@ -69,37 +58,31 @@ namespace ramses_internal
     }
 
     inline
-    UInt32 StringOutputStream::size() const
+    size_t StringOutputStream::size() const
     {
         return static_cast<uint32_t>(m_buffer.size());
     }
 
-    inline StringOutputStream& StringOutputStream::operator<<(const Char* value)
+    inline StringOutputStream& StringOutputStream::operator<<(const char* value)
     {
         if (value)
             fmt::format_to(std::back_inserter(m_buffer), "{}", value);
         return *this;
     }
 
-    inline const Char* StringOutputStream::c_str() const
+    inline const char* StringOutputStream::c_str() const
     {
         return m_buffer.c_str();
     }
 
     inline
-    void StringOutputStream::clear()
-    {
-        m_buffer.clear();
-    }
-
-    inline
-    void StringOutputStream::reserve(UInt capacity)
+    void StringOutputStream::reserve(size_t capacity)
     {
         m_buffer.reserve(capacity);
     }
 
     inline
-    UInt StringOutputStream::capacity() const
+    size_t StringOutputStream::capacity() const
     {
         return m_buffer.capacity();
     }
@@ -111,19 +94,11 @@ namespace ramses_internal
     }
 
     inline
-    String StringOutputStream::release()
+    std::string StringOutputStream::release()
     {
         std::string tmp;
         tmp.swap(m_buffer);
-        return String(std::move(tmp));
-    }
-
-    template <typename T>
-    inline String StringOutputStream::ToString(const T& value)
-    {
-        StringOutputStream sos;
-        sos << value;
-        return sos.release();
+        return tmp;
     }
 }
 

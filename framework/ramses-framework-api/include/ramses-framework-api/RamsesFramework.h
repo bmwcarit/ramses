@@ -53,6 +53,9 @@ namespace ramses
         /**
         * @brief Tries to establish a connection to the RAMSES system.
         *
+        * If only local rendering is desired this does not need to be called - but all
+        * scenes must be published in #ramses::EScenePublicationMode_LocalOnly.
+        *
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
@@ -105,7 +108,7 @@ namespace ramses
         *        to create any renderer depending on internal policy. Ownership of the renderer will
         *        remain with the framework.
         *
-        *        Must create the renderer object before calling connect().
+        *        Must create the renderer object before calling #connect().
         *
         * @param config  Set of configuration flags and attributes for the ramses renderer
         *
@@ -131,7 +134,7 @@ namespace ramses
         *        Only one DcsmProvider can exist per RamsesFramework instance. Depending on user
         *        the creation is not allowed and will always fail.
         *
-        *        Must call connect() before communication with remote Dcsm consumers is possible.
+        *        Must call #connect() before communication with remote Dcsm consumers is possible.
         *
         * @return The new DcsmProvider object or nullptr if the creation failed or was denied.
         */
@@ -155,7 +158,7 @@ namespace ramses
         *        to create any consumer depending on internal policy.
         *        Ownership of the consumer will remain with the framework.
         *
-        *        Must call connect() before communication with remote Dcsm providers is possible.
+        *        Must call #connect() before communication with remote Dcsm providers is possible.
         *
         * @return The new DcsmConsumer object or nullptr if the creation failed or was denied.
         */
@@ -174,6 +177,12 @@ namespace ramses
 
         /**
         * @brief Set the log level for all console log messages and apply it immediately.
+        *
+        * If this function is called before creation of RamsesFramework it will be overwritten
+        * by cmdl args ("log-level", "log-level-console"), environment variable ("RAMSES_LOGLEVEL") and
+        * by dynamically injected value by ramsh or dlt viewer/logger.
+        * If this function is called after creation of RamsesFramework it can only be overwritten
+        * dynamically by ramsh or dlt viewer/logger.
         *
         * @param[in] logLevel the log level to be applied
         */

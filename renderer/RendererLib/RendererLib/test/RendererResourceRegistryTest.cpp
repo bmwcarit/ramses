@@ -139,7 +139,7 @@ TEST_F(ARendererResourceRegistry, canSetResourceData)
     EXPECT_TRUE(registry.getAllResourcesNotInUseByScenes().empty());
 }
 
-TEST_F(ARendererResourceRegistry, canSetResourceUploaded_willReleaseResourceData)
+TEST_F(ARendererResourceRegistry, canSetResourceFromProvidedToUploaded_willReleaseResourceData)
 {
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
@@ -159,11 +159,53 @@ TEST_F(ARendererResourceRegistry, canSetResourceUploaded_willReleaseResourceData
     EXPECT_TRUE(registry.getAllResourcesNotInUseByScenes().empty());
 }
 
-TEST_F(ARendererResourceRegistry, canSetResourceBroken_willReleaseResourceData)
+TEST_F(ARendererResourceRegistry, canSetResourceProvidedToBroken_willReleaseResourceData)
 {
     const ResourceContentHash resource(123u, 0u);
     registry.registerResource(resource);
     registry.setResourceData(resource, testManagedResource);
+
+    registry.setResourceBroken(resource);
+
+    const ResourceDescriptor& rd = registry.getResourceDescriptor(resource);
+    EXPECT_EQ(EResourceStatus::Broken, rd.status);
+    EXPECT_FALSE(rd.resource);
+    EXPECT_EQ(EResourceType_IndexArray, rd.type);
+    EXPECT_FALSE(rd.deviceHandle.isValid());
+
+    EXPECT_TRUE(registry.getAllProvidedResources().empty());
+    EXPECT_TRUE(registry.getAllResourcesNotInUseByScenes().empty());
+}
+
+TEST_F(ARendererResourceRegistry, canSetResourceFromScheduledForUploadToUploaded_willReleaseResourceData)
+{
+    const ResourceContentHash resource(123u, 0u);
+    registry.registerResource(resource);
+    registry.setResourceData(resource, testManagedResource);
+    const ResourceDescriptor& rd = registry.getResourceDescriptor(resource);
+    EXPECT_EQ(EResourceStatus::Provided, rd.status);
+
+    registry.setResourceScheduledForUpload(resource);
+    EXPECT_EQ(EResourceStatus::ScheduledForUpload, rd.status);
+
+    const DeviceResourceHandle deviceHandle(123456u);
+    registry.setResourceUploaded(resource, deviceHandle, 666u);
+
+    EXPECT_EQ(EResourceStatus::Uploaded, rd.status);
+    EXPECT_EQ(deviceHandle, rd.deviceHandle);
+    EXPECT_FALSE(rd.resource);
+    EXPECT_EQ(EResourceType_IndexArray, rd.type);
+
+    EXPECT_TRUE(registry.getAllProvidedResources().empty());
+    EXPECT_TRUE(registry.getAllResourcesNotInUseByScenes().empty());
+}
+
+TEST_F(ARendererResourceRegistry, canSetResourceScheduledForUploadToBroken_willReleaseResourceData)
+{
+    const ResourceContentHash resource(123u, 0u);
+    registry.registerResource(resource);
+    registry.setResourceData(resource, testManagedResource);
+    registry.setResourceScheduledForUpload(resource);
 
     registry.setResourceBroken(resource);
 
@@ -188,6 +230,26 @@ TEST_F(ARendererResourceRegistry, providedResourceIsInProvidedList)
     EXPECT_TRUE(contains_c(resources, resource));
 }
 
+TEST_F(ARendererResourceRegistry, reportsIfHasAnyResourcesScheduledForUpload)
+{
+    EXPECT_FALSE(registry.hasAnyResourcesScheduledForUpload());
+    const ResourceContentHash resource(123u, 0u);
+
+    registry.registerResource(resource);
+    EXPECT_FALSE(registry.hasAnyResourcesScheduledForUpload());
+
+    registry.setResourceData(resource, testManagedResource);
+    EXPECT_FALSE(registry.hasAnyResourcesScheduledForUpload());
+
+    registry.setResourceScheduledForUpload(resource);
+    EXPECT_EQ(EResourceStatus::ScheduledForUpload, registry.getResourceStatus(resource));
+    EXPECT_TRUE(registry.hasAnyResourcesScheduledForUpload());
+
+    const DeviceResourceHandle deviceHandle(123456u);
+    registry.setResourceUploaded(resource, deviceHandle, 666u);
+    EXPECT_FALSE(registry.hasAnyResourcesScheduledForUpload());
+}
+
 TEST_F(ARendererResourceRegistry, uploadedResourceIsRemovedFromProvidedList)
 {
     const ResourceContentHash resource(123u, 0u);
@@ -196,6 +258,17 @@ TEST_F(ARendererResourceRegistry, uploadedResourceIsRemovedFromProvidedList)
     EXPECT_FALSE(registry.getAllProvidedResources().empty());
 
     registry.setResourceUploaded(resource, DeviceResourceHandle{ 123u }, 666u);
+    EXPECT_TRUE(registry.getAllProvidedResources().empty());
+}
+
+TEST_F(ARendererResourceRegistry, scheduledForUploadResourceIsRemovedFromProvidedList)
+{
+    const ResourceContentHash resource(123u, 0u);
+    registry.registerResource(resource);
+    registry.setResourceData(resource, testManagedResource);
+    EXPECT_FALSE(registry.getAllProvidedResources().empty());
+
+    registry.setResourceScheduledForUpload(resource);
     EXPECT_TRUE(registry.getAllProvidedResources().empty());
 }
 

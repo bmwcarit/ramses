@@ -38,7 +38,7 @@ namespace ramses
         }
 
     protected:
-        typedef std::vector<Animation*> AnimationVector;
+        using AnimationVector = std::vector<Animation*>;
         void createSomeAnimationsAndPutToSequence(AnimationVector& animations)
         {
             animations.clear();

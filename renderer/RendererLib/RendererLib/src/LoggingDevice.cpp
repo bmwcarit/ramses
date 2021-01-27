@@ -241,10 +241,16 @@ namespace ramses_internal
         logResourceActivation("index buffer", handle, DataFieldHandle::Invalid());
     }
 
-    DeviceResourceHandle LoggingDevice::uploadShader(const EffectResource& effect)
+    std::unique_ptr<const GPUResource> LoggingDevice::uploadShader(const EffectResource& effect)
     {
         m_logContext << "upload shader " << effect.getName() << RendererLogContext::NewLine;
-        return DeviceResourceHandle::Invalid();
+        return nullptr;
+    }
+
+    DeviceResourceHandle LoggingDevice::registerShader(std::unique_ptr<const GPUResource> shaderResource)
+    {
+        m_logContext << "register shader " << shaderResource->getGPUAddress() << RendererLogContext::NewLine;
+        return {};
     }
 
     DeviceResourceHandle LoggingDevice::uploadBinaryShader(const EffectResource& effect, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat)
@@ -458,16 +464,17 @@ namespace ramses_internal
     {
     }
 
-    ramses_internal::UInt32 LoggingDevice::getDrawCallCount() const
+    uint32_t LoggingDevice::getAndResetDrawCallCount()
     {
         return 0;
     }
 
-    void LoggingDevice::resetDrawCallCount()
+    void LoggingDevice::finish()
     {
     }
 
-    void LoggingDevice::finish()
+    uint32_t LoggingDevice::getGPUHandle(DeviceResourceHandle) const
     {
+        return 0u;
     }
 }

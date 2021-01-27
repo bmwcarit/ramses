@@ -12,7 +12,6 @@
 #include "SceneAPI/RenderState.h"
 #include "Scene/SceneActionCollectionCreator.h"
 #include "Scene/SceneActionApplier.h"
-#include "ResourceSerializationTestHelper.h"
 #include "Resource/IResource.h"
 
 using namespace testing;

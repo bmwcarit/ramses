@@ -13,6 +13,7 @@
 #include <PlatformAbstraction/PlatformTypes.h>
 #include "Utils/CommandLineParser.h"
 #include "Collections/StringOutputStream.h"
+#include "PlatformAbstraction/Macros.h"
 
 namespace ramses_internal
 {
@@ -22,8 +23,8 @@ namespace ramses_internal
         ArgumentBool(const CommandLineParser& parser, const char* shortName, const char* longName, const char* description = "");
         ArgumentBool(const char* shortName, const char* longName, const char* description = "");
 
-        bool wasDefined() const;
-        String getHelpString() const;
+        RNODISCARD bool wasDefined() const;
+        RNODISCARD std::string getHelpString() const;
         bool parseFromCmdLine(const CommandLineParser& parser);
 
         operator bool() const;  // NOLINT(google-explicit-constructor) implicit conversion is a (questionable) feature
@@ -53,12 +54,12 @@ namespace ramses_internal
     {
     }
 
-    inline String ArgumentBool::getHelpString() const
+    inline std::string ArgumentBool::getHelpString() const
     {
         StringOutputStream stream;
         stream << "-" << m_shortName << ", --" << m_longName;
         stream << " \t" << m_description << " (default: false)\n";
-        return stream.c_str();
+        return stream.release();
     }
 
     inline bool ArgumentBool::wasDefined() const

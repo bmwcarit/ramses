@@ -10,6 +10,7 @@
 #define RAMSES_SOMEIPSTACKCOMMON_H
 
 #include "Common/StronglyTypedValue.h"
+#include "PlatformAbstraction/FmtBase.h"
 #include <cstdint>
 
 namespace ramses_internal

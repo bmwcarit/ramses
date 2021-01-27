@@ -74,7 +74,8 @@ namespace ramses_internal
         MOCK_METHOD(void, deleteIndexBuffer, (DeviceResourceHandle), (override));
         MOCK_METHOD(void, activateIndexBuffer, (DeviceResourceHandle), (override));
 
-        MOCK_METHOD(DeviceResourceHandle, uploadShader, (const EffectResource&), (override));
+        MOCK_METHOD(std::unique_ptr<const GPUResource>, uploadShader, (const EffectResource&), (override));
+        MOCK_METHOD(DeviceResourceHandle, registerShader, (std::unique_ptr<const GPUResource>), (override));
         MOCK_METHOD(DeviceResourceHandle, uploadBinaryShader, (const EffectResource&, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat), (override));
         MOCK_METHOD(Bool, getBinaryShader, (DeviceResourceHandle, UInt8Vector&, BinaryShaderFormatID&), (override));
         MOCK_METHOD(void, deleteShader, (DeviceResourceHandle), (override));
@@ -108,8 +109,7 @@ namespace ramses_internal
         MOCK_METHOD(void, readPixels, (UInt8*, UInt32, UInt32, UInt32, UInt32), (override));
 
         MOCK_METHOD(UInt32, getTotalGpuMemoryUsageInKB, (), (const, override));
-        MOCK_METHOD(UInt32, getDrawCallCount, (), (const, override));
-        MOCK_METHOD(void, resetDrawCallCount, (), (override));
+        MOCK_METHOD(UInt32, getAndResetDrawCallCount, (), (override));
 
         MOCK_METHOD(void, validateDeviceStatusHealthy, (), (const, override));
         MOCK_METHOD(Bool, isDeviceStatusHealthy, (), (const, override));
@@ -118,6 +118,7 @@ namespace ramses_internal
         MOCK_METHOD(void, finish, (), (override));
 
         MOCK_METHOD(int, getTextureAddress, (DeviceResourceHandle), (const, override));
+        MOCK_METHOD(uint32_t, getGPUHandle, (DeviceResourceHandle), (const, override));
 
         static const DeviceResourceHandle FakeShaderDeviceHandle                 ;
         static const DeviceResourceHandle FakeVertexBufferDeviceHandle           ;

@@ -33,7 +33,7 @@ namespace ramses_internal
         if (resource.isCompressedAvailable())
         {
             // write compressed data to stream
-            const CompressedResouceBlob& compressedData = resource.getCompressedResourceData();
+            const CompressedResourceBlob& compressedData = resource.getCompressedResourceData();
             output.write(compressedData.data(), static_cast<uint32_t>(compressedData.size()));
         }
         else
@@ -56,9 +56,9 @@ namespace ramses_internal
             if (header.compressionStatus == EResourceCompressionStatus_Compressed)
             {
                 // read compressed data from stream
-                CompressedResouceBlob compressedData(header.compressedSize);
+                CompressedResourceBlob compressedData(header.compressedSize);
                 input.read(reinterpret_cast<char*>(compressedData.data()), static_cast<uint32_t>(compressedData.size()));
-                header.resource->setCompressedResourceData(std::move(compressedData), header.decompressedSize, hash);
+                header.resource->setCompressedResourceData(std::move(compressedData), IResource::CompressionLevel::Offline, header.decompressedSize, hash);
             }
             else
             {

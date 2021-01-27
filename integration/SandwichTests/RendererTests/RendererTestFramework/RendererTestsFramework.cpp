@@ -57,7 +57,7 @@ ramses::displayId_t RendererTestsFramework::createDisplay(const ramses::DisplayC
     const ramses::displayId_t displayId = m_testRenderer.createDisplay(displayConfig);
     if (displayId != ramses::displayId_t::Invalid())
     {
-        m_displays.push_back({displayId, displayConfig, OffscreenBufferVector()});
+        m_displays.push_back({ displayId, displayConfig, {}, {} });
     }
 
     return displayId;
@@ -145,13 +145,35 @@ void RendererTestsFramework::destroyOffscreenBuffer(uint32_t testDisplayIdx, ram
 {
     assert(testDisplayIdx < m_displays.size());
     const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
-    OffscreenBufferVector& offscreenBuffers = m_displays[testDisplayIdx].offscreenBuffers;
+    auto& offscreenBuffers = m_displays[testDisplayIdx].offscreenBuffers;
 
-    OffscreenBufferVector::iterator bufferIter = ramses_internal::find_c(offscreenBuffers, buffer);
+    auto bufferIter = ramses_internal::find_c(offscreenBuffers, buffer);
     assert(bufferIter != offscreenBuffers.end());
     offscreenBuffers.erase(bufferIter);
 
     m_testRenderer.destroyOffscreenBuffer(displayId, buffer);
+}
+
+ramses::streamBufferId_t RendererTestsFramework::createStreamBuffer(uint32_t testDisplayIdx, ramses::waylandIviSurfaceId_t source)
+{
+    assert(testDisplayIdx < m_displays.size());
+    const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
+    ramses::streamBufferId_t buffer = m_testRenderer.createStreamBuffer(displayId, source);
+    m_displays[testDisplayIdx].streamBuffers.push_back(buffer);
+    return buffer;
+}
+
+void RendererTestsFramework::destroyStreamBuffer(uint32_t testDisplayIdx, ramses::streamBufferId_t buffer)
+{
+    assert(testDisplayIdx < m_displays.size());
+    const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
+    auto& streamBuffers = m_displays[testDisplayIdx].streamBuffers;
+
+    auto bufferIter = ramses_internal::find_c(streamBuffers, buffer);
+    assert(bufferIter != streamBuffers.end());
+    streamBuffers.erase(bufferIter);
+
+    m_testRenderer.destroyStreamBuffer(displayId, buffer);
 }
 
 void RendererTestsFramework::assignSceneToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t buffer, int32_t renderOrder)
@@ -160,6 +182,11 @@ void RendererTestsFramework::assignSceneToDisplayBuffer(ramses::sceneId_t sceneI
 }
 
 void RendererTestsFramework::createBufferDataLink(ramses::displayBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag)
+{
+    m_testRenderer.createBufferDataLink(providerBuffer, consumerScene, consumerTag);
+}
+
+void RendererTestsFramework::createBufferDataLink(ramses::streamBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag)
 {
     m_testRenderer.createBufferDataLink(providerBuffer, consumerScene, consumerTag);
 }
@@ -463,17 +490,16 @@ void RendererTestsFramework::destroyScenes()
     m_testScenesAndRenderer.getScenesRegistry().destroyScenes();
 }
 
-void RendererTestsFramework::destroyOffscreenBuffers()
+void RendererTestsFramework::destroyBuffers()
 {
     for (auto& display : m_displays)
     {
-        OffscreenBufferVector& buffers = display.offscreenBuffers;
-
-        for(const auto& buffer : buffers)
-        {
+        for(const auto buffer : display.offscreenBuffers)
             m_testRenderer.destroyOffscreenBuffer(display.displayId, buffer);
-        }
-        buffers.clear();
+        display.offscreenBuffers.clear();
+        for (const auto buffer : display.streamBuffers)
+            m_testRenderer.destroyStreamBuffer(display.displayId, buffer);
+        display.streamBuffers.clear();
     }
 }
 
@@ -506,7 +532,7 @@ bool RendererTestsFramework::runAllTests()
         }
 
         destroyScenes();
-        destroyOffscreenBuffers();
+        destroyBuffers();
     }
 
     const ramses_internal::UInt64 endTime = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
@@ -534,7 +560,7 @@ bool RendererTestsFramework::runTestCase(RenderingTestCase& testCase)
     return testResult;
 }
 
-ramses_internal::String RendererTestsFramework::generateReport() const
+std::string RendererTestsFramework::generateReport() const
 {
     ramses_internal::StringOutputStream str;
 

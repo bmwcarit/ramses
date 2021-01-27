@@ -51,7 +51,7 @@ namespace ramses_internal
             , m_blockedExecutionStateEvent(blockedExecutionStateEvent)
         {
         }
-        virtual void execute()
+        virtual void execute() override
         {
             m_blockedExecutionStateEvent.signal();
             m_blockingLock.lock();
@@ -89,16 +89,16 @@ namespace ramses_internal
         {
         }
 
-        virtual void notifyThread(ramses::ERamsesThreadIdentifier)
+        virtual void notifyThread(ramses::ERamsesThreadIdentifier) override
         {
             ++m_counter;
         }
 
-        virtual void registerThread(ramses::ERamsesThreadIdentifier)
+        virtual void registerThread(ramses::ERamsesThreadIdentifier) override
         {
         }
 
-        virtual void unregisterThread(ramses::ERamsesThreadIdentifier)
+        virtual void unregisterThread(ramses::ERamsesThreadIdentifier) override
         {
         }
         std::atomic<uint32_t>& m_counter;

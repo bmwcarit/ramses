@@ -69,9 +69,11 @@ public:
     // All renderer tests should use this display config which makes window visible by default for Wayland
     static ramses::DisplayConfig CreateTestDisplayConfig(uint32_t iviSurfaceIdOffset, bool iviWindowStartVisible = true);
     static void SetMaxFrameCallbackPollingTime(std::chrono::microseconds time);
-    static void SetWaylandDisplayForSystemCompositorController(const ramses_internal::String& wd);
     static void SetCommandLineParams(const int argc, char const* const* argv);
     static const ramses::WarpingMeshData& CreateTestWarpingMesh();
+
+    static void SetWaylandDisplayForSystemCompositorController(const ramses_internal::String& wd);
+    static bool HasSystemCompositorEnabled();
 
     static const float DefaultMaxAveragePercentPerPixel;
 

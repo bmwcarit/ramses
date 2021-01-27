@@ -60,7 +60,7 @@
     template <> \
     struct DataBindContainerToTraitsSelector < _containerType > \
     { \
-        typedef DATA_BIND_GET_CLASS(_containerType) ContainerTraitsClassType; \
+        using ContainerTraitsClassType = DATA_BIND_GET_CLASS(_containerType) ; \
     }; \
     template <> \
     struct DataBindContainerToContainerIDSelector < _containerType > \
@@ -70,7 +70,7 @@
     template <> \
     struct DataBindContainerIDToContainerTypeSelector < _containerTypeID > \
     { \
-        typedef _containerType ContainerType; \
+        using ContainerType = _containerType ;        \
     }
 
 

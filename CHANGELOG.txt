@@ -1,3 +1,39 @@
+
+27.0.5
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Method DcsmContentControl::linkContentToTextureConsumer now implemented for ramses type contents
+        - DcsmContentControl will emit the appropriate content state event as soon as content is released, hidden or
+          accepted to stop offer by the user and not wait for a potential content hide animation to finish
+        - Added ramses example: ramses-example-local-dcsm to show local dcsm usage
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - DcsmContentControl will now properly handle rapid content reoffering/ready rerequesting
+
+27.0.4
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Dcsm safe area rect is now relative to bottom left corner of render size. Adapt documentation to the way its been implemented
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fixed renderer crash with unsubscribing scene while compiling its shaders
+        - ResourceDataPool: adding the same resource pool data multiple times now requires the same amount of removing resource pool data to delete it
+
+27.0.3
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Shaders are uploaded asynchronously. A thread and shared context are created per display, where the shared context
+          stays active in that thread to upload shaders when needed.
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Node::getRotation with convention sets convention out argument to ERotationConvention::XYZ when setRotation was not called before
+
 27.0.2
 -------------------
         API changes

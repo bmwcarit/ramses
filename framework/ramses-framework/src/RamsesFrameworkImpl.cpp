@@ -368,6 +368,10 @@ namespace ramses
             LOG_INFO(CONTEXT_FRAMEWORK, "Ramses synchronized time support enabled using " << synchronized_clock::source() <<
                      ". Currrent sync time " << asMicroseconds(currentSyncTime) << " us, system clock is " << systemClockTime << " us");
         }
+        else
+        {
+            LOG_INFO(CONTEXT_FRAMEWORK, "Ramses synchronized time support is not available");
+        }
 
         RamsesFrameworkImpl* impl = new RamsesFrameworkImpl(config.impl, participantAddress);
         if (config.impl.m_periodicLogsEnabled)

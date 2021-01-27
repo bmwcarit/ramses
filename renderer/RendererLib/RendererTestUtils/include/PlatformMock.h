@@ -17,10 +17,12 @@
 #include "RendererAPI/IWindowEventHandler.h"
 #include "RendererAPI/ISystemCompositorController.h"
 #include "RendererLib/DisplayConfig.h"
+#include "RendererAPI/IResourceUploadRenderBackend.h"
 
 #include "RenderBackendMock.h"
 #include "SystemCompositorControllerMock.h"
 #include "WindowEventsPollingManagerMock.h"
+#include "ResourceUploadRenderBackendMock.h"
 
 namespace ramses_internal
 {
@@ -30,20 +32,21 @@ namespace ramses_internal
     class PlatformMock : public IPlatform
     {
     public:
-        explicit PlatformMock(Bool testPerRendererConponents = true);
+        explicit PlatformMock();
         ~PlatformMock() override;
-
 
         MOCK_METHOD(Bool, createPerRendererComponents, (), (override));
         MOCK_METHOD(void, destroyPerRendererComponents, (), (override));
         MOCK_METHOD(IRenderBackend*, createRenderBackend, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
         MOCK_METHOD(void, destroyRenderBackend, (IRenderBackend& renderBackend), (override));
+        MOCK_METHOD(IResourceUploadRenderBackend*, createResourceUploadRenderBackend, (const IRenderBackend&), (override));
+        MOCK_METHOD(void, destroyResourceUploadRenderBackend, (IResourceUploadRenderBackend& ), (override));
 
         MOCK_METHOD(ISystemCompositorController* , createSystemCompositorController, (), (override));
         MOCK_METHOD(void, destroySystemCompositorController, (), (override));
         MOCK_METHOD(IWindow*, createWindow, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
         MOCK_METHOD(Bool, destroyWindow, (IWindow&), (override));
-        MOCK_METHOD(IContext*, createContext, (IWindow& window), (override));
+        MOCK_METHOD(IContext*, createContext, (IWindow& window, IContext*), (override));
         MOCK_METHOD(Bool, destroyContext, (IContext&), (override));
         MOCK_METHOD(IDevice*, createDevice, (IContext& context), (override));
         MOCK_METHOD(Bool, destroyDevice, (IDevice&), (override));
@@ -56,16 +59,27 @@ namespace ramses_internal
         MOCK_METHOD(ISystemCompositorController*, getSystemCompositorController, (), (const, override));
         MOCK_METHOD(const IWindowEventsPollingManager*, getWindowEventsPollingManager, (), (const, override));
 
-        MOCK_TYPE< SystemCompositorControllerMock > systemCompositorControllerMock;
-        MOCK_TYPE< WindowEventsPollingManagerMock > windowEventsPollingManagerMock;
-        MOCK_TYPE< RenderBackendMock<MOCK_TYPE> > renderBackendMock;
+        MOCK_TYPE<SystemCompositorControllerMock>   systemCompositorControllerMock;
+        MOCK_TYPE<WindowEventsPollingManagerMock>   windowEventsPollingManagerMock;
+        MOCK_TYPE<RenderBackendMock<MOCK_TYPE>>     renderBackendMock;
+        MOCK_TYPE<ResourceUploadRenderBackendMock<MOCK_TYPE>> resourceUploadRenderBackendMock;
 
     private:
-        void createDefaultMockCalls(Bool testPerRendererConponents);
+        void createDefaultMockCalls();
     };
 
     using PlatformNiceMock = PlatformMock< ::testing::NiceMock>;
     using PlatformStrictMock = PlatformMock< ::testing::StrictMock>;
+
+    template <template<typename> class MOCK_TYPE>
+    class PlatformMockWithPerRendererComponents : public PlatformMock<MOCK_TYPE>
+    {
+    public:
+        explicit PlatformMockWithPerRendererComponents(bool testPerRendererComponents = true);
+    };
+
+    using PlatformNiceMockWithPerRendererComponents = PlatformMockWithPerRendererComponents<::testing::NiceMock>;
+    using PlatformStrictMockWithPerRendererComponents = PlatformMockWithPerRendererComponents<::testing::StrictMock>;
 }
 
 #endif

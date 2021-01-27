@@ -58,6 +58,9 @@ namespace ramses
     /// Display buffer identifier referring to either a display's framebuffer or a created offscreen buffer.
     using displayBufferId_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), struct DisplayBufferIdTag>;
 
+    /// Stream buffer identifier referring to Wayland stream.
+    using streamBufferId_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), struct StreamBufferIdTag>;
+
     /**
     * @brief Data identifier used to refer to data provider
     *        and then manage their linkage to data consumer using renderer API

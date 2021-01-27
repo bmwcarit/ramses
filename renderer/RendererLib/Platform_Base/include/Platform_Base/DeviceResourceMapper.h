@@ -13,6 +13,7 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Platform_Base/GpuResource.h"
 #include "Utils/MemoryPool.h"
+#include <memory>
 #include <cassert>
 
 namespace ramses_internal
@@ -23,7 +24,7 @@ namespace ramses_internal
         DeviceResourceMapper();
         ~DeviceResourceMapper();
 
-        DeviceResourceHandle    registerResource(const GPUResource& resource);
+        DeviceResourceHandle    registerResource(std::unique_ptr<const GPUResource> resource);
         void                    deleteResource  (DeviceResourceHandle resourceHandle);
         Bool                    containsResource(DeviceResourceHandle resourceHandle) const;
         const GPUResource&      getResource     (DeviceResourceHandle resourceHandle) const;

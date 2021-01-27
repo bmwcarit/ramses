@@ -14,8 +14,6 @@ Runs all enabled style checking
 """
 
 import sys
-import re
-import string
 import os
 import common_modules.common
 import argparse
@@ -34,6 +32,7 @@ from check_api_export_symbols import check_api_export_symbols
 from check_comments import check_doxygen_singleline_comments
 from check_deprecated import check_deprecated
 from check_file_attributes import check_file_attributes
+
 
 def main():
     sdk_root = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", ".."))
@@ -82,7 +81,7 @@ def main():
     }
 
     # Whitelist for source files
-    src_whitelist   = {
+    src_whitelist = {
         r'\.h$',
         r'\.hpp$',
         r'\.cpp$'
@@ -99,17 +98,17 @@ def main():
         file_contents, file_lines = common_modules.common.read_file(f)
         clean_file_contents, clean_file_lines = common_modules.common.clean_file_content(file_contents)
 
-        check_header_guards                 (f, file_contents)
-        check_license_for_file              (f, file_contents, sdk_root)
-        check_tabbing_and_spacing           (f, file_lines)
-        check_curly_braces_alone_on_line    (f, file_contents, clean_file_contents, file_lines, clean_file_lines)
-        check_single_statement_on_line      (f, file_contents, clean_file_contents, file_lines, clean_file_lines)
-        check_single_definition_on_line     (f, file_contents, clean_file_contents, file_lines, clean_file_lines)
-        check_deprecated                    (f, file_contents, clean_file_contents, file_lines, clean_file_lines)
-        check_enum_style                    (f, clean_file_contents)
-        check_last_line_newline             (f, file_contents)
-        check_api_export_symbols            (f, clean_file_contents)
-        check_doxygen_singleline_comments   (f, file_lines)
+        check_header_guards(f, file_contents)
+        check_license_for_file(f, file_contents, sdk_root)
+        check_tabbing_and_spacing(f, file_lines)
+        check_curly_braces_alone_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
+        check_single_statement_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
+        check_single_definition_on_line(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
+        check_deprecated(f, file_contents, clean_file_contents, file_lines, clean_file_lines)
+        check_enum_style(f, clean_file_contents)
+        check_last_line_newline(f, file_contents)
+        check_api_export_symbols(f, clean_file_contents)
+        check_doxygen_singleline_comments(f, file_lines)
 
     shared_blacklist_non_src_files = shared_blacklist | {
         # Externals allowed to have own formatting
@@ -138,9 +137,9 @@ def main():
 
         file_contents, file_lines = common_modules.common.read_file(f)
 
-        check_tabs_no_spaces                (f, file_lines)
-        check_no_spacing_line_end           (f, file_lines)
-        check_last_line_newline             (f, file_contents)
+        check_tabs_no_spaces(f, file_lines)
+        check_no_spacing_line_end(f, file_lines)
+        check_last_line_newline(f, file_contents)
 
     blacklist_license = shared_blacklist_non_src_files | {
         # Can be safely excluded, don't need license header because trivial
@@ -158,19 +157,16 @@ def main():
         r'\.patch$',        # License headers can't be added to patch files
         r'\.tmpl$',         # File content hash-dependent, can't modify
         r'\.md$',                   # Markdown files never need license
-        r'^integration/TestContent/res/BigString\.txt$', # Test file with random content - doesn't need license
-        r'^cmake/templates/ramses-version\.in$', # Just a template, doesn't need license
-        r'.*/AndroidManifest\.xml$', #formatting different due to xml restrictions
+        r'^integration/TestContent/res/BigString\.txt$',  # Test file with random content - doesn't need license
+        r'^cmake/templates/ramses-version\.in$',  # Just a template, doesn't need license
+        r'.*/AndroidManifest\.xml$',  # formatting different due to xml restrictions
     }
     files_license_header = common_modules.common.get_all_files_with_filter(sdk_root, path, {r'.*'}, blacklist_license)
 
     # Check subset of the rules for non-source files
     for f in files_license_header:
-
         file_contents, file_lines = common_modules.common.read_file(f)
-
-        check_license_for_file               (f, file_contents, sdk_root)
-
+        check_license_for_file(f, file_contents, sdk_root)
 
     files_attribute_checking = common_modules.common.get_all_files_with_filter(sdk_root, path, {r'.*'}, {r'\.sh$', r'\.py$', r'/gradlew$', r'\.bat$'})
     for f in files_attribute_checking:
@@ -184,5 +180,6 @@ def main():
     else:
         print("detected {0} style guide issues".format(common_modules.common.G_WARNING_COUNT))
         return 1
+
 
 sys.exit(main())

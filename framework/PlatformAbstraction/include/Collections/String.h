@@ -32,10 +32,10 @@ namespace ramses_internal
         String(const String& other) = default;
         String(String&& other) noexcept = default;
         ~String() = default;
-        const Char* c_str() const;
-        Char at(UInt position) const;
-        Int find(const String& substring, UInt startPos = 0) const;
-        Int find(char ch, UInt offset = 0) const;
+        RNODISCARD const Char* c_str() const;
+        RNODISCARD Char at(UInt position) const;
+        RNODISCARD Int find(const String& substring, UInt startPos = 0) const;
+        RNODISCARD Int find(char ch, UInt offset = 0) const;
 
         String& operator=(const String& other) = default;
         String& operator=(String&& other) noexcept = default;
@@ -44,43 +44,43 @@ namespace ramses_internal
         String& operator=(Char character);
         String& operator=(const Char* other);
 
-        String operator+(const String& rOperand) const;
-        String operator+(const std::string& rOperand) const;
-        String operator+(const Char* rOperand) const;
+        RNODISCARD String operator+(const String& rOperand) const;
+        RNODISCARD String operator+(const std::string& rOperand) const;
+        RNODISCARD String operator+(const Char* rOperand) const;
         void operator+=(Char character);
         void operator+=(const Char* other);
         void operator+=(const String& other);
 
-        Char& operator[](UInt index);
-        Char operator[](UInt index) const;
+        RNODISCARD Char& operator[](UInt index);
+        RNODISCARD Char operator[](UInt index) const;
 
-        bool operator==(const String& other) const;
-        bool operator==(const std::string& other) const;
-        bool operator==(const char* other) const;
-        bool operator!=(const String& other) const;
-        bool operator!=(const std::string& other) const;
-        bool operator!=(const char* other) const;
+        RNODISCARD bool operator==(const String& other) const;
+        RNODISCARD bool operator==(const std::string& other) const;
+        RNODISCARD bool operator==(const char* other) const;
+        RNODISCARD bool operator!=(const String& other) const;
+        RNODISCARD bool operator!=(const std::string& other) const;
+        RNODISCARD bool operator!=(const char* other) const;
 
         String& append(const String& other);
         String& append(const std::string& other);
         String& append(const Char* other);
 
-        String substr(UInt start, Int length) const;
-        UInt size() const;
+        RNODISCARD String substr(UInt start, Int length) const;
+        RNODISCARD UInt size() const;
         void toUpperCase();
         void toLowerCase();
         void clear();
-        bool empty() const;
+        RNODISCARD bool empty() const;
         void resize(UInt newSize);
-        char* data();
-        const char* data() const;
+        RNODISCARD char* data();
+        RNODISCARD const char* data() const;
         void reserve(UInt capacity);
-        UInt capacity() const;
-        bool startsWith(const String& other) const;
-        bool endsWith(const String& other) const;
-        bool operator<(const String& other) const;
-        bool operator>(const String& other) const;
-        Int rfind(char ch) const;
+        RNODISCARD UInt capacity() const;
+        RNODISCARD bool startsWith(const String& other) const;
+        RNODISCARD bool endsWith(const String& other) const;
+        RNODISCARD bool operator<(const String& other) const;
+        RNODISCARD bool operator>(const String& other) const;
+        RNODISCARD Int rfind(char ch) const;
 
         /**
          * Swaps this string with another
@@ -89,8 +89,8 @@ namespace ramses_internal
          */
         String& swap(String& other);
 
-        const std::string& stdRef() const;
-        std::string& stdRef();
+        RNODISCARD const std::string& stdRef() const;
+        RNODISCARD std::string& stdRef();
 
     private:
         std::string m_string;

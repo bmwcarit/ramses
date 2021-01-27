@@ -29,39 +29,6 @@ namespace ramses_internal
     class RendererCachedScene;
     struct DisplayBufferInfo;
 
-    enum ERendererLogTopic
-    {
-        ERendererLogTopic_Displays = 0,
-        ERendererLogTopic_SceneStates,
-        ERendererLogTopic_StreamTextures,
-        ERendererLogTopic_Resources,
-        ERendererLogTopic_MissingResources,
-        ERendererLogTopic_RenderQueue,
-        ERendererLogTopic_Links,
-        ERendererLogTopic_EmbeddedCompositor,
-        ERendererLogTopic_EventQueue,
-        ERendererLogTopic_All,
-        ERendererLogTopic_PeriodicLog,
-        ERendererLogTopic_NUMBER_OF_ELEMENTS
-    };
-
-    static const char* RendererLogTopicNames[] =
-    {
-        "ERendererLogTopic_Displays",
-        "ERendererLogTopic_SceneStates",
-        "ERendererLogTopic_StreamTextures",
-        "ERendererLogTopic_Resources",
-        "ERendererLogTopic_MissingResources",
-        "ERendererLogTopic_RenderQueue",
-        "ERendererLogTopic_Links",
-        "ERendererLogTopic_EmbeddedCompositor",
-        "ERendererLogTopic_EventQueue",
-        "ERendererLogTopic_All",
-        "ERendererLogTopic_PeriodicLog"
-    };
-
-    ENUM_TO_STRING(ERendererLogTopic, RendererLogTopicNames, ERendererLogTopic_NUMBER_OF_ELEMENTS);
-
     class RendererLogger
     {
     public:
@@ -72,7 +39,7 @@ namespace ramses_internal
 
         static void LogSceneStates(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogDisplays(const RendererSceneUpdater& updater, RendererLogContext& context);
-        static void LogDisplayBuffer(const RendererSceneUpdater& updater, DeviceResourceHandle bufferHandle, const DisplayBufferInfo& dispBufferInfo, RendererLogContext& context);
+        static void LogDisplayBuffer(const RendererSceneUpdater& updater, DisplayHandle display, DeviceResourceHandle bufferHandle, const DisplayBufferInfo& dispBufferInfo, RendererLogContext& context);
         static void LogClientResources(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogSceneResources(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogMissingResources(const RendererSceneUpdater& updater, RendererLogContext& context);

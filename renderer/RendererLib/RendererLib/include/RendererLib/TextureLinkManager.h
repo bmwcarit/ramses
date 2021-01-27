@@ -11,6 +11,7 @@
 
 #include "RendererLib/LinkManagerBase.h"
 #include "RendererLib/BufferLinks.h"
+#include "SceneAPI/ResourceContentHash.h"
 
 namespace ramses_internal
 {

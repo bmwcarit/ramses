@@ -73,7 +73,7 @@ namespace ramses_internal
             {
             }
 
-            inline void run()
+            inline void run() override
             {
                 for (int32_t i = 0; i < mCount; ++i)
                 {
@@ -104,7 +104,7 @@ namespace ramses_internal
             {
             }
 
-            inline void run()
+            inline void run() override
             {
                 for (int32_t i = 0; i < mCount; ++i)
                 {

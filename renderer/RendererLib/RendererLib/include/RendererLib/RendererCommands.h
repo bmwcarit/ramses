@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2016 BMW Car IT GmbH
+//  Copyright (C) 2020 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,85 +9,333 @@
 #ifndef RAMSES_RENDERERCOMMANDS_H
 #define RAMSES_RENDERERCOMMANDS_H
 
-#include "RendererLib/RendererCommandContainer.h"
-#include "RendererLogger.h"
 #include "SceneAPI/Handles.h"
+#include "RendererAPI/Types.h"
 #include "Scene/EScenePublicationMode.h"
+#include "Components/SceneUpdate.h"
+#include "RendererLib/DisplayConfig.h"
+#include "RendererLib/WarpingMeshData.h"
+#include "Collections/String.h"
+#include "Math3d/Vector2.h"
+#include "PlatformAbstraction/VariantWrapper.h"
+#include <vector>
 
 namespace ramses_internal
 {
-    class WarpingMeshData;
-    class DisplayConfig;
-    class IResourceUploader;
+    class IBinaryShaderCache;
 
-    class RendererCommands
+    namespace RendererCommand
     {
-    public:
-        void publishScene(SceneId sceneId, EScenePublicationMode mode);
-        void unpublishScene(SceneId sceneId);
-        void receiveScene(const SceneInfo& sceneInfo);
+        struct ScenePublished
+        {
+            SceneId scene;
+            EScenePublicationMode publicationMode;
+        };
 
-        void setSceneState(SceneId sceneId, RendererSceneState state);
-        void setSceneMapping(SceneId sceneId, DisplayHandle display);
-        void setSceneDisplayBufferAssignment(SceneId sceneId, OffscreenBufferHandle displayBuffer, int32_t sceneRenderOrder);
+        struct SceneUnpublished
+        {
+            SceneId scene;
+        };
 
-        void subscribeScene(SceneId sceneId);
-        void unsubscribeScene(SceneId sceneId, bool indirect);
-        void mapSceneToDisplay(SceneId sceneId, DisplayHandle displayHandle);
-        void unmapScene(SceneId sceneId);
-        void showScene(SceneId sceneId);
-        void hideScene(SceneId sceneId);
+        struct ReceiveScene
+        {
+            SceneInfo info;
+        };
 
-        void enqueueActionsForScene(SceneId sceneId, SceneUpdate&& sceneUpdate);
+        struct UpdateScene
+        {
+            SceneId scene;
+            SceneUpdate updateData;
+        };
 
-        void createDisplay(const DisplayConfig& displayConfig, IResourceUploader& resourceUploader, DisplayHandle handle);
-        void destroyDisplay(DisplayHandle handle);
+        struct SetSceneState
+        {
+            SceneId scene;
+            RendererSceneState state;
+        };
 
-        void updateWarpingData(DisplayHandle displayHandle, const WarpingMeshData& warpingData);
-        void readPixels(DisplayHandle displayHandle, OffscreenBufferHandle obHandle, const String& filename, Bool fullScreen, UInt32 x, UInt32 y, UInt32 width, UInt32 height, Bool sendViaDLT = false);
-        void setClearColor(DisplayHandle displayHandle, OffscreenBufferHandle obHandle, const Vector4& color);
+        struct SetSceneMapping
+        {
+            SceneId scene;
+            DisplayHandle display;
+        };
 
-        void linkSceneData(const SceneId providerSceneId, DataSlotId providerDataSlotId, SceneId consumerSceneId, DataSlotId consumerDataSlotId);
-        void linkBufferToSceneData(OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerDataSlotId);
-        void unlinkSceneData(const SceneId consumerSceneId, DataSlotId consumerDataSlotId);
+        struct SetSceneDisplayBufferAssignment
+        {
+            SceneId scene;
+            OffscreenBufferHandle buffer;
+            int32_t renderOrder;
+        };
 
-        void createOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool interruptible);
-        void destroyOffscreenBuffer(OffscreenBufferHandle buffer, DisplayHandle display);
-        void assignSceneToDisplayBuffer(SceneId sceneId, OffscreenBufferHandle buffer, Int32 sceneRenderOrder);
+        struct LinkData
+        {
+            SceneId providerScene;
+            DataSlotId providerData;
+            SceneId consumerScene;
+            DataSlotId consumerData;
+        };
 
-        void logStatistics      ();
-        void logRendererInfo    (ERendererLogTopic topic, Bool verbose, NodeHandle nodeHandleFilter);
+        struct LinkOffscreenBuffer
+        {
+            OffscreenBufferHandle providerBuffer;
+            SceneId consumerScene;
+            DataSlotId consumerData;
+        };
 
-        void systemCompositorControllerListIviSurfaces();
-        void systemCompositorControllerSetIviSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility);
-        void systemCompositorControllerSetIviSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity);
-        void systemCompositorControllerSetIviSurfaceDestRectangle(WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height);
-        void systemCompositorControllerSetIviLayerVisibility(WaylandIviLayerId layerId, Bool visibility);
-        void systemCompositorControllerScreenshot(const String& fileName, int32_t screenIviId);
-        void systemCompositorControllerAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId);
-        void systemCompositorControllerRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId);
-        void systemCompositorControllerDestroyIviSurface(WaylandIviSurfaceId surfaceId);
+        struct LinkStreamBuffer
+        {
+            StreamBufferHandle providerBuffer;
+            SceneId consumerScene;
+            DataSlotId consumerData;
+        };
 
-        void confirmationEcho(const String& text);
+        struct UnlinkData
+        {
+            SceneId consumerScene;
+            DataSlotId consumerData;
+        };
 
-        void toggleFrameProfilerVisibility(Bool setVisibleInsteadOfToggle);
-        void setFrameProfilerTimingGraphHeight(UInt32 height);
-        void setFrameProfilerCounterGraphHeight(UInt32 height);
-        void setFrameProfilerFilteredRegionFlags(UInt32 flags);
+        struct PickEvent
+        {
+            SceneId scene;
+            Vector2 coordsNormalizedToBufferSize;
+        };
 
-        void setSkippingOfUnmodifiedBuffers(Bool enable);
-        void handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize);
-        void setFrameTimerLimits(UInt64 limitForSceneResourcesUpload, UInt64 limitForClientResourcesUploadMicrosec, UInt64 limitForOffscreenBufferRenderMicrosec);
-        void setForceApplyPendingFlushesLimit(UInt maximumPendingFlushes);
-        void setForceUnsubscribeLimits(UInt maximumPendingFlushes);
+        struct CreateDisplay
+        {
+            DisplayHandle display;
+            DisplayConfig config;
+            IBinaryShaderCache* binaryShaderCache;
+        };
 
-        const RendererCommandContainer& getCommands() const;
-        void swapCommandContainer(RendererCommandContainer& commandContainer);
-        void clear();
+        struct DestroyDisplay
+        {
+            DisplayHandle display;
+        };
 
-    private:
-        RendererCommandContainer m_commands;
-    };
+        struct CreateOffscreenBuffer
+        {
+            DisplayHandle display;
+            OffscreenBufferHandle offscreenBuffer;
+            uint32_t width;
+            uint32_t height;
+            uint32_t sampleCount;
+            bool interruptible;
+        };
+
+        struct DestroyOffscreenBuffer
+        {
+            DisplayHandle display;
+            OffscreenBufferHandle offscreenBuffer;
+        };
+
+        struct CreateStreamBuffer
+        {
+            DisplayHandle display;
+            StreamBufferHandle streamBuffer;
+            WaylandIviSurfaceId source;
+        };
+
+        struct DestroyStreamBuffer
+        {
+            DisplayHandle display;
+            StreamBufferHandle streamBuffer;
+        };
+
+        struct SetStreamBufferState
+        {
+            DisplayHandle display;
+            StreamBufferHandle streamBuffer;
+            bool newState;
+        };
+
+        struct SetClearColor
+        {
+            DisplayHandle display;
+            OffscreenBufferHandle offscreenBuffer;
+            Vector4 clearColor;
+        };
+
+        struct UpdateWarpingData
+        {
+            DisplayHandle display;
+            WarpingMeshData data;
+        };
+
+        struct ReadPixels
+        {
+            DisplayHandle display;
+            OffscreenBufferHandle offscreenBuffer;
+            uint32_t offsetX;
+            uint32_t offsetY;
+            uint32_t width;
+            uint32_t height;
+            bool fullScreen;
+            bool sendViaDLT;
+            String filename;
+        };
+
+        struct SetSkippingOfUnmodifiedBuffers
+        {
+            bool enable;
+        };
+
+        struct LogStatistics
+        {
+            bool _dummyValue = false; // work around unsolved gcc bug https://bugzilla.redhat.com/show_bug.cgi?id=1507359
+        };
+
+        struct LogInfo
+        {
+            ERendererLogTopic topic;
+            bool verbose;
+            NodeHandle nodeFilter;
+        };
+
+        struct SCListIviSurfaces
+        {
+            bool _dummyValue = false; // work around unsolved gcc bug https://bugzilla.redhat.com/show_bug.cgi?id=1507359
+        };
+
+        struct SCSetIviSurfaceVisibility
+        {
+            WaylandIviSurfaceId surface;
+            bool visibility;
+        };
+
+        struct SCSetIviSurfaceOpacity
+        {
+            WaylandIviSurfaceId surface;
+            float opacity;
+        };
+
+        struct SCSetIviSurfaceDestRectangle
+        {
+            WaylandIviSurfaceId surface;
+            int32_t x;
+            int32_t y;
+            int32_t width;
+            int32_t height;
+        };
+
+        struct SCScreenshot
+        {
+            int32_t screenId;
+            String filename;
+        };
+
+        struct SCAddIviSurfaceToIviLayer
+        {
+            WaylandIviSurfaceId surface;
+            WaylandIviLayerId layer;
+        };
+
+        struct SCSetIviLayerVisibility
+        {
+            WaylandIviLayerId layer;
+            bool visibility;
+        };
+
+        struct SCRemoveIviSurfaceFromIviLayer
+        {
+            WaylandIviSurfaceId surface;
+            WaylandIviLayerId layer;
+        };
+
+        struct SCDestroyIviSurface
+        {
+            WaylandIviSurfaceId surface;
+        };
+
+        struct SetLimits_FrameBudgets
+        {
+            uint64_t limitForSceneResourcesUploadMicrosec;
+            uint64_t limitForResourcesUploadMicrosec;
+            uint64_t limitForOffscreenBufferRenderMicrosec;
+        };
+
+        struct SetLimits_FlushesForceApply
+        {
+            uint32_t limitForPendingFlushesForceApply;
+        };
+
+        struct SetLimits_FlushesForceUnsubscribe
+        {
+            uint32_t limitForPendingFlushesForceUnsubscribe;
+        };
+
+        struct FrameProfiler_Toggle
+        {
+            bool toggle;
+        };
+
+        struct FrameProfiler_TimingGraphHeight
+        {
+            uint32_t height;
+        };
+
+        struct FrameProfiler_CounterGraphHeight
+        {
+            uint32_t height;
+        };
+
+        struct FrameProfiler_RegionFilterFlags
+        {
+            uint32_t flags;
+        };
+
+        struct ConfirmationEcho
+        {
+            String text;
+        };
+
+        using Variant = absl::variant<
+            ScenePublished,
+            SceneUnpublished,
+            ReceiveScene,
+            UpdateScene,
+            SetSceneState,
+            SetSceneMapping,
+            SetSceneDisplayBufferAssignment,
+            LinkData,
+            LinkOffscreenBuffer,
+            LinkStreamBuffer,
+            UnlinkData,
+            PickEvent,
+            CreateDisplay,
+            DestroyDisplay,
+            CreateOffscreenBuffer,
+            DestroyOffscreenBuffer,
+            CreateStreamBuffer,
+            DestroyStreamBuffer,
+            SetStreamBufferState,
+            SetClearColor,
+            UpdateWarpingData,
+            ReadPixels,
+            SetSkippingOfUnmodifiedBuffers,
+            LogStatistics,
+            LogInfo,
+            SCListIviSurfaces,
+            SCSetIviSurfaceVisibility,
+            SCSetIviSurfaceOpacity,
+            SCSetIviSurfaceDestRectangle,
+            SCScreenshot,
+            SCAddIviSurfaceToIviLayer,
+            SCSetIviLayerVisibility,
+            SCRemoveIviSurfaceFromIviLayer,
+            SCDestroyIviSurface,
+            SetLimits_FrameBudgets,
+            SetLimits_FlushesForceApply,
+            SetLimits_FlushesForceUnsubscribe,
+            FrameProfiler_Toggle,
+            FrameProfiler_TimingGraphHeight,
+            FrameProfiler_CounterGraphHeight,
+            FrameProfiler_RegionFilterFlags,
+            ConfirmationEcho
+        >;
+    }
+
+    using RendererCommands = std::vector<RendererCommand::Variant>;
 }
 
 #endif

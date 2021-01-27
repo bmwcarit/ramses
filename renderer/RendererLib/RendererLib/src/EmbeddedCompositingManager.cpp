@@ -21,52 +21,18 @@ namespace ramses_internal
     {
     }
 
-    void EmbeddedCompositingManager::refStream(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId)
-    {
-        auto streamTextureInfoIt = m_streamTextureSourceInfoMap.find(source);
-        if (m_streamTextureSourceInfoMap.end() == streamTextureInfoIt)
-        {
-            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::refStream by scene: Creating new stream texture with source id: " << source);
-            createStreamTexture(source);
-            streamTextureInfoIt = m_streamTextureSourceInfoMap.find(source);
-        }
-
-        LOG_INFO_P(CONTEXT_RENDERER, "EmbeddedCompositingManager::refStream adding scene {} reference to stream texture {} (internal handle {}).", sceneId, source, handle);
-        streamTextureInfoIt->value.sceneUsage.push_back({ sceneId, handle });
-    }
-
-    void EmbeddedCompositingManager::unrefStream(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId)
-    {
-        StreamTextureSourceInfo* streamTextureSourceInfo = m_streamTextureSourceInfoMap.get(source);
-        assert(nullptr != streamTextureSourceInfo);
-
-        // remove scene reference
-        auto isRefToRemove = [&](const auto& u) { return u.sceneId == sceneId && u.streamTextureHandle == handle; };
-        auto& sceneUsage = streamTextureSourceInfo->sceneUsage;
-        const auto itToRemove = std::find_if(sceneUsage.cbegin(), sceneUsage.cend(), isRefToRemove);
-        assert(itToRemove != sceneUsage.cend());
-        sceneUsage.erase(itToRemove);
-        LOG_INFO_P(CONTEXT_RENDERER, "EmbeddedCompositingManager::unrefStream removing scene {} reference to stream texture {} (internal handle {}).", sceneId, source, handle);
-
-        if (sceneUsage.empty() && streamTextureSourceInfo->streamBufferUsage == 0)
-        {
-            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::unrefStream by scene: Destroying no more referenced stream texture with source id: " << source);
-            destroyStreamTexture(source);
-        }
-    }
-
     void EmbeddedCompositingManager::refStream(WaylandIviSurfaceId source)
     {
         auto streamTextureInfoIt = m_streamTextureSourceInfoMap.find(source);
         if (m_streamTextureSourceInfoMap.end() == streamTextureInfoIt)
         {
-            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::refStream by stream buffer: Creating new stream texture with source id: " << source);
+            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::refStream: Creating new stream texture with source id: " << source);
             createStreamTexture(source);
             streamTextureInfoIt = m_streamTextureSourceInfoMap.find(source);
         }
 
-        LOG_INFO_P(CONTEXT_RENDERER, "EmbeddedCompositingManager::refStream adding stream buffer reference to stream texture {}.", source);
-        streamTextureInfoIt->value.streamBufferUsage++;
+        streamTextureInfoIt->value.refs++;
+        LOG_INFO_P(CONTEXT_RENDERER, "EmbeddedCompositingManager::refStream adding reference to stream texture {}. Total refs: {}", source, streamTextureInfoIt->value.refs);
     }
 
     void EmbeddedCompositingManager::unrefStream(WaylandIviSurfaceId source)
@@ -75,41 +41,39 @@ namespace ramses_internal
         assert(streamTextureSourceInfo != nullptr);
 
         // remove stream buffer reference
-        assert(streamTextureSourceInfo->streamBufferUsage > 0);
-        streamTextureSourceInfo->streamBufferUsage--;
-        LOG_INFO_P(CONTEXT_RENDERER, "EmbeddedCompositingManager::unrefStream removing stream buffer reference to stream texture {}.", source);
+        assert(streamTextureSourceInfo->refs > 0);
+        streamTextureSourceInfo->refs--;
+        LOG_INFO_P(CONTEXT_RENDERER, "EmbeddedCompositingManager::unrefStream removing reference to stream texture {}. Total refs: {}", source, streamTextureSourceInfo->refs);
 
-        if (streamTextureSourceInfo->sceneUsage.empty() && streamTextureSourceInfo->streamBufferUsage == 0)
+        if (streamTextureSourceInfo->refs == 0)
         {
-            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::unrefStream by stream buffer: Destroying no more referenced stream texture with source id: " << source);
+            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::unrefStream: Destroying no more referenced stream texture with source id: " << source);
             destroyStreamTexture(source);
         }
     }
 
-    void EmbeddedCompositingManager::dispatchStateChangesOfStreamTexturesAndSources(SceneStreamTextures& streamTexturesWithStateChange, WaylandIviSurfaceIdVector& newStreams, WaylandIviSurfaceIdVector& obsoleteStreams)
+    void EmbeddedCompositingManager::dispatchStateChangesOfSources(WaylandIviSurfaceIdVector& streamsWithAvailabilityChanged, WaylandIviSurfaceIdVector& newStreams, WaylandIviSurfaceIdVector& obsoleteStreams)
     {
-        assert(0u == streamTexturesWithStateChange.size());
-        assert(0u == newStreams.size());
-        assert(0u == obsoleteStreams.size());
+        assert(newStreams.empty());
+        assert(obsoleteStreams.empty());
+        assert(streamsWithAvailabilityChanged.empty());
 
         const auto newStreamsSet = m_embeddedCompositor.dispatchNewStreamTextureSourceIds();
         const auto obsoleteStreamsSet = m_embeddedCompositor.dispatchObsoleteStreamTextureSourceIds();
 
-        for(auto s : newStreamsSet)
-            newStreams.push_back(s);
-        for(auto s : obsoleteStreamsSet)
-            obsoleteStreams.push_back(s);
+        newStreams.resize(newStreamsSet.size());
+        std::copy(newStreamsSet.cbegin(), newStreamsSet.cend(), newStreams.begin());
+        obsoleteStreams.resize(obsoleteStreamsSet.size());
+        std::copy(obsoleteStreamsSet.cbegin(), obsoleteStreamsSet.cend(), obsoleteStreams.begin());
 
-        for(auto& streamTexture : m_streamTextureSourceInfoMap)
+        for (auto& streamTexture : m_streamTextureSourceInfoMap)
         {
-            const Bool contentAvailable = m_embeddedCompositor.isContentAvailableForStreamTexture(streamTexture.key);
-            StreamTextureSourceInfo& streamSourceInfo = streamTexture.value;
-            if (contentAvailable != streamSourceInfo.contentAvailable)
+            const bool contentAvailable = m_embeddedCompositor.isContentAvailableForStreamTexture(streamTexture.key);
+            if (streamTexture.value.contentAvailable != contentAvailable)
             {
-                AddStreamTexturesWithStateChange(streamTexturesWithStateChange, streamSourceInfo.sceneUsage);
+                streamsWithAvailabilityChanged.push_back(streamTexture.key);
+                streamTexture.value.contentAvailable = contentAvailable;
             }
-
-            streamSourceInfo.contentAvailable = contentAvailable;
         }
     }
 
@@ -130,20 +94,6 @@ namespace ramses_internal
         return m_embeddedCompositor.isRealCompositor();
     }
 
-    void EmbeddedCompositingManager::AddStreamTexturesWithStateChange(SceneStreamTextures& result, const StreamSourceSceneUsageEntryVector& streamTexturesWithStateChange)
-    {
-        for(const auto& streamTexture : streamTexturesWithStateChange)
-        {
-            if (!result.contains(streamTexture.sceneId))
-            {
-                result.put(streamTexture.sceneId, StreamTextureHandleVector());
-            }
-
-            StreamTextureHandleVector* sceneStreamTextures = result.get(streamTexture.sceneId);
-            sceneStreamTextures->push_back(streamTexture.streamTextureHandle);
-        }
-    }
-
     void EmbeddedCompositingManager::processClientRequests()
     {
         m_embeddedCompositor.handleRequestsFromClients();
@@ -155,21 +105,19 @@ namespace ramses_internal
         return m_embeddedCompositor.hasUpdatedStreamTextureSources();
     }
 
-    void EmbeddedCompositingManager::uploadResourcesAndGetUpdates(UpdatedSceneIdSet &updatedScenes, StreamTextureBufferUpdates& bufferUpdates)
+    void EmbeddedCompositingManager::uploadResourcesAndGetUpdates(StreamSourceUpdates& updatedStreams)
     {
         const WaylandIviSurfaceIdSet updatedStreamTextureSourceIds = m_embeddedCompositor.dispatchUpdatedStreamTextureSourceIds();
-        for(const auto streamTextureSourceId : updatedStreamTextureSourceIds)
+        assert(updatedStreams.empty());
+        updatedStreams.reserve(updatedStreamTextureSourceIds.size());
+
+        for (const auto streamTextureSourceId : updatedStreamTextureSourceIds)
         {
             const StreamTextureSourceInfo* streamTextureSourceInfo = m_streamTextureSourceInfoMap.get(streamTextureSourceId);
-            if(nullptr != streamTextureSourceInfo)
+            if (nullptr != streamTextureSourceInfo)
             {
-                const UInt32 bufferUpdateCount = m_embeddedCompositor.uploadCompositingContentForStreamTexture(streamTextureSourceId, streamTextureSourceInfo->compositedTextureHandle, m_textureUploadingAdapter);
-                bufferUpdates[streamTextureSourceId] = bufferUpdateCount;
-
-                for(const auto& it : streamTextureSourceInfo->sceneUsage)
-                {
-                    updatedScenes.put(it.sceneId);
-                }
+                const uint32_t bufferUpdateCount = m_embeddedCompositor.uploadCompositingContentForStreamTexture(streamTextureSourceId, streamTextureSourceInfo->compositedTextureHandle, m_textureUploadingAdapter);
+                updatedStreams.push_back({ streamTextureSourceId, bufferUpdateCount });
             }
         }
     }

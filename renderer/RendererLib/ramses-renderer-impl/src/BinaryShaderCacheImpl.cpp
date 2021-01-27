@@ -83,10 +83,7 @@ namespace ramses
 
         std::lock_guard<std::mutex> g(m_hashMapLock);
         if (m_binaryShaders.contains(effectId))
-        {
-            assert(false);
             return;
-        }
 
         BinaryShader binaryShader = { {binaryShaderData, binaryShaderData + binaryShaderDataSize}, ramses_internal::BinaryShaderFormatID{ binaryShaderFormat.getValue() } };
         m_binaryShaders.put(effectId, std::move(binaryShader));

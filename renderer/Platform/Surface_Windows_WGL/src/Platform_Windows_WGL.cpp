@@ -30,11 +30,19 @@ namespace ramses_internal
         return addPlatformWindow(platformWindow);
     }
 
-    IContext* Platform_Windows_WGL::createContext(IWindow& window)
+    IContext* Platform_Windows_WGL::createContext(IWindow& window, IContext* sharedContext)
     {
         Window_Windows* platformWindow = getPlatformWindow<Window_Windows>(window);
         assert(0 != platformWindow);
-        Context_WGL* context = new Context_WGL(platformWindow->getNativeDisplayHandle(), m_wglExtensions, getContextAttributes(), platformWindow->getMSAASampleCount(), 0);
+
+        Context_WGL* platformSharedContext = nullptr;
+        if (sharedContext)
+        {
+            platformSharedContext = getPlatformContext<Context_WGL>(*sharedContext);
+            assert(platformSharedContext);
+        }
+
+        Context_WGL* context = new Context_WGL(platformWindow->getNativeDisplayHandle(), m_wglExtensions, getContextAttributes(), platformWindow->getMSAASampleCount(), platformSharedContext);
         return addPlatformContext(context);
     }
 

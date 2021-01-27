@@ -8,7 +8,7 @@
 
 #include "AnimationDataBindTest.h"
 // In order to explicitly instantiate AnimationProcessDataDispatch for custom types defined here
-#include "../src/AnimationProcessDataDispatch.cpp"
+#include "../src/AnimationProcessDataDispatch.cpp" // NOLINT(bugprone-suspicious-include) will likely cause ODR issues but not worth/easy to fix
 #include "Math3d/Vector2.h"
 #include "Math3d/Vector3.h"
 #include "Math3d/Vector4.h"
@@ -259,7 +259,7 @@ namespace ramses_internal
     class ContainerBase
     {
     public:
-        typedef typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType GetSetType;
+        using GetSetType = typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType;
 
         virtual ~ContainerBase() {}
 
@@ -299,13 +299,13 @@ namespace ramses_internal
     public:
         using GetSetType = typename DataTypeReferenceSelector<EDataType>::PossibleReferenceType;
 
-        virtual GetSetType getValue(UInt32 handle) const
+        virtual GetSetType getValue(UInt32 handle) const override
         {
             UNUSED(handle);
             return InvalidData;
         }
 
-        virtual void setValue(UInt32 handle, GetSetType data)
+        virtual void setValue(UInt32 handle, GetSetType data) override
         {
             UNUSED(data);
             this->m_data[handle] = InvalidData;

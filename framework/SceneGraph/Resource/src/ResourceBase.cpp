@@ -46,16 +46,16 @@ namespace ramses_internal
 
     void ResourceBase::compress(CompressionLevel level) const
     {
-        if (level != CompressionLevel::NONE &&
-            !isCompressedAvailable() &&
+        if (level > m_currentCompression &&
             m_data.size() > 1000) // only compress if it pays off
         {
             assert(m_data.data());
             getHash(); // try calculate before uncompressed data is lost
-            const auto lz4Level = (level == CompressionLevel::REALTIME) ?
+            const auto lz4Level = (level == CompressionLevel::Realtime) ?
                 LZ4CompressionUtils::CompressionLevel::Fast :
                 LZ4CompressionUtils::CompressionLevel::High;
             m_compressedData = LZ4CompressionUtils::compress(m_data, lz4Level);
+            m_currentCompression = level;
         }
     }
 

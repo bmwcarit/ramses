@@ -51,11 +51,11 @@ namespace ramses_internal
 
     TEST_F(ARendererEventCollector, CanAddRendererEvent)
     {
-        m_rendererEventCollector.addDisplayEvent(ERendererEventType_DisplayCreated, m_displayHandle);
+        m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreated, m_displayHandle);
         const RendererEventVector resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(m_displayHandle, resultEvents[0].displayHandle);
-        EXPECT_EQ(ERendererEventType_DisplayCreated, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::DisplayCreated, resultEvents[0].eventType);
     }
 
     TEST_F(ARendererEventCollector, CanAddRendererEventWithPixelData)
@@ -64,12 +64,12 @@ namespace ramses_internal
         pixelData.push_back(8);
 
         const OffscreenBufferHandle bufferHandle{ 123u };
-        m_rendererEventCollector.addReadPixelsEvent(ERendererEventType_ReadPixelsFromFramebuffer, m_displayHandle, bufferHandle, std::move(pixelData));
+        m_rendererEventCollector.addReadPixelsEvent(ERendererEventType::ReadPixelsFromFramebuffer, m_displayHandle, bufferHandle, std::move(pixelData));
         const RendererEventVector resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(m_displayHandle, resultEvents[0].displayHandle);
         EXPECT_EQ(bufferHandle, resultEvents[0].offscreenBuffer);
-        EXPECT_EQ(ERendererEventType_ReadPixelsFromFramebuffer, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::ReadPixelsFromFramebuffer, resultEvents[0].eventType);
         ASSERT_EQ(1u, resultEvents[0].pixelData.size());
         EXPECT_EQ(8, resultEvents[0].pixelData[0]);
     }
@@ -79,11 +79,11 @@ namespace ramses_internal
         DisplayConfig config;
         config.setWarpingEnabled(true);
 
-        m_rendererEventCollector.addDisplayEvent(ERendererEventType_DisplayCreated, m_displayHandle);
+        m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreated, m_displayHandle);
         const RendererEventVector resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(m_displayHandle, resultEvents[0].displayHandle);
-        EXPECT_EQ(ERendererEventType_DisplayCreated, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::DisplayCreated, resultEvents[0].eventType);
     }
 
     TEST_F(ARendererEventCollector, CanAddRendererEventWithLinkInfo)
@@ -93,10 +93,10 @@ namespace ramses_internal
         const DataSlotId providerdataId(2u);
         const DataSlotId consumerdataId(3u);
 
-        m_rendererEventCollector.addDataLinkEvent(ERendererEventType_SceneDataLinked, providerSceneId, consumerSceneId, providerdataId, consumerdataId);
+        m_rendererEventCollector.addDataLinkEvent(ERendererEventType::SceneDataLinked, providerSceneId, consumerSceneId, providerdataId, consumerdataId);
         const RendererEventVector resultEvents = consumeSceneControlEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_SceneDataLinked, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneDataLinked, resultEvents[0].eventType);
         EXPECT_EQ(providerSceneId, resultEvents[0].providerSceneId);
         EXPECT_EQ(consumerSceneId, resultEvents[0].consumerSceneId);
         EXPECT_EQ(providerdataId, resultEvents[0].providerdataId);
@@ -109,10 +109,10 @@ namespace ramses_internal
         const SceneId consumerSceneId(1u);
         const DataSlotId consumerdataId(3u);
 
-        m_rendererEventCollector.addBufferLinkEvent(ERendererEventType_SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerdataId);
+        m_rendererEventCollector.addBufferLinkEvent(ERendererEventType::SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerdataId);
         const RendererEventVector resultEvents = consumeSceneControlEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_SceneDataBufferLinked, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneDataBufferLinked, resultEvents[0].eventType);
         EXPECT_FALSE(resultEvents[0].streamBuffer.isValid());
         EXPECT_EQ(providerBuffer, resultEvents[0].offscreenBuffer);
         EXPECT_EQ(consumerSceneId, resultEvents[0].consumerSceneId);
@@ -125,10 +125,10 @@ namespace ramses_internal
         const SceneId consumerSceneId(1u);
         const DataSlotId consumerdataId(3u);
 
-        m_rendererEventCollector.addBufferLinkEvent(ERendererEventType_SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerdataId);
+        m_rendererEventCollector.addBufferLinkEvent(ERendererEventType::SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerdataId);
         const RendererEventVector resultEvents = consumeSceneControlEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_SceneDataBufferLinked, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneDataBufferLinked, resultEvents[0].eventType);
         EXPECT_FALSE(resultEvents[0].offscreenBuffer.isValid());
         EXPECT_EQ(providerBuffer, resultEvents[0].streamBuffer);
         EXPECT_EQ(consumerSceneId, resultEvents[0].consumerSceneId);
@@ -140,31 +140,31 @@ namespace ramses_internal
         const OffscreenBufferHandle buffer(11u);
         const DisplayHandle display(22u);
 
-        m_rendererEventCollector.addOBEvent(ERendererEventType_OffscreenBufferCreated, buffer, display);
+        m_rendererEventCollector.addOBEvent(ERendererEventType::OffscreenBufferCreated, buffer, display);
         RendererEventVector resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_OffscreenBufferCreated, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::OffscreenBufferCreated, resultEvents[0].eventType);
         EXPECT_EQ(buffer, resultEvents[0].offscreenBuffer);
         EXPECT_EQ(display, resultEvents[0].displayHandle);
 
-        m_rendererEventCollector.addOBEvent(ERendererEventType_OffscreenBufferCreateFailed, buffer, display);
+        m_rendererEventCollector.addOBEvent(ERendererEventType::OffscreenBufferCreateFailed, buffer, display);
         resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_OffscreenBufferCreateFailed, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::OffscreenBufferCreateFailed, resultEvents[0].eventType);
         EXPECT_EQ(buffer, resultEvents[0].offscreenBuffer);
         EXPECT_EQ(display, resultEvents[0].displayHandle);
 
-        m_rendererEventCollector.addOBEvent(ERendererEventType_OffscreenBufferDestroyed, buffer, display);
+        m_rendererEventCollector.addOBEvent(ERendererEventType::OffscreenBufferDestroyed, buffer, display);
         resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_OffscreenBufferDestroyed, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::OffscreenBufferDestroyed, resultEvents[0].eventType);
         EXPECT_EQ(buffer, resultEvents[0].offscreenBuffer);
         EXPECT_EQ(display, resultEvents[0].displayHandle);
 
-        m_rendererEventCollector.addOBEvent(ERendererEventType_OffscreenBufferDestroyFailed, buffer, display);
+        m_rendererEventCollector.addOBEvent(ERendererEventType::OffscreenBufferDestroyFailed, buffer, display);
         resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_OffscreenBufferDestroyFailed, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::OffscreenBufferDestroyFailed, resultEvents[0].eventType);
         EXPECT_EQ(buffer, resultEvents[0].offscreenBuffer);
         EXPECT_EQ(display, resultEvents[0].displayHandle);
     }
@@ -174,10 +174,10 @@ namespace ramses_internal
         const SceneId sceneId(123u);
         const SceneVersionTag sceneVersionTag(345u);
 
-        m_rendererEventCollector.addSceneFlushEvent(ERendererEventType_SceneFlushed, sceneId, sceneVersionTag);
+        m_rendererEventCollector.addSceneFlushEvent(ERendererEventType::SceneFlushed, sceneId, sceneVersionTag);
         const RendererEventVector resultEvents = consumeSceneControlEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_SceneFlushed, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneFlushed, resultEvents[0].eventType);
         EXPECT_EQ(sceneId, resultEvents[0].sceneId);
         EXPECT_EQ(sceneVersionTag, resultEvents[0].sceneVersionTag);
     }
@@ -190,10 +190,10 @@ namespace ramses_internal
         keyEvent.keyCode = EKeyCode_K;
         keyEvent.type = EKeyEventType_Pressed;
 
-        m_rendererEventCollector.addWindowEvent(ERendererEventType_WindowKeyEvent, displayHandle, keyEvent);
+        m_rendererEventCollector.addWindowEvent(ERendererEventType::WindowKeyEvent, displayHandle, keyEvent);
         const RendererEventVector resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_WindowKeyEvent, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::WindowKeyEvent, resultEvents[0].eventType);
         EXPECT_EQ(displayHandle, resultEvents[0].displayHandle);
         EXPECT_EQ(keyEvent.type, resultEvents[0].keyEvent.type);
         EXPECT_EQ(keyEvent.keyCode, resultEvents[0].keyEvent.keyCode);
@@ -207,10 +207,10 @@ namespace ramses_internal
         mouseEvent.pos = Vector2i(50u, 60u);
         mouseEvent.type = EMouseEventType_LeftButtonDown;
 
-        m_rendererEventCollector.addWindowEvent(ERendererEventType_WindowMouseEvent, displayHandle, mouseEvent);
+        m_rendererEventCollector.addWindowEvent(ERendererEventType::WindowMouseEvent, displayHandle, mouseEvent);
         const RendererEventVector resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_WindowMouseEvent, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::WindowMouseEvent, resultEvents[0].eventType);
         EXPECT_EQ(displayHandle, resultEvents[0].displayHandle);
         EXPECT_EQ(mouseEvent.type, resultEvents[0].mouseEvent.type);
         EXPECT_EQ(mouseEvent.pos, resultEvents[0].mouseEvent.pos);
@@ -220,10 +220,10 @@ namespace ramses_internal
     {
         const DisplayHandle displayHandle(1287u);
 
-        m_rendererEventCollector.addDisplayEvent(ERendererEventType_WindowClosed, displayHandle);
+        m_rendererEventCollector.addDisplayEvent(ERendererEventType::WindowClosed, displayHandle);
         const RendererEventVector resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_WindowClosed, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::WindowClosed, resultEvents[0].eventType);
         EXPECT_EQ(displayHandle, resultEvents[0].displayHandle);
     }
 
@@ -231,11 +231,11 @@ namespace ramses_internal
     {
         const WaylandIviSurfaceId streamId(294u);
 
-        m_rendererEventCollector.addStreamSourceEvent(ERendererEventType_StreamSurfaceAvailable, streamId);
+        m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamSurfaceAvailable, streamId);
         const RendererEventVector resultEvents = consumeSceneControlEvents();
 
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_StreamSurfaceAvailable, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::StreamSurfaceAvailable, resultEvents[0].eventType);
         EXPECT_EQ(streamId, resultEvents[0].streamSourceId);
     }
 
@@ -243,11 +243,11 @@ namespace ramses_internal
     {
         const WaylandIviSurfaceId streamId(794u);
 
-        m_rendererEventCollector.addStreamSourceEvent(ERendererEventType_StreamSurfaceUnavailable, streamId);
+        m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamSurfaceUnavailable, streamId);
         const RendererEventVector resultEvents = consumeSceneControlEvents();
 
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_StreamSurfaceUnavailable, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::StreamSurfaceUnavailable, resultEvents[0].eventType);
         EXPECT_EQ(streamId, resultEvents[0].streamSourceId);
     }
 
@@ -258,10 +258,10 @@ namespace ramses_internal
         resizeEvent.width = 567;
         resizeEvent.height = 321;
 
-        m_rendererEventCollector.addWindowEvent(ERendererEventType_WindowResizeEvent, displayHandle, resizeEvent);
+        m_rendererEventCollector.addWindowEvent(ERendererEventType::WindowResizeEvent, displayHandle, resizeEvent);
         const RendererEventVector resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_WindowResizeEvent, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::WindowResizeEvent, resultEvents[0].eventType);
         EXPECT_EQ(displayHandle, resultEvents[0].displayHandle);
         EXPECT_EQ(resizeEvent.width, resultEvents[0].resizeEvent.width);
         EXPECT_EQ(resizeEvent.height, resultEvents[0].resizeEvent.height);
@@ -274,10 +274,10 @@ namespace ramses_internal
         moveEvent.posX = 567;
         moveEvent.posY = 321;
 
-        m_rendererEventCollector.addWindowEvent(ERendererEventType_WindowMoveEvent, displayHandle, moveEvent);
+        m_rendererEventCollector.addWindowEvent(ERendererEventType::WindowMoveEvent, displayHandle, moveEvent);
         const RendererEventVector resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_WindowMoveEvent, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::WindowMoveEvent, resultEvents[0].eventType);
         EXPECT_EQ(displayHandle, resultEvents[0].displayHandle);
         EXPECT_EQ(moveEvent.posX, resultEvents[0].moveEvent.posX);
         EXPECT_EQ(moveEvent.posY, resultEvents[0].moveEvent.posY);
@@ -290,10 +290,10 @@ namespace ramses_internal
         const PickableObjectId pickable1{ 567u };
         const PickableObjectId pickable2{ 2567u };
 
-        m_rendererEventCollector.addPickedEvent(ERendererEventType_ObjectsPicked, sceneId, { pickable1, pickable2 });
+        m_rendererEventCollector.addPickedEvent(ERendererEventType::ObjectsPicked, sceneId, { pickable1, pickable2 });
         const RendererEventVector resultEvents = consumeSceneControlEvents();
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType_ObjectsPicked, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::ObjectsPicked, resultEvents[0].eventType);
         EXPECT_EQ(sceneId, resultEvents[0].sceneId);
 
         ASSERT_EQ(2u, resultEvents[0].pickedObjectIds.size());
@@ -306,9 +306,9 @@ namespace ramses_internal
         constexpr SceneId sceneId1{ 123u };
         constexpr SceneId sceneId2{ 124u };
         constexpr SceneId sceneId3{ 125u };
-        m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_ScenePublished, sceneId1);
-        m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneMapFailed, sceneId2);
-        m_rendererEventCollector.addInternalSceneEvent(ERendererEventType_SceneShown, sceneId3);
+        m_rendererEventCollector.addInternalSceneEvent(ERendererEventType::ScenePublished, sceneId1);
+        m_rendererEventCollector.addInternalSceneEvent(ERendererEventType::SceneMapFailed, sceneId2);
+        m_rendererEventCollector.addInternalSceneEvent(ERendererEventType::SceneShown, sceneId3);
 
         InternalSceneStateEvents sceneEvts;
         m_rendererEventCollector.dispatchInternalSceneStateEvents(sceneEvts);
@@ -316,9 +316,9 @@ namespace ramses_internal
         EXPECT_EQ(sceneId1, sceneEvts[0].sceneId);
         EXPECT_EQ(sceneId2, sceneEvts[1].sceneId);
         EXPECT_EQ(sceneId3, sceneEvts[2].sceneId);
-        EXPECT_EQ(ERendererEventType_ScenePublished, sceneEvts[0].type);
-        EXPECT_EQ(ERendererEventType_SceneMapFailed, sceneEvts[1].type);
-        EXPECT_EQ(ERendererEventType_SceneShown, sceneEvts[2].type);
+        EXPECT_EQ(ERendererEventType::ScenePublished, sceneEvts[0].type);
+        EXPECT_EQ(ERendererEventType::SceneMapFailed, sceneEvts[1].type);
+        EXPECT_EQ(ERendererEventType::SceneShown, sceneEvts[2].type);
     }
 
     TEST_F(ARendererEventCollector, QueuesUpSceneEvents)
@@ -326,18 +326,18 @@ namespace ramses_internal
         constexpr SceneId sceneId1{ 123u };
         constexpr SceneId sceneId2{ 124u };
         constexpr SceneId sceneId3{ 125u };
-        m_rendererEventCollector.addSceneEvent(ERendererEventType_ScenePublished, sceneId1, RendererSceneState::Unavailable);
-        m_rendererEventCollector.addSceneEvent(ERendererEventType_SceneStateChanged, sceneId2, RendererSceneState::Available);
-        m_rendererEventCollector.addSceneEvent(ERendererEventType_SceneStateChanged, sceneId3, RendererSceneState::Ready);
+        m_rendererEventCollector.addSceneEvent(ERendererEventType::ScenePublished, sceneId1, RendererSceneState::Unavailable);
+        m_rendererEventCollector.addSceneEvent(ERendererEventType::SceneStateChanged, sceneId2, RendererSceneState::Available);
+        m_rendererEventCollector.addSceneEvent(ERendererEventType::SceneStateChanged, sceneId3, RendererSceneState::Ready);
 
         const RendererEventVector resultEvents = consumeSceneControlEvents();
         ASSERT_EQ(3u, resultEvents.size());
         EXPECT_EQ(sceneId1, resultEvents[0].sceneId);
         EXPECT_EQ(sceneId2, resultEvents[1].sceneId);
         EXPECT_EQ(sceneId3, resultEvents[2].sceneId);
-        EXPECT_EQ(ERendererEventType_ScenePublished, resultEvents[0].eventType);
-        EXPECT_EQ(ERendererEventType_SceneStateChanged, resultEvents[1].eventType);
-        EXPECT_EQ(ERendererEventType_SceneStateChanged, resultEvents[2].eventType);
+        EXPECT_EQ(ERendererEventType::ScenePublished, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::SceneStateChanged, resultEvents[1].eventType);
+        EXPECT_EQ(ERendererEventType::SceneStateChanged, resultEvents[2].eventType);
         EXPECT_EQ(RendererSceneState::Unavailable, resultEvents[0].state);
         EXPECT_EQ(RendererSceneState::Available, resultEvents[1].state);
         EXPECT_EQ(RendererSceneState::Ready, resultEvents[2].state);

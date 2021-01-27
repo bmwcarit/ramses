@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/ResourceUploader.h"
-#include "RendererLib/RendererStatistics.h"
 #include "Resource/IResource.h"
 #include "Resource/ArrayResource.h"
 #include "Resource/TextureResource.h"
@@ -22,13 +21,12 @@
 
 namespace ramses_internal
 {
-    ResourceUploader::ResourceUploader(RendererStatistics& stats, IBinaryShaderCache* binaryShaderCache)
+    ResourceUploader::ResourceUploader(IBinaryShaderCache* binaryShaderCache)
         : m_binaryShaderCache(binaryShaderCache)
-        , m_stats(stats)
     {
     }
 
-    DeviceResourceHandle ResourceUploader::uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& rd, UInt32& outVRAMSize)
+    absl::optional<DeviceResourceHandle> ResourceUploader::uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& rd, UInt32& outVRAMSize)
     {
         ManagedResource res = rd.resource;
         const IResource& resourceObject = *res.get();
@@ -59,8 +57,11 @@ namespace ramses_internal
         {
             const EffectResource* effectRes = resourceObject.convertTo<EffectResource>();
             const ResourceContentHash hash = effectRes->getHash();
-            const SceneId sceneid = (rd.sceneUsage.empty() ? SceneId::Invalid() : rd.sceneUsage.front());
-            return queryBinaryShaderCacheAndUploadEffect(renderBackend, *effectRes, hash, sceneid);
+            const auto binaryShaderDeviceHandle = queryBinaryShaderCache(renderBackend, *effectRes, hash);
+            if(binaryShaderDeviceHandle.isValid())
+                return binaryShaderDeviceHandle;
+
+            return absl::optional<DeviceResourceHandle>{};
         }
         default:
             assert(false && "Unexpected resource type");
@@ -158,28 +159,19 @@ namespace ramses_internal
         return textureDeviceHandle;
     }
 
-    ramses_internal::DeviceResourceHandle ResourceUploader::queryBinaryShaderCacheAndUploadEffect(IRenderBackend& renderBackend, const EffectResource& effect, ResourceContentHash hash, SceneId sceneid)
+    DeviceResourceHandle ResourceUploader::queryBinaryShaderCache(IRenderBackend& renderBackend, const EffectResource& effect, ResourceContentHash hash)
     {
         LOG_TRACE(CONTEXT_RENDERER, "ResourceUploader::queryBinaryShaderCacheAndUploadEffect: effectid:" << effect.getHash());
         IDevice& device = renderBackend.getDevice();
 
         if (!m_binaryShaderCache)
-        {
-            LOG_TRACE(CONTEXT_RENDERER, "ResourceUploader::queryBinaryShaderCacheAndUploadEffect: no binary shader cache present");
-            auto steadyNow = std::chrono::steady_clock::now();
-            auto handle = device.uploadShader(effect);
-            auto steadyDiff = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - steadyNow);
-            m_stats.shaderCompiled(steadyDiff, effect.getName(), sceneid);
-            return handle;
-        }
+            return {};
 
-        if (!m_supportedFormatsReported)
-        {
-            std::vector<BinaryShaderFormatID> supportedFormats;
-            device.getSupportedBinaryProgramFormats(supportedFormats);
-            m_binaryShaderCache->deviceSupportsBinaryShaderFormats(supportedFormats);
-            m_supportedFormatsReported = true;
-        }
+        std::call_once(m_binaryShaderCache->binaryShaderFormatsReported(), [this, &device]() {
+                std::vector<BinaryShaderFormatID> supportedFormats;
+                device.getSupportedBinaryProgramFormats(supportedFormats);
+                m_binaryShaderCache->deviceSupportsBinaryShaderFormats(supportedFormats);
+            });
 
         if (m_binaryShaderCache->hasBinaryShader(hash))
         {
@@ -200,29 +192,27 @@ namespace ramses_internal
                 return binaryShaderHandle;
             }
         }
-        else
-        {
-            LOG_TRACE(CONTEXT_RENDERER, "ResourceUploader::queryBinaryShaderCacheAndUploadEffect: Cache does not have binary shader");
-        }
 
+        LOG_TRACE(CONTEXT_RENDERER, "ResourceUploader::queryBinaryShaderCacheAndUploadEffect: Cache does not have binary shader");
         // If this point is reached, we either have no cache or the cache was broken.
-        auto steadyNow = std::chrono::steady_clock::now();
-        const DeviceResourceHandle sourceShaderHandle = device.uploadShader(effect);
-        auto steadyDiff = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - steadyNow);
-        m_stats.shaderCompiled(steadyDiff, effect.getName(), sceneid);
+        return {};
+    }
 
-        if (sourceShaderHandle.isValid() && m_binaryShaderCache->shouldBinaryShaderBeCached(hash, sceneid))
+    void ResourceUploader::storeShaderInBinaryShaderCache(IRenderBackend& renderBackend, DeviceResourceHandle deviceHandle, const ResourceContentHash& hash, SceneId sceneid)
+    {
+        assert(deviceHandle.isValid());
+        if (m_binaryShaderCache && m_binaryShaderCache->shouldBinaryShaderBeCached(hash, sceneid))
         {
+            IDevice& device = renderBackend.getDevice();
+
             UInt8Vector binaryShader;
             BinaryShaderFormatID format;
-            if (device.getBinaryShader(sourceShaderHandle, binaryShader, format))
+            if (device.getBinaryShader(deviceHandle, binaryShader, format))
             {
                 assert(binaryShader.size() != 0u);
                 m_binaryShaderCache->storeBinaryShader(hash, sceneid, &binaryShader.front(), static_cast<UInt32>(binaryShader.size()), format);
             }
         }
-
-        return sourceShaderHandle;
     }
 
     UInt32 ResourceUploader::EstimateGPUAllocatedSizeOfTexture(const TextureResource& texture, UInt32 numMipLevelsToAllocate)

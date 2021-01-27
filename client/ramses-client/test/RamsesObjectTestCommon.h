@@ -64,7 +64,7 @@ namespace ramses
 
     TYPED_TEST_P(RamsesObjectTest, convertToItsClosestBaseClass)
     {
-        typedef typename CLASS_OF_RAMSES_OBJECT_TYPE<CLASS_OF_RAMSES_OBJECT_TYPE<TYPE_ID_OF_RAMSES_OBJECT<TypeParam>::ID>::BaseTypeID>::ClassType BaseClassType;
+        using BaseClassType = typename CLASS_OF_RAMSES_OBJECT_TYPE<CLASS_OF_RAMSES_OBJECT_TYPE<TYPE_ID_OF_RAMSES_OBJECT<TypeParam>::ID>::BaseTypeID>::ClassType;
 
         RamsesObject& obj = this->template createObject<TypeParam>("object");
         const RamsesObject& constObj = obj;

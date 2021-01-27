@@ -24,7 +24,7 @@ namespace ramses_internal
         virtual ~ResourceMock();
 
         MOCK_METHOD(const ResourceBlob&, getResourceData, (), (const, override));
-        MOCK_METHOD(const CompressedResouceBlob&, getCompressedResourceData, (), (const, override));
+        MOCK_METHOD(const CompressedResourceBlob&, getCompressedResourceData, (), (const, override));
         MOCK_METHOD(UInt32, getDecompressedDataSize, (), (const, override));
         MOCK_METHOD(UInt32, getCompressedDataSize, (), (const, override));
         MOCK_METHOD(bool, isCompressedAvailable, (), (const, override));
@@ -33,7 +33,7 @@ namespace ramses_internal
         MOCK_METHOD(void, decompress, (), (const, override));
         MOCK_METHOD(void, setResourceData, (ResourceBlob, const ResourceContentHash&), (override));
         MOCK_METHOD(void, setResourceData, (ResourceBlob), (override));
-        MOCK_METHOD(void, setCompressedResourceData, (CompressedResouceBlob, uint32_t uncompressedSize, const ResourceContentHash&), (override));
+        MOCK_METHOD(void, setCompressedResourceData, (CompressedResourceBlob, CompressionLevel, uint32_t uncompressedSize, const ResourceContentHash&), (override));
         MOCK_METHOD(void, serializeResourceMetadataToStream, (IOutputStream& output), (const, override));
         MOCK_METHOD(ResourceCacheFlag, getCacheFlag, (), (const, override));
         MOCK_METHOD(const String&, getName, (), (const, override));

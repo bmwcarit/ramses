@@ -118,7 +118,7 @@ ENDIF()
 
 # flags for integrity
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Integrity")
-    target_compile_options(ramses-build-options-base INTERFACE --diag_suppress=381,111,2008,620,82,1974,1932,1721,1704,540,68,991,177,174)
+    target_compile_options(ramses-build-options-base INTERFACE --diag_suppress=381,111,2008,620,82,1974,1932,1721,1704,540,68,991,177,174 --pending_instantiations=200)
     ADD_FLAGS(CMAKE_EXE_LINKER_FLAGS "--c++14")
     ADD_FLAGS(RAMSES_RELEASE_FLAGS "-DNDEBUG")
 

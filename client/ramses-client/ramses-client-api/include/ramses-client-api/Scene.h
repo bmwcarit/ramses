@@ -487,9 +487,9 @@ namespace ramses
         TextureSamplerMS* createTextureSamplerMS(const RenderBuffer& renderBuffer, const char* name);
 
         /**
-        * @brief Create a new ArrayResource. It is taking ownership of the given range of data of a certain type and keeps it
-        *        as a resource, an immutable data object. See #ramses::ArrayResource for more details.
-        *
+        * @brief Create a new ArrayResource. It makes a copy of the given data of a certain type as a resource, an immutable data object.
+        *        See #ramses::ArrayResource for more details.
+
         * @details If an #ramses::ArrayResource object is created with type #ramses::EDataType::ByteBlob then an element
         *          is defined as one byte, rather than a logical vertex element. Hence, functions of the class
         *          #ramses::ArrayResource referring to element refer to a single byte within byte array, element size is 1 byte
@@ -510,14 +510,14 @@ namespace ramses
             const char* name = nullptr);
 
         /**
-        * @brief Create a new Texture2D. It is taking ownership of the given range of texture data in the specified pixel format
-        *        and keeps it as a resource, an immutable data object. See #ramses::Texture2D for more details.
+        * @brief Create a new Texture2D. It makes a copy of the given data of a certain type as a resource, an immutable data object.
+        *        See #ramses::Texture2D for more details. See #ramses::MipLevelData for more details on expected texel alignment.
         *
         * @param[in] format Pixel format of the Texture2D data.
         * @param[in] width Width of the texture (mipmap level 0).
         * @param[in] height Height of the texture (mipmap level 0).
         * @param[in] mipMapCount Number of mipmap levels contained in mipLevelData array.
-        * @param[in] mipLevelData Array of MipLevelData structs defining mipmap levels
+        * @param[in] mipLevelData Array of #ramses::MipLevelData structs defining mipmap levels
         *                         to use. Amount and sizes of supplied mipmap levels have to
         *                         conform to GL specification. Order is lowest level (biggest
         *                         resolution) to highest level (smallest resolution).
@@ -540,15 +540,15 @@ namespace ramses
             const char* name = nullptr);
 
         /**
-        * @brief Create a new Texture3D. It is taking ownership of the given range of texture data in the specified pixel format
-        *        and keeps it as a resource, an immutable data object. See #ramses::Texture3D for more details.
+        * @brief Create a new Texture3D. It makes a copy of the given data of a certain type as a resource, an immutable data object.
+        *        See #ramses::Texture3D for more details. See #ramses::MipLevelData for more details on expected texel alignment.
         *
         * @param[in] format Pixel format of the Texture3D data.
         * @param[in] width Width of the texture (mipmap level 0).
         * @param[in] height Height of the texture (mipmap level 0).
         * @param[in] depth Depth of the texture.
         * @param[in] mipMapCount Number of mipmap levels contained in mipLevelData array.
-        * @param[in] mipLevelData Array of MipLevelData structs defining mipmap levels
+        * @param[in] mipLevelData Array of #ramses::MipLevelData structs defining mipmap levels
         *                         to use. Amount and sizes of supplied mipmap levels have to
         *                         conform to GL specification. Order is lowest level (biggest
         *                         resolution) to highest level (smallest resolution).
@@ -569,9 +569,8 @@ namespace ramses
             const char* name = nullptr);
 
         /**
-        * @brief Create a new Cube Texture. It is taking ownership of the given range of texture data in the specified pixel format
-        *        and keeps it as a resource, an immutable data object. All texel values are initially initialized to 0.
-        *        See #ramses::TextureCube for more details.
+        * @brief Create a new Cube Texture. It makes a copy of the given data of a certain type as a resource, an immutable data object.
+        *        All texel values are initially initialized to 0. See #ramses::TextureCube for more details. See #ramses::CubeMipLevelData for more details on expected texel alignment.
         *
         * @param[in] format Pixel format of the Cube Texture data.
         * @param[in] size edge length of one quadratic cube face, belonging to the texture.

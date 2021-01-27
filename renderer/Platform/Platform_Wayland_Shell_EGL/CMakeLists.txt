@@ -11,7 +11,12 @@ ACME_MODULE(
     #==========================================================================
     # general module information
     #==========================================================================
-    NAME                    Platform_Wayland_Shell_EGL
+    # Attention: extra care is needed in case of renaming this module
+    # The name of this module (and all CONCRETE platform modules) must align with
+    # the postfix of generated RAMSES libs' names. The platform name is used in
+    # cmake modules and templates for the mentioned purposes.
+    # The module naming convention is broken here knowledgeably
+    NAME                    platform-wayland-shell-egl-es-3-0
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
 
@@ -27,5 +32,3 @@ ACME_MODULE(
     DEPENDENCIES            Platform_Wayland_EGL
                             Window_Wayland_Shell
 )
-
-# This module is tested in the renderer sandwich tests (<ramses>/integration/ramses-renderer-tests)

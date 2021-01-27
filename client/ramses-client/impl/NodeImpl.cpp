@@ -405,6 +405,7 @@ namespace ramses
             x = IdentityRotation.x;
             y = IdentityRotation.y;
             z = IdentityRotation.z;
+            rotationConvention = ERotationConvention::XYZ;
             return StatusOK;
         }
         else if (ramses_internal::ERotationConvention::Legacy_ZYX == getIScene().getRotationConvention(m_transformHandle))

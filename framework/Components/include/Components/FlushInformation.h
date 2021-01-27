@@ -16,8 +16,6 @@
 #include "SceneAPI/SceneVersionTag.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 
-#include <ostream>
-
 namespace ramses_internal
 {
     struct FlushInformation
@@ -89,8 +87,8 @@ struct fmt::formatter<ramses_internal::FlushInformation> : public ramses_interna
     template<typename FormatContext>
     auto format(const ramses_internal::FlushInformation& fi, FormatContext& ctx)
     {
-        return fmt::format_to(ctx.out(),
-            "FlushInformation:[valid:{};flushcounter:{};version:{};resChanges[+:{};-:{};resActions:{}];refActions:{};time[{};exp:{};int:{}];sizeInfo:{}]",
+        fmt::format_to(ctx.out(),
+            "FlushInformation:[valid:{};flushcounter:{};version:{};resChanges[+:{};-:{};resActions:{}];refActions:{};time[{};exp:{};int:{}];sizeInfo:",
             fi.containsValidInformation,
             fi.flushCounter,
             fi.versionTag,
@@ -98,8 +96,12 @@ struct fmt::formatter<ramses_internal::FlushInformation> : public ramses_interna
             fi.sceneReferences.size(),
             fi.flushTimeInfo.clock_type,
             static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(fi.flushTimeInfo.expirationTimestamp).time_since_epoch().count()),
-            static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(fi.flushTimeInfo.internalTimestamp).time_since_epoch().count()),
-            fi.hasSizeInfo ? fi.sizeInfo.asString().c_str() : "none");
+            static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(fi.flushTimeInfo.internalTimestamp).time_since_epoch().count()));
+        if (fi.hasSizeInfo)
+            fmt::format_to(ctx.out(), "{}", fi.sizeInfo);
+        else
+            fmt::format_to(ctx.out(), "none");
+        return fmt::format_to(ctx.out(), "]");
     }
 };
 #endif

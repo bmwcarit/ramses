@@ -42,7 +42,7 @@ TEST_F(ARendererSceneUpdater, generatesRendererEventForNamedFlush)
     RendererEventVector dummy;
     rendererEventCollector.appendAndConsumePendingEvents(dummy, events);
     ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(ERendererEventType_SceneFlushed, events[0].eventType);
+    EXPECT_EQ(ERendererEventType::SceneFlushed, events[0].eventType);
     EXPECT_EQ(version, events[0].sceneVersionTag);
 }
 
@@ -56,13 +56,13 @@ TEST_F(ARendererSceneUpdater, lastAppliedFlushVersionTagIsTracked)
     SceneVersionTag version{ 15u };
     performFlush(0u, version);
     update();
-    expectSceneEvent(ERendererEventType_SceneFlushed);
+    expectSceneEvent(ERendererEventType::SceneFlushed);
     EXPECT_EQ(version, rendererScenes.getStagingInfo(getSceneId()).lastAppliedVersionTag);
 
     version = SceneVersionTag{ 1111u };
     performFlush(0u, version);
     update();
-    expectSceneEvent(ERendererEventType_SceneFlushed);
+    expectSceneEvent(ERendererEventType::SceneFlushed);
     EXPECT_EQ(version, rendererScenes.getStagingInfo(getSceneId()).lastAppliedVersionTag);
 
     // invalid version tag is also tracked
@@ -73,7 +73,7 @@ TEST_F(ARendererSceneUpdater, lastAppliedFlushVersionTagIsTracked)
     version = SceneVersionTag{ 2222u };
     performFlush(0u, version);
     update();
-    expectSceneEvent(ERendererEventType_SceneFlushed);
+    expectSceneEvent(ERendererEventType::SceneFlushed);
     EXPECT_EQ(version, rendererScenes.getStagingInfo(getSceneId()).lastAppliedVersionTag);
 }
 
@@ -122,7 +122,7 @@ TEST_F(ARendererSceneUpdater, ignoresSceneActionsAddedAfterSceneWasUnsubscribed)
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), false);
     EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
-    expectInternalSceneStateEvent(ERendererEventType_SceneUnsubscribed);
+    expectInternalSceneStateEvent(ERendererEventType::SceneUnsubscribed);
     EXPECT_FALSE(rendererScenes.hasScene(getSceneId()));
 
     performFlush(0u, SceneVersionTag(1u));
@@ -138,7 +138,7 @@ TEST_F(ARendererSceneUpdater, ignoresSceneActionsAddedAfterSceneWasUnsubscribedB
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), true);
     EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
-    expectInternalSceneStateEvent(ERendererEventType_SceneUnsubscribedIndirect);
+    expectInternalSceneStateEvent(ERendererEventType::SceneUnsubscribedIndirect);
     EXPECT_FALSE(rendererScenes.hasScene(getSceneId()));
 
     performFlush(0u, SceneVersionTag(1u));
@@ -154,7 +154,7 @@ TEST_F(ARendererSceneUpdater, ignoresSceneActionsAddedBetweenUnsubscriptionAndRe
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), false);
     EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
-    expectInternalSceneStateEvent(ERendererEventType_SceneUnsubscribed);
+    expectInternalSceneStateEvent(ERendererEventType::SceneUnsubscribed);
 
     performFlush(0u, SceneVersionTag(1u));
 
@@ -171,6 +171,14 @@ TEST_F(ARendererSceneUpdater, canCreateAndDestroyDisplayContext)
     createDisplayAndExpectSuccess();
 
     destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, createDisplayFailsIfCreationOfResourceUploadRenderBackendFails)
+{
+    EXPECT_CALL(platformFactoryMock, createResourceUploadRenderBackend(_)).WillOnce(Return(nullptr));
+    rendererSceneUpdater->createDisplayContext({}, DisplayHandle1, nullptr);
+    EXPECT_FALSE(renderer.hasDisplayController(DisplayHandle1));
+    expectEvent(ERendererEventType::DisplayCreateFailed);
 }
 
 TEST_F(ARendererSceneUpdater, canNotDestroyNonExistantDisplay)
@@ -247,6 +255,7 @@ TEST_F(ARendererSceneUpdater, destroyingSceneUpdaterUnmapsAnyMappedSceneFromRend
     createPublishAndSubscribeScene();
     mapScene();
 
+    EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
     expectContextEnable(DisplayHandle1, 2);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
@@ -260,6 +269,7 @@ TEST_F(ARendererSceneUpdater, destroyingSceneUpdaterDestroysAllDisplayContexts)
     createPublishAndSubscribeScene();
     mapScene();
 
+    EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
     expectContextEnable(DisplayHandle1, 2);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
@@ -369,7 +379,7 @@ TEST_F(ARendererSceneUpdater, canHideSceneIfNotShownYet)
     // request show and hide within same frame
     rendererSceneUpdater->handleSceneShowRequest(getSceneId());
     rendererSceneUpdater->handleSceneHideRequest(getSceneId());
-    expectInternalSceneStateEvents({ ERendererEventType_SceneShowFailed, ERendererEventType_SceneHidden });
+    expectInternalSceneStateEvents({ ERendererEventType::SceneShowFailed, ERendererEventType::SceneHidden });
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
 
     // show failed (was canceled) and scene is still in mapped state
@@ -391,11 +401,11 @@ TEST_F(ARendererSceneUpdater, canNotUnmapSceneWhichWasRequestedToBeShown)
     rendererSceneUpdater->handleSceneShowRequest(getSceneId());
 
     rendererSceneUpdater->handleSceneUnmappingRequest(getSceneId());
-    expectInternalSceneStateEvents({ ERendererEventType_SceneUnmapFailed });
+    expectInternalSceneStateEvents({ ERendererEventType::SceneUnmapFailed });
     EXPECT_EQ(ESceneState::RenderRequested, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
-    expectInternalSceneStateEvent(ERendererEventType_SceneShown);
+    expectInternalSceneStateEvent(ERendererEventType::SceneShown);
     EXPECT_EQ(ESceneState::Rendered, sceneStateExecutor.getSceneState(getSceneId()));
 
     hideScene();
@@ -414,7 +424,7 @@ TEST_F(ARendererSceneUpdater, canUnsubscribeSceneIfSubscriptionRequested)
     // request unsubscribe cancels the subscription and reports unsubscribed
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), false);
-    expectInternalSceneStateEvent(ERendererEventType_SceneUnsubscribed);
+    expectInternalSceneStateEvent(ERendererEventType::SceneUnsubscribed);
     EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
@@ -434,7 +444,7 @@ TEST_F(ARendererSceneUpdater, canUnsubscribeSceneIfSubscriptionPending)
     // request unsubscribe cancels the subscription and reports unsubscribed
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(getSceneId()));
     rendererSceneUpdater->handleSceneUnsubscriptionRequest(getSceneId(), false);
-    expectInternalSceneStateEvent(ERendererEventType_SceneUnsubscribed);
+    expectInternalSceneStateEvent(ERendererEventType::SceneUnsubscribed);
     EXPECT_EQ(ESceneState::Published, sceneStateExecutor.getSceneState(getSceneId()));
 
     update();
@@ -898,6 +908,53 @@ TEST_F(ARendererSceneUpdater, doesNotCreateReadPixelsFailedEventIfInvalidDisplay
 }
 
 ///////////////////////////
+// Stream buffer tests
+///////////////////////////
+
+TEST_F(ARendererSceneUpdater, canCreateStreamBuffer)
+{
+    createDisplayAndExpectSuccess();
+
+    constexpr StreamBufferHandle buffer{ 1u };
+    constexpr WaylandIviSurfaceId source{ 2u };
+    expectContextEnable();
+    expectStreamBufferUploaded(buffer, source);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, failsToCreateStreamBufferOnUnknownDisplay)
+{
+    constexpr StreamBufferHandle buffer{ 1u };
+    constexpr WaylandIviSurfaceId source{ 2u };
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+}
+
+TEST_F(ARendererSceneUpdater, canDestroyStreamBuffer)
+{
+    createDisplayAndExpectSuccess();
+
+    constexpr StreamBufferHandle buffer{ 1u };
+    constexpr WaylandIviSurfaceId source{ 2u };
+    expectContextEnable();
+    expectStreamBufferUploaded(buffer, source);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+
+    expectContextEnable();
+    expectStreamBufferDeleted(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, failsToDestroyStreamBufferOnUnknownDisplay)
+{
+    constexpr StreamBufferHandle buffer{ 1u };
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+}
+
+///////////////////////////
 // Data linking tests
 ///////////////////////////
 
@@ -1135,7 +1192,7 @@ TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfProviderSceneMappedToDif
     destroyDisplay(DisplayHandle2);
 }
 
-TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed)
+TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed_OB)
 {
     createDisplayAndExpectSuccess();
 
@@ -1183,7 +1240,56 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed)
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, confidenceTest_triggersRemovalOfBufferLinkWhenConsumerSceneUnmapped_keepsOtherConsumerLinked)
+TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed_SB)
+{
+    createDisplayAndExpectSuccess();
+
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene();
+
+    mapScene(0u);
+    mapScene(1u);
+
+    showScene(0u);
+    showScene(1u);
+
+    const DataSlotId consumerId1 = createTextureConsumer(0u);
+    const DataSlotId consumerId2 = createTextureConsumer(1u);
+
+    constexpr StreamBufferHandle buffer{ 1u };
+    constexpr WaylandIviSurfaceId source{ 2u };
+    expectContextEnable();
+    expectStreamBufferUploaded(buffer, source);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
+
+    createBufferLink(buffer, getSceneId(0u), consumerId1);
+    createBufferLink(buffer, getSceneId(1u), consumerId2);
+
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
+
+    expectContextEnable();
+    expectStreamBufferDeleted(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
+
+    hideScene(0u);
+    hideScene(1u);
+    unmapScene(0u);
+    unmapScene(1u);
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenConsumerSceneUnmapped_keepsOtherConsumerLinked_OB)
 {
     createDisplayAndExpectSuccess();
 
@@ -1227,7 +1333,52 @@ TEST_F(ARendererSceneUpdater, confidenceTest_triggersRemovalOfBufferLinkWhenCons
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotMapped)
+TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenConsumerSceneUnmapped_keepsOtherConsumerLinked_SB)
+{
+    createDisplayAndExpectSuccess();
+
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene();
+
+    mapScene(0u);
+    mapScene(1u);
+
+    showScene(0u);
+    showScene(1u);
+
+    const DataSlotId consumerId1 = createTextureConsumer(0u);
+    const DataSlotId consumerId2 = createTextureConsumer(1u);
+
+    constexpr StreamBufferHandle buffer{ 1u };
+    constexpr WaylandIviSurfaceId source{ 2u };
+    expectContextEnable();
+    expectStreamBufferUploaded(buffer, source);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
+
+    createBufferLink(buffer, getSceneId(0u), consumerId1);
+    createBufferLink(buffer, getSceneId(1u), consumerId2);
+
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
+
+    hideScene(0u);
+    unmapScene(0u);
+
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
+
+    hideScene(1u);
+    unmapScene(1u);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotMapped_OB)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
@@ -1246,7 +1397,27 @@ TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotMapped)
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfProviderBufferIsFromAnotherDisplay)
+TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotMapped_SB)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    const DataSlotId consumerId = createTextureConsumer(0u);
+
+    constexpr StreamBufferHandle buffer{ 1u };
+    constexpr WaylandIviSurfaceId source{ 2u };
+    expectContextEnable();
+    expectStreamBufferUploaded(buffer, source);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+
+    createBufferLink(buffer, getSceneId(), consumerId, true);
+
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId()));
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfProviderBufferIsFromAnotherDisplay_OB)
 {
     createDisplayAndExpectSuccess(DisplayHandle1);
     createDisplayAndExpectSuccess(DisplayHandle2);
@@ -1273,6 +1444,34 @@ TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfProviderBufferIsFromAnoth
     destroyDisplay(DisplayHandle2);
 }
 
+TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfProviderBufferIsFromAnotherDisplay_SB)
+{
+    createDisplayAndExpectSuccess(DisplayHandle1);
+    createDisplayAndExpectSuccess(DisplayHandle2);
+
+    createPublishAndSubscribeScene();
+    mapScene();
+
+    const DataSlotId consumerId = createTextureConsumer(0u);
+
+    constexpr StreamBufferHandle buffer{ 1u };
+    constexpr WaylandIviSurfaceId source{ 2u };
+    expectContextEnable();
+    expectStreamBufferUploaded(buffer, source);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    createBufferLink(buffer, getSceneId(), consumerId, true);
+
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId()));
+
+    unmapScene();
+
+    destroyDisplay(DisplayHandle1);
+    destroyDisplay(DisplayHandle2);
+}
+
 /////////////////////////////////////////////
 // Other tests
 /////////////////////////////////////////////
@@ -1288,7 +1487,7 @@ TEST_F(ARendererSceneUpdater, updateSceneStreamTexturesDirtinessGeneratesEventsF
 
     expectNoEvent();
 
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfStreamTexturesAndSources(_, _, _)).WillOnce(DoAll(SetArgReferee<1>(newStreams), SetArgReferee<2>(obsoleteStreams)));
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(DoAll(SetArgReferee<1>(newStreams), SetArgReferee<2>(obsoleteStreams)));
 
     update();
 
@@ -1296,9 +1495,9 @@ TEST_F(ARendererSceneUpdater, updateSceneStreamTexturesDirtinessGeneratesEventsF
     RendererEventVector dummy;
     rendererEventCollector.appendAndConsumePendingEvents(dummy, resultEvents);
     ASSERT_EQ(2u, resultEvents.size());
-    EXPECT_EQ(ERendererEventType_StreamSurfaceAvailable, resultEvents[0].eventType);
+    EXPECT_EQ(ERendererEventType::StreamSurfaceAvailable, resultEvents[0].eventType);
     EXPECT_EQ(newStreamId, resultEvents[0].streamSourceId);
-    EXPECT_EQ(ERendererEventType_StreamSurfaceUnavailable, resultEvents[1].eventType);
+    EXPECT_EQ(ERendererEventType::StreamSurfaceUnavailable, resultEvents[1].eventType);
     EXPECT_EQ(obsoleteStreamId, resultEvents[1].streamSourceId);
 
     destroyDisplay();
@@ -1366,7 +1565,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamTextureStateIsN
     expectRenderableResourcesClean();
 
     {
-        EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfStreamTexturesAndSources(_, _, _));
+        EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _));
 
         expectNoModifiedScenesReportedToRenderer();
         update();
@@ -1377,74 +1576,224 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamTextureStateIsN
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamTextureStateIsUpdated)
+TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdated_usedByScenes)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-    createRenderableAndResourcesWithStreamTexture();
+    createPublishAndSubscribeScene();
+    mapScene(0u);
+    mapScene(1u);
+    showScene(0u);
+    showScene(1u);
+
+    constexpr WaylandIviSurfaceId source{ 12u };
+    constexpr StreamTextureHandle tex1{ 13u };
+    constexpr StreamTextureHandle tex2{ 14u };
+    const StreamUsage fakeStreamUsage{ { { getSceneId(0u), { tex1 } }, { getSceneId(1u), { tex2 } } }, {} };
+
+    StreamSourceUpdates updates{ {source, 1u } };
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(true));
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, uploadResourcesAndGetUpdates(_)).WillOnce(SetArgReferee<0>(updates));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
 
     expectContextEnable();
-    expectStreamTextureUploaded();
+    expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
-    expectRenderableResourcesClean();
 
-    {
-        const SceneId sceneId = stagingScene[0u]->getSceneId();
-        SceneStreamTextures updatedStreamTextures;
-        updatedStreamTextures.put(sceneId, { streamTextureHandle });
-        EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfStreamTexturesAndSources(_, _, _)).WillOnce(SetArgReferee<0>(updatedStreamTextures));
-
-        expectModifiedScenesReportedToRenderer();
-        update();
-    }
-    {
-        EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfStreamTexturesAndSources(_, _, _));
-
-        expectNoModifiedScenesReportedToRenderer();
-        update();
-    }
-
-    hideScene();
-    unmapScene();
+    hideScene(0u);
+    hideScene(1u);
+    unmapScene(0u);
+    unmapScene(1u);
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdated)
+TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdated_usedByStreamBufferLinkedToScenes)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
-    mapScene();
-    showScene();
-    createRenderableAndResourcesWithStreamTexture();
+    createPublishAndSubscribeScene();
+    mapScene(0u);
+    mapScene(1u);
+    showScene(0u);
+    showScene(1u);
+
+    constexpr WaylandIviSurfaceId source{ 12u };
+    constexpr StreamBufferHandle sb1{ 13u };
+    constexpr StreamBufferHandle sb2{ 14u };
+    const StreamUsage fakeStreamUsage{ {}, { sb1, sb2 } };
+
+    // link both SBs to scenes
+    const auto dataSlotId1 = createTextureConsumer(0u);
+    const auto dataSlotId2 = createTextureConsumer(1u);
+    createBufferLink(sb1, getSceneId(0u), dataSlotId1);
+    createBufferLink(sb2, getSceneId(1u), dataSlotId2);
+    update();
+
+    StreamSourceUpdates updates{ {source, 1u } };
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(true));
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, uploadResourcesAndGetUpdates(_)).WillOnce(SetArgReferee<0>(updates));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
 
     expectContextEnable();
-    expectStreamTextureUploaded();
+    expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
-    expectRenderableResourcesClean();
 
-    {
-        const SceneId sceneId = stagingScene[0u]->getSceneId();
-        UpdatedSceneIdSet updatedScenes;
-        updatedScenes.put(sceneId);
-        EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(true));
-        EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, uploadResourcesAndGetUpdates(_, _)).WillOnce(SetArgReferee<0>(updatedScenes));
+    hideScene(0u);
+    hideScene(1u);
+    unmapScene(0u);
+    unmapScene(1u);
+    destroyDisplay();
+}
 
-        expectContextEnable();
-        expectModifiedScenesReportedToRenderer();
-        update();
-    }
-    {
-        //SS not updated
-        EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(false));
+TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityChanged_usedByScenes)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene();
+    mapScene(0u);
+    mapScene(1u);
+    showScene(0u);
+    showScene(1u);
 
-        expectNoModifiedScenesReportedToRenderer();
-        update();
-    }
+    constexpr WaylandIviSurfaceId source{ 12u };
+    constexpr StreamTextureHandle tex1{ 13u };
+    constexpr StreamTextureHandle tex2{ 14u };
+    const StreamUsage fakeStreamUsage{ { { getSceneId(0u), { tex1 } }, { getSceneId(1u), { tex2 } } }, {} };
 
-    hideScene();
-    unmapScene();
+    WaylandIviSurfaceIdVector changedSources{ source };
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+
+    expectModifiedScenesReportedToRenderer({ 0u, 1u });
+    update();
+
+    hideScene(0u);
+    hideScene(1u);
+    unmapScene(0u);
+    unmapScene(1u);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityChanged_usedByStreamBufferLinkedToScenes)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene();
+    mapScene(0u);
+    mapScene(1u);
+    showScene(0u);
+    showScene(1u);
+
+    constexpr WaylandIviSurfaceId source{ 12u };
+    constexpr StreamBufferHandle sb1{ 13u };
+    constexpr StreamBufferHandle sb2{ 14u };
+    const StreamUsage fakeStreamUsage{ {}, { sb1, sb2 } };
+
+    // link both SBs to scenes
+    const auto dataSlotId1 = createTextureConsumer(0u);
+    const auto dataSlotId2 = createTextureConsumer(1u);
+    createBufferLink(sb1, getSceneId(0u), dataSlotId1);
+    createBufferLink(sb2, getSceneId(1u), dataSlotId2);
+    update();
+
+    WaylandIviSurfaceIdVector changedSources{ source };
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+
+    expectModifiedScenesReportedToRenderer({ 0u, 1u });
+    update();
+
+    hideScene(0u);
+    hideScene(1u);
+    unmapScene(0u);
+    unmapScene(1u);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfStreamSourceBecameUnavailable_sameSource)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene();
+    mapScene(0u);
+    mapScene(1u);
+    showScene(0u);
+    showScene(1u);
+
+    constexpr WaylandIviSurfaceId source{ 12u };
+    constexpr StreamBufferHandle sb1{ 13u };
+    constexpr StreamBufferHandle sb2{ 14u };
+    const StreamUsage fakeStreamUsage{ {}, { sb1, sb2 } };
+
+    // link both SBs to scenes
+    const auto dataSlotId1 = createTextureConsumer(0u);
+    const auto dataSlotId2 = createTextureConsumer(1u);
+    createBufferLink(sb1, getSceneId(0u), dataSlotId1);
+    createBufferLink(sb2, getSceneId(1u), dataSlotId2);
+    update();
+
+    WaylandIviSurfaceIdVector changedSources{ source };
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+
+    expectModifiedScenesReportedToRenderer({ 0u, 1u });
+    update();
+
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb1));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb2));
+
+    hideScene(0u);
+    hideScene(1u);
+    unmapScene(0u);
+    unmapScene(1u);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfOneOfStreamSourcesBecameUnavailabile)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    createPublishAndSubscribeScene();
+    mapScene(0u);
+    mapScene(1u);
+    showScene(0u);
+    showScene(1u);
+
+    constexpr WaylandIviSurfaceId source1{ 12u };
+    constexpr WaylandIviSurfaceId source2{ 13u };
+    constexpr StreamBufferHandle sb1{ 13u };
+    constexpr StreamBufferHandle sb2{ 14u };
+    const StreamUsage fakeStreamUsage1{ {}, { sb1 } };
+    const StreamUsage fakeStreamUsage2{ {}, { sb2 } };
+
+    // link both SBs to scenes
+    const auto dataSlotId1 = createTextureConsumer(0u);
+    const auto dataSlotId2 = createTextureConsumer(1u);
+    createBufferLink(sb1, getSceneId(0u), dataSlotId1);
+    createBufferLink(sb2, getSceneId(1u), dataSlotId2);
+    update();
+
+    const WaylandIviSurfaceIdVector changedSources{ source1, source2 };
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source1)).WillOnce(ReturnRef(fakeStreamUsage1));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source2)).WillOnce(ReturnRef(fakeStreamUsage2));
+    // only source2 is unavailable
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(source1)).WillOnce(Return(DeviceMock::FakeRenderTargetDeviceHandle));
+    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(source2)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+
+    expectModifiedScenesReportedToRenderer({ 1u });
+    update();
+
+    EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb1));
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(sb2));
+
+    hideScene(0u);
+    hideScene(1u);
+    unmapScene(0u);
+    unmapScene(1u);
     destroyDisplay();
 }
 
@@ -3462,7 +3811,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
     }
 
     // after maximum of pending flushes was reached the flushes were applied regardless of missing resource
-    expectSceneEvent(ERendererEventType_SceneFlushed);
+    expectSceneEvent(ERendererEventType::SceneFlushed);
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene(sceneInterrupted));
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
@@ -3479,10 +3828,10 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSubscribedSceneButWithNoFurthe
     const UInt32 scene = createPublishAndSubscribeScene(false);
     // initial flush and enable monitoring
     performFlushWithExpiration(scene, 1000u + 1u);
-    expectInternalSceneStateEvent(ERendererEventType_SceneSubscribed);
+    expectInternalSceneStateEvent(ERendererEventType::SceneSubscribed);
 
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     // no further flush, no expiration updates
     for (UInt32 i = 0u; i < 10u; ++i)
@@ -3491,7 +3840,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSubscribedSceneButWithNoFurthe
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
 
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType::SceneExpired);
 }
 
 TEST_F(ARendererSceneUpdater, doesNotReportExpirationForNotShownSceneBeingFlushedRegularly)
@@ -3500,7 +3849,7 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForNotShownSceneBeingFlushe
     // enable monitoring
     performFlushWithExpiration(scene, 2000);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3517,7 +3866,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneNotBeingFlushed)
     // flush once only to set limit
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
 
     for (UInt32 i = 0u; i < 10u; ++i)
@@ -3526,7 +3875,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneNotBeingFlushed)
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
 
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType::SceneExpired);
 }
 
 TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiredForNotShownScene)
@@ -3535,7 +3884,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiredForNotShownScene)
     // flush once only to set limit
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3543,7 +3892,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiredForNotShownScene)
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
     // expect exactly one event
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType::SceneExpired);
 
     for (UInt32 i = 10u; i < 20u; ++i)
     {
@@ -3552,7 +3901,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpiredForNotShownScene)
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
     // expect exactly one event
-    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType::SceneRecoveredFromExpiration);
 }
 
 TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedAndRenderedRegularly)
@@ -3565,7 +3914,7 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedAndRend
     // enable monitoring
     performFlushWithExpiration(scene, 2000);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3591,7 +3940,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneBeingFlushedButNotRendere
     // scene must be rendered at least once with valid expiration, only then it can expire
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     const NodeHandle nodeHandle(3u);
     const TransformHandle transform(2u);
@@ -3607,7 +3956,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneBeingFlushedButNotRendere
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType::SceneExpired);
 
     hideScene();
     unmapScene();
@@ -3624,7 +3973,7 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedButNotR
     // scene must be rendered at least once with valid expiration, only then it can expire
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     hideScene();
 
@@ -3654,7 +4003,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneNotBeingFlushedOnlyRender
     // flush once only to set limit
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3663,7 +4012,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForSceneNotBeingFlushedOnlyRender
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
 
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType::SceneExpired);
 }
 
 TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRenderedRegularly_byRenderingRegularlyAgain)
@@ -3676,7 +4025,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
     // scene must be rendered at least once with valid expiration, only then it can expire
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     const NodeHandle nodeHandle(3u);
     const TransformHandle transform(2u);
@@ -3692,7 +4041,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType::SceneExpired);
 
     for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
@@ -3701,7 +4050,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
         expirationMonitor.onRendered(getSceneId());
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType::SceneRecoveredFromExpiration);
 
     hideScene();
     unmapScene();
@@ -3718,7 +4067,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
     // scene must be rendered at least once with valid expiration, only then it can expire
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     const NodeHandle nodeHandle(3u);
     const TransformHandle transform(2u);
@@ -3734,7 +4083,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType::SceneExpired);
 
     hideScene();
 
@@ -3745,7 +4094,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneNotBeingRend
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType::SceneRecoveredFromExpiration);
 
     unmapScene();
     destroyDisplay();
@@ -3761,7 +4110,7 @@ TEST_F(ARendererSceneUpdater, doesNotReportExpirationForSceneBeingFlushedRegular
     // enable monitoring
     performFlushWithExpiration(scene, 2000);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
     {
@@ -3785,7 +4134,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneBeingFlushedButBl
     // flush with expiration info to initiate monitoring
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     // blocking flush
     expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
@@ -3799,7 +4148,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationForNotShownSceneBeingFlushedButBl
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType::SceneExpired);
 
     unmapScene();
     destroyDisplay();
@@ -3815,7 +4164,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationSceneBeingFlushedAndRenderedButBl
     // flush with expiration info to initiate monitoring
     performFlushWithExpiration(scene, 1000u + 2u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     // blocking flush
     expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
@@ -3830,7 +4179,7 @@ TEST_F(ARendererSceneUpdater, reportsExpirationSceneBeingFlushedAndRenderedButBl
         expirationMonitor.onRendered(getSceneId());
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType::SceneExpired);
 
     hideScene();
     unmapScene();
@@ -3849,7 +4198,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
     // flush with expiration info to initiate monitoring
     performFlushWithExpiration(scene, expTS);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     // blocking flush
     expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
@@ -3865,7 +4214,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
         expirationMonitor.onRendered(getSceneId());
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpired);
+    expectSceneEvent(ERendererEventType::SceneExpired);
 
     // simulate upload
     reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
@@ -3878,7 +4227,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
         expirationMonitor.onRendered(getSceneId());
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneRecoveredFromExpiration);
+    expectSceneEvent(ERendererEventType::SceneRecoveredFromExpiration);
 
     hideScene();
     unmapScene();
@@ -3894,7 +4243,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush)
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3906,7 +4255,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush)
     // disable expiration
     performFlushWithExpiration(scene, 0u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3927,7 +4276,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush)
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3943,7 +4292,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush)
     sceneAllocator.allocateNode(0u, nodeHandle);
     performFlushWithExpiration(scene, 0u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3969,7 +4318,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_render
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -3982,7 +4331,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_render
     // disable expiration
     performFlushWithExpiration(scene, 0u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4013,7 +4362,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_ren
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4030,7 +4379,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_ren
     sceneAllocator.allocateNode(0u, nodeHandle);
     performFlushWithExpiration(scene, 0u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4061,7 +4410,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_hidden
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4076,7 +4425,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withEmptyFlush_hidden
     // disable expiration
     performFlushWithExpiration(scene, 0u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4106,7 +4455,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_hid
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4125,7 +4474,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_withNonEmptyFlush_hid
     sceneAllocator.allocateNode(0u, nodeHandle);
     performFlushWithExpiration(scene, 0u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4155,7 +4504,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whileModifyingScene_c
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4181,7 +4530,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whileModifyingScene_c
     sceneAllocator.allocateNode(0u, nodeHandle);
     performFlushWithExpiration(scene, 0u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 10u; i < 20u; ++i)
     {
@@ -4211,7 +4560,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenFl
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4235,7 +4584,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenFl
     // disable expiration
     performFlushWithExpiration(scene, 0u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 10u; i < 20u; ++i)
     {
@@ -4265,7 +4614,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenEm
     const UInt32 initialTS = 1000u;
     performFlushWithExpiration(scene, initialTS);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringEnabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringEnabled);
 
     for (UInt32 i = 0u; i < 10u; ++i)
     {
@@ -4288,7 +4637,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationChecking_whenHiddenInBetweenEm
     sceneAllocator.allocateNode(0u, nodeHandle);
     performFlushWithExpiration(scene, 0u);
     update();
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
     for (UInt32 i = 10u; i < 20u; ++i)
     {
@@ -4314,7 +4663,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired)
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvents({ ERendererEventType_SceneExpirationMonitoringEnabled, ERendererEventType_SceneExpired });
+    expectSceneEvents({ ERendererEventType::SceneExpirationMonitoringEnabled, ERendererEventType::SceneExpired });
 
     // disable expiration
     performFlushWithExpiration(scene, 0u);
@@ -4324,7 +4673,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired)
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 }
 
 TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_rendered)
@@ -4340,7 +4689,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_re
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvents({ ERendererEventType_SceneExpirationMonitoringEnabled, ERendererEventType_SceneExpired });
+    expectSceneEvents({ ERendererEventType::SceneExpirationMonitoringEnabled, ERendererEventType::SceneExpired });
 
     // disable expiration
     performFlushWithExpiration(scene, 0u);
@@ -4350,7 +4699,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_re
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
     hideScene(scene);
     unmapScene(scene);
@@ -4367,7 +4716,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_no
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvents({ ERendererEventType_SceneExpirationMonitoringEnabled, ERendererEventType_SceneExpired });
+    expectSceneEvents({ ERendererEventType::SceneExpirationMonitoringEnabled, ERendererEventType::SceneExpired });
 
     // disable expiration together with some scene changes
     const NodeHandle nodeHandle(10u);
@@ -4381,7 +4730,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_no
         update();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 }
 
 TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_rendered_nonEmptyFlush)
@@ -4398,7 +4747,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_re
         doRenderLoop();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvents({ ERendererEventType_SceneExpirationMonitoringEnabled, ERendererEventType_SceneExpired });
+    expectSceneEvents({ ERendererEventType::SceneExpirationMonitoringEnabled, ERendererEventType::SceneExpired });
 
     // disable expiration together with some scene changes
     const NodeHandle nodeHandle(10u);
@@ -4413,7 +4762,7 @@ TEST_F(ARendererSceneUpdater, canDisableExpirationCheckingWhileAlreadyExpired_re
         doRenderLoop();
         expirationMonitor.checkExpiredScenes(FlushTime::Clock::time_point(std::chrono::milliseconds(1000u + i)));
     }
-    expectSceneEvent(ERendererEventType_SceneExpirationMonitoringDisabled);
+    expectSceneEvent(ERendererEventType::SceneExpirationMonitoringDisabled);
 
     hideScene(scene);
     unmapScene(scene);
@@ -4488,7 +4837,7 @@ TEST_F(ARendererSceneUpdater, reportsPickedObjects)
 
     EXPECT_CALL(*rendererSceneUpdater, handlePickEvent(_, _));
     rendererSceneUpdater->handlePickEvent(getSceneId(), { -0.375000f, 0.250000f });
-    expectSceneEvent(ERendererEventType_ObjectsPicked);
+    expectSceneEvent(ERendererEventType::ObjectsPicked);
 
     unmapScene();
     destroyDisplay();
@@ -4502,7 +4851,7 @@ TEST_F(ARendererSceneUpdater, emitsSequenceOfSceneStateChangesWhenRepublished_fr
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(getSceneId()));
     rendererSceneUpdater->handleSceneUnpublished(sceneId);
     rendererSceneUpdater->handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote);
-    expectInternalSceneStateEvents({ ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished, ERendererEventType_ScenePublished });
+    expectInternalSceneStateEvents({ ERendererEventType::SceneUnsubscribedIndirect, ERendererEventType::SceneUnpublished, ERendererEventType::ScenePublished });
 }
 
 TEST_F(ARendererSceneUpdater, emitsSequenceOfSceneStateChangesWhenRepublished_fromMapped)
@@ -4518,7 +4867,7 @@ TEST_F(ARendererSceneUpdater, emitsSequenceOfSceneStateChangesWhenRepublished_fr
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(sceneId));
     rendererSceneUpdater->handleSceneUnpublished(sceneId);
     rendererSceneUpdater->handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote);
-    expectInternalSceneStateEvents({ ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished, ERendererEventType_ScenePublished });
+    expectInternalSceneStateEvents({ ERendererEventType::SceneUnmappedIndirect, ERendererEventType::SceneUnsubscribedIndirect, ERendererEventType::SceneUnpublished, ERendererEventType::ScenePublished });
     EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
 
     destroyDisplay();
@@ -4538,7 +4887,7 @@ TEST_F(ARendererSceneUpdater, emitsSequenceOfSceneStateChangesWhenRepublished_fr
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(sceneId));
     rendererSceneUpdater->handleSceneUnpublished(sceneId);
     rendererSceneUpdater->handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote);
-    expectInternalSceneStateEvents({ ERendererEventType_SceneHiddenIndirect, ERendererEventType_SceneUnmappedIndirect, ERendererEventType_SceneUnsubscribedIndirect, ERendererEventType_SceneUnpublished, ERendererEventType_ScenePublished });
+    expectInternalSceneStateEvents({ ERendererEventType::SceneHiddenIndirect, ERendererEventType::SceneUnmappedIndirect, ERendererEventType::SceneUnsubscribedIndirect, ERendererEventType::SceneUnpublished, ERendererEventType::ScenePublished });
     EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
 
     destroyDisplay();

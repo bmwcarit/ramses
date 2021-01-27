@@ -10,18 +10,19 @@
 #define RAMSES_SETFRAMETIMELIMITS_H
 
 #include "Ramsh/RamshCommandArguments.h"
-#include "RendererLib/FrameTimer.h"
 
 namespace ramses_internal
 {
-    class SetFrameTimeLimits : public RamshCommandArgs<UInt32, UInt32>
+    class RendererCommandBuffer;
+
+    class SetFrameTimeLimits : public RamshCommandArgs<uint32_t, uint32_t, uint32_t>
     {
     public:
-        explicit SetFrameTimeLimits(FrameTimer& frametimer);
-        virtual Bool execute(UInt32& limitForResourcesUploadMicrosec, UInt32& limitForOffscreenBufferRenderMicrosec) const override;
+        explicit SetFrameTimeLimits(RendererCommandBuffer& rendererCommandBuffer);
+        virtual Bool execute(uint32_t& limitForDynamicResourcesUploadMicrosec, uint32_t& limitForStaticResourcesUploadMicrosec, uint32_t& limitForOffscreenBufferRenderMicrosec) const override;
 
     private:
-        FrameTimer& m_frametimer;
+        RendererCommandBuffer& m_rendererCommandBuffer;
     };
 }
 

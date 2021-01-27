@@ -37,7 +37,7 @@
         LOG_API_RAMSESOBJECT_PTR_STRING(&(OBJ))
 
 #define LOG_API_RESOURCE_PTR_STRING(PTR) \
-    LOG_API_RAMSESOBJECT_PTR_STRING(PTR) << " with resID " << ((PTR) ? ramses_internal::StringOutputStream::ToString((PTR)->getResourceId()) : "<invalid>")
+    LOG_API_RAMSESOBJECT_PTR_STRING(PTR) << " with resID " << ((PTR) ? fmt::to_string((PTR)->getResourceId()) : "<invalid>")
 
 #define _LOG_API_SEPERATOR << " ; " <<
 

@@ -58,7 +58,8 @@ namespace ramses_internal
         virtual void uploadIndexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) override;
         virtual void deleteIndexBuffer(DeviceResourceHandle handle) override;
         virtual void activateIndexBuffer(DeviceResourceHandle handle) override;
-        virtual DeviceResourceHandle uploadShader(const EffectResource& effect) override;
+        virtual std::unique_ptr<const GPUResource> uploadShader(const EffectResource& effect) override;
+        virtual DeviceResourceHandle registerShader(std::unique_ptr<const GPUResource> shaderResource) override;
         virtual DeviceResourceHandle uploadBinaryShader(const EffectResource& effect, const UInt8* binaryShaderData = nullptr, UInt32 binaryShaderDataSize = 0, BinaryShaderFormatID binaryShaderFormat = {}) override;
         virtual Bool getBinaryShader(DeviceResourceHandle handle, UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) override;
         virtual void deleteShader(DeviceResourceHandle handle) override;
@@ -94,9 +95,8 @@ namespace ramses_internal
 
         virtual void readPixels(UInt8* buffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height) override;
 
-        virtual UInt32 getTotalGpuMemoryUsageInKB() const override;
-        virtual UInt32 getDrawCallCount() const override;
-        virtual void resetDrawCallCount() override;
+        virtual uint32_t getTotalGpuMemoryUsageInKB() const override;
+        virtual uint32_t getAndResetDrawCallCount() override;
 
         virtual void clearDepth(Float d) override;
         virtual void clearStencil(Int32 s) override;
@@ -108,6 +108,8 @@ namespace ramses_internal
         virtual void getSupportedBinaryProgramFormats(std::vector<BinaryShaderFormatID>& formats) const override;
 
         virtual void finish() override;
+
+        virtual uint32_t getGPUHandle(DeviceResourceHandle deviceHandle) const override;
 
     private:
         // Used only to delegate getters for components

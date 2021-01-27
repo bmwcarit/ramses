@@ -11,29 +11,48 @@
 
 #include "ramses-framework-api/DcsmApiTypes.h"
 #include "ramses-framework-api/RendererSceneState.h"
-#include <unordered_map>
+#include <map>
 #include <algorithm>
 
 namespace ramses
 {
+    // Custom content identifier which allows the SharedSceneState to
+    // separately track desired states of
+    //     a) the content itself { contentId, false }
+    //     b) this contents hide animation placeholder { contentId, true }
+    // This allows the hide animation placeholder to still keep the scene
+    // rendering the hide animation while user is ramping the scene state
+    // of that content up or down independently from that animation.
+    struct ContentIdentifier
+    {
+        ContentID contentId;
+        bool      isHideAnimation;
+    };
+
+    bool operator<(const ContentIdentifier& lhs, const ContentIdentifier& rhs);
+
     class SharedSceneState
     {
     public:
-        void setActualState(RendererSceneState state);
-        RendererSceneState getActualState() const;
+        void setReportedState(RendererSceneState state);
+        RendererSceneState getReportedState() const;
 
-        void setDesiredState(ContentID contentID, RendererSceneState state);
+        void setRequestedState(RendererSceneState state);
+        RendererSceneState getRequestedState() const;
+
+        void setDesiredState(ContentIdentifier contentID, RendererSceneState state);
         RendererSceneState getConsolidatedDesiredState() const;
 
-        RendererSceneState getCurrentStateForContent(ContentID contentID) const;
+        RendererSceneState getCurrentStateForContent(ContentIdentifier contentID) const;
 
     private:
         void updateLastHighestStateAndOwner();
 
-        std::unordered_map<ContentID, RendererSceneState> m_desiredStates;
-        RendererSceneState m_actualState = RendererSceneState::Unavailable;
+        std::map<ContentIdentifier, RendererSceneState> m_desiredStates;
+        RendererSceneState m_reportedState = RendererSceneState::Unavailable;
+        RendererSceneState m_requestedState = RendererSceneState::Unavailable;
 
-        ContentID m_lastHighestStateOwner = ContentID::Invalid();
+        ContentIdentifier m_lastHighestStateOwner = ContentIdentifier{ ContentID::Invalid(), false };
         RendererSceneState m_lastHighestDesiredState = RendererSceneState::Unavailable;
     };
 }

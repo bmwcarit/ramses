@@ -208,6 +208,8 @@ public:
         m_sizeReceived = false;
         m_released = false;
 
+        /// [DCSM Provider Example]
+
         // first is to offer the content to a consumer listening
         ramses::DcsmMetadataCreator metadata;
         metadata.setPreviewDescription(std::u32string(U"example/пример/例"));
@@ -221,6 +223,8 @@ public:
             m_dcsm.dispatchEvents(*this);
             std::this_thread::sleep_for(std::chrono::milliseconds(16u));
         }
+
+        /// [DCSM Provider Example]
 
         bool currShowing = false;
         ramses::SizeInfo currSize = m_newSize;

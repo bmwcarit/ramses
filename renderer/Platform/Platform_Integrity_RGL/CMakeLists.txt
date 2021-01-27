@@ -29,9 +29,6 @@ ACME_MODULE(
     #==========================================================================
     # dependencies
     #==========================================================================
-    DEPENDENCIES            ramses-renderer-lib
-                            EGL
+    DEPENDENCIES            Platform_EGL
                             RGL
-                            Context_EGL
-                            Device_GL
 )

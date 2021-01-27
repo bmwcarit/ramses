@@ -53,7 +53,7 @@ public:
     }
 
 private:
-    typedef std::unordered_map<ramses::sceneId_t, ramses::RendererSceneState> SceneSet;
+    using SceneSet = std::unordered_map<ramses::sceneId_t, ramses::RendererSceneState>;
 
     ramses::RamsesRenderer& m_renderer;
     SceneSet m_scenes;

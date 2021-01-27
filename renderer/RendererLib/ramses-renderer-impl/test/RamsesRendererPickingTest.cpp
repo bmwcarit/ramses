@@ -54,10 +54,6 @@ namespace ramses_internal
     public:
         void createDisplay()
         {
-            //This has the effect that the display buffer will be created with given width and height which is needed to test the picking algorithm
-            EXPECT_CALL(gPlatformMock->renderBackendMock.surfaceMock.windowMock, getWidth()).WillRepeatedly(Return(1280));
-            EXPECT_CALL(gPlatformMock->renderBackendMock.surfaceMock.windowMock, getHeight()).WillRepeatedly(Return(480));
-
             m_displayId = m_renderer.createDisplay({});
             updateAndDispatch();
         }

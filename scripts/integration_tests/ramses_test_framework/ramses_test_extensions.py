@@ -6,10 +6,12 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from builtins import object
+from builtins import str
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
 import re
-
+from future.utils import iterkeys, iteritems
 
 def ramses_process_check(target):
     ramsesProcesses = target.get_process_list("ramses")
@@ -72,7 +74,7 @@ class IVI_Control(object):
 
                     section_name, section_id = line_tokens
 
-                    if not scene_state.has_key(section_name):
+                    if section_name not in scene_state:
                         scene_state[section_name] = dict()
 
                     scene_state[section_name][section_id] = dict()
@@ -101,10 +103,10 @@ class IVI_Control(object):
         for surface_id in getDifference('surface'): self.destroySurface(surface_id)
         for layer_id in getDifference('layer'): self.destroyLayer(layer_id)
 
-        for k,v in self.start_state.get('screen', dict()).items():
+        for k,v in iteritems(self.start_state.get('screen', dict())):
             self._setScreenRenderorder(k,v['layers'])
 
-        for k,v in self.start_state.get('layer', dict()).items():
+        for k,v in iteritems(self.start_state.get('layer', dict())):
             self.setLayerRenderorder(k,v['surfaces'])
             self.setLayerVisibility(k, v['visibility'])
         self.flush()
@@ -133,7 +135,7 @@ class IVI_Control(object):
         self.command_buffer.append(cmd)
 
     def getScreenIds(self):
-        return self.start_state['screen'].keys()
+        return list(iterkeys(self.start_state['screen']))
 
     def createLayer(self, layer_id, width, height):
         cmd = "layer {0} create {1} {2}".format(layer_id, width, height)
@@ -161,8 +163,8 @@ class IVI_Control(object):
 
     def getSurfaceIds(self):
         state = self.retrieveCurrentState()
-        if 'surface' in state.keys():
-            return state['surface'].keys()
+        if 'surface' in state:
+            return list(iterkeys(state['surface']))
         return []
 
     def setLayerRenderorder(self, layer_id, surface_ids):

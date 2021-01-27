@@ -15,45 +15,44 @@ namespace ramses_internal
 {
     void checkCompressionDecompression(const std::vector<UInt8>& input)
     {
-        const auto size = static_cast<UInt32>(input.size());
         for (auto level : { LZ4CompressionUtils::CompressionLevel::Fast,
                             LZ4CompressionUtils::CompressionLevel::High })
         {
             ResourceBlob inBlob(input.size(), input.data());
-            CompressedResouceBlob compBlob = LZ4CompressionUtils::compress(inBlob, level);
+            CompressedResourceBlob compBlob = LZ4CompressionUtils::compress(inBlob, level);
             EXPECT_GT(compBlob.size(), 0u);
             ASSERT_TRUE(compBlob.data() != nullptr);
 
             ResourceBlob outBlob = LZ4CompressionUtils::decompress(compBlob, static_cast<uint32_t>(input.size()));
             ASSERT_EQ(inBlob.size(), outBlob.size());
-            EXPECT_EQ(0, PlatformMemory::Compare(outBlob.data(), input.data(), size));
+            EXPECT_EQ(input, outBlob.span());
         }
     }
 
     TEST(LZ4CompressionUtilsTest, TestEmptyCompressionFast)
     {
-        CompressedResouceBlob res = LZ4CompressionUtils::compress(ResourceBlob(), LZ4CompressionUtils::CompressionLevel::Fast);
+        CompressedResourceBlob res = LZ4CompressionUtils::compress(ResourceBlob(), LZ4CompressionUtils::CompressionLevel::Fast);
         EXPECT_EQ(0u, res.size());
         EXPECT_TRUE(res.data() == nullptr);
     }
 
     TEST(LZ4CompressionUtilsTest, TestEmptyCompressionHigh)
     {
-        CompressedResouceBlob res = LZ4CompressionUtils::compress(ResourceBlob(), LZ4CompressionUtils::CompressionLevel::High);
+        CompressedResourceBlob res = LZ4CompressionUtils::compress(ResourceBlob(), LZ4CompressionUtils::CompressionLevel::High);
         EXPECT_EQ(0u, res.size());
         EXPECT_TRUE(res.data() == nullptr);
     }
 
     TEST(LZ4CompressionUtilsTest, TestEmptyDecompression)
     {
-        ResourceBlob res = LZ4CompressionUtils::decompress(CompressedResouceBlob(), 10);
+        ResourceBlob res = LZ4CompressionUtils::decompress(CompressedResourceBlob(), 10);
         EXPECT_EQ(0u, res.size());
         EXPECT_TRUE(res.data() == nullptr);
     }
 
     TEST(LZ4CompressionUtilsTest, TestDecompressionZeroUncompressedSize)
     {
-        ResourceBlob res = LZ4CompressionUtils::decompress(CompressedResouceBlob(10), 0);
+        ResourceBlob res = LZ4CompressionUtils::decompress(CompressedResourceBlob(10), 0);
         EXPECT_EQ(0u, res.size());
         EXPECT_TRUE(res.data() == nullptr);
     }

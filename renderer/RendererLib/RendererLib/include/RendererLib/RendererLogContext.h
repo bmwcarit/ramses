@@ -11,6 +11,7 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Collections/StringOutputStream.h"
+#include "Collections/String.h"
 #include "Common/BitForgeMacro.h"
 #include "SceneAPI/Handles.h"
 

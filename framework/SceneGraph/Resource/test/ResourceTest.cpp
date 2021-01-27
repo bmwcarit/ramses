@@ -10,6 +10,7 @@
 #include "Resource/ResourceBase.h"
 #include "gtest/gtest.h"
 #include <numeric>
+#include <random>
 
 namespace ramses_internal
 {
@@ -49,8 +50,8 @@ namespace ramses_internal
 
     INSTANTIATE_TEST_SUITE_P(AResourceTest,
                             ResourceCompression,
-                            ::testing::Values(IResource::CompressionLevel::REALTIME,
-                                              IResource::CompressionLevel::OFFLINE));
+                            ::testing::Values(IResource::CompressionLevel::Realtime,
+                                              IResource::CompressionLevel::Offline));
 
     TEST_P(ResourceCompression, compressUncompressGivesInitialDataForSmallSizes)
     {
@@ -68,12 +69,11 @@ namespace ramses_internal
             res.compress(GetParam());
 
             TestResource resFromCompressed(EResourceType_Invalid, ResourceCacheFlag(0), String());
-            resFromCompressed.setCompressedResourceData(CompressedResouceBlob(res.getCompressedResourceData().size(), res.getCompressedResourceData().data()),
-                                                        res.getDecompressedDataSize(), res.getHash());
+            resFromCompressed.setCompressedResourceData(CompressedResourceBlob(res.getCompressedResourceData().size(), res.getCompressedResourceData().data()),
+                                                        IResource::CompressionLevel::Realtime, res.getDecompressedDataSize(), res.getHash());
             resFromCompressed.decompress();
 
-            ASSERT_EQ(data.size(), resFromCompressed.getResourceData().size());
-            EXPECT_EQ(0, PlatformMemory::Compare(data.data(), resFromCompressed.getResourceData().data(), data.size()));
+            EXPECT_EQ(data.span(), resFromCompressed.getResourceData().span());
         }
     }
 
@@ -104,7 +104,7 @@ namespace ramses_internal
 
         ResourceBlob zeroBlobA;
         ResourceBlob zeroBlobB;
-        CompressedResouceBlob compressedBlob;
+        CompressedResourceBlob compressedBlob;
     };
 
     TEST_F(AResource, hasZeroSizesByDefault)
@@ -121,7 +121,7 @@ namespace ramses_internal
             SCOPED_TRACE(dataSize);
             TestResource res(EResourceType_Invalid, ResourceCacheFlag(0), String());
             res.setResourceData(ResourceBlob(dataSize));
-            res.compress(IResource::CompressionLevel::NONE);
+            res.compress(IResource::CompressionLevel::None);
             EXPECT_FALSE(res.isCompressedAvailable());
         }
     }
@@ -178,7 +178,7 @@ namespace ramses_internal
     {
         DummyResource res;
         ResourceContentHash someHash(1234568, 0);
-        res.setCompressedResourceData(std::move(compressedBlob), 1, someHash);
+        res.setCompressedResourceData(std::move(compressedBlob), IResource::CompressionLevel::Realtime, 1, someHash);
         EXPECT_EQ(someHash, res.getHash());
     }
 
@@ -227,13 +227,13 @@ namespace ramses_internal
         ResourceBlob blob(4096);
         std::iota(blob.data(), blob.data() + blob.size(), static_cast<uint8_t>(10));
         resA.setResourceData(std::move(blob));
-        resA.compress(IResource::CompressionLevel::REALTIME);
+        resA.compress(IResource::CompressionLevel::Realtime);
         ASSERT_TRUE(resA.isCompressedAvailable());
         ASSERT_TRUE(resA.isDeCompressedAvailable());
 
-        const CompressedResouceBlob& compBlobA = resA.getCompressedResourceData();
+        const CompressedResourceBlob& compBlobA = resA.getCompressedResourceData();
         DummyResource resB;
-        resB.setCompressedResourceData(CompressedResouceBlob(compBlobA.size(), compBlobA.data()), resA.getDecompressedDataSize(), resA.getHash());
+        resB.setCompressedResourceData(CompressedResourceBlob(compBlobA.size(), compBlobA.data()), IResource::CompressionLevel::Realtime, resA.getDecompressedDataSize(), resA.getHash());
         EXPECT_FALSE(resB.isDeCompressedAvailable());
         resB.decompress();
         ASSERT_TRUE(resB.isDeCompressedAvailable());
@@ -247,9 +247,62 @@ namespace ramses_internal
     {
         DummyResource resA(1);
         resA.setResourceData(std::move(zeroBlobA));
-        resA.compress(IResource::CompressionLevel::REALTIME);
+        resA.compress(IResource::CompressionLevel::Realtime);
         resA.decompress();
         EXPECT_TRUE(resA.isCompressedAvailable());
         EXPECT_TRUE(resA.isDeCompressedAvailable());
+    }
+
+    TEST_F(AResource, canOverwriteRealtimeCompressionWithOfflineCompressionButNotViceVersa)
+    {
+        // the following parameters will generate a blob which compresses differently with Offline and Realtime compression
+        std::mt19937 gen(123456); // NOLINT(cert-msc32-c,cert-msc51-cpp) we do want deterministically created values
+        std::uniform_int_distribution<unsigned short> dis(0, 32);
+        std::vector<Byte> nonTrivialData(4096);
+        std::generate(nonTrivialData.begin(), nonTrivialData.end(), [&](){ return static_cast<Byte>(dis(gen)); });
+
+        DummyResource resA;
+        resA.setResourceData(ResourceBlob{ nonTrivialData.size(), nonTrivialData.data() });
+
+        DummyResource resB;
+        resB.setResourceData(ResourceBlob{ nonTrivialData.size(), nonTrivialData.data() });
+
+        resA.compress(IResource::CompressionLevel::Realtime);
+        resB.compress(IResource::CompressionLevel::Offline);
+        EXPECT_NE(resA.getCompressedResourceData().span(), resB.getCompressedResourceData().span());
+        resA.compress(IResource::CompressionLevel::Offline);
+        EXPECT_EQ(resA.getCompressedResourceData().span(), resB.getCompressedResourceData().span());
+        resA.compress(IResource::CompressionLevel::Realtime);
+        EXPECT_EQ(resA.getCompressedResourceData().span(), resB.getCompressedResourceData().span());
+    }
+
+    TEST_F(AResource, canBeCompressedAgainAfterSettingNewResourceData)
+    {
+        DummyResource resA(1);
+        resA.setResourceData(std::move(zeroBlobA));
+        resA.compress(IResource::CompressionLevel::Offline);
+        EXPECT_TRUE(resA.isCompressedAvailable());
+        resA.setResourceData(std::move(zeroBlobB));
+        EXPECT_FALSE(resA.isCompressedAvailable());
+        resA.compress(IResource::CompressionLevel::Realtime);
+        EXPECT_TRUE(resA.isCompressedAvailable());
+    }
+
+    TEST_F(AResource, canBeCompressedAgainAfterSettingNewResourceDataWithHash)
+    {
+        DummyResource resA(1);
+        resA.setResourceData(std::move(zeroBlobA));
+        resA.compress(IResource::CompressionLevel::Offline);
+        EXPECT_TRUE(resA.isCompressedAvailable());
+        resA.setResourceData(std::move(zeroBlobB), ResourceContentHash{ 1, 1 });
+        EXPECT_FALSE(resA.isCompressedAvailable());
+        resA.compress(IResource::CompressionLevel::Realtime);
+        EXPECT_TRUE(resA.isCompressedAvailable());
+    }
+
+    TEST_F(AResource, ordersCompressionLevelsCorrectly)
+    {
+        EXPECT_GT(IResource::CompressionLevel::Realtime, IResource::CompressionLevel::None);
+        EXPECT_GT(IResource::CompressionLevel::Offline, IResource::CompressionLevel::Realtime);
     }
 }

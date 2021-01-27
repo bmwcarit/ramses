@@ -279,6 +279,13 @@ namespace ramses
         EXPECT_EQ(ECullMode_Disabled, mode);
     }
 
+    TEST_F(AAppearanceTest, hasDrawModeTrianglesByDefault)
+    {
+        EDrawMode mode;
+        EXPECT_EQ(StatusOK, appearance->getDrawMode(mode));
+        EXPECT_EQ(EDrawMode_Triangles, mode);
+    }
+
     TEST_F(AAppearanceTest, setGetDrawMode)
     {
         EDrawMode mode = EDrawMode_Lines;
@@ -437,7 +444,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueInt32(inputObject, 3u, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueInt32(inputObject, 3u, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
 
         EXPECT_NE(StatusOK, appearance->setInputValueInt32(inputObject, 0u, values));
         EXPECT_NE(StatusOK, appearance->setInputValueInt32(inputObject, 11u, values));
@@ -470,7 +477,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueFloat(inputObject, 3u, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueFloat(inputObject, 3u, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
 
         EXPECT_NE(StatusOK, appearance->setInputValueFloat(inputObject, 0u, values));
         EXPECT_NE(StatusOK, appearance->setInputValueFloat(inputObject, 11u, values));
@@ -502,7 +509,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueVector2i(inputObject, 3u, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueVector2i(inputObject, 3u, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
 
         EXPECT_NE(StatusOK, appearance->setInputValueVector2i(inputObject, 0u, values));
         EXPECT_NE(StatusOK, appearance->setInputValueVector2i(inputObject, 11u, values));
@@ -534,7 +541,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueVector3i(inputObject, 3u, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueVector3i(inputObject, 3u, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
 
         EXPECT_NE(StatusOK, appearance->setInputValueVector3i(inputObject, 0u, values));
         EXPECT_NE(StatusOK, appearance->setInputValueVector3i(inputObject, 11u, values));
@@ -571,7 +578,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueVector4i(inputObject, 3u, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueVector4i(inputObject, 3u, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
 
         EXPECT_NE(StatusOK, appearance->setInputValueVector4i(inputObject, 0u, values));
         EXPECT_NE(StatusOK, appearance->setInputValueVector4i(inputObject, 11u, values));
@@ -603,7 +610,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueVector2f(inputObject, 3u, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueVector2f(inputObject, 3u, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
 
         EXPECT_NE(StatusOK, appearance->setInputValueVector2f(inputObject, 0u, values));
         EXPECT_NE(StatusOK, appearance->setInputValueVector2f(inputObject, 11u, values));
@@ -640,7 +647,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueVector3f(inputObject, 3u, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueVector3f(inputObject, 3u, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
 
         EXPECT_NE(StatusOK, appearance->setInputValueVector3f(inputObject, 0u, values));
         EXPECT_NE(StatusOK, appearance->setInputValueVector3f(inputObject, 11u, values));
@@ -677,7 +684,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueVector4f(inputObject, 3u, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueVector4f(inputObject, 3u, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
 
         EXPECT_NE(StatusOK, appearance->setInputValueVector4f(inputObject, 0u, values));
         EXPECT_NE(StatusOK, appearance->setInputValueVector4f(inputObject, 11u, values));
@@ -699,7 +706,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueMatrix22f(inputObject, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueMatrix22f(inputObject, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
     }
 
     TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeMatrix22fArray)
@@ -717,7 +724,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueMatrix22f(inputObject, 3u, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueMatrix22f(inputObject, 3u, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
 
         EXPECT_NE(StatusOK, appearance->setInputValueMatrix22f(inputObject, 0u, values));
         EXPECT_NE(StatusOK, appearance->setInputValueMatrix22f(inputObject, 11u, values));
@@ -741,7 +748,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueMatrix33f(inputObject, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueMatrix33f(inputObject, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
     }
 
     TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeMatrix33fArray)
@@ -765,7 +772,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueMatrix33f(inputObject, 3u, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueMatrix33f(inputObject, 3u, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
 
         EXPECT_NE(StatusOK, appearance->setInputValueMatrix33f(inputObject, 0u, values));
         EXPECT_NE(StatusOK, appearance->setInputValueMatrix33f(inputObject, 11u, values));
@@ -790,7 +797,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueMatrix44f(inputObject, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueMatrix44f(inputObject, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
     }
 
     TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeMatrix44fArray)
@@ -817,7 +824,7 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, appearance->setInputValueMatrix44f(inputObject, 3u, values));
         EXPECT_EQ(StatusOK, appearance->getInputValueMatrix44f(inputObject, 3u, getValues));
-        EXPECT_EQ(0, ramses_internal::PlatformMemory::Compare(values, getValues, sizeof(values)));
+        EXPECT_EQ(values, absl::MakeSpan(getValues));
 
         EXPECT_NE(StatusOK, appearance->setInputValueMatrix44f(inputObject, 0u, values));
         EXPECT_NE(StatusOK, appearance->setInputValueMatrix44f(inputObject, 11u, values));

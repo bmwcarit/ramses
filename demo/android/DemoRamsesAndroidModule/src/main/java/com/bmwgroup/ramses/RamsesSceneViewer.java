@@ -12,9 +12,9 @@ import android.view.Surface;
 
 public class RamsesSceneViewer
 {
-    public RamsesSceneViewer(Surface surface, int width, int height, String sceneFile, String resFile)
+    public RamsesSceneViewer(Surface surface, int width, int height, String sceneFile)
     {
-        m_nativeHandle = createSceneViewerNative(surface, width, height, sceneFile, resFile);
+        m_nativeHandle = createSceneViewerNative(surface, width, height, sceneFile);
     }
 
     public void dispose()
@@ -40,7 +40,7 @@ public class RamsesSceneViewer
 
     private long m_nativeHandle;
 
-    private native long createSceneViewerNative(Surface surface, int width, int height, String sceneFile, String resFile);
+    private native long createSceneViewerNative(Surface surface, int width, int height, String sceneFile);
     private native void disposeSceneViewerNative(long handle);
     private native long findNodeByNameNative(long handle, String name);
     private native void flushSceneNative(long handle);

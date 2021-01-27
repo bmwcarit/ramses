@@ -28,7 +28,7 @@ namespace ramses
     class ANodeVisibilityTest : public LocalTestClientWithScene, public testing::Test
     {
     protected:
-        virtual void SetUp()
+        virtual void SetUp() override
         {
             m_visibilityNode = &this->template createObject<T>("node");
             m_parentVisNode = &this->template createObject<T>("parent");

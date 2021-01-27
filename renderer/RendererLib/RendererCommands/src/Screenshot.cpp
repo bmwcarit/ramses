@@ -77,7 +77,7 @@ namespace ramses_internal
             }
         }
 
-        m_rendererCommandBuffer.readPixels(display, {}, filename, true, 0u, 0u, 0u, 0u, sendViaDLT);
+        m_rendererCommandBuffer.enqueueCommand(RendererCommand::ReadPixels{ display, {}, 0u, 0u, 0u, 0u, true, sendViaDLT, filename });
 
         return true;
     }

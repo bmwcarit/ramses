@@ -13,7 +13,7 @@
 
 namespace ramses_internal
 {
-    ConnectionStatusUpdateNotifier::ConnectionStatusUpdateNotifier(const String& participantName, const String& usage, PlatformLock& frameworkLock)
+    ConnectionStatusUpdateNotifier::ConnectionStatusUpdateNotifier(const std::string& participantName, const std::string& usage, PlatformLock& frameworkLock)
         : m_participantName(participantName)
         , m_usage(usage)
         , m_lock(frameworkLock)

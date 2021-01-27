@@ -195,6 +195,8 @@ namespace ramses
         *        This function can be used only if #ramses::Node::setRotation(float,float,float) is used to set
         *        node rotation, which implicitly uses left-handed Euler ZYX rotation convention, otherwise it will fail.
         *
+        *        Default value is 0 for all components.
+        *
         * @deprecated This function is deprecated and will be removed in one of the next
         *             major releases. It is encouraged if possible to already migrate to using
         *             #ramses::Node::setRotation(float,float,float,ERotationConvention) and #ramses::Node::getRotation(float&,float&,float&,ERotationConvention&)const.
@@ -211,6 +213,8 @@ namespace ramses
         * @brief Retrieves the absolute rotation for right-handed rotation in all three directions and the used Euler
         *        angles rotation convention. This function can be used only
         *        if #ramses::Node::setRotation(float,float,float,ERotationConvention) is used to set node rotation.
+        *
+        *        Default value is 0 for all components and ERotationConvention::XYZ.
         *
         * @param[out] x Current value in degrees for rotation around x-axis in case of Tait-Bryan conventions, in case of Proper Euler conventions gets
                        the rotation angle for the first angle in the convention name.

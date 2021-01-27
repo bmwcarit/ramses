@@ -20,12 +20,13 @@
 #include "TestScenes/MultiTypeLinkScene.h"
 #include "TestScenes/MultipleRenderTargetScene.h"
 #include "TestScenes/SceneFromPath.h"
+#include "TestScenes/DcsmScene.h"
 #include "ramses-framework-api/RamsesFramework.h"
+#include "ramses-framework-api/DcsmProvider.h"
 #include "RamsesFrameworkImpl.h"
 #include "Ramsh/RamshCommandExit.h"
 #include "TestStepCommand.h"
 #include "Ramsh/Ramsh.h"
-
 
 using SceneVector = std::vector<ramses::Scene*>;
 using IntegrationScenePtr = std::unique_ptr<ramses_internal::IntegrationScene>;
@@ -255,6 +256,23 @@ int main(int argc, const char* argv[])
         integrationScenes.push_back(std::move(integrationScene));
         break;
     }
+    case 23:
+    {
+        ramses::DcsmProvider& dcsmProvider = *framework.createDcsmProvider();
+
+        ramses::Scene& scene = addAndReturnScene(*ramses, scenes, ramses::sceneId_t(44u));
+        IntegrationScenePtr dcsmScene(new ramses_internal::DcsmScene(scene, 0u, cameraPosParam, dcsmProvider, DefaultViewportWidth, DefaultViewportHeight));
+        scene.flush();
+
+        const ramses::ContentID contentId(345u);
+        ramses::DcsmMetadataCreator creator;
+        creator.setPreviewDescription(U"TestClient DCSM Scene");
+        dcsmProvider.offerContent(contentId, ramses::Category(98765), ramses::sceneId_t(44u), ramses::EDcsmOfferingMode::LocalAndRemote);
+        dcsmProvider.updateContentMetadata(contentId, creator);
+
+        integrationScenes.push_back(std::move(dcsmScene));
+        break;
+    }
     }
 
     // handle the case that testscene disconnects framework
@@ -267,6 +285,8 @@ int main(int argc, const char* argv[])
     {
         commandExit.waitForExitRequest(1000u);
         flushAllScenes(scenes);
+        for (auto& scene : integrationScenes)
+            scene->dispatchHandler();
     }
     integrationScenes.clear();
 

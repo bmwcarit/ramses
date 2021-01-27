@@ -120,7 +120,7 @@ namespace ramses_internal
                 {
                     for (auto& resource : sceneUpdate.resources)
                     {
-                        resource->compress(IResource::CompressionLevel::REALTIME);
+                        resource->compress(IResource::CompressionLevel::Realtime);
                     }
                     alreadyCompressed = true;
                 }

@@ -258,8 +258,12 @@ namespace ramses_internal
             }
             if (data.size() > 0)
             {
+                // TODO(Carsten): We need to set a compression level here, but we simply don't know which one it is.
+                // We just set offline for now to avoid any potential recompressing, but there shouldn't be
+                // any compressing on renderer side anyway.To implement correctly, we need to break network/file
+                // compatibility by serializing the IResource::CompressionLevel instead of EResourceCompressionStatus
                 if (header.compressionStatus == EResourceCompressionStatus_Compressed)
-                    resource->setCompressedResourceData(CompressedResouceBlob(data.size(), data.data()), header.decompressedSize, hash);
+                    resource->setCompressedResourceData(CompressedResourceBlob(data.size(), data.data()), IResource::CompressionLevel::Offline, header.decompressedSize, hash);
                 else
                     resource->setResourceData(ResourceBlob(data.size(), data.data()), hash);
             }

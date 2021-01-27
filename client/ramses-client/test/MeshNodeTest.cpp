@@ -28,7 +28,7 @@ namespace ramses
     class MeshNodeTest : public LocalTestClientWithSceneAndAnimationSystem, public testing::Test
     {
     protected:
-        virtual void SetUp()
+        virtual void SetUp() override
         {
             m_meshNode = m_scene.createMeshNode("node");
         }

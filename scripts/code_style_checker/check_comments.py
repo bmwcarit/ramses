@@ -9,19 +9,22 @@
 #  -------------------------------------------------------------------------
 
 import re
-from common_modules.common import *
+import sys
+from common_modules import common
+
 
 def check_doxygen_singleline_comments(filename, file_lines):
     rx = re.compile(r'^(?:\s*///[^<])|(?:.*///<)')
     for i in range(len(file_lines)):
         if "///" in file_lines[i]:
             if not rx.match(file_lines[i]):
-                log_warning("check_doxygen_singleline_comments", filename, i + 1, "wrong use of doxygen /// comment found (intended to use ///< ?)", file_lines[i].strip(" "))
+                common.log_warning("check_doxygen_singleline_comments", filename, i + 1,
+                                   "wrong use of doxygen /// comment found (intended to use ///< ?)", file_lines[i].strip(" "))
 
 
 if __name__ == "__main__":
     targets = sys.argv[1:]
-    targets = get_all_files(targets)
+    targets = common.get_all_files(targets)
 
     if len(targets) == 0:
         print("""
@@ -31,5 +34,5 @@ if __name__ == "__main__":
 
     for t in targets:
         if t[-2:] == ".h" or t[-4:] == ".cpp" or t[-2] == ".c":
-            _, file_lines = read_file(t)
+            _, file_lines = common.read_file(t)
             check_doxygen_singleline_comments(t, file_lines)

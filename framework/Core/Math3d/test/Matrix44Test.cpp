@@ -601,22 +601,23 @@ namespace ramses_internal
 
         Matrix44f identity = inv * mat1;
 
-        EXPECT_EQ(1.0f, identity.m11);
-        EXPECT_EQ(0.0f, identity.m12);
-        EXPECT_EQ(0.0f, identity.m13);
-        EXPECT_EQ(0.0f, identity.m14);
-        EXPECT_EQ(0.0f, identity.m21);
-        EXPECT_EQ(1.0f, identity.m22);
-        EXPECT_EQ(0.0f, identity.m23);
-        EXPECT_EQ(0.0f, identity.m24);
-        EXPECT_EQ(0.0f, identity.m31);
-        EXPECT_EQ(0.0f, identity.m32);
-        EXPECT_EQ(1.0f, identity.m33);
-        EXPECT_EQ(0.0f, identity.m34);
-        EXPECT_EQ(0.0f, identity.m41);
-        EXPECT_EQ(0.0f, identity.m42);
-        EXPECT_EQ(0.0f, identity.m43);
-        EXPECT_EQ(1.0f, identity.m44);
+
+        EXPECT_NEAR(1.0f, identity.m11, 0.00000001f);
+        EXPECT_NEAR(0.0f, identity.m12, 0.00000001f);
+        EXPECT_NEAR(0.0f, identity.m13, 0.00000001f);
+        EXPECT_NEAR(0.0f, identity.m14, 0.00000001f);
+        EXPECT_NEAR(0.0f, identity.m21, 0.00000001f);
+        EXPECT_NEAR(1.0f, identity.m22, 0.00000001f);
+        EXPECT_NEAR(0.0f, identity.m23, 0.00000001f);
+        EXPECT_NEAR(0.0f, identity.m24, 0.00000001f);
+        EXPECT_NEAR(0.0f, identity.m31, 0.00000001f);
+        EXPECT_NEAR(0.0f, identity.m32, 0.00000001f);
+        EXPECT_NEAR(1.0f, identity.m33, 0.00000001f);
+        EXPECT_NEAR(0.0f, identity.m34, 0.00000001f);
+        EXPECT_NEAR(0.0f, identity.m41, 0.00000001f);
+        EXPECT_NEAR(0.0f, identity.m42, 0.00000001f);
+        EXPECT_NEAR(0.0f, identity.m43, 0.00000001f);
+        EXPECT_NEAR(1.0f, identity.m44, 0.00000001f);
     }
 
     TEST_F(Matrix44Test, GetScalingMatrix)
@@ -658,10 +659,8 @@ namespace ramses_internal
 
     TEST_F(Matrix44Test, CanPrintToString)
     {
-        EXPECT_EQ("[1.0 2.0 3.0 4.0; 5.0 6.0 7.0 8.0; 9.0 10.0 11.0 12.0; 13.0 14.0 15.0 16.0]",
+        EXPECT_EQ("[1 2 3 4; 5 6 7 8; 9 10 11 12; 13 14 15 16]",
                   fmt::to_string(mat1));
-        EXPECT_EQ("[1.0 2.0 3.0 4.0; 5.0 6.0 7.0 8.0; 9.0 10.0 11.0 12.0; 13.0 14.0 15.0 16.0]",
-                  StringOutputStream::ToString(mat1));
     }
 
     TEST_F(Matrix44Test, CanSerializeDeserilize)

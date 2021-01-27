@@ -29,6 +29,7 @@ namespace ramses_internal
 
     Bool Context_EGL::init()
     {
+        //For more info: https://www.khronos.org/registry/EGL/specs/eglspec.1.4.pdf
         m_eglSurfaceData.eglDisplay = eglGetDisplay(reinterpret_cast<EGLNativeDisplayType>(m_nativeDisplay));
 
         if (EGL_NO_DISPLAY == m_eglSurfaceData.eglDisplay)
@@ -86,15 +87,19 @@ namespace ramses_internal
             return false;
         }
 
-        m_eglSurfaceData.eglSurface = eglCreateWindowSurface(
-            m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglConfig,
-            reinterpret_cast<EGLNativeWindowType>(m_nativeWindow), m_windowSurfaceAttributes);
-
-        if (!m_eglSurfaceData.eglSurface)
+        //do not create egl surface for shared context
+        if(!m_eglSurfaceData.eglSharedContext)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::init(): eglCreateWindowSurface() failed. Error code: " << eglGetError());
-            eglTerminate(m_eglSurfaceData.eglDisplay);
-            return false;
+            m_eglSurfaceData.eglSurface = eglCreateWindowSurface(
+                m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglConfig,
+                reinterpret_cast<EGLNativeWindowType>(m_nativeWindow), m_windowSurfaceAttributes);
+
+            if (!m_eglSurfaceData.eglSurface)
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::init(): eglCreateWindowSurface() failed. Error code: " << eglGetError());
+                eglTerminate(m_eglSurfaceData.eglDisplay);
+                return false;
+            }
         }
 
         m_eglSurfaceData.eglContext = eglCreateContext(
@@ -123,13 +128,16 @@ namespace ramses_internal
 
     Context_EGL::~Context_EGL()
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL destroy");
+        //For more info: https://www.khronos.org/registry/EGL/specs/eglspec.1.4.pdf
+        LOG_INFO(CONTEXT_RENDERER, "Context_EGL destroy");
 
-        if (m_eglSurfaceData.eglDisplay && m_eglSurfaceData.eglSurface && m_eglSurfaceData.eglContext)
+        if (isInitialized())
         {
             LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::destroy destroying surface and context");
 
-            if (!eglDestroySurface(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglSurface))
+            const bool isSharedContext = m_eglSurfaceData.eglSharedContext != nullptr;
+
+            if (!isSharedContext && !eglDestroySurface(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglSurface))
             {
                 LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::destroy eglDestroySurface failed. Error code: " << eglGetError());
             }
@@ -140,7 +148,7 @@ namespace ramses_internal
 
             LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::terminateEGLDisplayIfNotUsedAnymore calling eglTerminate ");
 
-            if (!eglTerminate(m_eglSurfaceData.eglDisplay))
+            if (!isSharedContext && !eglTerminate(m_eglSurfaceData.eglDisplay))
             {
                 LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::terminateEGLDisplayIfNotUsedAnymore eglTerminate() failed! Error code: " << eglGetError());
             }
@@ -161,14 +169,12 @@ namespace ramses_internal
 
     Bool Context_EGL::enable()
     {
-        assert (m_eglSurfaceData.eglDisplay);
-        assert (m_eglSurfaceData.eglSurface);
-        assert (m_eglSurfaceData.eglContext);
-
+        assert(isInitialized());
         LOG_TRACE(CONTEXT_RENDERER, "Context_EGL enable");
+
         const Bool ok = eglMakeCurrent(m_eglSurfaceData.eglDisplay,
-            m_eglSurfaceData.eglSurface, m_eglSurfaceData.eglSurface,
-            m_eglSurfaceData.eglContext);
+                                       m_eglSurfaceData.eglSurface, m_eglSurfaceData.eglSurface,
+                                       m_eglSurfaceData.eglContext) == EGL_TRUE;
 
         if (!ok)
         {
@@ -184,7 +190,7 @@ namespace ramses_internal
         if (m_eglSurfaceData.eglDisplay)
         {
             LOG_TRACE(CONTEXT_RENDERER, "Context_EGL disable");
-            const Bool ok = eglMakeCurrent(m_eglSurfaceData.eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+            const Bool ok = eglMakeCurrent(m_eglSurfaceData.eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_TRUE;
             if (!ok)
             {
                 LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::disable Error: eglMakeCurrent() failed. Error code " << eglGetError());
@@ -208,5 +214,14 @@ namespace ramses_internal
     EGLDisplay Context_EGL::getEglDisplay() const
     {
         return m_eglSurfaceData.eglDisplay;
+    }
+
+    bool Context_EGL::isInitialized() const
+    {
+        return m_eglSurfaceData.eglDisplay != nullptr
+               && m_eglSurfaceData.eglContext != nullptr
+               //either the context is a shared context, or the context has egl surface (logical XOR)
+               //i.e., a shared context must not have egl surface, and a non-shared context must have egl surface
+               && ((m_eglSurfaceData.eglSurface == nullptr) != (m_eglSurfaceData.eglSharedContext == nullptr));
     }
 }

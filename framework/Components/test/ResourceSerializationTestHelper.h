@@ -15,7 +15,6 @@
 #include "gtest/gtest.h"
 #include "Collections/Vector.h"
 #include "Components/ManagedResource.h"
-#include "Components/ResourceStreamSerialization.h"
 #include "TestRandom.h"
 
 namespace ramses_internal
@@ -34,28 +33,7 @@ namespace ramses_internal
         static void SetResourceDataRandom(IResource& res, UInt32 blobSize);
 
         using Types = ::testing::Types<TextureResource, ArrayResource, EffectResource>;
-
-        static std::vector<std::vector<Byte>> ConvertResourcesToResourceDataVector(const ManagedResourceVector& resources, UInt32 chunkSize);
     };
-
-    inline std::vector<std::vector<Byte>> ResourceSerializationTestHelper::ConvertResourcesToResourceDataVector(const ManagedResourceVector& resources, UInt32 chunkSize)
-    {
-        std::vector<std::vector<Byte>> resData;
-        std::vector<Byte> buffer;
-        auto preparePacketFun = [&](UInt32 neededSize) -> std::pair<Byte*, UInt32> {
-            buffer.resize(std::min(chunkSize, neededSize));
-            return std::make_pair(buffer.data(), static_cast<UInt32>(buffer.size()));
-        };
-        auto finishedPacketFun = [&](UInt32 usedSize) {
-            assert(usedSize <= buffer.size());
-            buffer.resize(usedSize);
-            resData.push_back(buffer);
-        };
-
-        ResourceStreamSerializer serializer;
-        serializer.serialize(preparePacketFun, finishedPacketFun, resources);
-        return resData;
-    }
 
     inline void ResourceSerializationTestHelper::CompareResourceValues(const IResource& a, const IResource& b)
     {

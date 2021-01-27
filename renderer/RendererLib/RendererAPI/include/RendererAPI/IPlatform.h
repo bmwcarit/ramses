@@ -11,10 +11,14 @@
 
 #include "Types.h"
 #include "EDeviceTypeId.h"
+#include "IContext.h"
+#include "RendererLib/DisplayEventHandler.h"
+#include "RendererLib/DisplayConfig.h"
 
 namespace ramses_internal
 {
     class IRenderBackend;
+    class IResourceUploadRenderBackend;
     class IWindow;
     class IContext;
     class IDevice;
@@ -35,6 +39,8 @@ namespace ramses_internal
         virtual void                         destroyPerRendererComponents() = 0;
         virtual IRenderBackend*              createRenderBackend(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) = 0;
         virtual void                         destroyRenderBackend(IRenderBackend& renderBackend) = 0;
+        virtual IResourceUploadRenderBackend* createResourceUploadRenderBackend(const IRenderBackend& mainRenderBackend) = 0;
+        virtual void                          destroyResourceUploadRenderBackend(IResourceUploadRenderBackend& renderBackend) = 0;
 
         virtual ISystemCompositorController* getSystemCompositorController() const = 0;
         virtual const IWindowEventsPollingManager* getWindowEventsPollingManager() const = 0;
@@ -46,7 +52,7 @@ namespace ramses_internal
         virtual IWindow*                     createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) = 0;
         virtual Bool                         destroyWindow(IWindow& window) = 0;
 
-        virtual IContext*                    createContext(IWindow& window) = 0;
+        virtual IContext*                    createContext(IWindow& window, IContext* sharedContex = nullptr) = 0;
         virtual Bool                         destroyContext(IContext& context) = 0;
 
         virtual ISurface*                    createSurface(IWindow& window, IContext& context) = 0;

@@ -11,7 +11,12 @@ ACME_MODULE(
     #==========================================================================
     # general module information
     #==========================================================================
-    NAME                    Platform_Wayland_IVI_EGL
+    # Attention: extra care is needed in case of renaming this module
+    # The name of this module (and all CONCRETE platform modules) must align with
+    # the postfix of generated RAMSES libs' names. The platform name is used in
+    # cmake modules and templates for the mentioned purposes.
+    # The module naming convention is broken here knowledgeably
+    NAME                    platform-wayland-ivi-egl-es-3-0
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
 
@@ -28,5 +33,3 @@ ACME_MODULE(
                             Window_Wayland_IVI
                             SystemCompositorController_Wayland_IVI
 )
-
-# This module is tested in the renderer sandwich tests (<ramses>/integration/ramses-renderer-tests)

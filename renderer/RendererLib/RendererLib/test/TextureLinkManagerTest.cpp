@@ -56,13 +56,13 @@ public:
         consumerSceneAllocator.allocateTextureSampler({ {}, consumerTextureHash }, sampler3);
 
         providerSceneAllocator.allocateDataSlot({ EDataSlotType_TextureProvider, providerId, NodeHandle(), DataInstanceHandle::Invalid(), providerTextureHash, TextureSamplerHandle() }, providerSlotHandle);
-        expectRendererEvent(ERendererEventType_SceneDataSlotProviderCreated, providerSceneId, providerId, SceneId(0u), DataSlotId(0u));
+        expectRendererEvent(ERendererEventType::SceneDataSlotProviderCreated, providerSceneId, providerId, SceneId(0u), DataSlotId(0u));
         consumerSceneAllocator.allocateDataSlot({ EDataSlotType_TextureConsumer, consumerId, NodeHandle(), DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), sampler }, consumerSlotHandle);
-        expectRendererEvent(ERendererEventType_SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId);
+        expectRendererEvent(ERendererEventType::SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId);
         consumerSceneAllocator.allocateDataSlot({ EDataSlotType_TextureConsumer, consumerId2, NodeHandle(), DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), sampler2 }, consumerSlotHandle2);
-        expectRendererEvent(ERendererEventType_SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId2);
+        expectRendererEvent(ERendererEventType::SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId2);
         consumerSceneAllocator.allocateDataSlot({ EDataSlotType_TextureConsumer, consumerId3, NodeHandle(), DataInstanceHandle::Invalid(), ResourceContentHash::Invalid(), sampler3 }, consumerSlotHandle3);
-        expectRendererEvent(ERendererEventType_SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId3);
+        expectRendererEvent(ERendererEventType::SceneDataSlotConsumerCreated, SceneId(0u), DataSlotId(0u), consumerSceneId, consumerId3);
 
         renderable = createRenderableWithResourcesAndMakeClean(sampler);
         // create a renderable with sampler2 and sampler3 as well so it is used for device handle caching
@@ -227,7 +227,7 @@ protected:
         if (dataSlot.isValid())
         {
             consumerScene.releaseDataSlot(dataSlot);
-            expectRendererEvent(ERendererEventType_SceneDataSlotConsumerDestroyed);
+            expectRendererEvent(ERendererEventType::SceneDataSlotConsumerDestroyed);
         }
 
         if (resource.isValid())
@@ -238,7 +238,7 @@ protected:
         if (dataSlot.isValid())
         {
             consumerScene.allocateDataSlot({ EDataSlotType_TextureConsumer, dataSlotId, {}, {}, {}, samplerHandle }, dataSlot);
-            expectRendererEvent(ERendererEventType_SceneDataSlotConsumerCreated);
+            expectRendererEvent(ERendererEventType::SceneDataSlotConsumerCreated);
         }
     }
 
@@ -283,7 +283,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerInitially)
 TEST_F(ATextureLinkManager, reportsLinkForSamplerWhenLinked)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     expectTextureLink(providerTextureHash);
     expectNoBufferLink(sampler);
 }
@@ -291,10 +291,10 @@ TEST_F(ATextureLinkManager, reportsLinkForSamplerWhenLinked)
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndUnlinked)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
 
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId, providerSceneId);
+    expectRendererEvent(ERendererEventType::SceneDataUnlinked, consumerSceneId, consumerId, providerSceneId);
     expectNoTextureLink();
     expectNoBufferLink(sampler);
 }
@@ -302,7 +302,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndUnlinked)
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndProviderSceneRemoved)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
 
     rendererScenes.destroyScene(providerSceneId);
     expectNoTextureLink();
@@ -312,7 +312,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndProviderSceneRem
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSceneRemoved)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
 
     rendererScenes.destroyScene(consumerSceneId);
     EXPECT_FALSE(textureLinkManager.hasLinkedTexture(consumerSceneId, sampler));
@@ -323,7 +323,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSceneRem
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndProviderSlotRemoved)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
 
     providerScene.releaseDataSlot(providerSlotHandle);
     expectNoTextureLink();
@@ -333,7 +333,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndProviderSlotRemo
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSlotRemoved)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
 
     consumerScene.releaseDataSlot(consumerSlotHandle);
     expectNoTextureLink();
@@ -343,7 +343,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSlotRemo
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndProviderSceneUnmapped)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
 
     sceneLinksManager.handleSceneUnmapped(providerSceneId);
     expectNoTextureLink();
@@ -353,7 +353,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndProviderSceneUnm
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSceneUnmapped)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
 
     sceneLinksManager.handleSceneUnmapped(consumerSceneId);
     expectNoTextureLink();
@@ -423,7 +423,7 @@ TEST_F(ATextureLinkManager, marksRenderableUsingSamplerDirtyWhenProviderSceneUnm
 TEST_F(ATextureLinkManager, doesNotMarkRenderableUsingSamplerDirtyWhenUnlinkedWithoutBeingLinked)
 {
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinkFailed, consumerSceneId, consumerId, SceneId::Invalid());
+    expectRendererEvent(ERendererEventType::SceneDataUnlinkFailed, consumerSceneId, consumerId, SceneId::Invalid());
     expectRenderableDirtinessState(renderable, false);
 }
 
@@ -462,14 +462,14 @@ TEST_F(ATextureLinkManager, marksRenderableUsingSamplerDirtyWhenLinkedAndConsume
 TEST_F(ATextureLinkManager, reportsLinkForSamplerWhenLinkedBuffer_OB)
 {
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
     expectOffscreenBufferLink(sampler);
 }
 
 TEST_F(ATextureLinkManager, reportsLinkForSamplerWhenLinkedBuffer_SB)
 {
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
     expectStreamBufferLink(sampler);
 }
 
@@ -477,7 +477,7 @@ TEST_F(ATextureLinkManager, reportsLinkFailedWhenLinkingToUnknownConsumerSlot_OB
 {
     constexpr DataSlotId unknownDataId{ 131313u };
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, unknownDataId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinkFailed, providerOffscreenBuffer, consumerSceneId, unknownDataId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinkFailed, providerOffscreenBuffer, consumerSceneId, unknownDataId);
     expectNoBufferLink(sampler);
 }
 
@@ -485,7 +485,7 @@ TEST_F(ATextureLinkManager, reportsLinkFailedWhenLinkingToUnknownConsumerSlot_SB
 {
     constexpr DataSlotId unknownDataId{ 131313u };
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, unknownDataId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinkFailed, providerStreamBuffer, consumerSceneId, unknownDataId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinkFailed, providerStreamBuffer, consumerSceneId, unknownDataId);
     expectNoBufferLink(sampler);
 }
 
@@ -494,10 +494,10 @@ TEST_F(ATextureLinkManager, reportsLinkFailedWhenLinkingToConsumerSlotWithWrongT
     // attempt to link to a provider type slot
     constexpr DataSlotId providerDataId{ 131313u };
     consumerSceneAllocator.allocateDataSlot({ EDataSlotType_TextureProvider, providerDataId, NodeHandle(), DataInstanceHandle::Invalid(), providerTextureHash, TextureSamplerHandle() });
-    expectRendererEvent(ERendererEventType_SceneDataSlotProviderCreated, consumerSceneId, providerDataId, SceneId(0u), DataSlotId(0u));
+    expectRendererEvent(ERendererEventType::SceneDataSlotProviderCreated, consumerSceneId, providerDataId, SceneId(0u), DataSlotId(0u));
 
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, providerDataId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinkFailed, providerOffscreenBuffer, consumerSceneId, providerDataId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinkFailed, providerOffscreenBuffer, consumerSceneId, providerDataId);
     expectNoBufferLink(sampler);
 }
 
@@ -506,20 +506,20 @@ TEST_F(ATextureLinkManager, reportsLinkFailedWhenLinkingToConsumerSlotWithWrongT
     // attempt to link to a provider type slot
     constexpr DataSlotId providerDataId{ 131313u };
     consumerSceneAllocator.allocateDataSlot({ EDataSlotType_TextureProvider, providerDataId, NodeHandle(), DataInstanceHandle::Invalid(), providerTextureHash, TextureSamplerHandle() });
-    expectRendererEvent(ERendererEventType_SceneDataSlotProviderCreated, consumerSceneId, providerDataId, SceneId(0u), DataSlotId(0u));
+    expectRendererEvent(ERendererEventType::SceneDataSlotProviderCreated, consumerSceneId, providerDataId, SceneId(0u), DataSlotId(0u));
 
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, providerDataId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinkFailed, providerStreamBuffer, consumerSceneId, providerDataId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinkFailed, providerStreamBuffer, consumerSceneId, providerDataId);
     expectNoBufferLink(sampler);
 }
 
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndUnlinked_OB)
 {
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
 
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId, SceneId::Invalid());
+    expectRendererEvent(ERendererEventType::SceneDataUnlinked, consumerSceneId, consumerId, SceneId::Invalid());
     expectNoTextureLink();
     expectNoBufferLink(sampler);
 }
@@ -527,10 +527,10 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndUnlinked_O
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndUnlinked_SB)
 {
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
 
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId, SceneId::Invalid());
+    expectRendererEvent(ERendererEventType::SceneDataUnlinked, consumerSceneId, consumerId, SceneId::Invalid());
     expectNoTextureLink();
     expectNoBufferLink(sampler);
 }
@@ -538,7 +538,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndUnlinked_S
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSceneRemoved_OB)
 {
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
 
     rendererScenes.destroyScene(consumerSceneId);
     EXPECT_FALSE(textureLinkManager.hasLinkedOffscreenBuffer(consumerSceneId, sampler));
@@ -549,7 +549,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSc
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSceneRemoved_SB)
 {
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
 
     rendererScenes.destroyScene(consumerSceneId);
     EXPECT_FALSE(textureLinkManager.hasLinkedOffscreenBuffer(consumerSceneId, sampler));
@@ -560,7 +560,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSc
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSlotRemoved_OB)
 {
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
     expectOffscreenBufferLink(sampler);
 
     consumerScene.releaseDataSlot(consumerSlotHandle);
@@ -571,7 +571,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSl
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSlotRemoved_SB)
 {
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
     expectStreamBufferLink(sampler);
 
     consumerScene.releaseDataSlot(consumerSlotHandle);
@@ -582,7 +582,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSl
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSceneUnmapped_OB)
 {
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
 
     sceneLinksManager.handleSceneUnmapped(consumerSceneId);
     expectNoTextureLink();
@@ -592,7 +592,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSc
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSceneUnmapped_SB)
 {
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
 
     sceneLinksManager.handleSceneUnmapped(consumerSceneId);
     expectNoTextureLink();
@@ -602,7 +602,7 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSc
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndBufferRemoved_OB)
 {
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
 
     sceneLinksManager.handleBufferDestroyed(providerOffscreenBuffer);
     expectNoTextureLink();
@@ -612,9 +612,9 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndBufferRemo
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenBufferLinkedAndBufferRemoved_SB)
 {
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
 
-    sceneLinksManager.handleBufferDestroyed(providerStreamBuffer);
+    sceneLinksManager.handleBufferDestroyedOrSourceUnavailable(providerStreamBuffer);
     expectNoTextureLink();
     expectNoBufferLink(sampler);
 }
@@ -656,7 +656,7 @@ TEST_F(ATextureLinkManager, marksRenderableUsingSamplerDirtyWhenBufferUnlinked_S
 TEST_F(ATextureLinkManager, doesNotMarkRenderableUsingSamplerDirtyWhenUnlinkedWithoutBeingBufferLinked)
 {
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinkFailed, consumerSceneId, consumerId, SceneId::Invalid());
+    expectRendererEvent(ERendererEventType::SceneDataUnlinkFailed, consumerSceneId, consumerId, SceneId::Invalid());
     expectRenderableDirtinessState(renderable, false);
 }
 
@@ -696,7 +696,7 @@ TEST_F(ATextureLinkManager, marksRenderableUsingSamplerDirtyWhenBufferLinkedAndB
     updateConsumerSceneResourcesCache();
     expectRenderableDirtinessState(renderable, false);
 
-    sceneLinksManager.handleBufferDestroyed(providerStreamBuffer);
+    sceneLinksManager.handleBufferDestroyedOrSourceUnavailable(providerStreamBuffer);
     expectRenderableDirtinessState(renderable, true);
 }
 
@@ -720,15 +720,15 @@ TEST_F(ATextureLinkManager, reportsLinkAndMarksRenderableUsingSamplerDirtyWhenPr
 TEST_F(ATextureLinkManager, canCreateTextureLinkAndBufferLink)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     expectTextureLink(providerTextureHash);
 
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
     expectOffscreenBufferLink(sampler2);
 
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId3);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
     expectStreamBufferLink(sampler3);
 }
 
@@ -736,49 +736,49 @@ TEST_F(ATextureLinkManager, differentTypesOfLinksOverwriteEachOther)
 {
     // OB
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
     expectOffscreenBufferLink(sampler);
     EXPECT_FALSE(textureLinkManager.hasLinkedTexture(consumerSceneId, sampler));
     EXPECT_FALSE(textureLinkManager.hasLinkedStreamBuffer(consumerSceneId, sampler));
 
     // OB -> tex
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     expectTextureLink(providerTextureHash);
     EXPECT_FALSE(textureLinkManager.hasLinkedOffscreenBuffer(consumerSceneId, sampler));
     EXPECT_FALSE(textureLinkManager.hasLinkedStreamBuffer(consumerSceneId, sampler));
 
     // tex -> OB
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
     expectOffscreenBufferLink(sampler);
     EXPECT_FALSE(textureLinkManager.hasLinkedTexture(consumerSceneId, sampler));
     EXPECT_FALSE(textureLinkManager.hasLinkedStreamBuffer(consumerSceneId, sampler));
 
     // OB -> SB
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
     expectStreamBufferLink(sampler);
     EXPECT_FALSE(textureLinkManager.hasLinkedTexture(consumerSceneId, sampler));
     EXPECT_FALSE(textureLinkManager.hasLinkedOffscreenBuffer(consumerSceneId, sampler));
 
     // SB -> tex
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     expectTextureLink(providerTextureHash);
     EXPECT_FALSE(textureLinkManager.hasLinkedOffscreenBuffer(consumerSceneId, sampler));
     EXPECT_FALSE(textureLinkManager.hasLinkedStreamBuffer(consumerSceneId, sampler));
 
     // tex -> SB
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId);
     expectStreamBufferLink(sampler);
     EXPECT_FALSE(textureLinkManager.hasLinkedTexture(consumerSceneId, sampler));
     EXPECT_FALSE(textureLinkManager.hasLinkedOffscreenBuffer(consumerSceneId, sampler));
 
     // SB -> OB
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId);
     expectOffscreenBufferLink(sampler);
     EXPECT_FALSE(textureLinkManager.hasLinkedTexture(consumerSceneId, sampler));
     EXPECT_FALSE(textureLinkManager.hasLinkedStreamBuffer(consumerSceneId, sampler));
@@ -787,11 +787,11 @@ TEST_F(ATextureLinkManager, differentTypesOfLinksOverwriteEachOther)
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndProviderSceneRemoved_KeepsBufferLink)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId3);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
 
     rendererScenes.destroyScene(providerSceneId);
     expectNoTextureLink();
@@ -803,9 +803,9 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndProviderSceneRem
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndBufferRemoved_KeepsTextureLink_OB)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
 
     sceneLinksManager.handleBufferDestroyed(providerOffscreenBuffer);
     expectTextureLink(providerTextureHash);
@@ -815,11 +815,11 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndBufferRemoved_Ke
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndBufferRemoved_KeepsTextureLink_SB)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId2);
 
-    sceneLinksManager.handleBufferDestroyed(providerStreamBuffer);
+    sceneLinksManager.handleBufferDestroyedOrSourceUnavailable(providerStreamBuffer);
     expectTextureLink(providerTextureHash);
     expectNoBufferLink(sampler2);
 }
@@ -827,11 +827,11 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndBufferRemoved_Ke
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSceneRemoved_BufferAndTextureLinks)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId3);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
 
     rendererScenes.destroyScene(consumerSceneId);
     EXPECT_FALSE(textureLinkManager.hasLinkedTexture(consumerSceneId, sampler));
@@ -842,11 +842,11 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSceneRem
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndProviderSlotRemoved_KeepsBufferLink)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId3);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
 
     providerScene.releaseDataSlot(providerSlotHandle);
     expectNoTextureLink();
@@ -858,11 +858,11 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndProviderSlotRemo
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSlotRemoved_KeepsBufferLink)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId3);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
 
     consumerScene.releaseDataSlot(consumerSlotHandle);
     expectNoTextureLink();
@@ -874,9 +874,9 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSlotRemo
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSlotRemoved_KeepsTextureLink_OB)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
 
     consumerScene.releaseDataSlot(consumerSlotHandle2);
     expectTextureLink(providerTextureHash);
@@ -886,9 +886,9 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSlotRemo
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSlotRemoved_KeepsTextureLink_SB)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId2);
 
     consumerScene.releaseDataSlot(consumerSlotHandle2);
     expectTextureLink(providerTextureHash);
@@ -898,11 +898,11 @@ TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSlotRemo
 TEST_F(ATextureLinkManager, reportsNoLinkForSamplerWhenLinkedAndConsumerSceneUnmapped_BufferAndTextureLinks)
 {
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId3);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
 
     sceneLinksManager.handleSceneUnmapped(consumerSceneId);
     expectNoTextureLink();
@@ -918,11 +918,11 @@ TEST_F(ATextureLinkManager, canCreateTextureLinkAndBufferLinkIfPreviouslyUsingRe
     setFallbackTextureToConsumerSampler(sampler3, {}, renderBuffer);
 
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId3);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
 
     expectTextureLink(providerTextureHash);
     expectOffscreenBufferLink(sampler2, false);
@@ -938,11 +938,11 @@ TEST_F(ATextureLinkManager, unlinkingTextureAndBufferFallsBackToPreviouslySetRen
     setFallbackTextureToConsumerSampler(sampler3, {}, renderBuffer);
 
     sceneLinksManager.createDataLink(providerSceneId, providerId, consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
+    expectRendererEvent(ERendererEventType::SceneDataLinked, providerSceneId, providerId, consumerSceneId, consumerId);
     sceneLinksManager.createBufferLink(providerOffscreenBuffer, consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerOffscreenBuffer, consumerSceneId, consumerId2);
     sceneLinksManager.createBufferLink(providerStreamBuffer, consumerSceneId, consumerId3);
-    expectRendererEvent(ERendererEventType_SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
+    expectRendererEvent(ERendererEventType::SceneDataBufferLinked, providerStreamBuffer, consumerSceneId, consumerId3);
 
     expectTextureLink(providerTextureHash);
     expectOffscreenBufferLink(sampler2, false);
@@ -950,11 +950,11 @@ TEST_F(ATextureLinkManager, unlinkingTextureAndBufferFallsBackToPreviouslySetRen
     updateCacheAndExpectDeviceHandles(sampler2, sampler3);
 
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId, providerSceneId);
+    expectRendererEvent(ERendererEventType::SceneDataUnlinked, consumerSceneId, consumerId, providerSceneId);
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId2);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId2, SceneId::Invalid());
+    expectRendererEvent(ERendererEventType::SceneDataUnlinked, consumerSceneId, consumerId2, SceneId::Invalid());
     sceneLinksManager.removeDataLink(consumerSceneId, consumerId3);
-    expectRendererEvent(ERendererEventType_SceneDataUnlinked, consumerSceneId, consumerId3, SceneId::Invalid());
+    expectRendererEvent(ERendererEventType::SceneDataUnlinked, consumerSceneId, consumerId3, SceneId::Invalid());
 
     EXPECT_EQ(TextureSampler::ContentType::RenderBuffer, consumerScene.getTextureSampler(sampler).contentType);
     EXPECT_EQ(TextureSampler::ContentType::RenderBuffer, consumerScene.getTextureSampler(sampler2).contentType);

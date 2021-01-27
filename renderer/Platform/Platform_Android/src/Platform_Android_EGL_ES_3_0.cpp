@@ -8,9 +8,6 @@
 
 #include "Platform_Android/Platform_Android_EGL_ES_3_0.h"
 #include <EGL/eglext.h>
-#include "Context_EGL/Context_EGL.h"
-#include "Device_GL/Device_GL.h"
-#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
@@ -24,54 +21,35 @@ namespace ramses_internal
     {
     }
 
-    IDevice* Platform_Android_EGL_ES_3_0::createDevice(IContext& context)
+    std::vector<EGLint> Platform_Android_EGL_ES_3_0::getSurfaceAttributes(UInt32 msaaSampleCount) const
     {
-        Context_EGL* platformContext = getPlatformContext<Context_EGL>(context);
-        assert(0 != platformContext);
-        Device_GL* device = new Device_GL(*platformContext, 3, 0, true);
-        return addPlatformDevice(device);
-    }
+        return std::vector<EGLint>
+        {
+            EGL_SURFACE_TYPE,
+            EGL_WINDOW_BIT,
 
-    void Platform_Android_EGL_ES_3_0::getSurfaceAttributes(UInt32 msaaSampleCount, std::vector<EGLint>& attributes) const
-    {
-        attributes.clear();
-        attributes.reserve(20u);
+            EGL_RENDERABLE_TYPE,
+            EGL_OPENGL_ES3_BIT_KHR,
 
-        attributes.push_back(EGL_SURFACE_TYPE);
-        attributes.push_back(EGL_WINDOW_BIT);
+            EGL_RED_SIZE,
+            8,
 
-        attributes.push_back(EGL_RENDERABLE_TYPE);
-        attributes.push_back(EGL_OPENGL_ES3_BIT_KHR);
+            EGL_ALPHA_SIZE,
+            8,
 
-        attributes.push_back(EGL_RED_SIZE);
-        attributes.push_back(8);
+            EGL_DEPTH_SIZE,
+            1,
 
-        attributes.push_back(EGL_ALPHA_SIZE);
-        attributes.push_back(8);
+            EGL_STENCIL_SIZE,
+            8,
 
-        attributes.push_back(EGL_DEPTH_SIZE);
-        attributes.push_back(1);
+            EGL_SAMPLE_BUFFERS,
+            (msaaSampleCount > 1) ? 1 : 0,
 
-        attributes.push_back(EGL_STENCIL_SIZE);
-        attributes.push_back(8);
+            EGL_SAMPLES,
+            static_cast<EGLint>(msaaSampleCount > 1 ? msaaSampleCount : 0),
 
-        attributes.push_back(EGL_SAMPLE_BUFFERS);
-        attributes.push_back((msaaSampleCount > 1) ? 1 : 0);
-
-        attributes.push_back(EGL_SAMPLES);
-        attributes.push_back((msaaSampleCount > 1) ? msaaSampleCount : 0);
-
-        attributes.push_back(EGL_NONE);
-    }
-
-    void Platform_Android_EGL_ES_3_0::getContextAttributes(std::vector<EGLint>& attributes) const
-    {
-        attributes.clear();
-        attributes.reserve(2u);
-
-        attributes.push_back(EGL_CONTEXT_CLIENT_VERSION);
-        attributes.push_back(3);
-
-        attributes.push_back(EGL_NONE);
+            EGL_NONE
+        };
     }
 }

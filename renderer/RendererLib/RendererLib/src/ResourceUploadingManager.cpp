@@ -16,32 +16,37 @@
 #include "RendererAPI/IDevice.h"
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformTime.h"
+#include "Resource/EffectResource.h"
+#include "absl/algorithm/container.h"
 
 namespace ramses_internal
 {
     ResourceUploadingManager::ResourceUploadingManager(
         RendererResourceRegistry& resources,
-        IResourceUploader& uploader,
+        std::unique_ptr<IResourceUploader> uploader,
         IRenderBackend& renderBackend,
+        AsyncEffectUploader& asyncEffectUploader,
         Bool keepEffects,
         const FrameTimer& frameTimer,
         RendererStatistics& stats,
         UInt64 gpuCacheSize)
         : m_resources(resources)
-        , m_uploader(uploader)
+        , m_uploader{ std::move(uploader) }
         , m_renderBackend(renderBackend)
+        , m_asyncEffectUploader(asyncEffectUploader)
         , m_keepEffects(keepEffects)
         , m_frameTimer(frameTimer)
         , m_resourceCacheSize(gpuCacheSize)
         , m_stats(stats)
     {
+        assert(m_uploader);
     }
 
     ResourceUploadingManager::~ResourceUploadingManager()
     {
         // Unload all remaining resources that were kept due to caching strategy.
         // Or in case display is being destructed together with scenes and there is no more rendering,
-        // ie. no more deferred upload/unloads
+        // i.e. no more deferred upload/unloads
         ResourceContentHashVector resourcesToUnload;
         getResourcesToUnloadNext(resourcesToUnload, false, std::numeric_limits<UInt64>::max());
         unloadResources(resourcesToUnload);
@@ -55,7 +60,7 @@ namespace ramses_internal
 
     Bool ResourceUploadingManager::hasAnythingToUpload() const
     {
-        return !m_resources.getAllProvidedResources().empty();
+        return !m_resources.getAllProvidedResources().empty() || m_resources.hasAnyResourcesScheduledForUpload();
     }
 
     void ResourceUploadingManager::uploadAndUnloadPendingResources()
@@ -70,6 +75,7 @@ namespace ramses_internal
 
         unloadResources(resourcesToUnload);
         uploadResources(resourcesToUpload);
+        syncEffects();
     }
 
     void ResourceUploadingManager::unloadResources(const ResourceContentHashVector& resourcesToUnload)
@@ -79,6 +85,51 @@ namespace ramses_internal
             const ResourceDescriptor& rd = m_resources.getResourceDescriptor(resource);
             unloadResource(rd);
         }
+    }
+
+    void ResourceUploadingManager::syncEffects()
+    {
+        m_asyncEffectUploader.sync(m_effectsToUpload, m_effectsUploadedTemp);
+        m_effectsToUpload.clear();
+
+        for (auto& e : m_effectsUploadedTemp)
+        {
+            const auto& hash = e.first;
+            if (!m_resources.containsResource(hash))
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::syncEffects unexpected effect uploaded, will be ignored because it does not exist in resource registry #" << hash);
+                assert(false);
+                continue;
+            }
+
+            const auto resourceStatus = m_resources.getResourceStatus(hash);
+            if (resourceStatus != EResourceStatus::ScheduledForUpload)
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::syncEffects unexpected effect uploaded, will be ignored because is not in state scheduled for upload #" << hash << " (status :" << resourceStatus << ")");
+                assert(false);
+                continue;
+            }
+
+            if (e.second)
+            {
+                const auto& rd = m_resources.getResourceDescriptor(hash);
+                const auto deviceHandle = m_renderBackend.getDevice().registerShader(std::move(e.second));
+                const auto resourceSize = rd.decompressedSize;
+                m_resourceSizes.put(hash, resourceSize);
+                m_resourceTotalUploadedSize += resourceSize;
+                m_resources.setResourceUploaded(hash, deviceHandle, resourceSize);
+
+                const auto sceneId = (rd.sceneUsage.empty() ? SceneId{} : rd.sceneUsage.front());
+                m_uploader->storeShaderInBinaryShaderCache(m_renderBackend, deviceHandle, hash, sceneId);
+            }
+            else
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::syncEffects failed to upload effect #" << hash);
+                m_resources.setResourceBroken(hash);
+            }
+        }
+
+        m_effectsUploadedTemp.clear();
     }
 
     void ResourceUploadingManager::uploadResources(const ResourceContentHashVector& resourcesToUpload)
@@ -92,7 +143,7 @@ namespace ramses_internal
             m_stats.resourceUploaded(resourceSize);
             sizeUploaded += resourceSize;
 
-            const Bool checkTimeLimit = (i % NumResourcesToUploadInBetweenTimeBudgetChecks == 0) || rd.type == EResourceType_Effect || resourceSize > LargeResourceByteSizeThreshold;
+            const Bool checkTimeLimit = (i % NumResourcesToUploadInBetweenTimeBudgetChecks == 0) || resourceSize > LargeResourceByteSizeThreshold;
             if (checkTimeLimit && m_frameTimer.isTimeBudgetExceededForSection(EFrameTimerSectionBudget::ResourcesUpload))
             {
                 const auto numUploaded = i + 1;
@@ -126,17 +177,27 @@ namespace ramses_internal
 
         const UInt32 resourceSize = pResource->getDecompressedDataSize();
         UInt32 vramSize = 0;
-        const DeviceResourceHandle deviceHandle = m_uploader.uploadResource(m_renderBackend, rd, vramSize);
-        if (deviceHandle.isValid())
+        const auto deviceHandle = m_uploader->uploadResource(m_renderBackend, rd, vramSize);
+        if (deviceHandle.has_value())
         {
-            m_resourceSizes.put(rd.hash, resourceSize);
-            m_resourceTotalUploadedSize += resourceSize;
-            m_resources.setResourceUploaded(rd.hash, deviceHandle, vramSize);
+            if (deviceHandle.value().isValid())
+            {
+                m_resourceSizes.put(rd.hash, resourceSize);
+                m_resourceTotalUploadedSize += resourceSize;
+                m_resources.setResourceUploaded(rd.hash, deviceHandle.value(), vramSize);
+            }
+            else
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResource failed to upload resource #" << rd.hash << " (" << EnumToString(rd.type) << ")");
+                m_resources.setResourceBroken(rd.hash);
+            }
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResource failed to upload resource #" << rd.hash << " (" << EnumToString(rd.type) << ")");
-            m_resources.setResourceBroken(rd.hash);
+            assert(rd.type == EResourceType_Effect);
+            assert(absl::c_find_if(m_effectsToUpload, [&](const auto& e){ return e->getHash() == rd.hash;}) == m_effectsToUpload.cend());
+            m_effectsToUpload.push_back(pResource->convertTo<const EffectResource>());
+            m_resources.setResourceScheduledForUpload(rd.hash);
         }
     }
 
@@ -148,7 +209,7 @@ namespace ramses_internal
 
         LOG_TRACE(CONTEXT_PROFILING, "        ResourceUploadingManager::unloadResource delete resource of type " << EnumToString(rd.type));
         LOG_TRACE(CONTEXT_RENDERER, "ResourceUploadingManager::unloadResource Unloading resource #" << rd.hash);
-        m_uploader.unloadResource(m_renderBackend, rd.type, rd.hash, rd.deviceHandle);
+        m_uploader->unloadResource(m_renderBackend, rd.type, rd.hash, rd.deviceHandle);
 
         auto resSizeIt = m_resourceSizes.find(rd.hash);
         assert(m_resourceTotalUploadedSize >= resSizeIt->value);

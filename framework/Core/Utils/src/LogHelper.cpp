@@ -8,6 +8,8 @@
 
 #include "Utils/LogHelper.h"
 #include "Utils/LogMacros.h"
+#include "Utils/StringUtils.h"
+
 
 namespace ramses_internal
 {

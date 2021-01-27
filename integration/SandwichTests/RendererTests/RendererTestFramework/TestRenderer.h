@@ -67,7 +67,11 @@ namespace ramses_internal
         void assignSceneToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t buffer, int32_t renderOrder);
         void setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const ramses_internal::Vector4& clearColor);
 
+        ramses::streamBufferId_t createStreamBuffer(ramses::displayId_t displayId, ramses::waylandIviSurfaceId_t source);
+        void destroyStreamBuffer(ramses::displayId_t displayId, ramses::streamBufferId_t buffer);
+
         void createBufferDataLink(ramses::displayBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
+        void createBufferDataLink(ramses::streamBufferId_t providerBuffer, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
         void createDataLink(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId);
         void removeDataLink(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId);
 
@@ -75,13 +79,12 @@ namespace ramses_internal
         bool performScreenshotCheck(const ramses::displayId_t displayId, ramses::displayBufferId_t bufferId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& comparisonImageFile, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel, bool readPixelsTwice = false);
         void saveScreenshotForDisplay(const ramses::displayId_t displayId, ramses::displayBufferId_t bufferId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& imageFile);
         void toggleRendererFrameProfiler();
-        IEmbeddedCompositingManager& getEmbeddedCompositorManager(ramses::displayId_t displayId);
-        void setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility);
         void readPixels(ramses::displayId_t displayId, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-        IEmbeddedCompositor& getEmbeddedCompositor(ramses::displayId_t displayId);
         void setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
+        void setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility);
 
-        bool hasSystemCompositorController() const;
+        IEmbeddedCompositor& getEmbeddedCompositor(ramses::displayId_t displayId);
+        IEmbeddedCompositingManager& getEmbeddedCompositorManager(ramses::displayId_t displayId);
 
     private:
         ramses::RamsesRenderer* m_renderer = nullptr;

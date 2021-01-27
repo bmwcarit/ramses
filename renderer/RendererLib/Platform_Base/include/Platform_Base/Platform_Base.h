@@ -14,8 +14,6 @@
 namespace ramses_internal
 {
     class RendererConfig;
-    class IWindowEventHandler;
-    class IRenderBackend;
 
     class Platform_Base : public IPlatform
     {
@@ -26,6 +24,9 @@ namespace ramses_internal
         void            destroyPerRendererComponents() override final;
         IRenderBackend* createRenderBackend(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
         void            destroyRenderBackend(IRenderBackend& renderBackend)  override final;
+
+        virtual IResourceUploadRenderBackend*   createResourceUploadRenderBackend(const IRenderBackend& mainRenderBackend) override final;
+        virtual void                            destroyResourceUploadRenderBackend(IResourceUploadRenderBackend& renderBackend) override final;
 
         ISystemCompositorController* getSystemCompositorController() const override final;
         const IWindowEventsPollingManager* getWindowEventsPollingManager() const override;
@@ -79,6 +80,7 @@ namespace ramses_internal
         Bool                            m_systemCompositorControllerFailedCreation = false;
 
         std::vector<IRenderBackend*> m_renderBackends;
+        std::vector<IResourceUploadRenderBackend*> m_resourceUploadRenderBackends;
         std::vector<IWindow*> m_windows;
         std::vector<IContext*> m_contexts;
         std::vector<IDevice*> m_devices;

@@ -7,9 +7,11 @@
 #  -------------------------------------------------------------------------
 
 
-LOCAL, REMOTE, REMOTE_INTERNAL = range(3)
+from builtins import object
+from builtins import range
+LOCAL, REMOTE, REMOTE_INTERNAL = list(range(3))
 
-class Core:
+class Core(object):
     def __init__(self, typ, config):
         if typ == LOCAL:
             from ramses_test_framework.cores.core_impl import LocalCoreImpl

@@ -20,14 +20,14 @@
 
 namespace ramses_internal
 {
-    typedef ::testing::Types<
+    using SceneTypes = ::testing::Types<
         Scene,
         TransformationCachedScene,
         ActionCollectingScene,
         ResourceChangeCollectingScene,
         DataLayoutCachedScene,
         ActionTestScene
-    > SceneTypes;
+    >;
 
     template <typename SCENE>
     class AScene : public testing::Test

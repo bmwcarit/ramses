@@ -31,10 +31,10 @@ class ARenderer : public ::testing::TestWithParam<bool>
 {
 public:
     ARenderer()
-        : platformFactoryMock(GetParam())
+        : platformFactoryMock(createPlatformMock())
         , rendererScenes(rendererEventCollector)
         , expirationMonitor(rendererScenes, rendererEventCollector)
-        , renderer(platformFactoryMock, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
+        , renderer(*platformFactoryMock, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
     {
         sceneRenderInterrupted.incrementRenderableIdx();
         sceneRenderInterrupted2.incrementRenderableIdx();
@@ -133,7 +133,7 @@ public:
     void doOneRendererLoop()
     {
         if(GetParam())
-            EXPECT_CALL(platformFactoryMock.windowEventsPollingManagerMock, pollWindowsTillAnyCanRender()).Times(1u);
+            EXPECT_CALL(platformFactoryMock->windowEventsPollingManagerMock, pollWindowsTillAnyCanRender()).Times(1u);
 
         renderer.getProfilerStatistics().markFrameFinished(std::chrono::microseconds{ 0u });
         renderer.doOneRenderLoop();
@@ -198,7 +198,7 @@ public:
 
     SystemCompositorControllerMock* getSystemCompositorMock()
     {
-        return static_cast<SystemCompositorControllerMock*>(platformFactoryMock.getSystemCompositorController());
+        return static_cast<SystemCompositorControllerMock*>(platformFactoryMock->getSystemCompositorController());
     }
 
     void initiateExpirationMonitoring(std::initializer_list<SceneId> scenes)
@@ -228,7 +228,7 @@ public:
     }
 
 protected:
-    StrictMock<PlatformStrictMock>       platformFactoryMock;
+    std::unique_ptr<StrictMock<PlatformStrictMock>>         platformFactoryMock;
     RendererCommandBuffer                       rendererCommandBuffer;
     RendererEventCollector                      rendererEventCollector;
     RendererScenes                              rendererScenes;
@@ -249,6 +249,23 @@ protected:
     Sequence SeqPreRender;
 
     const FlushTime::Clock::time_point currentFakeTime{ std::chrono::milliseconds(1000) };
+
+    private:
+        StrictMock<PlatformStrictMock>* createPlatformMock()
+        {
+            auto platform = new StrictMock<PlatformStrictMock>;
+            EXPECT_CALL(*platform, createPerRendererComponents()).Times(1u);
+            EXPECT_CALL(*platform, destroyPerRendererComponents()).Times(1u);
+
+            const auto perRendererComponentsCreated = GetParam();
+            if (!perRendererComponentsCreated)
+            {
+                ON_CALL(*platform, getSystemCompositorController()).WillByDefault(Return(nullptr));
+                ON_CALL(*platform, getWindowEventsPollingManager()).WillByDefault(Return(nullptr));
+            }
+
+            return platform;
+        }
 };
 
 INSTANTIATE_TEST_SUITE_P(, ARenderer, ::testing::Values(false, true));
@@ -1007,7 +1024,7 @@ TEST_P(ARenderer, skipsFrameIfDisplayControllerCanNotRenderNewFrame)
 
     //renderer must not try to render on that display
     if(GetParam())
-        EXPECT_CALL(platformFactoryMock.windowEventsPollingManagerMock, pollWindowsTillAnyCanRender()).Times(1u);
+        EXPECT_CALL(platformFactoryMock->windowEventsPollingManagerMock, pollWindowsTillAnyCanRender()).Times(1u);
     EXPECT_CALL(*displayMock.m_displayController, enableContext()).Times(0);
     EXPECT_CALL(*displayMock.m_displayController, swapBuffers()).Times(0);
     EXPECT_CALL(*displayMock.m_displayController, getEmbeddedCompositingManager()).Times(0);

@@ -15,6 +15,7 @@
 #include "RendererAPI/ISystemCompositorController.h"
 #include "RendererAPI/IWindowEventsPollingManager.h"
 #include "RendererLib/RenderBackend.h"
+#include "RendererLib/ResourceUploadRenderBackend.h"
 #include "RendererLib/RendererConfig.h"
 #include "Platform_Base/TextureUploadingAdapter_Base.h"
 #include "Platform_Base/Surface.h"
@@ -31,6 +32,7 @@ namespace ramses_internal
     {
         assert(nullptr == m_systemCompositorController);
         assert(m_renderBackends.empty());
+        assert(m_resourceUploadRenderBackends.empty());
     }
 
     Bool Platform_Base::createPerRendererComponents()
@@ -138,6 +140,45 @@ namespace ramses_internal
         std::vector<IRenderBackend*>::iterator renderBackendIter = find_c(m_renderBackends, &renderBackend);
         assert(m_renderBackends.end() != renderBackendIter);
         m_renderBackends.erase(renderBackendIter);
+        delete &renderBackend;
+    }
+
+    IResourceUploadRenderBackend* Platform_Base::createResourceUploadRenderBackend(const IRenderBackend& mainRenderBackend)
+    {
+        IWindow& window = mainRenderBackend.getSurface().getWindow();
+        IContext& mainContext = mainRenderBackend.getSurface().getContext();
+        auto context = createContext(window, &mainContext);
+        if(!context)
+            return nullptr;
+
+        context->enable();
+        auto device = createDevice(*context);
+
+        if(!device)
+        {
+            context->disable();
+            destroyContext(*context);
+            return nullptr;
+        }
+
+        IResourceUploadRenderBackend* renderBackend = new ResourceUploadRenderBackend(*context, *device);
+        m_resourceUploadRenderBackends.push_back(renderBackend);
+
+        return renderBackend;
+    }
+
+    void Platform_Base::destroyResourceUploadRenderBackend(IResourceUploadRenderBackend& renderBackend)
+    {
+        IContext& context = renderBackend.getContext();
+        IDevice& device = renderBackend.getDevice();
+
+        destroyDevice(device);
+        context.disable();
+        destroyContext(context);
+
+        std::vector<IResourceUploadRenderBackend*>::iterator renderBackendIter = find_c(m_resourceUploadRenderBackends, &renderBackend);
+        assert(m_resourceUploadRenderBackends.end() != renderBackendIter);
+        m_resourceUploadRenderBackends.erase(renderBackendIter);
         delete &renderBackend;
     }
 

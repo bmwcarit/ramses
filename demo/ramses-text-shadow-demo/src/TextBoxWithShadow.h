@@ -13,6 +13,7 @@
 #include "GaussFilter.h"
 #include "ImageBox.h"
 #include "TextBox.h"
+#include <memory>
 
 class TextBoxWithShadow : public GraphicalItem
 {
@@ -29,15 +30,15 @@ public:
     void setShadowSharpness(float variance);
 
 private:
-    ImageBox* m_imageBoxText   = nullptr;
-    ImageBox* m_imageBoxShadow = nullptr;
+    std::unique_ptr<ImageBox> m_imageBoxText;
+    std::unique_ptr<ImageBox> m_imageBoxShadow;
 
     int32_t m_textToShadowOffsetX = 0;
     int32_t m_textToShadowOffsetY = 0;
 
-    TextBox*     m_textBox      = nullptr;
-    GaussFilter* m_gaussFilterH = nullptr;
-    GaussFilter* m_gaussFilterV = nullptr;
+    std::unique_ptr<TextBox>     m_textBox;
+    std::unique_ptr<GaussFilter> m_gaussFilterH;
+    std::unique_ptr<GaussFilter> m_gaussFilterV;
 };
 
 #endif

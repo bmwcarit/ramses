@@ -55,7 +55,7 @@ namespace ramses
             ramses_internal::UInt8Vector data;
             ramses_internal::BinaryShaderFormatID format;
         };
-        typedef ramses_internal::HashMap<ramses_internal::ResourceContentHash, BinaryShader> BinaryShaderTable;
+        using BinaryShaderTable = ramses_internal::HashMap<ramses_internal::ResourceContentHash, BinaryShader>;
 
         BinaryShaderTable m_binaryShaders;
         std::vector<binaryShaderFormatId_t> m_supportedFormats;

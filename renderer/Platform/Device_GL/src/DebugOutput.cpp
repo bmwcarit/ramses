@@ -109,7 +109,7 @@ namespace ramses_internal
 
     Bool DebugOutput::isAvailable() const
     {
-        return (glDebugMessageCallback && glDebugMessageControl);
+        return (glDebugMessageCallback != nullptr && glDebugMessageControl != nullptr);
     }
 
     Bool DebugOutput::checkAndResetError() const

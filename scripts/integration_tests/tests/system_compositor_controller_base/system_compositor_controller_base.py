@@ -6,6 +6,7 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from builtins import range
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework import helper
@@ -131,7 +132,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         surfaceIdsList.sort(key=int)
         surfaceIdSearchRegEx = "SystemCompositorController_Wayland_IVI::listIVISurfaces Known ivi-ids are: {0}\n".format(" (([0-9])* )*".join(surfaceIdsList))
         log.info("waiting on surfaces beeing registered in scc " + surfaceIdSearchRegEx)
-        for i in xrange(1, 30):
+        for i in range(1, 30):
             if self.renderer.send_ramsh_command("scl", response_message=surfaceIdSearchRegEx, timeout=1):
                 return 1
         return 0

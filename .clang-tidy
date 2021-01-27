@@ -53,6 +53,9 @@ Checks:
     bugprone-unused-return-value,
     bugprone-use-after-move,
     bugprone-virtual-near-miss,
+    bugprone-spuriously-wake-up-functions,
+    bugprone-suspicious-include,
+    bugprone-misplaced-pointer-arithmetic-in-alloc,
 
     cert-dcl16-c,
     cert-dcl21-cpp,
@@ -71,6 +74,7 @@ Checks:
     cert-dcl50-cpp,
     cert-flp30-c,
     # TODO(tobias) false positives: cert-oop54-cpp,
+    cert-oop57-cpp,
 
     clang-analyzer-apiModeling.StdCLibraryFunctions,
     clang-analyzer-apiModeling.TrustNonnull,
@@ -151,7 +155,7 @@ Checks:
 
     hicpp-avoid-goto,
     # TODO hicpp-multiway-paths-covered,
-    hicpp-named-parameter,
+    # TODO hicpp-named-parameter,
     hicpp-no-assembler,
     hicpp-noexcept-move,
     # TODO hicpp-signed-bitwise,
@@ -173,6 +177,7 @@ Checks:
     modernize-use-bool-literals,
     modernize-raw-string-literal,
     modernize-use-nodiscard,
+    modernize-use-using,
 
     performance-faster-string-find,
     performance-for-range-copy,
@@ -216,6 +221,7 @@ Checks:
     readability-uniqueptr-delete-release,
     readability-misleading-indentation,
     readability-misplaced-array-index,
+    readability-implicit-bool-conversion,
 
     cppcoreguidelines-avoid-goto,
     cppcoreguidelines-c-copy-assignment-signature,
@@ -223,15 +229,14 @@ Checks:
     # TODO cppcoreguidelines-narrowing-conversions,
     cppcoreguidelines-no-malloc,
     # TODO cppcoreguidelines-pro-type-cstyle-cast,
-    cppcoreguidelines-slicing
+    cppcoreguidelines-slicing,
+    cppcoreguidelines-avoid-non-const-global-variable,
 '
-
-
 # everything that is enabled is also an error
 WarningsAsErrors: '*'
 
-# ignore headers in external because we cannot fix them
-HeaderFilterRegex: '/git/(client|demo|examples|framework|integration|renderer|utils|proprietary/(android|demo|framework|utils))/'
+# no headers filtered here, done later in wrapper script
+HeaderFilterRegex: '.*'
 
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
@@ -239,3 +244,15 @@ FormatStyle:     none
 CheckOptions:
   - key: modernize-use-nullptr.NullMacros
     value: 'NULL'
+
+  - key: cert-oop57-cpp.MemSetNames
+    value: ramses_internal::PlatformMemory::Set
+  - key: cert-oop57-cpp.MemCpyNames
+    value: ramses_internal::PlatformMemory::Copy
+  - key: cert-oop57-cpp.MemCmpNames
+    value: ramses_internal::PlatformMemory::Compare
+
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
+    value: true
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: true

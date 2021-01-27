@@ -10,6 +10,7 @@
 #include "RendererAPI/ISurface.h"
 #include "RendererAPI/IWindow.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
+#include "RendererAPI/IContext.h"
 #include "SceneAPI/StreamTexture.h"
 #include "RendererLib/RendererLogger.h"
 #include "RendererLib/RendererLogContext.h"
@@ -32,6 +33,7 @@
 #include "RenderExecutor.h"
 #include "RenderExecutorLogger.h"
 #include "RendererEventCollector.h"
+#include "Platform_Base/DeviceResourceMapper.h"
 #include "Utils/LogMacros.h"
 
 namespace ramses_internal
@@ -68,35 +70,35 @@ namespace ramses_internal
         context.setNodeHandleFilter(nodeHandleFilter);
         switch (topic)
         {
-        case ERendererLogTopic_Displays:
+        case ERendererLogTopic::Displays:
             LogDisplays(updater, context);
             break;
-        case ERendererLogTopic_SceneStates:
+        case ERendererLogTopic::SceneStates:
             LogSceneStates(updater, context);
             break;
-        case ERendererLogTopic_StreamTextures:
+        case ERendererLogTopic::StreamTextures:
             LogStreamTextures(updater, context);
             break;
-        case ERendererLogTopic_Resources:
+        case ERendererLogTopic::Resources:
             LogClientResources(updater, context);
             LogSceneResources(updater, context);
             break;
-        case ERendererLogTopic_MissingResources:
+        case ERendererLogTopic::MissingResources:
             LogMissingResources(updater, context);
             break;
-        case ERendererLogTopic_RenderQueue:
+        case ERendererLogTopic::RenderQueue:
             LogRenderQueue(updater, context);
             break;
-        case ERendererLogTopic_Links:
+        case ERendererLogTopic::Links:
             LogLinks(updater.m_rendererScenes, context);
             break;
-        case ERendererLogTopic_EmbeddedCompositor:
+        case ERendererLogTopic::EmbeddedCompositor:
             LogEmbeddedCompositor(updater, context);
             break;
-        case ERendererLogTopic_EventQueue:
+        case ERendererLogTopic::EventQueue:
             LogEventQueue(updater, context);
             break;
-        case ERendererLogTopic_All:
+        case ERendererLogTopic::All:
             LogDisplays(updater, context);
             LogSceneStates(updater, context);
             LogStreamTextures(updater, context);
@@ -107,14 +109,14 @@ namespace ramses_internal
             LogEmbeddedCompositor(updater, context);
             LogEventQueue(updater, context);
             break;
-        case ERendererLogTopic_PeriodicLog:
+        case ERendererLogTopic::PeriodicLog:
             LogPeriodicInfo(updater);
             break;
         default:
-            context << "Log topic " << EnumToString(topic) << " not found!" << RendererLogContext::NewLine;
+            context << "Log topic " << topic << " not found!" << RendererLogContext::NewLine;
             break;
         }
-        if (topic != ERendererLogTopic_PeriodicLog)
+        if (topic != ERendererLogTopic::PeriodicLog)
         {
             Log(CONTEXT_RENDERER, context);
         }
@@ -127,7 +129,7 @@ namespace ramses_internal
         for (const auto& res : resources)
             str << " " << res;
         str << " ]";
-        return str.release().stdRef();
+        return str.release();
     };
 
     void RendererLogger::LogSceneStates(const RendererSceneUpdater& updater, RendererLogContext& context)
@@ -182,7 +184,7 @@ namespace ramses_internal
                         {
                             context << "Flush " << flushInfo.flushIndex << RendererLogContext::NewLine;
                             context << "[ sceneActions: " << flushInfo.sceneActions.numberOfActions() << " (" << flushInfo.sceneActions.collectionData().size() << " bytes) ]" << RendererLogContext::NewLine;
-                            context << "[ " << stagingInfo.sizeInformation.asString().c_str() << " ]" << RendererLogContext::NewLine;
+                            context << "[ " << stagingInfo.sizeInformation << " ]" << RendererLogContext::NewLine;
                             context << "[ addedResources: "<< resourcesToString(flushInfo.resourcesAdded) << " ]" << RendererLogContext::NewLine;
                             context << "[ removedResources: " << resourcesToString(flushInfo.resourcesRemoved) << " ]" << RendererLogContext::NewLine;
                         }
@@ -203,7 +205,7 @@ namespace ramses_internal
         context << updater.m_displayResourceManagers.size() << " known Display(s)" << RendererLogContext::NewLine << RendererLogContext::NewLine;
 
         context.indent();
-        for(const auto& displayIt :updater.m_renderer.m_displays)
+        for(const auto& displayIt : updater.m_renderer.m_displays)
         {
             const DisplayHandle displayHandle = displayIt.first;
             const auto& displayController = *displayIt.second.displayController;
@@ -222,7 +224,7 @@ namespace ramses_internal
                 {
                     context << "Frame Buffer:" << RendererLogContext::NewLine;
                     context.indent();
-                    LogDisplayBuffer(updater, displayIt.second.frameBufferDeviceHandle, displayIt.second.buffersSetup.getDisplayBuffer(displayIt.second.frameBufferDeviceHandle), context);
+                    LogDisplayBuffer(updater, displayHandle, displayIt.second.frameBufferDeviceHandle, displayIt.second.buffersSetup.getDisplayBuffer(displayIt.second.frameBufferDeviceHandle), context);
                     context.unindent();
 
                     const auto& resMgr = static_cast<const RendererResourceManager&>(*updater.m_displayResourceManagers.find(displayHandle)->second);
@@ -230,10 +232,10 @@ namespace ramses_internal
                     context.indent();
                     for (const auto& ob : resMgr.m_offscreenBuffers)
                     {
-                        context << "Handle: " << ob.first << RendererLogContext::NewLine;
+                        context << "OB handle: " << ob.first << RendererLogContext::NewLine;
                         const auto deviceHandle = resMgr.getOffscreenBufferDeviceHandle(ob.first);
                         const auto& obInfo = displayIt.second.buffersSetup.getDisplayBuffer(deviceHandle);
-                        LogDisplayBuffer(updater, deviceHandle, obInfo, context);
+                        LogDisplayBuffer(updater, displayHandle, deviceHandle, obInfo, context);
                     }
                     context.unindent();
 
@@ -251,9 +253,11 @@ namespace ramses_internal
         EndSection("RENDERER DISPLAYS", context);
     }
 
-    void RendererLogger::LogDisplayBuffer(const RendererSceneUpdater& updater, DeviceResourceHandle bufferHandle, const DisplayBufferInfo& dispBufferInfo, RendererLogContext& context)
+    void RendererLogger::LogDisplayBuffer(const RendererSceneUpdater& updater, DisplayHandle display, DeviceResourceHandle bufferHandle, const DisplayBufferInfo& dispBufferInfo, RendererLogContext& context)
     {
-        context << "Display Buffer device handle: " << bufferHandle.asMemoryHandle() << (dispBufferInfo.isInterruptible ? " [interruptible]" : "") << RendererLogContext::NewLine;
+        context << "Display Buffer deviceHandle=" << bufferHandle.asMemoryHandle()
+            << " GPUhandle=" << updater.m_renderer.getDisplayController(display).getRenderBackend().getDevice().getGPUHandle(bufferHandle)
+            << (dispBufferInfo.isInterruptible ? " [interruptible]" : "") << RendererLogContext::NewLine;
 
         context.indent();
         const auto& vp = dispBufferInfo.viewport;
@@ -399,6 +403,7 @@ namespace ramses_internal
                 context << "Scene resources in scene " << sceneResRegistryIt.key << ":" << RendererLogContext::NewLine;
                 const RendererSceneResourceRegistry& resRegistry = sceneResRegistryIt.value;
                 const RendererCachedScene& scene = updater.m_rendererScenes.getScene(sceneResRegistryIt.key);
+                const auto& device = updater.m_renderer.getDisplayController(managerIt.first).getRenderBackend().getDevice();
 
                 context.indent();
 
@@ -413,7 +418,8 @@ namespace ramses_internal
                         const RenderBuffer& rbDesc = *rb.second;
                         if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                         {
-                            context << rb.first << " (deviceHandle " << resRegistry.getRenderBufferDeviceHandle(rb.first) << ") ";
+                            const auto deviceHandle = resRegistry.getRenderBufferDeviceHandle(rb.first);
+                            context << rb.first << " (deviceHandle=" << deviceHandle << " GPUhandle=" << device.getGPUHandle(deviceHandle) << ") ";
                             context << "[" << rbDesc.width << "x" << rbDesc.height << "; " << EnumToString(rbDesc.type) << "; " << EnumToString(rbDesc.format) << "; " << EnumToString(rbDesc.accessMode) << "; " << rbDesc.sampleCount << " samples] ";
                             context << resRegistry.getRenderBufferByteSize(rb.first) / 1024 << " KB";
                             context << RendererLogContext::NewLine;
@@ -432,7 +438,8 @@ namespace ramses_internal
                     context.indent();
                     for (const auto& rt : renderTargets)
                     {
-                        context << rt.first << " (deviceHandle " << resRegistry.getRenderTargetDeviceHandle(rt.first) << ") ";
+                        const auto deviceHandle = resRegistry.getRenderTargetDeviceHandle(rt.first);
+                        context << rt.first << " (deviceHandle=" << deviceHandle << " GPUhandle=" << device.getGPUHandle(deviceHandle) << ") ";
                         context << "renderBuffer handles: [ ";
                         for (UInt32 i = 0u; i < scene.getRenderTargetRenderBufferCount(rt.first); ++i)
                             context << scene.getRenderTargetRenderBuffer(rt.first, i) << " ";
@@ -1118,9 +1125,9 @@ namespace ramses_internal
         if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
         {
             for (size_t i = 0; i < rendererEvents.size(); ++i)
-                context << i << ". " << EnumToString(rendererEvents[i].eventType) << RendererLogContext::NewLine;
+                context << i << ". " << rendererEvents[i].eventType << RendererLogContext::NewLine;
             for (size_t i = 0; i < sceneControlEvents.size(); ++i)
-                context << i << ". " << EnumToString(sceneControlEvents[i].eventType) << RendererLogContext::NewLine;
+                context << i << ". " << sceneControlEvents[i].eventType << RendererLogContext::NewLine;
         }
 
         context.unindent();

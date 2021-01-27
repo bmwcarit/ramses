@@ -9,18 +9,20 @@
 #include "RendererLib/SceneReferenceLogic.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/RendererSceneControlLogic.h"
-#include "RendererLib/IRendererSceneControl.h"
+#include "RendererLib/IRendererSceneUpdater.h"
+#include "RendererLib/SceneReferenceOwnership.h"
 #include "RendererFramework/IRendererSceneEventSender.h"
 #include "Utils/LogMacros.h"
 #include "absl/algorithm/container.h"
 
 namespace ramses_internal
 {
-    SceneReferenceLogic::SceneReferenceLogic(const RendererScenes& scenes, IRendererSceneControlLogic& sceneLogic, IRendererSceneControl& sceneControl, IRendererSceneEventSender& sender)
+    SceneReferenceLogic::SceneReferenceLogic(const RendererScenes& scenes, IRendererSceneControlLogic& sceneLogic, IRendererSceneUpdater& sceneUpdater, IRendererSceneEventSender& sender, SceneReferenceOwnership& sharedOwnership)
         : m_rendererScenes(scenes)
         , m_sceneLogic(sceneLogic)
-        , m_sceneControl(sceneControl)
+        , m_sceneUpdater(sceneUpdater)
         , m_eventSender(sender)
+        , m_sharedOwnership(sharedOwnership)
     {
     }
 
@@ -44,7 +46,7 @@ namespace ramses_internal
         {
             switch (evt.eventType)
             {
-            case ERendererEventType_SceneStateChanged:
+            case ERendererEventType::SceneStateChanged:
             {
                 const auto masterSceneId = findMasterSceneForReferencedScene(evt.sceneId);
                 if (masterSceneId.isValid())
@@ -59,7 +61,7 @@ namespace ramses_internal
                 }
                 return masterSceneId.isValid();
             }
-            case ERendererEventType_SceneFlushed:
+            case ERendererEventType::SceneFlushed:
             {
                 const auto masterSceneId = findMasterSceneForReferencedScene(evt.sceneId);
                 if (masterSceneId.isValid() && m_masterScenes[masterSceneId].sceneReferencesWithFlushNotification.count(evt.sceneId) != 0)
@@ -69,8 +71,8 @@ namespace ramses_internal
                 }
                 return masterSceneId.isValid();
             }
-            case ERendererEventType_SceneDataLinked:
-            case ERendererEventType_SceneDataLinkFailed:
+            case ERendererEventType::SceneDataLinked:
+            case ERendererEventType::SceneDataLinkFailed:
             {
                 // check if any ref scene involved either as provider or consumer
                 const auto masterSceneId1 = findMasterSceneForReferencedScene(evt.providerSceneId);
@@ -78,15 +80,15 @@ namespace ramses_internal
                 const auto masterSceneId = (masterSceneId1.isValid() ? masterSceneId1 : masterSceneId2);
                 if (masterSceneId.isValid())
                 {
-                    const bool status = (evt.eventType == ERendererEventType_SceneDataLinked);
+                    const bool status = (evt.eventType == ERendererEventType::SceneDataLinked);
                     LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: sending event scene reference data linked to master {} (providerScene:dataId -> consumerSceneId:dataId) {}:{} -> {}:{} STATUS={}",
                         masterSceneId, evt.providerSceneId, evt.providerdataId, evt.consumerSceneId, evt.consumerdataId, status);
                     m_eventSender.sendDataLinked(masterSceneId, evt.providerSceneId, evt.providerdataId, evt.consumerSceneId, evt.consumerdataId, status);
                 }
                 return masterSceneId.isValid();
             }
-            case ERendererEventType_SceneDataUnlinked:
-            case ERendererEventType_SceneDataUnlinkFailed:
+            case ERendererEventType::SceneDataUnlinked:
+            case ERendererEventType::SceneDataUnlinkFailed:
             {
                 // check if any ref scene involved either as provider or consumer
                 const auto masterSceneId1 = findMasterSceneForReferencedScene(evt.providerSceneId);
@@ -94,17 +96,17 @@ namespace ramses_internal
                 const auto masterSceneId = (masterSceneId1.isValid() ? masterSceneId1 : masterSceneId2);
                 if (masterSceneId.isValid())
                 {
-                    const bool status = (evt.eventType == ERendererEventType_SceneDataUnlinked);
+                    const bool status = (evt.eventType == ERendererEventType::SceneDataUnlinked);
                     LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: sending event scene reference data unlinked to master {} consumerSceneId:dataId {}:{} STATUS={}",
                         masterSceneId, evt.consumerSceneId, evt.consumerdataId, status);
                     m_eventSender.sendDataUnlinked(masterSceneId, evt.consumerSceneId, evt.consumerdataId, status);
                 }
                 return masterSceneId.isValid();
             }
-            case ERendererEventType_SceneExpirationMonitoringEnabled:
-            case ERendererEventType_SceneExpirationMonitoringDisabled:
-            case ERendererEventType_SceneExpired:
-            case ERendererEventType_SceneRecoveredFromExpiration:
+            case ERendererEventType::SceneExpirationMonitoringEnabled:
+            case ERendererEventType::SceneExpirationMonitoringDisabled:
+            case ERendererEventType::SceneExpired:
+            case ERendererEventType::SceneRecoveredFromExpiration:
             {
                 auto logExpirationMsg = [](SceneId master, SceneId evtScene, const char* msg)
                 {
@@ -121,19 +123,19 @@ namespace ramses_internal
                 {
                     switch (evt.eventType)
                     {
-                    case ERendererEventType_SceneExpirationMonitoringEnabled:
+                    case ERendererEventType::SceneExpirationMonitoringEnabled:
                         m_masterScenes[masterSceneId].expirationStates[evt.sceneId] = ExpirationState::MonitoringEnabled;
                         logExpirationMsg(masterSceneId, evt.sceneId, "enabled for expiration monitoring");
                         break;
-                    case ERendererEventType_SceneExpirationMonitoringDisabled:
+                    case ERendererEventType::SceneExpirationMonitoringDisabled:
                         m_masterScenes[masterSceneId].expirationStates[evt.sceneId] = ExpirationState::MonitoringDisabled;
                         logExpirationMsg(masterSceneId, evt.sceneId, "disabled for expiration monitoring");
                         break;
-                    case ERendererEventType_SceneExpired:
+                    case ERendererEventType::SceneExpired:
                         m_masterScenes[masterSceneId].expirationStates[evt.sceneId] = ExpirationState::Expired;
                         logExpirationMsg(masterSceneId, evt.sceneId, "expired");
                         break;
-                    case ERendererEventType_SceneRecoveredFromExpiration:
+                    case ERendererEventType::SceneRecoveredFromExpiration:
                         m_masterScenes[masterSceneId].expirationStates[evt.sceneId] = ExpirationState::MonitoringEnabled;
                         logExpirationMsg(masterSceneId, evt.sceneId, "recovered from expiration");
                         break;
@@ -145,17 +147,15 @@ namespace ramses_internal
                 }
                 return masterSceneId.isValid();
             }
-            case ERendererEventType_SceneAssignedToDisplayBuffer:
-            case ERendererEventType_SceneAssignedToDisplayBufferFailed:
-            case ERendererEventType_SceneDataSlotProviderCreated:
-            case ERendererEventType_SceneDataSlotProviderDestroyed:
-            case ERendererEventType_SceneDataSlotConsumerCreated:
-            case ERendererEventType_SceneDataSlotConsumerDestroyed:
+            case ERendererEventType::SceneDataSlotProviderCreated:
+            case ERendererEventType::SceneDataSlotProviderDestroyed:
+            case ERendererEventType::SceneDataSlotConsumerCreated:
+            case ERendererEventType::SceneDataSlotConsumerDestroyed:
                 // implicit or irrelevant - if for referenced scene, these must be removed from event queue but are not sent to master scene client
                 return findMasterSceneForReferencedScene(evt.sceneId).isValid();
-            case ERendererEventType_SceneDataBufferLinked:
-            case ERendererEventType_SceneDataBufferLinkFailed:
-            case ERendererEventType_SceneDataUnlinkedAsResultOfClientSceneChange:
+            case ERendererEventType::SceneDataBufferLinked:
+            case ERendererEventType::SceneDataBufferLinkFailed:
+            case ERendererEventType::SceneDataUnlinkedAsResultOfClientSceneChange:
                 // not supported yet - if for referenced scene, these must be removed from event queue but are not sent to master scene client
                 return findMasterSceneForReferencedScene(evt.consumerSceneId).isValid();
             default:
@@ -195,6 +195,7 @@ namespace ramses_internal
                 const auto& refData = masterScene.getSceneReference(handle);
                 const auto refSceneId = refData.sceneId;
                 masterSceneInfo.sceneReferences[refSceneId] = handle;
+                m_sharedOwnership.setOwner(refSceneId, masterSceneId);
                 RendererSceneState refTargetState;
                 DisplayHandle refDisplay;
                 OffscreenBufferHandle refOB;
@@ -313,6 +314,7 @@ namespace ramses_internal
 
                         // remove from master info lists
                         masterInfo.sceneReferences.erase(sceneRefId);
+                        m_sharedOwnership.setOwner(sceneRefId, SceneId::Invalid());
                         masterInfo.sceneReferencesWithFlushNotification.erase(sceneRefId);
                         masterInfo.expirationStates.erase(sceneRefId);
 
@@ -355,14 +357,14 @@ namespace ramses_internal
                     const auto providerSceneId = (action.providerScene.isValid() ? masterScene.getSceneReference(action.providerScene).sceneId : masterSceneId);
                     const auto consumerSceneId = (action.consumerScene.isValid() ? masterScene.getSceneReference(action.consumerScene).sceneId : masterSceneId);
                     LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: executing data link for master scene {} (providerScene:dataId -> consumerSceneId:dataId) {}:{} -> {}:{}", masterSceneId, providerSceneId, action.providerId, consumerSceneId, action.consumerId);
-                    m_sceneControl.handleSceneDataLinkRequest(providerSceneId, action.providerId, consumerSceneId, action.consumerId);
+                    m_sceneUpdater.handleSceneDataLinkRequest(providerSceneId, action.providerId, consumerSceneId, action.consumerId);
                     break;
                 }
                 case SceneReferenceActionType::UnlinkData:
                 {
                     const auto consumerSceneId = (action.consumerScene.isValid() ? masterScene.getSceneReference(action.consumerScene).sceneId : masterSceneId);
                     LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: executing data unlink for master scene {} (consumerSceneId:dataId) {}:{}", masterSceneId, consumerSceneId, action.consumerId);
-                    m_sceneControl.handleDataUnlinkRequest(consumerSceneId, action.consumerId);
+                    m_sceneUpdater.handleDataUnlinkRequest(consumerSceneId, action.consumerId);
                     break;
                 }
                 }
@@ -383,7 +385,7 @@ namespace ramses_internal
         if (masterInfo.consolidatedExpirationState == ExpirationState::MonitoringDisabled
             && !absl::c_all_of(masterInfo.expirationStates, [](const auto& s) { return s.second == ExpirationState::MonitoringDisabled; }))
         {
-            events.push_back({ ERendererEventType_SceneExpirationMonitoringEnabled, masterSceneId });
+            events.push_back({ ERendererEventType::SceneExpirationMonitoringEnabled, masterSceneId });
             masterInfo.consolidatedExpirationState = ExpirationState::MonitoringEnabled;
             LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reporting master scene {} as enabled for expiration monitoring", masterSceneId);
         }
@@ -392,7 +394,7 @@ namespace ramses_internal
         if (masterInfo.consolidatedExpirationState != ExpirationState::MonitoringDisabled
             && absl::c_all_of(masterInfo.expirationStates, [](const auto& s) { return s.second == ExpirationState::MonitoringDisabled; }))
         {
-            events.push_back({ ERendererEventType_SceneExpirationMonitoringDisabled, masterSceneId });
+            events.push_back({ ERendererEventType::SceneExpirationMonitoringDisabled, masterSceneId });
             masterInfo.consolidatedExpirationState = ExpirationState::MonitoringDisabled;
             LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reporting master scene {} as disabled for expiration monitoring", masterSceneId);
         }
@@ -401,7 +403,7 @@ namespace ramses_internal
         if (masterInfo.consolidatedExpirationState == ExpirationState::MonitoringEnabled
             && absl::c_any_of(masterInfo.expirationStates, [](const auto& s) { return s.second == ExpirationState::Expired; }))
         {
-            events.push_back({ ERendererEventType_SceneExpired, masterSceneId });
+            events.push_back({ ERendererEventType::SceneExpired, masterSceneId });
             masterInfo.consolidatedExpirationState = ExpirationState::Expired;
             LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reporting master scene {} as expired", masterSceneId);
         }
@@ -410,7 +412,7 @@ namespace ramses_internal
         if (masterInfo.consolidatedExpirationState == ExpirationState::Expired
             && absl::c_none_of(masterInfo.expirationStates, [](const auto& s) { return s.second == ExpirationState::Expired; }))
         {
-            events.push_back({ ERendererEventType_SceneRecoveredFromExpiration, masterSceneId });
+            events.push_back({ ERendererEventType::SceneRecoveredFromExpiration, masterSceneId });
             masterInfo.consolidatedExpirationState = ExpirationState::MonitoringEnabled;
             LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: reporting master scene {} as recovered from expiration", masterSceneId);
         }

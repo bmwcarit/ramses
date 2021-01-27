@@ -230,8 +230,7 @@ TEST_F(Vector3Test, Normalize)
 
 TEST_F(Vector3Test, CanPrintToString)
 {
-    EXPECT_EQ("[1.0 2.0 3.0]", fmt::to_string(vec1));
-    EXPECT_EQ("[1.0 2.0 3.0]", ramses_internal::StringOutputStream::ToString(vec1));
+    EXPECT_EQ("[1 2 3]", fmt::to_string(vec1));
 }
 
 TEST_F(Vector3Test, canBinarySerializeDeserialize)

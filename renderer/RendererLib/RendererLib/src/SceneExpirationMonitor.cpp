@@ -32,7 +32,7 @@ namespace ramses_internal
             if (m_monitoredScenes.count(sceneId) == 0)
             {
                 LOG_INFO_P(CONTEXT_RENDERER, "SceneExpirationMonitor: expiration monitoring for scene {} enabled", sceneId);
-                m_eventCollector.addSceneExpirationEvent(ERendererEventType_SceneExpirationMonitoringEnabled, sceneId);
+                m_eventCollector.addSceneExpirationEvent(ERendererEventType::SceneExpirationMonitoringEnabled, sceneId);
             }
 
             TimeStampTag& ts = m_monitoredScenes[sceneId].expirationTSOfLastAppliedFlush;
@@ -43,7 +43,7 @@ namespace ramses_internal
         else if (m_monitoredScenes.count(sceneId) != 0)
         {
             LOG_INFO_P(CONTEXT_RENDERER, "SceneExpirationMonitor: expiration monitoring for scene {} disabled, last state expired={}", sceneId, m_monitoredScenes[sceneId].inExpiredState);
-            m_eventCollector.addSceneExpirationEvent(ERendererEventType_SceneExpirationMonitoringDisabled, sceneId);
+            m_eventCollector.addSceneExpirationEvent(ERendererEventType::SceneExpirationMonitoringDisabled, sceneId);
             m_monitoredScenes.erase(sceneId);
         }
     }
@@ -137,7 +137,7 @@ namespace ramses_internal
 
             // report event only if state changed from last time
             if (expired != timestamps.inExpiredState)
-                m_eventCollector.addSceneExpirationEvent(expired ? ERendererEventType_SceneExpired : ERendererEventType_SceneRecoveredFromExpiration, sceneId);
+                m_eventCollector.addSceneExpirationEvent(expired ? ERendererEventType::SceneExpired : ERendererEventType::SceneRecoveredFromExpiration, sceneId);
             timestamps.inExpiredState = expired;
         }
     }

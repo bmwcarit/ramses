@@ -68,15 +68,15 @@ void main(void)
 class StreamSourceViewer
 {
 public:
-    StreamSourceViewer(ramses::RamsesClient& ramsesClient, ramses::sceneId_t sceneId, bool flipY)
+    StreamSourceViewer(ramses::RamsesClient& ramsesClient, ramses::sceneId_t sceneId, bool flipY, ramses::EScenePublicationMode publicationMode, uint32_t displayWidth, uint32_t displayHeight)
         : m_ramsesClient(ramsesClient)
     {
         ramses::SceneConfig conf;
-        conf.setPublicationMode(ramses::EScenePublicationMode_LocalOnly);
+        conf.setPublicationMode(publicationMode);
         m_scene = m_ramsesClient.createScene(sceneId, conf);
         auto camera = m_scene->createPerspectiveCamera("my camera");
-        camera->setViewport(0, 0, 1280u, 480u);
-        camera->setFrustum(19.f, 1280.f / 480.f, 0.1f, 1500.f);
+        camera->setViewport(0, 0, displayWidth, displayHeight);
+        camera->setFrustum(19.f, static_cast<float>(displayWidth) / static_cast<float>(displayHeight), 0.1f, 1500.f);
         camera->setTranslation(0.0f, 0.0f, 5.0f);
         m_renderPass = m_scene->createRenderPass("my render pass");
         m_renderPass->setClearFlags(ramses::EClearFlags_None);
@@ -104,7 +104,7 @@ public:
             effectDesc.addCompilerDefine("FLIP_Y");
         m_effect = m_scene->createEffect(effectDesc, ramses::ResourceCacheFlag_DoNotCache, "glsl shader");
         m_scene->flush();
-        m_scene->publish(ramses::EScenePublicationMode_LocalOnly);
+        m_scene->publish(publicationMode);
     }
 
     void createMesh(ramses::waylandIviSurfaceId_t streamSource)
@@ -305,9 +305,9 @@ int main(int argc, char* argv[])
     if (helpRequested)
     {
         ramses_internal::RendererConfigUtils::PrintCommandLineOptions();
-        std::cout << dcsmSupportRequested.getHelpString().c_str();
-        std::cout << maxFps.getHelpString().c_str();
-        std::cout << flipY.getHelpString().c_str();
+        std::cout << dcsmSupportRequested.getHelpString();
+        std::cout << maxFps.getHelpString();
+        std::cout << flipY.getHelpString();
         return 0;
     }
 
@@ -335,8 +335,19 @@ int main(int argc, char* argv[])
     const ramses::displayId_t display = renderer->createDisplay(displayConfig);
     renderer->flush();
 
+
+    if (dcsmSupportRequested)
+        framework.connect();
+
     const ramses::sceneId_t sceneId{1u};
-    StreamSourceViewer sceneCreator(*ramsesClient, sceneId, flipY);
+    int32_t x;
+    int32_t y;
+    uint32_t width;
+    uint32_t height;
+    displayConfig.getWindowRectangle(x, y, width, height);
+    StreamSourceViewer sceneCreator(*ramsesClient, sceneId, flipY,
+                                    dcsmSupportRequested ? ramses::EScenePublicationMode_LocalAndRemote : ramses::EScenePublicationMode_LocalOnly,
+                                    width, height);
 
     sceneControlAPI->setSceneMapping(sceneId, display);
     sceneControlAPI->setSceneState(sceneId, ramses::RendererSceneState::Rendered);

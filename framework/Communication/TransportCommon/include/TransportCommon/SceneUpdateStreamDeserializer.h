@@ -58,7 +58,7 @@ namespace ramses_internal
         uint32_t m_nextExpectedPacketNum = 1;
         bool m_hasFailed = false;
         uint32_t m_currentBlockSize = 0;
-        uint32_t m_blockType;
+        uint32_t m_blockType = 0;
         std::vector<Byte> m_currentBlock;
         Result m_currentResult;
     };

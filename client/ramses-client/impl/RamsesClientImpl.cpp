@@ -186,6 +186,7 @@ namespace ramses
 
             getClientApplication().removeScene(sceneID);
 
+            scene.impl.closeSceneFile();
             auto task = new DeleteSceneRunnable(&scene, llscene);
             m_deleteSceneQueue.enqueue(*task);
             task->release();
@@ -240,7 +241,7 @@ namespace ramses
         const ramses_internal::SceneSizeInformation& sizeInformation = createInfo.m_sizeInfo;
         const ramses_internal::SceneInfo sceneInfo(createInfo.m_id, createInfo.m_name);
 
-        LOG_DEBUG(ramses_internal::CONTEXT_CLIENT, "RamsesClient::prepareSceneFromInputStream:  scene to be loaded has " << sizeInformation.asString());
+        LOG_DEBUG(ramses_internal::CONTEXT_CLIENT, "RamsesClient::prepareSceneFromInputStream:  scene to be loaded has " << sizeInformation);
 
         ramses_internal::ClientScene* internalScene = nullptr;
         {

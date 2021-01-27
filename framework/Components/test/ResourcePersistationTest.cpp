@@ -52,22 +52,12 @@ namespace ramses_internal
             return loaded;
         }
 
-        void checkRawResourceData(const IResource& createdResource, const IResource* loadedResource)
-        {
-            const ResourceBlob& referenceResourceData = createdResource.getResourceData();
-            const Byte* referenceData = referenceResourceData.data();
-            const Byte* loadedData = loadedResource->getResourceData().data();
-
-            ASSERT_EQ(referenceResourceData.size(), loadedResource->getResourceData().size());
-            EXPECT_EQ(0, PlatformMemory::Compare(referenceData, loadedData, referenceResourceData.size()));
-        }
-
         template <typename ResourceType>
         const ResourceType* createLoadedResource(const IResource& res, const EResourceType resourceType)
         {
             ManagedResource managedRes{ &res, m_deleterMock };
             IResource* loadedResource = readWriteResource(managedRes);
-            checkRawResourceData(res, loadedResource);
+            EXPECT_EQ(res.getResourceData().span(), loadedResource->getResourceData().span());
 
             EXPECT_EQ(resourceType, loadedResource->getTypeID());
             EXPECT_EQ(res.getCacheFlag(), loadedResource->getCacheFlag());
@@ -272,14 +262,14 @@ namespace ramses_internal
 
         ASSERT_TRUE(loadedTOC.containsResource(hash));
         IResource* loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash));
-        ASSERT_EQ(0, PlatformMemory::Compare(dataA, loadedResource->getResourceData().data(), 36));
+        ASSERT_EQ(absl::MakeSpan(reinterpret_cast<const uint8_t*>(dataA), sizeof(dataA)), loadedResource->getResourceData().span());
         ASSERT_EQ(flag1, loadedResource->getCacheFlag());
         EXPECT_EQ(String("res1"), loadedResource->getName());
         delete loadedResource;
 
         ASSERT_TRUE(loadedTOC.containsResource(hash2));
         loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash2));
-        ASSERT_EQ(0, PlatformMemory::Compare(dataB, loadedResource->getResourceData().data(), 72));
+        ASSERT_EQ(absl::MakeSpan(reinterpret_cast<const uint8_t*>(dataB), sizeof(dataB)), loadedResource->getResourceData().span());
         ASSERT_EQ(flag2, loadedResource->getCacheFlag());
         EXPECT_EQ(String("res2"), loadedResource->getName());
         delete loadedResource;

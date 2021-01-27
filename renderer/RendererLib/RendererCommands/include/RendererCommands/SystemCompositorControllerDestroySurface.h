@@ -14,7 +14,6 @@
 
 namespace ramses_internal
 {
-
     class SystemCompositorControllerDestroySurface : public RamshCommandArgs<UInt32>
     {
     public:

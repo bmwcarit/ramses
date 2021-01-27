@@ -45,14 +45,14 @@ namespace ramses_internal
         };
     }
 
-    typedef ::testing::Types<
+    using MemoryPoolTypes = ::testing::Types<
         MemoryPool<DummyTestObject, UInt32>,
         MemoryPool<DummyTestObject, UInt16>,
         MemoryPool<DummyTestObject, DummyMemoryHandle>,
         MemoryPoolExplicit<DummyTestObject, UInt32>,
         MemoryPoolExplicit<DummyTestObject, UInt16>,
         MemoryPoolExplicit<DummyTestObject, DummyMemoryHandle>
-    > MemoryPoolTypes;
+    >;
 
     TYPED_TEST_SUITE(AMemoryPoolIterator, MemoryPoolTypes);
 

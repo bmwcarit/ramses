@@ -142,9 +142,10 @@ namespace ramses
         * @details Linking data means that the consumer's data property will be overridden by provider's data property.
         *          Consumer can be linked to only one provider, a provider can be linked to multiple consumers.
         *          #ramses::IRendererSceneControlEventHandler::dataLinked will be emitted after the link is established.
+        *          Both provider scene and consumer scene have to be mapped (#ramses::RendererSceneControl::setSceneMapping)
+        *          to the same display and must be in state #RendererSceneState::Ready or above.
         *          The link will fail (reported via callback result argument) if either the provider or consumer does not exist
         *          or their data type does not match.
-        *          Both scenes have to be in state #RendererSceneState::Ready.
         *          If successful the operation can be assumed to be effective in the next frame consumer scene is rendered after flushed.
         *          If the data consumer is already linked to a provider (data or offscreen buffer), the old link will be discarded,
         *          however if the new link fails it is undefined whether previous link was discarded or not.

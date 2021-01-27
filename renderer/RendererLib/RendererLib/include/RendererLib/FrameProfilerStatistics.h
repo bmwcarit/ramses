@@ -23,7 +23,7 @@ namespace ramses_internal
     public:
         enum class ERegion
         {
-            RendererCommands = 0,
+            ExecuteRendererCommands = 0,
             UpdateClientResources,
             ApplySceneActions,
             UpdateSceneResources,

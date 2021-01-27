@@ -6,9 +6,10 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+from builtins import object
 import re
 
-class TargetInfo:
+class TargetInfo(object):
 
     def __init__(self, classname, name, hostname, username, buildJobName, powerDevice=None, powerOutletNr=None, privateKey=None, password=None,
                  systemMonitorClassname=None, sshPort=22, someIPTestsInterfaceIp=None, tcpTestsInterfaceIp=None):

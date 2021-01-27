@@ -39,8 +39,8 @@ namespace ramses_internal
         MOCK_METHOD(bool, hasTitle, (), (const, override));
         MOCK_METHOD(WaylandIviSurfaceId, getWaylandIviSurfaceID, (), (const, override));
 
-        static const UInt32 FakeWidth = 16u;
-        static const UInt32 FakeHeight = 8u;
+        static const UInt32 FakeWidth = 1280u;
+        static const UInt32 FakeHeight = 480u;
 
     private:
         void createDefaultMockCalls();

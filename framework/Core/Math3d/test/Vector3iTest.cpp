@@ -204,7 +204,6 @@ TEST_F(Vector3iTest, SetAllValues)
 TEST_F(Vector3iTest, CanPrintToString)
 {
     EXPECT_EQ("[1 2 3]", fmt::to_string(vec1));
-    EXPECT_EQ("[1 2 3]", ramses_internal::StringOutputStream::ToString(vec1));
 }
 
 TEST_F(Vector3iTest, canBinarySerializeDeserialize)

@@ -10,19 +10,34 @@
 
 namespace ramses
 {
-    void SharedSceneState::setActualState(RendererSceneState state)
+    bool operator<(const ContentIdentifier& lhs, const ContentIdentifier& rhs)
     {
-        m_actualState = state;
+        return lhs.contentId == rhs.contentId ? !lhs.isHideAnimation && rhs.isHideAnimation : lhs.contentId.getValue() < rhs.contentId.getValue();
+    }
+
+    void SharedSceneState::setReportedState(RendererSceneState state)
+    {
+        m_reportedState = state;
 
         updateLastHighestStateAndOwner();
     }
 
-    RendererSceneState SharedSceneState::getActualState() const
+    RendererSceneState SharedSceneState::getReportedState() const
     {
-        return m_actualState;
+        return m_reportedState;
     }
 
-    void SharedSceneState::setDesiredState(ContentID contentID, RendererSceneState state)
+    void SharedSceneState::setRequestedState(RendererSceneState state)
+    {
+        m_requestedState = state;
+    }
+
+    RendererSceneState SharedSceneState::getRequestedState() const
+    {
+        return m_requestedState;
+    }
+
+    void SharedSceneState::setDesiredState(ContentIdentifier contentID, RendererSceneState state)
     {
         m_desiredStates[contentID] = state;
 
@@ -38,19 +53,19 @@ namespace ramses
         return state;
     }
 
-    RendererSceneState SharedSceneState::getCurrentStateForContent(ContentID contentID) const
+    RendererSceneState SharedSceneState::getCurrentStateForContent(ContentIdentifier contentID) const
     {
         const auto desiredStateIt = m_desiredStates.find(contentID);
         if (desiredStateIt == m_desiredStates.cend())
             return RendererSceneState::Unavailable;
 
         // content is owner of last highest state, report actual scene state
-        if (contentID == m_lastHighestStateOwner)
-            return m_actualState;
+        if (contentID.contentId == m_lastHighestStateOwner.contentId && contentID.isHideAnimation == m_lastHighestStateOwner.isHideAnimation)
+            return m_reportedState;
 
         // content is not owner of last highest state
         // report actual state or desired state, whichever is lower
-        return std::min(m_actualState, desiredStateIt->second);
+        return std::min(m_reportedState, desiredStateIt->second);
     }
 
     void SharedSceneState::updateLastHighestStateAndOwner()
@@ -61,7 +76,7 @@ namespace ramses
 
         // find last highest state and its owner
         RendererSceneState maxCurrentlyDesiredState = RendererSceneState::Unavailable;
-        ContentID maxCurrentlyDesiredStateOwner = ContentID::Invalid();
+        ContentIdentifier maxCurrentlyDesiredStateOwner = ContentIdentifier{ ContentID::Invalid(), false };
         for (const auto& it : m_desiredStates)
         {
             if (it.second >= maxCurrentlyDesiredState)
@@ -72,7 +87,7 @@ namespace ramses
         }
 
         // update last highest state and owner only if desiring equal or higher than actual state
-        if (maxCurrentlyDesiredState >= m_actualState)
+        if (maxCurrentlyDesiredState >= m_reportedState)
         {
             m_lastHighestStateOwner = maxCurrentlyDesiredStateOwner;
             m_lastHighestDesiredState = maxCurrentlyDesiredState;

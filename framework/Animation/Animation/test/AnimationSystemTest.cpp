@@ -53,7 +53,7 @@ namespace ramses_internal
             m_animationSystem.setSplineKeyBasicVector3f(splineHandle1, 0u, Vector3(111.f, -999.f, 66.f));
             m_animationSystem.setSplineKeyBasicVector3f(splineHandle1, 10u, Vector3(11.f, -99.f, 666.f));
 
-            typedef DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType ContainerTraitsClass;
+            using ContainerTraitsClass = DataBindContainerToTraitsSelector<IScene>::ContainerTraitsClassType;
             const DataBindHandle dataBindHandle1 = m_animationSystem.allocateDataBinding(m_scene, ContainerTraitsClass::TransformNode_Rotation, transHandle1.asMemoryHandle(), InvalidMemoryHandle);
 
             const AnimationInstanceHandle animInstHandle1 = m_animationSystem.allocateAnimationInstance(splineHandle1, EInterpolationType_Linear, EVectorComponent_All);

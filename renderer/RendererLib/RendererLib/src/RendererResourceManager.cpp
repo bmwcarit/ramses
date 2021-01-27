@@ -22,12 +22,14 @@
 #include "Utils/LogMacros.h"
 #include "Utils/TextureMathUtils.h"
 #include "Math3d/Vector4.h"
+#include <memory>
 
 namespace ramses_internal
 {
     RendererResourceManager::RendererResourceManager(
-        IResourceUploader& uploader,
         IRenderBackend& renderBackend,
+        std::unique_ptr<IResourceUploader> resourceUploader,
+        AsyncEffectUploader& asyncEffectUploader,
         IEmbeddedCompositingManager& embeddedCompositingManager,
         Bool keepEffects,
         const FrameTimer& frameTimer,
@@ -35,7 +37,7 @@ namespace ramses_internal
         UInt64 gpuCacheSize)
         : m_renderBackend(renderBackend)
         , m_embeddedCompositingManager(embeddedCompositingManager)
-        , m_resourceUploadingManager(m_resourceRegistry, uploader, renderBackend, keepEffects, frameTimer, stats, gpuCacheSize)
+        , m_resourceUploadingManager(m_resourceRegistry, std::move(resourceUploader), renderBackend, asyncEffectUploader, keepEffects, frameTimer, stats, gpuCacheSize)
         , m_stats(stats)
     {
     }
@@ -244,10 +246,22 @@ namespace ramses_internal
 
     DeviceResourceHandle RendererResourceManager::getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const
     {
-        assert(m_streamBuffers.isAllocated(bufferHandle));
-        const auto surfaceId = *m_streamBuffers.getMemory(bufferHandle);
+        if (!m_streamBuffers.isAllocated(bufferHandle))
+            return DeviceResourceHandle::Invalid();
 
+        const auto surfaceId = *m_streamBuffers.getMemory(bufferHandle);
         return m_embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(surfaceId);
+    }
+
+    const StreamUsage& RendererResourceManager::getStreamUsage(WaylandIviSurfaceId source) const
+    {
+        assert(m_streamUsages.count(source));
+        return m_streamUsages.find(source)->second;
+    }
+
+    const RendererResourceRegistry& RendererResourceManager::getRendererResourceRegistry() const
+    {
+        return m_resourceRegistry;
     }
 
     void RendererResourceManager::uploadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer)
@@ -379,22 +393,29 @@ namespace ramses_internal
         m_offscreenBuffers.release(bufferHandle);
     }
 
-    void RendererResourceManager::uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId)
+    void RendererResourceManager::uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId source)
     {
         assert(!m_streamBuffers.isAllocated(bufferHandle));
         m_streamBuffers.allocate(bufferHandle);
-        *m_streamBuffers.getMemory(bufferHandle) = surfaceId;
+        *m_streamBuffers.getMemory(bufferHandle) = source;
 
-        m_embeddedCompositingManager.refStream(surfaceId);
+        m_embeddedCompositingManager.refStream(source);
+
+        assert(!contains_c(m_streamUsages[source].streamBufferUsages, bufferHandle));
+        m_streamUsages[source].streamBufferUsages.push_back(bufferHandle);
     }
 
     void RendererResourceManager::unloadStreamBuffer(StreamBufferHandle bufferHandle)
     {
         assert(m_streamBuffers.isAllocated(bufferHandle));
-        const auto surfaceId = *m_streamBuffers.getMemory(bufferHandle);
+        const auto source = *m_streamBuffers.getMemory(bufferHandle);
         m_streamBuffers.release(bufferHandle);
 
-        m_embeddedCompositingManager.unrefStream(surfaceId);
+        m_embeddedCompositingManager.unrefStream(source);
+
+        auto& streamUsage = m_streamUsages[source].streamBufferUsages;
+        assert(contains_c(streamUsage, bufferHandle));
+        streamUsage.erase(find_c(streamUsage, bufferHandle));
     }
 
     void RendererResourceManager::uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId)
@@ -403,7 +424,10 @@ namespace ramses_internal
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
         sceneResources.addStreamTexture(handle, source);
 
-        m_embeddedCompositingManager.refStream(handle, source, sceneId);
+        m_embeddedCompositingManager.refStream(source);
+
+        assert(!contains_c(m_streamUsages[source].sceneUsages[sceneId], handle));
+        m_streamUsages[source].sceneUsages[sceneId].push_back(handle);
     }
 
     void RendererResourceManager::unloadStreamTexture(StreamTextureHandle handle, SceneId sceneId)
@@ -413,7 +437,13 @@ namespace ramses_internal
         const WaylandIviSurfaceId source = sceneResources.getStreamTextureSourceId(handle);
         sceneResources.removeStreamTexture(handle);
 
-        m_embeddedCompositingManager.unrefStream(handle, source, sceneId);
+        m_embeddedCompositingManager.unrefStream(source);
+
+        auto& streamUsage = m_streamUsages[source].sceneUsages[sceneId];
+        assert(contains_c(streamUsage, handle));
+        streamUsage.erase(find_c(streamUsage, handle));
+        if (streamUsage.empty())
+            m_streamUsages[source].sceneUsages.erase(sceneId);
     }
 
     void RendererResourceManager::uploadBlitPassRenderTargets(BlitPassHandle blitPass, RenderBufferHandle sourceRenderBuffer, RenderBufferHandle destinationRenderBuffer, SceneId sceneId)

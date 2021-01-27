@@ -369,49 +369,49 @@ namespace ramses_internal
     TEST(CommandLineArgumentsTest, ArgumentProvidesGetHelpStringMethod)
     {
         Argument<String> valX("xx", "longx", "myDefault", "myDescription");
-        String result = valX.getHelpString();
+        const std::string result = valX.getHelpString();
 
-        Int posShortName = result.find("xx");
-        EXPECT_NE(-1, posShortName);
+        const auto posShortName = result.find("xx");
+        EXPECT_NE(std::string::npos, posShortName);
 
-        Int posLongName = result.find("longx");
-        EXPECT_NE(-1, posLongName);
+        const auto posLongName = result.find("longx");
+        EXPECT_NE(std::string::npos, posLongName);
         EXPECT_GT(posLongName, posShortName);
 
-        Int posValueMarker = result.find("<value>");
-        EXPECT_NE(-1, posValueMarker);
+        const auto posValueMarker = result.find("<value>");
+        EXPECT_NE(std::string::npos, posValueMarker);
         EXPECT_GT(posValueMarker, posLongName);
 
-        Int posDescription = result.find("myDescription");
-        EXPECT_NE(-1, posDescription);
+        const auto posDescription = result.find("myDescription");
+        EXPECT_NE(std::string::npos, posDescription);
         EXPECT_GT(posDescription, posValueMarker);
 
-        Int posDefault = result.find("myDefault");
-        EXPECT_NE(-1, posDefault);
+        const auto posDefault = result.find("myDefault");
+        EXPECT_NE(std::string::npos, posDefault);
         EXPECT_GT(posDefault, posDescription);
     }
 
     TEST(CommandLineArgumentsTest, ArgumentBoolProvidesGetHelpStringMethod)
     {
         ArgumentBool valX("xx", "longx", "myDescription");
-        String result = valX.getHelpString();
+        const std::string result = valX.getHelpString();
 
-        Int posShortName = result.find("xx");
-        EXPECT_NE(-1, posShortName);
+        const auto posShortName = result.find("xx");
+        EXPECT_NE(std::string::npos, posShortName);
 
-        Int posLongName = result.find("longx");
-        EXPECT_NE(-1, posLongName);
+        const auto posLongName = result.find("longx");
+        EXPECT_NE(std::string::npos, posLongName);
         EXPECT_GT(posLongName, posShortName);
 
-        Int posValueMarker = result.find("<value>");
-        EXPECT_EQ(-1, posValueMarker); //no value marker for bool arguments
+        const auto posValueMarker = result.find("<value>");
+        EXPECT_EQ(std::string::npos, posValueMarker); //no value marker for bool arguments
 
-        Int posDescription = result.find("myDescription");
-        EXPECT_NE(-1, posDescription);
+        const auto posDescription = result.find("myDescription");
+        EXPECT_NE(std::string::npos, posDescription);
         EXPECT_GT(posDescription, posLongName);
 
-        Int posDefault = result.find("false");
-        EXPECT_NE(-1, posDefault);
+        const auto posDefault = result.find("false");
+        EXPECT_NE(std::string::npos, posDefault);
         EXPECT_GT(posDefault, posDescription);
     }
 

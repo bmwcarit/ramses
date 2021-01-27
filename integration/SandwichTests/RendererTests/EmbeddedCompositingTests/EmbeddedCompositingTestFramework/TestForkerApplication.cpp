@@ -120,7 +120,8 @@ namespace ramses_internal
                 //P.S: has no effect if FD was not used
                 m_socket.cleanup();
 
-                exit(testApplicationExitStatus);
+                // TODO(tobias) this seems totally wrong as true is error condition as exit code
+                exit(testApplicationExitStatus ? 1 : 0);
             }
             else
             {

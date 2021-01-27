@@ -16,9 +16,9 @@ namespace ramses_internal
     {
         std::string result(nativeString);
         result.erase(result.begin(), std::find_if(result.begin(), result.end(),
-                                                      [](int ch) { return !std::isspace(ch); }));
+                                                      [](int ch) { return std::isspace(ch) == 0; }));
         result.erase(std::find_if(result.rbegin(), result.rend(),
-                                    [](int ch) { return !std::isspace(ch); }).base(),
+                                    [](int ch) { return std::isspace(ch) == 0; }).base(),
                        result.end());
         return String(std::move(result));
     }

@@ -14,6 +14,7 @@
 #include "Utils/LogMessage.h"
 #include "Utils/LogContext.h"
 #include <functional>
+#include <vector>
 
 namespace ramses_internal
 {

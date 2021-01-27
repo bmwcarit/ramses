@@ -6,10 +6,13 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+if (AndroidSDK_FOUND)
+    return()
+endif()
+
 SET(AndroidSDK_FOUND FALSE)
 
 FIND_LIBRARY(ANDROID_LIB android)
-
 IF(ANDROID_LIB)
     SET(AndroidSDK_LIBRARIES ${ANDROID_LIB} log)
 

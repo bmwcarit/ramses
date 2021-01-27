@@ -454,7 +454,7 @@ namespace ramses_internal
         const RendererEventVector events = consumeSceneControlEvents();
 
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneDataSlotProviderCreated, events.front().eventType);
+        EXPECT_EQ(ERendererEventType::SceneDataSlotProviderCreated, events.front().eventType);
         EXPECT_EQ(providerScene.getSceneId(), events.front().providerSceneId);
         EXPECT_EQ(dataSlotId, events.front().providerdataId);
     }
@@ -467,7 +467,7 @@ namespace ramses_internal
 
         const RendererEventVector events = consumeSceneControlEvents();
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneDataSlotProviderDestroyed, events.front().eventType);
+        EXPECT_EQ(ERendererEventType::SceneDataSlotProviderDestroyed, events.front().eventType);
         EXPECT_EQ(providerScene.getSceneId(), events.front().providerSceneId);
         EXPECT_EQ(providerSceneProviderId, events.front().providerdataId);
     }
@@ -482,7 +482,7 @@ namespace ramses_internal
         const RendererEventVector events = consumeSceneControlEvents();
 
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneDataSlotConsumerCreated, events.front().eventType);
+        EXPECT_EQ(ERendererEventType::SceneDataSlotConsumerCreated, events.front().eventType);
         EXPECT_EQ(consumer1Scene.getSceneId(), events.front().consumerSceneId);
         EXPECT_EQ(dataSlotId, events.front().consumerdataId);
     }
@@ -495,7 +495,7 @@ namespace ramses_internal
         const RendererEventVector events = consumeSceneControlEvents();
 
         ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType_SceneDataSlotConsumerDestroyed, events.front().eventType);
+        EXPECT_EQ(ERendererEventType::SceneDataSlotConsumerDestroyed, events.front().eventType);
         EXPECT_EQ(consumer1Scene.getSceneId(), events.front().consumerSceneId);
         EXPECT_EQ(consumer1SceneConsumerId, events.front().consumerdataId);
     }

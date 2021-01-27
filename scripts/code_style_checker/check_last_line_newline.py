@@ -8,8 +8,8 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-import sys, re, string
-from common_modules.common import *
+import sys
+from common_modules import common
 
 
 def check_last_line_newline(filename, file_lines):
@@ -17,12 +17,12 @@ def check_last_line_newline(filename, file_lines):
     Checks if file ends in newline
     """
     if len(file_lines) > 0 and file_lines[-1] != "\n":
-        log_warning("check_last_line_newline", filename, len(file_lines),
-                    "no newline at end of file")
+        common.log_warning("check_last_line_newline", filename, len(file_lines), "no newline at end of file")
+
 
 if __name__ == "__main__":
     targets = sys.argv[1:]
-    targets = get_all_files(targets)
+    targets = common.get_all_files(targets)
 
     if len(targets) == 0:
         print("""
@@ -34,5 +34,5 @@ if __name__ == "__main__":
         exit(0)
 
     for t in targets:
-        _, file_lines = read_file(t)
+        _, file_lines = common.read_file(t)
         check_last_line_newline(t, file_lines)

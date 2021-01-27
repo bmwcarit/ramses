@@ -51,7 +51,7 @@ namespace ramses_internal
         // possible compress all resources before writing
         for (const auto& res : resourcesForFile)
         {
-            res->compress(compress ? IResource::CompressionLevel::OFFLINE : IResource::CompressionLevel::NONE);
+            res->compress(compress ? IResource::CompressionLevel::Offline : IResource::CompressionLevel::None);
         }
 
         for (const auto& res : resourcesForFile)

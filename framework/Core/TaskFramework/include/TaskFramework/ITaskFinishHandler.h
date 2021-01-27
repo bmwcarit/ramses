@@ -16,7 +16,7 @@ namespace ramses_internal
     class ITaskFinishHandler
     {
     public:
-        virtual ~ITaskFinishHandler(){}
+        virtual ~ITaskFinishHandler() = default;
 
         virtual void TaskFinished(ITask& Task) = 0;
     };
