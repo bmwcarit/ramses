@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.2</span>
+   &#160;<span id="projectnumber">27.0.5</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -295,7 +295,7 @@ Friends</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The <a class="el" href="classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it...">Node</a> is the base class of all nodes and provides scene graph functionality which propagates to its children. </p>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-basic-file-loading_2src_2main_8cpp-example.html#_a72">ramses-example-basic-file-loading/src/main.cpp</a>, <a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#_a20">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#_a21">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-basic-scenegraph_2src_2main_8cpp-example.html#_a41">ramses-example-basic-scenegraph/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#_a11">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#_a82">ramses-example-local-offscreenbuffer/src/main.cpp</a>, and <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#_a21">ramses-example-renderonce/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-basic-file-loading_2src_2main_8cpp-example.html#_a72">ramses-example-basic-file-loading/src/main.cpp</a>, <a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#_a20">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#_a21">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-basic-scenegraph_2src_2main_8cpp-example.html#_a41">ramses-example-basic-scenegraph/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#_a11">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#_a84">ramses-example-local-offscreenbuffer/src/main.cpp</a>, and <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#_a21">ramses-example-renderonce/src/main.cpp</a>.</dd>
 </dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a61048d7535c89d159f6dbde91de8411f"></a>
@@ -595,6 +595,7 @@ nullptr if child at index does not exist. </dd></dl>
 
 <p>Retrieves the absolute rotation for left-handed rotation using Euler ZYX rotation convention. </p>
 <p>This function can be used only if <a class="el" href="classramses_1_1Node.html#acf1c0f0d1ddd4700b2516e87fd2a86d0" title="Sets the absolute rotation in all three directions for left-handed rotation using Euler ZYX rotation ...">ramses::Node::setRotation(float,float,float)</a> is used to set node rotation, which implicitly uses left-handed Euler ZYX rotation convention, otherwise it will fail.</p>
+<p>Default value is 0 for all components.</p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000003">Deprecated:</a></b></dt><dd>This function is deprecated and will be removed in one of the next major releases. It is encouraged if possible to already migrate to using <a class="el" href="classramses_1_1Node.html#a0c9769d4deaa0de60452e72acd1ed2db" title="Sets the absolute rotation in all three directions for right-handed rotation using the chosen Euler a...">ramses::Node::setRotation(float,float,float,ERotationConvention)</a> and <a class="el" href="classramses_1_1Node.html#a41c2c05ae78ea32434dfa2c27369ff8b" title="Retrieves the absolute rotation for right-handed rotation in all three directions and the used Euler ...">ramses::Node::getRotation(float&amp;,float&amp;,float&amp;,ERotationConvention&amp;)const</a>.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -647,6 +648,7 @@ nullptr if child at index does not exist. </dd></dl>
 </div><div class="memdoc">
 
 <p>Retrieves the absolute rotation for right-handed rotation in all three directions and the used Euler angles rotation convention. This function can be used only if <a class="el" href="classramses_1_1Node.html#a0c9769d4deaa0de60452e72acd1ed2db" title="Sets the absolute rotation in all three directions for right-handed rotation using the chosen Euler a...">ramses::Node::setRotation(float,float,float,ERotationConvention)</a> is used to set node rotation. </p>
+<p>Default value is 0 for all components and <a class="el" href="namespaceramses.html#a0f43821d4d2a9da2e8228455dcc70cb4ae65075d550f9b5bf9992fa1d71a131be" title="Euler rotation convention XYZ.">ERotationConvention::XYZ</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">x</td><td>Current value in degrees for rotation around x-axis in case of Tait-Bryan conventions, in case of Proper Euler conventions gets the rotation angle for the first angle in the convention name. </td></tr>
@@ -923,7 +925,7 @@ nullptr if child at index does not exist. </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a33">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a34">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
 </dl>
 
 </div>
@@ -970,7 +972,7 @@ nullptr if child at index does not exist. </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a34">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a35">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
 </dl>
 
 </div>
@@ -999,7 +1001,7 @@ nullptr if child at index does not exist. </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#a25">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#a26">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-basic-scenegraph_2src_2main_8cpp-example.html#a48">ramses-example-basic-scenegraph/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a54">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a84">ramses-example-local-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a80">ramses-example-local-pick-handling/src/main.cpp</a>, and <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#a26">ramses-example-renderonce/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#a25">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#a26">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-basic-scenegraph_2src_2main_8cpp-example.html#a48">ramses-example-basic-scenegraph/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a54">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a86">ramses-example-local-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a81">ramses-example-local-pick-handling/src/main.cpp</a>, and <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#a26">ramses-example-renderonce/src/main.cpp</a>.</dd>
 </dl>
 
 </div>
@@ -1047,7 +1049,7 @@ nullptr if child at index does not exist. </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a115">ramses-example-local-offscreenbuffer/src/main.cpp</a>, and <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a70">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a119">ramses-example-local-offscreenbuffer/src/main.cpp</a>, and <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a71">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
 </dl>
 
 </div>
@@ -1146,7 +1148,7 @@ nullptr if child at index does not exist. </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-basic-file-loading_2src_2main_8cpp-example.html#a80">ramses-example-basic-file-loading/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a71">ramses-example-local-pick-handling/src/main.cpp</a>, <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a56">ramses-example-local-scene-referencing/src/main.cpp</a>, and <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a56">ramses-example-local-viewport-link/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-basic-file-loading_2src_2main_8cpp-example.html#a80">ramses-example-basic-file-loading/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a72">ramses-example-local-pick-handling/src/main.cpp</a>, <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a56">ramses-example-local-scene-referencing/src/main.cpp</a>, and <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a56">ramses-example-local-viewport-link/src/main.cpp</a>.</dd>
 </dl>
 
 </div>
@@ -1193,7 +1195,7 @@ nullptr if child at index does not exist. </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-basic-blending_2src_2main_8cpp-example.html#a40">ramses-example-basic-blending/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendergroups_2src_2main_8cpp-example.html#a22">ramses-example-basic-rendergroups/src/main.cpp</a>, <a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#a22">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#a23">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-basic-scenegraph_2src_2main_8cpp-example.html#a47">ramses-example-basic-scenegraph/src/main.cpp</a>, <a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#a55">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a50">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#a58">ramses-example-local-geometry-shaders/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a72">ramses-example-local-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a69">ramses-example-local-pick-handling/src/main.cpp</a>, <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a17">ramses-example-local-scene-referencing/src/main.cpp</a>, <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a17">ramses-example-local-viewport-link/src/main.cpp</a>, <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#a23">ramses-example-renderonce/src/main.cpp</a>, <a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a48">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a48">ramses-example-text-languages/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-basic-blending_2src_2main_8cpp-example.html#a40">ramses-example-basic-blending/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendergroups_2src_2main_8cpp-example.html#a22">ramses-example-basic-rendergroups/src/main.cpp</a>, <a class="el" href="ramses-example-basic-renderpasses_2src_2main_8cpp-example.html#a22">ramses-example-basic-renderpasses/src/main.cpp</a>, <a class="el" href="ramses-example-basic-rendertarget_2src_2main_8cpp-example.html#a23">ramses-example-basic-rendertarget/src/main.cpp</a>, <a class="el" href="ramses-example-basic-scenegraph_2src_2main_8cpp-example.html#a47">ramses-example-basic-scenegraph/src/main.cpp</a>, <a class="el" href="ramses-example-local-client-dcsm_2src_2main_8cpp-example.html#a57">ramses-example-local-client-dcsm/src/main.cpp</a>, <a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#a55">ramses-example-local-client/src/main.cpp</a>, <a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a50">ramses-example-local-datalink/src/main.cpp</a>, <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#a59">ramses-example-local-geometry-shaders/src/main.cpp</a>, <a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a74">ramses-example-local-offscreenbuffer/src/main.cpp</a>, <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a70">ramses-example-local-pick-handling/src/main.cpp</a>, <a class="el" href="ramses-example-local-scene-referencing_2src_2main_8cpp-example.html#a17">ramses-example-local-scene-referencing/src/main.cpp</a>, <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a17">ramses-example-local-viewport-link/src/main.cpp</a>, <a class="el" href="ramses-example-renderonce_2src_2main_8cpp-example.html#a23">ramses-example-renderonce/src/main.cpp</a>, <a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a48">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a48">ramses-example-text-languages/src/main.cpp</a>.</dd>
 </dl>
 
 </div>
@@ -1267,7 +1269,7 @@ nullptr if child at index does not exist. </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a32">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a33">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
 </dl>
 
 </div>

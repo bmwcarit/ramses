@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.2</span>
+   &#160;<span id="projectnumber">27.0.5</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -96,7 +96,7 @@ Components</h1>
 <li>daemon (global address broker, exchanges connection info between clients and renderers in case the underlying communication is TCP)</li>
 </ul>
 <p>There can only be one daemon (when TCP communication is used), but arbitrary number of client and renderer instances. The daemon only "broadcasts" the existence of clients and renderers to each other (providers and consumers of scenes, respectively). The role of the ramses daemon is usually taken over by other means in other communication middlewares.</p>
-<p>Clients create scenes and manage their content, but cannot decide if and where a scene is shown (similar to a video stream which provides the video, but anyone can subscribe to it). Renderers act as content consumers and can subscribe to scenes from clients and show them. Renderers can not change scene content, but can change where and how a scene is shown - for example can show two scenes in split screen, or blend one scene on top of another, in special cases can link data accross scenes.</p>
+<p>Clients create scenes and manage their content, but cannot decide if and where a scene is shown (similar to a video stream which provides the video, but anyone can subscribe to it). Renderers act as content consumers and can subscribe to scenes from clients and show them. Renderers can not change scene content, but can change where and how a scene is shown - for example can show two scenes in split screen, or blend one scene on top of another, in special cases can link data across scenes.</p>
 <h1><a class="anchor" id="autotoc_md103"></a>
 Example</h1>
 <p>In a very simplified example, a client instance (e.g. the Navigation process) will create a 3D scene and "publish" it within the connected RAMSES applications (e.g. the renderer of each HMI). These renderers will "subscribe" to the published scene and show it on the screen.</p>

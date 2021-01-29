@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.2</span>
+   &#160;<span id="projectnumber">27.0.5</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -77,7 +77,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Struct containing information about one mip-map level.  
+<p>Struct containing information about one mip-map level of a texture.  
  <a href="structramses_1_1MipLevelData.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="MipLevelData_8h_source.html">MipLevelData.h</a>&gt;</code></p>
@@ -88,7 +88,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ae3150bf5003d9717690771a81ad19b2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <a href="structramses_1_1MipLevelData.html#ae3150bf5003d9717690771a81ad19b2e">More...</a><br /></td></tr>
 <tr class="separator:ae3150bf5003d9717690771a81ad19b2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc9d302fff1415cec252fca1d3f8bc1c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structramses_1_1MipLevelData.html#abc9d302fff1415cec252fca1d3f8bc1c">MipLevelData</a> (uint32_t size, const uint8_t *data)</td></tr>
-<tr class="memdesc:abc9d302fff1415cec252fca1d3f8bc1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a <a class="el" href="structramses_1_1MipLevelData.html" title="Struct containing information about one mip-map level.">MipLevelData</a>.  <a href="structramses_1_1MipLevelData.html#abc9d302fff1415cec252fca1d3f8bc1c">More...</a><br /></td></tr>
+<tr class="memdesc:abc9d302fff1415cec252fca1d3f8bc1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a <a class="el" href="structramses_1_1MipLevelData.html" title="Struct containing information about one mip-map level of a texture.">MipLevelData</a>. The texel data must be stored according to OpenGL conventions. Texel rows are stored bottom-to-top, so that first byte in the data array represents the first texel from the bottom texel row. See docs of glTexImage2D for more info.  <a href="structramses_1_1MipLevelData.html#abc9d302fff1415cec252fca1d3f8bc1c">More...</a><br /></td></tr>
 <tr class="separator:abc9d302fff1415cec252fca1d3f8bc1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -101,7 +101,10 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a7af056cffb73b1eaa6262f3287ab25fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Struct containing information about one mip-map level. </p>
+<div class="textblock"><p>Struct containing information about one mip-map level of a texture. </p>
+<p>NOTE: the texel data is stored according to OpenGL convention (first byte is from the bottom texel row). See docs of glTexImage2D for more info. </p>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-client-dcsm_2src_2main_8cpp-example.html#_a88">ramses-example-local-client-dcsm/src/main.cpp</a>.</dd>
+</dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ae3150bf5003d9717690771a81ad19b2e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae3150bf5003d9717690771a81ad19b2e">&#9670;&nbsp;</a></span>MipLevelData() <span class="overload">[1/2]</span></h2>
@@ -164,7 +167,7 @@ Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Constructs a <a class="el" href="structramses_1_1MipLevelData.html" title="Struct containing information about one mip-map level.">MipLevelData</a>. </p>
+<p>Constructs a <a class="el" href="structramses_1_1MipLevelData.html" title="Struct containing information about one mip-map level of a texture.">MipLevelData</a>. The texel data must be stored according to OpenGL conventions. Texel rows are stored bottom-to-top, so that first byte in the data array represents the first texel from the bottom texel row. See docs of glTexImage2D for more info. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">size</td><td>Size of mipmap data in bytes </td></tr>

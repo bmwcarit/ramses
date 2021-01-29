@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.2</span>
+   &#160;<span id="projectnumber">27.0.5</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -68,14 +68,14 @@ $(function() {
 <div class="title">The Display Cluster State Management Protocol </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md169"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md176"></a>
 What is DCSM</h1>
 <p>DCSM stands for Display Cluster State Management. It is a protocol which enables the provider and the consumer of any distributable or streamed graphical content to negotiate about the current state of the graphical content, e.g. if the content is supposed to be shown or not. The DCSM protocol is designed to work for any graphical content, be it video streams or rendered computer graphics content. Additionally to the state changes, it allows to synchronize between provider and consumer about the size of the content and about transition animations into new sizes and new content states.</p>
-<h1><a class="anchor" id="autotoc_md170"></a>
+<h1><a class="anchor" id="autotoc_md177"></a>
 Consumer and Provider</h1>
 <p>The Consumer is the part of the system, which owns the display and is able to show received Content on that display. The Provider is the part of the system, which owns and controls the actual graphical content and makes it available to the Consumer. The design of the protocol puts the Consumer in charge of what is being shown when and in which size. The Provider controls, what is available for being shown and how the graphical content looks.</p>
 <p>There can be multiple Consumers and Providers in a DCSM system. Providers offer their Content to all Consumers, but a Content might only be assigned to one Consumer at a time.</p>
-<h1><a class="anchor" id="autotoc_md171"></a>
+<h1><a class="anchor" id="autotoc_md178"></a>
 Content States</h1>
 <p>The Content may be in different states. The protocol is used to synchronize those states between Consumer and Provider.</p>
 <p><b>Offered</b><br  />
@@ -86,10 +86,10 @@ Content States</h1>
 <p><b>Ready</b><br  />
  If a Content is in a Ready state, it means it is not shown, but it could be shown with minimal latency. This implicates that the graphical content is available on the consumer side. Getting to the Ready state from the Assigned state may therefore take some time and may fail, depending on how the graphical content is being made available.</p>
 <p><b>Shown</b><br  />
- The Content is currently shown. For the Provider this may mean, that it needs to keep the Contents graphical content updated.</p>
+ The Content is currently shown. For the Provider this may mean, that it needs to keep the graphical content updated.</p>
 <p><b>AcceptStopOffer</b><br  />
  This not a real state, but it is used in a ContentStateChange message to allow a Provider to stop offering a Content currently in use by a Consumer.</p>
-<h1><a class="anchor" id="autotoc_md172"></a>
+<h1><a class="anchor" id="autotoc_md179"></a>
 Protocol messages</h1>
 <p><b>OfferContent(<em>ContentID, Category, ProviderID</em>)</b><br  />
  This message is broadcasted by a provider to all connected Consumers. It announces a new Content being Offered by that Provider. It carries a <em>ContentID</em>, which serves as a simple Content identifier and a <em>Category</em>, which defines in which context this Content can be used. The <em>ProviderID</em> identifies the Provider to an interested Consumer.</p>
@@ -113,7 +113,7 @@ Protocol messages</h1>
 <p><b>UpdateContentMetadata(<em>ContentID, Metadata</em>)</b><br  />
  This message carries arbitrary <em>Metadata</em> related to the Content from the Provider to the assigned Consumer. This message can be sent multiple times, as often as the <em>Metadata</em> needs to be updated, but only after sending the ContentDescription.</p>
 <p>DCSM does not define a <em>Metadata</em> format and leaves this for the Consumer and Provider to agree upon by other means. It just carries the <em>Metadata</em> as data blob.</p>
-<h1><a class="anchor" id="autotoc_md173"></a>
+<h1><a class="anchor" id="autotoc_md180"></a>
 Implementation</h1>
 <p>In the Ramses solution there is a DCSM Implementation. It implements the DCSM protocol specifically to control Ramses scenes.</p>
 <p>There are four major components in this implementation:</p>
@@ -124,7 +124,7 @@ Implementation</h1>
 <li>The DcsmContentControl is an API which combines DcsmConsumer control and content rendering state control. It is based on DcsmConsumer and RendererSceneControl and is used to render DCSM content in form of Ramses scenes.</li>
 </ul>
 <p>Refer to the API documentation for details about usage of the last three API classes.</p>
-<h1><a class="anchor" id="autotoc_md174"></a>
+<h1><a class="anchor" id="autotoc_md181"></a>
 Protocol example sequence diagrams</h1>
 <ul>
 <li>Sequence 1 - Switching between different widgets within one area</li>

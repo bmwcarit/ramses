@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.2</span>
+   &#160;<span id="projectnumber">27.0.5</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -225,7 +225,7 @@ Friends</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The <a class="el" href="classramses_1_1ArrayBuffer.html" title="The ArrayBuffer is a data object used to provide vertex or index data to ramses::GeometryBinding::set...">ArrayBuffer</a> is a data object used to provide vertex or index data to <a class="el" href="classramses_1_1GeometryBinding.html#a775b60f22ae9247c3145ddf16696eb46" title="Assign a data array resource to a given effect attribute input.">ramses::GeometryBinding::setInputBuffer</a> and <a class="el" href="classramses_1_1GeometryBinding.html#a3cdc6368939eee5b38e24c71e9964b76" title="Assign a data array with data type UInt16 or UInt32 to be used when accessing vertex data.">ramses::GeometryBinding::setIndices</a>. The buffer data of an <a class="el" href="classramses_1_1ArrayBuffer.html" title="The ArrayBuffer is a data object used to provide vertex or index data to ramses::GeometryBinding::set...">ArrayBuffer</a> is not filled initially and can be fully or partially updated in between scene flushes. </p>
 <p>If an <a class="el" href="classramses_1_1ArrayBuffer.html#a266f4d60328fc9dd0539aeb4503ef310" title="Constructor for ArrayBuffer.">ArrayBuffer</a> object is created with type <a class="el" href="namespaceramses.html#a6de13d29afe1f37ca41caec5ae20532ca9be5daafe7068fdcbd5f3683edd95d4e" title="array of raw bytes which gets typed later (e.g. interleaved vertex buffer) where one element is alway...">ramses::EDataType::ByteBlob</a> then an element is defined as one byte, rather than a logical vertex element. Hence, all functions of <a class="el" href="classramses_1_1ArrayBuffer.html#a266f4d60328fc9dd0539aeb4503ef310" title="Constructor for ArrayBuffer.">ArrayBuffer</a> referring to element refer to a single byte within byte array. </p>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-data-buffers-vertices_2src_2main_8cpp-example.html#_a33">ramses-example-data-buffers-vertices/src/main.cpp</a>, <a class="el" href="ramses-example-interleaved-vertex-buffers_2src_2main_8cpp-example.html#_a18">ramses-example-interleaved-vertex-buffers/src/main.cpp</a>, and <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#_a75">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-data-buffers-vertices_2src_2main_8cpp-example.html#_a33">ramses-example-data-buffers-vertices/src/main.cpp</a>, <a class="el" href="ramses-example-interleaved-vertex-buffers_2src_2main_8cpp-example.html#_a18">ramses-example-interleaved-vertex-buffers/src/main.cpp</a>, and <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#_a76">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
 </dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a266f4d60328fc9dd0539aeb4503ef310"></a>
@@ -433,7 +433,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-data-buffers-vertices_2src_2main_8cpp-example.html#a37">ramses-example-data-buffers-vertices/src/main.cpp</a>, <a class="el" href="ramses-example-interleaved-vertex-buffers_2src_2main_8cpp-example.html#a21">ramses-example-interleaved-vertex-buffers/src/main.cpp</a>, and <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a77">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-data-buffers-vertices_2src_2main_8cpp-example.html#a37">ramses-example-data-buffers-vertices/src/main.cpp</a>, <a class="el" href="ramses-example-interleaved-vertex-buffers_2src_2main_8cpp-example.html#a21">ramses-example-interleaved-vertex-buffers/src/main.cpp</a>, and <a class="el" href="ramses-example-local-pick-handling_2src_2main_8cpp-example.html#a78">ramses-example-local-pick-handling/src/main.cpp</a>.</dd>
 </dl>
 
 </div>

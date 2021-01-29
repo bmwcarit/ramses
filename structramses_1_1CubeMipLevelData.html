@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.2</span>
+   &#160;<span id="projectnumber">27.0.5</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -77,7 +77,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Struct containing information about one mip-map level for cube textures.  
+<p>Struct containing information about one mip-map level of a cube texture. All faces of the cube texture must have the same size!  
  <a href="structramses_1_1CubeMipLevelData.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="MipLevelData_8h_source.html">MipLevelData.h</a>&gt;</code></p>
@@ -88,7 +88,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a52206cd616b47a1bb3207eeadb92914e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <a href="structramses_1_1CubeMipLevelData.html#a52206cd616b47a1bb3207eeadb92914e">More...</a><br /></td></tr>
 <tr class="separator:a52206cd616b47a1bb3207eeadb92914e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad89bb11ce844453f3f2e3f5b228c352f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structramses_1_1CubeMipLevelData.html#ad89bb11ce844453f3f2e3f5b228c352f">CubeMipLevelData</a> (uint32_t size, const uint8_t *dataPX, const uint8_t *dataNX, const uint8_t *dataPY, const uint8_t *dataNY, const uint8_t *dataPZ, const uint8_t *dataNZ)</td></tr>
-<tr class="memdesc:ad89bb11ce844453f3f2e3f5b228c352f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <a href="structramses_1_1CubeMipLevelData.html#ad89bb11ce844453f3f2e3f5b228c352f">More...</a><br /></td></tr>
+<tr class="memdesc:ad89bb11ce844453f3f2e3f5b228c352f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a <a class="el" href="structramses_1_1MipLevelData.html" title="Struct containing information about one mip-map level of a texture.">MipLevelData</a>. The texel data must be stored according to OpenGL conventions. Texel rows are stored bottom-to-top, so that first byte in the data array represents the first texel from the bottom texel row. See docs of glTexImage2D for more info.  <a href="structramses_1_1CubeMipLevelData.html#ad89bb11ce844453f3f2e3f5b228c352f">More...</a><br /></td></tr>
 <tr class="separator:ad89bb11ce844453f3f2e3f5b228c352f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -115,7 +115,7 @@ Public Attributes</h2></td></tr>
 <tr class="separator:ae4dccfc4afc8bb7db38732f59808b17e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Struct containing information about one mip-map level for cube textures. </p>
+<div class="textblock"><p>Struct containing information about one mip-map level of a cube texture. All faces of the cube texture must have the same size! </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a52206cd616b47a1bb3207eeadb92914e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a52206cd616b47a1bb3207eeadb92914e">&#9670;&nbsp;</a></span>CubeMipLevelData() <span class="overload">[1/2]</span></h2>
@@ -208,10 +208,10 @@ Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Default constructor. </p>
+<p>Constructs a <a class="el" href="structramses_1_1MipLevelData.html" title="Struct containing information about one mip-map level of a texture.">MipLevelData</a>. The texel data must be stored according to OpenGL conventions. Texel rows are stored bottom-to-top, so that first byte in the data array represents the first texel from the bottom texel row. See docs of glTexImage2D for more info. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Size of data in bytes of single cube face </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Size of data in bytes of all cube faces </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dataPX</td><td>Data for face in positive X direction </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dataNX</td><td>Data for face in negative X direction </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dataPY</td><td>Data for face in positive Y direction </td></tr>
@@ -332,7 +332,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>size of mip-level data of one face in Bytes, assuming that all faces have the same data size </p>
+<p>size of mip-level data of all faces in Bytes, all faces must have the same data size </p>
 
 </div>
 </div>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.2</span>
+   &#160;<span id="projectnumber">27.0.5</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -197,7 +197,7 @@ Additional Inherited Members</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Update of information about a DCSM category. Contains information like changes in size. Objects of this type will be provided by ramses callbacks and are used to give information on consumer side. Do not reuse objects on consumer side, since they track changes and would transmit these again if reused. </p>
 <p>The object can be queried for all available data and when available can be extracted. See <a class="el" href="classramses_1_1IDcsmProviderEventHandler.html#a43a81395e426c98896f021037bf712be" title="Called after the rendering viewport for the content has been changed. Will be called once after a Dcs...">IDcsmProviderEventHandler::contentSizeChange()</a> for more details. </p>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-dcsm-provider_2src_2main_8cpp-example.html#_a57">ramses-example-dcsm-provider/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-dcsm-provider_2src_2main_8cpp-example.html#_a57">ramses-example-dcsm-provider/src/main.cpp</a>, and <a class="el" href="ramses-example-local-client-dcsm_2src_2main_8cpp-example.html#_a16">ramses-example-local-client-dcsm/src/main.cpp</a>.</dd>
 </dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a328a9f00ee99d222267cf31f27ce5f62"></a>
@@ -648,6 +648,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Set new category rect. </p>
+<p>Defined as rectangle inside render size (offsetX, offsetY, width, height). The offset is relative to lower left corner of render size. This is the area where the content should be. It is OK if you render content outside of category rect, but such content will not be visible in the rendered result (except potentially during layout size transition).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">rect</td><td>rectangle describing the new category dimensions </td></tr>
@@ -675,6 +676,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Set new render size. </p>
+<p>Defined as width and height. This can be thought of as the 'canvas' (display or offscreen render target) where content will be rendered.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">sizeInfo</td><td>the new render size </td></tr>
@@ -704,10 +706,11 @@ Additional Inherited Members</h2></td></tr>
 <p>Set new safe rect. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">rect</td><td>rectangle describing the new safe dimensions </td></tr>
+    <tr><td class="paramname">rect</td><td>rectangle describing the new safe dimensions</td></tr>
   </table>
   </dd>
 </dl>
+<p>Defined as rectangle relative to render size (offsetX, offsetY, width, height). The offset is relative to lower left corner of render size. This is just a hint from consumer which gives some guarantee that safe rect is not covered by any other UI element on the display (if content actively shown).</p>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
 
 </div>

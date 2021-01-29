@@ -71,7 +71,7 @@
 <area shape="rect" id="node57" href="$classramses_1_1PerspectiveCamera.html" title="The PerspectiveCamera is a local camera which defines a perspective view into the scene." alt="" coords="1413,1323,1619,1349"/>
 <area shape="rect" id="node65" href="$classramses_1_1ArrayResource.html" title="The ArrayResource stores a data array of a given type. The data is immutable. The resource can be use..." alt="" coords="1147,1424,1320,1451"/>
 <area shape="rect" id="node66" href="$classramses_1_1Effect.html" title="An effect describes how an object will be rendered to the screen." alt="" coords="1176,1475,1291,1501"/>
-<area shape="rect" id="node67" href="$classramses_1_1Texture2D.html" title="Texture represents a texture resource." alt="" coords="1161,1525,1305,1552"/>
+<area shape="rect" id="node67" href="$classramses_1_1Texture2D.html" title="Texture represents a 2&#45;D texture resource." alt="" coords="1161,1525,1305,1552"/>
 <area shape="rect" id="node68" href="$classramses_1_1Texture3D.html" title="Texture represents a texture resource." alt="" coords="1161,1576,1305,1603"/>
 <area shape="rect" id="node69" href="$classramses_1_1TextureCube.html" title="TextureCube stores pixel data with 6 equally sized quadratic faces." alt="" coords="1154,1627,1313,1653"/>
 </map>

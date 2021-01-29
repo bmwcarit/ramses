@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.2</span>
+   &#160;<span id="projectnumber">27.0.5</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -103,7 +103,7 @@ Collaboration diagram for ramses::DcsmProvider:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a7a72302ee32910ef774983e58f9f49ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmProvider.html#a7a72302ee32910ef774983e58f9f49ef">offerContent</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, <a class="el" href="namespaceramses.html#abaddc843cd87d7e57215d7bbc5ef49c1">Category</a> category, <a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> scene, <a class="el" href="namespaceramses.html#a5c6768ac12230d47013c798237d1c738">EDcsmOfferingMode</a> mode)</td></tr>
-<tr class="memdesc:a7a72302ee32910ef774983e58f9f49ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assigns a ramses scene ID to a contentID and category and offers that content to listening consumers. Should only be called if content could and should currently be shown. The ramses scene belonging to the scene ID must not exist yet.  <a href="classramses_1_1DcsmProvider.html#a7a72302ee32910ef774983e58f9f49ef">More...</a><br /></td></tr>
+<tr class="memdesc:a7a72302ee32910ef774983e58f9f49ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assigns a ramses scene ID to a contentID and category and offers that content to listening consumers. Should only be called if content could and should currently be shown. The ramses scene belonging to the scene ID does not have to exist yet.  <a href="classramses_1_1DcsmProvider.html#a7a72302ee32910ef774983e58f9f49ef">More...</a><br /></td></tr>
 <tr class="separator:a7a72302ee32910ef774983e58f9f49ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a86dff61ecf4bc44dd1ae02244079fa87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmProvider.html#a86dff61ecf4bc44dd1ae02244079fa87">offerContentWithMetadata</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, <a class="el" href="namespaceramses.html#abaddc843cd87d7e57215d7bbc5ef49c1">Category</a> category, <a class="el" href="namespaceramses.html#a2e5eeeb38c74c74dea063659a1f02f33">sceneId_t</a> scene, <a class="el" href="namespaceramses.html#a5c6768ac12230d47013c798237d1c738">EDcsmOfferingMode</a> mode, const <a class="el" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a> &amp;metadata)</td></tr>
 <tr class="memdesc:a86dff61ecf4bc44dd1ae02244079fa87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same behavior as <a class="el" href="classramses_1_1DcsmProvider.html#a7a72302ee32910ef774983e58f9f49ef" title="Assigns a ramses scene ID to a contentID and category and offers that content to listening consumers....">offerContent()</a> but additionally send provided metadata to consumers that assigned content to themselves.  <a href="classramses_1_1DcsmProvider.html#a86dff61ecf4bc44dd1ae02244079fa87">More...</a><br /></td></tr>
@@ -184,7 +184,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class used to offer ramses content and meta infos to a consumer and synchronize actions between client and renderer side applications. </p>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-dcsm-provider_2src_2main_8cpp-example.html#_a65">ramses-example-dcsm-provider/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-dcsm-provider_2src_2main_8cpp-example.html#_a65">ramses-example-dcsm-provider/src/main.cpp</a>, and <a class="el" href="ramses-example-local-client-dcsm_2src_2main_8cpp-example.html#_a101">ramses-example-local-client-dcsm/src/main.cpp</a>.</dd>
 </dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a8c8ac2f09c572140bd144f19ba776598"></a>
@@ -466,7 +466,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Assigns a ramses scene ID to a contentID and category and offers that content to listening consumers. Should only be called if content could and should currently be shown. The ramses scene belonging to the scene ID must not exist yet. </p>
+<p>Assigns a ramses scene ID to a contentID and category and offers that content to listening consumers. Should only be called if content could and should currently be shown. The ramses scene belonging to the scene ID does not have to exist yet. </p>
+<p>A content must only be offered in a way that one scene is not associated with two categories which get assigned to different ramses displays on the renderer/consumer side. Otherwise contents might never be able to reach ready state.</p>
 <p>A failing offerContent call might trigger a stopOfferAccepted event, which can be safely ignored.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
