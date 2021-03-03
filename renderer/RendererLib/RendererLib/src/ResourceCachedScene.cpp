@@ -9,7 +9,7 @@
 #include "RendererLib/ResourceCachedScene.h"
 #include "RendererLib/IResourceDeviceHandleAccessor.h"
 #include "RendererAPI/IEmbeddedCompositingManager.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

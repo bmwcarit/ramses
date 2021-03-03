@@ -81,8 +81,8 @@ namespace ramses_internal
         case ERendererEventType::StreamSurfaceAvailable:
         case ERendererEventType::StreamSurfaceUnavailable:
         case ERendererEventType::ObjectsPicked:
+        case ERendererEventType::FrameTimingReport:
             return false;
-        case ERendererEventType::RenderThreadPeriodicLoopTimes: // is not triggered by renderer command
         case ERendererEventType::Invalid:
         case ERendererEventType::NUMBER_OF_ELEMENTS:
             break;

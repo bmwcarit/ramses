@@ -12,8 +12,8 @@
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "EmbeddedCompositor_Wayland/IWaylandGlobal.h"
 #include "PlatformAbstraction/PlatformMath.h"
-#include "Utils/LogMacros.h"
-#include "assert.h"
+#include "Utils/ThreadLocalLogForced.h"
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -68,7 +68,7 @@ namespace ramses_internal
 
     void WaylandShellGlobal::ShellBindCallback(wl_client* client, void* data, uint32_t version, uint32_t id)
     {
-        UNUSED(version)
+        UNUSED(version);
         WaylandShellGlobal* shell = static_cast<WaylandShellGlobal*>(data);
         WaylandClient waylandClient(client);
         shell->shellBind(waylandClient, version, id);

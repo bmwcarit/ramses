@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_X11/Platform_X11_EGL.h"
-#include "Utils/LogMacros.h"
 #include "RendererLib/RendererConfig.h"
 #include "Platform_Base/EmbeddedCompositor_Dummy.h"
 

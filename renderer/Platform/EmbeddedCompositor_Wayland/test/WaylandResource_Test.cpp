@@ -38,7 +38,7 @@ namespace ramses_internal
     protected:
         void resourceDestroyedListener(void* data)
         {
-            UNUSED(data)
+            UNUSED(data);
             m_resourceDestroyedListenerCalled++;
         }
 
@@ -62,7 +62,7 @@ namespace ramses_internal
 
         static void ResourceDestroyedCallback(wl_resource* clientResource)
         {
-            UNUSED(clientResource)
+            UNUSED(clientResource);
 
             AWaylandResource* waylandResource = static_cast<AWaylandResource*>(wl_resource_get_user_data(clientResource));
             waylandResource->resourceDestroyedCallback();

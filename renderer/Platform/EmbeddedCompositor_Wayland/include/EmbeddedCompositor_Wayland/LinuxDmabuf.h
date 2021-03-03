@@ -10,7 +10,7 @@
 #ifndef RAMSES_LINUXDMABUF_H
 #define RAMSES_LINUXDMABUF_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <functional>
 
 namespace ramses_internal

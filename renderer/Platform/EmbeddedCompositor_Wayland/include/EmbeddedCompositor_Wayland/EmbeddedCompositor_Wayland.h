@@ -35,7 +35,7 @@ namespace ramses_internal
     {
     public:
         EmbeddedCompositor_Wayland(const RendererConfig& rendererConfig, const DisplayConfig& displayConfig, IContext& context);
-        virtual ~EmbeddedCompositor_Wayland();
+        virtual ~EmbeddedCompositor_Wayland() override;
 
         Bool init();
         wl_display* getEmbeddedCompositingDisplay() const;

@@ -13,17 +13,18 @@ from builtins import range
 import platform
 import os
 
-#some color enumeration for text printing
+# some color enumeration for text printing
 black, red, green, orange, blue, purple, cyan, light_gray, gray, light_red, light_green, yellow, light_blue, light_cyan = list(range(14))
 
 enableLogColors = platform.system() != "Windows"
 
-#internal class for text unit codes
+
+# internal class for text unit codes
 class text(object):
     endc = '\033[0m'
     bold = '\033[1m'
 
-    #foreground
+    # foreground
     class fg(object):
         black = '\033[30m'
         red = '\033[31m'
@@ -41,7 +42,7 @@ class text(object):
         pink = '\033[95m'
         light_cyan = '\033[96m'
 
-    #background
+    # background
     class bg(object):
         black = '\033[40m'
         red = '\033[41m'
@@ -59,8 +60,10 @@ class text(object):
         pink = '\033[105m'
         light_cyan = '\033[106m'
 
-    foreground = [fg.black, fg.red, fg.green, fg.orange, fg.blue, fg.purple, fg.cyan, fg.light_grey, fg.grey, fg.light_red, fg.light_green, fg.yellow, fg.light_blue, fg.light_cyan]
-    background = [bg.black, bg.red, bg.green, bg.orange, bg.blue, bg.purple, fg.cyan, bg.light_grey, bg.grey, bg.light_red, bg.light_green, bg.yellow, bg.light_blue, bg.light_cyan]
+    foreground = [fg.black, fg.red, fg.green, fg.orange, fg.blue, fg.purple, fg.cyan, fg.light_grey,
+                  fg.grey, fg.light_red, fg.light_green, fg.yellow, fg.light_blue, fg.light_cyan]
+    background = [bg.black, bg.red, bg.green, bg.orange, bg.blue, bg.purple, fg.cyan, bg.light_grey,
+                  bg.grey, bg.light_red, bg.light_green, bg.yellow, bg.light_blue, bg.light_cyan]
 
 
 class FileLogger(object):
@@ -75,15 +78,17 @@ class FileLogger(object):
             self.logFile.close()
 
     def log(self, msg):
-        self.logFile.write(msg+"\n")
+        self.logFile.write(msg + "\n")
 
     def close(self):
         self.logFile.close()
         self.logFile = None
 
+
 default_file_logger = None
 
-#internal(private) method; should not be used outside this class
+
+# internal(private) method; should not be used outside this class
 def _internal_print(msg, bold=False, foreground='', background=''):
     if enableLogColors and (bold or foreground or background):
         b = ""
@@ -97,7 +102,7 @@ def _internal_print(msg, bold=False, foreground='', background=''):
         default_file_logger.log(msg)
 
 
-#public logging methods
+# public logging methods
 def info(msg):
     _internal_print(msg)
 
@@ -107,11 +112,12 @@ def important_info(msg):
 
 
 def warning(msg):
-    _internal_print("Warning: "+msg, True, foreground=text.fg.orange)
+    _internal_print("Warning: " + msg, True, foreground=text.fg.orange)
 
 
 def error(msg):
-    _internal_print("Error: "+msg, True, foreground=text.fg.red)
+    _internal_print("Error: " + msg, True, foreground=text.fg.red)
+
 
 def errorAndAssert(msg):
     """
@@ -121,12 +127,13 @@ def errorAndAssert(msg):
     error(msg)
     assert False, msg
 
+
 def color_separator(color, txt=''):
     smart_print(txt, backcolor=color)
 
 
 def separator(ch):
-    important_info(ch*100)
+    important_info(ch * 100)
 
 
 def smart_print(msg, forecolor=None, backcolor=None, bold=False):
@@ -144,7 +151,7 @@ def strip_color_codes_from_file(path):
     content = f.read()
     f.close()
 
-    toReplace =  [text.endc, text.bold]
+    toReplace = [text.endc, text.bold]
     toReplace.extend(text.foreground)
     toReplace.extend(text.background)
     for item in toReplace:

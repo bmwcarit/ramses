@@ -37,14 +37,16 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         self.save_application_output(self.ramsesDaemon)
         log.info("output saved")
 
-
     def impl_test(self):
         self.renderer.showScene(39)
         self.renderer.showScene(40)
         self.validateScreenshot(self.renderer, "testClient_dataLink_noLinks.png")
 
-        self.renderer.send_ramsh_command("linkData -providerSceneId 39 -providerId 1251 -consumerSceneId 40 -consumerId 1252", waitForRendererConfirmation=True)
-        self.renderer.send_ramsh_command("linkData -providerSceneId 39 -providerId 31251 -consumerSceneId 40 -consumerId 31252", waitForRendererConfirmation=True)
-        self.renderer.send_ramsh_command("linkData -providerSceneId 40 -providerId 121 -consumerSceneId 39 -consumerId 122", waitForRendererConfirmation=True)
+        self.renderer.send_ramsh_command("linkData -providerSceneId 39 -providerId 1251 -consumerSceneId 40 -consumerId 1252",
+                                         waitForRendererConfirmation=True)
+        self.renderer.send_ramsh_command("linkData -providerSceneId 39 -providerId 31251 -consumerSceneId 40 -consumerId 31252",
+                                         waitForRendererConfirmation=True)
+        self.renderer.send_ramsh_command("linkData -providerSceneId 40 -providerId 121 -consumerSceneId 39 -consumerId 122",
+                                         waitForRendererConfirmation=True)
 
         self.validateScreenshot(self.renderer, "testClient_dataLink_linked.png")

@@ -21,7 +21,7 @@ namespace ramses
     {
     public:
         RenderTargetDescriptionImpl();
-        virtual ~RenderTargetDescriptionImpl();
+        virtual ~RenderTargetDescriptionImpl() override;
 
         virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
 

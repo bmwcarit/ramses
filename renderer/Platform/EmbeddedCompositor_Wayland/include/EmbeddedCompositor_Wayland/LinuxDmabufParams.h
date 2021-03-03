@@ -13,7 +13,7 @@
 #include "EmbeddedCompositor_Wayland/IWaylandClient.h"
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
 #include "wayland-server.h"
-#include <stdint.h>
+#include <cstdint>
 
 namespace ramses_internal
 {

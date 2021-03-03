@@ -10,9 +10,7 @@
 
 #include "Context_WGL/Context_WGL.h"
 #include "Device_GL/Device_GL.h"
-
-#include "Utils/LogMacros.h"
-
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

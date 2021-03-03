@@ -20,7 +20,7 @@ namespace ramses_internal
     {
     public:
         WaylandDisplay();
-        ~WaylandDisplay();
+        ~WaylandDisplay() override;
         virtual bool init(const String& socketName, const String& socketGroupName, uint32_t socketPermissions, int socketFD) override;
         virtual IWaylandGlobal* createGlobal(const wl_interface *interface, int version, void *data, wl_global_bind_func_t bind) override;
         virtual void dispatchEventLoop() override;

@@ -177,6 +177,13 @@ namespace ramses
         return status;
     }
 
+    status_t DisplayConfig::setDepthStencilBufferType(DisplayConfig& config, EDepthBufferType depthBufferType)
+    {
+        const auto status = config.impl.setDepthStencilBufferType(depthBufferType);
+        LOG_HL_RENDERER_STATIC_API1(status, depthBufferType);
+        return status;
+    }
+
     status_t DisplayConfig::setWindowsWindowHandle(void* hwnd)
     {
         const status_t status = impl.setWindowsWindowHandle(hwnd);

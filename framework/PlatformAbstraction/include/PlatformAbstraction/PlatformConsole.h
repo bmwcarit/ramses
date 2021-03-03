@@ -25,7 +25,7 @@ namespace ramses_internal
         White,
     };
 
-    class Console
+    class Console final
     {
     public:
         template <typename S, typename... Args>

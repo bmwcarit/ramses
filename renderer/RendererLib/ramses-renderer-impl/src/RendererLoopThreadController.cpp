@@ -15,16 +15,16 @@
 
 namespace ramses_internal
 {
-    RendererLoopThreadController::RendererLoopThreadController(DisplayDispatcher& displayDispatcher, PlatformWatchdog& watchdog, std::chrono::milliseconds loopCountPeriod)
+    RendererLoopThreadController::RendererLoopThreadController(DisplayDispatcher& displayDispatcher, IThreadAliveNotifier& watchdog)
         : m_displayDispatcher(&displayDispatcher)
         , m_watchdog(watchdog)
+        , m_aliveIdentifier(watchdog.registerThread())
         , m_thread("R_RendererThrd")
         , m_lock()
         , m_doRendering(false)
-        , m_targetMinimumFrameDuration(std::chrono::microseconds(std::chrono::seconds(1)) / 60)  // 60fps
+        , m_targetMinimumFrameDuration(std::chrono::microseconds(DefaultMinFrameDuration))  // 60fps
         , m_threadStarted(false)
         , m_destroyRenderer(false)
-        , m_loopCountPeriod(loopCountPeriod)
     {
     }
 
@@ -36,6 +36,7 @@ namespace ramses_internal
             m_sleepConditionVar.notify_one();
             m_thread.join();
         }
+        m_watchdog.unregisterThread(m_aliveIdentifier);
     }
 
     Bool RendererLoopThreadController::startRendering()
@@ -81,20 +82,19 @@ namespace ramses_internal
     void RendererLoopThreadController::run()
     {
         UInt64 loopStartTime = PlatformTime::GetMicrosecondsMonotonic();
-        std::chrono::milliseconds lastLoopSleepTime{ 0u };
-
+#if defined(__ghs__) && defined(RAMSES_RENDER_THREAD_PRIORITY)
+        setThreadPriorityIntegrity(RAMSES_RENDER_THREAD_PRIORITY, "renderer loop thread controller thread");
+#endif
         while (!isCancelRequested())
         {
             Bool doRendering = false;
             Bool destroyRenderer = false;
             std::chrono::microseconds minimumFrameDuration{ 0 };
-            ELoopMode loopMode = ELoopMode::UpdateAndRender;
             {
                 std::lock_guard<std::mutex> guard(m_lock);
                 minimumFrameDuration = m_targetMinimumFrameDuration;
                 doRendering = m_doRendering;
                 destroyRenderer = m_destroyRenderer;
-                loopMode = m_loopMode;
             }
 
             if (destroyRenderer)
@@ -113,40 +113,18 @@ namespace ramses_internal
             else
             {
                 assert(m_displayDispatcher != nullptr);
-                m_displayDispatcher->doOneLoop(loopMode, lastLoopSleepTime);
+                m_displayDispatcher->dispatchCommands();
+
+                // TODO vaclav actual update(dooneloop) now runs in each display thread, that makes most of the other code here obsolete, will be reworked as next step
 
                 const UInt64 loopEndTime = PlatformTime::GetMicrosecondsMonotonic();
                 assert(loopEndTime >= loopStartTime);
                 const std::chrono::microseconds currentLoopDuration{ loopEndTime - loopStartTime };
-                lastLoopSleepTime = sleepToControlFramerate(currentLoopDuration, minimumFrameDuration);
-                calculateLooptimeAverage(currentLoopDuration + lastLoopSleepTime, loopEndTime);
+                sleepToControlFramerate(currentLoopDuration, minimumFrameDuration);
                 loopStartTime = PlatformTime::GetMicrosecondsMonotonic();
             }
 
-            m_watchdog.notifyWatchdog();
-        }
-    }
-
-    void RendererLoopThreadController::calculateLooptimeAverage(const std::chrono::microseconds currentLoopDuration, const uint64_t loopEndTime)
-    {
-        if (m_loopCountPeriod.count() > 0)
-        {
-            m_sumOfLoopTimeInPeriod += currentLoopDuration;
-            m_numberOfLoopsInPeriod++;
-            m_maximumLoopTimeInPeriod = std::max(m_maximumLoopTimeInPeriod, currentLoopDuration);
-
-
-            if (loopEndTime >= m_lastPeriodLoopCountReportingTimeMicroseconds + std::chrono::microseconds(m_loopCountPeriod).count())
-            {
-                RendererEvent reportEvt{ ramses_internal::ERendererEventType::RenderThreadPeriodicLoopTimes };
-                reportEvt.renderThreadLoopTimes.averageLoopTimeWithinPeriod = std::chrono::microseconds(m_sumOfLoopTimeInPeriod.count() / m_numberOfLoopsInPeriod);
-                reportEvt.renderThreadLoopTimes.maximumLoopTimeWithinPeriod = m_maximumLoopTimeInPeriod;
-                m_displayDispatcher->injectRendererEvent(std::move(reportEvt));
-                m_sumOfLoopTimeInPeriod = std::chrono::microseconds(0);
-                m_numberOfLoopsInPeriod = 0;
-                m_maximumLoopTimeInPeriod = std::chrono::microseconds(0);
-                m_lastPeriodLoopCountReportingTimeMicroseconds = loopEndTime;
-            }
+            m_watchdog.notifyAlive(m_aliveIdentifier);
         }
     }
 
@@ -179,12 +157,6 @@ namespace ramses_internal
         std::lock_guard<std::mutex> guard(m_lock);
         using float_seconds = std::chrono::duration<float, std::ratio<1>>;
         return 1.0f / std::chrono::duration_cast<float_seconds>(m_targetMinimumFrameDuration).count();
-    }
-
-    void RendererLoopThreadController::setLoopMode(ELoopMode loopMode)
-    {
-        std::lock_guard<std::mutex> guard(m_lock);
-        m_loopMode = loopMode;
     }
 
     void RendererLoopThreadController::destroyRenderer()

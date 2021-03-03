@@ -47,6 +47,7 @@ namespace ramses_internal
         void operator()(const RendererCommand::CreateStreamBuffer& cmd);
         void operator()(const RendererCommand::DestroyStreamBuffer& cmd);
         void operator()(const RendererCommand::SetStreamBufferState& cmd);
+        void operator()(const RendererCommand::SetClearFlags& cmd);
         void operator()(const RendererCommand::SetClearColor& cmd);
         void operator()(RendererCommand::UpdateWarpingData& cmd);
         void operator()(RendererCommand::ReadPixels& cmd);

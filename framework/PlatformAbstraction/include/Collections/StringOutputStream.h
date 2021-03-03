@@ -12,7 +12,7 @@
 #include "PlatformAbstraction/Macros.h"
 #include "fmt/format.h"
 #include <string>
-#include <inttypes.h>
+#include <cinttypes>
 
 namespace ramses_internal
 {

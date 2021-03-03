@@ -8,7 +8,7 @@
 //  -------------------------------------------------------------------------
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 
 #include <wayland-egl-core.h>
 #include <EGL/egl.h>
@@ -88,7 +88,7 @@ namespace ramses_internal
 
     void LinuxDmabufGlobal::GlobalBindCallback(wl_client *client, void* data, uint32_t version, uint32_t id)
     {
-        UNUSED(version)
+        UNUSED(version);
         LinuxDmabufGlobal* global = static_cast<LinuxDmabufGlobal*>(data);
         WaylandClient waylandClient(client);
         global->globalBind(waylandClient, version, id);

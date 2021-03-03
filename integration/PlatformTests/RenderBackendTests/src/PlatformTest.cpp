@@ -19,6 +19,7 @@
 #include "Platform_Base/Platform_Base.h"
 #include "RendererAPI/IPlatform.h"
 #include "Resource/EffectResource.h"
+#include "Utils/ThreadLocalLog.h"
 #include <future>
 #include <thread>
 
@@ -42,6 +43,9 @@ namespace ramses_internal
         {
             platform = Platform_Base::CreatePlatform(rendererConfig);
             assert(nullptr != platform);
+
+            // caller is expected to have a display prefix for logs
+            ThreadLocalLog::SetPrefix(1);
         }
 
         ~APlatform()
@@ -58,10 +62,7 @@ namespace ramses_internal
             DisplayConfig displayConfig;
 
             if (multisampling)
-            {
                 displayConfig.setAntialiasingSampleCount(4);
-                displayConfig.setAntialiasingMethod(EAntiAliasingMethod_MultiSampling);
-            }
 
             displayConfig.setWaylandIviSurfaceID(useDifferentIviId ? differentIviSurfaceId : iviSurfaceId);
             displayConfig.setWaylandIviLayerID(WaylandIviLayerId(3u));
@@ -94,7 +95,7 @@ namespace ramses_internal
                     }
             )SHADER";
 
-            EffectResource effect(vertexShader, fragmentShader, "", {}, {}, "", ResourceCacheFlag_DoNotCache);
+            EffectResource effect(vertexShader, fragmentShader, "", absl::nullopt, {}, {}, "", ResourceCacheFlag_DoNotCache);
             EXPECT_TRUE(device.isDeviceStatusHealthy());
             auto resource = device.uploadShader(effect);
             EXPECT_NE(nullptr, resource);
@@ -304,6 +305,9 @@ namespace ramses_internal
 
         std::thread resourceUploadThread([&]()
             {
+                // caller is expected to have a display prefix for logs
+                ThreadLocalLog::SetPrefix(2);
+
                 IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
                 if (!resourceUploadRenderBackend)
                 {
@@ -332,6 +336,9 @@ namespace ramses_internal
 
         std::thread resourceUploadThread([&]()
             {
+                // caller is expected to have a display prefix for logs
+                ThreadLocalLog::SetPrefix(2);
+
                 IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
                 if (!resourceUploadRenderBackend)
                 {
@@ -368,6 +375,9 @@ namespace ramses_internal
 
         std::thread resourceUploadThread([&]()
             {
+                // caller is expected to have a display prefix for logs
+                ThreadLocalLog::SetPrefix(2);
+
                 IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
                 if (!resourceUploadRenderBackend)
                 {
@@ -402,6 +412,9 @@ namespace ramses_internal
 
         std::thread resourceUploadThread([&]()
             {
+                // caller is expected to have a display prefix for logs
+                ThreadLocalLog::SetPrefix(2);
+
                 IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
                 if (!resourceUploadRenderBackend)
                 {
@@ -445,6 +458,9 @@ namespace ramses_internal
 
         std::thread resourceUploadThread([&]()
             {
+                // caller is expected to have a display prefix for logs
+                ThreadLocalLog::SetPrefix(2);
+
                 IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
                 if (!resourceUploadRenderBackend)
                 {
@@ -488,6 +504,9 @@ namespace ramses_internal
 
         std::thread resourceUploadThread([&]()
             {
+                // caller is expected to have a display prefix for logs
+                ThreadLocalLog::SetPrefix(2);
+
                 IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
                 if (!resourceUploadRenderBackend)
                 {

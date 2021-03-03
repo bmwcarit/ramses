@@ -15,7 +15,7 @@ import os
 import posixpath
 import glob
 
-from paramiko.ssh_exception import SSHException, AuthenticationException, BadHostKeyException, PasswordRequiredException
+from paramiko.ssh_exception import SSHException, AuthenticationException, BadHostKeyException
 
 from ramses_test_framework import log
 from ramses_test_framework.application import Application
@@ -42,9 +42,9 @@ class RemoteTarget(Target):
 
     def _start_ramses_application(self, applicationName, args, workingDirectory, nameExtension, env, dltAppID):
         if "-someip" in args:
-            extendedArgs = args+" -myip "+self.someIPTestsInterfaceIp
+            extendedArgs = args + " -myip " + self.someIPTestsInterfaceIp
         else:
-            extendedArgs = args+" -myip "+self.tcpTestsInterfaceIp
+            extendedArgs = args + " -myip " + self.tcpTestsInterfaceIp
             if self.tcpAliveIntervalMs:
                 extendedArgs += " -tcpAlive {}".format(self.tcpAliveIntervalMs)
             if self.tcpAliveTimeoutMs:
@@ -60,7 +60,7 @@ class RemoteTarget(Target):
         return result
 
     def start_application(self, applicationName, args="", binaryDirectoryOnTarget=None, nameExtension="", env={}, dltAppID=None, prepend_unbuffer=False):
-        #ensure binary is there
+        # ensure binary is there
         if binaryDirectoryOnTarget:
             binaryPathOnTarget = binaryDirectoryOnTarget + '/' + applicationName
         else:
@@ -76,7 +76,7 @@ class RemoteTarget(Target):
             else:
                 log.warn("Unbuffer is not supported on this target! Will be ignored.")
 
-        #execute application
+        # execute application
         if binaryDirectoryOnTarget:
             command = "cd {}; {} ./{} {}".format(binaryDirectoryOnTarget, prefix, applicationName, args)
         else:
@@ -95,14 +95,16 @@ class RemoteTarget(Target):
         return application
 
     def _get_daemon_args(self, ramsesDaemonTarget):
-        if ramsesDaemonTarget != None:
-            return " --daemon-ip "+ramsesDaemonTarget.hostname
+        if ramsesDaemonTarget is not None:
+            return " --daemon-ip " + ramsesDaemonTarget.hostname
         else:
             return ""
 
-    def start_renderer(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='REND', waitForDisplayManagerRamsh=True, automap=False, startVisible=True):
+    def start_renderer(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='REND',
+                       waitForDisplayManagerRamsh=True, automap=False, startVisible=True):
         extendedArgs = args + self._get_daemon_args(ramsesDaemonTarget)
-        return Target.start_renderer(self, applicationName, extendedArgs, workingDirectory, ramsesDaemonTarget, nameExtension, env, dltAppID, waitForDisplayManagerRamsh, automap=automap, startVisible=startVisible)
+        return Target.start_renderer(self, applicationName, extendedArgs, workingDirectory, ramsesDaemonTarget, nameExtension, env, dltAppID,
+                                     waitForDisplayManagerRamsh, automap=automap, startVisible=startVisible)
 
     def start_client(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID=None):
         extendedArgs = args + self._get_daemon_args(ramsesDaemonTarget)
@@ -130,8 +132,8 @@ class RemoteTarget(Target):
         while (not self.isConnected) and (nrAttempts < self.powerNrAttempts):
             nrAttempts += 1
             self.connect()
-            #have you tried turning it off and on again?
-            if not self.isConnected and (nrAttempts < self.powerNrAttempts): #no need to try it after last connection attempt
+            # have you tried turning it off and on again?
+            if not self.isConnected and (nrAttempts < self.powerNrAttempts):  # no need to try it after last connection attempt
                 self._power_reset()
 
         if not self.isConnected:
@@ -159,7 +161,7 @@ class RemoteTarget(Target):
     def connect(self, error_on_fail=True):
         self.sshClient = paramiko.SSHClient()
         self.sshClient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        log.info("connecting to "+self.name+" hostname: "+self.hostname+" user: "+self.username)
+        log.info("connecting to " + self.name + " hostname: " + self.hostname + " user: " + self.username)
 
         rsa_key = None
         if self.privateKey is not None:
@@ -201,11 +203,11 @@ class RemoteTarget(Target):
             self.powerDevice.switch(self.powerOutletNr, True)
 
     def _prepare_install_directory(self):
-        #create result dir if it does not exist
+        # create result dir if it does not exist
         (_, _, resultTest) = self.execute_on_target("test -e " + self.ramsesInstallDir)
         if resultTest != 0:
             self.execute_on_target("mkdir -p " + self.ramsesInstallDir)
-        #make sure it is empty (delete old binaries from previous tests)
+        # make sure it is empty (delete old binaries from previous tests)
         self.execute_on_target("rm -r {0}/*".format(self.ramsesInstallDir))
 
     def _scp(self, source, sourceIsRemote, dest, destIsRemote, dest_has_filename=False):
@@ -228,7 +230,7 @@ class RemoteTarget(Target):
             raise
 
     def _transfer_binaries(self):
-        packageBaseName = self.buildJobName+'-*'
+        packageBaseName = self.buildJobName + '-*'
 
         # glob to get single expected archive for target, otherwise fail
         resultList = glob.glob("{0}/{1}".format(self.basePath, packageBaseName))
@@ -245,7 +247,7 @@ class RemoteTarget(Target):
         # transfer package
         self._scp(packagePathOnBuildServer, False, self.ramsesInstallDir, True)
 
-        #extract package
+        # extract package
         stdout, stderr, returnCode = self.execute_on_target(
             "tar mxf {0} -C {1}".format(packagePathOnTarget, self.ramsesInstallDir), block=True)
         if returnCode != 0:
@@ -253,10 +255,10 @@ class RemoteTarget(Target):
                       format(returnCode, "".join(stdout), "".join(stderr)))
             return False
 
-        #remove tar
+        # remove tar
         self.execute_on_target("rm {0}".format(packagePathOnTarget))
 
-        #move contents from subfolder directly to install dir
+        # move contents from subfolder directly to install dir
         self.execute_on_target("mv {0}/{1}/* {0}".format(self.ramsesInstallDir, packageBaseName), block=True)
 
         return True

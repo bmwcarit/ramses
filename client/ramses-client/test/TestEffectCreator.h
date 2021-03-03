@@ -19,10 +19,10 @@ namespace ramses
     class TestEffectCreator : public LocalTestClientWithScene
     {
     public:
-        explicit TestEffectCreator(bool withSemantics = false)
+        explicit TestEffectCreator(bool withSemantics = false, bool withGeometryShader = false)
             : LocalTestClientWithScene()
         {
-            effect = createEffect(m_scene, withSemantics);
+            effect = createEffect(m_scene, withSemantics, withGeometryShader);
             EXPECT_TRUE(effect != nullptr);
             appearance = this->m_scene.createAppearance(*effect);
             EXPECT_TRUE(appearance != nullptr);
@@ -41,10 +41,10 @@ namespace ramses
             EXPECT_EQ(StatusOK, this->m_scene.destroy(*appearance));
         }
 
-        static Effect* createEffect(Scene& scene, bool withSemantics)
+        static Effect* createEffect(Scene& scene, bool withSemantics, bool withGeometryShader = false)
         {
             ramses_internal::String VertexShader(
-                "#version 310 es\n"
+                "#version 320 es\n"
                 "uniform lowp float floatInput;\n"
                 "uniform lowp float floatInputArray[3];\n"
 
@@ -93,7 +93,7 @@ namespace ramses
                 "}\n");
 
             ramses_internal::String FragmentShader(
-                "#version 310 es\n"
+                "#version 320 es\n"
                 "precision mediump float;\n"
                 "uniform sampler2D texture2dInput;\n"
                 "uniform lowp sampler2DMS texture2dMSInput;\n"
@@ -108,6 +108,19 @@ namespace ramses
             ramses::EffectDescription effectDesc;
             effectDesc.setVertexShader(VertexShader.c_str());
             effectDesc.setFragmentShader(FragmentShader.c_str());
+
+            if (withGeometryShader)
+            {
+                effectDesc.setGeometryShader(R"SHADER(
+                    #version 320 es
+                    layout(lines) in;
+                    layout(points, max_vertices = 1) out;
+                    void main() {
+                        gl_Position = vec4(0.0);
+                        EmitVertex();
+                    }
+                    )SHADER");
+            }
 
             if (withSemantics)
             {

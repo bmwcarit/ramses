@@ -12,6 +12,7 @@
 #include "RendererLib/RendererStatistics.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/EDataBufferType.h"
+#include "SceneAPI/TextureEnums.h"
 #include "ResourceDeviceHandleAccessorMock.h"
 #include "RendererResourceCacheMock.h"
 #include "RendererResourceCacheFake.h"
@@ -19,6 +20,8 @@
 #include "EmbeddedCompositingManagerMock.h"
 #include "MockResourceHash.h"
 #include "ResourceUploaderMock.h"
+#include "Watchdog/ThreadAliveNotifierMock.h"
+#include "Utils/ThreadLocalLog.h"
 
 namespace ramses_internal {
 using namespace testing;
@@ -28,12 +31,16 @@ class ARendererResourceManager : public ::testing::Test
 public:
     explicit ARendererResourceManager(bool disableEffectDeletion = false)
         : fakeSceneId(66u)
-        , asyncEffectUploader(platform, platform.renderBackendMock)
+        , asyncEffectUploader(platform, platform.renderBackendMock, notifier, 1)
         , resourceManager(platform.renderBackendMock, std::unique_ptr<IResourceUploader>{ resUploader }, asyncEffectUploader, embeddedCompositingManager, disableEffectDeletion, frameTimer, stats)
     {
+        // caller is expected to have a display prefix for logs
+        ThreadLocalLog::SetPrefix(1);
+
         InSequence s;
         EXPECT_CALL(platform.renderBackendMock.surfaceMock, disable()).WillOnce(Return(true));
         EXPECT_CALL(platform, createResourceUploadRenderBackend(Ref(platform.renderBackendMock)));
+        EXPECT_CALL(platform.renderBackendMock.surfaceMock, enable()).WillOnce(Return(true));
         const bool status = asyncEffectUploader.createResourceUploadRenderBackendAndStartThread();
         EXPECT_TRUE(status);
     }
@@ -128,6 +135,7 @@ protected:
     RendererStatistics stats;
     StrictMock<ResourceUploaderMock>* resUploader = new StrictMock<ResourceUploaderMock>;
     FrameTimer frameTimer;
+    NiceMock<ThreadAliveNotifierMock> notifier;
     AsyncEffectUploader asyncEffectUploader;
     RendererResourceManager resourceManager;
 };
@@ -455,26 +463,6 @@ TEST_F(ARendererResourceManager, canUploadAndUpdateAndUnloadTextureBuffer_WithSe
     resourceManager.unloadTextureBuffer(textureBuffer, fakeSceneId);
 }
 
-TEST_F(ARendererResourceManager, canUploadAndUnloadTextureSampler)
-{
-    const TextureSamplerHandle textureSampler(1u);
-    const EWrapMethod wrapU(EWrapMethod::Clamp);
-    const EWrapMethod wrapV(EWrapMethod::Repeat);
-    const EWrapMethod wrapR(EWrapMethod::RepeatMirrored);
-    const ESamplingMethod minSampling(ESamplingMethod::Linear);
-    const ESamplingMethod magSampling(ESamplingMethod::Linear_MipMapLinear);
-    const UInt32 anisotropyLevel(2u);
-    const TextureSamplerStates state(wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel);
-
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadTextureSampler(wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel));
-    resourceManager.uploadTextureSampler(textureSampler, fakeSceneId, state);
-
-    EXPECT_EQ(DeviceMock::FakeTextureSamplerDeviceHandle, resourceManager.getTextureSamplerDeviceHandle(textureSampler, fakeSceneId));
-
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteTextureSampler(DeviceMock::FakeTextureSamplerDeviceHandle));
-    resourceManager.unloadTextureSampler(textureSampler, fakeSceneId);
-}
-
 TEST_F(ARendererResourceManager, canUploadAndUnloadRenderTargetBuffer)
 {
     RenderBufferHandle bufferHandle(1u);
@@ -571,6 +559,57 @@ TEST_F(ARendererResourceManager, GetsInvalidDeviceHandleForUnknownOffscreenBuffe
     EXPECT_FALSE(resourceManager.getOffscreenBufferHandle(DeviceMock::FakeRenderTargetDeviceHandle).isValid());
 }
 
+TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorBuffer)
+{
+    const OffscreenBufferHandle bufferHandle(1u);
+    const RenderBuffer colorOffscreenBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
+
+    InSequence seq;
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer)));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
+    RenderState::ScissorRegion scissorRegion{};
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, false, ERenderBufferType_InvalidBuffer);
+
+    EXPECT_EQ(DeviceMock::FakeRenderTargetDeviceHandle, resourceManager.getOffscreenBufferDeviceHandle(bufferHandle));
+    EXPECT_EQ(DeviceMock::FakeRenderBufferDeviceHandle, resourceManager.getOffscreenBufferColorBufferDeviceHandle(bufferHandle));
+    EXPECT_EQ(bufferHandle, resourceManager.getOffscreenBufferHandle(DeviceMock::FakeRenderTargetDeviceHandle));
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_));
+}
+
+TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthBuffers)
+{
+    const OffscreenBufferHandle bufferHandle(1u);
+    const RenderBuffer colorOffscreenBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
+    const RenderBuffer depthOffscreenBuffer(1u, 1u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_WriteOnly, 0u);
+    InSequence seq;
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer)));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(depthOffscreenBuffer)));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
+    RenderState::ScissorRegion scissorRegion{};
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, false, ERenderBufferType_DepthBuffer);
+
+    EXPECT_EQ(DeviceMock::FakeRenderTargetDeviceHandle, resourceManager.getOffscreenBufferDeviceHandle(bufferHandle));
+    EXPECT_EQ(DeviceMock::FakeRenderBufferDeviceHandle, resourceManager.getOffscreenBufferColorBufferDeviceHandle(bufferHandle));
+    EXPECT_EQ(bufferHandle, resourceManager.getOffscreenBufferHandle(DeviceMock::FakeRenderTargetDeviceHandle));
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_)).Times(2u);
+}
+
 TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilAttached)
 {
     const OffscreenBufferHandle bufferHandle(1u);
@@ -587,7 +626,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilA
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
-    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, false);
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer);
 
     EXPECT_EQ(DeviceMock::FakeRenderTargetDeviceHandle, resourceManager.getOffscreenBufferDeviceHandle(bufferHandle));
     EXPECT_EQ(DeviceMock::FakeRenderBufferDeviceHandle, resourceManager.getOffscreenBufferColorBufferDeviceHandle(bufferHandle));
@@ -613,7 +652,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilA
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
-    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 4u, false);
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 4u, false, ERenderBufferType_DepthStencilBuffer);
 
     EXPECT_EQ(DeviceMock::FakeRenderTargetDeviceHandle, resourceManager.getOffscreenBufferDeviceHandle(bufferHandle));
     EXPECT_EQ(DeviceMock::FakeRenderBufferDeviceHandle, resourceManager.getOffscreenBufferColorBufferDeviceHandle(bufferHandle));
@@ -623,7 +662,50 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilA
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_)).Times(2u);
 }
 
-TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithDoubleBuffering)
+TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorBuffer_WithDoubleBuffering)
+{
+    const OffscreenBufferHandle bufferHandle(1u);
+    const RenderBuffer colorOffscreenBuffer1(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
+    const RenderBuffer colorOffscreenBuffer2(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
+
+    const DeviceResourceHandle colorBufferDeviceHandle1{ 7771u };
+    const DeviceResourceHandle colorBufferDeviceHandle2{ 7778u };
+    const DeviceResourceHandle offscreenBufferDeviceHandle1{ 7798u };
+    const DeviceResourceHandle offscreenBufferDeviceHandle2{ 7799u };
+    InSequence seq;
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer1))).WillOnce(Return(colorBufferDeviceHandle1));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(Eq(DeviceHandleVector({ colorBufferDeviceHandle1 })))).WillOnce(Return(offscreenBufferDeviceHandle1));
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer2))).WillOnce(Return(colorBufferDeviceHandle2));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(Eq(DeviceHandleVector({ colorBufferDeviceHandle2 })))).WillOnce(Return(offscreenBufferDeviceHandle2));
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(offscreenBufferDeviceHandle1));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
+    RenderState::ScissorRegion scissorRegion{};
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(offscreenBufferDeviceHandle2));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, pairRenderTargetsForDoubleBuffering(_, _));
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, true, ERenderBufferType_InvalidBuffer);
+
+    EXPECT_EQ(offscreenBufferDeviceHandle1, resourceManager.getOffscreenBufferDeviceHandle(bufferHandle));
+    EXPECT_EQ(colorBufferDeviceHandle1, resourceManager.getOffscreenBufferColorBufferDeviceHandle(bufferHandle));
+    EXPECT_EQ(bufferHandle, resourceManager.getOffscreenBufferHandle(offscreenBufferDeviceHandle1));
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderTarget(_)).Times(2);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, unpairRenderTargets(_)).Times(1u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_)).Times(2u);
+}
+
+TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilBuffers_WithDoubleBuffering)
 {
     const OffscreenBufferHandle bufferHandle(1u);
     const RenderBuffer colorOffscreenBuffer1(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
@@ -658,7 +740,7 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithDoubleBuffering)
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, pairRenderTargetsForDoubleBuffering(_, _));
-    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, true);
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, true, ERenderBufferType_DepthStencilBuffer);
 
     EXPECT_EQ(offscreenBufferDeviceHandle1, resourceManager.getOffscreenBufferDeviceHandle(bufferHandle));
     EXPECT_EQ(colorBufferDeviceHandle1, resourceManager.getOffscreenBufferColorBufferDeviceHandle(bufferHandle));
@@ -669,7 +751,28 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithDoubleBuffering)
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_)).Times(3u);
 }
 
-TEST_F(ARendererResourceManager, CanUnloadOffscreenBuffer)
+TEST_F(ARendererResourceManager, CanUnloadOffscreenBuffer_WithColorBuffer)
+{
+    const OffscreenBufferHandle bufferHandle(1u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
+    RenderState::ScissorRegion scissorRegion{};
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, false, ERenderBufferType_InvalidBuffer);
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_));
+    resourceManager.unloadOffscreenBuffer(bufferHandle);
+
+    EXPECT_FALSE(resourceManager.getOffscreenBufferDeviceHandle(bufferHandle).isValid());
+}
+
+TEST_F(ARendererResourceManager, CanUnloadOffscreenBuffer_WithColorAndDepthStencilBuffers)
 {
     const OffscreenBufferHandle bufferHandle(1u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
@@ -681,7 +784,7 @@ TEST_F(ARendererResourceManager, CanUnloadOffscreenBuffer)
     RenderState::ScissorRegion scissorRegion{};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
-    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, false);
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer);
 
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_)).Times(2u);
@@ -690,7 +793,30 @@ TEST_F(ARendererResourceManager, CanUnloadOffscreenBuffer)
     EXPECT_FALSE(resourceManager.getOffscreenBufferDeviceHandle(bufferHandle).isValid());
 }
 
-TEST_F(ARendererResourceManager, CanUnloadDoubleBufferedOffscreenBuffer)
+TEST_F(ARendererResourceManager, CanUnloadDoubleBufferedOffscreenBuffer_WithColorBuffer)
+{
+    const OffscreenBufferHandle bufferHandle(1u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_)).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_)).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_)).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true)).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled)).Times(2u);
+    RenderState::ScissorRegion scissorRegion{};
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion)).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_)).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, pairRenderTargetsForDoubleBuffering(_, _));
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, true, ERenderBufferType_InvalidBuffer);
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, unpairRenderTargets(_)).Times(1u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderTarget(_)).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_)).Times(2u);
+    resourceManager.unloadOffscreenBuffer(bufferHandle);
+
+    EXPECT_FALSE(resourceManager.getOffscreenBufferDeviceHandle(bufferHandle).isValid());
+}
+
+TEST_F(ARendererResourceManager, CanUnloadDoubleBufferedOffscreenBuffer_WithColorAndDepthStencilBuffers)
 {
     const OffscreenBufferHandle bufferHandle(1u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_)).Times(2u);
@@ -703,7 +829,7 @@ TEST_F(ARendererResourceManager, CanUnloadDoubleBufferedOffscreenBuffer)
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, pairRenderTargetsForDoubleBuffering(_, _));
-    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, true);
+    resourceManager.uploadOffscreenBuffer(bufferHandle, 1u, 1u, 0u, true, ERenderBufferType_DepthStencilBuffer);
 
     EXPECT_CALL(platform.renderBackendMock.deviceMock, unpairRenderTargets(_)).Times(1u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderTarget(_)).Times(2u);
@@ -743,7 +869,7 @@ TEST_F(ARendererResourceManager, returnsInvalidDeviceHandleForUnknownStreamBuffe
 
 TEST_F(ARendererResourceManager, UploadAndDeleteValidShader)
 {
-    auto effectRes = std::make_unique<const EffectResource>("", "", "", EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
+    auto effectRes = std::make_unique<const EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
     const ResourceContentHash resHash = effectRes->getHash();
 
     // request some resources
@@ -780,7 +906,7 @@ TEST_F(ARendererResourceManager, DoesNotUnregisterResourceThatWasUploaded)
 
 TEST_F(ARendererResourceManager, DoesNotUnregisterResourceThatWasScheduledForUpload)
 {
-    auto effectRes = std::make_unique<const EffectResource>("", "", "", EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
+    auto effectRes = std::make_unique<const EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
     const ResourceContentHash resHash = effectRes->getHash();
 
     // request some resources
@@ -816,7 +942,7 @@ TEST_F(ARendererResourceManager, DoesNotUnregisterResourceThatWasScheduledForUpl
 
 TEST_F(ARendererResourceManager, CanUploadAndUnloadEffectOwnedBySceneThatGetsDestroyed_ConfidenceTest)
 {
-    auto effectRes = std::make_unique<const EffectResource>("", "", "", EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
+    auto effectRes = std::make_unique<const EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
     const ResourceContentHash resHash = effectRes->getHash();
 
     // request some resources
@@ -864,7 +990,7 @@ TEST_F(ARendererResourceManager, CanUploadAndUnloadEffectOwnedBySceneThatGetsDes
 
 TEST_F(ARendererResourceManager, DoesNotUnloadEffectThatGetsUnreferencedAndReReferencedWhileCompiling)
 {
-    auto effectRes = std::make_unique<const EffectResource>("", "", "", EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
+    auto effectRes = std::make_unique<const EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
     const ResourceContentHash resHash = effectRes->getHash();
 
     // request some resources
@@ -921,7 +1047,7 @@ TEST_F(ARendererResourceManager, DoesNotUnloadEffectThatGetsUnreferencedAndReRef
 
 TEST_F(ARendererResourceManager, UploadInvalidShaderResultsInBrokenResource)
 {
-    auto effectRes = std::make_unique<const EffectResource>("", "", "", EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
+    auto effectRes = std::make_unique<const EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector{}, EffectInputInformationVector{}, "", ResourceCacheFlag_DoNotCache);
     const ResourceContentHash resHash = effectRes->getHash();
 
     // request some resources
@@ -1149,8 +1275,8 @@ TEST_F(ARendererResourceManager, UnloadsAllRemainingOffscreenBuffersAndStreamBuf
     EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, RenderState::ScissorRegion{})).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_)).Times(2u);
-    resourceManager.uploadOffscreenBuffer(obHandle, 1u, 1u, 0u, false);
-    resourceManager.uploadOffscreenBuffer(obHandle2, 1u, 1u, 0u, false);
+    resourceManager.uploadOffscreenBuffer(obHandle, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer);
+    resourceManager.uploadOffscreenBuffer(obHandle2, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer);
 
     // 2 stream buffers
     constexpr StreamBufferHandle sbHandle{ 1u };

@@ -39,6 +39,7 @@ public:
     virtual ~RendererMock() override;
 
     MOCK_METHOD(void, markBufferWithSceneAsModified, (SceneId), (override));
+    MOCK_METHOD(void, setClearFlags, (DisplayHandle, DeviceResourceHandle, uint32_t), (override));
     MOCK_METHOD(void, setClearColor, (DisplayHandle, DeviceResourceHandle, const Vector4&), (override));
 
     static const FrameTimer FrameTimerInstance;
@@ -56,6 +57,7 @@ public:
     virtual void destroyDisplayContext(ramses_internal::DisplayHandle handle) override;
 
     virtual void markBufferWithSceneAsModified(SceneId sceneId) override;
+    virtual void setClearFlags(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags) override;
     virtual void setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor) override;
 
     DisplayMockInfo<MOCK_TYPE>& getDisplayMock(ramses_internal::DisplayHandle handle);

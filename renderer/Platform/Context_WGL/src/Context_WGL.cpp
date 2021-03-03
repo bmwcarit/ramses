@@ -7,25 +7,29 @@
 //  -------------------------------------------------------------------------
 
 #include "Context_WGL/Context_WGL.h"
-
-#include "Utils/LogMacros.h"
 #include "Window_Windows/HiddenWindow.h"
 #include "Window_Windows/Window_Windows.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {
-    Context_WGL::Context_WGL(HDC displayHandle, WglExtensions wglExtensions, const Int32* contextAttributes, UInt32 msaaSampleCount, Context_WGL* sharedContext /*= NULL*/)
+    Context_WGL::Context_WGL(ERenderBufferType depthStencilBufferType, HDC displayHandle, WglExtensions wglExtensions, const Int32* contextAttributes, UInt32 msaaSampleCount)
         : m_displayHandle(displayHandle)
         , m_ext(wglExtensions)
         , m_contextAttributes(contextAttributes)
         , m_msaaSampleCount(msaaSampleCount)
-        , m_wglSharedContextHandle(0)
-        , m_wglContextHandle(0)
+        , m_depthStencilBufferType(depthStencilBufferType)
     {
-        if (0 != sharedContext)
-        {
-            m_wglSharedContextHandle = sharedContext->getNativeContextHandle();
-        }
+    }
+
+    Context_WGL::Context_WGL(Context_WGL& sharedContext, HDC displayHandle, WglExtensions wglExtensions, const Int32* contextAttributes, UInt32 msaaSampleCount)
+        : m_displayHandle(displayHandle)
+        , m_ext(wglExtensions)
+        , m_contextAttributes(contextAttributes)
+        , m_msaaSampleCount(msaaSampleCount)
+        , m_wglSharedContextHandle(sharedContext.getNativeContextHandle())
+        , m_depthStencilBufferType(sharedContext.m_depthStencilBufferType)
+    {
     }
 
     Bool Context_WGL::init()
@@ -118,12 +122,32 @@ namespace ramses_internal
         UINT    numFormats;
         float   fAttributes[] = { 0, 0 };
 
-        int enableMultisampling = (m_msaaSampleCount > 1) ? GL_TRUE : GL_FALSE;
-        int sampleCount = (GL_TRUE == enableMultisampling) ? m_msaaSampleCount : 0;
-        int colorBits = 24;
-        int alphaBits = 8;
-        int depthBits = 16;
-        int stencilBits = 8;
+        const int enableMultisampling = (m_msaaSampleCount > 1) ? GL_TRUE : GL_FALSE;
+        const int sampleCount = (GL_TRUE == enableMultisampling) ? m_msaaSampleCount : 0;
+        const int colorBits = 24;
+        const int alphaBits = 8;
+
+        int depthBits = 0;
+        int stencilBits = 0;
+
+        switch (m_depthStencilBufferType)
+        {
+        case ERenderBufferType_DepthStencilBuffer:
+            depthBits = 24u;
+            stencilBits = 8u;
+            break;
+        case ERenderBufferType_DepthBuffer:
+            depthBits = 24u;
+            stencilBits = 0u;
+            break;
+        case ERenderBufferType_InvalidBuffer:
+            depthBits = 0u;
+            stencilBits = 0u;
+            break;
+        case ERenderBufferType_ColorBuffer:
+        case ERenderBufferType_NUMBER_OF_ELEMENTS:
+            assert(false);
+        }
 
         int iAttributes[] =
         {
@@ -163,24 +187,31 @@ namespace ramses_internal
         valid = m_ext.procs.wglGetPixelFormatAttribivARB(m_displayHandle, pixelFormat, 0, numAttribs, iResultAttributes, resultAttribs);
         if (!valid)
         {
-            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat() m_ext.procs.wglGetPixelFormatAttribivARB failed.");
+            LOG_ERROR(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat() m_ext.procs.wglGetPixelFormatAttribivARB failed.");
             return false;
         }
-        if (resultAttribs[0] < colorBits ||
-            resultAttribs[1] < alphaBits ||
-            resultAttribs[2] < depthBits ||
-            resultAttribs[3] < stencilBits ||
-            resultAttribs[4] < sampleCount )
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "Surface_Windows_WGL::initCustomPixelFormat:  could not get Requested pixel format. C:A:D:S:S "
-                << resultAttribs[0] << ":" << resultAttribs[1] << ":" << resultAttribs[2] << ":"
-                << resultAttribs[3] << ":" << resultAttribs[4]);
-        }
-        else
-        {
-            LOG_INFO(CONTEXT_RENDERER, "Surface_Windows_WGL::initCustomPixelFormat:  OpenGL pixel format C:A:D:S:S "
-                << colorBits << ":" << alphaBits << ":" << depthBits << ":" << stencilBits << ":" << sampleCount);
-        }
+
+        LOG_INFO(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  OpenGL pixel format: "
+            << "COLOR_BITS :" << resultAttribs[0]
+            << ", ALPHA_BITS :" << resultAttribs[1]
+            << ", DEPTH_BITS :" << resultAttribs[2]
+            << ", STENCIL_BITS :" << resultAttribs[3]
+            << ", SAMPLE_COUNT :" << resultAttribs[4]);
+
+        if (resultAttribs[0] != colorBits)
+            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual COLOR_BITS :" << resultAttribs[0] << " vs requested :" << colorBits);
+
+        if (resultAttribs[1] != alphaBits)
+            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual ALPHA_BITS :" << resultAttribs[1] << " vs requested :" << alphaBits);
+
+        if (resultAttribs[2] != depthBits)
+            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual DEPTH_BITS :" << resultAttribs[2] << " vs requested :" << depthBits);
+
+        if (resultAttribs[3] != stencilBits)
+            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual STENCIL_BITS :" << resultAttribs[3] << " vs requested :" << stencilBits);
+
+        if (resultAttribs[4] != sampleCount)
+            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual SAMPLE_COUNT :" << resultAttribs[4] << " vs requested :" << sampleCount);
 
         // This code is very misleading  - it looks like setting up a surface pixel format
         // but it doesn't, the data is actually unused

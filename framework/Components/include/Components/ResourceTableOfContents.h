@@ -36,7 +36,7 @@ namespace ramses_internal
         void registerContents(const ResourceInfo& info, UInt32 offsetInBytes, UInt32 sizeInBytes);
         const ResourceFileEntry& getEntryForHash(const ResourceContentHash& hash) const;
         const TableOfContentsMap& getFileContents() const;
-        bool readTOCPosAndTOCFromStream(BinaryFileInputStream& instream);
+        bool readTOCPosAndTOCFromStream(IInputStream& instream);
         void writeTOCToStream(IOutputStream& outstream);
 
     private:

@@ -39,7 +39,7 @@ namespace ramses
     {
     public:
         AppearanceImpl(SceneImpl& scene, const char* appearancename);
-        virtual ~AppearanceImpl();
+        virtual ~AppearanceImpl() override;
 
         void             initializeFrameworkData(const EffectImpl& effect);
         virtual void     deinitializeFrameworkData() override;

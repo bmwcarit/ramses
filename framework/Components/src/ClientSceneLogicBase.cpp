@@ -32,6 +32,9 @@ namespace ramses_internal
         , m_newResources()
         , m_animationSystemFactory(ramses_internal::EAnimationSystemOwner_Scenemanager)
     {
+        std::fill(m_resourceCount.begin(), m_resourceCount.end(), 0);
+        std::fill(m_resourceMaxSize.begin(), m_resourceMaxSize.end(), 0);
+        std::fill(m_resourceDataSize.begin(), m_resourceDataSize.end(), 0);
     }
 
     ClientSceneLogicBase::~ClientSceneLogicBase()
@@ -195,6 +198,57 @@ namespace ramses_internal
         }
     }
 
+    void ClientSceneLogicBase::updateResourceStatistics()
+    {
+        // reset locally gathered resource statistics
+        std::fill(m_resourceCount.begin(), m_resourceCount.end(), 0);
+        std::fill(m_resourceMaxSize.begin(), m_resourceMaxSize.end(), 0);
+        std::fill(m_resourceDataSize.begin(), m_resourceDataSize.end(), 0);
+
+        ManagedResourceVector resVector = m_resourceComponent.resolveResources(m_newResources);
+        for (auto const& res : resVector)
+        {
+            assert(res);
+
+            EResourceStatisticIndex index = EResourceStatisticIndex_ArrayResource;
+            switch (res->getTypeID())
+            {
+            case EResourceType_VertexArray:
+            case EResourceType_IndexArray:
+                index = EResourceStatisticIndex_ArrayResource;
+                break;
+            case EResourceType_Effect:
+                index = EResourceStatisticIndex_Effect;
+                break;
+            case EResourceType_Texture2D:
+            case EResourceType_Texture3D:
+            case EResourceType_TextureCube:
+                index = EResourceStatisticIndex_Texture;
+                break;
+            case EResourceType_Invalid:
+            case EResourceType_NUMBER_OF_ELEMENTS:
+                assert(0);
+            }
+            const auto size = res->getDecompressedDataSize();
+
+            m_resourceCount[index]++;
+            m_resourceDataSize[index] += size;
+            if (m_resourceMaxSize[index] < size)
+                m_resourceMaxSize[index] = size;
+        }
+    }
+
+    void ClientSceneLogicBase::fillStatisticsCollection()
+    {
+        auto& stats = m_scene.getStatisticCollection();
+        for (size_t i = 0; i < EResourceStatisticIndex_NumIndices; ++i)
+        {
+            stats.statResourceCount[i].setCounterValue(m_resourceCount[i]);
+            stats.statResourceAvgSize[i].setCounterValue(m_resourceCount[i] == 0 ? 0 : (m_resourceDataSize[i] / m_resourceCount[i]));
+            stats.statResourceMaxSize[i].setCounterValue(m_resourceMaxSize[i]);
+        }
+    }
+
     bool ClientSceneLogicBase::verifyAndGetResourceChanges(SceneUpdate& sceneUpdate, bool hasNewActions)
     {
         m_resourceChanges.clear();
@@ -215,6 +269,8 @@ namespace ramses_internal
                 if (sceneUpdate.resources.size() != m_resourceChanges.m_resourcesAdded.size())
                     return false;
             }
+
+            updateResourceStatistics();
 
             m_lastFlushClientResourcesInUse.swap(m_newResources);
         }

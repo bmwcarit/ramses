@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <sys/file.h>
 #include <unistd.h>
-#include <errno.h>
+#include <cerrno>
 #include <cstddef>
 #include <fcntl.h>
 #include <cassert>

@@ -9,7 +9,8 @@
 #ifndef RAMSES_RAMSHTOOLS_H
 #define RAMSES_RAMSHTOOLS_H
 
-#include "Ramsh/RamshInput.h"
+#include <vector>
+#include <string>
 
 namespace ramses_internal
 {
@@ -18,10 +19,10 @@ namespace ramses_internal
     class RamshTools
     {
     public:
-        static RamshInput parseCommandString(const String& msg);
-        static UInt delimiterPosition(const String& msg, const String& delimiter);
-        static UInt trailingSpacesPosition(const String& msg, UInt offset);
-        static UInt leadingSpacesPosition(const String& msg, UInt offset);
+        static std::vector<std::string> parseCommandString(const String& msg);
+        static std::size_t delimiterPosition(const String& msg, const String& delimiter);
+        static std::size_t trailingSpacesPosition(const String& msg, std::size_t offset);
+        static std::size_t leadingSpacesPosition(const String& msg, std::size_t offset);
     };
 
 }

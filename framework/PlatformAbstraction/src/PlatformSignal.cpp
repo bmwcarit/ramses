@@ -8,7 +8,7 @@
 
 #include "PlatformAbstraction/PlatformSignal.h"
 #include "Collections/HashMap.h"
-#include <signal.h>
+#include <csignal>
 
 namespace ramses_internal
 {

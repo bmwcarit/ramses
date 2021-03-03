@@ -13,6 +13,7 @@
 #include "RendererEventCollector.h"
 #include "SceneUtils/ISceneDataArrayAccessor.h"
 #include "SceneAllocateHelper.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -35,6 +36,9 @@ public:
         , providerId(33u)
         , consumerId(44u)
     {
+        // caller is expected to have a display prefix for logs
+        ThreadLocalLog::SetPrefix(1);
+
         if (createSlots)
         {
             const DataLayoutHandle providerLayout = providerSceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType::Float) }, ResourceContentHash::Invalid());

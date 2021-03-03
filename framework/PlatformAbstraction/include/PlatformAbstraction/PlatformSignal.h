@@ -10,7 +10,7 @@
 #define RAMSES_PLATFORMABSTRACTION_PLATFORMSIGNAL_H
 
 #include <cstdint>
-#include <signal.h>
+#include <csignal>
 
 namespace ramses_internal
 {
@@ -24,7 +24,7 @@ namespace ramses_internal
         TERM = SIGTERM
     };
 
-    class PlatformSignal
+    class PlatformSignal final
     {
     public:
         using SignalHandlerFunction = void(*)(int32_t);

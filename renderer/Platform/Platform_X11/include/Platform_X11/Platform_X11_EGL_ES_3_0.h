@@ -20,7 +20,6 @@ namespace ramses_internal
 
     protected:
         virtual uint32_t getSwapInterval() const override final;
-        virtual std::vector<EGLint> getSurfaceAttributes(UInt32 msaaSampleCount) const override final;
     };
 }
 

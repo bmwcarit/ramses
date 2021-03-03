@@ -11,7 +11,7 @@
 
 #include "PlatformAbstraction/FmtBase.h"
 #include <type_traits>
-#include <assert.h>
+#include <cassert>
 #include <cstddef>
 
 // declares mapping function from enum to strings

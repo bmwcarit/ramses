@@ -53,7 +53,7 @@ public:
     bool getSceneToRendered(ramses::sceneId_t sceneId, uint32_t testDisplayIdx = 0);
 
     void dispatchRendererEvents(ramses::IRendererEventHandler& eventHandler, ramses::IRendererSceneControlEventHandler& sceneControlEventHandler);
-    ramses::displayBufferId_t   createOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount = 0u);
+    ramses::displayBufferId_t   createOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount = 0u, ramses::EDepthBufferType depthBufferType = ramses::EDepthBufferType_DepthStencil);
     void                        destroyOffscreenBuffer(uint32_t testDisplayIdx, ramses::displayBufferId_t buffer);
     ramses::streamBufferId_t    createStreamBuffer(uint32_t testDisplayIdx, ramses::waylandIviSurfaceId_t source);
     void                        destroyStreamBuffer(uint32_t testDisplayIdx, ramses::streamBufferId_t buffer);
@@ -63,6 +63,7 @@ public:
     void createDataLink(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerTag, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
     void removeDataLink(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag);
     void setWarpingMeshData(const ramses::WarpingMeshData& meshData, uint32_t testDisplayIdx = 0u);
+    void setClearFlags(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, uint32_t clearFlags);
     void setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const ramses_internal::Vector4& clearColor);
     void publishAndFlushScene(ramses::sceneId_t sceneId);
     void flushRendererAndDoOneLoop();

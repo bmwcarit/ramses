@@ -11,6 +11,7 @@
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererLib/IResourceUploader.h"
+#include "Watchdog/IThreadAliveNotifier.h"
 
 namespace ramses_internal
 {
@@ -22,8 +23,9 @@ namespace ramses_internal
         const RendererEventCollector& rendererEventCollector,
         const FrameTimer& frameTimer,
         const SceneExpirationMonitor& expirationMonitor,
+        IThreadAliveNotifier& notifier,
         const IRendererResourceCache* rendererResourceCache)
-        : RendererSceneUpdater(platform, const_cast<Renderer&>(renderer), const_cast<RendererScenes&>(rendererScenes), const_cast<SceneStateExecutor&>(sceneStateExecutor), const_cast<RendererEventCollector&>(rendererEventCollector), const_cast<FrameTimer&>(frameTimer), const_cast<SceneExpirationMonitor&>(expirationMonitor), const_cast<IRendererResourceCache*>(rendererResourceCache))
+        : RendererSceneUpdater(platform, const_cast<Renderer&>(renderer), const_cast<RendererScenes&>(rendererScenes), const_cast<SceneStateExecutor&>(sceneStateExecutor), const_cast<RendererEventCollector&>(rendererEventCollector), const_cast<FrameTimer&>(frameTimer), const_cast<SceneExpirationMonitor&>(expirationMonitor), const_cast<IThreadAliveNotifier&>(notifier), const_cast<IRendererResourceCache*>(rendererResourceCache))
     {
     }
 
@@ -37,8 +39,9 @@ namespace ramses_internal
         const RendererEventCollector& rendererEventCollector,
         const FrameTimer& frameTimer,
         const SceneExpirationMonitor& expirationMonitor,
+        IThreadAliveNotifier& notifier,
         const IRendererResourceCache* rendererResourceCache)
-        : RendererSceneUpdaterPartialMock(platform, renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor, rendererResourceCache)
+        : RendererSceneUpdaterPartialMock(platform, renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor, notifier, rendererResourceCache)
     {
     }
 

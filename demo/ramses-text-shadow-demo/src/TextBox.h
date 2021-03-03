@@ -15,7 +15,7 @@
 #include "ramses-text-api/TextCache.h"
 #include "ramses-text-api/LayoutUtils.h"
 
-#include "vector"
+#include <vector>
 
 class TextBox : public GraphicalItem
 {

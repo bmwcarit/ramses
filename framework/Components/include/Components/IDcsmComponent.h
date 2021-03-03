@@ -14,6 +14,7 @@
 #include "Components/IDcsmProviderEventHandler.h"
 #include "Components/DcsmMetadata.h"
 #include "ramses-framework-api/IDcsmConsumerEventHandler.h"
+#include <chrono>
 
 namespace ramses_internal
 {
@@ -37,7 +38,9 @@ namespace ramses_internal
         virtual bool sendCanvasSizeChange(ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation ai) = 0;
         virtual bool sendContentStateChange(ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation ai) = 0;
 
+        virtual bool dispatchProviderEvents(IDcsmProviderEventHandler& handler, std::chrono::milliseconds timeout) = 0;
         virtual bool dispatchProviderEvents(IDcsmProviderEventHandler& handler) = 0;
+        virtual bool dispatchConsumerEvents(ramses::IDcsmConsumerEventHandler& handler, std::chrono::milliseconds timeout) = 0;
         virtual bool dispatchConsumerEvents(ramses::IDcsmConsumerEventHandler& handler) = 0;
     };
 }

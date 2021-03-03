@@ -59,9 +59,9 @@ namespace ramses_internal
         return pos;
     }
 
-    RamshInput RamshTools::parseCommandString(const String& msg)
+    std::vector<std::string> RamshTools::parseCommandString(const String& msg)
     {
-        RamshInput input;
+        std::vector<std::string> result;
 
         const String delim = "\r\n";
         const UInt delimPos = msg.size() - delimiterPosition(msg, delim);
@@ -100,11 +100,11 @@ namespace ramses_internal
                 endpos = inputLength; // if no separator found, take all the rest
             }
 
-            input.append(String(message.c_str(), pos, endpos-1)); // append command part
+            result.push_back(String(message.c_str(), pos, endpos-1).stdRef()); // append command part
 
             pos = endpos + 1;
         }
 
-        return input;
+        return result;
     }
 }// namespace ramses_internal

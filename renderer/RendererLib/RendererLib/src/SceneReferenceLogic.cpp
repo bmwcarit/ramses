@@ -12,7 +12,7 @@
 #include "RendererLib/IRendererSceneUpdater.h"
 #include "RendererLib/SceneReferenceOwnership.h"
 #include "RendererFramework/IRendererSceneEventSender.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "absl/algorithm/container.h"
 
 namespace ramses_internal
@@ -194,8 +194,21 @@ namespace ramses_internal
 
                 const auto& refData = masterScene.getSceneReference(handle);
                 const auto refSceneId = refData.sceneId;
-                masterSceneInfo.sceneReferences[refSceneId] = handle;
-                m_sharedOwnership.setOwner(refSceneId, masterSceneId);
+                if (masterSceneInfo.sceneReferences.count(refSceneId) == 0)
+                {
+                    // if ref scene was previously owned by another master remove that ownership - this can happen if ref scene changes ownership
+                    const auto oldMaster = findMasterSceneForReferencedScene(refSceneId);
+                    if (oldMaster.isValid())
+                    {
+                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic::updateReferencedScenes: discarding old scene reference ownership (master {} / ref {})", oldMaster, refSceneId);
+                        m_masterScenes[oldMaster].sceneReferences.erase(refSceneId);
+                    }
+                    LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic::updateReferencedScenes: new scene reference ownership (master {} / ref {})", masterSceneId, refSceneId);
+
+                    masterSceneInfo.sceneReferences[refSceneId] = handle;
+                    m_sharedOwnership.setOwner(refSceneId, masterSceneId);
+                }
+
                 RendererSceneState refTargetState;
                 DisplayHandle refDisplay;
                 OffscreenBufferHandle refOB;
@@ -269,7 +282,7 @@ namespace ramses_internal
             auto& masterInfo = masterScene.second;
             if (!m_rendererScenes.hasScene(masterScene.first) && !masterInfo.destroyed)
             {
-                LOG_INFO(CONTEXT_RENDERER, "SceneReferenceLogic: master scene destroyed, cleaning up its referenced scenes");
+                LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: master scene {} destroyed, cleaning up its referenced scenes", masterScene.first);
                 // unsubscribe any scene referenced by destroyed master scene
                 for (const auto& sceneRefIt : masterInfo.sceneReferences)
                 {
@@ -425,6 +438,7 @@ namespace ramses_internal
 
     SceneId SceneReferenceLogic::findMasterSceneForReferencedScene(SceneId sceneId) const
     {
+        assert(std::count_if(m_masterScenes.cbegin(), m_masterScenes.cend(), [sceneId](const auto& s) { return s.second.sceneReferences.count(sceneId) != 0; }) <= 1);
         for (const auto& master : m_masterScenes)
             if (master.second.sceneReferences.count(sceneId))
                 return master.first;

@@ -17,7 +17,7 @@
 
 namespace
 {
-    class ConsoleInputImpl
+    class ConsoleInputImpl final
     {
     public:
         bool init()
@@ -142,7 +142,7 @@ namespace
 #elif defined(__ghs__)
 namespace
 {
-    class ConsoleInputImpl
+    class ConsoleInputImpl final
     {
     public:
         bool init()
@@ -174,7 +174,7 @@ namespace
 
 namespace
 {
-    class ConsoleInputImpl
+    class ConsoleInputImpl final
     {
     public:
         bool init()

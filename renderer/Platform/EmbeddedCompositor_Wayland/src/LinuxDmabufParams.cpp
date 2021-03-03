@@ -18,9 +18,9 @@
 #include "EmbeddedCompositor_Wayland/LinuxDmabufParams.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufBuffer.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Warnings.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses_internal
 {
@@ -92,7 +92,7 @@ namespace ramses_internal
 
     void LinuxDmabufParams::DmabufParamsDestroyCallback(wl_client* client, wl_resource* dmabufParamsResource)
     {
-        UNUSED(client)
+        UNUSED(client);
 
         LinuxDmabufParams* params = static_cast<LinuxDmabufParams*>(wl_resource_get_user_data(dmabufParamsResource));
         delete params;
@@ -100,7 +100,7 @@ namespace ramses_internal
 
     void LinuxDmabufParams::DmabufParamsAddCallback(wl_client* client, wl_resource* dmabufParamsResource, int32_t fd, uint32_t plane_idx, uint32_t offset, uint32_t stride, uint32_t modifier_hi, uint32_t modifier_lo)
     {
-        UNUSED(client)
+        UNUSED(client);
         LinuxDmabufParams* params = static_cast<LinuxDmabufParams*>(wl_resource_get_user_data(dmabufParamsResource));
         params->addPlane(fd, plane_idx, offset, stride, modifier_hi, modifier_lo);
     }
@@ -356,7 +356,7 @@ namespace ramses_internal
 
     void LinuxDmabufBuffer::DmabufBufferDestroyCallback(wl_client* client, wl_resource* bufferResource)
     {
-        UNUSED(client)
+        UNUSED(client);
         wl_resource_destroy(bufferResource);
     }
 

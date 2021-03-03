@@ -8,6 +8,7 @@
 from tests.system_compositor_controller_base import system_compositor_controller_base
 from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip
 
+
 # Tests if the system compositor controller can control a new surface, which has the same id than a destroyed one before.
 class TestSystemCompositorController(system_compositor_controller_base.SystemCompositorControllerBase):
 
@@ -40,4 +41,3 @@ class TestSystemCompositorController(system_compositor_controller_base.SystemCom
         ensureSystemCompositorRoundTrip(self.renderer, self.testSurfaceIVIIds["wlClient4"])
         # Postcondition: renderer and gears No. 2 and 4 visible
         self.validateScreenshot(self.renderer, "scc_white_gear_left_big_red_gear_right_and_cube.png", useSystemCompositorForScreenshot=True)
-

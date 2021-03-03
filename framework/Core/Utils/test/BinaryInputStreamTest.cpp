@@ -217,6 +217,24 @@ namespace ramses_internal
         EXPECT_EQ(buffer+8, inStream.readPosition());
     }
 
+    TEST(BinaryInputStreamTest, canGetPos)
+    {
+        const Byte buffer[10] = {0};
+        BinaryInputStream inStream(buffer);
+
+        size_t pos = 0;
+        EXPECT_EQ(EStatus::Ok, inStream.getPos(pos));
+        EXPECT_EQ(0u, pos);
+
+        inStream.skip(1);
+        EXPECT_EQ(EStatus::Ok, inStream.getPos(pos));
+        EXPECT_EQ(1u, pos);
+
+        inStream.skip(7);
+        EXPECT_EQ(EStatus::Ok, inStream.getPos(pos));
+        EXPECT_EQ(8u, pos);
+    }
+
     TEST(BinaryInputStreamTest, CanSkipForward)
     {
         const Byte buffer[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -290,5 +308,37 @@ namespace ramses_internal
         EXPECT_EQ(5555u, inStream.getCurrentReadBytes());
         inStream.skip(-555);
         EXPECT_EQ(5000u, inStream.getCurrentReadBytes());
+    }
+
+    TEST(BinaryInputStreamTest, canSeekFromBeginning)
+    {
+        const Byte buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        BinaryInputStream inStream(buffer);
+
+        EXPECT_EQ(0u, inStream.getCurrentReadBytes());
+        EXPECT_EQ(EStatus::Ok, inStream.seek(1, IInputStream::Seek::FromBeginning));
+        EXPECT_EQ(1u, inStream.getCurrentReadBytes());
+        EXPECT_EQ(EStatus::Ok, inStream.seek(5, IInputStream::Seek::FromBeginning));
+        EXPECT_EQ(5u, inStream.getCurrentReadBytes());
+        EXPECT_EQ(EStatus::Ok, inStream.seek(9, IInputStream::Seek::FromBeginning));
+        EXPECT_EQ(9u, inStream.getCurrentReadBytes());
+        EXPECT_EQ(EStatus::Ok, inStream.seek(0, IInputStream::Seek::FromBeginning));
+        EXPECT_EQ(0u, inStream.getCurrentReadBytes());
+    }
+
+    TEST(BinaryInputStreamTest, canSeekRelative)
+    {
+        const Byte buffer[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        BinaryInputStream inStream(buffer);
+
+        EXPECT_EQ(0u, inStream.getCurrentReadBytes());
+        EXPECT_EQ(EStatus::Ok, inStream.seek(1, IInputStream::Seek::Relative));
+        EXPECT_EQ(1u, inStream.getCurrentReadBytes());
+        EXPECT_EQ(EStatus::Ok, inStream.seek(5, IInputStream::Seek::Relative));
+        EXPECT_EQ(6u, inStream.getCurrentReadBytes());
+        EXPECT_EQ(EStatus::Ok, inStream.seek(-5, IInputStream::Seek::Relative));
+        EXPECT_EQ(1u, inStream.getCurrentReadBytes());
+        EXPECT_EQ(EStatus::Ok, inStream.seek(0, IInputStream::Seek::Relative));
+        EXPECT_EQ(1u, inStream.getCurrentReadBytes());
     }
 }

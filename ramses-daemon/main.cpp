@@ -25,7 +25,7 @@ int main(int argc, const char* argv[])
     ramses::RamsesFrameworkConfigImpl config(argc, argv);
     GetRamsesLogger().initialize(config.getCommandLineParser(), "SMGR", "ramses-daemon", false, true); // no framework used
 
-    RamshCommandExit commandExit;
+    auto commandExit = std::make_shared<RamshCommandExit>();
     RamshStandardSetup ramsh(ramses::ERamsesShellType_Console, "Daemon");
     ramsh.add(commandExit);
     ramsh.start();
@@ -40,7 +40,7 @@ int main(int argc, const char* argv[])
     discoveryDaemon->start();
     LOG_INFO(CONTEXT_SMOKETEST, "Ramsh commands registered");
 
-    commandExit.waitForExitRequest();
+    commandExit->waitForExitRequest();
 
     ramsh.stop();
     return 0;

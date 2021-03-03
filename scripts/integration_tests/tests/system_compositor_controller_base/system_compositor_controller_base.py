@@ -9,11 +9,10 @@
 from builtins import range
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
-from ramses_test_framework import helper
-from ramses_test_framework import application
-from ramses_test_framework.ramses_test_extensions import with_ramses_process_check, IVI_Control
+from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
 from ramses_test_framework.targets.target import DEFAULT_TEST_LAYER
 from ramses_test_framework.targets.target import DEFAULT_TEST_SURFACE
+
 
 class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
 
@@ -28,12 +27,12 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         # Map of created test surfaces and surface ivi-ids
         # Ensure, that every ivi-id is listed here, for which a surface is created in this test
         # wlClient1 and wlClient4 shall share the same ivi-id
-        self.testSurfaceIVIIds = {"renderer":           DEFAULT_TEST_SURFACE ,
+        self.testSurfaceIVIIds = {"renderer": DEFAULT_TEST_SURFACE,
                                   "rendererbackground": DEFAULT_TEST_SURFACE + 1,
-                                  "wlClient1":          DEFAULT_TEST_SURFACE + 2,
-                                  "wlClient2":          DEFAULT_TEST_SURFACE + 3,
-                                  "wlClient3":          DEFAULT_TEST_SURFACE + 4,
-                                  "wlClient4":          DEFAULT_TEST_SURFACE + 5}
+                                  "wlClient1": DEFAULT_TEST_SURFACE + 2,
+                                  "wlClient2": DEFAULT_TEST_SURFACE + 3,
+                                  "wlClient3": DEFAULT_TEST_SURFACE + 4,
+                                  "wlClient4": DEFAULT_TEST_SURFACE + 5}
 
         # The surfaces of this tests (ivi-gears + renderer) are put on layer DEFAULT_TEST_LAYER + 1.
         # For having a black background, a second renderer is started on layer DEFAULT_TEST_LAYER, which just shows
@@ -58,15 +57,17 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.target.ivi_control.flush()
 
         # Start ivi-gears No. 1 (colors: red, blue, green)
-        self.wlClient1 = self.target.start_application("ivi-gears", "-I {0} --still".format(self.testSurfaceIVIIds["wlClient1"]), binaryDirectoryOnTarget=self.target.baseWorkingDirectory)
+        self.wlClient1 = self.target.start_application("ivi-gears", "-I {0} --still".format(self.testSurfaceIVIIds["wlClient1"]),
+                                                       binaryDirectoryOnTarget=self.target.baseWorkingDirectory)
         self.addCleanup(self.target.kill_application, self.wlClient1)
-        self.wlClient1.initialisation_message_to_look_for("time since startup until first eglSwapBuffers done");
+        self.wlClient1.initialisation_message_to_look_for("time since startup until first eglSwapBuffers done")
         self.expectedSurfaceIds.add("{0}".format(self.testSurfaceIVIIds["wlClient1"]))
 
         # Start ivi-gears No. 2 (colors: white, blue, green)
-        self.wlClient2 = self.target.start_application("ivi-gears", "-I {0} --still -a".format(self.testSurfaceIVIIds["wlClient2"]), binaryDirectoryOnTarget=self.target.baseWorkingDirectory)
+        self.wlClient2 = self.target.start_application("ivi-gears", "-I {0} --still -a".format(self.testSurfaceIVIIds["wlClient2"]),
+                                                       binaryDirectoryOnTarget=self.target.baseWorkingDirectory)
         self.addCleanup(self.target.kill_application, self.wlClient2)
-        self.wlClient2.initialisation_message_to_look_for("time since startup until first eglSwapBuffers done");
+        self.wlClient2.initialisation_message_to_look_for("time since startup until first eglSwapBuffers done")
         self.expectedSurfaceIds.add("{0}".format(self.testSurfaceIVIIds["wlClient2"]))
 
         # Wait until ivi-gears have rendered a frame
@@ -82,7 +83,8 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
 
         # Start renderer
-        self.renderer = self.target.start_default_renderer("--waylandIviLayerId {} --waylandIviSurfaceID {}".format(self.testLayer, self.testSurfaceIVIIds["renderer"]))
+        self.renderer = self.target.start_default_renderer("--waylandIviLayerId {} --waylandIviSurfaceID {}".
+                                                           format(self.testLayer, self.testSurfaceIVIIds["renderer"]))
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.save_application_output, self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
@@ -96,10 +98,13 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.addCleanup(self.target.kill_application, self.testClient)
 
         # make sure renderer added its surface to layer before applying renderorder
-        self.renderer.wait_for_msg_in_stdout_from_beginning("IVIControllerSurface::HandleLayerCallback: surface {} added to layer".format(self.testSurfaceIVIIds["renderer"]))
+        self.renderer.wait_for_msg_in_stdout_from_beginning("IVIControllerSurface::HandleLayerCallback: surface {} added to layer".
+                                                            format(self.testSurfaceIVIIds["renderer"]))
 
         # Put renderer, and ivi-gears No. 1 & 2 on the test layer
-        self.target.ivi_control.setLayerRenderorder(self.testLayer, "{0} {1} {2}".format(self.testSurfaceIVIIds["renderer"], self.testSurfaceIVIIds["wlClient1"], self.testSurfaceIVIIds["wlClient2"]))
+        self.target.ivi_control.setLayerRenderorder(self.testLayer, "{0} {1} {2}".format(self.testSurfaceIVIIds["renderer"],
+                                                                                         self.testSurfaceIVIIds["wlClient1"],
+                                                                                         self.testSurfaceIVIIds["wlClient2"]))
         self.target.ivi_control.flush()
 
         # Make cube in renderer visible, and check with screenshot

@@ -67,6 +67,14 @@ namespace ramses_internal
         EGLDisplay getEglDisplay() const;
 
     private:
+        bool getEglDisplayFromNativeHandle();
+        bool initializeEgl();
+        bool queryEglExtensions();
+        bool bindEglAPI();
+        bool chooseEglConfig();
+        bool createEglSurface();
+        bool createEglContext();
+
         bool isInitialized() const;
 
         EglSurfaceData m_eglSurfaceData;

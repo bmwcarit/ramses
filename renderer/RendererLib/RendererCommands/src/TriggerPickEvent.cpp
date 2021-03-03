@@ -9,7 +9,6 @@
 
 #include "RendererCommands/TriggerPickEvent.h"
 #include "RendererLib/RendererCommandBuffer.h"
-#include "Ramsh/RamshInput.h"
 #include "Math3d/Vector2i.h"
 
 namespace ramses_internal

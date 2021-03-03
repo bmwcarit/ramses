@@ -11,7 +11,7 @@
 
 namespace ramses
 {
-    const char* TextureSamplingMethodNames[] =
+    static const char* TextureSamplingMethodNames[] =
     {
         "ETextureSamplingMethod_Nearest",
         "ETextureSamplingMethod_Linear",
@@ -22,13 +22,13 @@ namespace ramses
     };
 
 
-    const char* TextureAddressModeNames[] = {
+    static const char* TextureAddressModeNames[] = {
         "ETextureAddressMode_Clamp",
         "ETextureAddressMode_Repeat",
         "ETextureAddressMode_Mirror"
     };
 
-    const char* TextureFormatNames[] = {
+    static const char* TextureFormatNames[] = {
         "ETextureFormat_Invalid",
         "ETextureFormat_R8",
         "ETextureFormat_RG8",
@@ -79,7 +79,7 @@ namespace ramses
         "ETextureFormat_ASTC_SRGBA_12x12"
     };
 
-    const char* TextureCubeFaceNames[] = {
+    static const char* TextureCubeFaceNames[] = {
         "ETextureCubeFace_PositiveX",
         "ETextureCubeFace_NegativeX",
         "ETextureCubeFace_PositiveY",

@@ -28,7 +28,7 @@ namespace ramses
     class RamsesObjectRegistry final : public IRamsesObjectRegistry
     {
     public:
-        virtual ~RamsesObjectRegistry();
+        virtual ~RamsesObjectRegistry() override;
 
         void     addObject(RamsesObject& object);
         void     removeObject(RamsesObject& object);

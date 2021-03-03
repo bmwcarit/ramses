@@ -9,6 +9,7 @@
 #ifndef RAMSES_RESOURCEFILEINPUTSTREAM_H
 #define RAMSES_RESOURCEFILEINPUTSTREAM_H
 
+#include "Collections/IInputStream.h"
 #include "Utils/File.h"
 #include "Utils/BinaryFileInputStream.h"
 
@@ -27,10 +28,13 @@ namespace ramses_internal
             return resourceFile.getFileName();
         }
 
+        IInputStream& getStream()
+        {
+            return resourceStream;
+        }
+
     private:
         File resourceFile; // here the order is crucial as the stream holds an reference of the file and closes it at destruction
-
-    public:
         BinaryFileInputStream resourceStream;
     };
 

@@ -17,7 +17,7 @@ namespace ramses_internal
     class RendererSceneEventSenderMock : public IRendererSceneEventSender
     {
     public:
-        virtual ~RendererSceneEventSenderMock() {}
+        virtual ~RendererSceneEventSenderMock() override = default;
 
         MOCK_METHOD(void, sendSubscribeScene, (SceneId sceneId), (override));
         MOCK_METHOD(void, sendUnsubscribeScene, (SceneId sceneId), (override));

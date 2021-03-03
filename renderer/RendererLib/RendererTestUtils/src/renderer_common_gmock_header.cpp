@@ -19,7 +19,6 @@ namespace ramses_internal
         *os << "\nBorderlesss=" << config.getBorderlessState();
         *os << "\nWarping=" << config.isWarpingEnabled();
 
-        *os << "\nAntialiasing method=" << config.getAntialiasingMethod();
         *os << "\nAntialiasing samples=" << config.getAntialiasingSampleCount();
 
         *os << "\nWindowWidth=" << config.getDesiredWindowWidth();

@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         explicit LogDcsmInfo(DcsmComponent& dcsmComponent);
-        virtual bool executeInput(const RamshInput& input) override;
+        virtual bool executeInput(const std::vector<std::string>& input) override;
 
     private:
         DcsmComponent& m_dcsmComponent;

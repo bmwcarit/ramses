@@ -40,9 +40,6 @@ namespace ramses_internal
 
         void renderStatistics(FrameProfilerStatistics& statistics);
 
-        using RendererFunc = std::function<void(FrameProfileRenderer&)>;
-        static void ForAllFrameProfileRenderer(Renderer& renderer, const RendererFunc& rendererFunc);
-
     private:
 
         struct Geometry

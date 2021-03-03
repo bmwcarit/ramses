@@ -18,7 +18,7 @@
 namespace ramses_internal
 {
     template <typename T>
-    class BlockingQueue
+    class BlockingQueue final
     {
     public:
         void push(const T& element);

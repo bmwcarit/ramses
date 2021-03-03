@@ -33,7 +33,7 @@ namespace ramses
     {
     public:
         GeometryBindingImpl(SceneImpl& scene, const char* name);
-        virtual ~GeometryBindingImpl();
+        virtual ~GeometryBindingImpl() override;
 
         void             initializeFrameworkData(const EffectImpl& effect);
         virtual void     deinitializeFrameworkData() override;

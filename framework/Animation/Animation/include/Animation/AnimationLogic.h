@@ -23,7 +23,7 @@ namespace ramses_internal
     {
     public:
         explicit AnimationLogic(AnimationData& animationData);
-        virtual ~AnimationLogic();
+        virtual ~AnimationLogic() override;
 
         // AnimationDataListener interface
         virtual void preAnimationTimeRangeChange(AnimationHandle handle) override;

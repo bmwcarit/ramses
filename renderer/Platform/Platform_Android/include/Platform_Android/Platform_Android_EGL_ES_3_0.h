@@ -17,9 +17,6 @@ namespace ramses_internal
     {
     public:
         Platform_Android_EGL_ES_3_0(const RendererConfig& rendererConfig);
-
-    protected:
-        std::vector<EGLint> getSurfaceAttributes(UInt32 msaaSampleCount) const override final;
     };
 }
 

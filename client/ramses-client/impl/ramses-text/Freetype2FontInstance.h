@@ -23,7 +23,7 @@ namespace ramses
     {
     public:
         Freetype2FontInstance(FontInstanceId id, FT_Face fontFace, uint32_t pixelSize, bool forceAutohinting);
-        virtual ~Freetype2FontInstance();
+        virtual ~Freetype2FontInstance() override;
 
         virtual bool      supportsCharacter(char32_t character) const override final;
         virtual int       getHeight() const override;

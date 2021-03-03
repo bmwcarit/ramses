@@ -52,25 +52,34 @@ namespace ramses_internal
     template<>
     struct TypeName<bool>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
             return "bool";
         }
     };
 
     template<>
+    struct TypeName<std::string>
+    {
+        inline explicit operator std::string() const
+        {
+            return "string";
+        }
+    };
+
+    template<>
     struct TypeName<String>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
-            return "String";
+            return "string";
         }
     };
 
     template<>
     struct TypeName<Float>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
             return "float";
         }
@@ -79,7 +88,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Double>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
             return "double";
         }
@@ -88,7 +97,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Int8>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
             return "int8";
         }
@@ -97,7 +106,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Int16>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
             return "int16";
         }
@@ -106,7 +115,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Int32>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
             return "int32";
         }
@@ -115,7 +124,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Int64>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
             return "int64";
         }
@@ -124,7 +133,7 @@ namespace ramses_internal
     template<>
     struct TypeName<UInt8>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
             return "uint8";
         }
@@ -133,7 +142,7 @@ namespace ramses_internal
     template<>
     struct TypeName<UInt16>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
             return "uint16";
         }
@@ -142,7 +151,7 @@ namespace ramses_internal
     template<>
     struct TypeName<UInt32>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
             return "uint32";
         }
@@ -151,7 +160,7 @@ namespace ramses_internal
     template<>
     struct TypeName<UInt64>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
             return "uint64";
         }
@@ -160,7 +169,7 @@ namespace ramses_internal
     template<>
     struct TypeName<Char>
     {
-        inline explicit operator String() const
+        inline explicit operator std::string() const
         {
             return "char";
         }

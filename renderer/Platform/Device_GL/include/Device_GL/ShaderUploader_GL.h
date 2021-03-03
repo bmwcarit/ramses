@@ -10,7 +10,6 @@
 #define RAMSES_SHADERUPLOADER_GL_H
 
 #include "RendererAPI/Types.h"
-#include "Utils/LogMacros.h"
 #include "Types_GL.h"
 
 namespace ramses_internal

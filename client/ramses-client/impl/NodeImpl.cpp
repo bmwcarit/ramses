@@ -285,7 +285,8 @@ namespace ramses
     {
         if (!m_transformHandle.isValid())
         {
-            if (rotation == IdentityRotation)
+            if (rotation == IdentityRotation &&
+                rotationConventionInternal == ramses_internal::ERotationConvention::Legacy_ZYX)
             {
                 return StatusOK;
             }

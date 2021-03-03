@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "Animation/AnimationStateChangeCollector.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses_internal
 {

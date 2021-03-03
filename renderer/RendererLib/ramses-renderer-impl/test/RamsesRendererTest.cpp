@@ -14,20 +14,16 @@
 #include "ramses-renderer-api/IRendererEventHandler.h"
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include "ramses-framework-api/RamsesFramework.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
 
 #include "RendererLib/RendererCommands.h"
 #include "RamsesRendererImpl.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "PlatformAbstraction/PlatformEvent.h"
 #include "RendererCommandVisitorMock.h"
+#include "SceneAPI/RenderState.h"
 
 using namespace testing;
-
-class RenderThreadLoopTimingsNotificationMock : public ramses::RendererEventHandlerEmpty
-{
-public:
-    MOCK_METHOD(void, renderThreadLoopTimings, (std::chrono::microseconds maximumLoopTimeMilliseconds, std::chrono::microseconds average), (override));
-};
 
 class SafeThreadWatchdogNotificationMock : public ramses::IThreadWatchdogNotification
 {
@@ -113,7 +109,6 @@ class ARamsesRendererWithDisplay : public ARamsesRenderer
 protected:
     ramses::displayId_t displayId;
     ramses::displayId_t warpingDisplayId;
-
 };
 
 class ARamsesRendererWithSystemCompositorController : public ARamsesRenderer
@@ -279,7 +274,28 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForValidWarpingDataUpdateOnWarp
 TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate)
 {
     EXPECT_NE(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 40u, 40u, 4u));
-    EXPECT_CALL(cmdVisitor, handleBufferCreateRequest(_, ramses_internal::DisplayHandle{ displayId.getValue() }, 40u, 40u, 4u, false));
+    EXPECT_CALL(cmdVisitor, handleBufferCreateRequest(_, ramses_internal::DisplayHandle{ displayId.getValue() }, 40u, 40u, 4u, false, ramses_internal::ERenderBufferType_DepthStencilBuffer));
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate_WithoutDepthStencilBuffer)
+{
+    EXPECT_NE(ramses::displayBufferId_t::Invalid(), ramses::RamsesRenderer::createOffscreenBuffer(renderer, displayId, 40u, 40u, 4u, ramses::EDepthBufferType_None));
+    EXPECT_CALL(cmdVisitor, handleBufferCreateRequest(_, ramses_internal::DisplayHandle{ displayId.getValue() }, 40u, 40u, 4u, false, ramses_internal::ERenderBufferType_InvalidBuffer));
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate_WithDepthBuffer)
+{
+    EXPECT_NE(ramses::displayBufferId_t::Invalid(), ramses::RamsesRenderer::createOffscreenBuffer(renderer, displayId, 40u, 40u, 4u, ramses::EDepthBufferType_Depth));
+    EXPECT_CALL(cmdVisitor, handleBufferCreateRequest(_, ramses_internal::DisplayHandle{ displayId.getValue() }, 40u, 40u, 4u, false, ramses_internal::ERenderBufferType_DepthBuffer));
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate_WithDepthStencilBuffer)
+{
+    EXPECT_NE(ramses::displayBufferId_t::Invalid(), ramses::RamsesRenderer::createOffscreenBuffer(renderer, displayId, 40u, 40u, 4u, ramses::EDepthBufferType_DepthStencil));
+    EXPECT_CALL(cmdVisitor, handleBufferCreateRequest(_, ramses_internal::DisplayHandle{ displayId.getValue() }, 40u, 40u, 4u, false, ramses_internal::ERenderBufferType_DepthStencilBuffer));
     cmdVisitor.visit(commandBuffer);
 }
 
@@ -511,32 +527,85 @@ TEST(ARamsesRendererWithSeparateRendererThread, canNotifyPerWatchdog)
     framework.destroyRenderer(renderer);
 }
 
-TEST(ARamsesRendererWithSeparateRendererThread, firesRenderThreadPeriodTimingsEvent)
+class RenderThreadLoopTimingsNotification final : public ramses::RendererEventHandlerEmpty
 {
-    RenderThreadLoopTimingsNotificationMock notificationMock;
+public:
+    void renderThreadLoopTimings(std::chrono::microseconds, std::chrono::microseconds) override
+    {
+        timingReported = true;
+    }
+    bool timingReported = false;
+};
 
+TEST(ARamsesRendererNonThreaded, reportsFrameTimings)
+{
     ramses::RamsesFramework framework;
     ramses::RendererConfig rConfig;
-    std::chrono::milliseconds period{ 50 };
-    rConfig.setRenderThreadLoopTimingReportingPeriod(period);
+    rConfig.setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds{ 50 });
     ramses::RamsesRenderer& renderer(*framework.createRenderer(rConfig));
-    // syncWaiter must outlive renderer because renderer calls syncWaiter
-        // via mock until its dtor has run (only then thread gets really stopped!)
-    ramses_internal::PlatformEvent syncWaiter;
 
-    EXPECT_CALL(notificationMock, renderThreadLoopTimings(_, _)).Times(AtLeast(1)).WillRepeatedly(InvokeWithoutArgs([&]() { syncWaiter.signal(); }));
+    renderer.createDisplay({});
+    renderer.flush();
+
+    // wait for either 60 seconds or until event was received
+    RenderThreadLoopTimingsNotification eventHandler;
+    const auto startTS = std::chrono::steady_clock::now();
+    while (!eventHandler.timingReported && std::chrono::steady_clock::now() - startTS < std::chrono::minutes{ 1 })
+    {
+        renderer.doOneLoop();
+        renderer.dispatchEvents(eventHandler);
+    }
+    EXPECT_TRUE(eventHandler.timingReported);
+
+    framework.destroyRenderer(renderer);
+}
+
+TEST(ARamsesRendererWithSeparateRendererThread, reportsFrameTimings)
+{
+    ramses::RamsesFramework framework;
+    ramses::RendererConfig rConfig;
+    rConfig.setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds{ 50 });
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rConfig));
+
+    renderer.createDisplay({});
+    renderer.flush();
+
     EXPECT_EQ(ramses::StatusOK, renderer.startThread());
 
-    bool eventReceived = false;
-    // wait for either 60 seconds or until event was received (signalled)
-    int i = 0;
-    const auto timesToRunToWaitFor60Seconds = 60 * 1000 / period.count();
-    while (i < timesToRunToWaitFor60Seconds && !eventReceived)
+    // wait for either 60 seconds or until event was received
+    RenderThreadLoopTimingsNotification eventHandler;
+    const auto startTS = std::chrono::steady_clock::now();
+    while (!eventHandler.timingReported && std::chrono::steady_clock::now() - startTS < std::chrono::minutes{ 1 })
     {
-        renderer.dispatchEvents(notificationMock);
-        eventReceived = syncWaiter.wait(1);
-        i++;
+        renderer.dispatchEvents(eventHandler);
+        std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
     }
+    EXPECT_TRUE(eventHandler.timingReported);
+
+    EXPECT_EQ(ramses::StatusOK, renderer.stopThread());
+    framework.destroyRenderer(renderer);
+}
+
+TEST(ARamsesRendererWithSeparateRendererThread, willNotReportsFrameTimingsIfDisabled)
+{
+    ramses::RamsesFramework framework;
+    ramses::RendererConfig rConfig;
+    rConfig.setRenderThreadLoopTimingReportingPeriod(std::chrono::milliseconds{ 0 });
+    ramses::RamsesRenderer& renderer(*framework.createRenderer(rConfig));
+
+    renderer.createDisplay({});
+    renderer.flush();
+
+    EXPECT_EQ(ramses::StatusOK, renderer.startThread());
+
+    RenderThreadLoopTimingsNotification eventHandler;
+    const auto startTS = std::chrono::steady_clock::now();
+    while (!eventHandler.timingReported && std::chrono::steady_clock::now() - startTS < std::chrono::seconds{ 10 })
+    {
+        renderer.dispatchEvents(eventHandler);
+        std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
+    }
+    EXPECT_FALSE(eventHandler.timingReported);
 
     EXPECT_EQ(ramses::StatusOK, renderer.stopThread());
     framework.destroyRenderer(renderer);
@@ -554,6 +623,32 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingSkippingUnmodifiedBuf
     EXPECT_EQ(ramses::StatusOK, renderer.setSkippingOfUnmodifiedBuffers(true));
     EXPECT_CALL(cmdVisitor, setSkippingOfUnmodifiedBuffers(true));
     cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingClearFlags_FB)
+{
+    EXPECT_EQ(ramses::StatusOK, renderer.setDisplayBufferClearFlags(renderer, displayId, renderer.getDisplayFramebuffer(displayId), ramses::EClearFlags_Color));
+    EXPECT_CALL(cmdVisitor, handleSetClearFlags(ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::OffscreenBufferHandle{}, ramses::EClearFlags_Color));
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingClearFlags_FBImplicitlyUsingInvalidDisplayBuffer)
+{
+    EXPECT_EQ(ramses::StatusOK, renderer.setDisplayBufferClearFlags(renderer, displayId, ramses::displayBufferId_t::Invalid(), ramses::EClearFlags_Color));
+    EXPECT_CALL(cmdVisitor, handleSetClearFlags(ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::OffscreenBufferHandle{}, ramses::EClearFlags_Color));
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingClearFlags_OB)
+{
+    EXPECT_EQ(ramses::StatusOK, renderer.setDisplayBufferClearFlags(renderer, displayId, ramses::displayBufferId_t{ 666u }, ramses::EClearFlags_Color));
+    EXPECT_CALL(cmdVisitor, handleSetClearFlags(ramses_internal::DisplayHandle{ displayId.getValue() }, ramses_internal::OffscreenBufferHandle{ 666u }, ramses::EClearFlags_Color));
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, reportsErrorIfSettingClearFlagsForUnknownDisplay)
+{
+    EXPECT_NE(ramses::StatusOK, renderer.setDisplayBufferClearFlags(renderer, ramses::displayId_t{ 999u }, {}, ramses::EClearFlags_Color));
 }
 
 TEST_F(ARamsesRendererWithDisplay, createsCommandForSettingClearColor_FB)

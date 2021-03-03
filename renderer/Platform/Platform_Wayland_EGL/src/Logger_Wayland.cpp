@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_Wayland_EGL/Logger_Wayland.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include <wayland-client.h>
 #include <wayland-server.h>
 

@@ -54,7 +54,9 @@ void RendererTestsFramework::destroyRenderer()
 
 ramses::displayId_t RendererTestsFramework::createDisplay(const ramses::DisplayConfig& displayConfig)
 {
+    m_testRenderer.setLoopMode(ramses::ELoopMode_UpdateOnly);
     const ramses::displayId_t displayId = m_testRenderer.createDisplay(displayConfig);
+    m_testRenderer.setLoopMode(ramses::ELoopMode_UpdateAndRender);
     if (displayId != ramses::displayId_t::Invalid())
     {
         m_displays.push_back({ displayId, displayConfig, {}, {} });
@@ -132,11 +134,11 @@ void RendererTestsFramework::dispatchRendererEvents(ramses::IRendererEventHandle
     m_testRenderer.dispatchEvents(eventHandler, sceneControlEventHandler);
 }
 
-ramses::displayBufferId_t RendererTestsFramework::createOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount)
+ramses::displayBufferId_t RendererTestsFramework::createOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount, ramses::EDepthBufferType depthBufferType)
 {
     assert(testDisplayIdx < m_displays.size());
     const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
-    ramses::displayBufferId_t buffer = m_testRenderer.createOffscreenBuffer(displayId, width, height, interruptible, sampleCount);
+    ramses::displayBufferId_t buffer = m_testRenderer.createOffscreenBuffer(displayId, width, height, interruptible, sampleCount, depthBufferType);
     m_displays[testDisplayIdx].offscreenBuffers.push_back(buffer);
     return buffer;
 }
@@ -205,6 +207,14 @@ void RendererTestsFramework::setWarpingMeshData(const ramses::WarpingMeshData& m
 {
     assert(testDisplayIdx < m_displays.size());
     m_testRenderer.updateWarpingMeshData(m_displays[testDisplayIdx].displayId, meshData);
+}
+
+void RendererTestsFramework::setClearFlags(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, uint32_t clearFlags)
+{
+    assert(testDisplayIdx < m_displays.size());
+    m_testRenderer.setClearFlags(m_displays[testDisplayIdx].displayId, ob, clearFlags);
+    // clearing state is persistent if display kept for next test, force re-init
+    m_forceDisplaysReinitForNextTestCase = true;
 }
 
 void RendererTestsFramework::setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const ramses_internal::Vector4& clearColor)

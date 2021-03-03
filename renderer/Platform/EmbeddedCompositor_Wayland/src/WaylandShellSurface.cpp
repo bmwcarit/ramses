@@ -9,7 +9,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandShellSurface.h"
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "EmbeddedCompositor_Wayland/NativeWaylandResource.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include <cassert>
 
 namespace ramses_internal
@@ -90,8 +90,8 @@ namespace ramses_internal
     void WaylandShellSurface::shellSurfacePong(IWaylandClient& client, uint32_t serial)
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfacePong");
-        UNUSED(client)
-        UNUSED(serial)
+        UNUSED(client);
+        UNUSED(serial);
 
         if (m_surface == nullptr)
         {
@@ -103,9 +103,9 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceMove");
 
-        UNUSED(client)
-        UNUSED(serial)
-        UNUSED(seatResource)
+        UNUSED(client);
+        UNUSED(serial);
+        UNUSED(seatResource);
 
         if (m_surface == nullptr)
         {
@@ -117,10 +117,10 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceResize");
 
-        UNUSED(client)
-        UNUSED(serial)
-        UNUSED(seatResource)
-        UNUSED(edges)
+        UNUSED(client);
+        UNUSED(serial);
+        UNUSED(seatResource);
+        UNUSED(edges);
 
         if (m_surface == nullptr)
         {
@@ -132,7 +132,7 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetToplevel");
 
-        UNUSED(client)
+        UNUSED(client);
 
         if (m_surface == nullptr)
         {
@@ -144,11 +144,11 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetTransient");
 
-        UNUSED(client)
-        UNUSED(parentSurfaceResource)
-        UNUSED(x)
-        UNUSED(y)
-        UNUSED(flags)
+        UNUSED(client);
+        UNUSED(parentSurfaceResource);
+        UNUSED(x);
+        UNUSED(y);
+        UNUSED(flags);
 
         if (m_surface == nullptr)
         {
@@ -160,9 +160,9 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetFullscreen");
 
-        UNUSED(client)
-        UNUSED(method)
-        UNUSED(framerate)
+        UNUSED(client);
+        UNUSED(method);
+        UNUSED(framerate);
 
         if (m_surface == nullptr)
         {
@@ -175,13 +175,13 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetPopup");
 
-        UNUSED(client)
-        UNUSED(seatResource)
-        UNUSED(serial)
-        UNUSED(parentSurfaceResource)
-        UNUSED(x)
-        UNUSED(y)
-        UNUSED(flags)
+        UNUSED(client);
+        UNUSED(seatResource);
+        UNUSED(serial);
+        UNUSED(parentSurfaceResource);
+        UNUSED(x);
+        UNUSED(y);
+        UNUSED(flags);
 
         if (m_surface == nullptr)
         {
@@ -193,7 +193,7 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetMaximized");
 
-        UNUSED(client)
+        UNUSED(client);
 
         if (m_surface == nullptr)
         {
@@ -204,7 +204,7 @@ namespace ramses_internal
     void WaylandShellSurface::shellSurfaceSetTitle(IWaylandClient& client, const char* title)
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetTitle title: " << title);
-        UNUSED(client)
+        UNUSED(client);
 
         if (m_surface == nullptr)
         {
@@ -220,8 +220,8 @@ namespace ramses_internal
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetClass");
 
-        UNUSED(client)
-        UNUSED(className)
+        UNUSED(client);
+        UNUSED(className);
 
         if (m_surface == nullptr)
         {

@@ -9,7 +9,7 @@
 #include "RendererLib/RendererSceneControlLogic.h"
 #include "RendererLib/IRendererSceneStateControl.h"
 #include "RendererLib/RendererEvent.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

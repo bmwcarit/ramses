@@ -15,7 +15,7 @@
 #include "EmbeddedCompositor_Wayland/IWaylandBuffer.h"
 #include "EmbeddedCompositor_Wayland/WaylandCallbackResource.h"
 #include "EmbeddedCompositor_Wayland/WaylandBufferResource.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include <cassert>
 
 namespace ramses_internal
@@ -175,9 +175,9 @@ namespace ramses_internal
     {
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceAttach");
 
-        UNUSED(client)
-        UNUSED(x)
-        UNUSED(y)
+        UNUSED(client);
+        UNUSED(x);
+        UNUSED(y);
 
         LOG_TRACE(CONTEXT_RENDERER,
                   "WaylandSurface::surfaceAttach: set new pending buffer to surface with title "
@@ -211,7 +211,7 @@ namespace ramses_internal
     {
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceDetach");
 
-        UNUSED(client)
+        UNUSED(client);
 
         LOG_TRACE(CONTEXT_RENDERER,
                   "WaylandSurface::surfaceAttach: remove current pending buffer from surface with title "
@@ -225,11 +225,11 @@ namespace ramses_internal
     {
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceDamage");
 
-        UNUSED(client)
-        UNUSED(x)
-        UNUSED(y)
-        UNUSED(width)
-        UNUSED(height)
+        UNUSED(client);
+        UNUSED(x);
+        UNUSED(y);
+        UNUSED(width);
+        UNUSED(height);
     }
 
     void WaylandSurface::surfaceFrame(IWaylandClient& client, uint32_t id)
@@ -254,23 +254,23 @@ namespace ramses_internal
     {
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceSetOpaqueRegion");
 
-        UNUSED(client)
-        UNUSED(regionResource)
+        UNUSED(client);
+        UNUSED(regionResource);
     }
 
     void WaylandSurface::surfaceSetInputRegion(IWaylandClient& client, INativeWaylandResource* regionResource)
     {
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceSetInputRegion");
 
-        UNUSED(client)
-        UNUSED(regionResource)
+        UNUSED(client);
+        UNUSED(regionResource);
     }
 
     void WaylandSurface::surfaceCommit(IWaylandClient& client)
     {
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceCommit");
 
-        UNUSED(client)
+        UNUSED(client);
 
         LOG_TRACE(CONTEXT_RENDERER,
                   "WaylandSurface::surfaceCommit: handling commit message for surface with ivi surface id "
@@ -312,27 +312,27 @@ namespace ramses_internal
     {
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceSetBufferTransform");
 
-        UNUSED(client)
-        UNUSED(transform)
+        UNUSED(client);
+        UNUSED(transform);
     }
 
     void WaylandSurface::surfaceSetBufferScale(IWaylandClient& client, int32_t scale)
     {
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceSetBufferScale");
 
-        UNUSED(client)
-        UNUSED(scale)
+        UNUSED(client);
+        UNUSED(scale);
     }
 
     void WaylandSurface::surfaceDamageBuffer(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height)
     {
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceDamageBuffer");
 
-        UNUSED(client)
-        UNUSED(x)
-        UNUSED(y)
-        UNUSED(width)
-        UNUSED(height)
+        UNUSED(client);
+        UNUSED(x);
+        UNUSED(y);
+        UNUSED(width);
+        UNUSED(height);
     }
 
     WaylandClientCredentials WaylandSurface::getClientCredentials() const
@@ -349,7 +349,7 @@ namespace ramses_internal
 
     void WaylandSurface::SurfaceDestroyCallback(wl_client* client, wl_resource* surfaceResource)
     {
-        UNUSED(client)
+        UNUSED(client);
         WaylandSurface* surface = static_cast<WaylandSurface*>(wl_resource_get_user_data(surfaceResource));
         delete surface;
     }
@@ -365,8 +365,8 @@ namespace ramses_internal
         }
         else
         {
-            UNUSED(x)
-            UNUSED(y)
+            UNUSED(x);
+            UNUSED(y);
             surface->surfaceDetach(waylandClient);
         }
 

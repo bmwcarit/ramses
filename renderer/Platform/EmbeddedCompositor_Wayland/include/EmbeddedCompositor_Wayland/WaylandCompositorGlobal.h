@@ -23,7 +23,7 @@ namespace ramses_internal
     {
     public:
         explicit WaylandCompositorGlobal(IEmbeddedCompositor_Wayland& compositor);
-        ~WaylandCompositorGlobal();
+        ~WaylandCompositorGlobal() override;
         virtual bool init(IWaylandDisplay& serverDisplay) override;
         virtual void destroy() override;
         virtual void compositorBind(IWaylandClient& client, uint32_t version, uint32_t id) override;

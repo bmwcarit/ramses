@@ -77,7 +77,7 @@ namespace ramses_internal
             EffectInputInformationVector attributeInputs;
             attributeInputs.push_back(EffectInputInformation("a_position", 1, EDataType::Vector3F, EFixedSemantics::Invalid));
 
-            return new EffectResource(vertexShader, fragmentShader, "", uniformInputs, attributeInputs, "test effect", ResourceCacheFlag_DoNotCache);
+            return new EffectResource(vertexShader, fragmentShader, "", absl::nullopt, uniformInputs, attributeInputs, "test effect", ResourceCacheFlag_DoNotCache);
         }
 
         static void SetUpTestCase()
@@ -192,7 +192,7 @@ namespace ramses_internal
             EffectInputInformationVector attributeInputs;
             attributeInputs.push_back(EffectInputInformation("a_position", 1, EDataType::Vector3F, EFixedSemantics::Invalid));
 
-            return new EffectResource(vertexShader, fragmentShader, geometryShader, uniformInputs, attributeInputs, "test effect", ResourceCacheFlag_DoNotCache);
+            return new EffectResource(vertexShader, fragmentShader, geometryShader, EDrawMode::Points, uniformInputs, attributeInputs, "test effect", ResourceCacheFlag_DoNotCache);
         }
     };
 
@@ -214,7 +214,7 @@ namespace ramses_internal
         const EffectResource invalidEffect(
             "--this is some invalide shader source code--",
             templateEffect->getFragmentShader(),
-            "",
+            "", absl::nullopt,
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);
@@ -228,7 +228,7 @@ namespace ramses_internal
         const EffectResource invalidEffect(
             templateEffect->getVertexShader(),
             "--this is some invalide shader source code--",
-            "",
+            "", absl::nullopt,
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);
@@ -255,7 +255,7 @@ namespace ramses_internal
         const EffectResource invalidEffect(
             templateEffect->getVertexShader(),
             fragmentShader,
-            "",
+            "", absl::nullopt,
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);
@@ -309,7 +309,7 @@ namespace ramses_internal
         const EffectResource testEffect(
             templateEffect->getVertexShader(),
             fragmentShader,
-            "",
+            "", absl::nullopt,
             uniformInputs,
             templateEffect->getAttributeInputs(),
             "uniform test effect", ResourceCacheFlag_DoNotCache);
@@ -372,7 +372,7 @@ namespace ramses_internal
         const EffectResource testEffect(
             templateEffect->getVertexShader(),
             templateEffect->getFragmentShader(),
-            "",
+            "", absl::nullopt,
             uniformInputs,
             templateEffect->getAttributeInputs(),
             "test effect", ResourceCacheFlag_DoNotCache);
@@ -496,6 +496,7 @@ namespace ramses_internal
             templateEffect->getVertexShader(),
             templateEffect->getFragmentShader(),
             "--this is some invalid shader source code--",
+            absl::nullopt,
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);
@@ -527,6 +528,7 @@ namespace ramses_internal
             templateEffect->getVertexShader(),
             templateEffect->getFragmentShader(),
             geometryShader,
+            EDrawMode::Points,
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
             "invalid effect", ResourceCacheFlag_DoNotCache);

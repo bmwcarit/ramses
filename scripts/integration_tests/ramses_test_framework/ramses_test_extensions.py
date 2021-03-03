@@ -13,6 +13,7 @@ from ramses_test_framework import log
 import re
 from future.utils import iterkeys, iteritems
 
+
 def ramses_process_check(target):
     ramsesProcesses = target.get_process_list("ramses")
     if len(ramsesProcesses) > 0:
@@ -35,29 +36,33 @@ def ensureSystemCompositorRoundTrip(renderer, ivisurfaceid):
     watchRenderer = renderer.start_watch_stdout()
     renderer.send_ramsh_command("scSetSurfaceOpacity {0} 0.5".format(ivisurfaceid))
     renderer.send_ramsh_command("scSetSurfaceOpacity {0} 1.0".format(ivisurfaceid))
-    opacityExecutedInSystemCompositor = renderer.wait_for_msg_in_stdout(watchRenderer, "IVIControllerSurface::HandleOpacityCallBack ivi-id: {0} opacity: 256".format(ivisurfaceid))
+    opacityExecutedInSystemCompositor = renderer.wait_for_msg_in_stdout(watchRenderer,
+                                                                        "IVIControllerSurface::HandleOpacityCallBack ivi-id: {0} opacity: 256".
+                                                                        format(ivisurfaceid))
     assert(opacityExecutedInSystemCompositor)  # Could not ensure system compositor roundtrip
+
 
 def ensureHasContentOnSurface(renderer, surface_id):
     # callback from system compositor when surface content state changes (1: content added, 2: content removed)
     is_executed = renderer.wait_for_msg_in_stdout_from_beginning("IVIControllerSurface::HandleContentCallback ivi-id: {} contentState: 1".format(surface_id))
     assert(is_executed)
 
+
 class IVI_Control(object):
 
     def __init__(self, target, xdg_runtime_dir):
-        self.target          = target
+        self.target = target
         self.xdg_runtime_dir = "XDG_RUNTIME_DIR=" + xdg_runtime_dir
-        self.command_buffer  = []
-        self.start_state     = self.retrieveCurrentState()
+        self.command_buffer = []
+        self.start_state = self.retrieveCurrentState()
 
     def retrieveCurrentState(self):
         self.flush()
         (stdout, _, _) = self.callIVIControl("scene")
 
-        scene_state  = dict()
+        scene_state = dict()
         section_name = ""
-        section_id   = 0
+        section_id = 0
         for line in stdout:
             try:
                 # check whether the line starts with a whitespace or not
@@ -69,7 +74,7 @@ class IVI_Control(object):
                         log.warning("Unexpected line while parsing output from ivi-control: " + line)
                         log.warning("Expect issues (and errors) while running the test(s)")
                         section_name = ""
-                        section_id   = 0
+                        section_id = 0
                         continue
 
                     section_name, section_id = line_tokens
@@ -84,13 +89,13 @@ class IVI_Control(object):
                 else:
                     assert(section_name != "" and section_id != 0)
                     section_dict = scene_state[section_name][section_id]
-                    object_parameter = [ x.strip() for x in line.split(":") ]
+                    object_parameter = [x.strip() for x in line.split(":")]
                     section_dict[object_parameter[0]] = object_parameter[1]
             except Exception:
                 log.warning("ivi: Failed while processing line: " + line)
                 log.warning("Full stdout of command:")
-                for l in stdout:
-                    log.warning(l)
+                for line in stdout:
+                    log.warning(line)
                 raise
         return scene_state
 
@@ -98,16 +103,18 @@ class IVI_Control(object):
         current_state = self.retrieveCurrentState()
 
         def getDifference(section):
-            return set(current_state.get(section,dict()).keys()) - set(self.start_state.get(section,dict()).keys())
+            return set(current_state.get(section, dict()).keys()) - set(self.start_state.get(section, dict()).keys())
 
-        for surface_id in getDifference('surface'): self.destroySurface(surface_id)
-        for layer_id in getDifference('layer'): self.destroyLayer(layer_id)
+        for surface_id in getDifference('surface'):
+            self.destroySurface(surface_id)
+        for layer_id in getDifference('layer'):
+            self.destroyLayer(layer_id)
 
-        for k,v in iteritems(self.start_state.get('screen', dict())):
-            self._setScreenRenderorder(k,v['layers'])
+        for k, v in iteritems(self.start_state.get('screen', dict())):
+            self._setScreenRenderorder(k, v['layers'])
 
-        for k,v in iteritems(self.start_state.get('layer', dict())):
-            self.setLayerRenderorder(k,v['surfaces'])
+        for k, v in iteritems(self.start_state.get('layer', dict())):
+            self.setLayerRenderorder(k, v['surfaces'])
             self.setLayerVisibility(k, v['visibility'])
         self.flush()
 
@@ -151,10 +158,10 @@ class IVI_Control(object):
 
     def getLayerDestRect(self, layer_id):
         state = self.retrieveCurrentState()
-        return state['layer'][str(layer_id)]["dst_rect"].replace(",","")
+        return state['layer'][str(layer_id)]["dst_rect"].replace(",", "")
 
     def setLayerDestRect(self, layer_id, x, y, width, height):
-        cmd = "layer {0} dstrect {1} {2} {3} {4}".format(layer_id,x,y,width,height)
+        cmd = "layer {0} dstrect {1} {2} {3} {4}".format(layer_id, x, y, width, height)
         self.command_buffer.append(cmd)
 
     def getLayerRenderorder(self, layer_id):

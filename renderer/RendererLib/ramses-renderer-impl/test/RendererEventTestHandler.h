@@ -81,7 +81,7 @@ struct RendererTestEvent
 class RendererEventTestHandler : public ramses::IRendererEventHandler
 {
 public:
-    ~RendererEventTestHandler()
+    ~RendererEventTestHandler() override
     {
         EXPECT_TRUE(m_events.empty());
     }

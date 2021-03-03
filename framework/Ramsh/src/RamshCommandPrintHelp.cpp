@@ -20,25 +20,9 @@ namespace ramses_internal
         description = "help command. lists all available commands.";
     }
 
-    bool RamshCommandPrintHelp::executeInput(const RamshInput& input)
+    bool RamshCommandPrintHelp::executeInput(const std::vector<std::string>& /*input*/)
     {
-        UNUSED(input);
-        HashSet<RamshCommand*> alreadyListed;
-        KeywordToCommandMap::ConstIterator iter = m_ramsh.commands().begin();
-        KeywordToCommandMap::ConstIterator end = m_ramsh.commands().end();
-        for (; iter != end; ++iter)
-        {
-            RamshCommand* cmd = iter->value;
-            if (!alreadyListed.contains(cmd))
-            {
-                LOG_INFO(CONTEXT_RAMSH,(String(iter->value->keywordString())));
-                LOG_INFO(CONTEXT_RAMSH,(String("\t\t").append(iter->value->descriptionString())));
-
-                alreadyListed.put(cmd);
-            }
-        }
-        LOG_INFO(CONTEXT_RAMSH, (String("#")));
-        LOG_INFO(CONTEXT_RAMSH, (String("\t\t").append("Browse through the last 10 used ramsh commands")));
+        LOG_INFO(CONTEXT_RAMSH, m_ramsh.getFullHelp());
         return true;
     }
 

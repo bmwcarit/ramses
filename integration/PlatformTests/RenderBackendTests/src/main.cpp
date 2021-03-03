@@ -15,7 +15,7 @@
 int main(int argc, char* argv[])
 {
     ramses_internal::CommandLineParser parser(argc, argv);
-    RendererTestUtils::SetCommandLineParams(argc, argv);
+    RendererTestUtils::SetCommandLineParamsForAllTests(argc, argv);
 
     testing::InitGoogleMock(&argc, argv);
 

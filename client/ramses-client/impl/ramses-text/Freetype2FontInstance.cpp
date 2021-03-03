@@ -11,7 +11,7 @@
 #include "Utils/LogMacros.h"
 #include "RamsesFrameworkTypesImpl.h"
 #include "ramses-text/TextTypesImpl.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses
 {

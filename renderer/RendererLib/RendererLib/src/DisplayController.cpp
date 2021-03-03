@@ -16,7 +16,6 @@
 #include "RendererLib/LoggingDevice.h"
 #include "RendererLib/RendererCachedScene.h"
 #include "Math3d/CameraMatrixHelper.h"
-#include "Utils/LogMacros.h"
 #include "RenderExecutor.h"
 
 namespace ramses_internal
@@ -68,14 +67,23 @@ namespace ramses_internal
         m_postProcessing->execute();
     }
 
-    void DisplayController::clearBuffer(DeviceResourceHandle buffer, const Vector4& clearColor)
+    void DisplayController::clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const Vector4& clearColor)
     {
-        m_device.activateRenderTarget(buffer);
-        m_device.colorMask(true, true, true, true);
-        m_device.clearColor(clearColor);
-        m_device.depthWrite(EDepthWrite::Enabled);
-        m_device.scissorTest(EScissorTest::Disabled, {});
-        m_device.clear(EClearFlags_All);
+        if (clearFlags != EClearFlags_None)
+        {
+            m_device.activateRenderTarget(buffer);
+
+            if (clearFlags & EClearFlags_Color)
+            {
+                m_device.colorMask(true, true, true, true);
+                m_device.clearColor(clearColor);
+            }
+            if (clearFlags & EClearFlags_Depth)
+                m_device.depthWrite(EDepthWrite::Enabled);
+
+            m_device.scissorTest(EScissorTest::Disabled, {});
+            m_device.clear(clearFlags);
+        }
     }
 
     void DisplayController::readPixels(DeviceResourceHandle renderTargetHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut)

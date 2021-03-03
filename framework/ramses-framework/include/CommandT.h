@@ -15,7 +15,7 @@
         } \
         static const CommandClassType::CommandTypeInfo CommandType = CommandTypeValue;
 
-#include <assert.h>
+#include <cassert>
 
 namespace ramses_internal
 {

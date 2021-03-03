@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         WaylandShellGlobal();
-        ~WaylandShellGlobal();
+        ~WaylandShellGlobal() override;
 
         bool init(WaylandDisplay& serverDisplay);
         void destroy();

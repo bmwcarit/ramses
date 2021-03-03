@@ -13,10 +13,6 @@
 class ADisplayConfig : public ::testing::Test
 {
 protected:
-    ADisplayConfig()
-    {
-    }
-
     ramses::DisplayConfig config;
 };
 
@@ -35,7 +31,6 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
     EXPECT_EQ(defaultDisplayConfig.isWarpingEnabled(), displayConfig.isWarpingEnabled());
     EXPECT_EQ(defaultDisplayConfig.getKeepEffectsUploaded(), displayConfig.getKeepEffectsUploaded());
 
-    EXPECT_EQ(defaultDisplayConfig.getAntialiasingMethod(), displayConfig.getAntialiasingMethod());
     EXPECT_EQ(defaultDisplayConfig.getAntialiasingSampleCount(), displayConfig.getAntialiasingSampleCount());
     EXPECT_EQ(defaultDisplayConfig.getStartVisibleIvi(), displayConfig.getStartVisibleIvi());
 
@@ -101,8 +96,10 @@ TEST_F(ADisplayConfig, failsToSetUnsupportedMultisampling)
     EXPECT_NE(ramses::StatusOK, config.setMultiSampling(0u));
     EXPECT_NE(ramses::StatusOK, config.setMultiSampling(3u));
     EXPECT_NE(ramses::StatusOK, config.setMultiSampling(5u));
+    EXPECT_NE(ramses::StatusOK, config.setMultiSampling(6u));
+    EXPECT_NE(ramses::StatusOK, config.setMultiSampling(7u));
+    EXPECT_NE(ramses::StatusOK, config.setMultiSampling(9u));
 
-    EXPECT_EQ(ramses_internal::EAntiAliasingMethod_PlainFramebuffer, config.impl.getInternalDisplayConfig().getAntialiasingMethod());
     EXPECT_EQ(1u, config.impl.getInternalDisplayConfig().getAntialiasingSampleCount());
 }
 
@@ -110,7 +107,6 @@ TEST_F(ADisplayConfig, setsAndGetsMultisampling)
 {
     EXPECT_EQ(ramses::StatusOK, config.setMultiSampling(2u));
 
-    EXPECT_EQ(ramses_internal::EAntiAliasingMethod_MultiSampling, config.impl.getInternalDisplayConfig().getAntialiasingMethod());
     EXPECT_EQ(2u, config.impl.getInternalDisplayConfig().getAntialiasingSampleCount());
 
     uint32_t sampleCount = 0;
@@ -188,4 +184,10 @@ TEST_F(ADisplayConfig, setClearColor)
     EXPECT_EQ(clearColor.g, green);
     EXPECT_EQ(clearColor.b, blue);
     EXPECT_EQ(clearColor.a, alpha);
+}
+
+TEST_F(ADisplayConfig, setDepthStencilBufferType)
+{
+    EXPECT_EQ(ramses::StatusOK, ramses::DisplayConfig::setDepthStencilBufferType(config, ramses::EDepthBufferType_Depth));
+    EXPECT_EQ(ramses_internal::ERenderBufferType_DepthBuffer, config.impl.getInternalDisplayConfig().getDepthStencilBufferType());
 }

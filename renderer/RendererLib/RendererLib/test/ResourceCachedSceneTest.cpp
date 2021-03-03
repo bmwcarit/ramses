@@ -12,6 +12,7 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
+#include "Utils/ThreadLocalLog.h"
 #include <array>
 
 namespace ramses_internal
@@ -25,6 +26,9 @@ namespace ramses_internal
             , sceneAllocator(scene)
             , sceneHelper(scene, indexArrayAvailable)
         {
+            // caller is expected to have a display prefix for logs
+            ThreadLocalLog::SetPrefix(1);
+
             sceneAllocator.allocateDataBuffer(EDataBufferType::VertexBuffer, EDataType::Vector3Buffer, sizeof(Float) * 3, verticesDataBuffer);
             sceneAllocator.allocateTextureBuffer(ETextureFormat::R8, { { 1u, 1u } }, textureBuffer);
 

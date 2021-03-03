@@ -29,80 +29,95 @@ void DisplayRenderingTests::setUpTestCases(RendererTestsFramework& testFramework
     displayConfig3.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
     displayConfig3.enableWarpingPostEffect();
 
-    testFramework.createTestCase(DisplayTest_TwoScenes, *this, "DisplayRendererTest_TwoScenes").m_displayConfigs.push_back(displayConfig1);
-    testFramework.createTestCase(DisplayTest_UnpublishScene, *this, "DisplayRendererTest_UnpublishScene").m_displayConfigs.push_back(displayConfig1);
-    testFramework.createTestCase(DisplayTest_HideScene, *this, "DisplayRendererTest_HideScene").m_displayConfigs.push_back(displayConfig1);
-    testFramework.createTestCase(DisplayTest_SceneRenderOrder, *this, "DisplayRendererTest_SceneRenderOrder").m_displayConfigs.push_back(displayConfig1);
-    testFramework.createTestCase(DisplayTest_SceneRenderOrderInversed, *this, "DisplayRendererTest_SceneRenderOrderInversed").m_displayConfigs.push_back(displayConfig1);
+    ramses::DisplayConfig displayConfigWithoutDepthAndStencil = RendererTestUtils::CreateTestDisplayConfig(3);
+    displayConfigWithoutDepthAndStencil.setWindowRectangle(0, 0, ramses_internal::IntegrationScene::DefaultViewportWidth, ramses_internal::IntegrationScene::DefaultViewportHeight);
+    ramses::DisplayConfig::setDepthStencilBufferType(displayConfigWithoutDepthAndStencil, ramses::EDepthBufferType_None);
+
+    ramses::DisplayConfig displayConfigWithoutStencil = RendererTestUtils::CreateTestDisplayConfig(4);
+    displayConfigWithoutStencil.setWindowRectangle(0, 0, ramses_internal::IntegrationScene::DefaultViewportWidth, ramses_internal::IntegrationScene::DefaultViewportHeight);
+    ramses::DisplayConfig::setDepthStencilBufferType(displayConfigWithoutStencil, ramses::EDepthBufferType_Depth);
+
+    testFramework.createTestCase(DisplayRenderingTest_TwoScenes, *this, "DisplayRenderingTest_TwoScenes").m_displayConfigs.push_back(displayConfig1);
+    testFramework.createTestCase(DisplayRenderingTest_UnpublishScene, *this, "DisplayRenderingTest_UnpublishScene").m_displayConfigs.push_back(displayConfig1);
+    testFramework.createTestCase(DisplayRenderingTest_HideScene, *this, "DisplayRenderingTest_HideScene").m_displayConfigs.push_back(displayConfig1);
+    testFramework.createTestCase(DisplayRenderingTest_SceneRenderOrder, *this, "DisplayRenderingTest_SceneRenderOrder").m_displayConfigs.push_back(displayConfig1);
+    testFramework.createTestCase(DisplayRenderingTest_SceneRenderOrderInversed, *this, "DisplayRenderingTest_SceneRenderOrderInversed").m_displayConfigs.push_back(displayConfig1);
 
     // These tests are using default display config from framework which uses higher resolution than other display tests
-    RenderingTestCase& testCaseWarp = testFramework.createTestCaseWithDefaultDisplay(DisplayTest_Warping, *this, "DisplayRendererTest_Warping");
+    RenderingTestCase& testCaseWarp = testFramework.createTestCaseWithDefaultDisplay(DisplayRenderingTest_Warping, *this, "DisplayRenderingTest_Warping");
     testCaseWarp.m_displayConfigs.front().enableWarpingPostEffect();
-    RenderingTestCase& testCaseWarp2 = testFramework.createTestCaseWithDefaultDisplay(DisplayTest_UpdateWarping, *this, "DisplayRendererTest_UpdateWarping");
+    RenderingTestCase& testCaseWarp2 = testFramework.createTestCaseWithDefaultDisplay(DisplayRenderingTest_UpdateWarping, *this, "DisplayRenderingTest_UpdateWarping");
     testCaseWarp2.m_displayConfigs.front().enableWarpingPostEffect();
-    testFramework.createTestCaseWithDefaultDisplay(DisplayTest_Subimage, *this, "DisplayRendererTest_Subimage");
+    testFramework.createTestCaseWithDefaultDisplay(DisplayRenderingTest_Subimage, *this, "DisplayRenderingTest_Subimage");
 
-    RenderingTestCase& testCaseRemap = testFramework.createTestCase(DisplayTest_RemapScene, *this, "DisplayRendererTest_RemapScene");
+    RenderingTestCase& testCaseRemap = testFramework.createTestCase(DisplayRenderingTest_RemapScene, *this, "DisplayRenderingTest_RemapScene");
     testCaseRemap.m_displayConfigs.push_back(displayConfig1);
     testCaseRemap.m_displayConfigs.push_back(displayConfig2);
 
-    RenderingTestCase& testCaseSwap = testFramework.createTestCase(DisplayTest_SwapScenes, *this, "DisplayRendererTest_SwapScenes");
+    RenderingTestCase& testCaseSwap = testFramework.createTestCase(DisplayRenderingTest_SwapScenes, *this, "DisplayRenderingTest_SwapScenes");
     testCaseSwap.m_displayConfigs.push_back(displayConfig1);
     testCaseSwap.m_displayConfigs.push_back(displayConfig2);
 
-    RenderingTestCase& testCaseRenderTarget = testFramework.createTestCase(DisplayTest_RemapSceneWithRenderTarget, *this, "DisplayRendererTest_RemapSceneWithRenderTarget");
+    RenderingTestCase& testCaseRenderTarget = testFramework.createTestCase(DisplayRenderingTest_RemapSceneWithRenderTarget, *this, "DisplayRenderingTest_RemapSceneWithRenderTarget");
     testCaseRenderTarget.m_displayConfigs.push_back(displayConfig1);
     testCaseRenderTarget.m_displayConfigs.push_back(displayConfig2);
 
-    RenderingTestCase& testCaseText = testFramework.createTestCase(DisplayTest_RemapSceneWithText, *this, "DisplayRendererTest_RemapSceneWithText");
+    RenderingTestCase& testCaseText = testFramework.createTestCase(DisplayRenderingTest_RemapSceneWithText, *this, "DisplayRenderingTest_RemapSceneWithText");
     testCaseText.m_displayConfigs.push_back(displayConfig1);
     testCaseText.m_displayConfigs.push_back(displayConfig2);
 
-    RenderingTestCase& testCaseRemapChanged = testFramework.createTestCase(DisplayTest_RemapSceneWithChangedContent, *this, "DisplayRendererTest_RemapSceneWithChangedContent");
+    RenderingTestCase& testCaseRemapChanged = testFramework.createTestCase(DisplayRenderingTest_RemapSceneWithChangedContent, *this, "DisplayRenderingTest_RemapSceneWithChangedContent");
     testCaseRemapChanged.m_displayConfigs.push_back(displayConfig1);
     testCaseRemapChanged.m_displayConfigs.push_back(displayConfig2);
 
-    RenderingTestCase& testCaseWarped = testFramework.createTestCase(DisplayTest_RemapSceneToWarpedDisplay, *this, "DisplayRendererTest_RemapSceneToWarpedDisplay");
+    RenderingTestCase& testCaseWarped = testFramework.createTestCase(DisplayRenderingTest_RemapSceneToWarpedDisplay, *this, "DisplayRenderingTest_RemapSceneToWarpedDisplay");
     testCaseWarped.m_displayConfigs.push_back(displayConfig1);
     testCaseWarped.m_displayConfigs.push_back(displayConfig3);
 
-    testFramework.createTestCase(DisplayTest_ResubscribeScene, *this, "DisplayTest_ResubscribeScene").m_displayConfigs.push_back(displayConfig1);
+    testFramework.createTestCase(DisplayRenderingTest_ResubscribeScene, *this, "DisplayRenderingTest_ResubscribeScene").m_displayConfigs.push_back(displayConfig1);
+
+    testFramework.createTestCase(DisplayRenderingTest_FramebufferWithoutDepthAndStencil, *this, "DisplayRenderingTest_FramebufferWithoutDepthAndStencil").m_displayConfigs.push_back(displayConfigWithoutDepthAndStencil);
+    testFramework.createTestCase(DisplayRenderingTest_FramebufferWithoutStencil , *this, "DisplayRenderingTest_FramebufferWithoutStencil").m_displayConfigs.push_back(displayConfigWithoutStencil);
 }
 
 bool DisplayRenderingTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)
 {
     switch (testCase.m_id)
     {
-    case DisplayTest_TwoScenes:
+    case DisplayRenderingTest_TwoScenes:
         return runTwoScenesTest(testFramework);
-    case DisplayTest_UnpublishScene:
+    case DisplayRenderingTest_UnpublishScene:
         return runUnpublishTest(testFramework);
-    case DisplayTest_HideScene:
+    case DisplayRenderingTest_HideScene:
         return runHideTest(testFramework);
-    case DisplayTest_SceneRenderOrder:
+    case DisplayRenderingTest_SceneRenderOrder:
         return runSceneRenderOrderTest(testFramework);
-    case DisplayTest_SceneRenderOrderInversed:
+    case DisplayRenderingTest_SceneRenderOrderInversed:
         return runSceneRenderOrderInversedTest(testFramework);
-    case DisplayTest_Warping:
+    case DisplayRenderingTest_Warping:
         return runWarpingTest(testFramework);
-    case DisplayTest_UpdateWarping:
+    case DisplayRenderingTest_UpdateWarping:
         return runUpdateWarpingTest(testFramework);
-    case DisplayTest_Subimage:
+    case DisplayRenderingTest_Subimage:
         return runSubimageTest(testFramework);
-    case DisplayTest_RemapScene:
+    case DisplayRenderingTest_RemapScene:
         return runRemapSceneTest(testFramework);
-    case DisplayTest_SwapScenes:
+    case DisplayRenderingTest_SwapScenes:
         return runSwapScenesTest(testFramework);
-    case DisplayTest_RemapSceneWithRenderTarget:
+    case DisplayRenderingTest_RemapSceneWithRenderTarget:
         return runRemapSceneWithRenderTargetTest(testFramework);
-    case DisplayTest_RemapSceneWithText:
+    case DisplayRenderingTest_RemapSceneWithText:
         return runRemapSceneWithTextTest(testFramework);
-    case DisplayTest_RemapSceneWithChangedContent:
+    case DisplayRenderingTest_RemapSceneWithChangedContent:
         return runRemapSceneWithChangedContentTest(testFramework);
-    case DisplayTest_RemapSceneToWarpedDisplay:
+    case DisplayRenderingTest_RemapSceneToWarpedDisplay:
         return runRemapSceneToWarpedDisplayTest(testFramework);
-    case DisplayTest_ResubscribeScene:
+    case DisplayRenderingTest_ResubscribeScene:
         return runResubscribeSceneTest(testFramework);
+    case DisplayRenderingTest_FramebufferWithoutDepthAndStencil:
+        return runFramebufferWithoutDepthAndStencilTest(testFramework);
+    case DisplayRenderingTest_FramebufferWithoutStencil:
+        return runFramebufferWithoutStencil(testFramework);
     default:
         assert(!"Invalid renderer test ID!");
         return false;
@@ -405,6 +420,40 @@ bool DisplayRenderingTests::runResubscribeSceneTest(RendererTestsFramework& test
 
     testFramework.getSceneToState(sceneId, ramses::RendererSceneState::Rendered);
     testResult &= testFramework.renderAndCompareScreenshot("ARendererInstance_Three_Triangles", 0u);
+
+    return testResult;
+}
+
+bool DisplayRenderingTests::runFramebufferWithoutDepthAndStencilTest(RendererTestsFramework& testFramework)
+{
+    ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::DEPTH_FUNC);
+    testFramework.publishAndFlushScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
+    bool testResult = testFramework.renderAndCompareScreenshot("MultipleTrianglesScene_DepthFunc_NoDepthBuffer");
+
+    testFramework.getScenesRegistry().getScene(sceneId).unpublish();
+
+    sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::STENCIL_TEST_1);
+    testFramework.publishAndFlushScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
+    testResult &= testFramework.renderAndCompareScreenshot("MultipleTrianglesScene_StencilTest_1_NoDepthOrStencilBuffer");
+
+    return testResult;
+}
+
+bool DisplayRenderingTests::runFramebufferWithoutStencil(RendererTestsFramework& testFramework)
+{
+    ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::DEPTH_FUNC);
+    testFramework.publishAndFlushScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
+    bool testResult = testFramework.renderAndCompareScreenshot("MultipleTrianglesScene_DepthFunc");
+
+    testFramework.getScenesRegistry().getScene(sceneId).unpublish();
+
+    sceneId = testFramework.getScenesRegistry().createScene<ramses_internal::MultipleTrianglesScene>(ramses_internal::MultipleTrianglesScene::STENCIL_TEST_1);
+    testFramework.publishAndFlushScene(sceneId);
+    testFramework.getSceneToRendered(sceneId);
+    testResult &= testFramework.renderAndCompareScreenshot("MultipleTrianglesScene_StencilTest_1_NoStencilBuffer");
 
     return testResult;
 }

@@ -65,7 +65,7 @@ class CoreImpl(object):
             # discover
             # search for tests in given dir
             suite = unittest.TestLoader().discover(dir, pattern=self.config.testPattern, top_level_dir=self.config.scriptDir)
-            #expand
+            # expand
             self._expand_test_suite(suite, expandedSuite)
 
         testList = list(expandedSuite)
@@ -78,7 +78,7 @@ class CoreImpl(object):
         rng = random.Random(self.randomTestSeed)
         random.shuffle(testList, lambda: rng.random())
 
-        #filter if given
+        # filter if given
         if self.filter is not None:
             testList = [t for t in testList if re.search(self.filter, t.id(), re.IGNORECASE)]
 
@@ -88,15 +88,15 @@ class CoreImpl(object):
             filteredSuite.addTest(t)
 
         # print tests to run in final order
-        log.color_separator(log.light_cyan,"discovered tests:")
+        log.color_separator(log.light_cyan, "discovered tests:")
         for test in filteredSuite:
             log.info(test.id())
         print("\n")
 
-        #small wait for output formatting
+        # small wait for output formatting
         time.sleep(0.01)
 
-        #run
+        # run
         runner = self._create_test_runner()
         result = runner.run(filteredSuite)
         self._post_process_test_results()
@@ -128,22 +128,21 @@ class CoreImpl(object):
                 if target.powerDevice is not None:
                     target.powerDevice.switch(target.powerOutletNr, False)
 
-        #tear-down and shutdown bridges after test targets (otherwise connection will be lost)
+        # tear-down and shutdown bridges after test targets (otherwise connection will be lost)
         anyBridgeTargetWasConnected = False
         for target in itervalues(self.bridgeTargets):
             anyBridgeTargetWasConnected |= target.isConnected
             target.target_specific_tear_down(shutdown=shutdownTargets)
 
-        #turn off power
+        # turn off power
         if shutdownTargets:
             if anyBridgeTargetWasConnected:
-                #wait time till all bridgeTargets should have finished shutdown properly
+                # wait time till all bridgeTargets should have finished shutdown properly
                 time.sleep(60)
 
             for target in itervalues(self.bridgeTargets):
                 if target.powerDevice is not None:
                     target.powerDevice.switch(target.powerOutletNr, False)
-
 
     def _expand_test_suite(self, testSuite, expandedSuite):
         for item in testSuite:
@@ -184,7 +183,8 @@ class LocalCoreImpl(CoreImpl):
         parser = AdaptedArgParser()
         parser.add_argument("path", help="path to ramses install directory and where test results should be stored")
         parser.add_argument("--platform", default=self.config.defaultPlatform,
-            help="Platform to use as default, possibilities: '"+self.config.defaultPlatform+"' (default), 'x11-egl-es-3-0', 'wayland-ivi-egl-es-3-0', ...")
+                            help=("Platform to use as default, possibilities: '" + self.config.defaultPlatform +
+                                  "' (default), 'x11-egl-es-3-0', 'wayland-ivi-egl-es-3-0', ..."))
         parser.add_argument("--filter", help="test filter")
         parser.add_argument("--random-seed", default=self.randomTestSeed, help="random seed used for test ordering")
         args = parser.parse_args()
@@ -196,13 +196,13 @@ class LocalCoreImpl(CoreImpl):
     def createTargets(self):
         CoreImpl.createTargets(self)
         for targetInfo in self.config.allTargetsList:
-            #create target object based on targetInfo and general config values
+            # create target object based on targetInfo and general config values
             target = targetInfo.classname(targetInfo, self.basePath, self.fullResultsDirPath, self.config.imagesDesiredDirs,
                                           self.config.imageDiffScaleFactor, logLevel=self.config.ramsesApplicationLogLevel)
             self.targets[targetInfo] = target
             if targetInfo in self.config.defaultTestTargetsList:
                 self.defaultTestTargets.append(target)
-            #special settings for local case
+            # special settings for local case
             target.defaultPlatform = self.platform
             target.isConnected = True
 
@@ -219,7 +219,7 @@ class LocalCoreImpl(CoreImpl):
             if isinstance(test, test_classes.OneConnectionTest) or isinstance(test, test_classes.OnSelectedTargetsTest):
                 test.target = target
             if isinstance(test, test_classes.MultipleConnectionsTest):
-                #testToTarget configuration is ignored as all applications are started locally
+                # testToTarget configuration is ignored as all applications are started locally
                 for i in range(test.get_nr_targets()):
                     test.add_target(target)
             expandedSuite.addTest(test)

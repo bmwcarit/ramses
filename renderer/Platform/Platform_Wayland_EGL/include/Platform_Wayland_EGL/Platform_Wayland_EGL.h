@@ -22,7 +22,7 @@ namespace ramses_internal
 
     protected:
         explicit Platform_Wayland_EGL(const RendererConfig& rendererConfig);
-        virtual ~Platform_Wayland_EGL();
+        virtual ~Platform_Wayland_EGL() override;
 
         IEmbeddedCompositor*         createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) override final;
         ITextureUploadingAdapter*    createTextureUploadingAdapter(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window) override final;

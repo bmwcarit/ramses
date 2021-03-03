@@ -97,7 +97,7 @@ namespace ramses_internal
     {
         UNUSED(participantIdentifier);
         UNUSED(frameworkLock);
-        UNUSED(statisticCollection)
+        UNUSED(statisticCollection);
 
         switch (config.getUsedProtocol())
         {

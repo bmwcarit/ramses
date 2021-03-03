@@ -7,24 +7,24 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/DisplayBundle.h"
+#include "RendererLib/RenderBackend.h"
 #include "RendererAPI/IPlatform.h"
-#include "Utils/LogMacros.h"
-
 #include "RendererAPI/IDisplayController.h"
-#include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/IDevice.h"
+#include "Watchdog/IThreadAliveNotifier.h"
 
 namespace ramses_internal
 {
-    DisplayBundle::DisplayBundle(IRendererSceneEventSender& rendererSceneSender, IPlatform& platform, const String& kpiFilename)
+    DisplayBundle::DisplayBundle(IRendererSceneEventSender& rendererSceneSender, IPlatform& platform, IThreadAliveNotifier& notifier, std::chrono::milliseconds timingReportingPeriod, const String& kpiFilename)
         : m_rendererScenes(m_rendererEventCollector)
         , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector)
         , m_renderer(platform, m_rendererScenes, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, m_rendererStatistics)
         , m_sceneStateExecutor(m_renderer, rendererSceneSender, m_rendererEventCollector)
-        , m_rendererSceneUpdater(platform, m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor)
+        , m_rendererSceneUpdater(platform, m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, notifier)
         , m_sceneControlLogic(m_rendererSceneUpdater)
         , m_rendererCommandExecutor(m_renderer, m_pendingCommands, m_rendererSceneUpdater, m_sceneControlLogic, m_rendererEventCollector, m_frameTimer)
         , m_sceneReferenceLogic(m_rendererScenes, m_sceneControlLogic, m_rendererSceneUpdater, rendererSceneSender, m_sceneReferenceOwnership)
+        , m_timingReportingPeriod{ timingReportingPeriod }
         , m_kpiMonitor(kpiFilename.empty() ? nullptr : new Monitor(kpiFilename))
     {
         m_rendererSceneUpdater.setSceneReferenceLogicHandler(m_sceneReferenceLogic);
@@ -32,6 +32,8 @@ namespace ramses_internal
 
     void DisplayBundle::doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime)
     {
+        updateTiming();
+
         switch (loopMode)
         {
         case ELoopMode::UpdateOnly:
@@ -54,8 +56,6 @@ namespace ramses_internal
 
     void DisplayBundle::update()
     {
-        m_frameTimer.startFrame();
-
         m_rendererCommandExecutor.executePendingCommands();
         updateSceneControlLogic();
         m_rendererSceneUpdater.updateScenes();
@@ -86,14 +86,11 @@ namespace ramses_internal
 
         UInt32 drawCallCount(0u);
         UInt32 usedGPUMemory(0u);
-        for (DisplayHandle handle(0u); handle < m_renderer.getDisplayControllerCount(); ++handle)
+        if (m_renderer.hasDisplayController())
         {
-            if (m_renderer.hasDisplayController(handle))
-            {
-                auto& device = m_renderer.getDisplayController(handle).getRenderBackend().getDevice();
-                drawCallCount += device.getAndResetDrawCallCount();
-                usedGPUMemory += device.getTotalGpuMemoryUsageInKB();
-            }
+            auto& device = m_renderer.getDisplayController().getRenderBackend().getDevice();
+            drawCallCount += device.getAndResetDrawCallCount();
+            usedGPUMemory += device.getTotalGpuMemoryUsageInKB();
         }
 
         m_renderer.getProfilerStatistics().setCounterValue(FrameProfilerStatistics::ECounter::DrawCalls, drawCallCount);
@@ -147,15 +144,41 @@ namespace ramses_internal
         return m_sceneReferenceOwnership.getSceneOwner(refScene);
     }
 
+    void DisplayBundle::enableContext()
+    {
+        if (m_renderer.hasDisplayController())
+            m_renderer.getDisplayController().enableContext();
+    }
+
     IEmbeddedCompositingManager& DisplayBundle::getECManager(DisplayHandle display)
     {
-        // TODO vaclav assert this is not called in threaded mode
         return m_renderer.getDisplayController(display).getEmbeddedCompositingManager();
     }
 
     IEmbeddedCompositor& DisplayBundle::getEC(DisplayHandle display)
     {
-        // TODO vaclav assert this is not called in threaded mode
         return m_renderer.getDisplayController(display).getRenderBackend().getEmbeddedCompositor();
+    }
+
+    void DisplayBundle::updateTiming()
+    {
+        const auto lastFrameStart = m_frameTimer.getFrameStartTime();
+        m_frameTimer.startFrame();
+
+        if (m_timingReportingPeriod.count() > 0)
+        {
+            const auto now = m_frameTimer.getFrameStartTime();
+            const auto frameTime = std::chrono::duration_cast<std::chrono::microseconds>(now - lastFrameStart);
+            m_maxFrameTime = std::max(m_maxFrameTime, frameTime);
+            m_sumFrameTimes += frameTime;
+            if (m_sumFrameTimes >= m_timingReportingPeriod && m_loopsWithinMeasurePeriod > 0)
+            {
+                m_rendererEventCollector.addFrameTimingReport(m_maxFrameTime, m_sumFrameTimes / m_loopsWithinMeasurePeriod);
+                m_maxFrameTime = std::chrono::microseconds{ 0 };
+                m_sumFrameTimes = std::chrono::microseconds{ 0 };
+                m_loopsWithinMeasurePeriod = 0u;
+            }
+            m_loopsWithinMeasurePeriod++;
+        }
     }
 }

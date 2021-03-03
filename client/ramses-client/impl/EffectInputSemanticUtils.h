@@ -11,7 +11,7 @@
 
 #include "ramses-client-api/EffectInputSemantic.h"
 #include "SceneAPI/EFixedSemantics.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses
 {

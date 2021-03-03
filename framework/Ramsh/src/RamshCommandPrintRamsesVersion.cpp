@@ -19,7 +19,7 @@ namespace ramses_internal
         description = "print RAMSES version";
     }
 
-    bool RamshCommandPrintRamsesVersion::executeInput(const RamshInput& /*input*/)
+    bool RamshCommandPrintRamsesVersion::executeInput(const std::vector<std::string>& /*input*/)
     {
         LOG_INFO(CONTEXT_RAMSH, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING);
         return true;

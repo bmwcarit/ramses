@@ -33,6 +33,7 @@
 #include "RamsesRendererUtils.h"
 #include "RendererFactory.h"
 #include "FrameworkFactoryRegistry.h"
+#include <chrono>
 
 namespace ramses
 {
@@ -44,11 +45,11 @@ namespace ramses
         , m_rendererResourceCache(config.impl.getRendererResourceCache() ? new RendererResourceCacheProxy(*(config.impl.getRendererResourceCache())) : nullptr)
         , m_pendingRendererCommands()
         , m_rendererFrameworkLogic(framework.getScenegraphComponent(), m_rendererCommandBuffer, framework.getFrameworkLock())
-        , m_displayDispatcher{ std::make_unique<ramses_internal::DisplayDispatcher>(config.impl.getInternalRendererConfig(), m_rendererCommandBuffer, m_rendererFrameworkLogic) }
+        , m_threadWatchdog(framework.getThreadWatchdogConfig(), ERamsesThreadIdentifier_Renderer)
+        , m_displayDispatcher{ std::make_unique<ramses_internal::DisplayDispatcher>(config.impl.getInternalRendererConfig(), m_rendererCommandBuffer, m_rendererFrameworkLogic, m_threadWatchdog) }
         , m_systemCompositorEnabled(config.impl.getInternalRendererConfig().getSystemCompositorControlEnabled())
         , m_loopMode(ramses_internal::ELoopMode::UpdateAndRender)
-        , m_rendererLoopThreadWatchdog(framework.getThreadWatchdogConfig().getWatchdogNotificationInterval(ERamsesThreadIdentifier_Renderer), ERamsesThreadIdentifier_Renderer, framework.getThreadWatchdogConfig().getCallBack())
-        , m_rendererLoopThreadController(*m_displayDispatcher, m_rendererLoopThreadWatchdog, config.getRenderThreadLoopTimingReportingPeriod())
+        , m_rendererLoopThreadController(*m_displayDispatcher, m_threadWatchdog)
         , m_rendererLoopThreadType(ERendererLoopThreadType_Undefined)
         , m_periodicLogSupplier(framework.getPeriodicLogger(), m_rendererCommandBuffer)
     {
@@ -83,7 +84,8 @@ namespace ramses
         }
 
         m_rendererLoopThreadType = ERendererLoopThreadType_UsingDoOneLoop;
-        m_displayDispatcher->doOneLoop(m_loopMode);
+        m_displayDispatcher->dispatchCommands();
+        m_displayDispatcher->doOneLoop();
         return StatusOK;
     }
 
@@ -154,7 +156,7 @@ namespace ramses
 
         if (!m_sceneControlAPI)
         {
-            LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesRenderer: intstantiating RendererSceneControl");
+            LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesRenderer: instantiating RendererSceneControl");
             m_sceneControlAPI = UniquePtrWithDeleter<RendererSceneControl>{ new RendererSceneControl(*new RendererSceneControlImpl(*this)), [](RendererSceneControl* api) { delete api; } };
         }
 
@@ -174,14 +176,14 @@ namespace ramses
         auto sceneControlAPI = getSceneControlAPI();
         assert(sceneControlAPI != nullptr);
 
-        LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesRenderer: intstantiating DcsmContentControl");
+        LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesRenderer: instantiating DcsmContentControl");
         m_dcsmContentControl = UniquePtrWithDeleter<DcsmContentControl>{ new DcsmContentControl(*new DcsmContentControlImpl(m_framework.createDcsmConsumer()->impl, sceneControlAPI->impl)), [](DcsmContentControl* api) { delete api; } };
         return m_dcsmContentControl.get();
     }
 
-    void RamsesRendererImpl::logConfirmationEcho(const ramses_internal::String& text)
+    void RamsesRendererImpl::logConfirmationEcho(displayId_t display, const ramses_internal::String& text)
     {
-        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::ConfirmationEcho{ text });
+        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::ConfirmationEcho{ ramses_internal::DisplayHandle{ display.getValue() }, text });
     }
 
     const ramses_internal::RendererCommands& RamsesRendererImpl::getPendingCommands() const
@@ -209,7 +211,7 @@ namespace ramses
         return StatusOK;
     }
 
-    displayBufferId_t RamsesRendererImpl::createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount, bool interruptible)
+    displayBufferId_t RamsesRendererImpl::createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount, bool interruptible, EDepthBufferType depthBufferType)
     {
         if (width < 1u || width > 4096u ||
             height < 1u || height > 4096u)
@@ -223,7 +225,21 @@ namespace ramses
         const ramses_internal::OffscreenBufferHandle bufferHandle(bufferId.getValue());
         m_nextDisplayBufferId.getReference() = m_nextDisplayBufferId.getValue() + 1;
 
-        ramses_internal::RendererCommand::CreateOffscreenBuffer cmd{ displayHandle, bufferHandle, width, height, sampleCount, interruptible };
+        ramses_internal::ERenderBufferType depthBufferTypeInternal = ramses_internal::ERenderBufferType_NUMBER_OF_ELEMENTS;
+        switch (depthBufferType)
+        {
+        case EDepthBufferType_None:
+            depthBufferTypeInternal = ramses_internal::ERenderBufferType_InvalidBuffer;
+            break;
+        case EDepthBufferType_Depth:
+            depthBufferTypeInternal = ramses_internal::ERenderBufferType_DepthBuffer;
+            break;
+        case EDepthBufferType_DepthStencil:
+            depthBufferTypeInternal = ramses_internal::ERenderBufferType_DepthStencilBuffer;
+            break;
+        }
+
+        ramses_internal::RendererCommand::CreateOffscreenBuffer cmd{ displayHandle, bufferHandle, width, height, sampleCount, interruptible, depthBufferTypeInternal};
         m_pendingRendererCommands.push_back(std::move(cmd));
 
         return bufferId;
@@ -234,6 +250,30 @@ namespace ramses
         const ramses_internal::DisplayHandle displayHandle(display.getValue());
         const ramses_internal::OffscreenBufferHandle bufferHandle(offscreenBuffer.getValue());
         m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::DestroyOffscreenBuffer{ displayHandle, bufferHandle });
+
+        return StatusOK;
+    }
+
+    status_t RamsesRendererImpl::setDisplayBufferClearFlags(displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags)
+    {
+        static_assert(
+            static_cast<uint32_t>(ramses::EClearFlags_None) == static_cast<uint32_t>(ramses_internal::EClearFlags_None) &&
+            static_cast<uint32_t>(ramses::EClearFlags_Color) == static_cast<uint32_t>(ramses_internal::EClearFlags_Color) &&
+            static_cast<uint32_t>(ramses::EClearFlags_Depth) == static_cast<uint32_t>(ramses_internal::EClearFlags_Depth) &&
+            static_cast<uint32_t>(ramses::EClearFlags_Stencil) == static_cast<uint32_t>(ramses_internal::EClearFlags_Stencil) &&
+            static_cast<uint32_t>(ramses::EClearFlags_All) == static_cast<uint32_t>(ramses_internal::EClearFlags_All), "Type conversion mismatch");
+
+        const auto it = m_displayFramebuffers.find(display);
+        if (it == m_displayFramebuffers.cend())
+            return addErrorEntry("RendererSceneControl::setDisplayBufferClearFlags failed: display does not exist.");
+
+        ramses_internal::OffscreenBufferHandle bufferHandle{ displayBuffer.getValue() };
+        // if buffer to clear is display's framebuffer pass invalid OB to internal renderer
+        if (displayBuffer == it->second)
+            bufferHandle = ramses_internal::OffscreenBufferHandle::Invalid();
+
+        const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
+        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::SetClearFlags{ displayHandle, bufferHandle, clearFlags });
 
         return StatusOK;
     }
@@ -434,8 +474,8 @@ namespace ramses
             case ramses_internal::ERendererEventType::WindowMoveEvent:
                 rendererEventHandler.windowMoved(displayId_t{ event.displayHandle.asMemoryHandle() }, event.moveEvent.posX, event.moveEvent.posY);
                 break;
-            case ramses_internal::ERendererEventType::RenderThreadPeriodicLoopTimes:
-                rendererEventHandler.renderThreadLoopTimings(event.renderThreadLoopTimes.maximumLoopTimeWithinPeriod, event.renderThreadLoopTimes.averageLoopTimeWithinPeriod);
+            case ramses_internal::ERendererEventType::FrameTimingReport:
+                rendererEventHandler.renderThreadLoopTimings(event.frameTimings.maximumLoopTimeWithinPeriod, event.frameTimings.averageLoopTimeWithinPeriod);
                 break;
             default:
                 assert(false);
@@ -460,6 +500,7 @@ namespace ramses
         }
 
         m_rendererLoopThreadType = ERendererLoopThreadType_InRendererOwnThread;
+        m_displayDispatcher->startDisplayThreadsUpdating();
         if (m_rendererLoopThreadController.startRendering())
         {
             return StatusOK;
@@ -475,6 +516,7 @@ namespace ramses
             return addErrorEntry("RamsesRenderer::stopThread Can not call stopThread if startThread was not called before!");
         }
 
+        m_displayDispatcher->stopDisplayThreadsUpdating();
         if (m_rendererLoopThreadController.stopRendering())
         {
             return StatusOK;
@@ -505,7 +547,24 @@ namespace ramses
             return addErrorEntry("RamsesRenderer::setMaximumFramerate Can not call setMaximumFramerate if doOneLoop is called before because it can only control framerate for rendering thread!");
         }
 
+        m_displayDispatcher->setMinFrameDuration(std::chrono::microseconds{ std::lround(1000000 / maximumFramerate) });
         m_rendererLoopThreadController.setMaximumFramerate(maximumFramerate);
+        return StatusOK;
+    }
+
+    status_t RamsesRendererImpl::setMaximumFramerate(float maximumFramerate, displayId_t display)
+    {
+        if (maximumFramerate <= 0.0f)
+        {
+            return addErrorEntry("RamsesRenderer::setMaximumFramerate must specify a positive maximumFramerate!");
+        }
+
+        if (ERendererLoopThreadType_UsingDoOneLoop == m_rendererLoopThreadType)
+        {
+            return addErrorEntry("RamsesRenderer::setMaximumFramerate Can not call setMaximumFramerate if doOneLoop is called before because it can only control framerate for rendering thread!");
+        }
+
+        m_displayDispatcher->setMinFrameDuration(std::chrono::microseconds{ std::lround(1000000 / maximumFramerate) }, ramses_internal::DisplayHandle{ display.getValue() });
         return StatusOK;
     }
 
@@ -526,7 +585,7 @@ namespace ramses
             break;
         }
 
-        m_rendererLoopThreadController.setLoopMode(m_loopMode);
+        m_displayDispatcher->setLoopMode(m_loopMode);
 
         return StatusOK;
     }

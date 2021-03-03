@@ -39,6 +39,7 @@
 #include "SerializationContext.h"
 #include "Utils/BinaryFileOutputStream.h"
 #include "Utils/BinaryFileInputStream.h"
+#include "Utils/BinaryInputStream.h"
 #include "Utils/LogContext.h"
 #include "Utils/File.h"
 #include "Collections/IInputStream.h"
@@ -78,18 +79,18 @@ namespace ramses
         assert(!framework.isConnected());
 
         m_appLogic.init(framework.getResourceComponent(), framework.getScenegraphComponent());
-        m_cmdPrintSceneList.reset(new ramses_internal::PrintSceneList(*this));
-        m_cmdPrintValidation.reset(new ramses_internal::ValidateCommand(*this));
-        m_cmdForceFallbackImage.reset(new ramses_internal::ForceFallbackImage(*this));
-        m_cmdFlushSceneVersion.reset(new ramses_internal::FlushSceneVersion(*this));
-        m_cmdDumpSceneToFile.reset(new ramses_internal::DumpSceneToFile(*this));
-        m_cmdLogResourceMemoryUsage.reset(new ramses_internal::LogResourceMemoryUsage(*this));
-        framework.getRamsh().add(*m_cmdPrintSceneList);
-        framework.getRamsh().add(*m_cmdPrintValidation);
-        framework.getRamsh().add(*m_cmdForceFallbackImage);
-        framework.getRamsh().add(*m_cmdFlushSceneVersion);
-        framework.getRamsh().add(*m_cmdDumpSceneToFile);
-        framework.getRamsh().add(*m_cmdLogResourceMemoryUsage);
+        m_cmdPrintSceneList = std::make_shared<ramses_internal::PrintSceneList>(*this);
+        m_cmdPrintValidation = std::make_shared<ramses_internal::ValidateCommand>(*this);
+        m_cmdForceFallbackImage = std::make_shared<ramses_internal::ForceFallbackImage>(*this);
+        m_cmdFlushSceneVersion = std::make_shared<ramses_internal::FlushSceneVersion>(*this);
+        m_cmdDumpSceneToFile = std::make_shared<ramses_internal::DumpSceneToFile>(*this);
+        m_cmdLogResourceMemoryUsage = std::make_shared<ramses_internal::LogResourceMemoryUsage>(*this);
+        framework.getRamsh().add(m_cmdPrintSceneList);
+        framework.getRamsh().add(m_cmdPrintValidation);
+        framework.getRamsh().add(m_cmdForceFallbackImage);
+        framework.getRamsh().add(m_cmdFlushSceneVersion);
+        framework.getRamsh().add(m_cmdDumpSceneToFile);
+        framework.getRamsh().add(m_cmdLogResourceMemoryUsage);
         m_framework.getPeriodicLogger().registerPeriodicLogSupplier(&m_framework.getScenegraphComponent());
     }
 
@@ -290,8 +291,8 @@ namespace ramses
     Scene* RamsesClientImpl::prepareSceneFromFile(const char* caller, std::string const& sceneFilename, bool localOnly)
     {
         // this file contains scene data AND resource data and will be handed over to and held open by resource component as resource stream
-        ramses_internal::ResourceFileInputStreamSPtr sceneAndResourceFileStream(new ramses_internal::ResourceFileInputStream(sceneFilename.c_str()));
-        ramses_internal::BinaryFileInputStream& inputStream = sceneAndResourceFileStream->resourceStream;
+        ramses_internal::ResourceFileInputStreamSPtr sceneAndResourceFileStream = std::make_shared<ramses_internal::ResourceFileInputStream>(ramses_internal::String(sceneFilename));
+        ramses_internal::IInputStream& inputStream = sceneAndResourceFileStream->getStream();
         if (inputStream.getState() != ramses_internal::EStatus::Ok)
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << caller << ":  failed to open file");
@@ -309,7 +310,18 @@ namespace ramses
         inputStream >> sceneObjectStart;
         inputStream >> llResourceStart;
 
-        Scene* scene = prepareSceneFromInputStream(caller, sceneFilename, inputStream, localOnly);
+        Scene* scene = nullptr;
+        const bool minimizeReads = true; // hard coded for now
+        if (minimizeReads)
+        {
+            std::vector<ramses_internal::Byte> sceneData(static_cast<size_t>(llResourceStart - sceneObjectStart));
+            inputStream.read(sceneData.data(), sceneData.size());
+            ramses_internal::BinaryInputStream sceneDataStream(sceneData.data());
+
+            scene = prepareSceneFromInputStream(caller, sceneFilename, sceneDataStream, localOnly);
+        }
+        else // this path will be used in the future when creating scene from user provided stream
+            scene = prepareSceneFromInputStream(caller, sceneFilename, inputStream, localOnly);
 
         // calls on m_appLogic are thread safe
         if (!m_appLogic.hasResourceFile(sceneFilename.c_str()))
@@ -352,7 +364,7 @@ namespace ramses
         ramses_internal::RamsesVersion::WriteToStream(stream, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH);
     }
 
-    bool RamsesClientImpl::ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::BinaryFileInputStream& inputStream, const ramses_internal::String& verboseFileName)
+    bool RamsesClientImpl::ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::IInputStream& inputStream, const ramses_internal::String& verboseFileName)
     {
         // return false on read error only, not version mismatch
         ramses_internal::RamsesVersion::VersionInfo readVersion;

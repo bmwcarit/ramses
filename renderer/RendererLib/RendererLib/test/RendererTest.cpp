@@ -24,6 +24,7 @@
 #include "ComponentMocks.h"
 #include "TestSceneHelper.h"
 #include "absl/algorithm/container.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace ramses_internal;
 
@@ -36,6 +37,9 @@ public:
         , expirationMonitor(rendererScenes, rendererEventCollector)
         , renderer(*platformFactoryMock, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
     {
+        // caller is expected to have a display prefix for logs
+        ThreadLocalLog::SetPrefix(1);
+
         sceneRenderInterrupted.incrementRenderableIdx();
         sceneRenderInterrupted2.incrementRenderableIdx();
         sceneRenderInterrupted2.incrementRenderableIdx();
@@ -66,29 +70,25 @@ public:
         createdDisplays.erase(display);
     }
 
-    void expectOffscreenBufferRendered(DisplayHandle display, std::initializer_list<DeviceResourceHandle> buffers, bool withContextEnable = false, const Vector4& clearColor = Renderer::DefaultClearColor)
+    void expectOffscreenBufferRendered(DisplayHandle display, std::initializer_list<DeviceResourceHandle> buffers, uint32_t clearFlags = EClearFlags_All, const Vector4& clearColor = Renderer::DefaultClearColor)
     {
         DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(display);
-        if (withContextEnable)
-            EXPECT_CALL(*displayMock.m_displayController, enableContext()).InSequence(SeqRender);
         for (auto buffer : buffers)
-            EXPECT_CALL(*displayMock.m_displayController, clearBuffer(buffer, clearColor)).InSequence(SeqRender);
+            EXPECT_CALL(*displayMock.m_displayController, clearBuffer(buffer, clearFlags, clearColor)).InSequence(SeqRender);
     }
 
-    void expectInterruptibleOffscreenBufferRendered(DisplayHandle display, std::initializer_list<DeviceResourceHandle> buffers, const std::vector< std::pair<bool, bool> >& expectClearAndSwapFlags = {}, bool withContextEnable = false)
+    void expectInterruptibleOffscreenBufferRendered(DisplayHandle display, std::initializer_list<DeviceResourceHandle> buffers, const std::vector< std::pair<bool, bool> >& expectClearAndSwap = {}, uint32_t clearFlags = EClearFlags_All)
     {
         DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(display);
-        if (withContextEnable)
-            EXPECT_CALL(*displayMock.m_displayController, enableContext()).InSequence(SeqRender);
 
         UInt32 bufferIdx = 0u;
         for (auto buffer : buffers)
         {
-            const bool expectClear = expectClearAndSwapFlags.empty() || expectClearAndSwapFlags[bufferIdx].first;
-            const bool expectSwap = expectClearAndSwapFlags.empty() || expectClearAndSwapFlags[bufferIdx].second;
+            const bool expectClear = expectClearAndSwap.empty() || expectClearAndSwap[bufferIdx].first;
+            const bool expectSwap = expectClearAndSwap.empty() || expectClearAndSwap[bufferIdx].second;
 
             if (expectClear)
-                EXPECT_CALL(*displayMock.m_displayController, clearBuffer(buffer, Renderer::DefaultClearColor)).InSequence(SeqRender);
+                EXPECT_CALL(*displayMock.m_displayController, clearBuffer(buffer, clearFlags, Renderer::DefaultClearColor)).InSequence(SeqRender);
             if (expectSwap)
             {
                 EXPECT_CALL(*displayMock.m_displayController, getRenderBackend()).InSequence(SeqRender);
@@ -99,18 +99,16 @@ public:
         }
     }
 
-    void expectFrameBufferRendered(DisplayHandle display = DisplayHandle(0u), bool expectContextEnable = true, bool expectRerender = true, const Vector4& clearColor = Renderer::DefaultClearColor)
+    void expectFrameBufferRendered(DisplayHandle display = DisplayHandle(0u), bool expectRerender = true, uint32_t clearFlags = EClearFlags_All, const Vector4& clearColor = Renderer::DefaultClearColor)
     {
         DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(display);
 
         EXPECT_CALL(*displayMock.m_displayController, handleWindowEvents()).InSequence(SeqPreRender);
         EXPECT_CALL(*displayMock.m_displayController, canRenderNewFrame()).InSequence(SeqPreRender).WillOnce(Return(true));
 
-        if (expectContextEnable)
-            EXPECT_CALL(*displayMock.m_displayController, enableContext()).InSequence(SeqRender);
         if (expectRerender)
         {
-            EXPECT_CALL(*displayMock.m_displayController, clearBuffer(DisplayControllerMock::FakeFrameBufferHandle, clearColor)).InSequence(SeqRender);
+            EXPECT_CALL(*displayMock.m_displayController, clearBuffer(DisplayControllerMock::FakeFrameBufferHandle, clearFlags, clearColor)).InSequence(SeqRender);
             EXPECT_CALL(*displayMock.m_displayController, executePostProcessing()).InSequence(SeqRender);
         }
         else
@@ -120,11 +118,9 @@ public:
         }
     }
 
-    void expectSwapBuffers(DisplayHandle display = DisplayHandle(0u), bool withContextEnable = false)
+    void expectSwapBuffers(DisplayHandle display = DisplayHandle(0u))
     {
         DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(display);
-        if (withContextEnable)
-            EXPECT_CALL(*displayMock.m_displayController, enableContext()).InSequence(SeqRender);
         EXPECT_CALL(*displayMock.m_displayController, swapBuffers()).InSequence(SeqRender);
         EXPECT_CALL(*displayMock.m_displayController, getEmbeddedCompositingManager()).InSequence(SeqRender);
         EXPECT_CALL(*displayMock.m_embeddedCompositingManager, notifyClients()).InSequence(SeqRender);
@@ -307,7 +303,7 @@ TEST_P(ARenderer, TakesScreenshotFromSystemCompositorController)
 TEST_P(ARenderer, rendersOneLoopWithSingleDisplayController)
 {
     addDisplayController();
-    EXPECT_EQ(1u, renderer.getDisplayControllerCount());
+    EXPECT_TRUE(renderer.hasDisplayController());
 
     expectFrameBufferRendered();
     expectSwapBuffers();
@@ -318,12 +314,13 @@ TEST_P(ARenderer, rendersOneLoopWithTwoDisplayControllers)
 {
     const DisplayHandle display1 = addDisplayController();
     const DisplayHandle display2 = addDisplayController();
-    EXPECT_EQ(2u, renderer.getDisplayControllerCount());
+    EXPECT_TRUE(renderer.hasDisplayController(display1));
+    EXPECT_TRUE(renderer.hasDisplayController(display2));
 
     expectFrameBufferRendered(display1);
     expectFrameBufferRendered(display2);
     expectSwapBuffers(display2);
-    expectSwapBuffers(display1, true);
+    expectSwapBuffers(display1);
     doOneRendererLoop();
 }
 
@@ -425,8 +422,8 @@ TEST_P(ARenderer, clearsOffscreenBufferIfThereIsSceneAssignedToIt)
     assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
-    expectFrameBufferRendered(displayHandle, false);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
+    expectFrameBufferRendered(displayHandle);
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
     expectSwapBuffers();
 
@@ -472,8 +469,8 @@ TEST_P(ARenderer, clearsOffscreenBufferIfThereIsSceneAssignedToItAndNotShown)
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
     assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
-    expectFrameBufferRendered(displayHandle, false);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
+    expectFrameBufferRendered(displayHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -493,8 +490,8 @@ TEST_P(ARenderer, clearsOffscreenBufferAndFramebufferWithRelatedColors)
     renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer, 1u, 2u, false);
     assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
-    expectFrameBufferRendered(displayHandle, false, true, displayClearColor);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
+    expectFrameBufferRendered(displayHandle, true, EClearFlags_All, displayClearColor);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -506,7 +503,7 @@ TEST_P(ARenderer, clearsFramebufferWithCustomClearColor)
     const Vector4 displayClearColor(.1f, .2f, .3f, .4f);
     const DisplayHandle displayHandle = addDisplayController();
     renderer.setClearColor(displayHandle, DisplayControllerMock::FakeFrameBufferHandle, displayClearColor);
-    expectFrameBufferRendered(displayHandle, true, true, displayClearColor);
+    expectFrameBufferRendered(displayHandle, true, EClearFlags_All, displayClearColor);
     expectSwapBuffers();
     doOneRendererLoop();
 }
@@ -525,8 +522,8 @@ TEST_P(ARenderer, clearsOffscreenBufferWithCustomClearColor)
 
     assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true, obClearColor);
-    expectFrameBufferRendered(displayHandle, false);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, EClearFlags_All, obClearColor);
+    expectFrameBufferRendered(displayHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -549,15 +546,79 @@ TEST_P(ARenderer, clearsBothFramebufferAndOffscreenBufferWithDifferentClearColor
 
     assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true, obClearColor);
-    expectFrameBufferRendered(displayHandle, false, true, displayClearColor);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, EClearFlags_All, obClearColor);
+    expectFrameBufferRendered(displayHandle, true, EClearFlags_All, displayClearColor);
     expectSwapBuffers();
     doOneRendererLoop();
 
     unassignScene(sceneId);
 }
 
-TEST_P(ARenderer, twoDisplaysAndTwoOffscreenBuffersWithContentCauseCorrectNumberOfEnableContexts)
+TEST_P(ARenderer, doesNotClearDisplayBuffersWithDisabledClear_FB)
+{
+    const auto displayHandle = addDisplayController();
+
+    constexpr DeviceResourceHandle fakeOffscreenBuffer1{ 313u };
+    constexpr DeviceResourceHandle fakeOffscreenBuffer2{ 314u };
+    renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer1, 1u, 2u, false);
+    renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer2, 1u, 2u, true);
+
+    // assign scene to trigger render of OB
+    constexpr SceneId sceneId1{ 12u };
+    constexpr SceneId sceneId2{ 13u };
+    createScene(sceneId1);
+    createScene(sceneId2);
+    assignSceneToDisplayBuffer(sceneId1, displayHandle, 0, fakeOffscreenBuffer1);
+    assignSceneToDisplayBuffer(sceneId2, displayHandle, 0, fakeOffscreenBuffer2);
+
+    // disable clear for FB
+    EXPECT_CALL(renderer, setClearFlags(displayHandle, DisplayControllerMock::FakeFrameBufferHandle, EClearFlags_None));
+    renderer.setClearFlags(displayHandle, DisplayControllerMock::FakeFrameBufferHandle, EClearFlags_None);
+
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer1 });
+    expectFrameBufferRendered(displayHandle, true, EClearFlags_None);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer2 }, { {true, true} });
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
+}
+
+TEST_P(ARenderer, doesNotClearDisplayBuffersWithDisabledClear_OBs)
+{
+    const auto displayHandle = addDisplayController();
+
+    constexpr DeviceResourceHandle fakeOffscreenBuffer1{ 313u };
+    constexpr DeviceResourceHandle fakeOffscreenBuffer2{ 314u };
+    renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer1, 1u, 2u, false);
+    renderer.registerOffscreenBuffer(displayHandle, fakeOffscreenBuffer2, 1u, 2u, true);
+
+    // assign scene to trigger render of OB
+    constexpr SceneId sceneId1{ 12u };
+    constexpr SceneId sceneId2{ 13u };
+    createScene(sceneId1);
+    createScene(sceneId2);
+    assignSceneToDisplayBuffer(sceneId1, displayHandle, 0, fakeOffscreenBuffer1);
+    assignSceneToDisplayBuffer(sceneId2, displayHandle, 0, fakeOffscreenBuffer2);
+
+    // disable clear for OBs
+    EXPECT_CALL(renderer, setClearFlags(displayHandle, fakeOffscreenBuffer1, EClearFlags_None));
+    EXPECT_CALL(renderer, setClearFlags(displayHandle, fakeOffscreenBuffer2, EClearFlags_None));
+    renderer.setClearFlags(displayHandle, fakeOffscreenBuffer1, EClearFlags_None);
+    renderer.setClearFlags(displayHandle, fakeOffscreenBuffer2, EClearFlags_None);
+
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer1 }, EClearFlags_None);
+    expectFrameBufferRendered(displayHandle);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer2 }, { {true, true} }, EClearFlags_None);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
+}
+
+TEST_P(ARenderer, rendersTwoDisplaysAndTwoOffscreenBuffersWithContentInCorrectOrder)
 {
     const DisplayHandle displayHandle1 = addDisplayController();
     const DisplayHandle displayHandle2 = addDisplayController();
@@ -576,16 +637,16 @@ TEST_P(ARenderer, twoDisplaysAndTwoOffscreenBuffersWithContentCauseCorrectNumber
     showScene(sceneId1);
     showScene(sceneId2);
 
-    expectOffscreenBufferRendered(displayHandle1, { fakeOffscreenBuffer1 }, true);
+    expectOffscreenBufferRendered(displayHandle1, { fakeOffscreenBuffer1 });
     expectSceneRendered(displayHandle1, sceneId1, fakeOffscreenBuffer1);
-    expectFrameBufferRendered(displayHandle1, false);
+    expectFrameBufferRendered(displayHandle1);
 
-    expectOffscreenBufferRendered(displayHandle2, { fakeOffscreenBuffer2 }, true);
+    expectOffscreenBufferRendered(displayHandle2, { fakeOffscreenBuffer2 });
     expectSceneRendered(displayHandle2, sceneId2, fakeOffscreenBuffer2);
-    expectFrameBufferRendered(displayHandle2, false);
+    expectFrameBufferRendered(displayHandle2);
 
     expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
     hideScene(sceneId1);
@@ -618,16 +679,16 @@ TEST_P(ARenderer, confidenceTest_clearsOffscreenBufferIfThereIsSceneAssignedToIt
     showScene(sceneId1);
     showScene(sceneId2);
 
-    expectOffscreenBufferRendered(displayHandle1, { fakeOffscreenBuffer2 }, true);
+    expectOffscreenBufferRendered(displayHandle1, { fakeOffscreenBuffer2 });
     expectSceneRendered(displayHandle1, sceneId1, fakeOffscreenBuffer2);
-    expectFrameBufferRendered(displayHandle1, false);
+    expectFrameBufferRendered(displayHandle1);
 
-    expectOffscreenBufferRendered(displayHandle2, { fakeOffscreenBuffer3 }, true);
+    expectOffscreenBufferRendered(displayHandle2, { fakeOffscreenBuffer3 });
     expectSceneRendered(displayHandle2, sceneId2, fakeOffscreenBuffer3);
-    expectFrameBufferRendered(displayHandle2, false);
+    expectFrameBufferRendered(displayHandle2);
 
     expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
     hideScene(sceneId1);
@@ -648,9 +709,9 @@ TEST_P(ARenderer, sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenB
     assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
-    expectFrameBufferRendered(displayHandle, false);
+    expectFrameBufferRendered(displayHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -658,8 +719,8 @@ TEST_P(ARenderer, sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenB
 
     hideScene(sceneId);
     unassignScene(sceneId);
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -705,7 +766,7 @@ TEST_P(ARenderer, rendersScenesInOrderAccordingToLocalOrderWithinDisplayBuffer)
     showScene(sceneId3);
     showScene(sceneId4);
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer1, fakeOffscreenBuffer2 }, true);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer1, fakeOffscreenBuffer2 });
     {
         InSequence s;
         expectSceneRendered(displayHandle, sceneId1, fakeOffscreenBuffer1);
@@ -716,7 +777,7 @@ TEST_P(ARenderer, rendersScenesInOrderAccordingToLocalOrderWithinDisplayBuffer)
         expectSceneRendered(displayHandle, sceneId2, fakeOffscreenBuffer2);
         expectSceneRendered(displayHandle, sceneId4, fakeOffscreenBuffer2);
     }
-    expectFrameBufferRendered(displayHandle, false);
+    expectFrameBufferRendered(displayHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -901,7 +962,7 @@ TEST_P(ARenderer, rendersTwoMappedAndShownScenesEachADifferentDisplay)
     expectFrameBufferRendered(displayHandle1);
     expectFrameBufferRendered(displayHandle2);
     expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
     hideScene(sceneId1);
@@ -947,7 +1008,7 @@ TEST_P(ARenderer, remappingAndReshowingSceneResultsInRenderingOnAnotherDisplayOn
     expectFrameBufferRendered(displayHandle1);
     expectFrameBufferRendered(displayHandle2);
     expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
     hideScene(sceneId);
@@ -959,7 +1020,7 @@ TEST_P(ARenderer, remappingAndReshowingSceneResultsInRenderingOnAnotherDisplayOn
     expectFrameBufferRendered(displayHandle1);
     expectFrameBufferRendered(displayHandle2);
     expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
     hideScene(sceneId);
@@ -986,7 +1047,7 @@ TEST_P(ARenderer, confidenceTest_mapAndShowTwoScenesOnTwoDisplaysAndSwapTheirMap
     expectFrameBufferRendered(displayHandle1);
     expectFrameBufferRendered(displayHandle2);
     expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
     // exchange their mapping
@@ -1004,7 +1065,7 @@ TEST_P(ARenderer, confidenceTest_mapAndShowTwoScenesOnTwoDisplaysAndSwapTheirMap
     expectFrameBufferRendered(displayHandle1);
     expectFrameBufferRendered(displayHandle2);
     expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
     hideScene(sceneId1);
@@ -1025,7 +1086,6 @@ TEST_P(ARenderer, skipsFrameIfDisplayControllerCanNotRenderNewFrame)
     //renderer must not try to render on that display
     if(GetParam())
         EXPECT_CALL(platformFactoryMock->windowEventsPollingManagerMock, pollWindowsTillAnyCanRender()).Times(1u);
-    EXPECT_CALL(*displayMock.m_displayController, enableContext()).Times(0);
     EXPECT_CALL(*displayMock.m_displayController, swapBuffers()).Times(0);
     EXPECT_CALL(*displayMock.m_displayController, getEmbeddedCompositingManager()).Times(0);
     EXPECT_CALL(*displayMock.m_embeddedCompositingManager, notifyClients()).Times(0);
@@ -1051,7 +1111,7 @@ TEST_P(ARenderer, canTakeASingleScreenshot_Framebuffer)
 
     // check that screenshot request got deleted
     EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     screenshots = renderer.dispatchProcessedScreenshots(displayHandle);
@@ -1068,8 +1128,8 @@ TEST_P(ARenderer, canTakeASingleScreenshot_Offscreenbuffer)
     scheduleScreenshot(displayHandle, obDeviceHandle, 1u, 2u, 3u, 4u);
 
     expectDisplayControllerReadPixels(displayHandle, obDeviceHandle, 1u, 2u, 3u, 4u);
-    expectOffscreenBufferRendered(displayHandle, { obDeviceHandle }, true);
-    expectFrameBufferRendered(displayHandle, false);
+    expectOffscreenBufferRendered(displayHandle, { obDeviceHandle });
+    expectFrameBufferRendered(displayHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1079,7 +1139,7 @@ TEST_P(ARenderer, canTakeASingleScreenshot_Offscreenbuffer)
 
     // check that screenshot request got deleted
     EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     screenshots = renderer.dispatchProcessedScreenshots(displayHandle);
@@ -1096,8 +1156,8 @@ TEST_P(ARenderer, canTakeASingleScreenshot_InterruptibleOffscreenbuffer)
     scheduleScreenshot(displayHandle, obDeviceHandle, 1u, 2u, 3u, 4u);
 
     expectDisplayControllerReadPixels(displayHandle, obDeviceHandle, 1u, 2u, 3u, 4u);
-    expectFrameBufferRendered(displayHandle, true);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { obDeviceHandle }, { {true, true} }, false);
+    expectFrameBufferRendered(displayHandle);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { obDeviceHandle }, { {true, true} });
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1131,7 +1191,7 @@ TEST_P(ARenderer, canTakeScreenshotsForMultipleDisplays)
     expectFrameBufferRendered(displayHandle1);
     expectFrameBufferRendered(displayHandle2);
     expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
     auto screenshots1 = renderer.dispatchProcessedScreenshots(displayHandle1);
@@ -1146,8 +1206,8 @@ TEST_P(ARenderer, canTakeScreenshotsForMultipleDisplays)
     // check that screenshot request got deleted
     EXPECT_CALL(*displayMock1.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
     EXPECT_CALL(*displayMock2.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
+    expectFrameBufferRendered(displayHandle1, false);
+    expectFrameBufferRendered(displayHandle2, false);
     doOneRendererLoop();
 
     screenshots1 = renderer.dispatchProcessedScreenshots(displayHandle1);
@@ -1176,7 +1236,7 @@ TEST_P(ARenderer, takeMultipleScreenshotsOfADisplayOverritesPreviousScreenshot)
 
     // check that screenshot request got deleted
     EXPECT_CALL(*displayMock1.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
-    expectFrameBufferRendered(displayHandle1, false, false);
+    expectFrameBufferRendered(displayHandle1, false);
     doOneRendererLoop();
 
     screenshots1 = renderer.dispatchProcessedScreenshots(displayHandle1);
@@ -1214,14 +1274,14 @@ TEST_P(ARenderer, canTakeMultipleScreenshotsForMultipleDisplaysFromFramebuffersA
     expectDisplayControllerReadPixels(displayHandle2, DisplayControllerMock::FakeFrameBufferHandle, 0u, 0u, 1u, 1u);
     expectDisplayControllerReadPixels(displayHandle2, obDeviceHandle22, 0u, 0u, 1u, 1u);
     expectDisplayControllerReadPixels(displayHandle1, obDeviceHandle12, 0u, 0u, 1u, 1u);
-    expectOffscreenBufferRendered(displayHandle1, { obDeviceHandle11 }, true);
-    expectFrameBufferRendered(displayHandle1, false);
-    expectOffscreenBufferRendered(displayHandle2, { obDeviceHandle21 }, true);
-    expectFrameBufferRendered(displayHandle2, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { obDeviceHandle12 }, { {true, true } }, true);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { obDeviceHandle22 }, { {true, true } }, true);
+    expectOffscreenBufferRendered(displayHandle1, { obDeviceHandle11 });
+    expectFrameBufferRendered(displayHandle1);
+    expectOffscreenBufferRendered(displayHandle2, { obDeviceHandle21 });
+    expectFrameBufferRendered(displayHandle2);
+    expectInterruptibleOffscreenBufferRendered(displayHandle1, { obDeviceHandle12 }, { {true, true } });
+    expectInterruptibleOffscreenBufferRendered(displayHandle2, { obDeviceHandle22 }, { {true, true } });
     expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
     auto screenshots1 = renderer.dispatchProcessedScreenshots(displayHandle1);
@@ -1248,7 +1308,7 @@ TEST_P(ARenderer, canTakeMultipleScreenshotsForMultipleDisplaysFromFramebuffersA
     expectFrameBufferRendered(displayHandle1);
     expectFrameBufferRendered(displayHandle2);
     expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
     screenshots1 = renderer.dispatchProcessedScreenshots(displayHandle1);
@@ -1355,9 +1415,9 @@ TEST_P(ARenderer, doesNotClearAndRerenderIfNoChangeToScene)
     doOneRendererLoop();
 
     // no further expectations for scene render or clear
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     hideScene(sceneId);
@@ -1387,7 +1447,7 @@ TEST_P(ARenderer, doesNotSkipClearAndRerenderIfNoChangeToSceneButSkippingUnmodif
 
     renderer.setSkippingOfUnmodifiedBuffers(true);
 
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     hideScene(sceneId);
@@ -1406,16 +1466,16 @@ TEST_P(ARenderer, doesNotClearAndRerenderOffscreenBufferIfNoChangeToScene)
     assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
-    expectFrameBufferRendered(displayHandle, false);
+    expectFrameBufferRendered(displayHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
     // no further expectations for scene render or clear
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     hideScene(sceneId);
@@ -1436,23 +1496,23 @@ TEST_P(ARenderer, doesNotSkipClearAndRerenderOffscreenBufferIfNoChangeToSceneBut
 
     renderer.setSkippingOfUnmodifiedBuffers(false);
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
-    expectFrameBufferRendered(displayHandle, false);
+    expectFrameBufferRendered(displayHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
-    expectFrameBufferRendered(displayHandle, false);
+    expectFrameBufferRendered(displayHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
     renderer.setSkippingOfUnmodifiedBuffers(true);
 
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     hideScene(sceneId);
@@ -1474,7 +1534,7 @@ TEST_P(ARenderer, clearAndRerenderIfSceneMarkedAsChanged)
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
     // mark change
     renderer.markBufferWithSceneAsModified(sceneId);
@@ -1483,7 +1543,7 @@ TEST_P(ARenderer, clearAndRerenderIfSceneMarkedAsChanged)
     expectSwapBuffers();
     doOneRendererLoop();
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
     // mark change
     renderer.markBufferWithSceneAsModified(sceneId);
@@ -1508,29 +1568,29 @@ TEST_P(ARenderer, clearAndRerenderOffscreenBufferIfSceneMarkedAsChanged)
     assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
-    expectFrameBufferRendered(displayHandle, false);
+    expectFrameBufferRendered(displayHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
     // mark change
     renderer.markBufferWithSceneAsModified(sceneId);
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop(); // framebuffer not cleared/swapped as there is no scene assigned
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
     // mark change
     renderer.markBufferWithSceneAsModified(sceneId);
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop(); // framebuffer not cleared/swapped as there is no scene assigned
 
     hideScene(sceneId);
@@ -1549,35 +1609,35 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfSceneAssign
     assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
-    expectFrameBufferRendered(displayHandle, false);
+    expectFrameBufferRendered(displayHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     // assign back to FB causes clear/render of both buffers
     renderer.assignSceneToDisplayBuffer(sceneId, displayHandle, DisplayControllerMock::FakeFrameBufferHandle, 0);
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
-    expectFrameBufferRendered(displayHandle, false, true);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
+    expectFrameBufferRendered(displayHandle, true);
     expectSceneRendered(displayHandle, sceneId, DisplayControllerMock::FakeFrameBufferHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     // assign back to offscreen buffer causes clear/render of both buffers
     renderer.assignSceneToDisplayBuffer(sceneId, displayHandle, fakeOffscreenBuffer, 0);
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer });
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
-    expectFrameBufferRendered(displayHandle, false, true); // framebuffer cleared/swapped
+    expectFrameBufferRendered(displayHandle, true); // framebuffer cleared/swapped
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1600,7 +1660,7 @@ TEST_P(ARenderer, clearAndRerenderBufferIfSceneHidden)
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     // hiding scene causes clear of FB but no render as scene is hidden
@@ -1610,7 +1670,7 @@ TEST_P(ARenderer, clearAndRerenderBufferIfSceneHidden)
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     unassignScene(sceneId);
@@ -1631,18 +1691,18 @@ TEST_P(ARenderer, clearAndRerenderBufferIfClearColorChanged)
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     // setting clear color causes clear/render
     renderer.setClearColor(displayHandle, DisplayControllerMock::FakeFrameBufferHandle, { 1, 2, 3, 4 });
     expectSceneRendered(displayHandle, sceneId);
-    expectFrameBufferRendered(displayHandle, true, true, { 1, 2, 3, 4 });
+    expectFrameBufferRendered(displayHandle, true, EClearFlags_All, { 1, 2, 3, 4 });
     expectSwapBuffers();
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     hideScene(sceneId);
@@ -1663,29 +1723,29 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfOBClearColo
     assignSceneToDisplayBuffer(sceneId, displayHandle, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true, obClearColor1);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, EClearFlags_All, obClearColor1);
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
-    expectFrameBufferRendered(displayHandle, false);
+    expectFrameBufferRendered(displayHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     // change clear color
     const Vector4 obClearColor2(.2f, .3f, .4f, .5f);
     renderer.setClearColor(displayHandle, fakeOffscreenBuffer, obClearColor2);
-    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, true, obClearColor2);
-    expectFrameBufferRendered(displayHandle, false, true);
+    expectOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, EClearFlags_All, obClearColor2);
+    expectFrameBufferRendered(displayHandle, true);
     expectSceneRendered(displayHandle, sceneId, fakeOffscreenBuffer);
     expectSwapBuffers();
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     hideScene(sceneId);
@@ -1717,8 +1777,8 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreShownScenes)
 
     // hide scene will trigger re-render of OB
     hideScene(sceneId);
-    expectFrameBufferRendered(displayHandle, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { true, true } }, true);
+    expectFrameBufferRendered(displayHandle, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { true, true } });
     doOneRendererLoop();
 
     // re-render FB to reflect finished interruptible OB in previous frame
@@ -1727,9 +1787,9 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreShownScenes)
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     unassignScene(sceneId);
@@ -1761,8 +1821,8 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreMappedScenes)
     // hide scene will trigger re-render of OB
     hideScene(sceneId);
     unassignScene(sceneId);
-    expectFrameBufferRendered(displayHandle, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { true, true } }, true);
+    expectFrameBufferRendered(displayHandle, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { true, true } });
     doOneRendererLoop();
 
     // re-render FB to reflect finished interruptible OB in previous frame
@@ -1771,9 +1831,9 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreMappedScenes)
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 }
 
@@ -1787,7 +1847,7 @@ TEST_P(ARenderer, rerendersFramebufferIfWarpingDataChanged)
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     // changing warping data causes re-render
@@ -1798,7 +1858,7 @@ TEST_P(ARenderer, rerendersFramebufferIfWarpingDataChanged)
     doOneRendererLoop();
 
     // no change
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 }
 
@@ -1876,16 +1936,16 @@ TEST_P(ARenderer, doesNotClearAndPassesPreviousStateWhenInterruptedAndSwapsAfter
 
     // continue from interruption point and interrupt again
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderInterrupted2);
-    expectFrameBufferRendered(displayHandle, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, false } }, true); // no clear and no swap due to interruption before and now again
+    expectFrameBufferRendered(displayHandle, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, false } }); // no clear and no swap due to interruption before and now again
     doOneRendererLoop();
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     // continue from interruption point and finish
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted2, sceneRenderBegin);
-    expectFrameBufferRendered(displayHandle, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, true } }, true); // no clear but swap after finish
+    expectFrameBufferRendered(displayHandle, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, true } }); // no clear but swap after finish
     doOneRendererLoop();
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -1925,8 +1985,8 @@ TEST_P(ARenderer, rendersScenesToFBEvenIfOBInterrupted)
     doOneRendererLoop();
 
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
-    expectFrameBufferRendered(displayHandle, false ,false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, true } }, true);
+    expectFrameBufferRendered(displayHandle ,false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, true } });
     doOneRendererLoop();
 
     // re-render FB to reflect change happened to OB in previous frame
@@ -2025,8 +2085,8 @@ TEST_P(ARenderer, doesNotSkipFramesTillAllInterruptionsFinishedAndRendered)
 
     // FB skipped, OB finished
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
-    expectFrameBufferRendered(displayHandle, false ,false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, true } }, true);
+    expectFrameBufferRendered(displayHandle ,false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, true } });
     doOneRendererLoop();
 
     // re-render FB to reflect change happened to OB in previous frame
@@ -2036,7 +2096,7 @@ TEST_P(ARenderer, doesNotSkipFramesTillAllInterruptionsFinishedAndRendered)
     doOneRendererLoop();
 
     // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     hideScene(sceneIdOB);
@@ -2080,16 +2140,16 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleScene
     // FB skipped, OB scene1 finished, OB scene2 interrupted
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneId1OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneId2OB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered(displayHandle, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, false } }, true);
+    expectFrameBufferRendered(displayHandle, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, false } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     // FB skipped (as OB is not done renderirng yet), OB scene1 skipped, OB scene2 finished
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneId2OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
-    expectFrameBufferRendered(displayHandle, false ,false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, true } }, true);
+    expectFrameBufferRendered(displayHandle ,false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, true } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2103,7 +2163,7 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleScene
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2151,8 +2211,8 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleScene
 
     // FB skipped, OB scene1 skipped, OB scene2 finished
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneId2OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
-    expectFrameBufferRendered(displayHandle, false ,false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, true } }, true);
+    expectFrameBufferRendered(displayHandle ,false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, true } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2166,7 +2226,7 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleScene
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2216,8 +2276,8 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
     // FB skipped, OB1 finished, OB2 interrupted
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneIdOB1, fakeOffscreenBuffer1, sceneRenderInterrupted, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneIdOB2, fakeOffscreenBuffer2, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered(displayHandle, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer1, fakeOffscreenBuffer2 }, { { false, true }, { true, false } }, true);
+    expectFrameBufferRendered(displayHandle, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer1, fakeOffscreenBuffer2 }, { { false, true }, { true, false } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2241,7 +2301,7 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2299,8 +2359,8 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
     // FB skipped, OB1 scene1 finished, OB1 scene2 interrupted, rest skipped
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneId1OB1, fakeOffscreenBuffer1, sceneRenderInterrupted, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneId2OB1, fakeOffscreenBuffer1, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered(displayHandle, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer1 }, { { false, false } }, true);
+    expectFrameBufferRendered(displayHandle, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer1 }, { { false, false } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2308,8 +2368,8 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
     // FB skipped, OB1 scene1 skipped, OB1 scene2 finished, OB2 scene1 interrupted, rest skipped
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneId2OB1, fakeOffscreenBuffer1, sceneRenderInterrupted, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneId1OB2, fakeOffscreenBuffer2, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered(displayHandle, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer1, fakeOffscreenBuffer2 }, { { false, true },{ true, false } }, true);
+    expectFrameBufferRendered(displayHandle, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer1, fakeOffscreenBuffer2 }, { { false, true },{ true, false } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2327,8 +2387,8 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
 
     // FB skipped, OB1 skipped, OB2 scene2 finished
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneId2OB2, fakeOffscreenBuffer2, sceneRenderInterrupted, sceneRenderBegin);
-    expectFrameBufferRendered(displayHandle, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer2 }, { { false, true } }, true);
+    expectFrameBufferRendered(displayHandle, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer2 }, { { false, true } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2340,7 +2400,7 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
     doOneRendererLoop();
 
     // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2392,9 +2452,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB, disp1OB, sceneRenderBegin, sceneRenderInterrupted);
     expectFrameBufferRendered(displayHandle1, true);
     expectFrameBufferRendered(displayHandle2, true);
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB }, { { true, false } }, true);
+    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB }, { { true, false } });
     expectSwapBuffers(displayHandle1);
-    expectSwapBuffers(displayHandle2, true);
+    expectSwapBuffers(displayHandle2);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
@@ -2403,10 +2463,10 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     // FB scenes skipped, FB1 OB scene finished, FB2 OB scene interrupted
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB, disp1OB, sceneRenderInterrupted, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB, disp2OB, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB }, { { false, true } }, true);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB }, { { true, false } }, true);
+    expectFrameBufferRendered(displayHandle1, false);
+    expectFrameBufferRendered(displayHandle2, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB }, { { false, true } });
+    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB }, { { true, false } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
@@ -2416,9 +2476,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     expectSceneRendered(displayHandle1, sceneIdDisp1FB);
     expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB, disp2OB, sceneRenderInterrupted, sceneRenderBegin);
     expectFrameBufferRendered(displayHandle1, true);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB }, { { false, true } }, true);
-    expectSwapBuffers(displayHandle1, true);
+    expectFrameBufferRendered(displayHandle2, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB }, { { false, true } });
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
@@ -2426,17 +2486,17 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
 
     // FB1 scene skipped, FB2 scene re-rendered, FB1 OB scene skipped, FB2 OB scene skipped
     expectSceneRendered(displayHandle2, sceneIdDisp2FB);
-    expectFrameBufferRendered(displayHandle1, false, false);
+    expectFrameBufferRendered(displayHandle1, false);
     expectFrameBufferRendered(displayHandle2, true);
-    expectSwapBuffers(displayHandle2, false);
+    expectSwapBuffers(displayHandle2);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
 
     // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
+    expectFrameBufferRendered(displayHandle1, false);
+    expectFrameBufferRendered(displayHandle2, false);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
@@ -2518,9 +2578,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB1scene1, disp1OB1, sceneRenderBegin, sceneRenderInterrupted);
     expectFrameBufferRendered(displayHandle1);
     expectFrameBufferRendered(displayHandle2);
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB1 }, { { true, false } }, true);
+    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB1 }, { { true, false } });
     expectSwapBuffers(displayHandle1);
-    expectSwapBuffers(displayHandle2, true);
+    expectSwapBuffers(displayHandle2);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
@@ -2529,9 +2589,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     // FB scenes skipped on both displays, FB1 OB1 scene1 finished, FB1 OB1 scene2 interrupted, rest skipped
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB1scene1, disp1OB1, sceneRenderInterrupted, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB1scene2, disp1OB1, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB1 }, { { false, false } }, true);
+    expectFrameBufferRendered(displayHandle1, false);
+    expectFrameBufferRendered(displayHandle2, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB1 }, { { false, false } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
@@ -2540,9 +2600,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     // FB scenes skipped on both displays, FB1 OB1 scene2 finished, FB1 OB2 scene1 interrupted, rest skipped
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB1scene2, disp1OB1, sceneRenderInterrupted, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB2scene1, disp1OB2, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB1, disp1OB2 }, { { false, true },{ true, false } }, true);
+    expectFrameBufferRendered(displayHandle1, false);
+    expectFrameBufferRendered(displayHandle2, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB1, disp1OB2 }, { { false, true },{ true, false } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
@@ -2553,7 +2613,7 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB2scene1, disp1OB2, sceneRenderInterrupted, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB2scene2, disp1OB2, sceneRenderBegin, sceneRenderInterrupted);
     expectFrameBufferRendered(displayHandle1);
-    expectFrameBufferRendered(displayHandle2, false, false);
+    expectFrameBufferRendered(displayHandle2, false);
     expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB2 }, { { false, false } });
     expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
@@ -2564,10 +2624,10 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     // FB scenes skipped on both displays, FB1 OB2 scene2 finished, FB2 OB1 scene1 interrupted, rest skipped
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB2scene2, disp1OB2, sceneRenderInterrupted, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB1scene1, disp2OB1, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB2 }, { { false, true } }, true);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB1 }, { { true, false } }, true);
+    expectFrameBufferRendered(displayHandle1, false);
+    expectFrameBufferRendered(displayHandle2, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB2 }, { { false, true } });
+    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB1 }, { { true, false } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
@@ -2578,9 +2638,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB1scene1, disp2OB1, sceneRenderInterrupted, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB1scene2, disp2OB1, sceneRenderBegin, sceneRenderInterrupted);
     expectFrameBufferRendered(displayHandle1);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB1 }, { { false, false } }, true);
-    expectSwapBuffers(displayHandle1, true);
+    expectFrameBufferRendered(displayHandle2, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB1 }, { { false, false } });
+    expectSwapBuffers(displayHandle1);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
@@ -2589,9 +2649,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     // FB scenes skipped on both displays, FB2 OB1 scene2 finished, FB2 OB2 scene1 interrupted, rest skipped
     expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB1scene2, disp2OB1, sceneRenderInterrupted, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB2scene1, disp2OB2, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB1, disp2OB2 }, { { false, true },{ true, false } }, true);
+    expectFrameBufferRendered(displayHandle1, false);
+    expectFrameBufferRendered(displayHandle2, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB1, disp2OB2 }, { { false, true },{ true, false } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
@@ -2601,7 +2661,7 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     expectSceneRendered(displayHandle2, sceneIdDisp2FB);
     expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB2scene1, disp2OB2, sceneRenderInterrupted, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB2scene2, disp2OB2, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered(displayHandle1, false, false);
+    expectFrameBufferRendered(displayHandle1, false);
     expectFrameBufferRendered(displayHandle2);
     expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB2 }, { { false, false } });
     expectSwapBuffers(displayHandle2);
@@ -2612,9 +2672,9 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
 
     // FB scenes skipped on both displays, FB2 OB2 scene2 finished, rest skipped
     expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB2scene2, disp2OB2, sceneRenderInterrupted, sceneRenderBegin);
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB2 }, { { false, true } }, true);
+    expectFrameBufferRendered(displayHandle1, false);
+    expectFrameBufferRendered(displayHandle2, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB2 }, { { false, true } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
@@ -2622,7 +2682,7 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
 
     // FB2 scene re-rendered (to reflect changed on disp2OB2)
     expectSceneRendered(displayHandle2, sceneIdDisp2FB);
-    expectFrameBufferRendered(displayHandle1, false, false);
+    expectFrameBufferRendered(displayHandle1, false);
     expectFrameBufferRendered(displayHandle2);
     expectSwapBuffers(displayHandle2);
     doOneRendererLoop();
@@ -2631,8 +2691,8 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
 
     // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
+    expectFrameBufferRendered(displayHandle1, false);
+    expectFrameBufferRendered(displayHandle2, false);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
@@ -2659,127 +2719,6 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDispl
     unassignScene(sceneIdDisp2OB1scene2);
     unassignScene(sceneIdDisp2OB2scene1);
     unassignScene(sceneIdDisp2OB2scene2);
-}
-
-TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleDisplaysWithNormalOBAndInterruptibleOB)
-{
-    // 2 FB, 2 OB (interruptible+normal) per display, 1 scene per OB
-
-    const DisplayHandle displayHandle1 = addDisplayController();
-    const DisplayHandle displayHandle2 = addDisplayController();
-    DeviceResourceHandle disp1OBint(313u);
-    DeviceResourceHandle disp1OBnon(314u);
-    DeviceResourceHandle disp2OBnon(315u);
-    DeviceResourceHandle disp2OBint(316u);
-    renderer.registerOffscreenBuffer(displayHandle1, disp1OBint, 1u, 1u, true);
-    renderer.registerOffscreenBuffer(displayHandle1, disp1OBnon, 1u, 1u, false);
-    renderer.registerOffscreenBuffer(displayHandle2, disp2OBnon, 1u, 1u, false);
-    renderer.registerOffscreenBuffer(displayHandle2, disp2OBint, 1u, 1u, true);
-
-    const SceneId sceneIdDisp1FB(12u);
-    const SceneId sceneIdDisp2FB(13u);
-    const SceneId sceneIdDisp1OBintScene(14u);
-    const SceneId sceneIdDisp1OBnonScene(16u);
-    const SceneId sceneIdDisp2OBnonScene(18u);
-    const SceneId sceneIdDisp2OBintScene(20u);
-
-    createScene(sceneIdDisp1FB);
-    createScene(sceneIdDisp2FB);
-    createScene(sceneIdDisp1OBintScene);
-    createScene(sceneIdDisp1OBnonScene);
-    createScene(sceneIdDisp2OBnonScene);
-    createScene(sceneIdDisp2OBintScene);
-
-    assignSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
-    assignSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
-    assignSceneToDisplayBuffer(sceneIdDisp1OBnonScene, displayHandle1, 0, disp1OBnon);
-    assignSceneToDisplayBuffer(sceneIdDisp1OBintScene, displayHandle1, 0, disp1OBint);
-    assignSceneToDisplayBuffer(sceneIdDisp2OBintScene, displayHandle2, 0, disp2OBint);
-    assignSceneToDisplayBuffer(sceneIdDisp2OBnonScene, displayHandle2, 0, disp2OBnon);
-
-    showScene(sceneIdDisp1FB);
-    showScene(sceneIdDisp2FB);
-    showScene(sceneIdDisp1OBintScene);
-    showScene(sceneIdDisp1OBnonScene);
-    showScene(sceneIdDisp2OBintScene);
-    showScene(sceneIdDisp2OBnonScene);
-
-    // FB and non-interruptible OB scenes rendered on both displays, FB1 OB scene interrupted, rest skipped
-    expectOffscreenBufferRendered(displayHandle1, { disp1OBnon }, true);
-    expectSceneRendered(displayHandle1, sceneIdDisp1OBnonScene, disp1OBnon);
-    expectFrameBufferRendered(displayHandle1, false);
-    expectSceneRendered(displayHandle1, sceneIdDisp1FB);
-
-    expectOffscreenBufferRendered(displayHandle2, { disp2OBnon }, true);
-    expectSceneRendered(displayHandle2, sceneIdDisp2OBnonScene, disp2OBnon);
-    expectFrameBufferRendered(displayHandle2, false);
-    expectSceneRendered(displayHandle2, sceneIdDisp2FB);
-
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OBint }, { { true, false } }, true);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OBintScene, disp1OBint, sceneRenderBegin, sceneRenderInterrupted);
-
-    expectSwapBuffers(displayHandle1);
-    expectSwapBuffers(displayHandle2, true);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    //FB1 OB scene finished, FB2 OB scene interrupted, rest skipped
-    expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OBintScene, disp1OBint, sceneRenderInterrupted, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OBintScene, disp2OBint, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OBint }, { { false, true } }, true);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OBint }, { { true, false } }, true);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    // FB1 re-rendered, FB2 OB scene finished, rest skipped
-    expectSceneRendered(displayHandle1, sceneIdDisp1FB);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OBintScene, disp2OBint, sceneRenderInterrupted, sceneRenderBegin);
-    expectFrameBufferRendered(displayHandle1);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OBint }, { { false, true } }, true);
-    expectSwapBuffers(displayHandle1, true);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    // FB2 re-rendered, rest skipped
-    expectSceneRendered(displayHandle2, sceneIdDisp2FB);
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2);
-    expectSwapBuffers(displayHandle2, false);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    hideScene(sceneIdDisp1FB);
-    hideScene(sceneIdDisp2FB);
-    hideScene(sceneIdDisp1OBintScene);
-    hideScene(sceneIdDisp1OBnonScene);
-    hideScene(sceneIdDisp2OBnonScene);
-    hideScene(sceneIdDisp2OBintScene);
-
-    unassignScene(sceneIdDisp1FB);
-    unassignScene(sceneIdDisp2FB);
-    unassignScene(sceneIdDisp1OBintScene);
-    unassignScene(sceneIdDisp1OBnonScene);
-    unassignScene(sceneIdDisp2OBnonScene);
-    unassignScene(sceneIdDisp2OBintScene);
 }
 
 TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInterrupted)
@@ -2818,8 +2757,8 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInte
 
     // FB skipped, OB scene1 skipped, OB scene2 finished
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneId2OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
-    expectFrameBufferRendered(displayHandle, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, true } }, true);
+    expectFrameBufferRendered(displayHandle, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { fakeOffscreenBuffer }, { { false, true } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2845,7 +2784,7 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInte
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2923,7 +2862,7 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneOnAn
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
 
     // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle).m_displayController);
@@ -2936,372 +2875,94 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneOnAn
     unassignScene(sceneIdFB);
 }
 
-TEST_P(ARenderer, willRenderAllScenesFromAllDisplaysAndBuffersInOneFrameIfWithinBudget)
+TEST_P(ARenderer, willRenderAllScenesFromAllBuffersInOneFrameIfWithinBudget)
 {
-    // 2 displays, 1 OB per display, 2 interruptible OBs per display, 2 scenes per OB
+    // 1 OB, 2 interruptible OBs, 2 scenes per OB
 
     const DisplayHandle displayHandle1 = addDisplayController();
-    const DisplayHandle displayHandle2 = addDisplayController();
     DeviceResourceHandle disp1OB(313u);
-    DeviceResourceHandle disp2OB(314u);
     DeviceResourceHandle disp1OBint1(315u);
     DeviceResourceHandle disp1OBint2(316u);
-    DeviceResourceHandle disp2OBint1(317u);
-    DeviceResourceHandle disp2OBint2(318u);
     renderer.registerOffscreenBuffer(displayHandle1, disp1OB, 1u, 1u, false);
-    renderer.registerOffscreenBuffer(displayHandle2, disp2OB, 1u, 1u, false);
     renderer.registerOffscreenBuffer(displayHandle1, disp1OBint1, 1u, 1u, true);
     renderer.registerOffscreenBuffer(displayHandle1, disp1OBint2, 1u, 1u, true);
-    renderer.registerOffscreenBuffer(displayHandle2, disp2OBint1, 1u, 1u, true);
-    renderer.registerOffscreenBuffer(displayHandle2, disp2OBint2, 1u, 1u, true);
 
     const SceneId sceneIdDisp1FB(12u);
-    const SceneId sceneIdDisp2FB(13u);
     const SceneId sceneIdDisp1OBscene(14u);
-    const SceneId sceneIdDisp2OBscene(15u);
     const SceneId sceneIdDisp1OBint1scene1(16u);
     const SceneId sceneIdDisp1OBint1scene2(17u);
     const SceneId sceneIdDisp1OBint2scene1(18u);
     const SceneId sceneIdDisp1OBint2scene2(19u);
-    const SceneId sceneIdDisp2OBint1scene1(20u);
-    const SceneId sceneIdDisp2OBint1scene2(21u);
-    const SceneId sceneIdDisp2OBint2scene1(22u);
-    const SceneId sceneIdDisp2OBint2scene2(23u);
 
     createScene(sceneIdDisp1FB);
-    createScene(sceneIdDisp2FB);
     createScene(sceneIdDisp1OBscene);
-    createScene(sceneIdDisp2OBscene);
     createScene(sceneIdDisp1OBint1scene1);
     createScene(sceneIdDisp1OBint1scene2);
     createScene(sceneIdDisp1OBint2scene1);
     createScene(sceneIdDisp1OBint2scene2);
-    createScene(sceneIdDisp2OBint1scene1);
-    createScene(sceneIdDisp2OBint1scene2);
-    createScene(sceneIdDisp2OBint2scene1);
-    createScene(sceneIdDisp2OBint2scene2);
 
     assignSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
-    assignSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
     assignSceneToDisplayBuffer(sceneIdDisp1OBscene, displayHandle1, 0, disp1OB);
-    assignSceneToDisplayBuffer(sceneIdDisp2OBscene, displayHandle2, 0, disp2OB);
     assignSceneToDisplayBuffer(sceneIdDisp1OBint2scene1, displayHandle1, 0, disp1OBint2);
     assignSceneToDisplayBuffer(sceneIdDisp1OBint2scene2, displayHandle1, 1, disp1OBint2);
     assignSceneToDisplayBuffer(sceneIdDisp1OBint1scene1, displayHandle1, 0, disp1OBint1);
     assignSceneToDisplayBuffer(sceneIdDisp1OBint1scene2, displayHandle1, 1, disp1OBint1);
-    assignSceneToDisplayBuffer(sceneIdDisp2OBint2scene1, displayHandle2, 0, disp2OBint2);
-    assignSceneToDisplayBuffer(sceneIdDisp2OBint2scene2, displayHandle2, 1, disp2OBint2);
-    assignSceneToDisplayBuffer(sceneIdDisp2OBint1scene1, displayHandle2, 0, disp2OBint1);
-    assignSceneToDisplayBuffer(sceneIdDisp2OBint1scene2, displayHandle2, 1, disp2OBint1);
 
     showScene(sceneIdDisp1FB);
-    showScene(sceneIdDisp2FB);
     showScene(sceneIdDisp1OBscene);
-    showScene(sceneIdDisp2OBscene);
     showScene(sceneIdDisp1OBint1scene1);
     showScene(sceneIdDisp1OBint1scene2);
     showScene(sceneIdDisp1OBint2scene1);
     showScene(sceneIdDisp1OBint2scene2);
-    showScene(sceneIdDisp2OBint1scene1);
-    showScene(sceneIdDisp2OBint1scene2);
-    showScene(sceneIdDisp2OBint2scene1);
-    showScene(sceneIdDisp2OBint2scene2);
 
     // all rendered
-    expectOffscreenBufferRendered(displayHandle1, { disp1OB }, true);
+    expectOffscreenBufferRendered(displayHandle1, { disp1OB });
     expectSceneRendered(displayHandle1, sceneIdDisp1OBscene, disp1OB);
-    expectFrameBufferRendered(displayHandle1, false);
+    expectFrameBufferRendered(displayHandle1);
     expectSceneRendered(displayHandle1, sceneIdDisp1FB);
 
-    expectOffscreenBufferRendered(displayHandle2, { disp2OB }, true);
-    expectSceneRendered(displayHandle2, sceneIdDisp2OBscene, disp2OB);
-    expectFrameBufferRendered(displayHandle2, false);
-    expectSceneRendered(displayHandle2, sceneIdDisp2FB);
-
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OBint1, disp1OBint2 }, { { true, true },{ true, true } }, true);
+    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OBint1, disp1OBint2 }, { { true, true },{ true, true } });
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OBint1scene1, disp1OBint1, sceneRenderBegin, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OBint1scene2, disp1OBint1, sceneRenderBegin, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OBint2scene1, disp1OBint2, sceneRenderBegin, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OBint2scene2, disp1OBint2, sceneRenderBegin, sceneRenderBegin);
 
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OBint1, disp2OBint2 }, { { true, true },{ true, true } }, true);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OBint1scene1, disp2OBint1, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OBint1scene2, disp2OBint1, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OBint2scene1, disp2OBint2, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OBint2scene2, disp2OBint2, sceneRenderBegin, sceneRenderBegin);
-
-    expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
+    expectSwapBuffers(displayHandle1);
 
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
 
-    // FBs have to be re-rendered because there were some interruptible OBs finished last frame,
+    // FB has to be re-rendered because there were some interruptible OBs finished last frame,
     // interruptible OBs are rendered at end of frame so the FBs have to be rendered again next frame
     // in order to use the latest state of the OBs wherever they are used in FBs
     expectFrameBufferRendered(displayHandle1);
     expectSceneRendered(displayHandle1, sceneIdDisp1FB);
-    expectFrameBufferRendered(displayHandle2);
-    expectSceneRendered(displayHandle2, sceneIdDisp2FB);
-    expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
+    expectSwapBuffers(displayHandle1);
 
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
 
     // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
+    expectFrameBufferRendered(displayHandle1, false);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
 
     hideScene(sceneIdDisp1FB);
-    hideScene(sceneIdDisp2FB);
     hideScene(sceneIdDisp1OBscene);
-    hideScene(sceneIdDisp2OBscene);
     hideScene(sceneIdDisp1OBint1scene1);
     hideScene(sceneIdDisp1OBint1scene2);
     hideScene(sceneIdDisp1OBint2scene1);
     hideScene(sceneIdDisp1OBint2scene2);
-    hideScene(sceneIdDisp2OBint1scene1);
-    hideScene(sceneIdDisp2OBint1scene2);
-    hideScene(sceneIdDisp2OBint2scene1);
-    hideScene(sceneIdDisp2OBint2scene2);
 
     unassignScene(sceneIdDisp1FB);
-    unassignScene(sceneIdDisp2FB);
     unassignScene(sceneIdDisp1OBscene);
-    unassignScene(sceneIdDisp2OBscene);
     unassignScene(sceneIdDisp1OBint1scene1);
     unassignScene(sceneIdDisp1OBint1scene2);
     unassignScene(sceneIdDisp1OBint2scene1);
     unassignScene(sceneIdDisp1OBint2scene2);
-    unassignScene(sceneIdDisp2OBint1scene1);
-    unassignScene(sceneIdDisp2OBint1scene2);
-    unassignScene(sceneIdDisp2OBint2scene1);
-    unassignScene(sceneIdDisp2OBint2scene2);
-}
-
-TEST_P(ARenderer, confidenceTest_combinationOfMultipleScenesAndOBsWhereScenesAreModifiedAtDifferentStatesOfInterruptionsAndExpectedToBeReRendered)
-{
-    // 2 FB, 2 interruptible OBs per display, 2 scenes per OB
-    // OB1 never interrupts, OB2 scene1 never interrupts
-    // OB1 scenes get modified sometime while interrupted
-
-    const DisplayHandle displayHandle1 = addDisplayController();
-    const DisplayHandle displayHandle2 = addDisplayController();
-    DeviceResourceHandle disp1OB1(313u);
-    DeviceResourceHandle disp1OB2(314u);
-    DeviceResourceHandle disp2OB1(315u);
-    DeviceResourceHandle disp2OB2(316u);
-    renderer.registerOffscreenBuffer(displayHandle1, disp1OB1, 1u, 1u, true);
-    renderer.registerOffscreenBuffer(displayHandle1, disp1OB2, 1u, 1u, true);
-    renderer.registerOffscreenBuffer(displayHandle2, disp2OB1, 1u, 1u, true);
-    renderer.registerOffscreenBuffer(displayHandle2, disp2OB2, 1u, 1u, true);
-
-    const SceneId sceneIdDisp1FB(12u);
-    const SceneId sceneIdDisp2FB(13u);
-    const SceneId sceneIdDisp1OB1scene1(14u);
-    const SceneId sceneIdDisp1OB1scene2(15u);
-    const SceneId sceneIdDisp1OB2scene1(16u);
-    const SceneId sceneIdDisp1OB2scene2(17u);
-    const SceneId sceneIdDisp2OB1scene1(18u);
-    const SceneId sceneIdDisp2OB1scene2(19u);
-    const SceneId sceneIdDisp2OB2scene1(20u);
-    const SceneId sceneIdDisp2OB2scene2(21u);
-
-    createScene(sceneIdDisp1FB);
-    createScene(sceneIdDisp2FB);
-    createScene(sceneIdDisp1OB1scene1);
-    createScene(sceneIdDisp1OB1scene2);
-    createScene(sceneIdDisp1OB2scene1);
-    createScene(sceneIdDisp1OB2scene2);
-    createScene(sceneIdDisp2OB1scene1);
-    createScene(sceneIdDisp2OB1scene2);
-    createScene(sceneIdDisp2OB2scene1);
-    createScene(sceneIdDisp2OB2scene2);
-
-    assignSceneToDisplayBuffer(sceneIdDisp1FB, displayHandle1, 0);
-    assignSceneToDisplayBuffer(sceneIdDisp2FB, displayHandle2, 0);
-    assignSceneToDisplayBuffer(sceneIdDisp1OB2scene1, displayHandle1, 0, disp1OB2);
-    assignSceneToDisplayBuffer(sceneIdDisp1OB2scene2, displayHandle1, 1, disp1OB2);
-    assignSceneToDisplayBuffer(sceneIdDisp1OB1scene1, displayHandle1, 0, disp1OB1);
-    assignSceneToDisplayBuffer(sceneIdDisp1OB1scene2, displayHandle1, 1, disp1OB1);
-    assignSceneToDisplayBuffer(sceneIdDisp2OB2scene1, displayHandle2, 0, disp2OB2);
-    assignSceneToDisplayBuffer(sceneIdDisp2OB2scene2, displayHandle2, 1, disp2OB2);
-    assignSceneToDisplayBuffer(sceneIdDisp2OB1scene1, displayHandle2, 0, disp2OB1);
-    assignSceneToDisplayBuffer(sceneIdDisp2OB1scene2, displayHandle2, 1, disp2OB1);
-
-    showScene(sceneIdDisp1FB);
-    showScene(sceneIdDisp2FB);
-    showScene(sceneIdDisp1OB1scene1);
-    showScene(sceneIdDisp1OB1scene2);
-    showScene(sceneIdDisp1OB2scene1);
-    showScene(sceneIdDisp1OB2scene2);
-    showScene(sceneIdDisp2OB1scene1);
-    showScene(sceneIdDisp2OB1scene2);
-    showScene(sceneIdDisp2OB2scene1);
-    showScene(sceneIdDisp2OB2scene2);
-
-    // FBs rendered, disp1 OB1 rendered, disp1 OB2 scene1 rendered, disp1 OB2 scene2 interrupted, rest skipped
-    expectSceneRendered(displayHandle1, sceneIdDisp1FB);
-    expectSceneRendered(displayHandle2, sceneIdDisp2FB);
-    expectFrameBufferRendered(displayHandle1);
-    expectFrameBufferRendered(displayHandle2);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB1scene1, disp1OB1, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB1scene2, disp1OB1, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB2scene1, disp1OB2, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB2scene2, disp1OB2, sceneRenderBegin, sceneRenderInterrupted);
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB1, disp1OB2 }, { { true, true }, { true, false } }, true);
-    expectSwapBuffers(displayHandle1);
-    expectSwapBuffers(displayHandle2, true);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    // FB1 rendered to reflect disp1 OB1 rendered, disp1 OB1 skipped, disp1 OB2 scene1 skipped, disp1 OB2 scene2 finished, disp2 OB1 scene1 interrupted, rest skipped
-    expectSceneRendered(displayHandle1, sceneIdDisp1FB);
-    expectFrameBufferRendered(displayHandle1);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB2scene2, disp1OB2, sceneRenderInterrupted, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB1scene1, disp2OB1, sceneRenderBegin, sceneRenderInterrupted);
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB2 }, { { false, true } });
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB1 }, { { true, false } }, true);
-    expectSwapBuffers(displayHandle1, true);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    // modify some scenes
-    renderer.markBufferWithSceneAsModified(sceneIdDisp1OB1scene2);
-    renderer.markBufferWithSceneAsModified(sceneIdDisp1OB2scene1);
-
-    // FB1 rendered to reflect disp1 OB2 rendered, disp1 OBs skipped due to interruption, disp2 OB1 scene1 finished, disp2 OB1 scene2 interrupted, rest skipped
-    expectSceneRendered(displayHandle1, sceneIdDisp1FB);
-    expectFrameBufferRendered(displayHandle1);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB1scene1, disp2OB1, sceneRenderInterrupted, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB1scene2, disp2OB1, sceneRenderBegin, sceneRenderInterrupted);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB1 }, { { false, false } }, true);
-    expectSwapBuffers(displayHandle1, true);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    // modify just finished scene on still interrupted OB
-    renderer.markBufferWithSceneAsModified(sceneIdDisp2OB1scene1);
-
-    // FBs skipped due to no change, disp1 skipped due to interruption, disp2 OB1 scene2 finished, disp2 OB2 scene1 interrupted, rest skipped
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB1scene2, disp2OB1, sceneRenderInterrupted, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB2scene1, disp2OB2, sceneRenderBegin, sceneRenderInterrupted);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB1, disp2OB2 }, { { false, true }, { true, false } }, true);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    // modify just started and unfinished scene on newly interrupted OB
-    renderer.markBufferWithSceneAsModified(sceneIdDisp2OB2scene1);
-
-    // FB1 skipped due to no change, FB2 re-rendered to reflect disp2 OB1 rendered, disp2 OB2 scene1 finished, disp2 OB2 scene2 interrupted, rest skipped
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2);
-    expectSceneRendered(displayHandle2, sceneIdDisp2FB);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB2scene1, disp2OB2, sceneRenderInterrupted, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB2scene2, disp2OB2, sceneRenderBegin, sceneRenderInterrupted);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB2 }, { { false, false } });
-    expectSwapBuffers(displayHandle2);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    // FBs skipped due to no change, disp2 OB2 scene2 finished
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB2scene2, disp2OB2, sceneRenderInterrupted, sceneRenderBegin);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB2 }, { { false, true } }, true);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    // only now there is no interruption between frames, renderer will re-render all the buffers with scenes modified during interruption:
-    //  expect disp1 OB1 and OB2 re-rendered
-    //  expect disp2 OB1 and OB2 re-rendered
-
-    // FB1 skipped due to no change, FB2 re-rendered to reflect disp2 OB2 rendered, disp1 re-rendered, disp2 OB1 re-rendered, disp2 OB2 skipped due to no change
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2);
-    expectSceneRendered(displayHandle2, sceneIdDisp2FB);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB1scene1, disp1OB1, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB1scene2, disp1OB1, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB2scene1, disp1OB2, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle1, sceneIdDisp1OB2scene2, disp1OB2, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB1scene1, disp2OB1, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB1scene2, disp2OB1, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB2scene1, disp2OB2, sceneRenderBegin, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(displayHandle2, sceneIdDisp2OB2scene2, disp2OB2, sceneRenderBegin, sceneRenderBegin);
-    expectInterruptibleOffscreenBufferRendered(displayHandle1, { disp1OB1, disp1OB2 }, { { true, true }, { true, true } }, true);
-    expectInterruptibleOffscreenBufferRendered(displayHandle2, { disp2OB1, disp2OB2 }, { { true, true }, { true, true } }, true);
-    expectSwapBuffers(displayHandle2);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    // Both FBs re-rendered to reflect changes on both display's OBs
-    expectFrameBufferRendered(displayHandle1);
-    expectFrameBufferRendered(displayHandle2);
-    expectSceneRendered(displayHandle1, sceneIdDisp1FB);
-    expectSceneRendered(displayHandle2, sceneIdDisp2FB);
-    expectSwapBuffers(displayHandle2);
-    expectSwapBuffers(displayHandle1, true);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle1, false, false);
-    expectFrameBufferRendered(displayHandle2, false, false);
-    doOneRendererLoop();
-
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle1).m_displayController);
-    Mock::VerifyAndClearExpectations(renderer.getDisplayMock(displayHandle2).m_displayController);
-
-    hideScene(sceneIdDisp1FB);
-    hideScene(sceneIdDisp2FB);
-    hideScene(sceneIdDisp1OB1scene1);
-    hideScene(sceneIdDisp1OB1scene2);
-    hideScene(sceneIdDisp1OB2scene1);
-    hideScene(sceneIdDisp1OB2scene2);
-    hideScene(sceneIdDisp2OB1scene1);
-    hideScene(sceneIdDisp2OB1scene2);
-    hideScene(sceneIdDisp2OB2scene1);
-    hideScene(sceneIdDisp2OB2scene2);
-
-    unassignScene(sceneIdDisp1FB);
-    unassignScene(sceneIdDisp2FB);
-    unassignScene(sceneIdDisp1OB1scene1);
-    unassignScene(sceneIdDisp1OB1scene2);
-    unassignScene(sceneIdDisp1OB2scene1);
-    unassignScene(sceneIdDisp1OB2scene2);
-    unassignScene(sceneIdDisp2OB1scene1);
-    unassignScene(sceneIdDisp2OB1scene2);
-    unassignScene(sceneIdDisp2OB2scene1);
-    unassignScene(sceneIdDisp2OB2scene2);
 }
 
 TEST_P(ARenderer, canMapSceneWhileThereIsInterruption)
@@ -3348,7 +3009,7 @@ TEST_P(ARenderer, canMapSceneWhileThereIsInterruption)
     doOneRendererLoop();
 
     // no change -> nothing rendered
-    expectFrameBufferRendered(displayHandle, false, false);
+    expectFrameBufferRendered(displayHandle, false);
     doOneRendererLoop();
 
     hideScene(sceneIdOB);
@@ -3379,8 +3040,8 @@ TEST_P(ARenderer, doesNotReportSceneIfNotRenderedToExpirationMonitor)
     assignSceneToDisplayBuffer(sceneIdOB, displayHandle, 0, ob);
     assignSceneToDisplayBuffer(sceneIdOBint, displayHandle, 0, obInt);
 
-    expectOffscreenBufferRendered(displayHandle, { ob }, true);
-    expectFrameBufferRendered(displayHandle, false);
+    expectOffscreenBufferRendered(displayHandle, { ob });
+    expectFrameBufferRendered(displayHandle);
     expectInterruptibleOffscreenBufferRendered(displayHandle, { obInt }, { { true, true } });
     expectSwapBuffers();
     doOneRendererLoop();
@@ -3420,8 +3081,8 @@ TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitor)
     showScene(sceneIdOB);
     showScene(sceneIdOBint);
 
-    expectOffscreenBufferRendered(displayHandle, { ob }, true);
-    expectFrameBufferRendered(displayHandle, false);
+    expectOffscreenBufferRendered(displayHandle, { ob });
+    expectFrameBufferRendered(displayHandle);
     expectInterruptibleOffscreenBufferRendered(displayHandle, { obInt }, { { true, true } });
     expectSceneRendered(displayHandle, sceneIdOB, ob);
     expectSceneRendered(displayHandle, sceneIdFB);
@@ -3471,8 +3132,8 @@ TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitorOnlyAfterFullyRendere
     // only FB scene reported as rendered, OB scene is interrupted
     expectScenesReportedToExpirationMonitorAsRendered({ sceneIdFB });
 
-    expectFrameBufferRendered(displayHandle, false, false);
-    expectInterruptibleOffscreenBufferRendered(displayHandle, { obInt }, { { false, true } }, true);
+    expectFrameBufferRendered(displayHandle, false);
+    expectInterruptibleOffscreenBufferRendered(displayHandle, { obInt }, { { false, true } });
     expectSceneRenderedWithInterruptionEnabled(displayHandle, sceneIdOBint, obInt, sceneRenderInterrupted, sceneRenderBegin);
     doOneRendererLoop();
 

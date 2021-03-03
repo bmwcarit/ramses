@@ -18,7 +18,7 @@
 namespace ramses_internal
 {
     template <typename T, typename _uniqueId = void>
-    class HeapArray
+    class HeapArray final
     {
         static_assert(std::is_integral<T>::value, "only integral types allowed");
 

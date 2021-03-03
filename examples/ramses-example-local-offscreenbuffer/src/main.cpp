@@ -17,7 +17,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <thread>
-#include <string.h>
+#include <cstring>
 
 /**
  * @example ramses-example-local-offscreenbuffer/src/main.cpp
@@ -130,7 +130,7 @@ uint64_t nowMs()
     return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count();
 }
 
-static constexpr uint32_t SampleCount = 16u;
+static constexpr uint32_t SampleCount = 4u;
 static constexpr uint32_t ObWidth = 200u;
 static constexpr uint32_t ObHeight = 200u;
 static constexpr uint32_t DisplayWidth = 800u;

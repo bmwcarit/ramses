@@ -10,57 +10,52 @@
 #include "Utils/LogMacros.h"
 #include "PlatformAbstraction/PlatformTime.h"
 
+using namespace std::chrono_literals;
 namespace ramses_internal
 {
 
-    PlatformWatchdog::PlatformWatchdog(uint32_t notificationIntervalMilliSeconds, ramses::ERamsesThreadIdentifier thread, ramses::IThreadWatchdogNotification* callback)
-        : m_intervalMilliSeconds(notificationIntervalMilliSeconds / 2)
+    PlatformWatchdog::PlatformWatchdog(std::chrono::milliseconds notificationInterval, ramses::ERamsesThreadIdentifier thread, ramses::IThreadWatchdogNotification* callback)
+        : m_interval(notificationInterval / 2)
         , m_thread(thread)
         , m_watchdogCallback(callback)
-        , m_lastNotificationTimeMilliSeconds(0u)
+        , m_lastNotificationTime(0ms)
     {
         if (nullptr != m_watchdogCallback)
-        {
             m_watchdogCallback->registerThread(m_thread);
-        }
     }
 
     PlatformWatchdog::~PlatformWatchdog()
     {
         if (nullptr != m_watchdogCallback)
-        {
             m_watchdogCallback->unregisterThread(m_thread);
-        }
     }
 
     void PlatformWatchdog::notifyWatchdog()
     {
-        const uint64_t timeNowMilliSeconds = PlatformTime::GetMillisecondsMonotonic();
-        if ( (timeNowMilliSeconds - m_lastNotificationTimeMilliSeconds) >= m_intervalMilliSeconds / 2)
+        const std::chrono::milliseconds timeNow{ PlatformTime::GetMillisecondsMonotonic() };
+        if ((timeNow - m_lastNotificationTime) >= (m_interval / 2) || m_lastNotificationTime == 0ms) // always allow first notification
         {
-            LOG_TRACE(CONTEXT_FRAMEWORK, "notify watchdog from thread " << EnumToString(m_thread));
             if (nullptr != m_watchdogCallback)
             {
+                LOG_TRACE(CONTEXT_FRAMEWORK, "notify watchdog from thread " << EnumToString(m_thread));
                 m_watchdogCallback->notifyThread(m_thread);
             }
-            m_lastNotificationTimeMilliSeconds = timeNowMilliSeconds;
+            m_lastNotificationTime = timeNow;
         }
     }
 
-    uint32_t PlatformWatchdog::calculateTimeout() const
+    std::chrono::milliseconds PlatformWatchdog::calculateTimeout() const
     {
-        if (m_lastNotificationTimeMilliSeconds == 0)
-        {
-            return m_intervalMilliSeconds;
-        }
+        if (m_lastNotificationTime == 0ms || m_interval == 0ms)
+            return m_interval;
 
         const auto timeSinceLastNotify =
-            static_cast<Int64>(PlatformTime::GetMillisecondsMonotonic() - m_lastNotificationTimeMilliSeconds);
-        Int64 timeToNext = m_intervalMilliSeconds - timeSinceLastNotify;
-        while (timeToNext <= 0)
+            std::chrono::milliseconds(PlatformTime::GetMillisecondsMonotonic()) - m_lastNotificationTime;
+        std::chrono::milliseconds timeToNext = m_interval - timeSinceLastNotify;
+        while (timeToNext <= 0ms)
         {
-            timeToNext += m_intervalMilliSeconds;
+            timeToNext += m_interval;
         }
-        return static_cast<uint32_t>(timeToNext);
+        return timeToNext;
     }
 }

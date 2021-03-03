@@ -178,6 +178,9 @@ Checks:
     modernize-raw-string-literal,
     modernize-use-nodiscard,
     modernize-use-using,
+    modernize-deprecated-headers,
+    modernize-make-unique,
+    modernize-make-shared,
 
     performance-faster-string-find,
     performance-for-range-copy,

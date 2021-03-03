@@ -12,7 +12,7 @@ namespace ramses_internal
 {
     RendererScenes::RendererScenes(RendererEventCollector& eventCollector)
     {
-        m_sceneLinksManager.reset(new SceneLinksManager(*this, eventCollector));
+        m_sceneLinksManager = std::make_unique<SceneLinksManager>(*this, eventCollector);
     }
 
     RendererScenes::~RendererScenes()

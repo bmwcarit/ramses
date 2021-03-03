@@ -71,7 +71,7 @@ namespace ramses
     void AnimationSystemData::initializeFrameworkData(AnimationSystemImpl& animationSystem)
     {
         m_animationSystem = &animationSystem;
-        m_animatedPropertyFactory.reset(new AnimatedPropertyFactory(animationSystem));
+        m_animatedPropertyFactory = std::make_unique<AnimatedPropertyFactory>(animationSystem);
     }
 
     void AnimationSystemData::deinitializeFrameworkData()

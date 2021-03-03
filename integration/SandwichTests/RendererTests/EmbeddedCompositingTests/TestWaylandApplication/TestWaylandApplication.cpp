@@ -495,7 +495,7 @@ namespace ramses_internal
         ramses::RamsesFrameworkConfig config;
         TestScenesAndRenderer testScenesAndRenderer(config);
         TestRenderer& testRenderer = testScenesAndRenderer.getTestRenderer();
-        RendererTestUtils::SetWaylandDisplayForSystemCompositorController(systemCompositorDisplay);
+        RendererTestUtils::SetWaylandDisplayForSystemCompositorControllerForAllTests(systemCompositorDisplay);
         testScenesAndRenderer.initializeRenderer();
 
         ramses::DisplayConfig displayConfig1 = RendererTestUtils::CreateTestDisplayConfig(iviSurfaceIdOffset);

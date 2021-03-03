@@ -150,19 +150,19 @@ namespace ramses_internal
         config.setWindowPositionX(rendererArgs.windowPositionX.parseValueFromCmdLine(parser));
         config.setWindowPositionY(rendererArgs.windowPositionY.parseValueFromCmdLine(parser));
 
+        // obsolete way of setting MSAA via string, use 2 as default sample count
+        const String antialiasingMethodName = rendererArgs.antialiasingMethod.parseValueFromCmdLine(parser);
+        if (antialiasingMethodName == "MSAA")
+            config.setAntialiasingSampleCount(2u);
         const UInt8 sampleCount = static_cast<UInt8>(rendererArgs.antialiasingSampleCount.parseValueFromCmdLine(parser));
         if (rendererArgs.antialiasingSampleCount.wasDefined())
         {
-            config.setAntialiasingSampleCount(sampleCount);
-        }
-        const String antialiasingMethodName = rendererArgs.antialiasingMethod.parseValueFromCmdLine(parser);
-        if (String("MSAA") == antialiasingMethodName)
-        {
-            config.setAntialiasingMethod(EAntiAliasingMethod_MultiSampling);
-        }
-        else
-        {
-            config.setAntialiasingMethod(EAntiAliasingMethod_PlainFramebuffer);
+            if (!ramses_internal::contains_c<uint32_t>({ 1u, 2u, 4u, 8u }, sampleCount))
+            {
+                LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Invalid MSAA sample count command line argument, sample count must be 1, 2, 4 or 8!");
+            }
+            else
+                config.setAntialiasingSampleCount(sampleCount);
         }
 
         config.setWaylandIviLayerID(WaylandIviLayerId(rendererArgs.waylandIviLayerId.parseValueFromCmdLine(parser)));

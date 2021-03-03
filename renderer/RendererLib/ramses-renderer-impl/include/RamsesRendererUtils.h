@@ -17,7 +17,7 @@
 
 namespace ramses
 {
-    class RamsesRendererUtils
+    class RamsesRendererUtils final
     {
     public:
         static EMouseEvent          GetMouseEvent(    ramses_internal::EMouseEventType type);

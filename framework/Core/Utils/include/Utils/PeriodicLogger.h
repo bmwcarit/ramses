@@ -27,7 +27,7 @@ namespace ramses_internal
     {
     public:
         PeriodicLogger(PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection);
-        ~PeriodicLogger();
+        ~PeriodicLogger() override;
 
         void startLogging(UInt32 periodicLogTimeoutSeconds);
 
@@ -69,7 +69,10 @@ namespace ramses_internal
     {
         if (numberTimeIntervals > 0)
         {
-            stream << "(" << summary.minValue << "/" << summary.maxValue << "/" << summary.sum / numberTimeIntervals << ")";
+            if (summary.minValue == summary.maxValue)
+                stream << "(" << summary.minValue << ")";
+            else
+                stream << "(" << summary.minValue << "/" << summary.maxValue << "/" << summary.sum / numberTimeIntervals << ")";
         }
         else
         {

@@ -26,6 +26,9 @@ namespace ramses_internal
         size_t getCurrentReadBytes() const;
         void skip(int64_t offset);
 
+        EStatus seek(Int numberOfBytesToSeek, Seek origin) override;
+        EStatus getPos(size_t& position) const override;
+
     private:
         const Byte* m_current;
         const Byte* m_start;
@@ -63,6 +66,21 @@ namespace ramses_internal
     inline void BinaryInputStream::skip(int64_t offset)
     {
         m_current += offset;
+    }
+
+    inline EStatus BinaryInputStream::seek(Int numberOfBytesToSeek, Seek origin)
+    {
+        if (origin == Seek::FromBeginning)
+            m_current = m_start + numberOfBytesToSeek;
+        else if (origin == Seek::Relative)
+            m_current += numberOfBytesToSeek;
+        return EStatus::Ok;
+    }
+
+    inline EStatus BinaryInputStream::getPos(size_t& position) const
+    {
+        position = getCurrentReadBytes();
+        return EStatus::Ok;
     }
 }
 

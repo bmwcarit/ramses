@@ -14,7 +14,7 @@
 
 namespace ramses_internal
 {
-    class PlatformEvent
+    class PlatformEvent final
     {
     public:
         PlatformEvent() = default;

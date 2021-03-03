@@ -11,28 +11,44 @@
 
 #include "RendererLib/AsyncEffectUploader.h"
 #include "PlatformMock.h"
+#include "Utils/ThreadLocalLog.h"
 #include "absl/algorithm/container.h"
+#include "Watchdog/ThreadAliveNotifierMock.h"
 #include <thread>
 #include <memory>
 
 using namespace testing;
-
+using namespace std::chrono_literals;
 namespace ramses_internal
 {
     class AnAsyncEffectUploader : public testing::Test
     {
     protected:
         AnAsyncEffectUploader()
-            : platformMock()
-            , asyncEffectUploader(platformMock, platformMock.renderBackendMock)
+            : asyncEffectUploader(platformMock, platformMock.renderBackendMock, (EXPECT_CALL(notifier, registerThread()).WillOnce(Return(ThreadAliveNotifierMock::dummyThreadId)), notifier), 1)
         {
+            // caller of async shader uploader is expected to have a display prefix for logs
+            ThreadLocalLog::SetPrefix(0);
         }
 
-        void createResourceUploadingRenderBackend()
+        void TearDown()
         {
-            InSequence s;
-            EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, disable()).WillOnce(Return(true));
-            EXPECT_CALL(platformMock, createResourceUploadRenderBackend(Ref(platformMock.renderBackendMock)));
+            EXPECT_CALL(notifier, unregisterThread(ThreadAliveNotifierMock::dummyThreadId)).Times(1);
+        }
+
+        void createResourceUploadingRenderBackend(bool expectNotifications = true)
+        {
+            {
+                InSequence s;
+                EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, disable()).WillOnce(Return(true));
+                EXPECT_CALL(platformMock, createResourceUploadRenderBackend(Ref(platformMock.renderBackendMock)));
+                EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, enable()).WillOnce(Return(true));
+            }
+            if (expectNotifications)
+            {
+                EXPECT_CALL(notifier, notifyAlive(ThreadAliveNotifierMock::dummyThreadId)).Times(AnyNumber());
+                EXPECT_CALL(notifier, calculateTimeout()).Times(AnyNumber()).WillRepeatedly(Return(10ms));
+            }
             const bool status = asyncEffectUploader.createResourceUploadRenderBackendAndStartThread();
             EXPECT_TRUE(status);
         }
@@ -41,6 +57,7 @@ namespace ramses_internal
         {
             EXPECT_CALL(platformMock, destroyResourceUploadRenderBackend(Ref(platformMock.resourceUploadRenderBackendMock)));
             asyncEffectUploader.destroyResourceUploadRenderBackendAndStopThread();
+            Mock::VerifyAndClearExpectations(&notifier);
         }
 
         void submitForUploadAndExpectNoShaderWereUploaded(const EffectsRawResources& effectsToUpload)
@@ -57,7 +74,7 @@ namespace ramses_internal
             for(uint32_t i = 0u; i < count; ++i)
             {
                 const auto randomString = std::to_string(++createdEffectCounter);
-                const EffectResource* effect = new EffectResource(randomString.c_str(), "", "", {}, {}, "", ResourceCacheFlag_DoNotCache);
+                const EffectResource* effect = new EffectResource(randomString.c_str(), "", "", absl::nullopt, {}, {}, "", ResourceCacheFlag_DoNotCache);
                 result.push_back(effect);
 
                 createdEffects.emplace_back(effect); //keep track of created resource to avoid mem-leak
@@ -106,7 +123,11 @@ namespace ramses_internal
         }
 
         PlatformStrictMock platformMock;
+        StrictMock<ThreadAliveNotifierMock> notifier;
         AsyncEffectUploader asyncEffectUploader;
+
+        std::atomic_uint32_t notifyCounter{ 0 };
+        std::atomic_uint32_t timeoutCounter{ 0 };
 
         std::vector<std::unique_ptr<const EffectResource>> createdEffects; //keep track of created resources to avoid mem-leak
         uint32_t createdEffectCounter = 0u;
@@ -123,6 +144,7 @@ namespace ramses_internal
         InSequence s;
         EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, disable()).WillOnce(Return(true));
         EXPECT_CALL(platformMock, createResourceUploadRenderBackend(Ref(platformMock.renderBackendMock))).WillOnce(Return(nullptr));
+        EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, enable()).WillOnce(Return(true));
         const bool status = asyncEffectUploader.createResourceUploadRenderBackendAndStartThread();
         EXPECT_FALSE(status);
     }
@@ -225,5 +247,30 @@ namespace ramses_internal
         expectShaderUploadingResult(effectsToUploadWhileBusy);
 
         destroyResourceUploadingRenderBackend();
+    }
+
+    TEST_F(AnAsyncEffectUploader, notifiesWatchdogInbetweenEveryShaderUpload)
+    {
+        EXPECT_CALL(notifier, notifyAlive(ThreadAliveNotifierMock::dummyThreadId)).Times(AtLeast(5)).WillRepeatedly([this](auto) { notifyCounter++; });
+        EXPECT_CALL(notifier, calculateTimeout()).Times(AtLeast(0)).WillRepeatedly([this]() { timeoutCounter++; return 20ms; });
+        createResourceUploadingRenderBackend(false);
+
+        uploadShadersAndExpectSuccess(5u);
+
+        destroyResourceUploadingRenderBackend();
+        EXPECT_EQ(notifyCounter, timeoutCounter + 5u);
+    }
+
+    TEST_F(AnAsyncEffectUploader, notifiesWatchdogRegularlyWithNoWorkToDo)
+    {
+        EXPECT_CALL(notifier, notifyAlive(ThreadAliveNotifierMock::dummyThreadId)).Times(AtLeast(10)).WillRepeatedly([this](auto) { notifyCounter++; });
+        EXPECT_CALL(notifier, calculateTimeout()).Times(AtLeast(10)).WillRepeatedly([this]() { timeoutCounter++; return 1ms; });
+        createResourceUploadingRenderBackend(false);
+
+        while (timeoutCounter < 10)
+            std::this_thread::sleep_for(1ms);
+
+        destroyResourceUploadingRenderBackend();
+        EXPECT_EQ(notifyCounter, timeoutCounter);
     }
 }

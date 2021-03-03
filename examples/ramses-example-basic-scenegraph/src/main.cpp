@@ -21,7 +21,7 @@
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <thread>
 
 /**

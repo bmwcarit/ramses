@@ -33,24 +33,28 @@ private:
     bool runRemapSceneToWarpedDisplayTest(RendererTestsFramework& testFramework);
     bool runRemapSceneWithChangedContentTest(RendererTestsFramework& testFramework);
     bool runResubscribeSceneTest(RendererTestsFramework& testFramework);
+    bool runFramebufferWithoutDepthAndStencilTest(RendererTestsFramework& testFramework);
+    bool runFramebufferWithoutStencil(RendererTestsFramework& testFramework);
 
     enum
     {
-        DisplayTest_TwoScenes = 0,
-        DisplayTest_UnpublishScene,
-        DisplayTest_HideScene,
-        DisplayTest_SceneRenderOrder,
-        DisplayTest_SceneRenderOrderInversed,
-        DisplayTest_Warping,
-        DisplayTest_UpdateWarping,
-        DisplayTest_Subimage,
-        DisplayTest_RemapScene,
-        DisplayTest_SwapScenes,
-        DisplayTest_RemapSceneWithRenderTarget,
-        DisplayTest_RemapSceneWithText,
-        DisplayTest_RemapSceneWithChangedContent,
-        DisplayTest_RemapSceneToWarpedDisplay,
-        DisplayTest_ResubscribeScene
+        DisplayRenderingTest_TwoScenes = 0,
+        DisplayRenderingTest_UnpublishScene,
+        DisplayRenderingTest_HideScene,
+        DisplayRenderingTest_SceneRenderOrder,
+        DisplayRenderingTest_SceneRenderOrderInversed,
+        DisplayRenderingTest_Warping,
+        DisplayRenderingTest_UpdateWarping,
+        DisplayRenderingTest_Subimage,
+        DisplayRenderingTest_RemapScene,
+        DisplayRenderingTest_SwapScenes,
+        DisplayRenderingTest_RemapSceneWithRenderTarget,
+        DisplayRenderingTest_RemapSceneWithText,
+        DisplayRenderingTest_RemapSceneWithChangedContent,
+        DisplayRenderingTest_RemapSceneToWarpedDisplay,
+        DisplayRenderingTest_ResubscribeScene,
+        DisplayRenderingTest_FramebufferWithoutDepthAndStencil,
+        DisplayRenderingTest_FramebufferWithoutStencil
     };
 
     static constexpr uint32_t DisplayWidth = 128u;

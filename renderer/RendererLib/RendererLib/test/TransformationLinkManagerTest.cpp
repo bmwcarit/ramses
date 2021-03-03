@@ -13,6 +13,7 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -38,6 +39,9 @@ public:
         , providerId(33u)
         , consumerId(44u)
     {
+        // caller is expected to have a display prefix for logs
+        ThreadLocalLog::SetPrefix(1);
+
         providerSceneAllocator.allocateNode(0u, providerNode);
         consumerSceneAllocator.allocateNode(0u, consumerNode);
 

@@ -123,8 +123,9 @@ namespace ramses_internal
 
         const EffectInputInformationVector& uniformInputs = glslToEffectConverter.getUniformInputs();
         const EffectInputInformationVector& attributeInputs = glslToEffectConverter.getAttributeInputs();
+        absl::optional<EDrawMode> geomInputType = glslToEffectConverter.getGeometryShaderInputType();
 
-        m_effectResource = new EffectResource(mergeShaderParts(vertexShaderParts), mergeShaderParts(fragmentShaderParts), mergeShaderParts(geometryShaderParts), uniformInputs, attributeInputs, m_name, cacheFlag);
+        m_effectResource = new EffectResource(mergeShaderParts(vertexShaderParts), mergeShaderParts(fragmentShaderParts), mergeShaderParts(geometryShaderParts), geomInputType, uniformInputs, attributeInputs, m_name, cacheFlag);
         return m_effectResource;
     }
 

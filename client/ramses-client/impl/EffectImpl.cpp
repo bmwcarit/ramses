@@ -16,6 +16,7 @@
 #include "Resource/EffectResource.h"
 #include "Collections/StringOutputStream.h"
 #include "EffectInputSemanticUtils.h"
+#include "AppearanceUtils.h"
 
 namespace ramses
 {
@@ -28,10 +29,11 @@ namespace ramses
     {
     }
 
-    void EffectImpl::initializeFromFrameworkData(const ramses_internal::EffectInputInformationVector& uniformInputs, const ramses_internal::EffectInputInformationVector& attributeInputs)
+    void EffectImpl::initializeFromFrameworkData(const ramses_internal::EffectInputInformationVector& uniformInputs, const ramses_internal::EffectInputInformationVector& attributeInputs, absl::optional<ramses_internal::EDrawMode> geometryShaderInputType)
     {
         m_effectUniformInputs = uniformInputs;
         m_effectAttributeInputs = attributeInputs;
+        m_geometryShaderInputType = geometryShaderInputType;
     }
 
     status_t EffectImpl::serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const
@@ -54,6 +56,9 @@ namespace ramses
             outStream << static_cast<uint32_t>(input.dataType);
             outStream << static_cast<uint32_t>(input.semantics);
         }
+
+        // TODO (backported) enable this once 27 merged to master
+        //outStream << static_cast<uint32_t>(m_geometryShaderInputType);
 
         return StatusOK;
     }
@@ -96,6 +101,11 @@ namespace ramses
             m_effectAttributeInputs[i].elementCount = 1u;
             m_effectAttributeInputs[i].semantics = static_cast<ramses_internal::EFixedSemantics>(semanticAsUInt);
         }
+
+        // TODO (backported) enable this once 27 merged to master
+        //ramses_internal::EDrawMode geometryShaderInputType;
+        //inStream >> geometryShaderInputType;
+        //m_geometryShaderInputType = geometryShaderInputType;
 
         return StatusOK;
     }
@@ -239,5 +249,21 @@ namespace ramses
             effectInputInfo.elementCount,
             index
             );
+    }
+
+    bool EffectImpl::hasGeometryShader() const
+    {
+        return m_geometryShaderInputType.has_value();
+    }
+
+    status_t EffectImpl::getGeometryShaderInputType(EDrawMode& inputType) const
+    {
+        if (!hasGeometryShader())
+        {
+            return addErrorEntry((ramses_internal::StringOutputStream() << "Effect::getGeometryShaderInputType: failed, effect '" << getName() << "' has no geometry shader attached to it!").c_str());
+        }
+
+        inputType = AppearanceUtils::GetDrawModeFromInternal(*m_geometryShaderInputType);
+        return StatusOK;
     }
 }

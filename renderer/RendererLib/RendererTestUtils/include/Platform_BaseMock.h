@@ -28,7 +28,7 @@ namespace ramses_internal
     {
     public:
         explicit Platform_BaseMock(const RendererConfig& config);
-        virtual ~Platform_BaseMock();
+        virtual ~Platform_BaseMock() override;
 
         template <typename MockT>
         MockT* createMockObjectHelper()
@@ -41,7 +41,7 @@ namespace ramses_internal
 
         MOCK_METHOD(ISystemCompositorController* , createSystemCompositorController, (), (override));
         MOCK_METHOD(IWindow*, createWindow, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
-        MOCK_METHOD(IContext*, createContext, (IWindow& window, IContext*), (override));
+        MOCK_METHOD(IContext*, createContext, (const DisplayConfig& displayConfig, IWindow& window, IContext*), (override));
         MOCK_METHOD(IDevice*, createDevice, (IContext& context), (override));
         MOCK_METHOD(IEmbeddedCompositor*, createEmbeddedCompositor, (const DisplayConfig& displayConfig, IContext& context), (override));
         MOCK_METHOD(ITextureUploadingAdapter*, createTextureUploadingAdapter, (IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window), (override));
@@ -70,7 +70,7 @@ namespace ramses_internal
             return addPlatformDevice(device);
         }
 
-        IContext* createContext_fake(IWindow& /*window*/, IContext*)
+        IContext* createContext_fake(const DisplayConfig&, IWindow& /*window*/, IContext*)
         {
             return addPlatformContext(context);
         }

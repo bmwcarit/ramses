@@ -22,16 +22,17 @@ class IntegrationTest(unittest.TestCase):
         self.screenshotNumber = 0
 
     def fullClassName(self):
-        return self.__module__+'.'+self.__class__.__name__
+        return self.__module__ + '.' + self.__class__.__name__
 
-    def validateScreenshotOnTarget(self, renderer, imageName, target, displayNumber = 0, useSystemCompositorForScreenshot = False, compareForEquality = True):
+    def validateScreenshotOnTarget(self, renderer, imageName, target, displayNumber=0,
+                                   useSystemCompositorForScreenshot=False, compareForEquality=True):
         if useSystemCompositorForScreenshot:
             self.assertTrue(self.target.systemCompositorScreenshotSupported, msg="Cannot take system compositor screenshot when not supported on target")
 
         target.take_screenshot_and_compare(renderer, imageName, self.fullClassName(), self.name_test_run(),
-            displayNumber, self.screenshotNumber, self.percentageOfWrongPixelsAllowed,
-            self.percentageOfRGBDifferenceAllowedPerPixel, self.numberOfRequiredUnequalPixels,
-            useSystemCompositorForScreenshot, compareForEquality)
+                                           displayNumber, self.screenshotNumber, self.percentageOfWrongPixelsAllowed,
+                                           self.percentageOfRGBDifferenceAllowedPerPixel, self.numberOfRequiredUnequalPixels,
+                                           useSystemCompositorForScreenshot, compareForEquality)
         self.screenshotNumber += 1
 
     def save_application_output_on_target(self, application, target):
@@ -41,7 +42,7 @@ class IntegrationTest(unittest.TestCase):
         self.assertTrue(application.started, "Application {} could not be started".format(application.name))
 
     def setUp(self):
-        #output separator
+        # output separator
         print("")
         log.separator("=")
 
@@ -79,6 +80,7 @@ class IntegrationTest(unittest.TestCase):
     def _get_result_dir(self):
         pass
 
+
 class OneConnectionTest(IntegrationTest):
     """ Test that contains a ssh connection to one target.
 
@@ -112,7 +114,7 @@ class OneConnectionTest(IntegrationTest):
     def class_teardown(self):
         self.target.currentTestId = None
 
-    def validateScreenshot(self, renderer, imageName, displayNumber=0, useSystemCompositorForScreenshot=False, compareForEquality = True):
+    def validateScreenshot(self, renderer, imageName, displayNumber=0, useSystemCompositorForScreenshot=False, compareForEquality=True):
         log.info("Validating test via screenshot comparison")
         self.validateScreenshotOnTarget(renderer, imageName, self.target, displayNumber, useSystemCompositorForScreenshot, compareForEquality)
 

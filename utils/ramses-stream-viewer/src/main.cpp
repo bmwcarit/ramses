@@ -24,7 +24,7 @@
 #include <thread>
 #include <vector>
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <unordered_map>
 #include <iostream>
 
@@ -223,9 +223,11 @@ private:
 class DcsmConsumerEventHandler: public ramses::IDcsmConsumerEventHandler
 {
 public:
-    DcsmConsumerEventHandler(StreamSourceViewer& sceneCreator, ramses::DcsmConsumer& dcsmConsumer)
+    DcsmConsumerEventHandler(StreamSourceViewer& sceneCreator, ramses::DcsmConsumer& dcsmConsumer, uint32_t displayWidth, uint32_t displayHeight)
         : m_sceneCreator(sceneCreator)
         , m_dcsmConsumer(dcsmConsumer)
+        , m_displayWidth(displayWidth)
+        , m_displayHeight(displayHeight)
     {
     }
 
@@ -233,7 +235,7 @@ public:
     {
         if (contentType == ramses::ETechnicalContentType::WaylandIviSurfaceID)
         {
-            ramses::CategoryInfoUpdate update{ { 1,1 }, { 0,0,1,1 } };
+            ramses::CategoryInfoUpdate update{ { m_displayWidth, m_displayHeight }, { 0, 0, m_displayWidth, m_displayHeight } };
             m_dcsmConsumer.assignContentToConsumer(contentID, update);
             m_dcsmConsumer.contentStateChange(contentID, ramses::EDcsmState::Ready, ramses::AnimationInformation());
         }
@@ -284,14 +286,19 @@ private:
     void removeContent(ramses::ContentID contentID)
     {
         auto contentIt = contentToWaylandSurfaceIdMap.find(contentID);
-        m_sceneCreator.removeMesh(contentIt->second);
-        contentToWaylandSurfaceIdMap.erase(contentIt);
+        if (contentIt != contentToWaylandSurfaceIdMap.end())
+        {
+            m_sceneCreator.removeMesh(contentIt->second);
+            contentToWaylandSurfaceIdMap.erase(contentIt);
+        }
     }
 
 private:
     StreamSourceViewer& m_sceneCreator;
     ramses::DcsmConsumer& m_dcsmConsumer;
     std::unordered_map<ramses::ContentID, ramses::waylandIviSurfaceId_t> contentToWaylandSurfaceIdMap;
+    uint32_t m_displayWidth;
+    uint32_t m_displayHeight;
 };
 
 int main(int argc, char* argv[])
@@ -360,11 +367,11 @@ int main(int argc, char* argv[])
     if (dcsmSupportRequested)
     {
         dcsmConsumer = framework.createDcsmConsumer();
-        dcsmConsumerEventHandler.reset(new DcsmConsumerEventHandler (sceneCreator, *dcsmConsumer));
+        dcsmConsumerEventHandler = std::make_unique<DcsmConsumerEventHandler>(sceneCreator, *dcsmConsumer, width, height);
     }
     else
     {
-        eventHandler.reset(new RendererEventHandler(sceneCreator));
+        eventHandler = std::make_unique<RendererEventHandler>(sceneCreator);
     }
 
     for (;;)

@@ -12,6 +12,7 @@
 #include "RendererAPI/Types.h"
 #include "SceneAPI/SceneId.h"
 #include "SceneAPI/WaylandIviSurfaceId.h"
+#include "SceneAPI/TextureEnums.h"
 #include "SceneAPI/DataSlot.h"
 #include "Math3d/Vector2.h"
 #include "Math3d/Vector4.h"
@@ -31,11 +32,12 @@ namespace ramses_internal
         virtual void handleScenePublished(SceneId sceneId, EScenePublicationMode mode) = 0;
         virtual void handleSceneUnpublished(SceneId sceneId) = 0;
         virtual void handleSceneReceived(const SceneInfo& sceneInfo) = 0;
-        virtual bool handleBufferCreateRequest(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered) = 0;
+        virtual bool handleBufferCreateRequest(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) = 0;
         virtual bool handleBufferDestroyRequest(OffscreenBufferHandle buffer, DisplayHandle display) = 0;
         virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, DisplayHandle display, WaylandIviSurfaceId source) = 0;
         virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer, DisplayHandle display) = 0;
         virtual bool setStreamBufferState(StreamBufferHandle buffer, DisplayHandle display, bool newState) = 0;
+        virtual void handleSetClearFlags(DisplayHandle display, OffscreenBufferHandle buffer, uint32_t clearFlags) = 0;
         virtual void handleSetClearColor(DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor) = 0;
         virtual void handleReadPixels(DisplayHandle display, OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo) = 0;
         virtual void handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize) = 0;

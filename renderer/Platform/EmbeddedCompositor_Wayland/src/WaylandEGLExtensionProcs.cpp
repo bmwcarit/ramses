@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "EmbeddedCompositor_Wayland/WaylandEGLExtensionProcs.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include <cassert>
 
 namespace ramses_internal

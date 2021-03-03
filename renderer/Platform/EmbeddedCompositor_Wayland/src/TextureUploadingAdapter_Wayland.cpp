@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "EmbeddedCompositor_Wayland/TextureUploadingAdapter_Wayland.h"
-#include <assert.h>
+#include <cassert>
 #include <functional>
 
 #include <drm_fourcc.h>
@@ -15,7 +15,7 @@
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
 #include "RendererAPI/IDevice.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Warnings.h"
 
 namespace ramses_internal

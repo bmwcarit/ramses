@@ -28,7 +28,7 @@ namespace ramses
     {
     public:
         MeshNodeImpl(SceneImpl& scene, const char* nodeName);
-        virtual ~MeshNodeImpl();
+        virtual ~MeshNodeImpl() override;
 
         void             initializeFrameworkData();
         virtual void     deinitializeFrameworkData() override;

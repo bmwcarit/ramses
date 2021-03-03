@@ -23,7 +23,6 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
 {
     EXPECT_FALSE(m_config.getFullscreenState());
     EXPECT_FALSE(m_config.getBorderlessState());
-    EXPECT_EQ(ramses_internal::EAntiAliasingMethod_PlainFramebuffer, m_config.getAntialiasingMethod());
     EXPECT_EQ(1u, m_config.getAntialiasingSampleCount());
     EXPECT_EQ(1280u, m_config.getDesiredWindowWidth());
     EXPECT_EQ(480u, m_config.getDesiredWindowHeight());
@@ -38,6 +37,7 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_EQ(0u, m_config.getGPUMemoryCacheSize());
     EXPECT_EQ(ramses_internal::Vector4(0.f,0.f,0.f,1.f), m_config.getClearColor());
     EXPECT_STREQ("", m_config.getWaylandDisplay().c_str());
+    EXPECT_EQ(ramses_internal::ERenderBufferType_DepthStencilBuffer, m_config.getDepthStencilBufferType());
 
     // this value is used in HL API, so test that value does not change unnoticed
     EXPECT_TRUE(ramses_internal::IntegrityRGLDeviceUnit::Invalid().getValue() == 0xFFFFFFFF);
@@ -50,9 +50,6 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
 
     m_config.setBorderlessState(true);
     EXPECT_TRUE(m_config.getBorderlessState());
-
-    m_config.setAntialiasingMethod(ramses_internal::EAntiAliasingMethod_MultiSampling);
-    EXPECT_EQ(ramses_internal::EAntiAliasingMethod_MultiSampling, m_config.getAntialiasingMethod());
 
     m_config.setAntialiasingSampleCount(2u);
     EXPECT_EQ(2u, m_config.getAntialiasingSampleCount());
@@ -94,6 +91,9 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
     m_config.setClearColor(clearColor);
     EXPECT_EQ(clearColor, m_config.getClearColor());
 
+    m_config.setDepthStencilBufferType(ramses_internal::ERenderBufferType_DepthBuffer);
+    EXPECT_EQ(ramses_internal::ERenderBufferType_DepthBuffer, m_config.getDepthStencilBufferType());
+
     m_config.setWaylandDisplay("ramses display");
     EXPECT_STREQ("ramses display", m_config.getWaylandDisplay().c_str());
 }
@@ -134,7 +134,6 @@ TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)
     EXPECT_TRUE(config.getBorderlessState());
     EXPECT_TRUE(config.isWarpingEnabled());
 
-    EXPECT_EQ(ramses_internal::EAntiAliasingMethod_MultiSampling, config.getAntialiasingMethod());
     EXPECT_EQ(4u, config.getAntialiasingSampleCount());
     EXPECT_EQ(101u, config.getWaylandIviLayerID().getValue());
     EXPECT_EQ(1001u, config.getWaylandIviSurfaceID().getValue());
@@ -143,6 +142,21 @@ TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)
     EXPECT_TRUE(config.isWarpingEnabled());
     EXPECT_FALSE(config.getKeepEffectsUploaded());
     EXPECT_TRUE(config.isResizable());
+}
+
+TEST_F(AInternalDisplayConfig, willUseMSAA2IfMSAAMethodSpecifiedWithoutSamples)
+{
+    static const char* args[] =
+    {
+        "app",
+        "-aa", "MSAA",
+    };
+    ramses_internal::CommandLineParser parser(sizeof(args) / sizeof(char*), args);
+
+    ramses_internal::DisplayConfig config;
+    ramses_internal::RendererConfigUtils::ApplyValuesFromCommandLine(parser, config);
+
+    EXPECT_EQ(2u, config.getAntialiasingSampleCount());
 }
 
 TEST_F(AInternalDisplayConfig, canBeCompared)

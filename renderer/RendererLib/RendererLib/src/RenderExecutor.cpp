@@ -79,9 +79,9 @@ namespace ramses_internal
                 m_state.getDevice().clear(clearFlags);
 
                 //reset cached render states that were updated on device before clearing
-                m_state.depthStencilState.reset();
-                m_state.blendState.reset();
-                m_state.rasterizerState.reset();
+                m_state.depthWriteState.reset();
+                m_state.colorWriteMaskState.reset();
+                m_state.scissorState.reset();
             }
         }
 
@@ -137,25 +137,49 @@ namespace ramses_internal
     {
         IDevice& device = m_state.getDevice();
 
-        // TODO Mohamed: merge with rasterizer cached state, first check wrong cached states due to explicit state change on clear
-        device.scissorTest(m_state.scissorState.m_scissorTest, m_state.scissorState.m_scissorRegion);
+        if(m_state.scissorState.hasChanged())
+            device.scissorTest(m_state.scissorState.getState().m_scissorTest, m_state.scissorState.getState().m_scissorRegion);
 
-        if (m_state.depthStencilState.hasChanged())
+        if (m_state.depthFuncState.hasChanged())
         {
-            const DepthStencilState& depthStencilState = m_state.depthStencilState.getState();
-            device.depthFunc(depthStencilState.m_depthFunc);
-            device.depthWrite(depthStencilState.m_depthWrite);
-            device.stencilFunc(depthStencilState.m_stencilFunc, depthStencilState.m_stencilRefValue, depthStencilState.m_stencilMask);
-            device.stencilOp(depthStencilState.m_stencilOpFail, depthStencilState.m_stencilOpDepthFail, depthStencilState.m_stencilOpDepthPass);
+            const EDepthFunc depthFunc = m_state.depthFuncState.getState();
+            device.depthFunc(depthFunc);
         }
 
-        if (m_state.blendState.hasChanged())
+        if (m_state.depthWriteState.hasChanged())
         {
-            const BlendState& blendState = m_state.blendState.getState();
-            device.blendOperations(blendState.m_blendOperationColor, blendState.m_blendOperationAlpha);
-            device.blendFactors(blendState.m_blendFactorSrcColor, blendState.m_blendFactorDstColor, blendState.m_blendFactorSrcAlpha, blendState.m_blendFactorDstAlpha);
-            device.blendColor(blendState.m_blendColor);
-            const ColorWriteMask colorMask = blendState.m_colorWriteMask;
+            const EDepthWrite depthWrite = m_state.depthWriteState.getState();
+            device.depthWrite(depthWrite);
+        }
+
+        if (m_state.stencilState.hasChanged())
+        {
+            const auto& state = m_state.stencilState.getState();
+            device.stencilFunc(state.m_stencilFunc, state.m_stencilRefValue, state.m_stencilMask);
+            device.stencilOp(state.m_stencilOpFail, state.m_stencilOpDepthFail, state.m_stencilOpDepthPass);
+        }
+
+        if (m_state.blendOperationsState.hasChanged())
+        {
+            const auto& state = m_state.blendOperationsState.getState();
+            device.blendOperations(state.m_blendOperationColor, state.m_blendOperationAlpha);
+        }
+
+        if (m_state.blendFactorsState.hasChanged())
+        {
+            const auto& state = m_state.blendFactorsState.getState();
+            device.blendFactors(state.m_blendFactorSrcColor, state.m_blendFactorDstColor, state.m_blendFactorSrcAlpha, state.m_blendFactorDstAlpha);
+        }
+
+        if (m_state.blendColorState.hasChanged())
+        {
+            const auto& blendColor = m_state.blendColorState.getState();
+            device.blendColor(blendColor);
+        }
+
+        if (m_state.colorWriteMaskState.hasChanged())
+        {
+            const ColorWriteMask colorMask = m_state.colorWriteMaskState.getState();
             const Bool writeR = (colorMask & EColorWriteFlag_Red) != 0u;
             const Bool writeG = (colorMask & EColorWriteFlag_Green) != 0u;
             const Bool writeB = (colorMask & EColorWriteFlag_Blue) != 0u;
@@ -163,12 +187,13 @@ namespace ramses_internal
             device.colorMask(writeR, writeG, writeB, writeA);
         }
 
-        if (m_state.rasterizerState.hasChanged())
+        if (m_state.cullModeState.hasChanged())
         {
-            const RasterizerState& rasterizerState = m_state.rasterizerState.getState();
-            device.cullMode(rasterizerState.m_cullMode);
-            device.drawMode(rasterizerState.m_drawMode);
+            const ECullMode cullMode = m_state.cullModeState.getState();
+            device.cullMode(cullMode);
         }
+
+        device.drawMode(m_state.drawMode);
     }
 
     void RenderExecutor::executeEffectAndInputs() const
@@ -319,13 +344,7 @@ namespace ramses_internal
             device.activateTexture(textureDeviceHandle, uniformInputField);
 
             const TextureSamplerStates& samplerStates = renderScene.getTextureSampler(samplerHandle).states;
-            device.setTextureSampling(uniformInputField,
-                samplerStates.m_addressModeU,
-                samplerStates.m_addressModeV,
-                samplerStates.m_addressModeR,
-                samplerStates.m_minSamplingMode,
-                samplerStates.m_magSamplingMode,
-                samplerStates.m_anisotropyLevel);
+            device.activateTextureSamplerObject(samplerStates, dataInstancefield);
             break;
         }
         case EDataType::TextureSampler2DMS:
@@ -389,36 +408,40 @@ namespace ramses_internal
 
         const RenderState& renderState = renderScene.getRenderState(renderable.renderState);
 
-        m_state.scissorState.m_scissorTest = renderState.scissorTest;
-        m_state.scissorState.m_scissorRegion = renderState.scissorRegion;
+        ScissorState scissorState;
+        scissorState.m_scissorTest = renderState.scissorTest;
+        scissorState.m_scissorRegion = renderState.scissorRegion;
+        m_state.scissorState.setState(scissorState);
 
-        DepthStencilState depthStencilState;
-        depthStencilState.m_depthFunc          = renderState.depthFunc;
-        depthStencilState.m_depthWrite         = renderState.depthWrite;
-        depthStencilState.m_stencilFunc        = renderState.stencilFunc;
-        depthStencilState.m_stencilMask        = renderState.stencilMask;
-        depthStencilState.m_stencilOpDepthFail = renderState.stencilOpDepthFail;
-        depthStencilState.m_stencilOpDepthPass = renderState.stencilOpDepthPass;
-        depthStencilState.m_stencilOpFail      = renderState.stencilOpFail;
-        depthStencilState.m_stencilRefValue    = renderState.stencilRefValue;
-        m_state.depthStencilState.setState(depthStencilState);
+        m_state.depthFuncState.setState(renderState.depthFunc);
+        m_state.depthWriteState.setState(renderState.depthWrite);
 
+        StencilState stencilState;
+        stencilState.m_stencilFunc              = renderState.stencilFunc;
+        stencilState.m_stencilMask              = renderState.stencilMask;
+        stencilState.m_stencilOpDepthFail       = renderState.stencilOpDepthFail;
+        stencilState.m_stencilOpDepthPass       = renderState.stencilOpDepthPass;
+        stencilState.m_stencilOpFail            = renderState.stencilOpFail;
+        stencilState.m_stencilRefValue          = renderState.stencilRefValue;
+        m_state.stencilState.setState(stencilState);
 
-        BlendState blendState;
-        blendState.m_blendFactorSrcColor = renderState.blendFactorSrcColor;
-        blendState.m_blendFactorDstColor = renderState.blendFactorDstColor;
-        blendState.m_blendFactorSrcAlpha = renderState.blendFactorSrcAlpha;
-        blendState.m_blendFactorDstAlpha = renderState.blendFactorDstAlpha;
-        blendState.m_blendOperationColor = renderState.blendOperationColor;
-        blendState.m_blendOperationAlpha = renderState.blendOperationAlpha;
-        blendState.m_blendColor = renderState.blendColor;
-        blendState.m_colorWriteMask      = renderState.colorWriteMask;
-        m_state.blendState.setState(blendState);
+        BlendFactorsState blendFactorsState;
+        blendFactorsState.m_blendFactorSrcColor = renderState.blendFactorSrcColor;
+        blendFactorsState.m_blendFactorDstColor = renderState.blendFactorDstColor;
+        blendFactorsState.m_blendFactorSrcAlpha = renderState.blendFactorSrcAlpha;
+        blendFactorsState.m_blendFactorDstAlpha = renderState.blendFactorDstAlpha;
+        m_state.blendFactorsState.setState(blendFactorsState);
 
-        RasterizerState rasterizerState;
-        rasterizerState.m_cullMode = renderState.cullMode;
-        rasterizerState.m_drawMode = renderState.drawMode;
-        m_state.rasterizerState.setState(rasterizerState);
+        BlendOperationsState blendOperationsState;
+        blendOperationsState.m_blendOperationColor = renderState.blendOperationColor;
+        blendOperationsState.m_blendOperationAlpha = renderState.blendOperationAlpha;
+        m_state.blendOperationsState.setState(blendOperationsState);
+
+        m_state.blendColorState.setState(renderState.blendColor);
+        m_state.colorWriteMaskState.setState(renderState.colorWriteMask);
+        m_state.cullModeState.setState(renderState.cullMode);
+
+        m_state.drawMode = renderState.drawMode;
     }
 
     void RenderExecutor::activateRenderTarget(RenderTargetHandle renderTarget) const

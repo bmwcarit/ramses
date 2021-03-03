@@ -33,12 +33,11 @@ namespace ramses
 
         static void SetUpTestCase()
         {
-            sharedTestState = new TestEffectCreator(false);
+            sharedTestState = std::make_unique<TestEffectCreator>(false);
         }
 
         static void TearDownTestCase()
         {
-            delete sharedTestState;
             sharedTestState = nullptr;
         }
 
@@ -119,18 +118,18 @@ namespace ramses
             info.sampler = sampler;
         }
 
-        static TestEffectCreator* sharedTestState;
+        static std::unique_ptr<TestEffectCreator> sharedTestState;
         Appearance* appearance;
     };
 
-    TestEffectCreator* AAppearanceTest::sharedTestState = nullptr;
+    std::unique_ptr<TestEffectCreator> AAppearanceTest::sharedTestState;
 
     class AAppearanceTestWithSemanticUniforms : public AAppearanceTest
     {
     public:
         static void SetUpTestCase()
         {
-            sharedTestState = new TestEffectCreator(true);
+            sharedTestState = std::make_unique<TestEffectCreator>(true);
         }
     };
 
@@ -1149,5 +1148,42 @@ namespace ramses
         EXPECT_EQ(StatusOK, appearance->getBlendingOperations(opColor, opAlpha));
         EXPECT_EQ(EBlendOperation_Subtract, opColor);
         EXPECT_EQ(EBlendOperation_ReverseSubtract, opAlpha);
+    }
+
+    class AnAppearanceWithGeometryShader : public AAppearanceTest
+    {
+    public:
+
+        static void SetUpTestCase()
+        {
+            sharedTestState = std::make_unique<TestEffectCreator>(false, true);
+        }
+    };
+
+    TEST_F(AnAppearanceWithGeometryShader, HasInitialDrawModeOfGeometryShadersRequirement)
+    {
+        EDrawMode mode;
+        EXPECT_EQ(StatusOK, appearance->getDrawMode(mode));
+        EXPECT_EQ(EDrawMode_Lines, mode);
+    }
+
+    TEST_F(AnAppearanceWithGeometryShader, RefusesToChangeDrawingMode_WhenIncompatibleToGeometryShader)
+    {
+        // Shader uses lines, can't change to incompatible types
+        EXPECT_NE(StatusOK, appearance->setDrawMode(EDrawMode::EDrawMode_Points));
+        EXPECT_NE(StatusOK, appearance->setDrawMode(EDrawMode::EDrawMode_Triangles));
+        EXPECT_NE(StatusOK, appearance->setDrawMode(EDrawMode::EDrawMode_TriangleFan));
+        EDrawMode mode;
+        EXPECT_EQ(StatusOK, appearance->getDrawMode(mode));
+        EXPECT_EQ(EDrawMode_Lines, mode);
+    }
+
+    TEST_F(AnAppearanceWithGeometryShader, AllowsChangingDrawMode_IfNewModeIsStillCompatible)
+    {
+        // Shader uses lines, change to line strip is ok - still produces lines for the geometry stage
+        EXPECT_EQ(StatusOK, appearance->setDrawMode(EDrawMode::EDrawMode_LineStrip));
+        EDrawMode mode;
+        EXPECT_EQ(StatusOK, appearance->getDrawMode(mode));
+        EXPECT_EQ(EDrawMode_LineStrip, mode);
     }
 }

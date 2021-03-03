@@ -17,7 +17,7 @@ namespace ramses_internal
     class Platform_Integrity_RGL_EGL_ES_3_0 : public Platform_EGL<Window_Integrity_RGL>
     {
     public:
-        Platform_Integrity_RGL_EGL_ES_3_0(const RendererConfig& rendererConfig);
+        explicit Platform_Integrity_RGL_EGL_ES_3_0(const RendererConfig& rendererConfig);
 
     protected:
         ISystemCompositorController* createSystemCompositorController() override final;
@@ -25,7 +25,6 @@ namespace ramses_internal
         IEmbeddedCompositor* createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) final;
 
         virtual uint32_t getSwapInterval() const override;
-        virtual std::vector<EGLint> getSurfaceAttributes(UInt32 msaaSampleCount) const override final;
     };
 }
 

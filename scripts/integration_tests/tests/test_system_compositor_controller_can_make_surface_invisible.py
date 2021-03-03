@@ -8,6 +8,7 @@
 from tests.system_compositor_controller_base import system_compositor_controller_base
 from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip
 
+
 # Tests if the system compositor controller can make a surface invisible.
 class TestSystemCompositorController(system_compositor_controller_base.SystemCompositorControllerBase):
 

@@ -204,6 +204,10 @@ if (DEFINED ramses-sdk_CONSOLE_LOGLEVEL AND NOT ramses-sdk_CONSOLE_LOGLEVEL STRE
     target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_CONSOLE_LOGLEVEL_DEFAULT=${ramses-sdk_CONSOLE_LOGLEVEL}")
 endif()
 
+if (DEFINED ramses-sdk_WORKER_THREAD_PRIORITY AND NOT ramses-sdk_WORKER_THREAD_PRIORITY STREQUAL "")
+    target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_WORKER_THREAD_PRIORITY=${ramses-sdk_WORKER_THREAD_PRIORITY}")
+endif()
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-framework PRIVATE "-Wsuggest-override")
 endif()

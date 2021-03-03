@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/RendererResourceRegistry.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

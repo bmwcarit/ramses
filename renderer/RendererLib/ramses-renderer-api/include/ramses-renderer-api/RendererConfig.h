@@ -210,9 +210,11 @@ namespace ramses
         const char* getSystemCompositorWaylandDisplay() const;
 
         /**
-        * @brief Set the desired reporting period for renderThread loop timings
-        *        The values are reported via the renderer event 'RenderThreadPeriodicLoopTimes'
-        *        A value of zero disables reporting and is the default.
+        * @brief   Set the desired reporting period for first display loop timings.
+        * @details The values are reported periodically via the renderer callback
+        *          ramses::IRendererEventHandler::renderThreadLoopTimings.
+        *          Only the first display is measured.
+        *          A value of zero disables reporting and is the default.
         *
         * @param[in] period Cyclic time period after which timing information should be reported
         * @return StatusOK on success, otherwise the returned status can be used

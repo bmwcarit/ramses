@@ -9,7 +9,7 @@
 #include "RendererLib/LinkManagerBase.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DataLinkUtils.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

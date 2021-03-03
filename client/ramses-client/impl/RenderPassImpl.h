@@ -35,7 +35,7 @@ namespace ramses
     {
     public:
         RenderPassImpl(SceneImpl& scene, const char* renderpassName);
-        virtual ~RenderPassImpl();
+        virtual ~RenderPassImpl() override;
 
         void             initializeFrameworkData();
         virtual void     deinitializeFrameworkData() override;

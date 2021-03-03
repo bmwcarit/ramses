@@ -13,6 +13,7 @@
 #include "RendererEventCollector.h"
 #include "TestEqualHelper.h"
 #include "SceneAllocateHelper.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -74,6 +75,8 @@ namespace ramses_internal
             , consumer2ndLevelSceneConsumerId(5u)
             , consumerWithoutTransformsSceneConsumerId(6u)
         {
+            // caller is expected to have a display prefix for logs
+            ThreadLocalLog::SetPrefix(1);
             setupNodesAndDataSlots();
         }
 

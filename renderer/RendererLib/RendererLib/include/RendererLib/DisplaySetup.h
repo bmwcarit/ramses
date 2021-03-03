@@ -28,12 +28,13 @@ namespace ramses_internal
 
     struct DisplayBufferInfo
     {
-        Bool isOffscreenBuffer;
-        Bool isInterruptible;
+        bool isOffscreenBuffer;
+        bool isInterruptible;
         Viewport viewport;
+        uint32_t clearFlags;
         Vector4 clearColor;
         AssignedScenes scenes;
-        Bool needsRerender;
+        bool needsRerender;
     };
     using DisplayBuffersMap = std::map<DeviceResourceHandle, DisplayBufferInfo>;
 
@@ -51,6 +52,7 @@ namespace ramses_internal
         void                 unassignScene(SceneId sceneId);
         DeviceResourceHandle findDisplayBufferSceneIsAssignedTo(SceneId sceneId) const;
         void                 setSceneShown(SceneId sceneId, Bool show);
+        void                 setClearFlags(DeviceResourceHandle displayBuffer, uint32_t clearFlags);
         void                 setClearColor(DeviceResourceHandle displayBuffer, const Vector4& clearColor);
 
         const DeviceHandleVector& getNonInterruptibleOffscreenBuffersToRender() const;

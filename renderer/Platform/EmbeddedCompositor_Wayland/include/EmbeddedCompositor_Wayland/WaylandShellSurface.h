@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         WaylandShellSurface(IWaylandClient& client, INativeWaylandResource& shellConnectionResource, uint32_t id, IWaylandSurface& surface);
-        ~WaylandShellSurface();
+        ~WaylandShellSurface() override;
         bool wasSuccessfullyInitialized() const;
         virtual void resourceDestroyed() override;
         virtual void surfaceWasDeleted() override;

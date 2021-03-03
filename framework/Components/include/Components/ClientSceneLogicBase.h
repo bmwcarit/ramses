@@ -45,6 +45,8 @@ namespace ramses_internal
         void sendSceneToWaitingSubscribers(const IScene& scene, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag);
         void printFlushInfo(StringOutputStream& sos, const char* name, const SceneActionCollection& collection) const;
         bool verifyAndGetResourceChanges(SceneUpdate& sceneUpdate, bool hasNewActions);
+        void updateResourceStatistics();
+        void fillStatisticsCollection();
 
         ISceneGraphSender&     m_scenegraphSender;
         IResourceProviderComponent& m_resourceComponent;
@@ -63,6 +65,11 @@ namespace ramses_internal
         ResourceChanges m_resourceChanges; // keep container memory allocated
         ResourceContentHashVector m_newResources; // keep container memory allocated
         AnimationSystemFactory m_animationSystemFactory;
+
+        // resource statistics gathered while flushing the last time
+        std::array<uint64_t, EResourceStatisticIndex_NumIndices> m_resourceCount;
+        std::array<uint64_t, EResourceStatisticIndex_NumIndices> m_resourceDataSize;
+        std::array<uint64_t, EResourceStatisticIndex_NumIndices> m_resourceMaxSize;
     };
 }
 

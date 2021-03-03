@@ -264,7 +264,6 @@ TEST_F(ARendererSceneUpdater, triggersResourceUploadAndUnloadWhenResourceProvide
 
     // trigger unload/upload code path
     ON_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], hasResourcesToBeUploaded()).WillByDefault(Return(true));
-    expectContextEnable();
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadAndUnloadPendingResources());
     update();
 
@@ -288,7 +287,6 @@ TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByMapRequestedSceneWhenS
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    expectContextEnable();
     expectUnloadOfSceneResources();
     unpublishMapRequestedScene();
 
@@ -308,7 +306,6 @@ TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByRenderedSceneWhenScene
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    expectContextEnable();
     expectUnloadOfSceneResources();
     unpublishShownScene();
 
@@ -327,7 +324,6 @@ TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByMappedSceneWhenSceneGe
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    expectContextEnable();
     expectUnloadOfSceneResources();
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(_));
     unsubscribeMappedScene();
@@ -351,7 +347,6 @@ TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByMapRequestedSceneWhenS
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
-    expectContextEnable();
     expectUnloadOfSceneResources();
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(_));
     unsubscribeMapRequestedScene();
@@ -371,7 +366,6 @@ TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByRenderedSceneWhenScene
     setRenderableResources();
     update();
 
-    expectContextEnable();
     expectUnloadOfSceneResources();
     EXPECT_CALL(sceneEventSender, sendUnsubscribeScene(_));
     unsubscribeShownScene();
@@ -391,7 +385,6 @@ TEST_F(ARendererSceneUpdater, unreferencesResourcesInUseByMappedSceneWhenUpdater
     update();
 
     EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
-    expectContextEnable(DisplayHandle1, 2u);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
 }
@@ -415,7 +408,6 @@ TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_SingleScene)
     showScene();
     createRenderableAndResourcesWithStreamTexture();
 
-    expectContextEnable();
     expectStreamTextureUploaded();
     update();
     expectRenderableResourcesClean();
@@ -447,11 +439,9 @@ TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_MultipleScenes)
     showScene(1u);
 
     createRenderableAndResourcesWithStreamTexture(0u);
-    expectContextEnable();
     expectStreamTextureUploaded();
     update();
 
-    expectContextEnable();
     createRenderableAndResourcesWithStreamTexture(1u);
     update();
 
@@ -488,11 +478,9 @@ TEST_F(ARendererSceneUpdater, updatesScenesStreamTexturesCache_MultipleScenes_Mu
     showScene(1u);
 
     createRenderableAndResourcesWithStreamTexture(0u);
-    expectContextEnable();
     expectStreamTextureUploaded();
     update();
 
-    expectContextEnable();
     createRenderableAndResourcesWithStreamTexture(1u);
     update();
 
@@ -599,7 +587,6 @@ TEST_F(ARendererSceneUpdater, appliesPendingFlushesAtOnceAndInOrderWhenUnblocked
     EXPECT_EQ(version3.getValue(), events[2].sceneVersionTag.getValue());
 
     EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
-    expectContextEnable(DisplayHandle1, 2u);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
 }
@@ -655,7 +642,6 @@ TEST_F(ARendererSceneUpdater, appliesPendingFlushesAtOnceAndInOrderWhenUnblocked
     EXPECT_EQ(version3.getValue(), events[2].sceneVersionTag.getValue());
 
     EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
-    expectContextEnable(DisplayHandle1, 2u);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
 }
@@ -860,7 +846,6 @@ TEST_F(ARendererSceneUpdater, canRemapScene)
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
     EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
-    expectContextEnable(DisplayHandle1, 2u);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
 }
@@ -889,7 +874,6 @@ TEST_F(ARendererSceneUpdater, canRemapSceneWithUnusedTextureSampler)
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
     EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
-    expectContextEnable(DisplayHandle1, 2u);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
 }
@@ -919,7 +903,6 @@ TEST_F(ARendererSceneUpdater, mappedSceneWithBlockingFlushGetsUnmappedAndRemappe
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
 
     EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
-    expectContextEnable(DisplayHandle1, 2u);
     expectUnloadOfSceneResources();
     destroySceneUpdater();
 }
@@ -943,7 +926,6 @@ TEST_F(ARendererSceneUpdater, newRenderTargetIsUploadedOnlyAfterPendingFlushAppl
 
     // unblock pending flushes
     reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
-    expectContextEnable();
     expectRenderTargetUploaded();
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
@@ -961,7 +943,6 @@ TEST_F(ARendererSceneUpdater, renderTargetIsUnloadedOnlyAfterPendingFlushApplied
     mapScene();
 
     createRenderTargetWithBuffers();
-    expectContextEnable();
     expectRenderTargetUploaded();
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
@@ -977,7 +958,6 @@ TEST_F(ARendererSceneUpdater, renderTargetIsUnloadedOnlyAfterPendingFlushApplied
 
     // unblock pending flushes
     reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Uploaded);
-    expectContextEnable();
     expectRenderTargetUnloaded();
     update();
     EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
@@ -995,11 +975,9 @@ TEST_F(ARendererSceneUpdater, renderTargetIsUploadedOnceWhenMappedIfCreatedBefor
     createRenderTargetWithBuffers();
     update();
 
-    expectContextEnable();
     expectRenderTargetUploaded();
     mapScene();
 
-    expectContextEnable();
     expectRenderTargetUnloaded();
     destroyRenderTargetWithBuffers();
     update();
@@ -1015,11 +993,9 @@ TEST_F(ARendererSceneUpdater, renderTargetIsUploadedOnceWhenCreatedIfAlreadyMapp
     mapScene();
 
     createRenderTargetWithBuffers();
-    expectContextEnable();
     expectRenderTargetUploaded();
     update();
 
-    expectContextEnable();
     expectRenderTargetUnloaded();
     destroyRenderTargetWithBuffers();
     update();
@@ -1035,13 +1011,11 @@ TEST_F(ARendererSceneUpdater, unloadsAndUploadsRenderTargetWithSameHandleDestroy
     mapScene();
 
     createRenderTargetWithBuffers();
-    expectContextEnable();
     expectRenderTargetUploaded();
     update();
 
     destroyRenderTargetWithBuffers();
     createRenderTargetWithBuffers();
-    expectContextEnable();
     expectRenderTargetUnloaded();
     expectRenderTargetUploaded();
     update();
@@ -1099,14 +1073,12 @@ TEST_F(ARendererSceneUpdater, renderTargetAndBuffersAreReuploadedAfterSceneRemap
     mapScene();
 
     createRenderTargetWithBuffers();
-    expectContextEnable();
     expectRenderTargetUploaded();
     update();
 
     unmapScene();
     update();
 
-    expectContextEnable();
     expectRenderTargetUploaded();
     mapScene();
 
@@ -1121,14 +1093,12 @@ TEST_F(ARendererSceneUpdater, blitPassesReuploadedAfterSceneRemapped)
     mapScene();
 
     createBlitPass();
-    expectContextEnable();
     expectBlitPassUploaded();
     update();
 
     unmapScene();
     update();
 
-    expectContextEnable();
     expectBlitPassUploaded();
     mapScene();
 
@@ -1331,7 +1301,6 @@ TEST_F(ARendererSceneUpdater, canUnmapSceneWhenSceneIsMappingAndUploadingWithMap
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectContextEnable();
     expectUnloadOfSceneResources();
     rendererSceneUpdater->handleSceneUnmappingRequest(getSceneId());
     expectInternalSceneStateEvents({ ERendererEventType::SceneMapFailed, ERendererEventType::SceneUnmapped });
@@ -1363,7 +1332,6 @@ TEST_F(ARendererSceneUpdater, unmappingSceneWhenSceneIsMappingAndUploadingWillUn
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectContextEnable();
     expectUnloadOfSceneResources();
     rendererSceneUpdater->handleSceneUnmappingRequest(getSceneId());
     expectInternalSceneStateEvents({ ERendererEventType::SceneMapFailed, ERendererEventType::SceneUnmapped });
@@ -1390,7 +1358,6 @@ TEST_F(ARendererSceneUpdater, renderTargetIsUploadedWhenSceneMappingAndUploading
     requestMapScene();
     EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
 
-    expectContextEnable();
     expectRenderTargetUploaded();
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
@@ -1430,7 +1397,6 @@ TEST_F(ARendererSceneUpdater, confidenceTest_renderTargetIsUploadedInCorrectOrde
     // block resource
     expectResourcesReferencedAndProvided_altogether({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
     reportResourceAs(MockResourceHash::IndexArrayHash, EResourceStatus::Provided);
-    expectContextEnable();
     expectRenderTargetUploaded();
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
@@ -1463,7 +1429,6 @@ TEST_F(ARendererSceneUpdater, confidenceTest_renderTargetIsUploadedInCorrectOrde
     requestMapScene();
     EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
     expectResourcesReferenced({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash2 });
-    expectContextEnable();
     expectRenderTargetUploaded();
     update();
     EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
@@ -2073,7 +2038,6 @@ TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceed
     requestMapScene();
 
     // context is enabled twice, first before uploading, second when unloading due to forced unsubscribe/destroy
-    expectContextEnable(DisplayHandle1, 2u);
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadRenderTargetBuffer(_, getSceneId(), _)).Times(AtLeast(2));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadRenderTarget(_, _, getSceneId())).Times(AnyNumber());
     // render buffers are collected first therefore render targets might or might not be uploaded before interruption, depending on checking frequency (internal logic of scene resources uploader)
@@ -2119,7 +2083,6 @@ TEST_F(ARendererSceneUpdater, forceUnsubscribesSceneIfSceneResourcesUploadExceed
     requestMapScene(sceneIdx2);
 
     // context is enabled twice, first before uploading, second when unloading due to forced unsubscribe/destroy
-    expectContextEnable(DisplayHandle1, 2u);
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadRenderTargetBuffer(_, getSceneId(sceneIdx2), _)).Times(AtLeast(2));
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], uploadRenderTarget(_, _, getSceneId(sceneIdx2))).Times(AnyNumber());
     // render buffers are collected first therefore render targets might or might not be uploaded before interruption, depending on checking frequency (internal logic of scene resources uploader)

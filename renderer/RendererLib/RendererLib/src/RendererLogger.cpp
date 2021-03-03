@@ -34,7 +34,7 @@
 #include "RenderExecutorLogger.h"
 #include "RendererEventCollector.h"
 #include "Platform_Base/DeviceResourceMapper.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

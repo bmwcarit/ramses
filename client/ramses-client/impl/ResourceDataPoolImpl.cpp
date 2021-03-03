@@ -8,6 +8,7 @@
 
 #include "ResourceDataPoolImpl.h"
 
+#include "Collections/IInputStream.h"
 #include "ramses-client-api/Resource.h"
 #include "ramses-client-api/ArrayResource.h"
 #include "ramses-client-api/Texture2D.h"
@@ -113,8 +114,8 @@ namespace ramses
             return false;
         }
 
-        ramses_internal::ResourceFileInputStreamSPtr resourceFileStream(new ramses_internal::ResourceFileInputStream(filename.c_str()));
-        ramses_internal::BinaryFileInputStream& inputStream = resourceFileStream->resourceStream;
+        ramses_internal::ResourceFileInputStreamSPtr resourceFileStream = std::make_shared<ramses_internal::ResourceFileInputStream>(ramses_internal::String(filename));
+        ramses_internal::IInputStream& inputStream = resourceFileStream->getStream();
         if (inputStream.getState() != ramses_internal::EStatus::Ok)
         {
             LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::addResourceDataFile '" << filename << "' failed, file could not be opened.");
@@ -134,7 +135,7 @@ namespace ramses
         inputStream >> offsetForLLResourceBlock;
 
         // read HL Resources
-        inputStream.seek(static_cast<ramses_internal::Int>(offsetForHLToc), ramses_internal::File::SeekOrigin::BeginningOfFile);
+        inputStream.seek(static_cast<ramses_internal::Int>(offsetForHLToc), ramses_internal::IInputStream::Seek::FromBeginning);
 
         uint64_t totalCount = 0u;
         inputStream >> totalCount;
@@ -149,7 +150,7 @@ namespace ramses
             m_resourceDataFileContent[filename].push_back(id);
         }
 
-        inputStream.seek(static_cast<ramses_internal::Int>(offsetForLLResourceBlock), ramses_internal::File::SeekOrigin::BeginningOfFile);
+        inputStream.seek(static_cast<ramses_internal::Int>(offsetForLLResourceBlock), ramses_internal::IInputStream::Seek::FromBeginning);
         // register resource file for on-demand loading (LL-Resources)
         ramses_internal::ResourceTableOfContents loadedTOC;
         if (!loadedTOC.readTOCPosAndTOCFromStream(inputStream))
@@ -337,8 +338,8 @@ namespace ramses
 
     ramses::Resource* ResourceDataPoolImpl::createResourceForScene(Scene& scene, ResourceFileAddress const& address, resourceId_t const& id) const
     {
-        ramses_internal::BinaryFileInputStream& inputStream = address.file->resourceStream;
-        if (inputStream.seek(static_cast<ramses_internal::Int>(address.offset), ramses_internal::File::SeekOrigin::BeginningOfFile) != ramses_internal::EStatus::Ok)
+        ramses_internal::IInputStream& inputStream = address.file->getStream();
+        if (inputStream.seek(static_cast<ramses_internal::Int>(address.offset), ramses_internal::IInputStream::Seek::FromBeginning) != ramses_internal::EStatus::Ok)
         {
             LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::createResourceForScene: Error accessing file for Resource " << id);
             return nullptr;

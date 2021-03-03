@@ -20,7 +20,7 @@ namespace ramses_internal
     {
     public:
         explicit ShowFrameProfiler(RendererCommandBuffer& commandBuffer);
-        virtual Bool executeInput(const RamshInput& input) override;
+        virtual Bool executeInput(const std::vector<std::string>& input) override;
 
     private:
         RendererCommandBuffer& m_commandBuffer;

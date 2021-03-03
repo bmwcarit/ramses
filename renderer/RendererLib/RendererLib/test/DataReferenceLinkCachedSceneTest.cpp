@@ -12,6 +12,7 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -24,6 +25,9 @@ public:
         , scene(rendererScenes.createScene(SceneInfo(SceneId(3u))))
         , sceneAllocator(scene)
     {
+        // caller is expected to have a display prefix for logs
+        ThreadLocalLog::SetPrefix(1);
+
         const DataLayoutHandle layout = sceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType::Int32) }, ResourceContentHash::Invalid());
         dataRef = sceneAllocator.allocateDataInstance(layout);
 

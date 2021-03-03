@@ -13,7 +13,6 @@ from builtins import map
 import os
 import posixpath
 import time
-import glob
 import random
 import string
 from PIL import Image
@@ -27,6 +26,7 @@ SYSTEM_COMPOSITOR_SCREENSHOT_TIMEOUT = 30
 CUSTOM_DAEMON_PORT = 6001
 DEFAULT_TEST_LAYER = 1000000
 DEFAULT_TEST_SURFACE = 1000000
+
 
 class Target(with_metaclass(ABCMeta)):
     def __init__(self, targetInfo, ramsesInstallDir, resultDir, imagesDesiredDirs, imageDiffScaleFactor, logLevel):
@@ -80,7 +80,7 @@ class Target(with_metaclass(ABCMeta)):
         self.currentTestId = None
 
     def setup(self, transfer_binaries=True):
-        return False #can be overwritten by sub-classes
+        return False  # can be overwritten by sub-classes
 
     def tests_finished(self):
         """
@@ -124,14 +124,15 @@ class Target(with_metaclass(ABCMeta)):
         """
         pass
 
-    def start_daemon(self,  args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='SMGR'):
-        #use custom daemon port for all ramses applications to avoid connections to other applications running on the system (e.g. the HMI)
+    def start_daemon(self, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='SMGR'):
+        # use custom daemon port for all ramses applications to avoid connections to other applications running on the system (e.g. the HMI)
         extendedArgs = args + " -myport {}".format(CUSTOM_DAEMON_PORT)
-        daemon = self._start_ramses_application("ramses-daemon", extendedArgs, workingDirectory,  nameExtension, env, dltAppID)
+        daemon = self._start_ramses_application("ramses-daemon", extendedArgs, workingDirectory, nameExtension, env, dltAppID)
         daemon.initialisation_message_to_look_for("Ramsh commands registered")
         return daemon
 
-    def start_renderer(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='REND', waitForDisplayManagerRamsh=True, automap=False, startVisible=True):
+    def start_renderer(self, applicationName, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}, dltAppID='REND',
+                       waitForDisplayManagerRamsh=True, automap=False, startVisible=True):
         extendedArgs = args
         if startVisible:
             extendedArgs += " --startVisible"
@@ -151,7 +152,7 @@ class Target(with_metaclass(ABCMeta)):
             renderer.initialisation_message_to_look_for("Ramsh commands registered from RamsesRenderer")
         return renderer
 
-    def start_default_renderer(self,  args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}):
+    def start_default_renderer(self, args="", workingDirectory=None, ramsesDaemonTarget=None, nameExtension="", env={}):
         applicationName = "ramses-renderer-{}".format(self.defaultPlatform)
         return self.start_renderer(applicationName, args, workingDirectory, ramsesDaemonTarget, nameExtension, env)
 
@@ -171,9 +172,9 @@ class Target(with_metaclass(ABCMeta)):
         binaryDirectoryOnTarget = self._get_merged_working_directory(workingDirectory)
         extendedArgs = args
         if dltAppID:
-            extendedArgs += " -dai "+dltAppID
-        extendedArgs += " -l " + str(self.logLevel) +" --enableSmokeTestContext " + " --enableProtocolVersionOffset "
-        #use custom daemon port for all ramses applications to avoid connections to other applications running on the system (e.g. the HMI)
+            extendedArgs += " -dai " + dltAppID
+        extendedArgs += " -l " + str(self.logLevel) + " --enableSmokeTestContext " + " --enableProtocolVersionOffset "
+        # use custom daemon port for all ramses applications to avoid connections to other applications running on the system (e.g. the HMI)
         extendedArgs += " -p {}".format(CUSTOM_DAEMON_PORT)
         if self.currentTestId:
             extendedArgs += " --executionIdentifier '{}'".format(self.currentTestId)
@@ -194,7 +195,7 @@ class Target(with_metaclass(ABCMeta)):
         """
         pass
 
-    def configureNetworkMonitoring(self, internalNetwork = True, externalNetwork = True):
+    def configureNetworkMonitoring(self, internalNetwork=True, externalNetwork=True):
         # The target should configure any attached SystemMonitor to monitor the specified kind of network.
         # internalNetwork: should monitor network traffic between applications running on this target
         # externalNetwork: should monitor network traffic between different target devices, used for e.g. multi-target tests
@@ -202,9 +203,9 @@ class Target(with_metaclass(ABCMeta)):
         # override this in subclass if hardware platforms differ from these default values
         if self.systemMonitor is not None:
             if internalNetwork:
-                self.systemMonitor.addNetworkParameters(interfaceNames = ["lo"])
+                self.systemMonitor.addNetworkParameters(interfaceNames=["lo"])
             if externalNetwork:
-                self.systemMonitor.addNetworkParameters(interfaceNames = ["eth0"])
+                self.systemMonitor.addNetworkParameters(interfaceNames=["eth0"])
 
     def save_application_output(self, application, testClassName, testRunName):
         """" saves the output of an application to a file
@@ -213,7 +214,7 @@ class Target(with_metaclass(ABCMeta)):
         """
 
         if not application.started:
-            resultDirForTest = self.resultDir+'/'+testClassName+"/"+testRunName
+            resultDirForTest = self.resultDir + '/' + testClassName + "/" + testRunName
             if application.nameExtension:
                 fileName = "{0}_{1}_{2}".format(application.name, application.nameExtension, self.name)
             else:
@@ -221,11 +222,11 @@ class Target(with_metaclass(ABCMeta)):
 
             stdoutOutputList = application.get_stdout_data()
             if stdoutOutputList:
-                helper.save_text_file(resultDirForTest+"/"+fileName+".txt", "".join(stdoutOutputList))
+                helper.save_text_file(resultDirForTest + "/" + fileName + ".txt", "".join(stdoutOutputList))
 
             stderrOutputList = application.get_stderr_data()
             if stderrOutputList:
-                helper.save_text_file(resultDirForTest+"/"+fileName+"_STDERR.txt", "".join(stderrOutputList))
+                helper.save_text_file(resultDirForTest + "/" + fileName + "_STDERR.txt", "".join(stderrOutputList))
         else:
             log.error("application output can only be saved if application was stopped before")
 
@@ -249,14 +250,17 @@ class Target(with_metaclass(ABCMeta)):
         else:
             log.info("comparing images...")
             if (self.percentageOfRGBDifferenceAllowedPerPixelOnTarget > percentageOfRGBDifferenceAllowedPerPixel):
-                log.important_info("Allowing higher difference per pixel because of target value: {}%".format(self.percentageOfRGBDifferenceAllowedPerPixelOnTarget*100))
+                log.important_info("Allowing higher difference per pixel because of target value: {}%".
+                                   format(self.percentageOfRGBDifferenceAllowedPerPixelOnTarget * 100))
                 percentageOfRGBDifferenceAllowedPerPixel = self.percentageOfRGBDifferenceAllowedPerPixelOnTarget
 
             if (self.percentageOfWrongPixelsAllowedOnTarget > percentageOfWrongPixelsAllowed):
-                log.important_info("Allowing higher number of wrong pixels because of target value: {}%".format(self.percentageOfWrongPixelsAllowedOnTarget*100))
+                log.important_info("Allowing higher number of wrong pixels because of target value: {}%".
+                                   format(self.percentageOfWrongPixelsAllowedOnTarget * 100))
                 percentageOfWrongPixelsAllowed = self.percentageOfWrongPixelsAllowedOnTarget
 
-            helper.compare_images(pathToResultScreenshot, referenceImagePath, percentageOfWrongPixelsAllowed, percentageOfRGBDifferenceAllowedPerPixel, numberOfRequiredUnequalPixels, self.imageDiffScaleFactor, compareForEquality)
+            helper.compare_images(pathToResultScreenshot, referenceImagePath, percentageOfWrongPixelsAllowed, percentageOfRGBDifferenceAllowedPerPixel,
+                                  numberOfRequiredUnequalPixels, self.imageDiffScaleFactor, compareForEquality)
 
     @abstractmethod
     def delete_file(self, fileName):
@@ -267,7 +271,8 @@ class Target(with_metaclass(ABCMeta)):
 
         splittedImageName = os.path.splitext(imageName)
         localScreenshotName = "{}_{}_{}{}".format(splittedImageName[0], screenshotNumber, self.name, splittedImageName[1])
-        targetScreenshotName = "{}{}_{:04d}_{}".format(self.fixed_screenshot_prefix, self.unique_screenshot_prefix, self.target_screenshot_counter, localScreenshotName)
+        targetScreenshotName = "{}{}_{:04d}_{}".format(self.fixed_screenshot_prefix, self.unique_screenshot_prefix,
+                                                       self.target_screenshot_counter, localScreenshotName)
         self.target_screenshot_counter += 1
 
         # trigger screenshot(s)
@@ -276,7 +281,7 @@ class Target(with_metaclass(ABCMeta)):
         else:
             self._take_renderer_screenshot(targetScreenshotName, renderer, displayNumber)
 
-        resultDirForTest = helper.get_result_dir_subdirectory(self.resultDir, testClassName+"/"+testRunName)
+        resultDirForTest = helper.get_result_dir_subdirectory(self.resultDir, testClassName + "/" + testRunName)
 
         self._transfer_screenshots(targetScreenshotName, self.tmpDir, resultDirForTest)
 
@@ -284,7 +289,7 @@ class Target(with_metaclass(ABCMeta)):
         log.info("Store remote {} as local {}".format(targetScreenshotName, localScreenshotFile))
         os.rename(os.path.join(resultDirForTest, targetScreenshotName), localScreenshotFile)
 
-        #check image size
+        # check image size
         pilImage = Image.open(localScreenshotFile)
         if (pilImage.size[0] < minWidth) or (pilImage.size[1] < minHeight):
             log.errorAndAssert("Screenshot too small: expected >= {}x{}, got {}x{}".format(minWidth, minHeight, pilImage.size[0], pilImage.size[1]))
@@ -302,21 +307,21 @@ class Target(with_metaclass(ABCMeta)):
     def _get_ramsh_option_string_for_variant(self, ramshOptionName, value):
         optionString = ""
         if isinstance(value, int):
-            optionString += " -{0} {1}".format(ramshOptionName,value)
+            optionString += " -{0} {1}".format(ramshOptionName, value)
         if isinstance(value, list):
-            optionString += " -" + ramshOptionName + " " + " ".join(list(map(str,value)))
+            optionString += " -" + ramshOptionName + " " + " ".join(list(map(str, value)))
         return optionString
 
     def _take_renderer_screenshot(self, screenshotName, renderer, displayNumber):
         log.info("Make screenshot of renderer")
-        ramshCommand  = "screenshot -filename \"{0}\"".format(self.tmpDir+"/"+screenshotName)
+        ramshCommand = "screenshot -filename \"{0}\"".format(self.tmpDir + "/" + screenshotName)
         if displayNumber:
             ramshCommand += " -displayId {}".format(displayNumber)
-        #waitForRendererConfirmation cannot be used for screenshot creation as screenshots are enqeued at the renderer and taken on the next renderer loop
+        # waitForRendererConfirmation cannot be used for screenshot creation as screenshots are enqeued at the renderer and taken on the next renderer loop
         result = renderer.send_ramsh_command(ramshCommand, response_message="screenshot successfully saved to file")
         if not result:
             log.warning("Screenshot confirmation not received from the renderer, check renderer application output")
-            #print some debug output
+            # print some debug output
             renderer.send_ramsh_command("rinfo all -v")
 
             if self.systemCompositorControllerSupported:
@@ -325,8 +330,9 @@ class Target(with_metaclass(ABCMeta)):
     def _take_system_compositor_screenshot(self, screenshotName, renderer):
         log.info("Make screenshot of screen using system compositor")
 
-        targetScreenshotPath = self.tmpDir+"/"+screenshotName
-        renderer.send_ramsh_command("scScreenshot \"{}\" {}".format(targetScreenshotPath, self.main_screen_id), response_message="SystemCompositorController_Wayland_IVI::screenshot: Saved screenshot for screen")
+        targetScreenshotPath = self.tmpDir + "/" + screenshotName
+        renderer.send_ramsh_command("scScreenshot \"{}\" {}".format(targetScreenshotPath, self.main_screen_id),
+                                    response_message="SystemCompositorController_Wayland_IVI::screenshot: Saved screenshot for screen")
 
         startTime = time.time()
         while time.time() < startTime + SYSTEM_COMPOSITOR_SCREENSHOT_TIMEOUT:
@@ -334,7 +340,7 @@ class Target(with_metaclass(ABCMeta)):
             if retCode == 0:
                 log.info("system_compositor_screenshot: found {}".format(targetScreenshotPath))
                 return True
-            log.info("system_compositor_screenshot: find result {} since {}s ".format(retCode, time.time()-startTime))
+            log.info("system_compositor_screenshot: find result {} since {}s ".format(retCode, time.time() - startTime))
             time.sleep(0.1)
 
         log.warning("system_compositor_screenshot: failed to take screenshot {}".format(screenshotName))

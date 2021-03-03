@@ -14,10 +14,9 @@
 #include "ramses-client-api/GeometryBinding.h"
 #include "ramses-client-api/AttributeInput.h"
 #include "ramses-client-api/Effect.h"
+#include "PlatformAbstraction/PlatformMath.h"
+#include <vector>
 
-#include "Collections/Vector.h"
-#define _USE_MATH_DEFINES
-#include <math.h>
 
 namespace ramses_internal
 {
@@ -47,7 +46,7 @@ namespace ramses_internal
         colors.push_back(1.f);
 
         const UInt32 slices = 28;
-        const Float sliceAngle = 2.f * Float(M_PI) / slices;
+        const Float sliceAngle = 2.f * PlatformMath::PI_f / slices;
         for (UInt16 i = 0; i <= slices; i++)
         {
             Float angle = sliceAngle * i;

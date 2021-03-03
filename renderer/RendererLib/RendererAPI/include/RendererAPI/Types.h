@@ -21,12 +21,6 @@
 
 namespace ramses_internal
 {
-    enum EAntiAliasingMethod
-    {
-        EAntiAliasingMethod_PlainFramebuffer = 0,
-        EAntiAliasingMethod_MultiSampling
-    };
-
     enum EPostProcessingEffect
     {
         EPostProcessingEffect_None = 0,

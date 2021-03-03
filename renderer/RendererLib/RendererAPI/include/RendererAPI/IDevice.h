@@ -34,6 +34,7 @@ namespace ramses_internal
     class Matrix44f;
 
     struct PixelRectangle;
+    struct TextureSamplerStates;
 
     class IDevice
     {
@@ -77,7 +78,6 @@ namespace ramses_internal
         virtual void stencilOp           (EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) = 0;
         virtual void drawMode            (EDrawMode mode) = 0;
         virtual void setViewport         (UInt32 x, UInt32 y, UInt32 width, UInt32 height) = 0;
-        virtual void setTextureSampling  (DataFieldHandle field, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel) = 0;
 
         // resources
         virtual DeviceResourceHandle    allocateVertexBuffer        (UInt32 totalSizeInBytes) = 0;
@@ -112,9 +112,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle    uploadRenderBuffer          (const RenderBuffer& renderBuffer) = 0;
         virtual void                    deleteRenderBuffer          (DeviceResourceHandle handle) = 0;
 
-        virtual DeviceResourceHandle    uploadTextureSampler        (EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel) = 0;
-        virtual void                    deleteTextureSampler        (DeviceResourceHandle handle) = 0;
-        virtual void                    activateTextureSampler      (DeviceResourceHandle handle, DataFieldHandle field) = 0;
+        virtual void                    activateTextureSamplerObject(const TextureSamplerStates& samplerStates, DataFieldHandle field) = 0;
 
         virtual DeviceResourceHandle    getFramebufferRenderTarget  () const = 0;
         virtual DeviceResourceHandle    uploadRenderTarget          (const DeviceHandleVector& renderBuffers) = 0;

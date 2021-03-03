@@ -43,7 +43,7 @@ namespace ramses_internal
     public:
         MOCK_METHOD(void, execute, (), (override));
         MOCK_METHOD(void, destructor, ());
-        virtual ~MockITask()
+        virtual ~MockITask() override
         {
             destructor();
         }

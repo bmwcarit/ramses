@@ -80,7 +80,7 @@ namespace ramses_internal
 
             ramses_internal::ResourceTableOfContents resourceFileToc;
             ResourceFileInputStreamSPtr resourceInputStream(new ResourceFileInputStream(resourceFileName));
-            resourceFileToc.readTOCPosAndTOCFromStream(resourceInputStream->resourceStream);
+            resourceFileToc.readTOCPosAndTOCFromStream(resourceInputStream->getStream());
             localResourceComponent.addResourceFile(resourceInputStream, resourceFileToc);
 
             return hashes;
@@ -302,7 +302,7 @@ namespace ramses_internal
         {
             ramses_internal::ResourceTableOfContents resourceFileToc;
             ResourceFileInputStreamSPtr resourceInputStream(new ResourceFileInputStream(resourceFileName));
-            resourceFileToc.readTOCPosAndTOCFromStream(resourceInputStream->resourceStream);
+            resourceFileToc.readTOCPosAndTOCFromStream(resourceInputStream->getStream());
 
             localResourceComponent.addResourceFile(resourceInputStream, resourceFileToc);
         }

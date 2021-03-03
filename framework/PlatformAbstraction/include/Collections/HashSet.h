@@ -27,7 +27,7 @@ namespace ramses_internal
          * Iterator for HashSet
          */
         template<typename HashMapIteratorType>
-        class HashSetIterator
+        class HashSetIterator final
         {
         public:
 

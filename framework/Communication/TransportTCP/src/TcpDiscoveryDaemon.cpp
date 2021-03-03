@@ -25,12 +25,16 @@ namespace ramses_internal
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TcpDiscoveryDaemon::TcpDiscoveryDaemon: My Address: " << participantNetworkAddress.getIp() << ":" << participantNetworkAddress.getPort());
 
         const NetworkParticipantAddress daemonNetworkAddress;
-        m_communicationSystem.reset(new TCPConnectionSystem(participantNetworkAddress, config.getProtocolVersion(), daemonNetworkAddress, true, frameworkLock, statisticCollection, config.m_tcpConfig.getAliveInterval(), config.m_tcpConfig.getAliveTimeout()));
+        m_communicationSystem = std::make_unique<TCPConnectionSystem>(participantNetworkAddress, config.getProtocolVersion(),
+                                                                      daemonNetworkAddress, true,
+                                                                      frameworkLock,
+                                                                      statisticCollection,
+                                                                      config.m_tcpConfig.getAliveInterval(), config.m_tcpConfig.getAliveTimeout());
 
         if (optionalRamsh)
         {
-            m_commandLogConnectionInformation.reset(new LogConnectionInfo(*m_communicationSystem));
-            optionalRamsh->add(*m_commandLogConnectionInformation);
+            m_commandLogConnectionInformation = std::make_shared<LogConnectionInfo>(*m_communicationSystem);
+            optionalRamsh->add(m_commandLogConnectionInformation);
         }
     }
 

@@ -24,7 +24,7 @@
 using namespace ramses_internal;
 
 const float RendererTestUtils::DefaultMaxAveragePercentPerPixel = 0.2f;
-std::chrono::microseconds RendererTestUtils::MaxFrameCallbackPollingTime;
+absl::optional<std::chrono::microseconds> RendererTestUtils::MaxFrameCallbackPollingTime;
 ramses_internal::String RendererTestUtils::WaylandDisplayForSystemCompositorController;
 std::vector<const char*> RendererTestUtils::CommandLineArgs{};
 
@@ -139,12 +139,13 @@ ramses::RendererConfig RendererTestUtils::CreateTestRendererConfig()
         internalRendererConfig.setWaylandDisplayForSystemCompositorController(WaylandDisplayForSystemCompositorController);
     }
 
-    internalRendererConfig.setFrameCallbackMaxPollTime(MaxFrameCallbackPollingTime);
+    if(MaxFrameCallbackPollingTime.has_value())
+        internalRendererConfig.setFrameCallbackMaxPollTime(MaxFrameCallbackPollingTime.value());
 
     return rendererConfig;
 }
 
-void RendererTestUtils::SetWaylandDisplayForSystemCompositorController(const ramses_internal::String& wd)
+void RendererTestUtils::SetWaylandDisplayForSystemCompositorControllerForAllTests(const ramses_internal::String& wd)
 {
     WaylandDisplayForSystemCompositorController = wd;
 }
@@ -154,12 +155,12 @@ bool RendererTestUtils::HasSystemCompositorEnabled()
     return !WaylandDisplayForSystemCompositorController.empty();
 }
 
-void RendererTestUtils::SetCommandLineParams(const int argc, char const* const* argv)
+void RendererTestUtils::SetCommandLineParamsForAllTests(const int argc, char const* const* argv)
 {
     CommandLineArgs.assign(argv, argv + argc);
 }
 
-void RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::microseconds time)
+void RendererTestUtils::SetMaxFrameCallbackPollingTimeForAllTests(std::chrono::microseconds time)
 {
     MaxFrameCallbackPollingTime = time;
 }

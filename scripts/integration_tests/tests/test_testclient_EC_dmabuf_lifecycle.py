@@ -15,7 +15,7 @@ from tests.embedded_compositor_base import embedded_compositor_base
 # client is removed.
 class TestEmbeddedCompositorDmaBufLifecycle(embedded_compositor_base.EmbeddedCompositorBase):
 
-    def __init__(self, methodName ='runTest'):
+    def __init__(self, methodName='runTest'):
         embedded_compositor_base.EmbeddedCompositorBase.__init__(self, methodName, 0)
 
     def impl_test(self):
@@ -25,7 +25,7 @@ class TestEmbeddedCompositorDmaBufLifecycle(embedded_compositor_base.EmbeddedCom
         self.validateScreenshot(self.renderer, "testClient_compositing_fallbacktexture.png")
 
         # dma buf example should be composited
-        self._startDmaBufExample(iviID = 2, alternateColors = False)
+        self._startDmaBufExample(iviID=2, alternateColors=False)
         self.validateScreenshot(self.renderer, "testClient_streamtexture_dmabuf_1.png")
 
         # dma buf example, fallbacks are shown again

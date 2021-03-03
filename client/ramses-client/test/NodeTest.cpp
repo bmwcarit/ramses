@@ -540,6 +540,19 @@ namespace ramses
         EXPECT_EQ(ramses_internal::ERotationConvention::Legacy_ZYX, this->m_scene.impl.getIScene().getRotationConvention(transformHandle));
     }
 
+    TYPED_TEST(NodeTest, identitySetRotationWithExplicitConventionCanNotBeDiscarded)
+    {
+        Node& node = this->createNode("node");
+        EXPECT_EQ(ramses::StatusOK, node.setRotation(0.f, 0.f, 0.f, ERotationConvention::ZYX));
+
+        float x;
+        float y;
+        float z;
+        ERotationConvention conv;
+        EXPECT_EQ(ramses::StatusOK, node.getRotation(x, y, z, conv));
+        EXPECT_EQ(ERotationConvention::ZYX, conv);
+    }
+
     TYPED_TEST(NodeTest, getsIdentityInverseModelMatrixInitially)
     {
         Node& node = this->createNode("node");

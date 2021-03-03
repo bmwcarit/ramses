@@ -16,7 +16,7 @@ namespace ramses_internal
 {
     class IContext;
 
-    class DebugOutput
+    class DebugOutput final
     {
     public:
         Bool enable(const IContext& context);

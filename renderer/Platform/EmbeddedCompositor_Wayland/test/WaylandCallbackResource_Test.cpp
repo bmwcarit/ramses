@@ -16,7 +16,6 @@
 #include "wayland-client.h"
 #include "wayland-client-protocol.h"
 #include "wayland-server.h"
-#include "Utils/LogMacros.h"
 #include <atomic>
 
 namespace ramses_internal
@@ -87,14 +86,14 @@ namespace ramses_internal
 
             static void RegistryHandleGlobalRemoveCallBack(void* data, wl_registry* wl_registry, uint32_t name)
             {
-                UNUSED(data)
-                UNUSED(wl_registry)
-                UNUSED(name)
+                UNUSED(data);
+                UNUSED(wl_registry);
+                UNUSED(name);
             }
 
             static void SyncCallbackDone(void *data, wl_callback* callback, uint32_t callbackData)
             {
-                UNUSED(callback)
+                UNUSED(callback);
                 ClientRunnable* clientRunnable = static_cast<ClientRunnable*>(data);
                 EXPECT_EQ(33u, callbackData);
                 clientRunnable->m_callbackReceived = true;
@@ -172,8 +171,8 @@ namespace ramses_internal
 
         static void DisplaySync(struct wl_client* client, wl_resource* resource, uint32_t id)
         {
-            UNUSED(client)
-            UNUSED(resource)
+            UNUSED(client);
+            UNUSED(resource);
 
             wl_resource* callbackResource = wl_resource_create(client, &wl_callback_interface, 1, id);
             WaylandCallbackResource waylandCallbackResource(callbackResource);
@@ -183,9 +182,9 @@ namespace ramses_internal
 
         static void GetRegistry(struct wl_client* client, struct wl_resource* resource, uint32_t registry)
         {
-            UNUSED(client)
-            UNUSED(registry)
-            UNUSED(resource)
+            UNUSED(client);
+            UNUSED(registry);
+            UNUSED(resource);
         }
 
         const struct Display_Interface : public wl_display_interface

@@ -19,6 +19,8 @@
 #include "MockResourceHash.h"
 #include "Components/ResourceDeleterCallingCallback.h"
 #include "PlatformAbstraction/PlatformThread.h"
+#include "Watchdog/ThreadAliveNotifierMock.h"
+#include "Utils/ThreadLocalLog.h"
 
 
 namespace ramses_internal{
@@ -28,17 +30,20 @@ class AResourceUploadingManager : public ::testing::Test
 public:
     explicit AResourceUploadingManager(bool keepEffects = false, UInt64 ResourceCacheSize = 0u)
         : dummyResource(EResourceType_IndexArray, 5, EDataType::UInt16, reinterpret_cast<const Byte*>(m_dummyData), ResourceCacheFlag_DoNotCache, String())
-        , dummyEffectResource("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache)
+        , dummyEffectResource("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache)
         , dummyManagedResourceCallback(managedResourceDeleter)
         , sceneId(66u)
         , uploader{ new StrictMock<ResourceUploaderMock> }
-        , asyncEffectUploader(platformMock, platformMock.renderBackendMock)
+        , asyncEffectUploader(platformMock, platformMock.renderBackendMock, notifier, 1)
         , rendererResourceUploader(resourceRegistry, std::unique_ptr<IResourceUploader>{ uploader }, platformMock.renderBackendMock, asyncEffectUploader, keepEffects, frameTimer, stats, ResourceCacheSize)
     {
+        // caller is expected to have a display prefix for logs
+        ThreadLocalLog::SetPrefix(1);
 
         InSequence s;
         EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, disable()).WillOnce(Return(true));
         EXPECT_CALL(platformMock, createResourceUploadRenderBackend(Ref(platformMock.renderBackendMock)));
+        EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, enable()).WillOnce(Return(true));
         const bool status = asyncEffectUploader.createResourceUploadRenderBackendAndStartThread();
         EXPECT_TRUE(status);
     }
@@ -146,6 +151,7 @@ protected:
 
     FrameTimer frameTimer;
     RendererStatistics stats;
+    NiceMock<ThreadAliveNotifierMock> notifier;
     StrictMock<ResourceUploaderMock>* uploader;
     AsyncEffectUploader asyncEffectUploader;
     ResourceUploadingManager rendererResourceUploader;

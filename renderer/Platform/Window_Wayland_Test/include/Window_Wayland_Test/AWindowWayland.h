@@ -16,6 +16,7 @@
 #include "DisplayConfigImpl.h"
 #include "WaylandUtilities/UnixDomainSocket.h"
 #include "Utils/StringUtils.h"
+#include "Utils/ThreadLocalLog.h"
 
 namespace ramses_internal
 {
@@ -25,6 +26,7 @@ namespace ramses_internal
     public:
         virtual void SetUp() override
         {
+            ThreadLocalLog::SetPrefix(1);
             createWaylandWindow();
         }
 

@@ -37,7 +37,6 @@ public:
     MOCK_METHOD(void, getBlitPassRenderTargetsDeviceHandle, (BlitPassHandle, SceneId, DeviceResourceHandle&, DeviceResourceHandle&), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getDataBufferDeviceHandle, (DataBufferHandle, SceneId), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getTextureBufferDeviceHandle, (TextureBufferHandle, SceneId), (const, override));
-    MOCK_METHOD(DeviceResourceHandle, getTextureSamplerDeviceHandle, (TextureSamplerHandle, SceneId), (const, override));
     // IRendererResourceManager
     MOCK_METHOD(EResourceStatus, getResourceStatus, (const ResourceContentHash& hash), (const, override));
     MOCK_METHOD(EResourceType, getResourceType, (const ResourceContentHash& hash), (const, override));
@@ -53,12 +52,10 @@ public:
     MOCK_METHOD(void, unloadRenderTargetBuffer, (RenderBufferHandle renderBufferHandle, SceneId sceneId), (override));
     MOCK_METHOD(void, uploadRenderTarget, (RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId), (override));
     MOCK_METHOD(void, unloadRenderTarget, (RenderTargetHandle renderTarget, SceneId sceneId), (override));
-    MOCK_METHOD(void, uploadOffscreenBuffer, (OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, bool isDoubleBuffered), (override));
+    MOCK_METHOD(void, uploadOffscreenBuffer, (OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, bool isDoubleBuffered, ERenderBufferType depthStencilBufferType), (override));
     MOCK_METHOD(void, unloadOffscreenBuffer, (OffscreenBufferHandle bufferHandle), (override));
     MOCK_METHOD(void, uploadStreamBuffer, (StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId), (override));
     MOCK_METHOD(void, unloadStreamBuffer, (StreamBufferHandle bufferHandle), (override));
-    MOCK_METHOD(void, uploadTextureSampler, (TextureSamplerHandle bufferHandle, SceneId sceneId, const TextureSamplerStates& states), (override));
-    MOCK_METHOD(void, unloadTextureSampler, (TextureSamplerHandle bufferHandle, SceneId sceneId), (override));
     MOCK_METHOD(void, uploadStreamTexture, (StreamTextureHandle bufferHandle, WaylandIviSurfaceId source, SceneId sceneId), (override));
     MOCK_METHOD(void, unloadStreamTexture, (StreamTextureHandle bufferHandle, SceneId sceneId), (override));
     MOCK_METHOD(void, uploadBlitPassRenderTargets, (BlitPassHandle, RenderBufferHandle, RenderBufferHandle, SceneId), (override));
@@ -77,7 +74,7 @@ public:
 class RendererResourceManagerRefCountMock : public RendererResourceManagerMock
 {
 public:
-    virtual ~RendererResourceManagerRefCountMock();
+    virtual ~RendererResourceManagerRefCountMock() override;
 
     virtual void referenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;
     virtual void unreferenceResourcesForScene(SceneId sceneId, const ResourceContentHashVector& resources) override;

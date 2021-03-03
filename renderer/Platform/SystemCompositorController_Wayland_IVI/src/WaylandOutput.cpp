@@ -80,7 +80,7 @@ namespace ramses_internal
     void WaylandOutput::OutputHandleModeCallback(
         void* data, wl_output* wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh)
     {
-        UNUSED(wl_output)
+        UNUSED(wl_output);
         WaylandOutput* waylandOutput = static_cast<WaylandOutput*>(data);
         waylandOutput->outputHandleMode(flags, width, height, refresh);
     }

@@ -75,6 +75,14 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-renderer-lib PRIVATE "-Wsuggest-override")
 endif()
 
+if (DEFINED ramses-sdk_RENDER_THREAD_PRIORITY AND NOT ramses-sdk_RENDER_THREAD_PRIORITY STREQUAL "")
+    target_compile_definitions(ramses-renderer-lib PRIVATE "-DRAMSES_RENDER_THREAD_PRIORITY=${ramses-sdk_RENDER_THREAD_PRIORITY}")
+endif()
+
+if (DEFINED ramses-sdk_ASYNC_SHADERCOMPILE_THREAD_PRIORITY AND NOT ramses-sdk_ASYNC_SHADERCOMPILE_THREAD_PRIORITY STREQUAL "")
+    target_compile_definitions(ramses-renderer-lib PRIVATE "-DRAMSES_ASYNC_SHADERCOMPILE_THREAD_PRIORITY=${ramses-sdk_ASYNC_SHADERCOMPILE_THREAD_PRIORITY}")
+endif()
+
 set(ramses-shared-lib-renderer-MIXIN
     ${ramses-shared-lib-renderer-MIXIN}
     INCLUDE_BASE ${RAMSES_RENDERER_API_INCLUDE_BASE}

@@ -11,6 +11,7 @@
 
 #include "ramses-framework-api/IThreadWatchdogNotification.h"
 #include "Collections/String.h"
+#include <chrono>
 
 namespace ramses_internal
 {
@@ -28,17 +29,17 @@ namespace ramses_internal
     class PlatformWatchdog
     {
     public:
-        PlatformWatchdog(uint32_t notificationIntervalMilliSeconds, ramses::ERamsesThreadIdentifier thread, ramses::IThreadWatchdogNotification* callback);
+        PlatformWatchdog(std::chrono::milliseconds notificationInterval, ramses::ERamsesThreadIdentifier thread, ramses::IThreadWatchdogNotification* callback);
         virtual ~PlatformWatchdog();
 
-        void     notifyWatchdog();
-        uint32_t calculateTimeout() const;
+        void                      notifyWatchdog();
+        std::chrono::milliseconds calculateTimeout() const;
 
     private:
-        const uint32_t m_intervalMilliSeconds;
+        const std::chrono::milliseconds m_interval;
         ramses::ERamsesThreadIdentifier m_thread;
         ramses::IThreadWatchdogNotification* m_watchdogCallback;
-        uint64_t m_lastNotificationTimeMilliSeconds;
+        std::chrono::milliseconds m_lastNotificationTime;
     };
 }
 

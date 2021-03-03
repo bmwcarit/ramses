@@ -41,7 +41,7 @@ namespace ramses_internal
             const FrameTimer& frameTimer,
             RendererStatistics& stats,
             UInt64 gpuCacheSize = 0u);
-        virtual ~RendererResourceManager();
+        virtual ~RendererResourceManager() override;
 
         // Immutable resources
         virtual void                 referenceResourcesForScene     (SceneId sceneId, const ResourceContentHashVector& resources) override;
@@ -66,15 +66,11 @@ namespace ramses_internal
         virtual void                 uploadRenderTarget(RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId) override;
         virtual void                 unloadRenderTarget(RenderTargetHandle renderTarget, SceneId sceneId) override;
 
-        virtual void                 uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered) override;
+        virtual void                 uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
         virtual void                 unloadOffscreenBuffer(OffscreenBufferHandle bufferHandle) override;
 
         virtual void                 uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId source) override;
         virtual void                 unloadStreamBuffer(StreamBufferHandle bufferHandle) override;
-
-        virtual void                 uploadTextureSampler(TextureSamplerHandle handle, SceneId sceneId, const TextureSamplerStates& states) override;
-        virtual void                 unloadTextureSampler(TextureSamplerHandle handle, SceneId sceneId) override;
-        virtual DeviceResourceHandle getTextureSamplerDeviceHandle(TextureSamplerHandle textureBufferHandle, SceneId sceneId) const override;
 
         virtual void                 uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId) override;
         virtual void                 unloadStreamTexture(StreamTextureHandle handle, SceneId sceneId) override;

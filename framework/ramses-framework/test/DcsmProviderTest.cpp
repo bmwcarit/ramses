@@ -15,6 +15,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <chrono>
 #include "ramses-framework-api/CategoryInfoUpdate.h"
 
 
@@ -26,6 +27,7 @@ namespace ramses
     {
     public:
         MOCK_METHOD(bool, dispatchProviderEvents, (ramses_internal::IDcsmProviderEventHandler&), (override));
+        MOCK_METHOD(bool, dispatchProviderEvents, (ramses_internal::IDcsmProviderEventHandler&, std::chrono::milliseconds), (override));
         MOCK_METHOD(bool, sendOfferContent, (ramses_internal::ContentID, ramses_internal::Category, ramses_internal::ETechnicalContentType, const std::string&, bool), (override));
         MOCK_METHOD(bool, sendContentDescription, (ramses_internal::ContentID, ramses_internal::TechnicalContentDescriptor), (override));
         MOCK_METHOD(bool, sendContentReady, (ramses_internal::ContentID), (override));
@@ -35,6 +37,7 @@ namespace ramses
         MOCK_METHOD(bool, sendCanvasSizeChange, (ramses_internal::ContentID, const ramses_internal::CategoryInfo&, ramses_internal::AnimationInformation), (override));
         MOCK_METHOD(bool, sendContentStateChange, (ramses_internal::ContentID, ramses_internal::EDcsmState, const ramses_internal::CategoryInfo&, ramses_internal::AnimationInformation), (override));
         MOCK_METHOD(bool, dispatchConsumerEvents, (IDcsmConsumerEventHandler&), (override));
+        MOCK_METHOD(bool, dispatchConsumerEvents, (IDcsmConsumerEventHandler&, std::chrono::milliseconds), (override));
 
         MOCK_METHOD(bool, setLocalProviderAvailability, (bool), (override));
         MOCK_METHOD(bool, setLocalConsumerAvailability, (bool), (override));
@@ -53,7 +56,7 @@ namespace ramses
             // we expect exactly two setLocalProviderAvailability calls
             EXPECT_CALL(compMock, setLocalProviderAvailability(true)).WillOnce(Return(true));
             EXPECT_CALL(compMock, setLocalProviderAvailability(false)).WillOnce(Return(true));
-            provider.reset(new DcsmProvider(*new DcsmProviderImpl(compMock)));
+            provider = std::make_unique<DcsmProvider>(*new DcsmProviderImpl(compMock));
 
             // "initialize" event handler for easier testing
             EXPECT_CALL(compMock, dispatchProviderEvents(_)).WillOnce(Return(true));

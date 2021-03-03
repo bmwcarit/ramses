@@ -13,31 +13,45 @@
 #include "RendererLib/DisplayDispatcher.h"
 #include "PlatformMock.h"
 #include "DisplayBundleMock.h"
+#include "DisplayThreadMock.h"
 
 namespace ramses_internal
 {
     class DisplayDispatcherMock : public DisplayDispatcher
     {
     public:
-        DisplayDispatcherMock(const RendererConfig& config, RendererCommandBuffer& commandBuffer, IRendererSceneEventSender& rendererSceneSender);
-        virtual ~DisplayDispatcherMock();
+        DisplayDispatcherMock(const RendererConfig& config, RendererCommandBuffer& commandBuffer, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier);
+        virtual ~DisplayDispatcherMock() override;
 
-        MOCK_METHOD(Display, createDisplayBundle, (), (override));
+        MOCK_METHOD(Display, createDisplayBundle, (DisplayHandle), (override));
     };
 
     class DisplayDispatcherFacade : public DisplayDispatcherMock
     {
     public:
-        DisplayDispatcherFacade(const RendererConfig& config, RendererCommandBuffer& commandBuffer, IRendererSceneEventSender& rendererSceneSender);
-        virtual ~DisplayDispatcherFacade();
+        DisplayDispatcherFacade(const RendererConfig& config, RendererCommandBuffer& commandBuffer, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier ,bool threaded);
+        virtual ~DisplayDispatcherFacade() override;
 
-        virtual Display createDisplayBundle() override;
+        virtual Display createDisplayBundle(DisplayHandle displayHandle) override;
 
-        ::testing::StrictMock<DisplayBundleMock>* getDisplayBundleMock(DisplayHandle display);
+        template <template<typename> class MOCK_TYPE = ::testing::StrictMock>
+        MOCK_TYPE<DisplayBundleMock>* getDisplayBundleMock(DisplayHandle display);
+        template <template<typename> class MOCK_TYPE = ::testing::StrictMock>
+        MOCK_TYPE<DisplayThreadMock>* getDisplayThreadMock(DisplayHandle display);
         DisplayHandleVector getDisplays() const;
 
         RendererCommands m_expectedBroadcastCommandsForNewDisplays;
         RendererCommands m_expectedCommandsForNextCreatedDisplay;
+        ELoopMode m_expectedLoopModeForNewDisplays = ELoopMode::UpdateOnly;
+        std::chrono::microseconds m_expectedMinFrameDurationForNextDisplayCreation{ 0 };
+        bool m_expectNewDisplaysToStartUpdating = true;
+        bool m_useNiceMock = false;
+
+    private:
+        template <template<typename> class MOCK_TYPE>
+        Display createDisplayBundleMocks();
+
+        bool m_threaded;
     };
 }
 #endif

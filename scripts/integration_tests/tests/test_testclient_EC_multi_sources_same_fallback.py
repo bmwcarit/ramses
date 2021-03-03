@@ -15,7 +15,7 @@ from tests.embedded_compositor_base import embedded_compositor_base
 # client is removed.
 class TestEmbeddedCompositorMultiSourcesSameFallback(embedded_compositor_base.EmbeddedCompositorBase):
 
-    def __init__(self, methodName ='runTest'):
+    def __init__(self, methodName='runTest'):
         embedded_compositor_base.EmbeddedCompositorBase.__init__(self, methodName, 1)
 
     def impl_test(self):
@@ -25,11 +25,11 @@ class TestEmbeddedCompositorMultiSourcesSameFallback(embedded_compositor_base.Em
         self.validateScreenshot(self.renderer, "testClient_compositing_allSidesSameFallback.png")
 
         # ivi gears should be composited
-        self._startIviGears(iviID = 2, alternateColors = False)
+        self._startIviGears(iviID=2, alternateColors=False)
         self.validateScreenshot(self.renderer, "testClient_compositing_allSidesSameFallback_oneCompositing.png")
 
         # another ivi gears is composited
-        self._startIviGears(iviID = 4, alternateColors = True)
+        self._startIviGears(iviID=4, alternateColors=True)
         self.validateScreenshot(self.renderer, "testClient_compositing_allSidesSameFallback_oneAndTwoCompositing.png")
 
         # gears is killed (this kills both gears applications), fallback is shown again

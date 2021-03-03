@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_Base/Context_Base.h"
-#include "Utils/LogMacros.h"
 #include "Utils/StringUtils.h"
 
 namespace ramses_internal
@@ -23,8 +22,6 @@ namespace ramses_internal
 
     void Context_Base::ParseContextExtensionsHelper(const Char* extensionNativeString, StringSet& extensionsOut)
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "Context_Base::ParseContextExtensionsHelper:  parsing context extensions");
-
         extensionsOut = StringSet();
         String extensionString = StringUtils::Trim(extensionNativeString);
         StringUtils::Tokenize(extensionString, extensionsOut);

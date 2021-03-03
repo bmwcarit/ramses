@@ -145,7 +145,7 @@ namespace ramses
             while (!conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)
             {
                 if (!m_renderer.impl.isThreaded())
-                    m_renderer.impl.getDisplayDispatcher().doOneLoop(ramses_internal::ELoopMode::UpdateOnly);
+                    m_renderer.doOneLoop();
 
                 std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });  // will give the renderer time to process changes
 

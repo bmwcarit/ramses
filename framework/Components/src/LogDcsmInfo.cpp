@@ -19,7 +19,7 @@ namespace ramses_internal
         registerKeyword("printDcsmInfo");
     }
 
-    bool LogDcsmInfo::executeInput(const RamshInput& /*input*/)
+    bool LogDcsmInfo::executeInput(const std::vector<std::string>& /*input*/)
     {
         m_dcsmComponent.logInfo();
         return true;

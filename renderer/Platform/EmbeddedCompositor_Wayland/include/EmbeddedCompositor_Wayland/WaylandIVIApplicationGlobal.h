@@ -22,7 +22,7 @@ namespace ramses_internal
     {
     public:
         explicit WaylandIVIApplicationGlobal(EmbeddedCompositor_Wayland& compositor);
-        ~WaylandIVIApplicationGlobal();
+        ~WaylandIVIApplicationGlobal() override;
 
         bool init(WaylandDisplay& serverDisplay);
         void destroy();

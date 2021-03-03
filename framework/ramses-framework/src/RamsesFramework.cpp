@@ -116,4 +116,12 @@ namespace ramses
     {
         RamsesFrameworkImpl::SetConsoleLogLevel(logLevel);
     }
+
+    status_t RamsesFramework::addRamshCommand(const std::shared_ptr<IRamshCommand>& command)
+    {
+        const status_t result = impl.addRamshCommand(command);
+        LOG_HL_CLIENT_API1(result, LOG_API_GENERIC_PTR_STRING(command.get()));
+        return result;
+    }
+
 }

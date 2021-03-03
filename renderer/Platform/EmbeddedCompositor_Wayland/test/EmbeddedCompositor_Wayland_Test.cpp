@@ -24,7 +24,7 @@
 #include "WaylandBufferResourceMock.h"
 #include "EmbeddedCompositor_Wayland/WaylandBuffer.h"
 #include "wayland-client.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLog.h"
 #include <pwd.h>
 #include <grp.h>
 #include <atomic>
@@ -158,6 +158,9 @@ namespace ramses_internal
     public:
         bool init(const String& ecSocketName, const String& ecSocketGroup = "", int ecSocketFD = -1, bool xdgRuntimeDirSet = true, uint32_t ecSocketPermissions = 0)
         {
+            // caller is expected to have a display prefix for logs
+            ThreadLocalLog::SetPrefix(1);
+
             if(xdgRuntimeDirSet)
                 WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
             else
@@ -170,7 +173,7 @@ namespace ramses_internal
             if (ecSocketPermissions != 0)
                 rendererConfig.setWaylandEmbeddedCompositingSocketPermissions(ecSocketPermissions);
 
-            embeddedCompositor.reset(new EmbeddedCompositor_Wayland(rendererConfig, {}, context));
+            embeddedCompositor = std::make_unique<EmbeddedCompositor_Wayland>(rendererConfig, DisplayConfig{}, context);
             return embeddedCompositor->init();
         }
 

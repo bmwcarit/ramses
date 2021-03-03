@@ -53,6 +53,7 @@ void ARendererCommandBuffer::fillBufferWithCommands(RendererCommandBuffer& buffe
     buffer.enqueueCommand(RendererCommand::DestroyDisplay{ displayHandle });
     buffer.enqueueCommand(RendererCommand::LinkData{ providerSceneId, providerId, consumerSceneId, consumerId });
     buffer.enqueueCommand(RendererCommand::UnlinkData{ consumerSceneId, consumerId });
+    buffer.enqueueCommand(RendererCommand::SetClearFlags{ displayHandle, obHandle, EClearFlags_Color });
     buffer.enqueueCommand(RendererCommand::SetClearColor{ displayHandle, obHandle, clearColor });
     buffer.enqueueCommand(RendererCommand::CreateStreamBuffer{ displayHandle, streamBuffer, source });
     buffer.enqueueCommand(RendererCommand::DestroyStreamBuffer{ displayHandle, streamBuffer });
@@ -80,6 +81,7 @@ void ARendererCommandBuffer::expectFilledBufferVisits()
     EXPECT_CALL(visitor, destroyDisplayContext(displayHandle));
     EXPECT_CALL(visitor, handleSceneDataLinkRequest(providerSceneId, providerId, consumerSceneId, consumerId));
     EXPECT_CALL(visitor, handleDataUnlinkRequest(consumerSceneId, consumerId));
+    EXPECT_CALL(visitor, handleSetClearFlags(displayHandle, obHandle, EClearFlags_Color));
     EXPECT_CALL(visitor, handleSetClearColor(displayHandle, obHandle, clearColor));
     EXPECT_CALL(visitor, handleBufferCreateRequest(streamBuffer, displayHandle, source));
     EXPECT_CALL(visitor, handleBufferDestroyRequest(streamBuffer, displayHandle));

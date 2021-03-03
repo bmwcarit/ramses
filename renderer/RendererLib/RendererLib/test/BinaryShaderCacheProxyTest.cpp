@@ -22,7 +22,7 @@ namespace ramses
     {
     public:
         BinaryShaderCacheMock() = default;
-        virtual ~BinaryShaderCacheMock() {}
+        virtual ~BinaryShaderCacheMock() override = default;
 
         MOCK_METHOD(void, deviceSupportsBinaryShaderFormats, (const binaryShaderFormatId_t* supportedFormats, uint32_t numSupportedFormats), (override));
         MOCK_METHOD(bool, hasBinaryShader, (effectId_t effectId), (const, override));

@@ -11,6 +11,7 @@ import time
 
 from ramses_test_framework import log
 
+
 class AsynchronousPipeReader(threading.Thread):
     def __init__(self, pipe, buffer, name=""):
         threading.Thread.__init__(self)
@@ -31,7 +32,8 @@ class AsynchronousPipeReader(threading.Thread):
 
             if doStop:
                 if (self.abortTime is not None) and (time.time() >= self.abortTime):
-                    log.error("Timeout while trying to read remaining contents of pipe ({}). Current buffer content\n----------------\n{}\n----------------".format(self._name, self._buffer.get_all_data()))
+                    log.error("Timeout while trying to read remaining contents of pipe ({}). Current buffer content\n----------------\n{}\n----------------".
+                              format(self._name, self._buffer.get_all_data()))
                     return
 
             line = self._pipe.readline()
@@ -41,9 +43,9 @@ class AsynchronousPipeReader(threading.Thread):
 
             if line == "":
                 if doStop:
-                    return  #pipe is empty, we can stop reader immediately
+                    return  # pipe is empty, we can stop reader immediately
                 else:
-                    time.sleep(0.1) #pipe currently empty, wait for new data
+                    time.sleep(0.1)  # pipe currently empty, wait for new data
             else:
                 self._buffer.append(line)
 

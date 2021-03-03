@@ -25,11 +25,11 @@ namespace ramses
     *          There cannot be multiple instances of SceneReference referring to the same sceneId, however SceneReference
     *          can be destroyed using #ramses::Scene::destroy and re-created with same sceneId in another scene,
     *          i.e. change its 'master' scene.
-    *          It is recommended to get SceneReference to #ramses::RendererSceneState::Unavailable state and wait for confirmation
+    *          It is recommended to get SceneReference to #ramses::RendererSceneState::Available state and wait for confirmation
     *          (#ramses::IClientEventHandler::sceneReferenceStateChanged) before destroying it, otherwise the scene remains on renderer
     *          side with no owner, potentially consuming resources and causing undesired results if shown, also any pending requests, events
     *          or actions will either fail or get lost (no master scene to report to).
-    *          Even though recommended, setting referenced scene to unavailable before destroying is not strictly required,
+    *          Even though recommended, setting referenced scene to Available before destroying is not strictly required,
     *          so it is possible to change its master scene regardless of its actual state on renderer side (even if actively rendered)
     *          but this should be done only with extra caution and understanding of the consequences mentioned above.
     */

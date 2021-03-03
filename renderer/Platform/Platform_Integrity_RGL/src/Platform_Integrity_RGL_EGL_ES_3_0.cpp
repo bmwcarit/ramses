@@ -9,7 +9,6 @@
 #include "Platform_Integrity_RGL/Platform_Integrity_RGL_EGL_ES_3_0.h"
 #include "Platform_Base/EmbeddedCompositor_Dummy.h"
 #include "RendererLib/DisplayConfig.h"
-#include <EGL/eglext.h>
 
 namespace ramses_internal
 {
@@ -26,24 +25,6 @@ namespace ramses_internal
     uint32_t Platform_Integrity_RGL_EGL_ES_3_0::getSwapInterval() const
     {
         return 1u;
-    }
-
-    std::vector<EGLint> Platform_Integrity_RGL_EGL_ES_3_0::getSurfaceAttributes(UInt32 msaaSampleCount) const
-    {
-        UNUSED(msaaSampleCount);
-
-        return std::vector<EGLint>
-        {
-            EGL_BUFFER_SIZE,          32,
-            EGL_ALPHA_SIZE,           8,
-            EGL_BLUE_SIZE,            8,
-            EGL_GREEN_SIZE,           8,
-            EGL_RED_SIZE,             8,
-            EGL_DEPTH_SIZE,           8,
-            EGL_SURFACE_TYPE,         EGL_WINDOW_BIT,
-            EGL_RENDERABLE_TYPE,      EGL_OPENGL_ES3_BIT_KHR,
-            EGL_NONE
-        };
     }
 
     ISystemCompositorController* Platform_Integrity_RGL_EGL_ES_3_0::createSystemCompositorController()

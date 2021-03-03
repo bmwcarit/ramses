@@ -21,7 +21,7 @@
 
 namespace ramses_internal
 {
-    class PlatformThread
+    class PlatformThread final
     {
     public:
         explicit PlatformThread(const String& threadName);

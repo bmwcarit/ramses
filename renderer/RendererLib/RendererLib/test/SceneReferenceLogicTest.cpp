@@ -16,6 +16,7 @@
 #include "RendererSceneEventSenderMock.h"
 #include "RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -28,6 +29,8 @@ namespace ramses_internal
             : m_scenes(m_eventCollector)
             , m_logic(m_scenes, m_sceneLogic, m_sceneUpdater, m_eventSender, m_ownership)
         {
+            // caller is expected to have a display prefix for logs
+            ThreadLocalLog::SetPrefix(1);
         }
 
         virtual void SetUp() override
@@ -57,6 +60,19 @@ namespace ramses_internal
 
             // ignore this unless overridden by test
             EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; });
+        }
+
+        void expectSceneRefEventSent(SceneId refScene, SceneId expectedMasterScene)
+        {
+            RendererEventVector events;
+            RendererEvent event{ ERendererEventType::SceneStateChanged };
+            event.sceneId = refScene;
+            event.state = RendererSceneState::Ready;
+            events.push_back(event);
+
+            // ref scene event will be extracted and sent
+            EXPECT_CALL(m_eventSender, sendSceneStateChanged(expectedMasterScene, refScene, RendererSceneState::Ready));
+            m_logic.extractAndSendSceneReferenceEvents(events);
         }
 
         RendererEventCollector m_eventCollector;
@@ -1504,6 +1520,8 @@ namespace ramses_internal
         m_scenes.getScene(MasterSceneId2).requestSceneReferenceState(otherRefHandle, RendererSceneState::Ready);
         EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId11, RendererSceneState::Ready));
         m_logic.update();
+
+        expectSceneRefEventSent(RefSceneId11, MasterSceneId2);
     }
 
     TEST_F(ASceneReferenceLogic, referenceCanGetNewMasterWhileKeepingItsState)
@@ -1549,6 +1567,53 @@ namespace ramses_internal
         m_scenes.getScene(MasterSceneId2).requestSceneReferenceState(otherRefHandle, RendererSceneState::Available);
         EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId11, RendererSceneState::Available));
         m_logic.update();
+
+        expectSceneRefEventSent(RefSceneId11, MasterSceneId2);
+    }
+
+    TEST_F(ASceneReferenceLogic, referenceCanBeControlledUnderNewMasterWhenRereferencedAfterOldMasterDestroyed)
+    {
+        // other scenes not relevant for this test, keep available
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; }));
+
+        // simulate original master and ref scene Rendered
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        {
+            targetState = RendererSceneState::Rendered;
+        }));
+
+        m_scenes.getScene(MasterSceneId2).requestSceneReferenceState(RefSceneHandle21, RendererSceneState::Rendered);
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId21, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Rendered; }));
+        m_logic.update();
+
+        // destroy original master
+        m_scenes.destroyScene(MasterSceneId2);
+
+        EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId21, RendererSceneState::Available));
+        EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId22, RendererSceneState::Available));
+        m_logic.update();
+
+        // re-reference by new master
+        SceneAllocateHelper otherMaster{ m_scenes.getScene(MasterSceneId1) };
+        const auto otherRefHandle = otherMaster.allocateSceneReference(RefSceneId21);
+
+        // ref scene is now under new master which did not request any state for it yet, i.e. default is available
+        EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId21, RendererSceneState::Available));
+        m_logic.update();
+        EXPECT_EQ(MasterSceneId1, m_ownership.getSceneOwner(RefSceneId21));
+
+        // simulate new master Ready
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        {
+            targetState = RendererSceneState::Ready;
+        }));
+
+        // request ref ready from new master now
+        m_scenes.getScene(MasterSceneId1).requestSceneReferenceState(otherRefHandle, RendererSceneState::Ready);
+        EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId21, RendererSceneState::Ready));
+        m_logic.update();
+
+        expectSceneRefEventSent(RefSceneId21, MasterSceneId1);
     }
 
     TEST_F(ASceneReferenceLogic, referenceGetsMappingFromNewMasterWhenRereferenced)

@@ -10,6 +10,7 @@
 #define RAMSES_TESTRENDERER_H
 
 #include "ramses-renderer-api/RamsesRenderer.h"
+#include "ramses-renderer-api/Types.h"
 #include "ramses-framework-api/RendererSceneState.h"
 #include "RendererAPI/Types.h"
 #include "RendererAPI/EDeviceTypeId.h"
@@ -62,9 +63,10 @@ namespace ramses_internal
         bool isRendererThreadEnabled() const;
         void doOneLoop();
 
-        ramses::displayBufferId_t createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount = 0u);
+        ramses::displayBufferId_t createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount = 0u, ramses::EDepthBufferType depthBufferType = ramses::EDepthBufferType_DepthStencil);
         void destroyOffscreenBuffer(ramses::displayId_t displayId, ramses::displayBufferId_t buffer);
         void assignSceneToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t buffer, int32_t renderOrder);
+        void setClearFlags(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, uint32_t clearFlags);
         void setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const ramses_internal::Vector4& clearColor);
 
         ramses::streamBufferId_t createStreamBuffer(ramses::displayId_t displayId, ramses::waylandIviSurfaceId_t source);

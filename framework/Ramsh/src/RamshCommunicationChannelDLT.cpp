@@ -49,7 +49,6 @@ namespace ramses_internal
 
     void RamshCommunicationChannelDLT::processInput(const String& s)
     {
-        RamshInput input = RamshTools::parseCommandString(s);
-        m_ramsh.execute(input);
+        m_ramsh.execute(RamshTools::parseCommandString(s));
     }
 }

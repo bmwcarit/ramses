@@ -11,7 +11,7 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/LoggingUtils.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses_internal
 {

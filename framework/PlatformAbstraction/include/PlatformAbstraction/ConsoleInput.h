@@ -13,7 +13,7 @@
 
 namespace ramses_internal
 {
-    class ConsoleInput
+    class ConsoleInput final
     {
     public:
         bool readChar(char& c);

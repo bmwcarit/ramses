@@ -10,7 +10,7 @@
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/TextureSampler.h"
 #include "ramses-client-api/Texture2DBuffer.h"
-#include <assert.h>
+#include <cassert>
 
 
 namespace

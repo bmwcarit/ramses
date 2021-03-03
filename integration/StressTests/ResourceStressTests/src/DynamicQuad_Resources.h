@@ -29,7 +29,7 @@ namespace ramses_internal
     {
     public:
         DynamicQuad_Resources(ramses::Scene& scene, const ScreenspaceQuad& screenspaceQuad);
-        ~DynamicQuad_Resources();
+        ~DynamicQuad_Resources() override;
 
         virtual void recreate() override final;
 

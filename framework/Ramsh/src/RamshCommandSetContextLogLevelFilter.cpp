@@ -6,15 +6,15 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "Ramsh/RamshCommandSetContextLogLevel.h"
+#include "Ramsh/RamshCommandSetContextLogLevelFilter.h"
 #include "Ramsh/Ramsh.h"
-#include "Collections/HashSet.h"
 #include "Utils/LogMacros.h"
 #include "Utils/RamsesLogger.h"
 
 namespace ramses_internal
 {
-    RamshCommandSetContextLogLevelFilter::RamshCommandSetContextLogLevelFilter(const Ramsh& ramsh) : m_ramsh(ramsh)
+    RamshCommandSetContextLogLevelFilter::RamshCommandSetContextLogLevelFilter(const Ramsh& ramsh)
+        : m_ramsh(ramsh)
     {
         //commands to set a common log level for all appenders
         registerKeyword("setContextLogLevelFilter");
@@ -23,7 +23,7 @@ namespace ramses_internal
         description = "Commands to set the log level of specific contexts. Usage: setContextLogLevelFilter 0..7:ContextIdPattern,0..7:ContextIdPattern,...";
     }
 
-    bool RamshCommandSetContextLogLevelFilter::executeInput(const RamshInput& input)
+    bool RamshCommandSetContextLogLevelFilter::executeInput(const std::vector<std::string>& input)
     {
         if (input.size() != 2)
         {
@@ -31,7 +31,7 @@ namespace ramses_internal
             return false;
         }
 
-        GetRamsesLogger().applyContextFilterCommand(input[1]);
+        GetRamsesLogger().applyContextFilterCommand(String(input[1]));
         return true;
     }
 }

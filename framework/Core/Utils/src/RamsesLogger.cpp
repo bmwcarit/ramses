@@ -169,7 +169,7 @@ namespace ramses_internal
                                            },
                                            m_logContexts, pushLogLevelToDltDaemon))
                 {
-                    m_dltLogAppender.reset(new DltLogAppender);
+                    m_dltLogAppender = std::make_unique<DltLogAppender>();
 
                     {
                         std::lock_guard<std::mutex> guard(m_appenderLock);

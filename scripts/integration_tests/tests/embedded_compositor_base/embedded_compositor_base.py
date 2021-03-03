@@ -9,10 +9,10 @@
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
-from ramses_test_framework import application
+
 
 class EmbeddedCompositorBase(test_classes.OnAllDefaultTargetsTest):
-    def __init__(self, methodName ='runTest', testSceneState=0):
+    def __init__(self, methodName='runTest', testSceneState=0):
         test_classes.OnAllDefaultTargetsTest.__init__(self, methodName)
         self._testSceneState = testSceneState
 
@@ -21,14 +21,15 @@ class EmbeddedCompositorBase(test_classes.OnAllDefaultTargetsTest):
         if not self.target.embeddedCompositingSupported:
             self.skipTest("Embedded compositor support is not configured for this target")
 
-        self.percentageOfRGBDifferenceAllowedPerPixel = 0.004   #allows +/- 1 for rgb values (needed e.g. for ufo driver)
-        self.percentageOfWrongPixelsAllowed = 0.0004            #allows few wrong pixels, same as above...
+        self.percentageOfRGBDifferenceAllowedPerPixel = 0.004   # allows +/- 1 for rgb values (needed e.g. for ufo driver)
+        self.percentageOfWrongPixelsAllowed = 0.0004            # allows few wrong pixels, same as above...
 
         self.ramsesDaemon = self.target.start_daemon()
         self.checkThatApplicationWasStarted(self.ramsesDaemon)
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
         # start renderer with wayland backend to use embedded compositing features
-        self.renderer = self.target.start_renderer(applicationName="ramses-renderer-wayland-ivi-egl-es-3-0", args="--wayland-socket-embedded wayland-10 --wayland-socket-embedded-groupname wayland")
+        self.renderer = self.target.start_renderer(applicationName="ramses-renderer-wayland-ivi-egl-es-3-0",
+                                                   args="--wayland-socket-embedded wayland-10 --wayland-socket-embedded-groupname wayland")
         self.checkThatApplicationWasStarted(self.renderer)
         self.addCleanup(self.target.kill_application, self.renderer)
         self.testClient = self.target.start_client("ramses-test-client", "-tn 10 -ts {} -cz 5".format(self._testSceneState))
@@ -38,7 +39,7 @@ class EmbeddedCompositorBase(test_classes.OnAllDefaultTargetsTest):
 
     def impl_tearDown(self):
         if self.target.systemCompositorControllerSupported:
-            #ivi control is supported only on systems with SCC support
+            # ivi control is supported only on systems with SCC support
             self.target.ivi_control.cleanup()
         self.target.kill_application(self.testClient)
         self.target.kill_application(self.renderer)
@@ -49,28 +50,28 @@ class EmbeddedCompositorBase(test_classes.OnAllDefaultTargetsTest):
         self.save_application_output(self.ramsesDaemon)
         log.info("output saved")
 
-    def _startIviGears(self, iviID, alternateColors = False):
+    def _startIviGears(self, iviID, alternateColors=False):
         self.watchSurfaceFound = self.renderer.start_watch_stdout()
         gearsArguments = "-I {} --still".format(iviID)
         if alternateColors:
             gearsArguments += " --alternateColors"
         self.wlClientIviGears = self.target.start_application("ivi-gears", gearsArguments,
-                                                      binaryDirectoryOnTarget=self.target.baseWorkingDirectory,
-                                                      env={"WAYLAND_DISPLAY" : "wayland-10"})
+                                                              binaryDirectoryOnTarget=self.target.baseWorkingDirectory,
+                                                              env={"WAYLAND_DISPLAY": "wayland-10"})
         self.checkThatApplicationWasStarted(self.wlClientIviGears)
         self.addCleanup(self.target.kill_application, self.wlClientIviGears)
         surfaceFound = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceFound,
                                                             "embedded-compositing client surface found for existing streamtexture: {}".format(iviID))
         self.assertTrue(surfaceFound, msg="Surface was not found by renderer")
 
-    def _startDmaBufExample(self, iviID, alternateColors = False):
+    def _startDmaBufExample(self, iviID, alternateColors=False):
         self.watchSurfaceFound = self.renderer.start_watch_stdout()
         dmaBufExampleArguments = "-I {} --still".format(iviID)
         if alternateColors:
             dmaBufExampleArguments += " --mandelbrot"
         self.wlClientDmaBuf = self.target.start_application("ivi-simple-dmabuf-egl", dmaBufExampleArguments,
-                                                      binaryDirectoryOnTarget=self.target.baseWorkingDirectory,
-                                                      env={"WAYLAND_DISPLAY" : "wayland-10"})
+                                                            binaryDirectoryOnTarget=self.target.baseWorkingDirectory,
+                                                            env={"WAYLAND_DISPLAY": "wayland-10"})
         self.checkThatApplicationWasStarted(self.wlClientDmaBuf)
         self.addCleanup(self.target.kill_application, self.wlClientDmaBuf)
         surfaceFound = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceFound,
@@ -81,21 +82,21 @@ class EmbeddedCompositorBase(test_classes.OnAllDefaultTargetsTest):
         self.watchSurfaceIsGone = self.renderer.start_watch_stdout()
         self.target.kill_application(self.wlClientIviGears)
         surfaceIsGone = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceIsGone,
-                                                            "embedded-compositing client surface destroyed")
+                                                             "embedded-compositing client surface destroyed")
         self.assertTrue(surfaceIsGone, msg="Surface was not destroyed")
 
     def _killDmaBufExample(self):
         self.watchSurfaceIsGone = self.renderer.start_watch_stdout()
         self.target.kill_application(self.wlClientDmaBuf)
         surfaceIsGone = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceIsGone,
-                                                            "embedded-compositing client surface destroyed")
+                                                             "embedded-compositing client surface destroyed")
         self.assertTrue(surfaceIsGone, msg="Surface was not destroyed")
 
     def _stopIviGears(self):
         self.watchSurfaceIsGone = self.renderer.start_watch_stdout()
         self.target.execute_on_target("killall -SIGINT " + self.wlClientIviGears.name)
         surfaceIsGone = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceIsGone,
-                                                            "embedded-compositing client surface destroyed")
+                                                             "embedded-compositing client surface destroyed")
         self.assertTrue(surfaceIsGone, msg="Surface was not destroyed")
 
     def syncSceneOnClientAndRenderer(self, sceneId):
@@ -103,5 +104,5 @@ class EmbeddedCompositorBase(test_classes.OnAllDefaultTargetsTest):
         self.flushIsReceived = self.renderer.start_watch_stdout()
         self.testClient.send_ramsh_command("sceneversion {} {}".format(self.flushname, sceneId), waitForRendererConfirmation=False)
         flushWasReceived = self.renderer.wait_for_msg_in_stdout(self.flushIsReceived,
-                                                            "Named flush applied on scene {} with sceneVersionTag {}".format(sceneId, self.flushname))
+                                                                "Named flush applied on scene {} with sceneVersionTag {}".format(sceneId, self.flushname))
         self.assertTrue(flushWasReceived, msg="Renderer didn't receive named flush")

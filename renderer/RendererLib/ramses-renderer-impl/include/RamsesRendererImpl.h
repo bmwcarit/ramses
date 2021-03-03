@@ -19,7 +19,7 @@
 #include "RendererLib/RendererPeriodicLogSupplier.h"
 #include "RendererAPI/ELoopMode.h"
 #include "RendererFramework/RendererFrameworkLogic.h"
-#include "Watchdog/PlatformWatchdog.h"
+#include "Watchdog/ThreadWatchdog.h"
 #include <memory>
 
 namespace ramses_internal
@@ -55,8 +55,9 @@ namespace ramses
         RendererSceneControl* getSceneControlAPI();
         DcsmContentControl* createDcsmContentControl();
 
-        displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount, bool interruptible);
+        displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount, bool interruptible, EDepthBufferType depthBufferType);
         status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
+        status_t setDisplayBufferClearFlags(displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags);
         status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
 
         streamBufferId_t createStreamBuffer(displayId_t display, waylandIviSurfaceId_t source);
@@ -75,7 +76,7 @@ namespace ramses
 
         status_t dispatchEvents(IRendererEventHandler& rendererEventHandler);
 
-        void logConfirmationEcho(const ramses_internal::String& text);
+        void logConfirmationEcho(displayId_t display, const ramses_internal::String& text);
         status_t logRendererInfo();
 
         status_t startThread();
@@ -83,6 +84,7 @@ namespace ramses
         bool isThreadRunning() const;
         bool isThreaded() const;
         status_t setMaximumFramerate(float maximumFramerate);
+        status_t setMaximumFramerate(float maximumFramerate, displayId_t display);
         float getMaximumFramerate() const;
         status_t setLoopMode(ELoopMode loopMode);
         ELoopMode getLoopMode() const;
@@ -105,6 +107,7 @@ namespace ramses
         ramses_internal::RendererCommands                                           m_pendingRendererCommands;
         ramses_internal::RendererCommandBuffer                                      m_rendererCommandBuffer;
         ramses_internal::RendererFrameworkLogic                                     m_rendererFrameworkLogic;
+        ramses_internal::ThreadWatchdog                                             m_threadWatchdog;
         std::unique_ptr<ramses_internal::DisplayDispatcher>                         m_displayDispatcher;
 
         displayId_t                                                                 m_nextDisplayId{ 0u };
@@ -113,7 +116,6 @@ namespace ramses
         DisplayFrameBufferMap                                                       m_displayFramebuffers;
         bool                                                                        m_systemCompositorEnabled;
         ramses_internal::ELoopMode                                                  m_loopMode;
-        ramses_internal::PlatformWatchdog                                           m_rendererLoopThreadWatchdog;
         ramses_internal::RendererLoopThreadController                               m_rendererLoopThreadController;
 
         enum ERendererLoopThreadType

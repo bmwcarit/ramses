@@ -23,13 +23,13 @@ namespace ramses_internal
         description = "Commands to set the log level of all contexts. Usage: setContextLogLevel <0..7>";
     }
 
-    bool RamshCommandSetContextLogLevel::executeInput(const RamshInput& input)
+    bool RamshCommandSetContextLogLevel::executeInput(const std::vector<std::string>& input)
     {
         if (input.size() != 2)
             return false;
 
         ELogLevel level;
-        if (!LogHelper::StringToLogLevel(input[1], level))
+        if (!LogHelper::StringToLogLevel(String(input[1]), level))
             return false;
 
         RamsesLogger& logger = GetRamsesLogger();

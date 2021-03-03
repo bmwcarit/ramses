@@ -19,7 +19,7 @@ namespace ramses_internal
     /**
      * RamshInput from DLT
      */
-    class RamshCommunicationChannelDLT
+    class RamshCommunicationChannelDLT final
     {
     public:
         explicit RamshCommunicationChannelDLT(Ramsh& ramsh);

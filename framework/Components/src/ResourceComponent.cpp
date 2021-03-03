@@ -91,7 +91,7 @@ namespace ramses_internal
 
     ManagedResource ResourceComponent::loadResource(const ResourceContentHash& hash)
     {
-        BinaryFileInputStream* resourceStream(nullptr);
+        IInputStream* resourceStream = nullptr;
         ResourceFileEntry entry;
         const EStatus canLoadFromFile = m_resourceFiles.getEntry(hash, resourceStream, entry);
         if (canLoadFromFile == EStatus::Ok)

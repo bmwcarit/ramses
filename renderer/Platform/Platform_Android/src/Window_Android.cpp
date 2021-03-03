@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/DisplayConfig.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Warnings.h"
 
 #include "RendererAPI/IWindowEventHandler.h"

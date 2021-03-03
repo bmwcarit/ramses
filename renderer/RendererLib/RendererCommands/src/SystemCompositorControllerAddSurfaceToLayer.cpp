@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererCommands/SystemCompositorControllerAddSurfaceToLayer.h"
-#include "Ramsh/RamshInput.h"
 
 namespace ramses_internal
 {

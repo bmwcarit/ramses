@@ -32,7 +32,7 @@ namespace ramses_internal
     {
         using InstanceIdType = typename Callbacks::InstanceIdType;
     public:
-        ~ConnectionSystemBase();
+        ~ConnectionSystemBase() override;
 
         void logConnectionInfo();
         void logPeriodicInfo();

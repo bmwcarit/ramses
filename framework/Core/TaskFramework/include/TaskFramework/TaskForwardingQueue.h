@@ -23,7 +23,7 @@ namespace ramses_internal
     public:
         explicit TaskForwardingQueue(ITaskQueue& nextQueue);
         explicit TaskForwardingQueue(const TaskForwardingQueue&) = delete;
-        virtual ~TaskForwardingQueue();
+        virtual ~TaskForwardingQueue() override;
 
         virtual bool enqueue(ITask& task) override;
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;

@@ -14,7 +14,7 @@
 #include "RendererAPI/IBinaryShaderCache.h"
 #include "RendererAPI/IDevice.h"
 #include "RendererAPI/IRenderBackend.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "Utils/TextureMathUtils.h"
 #include "Components/ManagedResource.h"
 #include "RendererLib/ResourceDescriptor.h"

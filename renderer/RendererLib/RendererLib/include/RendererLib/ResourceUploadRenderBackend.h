@@ -19,7 +19,7 @@ namespace ramses_internal
     public:
         ResourceUploadRenderBackend(IContext& context, IDevice& device);
 
-        virtual ~ResourceUploadRenderBackend() {}
+        virtual ~ResourceUploadRenderBackend() override = default;
 
         virtual IContext& getContext() const override;
 

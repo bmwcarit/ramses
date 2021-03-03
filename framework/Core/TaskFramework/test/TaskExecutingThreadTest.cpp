@@ -12,74 +12,79 @@
 #include "gmock/gmock.h"
 #include "TaskFramework/ProcessingTaskQueue.h"
 #include "PlatformAbstraction/PlatformEvent.h"
+#include "Watchdog/ThreadAliveNotifierMock.h"
 
 #include <thread>
 #include <chrono>
 
 using namespace testing;
-
+using namespace std::chrono_literals;
 namespace ramses_internal
 {
-    class AliveHandlerMock : public IThreadAliveNotifier
-    {
-    public:
-        MOCK_METHOD(void, notifyAlive, (UInt16 threadIndex), (override));
-        MOCK_METHOD(UInt32, calculateTimeout, (), (const, override));
-    };
-
     TEST(ATaskExecutingThread, callsAliveNotificationWithGivenThreadID)
     {
         PlatformEvent syncWaiter;
-        AliveHandlerMock handlerMock;
+        ThreadAliveNotifierMock handlerMock;
         ProcessingTaskQueue q;
-        TaskExecutingThread thread(13, handlerMock);
+
+        EXPECT_CALL(handlerMock, registerThread()).WillOnce(Return(13));
+        TaskExecutingThread thread(handlerMock);
 
         EXPECT_CALL(handlerMock, notifyAlive(13))
             .Times(AtLeast(2))
             .WillOnce(Return())
             .WillRepeatedly(InvokeWithoutArgs([&]() { syncWaiter.signal(); }));
-        EXPECT_CALL(handlerMock, calculateTimeout()).Times(AtLeast(1)).WillRepeatedly(Return(100));
+        EXPECT_CALL(handlerMock, calculateTimeout()).Times(AtLeast(1)).WillRepeatedly(Return(100ms));
         thread.start(q);
 
         EXPECT_TRUE(syncWaiter.wait(1000));
+        EXPECT_CALL(handlerMock, unregisterThread(13));
     }
 
     TEST(ATaskExecutingThread, stopThreadWorks)
     {
-        AliveHandlerMock handlerMock;
+        ThreadAliveNotifierMock handlerMock;
         ProcessingTaskQueue q;
-        TaskExecutingThread thread(13, handlerMock);
+
+        EXPECT_CALL(handlerMock, registerThread()).WillOnce(Return(13));
+        TaskExecutingThread thread(handlerMock);
         thread.start(q);
         EXPECT_FALSE(thread.isCancelRequested());
         thread.stop();
         EXPECT_TRUE(thread.isCancelRequested());
+        EXPECT_CALL(handlerMock, unregisterThread(13));
     }
 
     TEST(ATaskExecutingThread, cancelUnlockJoinThreadWorks)
     {
-        AliveHandlerMock handlerMock;
+        ThreadAliveNotifierMock handlerMock;
         ProcessingTaskQueue q;
-        TaskExecutingThread thread(13, handlerMock);
+
+        EXPECT_CALL(handlerMock, registerThread()).WillOnce(Return(13));
+        TaskExecutingThread thread(handlerMock);
         thread.start(q);
         EXPECT_FALSE(thread.isCancelRequested());
         thread.cancelThread();
         EXPECT_TRUE(thread.isCancelRequested());
         thread.unlockThread();
         thread.joinThread();
+        EXPECT_CALL(handlerMock, unregisterThread(13));
     }
 
     TEST(ATaskExecutingThread, queueAcceptsAndUnlocksWithNullptr)
     {
         PlatformEvent syncWaiter;
-        AliveHandlerMock handlerMock;
+        ThreadAliveNotifierMock handlerMock;
         ProcessingTaskQueue q;
-        TaskExecutingThread thread(13, handlerMock);
+
+        EXPECT_CALL(handlerMock, registerThread()).WillOnce(Return(13));
+        TaskExecutingThread thread(handlerMock);
 
         EXPECT_CALL(handlerMock, notifyAlive(13))
             .Times(AtLeast(2))
             .WillOnce(Return())
             .WillRepeatedly(InvokeWithoutArgs([&]() { syncWaiter.signal(); }));
-        EXPECT_CALL(handlerMock, calculateTimeout()).Times(AtLeast(1)).WillRepeatedly(Return(2000));
+        EXPECT_CALL(handlerMock, calculateTimeout()).Times(AtLeast(1)).WillRepeatedly(Return(2000ms));
         thread.start(q);
 
         std::thread t([&]()
@@ -94,5 +99,6 @@ namespace ramses_internal
         EXPECT_TRUE(syncWaiter.wait(1000));
         thread.stop();
         t.join();
+        EXPECT_CALL(handlerMock, unregisterThread(13));
     }
 }

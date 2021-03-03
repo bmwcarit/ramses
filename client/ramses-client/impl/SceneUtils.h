@@ -9,7 +9,7 @@
 #ifndef RAMSES_SCENEUTILS_H
 #define RAMSES_SCENEUTILS_H
 
-#include <assert.h>
+#include <cassert>
 
 #include "Scene/EScenePublicationMode.h"
 #include "ramses-client-api/EScenePublicationMode.h"

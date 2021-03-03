@@ -42,6 +42,7 @@ namespace ramses_internal
     class ISceneReferenceLogic;
     class IRenderBackend;
     class IPlatform;
+    class IThreadAliveNotifier;
 
     class RendererSceneUpdater : public IRendererSceneUpdater, public IRendererSceneStateControl
     {
@@ -58,8 +59,9 @@ namespace ramses_internal
             RendererEventCollector& eventCollector,
             FrameTimer& frameTimer,
             SceneExpirationMonitor& expirationMonitor,
+            IThreadAliveNotifier& notifier,
             IRendererResourceCache* rendererResourceCache = nullptr);
-        virtual ~RendererSceneUpdater();
+        virtual ~RendererSceneUpdater() override;
 
         // IRendererSceneUpdater
         virtual void handleSceneUpdate(SceneId sceneId, SceneUpdate&& sceneUpdate) override;
@@ -68,11 +70,12 @@ namespace ramses_internal
         virtual void handleScenePublished(SceneId sceneId, EScenePublicationMode mode) override;
         virtual void handleSceneUnpublished(SceneId sceneId) override;
         virtual void handleSceneReceived(const SceneInfo& sceneInfo) override;
-        virtual bool handleBufferCreateRequest(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered) override;
+        virtual bool handleBufferCreateRequest(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
         virtual bool handleBufferDestroyRequest(OffscreenBufferHandle buffer, DisplayHandle display) override;
         virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, DisplayHandle display, WaylandIviSurfaceId source) override;
         virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer, DisplayHandle display) override;
         virtual bool setStreamBufferState(StreamBufferHandle buffer, DisplayHandle display, bool newState) override;
+        virtual void handleSetClearFlags(DisplayHandle display, OffscreenBufferHandle buffer, uint32_t clearFlags) override;
         virtual void handleSetClearColor(DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor) override;
         virtual void handleReadPixels(DisplayHandle display, OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo) override;
         virtual void handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize) override;
@@ -117,7 +120,7 @@ namespace ramses_internal
         UInt32 updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
         void applySceneActions(RendererCachedScene& scene, PendingFlush& flushInfo);
         UInt32 applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
-        void processStagedResourceChanges(SceneId sceneID, StagingInfo& stagingInfo, DisplayHandle& activeDisplay);
+        void processStagedResourceChanges(SceneId sceneID, StagingInfo& stagingInfo);
 
         bool areResourcesFromPendingFlushesUploaded(SceneId sceneId) const;
 
@@ -125,18 +128,16 @@ namespace ramses_internal
         void consolidatePendingSceneActions(SceneId sceneID, SceneUpdate&& sceneUpdate);
         void consolidateResourceDataForMapping(SceneId sceneID);
         void referenceAndProvidePendingResourceData(SceneId sceneID, DisplayHandle display);
-        void requestAndUploadAndUnloadResources(DisplayHandle& activeDisplay);
-        void uploadUpdatedECStreams(DisplayHandle& activeDisplay);
+        void requestAndUploadAndUnloadResources();
+        void uploadUpdatedECStreams();
         void tryToApplyPendingFlushes();
-        void processStagedResourceChangesFromAppliedFlushes(DisplayHandle& activeDisplay);
+        void processStagedResourceChangesFromAppliedFlushes();
         void handleECStreamAvailabilityChanges();
         void updateScenesResourceCache();
         void updateScenesRealTimeAnimationSystems();
         void updateScenesTransformationCache();
         void updateScenesDataLinks();
         void updateScenesStates();
-
-        void activateDisplayContext(DisplayHandle& activeDisplay, DisplayHandle displayToActivate);
 
         void resolveDataLinksForConsumerScenes(const DataReferenceLinkManager& dataRefLinkManager);
         void markScenesDependantOnModifiedConsumersAsModified(const DataReferenceLinkManager& dataRefLinkManager, const TransformationLinkManager &transfLinkManager, const TextureLinkManager& texLinkManager);
@@ -182,6 +183,8 @@ namespace ramses_internal
 
         // keep as members to avoid reallocs
         StreamSourceUpdates m_streamUpdates;
+
+        IThreadAliveNotifier& m_notifier;
     };
 }
 

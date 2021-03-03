@@ -18,7 +18,7 @@ namespace ramses_internal
     {
     public:
         explicit BinaryFileOutputStream(File& file, File::Mode mode = File::Mode::WriteNewBinary);
-        ~BinaryFileOutputStream();
+        ~BinaryFileOutputStream() override;
 
         BinaryFileOutputStream(const BinaryFileOutputStream&) = delete;
         BinaryFileOutputStream& operator=(const BinaryFileOutputStream&) = delete;

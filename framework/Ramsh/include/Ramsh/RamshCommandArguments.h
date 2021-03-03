@@ -9,7 +9,6 @@
 #ifndef RAMSES_RAMSHCOMMANDARGUMENTS_H
 #define RAMSES_RAMSHCOMMANDARGUMENTS_H
 
-#include "Ramsh/RamshInput.h"
 #include "Ramsh/RamshCommand.h"
 #include "Ramsh/RamshCommandArgumentsDataProvider.h"
 #include "Ramsh/RamshCommandArgumentsUtils.h"
@@ -39,10 +38,10 @@ namespace ramses_internal
         RamshCommandArgsBase();
 
         // from RamshCommand
-        bool executeInput(const RamshInput& in) override;
-        String descriptionString() const override;
+        bool executeInput(const std::vector<std::string>& in) override;
+        std::string descriptionString() const override;
 
-        virtual ~RamshCommandArgsBase()
+        virtual ~RamshCommandArgsBase() override
         {
         }
 
@@ -211,7 +210,7 @@ struct RamshCommandArgs \
     }
 
     template<Int32 N>
-    inline bool RamshCommandArgsBase<N,Unused,Unused,Unused,Unused,Unused>::executeInput(const RamshInput& in)
+    inline bool RamshCommandArgsBase<N,Unused,Unused,Unused,Unused,Unused>::executeInput(const std::vector<std::string>& in)
     {
         // parse the raw input data and call downwards with it
         RamshArgumentDataProvider args = RamshArgumentProvider::parse(in);
@@ -220,9 +219,11 @@ struct RamshCommandArgs \
     }
 
     template<Int32 N>
-    inline String RamshCommandArgsBase<N,Unused,Unused,Unused,Unused,Unused>::descriptionString() const
+    inline std::string RamshCommandArgsBase<N,Unused,Unused,Unused,Unused,Unused>::descriptionString() const
     {
-        return String("Usage:").append(RamshArgumentProvider::argumentString()).append(" - ").append(RamshCommand::descriptionString());
+        return fmt::format("Usage: {} - {}",
+                           RamshArgumentProvider::argumentString(),
+                           RamshCommand::descriptionString());
     }
 
     template<Int32 N>

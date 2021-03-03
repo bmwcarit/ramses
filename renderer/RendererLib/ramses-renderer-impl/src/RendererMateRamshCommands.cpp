@@ -23,24 +23,24 @@ namespace ramses_internal
         registerKeyword("showSceneOnDisplay");
     }
 
-    uint32_t parseIntArg(const RamshInput& input, uint32_t idx)
+    uint32_t parseIntArg(const std::vector<std::string>& input, uint32_t idx)
     {
         const String argVal(input[idx]);
         return atoi(argVal.c_str());
     }
 
-    float parseFloatArg(const RamshInput& input, uint32_t idx)
+    float parseFloatArg(const std::vector<std::string>& input, uint32_t idx)
     {
         const String argVal(input[idx]);
         return static_cast<float>(atof(argVal.c_str()));
     }
 
-    std::string parseStringArg(const RamshInput& input, uint32_t idx)
+    std::string parseStringArg(const std::vector<std::string>& input, uint32_t idx)
     {
-        return input[idx].stdRef();
+        return input[idx];
     }
 
-    bool ShowSceneOnDisplay::executeInput(const RamshInput& input)
+    bool ShowSceneOnDisplay::executeInput(const std::vector<std::string>& input)
     {
         ramses::sceneId_t sceneId(0xffff);
         ramses::displayId_t displayId{ 0xffff };
@@ -53,7 +53,7 @@ namespace ramses_internal
         const uint32_t numArgStrings = static_cast<uint32_t>(input.size());
         for (uint32_t argStrIdx = 0u; argStrIdx < numArgStrings - 1; ++argStrIdx)
         {
-            const std::string argStr(input[argStrIdx].stdRef());
+            const std::string argStr(input[argStrIdx]);
             if (argStr == std::string("-sceneId"))
             {
                 sceneId = ramses::sceneId_t(parseIntArg(input, ++argStrIdx));
@@ -153,12 +153,13 @@ namespace ramses_internal
         description = "echos given text when command is executed (used for automated tests)";
         registerKeyword("confirm");
 
-        getArgument<0>().setDescription("text");
+        getArgument<0>().setDescription("displayId");
+        getArgument<1>().setDescription("text");
     }
 
-    bool ConfirmationEcho::execute(String& text) const
+    bool ConfirmationEcho::execute(uint32_t& displayId, String& text) const
     {
-        m_rendererMate.processConfirmationEchoCommand(text.stdRef());
+        m_rendererMate.processConfirmationEchoCommand(ramses::displayId_t{ displayId }, text.stdRef());
         return true;
     }
 }

@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         DisplayEventHandler(DisplayHandle displayHandle, RendererEventCollector& eventCollector);
-        virtual ~DisplayEventHandler();
+        virtual ~DisplayEventHandler() override;
 
         /* Inherited from IWindowEventHandler */
         virtual void onKeyEvent(EKeyEventType event, UInt32 modifiers, EKeyCode keyCode) override;

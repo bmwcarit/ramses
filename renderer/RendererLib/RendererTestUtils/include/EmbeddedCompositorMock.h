@@ -22,7 +22,7 @@ namespace ramses_internal
     {
     public:
         EmbeddedCompositorMock();
-        virtual ~EmbeddedCompositorMock();
+        virtual ~EmbeddedCompositorMock() override;
 
         MOCK_METHOD(Bool, init, ());
         MOCK_METHOD(void, handleRequestsFromClients, (), (override));

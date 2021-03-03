@@ -18,7 +18,8 @@ namespace ramses_internal
         SystemTime = 0, // for development, or if system time is synchronized (hypervisor, container etc)
         PTP = 1, // precision time protocol - network wide synchronized time
     };
-    struct synchronized_clock
+
+    struct synchronized_clock final
     {
         using duration =  std::chrono::nanoseconds;
         using rep = duration::rep;
@@ -44,8 +45,6 @@ namespace ramses_internal
 
 // platform specific implementations
 #if defined(__INTEGRITY)
-#include "gptp_facade.h"
-
 namespace ramses_internal
 {
     inline const char* synchronized_clock::source()
@@ -53,24 +52,15 @@ namespace ramses_internal
         return "gptp";
     }
 
-    inline synchronized_clock::time_point synchronized_clock::now()
-    {
-        static gptp_facade gptpObj(GPTPSource::GPTPFromMemory, GPTPEntity::GPTPClient);
-        uint64_t ts = 0;
-        if (gptpObj.readGptpTimeStamp(&ts) != Success)
-            return time_point(std::chrono::nanoseconds(0));
-        return time_point(std::chrono::nanoseconds(ts));
-    }
-
     inline synchronized_clock_type synchronized_clock::getClockType()
     {
-        // todo change once ptp is supported here
         return synchronized_clock_type::PTP;
     }
+
 }
 
 #elif defined(RAMSES_LINUX_USE_DEV_PTP)
-#include <time.h>
+#include <ctime>
 
 namespace ramses_internal
 {

@@ -125,7 +125,7 @@ namespace ramses_internal
                                                         ivi_controller_surface* iviControllerSurface,
                                                         int32_t                 visibility)
     {
-        UNUSED(iviControllerSurface)
+        UNUSED(iviControllerSurface);
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
         LOG_INFO(CONTEXT_RENDERER,
@@ -136,7 +136,7 @@ namespace ramses_internal
                                                      ivi_controller_surface* iviControllerSurface,
                                                      wl_fixed_t              opacity)
     {
-        UNUSED(iviControllerSurface)
+        UNUSED(iviControllerSurface);
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
@@ -148,7 +148,7 @@ namespace ramses_internal
     void IVIControllerSurface::HandleSourceRectangleCallback(
         void* data, ivi_controller_surface* iviControllerSurface, int32_t x, int32_t y, int32_t width, int32_t height)
     {
-        UNUSED(iviControllerSurface)
+        UNUSED(iviControllerSurface);
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
@@ -161,7 +161,7 @@ namespace ramses_internal
     void IVIControllerSurface::HandleDestinationRectangleCallback(
         void* data, ivi_controller_surface* iviControllerSurface, int32_t x, int32_t y, int32_t width, int32_t height)
     {
-        UNUSED(iviControllerSurface)
+        UNUSED(iviControllerSurface);
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
@@ -176,7 +176,7 @@ namespace ramses_internal
                                                            int32_t                 width,
                                                            int32_t                 height)
     {
-        UNUSED(iviControllerSurface)
+        UNUSED(iviControllerSurface);
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
@@ -189,7 +189,7 @@ namespace ramses_internal
                                                          ivi_controller_surface* iviControllerSurface,
                                                          int32_t                 orientation)
     {
-        UNUSED(iviControllerSurface)
+        UNUSED(iviControllerSurface);
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
@@ -202,7 +202,7 @@ namespace ramses_internal
                                                          ivi_controller_surface* iviControllerSurface,
                                                          int32_t                 pixelformat)
     {
-        UNUSED(iviControllerSurface)
+        UNUSED(iviControllerSurface);
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
@@ -215,8 +215,8 @@ namespace ramses_internal
                                                    ivi_controller_surface* iviControllerSurface,
                                                    ivi_controller_layer*   layer)
     {
-        UNUSED(iviControllerSurface)
-        UNUSED(layer)
+        UNUSED(iviControllerSurface);
+        UNUSED(layer);
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
@@ -231,7 +231,7 @@ namespace ramses_internal
                                                    uint32_t                pid,
                                                    const char*             processName)
     {
-        UNUSED(iviControllerSurface)
+        UNUSED(iviControllerSurface);
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
@@ -243,7 +243,7 @@ namespace ramses_internal
 
     void IVIControllerSurface::HandleDestroyedCallback(void* data, ivi_controller_surface* iviControllerSurface)
     {
-        UNUSED(iviControllerSurface)
+        UNUSED(iviControllerSurface);
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
@@ -257,7 +257,7 @@ namespace ramses_internal
                                                      ivi_controller_surface* iviControllerSurface,
                                                      int32_t                 contentState)
     {
-        UNUSED(iviControllerSurface)
+        UNUSED(iviControllerSurface);
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 

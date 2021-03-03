@@ -108,7 +108,7 @@ namespace ramses_internal
 
                 m_pausePrompt = true;
 
-                RamshInput input = RamshTools::parseCommandString(m_input);
+                std::vector<std::string> input = RamshTools::parseCommandString(m_input);
                 m_commandHistory.insert(m_commandHistory.begin(), m_input);
                 m_input.clear();
 

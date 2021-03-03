@@ -37,14 +37,14 @@ int main(int argc, const char *argv[])
     //Do not move this from here, and do not do anything meaningful before it!!!
     ramses_internal::TestForkingController forkingController(embeddedCompositingSocketName);
 
-    RendererTestUtils::SetCommandLineParams(argc, argv);
+    RendererTestUtils::SetCommandLineParamsForAllTests(argc, argv);
 
     std::vector<ramses_internal::String>  filterInTestStrings;
     std::vector<ramses_internal::String>  filterOutTestStrings;
     ramses_internal::StringUtils::Tokenize(filterInTest, filterInTestStrings, ':');
     ramses_internal::StringUtils::Tokenize(filterOutTest, filterOutTestStrings, ':');
 
-    RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::microseconds{10000000});
+    RendererTestUtils::SetMaxFrameCallbackPollingTimeForAllTests(std::chrono::microseconds{10000000});
 
     ramses::RamsesFrameworkConfig config(argc, argv);
 

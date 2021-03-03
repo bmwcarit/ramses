@@ -53,9 +53,6 @@ namespace ramses_internal
         virtual void             uploadRenderTarget(RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId) = 0;
         virtual void             unloadRenderTarget(RenderTargetHandle renderTarget, SceneId sceneId) = 0;
 
-        virtual void             uploadTextureSampler(TextureSamplerHandle handle, SceneId sceneId, const TextureSamplerStates& states) = 0;
-        virtual void             unloadTextureSampler(TextureSamplerHandle handle, SceneId sceneId) = 0;
-
         virtual void             uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId) = 0;
         virtual void             unloadStreamTexture(StreamTextureHandle handle, SceneId sceneId) = 0;
 
@@ -75,7 +72,7 @@ namespace ramses_internal
         virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const = 0;
 
         // Renderer resources
-        virtual void             uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered) = 0;
+        virtual void             uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) = 0;
         virtual void             unloadOffscreenBuffer(OffscreenBufferHandle bufferHandle) = 0;
 
         virtual void             uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId) = 0;

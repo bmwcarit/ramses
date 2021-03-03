@@ -126,11 +126,12 @@ namespace ramses
         virtual void windowClosed(displayId_t displayId) = 0;
 
         /**
-        * @brief This method will be called in period given to renderer config and provides rough performance indicators.
-        *        It only works when using render thread.
+        * @brief This method will be called in period given to renderer config (#ramses::RendererConfig::setRenderThreadLoopTimingReportingPeriod)
+        *        and provides rough performance indicators - maximum and average loop (frame) time within that measure period.
+        *        It only reports timings for first display.
         *
-        * @param[in] maximumLoopTime The maximum time a loop of the renderthread took since the last event
-        * @param[in] averageLooptime The average time a loop of the renderthread took since the last event
+        * @param[in] maximumLoopTime The maximum time a loop of the first display within the last measure period
+        * @param[in] averageLooptime The average time a loop of the first display within the last measure period
         */
         virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) = 0;
 

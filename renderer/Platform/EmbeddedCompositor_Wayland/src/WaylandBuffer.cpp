@@ -8,7 +8,7 @@
 
 #include "EmbeddedCompositor_Wayland/WaylandBuffer.h"
 #include "EmbeddedCompositor_Wayland/IEmbeddedCompositor_Wayland.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Warnings.h"
 #include <cassert>
 
@@ -38,7 +38,7 @@ namespace ramses_internal
 
     void WaylandBuffer::ClientBufferDestroyed(wl_listener* listener, void* data)
     {
-        UNUSED(data)
+        UNUSED(data);
         LOG_DEBUG(CONTEXT_RENDERER, "WaylandBuffer::ClientBufferDestroyed data: " << data);
 
         WaylandBuffer* buffer(nullptr);

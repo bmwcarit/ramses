@@ -9,6 +9,7 @@
 from builtins import object
 import os
 
+
 class Config(object):
     def __init__(self):
         self.scriptDir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
@@ -21,7 +22,7 @@ class Config(object):
         self.testPattern = 'test*.py'
         self.imagesDesiredDirs = [os.path.join(self.scriptDir, 'images_desired')]  # list of directories containing desired images
 
-        self.imageDiffScaleFactor = 100 #scale factor for the scaled diff images
+        self.imageDiffScaleFactor = 100  # scale factor for the scaled diff images
 
         # common switches
         self.ramsesApplicationLogLevel = 5

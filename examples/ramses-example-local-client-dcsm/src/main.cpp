@@ -104,7 +104,7 @@ public:
         renderer->flush();
     }
 
-    ~LocalDCSMExample()
+    ~LocalDCSMExample() override
     {
         renderer->stopThread();
         m_framework->destroyRenderer(*renderer);

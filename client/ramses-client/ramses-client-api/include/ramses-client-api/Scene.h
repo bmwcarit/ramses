@@ -311,14 +311,18 @@ namespace ramses
         BlitPass* createBlitPass(const RenderBuffer& sourceRenderBuffer, const RenderBuffer& destinationRenderBuffer, const char* name = nullptr);
 
         /**
-        * @brief Create a RenderBuffer to be used with RenderTarget for rendering into and TextureSampler for sampling from.
+        * @brief   Create a RenderBuffer to be used with RenderTarget for rendering into and TextureSampler for sampling from.
+        * @details A multisampled buffer will be created if sampleCount greater than 0, note that the value is just a hint for the device,
+        *          the actual number of samples might be different depending on device driver implementation.
+        *          If the number of samples exceeds device capabilities the number of samples it will be clamped to its
+        *          maximum supported (creation will succeeded with a warning log).
         *
         * @param[in] width The width of the RenderBuffer in pixel.
         * @param[in] height The height of the RenderBuffer in pixel.
         * @param[in] bufferType Type of the RenderBuffer to be created (color, depth, depth/stecil).
         * @param[in] bufferFormat Data format to use for the RenderBuffer to be created.
         * @param[in] accessMode Read/Write access mode of render buffer
-        * @param[in] sampleCount Optional sample count for MSAA number of samples. Default value is Zero, which disables MSAA for the render buffer.
+        * @param[in] sampleCount Optional sample count for MSAA number of samples. Default value is 0 for no MSAA.
         * @param[in] name Optional name of the object.
         * @return Pointer to the created RenderBuffer, null on failure.
         **/

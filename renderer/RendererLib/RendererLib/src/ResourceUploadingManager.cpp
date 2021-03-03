@@ -14,7 +14,7 @@
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "RendererAPI/IDevice.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Resource/EffectResource.h"
 #include "absl/algorithm/container.h"

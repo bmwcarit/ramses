@@ -27,7 +27,7 @@ namespace ramses
     {
     public:
         CameraNodeImpl(SceneImpl& scene, ERamsesObjectType cameraType, const char* cameraName);
-        virtual ~CameraNodeImpl();
+        virtual ~CameraNodeImpl() override;
 
         // Common for all camera types
         ramses_internal::ECameraProjectionType getProjectionType() const;

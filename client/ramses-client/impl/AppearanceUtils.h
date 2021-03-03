@@ -422,6 +422,25 @@ namespace ramses
             }
         }
 
+        static bool GeometryShaderCompatibleWithDrawMode(EDrawMode geometryShaderInputType, EDrawMode drawMode)
+        {
+            switch (drawMode)
+            {
+            case EDrawMode_Points:
+                return geometryShaderInputType == EDrawMode_Points;
+            case EDrawMode_Lines:
+            case EDrawMode_LineStrip:
+            case EDrawMode_LineLoop:
+                return geometryShaderInputType == EDrawMode_Lines;
+            case EDrawMode_Triangles:
+            case EDrawMode_TriangleStrip:
+            case EDrawMode_TriangleFan:
+                return geometryShaderInputType == EDrawMode_Triangles;
+            default:
+                return false;
+            }
+        }
+
         static EDrawMode GetDrawModeFromInternal(ramses_internal::EDrawMode drawMode)
         {
             switch (drawMode)

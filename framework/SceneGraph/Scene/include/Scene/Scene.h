@@ -69,7 +69,7 @@ namespace ramses_internal
         using AnimationSystemMemoryPool = MEMORYPOOL<IAnimationSystem*  , AnimationSystemHandle>;
 
         explicit SceneT(const SceneInfo& sceneInfo = SceneInfo());
-        virtual ~SceneT();
+        virtual ~SceneT() override;
 
         virtual void                        preallocateSceneSize            (const SceneSizeInformation& sizeInfo) override;
 

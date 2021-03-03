@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "Window_Wayland/Window_Wayland.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "RendererLib/DisplayConfig.h"
 
@@ -169,9 +169,9 @@ namespace ramses_internal
 
     void Window_Wayland::RegistryGlobalRemoved(void* data, wl_registry* wl_registry, uint32_t name)
     {
-        UNUSED(data)
-        UNUSED(wl_registry)
-        UNUSED(name)
+        UNUSED(data);
+        UNUSED(wl_registry);
+        UNUSED(name);
         //callback to destroy globals not implemented in neither winston or weston, globals are destroyed in destructor.
     }
 
@@ -217,7 +217,7 @@ namespace ramses_internal
 
     void Window_Wayland::registryGlobalCreated(wl_registry* wl_registry, uint32_t name, const char* interface, uint32_t version)
     {
-        UNUSED(version)
+        UNUSED(version);
         if (0 == strcmp(interface, "wl_compositor"))
         {
             m_wlContext.compositor =

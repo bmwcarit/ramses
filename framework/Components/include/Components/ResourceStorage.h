@@ -34,7 +34,7 @@ namespace ramses_internal
         };
     public:
         explicit ResourceStorage(PlatformLock& lockToUse, StatisticCollectionFramework& statistics);
-        virtual ~ResourceStorage();
+        virtual ~ResourceStorage() override;
 
         ResourceInfoVector getAllResourceInfo() const;
         ManagedResource manageResource(const IResource& resource, bool deletionAllowed = false);

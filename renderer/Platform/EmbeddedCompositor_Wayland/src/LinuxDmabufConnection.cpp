@@ -7,7 +7,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include <assert.h>
+#include <cassert>
 
 #include <drm_fourcc.h>
 
@@ -19,7 +19,7 @@
 
 #include "EmbeddedCompositor_Wayland/LinuxDmabufConnection.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufParams.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Warnings.h"
 
 namespace ramses_internal

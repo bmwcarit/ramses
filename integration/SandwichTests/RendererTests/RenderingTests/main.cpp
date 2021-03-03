@@ -41,7 +41,7 @@ int main(int argc, const char *argv[])
     }
 #endif
 
-    RendererTestUtils::SetCommandLineParams(argc, argv);
+    RendererTestUtils::SetCommandLineParamsForAllTests(argc, argv);
     const ramses::RamsesFrameworkConfig config(argc, argv);
     RenderingTests renderingTests(filterInTestStrings, filterOutTestStrings, generateBitmaps, config);
 

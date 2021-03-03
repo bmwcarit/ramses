@@ -20,15 +20,15 @@ namespace ramses_internal
     {
     public:
         explicit BinaryFileInputStream(File& file);
-        ~BinaryFileInputStream();
+        ~BinaryFileInputStream() override;
 
         BinaryFileInputStream(const BinaryFileInputStream&) = delete;
         BinaryFileInputStream& operator=(const BinaryFileInputStream&) = delete;
 
         IInputStream& read(void* buffer, size_t size) override;
 
-        EStatus seek(Int numberOfBytesToSeek, File::SeekOrigin origin);
-        EStatus getPos(size_t& position);
+        EStatus seek(Int numberOfBytesToSeek, Seek origin) override;
+        EStatus getPos(size_t& position) const override;
 
         virtual EStatus getState() const override;
 
@@ -76,14 +76,19 @@ namespace ramses_internal
 
     inline
     ramses_internal::EStatus
-    BinaryFileInputStream::seek(Int numberOfBytesToSeek, File::SeekOrigin origin)
+    BinaryFileInputStream::seek(Int numberOfBytesToSeek, Seek origin)
     {
-        return m_file.seek(numberOfBytesToSeek, origin) ? EStatus::Ok : EStatus::Error;
+        File::SeekOrigin fileOrigin = File::SeekOrigin::BeginningOfFile;
+        if (origin == Seek::FromBeginning)
+            fileOrigin = File::SeekOrigin::BeginningOfFile;
+        else if (origin == Seek::Relative)
+            fileOrigin = File::SeekOrigin::RelativeToCurrentPosition;
+        return m_file.seek(numberOfBytesToSeek, fileOrigin) ? EStatus::Ok : EStatus::Error;
     }
 
     inline
     ramses_internal::EStatus
-    BinaryFileInputStream::getPos(size_t& position)
+    BinaryFileInputStream::getPos(size_t& position) const
     {
         return m_file.getPos(position) ? EStatus::Ok : EStatus::Error;
     }

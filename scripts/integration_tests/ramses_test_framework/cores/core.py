@@ -11,6 +11,7 @@ from builtins import object
 from builtins import range
 LOCAL, REMOTE, REMOTE_INTERNAL = list(range(3))
 
+
 class Core(object):
     def __init__(self, typ, config):
         if typ == LOCAL:
@@ -37,4 +38,3 @@ class Core(object):
 
     def tear_down(self, shutdownTargets=True):
         self.coreImpl.tear_down(shutdownTargets)
-

@@ -158,7 +158,7 @@ namespace ramses
             return false;
         }
 
-        if (!inFile.open(ramses_internal::File::Mode::ReadOnly))
+        if (!inFile.open(ramses_internal::File::Mode::ReadOnlyBinary))
         {
             LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "EffectDescriptionImpl::ReadFileContentsToString:  could not open file: " << fileName);
             return false;

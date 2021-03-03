@@ -22,13 +22,13 @@ namespace ramses_internal
         description = "Command to set the console log level. Usage: setLogLevelConsole {off | fatal | error | warn | info | debug | trace}";
     }
 
-    bool RamshCommandSetConsoleLogLevel::executeInput(const RamshInput& input)
+    bool RamshCommandSetConsoleLogLevel::executeInput(const std::vector<std::string>& input)
     {
         if (input.size() != 2)
             return false;
 
         ELogLevel level;
-        if (!LogHelper::StringToLogLevel(input[1], level))
+        if (!LogHelper::StringToLogLevel(String(input[1]), level))
             return false;
 
 

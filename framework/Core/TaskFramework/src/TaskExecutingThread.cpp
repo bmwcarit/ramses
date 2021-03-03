@@ -13,11 +13,11 @@
 
 namespace ramses_internal
 {
-    TaskExecutingThread::TaskExecutingThread(UInt16 workerIndex, IThreadAliveNotifier& aliveHandler)
+    TaskExecutingThread::TaskExecutingThread(IThreadAliveNotifier& aliveHandler)
             : m_pBlockingTaskQueue(nullptr)
             , m_thread("R_Taskpool_Thrd")
-            , m_workerIndex(workerIndex)
             , m_aliveHandler(aliveHandler)
+            , m_aliveIdentifier(m_aliveHandler.registerThread())
             , m_bThreadStarted(false)
     {
     }
@@ -25,6 +25,7 @@ namespace ramses_internal
     TaskExecutingThread::~TaskExecutingThread()
     {
         stop();
+        m_aliveHandler.unregisterThread(m_aliveIdentifier);
     }
 
 
@@ -86,13 +87,16 @@ namespace ramses_internal
 
     void TaskExecutingThread::run()
     {
+#if defined(__ghs__) && defined(RAMSES_WORKER_THREAD_PRIORITY)
+        setThreadPriorityIntegrity(RAMSES_WORKER_THREAD_PRIORITY, "worker thread");
+#endif
         if (nullptr != m_pBlockingTaskQueue)
         {
-            m_aliveHandler.notifyAlive(m_workerIndex);
+            m_aliveHandler.notifyAlive(m_aliveIdentifier);
             while (!isCancelRequested())
             {
                 ITask* const pTaskToExecute = m_pBlockingTaskQueue->popTask(std::chrono::milliseconds{m_aliveHandler.calculateTimeout()});
-                m_aliveHandler.notifyAlive(m_workerIndex);
+                m_aliveHandler.notifyAlive(m_aliveIdentifier);
                 if (nullptr != pTaskToExecute)
                 {
                     pTaskToExecute->execute();

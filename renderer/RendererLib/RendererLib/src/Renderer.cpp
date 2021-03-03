@@ -22,7 +22,7 @@
 #include "RendererLib/DisplayEventHandler.h"
 #include "RendererLib/SceneExpirationMonitor.h"
 #include "Platform_Base/Platform_Base.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {
@@ -69,6 +69,23 @@ namespace ramses_internal
         displayInfo.screenshots.erase(bufferDeviceHandle);
     }
 
+    const IDisplayController& Renderer::getDisplayController() const
+    {
+        assert(m_displays.size() == 1u);
+        return *m_displays.cbegin()->second.displayController;
+    }
+
+    IDisplayController& Renderer::getDisplayController()
+    {
+        // non-const version of getDisplayController cast to its const version to avoid duplicating code
+        return const_cast<IDisplayController&>((const_cast<const Renderer&>(*this)).getDisplayController());
+    }
+
+    bool Renderer::hasDisplayController() const
+    {
+        return !m_displays.empty();
+    }
+
     const IDisplayController& Renderer::getDisplayController(DisplayHandle display) const
     {
         assert(m_displays.find(display) != m_displays.cend());
@@ -79,11 +96,6 @@ namespace ramses_internal
     {
         // non-const version of getDisplayController cast to its const version to avoid duplicating code
         return const_cast<IDisplayController&>((const_cast<const Renderer&>(*this)).getDisplayController(display));
-    }
-
-    UInt32 Renderer::getDisplayControllerCount() const
-    {
-        return static_cast<UInt32>(m_displays.size());
     }
 
     DisplayEventHandler& Renderer::getDisplayEventHandler(DisplayHandle display)
@@ -110,7 +122,6 @@ namespace ramses_internal
         displayInfo.displayController = &display;
         displayInfo.frameBufferDeviceHandle = display.getDisplayBuffer();
         displayInfo.buffersSetup.registerDisplayBuffer(displayInfo.frameBufferDeviceHandle, { 0, 0, display.getDisplayWidth(), display.getDisplayHeight() }, DefaultClearColor, false, false);
-        displayInfo.couldRenderLastFrame = true;
 
         auto profileRenderer = new FrameProfileRenderer(display.getRenderBackend().getDevice(), display.getDisplayWidth(), display.getDisplayHeight());
         m_frameProfileRenderer.put(displayHandle, profileRenderer);
@@ -338,7 +349,7 @@ namespace ramses_internal
 
         ActivateDisplayContext(displayHandle, activeDisplay, display);
 
-        display.clearBuffer(displayInfo.frameBufferDeviceHandle, displayBufferInfo.clearColor);
+        display.clearBuffer(displayInfo.frameBufferDeviceHandle, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
 
         m_tempScenesRendered.clear();
         const auto& assignedScenes = displayBufferInfo.scenes;
@@ -385,7 +396,7 @@ namespace ramses_internal
         for (const auto displayBuffer : displayBuffersToRender)
         {
             const auto& displayBufferInfo = displayInfo.buffersSetup.getDisplayBuffer(displayBuffer);
-            display.clearBuffer(displayBuffer, displayBufferInfo.clearColor);
+            display.clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
 
             m_tempScenesRendered.clear();
             const auto& assignedScenes = displayBufferInfo.scenes;
@@ -434,7 +445,7 @@ namespace ramses_internal
                 // remove buffer from list of buffers to re-render as soon as we start rendering into it (even if it gets interrupted later on)
                 displayInfo.buffersSetup.setDisplayBufferToBeRerendered(displayBuffer, false);
                 // clear buffer only if we just started rendering into it
-                display.clearBuffer(displayBuffer, displayBufferInfo.clearColor);
+                display.clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
                 LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers (display " << displayHandle.asMemoryHandle() << ") interruptible OB " << displayBuffer.asMemoryHandle() << " cleared");
             }
 
@@ -567,13 +578,11 @@ namespace ramses_internal
         m_statistics.sceneRendered(scene.getSceneId());
     }
 
-    void Renderer::ActivateDisplayContext(DisplayHandle displayToActivate, DisplayHandle& activeDisplay, IDisplayController& dispController)
+    void Renderer::ActivateDisplayContext(DisplayHandle displayToActivate, DisplayHandle& activeDisplay, IDisplayController&)
     {
+        // TODO vaclav clean all this up when multidisplay support removed from internal components
         if (displayToActivate != activeDisplay)
-        {
-            dispController.enableContext();
             activeDisplay = displayToActivate;
-        }
     }
 
     void Renderer::ReorderDisplaysToStartWith(std::vector<DisplayHandle>& displays, DisplayHandle displayToStartWith)
@@ -726,9 +735,16 @@ namespace ramses_internal
         renderBackend->getSurface().enable();
 
         const UInt32 postProcessorEffects = config.isWarpingEnabled() ? EPostProcessingEffect_Warping : EPostProcessingEffect_None;
-        const UInt32 numSamples = (config.getAntialiasingMethod() == EAntiAliasingMethod_MultiSampling) ? config.getAntialiasingSampleCount() : 1u;
+        const UInt32 numSamples = config.getAntialiasingSampleCount();
 
         return new DisplayController(*renderBackend, numSamples, postProcessorEffects);
+    }
+
+    void Renderer::setClearFlags(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags)
+    {
+        assert(m_displays.find(displayHandle) != m_displays.cend());
+        auto& displayInfo = m_displays.find(displayHandle)->second;
+        displayInfo.buffersSetup.setClearFlags(bufferDeviceHandle, clearFlags);
     }
 
     void Renderer::setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor)
@@ -804,10 +820,10 @@ namespace ramses_internal
         m_rendererInterruptState = RendererInterruptState{};
     }
 
-    FrameProfileRenderer& Renderer::getFrameProfileRenderer(DisplayHandle display)
+    FrameProfileRenderer& Renderer::getFrameProfileRenderer()
     {
-        assert(m_frameProfileRenderer.contains(display));
-        return **m_frameProfileRenderer.get(display);
+        assert(m_frameProfileRenderer.size() == 1u);
+        return *m_frameProfileRenderer.begin()->value;
     }
 
     void Renderer::updateSystemCompositorController() const

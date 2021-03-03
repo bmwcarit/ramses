@@ -18,7 +18,7 @@ namespace ramses_internal
     {
     public:
         SceneReferenceLogicMock();
-        virtual ~SceneReferenceLogicMock();
+        virtual ~SceneReferenceLogicMock() override;
 
         MOCK_METHOD(void, addActions, (SceneId, const SceneReferenceActionVector&), (override));
         MOCK_METHOD(void, update, (), (override));

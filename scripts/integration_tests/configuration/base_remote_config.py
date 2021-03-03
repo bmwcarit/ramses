@@ -11,6 +11,7 @@ import re
 from future.utils import iteritems
 from configuration.local_config import Config
 
+
 class BaseRemoteConfig(Config):
     def __init__(self):
         Config.__init__(self)
@@ -35,10 +36,10 @@ class BaseRemoteConfig(Config):
         # list of all targets on which tests of type OnAllDefaultTargetsTest should be executed
         self.defaultTestTargetsList = []
 
-        #configuration for OnSelectedTargetsTest and MultipleConnectionsTest test instaces
-        #format:  Dict(Targetname ->  List( List(TargetInfo) )
-        #the outer list defines the number of tests instanciated from this test class
-        #the inner list contains all targets used to instanciate one test instance (i.e. length = 1 for a
+        # configuration for OnSelectedTargetsTest and MultipleConnectionsTest test instaces
+        # format:  Dict(Targetname ->  List( List(TargetInfo) )
+        # the outer list defines the number of tests instanciated from this test class
+        # the inner list contains all targets used to instanciate one test instance (i.e. length = 1 for a
         # OnSelectedTargetsTest, for a MultipleConnectionsTest length = get_nr_targets() of the test)
         self.testToTargetConfig = {}
 

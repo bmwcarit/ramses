@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "Window_Wayland_IVI/Window_Wayland_IVI.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "ivi-application-client-protocol.h"
 
 namespace ramses_internal

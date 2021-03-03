@@ -81,7 +81,7 @@ namespace ramses
 
         static void SetUpTestCase()
         {
-            ramsesClientRenderer.reset(new RamsesClientAndRendererWithScene);
+            ramsesClientRenderer = std::make_unique<RamsesClientAndRendererWithScene>();
         }
 
         static void TearDownTestCase()

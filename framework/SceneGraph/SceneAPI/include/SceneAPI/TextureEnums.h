@@ -9,7 +9,7 @@
 #ifndef RAMSES_FRAMEWORK_TEXTUREENUMS_H
 #define RAMSES_FRAMEWORK_TEXTUREENUMS_H
 
-#include <assert.h>
+#include <cassert>
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Utils/LoggingUtils.h"
 

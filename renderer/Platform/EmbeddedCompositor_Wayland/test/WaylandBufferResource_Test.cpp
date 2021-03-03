@@ -13,7 +13,6 @@
 #include "PlatformAbstraction/PlatformThread.h"
 #include "EmbeddedCompositor_Wayland/WaylandDisplay.h"
 #include "Utils/ThreadBarrier.h"
-#include "Utils/LogMacros.h"
 #include "gtest/gtest.h"
 #include "wayland-client.h"
 #include "wayland-server.h"
@@ -136,9 +135,9 @@ namespace ramses_internal
 
             static void RegistryHandleGlobalRemoveCallBack(void* data, struct wl_registry* registry, uint32_t name)
             {
-                UNUSED(data)
-                UNUSED(registry)
-                UNUSED(name)
+                UNUSED(data);
+                UNUSED(registry);
+                UNUSED(name);
             }
 
             int                            m_fd           = 0;
@@ -216,10 +215,10 @@ namespace ramses_internal
 
         static void SurfaceAttachCallback(wl_client* client, wl_resource* surfaceResource, wl_resource* bufferResource, int x, int y)
         {
-            UNUSED(client)
-            UNUSED(surfaceResource)
-            UNUSED(x)
-            UNUSED(y)
+            UNUSED(client);
+            UNUSED(surfaceResource);
+            UNUSED(x);
+            UNUSED(y);
 
             AWaylandBufferResource* awaylandBufferResource = static_cast<AWaylandBufferResource*>(wl_resource_get_user_data(surfaceResource));
 
@@ -259,7 +258,7 @@ namespace ramses_internal
 
         static void ResourceDestroyedListener(wl_listener* listener, void* data)
         {
-            UNUSED(data)
+            UNUSED(data);
             WARNINGS_PUSH
             WARNING_DISABLE_LINUX(-Winvalid-offsetof)
             WARNING_DISABLE_LINUX(-Wcast-align)

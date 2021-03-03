@@ -26,14 +26,14 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <cmath>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
 #include <sys/time.h>
 #include <unistd.h>
 
-#include <signal.h>
+#include <csignal>
 #include <poll.h>
 #include <getopt.h>
 

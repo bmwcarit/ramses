@@ -197,6 +197,16 @@ namespace ramses
 
     status_t AppearanceImpl::setDrawMode(EDrawMode mode)
     {
+        if (m_effectImpl->hasGeometryShader())
+        {
+            EDrawMode geometryShaderInputType;
+            m_effectImpl->getGeometryShaderInputType(geometryShaderInputType);
+            if (!AppearanceUtils::GeometryShaderCompatibleWithDrawMode(geometryShaderInputType, mode))
+            {
+                return addErrorEntry("Appearance::setDrawMode failed, source Effect has a geometry shader which expects a different draw mode.");
+            }
+        }
+
         getIScene().setRenderStateDrawMode(m_renderStateHandle, AppearanceUtils::GetDrawModeInternal(mode));
         return StatusOK;
     }
@@ -405,6 +415,14 @@ namespace ramses
 
         m_renderStateHandle = getIScene().allocateRenderState(ramses_internal::RenderStateHandle::Invalid());
         createUniformDataInstance(effect);
+
+        // Set draw mode to geometry shader's expected mode, if effect has such
+        if (effect.hasGeometryShader())
+        {
+            EDrawMode geometryShaderInputType;
+            effect.getGeometryShaderInputType(geometryShaderInputType);
+            setDrawMode(geometryShaderInputType);
+        }
     }
 
     void AppearanceImpl::deinitializeFrameworkData()

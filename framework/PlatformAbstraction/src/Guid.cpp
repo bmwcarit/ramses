@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "Collections/Guid.h"
-#include <inttypes.h>
+#include <cinttypes>
 
 namespace ramses_internal
 {

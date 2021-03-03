@@ -8,6 +8,7 @@
 from tests.system_compositor_controller_base import system_compositor_controller_base
 from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip
 
+
 # Tests if the system compositor controller removes a surface from it's list of known surfaces, when the surface is destroyed
 # from an outside applciation.
 class TestSystemCompositorController(system_compositor_controller_base.SystemCompositorControllerBase):
@@ -28,4 +29,3 @@ class TestSystemCompositorController(system_compositor_controller_base.SystemCom
 
         # Postcondition: renderer and gears No. 2 visible
         self.validateScreenshot(self.renderer, "scc_white_gear_left_and_cube.png", useSystemCompositorForScreenshot=True)
-

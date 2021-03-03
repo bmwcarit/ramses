@@ -14,6 +14,8 @@
 #include "Context_EGL/Context_EGL.h"
 #include "Device_GL/Device_GL.h"
 
+#include <EGL/eglext.h>
+
 namespace ramses_internal
 {
     template <typename WindowT>
@@ -25,14 +27,14 @@ namespace ramses_internal
         {
         }
 
-        virtual IContext* createContext(IWindow& window, IContext* sharedContext) override final
+        virtual IContext* createContext(const DisplayConfig& displayConfig, IWindow& window, IContext* sharedContext) override final
         {
             WindowT* platformWindow = getPlatformWindow<WindowT>(window);
             assert(nullptr != platformWindow);
 
             const auto swapInterval = getSwapInterval();
-            const std::vector<EGLint> contextAttributes = getContextAttributes();
-            const std::vector<EGLint> surfaceAttributes = getSurfaceAttributes(platformWindow->getMSAASampleCount());
+            const std::vector<EGLint> contextAttributes = GetContextAttributes();
+            const std::vector<EGLint> surfaceAttributes = GetSurfaceAttributes(platformWindow->getMSAASampleCount(), displayConfig.getDepthStencilBufferType());
             Context_EGL* platformSharedContext = nullptr;
 
             if(sharedContext)
@@ -62,7 +64,10 @@ namespace ramses_internal
             return addPlatformDevice(device);
         }
 
-        std::vector<EGLint> getContextAttributes() const
+        virtual uint32_t getSwapInterval() const = 0;
+
+    private:
+        static std::vector<EGLint> GetContextAttributes()
         {
             return {
                 EGL_CONTEXT_CLIENT_VERSION,
@@ -72,8 +77,68 @@ namespace ramses_internal
             };
         }
 
-        virtual uint32_t getSwapInterval() const = 0;
-        virtual std::vector<EGLint> getSurfaceAttributes(UInt32 msaaSampleCount) const = 0;
+        static std::vector<EGLint> GetSurfaceAttributes(UInt32 msaaSampleCount, ERenderBufferType depthStencilBufferType)
+        {
+            EGLint depthBufferSize = 0;
+            EGLint stencilBufferSize = 0;
+
+            switch(depthStencilBufferType)
+            {
+            case ERenderBufferType_DepthStencilBuffer:
+                depthBufferSize = 24;
+                stencilBufferSize = 8;
+                break;
+            case ERenderBufferType_DepthBuffer:
+                depthBufferSize = 24;
+                stencilBufferSize = 0;
+                break;
+            case ERenderBufferType_InvalidBuffer:
+                depthBufferSize = 0;
+                stencilBufferSize = 0;
+                break;
+            case ERenderBufferType_ColorBuffer:
+            case ERenderBufferType_NUMBER_OF_ELEMENTS:
+                assert(false);
+            }
+
+            return std::vector<EGLint>
+            {
+                EGL_SURFACE_TYPE,
+                EGL_WINDOW_BIT,
+
+                EGL_RENDERABLE_TYPE,
+                EGL_OPENGL_ES3_BIT_KHR,
+
+                EGL_BUFFER_SIZE,
+                32,
+
+                EGL_RED_SIZE,
+                8,
+
+                EGL_GREEN_SIZE,
+                8,
+
+                EGL_BLUE_SIZE,
+                8,
+
+                EGL_ALPHA_SIZE,
+                8,
+
+                EGL_DEPTH_SIZE,
+                depthBufferSize,
+
+                EGL_STENCIL_SIZE,
+                stencilBufferSize,
+
+                EGL_SAMPLE_BUFFERS,
+                (msaaSampleCount > 1) ? 1 : 0,
+
+                EGL_SAMPLES,
+                static_cast<EGLint>(msaaSampleCount > 1 ? msaaSampleCount : 0),
+
+                EGL_NONE
+            };
+        }
     };
 }
 

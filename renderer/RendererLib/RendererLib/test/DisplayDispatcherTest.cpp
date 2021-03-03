@@ -9,6 +9,8 @@
 #include "gmock/gmock.h"
 #include "DisplayDispatcherMock.h"
 #include "RendererSceneEventSenderMock.h"
+#include "Watchdog/ThreadAliveNotifierMock.h"
+#include <thread>
 
 using namespace testing;
 
@@ -18,22 +20,30 @@ namespace ramses_internal
     {
     public:
         ADisplayDispatcher()
-            : m_displayDispatcher(RendererConfig{}, m_commandBuffer, m_sceneEventSender)
+            : m_displayDispatcher(RendererConfig{}, m_commandBuffer, m_sceneEventSender, m_notifier, false)
         {
+            m_displayDispatcher.setLoopMode(ELoopMode::UpdateOnly);
+            m_displayDispatcher.m_expectedLoopModeForNewDisplays = ELoopMode::UpdateOnly;
         }
 
         void update()
         {
+            m_displayDispatcher.dispatchCommands();
+
             for (const auto d : m_displayDispatcher.getDisplays())
-                EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(d), doOneLoop(ELoopMode::UpdateOnly, _));
-            m_displayDispatcher.doOneLoop(ELoopMode::UpdateOnly);
+            {
+                if (m_displayDispatcher.getDisplays().size() > 1u)
+                    EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(d), enableContext());
+                EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(d), doOneLoop(_, _));
+            }
+            m_displayDispatcher.doOneLoop();
         }
 
         void createDisplay(DisplayHandle displayHandle)
         {
             m_commandBuffer.enqueueCommand(RendererCommand::CreateDisplay{ displayHandle, DisplayConfig{}, nullptr });
 
-            EXPECT_CALL(m_displayDispatcher, createDisplayBundle());
+            EXPECT_CALL(m_displayDispatcher, createDisplayBundle(displayHandle));
             update();
             ASSERT_TRUE(m_displayDispatcher.getDisplayBundleMock(displayHandle) != nullptr);
         }
@@ -74,6 +84,15 @@ namespace ramses_internal
             }));
         }
 
+        void expectCommandsCountPushed(DisplayHandle displayHandle, size_t cmdCount)
+        {
+            EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(displayHandle), pushAndConsumeCommands(_)).WillOnce(Invoke([cmdCount](auto& cmds)
+            {
+                EXPECT_EQ(cmdCount, cmds.size());
+                cmds.clear();
+            }));
+        }
+
         void expectNoCommandPushed(DisplayHandle displayHandle)
         {
             EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(displayHandle), pushAndConsumeCommands(_)).Times(0);
@@ -104,6 +123,7 @@ namespace ramses_internal
         StrictMock<RendererSceneEventSenderMock> m_sceneEventSender;
         RendererCommandBuffer m_commandBuffer;
         StrictMock<DisplayDispatcherFacade> m_displayDispatcher;
+        NiceMock<ThreadAliveNotifierMock> m_notifier;
     };
 
     TEST_F(ADisplayDispatcher, canCreateDisplay)
@@ -124,7 +144,7 @@ namespace ramses_internal
         createDisplay(display1);
         createDisplay(display2);
 
-        m_commandBuffer.enqueueCommand(RendererCommand::CreateOffscreenBuffer{ display1, {}, {}, {}, {}, {} });
+        m_commandBuffer.enqueueCommand(RendererCommand::CreateOffscreenBuffer{ display1, {}, {}, {}, {}, {}, ERenderBufferType_DepthStencilBuffer });
         m_commandBuffer.enqueueCommand(RendererCommand::DestroyOffscreenBuffer{ display2, {} });
 
         expectCommandPushed(display1, RendererCommand::CreateOffscreenBuffer{});
@@ -246,6 +266,53 @@ namespace ramses_internal
         expectNoCommandPushed(display1);
         expectNoCommandPushed(display2);
         expectNoCommandPushed(display3);
+        update();
+    }
+
+    TEST_F(ADisplayDispatcher, consolidatesBroadcastCommandBeforePushingToNewlyCreatedDisplay)
+    {
+        constexpr DisplayHandle display1{ 1u };
+        createDisplay(display1);
+
+        constexpr SceneId scene1{ 1u };
+        constexpr SceneId scene2{ 2u };
+        constexpr SceneId scene3{ 3u };
+
+        // publish/unpublish strike out
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene2, {} });
+        m_commandBuffer.enqueueCommand(RendererCommand::SceneUnpublished{ scene1 });
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene3, {} });
+        m_commandBuffer.enqueueCommand(RendererCommand::SceneUnpublished{ scene3 });
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
+        m_commandBuffer.enqueueCommand(RendererCommand::SceneUnpublished{ scene1 });
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene3, {} });
+        m_commandBuffer.enqueueCommand(RendererCommand::SceneUnpublished{ scene2 });
+        // not stashed
+        m_commandBuffer.enqueueCommand(RendererCommand::FrameProfiler_Toggle{});
+        m_commandBuffer.enqueueCommand(RendererCommand::LogInfo{});
+        m_commandBuffer.enqueueCommand(RendererCommand::LogStatistics{});
+        // only last one kept
+        m_commandBuffer.enqueueCommand(RendererCommand::SetLimits_FrameBudgets{});
+        m_commandBuffer.enqueueCommand(RendererCommand::SetLimits_FrameBudgets{});
+        m_commandBuffer.enqueueCommand(RendererCommand::SetLimits_FrameBudgets{});
+
+        expectCommandsCountPushed(display1, 15u);
+        update();
+
+        // will expect these commands to be pushed to any new display
+        m_displayDispatcher.m_expectedBroadcastCommandsForNewDisplays.push_back(RendererCommand::ScenePublished{ scene3, EScenePublicationMode::EScenePublicationMode_LocalOnly });
+        m_displayDispatcher.m_expectedBroadcastCommandsForNewDisplays.push_back(RendererCommand::SetLimits_FrameBudgets{});
+
+        expectNoCommandPushed(display1);
+        update();
+
+        constexpr DisplayHandle display2{ 2u };
+        createDisplay(display2);
+        update();
+
+        expectNoCommandPushed(display1);
+        expectNoCommandPushed(display2);
         update();
     }
 
@@ -503,7 +570,7 @@ namespace ramses_internal
         createDisplay(display1);
 
         m_commandBuffer.enqueueCommand(RendererCommand::DestroyOffscreenBuffer{ display2, {} });
-        m_commandBuffer.enqueueCommand(RendererCommand::CreateOffscreenBuffer{ display2, {}, {}, {}, {}, {} });
+        m_commandBuffer.enqueueCommand(RendererCommand::CreateOffscreenBuffer{ display2, {}, {}, {}, {}, {}, ERenderBufferType_DepthStencilBuffer });
         expectNoCommandPushed(display1);
         update();
 
@@ -559,5 +626,43 @@ namespace ramses_internal
         update();
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchRendererEvents(_));
         dispatchAndExpectRendererEvents({});
+    }
+
+    TEST_F(ADisplayDispatcher, canChangeLoopModeForAllDisplays)
+    {
+        constexpr DisplayHandle display1{ 1u };
+        constexpr DisplayHandle display2{ 2u };
+        createDisplay(display1);
+        createDisplay(display2);
+
+        m_displayDispatcher.setLoopMode(ELoopMode::UpdateAndRender);
+
+        InSequence seq;
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), enableContext());
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), doOneLoop(ELoopMode::UpdateAndRender, _));
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), enableContext());
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), doOneLoop(ELoopMode::UpdateAndRender, _));
+        m_displayDispatcher.doOneLoop();
+    }
+
+    TEST_F(ADisplayDispatcher, newDisplayWillBeUpdatedWithLastSetLoopMode)
+    {
+        constexpr DisplayHandle display1{ 1u };
+        constexpr DisplayHandle display2{ 2u };
+        createDisplay(display1);
+
+        m_displayDispatcher.setLoopMode(ELoopMode::UpdateAndRender);
+        m_displayDispatcher.m_expectedLoopModeForNewDisplays = ELoopMode::UpdateAndRender;
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), doOneLoop(ELoopMode::UpdateAndRender, _));
+        m_displayDispatcher.doOneLoop();
+
+        createDisplay(display2);
+
+        InSequence seq;
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), enableContext());
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), doOneLoop(ELoopMode::UpdateAndRender, _));
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), enableContext());
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), doOneLoop(ELoopMode::UpdateAndRender, _));
+        m_displayDispatcher.doOneLoop();
     }
 }

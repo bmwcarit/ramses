@@ -252,7 +252,7 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
         m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::DEPTH_FUNC, Vector3(0.2f, 0.5f, -5.f), OBWidth, OBHeight);
         m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, Vector3(0.f, 0.f, -3.f));
 
-        const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, m_interruptibleBuffers);
+        const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, m_interruptibleBuffers, 0u, ramses::EDepthBufferType_Depth);
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer);
         testFramework.createBufferDataLink(offscreenBuffer, m_sceneIdConsumer, TextureLinkScene::DataConsumerId);
 
@@ -264,7 +264,7 @@ bool OffscreenBufferLinkTests::run(RendererTestsFramework& testFramework, const 
         m_sceneIdProvider = createAndShowScene<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::STENCIL_TEST_1, Vector3(0.f, 0.5f, -5.f), OBWidth, OBHeight);
         m_sceneIdConsumer = createAndShowScene<TextureLinkScene>(testFramework, TextureLinkScene::DATA_CONSUMER, Vector3(0.f, 0.f, -4.f));
 
-        const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, m_interruptibleBuffers);
+        const ramses::displayBufferId_t offscreenBuffer = testFramework.createOffscreenBuffer(0, OBWidth, OBHeight, m_interruptibleBuffers, 0u, ramses::EDepthBufferType_DepthStencil);
         testFramework.assignSceneToDisplayBuffer(m_sceneIdProvider, offscreenBuffer);
         testFramework.createBufferDataLink(offscreenBuffer, m_sceneIdConsumer, TextureLinkScene::DataConsumerId);
 

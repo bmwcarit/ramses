@@ -9,7 +9,7 @@
 #include "Animation/SplineIterator.h"
 #include "Animation/SplineBase.h"
 #include "PlatformAbstraction/PlatformMath.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses_internal
 {

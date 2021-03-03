@@ -18,6 +18,7 @@
 #include "TestPngHeader.h"
 
 #include <array>
+#include <chrono>
 #include "Utils/CommandLineParser.h"
 #include "Utils/RamsesLogger.h"
 #include "ramses-framework-api/CategoryInfoUpdate.h"
@@ -2758,13 +2759,17 @@ namespace ramses_internal
         getContentToState_RPLC(2, CS::Assigned);
     }
 
-    TEST_F(ADcsmComponent, rejectsSecondContentDescriptionCall)
+    TEST_F(ADcsmComponent, canCallContentDescriptionMultipleTimesInAssigned)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         comp.newParticipantHasConnected(remoteId);
         getContentToState_LPRC(2, CS::Assigned);
 
-        EXPECT_FALSE(comp.sendContentDescription(ContentID(2), TechnicalContentDescriptor(5)));
+        EXPECT_CALL(comm, sendDcsmContentDescription(remoteId, ContentID(2), TechnicalContentDescriptor(5)));
+        EXPECT_TRUE(comp.sendContentDescription(ContentID(2), TechnicalContentDescriptor(5)));
+        EXPECT_CALL(comm, sendDcsmContentDescription(remoteId, ContentID(2), TechnicalContentDescriptor(6)));
+        EXPECT_TRUE(comp.sendContentDescription(ContentID(2), TechnicalContentDescriptor(6)));
+
         ensureNoEventsPending();
     }
 
@@ -2790,7 +2795,7 @@ namespace ramses_internal
         ensureNoEventsPending();
     }
 
-    TEST_F(ADcsmComponent, allowsToChangeContentDescriptionOnlyAfterReoffering)
+    TEST_F(ADcsmComponent, allowsToChangeContentDescriptionOnlyAfterGoingToAssignedAgain)
     {
         EXPECT_TRUE(comp.setLocalProviderAvailability(true));
         comp.newParticipantHasConnected(remoteId);
@@ -2804,14 +2809,15 @@ namespace ramses_internal
         EXPECT_EQ(CS::Assigned, comp.getContentState(ContentID(2)));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
 
-        EXPECT_FALSE(comp.sendContentDescription(ContentID(2), TechnicalContentDescriptor(5)));
+        EXPECT_CALL(comm, sendDcsmContentDescription(remoteId, ContentID(2), TechnicalContentDescriptor(6)));
+        EXPECT_TRUE(comp.sendContentDescription(ContentID(2), TechnicalContentDescriptor(6)));
 
         comp.handleContentStateChange(ContentID(2), EDcsmState::Offered, CategoryInfo{ 0u, 0u }, AnimationInformation{ 0, 0 }, remoteId);
         EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Offered, _, ramses::AnimationInformation{ 0, 0 }));
         EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(2)));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
 
-        EXPECT_FALSE(comp.sendContentDescription(ContentID(2), TechnicalContentDescriptor(5)));
+        EXPECT_TRUE(comp.sendContentDescription(ContentID(2), TechnicalContentDescriptor(7)));
 
         EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(2)));
         EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(2)));
@@ -2828,6 +2834,29 @@ namespace ramses_internal
         comp.handleContentStateChange(ContentID(2), EDcsmState::Assigned, CategoryInfo{ 0u, 0u }, AnimationInformation{ 0, 0 }, remoteId);
         EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Assigned, _, ramses::AnimationInformation{ 0, 0 }));
         EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+    }
+
+    TEST_F(ADcsmComponent, allowChangeContentDescriptionOnReadyRequestedWhenWasReadyBefore)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_LPRC(2, CS::Ready);
+
+        comp.handleContentStateChange(ContentID(2), EDcsmState::Assigned, CategoryInfo{ 0u, 0u }, AnimationInformation{ 0, 0 }, remoteId);
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Assigned, _, ramses::AnimationInformation{ 0, 0 }));
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+
+        comp.handleContentStateChange(ContentID(2), EDcsmState::Ready, CategoryInfo{ 0u, 0u }, AnimationInformation{ 0, 0 }, remoteId);
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Ready, _, ramses::AnimationInformation{ 0, 0 }));
+        EXPECT_EQ(CS::ReadyRequested, comp.getContentState(ContentID(2)));
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+
+        EXPECT_CALL(comm, sendDcsmContentDescription(remoteId, ContentID(2), TechnicalContentDescriptor(5)));
+        EXPECT_TRUE(comp.sendContentDescription(ContentID(2), TechnicalContentDescriptor(5)));
+
+        EXPECT_CALL(comm, sendDcsmContentReady(remoteId, ContentID(2)));
+        EXPECT_TRUE(comp.sendContentReady(ContentID(2)));
+        EXPECT_EQ(CS::Ready, comp.getContentState(ContentID(2)));
     }
 
     TEST_F(ADcsmComponent, acceptsSendContentDescriptionCallWhenInOfferedStateAndSendsContentDescriptionAfterBeingAssigned)
@@ -3116,6 +3145,38 @@ namespace ramses_internal
         EXPECT_CALL(comm, sendDcsmContentDescription(remoteId, ContentID(2), TechnicalContentDescriptor(5)));
         EXPECT_TRUE(comp.sendContentDescription(ContentID(2), TechnicalContentDescriptor(5)));
         ensureNoEventsPending();
+    }
+
+    TEST_F(ADcsmComponent, blockingDispatchProviderRespectsTimeout)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider, std::chrono::milliseconds{1}));
+    }
+
+    TEST_F(ADcsmComponent, blockingDispatchConsumerRespectsTimeout)
+    {
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer, std::chrono::milliseconds{1}));
+    }
+
+    TEST_F(ADcsmComponent, blockingDispatchProviderReturnsOnEvent)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_LPRC(2, CS::StopOfferRequested);
+        comp.participantHasDisconnected(remoteId);
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::AcceptStopOffer, _, ramses::AnimationInformation{0, 0}));
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider, std::chrono::milliseconds{1000000000}));
+    }
+
+    TEST_F(ADcsmComponent, blockingDispatchConsumerReturnsOnEvent)
+    {
+        comp.newParticipantHasConnected(remoteId);
+        comp.handleOfferContent(ContentID(1), Category(2), ETechnicalContentType::RamsesSceneID, "mycontent", remoteId);
+        EXPECT_EQ(CS::Offered, comp.getContentState(ContentID(1)));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(2), ramses::ETechnicalContentType::RamsesSceneID));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer, std::chrono::milliseconds{1000000000}));
     }
 
     class ADcsmComponentNotConnected : public ADcsmComponent

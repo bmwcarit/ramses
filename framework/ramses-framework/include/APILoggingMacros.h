@@ -110,5 +110,7 @@
         LOG_HL_RENDERER_STATIC_API2(retval, arg1, arg2 _LOG_API_SEPERATOR arg3)
 #define LOG_HL_RENDERER_STATIC_API4(retval, arg1, arg2, arg3, arg4) \
         LOG_HL_RENDERER_STATIC_API3(retval, arg1, arg2, arg3 _LOG_API_SEPERATOR arg4)
+#define LOG_HL_RENDERER_STATIC_API5(retval, arg1, arg2, arg3, arg4, arg5) \
+        LOG_HL_RENDERER_STATIC_API4(retval, arg1, arg2, arg3, arg4 _LOG_API_SEPERATOR arg5)
 
 #endif

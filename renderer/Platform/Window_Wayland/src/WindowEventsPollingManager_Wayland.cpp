@@ -8,8 +8,8 @@
 
 #include "Window_Wayland/WindowEventsPollingManager_Wayland.h"
 #include "Window_Wayland/Window_Wayland.h"
-#include "Utils/LogMacros.h"
-#include <errno.h>
+#include "Utils/ThreadLocalLogForced.h"
+#include <cerrno>
 
 namespace ramses_internal
 {

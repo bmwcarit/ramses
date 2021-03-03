@@ -10,6 +10,7 @@ from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
 
+
 class TestClientFileLoadingTcp(test_classes.OnSelectedTargetsTest):
     def __init__(self, methodName='runTest'):
         test_classes.OnSelectedTargetsTest.__init__(self, methodName)

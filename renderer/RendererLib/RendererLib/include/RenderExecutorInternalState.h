@@ -23,11 +23,41 @@ namespace ramses_internal
     class IDevice;
     class RendererCachedScene;
 
+    template <typename STATETYPE> inline static STATETYPE DefaultStateValue()
+    {
+        return STATETYPE();
+    }
+
+    template <> inline Vector4 DefaultStateValue<Vector4>()
+    {
+        return Vector4(std::numeric_limits<float>::max());
+    }
+
+    template <> inline ColorWriteMask DefaultStateValue<ColorWriteMask>()
+    {
+        return std::numeric_limits<ColorWriteMask>::max();
+    }
+
+    template <> inline EDepthFunc DefaultStateValue<EDepthFunc>()
+    {
+        return EDepthFunc::NUMBER_OF_ELEMENTS;
+    }
+
+    template <> inline EDepthWrite DefaultStateValue<EDepthWrite>()
+    {
+        return EDepthWrite::NUMBER_OF_ELEMENTS;
+    }
+
+    template <> inline ECullMode DefaultStateValue<ECullMode>()
+    {
+        return ECullMode::NUMBER_OF_ELEMENTS;
+    }
+
     template <typename STATETYPE>
     struct CachedState
     {
     public:
-        explicit CachedState(const STATETYPE& initialState = STATETYPE())
+        explicit CachedState(const STATETYPE& initialState = DefaultStateValue<STATETYPE>())
             : m_state(initialState)
             , m_changed(true)
         {
@@ -56,7 +86,7 @@ namespace ramses_internal
         void reset()
         {
             m_changed = true;
-            m_state = STATETYPE();
+            m_state = DefaultStateValue<STATETYPE>();
         }
 
     private:
@@ -100,13 +130,19 @@ namespace ramses_internal
 
         CachedState < DeviceResourceHandle >    shaderDeviceHandle;
         CachedState < DeviceResourceHandle >    indexBufferDeviceHandle;
-        ScissorState                            scissorState;
-        CachedState < DepthStencilState >       depthStencilState;
-        CachedState < BlendState >              blendState;
-        CachedState < RasterizerState >         rasterizerState;
+        CachedState < ScissorState >            scissorState;
+        CachedState < EDepthFunc >              depthFuncState;
+        CachedState < EDepthWrite >             depthWriteState;
+        CachedState < StencilState >            stencilState;
+        CachedState < BlendOperationsState >    blendOperationsState;
+        CachedState < BlendFactorsState >       blendFactorsState;
+        CachedState < Vector4 >                 blendColorState;
+        CachedState < ColorWriteMask >          colorWriteMaskState;
+        CachedState < ECullMode >               cullModeState;
         CachedState < RenderTargetHandle >      renderTargetState;
         CachedState < RenderPassHandle >        renderPassState;
         CachedState < Viewport >                viewportState;
+        EDrawMode                               drawMode = EDrawMode::NUMBER_OF_ELEMENTS;
 
         SceneRenderExecutionIterator            m_currentRenderIterator;
 

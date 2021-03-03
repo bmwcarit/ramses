@@ -17,7 +17,7 @@
 
 #if defined(__GNUC__)
 #  define RNODISCARD __attribute__((warn_unused_result))
-#elif _MSC_VER >= 1925
+#elif defined(_MSC_VER) && _MSC_VER >= 1925
 #  define RNODISCARD [[nodiscard]]
 #else
 #  define RNODISCARD

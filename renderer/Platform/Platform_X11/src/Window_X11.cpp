@@ -9,10 +9,9 @@
 #include "Platform_X11/Window_X11.h"
 #include "RendererLib/DisplayConfig.h"
 #include "RendererLib/EKeyModifier.h"
-#include "Utils/LogMacros.h"
-#include "Utils/Warnings.h"
-
 #include "RendererAPI/IWindowEventHandler.h"
+#include "Utils/ThreadLocalLogForced.h"
+#include "Utils/Warnings.h"
 
 namespace ramses_internal
 {

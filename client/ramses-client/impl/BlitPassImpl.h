@@ -21,7 +21,7 @@ namespace ramses
     {
     public:
         BlitPassImpl(SceneImpl& scene, const char* blitpassName);
-        virtual ~BlitPassImpl();
+        virtual ~BlitPassImpl() override;
 
         void             initializeFrameworkData(const RenderBufferImpl& sourceRenderBuffer, const RenderBufferImpl& destinationRenderBuffer);
         virtual void     deinitializeFrameworkData() override;

@@ -18,18 +18,14 @@ namespace ramses
     * to its corresponding type ID
     */
     template<typename T>
-    struct TYPE_ID_OF_RAMSES_OBJECT
-    {
-    };
+    struct TYPE_ID_OF_RAMSES_OBJECT;
 
     /**
     * @brief Helper class providing static mapping from a RamsesObject type
     * to its corresponding class
     */
     template<ERamsesObjectType T>
-    struct CLASS_OF_RAMSES_OBJECT_TYPE
-    {
-    };
+    struct CLASS_OF_RAMSES_OBJECT_TYPE;
 
 #define FORWARD_DECLARE_CLASS(_className) \
     class _className;
@@ -42,7 +38,7 @@ namespace ramses
 
 #define DEFINE_TYPEID_OF_RAMSES_OBJECT(_className, _id) \
     /** @brief Helper class providing static mapping from a concrete RamsesObject class to its corresponding type ID */ \
-    template<> struct TYPE_ID_OF_RAMSES_OBJECT < _className > \
+    template<> struct TYPE_ID_OF_RAMSES_OBJECT < _className > final \
         { \
         /** Corresponding RamsesObject type ID */ \
         static const ERamsesObjectType ID = _id; \
@@ -50,7 +46,7 @@ namespace ramses
 
 #define DEFINE_CLASS_OF_RAMSES_OBJECT_TYPE(_className, _id, _baseTypeId, _isConcreteType) \
     /** @brief Helper class providing static mapping from a RamsesObject type to its corresponding class */ \
-    template<> struct CLASS_OF_RAMSES_OBJECT_TYPE < _id > \
+    template<> struct CLASS_OF_RAMSES_OBJECT_TYPE < _id > final \
         { \
         /** Corresponding RamsesObject class */ \
         using ClassType = _className; \

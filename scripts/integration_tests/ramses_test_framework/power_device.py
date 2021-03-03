@@ -11,6 +11,7 @@ import time
 from abc import ABCMeta, abstractmethod
 from future.utils import with_metaclass
 import sys
+import socket
 
 from ramses_test_framework import log
 
@@ -34,23 +35,23 @@ class NETIOPowerDevice(PowerDevice):
 
     def createTelnetConnection(self):
         log.info("Connecting to power device {0} user: {1}".format(self.url, self.username))
-        #create telnet connection to power outlet
+        # create telnet connection to power outlet
         try:
             telnet_conn = telnetlib.Telnet(self.url, 1234)
             return telnet_conn
-        except:
+        except (ConnectionRefusedError, socket.timeout):
             log.error("Connection to power device {0} could not be established".format(self.url))
         return None
 
     def switch(self, outletNr, on):
-        #self.telnet_connection.read_until("100 HELLO 00000000 - KSHELL V1.5")
+        # self.telnet_connection.read_until("100 HELLO 00000000 - KSHELL V1.5")
         telnet_conn = self.createTelnetConnection()
         if not telnet_conn:
             return False
 
         self._write(telnet_conn, "login {0} {1}\n".format(self.username, self.password))
 
-        #turn power outlet on or off
+        # turn power outlet on or off
         status = 0
         if on:
             status = 1

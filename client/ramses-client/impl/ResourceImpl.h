@@ -32,7 +32,7 @@ namespace ramses
             ramses_internal::ResourceHashUsage hashUsage,
             SceneImpl& scene,
             const char* name);
-        virtual ~ResourceImpl();
+        virtual ~ResourceImpl() override;
 
         virtual void     deinitializeFrameworkData() override;
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;

@@ -33,7 +33,7 @@ namespace ramses
         bool setSceneDisplayBufferAssignment(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder = 0);
         void linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId);
         void linkData(sceneId_t providerSceneId, dataProviderId_t providerId, sceneId_t consumerSceneId, dataConsumerId_t consumerId);
-        void processConfirmationEchoCommand(std::string confirmationText);
+        void processConfirmationEchoCommand(displayId_t display, std::string confirmationText);
 
         void dispatchAndFlush(IRendererSceneControlEventHandler& sceneControlHandler, IRendererEventHandler* customRendererEventHandler = nullptr);
 
@@ -53,6 +53,7 @@ namespace ramses
         struct SceneInfo
         {
             RendererSceneState currentState = RendererSceneState::Available;
+            displayId_t displayMapped;
             std::string renderedStateConfirmationText;
         };
 
@@ -61,8 +62,8 @@ namespace ramses
 
         std::unordered_map<sceneId_t, SceneInfo> m_scenesInfo;
 
-        std::unique_ptr<ramses_internal::RamshCommandExit> m_exitCommand;
-        std::vector<std::unique_ptr<ramses_internal::RamshCommand>> m_ramshCommands;
+        std::shared_ptr<ramses_internal::RamshCommandExit> m_exitCommand;
+        std::vector<std::shared_ptr<ramses_internal::RamshCommand>> m_ramshCommands;
 
         bool m_isRunning = true;
         bool m_keysHandling = false;

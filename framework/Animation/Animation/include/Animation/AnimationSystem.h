@@ -26,7 +26,7 @@ namespace ramses_internal
     {
     public:
         AnimationSystem(UInt32 flags, const AnimationSystemSizeInformation& sizeInfo);
-        virtual ~AnimationSystem();
+        virtual ~AnimationSystem() override;
 
         virtual void                         setHandle(AnimationSystemHandle handle) override;
         virtual void                         setTime(const AnimationTime& globalTime) override;

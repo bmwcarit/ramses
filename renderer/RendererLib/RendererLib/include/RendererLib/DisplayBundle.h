@@ -31,6 +31,7 @@ namespace ramses_internal
     class IRendererSceneEventSender;
     class IEmbeddedCompositingManager;
     class IEmbeddedCompositor;
+    class IThreadAliveNotifier;
 
     class IDisplayBundle
     {
@@ -40,16 +41,17 @@ namespace ramses_internal
         virtual void dispatchRendererEvents(RendererEventVector& events) = 0;
         virtual void dispatchSceneControlEvents(RendererEventVector& events) = 0;
         virtual SceneId findMasterSceneForReferencedScene(SceneId refScene) const = 0;
+        virtual void enableContext() = 0;
         virtual IEmbeddedCompositingManager& getECManager(DisplayHandle display) = 0;
         virtual IEmbeddedCompositor& getEC(DisplayHandle display) = 0;
 
         virtual ~IDisplayBundle() = default;
     };
 
-    class DisplayBundle : public IDisplayBundle
+    class DisplayBundle final : public IDisplayBundle
     {
     public:
-        DisplayBundle(IRendererSceneEventSender& rendererSceneSender, IPlatform& platform, const String& kpiFilename = {});
+        DisplayBundle(IRendererSceneEventSender& rendererSceneSender, IPlatform& platform, IThreadAliveNotifier& notifier, std::chrono::milliseconds timingReportingPeriod, const String& kpiFilename = {});
 
         virtual void doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime) override;
 
@@ -58,6 +60,7 @@ namespace ramses_internal
         virtual void dispatchSceneControlEvents(RendererEventVector& events) override;
 
         virtual SceneId findMasterSceneForReferencedScene(SceneId refScene) const override;
+        virtual void enableContext() override;
 
         // needed for EC tests...
         virtual IEmbeddedCompositingManager& getECManager(DisplayHandle display) override;
@@ -70,6 +73,7 @@ namespace ramses_internal
         void collectEvents();
         void finishFrameStatistics(std::chrono::microseconds sleepTime);
         void updateSceneControlLogic();
+        void updateTiming();
 
         FrameTimer                m_frameTimer;
         RendererEventCollector    m_rendererEventCollector;
@@ -88,6 +92,11 @@ namespace ramses_internal
         std::mutex            m_eventsLock;
         RendererEventVector   m_rendererEvents;
         RendererEventVector   m_sceneControlEvents;
+
+        std::chrono::milliseconds m_timingReportingPeriod{ 0 };
+        std::chrono::microseconds m_sumFrameTimes{ 0 };
+        std::chrono::microseconds m_maxFrameTime{ 0 };
+        size_t m_loopsWithinMeasurePeriod{ 0u };
 
         // TODO rework KPI monitor
         uint64_t m_lastUpdateTimeStampMilliSec = 0;

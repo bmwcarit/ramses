@@ -17,6 +17,7 @@
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/PixelRectangle.h"
 #include "Math3d/Vector4.h"
+#include "SceneAPI/TextureSamplerStates.h"
 
 namespace ramses_internal
 {
@@ -63,7 +64,6 @@ namespace ramses_internal
         MOCK_METHOD(void, stencilOp, (EStencilOp, EStencilOp, EStencilOp), (override));
         MOCK_METHOD(void, drawMode, (EDrawMode), (override));
         MOCK_METHOD(void, setViewport, (UInt32, UInt32, UInt32, UInt32), (override));
-        MOCK_METHOD(void, setTextureSampling, (DataFieldHandle, EWrapMethod, EWrapMethod, EWrapMethod, ESamplingMethod, ESamplingMethod, UInt32), (override));
 
         MOCK_METHOD(DeviceResourceHandle, allocateVertexBuffer, (UInt32), (override));
         MOCK_METHOD(void, uploadVertexBufferData, (DeviceResourceHandle, const Byte*, UInt32), (override));
@@ -93,9 +93,7 @@ namespace ramses_internal
 
         MOCK_METHOD(DeviceResourceHandle, uploadRenderBuffer, (const RenderBuffer&), (override));
         MOCK_METHOD(void, deleteRenderBuffer, (DeviceResourceHandle), (override));
-        MOCK_METHOD(DeviceResourceHandle, uploadTextureSampler, (EWrapMethod, EWrapMethod, EWrapMethod, ESamplingMethod, ESamplingMethod, UInt32), (override));
-        MOCK_METHOD(void, deleteTextureSampler, (DeviceResourceHandle), (override));
-        MOCK_METHOD(void, activateTextureSampler, (DeviceResourceHandle, DataFieldHandle), (override));
+        MOCK_METHOD(void, activateTextureSamplerObject, (const TextureSamplerStates&, DataFieldHandle), (override));
         MOCK_METHOD(DeviceResourceHandle, getFramebufferRenderTarget, (), (const, override));
         MOCK_METHOD(DeviceResourceHandle, uploadRenderTarget, (const DeviceHandleVector&), (override));
         MOCK_METHOD(void, activateRenderTarget, (DeviceResourceHandle), (override));

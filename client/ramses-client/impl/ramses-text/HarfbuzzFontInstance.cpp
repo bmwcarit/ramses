@@ -10,7 +10,7 @@
 #include "Utils/Warnings.h"
 #include "Utils/LogMacros.h"
 #include <vector>
-#include <assert.h>
+#include <cassert>
 
 PUSH_DISABLE_C_STYLE_CAST_WARNING
 #include <hb-ft.h>

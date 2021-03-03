@@ -26,7 +26,7 @@ namespace ramses_internal
     {
     public:
         WaylandSurface(IEmbeddedCompositor_Wayland& compositor, IWaylandClient& client, int version, uint32_t id);
-        ~WaylandSurface();
+        ~WaylandSurface() override;
 
         virtual IWaylandBuffer* getWaylandBuffer() const override;
         virtual bool hasPendingBuffer() const override;

@@ -10,7 +10,7 @@
 
 #include "RendererAPI/IContext.h"
 
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include <array>
 #include <cassert>
 

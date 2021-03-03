@@ -20,7 +20,7 @@ namespace ramses_internal
         description = "print Log Levels";
     }
 
-    bool RamshCommandPrintLogLevels::executeInput(const RamshInput& input)
+    bool RamshCommandPrintLogLevels::executeInput(const std::vector<std::string>& input)
     {
         UNUSED(input);
 

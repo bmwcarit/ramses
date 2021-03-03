@@ -10,7 +10,6 @@
 #include "RendererLib/TransformationLinkCachedScene.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DataLinkUtils.h"
-#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {

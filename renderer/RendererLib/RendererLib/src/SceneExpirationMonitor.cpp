@@ -11,6 +11,7 @@
 #include "RendererEventCollector.h"
 #include "Scene/SceneActionApplier.h"
 #include "PlatformAbstraction/PlatformTime.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {
@@ -64,7 +65,7 @@ namespace ramses_internal
 
     void SceneExpirationMonitor::checkExpiredScenes(FlushTime::Clock::time_point currentTime)
     {
-        const auto isTSExpired = [currentTime](FlushTime::Clock::time_point ts)  { return ts != FlushTime::InvalidTimestamp && currentTime > ts; };
+        const auto isTSExpired = [currentTime](FlushTime::Clock::time_point ts)  { return ts != FlushTime::InvalidTimestamp && (currentTime == FlushTime::InvalidTimestamp || currentTime > ts); };
 
         for (auto& it : m_monitoredScenes)
         {

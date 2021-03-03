@@ -8,7 +8,7 @@
 
 #include "Platform_Integrity_RGL/Window_Integrity_RGL.h"
 #include "RendererLib/DisplayConfig.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

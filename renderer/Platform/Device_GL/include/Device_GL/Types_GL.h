@@ -24,6 +24,9 @@ namespace ramses_internal
     static const GLInputLocation GLInputLocationInvalid(-1);
 
     using TextureSlot = Int32;
+
+    // TODO Violin fix this
+    using GLenum = unsigned int;
 }
 
 #endif

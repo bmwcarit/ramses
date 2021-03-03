@@ -29,7 +29,7 @@ namespace ramses_internal
         if (m_type == ramses::ERamsesShellType_Console)
             m_consoleChannel = RamshCommunicationChannelConsole::Construct(*this, m_prompt);
         if (m_type == ramses::ERamsesShellType_Console || m_type == ramses::ERamsesShellType_Default)
-            m_dltChannel.reset(new RamshCommunicationChannelDLT(*this));
+            m_dltChannel = std::make_unique<RamshCommunicationChannelDLT>(*this);
         return true;
     }
 

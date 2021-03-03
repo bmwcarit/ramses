@@ -7,37 +7,41 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_Base/RendererLimits.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {
-    RendererLimits::RendererLimits()
-        : m_maximumTextureUnits(1u)
-        , m_maximumAnisotropy(1u)
-    {
-    }
-
-    UInt32 RendererLimits::getMaximumTextureUnits() const
+    uint32_t RendererLimits::getMaximumTextureUnits() const
     {
         return m_maximumTextureUnits;
     }
 
-    void RendererLimits::setMaximumTextureUnits(UInt32 units)
+    void RendererLimits::setMaximumTextureUnits(uint32_t units)
     {
         m_maximumTextureUnits = units;
     }
 
-    UInt32 RendererLimits::getMaximumAnisotropy() const
+    uint32_t RendererLimits::getMaximumSamples() const
+    {
+        return m_maximumSamples;
+    }
+
+    void RendererLimits::setMaximumSamples(uint32_t samples)
+    {
+        m_maximumSamples = samples;
+    }
+
+    uint32_t RendererLimits::getMaximumAnisotropy() const
     {
         return m_maximumAnisotropy;
     }
 
-    void RendererLimits::setMaximumAnisotropy(UInt32 anisotropy)
+    void RendererLimits::setMaximumAnisotropy(uint32_t anisotropy)
     {
         m_maximumAnisotropy = anisotropy;
     }
 
-    Bool RendererLimits::isTextureFormatAvailable(ETextureFormat format) const
+    bool RendererLimits::isTextureFormatAvailable(ETextureFormat format) const
     {
         return m_availableTextureFormats.contains(format);
     }
@@ -49,11 +53,12 @@ namespace ramses_internal
 
     void RendererLimits::logLimits() const
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "Device features and limits:");
-        LOG_DEBUG(CONTEXT_RENDERER, "  - maximum number of texture units:            " << m_maximumTextureUnits);
-        LOG_DEBUG(CONTEXT_RENDERER, "  - maximum number of anisotropy samples:       " << m_maximumAnisotropy);
+        LOG_INFO(CONTEXT_RENDERER, "Rendering device features and limits:");
+        LOG_INFO(CONTEXT_RENDERER, "  - maximum number of texture units:            " << m_maximumTextureUnits);
+        LOG_INFO(CONTEXT_RENDERER, "  - maximum number of MSAA samples:             " << m_maximumSamples);
+        LOG_INFO(CONTEXT_RENDERER, "  - maximum number of anisotropy samples:       " << m_maximumAnisotropy);
 
-        LOG_DEBUG(CONTEXT_RENDERER, "  - supported texture formats:");
+        LOG_INFO(CONTEXT_RENDERER, "  - supported texture formats: " << m_availableTextureFormats.size());
         for(const auto& texture : m_availableTextureFormats)
         {
             LOG_DEBUG(CONTEXT_RENDERER, "      " << EnumToString(texture));

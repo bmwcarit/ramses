@@ -11,13 +11,13 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include <limits>
-#include <tuple>
+#include <array>
 #include <atomic>
 
 namespace ramses_internal
 {
     template<typename DataType>
-    struct SummaryEntry
+    struct SummaryEntry final
     {
         SummaryEntry();
 
@@ -58,12 +58,13 @@ namespace ramses_internal
     }
 
     template<typename DataType>
-    struct StatisticEntry
+    struct StatisticEntry final
     {
         StatisticEntry();
 
         void incCounter(DataType increment);
         void decCounter(DataType decrement);
+        void setCounterValue(DataType newValue);
         DataType getCounterValue() const;
         void reset();
         void updateSummary();
@@ -123,6 +124,12 @@ namespace ramses_internal
     }
 
     template<typename DataType>
+    void ramses_internal::StatisticEntry<DataType>::setCounterValue(DataType newValue)
+    {
+        m_counter = newValue;
+    }
+
+    template<typename DataType>
     SummaryEntry<DataType>& ramses_internal::StatisticEntry<DataType>::getSummary()
     {
         return m_summary;
@@ -167,6 +174,15 @@ namespace ramses_internal
         StatisticEntry<UInt32> statResourcesLoadedFromFileSize;
     };
 
+    enum EResourceStatisticIndex : std::size_t // deliberately not enum class, supposed to be implicitly convertible
+    {
+        EResourceStatisticIndex_ArrayResource,
+        EResourceStatisticIndex_Effect,
+        EResourceStatisticIndex_Texture,
+
+        EResourceStatisticIndex_NumIndices
+    };
+
     class StatisticCollectionScene : public StatisticCollection
     {
     public:
@@ -177,14 +193,15 @@ namespace ramses_internal
         StatisticEntry<UInt32> statFlushesTriggered;
         StatisticEntry<UInt32> statObjectsCreated;
         StatisticEntry<UInt32> statObjectsDestroyed;
-        StatisticEntry<UInt32> statObjectsNumber; //updated by values of statObjectsCreated and statObjectsDestroyed
-        StatisticEntry<UInt32> statResourceObjectsCreated;
-        StatisticEntry<UInt32> statResourceObjectsDestroyed;
-        StatisticEntry<UInt32> statResourceObjectsNumber; //updated by values of statResourceObjectsCreated and statResourceObjectsDestroyed
+        StatisticEntry<UInt32> statObjectsCount; //updated by values of statObjectsCreated and statObjectsDestroyed
         StatisticEntry<UInt32> statSceneActionsSent;
         StatisticEntry<UInt32> statSceneActionsSentSkipped;
         StatisticEntry<UInt32> statSceneActionsGenerated;
         StatisticEntry<UInt32> statSceneActionsGeneratedSize;
+
+        std::array<StatisticEntry<UInt64>, EResourceStatisticIndex_NumIndices> statResourceCount;
+        std::array<StatisticEntry<UInt64>, EResourceStatisticIndex_NumIndices> statResourceAvgSize;
+        std::array<StatisticEntry<UInt64>, EResourceStatisticIndex_NumIndices> statResourceMaxSize;
     };
 }
 

@@ -9,7 +9,7 @@
 #ifndef RAMSES_SHMTRIANGLEDRAWER_H
 #define RAMSES_SHMTRIANGLEDRAWER_H
 
-#include "stdint.h"
+#include <cstdint>
 #include "ETriangleColor.h"
 
 namespace ramses_internal

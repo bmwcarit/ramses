@@ -14,6 +14,7 @@
 #include "TaskExecutingThreadPool.h"
 #include "TaskFramework/ProcessingTaskQueue.h"
 #include "ThreadWatchdogConfig.h"
+#include "Watchdog/ThreadWatchdog.h"
 #include "Watchdog/PlatformWatchdog.h"
 #include "Collections/Vector.h"
 
@@ -23,7 +24,7 @@ namespace ramses_internal
      * The (central) task executor class which puts execute request in the processing queue and uses the thread pool
      * for executing the tasks.
      */
-    class ThreadedTaskExecutor final : public ITaskQueue, public IThreadAliveNotifier
+    class ThreadedTaskExecutor final : public ITaskQueue, public ThreadWatchdog
     {
     public:
         /**
@@ -59,11 +60,6 @@ namespace ramses_internal
          */
         void stop();
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;
-
-        virtual void notifyAlive(UInt16 threadIndex) override;
-
-        virtual UInt32 calculateTimeout() const override;
-
     private:
         /**
          * Start the instance with the executing thread and the thread pool.
@@ -81,11 +77,6 @@ namespace ramses_internal
 
         bool m_acceptingNewTasks;
         mutable std::mutex m_lock;
-
-        UInt32       m_numberOfThreads;
-        mutable std::mutex m_aliveLock;
-        std::vector<bool> m_aliveThreads;
-        PlatformWatchdog m_watchdogNotifier;
     };
 }
 

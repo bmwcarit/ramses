@@ -11,7 +11,6 @@
 #include "Scene/ClientScene.h"
 #include "Scene/SceneDescriber.h"
 #include "Scene/SceneActionApplier.h"
-#include "Scene/SceneActionCollectionCreator.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"
@@ -44,6 +43,7 @@ namespace ramses_internal
             return false;
         }
 
+        fillStatisticsCollection();
         const SceneSizeInformation sceneSizes(m_scene.getSceneSizeInformation());
 
         // swap out of ClientScene and reserve new memory there
@@ -74,10 +74,7 @@ namespace ramses_internal
         ++m_flushCounter;
 
         if (isPublished())
-        {
             sceneUpdate.flushInfos = { m_flushCounter, versionTag, sceneSizes, m_resourceChanges, m_scene.getSceneReferenceActions(), flushTimeInfo,sceneSizes > m_sceneShadowCopy.getSceneSizeInformation(), true };
-            SceneActionCollectionCreator creator(sceneUpdate.actions);
-        }
 
         // reserve memory in ClientScene after flush because flush might add a lot of data
         m_scene.getSceneActionCollection().reserveAdditionalCapacity(sceneUpdate.actions.collectionData().size(), sceneUpdate.actions.numberOfActions());
@@ -116,9 +113,7 @@ namespace ramses_internal
 
         // send to subscribers if flushed for first time
         if (m_flushCounter == 1u)
-        {
             sendShadowCopySceneToWaitingSubscribers();
-        }
 
         return true;
     }

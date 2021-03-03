@@ -90,9 +90,9 @@ int main(int argc, const char* argv[])
     ramses::RamsesFrameworkConfig frameworkConfig(argc, argv);
     frameworkConfig.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
     ramses::RamsesFramework framework(frameworkConfig);
-    ramses_internal::RamshCommandExit commandExit;
+    auto commandExit = std::make_shared<ramses_internal::RamshCommandExit>();
     framework.impl.getRamsh().add(commandExit);
-    ramses_internal::TestStepCommand testStepCommand;
+    auto testStepCommand = std::make_shared<ramses_internal::TestStepCommand>();
     framework.impl.getRamsh().add(testStepCommand);
 
     ramses::RamsesClient* ramses(framework.createClient("ramses test client"));
@@ -281,9 +281,9 @@ int main(int argc, const char* argv[])
         publishAllScenes(scenes);
     }
 
-    while(!commandExit.exitRequested())
+    while(!commandExit->exitRequested())
     {
-        commandExit.waitForExitRequest(1000u);
+        commandExit->waitForExitRequest(1000u);
         flushAllScenes(scenes);
         for (auto& scene : integrationScenes)
             scene->dispatchHandler();

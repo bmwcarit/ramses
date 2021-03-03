@@ -19,7 +19,7 @@ namespace ramses_internal
         registerKeyword("screenshot");
     }
 
-    Bool Screenshot::executeInput(const RamshInput& input)
+    Bool Screenshot::executeInput(const std::vector<std::string>& input)
     {
         enum EOption
         {
@@ -30,24 +30,21 @@ namespace ramses_internal
 
         EOption lastOption = EOption_None;
 
-        String              filename = "unnamed.png";
+        std::string         filename = "unnamed.png";
         DisplayHandle       display = DisplayHandle(0);
         Bool                sendViaDLT = false;
 
-        const UInt32 numArgs = static_cast<UInt32>(input.size());
-        for (UInt argStrIdx = 0u; argStrIdx < numArgs; ++argStrIdx)
+        for (const auto& arg : input)
         {
-            const String argStr(input[argStrIdx]);
-
-            if (argStr == String("-filename"))
+            if (arg == "-filename")
             {
                 lastOption = EOption_Filename;
             }
-            else if (argStr == String("-displayId"))
+            else if (arg == "-displayId")
             {
                 lastOption = EOption_Display;
             }
-            else if (argStr == String("-sendViaDLT"))
+            else if (arg == "-sendViaDLT")
             {
                 sendViaDLT = true;
             }
@@ -56,16 +53,16 @@ namespace ramses_internal
                 switch( lastOption )
                 {
                 case EOption_Display:
-                    display    = DisplayHandle(atoi(argStr.c_str()));
+                    display    = DisplayHandle(atoi(arg.c_str()));
                     lastOption = EOption_None;
                     break;
                 case EOption_Filename:
-                    filename   = argStr;
+                    filename   = arg;
                     lastOption = EOption_None;
                     break;
 
                 case EOption_None:
-                    if( contains_c(m_keywords, argStr) ) // check whether a keyword is the current argument
+                    if( contains_c(m_keywords, arg) ) // check whether a keyword is the current argument
                     {
                         continue;
                     }
@@ -77,7 +74,7 @@ namespace ramses_internal
             }
         }
 
-        m_rendererCommandBuffer.enqueueCommand(RendererCommand::ReadPixels{ display, {}, 0u, 0u, 0u, 0u, true, sendViaDLT, filename });
+        m_rendererCommandBuffer.enqueueCommand(RendererCommand::ReadPixels{ display, {}, 0u, 0u, 0u, 0u, true, sendViaDLT, String(std::move(filename)) });
 
         return true;
     }

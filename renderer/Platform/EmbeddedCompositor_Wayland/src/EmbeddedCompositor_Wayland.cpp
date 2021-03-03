@@ -19,7 +19,7 @@
 #include "RendererLib/RendererConfig.h"
 #include "RendererLib/DisplayConfig.h"
 #include "RendererLib/RendererLogContext.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Warnings.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "absl/algorithm/container.h"
@@ -410,7 +410,7 @@ namespace ramses_internal
     void EmbeddedCompositor_Wayland::removeWaylandRegion(IWaylandRegion& waylandRegion)
     {
         const bool removed = m_regions.remove(&waylandRegion);
-        UNUSED(removed)
+        UNUSED(removed);
         assert(removed);
     }
 }

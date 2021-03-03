@@ -26,7 +26,7 @@ namespace ramses
             SceneImpl& scene,
             const char* name);
 
-        virtual ~Texture3DImpl();
+        virtual ~Texture3DImpl() override;
 
         void initializeFromFrameworkData(uint32_t width, uint32_t height, uint32_t depth, ETextureFormat textureFormat);
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;

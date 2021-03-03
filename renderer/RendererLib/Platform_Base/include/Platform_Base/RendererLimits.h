@@ -18,24 +18,26 @@ namespace ramses_internal
     class RendererLimits
     {
     public:
-        RendererLimits();
-
         // Device limits
-        UInt32  getMaximumTextureUnits() const;
-        void    setMaximumTextureUnits(UInt32 count);
+        uint32_t getMaximumTextureUnits() const;
+        void     setMaximumTextureUnits(uint32_t count);
 
-        UInt32  getMaximumAnisotropy() const;
-        void    setMaximumAnisotropy(UInt32 anisotropy);
+        uint32_t getMaximumSamples() const;
+        void     setMaximumSamples(uint32_t samples);
+
+        UInt32   getMaximumAnisotropy() const;
+        void     setMaximumAnisotropy(uint32_t anisotropy);
 
         // Texture formats
-        Bool    isTextureFormatAvailable(ETextureFormat format) const;
-        void    addTextureFormat(ETextureFormat format);
+        bool isTextureFormatAvailable(ETextureFormat format) const;
+        void addTextureFormat(ETextureFormat format);
 
-        void    logLimits() const;
+        void logLimits() const;
 
     private:
-        UInt32 m_maximumTextureUnits;
-        UInt32 m_maximumAnisotropy;
+        uint32_t m_maximumTextureUnits = 1u;
+        uint32_t m_maximumSamples = 1u;
+        uint32_t m_maximumAnisotropy = 1u;
         HashSet<ETextureFormat> m_availableTextureFormats;
     };
 }

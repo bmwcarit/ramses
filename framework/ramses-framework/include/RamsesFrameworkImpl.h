@@ -37,6 +37,7 @@ namespace ramses_internal
     class ICommunicationSystem;
     class RamshStandardSetup;
     class Ramsh;
+    class PublicRamshCommand;
 }
 
 namespace ramses
@@ -48,6 +49,7 @@ namespace ramses
     class RamsesClient;
     class RamsesRenderer;
     class RendererConfig;
+    class IRamshCommand;
 
     class RamsesFrameworkImpl : public StatusObjectImpl
     {
@@ -83,6 +85,7 @@ namespace ramses
         ramses_internal::PeriodicLogger& getPeriodicLogger();
         ramses_internal::StatisticCollectionFramework& getStatisticCollection();
         static void SetConsoleLogLevel(ELogLevel logLevel);
+        status_t addRamshCommand(const std::shared_ptr<IRamshCommand>& command);
 
     private:
         RamsesFrameworkImpl(const RamsesFrameworkConfigImpl& config, const ramses_internal::ParticipantIdentifier& participantAddress);
@@ -97,6 +100,7 @@ namespace ramses
         // has to be used by all logic, component, etc classes
         ramses_internal::PlatformLock m_frameworkLock;
         std::unique_ptr<ramses_internal::RamshStandardSetup> m_ramsh;
+        std::vector<std::shared_ptr<ramses_internal::PublicRamshCommand>> m_publicRamshCommands;
         ramses_internal::StatisticCollectionFramework m_statisticCollection;
         ramses_internal::ParticipantIdentifier m_participantAddress;
         ramses_internal::EConnectionProtocol m_connectionProtocol;
@@ -108,8 +112,8 @@ namespace ramses
         ramses_internal::ResourceComponent m_resourceComponent;
         ramses_internal::SceneGraphComponent m_scenegraphComponent;
         ramses_internal::DcsmComponent m_dcsmComponent;
-        ramses_internal::LogConnectionInfo m_ramshCommandLogConnectionInformation;
-        ramses_internal::LogDcsmInfo m_ramshCommandLogDcsmInformation;
+        std::shared_ptr<ramses_internal::LogConnectionInfo> m_ramshCommandLogConnectionInformation;
+        std::shared_ptr<ramses_internal::LogDcsmInfo> m_ramshCommandLogDcsmInformation;
         std::unique_ptr<DcsmProvider> m_dcsmProvider;
         std::unique_ptr<DcsmConsumer> m_dcsmConsumer;
 

@@ -18,10 +18,19 @@ namespace ramses_internal
     class IInputStream
     {
     public:
+        enum class Seek
+        {
+            FromBeginning,
+            Relative,
+        };
+
         virtual ~IInputStream() = default;
 
         virtual IInputStream& read(void* data, size_t size) = 0;
         virtual EStatus getState() const = 0;
+
+        virtual EStatus seek(Int numberOfBytesToSeek, Seek origin) = 0;
+        virtual EStatus getPos(size_t& position) const = 0;
     };
 
     inline IInputStream& operator>>(IInputStream& stream, int32_t& value)

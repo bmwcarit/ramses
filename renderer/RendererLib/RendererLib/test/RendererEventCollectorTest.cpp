@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "RendererEventCollector.h"
 #include "RendererLib/EKeyModifier.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -18,6 +19,12 @@ namespace ramses_internal
     class ARendererEventCollector : public testing::Test
     {
     protected:
+        ARendererEventCollector()
+        {
+            // caller is expected to have a display prefix for logs
+            ThreadLocalLog::SetPrefix(1);
+        }
+
         virtual void TearDown() override
         {
             // make sure all test cases dispatch all collected events
@@ -299,6 +306,18 @@ namespace ramses_internal
         ASSERT_EQ(2u, resultEvents[0].pickedObjectIds.size());
         EXPECT_EQ(pickable1, resultEvents[0].pickedObjectIds[0]);
         EXPECT_EQ(pickable2, resultEvents[0].pickedObjectIds[1]);
+    }
+
+    TEST_F(ARendererEventCollector, CanAddFrameTimingEvent)
+    {
+        constexpr std::chrono::microseconds maxTime{ 123 };
+        constexpr std::chrono::microseconds avgTime{ 321 };
+        m_rendererEventCollector.addFrameTimingReport(maxTime, avgTime);
+        const RendererEventVector resultEvents = consumeRendererEvents();
+        ASSERT_EQ(1u, resultEvents.size());
+        EXPECT_EQ(ERendererEventType::FrameTimingReport, resultEvents[0].eventType);
+        EXPECT_EQ(maxTime, resultEvents[0].frameTimings.maximumLoopTimeWithinPeriod);
+        EXPECT_EQ(avgTime, resultEvents[0].frameTimings.averageLoopTimeWithinPeriod);
     }
 
     TEST_F(ARendererEventCollector, QueuesUpInternalSceneEvents)

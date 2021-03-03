@@ -10,7 +10,7 @@
 #include "RendererAPI/IWindowEventHandler.h"
 #include "RendererLib/DisplayConfig.h"
 #include "RendererLib/EKeyModifier.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "Collections/Guid.h"
 #include "fmt/format.h"
 #include <WindowsX.h>

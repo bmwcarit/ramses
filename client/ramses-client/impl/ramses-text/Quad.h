@@ -9,8 +9,8 @@
 #ifndef RAMSES_TEXT_QUAD_H
 #define RAMSES_TEXT_QUAD_H
 
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 #include <algorithm>
 #include <vector>
 

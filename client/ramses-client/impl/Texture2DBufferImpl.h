@@ -21,7 +21,7 @@ namespace ramses
     {
     public:
         Texture2DBufferImpl(SceneImpl& scene, const char* textureBufferName);
-        virtual ~Texture2DBufferImpl();
+        virtual ~Texture2DBufferImpl() override;
 
         void             initializeFrameworkData(const ramses_internal::MipMapDimensions& mipDimensions, ETextureFormat textureFormat);
         virtual void     deinitializeFrameworkData() override;

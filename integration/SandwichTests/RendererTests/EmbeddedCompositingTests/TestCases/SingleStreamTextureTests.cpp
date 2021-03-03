@@ -408,7 +408,7 @@ namespace ramses_internal
             TestApplicationSurfaceId surfaceId2 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId2, streamTextureSourceId);
 
-            UNUSED(surfaceId2)
+            UNUSED(surfaceId2);
 
             // The embedded compositor sends a wl_resource_post_error to the client, for the second
             // ivi_application_surface_create. This terminates the wayland display connection of the client to the
@@ -430,7 +430,7 @@ namespace ramses_internal
             TestApplicationSurfaceId surfaceId2 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
             testFramework.sendCreateIVISurfaceToTestApplication(surfaceId2, streamTextureSourceId);
 
-            UNUSED(surfaceId1)
+            UNUSED(surfaceId1);
 
             // There was a bug where the update of the second surface caused crash in the embedded compositor.
             // Both surfaces were registered with the same ivi-id. When the second surface has done an update, the first surface was found for compositing

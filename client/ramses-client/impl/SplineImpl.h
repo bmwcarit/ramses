@@ -28,7 +28,7 @@ namespace ramses
     {
     public:
         explicit SplineImpl(AnimationSystemImpl& animationSystem, ERamsesObjectType type, const char* name);
-        virtual ~SplineImpl();
+        virtual ~SplineImpl() override;
 
         void             initializeFrameworkData(ramses_internal::EInterpolationType interpolationType, ramses_internal::EDataTypeID dataTypeID);
         virtual void     deinitializeFrameworkData() override;

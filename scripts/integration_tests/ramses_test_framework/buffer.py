@@ -54,7 +54,7 @@ class BufferWatcher(object):
         self.watchCount = 0
 
     def start_watch(self):
-        #unique id for each start_watch
+        # unique id for each start_watch
         self.watchCount += 1
         self.watchStartPositions[self.watchCount] = self.buffer.get_length()
         return self.watchCount
@@ -102,7 +102,7 @@ class BufferWatcher(object):
             log.error("Cannot wait! Nor timeout or msg given.")
             return False
 
-        #check data in buffer that is available until now
+        # check data in buffer that is available until now
         nextLinePos = self.buffer.get_length()
         for i in range(self.watchStartPositions[watch_id], nextLinePos):
             if not self.is_active(watch_id):
@@ -115,7 +115,7 @@ class BufferWatcher(object):
                     timer.cancel()
                 return True
 
-        #wait for new data
+        # wait for new data
         while self.is_active(watch_id):
             bufferSize = self.buffer.get_length()
             if nextLinePos >= bufferSize:
@@ -131,7 +131,3 @@ class BufferWatcher(object):
                     nextLinePos += 1
         log.warning("Timeout ({} seconds) waiting for msg:\'{}\'".format(str(timeout), msg))
         return False
-
-
-
-

@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererCommands/ShowFrameProfiler.h"
-#include "Ramsh/RamshInput.h"
 #include "RendererLib/FrameProfileRenderer.h"
 #include "Utils/LogMacros.h"
 
@@ -21,7 +20,7 @@ namespace ramses_internal
         registerKeyword("fp");
     }
 
-    Bool ShowFrameProfiler::executeInput(const RamshInput& input)
+    Bool ShowFrameProfiler::executeInput(const std::vector<std::string>& input)
     {
         const uint32_t numArgStrings = static_cast<uint32_t>(input.size());
         if (numArgStrings < 1)

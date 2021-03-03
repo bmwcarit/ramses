@@ -7,12 +7,9 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_Windows_WGL_4_2_core/Platform_Windows_WGL_4_2_core.h"
-
 #include "Context_WGL/Context_WGL.h"
 #include "Device_GL/Device_GL.h"
-
-#include "Utils/LogMacros.h"
-
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

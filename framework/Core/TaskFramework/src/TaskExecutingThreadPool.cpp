@@ -41,7 +41,7 @@ namespace ramses_internal
 
             for (UInt16 index = 0; index < threadCount; ++index)
             {
-                m_threads.push_back(std::unique_ptr<TaskExecutingThread>(new TaskExecutingThread(index, threadAliveHandler)));
+                m_threads.push_back(std::make_unique<TaskExecutingThread>(threadAliveHandler));
             }
         }
     }

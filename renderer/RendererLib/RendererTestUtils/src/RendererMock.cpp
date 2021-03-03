@@ -54,7 +54,8 @@ void RendererMockWithMockDisplay<MOCK_TYPE>::createDisplayContext(const DisplayC
     EXPECT_CALL(*displayController, getDisplayBuffer()).Times(AnyNumber());
     EXPECT_CALL(*displayController, getRenderBackend()).Times(AnyNumber());
     EXPECT_CALL(*displayController, getEmbeddedCompositingManager()).Times(AnyNumber());
-    EXPECT_CALL(renderBackend->surfaceMock, disable()).Times(AtMost(1));
+    EXPECT_CALL(renderBackend->surfaceMock, disable()).Times(AtMost(1)).WillRepeatedly(Return(true));
+    EXPECT_CALL(renderBackend->surfaceMock, enable()).Times(AtMost(1)).WillRepeatedly(Return(true));
     ON_CALL(*displayController, getRenderBackend()).WillByDefault(ReturnRef(*renderBackend));
     ON_CALL(*displayController, getEmbeddedCompositingManager()).WillByDefault(ReturnRef(*embeddedCompositingManager));
 
@@ -86,6 +87,13 @@ void RendererMockWithMockDisplay<MOCK_TYPE>::markBufferWithSceneAsModified(Scene
 {
     Renderer::markBufferWithSceneAsModified(sceneId);  // NOLINT clang-tidy: We really mean to call into Renderer
     RendererMock::markBufferWithSceneAsModified(sceneId);
+}
+
+template <template<typename> class MOCK_TYPE>
+void ramses_internal::RendererMockWithMockDisplay<MOCK_TYPE>::setClearFlags(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags)
+{
+    Renderer::setClearFlags(displayHandle, bufferDeviceHandle, clearFlags);  // NOLINT clang-tidy: We really mean to call into Renderer
+    RendererMock::setClearFlags(displayHandle, bufferDeviceHandle, clearFlags);
 }
 
 template <template<typename> class MOCK_TYPE>

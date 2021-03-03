@@ -27,7 +27,7 @@ namespace ramses_internal
     {
     public:
         RenderBackendMock();
-        virtual ~RenderBackendMock();
+        virtual ~RenderBackendMock() override;
         MOCK_METHOD(ramses_internal::ISurface&, getSurface, (), (const, override));
         MOCK_METHOD(ramses_internal::IDevice&, getDevice, (), (const, override));
         MOCK_METHOD(ramses_internal::IEmbeddedCompositor&, getEmbeddedCompositor, (), (const, override));

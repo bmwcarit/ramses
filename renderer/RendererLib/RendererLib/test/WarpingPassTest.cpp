@@ -10,6 +10,7 @@
 
 #include "DeviceMock.h"
 #include "RendererLib/WarpingMeshData.h"
+#include "gmock/gmock.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -53,8 +54,8 @@ TEST_F(AWarpingPass, ValidRenderBackendCallsOnExecute)
     EXPECT_CALL(device, activateShader(Ne(DeviceResourceHandle::Invalid())));
 
     EXPECT_CALL(device, activateTexture(inputColorBuffer, Ne(DataFieldHandle::Invalid())));
-    const UInt32 isotropicFilteringLevel = 1;
-    EXPECT_CALL(device, setTextureSampling(Ne(DataFieldHandle::Invalid()), EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp, ESamplingMethod::Linear, ESamplingMethod::Linear, isotropicFilteringLevel));
+    const TextureSamplerStates expectedSamplerStates(EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp, ESamplingMethod::Linear, ESamplingMethod::Linear, 1u);
+    EXPECT_CALL(device, activateTextureSamplerObject(Property(&TextureSamplerStates::hash, Eq(expectedSamplerStates.hash())), Ne(DataFieldHandle::Invalid())));
 
     EXPECT_CALL(device, activateIndexBuffer(Ne(DeviceResourceHandle::Invalid())));
     EXPECT_CALL(device, activateVertexBuffer(Ne(DeviceResourceHandle::Invalid()), Ne(DataFieldHandle::Invalid()), 0u, 0u, _, 0u, 0u)).Times(2);

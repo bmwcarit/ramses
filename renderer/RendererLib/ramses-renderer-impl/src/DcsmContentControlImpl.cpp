@@ -96,10 +96,10 @@ namespace ramses
         LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:requestContentReady: content " << contentID << " timeOut " << timeOut << " (timeNow=" << m_timeStampNow << ")");
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: cannot set state of unknown content");
+            return addErrorEntry("DcsmContentControl:requestContentReady: cannot set state of unknown content");
 
         if (contentIt->second.contentType == ETechnicalContentType::WaylandIviSurfaceID)
-            return addErrorEntry("DcsmContentControl: Content of type WaylandIviSurfaceID can currently not be controlled with DcsmContentControl, use DcsmConsumer directly");
+            return addErrorEntry("DcsmContentControl:requestContentReady: Content of type WaylandIviSurfaceID can currently not be controlled with DcsmContentControl, use DcsmConsumer directly");
 
         auto& contentInfo = contentIt->second;
         const ContentState currState = determineCurrentContentState(contentID);
@@ -132,10 +132,10 @@ namespace ramses
         LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:showContent: content " << contentID << " timing <" << timingInfo.startTime << ";" << timingInfo.finishTime << ">");
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: cannot set state of unknown content");
+            return addErrorEntry("DcsmContentControl:showContent: cannot set state of unknown content");
 
         if (contentIt->second.contentType == ETechnicalContentType::WaylandIviSurfaceID)
-            return addErrorEntry("DcsmContentControl: Content of type WaylandIviSurfaceID can currently not be controlled with DcsmContentControl, use DcsmConsumer directly");
+            return addErrorEntry("DcsmContentControl:showContent: Content of type WaylandIviSurfaceID can currently not be controlled with DcsmContentControl, use DcsmConsumer directly");
 
         if (contentIt->second.dcsmState != ContentDcsmState::Ready)
             return addErrorEntry("DcsmContentControl:showContent: cannot show content if it is not ready from Dcsm provider side");
@@ -151,7 +151,7 @@ namespace ramses
             CHECK_RETURN_ERR(m_dcsmConsumer.contentStateChange(contentID, EDcsmState::Shown, timingInfo));
             contentIt->second.dcsmState = ContentDcsmState::Shown;
 
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: scheduling content" << contentID << "'s scene state change to Rendered at TS " << timingInfo.startTime);
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:showContent: scheduling content" << contentID << "'s scene state change to Rendered at TS " << timingInfo.startTime);
             m_pendingSceneStateChangeCommands[{ contentID, false }] = { timingInfo.startTime, getSceneAssociatedWithContent(contentID), RendererSceneState::Rendered };
             break;
         case ContentState::Invalid:
@@ -167,7 +167,7 @@ namespace ramses
         LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:hideContent: content " << contentID << " timing <" << timingInfo.startTime << ";" << timingInfo.finishTime << ">");
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: cannot set state of unknown content");
+            return addErrorEntry("DcsmContentControl:hideContent: cannot set state of unknown content");
 
         if (contentIt->second.contentType == ETechnicalContentType::WaylandIviSurfaceID)
             return addErrorEntry("DcsmContentControl: Content of type WaylandIviSurfaceID can currently not be controlled with DcsmContentControl, use DcsmConsumer directly");
@@ -197,10 +197,10 @@ namespace ramses
         LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:releaseContent: content " << contentID << " timing <" << timingInfo.startTime << ";" << timingInfo.finishTime << ">");
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: cannot set state of unknown content");
+            return addErrorEntry("DcsmContentControl:releaseContent: cannot set state of unknown content");
 
         if (contentIt->second.contentType == ETechnicalContentType::WaylandIviSurfaceID)
-            return addErrorEntry("DcsmContentControl: Content of type WaylandIviSurfaceID can currently not be controlled with DcsmContentControl, use DcsmConsumer directly");
+            return addErrorEntry("DcsmContentControl:releaseContent: Content of type WaylandIviSurfaceID can currently not be controlled with DcsmContentControl, use DcsmConsumer directly");
 
         const ContentState lastState = determineCurrentContentState(contentID);
         CHECK_RETURN_ERR(m_dcsmConsumer.contentStateChange(contentID, EDcsmState::Assigned, timingInfo));
@@ -221,7 +221,7 @@ namespace ramses
         LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:setCategoryInfo: category " << categoryId << ", " << categoryInfo << " timing <" << timingInfo.startTime << ";" << timingInfo.finishTime << ">");
         auto it = m_categories.find(categoryId);
         if (it == m_categories.end())
-            return addErrorEntry("DcsmContentControl: cannot set info of unknown category");
+            return addErrorEntry("DcsmContentControl:setCategoryInfo: cannot set info of unknown category");
 
         status_t combinedStat = StatusOK;
         for (const auto content : it->second.assignedContentIds)
@@ -229,7 +229,7 @@ namespace ramses
             const auto stat = m_dcsmConsumer.contentSizeChange(content, categoryInfo, timingInfo);
             if (stat != StatusOK)
             {
-                LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: failed to set content size on Dcsm consumer for content " << content);
+                LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:setCategoryInfo: failed to set content size on Dcsm consumer for content " << content);
                 combinedStat = stat;
             }
         }
@@ -246,10 +246,10 @@ namespace ramses
         LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:acceptStopOffer: content " << contentID << " timing <" << timingInfo.startTime << ";" << timingInfo.finishTime << ">");
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: cannot set accept stop offer of unknown content");
+            return addErrorEntry("DcsmContentControl:acceptStopOffer: cannot set accept stop offer of unknown content");
 
         if (contentIt->second.contentType == ETechnicalContentType::WaylandIviSurfaceID)
-            return addErrorEntry("DcsmContentControl: Content of type WaylandIviSurfaceID can currently not be controlled with DcsmContentControl, use DcsmConsumer directly");
+            return addErrorEntry("DcsmContentControl:acceptStopOffer: Content of type WaylandIviSurfaceID can currently not be controlled with DcsmContentControl, use DcsmConsumer directly");
 
         const auto status = m_dcsmConsumer.acceptStopOffer(contentID, timingInfo);
         if (status != StatusOK)
@@ -273,14 +273,14 @@ namespace ramses
 
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: cannot assign unknown content");
+            return addErrorEntry("DcsmContentControl:assignContentToDisplayBuffer: cannot assign unknown content");
 
         if (contentIt->second.contentType == ETechnicalContentType::WaylandIviSurfaceID)
-            return addErrorEntry("DcsmContentControl: Content of type WaylandIviSurfaceID can currently not be controlled with DcsmContentControl, use DcsmConsumer directly");
+            return addErrorEntry("DcsmContentControl:assignContentToDisplayBuffer: Content of type WaylandIviSurfaceID can currently not be controlled with DcsmContentControl, use DcsmConsumer directly");
 
         const auto sceneId = getSceneAssociatedWithContent(contentID);
         if (!sceneId.isValid() || (contentIt->second.dcsmState != ContentDcsmState::Ready && contentIt->second.dcsmState != ContentDcsmState::Shown))
-            return addErrorEntry("DcsmContentControl: content must be ready (at least reported as ready from DCSM provider) in order to be able to assign it to a display buffer");
+            return addErrorEntry("DcsmContentControl:assignContentToDisplayBuffer: content must be ready (at least reported as ready from DCSM provider) in order to be able to assign it to a display buffer");
         // Remember sceneId to displaybuffer mapping
         const auto& it = m_contents.find(contentID);
         if (it != m_contents.end())
@@ -298,14 +298,14 @@ namespace ramses
 
         const auto contentIt = m_contents.find(consumerContentID);
         if (contentIt == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: failed to link offscreen buffer, consumer content unknown.");
+            return addErrorEntry("DcsmContentControl:linkOffscreenBuffer: failed to link offscreen buffer, consumer content unknown.");
 
         if (contentIt->second.contentType == ETechnicalContentType::WaylandIviSurfaceID)
-            return addErrorEntry("DcsmContentControl: Linking offscreen buffer cannot be used with content of type WaylandIviSurfaceID");
+            return addErrorEntry("DcsmContentControl:linkOffscreenBuffer: Linking offscreen buffer cannot be used with content of type WaylandIviSurfaceID");
 
         const auto consumerSceneId = getSceneAssociatedWithContent(consumerContentID);
         if (!consumerSceneId.isValid() || (contentIt->second.dcsmState != ContentDcsmState::Ready && contentIt->second.dcsmState != ContentDcsmState::Shown))
-            return addErrorEntry("DcsmContentControl: failed to link offscreen buffer, consumer content's scene unknown. Make content ready at least once before linking.");
+            return addErrorEntry("DcsmContentControl:linkOffscreenBuffer: failed to link offscreen buffer, consumer content's scene unknown. Make content ready at least once before linking.");
 
         return m_sceneControl.linkOffscreenBuffer(offscreenBufferId, consumerSceneId, consumerId);
     }
@@ -318,31 +318,31 @@ namespace ramses
         // check consumer validity
         const auto consumerContentIt = m_contents.find(consumerContentID);
         if (consumerContentIt == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: failed to link content, consumer content unknown.");
+            return addErrorEntry("DcsmContentControl:linkContentToTextureConsumer: failed to link content, consumer content unknown.");
 
         const auto consumerSceneId = getSceneAssociatedWithContent(consumerContentID);
         if (!consumerSceneId.isValid() || (consumerContentIt->second.dcsmState != ContentDcsmState::Ready && consumerContentIt->second.dcsmState != ContentDcsmState::Shown))
-            return addErrorEntry("DcsmContentControl: failed to link content, consumer content's scene unknown. Make content ready at least once before linking.");
+            return addErrorEntry("DcsmContentControl:linkContentToTextureConsumer: failed to link content, consumer content's scene unknown. Make content ready at least once before linking.");
 
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: failed to link content, content unknown.");
+            return addErrorEntry("DcsmContentControl:linkContentToTextureConsumer: failed to link content, content unknown.");
 
         if (contentIt->second.contentType == ETechnicalContentType::RamsesSceneID)
         {
             if (contentIt->second.dcsmState != ContentDcsmState::Ready && contentIt->second.dcsmState != ContentDcsmState::Shown)
-                return addErrorEntry("DcsmContentControl: failed to link content, content must be ready to link to a texture consumer");
+                return addErrorEntry("DcsmContentControl:linkContentToTextureConsumer: failed to link content, content must be ready to link to a texture consumer");
 
             // displaybuffer must have been assigned before
             const displayBufferId_t previouslyAssignedOB = contentIt->second.displayBufferAssignment;
             if (!previouslyAssignedOB.isValid())
             {
-                return addErrorEntry("DcsmContentControl: failed to link content, contentid not assigned to an offscreenbuffer");
+                return addErrorEntry("DcsmContentControl:linkContentToTextureConsumer: failed to link content, contentid not assigned to an offscreenbuffer");
             }
             return m_sceneControl.linkOffscreenBuffer(previouslyAssignedOB, consumerSceneId, consumerId);
         }
 
-        return addErrorEntry("DcsmContentControl: Cannot link content of unknown type");
+        return addErrorEntry("DcsmContentControl:linkContentToTextureConsumer: Cannot link content of unknown type");
     }
 
 
@@ -353,21 +353,21 @@ namespace ramses
 
         const auto contentItProvider = m_contents.find(providerContentID);
         if (contentItProvider == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: failed to link data, provider content unknown.");
+            return addErrorEntry("DcsmContentControl:linkData: failed to link data, provider content unknown.");
         const auto contentItConsumer = m_contents.find(consumerContentID);
         if (contentItConsumer == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: failed to link data, consumer content unknown.");
+            return addErrorEntry("DcsmContentControl:linkData: failed to link data, consumer content unknown.");
 
         if (contentItProvider->second.contentType == ETechnicalContentType::WaylandIviSurfaceID
                 || contentItConsumer->second.contentType == ETechnicalContentType::WaylandIviSurfaceID)
-            return addErrorEntry("DcsmContentControl: Data linking cannot be used with content of type WaylandIviSurfaceID");
+            return addErrorEntry("DcsmContentControl:linkData: Data linking cannot be used with content of type WaylandIviSurfaceID");
 
         const auto providerSceneId = getSceneAssociatedWithContent(providerContentID);
         const auto consumerSceneId = getSceneAssociatedWithContent(consumerContentID);
         if (!providerSceneId.isValid())
-            return addErrorEntry("DcsmContentControl: failed to link data, provider content's scene unknown. Make content ready at least once before linking.");
+            return addErrorEntry("DcsmContentControl:linkData: failed to link data, provider content's scene unknown. Make content ready at least once before linking.");
         if (!consumerSceneId.isValid())
-            return addErrorEntry("DcsmContentControl: failed to link data, consumer content's scene unknown. Make content ready at least once before linking.");
+            return addErrorEntry("DcsmContentControl:linkData: failed to link data, consumer content's scene unknown. Make content ready at least once before linking.");
 
         return m_sceneControl.linkData(providerSceneId, providerId, consumerSceneId, consumerId);
     }
@@ -378,14 +378,14 @@ namespace ramses
 
         const auto contentItConsumer = m_contents.find(consumerContentID);
         if (contentItConsumer == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: failed to unlink data, consumer content unknown.");
+            return addErrorEntry("DcsmContentControl:unlinkData: failed to unlink data, consumer content unknown.");
 
         if (contentItConsumer->second.contentType == ETechnicalContentType::WaylandIviSurfaceID)
-            return addErrorEntry("DcsmContentControl: Data linking cannot be used with content of type WaylandIviSurfaceID");
+            return addErrorEntry("DcsmContentControl:unlinkData: Data linking cannot be used with content of type WaylandIviSurfaceID");
 
         const auto consumerSceneId = getSceneAssociatedWithContent(consumerContentID);
         if (!consumerSceneId.isValid())
-            return addErrorEntry("DcsmContentControl: failed to unlink data, consumer content's scene unknown.");
+            return addErrorEntry("DcsmContentControl:unlinkData: failed to unlink data, consumer content's scene unknown.");
 
         return m_sceneControl.unlinkData(consumerSceneId, consumerId);
     }
@@ -397,14 +397,14 @@ namespace ramses
 
         const auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.cend())
-            return addErrorEntry("DcsmContentControl: failed to handle pick event, content unknown.");
+            return addErrorEntry("DcsmContentControl:handlePickEvent: failed to handle pick event, content unknown.");
 
         if (contentIt->second.contentType == ETechnicalContentType::WaylandIviSurfaceID)
-            return addErrorEntry("DcsmContentControl: Pick event handling cannot be used with content of type WaylandIviSurfaceID");
+            return addErrorEntry("DcsmContentControl:handlePickEvent: Pick event handling cannot be used with content of type WaylandIviSurfaceID");
 
         const auto sceneId = getSceneAssociatedWithContent(contentID);
         if (!sceneId.isValid())
-            return addErrorEntry("DcsmContentControl: failed to handle pick event, content's scene unknown. Make content ready at least once before picking");
+            return addErrorEntry("DcsmContentControl:handlePickEvent: failed to handle pick event, content's scene unknown. Make content ready at least once before picking");
 
         return m_sceneControl.handlePickEvent(sceneId, bufferNormalizedCoordX, bufferNormalizedCoordY);
     }
@@ -445,19 +445,19 @@ namespace ramses
             const auto contentIt = m_contents.find(contentID);
             if (contentIt != m_contents.cend() && contentIt->second.category != category)
             {
-                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content offered " << contentID << " is already assigned to another category " << contentIt->second.category
+                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentOffered: content offered " << contentID << " is already assigned to another category " << contentIt->second.category
                     << ", now requesting category " << category << ". Ignoring, stop offer first before changing category.");
                 return;
             }
 
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: assigning content " << contentID << " to category " << category);
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentOffered: assigning content " << contentID << " to category " << category);
             auto& catInfo = it->second;
             CategoryInfoUpdate update;
             update.impl.setCategoryInfo(catInfo.categoryInfo);
             auto status = m_dcsmConsumer.assignContentToConsumer(contentID, update);
             if (status != ramses::StatusOK)
             {
-                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: could not assign content " << contentID << " to category " << category);
+                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentOffered: could not assign content " << contentID << " to category " << category);
                 return;
             }
             catInfo.assignedContentIds.insert(contentID);
@@ -467,18 +467,18 @@ namespace ramses
         }
         else
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: not interested in content offer " << contentID << " for category " << category);
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentOffered: not interested in content offer " << contentID << " for category " << category);
             m_offeredContentsForOtherCategories.push_back({category, contentID, contentType});
         }
     }
 
     void DcsmContentControlImpl::contentDescription(ContentID contentID, TechnicalContentDescriptor contentDescriptor)
     {
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received DCSM content description for content " << contentID << " content descriptor " << contentDescriptor);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentDescription: received DCSM content description for content " << contentID << " content descriptor " << contentDescriptor);
         auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << contentID << " not assigned, ignoring content description.");
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentDescription: content " << contentID << " not assigned, ignoring content description.");
         }
         else
         {
@@ -509,7 +509,7 @@ namespace ramses
                 }
                 break;
             case ETechnicalContentType::WaylandIviSurfaceID:
-                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << contentID << " has content type WaylandIviSurfaceID, this content type can currently not controlled with DcsmContentControl");
+                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentDescription: content " << contentID << " has content type WaylandIviSurfaceID, this content type can currently not controlled with DcsmContentControl");
                 break;
             }
         }
@@ -517,11 +517,11 @@ namespace ramses
 
     void DcsmContentControlImpl::contentReady(ContentID contentID)
     {
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received DCSM event CONTENT READY for content " << contentID);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentReady: received DCSM event CONTENT READY for content " << contentID);
         auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << contentID << " not assigned, ignoring state change.");
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentReady: content " << contentID << " not assigned, ignoring state change.");
         }
         else
         {
@@ -533,18 +533,18 @@ namespace ramses
                 handleContentStateChange(contentID, lastState);
             }
             else
-                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << contentID << " not requested to be ready or released after request, ignoring state change.");
+                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentReady: content " << contentID << " not requested to be ready or released after request, ignoring state change.");
         }
     }
 
     void DcsmContentControlImpl::contentStopOfferRequest(ContentID contentID)
     {
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received DCSM event CONTENT STOP OFFER REQUEST for content " << contentID);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentStopOfferRequest: received DCSM event CONTENT STOP OFFER REQUEST for content " << contentID);
         auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
         {
             // no need to confirm, because not assigned
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << contentID << " not assigned, ignoring stopofferrequest.");
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentStopOfferRequest: content " << contentID << " not assigned, ignoring stopofferrequest.");
             auto itEnd = std::remove_if(m_offeredContentsForOtherCategories.begin(), m_offeredContentsForOtherCategories.end(), [&](const OfferedContents& offer)
             {
                 return (offer.contentID == contentID);
@@ -557,11 +557,11 @@ namespace ramses
 
     void DcsmContentControlImpl::forceContentOfferStopped(ContentID contentID)
     {
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received DCSM event FORCE CONTENT OFFER STOPPED for content " << contentID);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:forceContentOfferStopped: received DCSM event FORCE CONTENT OFFER STOPPED for content " << contentID);
         auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << contentID << " not assigned, nothing to do.");
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:forceContentOfferStopped: content " << contentID << " not assigned, nothing to do.");
             auto itEnd = std::remove_if(m_offeredContentsForOtherCategories.begin(), m_offeredContentsForOtherCategories.end(), [&](const OfferedContents& offer)
                 {
                     return (offer.contentID == contentID);
@@ -570,22 +570,19 @@ namespace ramses
         }
         else
         {
+            requestSceneState(contentID, RendererSceneState::Available);
             removeContent(contentID);
-            for (const auto& sceneIt : m_scenes)
-                if (sceneIt.second.associatedContents.count(contentID) > 0)
-                    if (m_sceneControl.setSceneState(sceneIt.first, RendererSceneState::Available) != StatusOK)
-                        LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: failed to set scene state " << RendererSceneState::Available << " to scene " << sceneIt.first << " content " << contentID);
             m_pendingEvents.push_back({ EventType::ContentNotAvailable, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK });
         }
     }
 
     void DcsmContentControlImpl::contentMetadataUpdated(ContentID contentID, const DcsmMetadataUpdate& metadataUpdate)
     {
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received DCSM event UPDATE CONTENT METADATA for content " << contentID);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentMetadataUpdated: received DCSM event UPDATE CONTENT METADATA for content " << contentID);
         auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << contentID << " not assigned, nothing to do.");
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentMetadataUpdated: content " << contentID << " not assigned, nothing to do.");
         }
         else
             m_pendingEvents.push_back({ EventType::ContentMetadataUpdate, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK, metadataUpdate.impl.getMetadata() });
@@ -593,7 +590,7 @@ namespace ramses
 
     void DcsmContentControlImpl::sceneStateChanged(sceneId_t sceneId, RendererSceneState state)
     {
-        LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received scene {} state changed event {}", sceneId, state);
+        LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:sceneStateChanged: received scene {} state changed event {}", sceneId, state);
 
         // first collect current state of all associated contents to be used as 'last' state when checking if changed
         std::unordered_map<ContentID, ContentState> lastStates;
@@ -616,13 +613,13 @@ namespace ramses
 
     void DcsmContentControlImpl::offscreenBufferLinked(displayBufferId_t offscreenBufferId, sceneId_t consumerScene, dataConsumerId_t consumerId, bool success)
     {
-        LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received offscreen buffer {} linked event to scene consumer {} consumerId {}, success={}.",
+        LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:offscreenBufferLinked: received offscreen buffer {} linked event to scene consumer {} consumerId {}, success={}.",
             offscreenBufferId, consumerScene, consumerId, success);
 
         auto contents = findContentsAssociatingScene(consumerScene);
         if (contents.empty())
         {
-            LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received offscreen buffer linked event but cannot find corresponding consumer content for scene {}"
+            LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:offscreenBufferLinked: received offscreen buffer linked event but cannot find corresponding consumer content for scene {}"
                 " this can happen if content or its scene became unavailable after offscreen buffer linked processed."
                 " Event will still be emitted but with content ID set to invalid value.", consumerScene);
             contents.push_back(ContentID::Invalid());
@@ -631,7 +628,7 @@ namespace ramses
         {
             LOG_INFO_F(ramses_internal::CONTEXT_RENDERER, [&](ramses_internal::StringOutputStream& sos)
             {
-                sos << "DcsmContentControl: received offscreen buffer linked event for scene " << consumerScene << " which is associated with multiple contents:";
+                sos << "DcsmContentControl:offscreenBufferLinked: received offscreen buffer linked event for scene " << consumerScene << " which is associated with multiple contents:";
                 for (const auto c : contents)
                     sos << "  " << c;
                 sos << ". Event will be emitted for the first one only.";
@@ -639,7 +636,7 @@ namespace ramses
         }
 
         const auto consumerContent = contents.front();
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: offscreen buffer linked - offscreen buffer " << offscreenBufferId << " to consumer content " << consumerContent << " dataId " << consumerId);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:offscreenBufferLinked: offscreen buffer linked - offscreen buffer " << offscreenBufferId << " to consumer content " << consumerContent << " dataId " << consumerId);
         Event evt{ EventType::OffscreenBufferLinked };
         evt.displayBuffer = offscreenBufferId;
         evt.consumerContentID = consumerContent;
@@ -653,7 +650,7 @@ namespace ramses
         auto contentsProvider = findContentsAssociatingScene(providerScene);
         if (contentsProvider.empty())
         {
-            LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received data linked event but cannot find corresponding provider content for provider scene {},"
+            LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataLinked: received data linked event but cannot find corresponding provider content for provider scene {},"
                 " this can happen if content or its scene became unavailable after data linked processed. Event will still be emitted but with content ID set to invalid value.", providerScene);
             contentsProvider.push_back(ContentID::Invalid());
         }
@@ -661,7 +658,7 @@ namespace ramses
         {
             LOG_INFO_F(ramses_internal::CONTEXT_RENDERER, [&](ramses_internal::StringOutputStream& sos)
             {
-                sos << "DcsmContentControl: received data linked event for provider scene " << providerScene << " which is associated with multiple contents:";
+                sos << "DcsmContentControl:dataLinked: received data linked event for provider scene " << providerScene << " which is associated with multiple contents:";
                 for (const auto c : contentsProvider)
                     sos << "  " << c;
                 sos << ". Event will be emitted for the first one only.";
@@ -671,7 +668,7 @@ namespace ramses
         auto contentsConsumer = findContentsAssociatingScene(consumerScene);
         if (contentsConsumer.empty())
         {
-            LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received data linked event but cannot find corresponding consumer content for consumer scene {},"
+            LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataLinked: received data linked event but cannot find corresponding consumer content for consumer scene {},"
                 " this can happen if content or its scene became unavailable after data linked processed. Event will still be emitted but with content ID set to invalid value.", consumerScene);
             contentsConsumer.push_back(ContentID::Invalid());
         }
@@ -679,7 +676,7 @@ namespace ramses
         {
             LOG_INFO_F(ramses_internal::CONTEXT_RENDERER, [&](ramses_internal::StringOutputStream& sos)
             {
-                sos << "DcsmContentControl: received data linked event for consumer scene " << consumerScene << " which is associated with multiple contents:";
+                sos << "DcsmContentControl:dataLinked: received data linked event for consumer scene " << consumerScene << " which is associated with multiple contents:";
                 for (const auto c : contentsConsumer)
                     sos << "  " << c;
                 sos << ". Event will be emitted for the first one only.";
@@ -689,7 +686,7 @@ namespace ramses
         const ContentID providerContent = contentsProvider.front();
         const ContentID consumerContent = contentsConsumer.front();
 
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: data linked - provider content " << providerContent << " dataId " << providerId
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataLinked: data linked - provider content " << providerContent << " dataId " << providerId
             << " to consumer content " << consumerContent << " dataId " << consumerId);
         Event evt{ EventType::DataLinked };
         evt.providerContentID = providerContent;
@@ -705,7 +702,7 @@ namespace ramses
         auto contentsConsumer = findContentsAssociatingScene(consumerScene);
         if (contentsConsumer.empty())
         {
-            LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received data unlinked event but cannot find corresponding consumer content for consumer scene {},"
+            LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataUnlinked: received data unlinked event but cannot find corresponding consumer content for consumer scene {},"
                 " this can happen if content or its scene became unavailable after data unlinked processed. Event will still be emitted but with content ID set to invalid value.", consumerScene);
             contentsConsumer.push_back(ContentID::Invalid());
         }
@@ -713,7 +710,7 @@ namespace ramses
         {
             LOG_INFO_F(ramses_internal::CONTEXT_RENDERER, [&](ramses_internal::StringOutputStream& sos)
             {
-                sos << "DcsmContentControl: received data unlinked event for consumer scene " << consumerScene << " which is associated with multiple contents:";
+                sos << "DcsmContentControl:dataUnlinked: received data unlinked event for consumer scene " << consumerScene << " which is associated with multiple contents:";
                 for (const auto c : contentsConsumer)
                     sos << "  " << c;
                 sos << ". Event will be emitted for the first one only.";
@@ -722,7 +719,7 @@ namespace ramses
 
         const ContentID consumerContent = contentsConsumer.front();
 
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: data unlinked - consumer content " << consumerContent << " dataId " << consumerId);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataUnlinked: data unlinked - consumer content " << consumerContent << " dataId " << consumerId);
         Event evt{ EventType::DataUnlinked };
         evt.consumerContentID = consumerContent;
         evt.consumerID = consumerId;
@@ -735,7 +732,7 @@ namespace ramses
         auto contents = findContentsAssociatingScene(scene);
         if (contents.empty())
         {
-            LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received objects picked event but cannot find corresponding content for scene {},"
+            LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:objectsPicked: received objects picked event but cannot find corresponding content for scene {},"
                 " this can happen if content or its scene became unavailable after objects picked processed. Event will still be emitted but with content ID set to invalid value.", scene);
             contents.push_back(ContentID::Invalid());
         }
@@ -743,14 +740,14 @@ namespace ramses
         {
             LOG_INFO_F(ramses_internal::CONTEXT_RENDERER, [&](ramses_internal::StringOutputStream& sos)
             {
-                sos << "DcsmContentControl: received " << pickedObjectsCount << " objects picked event for scene " << scene << " which is associated with multiple contents:";
+                sos << "DcsmContentControl:objectsPicked: received " << pickedObjectsCount << " objects picked event for scene " << scene << " which is associated with multiple contents:";
                 for (const auto c : contents)
                     sos << "  " << c;
                 sos << ". Event will be emitted for the first one only.";
             });
         }
         else
-            LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: {} objects picked, scene {}, content {}", pickedObjectsCount, scene, contents.front());
+            LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:objectsPicked: {} objects picked, scene {}, content {}", pickedObjectsCount, scene, contents.front());
 
         Event evt{ EventType::ObjectsPicked };
         evt.contentID = contents.front();
@@ -763,13 +760,13 @@ namespace ramses
         auto contents = findContentsAssociatingScene(sceneId);
         if (contents.empty())
         {
-            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received data provider created event but cannot find corresponding content for scene " << sceneId
+            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataProviderCreated: received data provider created event but cannot find corresponding content for scene " << sceneId
                 << " this can happen if content or its scene became unavailable after event processed.");
         }
 
         for (const auto content : contents)
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: data provider " << dataProviderId << " created in content " << content);
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataProviderCreated: data provider " << dataProviderId << " created in content " << content);
             Event evt{ EventType::DataProviderCreated };
             evt.providerContentID = content;
             evt.providerID = dataProviderId;
@@ -782,13 +779,13 @@ namespace ramses
         auto contents = findContentsAssociatingScene(sceneId);
         if (contents.empty())
         {
-            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received data provider destroyed event but cannot find corresponding content for scene " << sceneId
+            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataProviderDestroyed: received data provider destroyed event but cannot find corresponding content for scene " << sceneId
                 << " this can happen if content or its scene became unavailable after event processed.");
         }
 
         for (const auto content : contents)
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: data provider " << dataProviderId << " destroyed in content " << content);
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataProviderDestroyed: data provider " << dataProviderId << " destroyed in content " << content);
             Event evt{ EventType::DataProviderDestroyed };
             evt.providerContentID = content;
             evt.providerID = dataProviderId;
@@ -801,13 +798,13 @@ namespace ramses
         auto contents = findContentsAssociatingScene(sceneId);
         if (contents.empty())
         {
-            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received data consumer created event but cannot find corresponding content for scene " << sceneId
+            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataConsumerCreated: received data consumer created event but cannot find corresponding content for scene " << sceneId
                 << " this can happen if content or its scene became unavailable after event processed.");
         }
 
         for (const auto content : contents)
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: data consumer " << dataConsumerId << " created in content " << content);
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataConsumerCreated: data consumer " << dataConsumerId << " created in content " << content);
             Event evt{ EventType::DataConsumerCreated };
             evt.consumerContentID = content;
             evt.consumerID = dataConsumerId;
@@ -820,13 +817,13 @@ namespace ramses
         auto contents = findContentsAssociatingScene(sceneId);
         if (contents.empty())
         {
-            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received data consumer destroyed event but cannot find corresponding content for scene " << sceneId
+            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataConsumerDestroyed: received data consumer destroyed event but cannot find corresponding content for scene " << sceneId
                 << " this can happen if content or its scene became unavailable after event processed.");
         }
 
         for (const auto content : contents)
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: data consumer " << dataConsumerId << " destroyed in content " << content);
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dataConsumerDestroyed: data consumer " << dataConsumerId << " destroyed in content " << content);
             Event evt{ EventType::DataConsumerDestroyed };
             evt.consumerContentID = content;
             evt.consumerID = dataConsumerId;
@@ -839,13 +836,13 @@ namespace ramses
         auto contents = findContentsAssociatingScene(sceneId);
         if (contents.empty())
         {
-            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received scene flushed event but cannot find corresponding content for scene " << sceneId
+            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:sceneFlushed: received scene flushed event but cannot find corresponding content for scene " << sceneId
                 << " this can happen if content or its scene became unavailable after event processed.");
         }
 
         for (const auto content : contents)
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << content << " flushed with version " << sceneVersionTag);
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:sceneFlushed: content " << content << " flushed with version " << sceneVersionTag);
             Event evt{ EventType::ContentFlushed };
             evt.contentID = content;
             evt.version = sceneVersionTag;
@@ -894,13 +891,13 @@ namespace ramses
         auto contents = findContentsAssociatingScene(sceneId);
         if (contents.empty())
         {
-            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received scene expired event but cannot find corresponding content for scene " << sceneId
+            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:sceneExpired: received scene expired event but cannot find corresponding content for scene " << sceneId
                 << " this can happen if content or its scene became unavailable after event processed.");
         }
 
         for (const auto content : contents)
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << content << " expired");
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:sceneExpired: content " << content << " expired");
             Event evt{ EventType::ContentExpired };
             evt.contentID = content;
             m_pendingEvents.push_back(evt);
@@ -912,13 +909,13 @@ namespace ramses
         auto contents = findContentsAssociatingScene(sceneId);
         if (contents.empty())
         {
-            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received scene recovered from expiration event but cannot find corresponding content for scene " << sceneId
+            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:sceneRecoveredFromExpiration: received scene recovered from expiration event but cannot find corresponding content for scene " << sceneId
                 << " this can happen if content or its scene became unavailable after event processed.");
         }
 
         for (const auto content : contents)
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << content << " recovered from expiration");
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:sceneRecoveredFromExpiration: content " << content << " recovered from expiration");
             Event evt{ EventType::ContentRecoveredFromExpiration };
             evt.contentID = content;
             m_pendingEvents.push_back(evt);
@@ -927,7 +924,7 @@ namespace ramses
 
     void DcsmContentControlImpl::streamAvailabilityChanged(waylandIviSurfaceId_t streamId, bool available)
     {
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: stream " << streamId << " availability changed to " << available);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:streamAvailabilityChanged: stream " << streamId << " availability changed to " << available);
         Event evt{ EventType::StreamAvailable };
         evt.streamSource = streamId;
         evt.streamAvailable = available;
@@ -1070,16 +1067,16 @@ namespace ramses
                 const auto displayId = m_scenes[sceneId].display;
                 assert(displayId.isValid());
                 if (m_sceneControl.setSceneMapping(sceneId, displayId) != StatusOK)
-                    LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: failed to set scene mapping for scene " << sceneId);
+                    LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:goToConsolidatedDesiredSceneState: failed to set scene mapping for scene " << sceneId);
             }
 
             // make sure to go only one state at a time in direction of our target state
             RendererSceneState newState = reportedState == RendererSceneState::Ready ? consolidatedDesiredState : RendererSceneState::Ready;
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: requesting scene state change for scene " << sceneId << " to " << EnumToString(newState));
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:goToConsolidatedDesiredSceneState: requesting scene state change for scene " << sceneId << " to " << EnumToString(newState));
             if (m_sceneControl.setSceneState(sceneId, newState) == StatusOK)
                 sharedState.setRequestedState(newState);
             else
-                LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: failed to request state for scene " << sceneId << " to " << EnumToString(newState));
+                LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:goToConsolidatedDesiredSceneState: failed to request state for scene " << sceneId << " to " << EnumToString(newState));
         }
     }
 
@@ -1107,14 +1104,14 @@ namespace ramses
                 contentInfo.displayBufferAssignment = {};
             }
 
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << contentID << " state changed from " << ContentStateName(lastState) << " to " << ContentStateName(currState));
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:handleContentStateChange: content " << contentID << " state changed from " << ContentStateName(lastState) << " to " << ContentStateName(currState));
             m_pendingEvents.push_back({ EventType::ContentStateChanged, contentID, contentInfo.category, currState, lastState, DcsmContentControlEventResult::OK });
         }
     }
 
     void DcsmContentControlImpl::removeContent(ContentID contentID)
     {
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: removing content " << contentID << " and any pending commands associated with it");
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:removeContent: removing content " << contentID << " and any pending commands associated with it");
         m_contents.erase(contentID);
         for (auto& catIt : m_categories)
             catIt.second.assignedContentIds.erase(contentID);
@@ -1171,7 +1168,7 @@ namespace ramses
             auto& contentInfo = contentIt.second;
             if ((contentInfo.dcsmState == ContentDcsmState::ReadyRequested || contentInfo.dcsmState == ContentDcsmState::Ready) && m_timeStampNow > contentInfo.readyRequestTimeOut)
             {
-                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: ready request for content " << contentID << " timed out (timeoutTS=" << contentInfo.readyRequestTimeOut
+                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:processTimedOutRequests: ready request for content " << contentID << " timed out (timeoutTS=" << contentInfo.readyRequestTimeOut
                     << " nowTS=" << m_timeStampNow << "), releasing content. Request ready again for re-try.");
                 m_pendingEvents.push_back({ EventType::ContentStateChanged, contentID, Category{0}, ContentState::Ready, ContentState::Available, DcsmContentControlEventResult::TimedOut });
                 contentInfo.dcsmState = ContentDcsmState::Assigned;
@@ -1190,7 +1187,7 @@ namespace ramses
                     if (m_sceneControl.setSceneState(sceneId, sharedState.getReportedState()) == StatusOK)
                         sharedState.setRequestedState(sharedState.getReportedState());
                     else
-                        LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: failed to request state for scene " << sceneId << " to " << EnumToString(sharedState.getReportedState()));
+                        LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:processTimedOutRequests: failed to request state for scene " << sceneId << " to " << EnumToString(sharedState.getReportedState()));
                 }
 
                 releaseContent(contentID, { 0, 0 });
@@ -1219,11 +1216,11 @@ namespace ramses
 
     void DcsmContentControlImpl::contentEnableFocusRequest(ramses::ContentID contentID, int32_t focusRequest)
     {
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received DCSM event CONTENT ENABLE FOCUS REQUEST for content " << contentID);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentEnableFocusRequest: received DCSM event CONTENT ENABLE FOCUS REQUEST for content " << contentID);
         auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << contentID << " not assigned, ignoring request.");
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentEnableFocusRequest: content " << contentID << " not assigned, ignoring request.");
         }
         else
             m_pendingEvents.push_back({EventType::ContentEnableFocusRequest, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK, {}, {}, {}, {}, {}, {}, {}, {}, {},  focusRequest});
@@ -1231,11 +1228,11 @@ namespace ramses
 
     void DcsmContentControlImpl::contentDisableFocusRequest(ramses::ContentID contentID, int32_t focusRequest)
     {
-        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: received DCSM event CONTENT DISABLE FOCUS REQUEST for content " << contentID);
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentDisableFocusRequest: received DCSM event CONTENT DISABLE FOCUS REQUEST for content " << contentID);
         auto contentIt = m_contents.find(contentID);
         if (contentIt == m_contents.end())
         {
-            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl: content " << contentID << " not assigned, ignoring request.");
+            LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentDisableFocusRequest: content " << contentID << " not assigned, ignoring request.");
         }
         else
             m_pendingEvents.push_back({EventType::ContentDisableFocusRequest, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK, {}, {}, {}, {}, {}, {}, {}, {}, {},  focusRequest});

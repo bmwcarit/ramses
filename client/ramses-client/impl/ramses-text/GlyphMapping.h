@@ -14,7 +14,7 @@
 
 namespace ramses
 {
-    struct GlyphMapping
+    struct GlyphMapping final
     {
         // Violin: there is no working around this ref count, because glyphs
         // can be used multiple times in different strings, and someone needs

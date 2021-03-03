@@ -18,10 +18,8 @@ namespace ramses_internal
     // from scene's render states set by user must compare NOT equal
     // in order to initiate the device states.
 
-    struct DepthStencilState
+    struct StencilState
     {
-        EDepthFunc      m_depthFunc = EDepthFunc::NUMBER_OF_ELEMENTS;
-        EDepthWrite     m_depthWrite = EDepthWrite::NUMBER_OF_ELEMENTS;
         EStencilFunc    m_stencilFunc = EStencilFunc::NUMBER_OF_ELEMENTS;
         EStencilOp      m_stencilOpFail = EStencilOp::NUMBER_OF_ELEMENTS;
         EStencilOp      m_stencilOpDepthFail = EStencilOp::NUMBER_OF_ELEMENTS;
@@ -29,11 +27,9 @@ namespace ramses_internal
         UInt8           m_stencilMask = 0;
         UInt8           m_stencilRefValue = 0;
 
-        Bool operator!=(const DepthStencilState& other) const
+        Bool operator!=(const StencilState& other) const
         {
-            return m_depthFunc != other.m_depthFunc
-                || m_depthWrite != other.m_depthWrite
-                || m_stencilFunc != other.m_stencilFunc
+            return m_stencilFunc != other.m_stencilFunc
                 || m_stencilOpFail != other.m_stencilOpFail
                 || m_stencilOpDepthFail != other.m_stencilOpDepthFail
                 || m_stencilOpDepthPass != other.m_stencilOpDepthPass
@@ -42,46 +38,44 @@ namespace ramses_internal
         }
     };
 
-    // TODO Mohamed : merge into RasterizerState once caching fixed
     struct ScissorState
     {
         EScissorTest m_scissorTest = EScissorTest::NUMBER_OF_ELEMENTS;
         RenderState::ScissorRegion m_scissorRegion = {0, 0, 0, 0};
+
+        bool operator!=(const ScissorState& other) const
+        {
+            return m_scissorTest != other.m_scissorTest
+                || !(m_scissorRegion == other.m_scissorRegion);
+        }
+
     };
 
-    struct BlendState
+    struct BlendOperationsState
+    {
+        EBlendOperation m_blendOperationColor = EBlendOperation::NUMBER_OF_ELEMENTS;
+        EBlendOperation m_blendOperationAlpha = EBlendOperation::NUMBER_OF_ELEMENTS;
+
+        bool operator!=(const BlendOperationsState& other) const
+        {
+            return m_blendOperationColor != other.m_blendOperationColor
+                || m_blendOperationAlpha != other.m_blendOperationAlpha;
+        }
+    };
+
+    struct BlendFactorsState
     {
         EBlendFactor    m_blendFactorSrcColor = EBlendFactor::NUMBER_OF_ELEMENTS;
         EBlendFactor    m_blendFactorDstColor = EBlendFactor::NUMBER_OF_ELEMENTS;
         EBlendFactor    m_blendFactorSrcAlpha = EBlendFactor::NUMBER_OF_ELEMENTS;
         EBlendFactor    m_blendFactorDstAlpha = EBlendFactor::NUMBER_OF_ELEMENTS;
-        EBlendOperation m_blendOperationColor = EBlendOperation::NUMBER_OF_ELEMENTS;
-        EBlendOperation m_blendOperationAlpha = EBlendOperation::NUMBER_OF_ELEMENTS;
-        Vector4         m_blendColor = { 0.f, 0.f, 0.f, 0.f };
-        ColorWriteMask  m_colorWriteMask = 0;
 
-        Bool operator!=(const BlendState& other) const
+        bool operator!=(const BlendFactorsState& other) const
         {
             return m_blendFactorSrcColor != other.m_blendFactorSrcColor
                 || m_blendFactorDstColor != other.m_blendFactorDstColor
                 || m_blendFactorSrcAlpha != other.m_blendFactorSrcAlpha
-                || m_blendFactorDstAlpha != other.m_blendFactorDstAlpha
-                || m_blendOperationColor != other.m_blendOperationColor
-                || m_blendOperationAlpha != other.m_blendOperationAlpha
-                || m_blendColor != other.m_blendColor
-                || m_colorWriteMask != other.m_colorWriteMask;
-        }
-    };
-
-    struct RasterizerState
-    {
-        ECullMode       m_cullMode = ECullMode::NUMBER_OF_ELEMENTS;
-        EDrawMode       m_drawMode = EDrawMode::NUMBER_OF_ELEMENTS;
-
-        Bool operator!=(const RasterizerState& other) const
-        {
-            return m_cullMode != other.m_cullMode
-                || m_drawMode != other.m_drawMode;
+                || m_blendFactorDstAlpha != other.m_blendFactorDstAlpha;
         }
     };
 }

@@ -23,7 +23,7 @@ namespace ramses_internal
     {
     public:
         explicit EnqueueOnlyOneAtATimeQueue(ITaskQueue& nextQueue);
-        virtual ~EnqueueOnlyOneAtATimeQueue();
+        virtual ~EnqueueOnlyOneAtATimeQueue() override;
         virtual bool enqueue(ITask& Task) override;
         virtual void TaskFinished(ITask& Task) override;
         virtual void disableAcceptingTasksAfterExecutingCurrentQueue() override;

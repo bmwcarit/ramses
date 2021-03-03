@@ -14,20 +14,26 @@
 #include "RendererAPI/ISurface.h"
 #include "RendererAPI/IPlatform.h"
 #include "Resource/EffectResource.h"
-#include "Utils/LogMacros.h"
+#include "Watchdog/IThreadAliveNotifier.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "absl/algorithm/container.h"
 
 namespace ramses_internal
 {
-    AsyncEffectUploader::AsyncEffectUploader(IPlatform& platform, IRenderBackend& renderBackend) : m_platform(platform)
+    AsyncEffectUploader::AsyncEffectUploader(IPlatform& platform, IRenderBackend& renderBackend, IThreadAliveNotifier& notifier, int logPrefixID)
+        : m_platform(platform)
         , m_renderBackend(renderBackend)
-        , m_thread("R_EffectUpload")
+        , m_thread{ String{ fmt::format("R_EffUpload{}", logPrefixID) } }
+        , m_notifier(notifier)
+        , m_aliveIdentifier(notifier.registerThread())
+        , m_logPrefixID{ logPrefixID }
     {
     }
 
     AsyncEffectUploader::~AsyncEffectUploader()
     {
         assert(!m_thread.isRunning());
+        m_notifier.unregisterThread(m_aliveIdentifier);
     }
 
     bool AsyncEffectUploader::createResourceUploadRenderBackendAndStartThread()
@@ -41,6 +47,9 @@ namespace ramses_internal
         const auto success = m_creationSuccess.get_future().get();
         if (!success)
             m_thread.join();
+
+        // re-enable main context
+        m_renderBackend.getSurface().enable();
 
         return success;
     }
@@ -65,7 +74,10 @@ namespace ramses_internal
         EffectsRawResources effectsToUpload;
         {
             std::unique_lock<std::mutex> guard(m_mutex);
-            m_sleepConditionVar.wait(guard, [&]() { return !m_effectsToUpload.empty() || !m_effectsUploadedCache.empty() || isCancelRequested(); });
+            do
+                m_notifier.notifyAlive(m_aliveIdentifier);
+            while (!m_sleepConditionVar.wait_for(guard, m_notifier.calculateTimeout(),
+                [&]() { return !m_effectsToUpload.empty() || !m_effectsUploadedCache.empty() || isCancelRequested(); }));
 
             m_effectsUploaded.insert(m_effectsUploaded.end(), std::make_move_iterator(m_effectsUploadedCache.begin()), std::make_move_iterator(m_effectsUploadedCache.end()));
             m_effectsUploadedCache.clear();
@@ -90,6 +102,7 @@ namespace ramses_internal
             LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader uploading: " << effectHash);
 
             assert(absl::c_find_if(m_effectsUploadedCache, [&effectHash](const auto& u) {return effectHash == u.first; }) == m_effectsUploadedCache.cend());
+            m_notifier.notifyAlive(m_aliveIdentifier);
             const auto shaderUploadStart = std::chrono::steady_clock::now();
             auto shaderResource = resourceUploadRenderBackend.getDevice().uploadShader(*effectRes);
             const auto shaderUploadTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - shaderUploadStart);
@@ -142,6 +155,8 @@ namespace ramses_internal
 
     void AsyncEffectUploader::run()
     {
+        ThreadLocalLog::SetPrefix(m_logPrefixID);
+
         LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader creating render backend for resource uploading");
         auto resourceUploadRenderBackend = m_platform.createResourceUploadRenderBackend(m_renderBackend);
         if (!resourceUploadRenderBackend)
@@ -152,6 +167,10 @@ namespace ramses_internal
         }
         LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader resource upload render backend created successfully");
         m_creationSuccess.set_value(true);
+
+#if defined(__ghs__) && defined(RAMSES_ASYNC_SHADERCOMPILE_THREAD_PRIORITY)
+        setThreadPriorityIntegrity(RAMSES_ASYNC_SHADERCOMPILE_THREAD_PRIORITY, "async shader compiler thread");
+#endif
 
         while (!isCancelRequested())
             uploadEffectsOrWait(*resourceUploadRenderBackend);

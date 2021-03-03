@@ -5,10 +5,10 @@
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
+
 #include "windows.h"
 #include "Window_Windows/HiddenWindow.h"
-#include "Utils/LogMacros.h"
-
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

@@ -21,7 +21,7 @@ namespace ramses_internal
         uint32_t index = 0;
         for (const auto& sceneConfig : sceneArrayConfig)
         {
-            m_scenes[index++].reset(new ResourceStressTestScene(client, sceneConfig.sceneId, sceneConfig.textureConsumerIds, sceneConfig.targetScreenQuad));
+            m_scenes[index++] = std::make_unique<ResourceStressTestScene>(client, sceneConfig.sceneId, sceneConfig.textureConsumerIds, sceneConfig.targetScreenQuad);
             m_renderer.setSceneDisplayAndBuffer(sceneConfig.sceneId, sceneConfig.displayId, sceneConfig.offscreenBufferId);
         }
     }

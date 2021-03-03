@@ -9,8 +9,8 @@
 
 #include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
 #include "PlatformAbstraction/PlatformTypes.h"
-#include "Utils/LogMacros.h"
-#include <assert.h>
+#include "Utils/ThreadLocalLogForced.h"
+#include <cassert>
 #include <unistd.h>
 
 namespace ramses_internal
@@ -65,7 +65,7 @@ namespace ramses_internal
 
     void LinuxDmabufBufferData::noopDestroyCallback(LinuxDmabufBufferData* dmabuf)
     {
-        UNUSED(dmabuf)
+        UNUSED(dmabuf);
     }
 
     void LinuxDmabufBufferData::clearDestroyCallback()

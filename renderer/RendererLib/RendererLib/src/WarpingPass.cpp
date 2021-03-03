@@ -11,6 +11,7 @@
 #include "Resource/ArrayResource.h"
 #include "Resource/EffectResource.h"
 #include "RendererLib/WarpingMeshData.h"
+#include "SceneAPI/TextureSamplerStates.h"
 
 namespace ramses_internal
 {
@@ -101,7 +102,7 @@ namespace ramses_internal
         EffectInputInformationVector uniformInputs;
         uniformInputs.push_back(u_texture);
 
-        EffectResource effect(vertexShader, fragmentShader, "", uniformInputs, attributeInputs, "WarpingEffect", ResourceCacheFlag_DoNotCache);
+        EffectResource effect(vertexShader, fragmentShader, "", absl::nullopt, uniformInputs, attributeInputs, "WarpingEffect", ResourceCacheFlag_DoNotCache);
 
         // store field handles
         m_vertexPositionField = effect.getAttributeDataFieldHandleByName("a_position");
@@ -124,8 +125,8 @@ namespace ramses_internal
 
         m_device.activateTexture(sourceColorBuffer, m_inputRenderBufferField);
         const UInt32 isotropicFilteringLevel = 1u;
-        m_device.setTextureSampling(m_inputRenderBufferField,
-            EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp, ESamplingMethod::Linear, ESamplingMethod::Linear, isotropicFilteringLevel);
+        const TextureSamplerStates samplerState(EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp, ESamplingMethod::Linear, ESamplingMethod::Linear, isotropicFilteringLevel);
+        m_device.activateTextureSamplerObject(samplerState, m_inputRenderBufferField);
 
         m_device.activateIndexBuffer(m_indexBufferResource);
         m_device.activateVertexBuffer(m_vertexBufferResource, m_vertexPositionField, 0u, 0u, EDataType::Vector3Buffer, 0u, 0u);

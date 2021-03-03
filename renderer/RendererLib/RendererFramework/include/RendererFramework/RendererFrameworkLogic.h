@@ -34,7 +34,7 @@ namespace ramses_internal
             ISceneGraphConsumerComponent& sgc,
             RendererCommandBuffer& rendererCommandBuffer,
             PlatformLock& frameworkLock);
-        virtual ~RendererFrameworkLogic();
+        virtual ~RendererFrameworkLogic() override;
 
         // ISceneRendererHandler
         virtual void handleInitializeScene(const SceneInfo& sceneInfo, const Guid& providerID) override;

@@ -43,7 +43,7 @@ namespace ramses_internal
         void unregisterResourceFile(const String& filename);
         bool hasResourceFile(const String& resourceFileName) const;
         const FileContentsMap* getContentsOfResourceFile(const String& filename) const;
-        EStatus getEntry(const ResourceContentHash& hash, BinaryFileInputStream*& resourceStream, ResourceFileEntry& fileEntry) const;
+        EStatus getEntry(const ResourceContentHash& hash, IInputStream*& resourceStream, ResourceFileEntry& fileEntry) const;
     private:
         ResourceFileInputStreamToFileContentMap m_resourceFiles;
     };
@@ -104,7 +104,7 @@ namespace ramses_internal
     }
 
     inline
-    EStatus ResourceFilesRegistry::getEntry(const ResourceContentHash& hash, BinaryFileInputStream*& resourceStream, ResourceFileEntry& fileEntry) const
+    EStatus ResourceFilesRegistry::getEntry(const ResourceContentHash& hash, IInputStream*& resourceStream, ResourceFileEntry& fileEntry) const
     {
         for (const auto& iter : m_resourceFiles)
         {
@@ -112,7 +112,7 @@ namespace ramses_internal
             ResourceRegistryEntry* entry = fileContents.get(hash);
             if (entry != nullptr)
             {
-                resourceStream = &iter.first->resourceStream;
+                resourceStream = &iter.first->getStream();
                 fileEntry = entry->fileEntry;
                 return EStatus::Ok;
             }

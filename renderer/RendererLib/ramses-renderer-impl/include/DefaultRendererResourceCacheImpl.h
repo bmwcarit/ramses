@@ -24,7 +24,7 @@ namespace ramses
     {
     public:
         explicit DefaultRendererResourceCacheImpl(uint32_t maxCacheSizeInBytes);
-        virtual ~DefaultRendererResourceCacheImpl();
+        virtual ~DefaultRendererResourceCacheImpl() override;
 
         bool virtual hasResource(rendererResourceId_t resourceId, uint32_t& size) const override;
         bool virtual getResourceData(rendererResourceId_t resourceId, uint8_t* buffer, uint32_t bufferSize) const override;

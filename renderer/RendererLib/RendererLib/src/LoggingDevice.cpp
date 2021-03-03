@@ -10,6 +10,7 @@
 #include "RendererLib/ConstantLogger.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "Resource/EffectResource.h"
+#include "SceneAPI/TextureSamplerStates.h"
 
 namespace ramses_internal
 {
@@ -178,11 +179,6 @@ namespace ramses_internal
         m_logContext << "set draw mode: " << EnumToString(mode) << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::setTextureSampling(DataFieldHandle field, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel)
-    {
-        m_logContext << "set texture sampling for texture " << field << " : [wrapU: " << EnumToString(wrapU) << "; wrapV: " << EnumToString(wrapV) << "; wrapR: " << EnumToString(wrapR) << "; min sampling: " << EnumToString(minSampling) << "; mag sampling: " << EnumToString(magSampling) << "; anisotropyLevel: " << anisotropyLevel << "]" << RendererLogContext::NewLine;
-    }
-
     DeviceResourceHandle LoggingDevice::allocateVertexBuffer(UInt32 totalSizeInBytes)
     {
         m_logContext << "allocate vertex buffer [total size: " << totalSizeInBytes << "]" << RendererLogContext::NewLine;
@@ -340,20 +336,17 @@ namespace ramses_internal
         m_logContext << "delete render buffer [handle: " << handle << "]" << RendererLogContext::NewLine;
     }
 
-    DeviceResourceHandle LoggingDevice::uploadTextureSampler(EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel)
+    void LoggingDevice::activateTextureSamplerObject(const TextureSamplerStates& samplerState, DataFieldHandle field)
     {
-        m_logContext << "upload texture sampler: [wrapU: " << EnumToString(wrapU) << "; wrapV: " << EnumToString(wrapV) << "; wrapR: " << EnumToString(wrapR) << "; min sampling: " << EnumToString(minSampling) << "; mag sampling: " << EnumToString(magSampling) << "; anisotropyLevel: " << anisotropyLevel << "]" << RendererLogContext::NewLine;
-        return DeviceResourceHandle::Invalid();
-    }
-
-    void LoggingDevice::deleteTextureSampler(DeviceResourceHandle handle)
-    {
-        m_logContext << "delete texture sampler [handle: " << handle << "]" << RendererLogContext::NewLine;
-    }
-
-    void LoggingDevice::activateTextureSampler(DeviceResourceHandle handle, DataFieldHandle field)
-    {
-        logResourceActivation("textureSampler", handle, field);
+        m_logContext << "activate texture sampler object [hash: " << samplerState.hash()
+            << "; field: " << field
+            << "; wrapU: " << EnumToString(samplerState.m_addressModeU)
+            << "; wrapV: " << EnumToString(samplerState.m_addressModeV)
+            << "; wrapR: " << EnumToString(samplerState.m_addressModeR)
+            << "; min sampling: " << EnumToString(samplerState.m_minSamplingMode)
+            << "; mag sampling: " << EnumToString(samplerState.m_magSamplingMode)
+            << "; anisotropyLevel: " << samplerState.m_anisotropyLevel
+            << RendererLogContext::NewLine;
     }
 
     DeviceResourceHandle LoggingDevice::getFramebufferRenderTarget() const

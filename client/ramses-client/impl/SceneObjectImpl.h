@@ -24,7 +24,7 @@ namespace ramses
     {
     public:
         explicit SceneObjectImpl(SceneImpl& scene, ERamsesObjectType type, const char* name);
-        virtual ~SceneObjectImpl();
+        virtual ~SceneObjectImpl() override;
 
 
 

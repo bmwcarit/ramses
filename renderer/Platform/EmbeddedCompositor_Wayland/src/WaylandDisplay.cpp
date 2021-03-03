@@ -10,9 +10,9 @@
 #include "EmbeddedCompositor_Wayland/WaylandCompositorConnection.h"
 #include "EmbeddedCompositor_Wayland/WaylandGlobal.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include <grp.h>
-#include <errno.h>
+#include <cerrno>
 #include <unistd.h>
 #include <sys/stat.h>
 

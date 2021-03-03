@@ -11,7 +11,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "EmbeddedCompositor_Wayland/IWaylandDisplay.h"
 #include "EmbeddedCompositor_Wayland/IWaylandGlobal.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

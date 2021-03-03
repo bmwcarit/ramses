@@ -9,11 +9,11 @@
 #include "TextLayoutDemo.h"
 #include "ramses-text-api/LayoutUtils.h"
 #include "ramses-text-api/GlyphMetrics.h"
-#include <string.h>
+#include <cstring>
 #include <thread>
 #include <numeric>
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 
 namespace
 {

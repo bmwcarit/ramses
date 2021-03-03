@@ -19,7 +19,7 @@
 #include "SceneAPI/EDataBufferType.h"
 #include "Components/ManagedResource.h"
 #include "Resource/ResourceInfo.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "Utils/TextureMathUtils.h"
 #include "Math3d/Vector4.h"
 #include <memory>
@@ -322,7 +322,7 @@ namespace ramses_internal
         sceneResources.removeRenderTarget(renderTarget);
     }
 
-    void RendererResourceManager::uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered)
+    void RendererResourceManager::uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType)
     {
         assert(!m_offscreenBuffers.isAllocated(bufferHandle));
         IDevice& device = m_renderBackend.getDevice();
@@ -331,13 +331,29 @@ namespace ramses_internal
         OffscreenBufferDescriptor& offscreenBufferDesc = *m_offscreenBuffers.getMemory(bufferHandle);
 
         offscreenBufferDesc.m_colorBufferHandle[0] = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, sampleCount));
-        offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, sampleCount));
+        switch (depthStencilBufferType)
+        {
+        case ERenderBufferType_InvalidBuffer:
+            offscreenBufferDesc.m_depthBufferHandle = {};
+            break;
+        case ERenderBufferType_DepthBuffer:
+            offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_WriteOnly, sampleCount));
+            break;
+        case ERenderBufferType_DepthStencilBuffer:
+            offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, sampleCount));
+            break;
+        case ERenderBufferType_ColorBuffer:
+        case ERenderBufferType_NUMBER_OF_ELEMENTS:
+            assert(false);
+        }
+
         const UInt32 sampleMultiplier = (sampleCount == 0) ? 1u : sampleCount;
         offscreenBufferDesc.m_estimatedVRAMUsage = width * height * ((isDoubleBuffered ? 2u : 1u) * GetTexelSizeFromFormat(ETextureFormat::RGBA8) * sampleMultiplier + GetTexelSizeFromFormat(ETextureFormat::Depth24_Stencil8) * sampleMultiplier);
 
         DeviceHandleVector bufferDeviceHandles;
         bufferDeviceHandles.push_back(offscreenBufferDesc.m_colorBufferHandle[0]);
-        bufferDeviceHandles.push_back(offscreenBufferDesc.m_depthBufferHandle);
+        if(offscreenBufferDesc.m_depthBufferHandle.isValid())
+            bufferDeviceHandles.push_back(offscreenBufferDesc.m_depthBufferHandle);
         offscreenBufferDesc.m_renderTargetHandle[0] = device.uploadRenderTarget(bufferDeviceHandles);
 
         if (isDoubleBuffered)
@@ -346,7 +362,8 @@ namespace ramses_internal
 
             DeviceHandleVector bufferDeviceHandles2;
             bufferDeviceHandles2.push_back(offscreenBufferDesc.m_colorBufferHandle[1]);
-            bufferDeviceHandles2.push_back(offscreenBufferDesc.m_depthBufferHandle);
+            if(offscreenBufferDesc.m_depthBufferHandle.isValid())
+                bufferDeviceHandles2.push_back(offscreenBufferDesc.m_depthBufferHandle);
             offscreenBufferDesc.m_renderTargetHandle[1] = device.uploadRenderTarget(bufferDeviceHandles2);
         }
 
@@ -384,11 +401,12 @@ namespace ramses_internal
             device.unpairRenderTargets(offscreenBufferDesc.m_renderTargetHandle[0]);
         }
         device.deleteRenderBuffer(offscreenBufferDesc.m_colorBufferHandle[0]);
-        device.deleteRenderBuffer(offscreenBufferDesc.m_depthBufferHandle);
+
+        if(offscreenBufferDesc.m_depthBufferHandle.isValid())
+            device.deleteRenderBuffer(offscreenBufferDesc.m_depthBufferHandle);
+
         if (offscreenBufferDesc.m_colorBufferHandle[1].isValid())
-        {
             device.deleteRenderBuffer(offscreenBufferDesc.m_colorBufferHandle[1]);
-        }
 
         m_offscreenBuffers.release(bufferHandle);
     }
@@ -621,47 +639,5 @@ namespace ramses_internal
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
         return sceneResources.getTextureBufferDeviceHandle(textureBufferHandle);
-    }
-
-    void RendererResourceManager::uploadTextureSampler(TextureSamplerHandle handle, SceneId sceneId, const TextureSamplerStates& states)
-    {
-        assert(handle.isValid());
-        RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
-
-        const EWrapMethod     wrapU           = states.m_addressModeU;
-        const EWrapMethod     wrapV           = states.m_addressModeV;
-        const EWrapMethod     wrapR           = states.m_addressModeR;
-        const ESamplingMethod minSampling     = states.m_minSamplingMode;
-        const ESamplingMethod magSampling     = states.m_magSamplingMode;
-        const UInt32          anisotropyLevel = states.m_anisotropyLevel;
-
-        IDevice& device = m_renderBackend.getDevice();
-        DeviceResourceHandle deviceHandle = device.uploadTextureSampler(wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel);
-        assert(deviceHandle.isValid());
-
-        sceneResources.addTextureSampler(handle, deviceHandle);
-    }
-
-    void RendererResourceManager::unloadTextureSampler(TextureSamplerHandle handle, SceneId sceneId)
-    {
-        assert(handle.isValid());
-        assert(m_sceneResourceRegistryMap.contains(sceneId));
-        RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
-
-        const DeviceResourceHandle deviceHandle = sceneResources.getTextureSamplerDeviceHandle(handle);
-        assert(deviceHandle.isValid());
-
-        IDevice& device = m_renderBackend.getDevice();
-        device.deleteTextureSampler(deviceHandle);
-        sceneResources.removeTextureSampler(handle);
-    }
-
-    DeviceResourceHandle RendererResourceManager::getTextureSamplerDeviceHandle(TextureSamplerHandle handle, SceneId sceneId) const
-    {
-        assert(handle.isValid());
-        assert(m_sceneResourceRegistryMap.contains(sceneId));
-        RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
-
-        return sceneResources.getTextureSamplerDeviceHandle(handle);
     }
 }

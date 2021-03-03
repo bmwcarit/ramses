@@ -43,6 +43,7 @@ namespace ramses_internal
             : m_framework()
             , m_renderer(*m_framework.createRenderer(ramses::RendererConfig()))
         {
+            m_renderer.setLoopMode(ramses::ELoopMode_UpdateOnly);
         }
 
         ramses::displayId_t addDisplay(bool warpingEnabled = false)
@@ -61,14 +62,14 @@ namespace ramses_internal
         {
             const ramses::displayId_t displayId = addDisplay();
             updateAndDispatch(m_handler);
-            m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult::ERendererEventResult_OK);
+            m_handler.expectDisplayCreated(displayId, ramses::ERendererEventResult_OK);
 
             return displayId;
         }
 
         void doUpdateLoop()
         {
-            m_renderer.impl.getDisplayDispatcher().doOneLoop(ramses_internal::ELoopMode::UpdateOnly);
+            m_renderer.doOneLoop();
         }
 
         void updateAndDispatch(RendererEventTestHandler& eventHandler, uint32_t loops = 1u)

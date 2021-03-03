@@ -24,7 +24,7 @@ namespace ramses_internal
     {
         stopForkerApplication();
         pid_t processEndStatus = ::waitpid(m_testForkerApplicationProcessId, nullptr, 0);
-        UNUSED(processEndStatus)
+        UNUSED(processEndStatus);
         assert(m_testForkerApplicationProcessId == processEndStatus);
     }
 

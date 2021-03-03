@@ -37,7 +37,7 @@ namespace ramses
     {
     public:
         explicit RamsesObjectImpl(ERamsesObjectType type, const char* name);
-        virtual ~RamsesObjectImpl();
+        virtual ~RamsesObjectImpl() override;
 
         void setObjectRegistry(IRamsesObjectRegistry& objectRegistry);
         void setObjectRegistryHandle(RamsesObjectHandle handle);

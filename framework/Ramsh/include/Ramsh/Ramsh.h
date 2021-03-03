@@ -9,52 +9,49 @@
 #ifndef RAMSES_RAMSH_H
 #define RAMSES_RAMSH_H
 
-#include "Ramsh/RamshCommandPrintHelp.h"
-#include "Collections/Vector.h"
-#include "Collections/HashMap.h"
-#include "Collections/String.h"
-#include "Ramsh/RamshCommandPrintBuildConfig.h"
-#include "Ramsh/RamshCommandPrintRamsesVersion.h"
-#include "Ramsh/RamshCommandSetConsoleLogLevel.h"
-#include "Ramsh/RamshCommandSetContextLogLevel.h"
-#include "Ramsh/RamshCommandSetContextLogLevelFilter.h"
-#include "Ramsh/RamshCommandPrintLogLevels.h"
+#include <memory>
+#include <unordered_map>
+#include <string>
+#include <mutex>
+#include <vector>
 
 namespace ramses_internal
 {
     class RamshCommand;
-    class RamshInput;
-    class RamshCommunicationChannel;
-
-    using KeywordToCommandMap = HashMap<String, RamshCommand *>;
+    class RamshCommandPrintHelp;
+    class RamshCommandPrintBuildConfig;
+    class RamshCommandPrintRamsesVersion;
+    class RamshCommandSetConsoleLogLevel;
+    class RamshCommandSetContextLogLevel;
+    class RamshCommandSetContextLogLevelFilter;
+    class RamshCommandPrintLogLevels;
 
     class Ramsh
     {
     public:
         Ramsh();
-
         virtual ~Ramsh();
 
-        void add(RamshCommand& command);
+        Ramsh(const Ramsh& ramsh) = delete;
+        Ramsh& operator=(const Ramsh& ramsh) = delete;
 
-        virtual bool execute(const RamshInput& input);
+        bool add(const std::shared_ptr<RamshCommand>& command, bool allowOverride = true);
 
-        const KeywordToCommandMap& commands() const;
+        virtual bool execute(const std::vector<std::string>& input);
 
-    protected:
-        KeywordToCommandMap m_commands;
-        RamshCommandPrintHelp* m_pCmdPrintHelp;
-        RamshCommandPrintBuildConfig m_cmdPrintBuildConfig;
-        RamshCommandPrintRamsesVersion m_cmdPrintRamsesVersion;
-        RamshCommandSetConsoleLogLevel* m_pCmdSetLogLevel;
-        RamshCommandSetContextLogLevel* m_pCmdSetContextLogLevel;
-        RamshCommandSetContextLogLevelFilter* m_pCmdSetContextLogLevelFilter;
-        RamshCommandPrintLogLevels* m_pCmdPrintLogLevels;
+        std::string getFullHelp() const;
 
     private:
-        Ramsh(const Ramsh& ramsh);
+        mutable std::mutex m_lock;
+        std::unordered_map<std::string, std::weak_ptr<RamshCommand>> m_commands;
+        std::shared_ptr<RamshCommandPrintHelp> m_pCmdPrintHelp;
+        std::shared_ptr<RamshCommandPrintBuildConfig>m_cmdPrintBuildConfig;
+        std::shared_ptr<RamshCommandPrintRamsesVersion>m_cmdPrintRamsesVersion;
+        std::shared_ptr<RamshCommandSetConsoleLogLevel> m_pCmdSetLogLevel;
+        std::shared_ptr<RamshCommandSetContextLogLevel> m_pCmdSetContextLogLevel;
+        std::shared_ptr<RamshCommandSetContextLogLevelFilter> m_pCmdSetContextLogLevelFilter;
+        std::shared_ptr<RamshCommandPrintLogLevels> m_pCmdPrintLogLevels;
     };
-
-}// namespace ramses_internal
+}
 
 #endif

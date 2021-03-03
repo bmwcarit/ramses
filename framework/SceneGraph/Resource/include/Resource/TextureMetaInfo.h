@@ -9,7 +9,7 @@
 #ifndef RAMSES_FRAMEWORK_TEXTUREMETAINFO_H
 #define RAMSES_FRAMEWORK_TEXTUREMETAINFO_H
 
-#include <assert.h>
+#include <cassert>
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Collections/Vector.h"
 #include "SceneAPI/TextureEnums.h"

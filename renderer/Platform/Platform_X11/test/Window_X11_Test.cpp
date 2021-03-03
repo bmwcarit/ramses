@@ -11,6 +11,7 @@
 #include "WindowEventHandlerMock.h"
 #include "RendererLib/DisplayConfig.h"
 #include "RendererLib/EKeyModifier.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -22,6 +23,12 @@ namespace ramses_internal
         WindowX11()
             : window(config, eventHandlerMock, 0)
         {
+        }
+
+        static void SetUpTestSuite()
+        {
+            // caller is expected to have a display prefix for logs
+            ThreadLocalLog::SetPrefix(1);
         }
 
         virtual void SetUp() override

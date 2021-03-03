@@ -17,7 +17,7 @@
 #include "Math3d/Vector2i.h"
 #include "Math3d/Vector3i.h"
 #include "Math3d/Vector4i.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses_internal
 {

@@ -11,7 +11,6 @@
 #include "Scene/ClientScene.h"
 #include "Scene/SceneDescriber.h"
 #include "Scene/SceneActionApplier.h"
-#include "Scene/SceneActionCollectionCreator.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StatisticCollection.h"
@@ -39,6 +38,7 @@ namespace ramses_internal
             return false;
         }
 
+        fillStatisticsCollection();
         const SceneSizeInformation sceneSizes(m_scene.getSceneSizeInformation());
 
         // swap out of ClientScene and reserve new memory there
@@ -63,7 +63,6 @@ namespace ramses_internal
 
         if (isPublished())
         {
-            SceneActionCollectionCreator creator(sceneUpdate.actions);
             const bool addSizeInfo = sceneSizes > m_previousSceneSizes;
             sceneUpdate.flushInfos = { m_flushCounter, versionTag, addSizeInfo?sceneSizes: SceneSizeInformation(), m_resourceChanges, m_scene.getSceneReferenceActions(), flushTimeInfo, addSizeInfo, true};
             m_previousSceneSizes = sceneSizes;
@@ -90,9 +89,7 @@ namespace ramses_internal
         m_scene.resetSceneReferenceActions();
 
         if (isPublished())
-        {
             sendSceneToWaitingSubscribers(m_scene, flushTimeInfo, versionTag);
-        }
 
         return true;
     }

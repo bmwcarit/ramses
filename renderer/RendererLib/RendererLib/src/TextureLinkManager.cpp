@@ -9,7 +9,6 @@
 #include "RendererLib/TextureLinkManager.h"
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DataLinkUtils.h"
-#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {

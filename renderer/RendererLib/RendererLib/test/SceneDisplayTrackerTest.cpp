@@ -71,14 +71,16 @@ namespace ramses_internal
         EXPECT_EQ(sceneDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::PickEvent{ sceneId, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateDisplay{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::DestroyDisplay{ cmdDisplay }));
-        EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateOffscreenBuffer{ cmdDisplay, {}, {}, {}, {}, {} }));
+        EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateOffscreenBuffer{ cmdDisplay, {}, {}, {}, {}, {}, ERenderBufferType_DepthStencilBuffer }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::DestroyOffscreenBuffer{ cmdDisplay, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateStreamBuffer{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::DestroyStreamBuffer{ cmdDisplay, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetStreamBufferState{ cmdDisplay, {}, {} }));
+        EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetClearFlags{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::SetClearColor{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::UpdateWarpingData{ cmdDisplay, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::ReadPixels{ cmdDisplay, {}, {}, {}, {}, {}, {}, {}, {} }));
+        EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::ConfirmationEcho{ cmdDisplay, {} }));
         // broadcast commands
         EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::ScenePublished{ sceneId, EScenePublicationMode_LocalOnly }));
         EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::SceneUnpublished{ sceneId }));
@@ -101,7 +103,6 @@ namespace ramses_internal
         EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::FrameProfiler_TimingGraphHeight{}));
         EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::FrameProfiler_CounterGraphHeight{}));
         EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::FrameProfiler_RegionFilterFlags{}));
-        EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::ConfirmationEcho{}));
     }
 
     TEST_F(ASceneDisplayTracker, returnsInvalidDisplayIfNoOwnershio)

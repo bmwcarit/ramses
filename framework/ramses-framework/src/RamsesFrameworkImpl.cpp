@@ -25,6 +25,8 @@
 #include "ramses-framework-api/DcsmConsumer.h"
 #include "FrameworkFactoryRegistry.h"
 #include "PlatformAbstraction/PlatformTime.h"
+#include "PublicRamshCommand.h"
+#include "ramses-framework-api/IRamshCommand.h"
 #include <random>
 
 namespace ramses
@@ -46,8 +48,8 @@ namespace ramses
         , m_resourceComponent(m_statisticCollection, m_frameworkLock)
         , m_scenegraphComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getRamsesConnectionStatusUpdateNotifier(), m_resourceComponent, m_frameworkLock)
         , m_dcsmComponent(m_participantAddress.getParticipantId(), *m_communicationSystem, m_communicationSystem->getDcsmConnectionStatusUpdateNotifier(), m_frameworkLock)
-        , m_ramshCommandLogConnectionInformation(*m_communicationSystem)
-        , m_ramshCommandLogDcsmInformation(m_dcsmComponent)
+        , m_ramshCommandLogConnectionInformation(std::make_shared<ramses_internal::LogConnectionInfo>(*m_communicationSystem))
+        , m_ramshCommandLogDcsmInformation(std::make_shared<ramses_internal::LogDcsmInfo>(m_dcsmComponent))
         , m_ramsesClients()
         , m_ramsesRenderer(nullptr, [](RamsesRenderer*) {})
     {
@@ -207,6 +209,18 @@ namespace ramses
         return m_statisticCollection;
     }
 
+    status_t RamsesFrameworkImpl::addRamshCommand(const std::shared_ptr<IRamshCommand>& command)
+    {
+        if (!command)
+            return addErrorEntry("addRamshCommand: command may not be null");
+        LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFrameworkImpl::addRamshCommand: keyword '{}'", command->keyword());
+        auto commandWrapper = std::make_shared<ramses_internal::PublicRamshCommand>(command);
+        if (!m_ramsh->add(commandWrapper, false))
+            return addErrorEntry("addRamshCommand: command not valid");
+        m_publicRamshCommands.push_back(commandWrapper);
+        return StatusOK;
+    }
+
     ramses::status_t RamsesFrameworkImpl::connect()
     {
         LOG_INFO(CONTEXT_FRAMEWORK, "RamsesFrameworkImpl::connect");
@@ -265,7 +279,7 @@ namespace ramses
             return nullptr;
         }
         DcsmProviderImpl* impl = new DcsmProviderImpl(getDcsmComponent());
-        m_dcsmProvider.reset(new DcsmProvider(*impl));
+        m_dcsmProvider = std::make_unique<DcsmProvider>(*impl);
         return m_dcsmProvider.get();
     }
 
@@ -293,7 +307,7 @@ namespace ramses
             return nullptr;
         }
         DcsmConsumerImpl* impl = new DcsmConsumerImpl(*this);
-        m_dcsmConsumer.reset(new DcsmConsumer(*impl));
+        m_dcsmConsumer = std::make_unique<DcsmConsumer>(*impl);
         return m_dcsmConsumer.get();
     }
 
@@ -360,18 +374,10 @@ namespace ramses
         LogAvailableCommunicationStacks();
         LogBuildInformation();
 
-        // trigger initialization of synchronized time and print as reference (or let Get* print error when init failed)
         const auto currentSyncTime = synchronized_clock::now();
-        if (asMilliseconds(currentSyncTime) != 0)
-        {
-            const UInt64 systemClockTime = PlatformTime::GetMicrosecondsAbsolute();
-            LOG_INFO(CONTEXT_FRAMEWORK, "Ramses synchronized time support enabled using " << synchronized_clock::source() <<
+        const UInt64 systemClockTime = PlatformTime::GetMicrosecondsAbsolute();
+        LOG_INFO(CONTEXT_FRAMEWORK, "Ramses synchronized time is using " << synchronized_clock::source() <<
                      ". Currrent sync time " << asMicroseconds(currentSyncTime) << " us, system clock is " << systemClockTime << " us");
-        }
-        else
-        {
-            LOG_INFO(CONTEXT_FRAMEWORK, "Ramses synchronized time support is not available");
-        }
 
         RamsesFrameworkImpl* impl = new RamsesFrameworkImpl(config.impl, participantAddress);
         if (config.impl.m_periodicLogsEnabled)

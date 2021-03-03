@@ -124,7 +124,7 @@ namespace ramses_internal
             frag[i] = 'b';
             geom[i] = 'c';
         }
-        EffectResource* resource = new EffectResource(vert, frag, geom, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", ResourceCacheFlag(1u));
+        EffectResource* resource = new EffectResource(vert, frag, geom, absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", ResourceCacheFlag(1u));
         return resource;
     }
 

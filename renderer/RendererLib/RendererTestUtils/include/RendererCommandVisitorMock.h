@@ -100,7 +100,7 @@ namespace ramses_internal
 
         void operator()(const RendererCommand::CreateOffscreenBuffer& cmd)
         {
-            handleBufferCreateRequest(cmd.offscreenBuffer, cmd.display, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible);
+            handleBufferCreateRequest(cmd.offscreenBuffer, cmd.display, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible, cmd.depthStencilBufferType);
         }
 
         void operator()(const RendererCommand::DestroyOffscreenBuffer& cmd)
@@ -121,6 +121,11 @@ namespace ramses_internal
         void operator()(const RendererCommand::SetStreamBufferState& cmd)
         {
             setStreamBufferState(cmd.streamBuffer, cmd.display, cmd.newState);
+        }
+
+        void operator()(const RendererCommand::SetClearFlags& cmd)
+        {
+            handleSetClearFlags(cmd.display, cmd.offscreenBuffer, cmd.clearFlags);
         }
 
         void operator()(const RendererCommand::SetClearColor& cmd)
@@ -205,7 +210,7 @@ namespace ramses_internal
 
         void operator()(const RendererCommand::ConfirmationEcho& cmd)
         {
-            handleConfirmationEcho(cmd.text);
+            handleConfirmationEcho(cmd.display, cmd.text);
         }
 
         template <typename T>
@@ -225,9 +230,10 @@ namespace ramses_internal
         MOCK_METHOD(void, destroyDisplayContext, (DisplayHandle));
         MOCK_METHOD(void, handleSceneDataLinkRequest, (SceneId, DataSlotId, SceneId, DataSlotId));
         MOCK_METHOD(void, handleDataUnlinkRequest, (SceneId, DataSlotId));
+        MOCK_METHOD(void, handleSetClearFlags, (DisplayHandle, OffscreenBufferHandle, uint32_t));
         MOCK_METHOD(void, handleSetClearColor, (DisplayHandle, OffscreenBufferHandle, const Vector4&));
         MOCK_METHOD(void, handlePick, (SceneId, const Vector2&));
-        MOCK_METHOD(void, handleBufferCreateRequest, (OffscreenBufferHandle, DisplayHandle, uint32_t, uint32_t, uint32_t, bool));
+        MOCK_METHOD(void, handleBufferCreateRequest, (OffscreenBufferHandle, DisplayHandle, uint32_t, uint32_t, uint32_t, bool, ERenderBufferType));
         MOCK_METHOD(void, handleBufferDestroyRequest, (OffscreenBufferHandle, DisplayHandle));
         MOCK_METHOD(void, handleBufferCreateRequest, (StreamBufferHandle, DisplayHandle, WaylandIviSurfaceId));
         MOCK_METHOD(void, handleBufferDestroyRequest, (StreamBufferHandle, DisplayHandle));
@@ -248,7 +254,7 @@ namespace ramses_internal
         MOCK_METHOD(void, updateWarpingData, (DisplayHandle, const WarpingMeshData&));
         MOCK_METHOD(void, setLimitsFrameBudgets, (uint64_t, uint64_t, uint64_t));
         MOCK_METHOD(void, setSkippingOfUnmodifiedBuffers, (bool));
-        MOCK_METHOD(void, handleConfirmationEcho, (const String&));
+        MOCK_METHOD(void, handleConfirmationEcho, (DisplayHandle, const String&));
     };
 }
 

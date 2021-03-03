@@ -34,7 +34,7 @@ namespace ramses_internal
         {
         }
 
-        virtual ~AbstractSenderAndReceiverTest()
+        virtual ~AbstractSenderAndReceiverTest() override
         {
         }
 

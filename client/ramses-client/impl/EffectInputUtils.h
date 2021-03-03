@@ -11,7 +11,7 @@
 
 #include "ramses-client-api/EffectInputDataType.h"
 #include "SceneAPI/EDataType.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses
 {

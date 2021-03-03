@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         WaylandIVIApplicationConnection(IWaylandClient& client, uint32_t version, uint32_t id, EmbeddedCompositor_Wayland& compositor);
-        virtual ~WaylandIVIApplicationConnection();
+        virtual ~WaylandIVIApplicationConnection() override;
         bool wasSuccessfullyInitialized() const;
 
         virtual void resourceDestroyed() override;

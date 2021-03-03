@@ -9,6 +9,7 @@
 #include "renderer_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "RendererLib/SceneLinks.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -26,6 +27,8 @@ public:
         , consumerSlot1(3u)
         , consumerSlot2(4u)
     {
+        // caller is expected to have a display prefix for logs
+        ThreadLocalLog::SetPrefix(1);
     }
 
 protected:

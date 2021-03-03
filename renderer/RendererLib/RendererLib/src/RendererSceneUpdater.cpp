@@ -34,7 +34,7 @@
 #include "RendererEventCollector.h"
 #include "Components/FlushTimeInformation.h"
 #include "Components/SceneUpdate.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Image.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include "PlatformAbstraction/Macros.h"
@@ -50,6 +50,7 @@ namespace ramses_internal
         RendererEventCollector& eventCollector,
         FrameTimer& frameTimer,
         SceneExpirationMonitor& expirationMonitor,
+        IThreadAliveNotifier& notifier,
         IRendererResourceCache* rendererResourceCache
         )
         : m_platform(platform)
@@ -61,6 +62,7 @@ namespace ramses_internal
         , m_expirationMonitor(expirationMonitor)
         , m_rendererResourceCache(rendererResourceCache)
         , m_animationSystemFactory(EAnimationSystemOwner_Renderer)
+        , m_notifier(notifier)
     {
     }
 
@@ -98,7 +100,7 @@ namespace ramses_internal
         if (SceneStateIsAtLeast(sceneState, ESceneState::Subscribed))
             consolidatePendingSceneActions(sceneId, std::move(sceneUpdate));
         else
-            LOG_ERROR(CONTEXT_RENDERER, "    RendererSceneUpdater::handleSceneActions could not apply scene actions because scene " << sceneId << " is neither subscribed nor mapped");
+            LOG_ERROR_P(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneActions could not apply scene actions because scene {} is neither subscribed nor mapped", sceneId);
     }
 
     void RendererSceneUpdater::createDisplayContext(const DisplayConfig& displayConfig, DisplayHandle handle, IBinaryShaderCache* binaryShaderCache)
@@ -113,7 +115,7 @@ namespace ramses_internal
             IRenderBackend& renderBackend = displayController.getRenderBackend();
             IEmbeddedCompositingManager& embeddedCompositingManager = displayController.getEmbeddedCompositingManager();
 
-            auto asyncEffectUploader = std::make_unique<AsyncEffectUploader>(m_platform, renderBackend);
+            auto asyncEffectUploader = std::make_unique<AsyncEffectUploader>(m_platform, renderBackend, m_notifier, static_cast<int>(handle.asMemoryHandle()));
             if (!asyncEffectUploader->createResourceUploadRenderBackendAndStartThread())
             {
                 m_renderer.destroyDisplayContext(handle);
@@ -127,8 +129,9 @@ namespace ramses_internal
             m_displayResourceManagers.insert({ handle, std::move(resourceManager) });
             m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreated, handle);
 
-            LOG_INFO(CONTEXT_RENDERER, "Created display " << handle.asMemoryHandle() << ": " << displayController.getDisplayWidth() << "x" << displayController.getDisplayHeight()
-                << (displayConfig.getFullscreenState() ? " fullscreen" : "") << (displayConfig.isWarpingEnabled() ? " warped" : "") << " MSAA" << displayConfig.getAntialiasingSampleCount());
+            LOG_INFO_P(CONTEXT_RENDERER, "Created display {}: {}x{}{}{} MSAA{}",
+                handle, displayController.getDisplayWidth(), displayController.getDisplayHeight(), (displayConfig.getFullscreenState() ? " fullscreen" : ""),
+                (displayConfig.isWarpingEnabled() ? " warped" : ""), displayConfig.getAntialiasingSampleCount());
         }
         else
         {
@@ -196,9 +199,6 @@ namespace ramses_internal
             return;
         }
 
-        // Context has to be enabled before destruction of resource manager and display controller
-        DisplayHandle activeDisplay;
-        activateDisplayContext(activeDisplay, display);
         m_displayResourceManagers.erase(display);
 
         auto asyncEffectUploaderIt = m_asyncEffectUploaders.find(display);
@@ -213,13 +213,10 @@ namespace ramses_internal
 
     void RendererSceneUpdater::updateScenes()
     {
-        // Display context is activated on demand, assuming that normally at most one scene/display needs resources uploading
-        DisplayHandle activeDisplay;
-
         {
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes request resources from network, upload used resources and unload obsolete resources");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateClientResources);
-            requestAndUploadAndUnloadResources(activeDisplay);
+            requestAndUploadAndUnloadResources();
         }
 
         {
@@ -237,13 +234,13 @@ namespace ramses_internal
         {
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes unref obsolete client resources and upload pending scene resources");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateSceneResources);
-            processStagedResourceChangesFromAppliedFlushes(activeDisplay);
+            processStagedResourceChangesFromAppliedFlushes();
         }
 
         {
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update embedded compositing resources");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateEmbeddedCompositingResources);
-            uploadUpdatedECStreams(activeDisplay);
+            uploadUpdatedECStreams();
         }
 
         {
@@ -327,7 +324,7 @@ namespace ramses_internal
 
         if (sceneUpdate.flushInfos.hasSizeInfo)
             stagingInfo.sizeInformation = sceneUpdate.flushInfos.sizeInfo;
-        pendingData.sceneReferenceActions = sceneUpdate.flushInfos.sceneReferences;
+        pendingData.sceneReferenceActions.insert(pendingData.sceneReferenceActions.end(), sceneUpdate.flushInfos.sceneReferences.cbegin(), sceneUpdate.flushInfos.sceneReferences.cend());
         flushInfo.timeInfo = sceneUpdate.flushInfos.flushTimeInfo;
         flushInfo.versionTag = sceneUpdate.flushInfos.versionTag;
 
@@ -401,7 +398,7 @@ namespace ramses_internal
             pendingFlush.resourceDataToProvide.clear();
 
             // assert stored resources are unique (without modifying state!)
-            assert([&resourcesForMapping]
+            assert([&resourcesForMapping]()
             {
                 ResourceContentHashVector hashes{ resourcesForMapping.size() };
                 std::transform(resourcesForMapping.cbegin(), resourcesForMapping.cend(), hashes.begin(), [](const auto& mr) { return mr->getHash(); });
@@ -453,7 +450,7 @@ namespace ramses_internal
         }
     }
 
-    void RendererSceneUpdater::requestAndUploadAndUnloadResources(DisplayHandle& activeDisplay)
+    void RendererSceneUpdater::requestAndUploadAndUnloadResources()
     {
         for (const auto& rendererScene : m_rendererScenes)
         {
@@ -468,17 +465,13 @@ namespace ramses_internal
         // if there are resources to upload, unload and upload pending resources
         for(const auto& it : m_displayResourceManagers)
         {
-            const DisplayHandle displayHandle = it.first;
             IRendererResourceManager& resourceManager = *it.second;
             if (resourceManager.hasResourcesToBeUploaded())
-            {
-                activateDisplayContext(activeDisplay, displayHandle);
                 resourceManager.uploadAndUnloadPendingResources();
-            }
         }
     }
 
-    void RendererSceneUpdater::uploadUpdatedECStreams(DisplayHandle& activeDisplay)
+    void RendererSceneUpdater::uploadUpdatedECStreams()
     {
         for(const auto& displayResourceManager : m_displayResourceManagers)
         {
@@ -493,7 +486,6 @@ namespace ramses_internal
                 if (embeddedCompositingManager.hasUpdatedContentFromStreamSourcesToUpload())
                 {
                     m_streamUpdates.clear();
-                    activateDisplayContext(activeDisplay, displayHandle);
                     embeddedCompositingManager.uploadResourcesAndGetUpdates(m_streamUpdates);
 
                     const auto& texLinks = m_rendererScenes.getSceneLinksManager().getTextureLinkManager();
@@ -616,7 +608,7 @@ namespace ramses_internal
         return static_cast<UInt32>(numActionsApplied);
     }
 
-    void RendererSceneUpdater::processStagedResourceChangesFromAppliedFlushes(DisplayHandle& activeDisplay)
+    void RendererSceneUpdater::processStagedResourceChangesFromAppliedFlushes()
     {
         // process resource changes only if there are no pending flushes
         for (const auto& rendererScene : m_rendererScenes)
@@ -628,13 +620,13 @@ namespace ramses_internal
             if (pendingData.allPendingFlushesApplied)
             {
                 // process staged resource changes only if ALL pending flushes were applied
-                processStagedResourceChanges(sceneID, stagingInfo, activeDisplay);
+                processStagedResourceChanges(sceneID, stagingInfo);
                 PendingData::Clear(pendingData);
             }
         }
     }
 
-    void RendererSceneUpdater::processStagedResourceChanges(SceneId sceneID, StagingInfo& stagingInfo, DisplayHandle& activeDisplay)
+    void RendererSceneUpdater::processStagedResourceChanges(SceneId sceneID, StagingInfo& stagingInfo)
     {
         // if scene is mapped unreference client resources that are no longer needed
         // and execute collected scene resource actions
@@ -646,12 +638,7 @@ namespace ramses_internal
             for (const auto& pendingFlush : pendingData.pendingFlushes)
                 resourceManager.unreferenceResourcesForScene(sceneID, pendingFlush.resourcesRemoved);
 
-            const auto& pendingSceneResourceActions = pendingData.sceneResourceActions;
-            if (!pendingSceneResourceActions.empty())
-            {
-                activateDisplayContext(activeDisplay, displayHandle);
-                PendingSceneResourcesUtils::ApplySceneResourceActions(pendingSceneResourceActions, m_rendererScenes.getScene(sceneID), resourceManager);
-            }
+            PendingSceneResourcesUtils::ApplySceneResourceActions(pendingData.sceneResourceActions, m_rendererScenes.getScene(sceneID), resourceManager);
         }
     }
 
@@ -926,8 +913,6 @@ namespace ramses_internal
         assert(displayHandle.isValid());
         IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(displayHandle)->second;
 
-        DisplayHandle activeDisplay;
-        activateDisplayContext(activeDisplay, displayHandle);
         resourceManager.unloadAllSceneResourcesForScene(sceneId);
         resourceManager.unreferenceAllResourcesForScene(sceneId);
 
@@ -951,8 +936,6 @@ namespace ramses_internal
         ResourceUtils::GetAllSceneResourcesFromScene(sceneResourceActions, scene, sceneResourcesByteSize);
         if (!sceneResourceActions.empty())
         {
-            DisplayHandle activeDisplay;
-            activateDisplayContext(activeDisplay, displayHandle);
             if (sceneResourcesByteSize > 0u)
                 LOG_INFO(CONTEXT_RENDERER, "Applying scene resources gathered from scene " << sceneId << ", " << sceneResourceActions.size() << " actions, " << sceneResourcesByteSize << " bytes");
 
@@ -1112,7 +1095,7 @@ namespace ramses_internal
         }
     }
 
-    bool RendererSceneUpdater::handleBufferCreateRequest(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered)
+    bool RendererSceneUpdater::handleBufferCreateRequest(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType)
     {
         if (!m_displayResourceManagers.count(display))
         {
@@ -1127,9 +1110,7 @@ namespace ramses_internal
             return false;
         }
 
-        DisplayHandle activeDisplay;
-        activateDisplayContext(activeDisplay, display);
-        resourceManager.uploadOffscreenBuffer(buffer, width, height, sampleCount, isDoubleBuffered);
+        resourceManager.uploadOffscreenBuffer(buffer, width, height, sampleCount, isDoubleBuffered, depthStencilBufferType);
         const DeviceResourceHandle deviceHandle = resourceManager.getOffscreenBufferDeviceHandle(buffer);
         m_renderer.resetRenderInterruptState();
         m_renderer.registerOffscreenBuffer(display, deviceHandle, width, height, isDoubleBuffered);
@@ -1176,9 +1157,6 @@ namespace ramses_internal
         m_rendererScenes.getSceneLinksManager().handleBufferDestroyed(buffer);
         m_renderer.resetRenderInterruptState();
         m_renderer.unregisterOffscreenBuffer(display, bufferDeviceHandle);
-
-        DisplayHandle activeDisplay;
-        activateDisplayContext(activeDisplay, display);
         resourceManager.unloadOffscreenBuffer(buffer);
 
         return true;
@@ -1201,8 +1179,6 @@ namespace ramses_internal
         }
 
         IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(display)->second;
-        DisplayHandle activeDisplay;
-        activateDisplayContext(activeDisplay, display);
         resourceManager.uploadStreamBuffer(buffer, source);
 
         const DeviceResourceHandle deviceHandle = resourceManager.getStreamBufferDeviceHandle(buffer);
@@ -1220,12 +1196,35 @@ namespace ramses_internal
         }
 
         IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(display)->second;
-        DisplayHandle activeDisplay;
-        activateDisplayContext(activeDisplay, display);
         resourceManager.unloadStreamBuffer(buffer);
         m_rendererScenes.getSceneLinksManager().handleBufferDestroyedOrSourceUnavailable(buffer);
 
         return true;
+    }
+
+    void RendererSceneUpdater::handleSetClearFlags(DisplayHandle display, OffscreenBufferHandle buffer, uint32_t clearFlags)
+    {
+        if (!m_renderer.hasDisplayController(display))
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearEnabled failed, unknown display " << display);
+            return;
+        }
+
+        DeviceResourceHandle bufferDeviceHandle;
+        if (buffer.isValid())
+        {
+            bufferDeviceHandle = m_displayResourceManagers.find(display)->second->getOffscreenBufferDeviceHandle(buffer);
+            if (!bufferDeviceHandle.isValid())
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearEnabled cannot enable/disable clear for unknown offscreen buffer " << buffer);
+                return;
+            }
+        }
+        else
+            bufferDeviceHandle = m_renderer.getDisplayController(display).getDisplayBuffer();
+
+        assert(bufferDeviceHandle.isValid());
+        m_renderer.setClearFlags(display, bufferDeviceHandle, clearFlags);
     }
 
     void RendererSceneUpdater::handleSetClearColor(DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor)
@@ -1669,15 +1668,6 @@ namespace ramses_internal
             if (numMissingResources > missingResourcesToLog.size())
                 sos << " ...\n";
         }));
-    }
-
-    void RendererSceneUpdater::activateDisplayContext(DisplayHandle& activeDisplay, DisplayHandle displayToActivate)
-    {
-        if (activeDisplay != displayToActivate)
-        {
-            m_renderer.getDisplayController(displayToActivate).getRenderBackend().getSurface().enable();
-            activeDisplay = displayToActivate;
-        }
     }
 
     void RendererSceneUpdater::processScreenshotResults()

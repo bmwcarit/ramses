@@ -21,7 +21,7 @@ namespace ramses_internal
 {
     class String;
 
-    class Guid
+    class Guid final
     {
     public:
         using value_type = uint64_t;

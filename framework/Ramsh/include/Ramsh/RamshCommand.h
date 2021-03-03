@@ -9,29 +9,27 @@
 #ifndef RAMSES_RAMSHCOMMAND_H
 #define RAMSES_RAMSHCOMMAND_H
 
-#include "Collections/Vector.h"
-#include "Collections/String.h"
-#include "Ramsh/RamshInput.h"
+#include <string>
+#include <vector>
 
 namespace ramses_internal
 {
     class RamshCommand
     {
     public:
-        virtual ~RamshCommand() {}
-        void registerKeyword(const String& keyword);
-        virtual bool executeInput(const RamshInput& input) = 0;
+        virtual ~RamshCommand() = default;
+        void registerKeyword(const std::string& keyword);
+        virtual bool executeInput(const std::vector<std::string>& input) = 0;
 
-        String keywordString() const;
-        const StringVector& keywords() const;
+        std::string keywordString() const;
+        const std::vector<std::string>& keywords() const;
 
-        virtual String descriptionString() const;
+        virtual std::string descriptionString() const;
 
     protected:
-        StringVector m_keywords;
-        String description;
+        std::vector<std::string> m_keywords;
+        std::string description;
     };
-
 }// namespace ramses_internal
 
 #endif

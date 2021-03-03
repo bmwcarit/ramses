@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_X11/Platform_X11_EGL_ES_3_0.h"
-#include <EGL/eglext.h>
 
 namespace ramses_internal
 {
@@ -24,37 +23,5 @@ namespace ramses_internal
     uint32_t Platform_X11_EGL_ES_3_0::getSwapInterval() const
     {
         return 1u;
-    }
-
-    std::vector<EGLint> Platform_X11_EGL_ES_3_0::getSurfaceAttributes(UInt32 msaaSampleCount) const
-    {
-        return std::vector<EGLint>
-        {
-            EGL_SURFACE_TYPE,
-            EGL_WINDOW_BIT,
-
-            EGL_RENDERABLE_TYPE,
-            EGL_OPENGL_ES3_BIT_KHR,
-
-            EGL_RED_SIZE,
-            8,
-
-            EGL_ALPHA_SIZE,
-            8,
-
-            EGL_DEPTH_SIZE,
-            1,
-
-            EGL_STENCIL_SIZE,
-            8,
-
-            EGL_SAMPLE_BUFFERS,
-            (msaaSampleCount > 1) ? 1 : 0,
-
-            EGL_SAMPLES,
-            static_cast<EGLint>(msaaSampleCount > 1 ? msaaSampleCount : 0),
-
-            EGL_NONE
-        };
     }
 }

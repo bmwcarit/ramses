@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/DisplaySetup.h"
+#include "SceneAPI/RenderState.h"
 
 namespace ramses_internal
 {
@@ -15,7 +16,7 @@ namespace ramses_internal
         assert(!isInterruptible || isOffscreenBuffer);
         assert(m_displayBuffers.find(displayBuffer) == m_displayBuffers.cend());
 
-        DisplayBufferInfo bufferInfo{ isOffscreenBuffer, isInterruptible, viewport, clearColor, {}, true };
+        DisplayBufferInfo bufferInfo{ isOffscreenBuffer, isInterruptible, viewport, EClearFlags_All, clearColor, {}, true };
         m_displayBuffers.emplace(displayBuffer, std::move(bufferInfo));
     }
 
@@ -93,6 +94,11 @@ namespace ramses_internal
         const auto displayBuffer = findDisplayBufferSceneIsAssignedTo(sceneId);
         findSceneInfo(sceneId, displayBuffer).shown = show;
         getDisplayBufferInternal(displayBuffer).needsRerender = true;
+    }
+
+    void DisplaySetup::setClearFlags(DeviceResourceHandle displayBuffer, uint32_t clearFlags)
+    {
+        getDisplayBufferInternal(displayBuffer).clearFlags = clearFlags;
     }
 
     void DisplaySetup::setClearColor(DeviceResourceHandle displayBuffer, const Vector4& clearColor)

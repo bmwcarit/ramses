@@ -12,6 +12,7 @@
 #include "RendererAPI/IRenderBackend.h"
 #include "WindowEventHandlerMock.h"
 #include "RenderBackendMock.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -19,6 +20,13 @@ namespace ramses_internal
 {
     class APlatformTest : public Test
     {
+    public:
+        static void SetUpTestCase()
+        {
+            // caller is expected to have a display prefix for logs
+            ThreadLocalLog::SetPrefix(1);
+        }
+
     protected:
         IRenderBackend* createRenderBackend(Platform_BaseMock& platform)
         {
@@ -28,7 +36,7 @@ namespace ramses_internal
             EXPECT_CALL(platform, createWindow(_, _));
             EXPECT_CALL(*platform.window, init()).WillOnce(Return(true));
 
-            EXPECT_CALL(platform, createContext(Ref(*platform.window), nullptr));
+            EXPECT_CALL(platform, createContext(_, Ref(*platform.window), nullptr));
             EXPECT_CALL(*platform.context, init()).WillOnce(Return(true));
 
             EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
@@ -54,7 +62,7 @@ namespace ramses_internal
             EXPECT_CALL(mainRenderBackendMock, getSurface());
             EXPECT_CALL(mainRenderBackendMock.surfaceMock, getContext());
 
-            EXPECT_CALL(platform, createContext(Ref(mainRenderBackendMock.surfaceMock.windowMock), &mainRenderBackendMock.surfaceMock.contextMock));
+            EXPECT_CALL(platform, createContext(_, Ref(mainRenderBackendMock.surfaceMock.windowMock), &mainRenderBackendMock.surfaceMock.contextMock));
             EXPECT_CALL(*platform.context, init()).WillOnce(Return(true));
             EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
             EXPECT_CALL(platform, createDevice(Ref(*platform.context)));
@@ -208,7 +216,7 @@ namespace ramses_internal
             EXPECT_CALL(platform, createWindow(_, _));
             EXPECT_CALL(*platform.window, init()).WillOnce(Return(true));
 
-            EXPECT_CALL(platform, createContext(Ref(*platform.window), nullptr));
+            EXPECT_CALL(platform, createContext(_, Ref(*platform.window), nullptr));
             EXPECT_CALL(*platform.context, init()).WillOnce(Return(false)); //context fails init
             //destructors gets called
             EXPECT_CALL(static_cast<ContextMockWithDestructor&>(*platform.context), Die());
@@ -238,7 +246,7 @@ namespace ramses_internal
             EXPECT_CALL(platform, createWindow(_, _));
             EXPECT_CALL(*platform.window, init()).WillOnce(Return(true));
 
-            EXPECT_CALL(platform, createContext(Ref(*platform.window), nullptr));
+            EXPECT_CALL(platform, createContext(_, Ref(*platform.window), nullptr));
             EXPECT_CALL(*platform.context, init()).WillOnce(Return(true));
 
             EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
@@ -275,7 +283,7 @@ namespace ramses_internal
             EXPECT_CALL(platform, createWindow(_, _));
             EXPECT_CALL(*platform.window, init()).WillOnce(Return(true));
 
-            EXPECT_CALL(platform, createContext(Ref(*platform.window), nullptr));
+            EXPECT_CALL(platform, createContext(_, Ref(*platform.window), nullptr));
             EXPECT_CALL(*platform.context, init()).WillOnce(Return(true));
 
             EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
@@ -314,7 +322,7 @@ namespace ramses_internal
             EXPECT_CALL(mainRenderBackendMock, getSurface());
             EXPECT_CALL(mainRenderBackendMock.surfaceMock, getContext());
 
-            EXPECT_CALL(platform, createContext(Ref(mainRenderBackendMock.surfaceMock.windowMock), &mainRenderBackendMock.surfaceMock.contextMock));
+            EXPECT_CALL(platform, createContext(_, Ref(mainRenderBackendMock.surfaceMock.windowMock), &mainRenderBackendMock.surfaceMock.contextMock));
             EXPECT_CALL(*platform.context, init()).WillOnce(Return(false)); //context fails init
 
             //destructor gets called
@@ -349,7 +357,7 @@ namespace ramses_internal
             EXPECT_CALL(mainRenderBackendMock, getSurface());
             EXPECT_CALL(mainRenderBackendMock.surfaceMock, getContext());
 
-            EXPECT_CALL(platform, createContext(Ref(mainRenderBackendMock.surfaceMock.windowMock), &mainRenderBackendMock.surfaceMock.contextMock));
+            EXPECT_CALL(platform, createContext(_, Ref(mainRenderBackendMock.surfaceMock.windowMock), &mainRenderBackendMock.surfaceMock.contextMock));
             EXPECT_CALL(*platform.context, init()).WillOnce(Return(true));
             EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
             EXPECT_CALL(platform, createDevice(Ref(*platform.context)));

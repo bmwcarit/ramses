@@ -30,7 +30,7 @@ namespace ramses_internal
     void PlatformMock<MOCK_TYPE>::createDefaultMockCalls()
     {
         ON_CALL(*this, createWindow(_, _)).WillByDefault(Return(&renderBackendMock.surfaceMock.windowMock));
-        ON_CALL(*this, createContext(_, nullptr)).WillByDefault(Return(&renderBackendMock.surfaceMock.contextMock)); //non-shared context
+        ON_CALL(*this, createContext(_, _, nullptr)).WillByDefault(Return(&renderBackendMock.surfaceMock.contextMock)); //non-shared context
         ON_CALL(*this, createDevice(Ref(renderBackendMock.surfaceMock.contextMock))).WillByDefault(Return(&renderBackendMock.deviceMock));
         ON_CALL(*this, createSurface(_, _)).WillByDefault(Return(&renderBackendMock.surfaceMock));
         ON_CALL(*this, createEmbeddedCompositor(_, _)).WillByDefault(Return(&renderBackendMock.embeddedCompositorMock));
@@ -39,7 +39,7 @@ namespace ramses_internal
         ON_CALL(*this, createRenderBackend(_, _)).WillByDefault(Return(&renderBackendMock));
 
         ON_CALL(*this, createResourceUploadRenderBackend(_)).WillByDefault(Return(&resourceUploadRenderBackendMock));
-        ON_CALL(*this, createContext(_, Ne(nullptr))).WillByDefault(Return(&resourceUploadRenderBackendMock.contextMock)); //shared context (not null)
+        ON_CALL(*this, createContext(_, _, Ne(nullptr))).WillByDefault(Return(&resourceUploadRenderBackendMock.contextMock)); //shared context (not null)
         ON_CALL(*this, createDevice(Ref(resourceUploadRenderBackendMock.contextMock))).WillByDefault(Return(&resourceUploadRenderBackendMock.deviceMock));
     }
 

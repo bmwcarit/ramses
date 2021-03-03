@@ -7,9 +7,8 @@
 //  -------------------------------------------------------------------------
 
 #include "GaussFilter.h"
-#include "vector"
-#include "stdio.h"
-
+#include <vector>
+#include <cstdio>
 #include <cmath>
 
 GaussFilter::GaussFilter(ramses::RenderBuffer& inputBuffer,

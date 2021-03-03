@@ -9,7 +9,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandOutputConnection.h"
 #include "EmbeddedCompositor_Wayland/WaylandClient.h"
 #include "EmbeddedCompositor_Wayland/INativeWaylandResource.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include <wayland-server.h>
 #include <wayland-server-protocol.h>
 

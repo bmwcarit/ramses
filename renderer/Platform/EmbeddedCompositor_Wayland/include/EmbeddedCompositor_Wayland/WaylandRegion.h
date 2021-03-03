@@ -27,7 +27,7 @@ namespace ramses_internal
     public:
 
         WaylandRegion(IEmbeddedCompositor_Wayland& compositor, IWaylandClient& client, uint32_t version, uint32_t id);
-        ~WaylandRegion();
+        ~WaylandRegion() override;
 
         virtual void regionAdd(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height) override;
         virtual void regionSubtract(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height) override;

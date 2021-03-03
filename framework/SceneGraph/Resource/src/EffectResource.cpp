@@ -14,13 +14,14 @@
 namespace ramses_internal
 {
     EffectResource::EffectResource(const String& vertexShader, const String& fragmentShader, const String& geometryShader,
-        const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs,
-        const String& name, ResourceCacheFlag cacheFlag)
+        absl::optional<EDrawMode> geometryShaderInputType, const EffectInputInformationVector& uniformInputs,
+        const EffectInputInformationVector& attributeInputs, const String& name, ResourceCacheFlag cacheFlag)
         : ResourceBase(EResourceType_Effect, cacheFlag, name)
         , m_uniformInputs(uniformInputs)
         , m_attributeInputs(attributeInputs)
         , m_fragmentShaderOffset(static_cast<UInt32>(vertexShader.size() + 1))
         , m_geometryShaderOffset(m_fragmentShaderOffset+static_cast<UInt32>(fragmentShader.size() + 1))
+        , m_geometryShaderInputType(geometryShaderInputType)
     {
         const UInt32 dataLength = static_cast<UInt32>(vertexShader.size() + 1 + fragmentShader.size() + 1 + geometryShader.size() + 1); // including 3x terminating '0'
         ResourceBlob blob(dataLength);
@@ -30,12 +31,14 @@ namespace ramses_internal
         setResourceData(std::move(blob));
     }
 
-    EffectResource::EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs, const String& name, UInt32 fragmentShaderOffset, UInt32 geometryShaderOffset, ResourceCacheFlag cacheFlag)
+    EffectResource::EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs, absl::optional<EDrawMode> geometryShaderInputType,
+        const String& name, UInt32 fragmentShaderOffset, UInt32 geometryShaderOffset, ResourceCacheFlag cacheFlag)
         : ResourceBase(EResourceType_Effect, cacheFlag, name)
         , m_uniformInputs(uniformInputs)
         , m_attributeInputs(attributeInputs)
         , m_fragmentShaderOffset(fragmentShaderOffset)
         , m_geometryShaderOffset(geometryShaderOffset)
+        , m_geometryShaderInputType(geometryShaderInputType)
     {
     }
 
@@ -55,6 +58,13 @@ namespace ramses_internal
     {
         const char* data = reinterpret_cast<const char*>(getResourceData().data());
         return data + m_geometryShaderOffset;
+    }
+
+    absl::optional<EDrawMode> EffectResource::getGeometryShaderInputType() const
+    {
+        // TODO (backported) once 27 merged to master, consider if we want to add few asserts in this class that
+        // geometry shader input is not nullopt IFF geometry shader is set (for additional safety)
+        return m_geometryShaderInputType;
     }
 
     const EffectInputInformationVector& EffectResource::getUniformInputs() const
@@ -97,6 +107,17 @@ namespace ramses_internal
         WriteInputVector(output, m_attributeInputs);
         output << m_fragmentShaderOffset;
         output << m_geometryShaderOffset;
+
+        // TODO (backported) enable this once 27 merged to master
+        // Also drag in the geometry shader offset inside the if below
+        //if (m_geometryShaderInputType)
+        //{
+        //    output << static_cast<uint8_t>(*m_geometryShaderInputType);
+        //}
+        //else
+        //{
+        //    output << static_cast<uint8_t>(EDrawMode::NUMBER_OF_ELEMENTS);
+        //}
     }
 
     IResource* EffectResource::CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, const String& name)
@@ -111,7 +132,16 @@ namespace ramses_internal
         UInt32 geometryShaderOffset = 0;
         input >> geometryShaderOffset;
 
-        return new EffectResource(uniformInputs, attributeInputs, name, fragementShaderOffset, geometryShaderOffset, cacheFlag);
+        absl::optional<EDrawMode> geometryShaderInputTypeOpt;
+        // TODO (backported) enable this once 27 merged to master
+        //uint8_t geometryShaderInputTypeInt = 0;
+        //input >> geometryShaderInputTypeInt;
+        //if (geometryShaderInputTypeInt != static_cast<uint8_t>(EDrawMode::NUMBER_OF_ELEMENTS))
+        //{
+        //    geometryShaderInputTypeOpt = static_cast<EDrawMode>(geometryShaderInputTypeInt);
+        //}
+
+        return new EffectResource(uniformInputs, attributeInputs, geometryShaderInputTypeOpt, name, fragementShaderOffset, geometryShaderOffset, cacheFlag);
     }
 
     void EffectResource::WriteInputVector(IOutputStream& stream, const EffectInputInformationVector& inputVector)

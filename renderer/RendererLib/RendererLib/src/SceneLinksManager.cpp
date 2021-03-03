@@ -10,7 +10,7 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererLib/DataLinkUtils.h"
 #include "RendererEventCollector.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

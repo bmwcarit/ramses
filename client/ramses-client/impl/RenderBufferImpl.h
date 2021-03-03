@@ -23,7 +23,7 @@ namespace ramses
     {
     public:
         RenderBufferImpl(SceneImpl& scene, const char* name);
-        virtual ~RenderBufferImpl();
+        virtual ~RenderBufferImpl() override;
 
         void             initializeFrameworkData(uint32_t width, uint32_t height, ERenderBufferType bufferType, ERenderBufferFormat bufferFormat, ERenderBufferAccessMode accessMode, uint32_t sampleCount);
         virtual void     deinitializeFrameworkData() override;

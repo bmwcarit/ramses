@@ -19,7 +19,7 @@ namespace ramses
     {
     public:
         ArrayResourceImpl(ramses_internal::ResourceHashUsage arrayHash, SceneImpl& scene, const char* name);
-        virtual ~ArrayResourceImpl();
+        virtual ~ArrayResourceImpl() override;
 
         void initializeFromFrameworkData(uint32_t elementCount, EDataType elementType);
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;

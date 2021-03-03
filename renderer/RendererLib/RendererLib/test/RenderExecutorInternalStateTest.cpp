@@ -202,249 +202,312 @@ namespace ramses_internal
         expectMatrixFloatEqual(expectedProjectionMat * expectedViewMat * modelMat, m_executorState.getModelViewProjectionMatrix());
     }
 
-    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsUnchangedIfSetToSameValue)
+    TEST_F(ARenderExecutorInternalState, depthFuncRenderStateMarkedAsUnchangedIfSetToSameValue)
     {
-        DepthStencilState depthState;
-        depthState.m_depthFunc = EDepthFunc::Disabled;
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_FALSE(m_executorState.depthStencilState.hasChanged());
+        const auto depthFuncState = EDepthFunc::Disabled;
+        m_executorState.depthFuncState.setState(depthFuncState);
+        EXPECT_TRUE(m_executorState.depthFuncState.hasChanged());
+        m_executorState.depthFuncState.setState(depthFuncState);
+        EXPECT_FALSE(m_executorState.depthFuncState.hasChanged());
     }
 
-    TEST_F(ARenderExecutorInternalState, initialSetToDepthRenderStateTriggersChange)
+    TEST_F(ARenderExecutorInternalState, initialSetToDepthFuncRenderStateTriggersChange)
     {
-        DepthStencilState depthState;
-        depthState.m_depthFunc = EDepthFunc::Disabled;
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
-        EXPECT_FALSE(depthState != m_executorState.depthStencilState.getState());
+        const auto depthState = EDepthFunc::Disabled;
+        m_executorState.depthFuncState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthFuncState.hasChanged());
+        EXPECT_FALSE(depthState != m_executorState.depthFuncState.getState());
     }
 
-    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsChanged_IfDepthFunctionChanged)
+    TEST_F(ARenderExecutorInternalState, initialSetToDepthWriteRenderStateTriggersChange)
     {
-        DepthStencilState depthState;
-        depthState.m_depthFunc = EDepthFunc::Disabled;
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
-
-        depthState.m_depthFunc = EDepthFunc::Greater;
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+        const auto depthState = EDepthWrite::Disabled;
+        m_executorState.depthWriteState.setState(depthState);
+        EXPECT_TRUE(m_executorState.depthWriteState.hasChanged());
+        EXPECT_FALSE(depthState != m_executorState.depthWriteState.getState());
     }
 
-    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsChanged_IfDepthWriteChanged)
+    TEST_F(ARenderExecutorInternalState, initialSetToStencilRenderStateTriggersChange)
     {
-        DepthStencilState depthState;
-        depthState.m_depthWrite = EDepthWrite::Disabled;
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
-
-        depthState.m_depthWrite = EDepthWrite::Enabled;
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+        StencilState stencilState;
+        stencilState.m_stencilFunc = EStencilFunc::Disabled;
+        m_executorState.stencilState.setState(stencilState);
+        EXPECT_TRUE(m_executorState.stencilState.hasChanged());
+        EXPECT_FALSE(stencilState != m_executorState.stencilState.getState());
     }
 
-    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsChanged_IfStencilFunctionChanged)
+    TEST_F(ARenderExecutorInternalState, depthFuncRenderStateMarkedAsChanged_IfDepthFunctionChanged)
     {
-        DepthStencilState depthState;
-        depthState.m_stencilFunc = EStencilFunc::NeverPass;
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+        m_executorState.depthFuncState.setState(EDepthFunc::Disabled);
+        EXPECT_TRUE(m_executorState.depthFuncState.hasChanged());
 
-        depthState.m_stencilFunc = EStencilFunc::AlwaysPass;
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+        m_executorState.depthFuncState.setState(EDepthFunc::Greater);
+        EXPECT_TRUE(m_executorState.depthFuncState.hasChanged());
     }
 
-    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsChanged_IfStencilOperationChanged)
+    TEST_F(ARenderExecutorInternalState, depthWriteRenderStateMarkedAsChanged_IfDepthWriteChanged)
     {
-        auto runTest = [this](DepthStencilState& depthState, EStencilOp& stencilOp) {
+        m_executorState.depthWriteState.setState(EDepthWrite::Disabled);
+        EXPECT_TRUE(m_executorState.depthWriteState.hasChanged());
+
+        m_executorState.depthWriteState.setState(EDepthWrite::Enabled);
+        EXPECT_TRUE(m_executorState.depthWriteState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, stencilRenderStateMarkedAsChanged_IfStencilFunctionChanged)
+    {
+        StencilState stencilState;
+        stencilState.m_stencilFunc = EStencilFunc::NeverPass;
+        m_executorState.stencilState.setState(stencilState);
+        EXPECT_TRUE(m_executorState.stencilState.hasChanged());
+
+        stencilState.m_stencilFunc = EStencilFunc::AlwaysPass;
+        m_executorState.stencilState.setState(stencilState);
+        EXPECT_TRUE(m_executorState.stencilState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, stencilRenderStateMarkedAsChanged_IfStencilOperationChanged)
+    {
+        auto runTest = [this](StencilState& depthState, EStencilOp& stencilOp) {
             stencilOp = EStencilOp::Increment;
-            m_executorState.depthStencilState.setState(depthState);
-            EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+            m_executorState.stencilState.setState(depthState);
+            EXPECT_TRUE(m_executorState.stencilState.hasChanged());
 
             stencilOp = EStencilOp::Invert;
-            m_executorState.depthStencilState.setState(depthState);
-            EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+            m_executorState.stencilState.setState(depthState);
+            EXPECT_TRUE(m_executorState.stencilState.hasChanged());
         };
 
         {
-            DepthStencilState depthState;
-            runTest(depthState, depthState.m_stencilOpDepthFail);
+            StencilState stencilState;
+            runTest(stencilState, stencilState.m_stencilOpDepthFail);
         }
         {
-            DepthStencilState depthState;
-            runTest(depthState, depthState.m_stencilOpDepthPass);
+            StencilState stencilState;
+            runTest(stencilState, stencilState.m_stencilOpDepthPass);
         }
         {
-            DepthStencilState depthState;
-            runTest(depthState, depthState.m_stencilOpFail);
+            StencilState stencilState;
+            runTest(stencilState, stencilState.m_stencilOpFail);
         }
     }
 
-    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsChanged_IfStencilMaskChanged)
+    TEST_F(ARenderExecutorInternalState, stencilRenderStateMarkedAsChanged_IfStencilMaskChanged)
     {
-        DepthStencilState depthState;
-        depthState.m_stencilMask = 123;
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+        StencilState stencilState;
+        stencilState.m_stencilMask = 123;
+        m_executorState.stencilState.setState(stencilState);
+        EXPECT_TRUE(m_executorState.stencilState.hasChanged());
 
-        depthState.m_stencilMask = 124;
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+        stencilState.m_stencilMask = 124;
+        m_executorState.stencilState.setState(stencilState);
+        EXPECT_TRUE(m_executorState.stencilState.hasChanged());
     }
 
-    TEST_F(ARenderExecutorInternalState, depthRenderStateMarkedAsChanged_IfStencilRefValueChanged)
+    TEST_F(ARenderExecutorInternalState, stencilRenderStateMarkedAsChanged_IfStencilRefValueChanged)
     {
-        DepthStencilState depthState;
-        depthState.m_stencilRefValue = 123;
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+        StencilState stencilState;
+        stencilState.m_stencilRefValue = 123;
+        m_executorState.stencilState.setState(stencilState);
+        EXPECT_TRUE(m_executorState.stencilState.hasChanged());
 
-        depthState.m_stencilRefValue = 124;
-        m_executorState.depthStencilState.setState(depthState);
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
+        stencilState.m_stencilRefValue = 124;
+        m_executorState.stencilState.setState(stencilState);
+        EXPECT_TRUE(m_executorState.stencilState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, initialSetToScissorStateTriggersChange)
+    {
+        ScissorState scissorState;
+        scissorState.m_scissorTest = EScissorTest::Disabled;
+        m_executorState.scissorState.setState(scissorState);
+        EXPECT_TRUE(m_executorState.scissorState.hasChanged());
+        EXPECT_FALSE(scissorState != m_executorState.scissorState.getState());
+    }
+
+    TEST_F(ARenderExecutorInternalState, scissorStateMarkedAsUnchangedIfSetToSameValue)
+    {
+        ScissorState scissorState;
+        scissorState.m_scissorTest = EScissorTest::Disabled;
+        m_executorState.scissorState.setState(scissorState);
+        EXPECT_TRUE(m_executorState.scissorState.hasChanged());
+        m_executorState.scissorState.setState(scissorState);
+        EXPECT_FALSE(m_executorState.scissorState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, scissorStateMarkedAsChanged_IfScissorTestChanged)
+    {
+        ScissorState scissorState;
+        scissorState.m_scissorTest = EScissorTest::Disabled;
+        m_executorState.scissorState.setState(scissorState);
+        EXPECT_TRUE(m_executorState.scissorState.hasChanged());
+
+        scissorState.m_scissorTest = EScissorTest::Enabled;
+        m_executorState.scissorState.setState(scissorState);
+        EXPECT_TRUE(m_executorState.scissorState.hasChanged());
+    }
+
+    TEST_F(ARenderExecutorInternalState, scissorStateMarkedAsChanged_IfScissorRegionsChanged)
+    {
+        ScissorState scissorState;
+        scissorState.m_scissorRegion.x = 1u;
+        m_executorState.scissorState.setState(scissorState);
+        EXPECT_TRUE(m_executorState.scissorState.hasChanged());
+
+        scissorState.m_scissorRegion.x = 2u;
+        m_executorState.scissorState.setState(scissorState);
+        EXPECT_TRUE(m_executorState.scissorState.hasChanged());
     }
 
     TEST_F(ARenderExecutorInternalState, initialSetToBlendRenderStateTriggersChange)
     {
-        BlendState blendState;
-        blendState.m_blendFactorSrcColor = EBlendFactor::OneMinusDstAlpha;
-        m_executorState.blendState.setState(blendState);
-        EXPECT_TRUE(m_executorState.blendState.hasChanged());
-        EXPECT_FALSE(blendState != m_executorState.blendState.getState());
+        BlendFactorsState blendFactorsState;
+        blendFactorsState.m_blendFactorSrcColor = EBlendFactor::OneMinusDstAlpha;
+        m_executorState.blendFactorsState.setState(blendFactorsState);
+        EXPECT_TRUE(m_executorState.blendFactorsState.hasChanged());
+        EXPECT_FALSE(blendFactorsState != m_executorState.blendFactorsState.getState());
+
+        BlendOperationsState blendOperationsState;
+        blendOperationsState.m_blendOperationAlpha = EBlendOperation::Max;
+        m_executorState.blendOperationsState.setState(blendOperationsState);
+        EXPECT_TRUE(m_executorState.blendOperationsState.hasChanged());
+        EXPECT_FALSE(blendOperationsState != m_executorState.blendOperationsState.getState());
+
+        const Vector4 blendColorState(0.f);
+        m_executorState.blendColorState.setState(blendColorState);
+        EXPECT_TRUE(m_executorState.blendColorState.hasChanged());
+        EXPECT_FALSE(blendColorState != m_executorState.blendColorState.getState());
+
+        const ColorWriteMask colorMaskState = 0u;
+        m_executorState.colorWriteMaskState.setState(colorMaskState);
+        EXPECT_TRUE(m_executorState.colorWriteMaskState.hasChanged());
+        EXPECT_FALSE(colorMaskState != m_executorState.colorWriteMaskState.getState());
     }
 
     TEST_F(ARenderExecutorInternalState, blendRenderStateMarkedAsUnchangedIfSetToSameValue)
     {
-        BlendState blendState;
-        blendState.m_blendFactorSrcColor = EBlendFactor::OneMinusConstColor;
-        m_executorState.blendState.setState(blendState);
-        EXPECT_TRUE(m_executorState.blendState.hasChanged());
-        m_executorState.blendState.setState(blendState);
-        EXPECT_FALSE(m_executorState.blendState.hasChanged());
+        BlendFactorsState blendFactorsState;
+        blendFactorsState.m_blendFactorSrcColor = EBlendFactor::OneMinusConstColor;
+        m_executorState.blendFactorsState.setState(blendFactorsState);
+        EXPECT_TRUE(m_executorState.blendFactorsState.hasChanged());
+        m_executorState.blendFactorsState.setState(blendFactorsState);
+        EXPECT_FALSE(m_executorState.blendFactorsState.hasChanged());
+
+        BlendOperationsState blendOperationsState;
+        blendOperationsState.m_blendOperationAlpha = EBlendOperation::Max;
+        m_executorState.blendOperationsState.setState(blendOperationsState);
+        EXPECT_TRUE(m_executorState.blendOperationsState.hasChanged());
+        m_executorState.blendOperationsState.setState(blendOperationsState);
+        EXPECT_FALSE(m_executorState.blendOperationsState.hasChanged());
+
+        const Vector4 blendColorState(123.f);
+        m_executorState.blendColorState.setState(blendColorState);
+        EXPECT_TRUE(m_executorState.blendColorState.hasChanged());
+        m_executorState.blendColorState.setState(blendColorState);
+        EXPECT_FALSE(m_executorState.blendColorState.hasChanged());
+
+        const ColorWriteMask colorMaskState = 123u;
+        m_executorState.colorWriteMaskState.setState(colorMaskState);
+        EXPECT_TRUE(m_executorState.colorWriteMaskState.hasChanged());
+        m_executorState.colorWriteMaskState.setState(colorMaskState);
+        EXPECT_FALSE(m_executorState.colorWriteMaskState.hasChanged());
     }
 
-    TEST_F(ARenderExecutorInternalState, blendRenderStateMarkedAsChanged_IfBlendFactorChanged)
+    TEST_F(ARenderExecutorInternalState, blendFactorsStateMarkedAsChanged_IfBlendFactorChanged)
     {
-        auto runTest = [this](BlendState& blendState, EBlendFactor& blendFactor) {
+        auto runTest = [this](auto& blendState, EBlendFactor& blendFactor) {
             blendFactor = EBlendFactor::OneMinusConstAlpha;
-            m_executorState.blendState.setState(blendState);
-            EXPECT_TRUE(m_executorState.blendState.hasChanged());
+            m_executorState.blendFactorsState.setState(blendState);
+            EXPECT_TRUE(m_executorState.blendFactorsState.hasChanged());
 
             blendFactor = EBlendFactor::ConstAlpha;
-            m_executorState.blendState.setState(blendState);
-            EXPECT_TRUE(m_executorState.blendState.hasChanged());
+            m_executorState.blendFactorsState.setState(blendState);
+            EXPECT_TRUE(m_executorState.blendFactorsState.hasChanged());
         };
 
         {
-            BlendState blendState;
-            runTest(blendState, blendState.m_blendFactorSrcColor);
+            BlendFactorsState state;
+            runTest(state, state.m_blendFactorSrcColor);
         }
         {
-            BlendState blendState;
-            runTest(blendState, blendState.m_blendFactorDstColor);
+            BlendFactorsState state;
+            runTest(state, state.m_blendFactorDstColor);
         }
         {
-            BlendState blendState;
-            runTest(blendState, blendState.m_blendFactorSrcAlpha);
+            BlendFactorsState state;
+            runTest(state, state.m_blendFactorSrcAlpha);
         }
         {
-            BlendState blendState;
-            runTest(blendState, blendState.m_blendFactorDstAlpha);
+            BlendFactorsState state;
+            runTest(state, state.m_blendFactorDstAlpha);
         }
     }
 
-    TEST_F(ARenderExecutorInternalState, blendRenderStateMarkedAsChanged_IfBlendOperationChanged)
+    TEST_F(ARenderExecutorInternalState, blendOperationsStateMarkedAsChanged_IfBlendOperationChanged)
     {
         {
-            BlendState blendState;
-            blendState.m_blendOperationColor = EBlendOperation::Min;
-            m_executorState.blendState.setState(blendState);
-            EXPECT_TRUE(m_executorState.blendState.hasChanged());
+            BlendOperationsState state;
+            state.m_blendOperationColor = EBlendOperation::Min;
+            m_executorState.blendOperationsState.setState(state);
+            EXPECT_TRUE(m_executorState.blendOperationsState.hasChanged());
 
-            blendState.m_blendOperationColor = EBlendOperation::Max;
-            m_executorState.blendState.setState(blendState);
-            EXPECT_TRUE(m_executorState.blendState.hasChanged());
+            state.m_blendOperationColor = EBlendOperation::Max;
+            m_executorState.blendOperationsState.setState(state);
+            EXPECT_TRUE(m_executorState.blendOperationsState.hasChanged());
         }
         {
-            BlendState blendState;
-            blendState.m_blendOperationAlpha = EBlendOperation::Min;
-            m_executorState.blendState.setState(blendState);
-            EXPECT_TRUE(m_executorState.blendState.hasChanged());
+            BlendOperationsState state;
+            state.m_blendOperationAlpha = EBlendOperation::Min;
+            m_executorState.blendOperationsState.setState(state);
+            EXPECT_TRUE(m_executorState.blendOperationsState.hasChanged());
 
-            blendState.m_blendOperationAlpha = EBlendOperation::Max;
-            m_executorState.blendState.setState(blendState);
-            EXPECT_TRUE(m_executorState.blendState.hasChanged());
+            state.m_blendOperationAlpha = EBlendOperation::Max;
+            m_executorState.blendOperationsState.setState(state);
+            EXPECT_TRUE(m_executorState.blendOperationsState.hasChanged());
         }
     }
 
-    TEST_F(ARenderExecutorInternalState, blendRenderStateMarkedAsChanged_IfBlendColorChanged)
+    TEST_F(ARenderExecutorInternalState, blendColorMarkedAsChanged_IfBlendColorChanged)
     {
-        BlendState blendState;
-        blendState.m_blendColor = {.1f, .2f, .3f, .4f};
-        m_executorState.blendState.setState(blendState);
-        EXPECT_TRUE(m_executorState.blendState.hasChanged());
+        m_executorState.blendColorState.setState(Vector4{ .1f, .2f, .3f, .4f });
+        EXPECT_TRUE(m_executorState.blendColorState.hasChanged());
 
-        blendState.m_blendColor = { .9f, .9f, .9f, .9f };
-        m_executorState.blendState.setState(blendState);
-        EXPECT_TRUE(m_executorState.blendState.hasChanged());
+        m_executorState.blendColorState.setState(Vector4{ .9f });
+        EXPECT_TRUE(m_executorState.blendColorState.hasChanged());
     }
 
-    TEST_F(ARenderExecutorInternalState, blendRenderStateMarkedAsChanged_IfColorWriteMaskChanged)
+    TEST_F(ARenderExecutorInternalState, colorWriteMaskMarkedAsChanged_IfColorWriteMaskChanged)
     {
-        BlendState blendState;
-        blendState.m_colorWriteMask = EColorWriteFlag::EColorWriteFlag_Green;
-        m_executorState.blendState.setState(blendState);
-        EXPECT_TRUE(m_executorState.blendState.hasChanged());
+        m_executorState.colorWriteMaskState.setState(EColorWriteFlag::EColorWriteFlag_Green);
+        EXPECT_TRUE(m_executorState.colorWriteMaskState.hasChanged());
 
-        blendState.m_colorWriteMask = EColorWriteFlag::EColorWriteFlag_Blue;
-        m_executorState.blendState.setState(blendState);
-        EXPECT_TRUE(m_executorState.blendState.hasChanged());
+        m_executorState.colorWriteMaskState.setState(EColorWriteFlag::EColorWriteFlag_Blue);
+        EXPECT_TRUE(m_executorState.colorWriteMaskState.hasChanged());
     }
 
-    TEST_F(ARenderExecutorInternalState, initialSetToRasterizerRenderStateTriggersChange)
+    TEST_F(ARenderExecutorInternalState, initialSetToCullModeRenderStateTriggersChange)
     {
-        RasterizerState rasterState;
-        rasterState.m_cullMode = ECullMode::Disabled;
-        m_executorState.rasterizerState.setState(rasterState);
-        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
-        EXPECT_FALSE(rasterState != m_executorState.rasterizerState.getState());
+        const auto cullModeState = ECullMode::Disabled;
+        m_executorState.cullModeState.setState(cullModeState);
+        EXPECT_TRUE(m_executorState.cullModeState.hasChanged());
+        EXPECT_FALSE(cullModeState != m_executorState.cullModeState.getState());
     }
 
     TEST_F(ARenderExecutorInternalState, rasterizerRenderStateMarkedAsUnchangedIfSetToSameValue)
     {
-        RasterizerState rasterState;
-        rasterState.m_cullMode = ECullMode::Disabled;
-        m_executorState.rasterizerState.setState(rasterState);
-        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
-        m_executorState.rasterizerState.setState(rasterState);
-        EXPECT_FALSE(m_executorState.rasterizerState.hasChanged());
+        m_executorState.cullModeState.setState(ECullMode::Disabled);
+        EXPECT_TRUE(m_executorState.cullModeState.hasChanged());
+        m_executorState.cullModeState.setState(ECullMode::Disabled);
+        EXPECT_FALSE(m_executorState.cullModeState.hasChanged());
     }
 
     TEST_F(ARenderExecutorInternalState, rasterizerRenderStateMarkedAsChanged_IfCullModeChanged)
     {
-        RasterizerState rasterState;
-        rasterState.m_cullMode = ECullMode::Disabled;
-        m_executorState.rasterizerState.setState(rasterState);
-        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
+        m_executorState.cullModeState.setState(ECullMode::Disabled);
+        EXPECT_TRUE(m_executorState.cullModeState.hasChanged());
 
-        rasterState.m_cullMode = ECullMode::BackFacing;
-        m_executorState.rasterizerState.setState(rasterState);
-        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
-    }
-
-    TEST_F(ARenderExecutorInternalState, rasterizerRenderStateMarkedAsChanged_IfDrawModeChanged)
-    {
-        RasterizerState rasterState;
-        rasterState.m_drawMode = EDrawMode::LineLoop;
-        m_executorState.rasterizerState.setState(rasterState);
-        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
-
-        rasterState.m_drawMode = EDrawMode::Points;
-        m_executorState.rasterizerState.setState(rasterState);
-        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
+        m_executorState.cullModeState.setState(ECullMode::BackFacing);
+        EXPECT_TRUE(m_executorState.cullModeState.hasChanged());
     }
 
     TEST_F(ARenderExecutorInternalState, initialSetToDefaultDeviceHandlesTriggersChange)
@@ -561,25 +624,53 @@ namespace ramses_internal
 
     TEST_F(ARenderExecutorInternalState, canResetCachedStates)
     {
-        m_executorState.blendState.setState(BlendState());
-        m_executorState.depthStencilState.setState(DepthStencilState());
-        m_executorState.rasterizerState.setState(RasterizerState());
+        m_executorState.blendOperationsState.setState(BlendOperationsState());
+        m_executorState.blendFactorsState.setState(BlendFactorsState());
+        m_executorState.blendColorState.setState(Vector4(std::numeric_limits<float>::max()));
+        m_executorState.colorWriteMaskState.setState(std::numeric_limits<ColorWriteMask>::max());
 
-        ASSERT_FALSE(m_executorState.blendState.hasChanged());
-        ASSERT_FALSE(m_executorState.depthStencilState.hasChanged());
-        ASSERT_FALSE(m_executorState.rasterizerState.hasChanged());
+        m_executorState.depthFuncState.setState(EDepthFunc::NUMBER_OF_ELEMENTS);
+        m_executorState.depthWriteState.setState(EDepthWrite::NUMBER_OF_ELEMENTS);
+        m_executorState.stencilState.setState(StencilState());
+        m_executorState.cullModeState.setState(ECullMode::NUMBER_OF_ELEMENTS);
 
-        m_executorState.blendState.reset();
-        m_executorState.depthStencilState.reset();
-        m_executorState.rasterizerState.reset();
+        ASSERT_FALSE(m_executorState.blendOperationsState.hasChanged());
+        ASSERT_FALSE(m_executorState.blendFactorsState.hasChanged());
+        ASSERT_FALSE(m_executorState.blendColorState.hasChanged());
+        ASSERT_FALSE(m_executorState.colorWriteMaskState.hasChanged());
 
-        EXPECT_TRUE(m_executorState.blendState.hasChanged());
-        EXPECT_TRUE(m_executorState.depthStencilState.hasChanged());
-        EXPECT_TRUE(m_executorState.rasterizerState.hasChanged());
+        ASSERT_FALSE(m_executorState.depthFuncState.hasChanged());
+        ASSERT_FALSE(m_executorState.depthWriteState.hasChanged());
+        ASSERT_FALSE(m_executorState.stencilState.hasChanged());
+        ASSERT_FALSE(m_executorState.cullModeState.hasChanged());
 
-        EXPECT_FALSE(m_executorState.blendState.getState()          != BlendState());
-        EXPECT_FALSE(m_executorState.depthStencilState.getState()   != DepthStencilState());
-        EXPECT_FALSE(m_executorState.rasterizerState.getState()     != RasterizerState());
+        m_executorState.blendOperationsState.reset();
+        m_executorState.blendFactorsState.reset();
+        m_executorState.blendColorState.reset();
+        m_executorState.colorWriteMaskState.reset();
+
+        m_executorState.depthFuncState.reset();
+        m_executorState.depthWriteState.reset();
+        m_executorState.stencilState.reset();
+        m_executorState.cullModeState.reset();
+
+        EXPECT_TRUE(m_executorState.blendOperationsState.hasChanged());
+        EXPECT_TRUE(m_executorState.blendFactorsState.hasChanged());
+        EXPECT_TRUE(m_executorState.blendColorState.hasChanged());
+        EXPECT_TRUE(m_executorState.colorWriteMaskState.hasChanged());
+        EXPECT_TRUE(m_executorState.depthFuncState.hasChanged());
+        EXPECT_TRUE(m_executorState.depthWriteState.hasChanged());
+        EXPECT_TRUE(m_executorState.stencilState.hasChanged());
+        EXPECT_TRUE(m_executorState.cullModeState.hasChanged());
+
+        EXPECT_FALSE(m_executorState.blendOperationsState.getState() != BlendOperationsState());
+        EXPECT_FALSE(m_executorState.blendFactorsState.getState()   != BlendFactorsState());
+        EXPECT_FALSE(m_executorState.blendColorState.getState()     != Vector4(std::numeric_limits<float>::max()));
+        EXPECT_FALSE(m_executorState.colorWriteMaskState.getState() != std::numeric_limits<ColorWriteMask>::max());
+        EXPECT_FALSE(m_executorState.depthFuncState.getState()      != EDepthFunc::NUMBER_OF_ELEMENTS);
+        EXPECT_FALSE(m_executorState.depthWriteState.getState()     != EDepthWrite::NUMBER_OF_ELEMENTS);
+        EXPECT_FALSE(m_executorState.stencilState.getState()        != StencilState());
+        EXPECT_FALSE(m_executorState.cullModeState.getState()       != ECullMode::NUMBER_OF_ELEMENTS);
     }
 
     TEST_F(ARenderExecutorInternalState, canIncrementAndGetRenderPassAndRenderableIdx)

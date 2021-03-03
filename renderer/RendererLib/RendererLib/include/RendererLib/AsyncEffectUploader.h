@@ -24,6 +24,7 @@ namespace ramses_internal
     class IRenderBackend;
     class IResourceUploadRenderBackend;
     class EffectResource;
+    class IThreadAliveNotifier;
 
     using EffectsGpuResources = std::vector<std::pair<ResourceContentHash, std::unique_ptr<const GPUResource>>>;
     using EffectsRawResources = std::vector<const EffectResource*>;
@@ -31,8 +32,8 @@ namespace ramses_internal
     class AsyncEffectUploader : private Runnable
     {
     public:
-        explicit AsyncEffectUploader(IPlatform& platform, IRenderBackend& renderBackend);
-        ~AsyncEffectUploader();
+        AsyncEffectUploader(IPlatform& platform, IRenderBackend& renderBackend, IThreadAliveNotifier& notifier, int logPrefixID);
+        virtual ~AsyncEffectUploader() override;
 
         bool createResourceUploadRenderBackendAndStartThread();
         void destroyResourceUploadRenderBackendAndStopThread();
@@ -56,6 +57,11 @@ namespace ramses_internal
         EffectsGpuResources m_effectsUploadedCache; //to avoid acquiring mutex twice in resource upload thread
 
         std::promise<bool> m_creationSuccess;
+
+        IThreadAliveNotifier& m_notifier;
+        const uint64_t        m_aliveIdentifier;
+
+        const int m_logPrefixID;
     };
 }
 

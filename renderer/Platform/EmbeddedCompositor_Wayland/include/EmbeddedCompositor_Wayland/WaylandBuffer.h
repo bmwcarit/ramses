@@ -22,7 +22,7 @@ namespace ramses_internal
 
     public:
         WaylandBuffer(WaylandBufferResource& bufferResource, IEmbeddedCompositor_Wayland& compositor);
-        ~WaylandBuffer();
+        ~WaylandBuffer() override;
 
         virtual WaylandBufferResource& getResource() const override;
         virtual void reference() override;

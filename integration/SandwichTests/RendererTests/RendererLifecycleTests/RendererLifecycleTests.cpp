@@ -1097,9 +1097,10 @@ namespace ramses_internal
     TEST_F(ARendererLifecycleTest, PollingFrameCallbacks_DoesNotBlockIfNoDisplaysExist)
     {
         const std::chrono::seconds largePollingTime{100u};
-        RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::duration_cast<std::chrono::microseconds>(largePollingTime));
+        auto rendererConfig = RendererTestUtils::CreateTestRendererConfig();
+        rendererConfig.setFrameCallbackMaxPollTime(std::chrono::duration_cast<std::chrono::microseconds>(largePollingTime).count());
 
-        testScenesAndRenderer.initializeRenderer();
+        testScenesAndRenderer.initializeRenderer(rendererConfig);
 
         const auto startTime = std::chrono::steady_clock::now();
 
@@ -1122,9 +1123,10 @@ namespace ramses_internal
     TEST_F(ARendererLifecycleTest, PollingFrameCallbacks_BlocksIfDisplayNotReadyToRender)
     {
         const std::chrono::milliseconds nonTrivialPollingTime{50u};
-        RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::duration_cast<std::chrono::microseconds>(nonTrivialPollingTime));
+        auto rendererConfig = RendererTestUtils::CreateTestRendererConfig();
+        rendererConfig.setFrameCallbackMaxPollTime(std::chrono::duration_cast<std::chrono::microseconds>(nonTrivialPollingTime).count());
 
-        testScenesAndRenderer.initializeRenderer();
+        testScenesAndRenderer.initializeRenderer(rendererConfig);
 
         if (RendererTestUtils::HasSystemCompositorEnabled())
         {
@@ -1147,9 +1149,10 @@ namespace ramses_internal
     TEST_F(ARendererLifecycleTest, PollingFrameCallbacks_BlocksIfAllDisplaysNotReadyToRender)
     {
         const std::chrono::milliseconds nonTrivialPollingTime{50u};
-        RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::duration_cast<std::chrono::microseconds>(nonTrivialPollingTime));
+        auto rendererConfig = RendererTestUtils::CreateTestRendererConfig();
+        rendererConfig.setFrameCallbackMaxPollTime(std::chrono::duration_cast<std::chrono::microseconds>(nonTrivialPollingTime).count());
 
-        testScenesAndRenderer.initializeRenderer();
+        testScenesAndRenderer.initializeRenderer(rendererConfig);
 
         if (RendererTestUtils::HasSystemCompositorEnabled())
         {
@@ -1173,9 +1176,10 @@ namespace ramses_internal
     TEST_F(ARendererLifecycleTest, PollingFrameCallbacks_UnreadyDisplayDoesNotBlockReadyDisplay)
     {
         const std::chrono::seconds largePollingTime{100u};
-        RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::duration_cast<std::chrono::microseconds>(largePollingTime));
+        auto rendererConfig = RendererTestUtils::CreateTestRendererConfig();
+        rendererConfig.setFrameCallbackMaxPollTime(std::chrono::duration_cast<std::chrono::microseconds>(largePollingTime).count());
 
-        testScenesAndRenderer.initializeRenderer();
+        testScenesAndRenderer.initializeRenderer(rendererConfig);
 
         if (RendererTestUtils::HasSystemCompositorEnabled())
         {
@@ -1210,9 +1214,10 @@ namespace ramses_internal
     TEST_F(ARendererLifecycleTest, PollingFrameCallbacks_UnreadyDisplayDoesNotBlockReadyDisplay_DisplaysInOtherOrder)
     {
         const std::chrono::seconds largePollingTime{100u};
-        RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::duration_cast<std::chrono::microseconds>(largePollingTime));
+        auto rendererConfig = RendererTestUtils::CreateTestRendererConfig();
+        rendererConfig.setFrameCallbackMaxPollTime(std::chrono::duration_cast<std::chrono::microseconds>(largePollingTime).count());
 
-        testScenesAndRenderer.initializeRenderer();
+        testScenesAndRenderer.initializeRenderer(rendererConfig);
 
         if (RendererTestUtils::HasSystemCompositorEnabled())
         {
@@ -1246,9 +1251,10 @@ namespace ramses_internal
     TEST_F(ARendererLifecycleTest, PollingFrameCallbacks_ReadyDisplayDoesNotStarveOtherDisplay)
     {
         const std::chrono::milliseconds nonTrivialPollingTime{50u};
-        RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::duration_cast<std::chrono::microseconds>(nonTrivialPollingTime));
+        auto rendererConfig = RendererTestUtils::CreateTestRendererConfig();
+        rendererConfig.setFrameCallbackMaxPollTime(std::chrono::duration_cast<std::chrono::microseconds>(nonTrivialPollingTime).count());
 
-        testScenesAndRenderer.initializeRenderer();
+        testScenesAndRenderer.initializeRenderer(rendererConfig);
 
         if (RendererTestUtils::HasSystemCompositorEnabled())
         {
@@ -1279,9 +1285,10 @@ namespace ramses_internal
     TEST_F(ARendererLifecycleTest, PollingFrameCallbacks_ReadyDisplayDoesNotStarveOtherDisplay_DisplaysInOtherOrder)
     {
         const std::chrono::milliseconds nonTrivialPollingTime{50u};
-        RendererTestUtils::SetMaxFrameCallbackPollingTime(std::chrono::duration_cast<std::chrono::microseconds>(nonTrivialPollingTime));
+        auto rendererConfig = RendererTestUtils::CreateTestRendererConfig();
+        rendererConfig.setFrameCallbackMaxPollTime(std::chrono::duration_cast<std::chrono::microseconds>(nonTrivialPollingTime).count());
 
-        testScenesAndRenderer.initializeRenderer();
+        testScenesAndRenderer.initializeRenderer(rendererConfig);
 
         if (RendererTestUtils::HasSystemCompositorEnabled())
         {

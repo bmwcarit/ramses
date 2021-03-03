@@ -14,38 +14,30 @@
 
 namespace ramses_internal
 {
-    class PlatformMemory
+    namespace PlatformMemory
     {
-    public:
+        inline
+        void Set(void* dst, Int32 val, size_t size)
+        {
+            if(size > 0)
+                std::memset(dst, val, size);
+        }
 
-        static void Set(void* dst, Int32 val, size_t size);
+        inline
+        void Copy(void* dst, const void* src, UInt size)
+        {
+            if(size > 0)
+                std::memcpy(dst, src, size);
+        }
 
-        static void Copy(void* dst, const void* src, UInt size);
-
-        static Int32 Compare(const void* mem1, const void* mem2, UInt num);
+        inline
+        Int32 Compare(const void* mem1, const void* mem2, UInt num)
+        {
+            if(num > 0)
+                return std::memcmp(mem1, mem2, num);
+            return 0;
+        }
     };
-
-    inline
-    void PlatformMemory::Set(void* dst, Int32 val, size_t size)
-    {
-        if(size > 0)
-            std::memset(dst, val, size);
-    }
-
-    inline
-    void PlatformMemory::Copy(void* dst, const void* src, UInt size)
-    {
-        if(size > 0)
-            std::memcpy(dst, src, size);
-    }
-
-    inline
-    Int32 PlatformMemory::Compare(const void* mem1, const void* mem2, UInt num)
-    {
-        if(num > 0)
-            return std::memcmp(mem1, mem2, num);
-        return 0;
-    }
 }
 
 #endif

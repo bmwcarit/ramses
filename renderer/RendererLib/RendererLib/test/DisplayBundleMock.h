@@ -20,13 +20,14 @@ namespace ramses_internal
     {
     public:
         DisplayBundleMock();
-        virtual ~DisplayBundleMock();
+        virtual ~DisplayBundleMock() override;
 
         MOCK_METHOD(void, doOneLoop, (ELoopMode loopMode, std::chrono::microseconds sleepTime), (override));
         MOCK_METHOD(void, pushAndConsumeCommands, (RendererCommands& cmds), (override));
         MOCK_METHOD(void, dispatchRendererEvents, (RendererEventVector& events), (override));
         MOCK_METHOD(void, dispatchSceneControlEvents, (RendererEventVector& events), (override));
         MOCK_METHOD(SceneId, findMasterSceneForReferencedScene, (SceneId refScene), (const, override));
+        MOCK_METHOD(void, enableContext, (), (override));
         MOCK_METHOD(IEmbeddedCompositingManager&, getECManager, (DisplayHandle display), (override));
         MOCK_METHOD(IEmbeddedCompositor&, getEC, (DisplayHandle display), (override));
     };

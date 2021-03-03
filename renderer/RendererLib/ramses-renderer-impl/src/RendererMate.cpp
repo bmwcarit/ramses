@@ -19,16 +19,16 @@ namespace ramses
     RendererMate::RendererMate(RamsesRendererImpl& renderer, RamsesFrameworkImpl& framework)
         : m_ramsesRenderer(renderer)
         , m_rendererSceneControl(*renderer.getSceneControlAPI())
-        , m_exitCommand{ std::make_unique<ramses_internal::RamshCommandExit>() }
+        , m_exitCommand{ std::make_shared<ramses_internal::RamshCommandExit>() }
     {
-        framework.getRamsh().add(*m_exitCommand);
-        m_ramshCommands.push_back(std::make_unique<ramses_internal::ShowSceneOnDisplay>(*this));
-        m_ramshCommands.push_back(std::make_unique<ramses_internal::HideScene>(*this));
-        m_ramshCommands.push_back(std::make_unique<ramses_internal::ReleaseScene>(*this));
-        m_ramshCommands.push_back(std::make_unique<ramses_internal::LinkData>(*this));
-        m_ramshCommands.push_back(std::make_unique<ramses_internal::ConfirmationEcho>(*this));
+        framework.getRamsh().add(m_exitCommand);
+        m_ramshCommands.push_back(std::make_shared<ramses_internal::ShowSceneOnDisplay>(*this));
+        m_ramshCommands.push_back(std::make_shared<ramses_internal::HideScene>(*this));
+        m_ramshCommands.push_back(std::make_shared<ramses_internal::ReleaseScene>(*this));
+        m_ramshCommands.push_back(std::make_shared<ramses_internal::LinkData>(*this));
+        m_ramshCommands.push_back(std::make_shared<ramses_internal::ConfirmationEcho>(*this));
         for (auto& cmd : m_ramshCommands)
-            framework.getRamsh().add(*cmd);
+            framework.getRamsh().add(cmd);
         LOG_INFO(ramses_internal::CONTEXT_SMOKETEST, "Ramsh commands registered from RendererMate");
     }
 
@@ -38,7 +38,7 @@ namespace ramses
 
         if (getLastReportedSceneState(sceneId) == RendererSceneState::Rendered)
         {
-            processConfirmationEchoCommand(std::move(confirmationText));
+            processConfirmationEchoCommand(m_scenesInfo[sceneId].displayMapped, std::move(confirmationText));
             m_scenesInfo[sceneId].renderedStateConfirmationText.clear();
         }
         else
@@ -50,6 +50,7 @@ namespace ramses
     bool RendererMate::setSceneMapping(sceneId_t sceneId, displayId_t displayId)
     {
         std::lock_guard<std::recursive_mutex> guard(m_lock);
+        m_scenesInfo[sceneId].displayMapped = displayId;
         return m_rendererSceneControl.setSceneMapping(sceneId, displayId) == StatusOK;
     }
 
@@ -59,11 +60,11 @@ namespace ramses
         return m_rendererSceneControl.setSceneDisplayBufferAssignment(sceneId, displayBuffer, sceneRenderOrder) == StatusOK;
     }
 
-    void RendererMate::processConfirmationEchoCommand(std::string confirmationText)
+    void RendererMate::processConfirmationEchoCommand(displayId_t display, std::string confirmationText)
     {
         std::lock_guard<std::recursive_mutex> guard(m_lock);
         if (!confirmationText.empty())
-            m_ramsesRenderer.logConfirmationEcho(ramses_internal::String{ std::move(confirmationText) });
+            m_ramsesRenderer.logConfirmationEcho(display, ramses_internal::String{ std::move(confirmationText) });
     }
 
     void RendererMate::linkOffscreenBuffer(displayBufferId_t offscreenBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId)
@@ -118,7 +119,7 @@ namespace ramses
 
         if (state == RendererSceneState::Rendered)
         {
-            processConfirmationEchoCommand(sceneInfo.renderedStateConfirmationText);
+            processConfirmationEchoCommand(m_scenesInfo[sceneId].displayMapped, sceneInfo.renderedStateConfirmationText);
             sceneInfo.renderedStateConfirmationText.clear();
         }
     }

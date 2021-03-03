@@ -18,21 +18,6 @@ namespace ramses
     class RenderTarget;
 
     /**
-    * @brief Clear flags used to specify which render buffers should be cleared.
-    *
-    */
-    enum EClearFlags
-    {
-        EClearFlags_None      = 0,
-
-        EClearFlags_Color     = 1 << 0,
-        EClearFlags_Depth     = 1 << 1,
-        EClearFlags_Stencil   = 1 << 2,
-
-        EClearFlags_All       = EClearFlags_Color | EClearFlags_Depth | EClearFlags_Stencil
-    };
-
-    /**
      * @brief The RenderPass is a container used to collect meshes which are supposed
      * to be rendered together.
      * @details A RenderPass has a Camera which is used for all MeshNodes
@@ -168,11 +153,11 @@ namespace ramses
         void getClearColor(float &r, float &g, float &b, float &a) const;
 
         /**
-        * @brief Set the clear flags which enable/disable the clearing of the render target assigned to this RenderPass(default: EClearFlags_All)
+        * @brief Set the clear flags which enable/disable the clearing of the render target assigned to this RenderPass(default: #ramses::EClearFlags_All)
         * @details The clear flags have no effect on render passes with no render target assigned, i.e. it is not allowed to control clearing
         *          of display buffer (whether it is framebuffer or offscreen buffer) on renderer side from within scene's render pass.
         *
-        * @param clearFlags clear flags, which is a bitmask of the EClearFlags enum
+        * @param clearFlags clear flags, which is a bitmask of the #ramses::EClearFlags enum
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
@@ -181,7 +166,7 @@ namespace ramses
         /**
         * @brief Returns the clear flags of the RenderPass
         *
-        * @returns clear flags, which is a bitmask of the EClearFlags enum
+        * @returns clear flags, which is a bitmask of the #ramses::EClearFlags enum
         */
         uint32_t getClearFlags() const;
 

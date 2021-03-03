@@ -22,7 +22,7 @@ namespace ramses_internal
     {
     public:
         explicit WindowEventsPollingManager_Wayland(std::chrono::microseconds maxFrameCallbackTime);
-        virtual ~WindowEventsPollingManager_Wayland();
+        virtual ~WindowEventsPollingManager_Wayland() override;
 
         virtual void pollWindowsTillAnyCanRender() const override final;
         void addWindow(Window_Wayland* window);

@@ -12,6 +12,7 @@
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-client-api/Resource.h"
 #include "ramses-client-api/EffectInputSemantic.h"
+#include "ramses-client-api/AppearanceEnums.h"
 
 namespace ramses
 {
@@ -98,6 +99,28 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t findAttributeInput(EEffectAttributeSemantic attributeSemantic, AttributeInput& attributeInput) const;
+
+        /**
+        * @brief Returns whether the \p effect has a geometry shader attached to it.
+        *
+        * @param[in] effect effect to check for existance of geometry shader
+        * @return true if the effect has a geometry shader attached to it, false otherwise
+        */
+        static bool hasGeometryShader(const Effect& effect);
+
+        /**
+        * @brief If the \p effect has a geometry shader attached to it (see #hasGeometryShader) this method
+        * can be used to check the expected primitive type of the geometry shader. Use this to make sure
+        * that geometry-based effects get only paired with geometry which matches their expected type!
+        *
+        * See also #ramses::Appearance::setDrawMode().
+        *
+        * @param[in] effect effect to check for geometry input type
+        * @param[out] expectedGeometryInputType geometry type expected by the geometry shader of /p effect
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        static status_t getGeometryShaderInputType(const Effect& effect, EDrawMode& expectedGeometryInputType);
 
         /**
         * @brief Stores internal data for implementation specifics of Effect.

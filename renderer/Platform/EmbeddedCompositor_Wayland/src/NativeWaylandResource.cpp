@@ -8,7 +8,6 @@
 
 #include "EmbeddedCompositor_Wayland/NativeWaylandResource.h"
 #include "Collections/String.h"
-#include "Utils/LogMacros.h"
 #include <cassert>
 
 namespace ramses_internal

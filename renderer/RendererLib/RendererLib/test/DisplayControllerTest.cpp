@@ -41,20 +41,14 @@ namespace ramses_internal
         destroyDisplayController(displayController);
     }
 
-    TEST_F(ADisplayController, enablesContextOnBeginFrame)
+    TEST_F(ADisplayController, doesNotEnableContextOnBeginFrame)
     {
         IDisplayController& displayController = createDisplayController();
-
-        InSequence seq;
-        EXPECT_CALL(m_renderBackend, getSurface());
-        EXPECT_CALL(m_renderBackend.surfaceMock, enable());
-
-        displayController.enableContext();
-
+        EXPECT_CALL(m_renderBackend.surfaceMock, enable()).Times(0);
         destroyDisplayController(displayController);
     }
 
-    TEST_F(ADisplayController, activatesBufferAndClearsOnClearBuffer)
+    TEST_F(ADisplayController, activatesBufferAndClearsOnClearBuffer_clearAll)
     {
         const Vector4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
         IDisplayController& displayController = createDisplayController();
@@ -66,9 +60,37 @@ namespace ramses_internal
         EXPECT_CALL(m_renderBackend.deviceMock, depthWrite(EDepthWrite::Enabled));
         RenderState::ScissorRegion scissorRegion{};
         EXPECT_CALL(m_renderBackend.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
-        EXPECT_CALL(m_renderBackend.deviceMock, clear(_));
+        EXPECT_CALL(m_renderBackend.deviceMock, clear(EClearFlags_All));
 
-        displayController.clearBuffer(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, clearColor);
+        displayController.clearBuffer(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, EClearFlags_All, clearColor);
+
+        destroyDisplayController(displayController);
+    }
+
+    TEST_F(ADisplayController, activatesBufferAndClearsOnClearBuffer_clearColor)
+    {
+        const Vector4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
+        IDisplayController& displayController = createDisplayController();
+
+        InSequence seq;
+        EXPECT_CALL(m_renderBackend.deviceMock, activateRenderTarget(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle));
+        EXPECT_CALL(m_renderBackend.deviceMock, colorMask(true, true, true, true));
+        EXPECT_CALL(m_renderBackend.deviceMock, clearColor(clearColor));
+        RenderState::ScissorRegion scissorRegion{};
+        EXPECT_CALL(m_renderBackend.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
+        EXPECT_CALL(m_renderBackend.deviceMock, clear(EClearFlags_Color));
+
+        displayController.clearBuffer(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, EClearFlags_Color, clearColor);
+
+        destroyDisplayController(displayController);
+    }
+
+    TEST_F(ADisplayController, doesNotActivatesBufferNorClearsOnClearBuffer_clearNone)
+    {
+        const Vector4 clearColor(0.1f, 0.2f, 0.3f, 0.4f);
+        IDisplayController& displayController = createDisplayController();
+
+        displayController.clearBuffer(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, EClearFlags_None, clearColor);
 
         destroyDisplayController(displayController);
     }

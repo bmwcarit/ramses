@@ -201,7 +201,7 @@ namespace ramses_internal
     TEST_F(AResourcePersistation, WriteRead_EffectResource)
     {
         const ResourceCacheFlag flag(15u);
-        EffectResource effectResource("vertexBla", "fragmentFoo", "geometryFoo", EffectInputInformationVector(), EffectInputInformationVector(), "effect name", flag);
+        EffectResource effectResource("vertexBla", "fragmentFoo", "geometryFoo", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", flag);
 
         const EffectResource* loadedEffectResource = createLoadedResource<EffectResource>(effectResource, EResourceType_Effect);
 
@@ -241,7 +241,7 @@ namespace ramses_internal
         ManagedResource managedRes2{ &res2, dummyManagedResourceCallback };
         const ResourceContentHash hash2 = managedRes2->getHash();
 
-        EffectResource res3("foo", "bar", "qux", EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", flag3);
+        EffectResource res3("foo", "bar", "qux", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", flag3);
         ManagedResource managedRes3{ &res3, dummyManagedResourceCallback };
         const ResourceContentHash hash3 = managedRes3->getHash();
 

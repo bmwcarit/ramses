@@ -22,10 +22,10 @@ namespace ramses_internal
     {
     public:
         explicit RamshCommandExit();
-        virtual bool executeInput(const RamshInput& input) override;
+        virtual bool executeInput(const std::vector<std::string>& input) override;
 
         bool exitRequested();
-        void waitForExitRequest(UInt32 timeoutMillisec = 0u);
+        void waitForExitRequest(uint32_t timeoutMillisec = 0u);
 
     private:
         std::atomic<bool> m_exitRequested;

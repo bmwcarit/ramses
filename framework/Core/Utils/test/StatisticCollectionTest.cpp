@@ -24,13 +24,34 @@ namespace ramses_internal
         StatisticCollectionFramework m_statisticCollection;
     };
 
-    TEST_F(StatisticCollectionTest, canUpdateCounter)
+    TEST_F(StatisticCollectionTest, canIncreaseCounter)
     {
         EXPECT_EQ(0u, m_statisticCollection.statResourcesCreated.getCounterValue());
-        m_statisticCollection.statResourcesCreated.getCounterValue();
         m_statisticCollection.statResourcesCreated.incCounter(1);
         EXPECT_EQ(1u, m_statisticCollection.statResourcesCreated.getCounterValue());
+        m_statisticCollection.statResourcesCreated.incCounter(2);
+        EXPECT_EQ(3u, m_statisticCollection.statResourcesCreated.getCounterValue());
     }
+
+    TEST_F(StatisticCollectionTest, canSetCounterValue)
+    {
+        m_statisticCollection.statResourcesCreated.incCounter(1);
+        EXPECT_EQ(1u, m_statisticCollection.statResourcesCreated.getCounterValue());
+        m_statisticCollection.statResourcesCreated.setCounterValue(3);
+        EXPECT_EQ(3u, m_statisticCollection.statResourcesCreated.getCounterValue());
+        m_statisticCollection.statResourcesCreated.setCounterValue(5);
+        EXPECT_EQ(5u, m_statisticCollection.statResourcesCreated.getCounterValue());
+    }
+
+    TEST_F(StatisticCollectionTest, canDecreaseCounter)
+    {
+        m_statisticCollection.statResourcesCreated.setCounterValue(3);
+        m_statisticCollection.statResourcesCreated.decCounter(1);
+        EXPECT_EQ(2u, m_statisticCollection.statResourcesCreated.getCounterValue());
+        m_statisticCollection.statResourcesCreated.decCounter(2);
+        EXPECT_EQ(0u, m_statisticCollection.statResourcesCreated.getCounterValue());
+    }
+
 
     TEST_F(StatisticCollectionTest, nextTimeIntervalResetsCounter)
     {

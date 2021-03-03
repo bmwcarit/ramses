@@ -18,6 +18,7 @@
 #include "RendererLib/ResourceDescriptor.h"
 #include "Components/ResourceDeleterCallingCallback.h"
 #include "Utils/ThreadBarrier.h"
+#include "Utils/ThreadLocalLog.h"
 #include <thread>
 
 using namespace ramses_internal;
@@ -90,6 +91,8 @@ public:
     AResourceUploader()
         : dummyManagedResourceCallback(managedResourceDeleter)
     {
+        // caller is expected to have a display prefix for logs
+        ThreadLocalLog::SetPrefix(1);
     }
 
     StrictMock<RenderBackendStrictMock> renderer;
@@ -254,7 +257,7 @@ TEST_F(AResourceUploader, uploadsTextureCubeResourceWithMipGen)
 
 TEST_F(AResourceUploader, canStoreBinaryShader)
 {
-    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     const SceneId sceneUsingResource(14);
 
     BinaryShaderProviderFake binaryShaderProvider;
@@ -268,7 +271,7 @@ TEST_F(AResourceUploader, canStoreBinaryShader)
 
 TEST_F(AResourceUploader, doesNoStoreBinaryShaderIfFailedToGetBinaryShaderFromDevice)
 {
-    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     const SceneId sceneUsingResource(14);
 
     BinaryShaderProviderFake binaryShaderProvider;
@@ -283,7 +286,7 @@ TEST_F(AResourceUploader, doesNoStoreBinaryShaderIfFailedToGetBinaryShaderFromDe
 
 TEST_F(AResourceUploader, ifShaderShouldNotBeCachedNoDownloadWillHappen)
 {
-    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     const SceneId sceneUsingResource(14);
 
     BinaryShaderProviderFake binaryShaderProvider;
@@ -297,7 +300,7 @@ TEST_F(AResourceUploader, ifShaderShouldNotBeCachedNoDownloadWillHappen)
 
 TEST_F(AResourceUploader, doesNotTryToStoreBinaryShaderIfNoBinaryShaderCacheAvailable)
 {
-    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     const SceneId sceneUsingResource(14);
 
     EXPECT_CALL(renderer.deviceMock, getBinaryShader(_, _, _)).Times(0);
@@ -306,7 +309,7 @@ TEST_F(AResourceUploader, doesNotTryToStoreBinaryShaderIfNoBinaryShaderCacheAvai
 
 TEST_F(AResourceUploader, doesNotReturnDeviceHandleForEffectResourceWithoutBinaryShaderCache)
 {
-    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
@@ -319,7 +322,7 @@ TEST_F(AResourceUploader, doesNotReturnDeviceHandleIfShaderIsNotCached)
     BinaryShaderProviderFake binaryShaderProvider;
     ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
 
-    EffectResource res("", "","", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
 
     EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported());
@@ -334,7 +337,7 @@ TEST_F(AResourceUploader, doesNotReturnDeviceHandleIfShaderIsNotCached)
 
 TEST_F(AResourceUploader, uploadsEffectResourceFromBinaryShaderCacheWhenCacheHit)
 {
-    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     ManagedResource managedRes{ &res, dummyManagedResourceCallback };
 
     UInt8 binaryShaderData[] = { 1u, 2u, 3u, 4u };
@@ -365,7 +368,7 @@ TEST_F(AResourceUploader, uploadsEffectResourceFromBinaryShaderCacheWhenCacheHit
 
 TEST_F(AResourceUploader, doesNotReturnDeviceHandleForEffectResourceWithBrokenBinaryShaderCache)
 {
-    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     ManagedResource managedRes{ &res, dummyManagedResourceCallback };
     SceneId sceneUsingResource(14);
 
@@ -403,7 +406,7 @@ TEST_F(AResourceUploader, providesSupportedBinaryShaderFormatsOnlyOnce)
     BinaryShaderProviderFake binaryShaderProvider;
     ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
 
-    EffectResource res("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(3);
 
     EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported()).Times(3);
@@ -432,9 +435,9 @@ TEST_F(AResourceUploader, providesSupportedBinaryShaderFormatsOnlyOnceFromMultip
     ResourceUploader uploaderWithBinaryProvider2(&binaryShaderProvider);
     ResourceUploader uploaderWithBinaryProvider3(&binaryShaderProvider);
 
-    EffectResource res1("1", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
-    EffectResource res2("2", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
-    EffectResource res3("3", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res1("1", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res2("2", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EffectResource res3("3", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(3);
     EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported()).Times(3);
 
@@ -460,16 +463,19 @@ TEST_F(AResourceUploader, providesSupportedBinaryShaderFormatsOnlyOnceFromMultip
 
     ThreadBarrier startBarrier(3);
     std::thread t1([&]() {
+            ThreadLocalLog::SetPrefix(2);
             startBarrier.wait();
             uint32_t ramSize = 0;
             EXPECT_FALSE(uploaderWithBinaryProvider1.uploadResource(renderer, resourceObject1, ramSize).has_value());
         });
     std::thread t2([&]() {
+            ThreadLocalLog::SetPrefix(3);
             startBarrier.wait();
             uint32_t ramSize = 0;
             EXPECT_FALSE(uploaderWithBinaryProvider2.uploadResource(renderer, resourceObject2, ramSize).has_value());
         });
     std::thread t3([&]() {
+            ThreadLocalLog::SetPrefix(4);
             startBarrier.wait();
             uint32_t ramSize = 0;
             EXPECT_FALSE(uploaderWithBinaryProvider3.uploadResource(renderer, resourceObject3, ramSize).has_value());

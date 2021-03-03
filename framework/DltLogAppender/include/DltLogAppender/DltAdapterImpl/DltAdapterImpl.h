@@ -59,7 +59,7 @@ namespace ramses_internal
         static void DltLogLevelChangedCallback(char context_id[DLT_ID_SIZE], uint8_t log_level, uint8_t trace_status);
 
         DltAdapterImpl();
-        ~DltAdapterImpl();
+        ~DltAdapterImpl() override;
 
         bool m_initialized = false;
         bool m_appRegistered = false;

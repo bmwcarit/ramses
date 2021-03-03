@@ -349,9 +349,9 @@ namespace ramses_internal
 
     void WaylandHandler::registry_handle_global_remove(void* data, wl_registry* wl_registry, uint32_t name)
     {
-        UNUSED(data)
-        UNUSED(wl_registry)
-        UNUSED(name)
+        UNUSED(data);
+        UNUSED(wl_registry);
+        UNUSED(name);
     }
 
     bool WaylandHandler::setupWayland()

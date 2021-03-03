@@ -15,7 +15,7 @@ from tests.embedded_compositor_base import embedded_compositor_base
 # client is removed.
 class TestEmbeddedCompositorLifecycle(embedded_compositor_base.EmbeddedCompositorBase):
 
-    def __init__(self, methodName ='runTest'):
+    def __init__(self, methodName='runTest'):
         embedded_compositor_base.EmbeddedCompositorBase.__init__(self, methodName, 0)
 
     def impl_test(self):
@@ -25,7 +25,7 @@ class TestEmbeddedCompositorLifecycle(embedded_compositor_base.EmbeddedComposito
         self.validateScreenshot(self.renderer, "testClient_compositing_fallbacktexture.png")
 
         # ivi gears should be composited
-        self._startIviGears(iviID = 2, alternateColors = False)
+        self._startIviGears(iviID=2, alternateColors=False)
         self.validateScreenshot(self.renderer, "testClient_streamtexture_1.png")
 
         # gears is killed, fallbacks are shown again

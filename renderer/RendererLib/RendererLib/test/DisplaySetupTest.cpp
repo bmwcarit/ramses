@@ -9,6 +9,7 @@
 #include "renderer_common_gmock_header.h"
 #include "gtest/gtest.h"
 #include "RendererLib/DisplaySetup.h"
+#include "SceneAPI/RenderState.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -354,6 +355,28 @@ TEST_F(ADisplaySetup, triggersRerenderForBufferWithChangedSceneShowState)
     EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOBint).needsRerender);
     EXPECT_EQ(DeviceHandleVector{ bufferHandleOB }, displaySetup.getNonInterruptibleOffscreenBuffersToRender());
     EXPECT_EQ(DeviceHandleVector{ bufferHandleOBint }, displaySetup.getInterruptibleOffscreenBuffersToRender(DeviceResourceHandle::Invalid()));
+}
+
+TEST_F(ADisplaySetup, canSetClearFlagsForAnyRegisteredBuffer)
+{
+    constexpr DeviceResourceHandle bufferHandleFB{ 33u };
+    constexpr DeviceResourceHandle bufferHandleOB{ 34u };
+    constexpr DeviceResourceHandle bufferHandleOBint{ 35u };
+    displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
+    displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
+    displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+
+    EXPECT_EQ(EClearFlags_All, displaySetup.getDisplayBuffer(bufferHandleFB).clearFlags);
+    EXPECT_EQ(EClearFlags_All, displaySetup.getDisplayBuffer(bufferHandleOB).clearFlags);
+    EXPECT_EQ(EClearFlags_All, displaySetup.getDisplayBuffer(bufferHandleOBint).clearFlags);
+
+    displaySetup.setClearFlags(bufferHandleFB, EClearFlags_None);
+    displaySetup.setClearFlags(bufferHandleOB, EClearFlags_Color);
+    displaySetup.setClearFlags(bufferHandleOBint, EClearFlags_All);
+
+    EXPECT_EQ(EClearFlags_None, displaySetup.getDisplayBuffer(bufferHandleFB).clearFlags);
+    EXPECT_EQ(EClearFlags_Color, displaySetup.getDisplayBuffer(bufferHandleOB).clearFlags);
+    EXPECT_EQ(EClearFlags_All, displaySetup.getDisplayBuffer(bufferHandleOBint).clearFlags);
 }
 
 TEST_F(ADisplaySetup, canSetClearColorForAnyRegisteredBuffer)

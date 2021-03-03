@@ -25,13 +25,11 @@ WARNING_DISABLE_LINUX(-Wnon-virtual-dtor)
 WARNING_DISABLE_GCC(-Wsuggest-override)
 WARNING_DISABLE_GCC9(-Wdeprecated-copy)
 
-// INCLUDE PROBLEMATIC HEADERS
-#undef max
-
 #ifdef __ghs__
 #define __inline inline
 #endif
 
+// INCLUDE PROBLEMATIC HEADERS
 #include "Include/intermediate.h"
 #include "Include/InitializeGlobals.h"
 #include "MachineIndependent/localintermediate.h"

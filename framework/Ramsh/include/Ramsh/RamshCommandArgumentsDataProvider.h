@@ -9,7 +9,6 @@
 #ifndef RAMSES_RAMSHCOMMANDARGUMENTSDATAPROVIDER_H
 #define RAMSES_RAMSHCOMMANDARGUMENTSDATAPROVIDER_H
 
-#include "Ramsh/RamshInput.h"
 #include "Ramsh/RamshCommandArgumentsConverter.h"
 #include "Collections/HashSet.h"
 #include "Ramsh/RamshTypeInfo.h"
@@ -32,10 +31,10 @@ namespace ramses_internal
     {
     public:
         // returns the description of the argument
-        String description() const;
+        std::string description() const;
 
         // returns all the concatenated keywords of the argument
-        String keywords() const;
+        std::string keywords() const;
 
     protected:
         explicit RamshArgumentBase(const RamshTypeInfo& typeinfo, void* defaultValue = nullptr);
@@ -48,22 +47,22 @@ namespace ramses_internal
         virtual UInt32 amountConsumed() const;
 
         // try to set the argument's data with a given keyword (doesn't modify the argument itself, just returns a data object or nullptr if keyword doesn't match)
-        const RamshArgumentData* set(const String& keyword, const String& data) const;
+        const RamshArgumentData* set(const std::string& keyword, const std::string& data) const;
 
-        const RamshArgumentData* forceSet(const String& data) const;
+        const RamshArgumentData* forceSet(const std::string& data) const;
 
         // tries to get the value of the argument (converts the data) with a data object previously retrieved by calling set/forceSet
         template<typename T> bool getValue(const RamshArgumentData* data, T& value) const;
 
-        virtual String typeString() const = 0;
+        virtual std::string typeString() const = 0;
 
-        virtual String defaultValueString() const = 0;
+        virtual std::string defaultValueString() const = 0;
 
-        template<typename T> String defaultValueStringInternal() const;
+        template<typename T> std::string defaultValueStringInternal() const;
 
-        void registerKeywordInternal(const String& keyword);
+        void registerKeywordInternal(const std::string& keyword);
 
-        void setDescriptionInternal(const String& description);
+        void setDescriptionInternal(const std::string& description);
 
         template<typename T> void setDefaultValueInternal(const T& defaultValue);
 
@@ -73,8 +72,8 @@ namespace ramses_internal
         }
 
     private:
-        HashSet<String> m_keywords;
-        String m_description;
+        HashSet<std::string> m_keywords;
+        std::string m_description;
         void* m_defaultValue;
         const RamshTypeInfo m_typeInfo;
 
@@ -90,9 +89,9 @@ namespace ramses_internal
     public:
         template<typename T> RamshArgument<void>& setDefaultValue(const T& defaultValue);
 
-        RamshArgument<void>& registerKeyword(const String& keyword);
+        RamshArgument<void>& registerKeyword(const std::string& keyword);
 
-        RamshArgument<void>& setDescription(const String& description);
+        RamshArgument<void>& setDescription(const std::string& description);
     };
 
     // typed argument definition
@@ -108,19 +107,19 @@ namespace ramses_internal
 
         RamshArgument<T>& setDefaultValue(const T& defaultValue);
 
-        RamshArgument<T>& registerKeyword(const String& keyword);
+        RamshArgument<T>& registerKeyword(const std::string& keyword);
 
-        RamshArgument<T>& setDescription(const String& description);
+        RamshArgument<T>& setDescription(const std::string& description);
 
-        inline ~RamshArgument()
+        inline ~RamshArgument() override
         {
             RamshArgumentBase::cleanup<T>();
         }
 
     protected:
-        String defaultValueString() const override;
+        std::string defaultValueString() const override;
 
-        String typeString() const override;
+        std::string typeString() const override;
     };
 
     template<typename T>
@@ -154,7 +153,7 @@ namespace ramses_internal
     struct RamshArgumentDataProvider
     {
         // parses the command line input according to a given argument definition vector
-        RamshArgumentDataProvider(const ArgumentVector& args, const RamshInput& input);
+        RamshArgumentDataProvider(const ArgumentVector& args, const std::vector<std::string>& input);
 
         // try to get the converted data of the argument with index
         template<typename T> bool getValue(UInt32 index, T& value) const;
@@ -178,10 +177,10 @@ namespace ramses_internal
         RamshArgument<void>& getArgument(UInt32 index) const;
 
         // returns the argument definitions in a readable format
-        String argumentString() const;
+        std::string argumentString() const;
 
         // parses the given input according to the argument definitions
-        RamshArgumentDataProvider parse(const RamshInput& in) const;
+        RamshArgumentDataProvider parse(const std::vector<std::string>& in) const;
 
         // delete created argmuents
         ~RamshArgumentProvider();
@@ -205,25 +204,20 @@ namespace ramses_internal
         return 2; // default data amount consumed by an argument (flag + data)
     }
 
-    inline String RamshArgumentBase::description() const
+    inline std::string RamshArgumentBase::description() const
     {
-        return String(m_description).append(" (").append(typeString()).append(", ").append(defaultValueString()).append(")");
+        return fmt::format("{} ({}, {})", m_description, typeString(), defaultValueString());
     }
 
-    inline String RamshArgumentBase::keywords() const
+    inline std::string RamshArgumentBase::keywords() const
     {
-        StringSet::ConstIterator it = m_keywords.begin();
-        const StringSet::ConstIterator end = m_keywords.end();
-
-        String s;
-        for(;it!=end;++it)
-        {
-            s.append("-").append(*it).append(" ");
-        }
-        return s;
+        std::string result;
+        for (const auto& kw : m_keywords)
+            result += "-" + kw;
+        return result;
     }
 
-    inline const RamshArgumentData* RamshArgumentBase::set(const String& keyword, const String& data) const
+    inline const RamshArgumentData* RamshArgumentBase::set(const std::string& keyword, const std::string& data) const
     {
         if(m_keywords.contains(keyword))
         {
@@ -232,7 +226,7 @@ namespace ramses_internal
         return nullptr;
     }
 
-    inline const RamshArgumentData* RamshArgumentBase::forceSet(const String& data) const
+    inline const RamshArgumentData* RamshArgumentBase::forceSet(const std::string& data) const
     {
         return &data;
     }
@@ -253,7 +247,7 @@ namespace ramses_internal
         else
         {
             LOG_ERROR(CONTEXT_RAMSH,"Trying to set default value of argument of type " << typeString() <<
-                      " with value of wrong type " << static_cast<String>(TypeName<T>()));
+                      " with value of wrong type " << static_cast<std::string>(TypeName<T>()));
         }
     }
 
@@ -284,7 +278,7 @@ namespace ramses_internal
     }
 
     template<typename T>
-    inline String RamshArgumentBase::defaultValueStringInternal() const
+    inline std::string RamshArgumentBase::defaultValueStringInternal() const
     {
         // if a default value is set, return a string representation, else the argument is mandatory
         if(m_defaultValue)
@@ -296,12 +290,12 @@ namespace ramses_internal
         return "required";
     }
 
-    inline void RamshArgumentBase::registerKeywordInternal(const String& keyword)
+    inline void RamshArgumentBase::registerKeywordInternal(const std::string& keyword)
     {
         m_keywords.put(keyword);
     }
 
-    inline void RamshArgumentBase::setDescriptionInternal(const String& description)
+    inline void RamshArgumentBase::setDescriptionInternal(const std::string& description)
     {
         m_description = description;
     }
@@ -310,13 +304,13 @@ namespace ramses_internal
     // RamshArgument<void>
     // -------------------
 
-    inline RamshArgument<void>& RamshArgument<void>::registerKeyword(const String& keyword)
+    inline RamshArgument<void>& RamshArgument<void>::registerKeyword(const std::string& keyword)
     {
         RamshArgumentBase::registerKeywordInternal(keyword);
         return *this;
     }
 
-    inline RamshArgument<void>& RamshArgument<void>::setDescription(const String& description)
+    inline RamshArgument<void>& RamshArgument<void>::setDescription(const std::string& description)
     {
         RamshArgumentBase::setDescriptionInternal(description);
         return *this;
@@ -353,26 +347,26 @@ namespace ramses_internal
     }
 
     template<typename T>
-    inline String RamshArgument<T>::defaultValueString() const
+    inline std::string RamshArgument<T>::defaultValueString() const
     {
         return RamshArgumentBase::defaultValueStringInternal<T>();
     }
 
     template<typename T>
-    inline String RamshArgument<T>::typeString() const
+    inline std::string RamshArgument<T>::typeString() const
     {
-        return static_cast<String>(TypeName<T>());
+        return static_cast<std::string>(TypeName<T>());
     }
 
     template<typename T>
-    inline RamshArgument<T>& RamshArgument<T>::registerKeyword(const String& keyword)
+    inline RamshArgument<T>& RamshArgument<T>::registerKeyword(const std::string& keyword)
     {
         RamshArgumentBase::registerKeywordInternal(keyword);
         return *this;
     }
 
     template<typename T>
-    inline RamshArgument<T>& RamshArgument<T>::setDescription(const String& description)
+    inline RamshArgument<T>& RamshArgument<T>::setDescription(const std::string& description)
     {
         RamshArgumentBase::setDescriptionInternal(description);
         return *this;
@@ -391,11 +385,11 @@ namespace ramses_internal
     // RamshArgumentDataProvider
     // -------------------
 
-    inline RamshArgumentDataProvider::RamshArgumentDataProvider(const ArgumentVector& args, const RamshInput& input)
+    inline RamshArgumentDataProvider::RamshArgumentDataProvider(const ArgumentVector& args, const std::vector<std::string>& input)
         : m_args(args)
     {
         // holds the unconsumed raw data
-        std::vector<const String*> in;
+        std::vector<const std::string*> in;
         m_data.resize(m_args.size());
 
         // initialize the list with references to input
@@ -411,7 +405,7 @@ namespace ramses_internal
             for (UInt pos = 0; pos < in.size(); ++pos)
             {
                 // determine if current raw data is a flag
-                if(in[pos]->startsWith(String("-")))
+                if(in[pos]->find("-") == 0)
                 {
                     // TODO account for arguments which consume even more data?
                     if(m_args[j]->amountConsumed() > 1)
@@ -422,7 +416,7 @@ namespace ramses_internal
                         {
                             // more data is available, try to set the argument
                             --pos;
-                            const String keyword = in[pos]->substr(1,in[pos]->size()-1);
+                            const std::string keyword = in[pos]->substr(1,in[pos]->size()-1);
                             ++pos;
                             m_data[j] = m_args[j]->set(keyword, *in[pos]);
                         }
@@ -486,14 +480,12 @@ namespace ramses_internal
         }
     }
 
-    inline String RamshArgumentProvider::argumentString() const
+    inline std::string RamshArgumentProvider::argumentString() const
     {
-        String s;
-        for(ArgumentVector::const_iterator it = m_arguments.begin(); it != m_arguments.end(); ++it)
-        {
-            s.append(" [").append((*it)->keywords()).append(" - ").append((*it)->description()).append("]");
-        }
-        return s;
+        std::string result;
+        for (const auto& arg : m_arguments)
+            result += fmt::format(" [{} - {}]", arg->keywords(), arg->description());
+        return result;
     }
 
     template<typename T>
@@ -512,7 +504,7 @@ namespace ramses_internal
         return *arg;
     }
 
-    inline RamshArgumentDataProvider RamshArgumentProvider::parse(const RamshInput& in) const
+    inline RamshArgumentDataProvider RamshArgumentProvider::parse(const std::vector<std::string>& in) const
     {
         return RamshArgumentDataProvider(m_arguments,in);
     }

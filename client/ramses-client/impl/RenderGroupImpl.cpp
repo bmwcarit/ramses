@@ -57,7 +57,7 @@ namespace ramses
     template <typename OBJECT>
     void deserializeObjects(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext, std::vector<const OBJECT*>& objects)
     {
-        UNUSED(serializationContext)
+        UNUSED(serializationContext);
         uint32_t numberOfObjects = 0;
         inStream >> numberOfObjects;
         assert(objects.empty());

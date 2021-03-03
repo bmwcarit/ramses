@@ -30,9 +30,9 @@ namespace ramses_internal
 
     void Device_Base::drawTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount)
     {
-        UNUSED(startOffset)
-        UNUSED(elementCount)
-        UNUSED(instanceCount)
+        UNUSED(startOffset);
+        UNUSED(elementCount);
+        UNUSED(instanceCount);
         ++m_drawCalls;
     }
 

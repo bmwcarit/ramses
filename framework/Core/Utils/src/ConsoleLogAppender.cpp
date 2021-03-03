@@ -14,7 +14,6 @@
 #include "PlatformAbstraction/PlatformConsole.h"
 #include "fmt/format.h"
 #include "fmt/chrono.h"
-#include <time.h>
 
 namespace ramses_internal
 {

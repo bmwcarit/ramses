@@ -1,3 +1,65 @@
+27.0.100
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Attach ramses version as cmake property RAMSES_VERSION to shared libraries
+
+        API changes
+        ------------------------------------------------------------------------
+        - Add RamsesFrameWork::addRamshCommand
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fix Node::setRotation with convention forgetting convention when identity values were set for angles
+
+27.0.8
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Added static DisplayConfig::setDepthStencilBufferType to allow configuring depth and stencil
+          buffers of framebuffer
+        - MSAA number of samples less strict and adapting to device capabilities when possible.
+            - DisplayConfig::setMultiSampling allows 1, 2, 4 and 8 samples.
+            - Scene::createRenderBuffer, RamsesRenderer::createOffscreenBuffer allows arbitrary number of samples,
+              see API docs for details.
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Shaders given to EffectDescription::setXXShaderFromFile are read in binary file mode
+          Before this could cause effect ids to depend on operating system
+        - Fixed issue with scene reference actions (data un/link of scene references) getting lost sometimes
+          due to wrong queing up when coming from multiple flushes per frame update.
+
+27.0.6
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Enable creation of renderer with shared context for async effect upload on Android emulator
+            - Create dummy PBuffer surface and bind it to the shared context
+            - The change affects only Android platform
+        - Texture sampler objects are used to reduce calls needed for setting texture sampling state
+        - Update/render logic is now isolated for each display and runs in thread (if threaded rendering enabled)
+            - Consequence of this is that when reading logs, some messages are seemingly redundant or out of order,
+              in fact they are just happening in different display contexts (potentially in parallel).
+              In order to make the logs clearer each log message from a display is prefixed with its display ID.
+        - Temporary limitation: IRendererSceneControlEventHandler::sceneStateChanged callbacks with available/unavailable
+          state change (published/unpublished) will NOT be emitted if there is no display created.
+
+        API changes
+        ------------------------------------------------------------------------
+        - Added static RamsesRenderer::setMaximumFramerate which also takes display argument for setting fps per displaythread
+        - Two new static methods for Effect, hasGeometryShader() and getGeometryShaderInputType()
+        - Added static RamsesRenderer::setDisplayBufferClearFlags to enable/disable clearing of display buffer components in runtime.
+        - Added static variants of functions createOffscreenBuffer and createInterruptibleOffscreenBuffer that enable configuring depth and stencil buffers
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Appearance's draw mode is set to expected geometry shader draw mode when created from such Effect
+        - Appearances created from effect with geometry shader report error when trying to set a mismatching draw mode
+            - used to crash the renderer, now checked by client API
+            - does not work for effects loaded from file (breaking change, will be fixed on ramses 28+)
+        - Fixed scene reference events being sent to old master if old master destroyed and scene reference changed ownership to new master
+
 
 27.0.5
 -------------------

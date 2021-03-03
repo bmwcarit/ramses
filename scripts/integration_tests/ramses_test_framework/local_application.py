@@ -8,6 +8,7 @@
 
 from ramses_test_framework.application import Application
 
+
 class LocalApplication(Application):
     def __init__(self, popenApp, name, workingDirectoryAbsolute, nameExtension=""):
         if popenApp:
@@ -26,4 +27,3 @@ class LocalApplication(Application):
         self.started = False
         self.stop_readers()
         return self.popenApp.returncode
-

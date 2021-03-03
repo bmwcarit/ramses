@@ -10,7 +10,7 @@
 #define RAMSES_SCENE_ESCENEPUBLICATIONMODE_H
 
 #include "PlatformAbstraction/PlatformTypes.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses_internal
 {

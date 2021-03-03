@@ -108,7 +108,7 @@ namespace ramses
     {
     public:
         SceneImpl(ramses_internal::ClientScene& scene, const SceneConfigImpl& sceneConfig, RamsesClient& ramsesClient);
-        virtual ~SceneImpl();
+        virtual ~SceneImpl() override;
 
         void             initializeFrameworkData();
         virtual void     deinitializeFrameworkData() override final;

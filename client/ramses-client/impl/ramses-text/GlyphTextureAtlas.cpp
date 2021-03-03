@@ -8,7 +8,7 @@
 
 #include "ramses-text/GlyphTextureAtlas.h"
 #include "Utils/LogMacros.h"
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
 
 namespace ramses
@@ -38,7 +38,7 @@ namespace ramses
 
     size_t GlyphTextureAtlas::createNewPage()
     {
-        m_glyphAtlasPages.push_back(std::unique_ptr<GlyphTexturePage>(new GlyphTexturePage(m_scene, m_pageSize)));
+        m_glyphAtlasPages.push_back(std::make_unique<GlyphTexturePage>(m_scene, m_pageSize));
         return m_glyphAtlasPages.size() - 1;
     }
 

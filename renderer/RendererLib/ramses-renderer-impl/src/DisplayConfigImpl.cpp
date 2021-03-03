@@ -66,21 +66,9 @@ namespace ramses
 
     status_t DisplayConfigImpl::setMultiSampling(uint32_t numSamples)
     {
-        if (numSamples != 1u &&
-            numSamples != 2u &&
-            numSamples != 4u)
-        {
-            return addErrorEntry("DisplayConfig::setMultiSampling failed - currently the only valid sample count is 1, 2 or 4!");
-        }
+        if (!ramses_internal::contains_c<uint32_t>({ 1u, 2u, 4u, 8u }, numSamples))
+            return addErrorEntry("DisplayConfigImpl::setMultiSampling failed - sample count must be 1, 2, 4 or 8!");
 
-        if (numSamples > 1u)
-        {
-            m_internalConfig.setAntialiasingMethod(ramses_internal::EAntiAliasingMethod_MultiSampling);
-        }
-        else
-        {
-            m_internalConfig.setAntialiasingMethod(ramses_internal::EAntiAliasingMethod_PlainFramebuffer);
-        }
         m_internalConfig.setAntialiasingSampleCount(numSamples);
 
         return StatusOK;
@@ -171,6 +159,24 @@ namespace ramses
     status_t DisplayConfigImpl::setClearColor(float red, float green, float blue, float alpha)
     {
         m_internalConfig.setClearColor(ramses_internal::Vector4(red, green, blue, alpha));
+        return StatusOK;
+    }
+
+    status_t DisplayConfigImpl::setDepthStencilBufferType(EDepthBufferType depthBufferType)
+    {
+        switch (depthBufferType)
+        {
+        case EDepthBufferType_None:
+            m_internalConfig.setDepthStencilBufferType(ramses_internal::ERenderBufferType_InvalidBuffer);
+            break;
+        case EDepthBufferType_Depth:
+            m_internalConfig.setDepthStencilBufferType(ramses_internal::ERenderBufferType_DepthBuffer);
+            break;
+        case EDepthBufferType_DepthStencil:
+            m_internalConfig.setDepthStencilBufferType(ramses_internal::ERenderBufferType_DepthStencilBuffer);
+            break;
+        }
+
         return StatusOK;
     }
 

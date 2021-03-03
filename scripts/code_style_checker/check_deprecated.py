@@ -16,6 +16,8 @@ g_re_deprecated_mock_syntax = re.compile(r'MOCK_(?:CONST_)?METHOD\d+')
 g_re_unwanted_gtest_include = re.compile(r'#\s*include\s*["<]gtest/(?!gtest\.h[">])')
 g_re_unwanted_gmock_include = re.compile(r'#\s*include\s*["<]gmock/(?!gmock\.h[">])')
 g_re_unwanted_fmt_include = re.compile(r'#\s*include\s*["<]fmt/(?!(?:format|chrono)\.h[">])')
+g_re_unwanted_system_include = re.compile(r'#\s*include\s*"[^\.]+"')
+g_re_unwanted_force_thread_local = re.compile(r'#include\s*["<"]Utils/ThreadLocalLogForced\.h[">]')
 
 
 def check_deprecated(filename, file_contents, clean_file_contents, file_lines, clean_file_lines):
@@ -38,6 +40,19 @@ def check_deprecated(filename, file_contents, clean_file_contents, file_lines, c
         if g_re_unwanted_fmt_include.search(line):
             common.log_warning("check_deprecated", filename, line_number + 1,
                                "usage of unwanted fmt include, use '#include \"fmt/format.h\"' instead", file_lines[line_number].strip(" \t\r\n"))
+
+        if g_re_unwanted_system_include.search(line):
+            common.log_warning("check_deprecated", filename, line_number + 1,
+                               'found system include with "...", use <...> instead"', file_lines[line_number].strip(" \t\r\n"))
+
+        if filename.endswith('.h') and g_re_unwanted_force_thread_local.search(line):
+            common.log_warning("check_deprecated", filename, line_number + 1,
+                               'found disallowed #include "Utils/ThreadLocalLogForced.h" in header"', file_lines[line_number].strip(" \t\r\n"))
+
+        # TODO: Fix offenders and reduce limit until some reasonable length is reached
+        if len(line) > 503:
+            common.log_warning("check_deprecated", filename, line_number + 1,
+                               f'line of {len(line)} characters too long, add some linebreaks ', file_lines[line_number].strip(" \t\r\n"))
 
 
 if __name__ == "__main__":

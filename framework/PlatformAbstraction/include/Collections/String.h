@@ -20,7 +20,7 @@
 
 namespace ramses_internal
 {
-    class String
+    class String final
     {
     public:
         String() = default;
@@ -160,7 +160,7 @@ namespace ramses_internal
 
     inline String::String(const Char* other)
     {
-        if (other && *other)
+        if (other != nullptr && *other != 0)
             m_string = other;
     }
 

@@ -36,12 +36,10 @@ namespace ramses
         {
             updateResourceHash();
         }
-        getSceneImpl().getStatisticCollection().statResourceObjectsCreated.incCounter(1);
     }
 
     ResourceImpl::~ResourceImpl()
     {
-        getSceneImpl().getStatisticCollection().statResourceObjectsDestroyed.incCounter(1);
     }
 
     resourceId_t ResourceImpl::getResourceId() const

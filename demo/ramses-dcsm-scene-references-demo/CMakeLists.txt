@@ -6,13 +6,10 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-RENDERER_MODULE_PER_CONFIG_STATIC(ramses-dcsm-scene-references-demo
+RENDERER_MODULE_PER_CONFIG_DYNAMIC(ramses-dcsm-scene-references-demo
     TYPE                    BINARY
     ENABLE_INSTALL          ON
 
     FILES_SOURCE            src/*
     RESOURCE_FOLDER         res
-
-    DEPENDENCIES            ramses-client
-                            ramses-renderer-lib
    )

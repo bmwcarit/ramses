@@ -17,6 +17,24 @@
 
 #define RAMSES_INTEGRITY_DEFAULT_THREAD_STACK_SIZE 0x7D000    // stack size for all integrity threads in bytes (512k)
 
+#if defined(__ghs__)
+#include "Utils/LogMacros.h"
+#include "absl/strings/string_view.h"
+
+inline void setThreadPriorityIntegrity(int priority, absl::string_view threadname)
+{
+    const Error ret = SetPriorityAndWeight(CurrentTask(), priority, 1, true);
+    if (ret != Success)
+    {
+        LOG_ERROR(ramses_internal::CONTEXT_FRAMEWORK, "setThreadPriorityIntegrity: " << threadname.data() << " setting thread priority failed:" << ret);
+    }
+    else
+    {
+        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "setThreadPriorityIntegrity: " << threadname.data() << " set thread priority to:" << priority);
+    }
+}
+#endif
+
 namespace ramses_internal
 {
 namespace internal

@@ -6,13 +6,8 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-# force clang to use libstdc++ (from gcc) instead of libc++
-SET(LLVM_ENABLE_LIBCXX 0)
-SET(LLVM_STDLIB_HANDLED 1)
-
 SET(CMAKE_C_COMPILER   clang)
 SET(CMAKE_CXX_COMPILER clang++)
-SET(CMAKE_LINKER       llvm-link)
 
 SET(CMAKE_C_FLAGS "-m64 -fdiagnostics-color" CACHE STRING "")
 SET(CMAKE_CXX_FLAGS "-m64 -fdiagnostics-color" CACHE STRING "")

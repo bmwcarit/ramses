@@ -19,7 +19,7 @@
 #include "RendererLib/RendererConfig.h"
 #include "Platform_Base/TextureUploadingAdapter_Base.h"
 #include "Platform_Base/Surface.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLog.h"
 
 namespace ramses_internal
 {
@@ -60,21 +60,21 @@ namespace ramses_internal
     {
         if(m_systemCompositorControllerFailedCreation)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: will not create display because system compositor controller creation failed");
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: will not create display because system compositor controller creation failed");
             return nullptr;
         }
 
         IWindow* window = createWindow(displayConfig, windowEventHandler);
         if (nullptr == window)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  window creation failed");
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  window creation failed");
             return nullptr;
         }
 
-        IContext* context = createContext(*window);
+        IContext* context = createContext(displayConfig, *window);
         if (nullptr == context)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  context creation failed");
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  context creation failed");
             destroyWindow(*window);
             return nullptr;
         }
@@ -82,19 +82,19 @@ namespace ramses_internal
         ISurface* surface = createSurface(*window, *context);
         if (nullptr == surface)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  window + context creation failed");
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  window + context creation failed");
             destroyContext(*context);
             destroyWindow(*window);
             return nullptr;
         }
 
-        // Surface enable is required so that device and texture adapter can load their extrensions
+        // Surface enable is required so that device and texture adapter can load their extensions
         surface->enable();
 
         IDevice* device = createDevice(*context);
         if (nullptr == device)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  device creation failed");
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  device creation failed");
             destroySurface(*surface);
             destroyContext(*context);
             destroyWindow(*window);
@@ -105,7 +105,7 @@ namespace ramses_internal
 
         if (nullptr == embeddedCompositor)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  embedded compositor creation failed");
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  embedded compositor creation failed");
             destroyDevice(*device);
             destroySurface(*surface);
             destroyContext(*context);
@@ -147,7 +147,8 @@ namespace ramses_internal
     {
         IWindow& window = mainRenderBackend.getSurface().getWindow();
         IContext& mainContext = mainRenderBackend.getSurface().getContext();
-        auto context = createContext(window, &mainContext);
+        DisplayConfig dummyDisplayConfig;
+        auto context = createContext(dummyDisplayConfig, window, &mainContext);
         if(!context)
             return nullptr;
 

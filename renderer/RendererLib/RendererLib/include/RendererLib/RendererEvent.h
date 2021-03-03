@@ -86,7 +86,7 @@ namespace ramses_internal
         StreamSurfaceAvailable,
         StreamSurfaceUnavailable,
         ObjectsPicked,
-        RenderThreadPeriodicLoopTimes,
+        FrameTimingReport,
         NUMBER_OF_ELEMENTS
     };
 
@@ -147,7 +147,7 @@ namespace ramses_internal
         "StreamSurfaceAvailable",
         "StreamSurfaceUnavailable",
         "ObjectsPicked",
-        "RenderThreadPeriodicLoopTimes",
+        "FrameTimingReport",
     };
 
     struct MouseEvent
@@ -175,7 +175,7 @@ namespace ramses_internal
         UInt32 height;
     };
 
-    struct RenderThreadPeriodicLoopTimes
+    struct FrameTimings
     {
         std::chrono::microseconds maximumLoopTimeWithinPeriod;
         std::chrono::microseconds averageLoopTimeWithinPeriod;
@@ -208,7 +208,7 @@ namespace ramses_internal
         WindowMoveEvent             moveEvent;
         WaylandIviSurfaceId         streamSourceId;
         PickableObjectIds           pickedObjectIds;
-        RenderThreadPeriodicLoopTimes renderThreadLoopTimes;
+        FrameTimings                frameTimings;
     };
     using RendererEventVector = std::vector<RendererEvent>;
 

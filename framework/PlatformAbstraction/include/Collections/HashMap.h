@@ -34,7 +34,7 @@ namespace ramses_internal
         /// defines the capacity to use for hash tablesize
         static const size_t DefaultHashMapCapacity;
 
-        class Pair
+        class Pair final
         {
         public:
             Pair(const Key& key_, const T& value_)
@@ -51,7 +51,7 @@ namespace ramses_internal
         /**
          * Data structure to hold a key/value pair inside the hash table
          */
-        class HashMapEntry
+        class HashMapEntry final
         {
         public:
             HashMapEntry()
@@ -98,7 +98,7 @@ namespace ramses_internal
         };
 
     public:
-        class ConstIterator
+        class ConstIterator final
         {
         public:
 
@@ -189,7 +189,7 @@ namespace ramses_internal
         /**
          * Internal helper class to perform iterations over the map entries.
          */
-        class Iterator
+        class Iterator final
         {
         public:
 

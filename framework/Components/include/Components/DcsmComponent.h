@@ -20,6 +20,8 @@
 #include "Collections/Guid.h"
 #include "Utils/IPeriodicLogSupplier.h"
 #include "Collections/HashSet.h"
+#include <chrono>
+#include <condition_variable>
 #include <unordered_map>
 
 
@@ -78,6 +80,9 @@ namespace ramses_internal
 
         virtual bool dispatchProviderEvents(IDcsmProviderEventHandler& handler) override;
         virtual bool dispatchConsumerEvents(ramses::IDcsmConsumerEventHandler& handler) override;
+
+        virtual bool dispatchProviderEvents(IDcsmProviderEventHandler& handler, std::chrono::milliseconds timeout) override;
+        virtual bool dispatchConsumerEvents(ramses::IDcsmConsumerEventHandler& handler, std::chrono::milliseconds timeout) override;
 
         // for logging
         void logInfo();
@@ -178,7 +183,9 @@ namespace ramses_internal
         HashMap<ContentID, ContentInfo> m_contentRegistry;
 
         std::vector<DcsmEvent> m_providerEvents;
+        std::condition_variable_any m_providerEventsSignal;
         std::vector<DcsmEvent> m_consumerEvents;
+        std::condition_variable_any m_consumerEventsSignal;
     };
 }
 

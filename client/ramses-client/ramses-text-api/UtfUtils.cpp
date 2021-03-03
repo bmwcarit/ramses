@@ -8,7 +8,7 @@
 
 #include "ramses-text-api/UtfUtils.h"
 #include "Utils/LogMacros.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses
 {

@@ -208,4 +208,9 @@ namespace ramses_internal
         EXPECT_FALSE(ci.hasCategoryRectChange());
     }
 
+    TEST_F(ACategoryInfo, canFormat)
+    {
+        EXPECT_EQ("[]", fmt::to_string(empty));
+        EXPECT_EQ("[categoryRect:xy12:34 56x78;rendSize:88x99;safeRect:xy4:3 2x1]", fmt::to_string(filled));
+    }
 }

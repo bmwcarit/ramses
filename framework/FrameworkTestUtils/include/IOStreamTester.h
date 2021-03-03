@@ -36,6 +36,18 @@ namespace ramses_internal
             return EStatus::Ok;
         }
 
+        virtual EStatus seek(Int /*numberOfBytesToSeek*/, Seek /*origin*/) override
+        {
+            assert(false);
+            return EStatus::Error;
+        }
+
+        virtual EStatus getPos(size_t& /*position*/) const override
+        {
+            assert(false);
+            return EStatus::Error;
+        }
+
         virtual IOutputStream& write(const void* data, size_t size) override
         {
             m_buffer.insert(m_buffer.end(), static_cast<const Byte*>(data), static_cast<const Byte*>(data)+size);

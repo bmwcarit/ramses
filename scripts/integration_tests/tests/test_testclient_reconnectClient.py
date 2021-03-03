@@ -53,6 +53,6 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         self.testClient2 = self.target.start_client("ramses-test-client", "-tn 5 -ts 0 -cx -2 -cz 5", nameExtension='2nd')
         self.checkThatApplicationWasStarted(self.testClient2)
         self.addCleanup(self.target.kill_application, self.testClient2)
-        self.renderer.showScene(26) # must explicitly trigger new ramp up to rendered
+        self.renderer.showScene(26)  # must explicitly trigger new ramp up to rendered
         self.renderer.wait_for_msg_in_stdout(watchId, "Scene 26 is in state RENDERED caused by command SHOW", 30)
         self.validateScreenshot(self.renderer, "testClient_disconnectedClient.png")

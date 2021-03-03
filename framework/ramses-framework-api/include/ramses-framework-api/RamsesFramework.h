@@ -14,6 +14,7 @@
 #include "RamsesFrameworkConfig.h"
 #include "ramses-framework-api/APIExport.h"
 #include "ramses-framework-api/StatusObject.h"
+#include <memory>
 
 namespace ramses
 {
@@ -22,6 +23,7 @@ namespace ramses
     class RamsesRenderer;
     class RamsesClient;
     class RendererConfig;
+    class IRamshCommand;
 
     /**
     * @brief Class representing ramses framework components that are needed
@@ -187,6 +189,25 @@ namespace ramses
         * @param[in] logLevel the log level to be applied
         */
         static void SetConsoleLogLevel(ELogLevel logLevel);
+
+        /**
+        * @brief Register a ramsh command that can be invoked via console and DLT injection
+        *
+        * This is for testing and debugging purpose only. Command injection is not guaranteed to work in production.
+        *
+        * The command has to be provided via shared_ptr to avoid lifetime issues. Internally ramses will only store
+        * a std::weak_ptr to the command. Therefore it is valid to let go of the shared_ptr on caller side and expect
+        * that no calls will happen in the command anymore. This allows to have user obejct references in the command
+        * implementation with a shorter lifetime than RamsesFramework.
+        *
+        * It is not possible to delete commands. They are expected to be long-living and are bound to the lifetime
+        * of the RamsesFramework object.
+        *
+        * @param[in] command the ramsh command
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t addRamshCommand(const std::shared_ptr<IRamshCommand>& command);
 
         /**
         * @brief Destructor of RamsesFramework

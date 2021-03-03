@@ -8,7 +8,6 @@
 
 
 #include "RendererCommands/LogRendererInfo.h"
-#include "Ramsh/RamshInput.h"
 #include "RendererLib/RendererCommandBuffer.h"
 
 namespace ramses_internal

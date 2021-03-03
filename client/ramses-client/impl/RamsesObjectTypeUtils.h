@@ -12,11 +12,11 @@
 #include "ramses-client-api/RamsesObjectTypes.h"
 #include "ramses-client-api/RamsesObject.h"
 #include "RamsesObjectTypeTraits.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses
 {
-    class RamsesObjectTypeUtils
+    class RamsesObjectTypeUtils final
     {
     public:
         static const char* GetRamsesObjectTypeName( ERamsesObjectType type );

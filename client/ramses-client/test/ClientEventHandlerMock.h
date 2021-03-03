@@ -19,7 +19,7 @@ namespace ramses
     {
     public:
         ClientEventHandlerMock();
-        virtual ~ClientEventHandlerMock();
+        virtual ~ClientEventHandlerMock() override;
 
         MOCK_METHOD(void, sceneFileLoadFailed, (const char* filename), (override));
         MOCK_METHOD(void, sceneFileLoadSucceeded, (const char* filename, Scene* loadedScene), (override));

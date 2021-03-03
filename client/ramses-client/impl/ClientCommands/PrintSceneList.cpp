@@ -8,7 +8,6 @@
 
 #include "PrintSceneList.h"
 #include "ramses-client-api/Scene.h"
-#include "Ramsh/RamshInput.h"
 #include "SceneImpl.h"
 #include "RamsesClientImpl.h"
 #include "Utils/LogMacros.h"
@@ -22,7 +21,7 @@ namespace ramses_internal
         registerKeyword("printSceneList");
     }
 
-    Bool PrintSceneList::executeInput(const RamshInput& input)
+    Bool PrintSceneList::executeInput(const std::vector<std::string>& input)
     {
         UNUSED(input);
 

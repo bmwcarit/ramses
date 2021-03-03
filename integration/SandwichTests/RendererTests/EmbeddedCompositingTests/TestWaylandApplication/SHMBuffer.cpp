@@ -7,8 +7,8 @@
 //  -------------------------------------------------------------------------
 
 #include "SHMBuffer.h"
-#include "assert.h"
-#include <stdlib.h>
+#include <cassert>
+#include <cstdlib>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -103,7 +103,7 @@ namespace ramses_internal
 
     void SHMBuffer::ReleaseCallback(void* data, wl_buffer* buffer)
     {
-        UNUSED(buffer)
+        UNUSED(buffer);
         static_cast<SHMBuffer*>(data)->release();
     }
 

@@ -72,9 +72,24 @@ struct fmt::formatter<ramses_internal::CategoryInfo> : public ramses_internal::S
     template <typename FormatContext>
     auto format(const ramses_internal::CategoryInfo& categoryInfo, FormatContext& ctx)
     {
-        fmt::format_to(ctx.out(), "[categoryRect:");
+        fmt::format_to(ctx.out(), "[");
         if (categoryInfo.hasCategoryRectChange())
-            fmt::format_to(ctx.out(), "{}x{}", categoryInfo.getCategoryWidth(), categoryInfo.getCategoryHeight());
+        {
+            fmt::format_to(ctx.out(), "categoryRect:xy{}:{} {}x{};",
+                           categoryInfo.getCategoryX(), categoryInfo.getCategoryY(),
+                           categoryInfo.getCategoryWidth(), categoryInfo.getCategoryHeight());
+        }
+        if (categoryInfo.hasRenderSizeChange())
+        {
+            fmt::format_to(ctx.out(), "rendSize:{}x{};",
+                           categoryInfo.getRenderSizeWidth(), categoryInfo.getRenderSizeHeight());
+        }
+        if (categoryInfo.hasSafeRectChange())
+        {
+            fmt::format_to(ctx.out(), "safeRect:xy{}:{} {}x{}",
+                           categoryInfo.getSafeRectX(), categoryInfo.getSafeRectY(),
+                           categoryInfo.getSafeRectWidth(), categoryInfo.getSafeRectHeight());
+        }
         return fmt::format_to(ctx.out(), "]");
     }
 };

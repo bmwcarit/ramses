@@ -214,7 +214,7 @@ IF (NOT ramses-sdk_DISABLE_WAYLAND_IVI_EXTENSION)
     FIND_PACKAGE(wayland-ivi-extension QUIET)
     IF (wayland-ivi-extension_FOUND)
         ACME_INFO("+ wayland-ivi-extension (system)")
-    ELSE()
+    ELSEIF (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-ivi-extension")
         IF (wayland-client_FOUND AND wayland-server_FOUND)
             ACME_MODULE(
                 NAME                    wayland-ivi-extension
@@ -230,7 +230,7 @@ IF (NOT ramses-sdk_DISABLE_WAYLAND_IVI_EXTENSION)
 ENDIF()
 
 option(ramses-sdk_BUILD_IVI_TEST_APPS "Enable build of ivi test applications" ON)
-if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension))
+if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wayland-ivi-extension) AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-ivi-example-client")
     # wayland ivi example/test application
     ACME_MODULE(
         #==========================================================================
@@ -257,7 +257,7 @@ if (ramses-sdk_BUILD_IVI_TEST_APPS AND (wayland-ivi-extension_FOUND OR TARGET wa
 endif()
 
 # wayland zwp-linux-dmabuf-v1 extension protocol
-IF (wayland-client_FOUND AND wayland-server_FOUND)
+IF (wayland-client_FOUND AND wayland-server_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/wayland-zwp-linux-dmabuf-v1-extension")
     ACME_MODULE(
         NAME                    wayland-zwp-linux-dmabuf-v1-extension
         TYPE                    STATIC_LIBRARY

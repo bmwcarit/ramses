@@ -40,9 +40,9 @@ class RemoteCoreImpl(CoreImpl):
         self._interpret_arguments(args)
 
     def _add_arguments(self, parser, transferGroup, targetsGroup):
-        parser.add_argument("basePath", help="Path where .tar.gz package files can be found and where test results "
-                                             "should be stored")
-        transferGroup.add_argument("--package", action="store_true", default=False, help="for package upload to target. search in <basepath>, expect single result")
+        parser.add_argument("basePath", help="Path where .tar.gz package files can be found and where test results should be stored")
+        transferGroup.add_argument("--package", action="store_true", default=False,
+                                   help="for package upload to target. search in <basepath>, expect single result")
         transferGroup.add_argument("--noTransfer", action="store_true", default=False, help="do not transfer binaries (for debugging)")
         parser.add_argument("--filter", help="test filter")
         parser.add_argument("--random-seed", default=self.randomTestSeed, help="random seed used for test ordering")
@@ -58,24 +58,22 @@ class RemoteCoreImpl(CoreImpl):
             self.config.filterTargets(args.targets)
 
     def _createTarget(self, targetInfo):
-        #create target object based on targetInfo and general config values
+        # create target object based on targetInfo and general config values
         target = targetInfo.classname(targetInfo, self.config.ramsesInstallDir, self.fullResultsDirPath,
-            self.config.imagesDesiredDirs, self.config.imageDiffScaleFactor,
-            self.basePath,
-            self.config.sshConnectionNrAttempts, self.config.sshConnectionTimeoutPerAttempt,
-            self.config.sshConnectionSleepPerAttempt, self.config.powerNrAttempts,
-            self.config.ramsesApplicationLogLevel
-        )
+                                      self.config.imagesDesiredDirs, self.config.imageDiffScaleFactor,
+                                      self.basePath,
+                                      self.config.sshConnectionNrAttempts, self.config.sshConnectionTimeoutPerAttempt,
+                                      self.config.sshConnectionSleepPerAttempt, self.config.powerNrAttempts,
+                                      self.config.ramsesApplicationLogLevel)
         return target
 
     def _createBridgedTarget(self, bridgeTarget, targetInfo):
         target = targetInfo.classname(bridgeTarget, targetInfo, self.config.ramsesInstallDir, self.fullResultsDirPath,
-            self.config.imagesDesiredDirs, self.config.imageDiffScaleFactor,
-            self.basePath,
-            self.config.sshConnectionNrAttempts, self.config.sshConnectionTimeoutPerAttempt,
-            self.config.sshConnectionSleepPerAttempt, self.config.powerNrAttempts,
-            self.config.ramsesApplicationLogLevel
-        )
+                                      self.config.imagesDesiredDirs, self.config.imageDiffScaleFactor,
+                                      self.basePath,
+                                      self.config.sshConnectionNrAttempts, self.config.sshConnectionTimeoutPerAttempt,
+                                      self.config.sshConnectionSleepPerAttempt, self.config.powerNrAttempts,
+                                      self.config.ramsesApplicationLogLevel)
         return target
 
     def createTargets(self):
@@ -128,7 +126,7 @@ class RemoteCoreImpl(CoreImpl):
         if isinstance(test, test_classes.OnAllDefaultTargetsTest):
             for target in self.defaultTestTargets:
                 if target.isConnected:
-                    #create a copy of test for each target
+                    # create a copy of test for each target
                     testForOneTarget = copy.deepcopy(test)
                     testForOneTarget.set_target(target)
                     expandedSuite.addTest(testForOneTarget)
@@ -147,8 +145,7 @@ class RemoteCoreImpl(CoreImpl):
                                 testForOneTargetSet.set_target(target)
                         expandedSuite.addTest(testForOneTargetSet)
                     else:
-                        log.error("test '{0}' could not be added to the active tests due to missing target connection or "
-                                "invalid src.".format(test.id()))
+                        log.error("test '{0}' could not be added to the active tests due to missing target connection or invalid src.".format(test.id()))
             else:
                 log.warning("Missing testToTargetConfig for test {0}".format(test.id()))
         else:

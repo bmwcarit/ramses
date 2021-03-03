@@ -231,6 +231,21 @@ namespace ramses
     * @brief Id assigned to Layer in Wayland with IVI extension
     */
     using waylandIviLayerId_t = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), waylandIviLayerIdTag>;
+
+    /**
+    * @brief Clear flags used to specify which components of a render target or display buffer should be cleared.
+    *
+    */
+    enum EClearFlags
+    {
+        EClearFlags_None      = 0,
+
+        EClearFlags_Color     = 1 << 0,
+        EClearFlags_Depth     = 1 << 1,
+        EClearFlags_Stencil   = 1 << 2,
+
+        EClearFlags_All       = EClearFlags_Color | EClearFlags_Depth | EClearFlags_Stencil
+    };
 }
 
 #endif

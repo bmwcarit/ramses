@@ -11,13 +11,14 @@
 #include "PlatformAbstraction/PlatformThread.h"
 #include "PlatformWatchDogMock.h"
 
+using namespace std::chrono_literals;
 namespace ramses_internal
 {
     TEST(PlatformWatchDogTest, callsRegisterAndUnregister)
     {
         PlatformWatchdogMockCallback callback;
         EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
-        PlatformWatchdog watchdogNotifer(100u, ramses::ERamsesThreadIdentifier_Workers, &callback);
+        PlatformWatchdog watchdogNotifer(100ms, ramses::ERamsesThreadIdentifier_Workers, &callback);
         EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
     }
 
@@ -25,7 +26,7 @@ namespace ramses_internal
     {
         PlatformWatchdogMockCallback callback;
         EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
-        PlatformWatchdog watchdogNotifer(100u, ramses::ERamsesThreadIdentifier_Workers, &callback);
+        PlatformWatchdog watchdogNotifer(100ms, ramses::ERamsesThreadIdentifier_Workers, &callback);
 
         EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier_Workers));
         watchdogNotifer.notifyWatchdog();
@@ -37,7 +38,7 @@ namespace ramses_internal
     {
         PlatformWatchdogMockCallback callback;
         EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
-        PlatformWatchdog watchdogNotifer(10000u, ramses::ERamsesThreadIdentifier_Workers, &callback);
+        PlatformWatchdog watchdogNotifer(10000ms, ramses::ERamsesThreadIdentifier_Workers, &callback);
 
         EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(1);
         watchdogNotifer.notifyWatchdog(); // this calls right away
@@ -52,7 +53,7 @@ namespace ramses_internal
     {
         PlatformWatchdogMockCallback callback;
         EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
-        PlatformWatchdog watchdogNotifer(200u, ramses::ERamsesThreadIdentifier_Workers, &callback);
+        PlatformWatchdog watchdogNotifer(200ms, ramses::ERamsesThreadIdentifier_Workers, &callback);
 
         EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(1);
         watchdogNotifer.notifyWatchdog(); // this calls right away
@@ -68,5 +69,36 @@ namespace ramses_internal
         watchdogNotifer.notifyWatchdog(); // no call, not enough time passed
 
         EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
+    }
+
+    TEST(PlatformWatchDogTest, alwaysAllowsFirstNotification)
+    {
+        PlatformWatchdogMockCallback callback;
+        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
+        PlatformWatchdog watchdogNotifer(std::chrono::milliseconds::max(), ramses::ERamsesThreadIdentifier_Workers, &callback);
+        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
+
+        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(1);
+        watchdogNotifer.notifyWatchdog();
+    }
+
+    TEST(PlatformWatchDogTest, alwaysNotifiesWithZeroInterval)
+    {
+        PlatformWatchdogMockCallback callback;
+        EXPECT_CALL(callback, registerThread(ramses::ERamsesThreadIdentifier_Workers));
+        PlatformWatchdog watchdogNotifer(0ms, ramses::ERamsesThreadIdentifier_Workers, &callback);
+        EXPECT_CALL(callback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
+
+        EXPECT_CALL(callback, notifyThread(ramses::ERamsesThreadIdentifier_Workers)).Times(6);
+        EXPECT_EQ(0ms, watchdogNotifer.calculateTimeout());
+        watchdogNotifer.notifyWatchdog();
+        EXPECT_EQ(0ms, watchdogNotifer.calculateTimeout());
+        watchdogNotifer.notifyWatchdog();
+        EXPECT_EQ(0ms, watchdogNotifer.calculateTimeout());
+        watchdogNotifer.notifyWatchdog();
+        EXPECT_EQ(0ms, watchdogNotifer.calculateTimeout());
+        watchdogNotifer.notifyWatchdog();
+        watchdogNotifer.notifyWatchdog();
+        watchdogNotifer.notifyWatchdog();
     }
 }

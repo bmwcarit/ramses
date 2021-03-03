@@ -28,12 +28,7 @@ namespace ramses_internal
         , m_waylandIviSurfaceID(displayConfig.getWaylandIviSurfaceID())
         , m_resizable(displayConfig.isResizable())
     {
-        if (displayConfig.getAntialiasingMethod() == EAntiAliasingMethod_MultiSampling)
-        {
-            // Proper MSAA config is done on higher abstraction levels
-            m_msaaSampleCount = displayConfig.getAntialiasingSampleCount();
-            assert(m_msaaSampleCount > 0);
-        }
+        m_msaaSampleCount = displayConfig.getAntialiasingSampleCount();
     }
 
     Bool Window_Base::canRenderNewFrame() const

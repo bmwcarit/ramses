@@ -122,7 +122,7 @@ int main(int argc, const char* argv[])
             case 4:
             {
                 renderer.setLoopMode(ramses::ELoopMode_UpdateOnly);
-                ramses_internal::TestStepCommand testStepCommand;
+                auto testStepCommand = std::make_shared<ramses_internal::TestStepCommand>();
                 framework.impl.getRamsh().add(testStepCommand);
 
                 const ramses::sceneId_t sceneId(1u);
@@ -141,7 +141,7 @@ int main(int argc, const char* argv[])
                 // The integration test "test_run_no_initial_black_frame.py" checks here, if the surface is not yet
                 // visible on the screen by doing a screenshot from the system compositor. It then sends "step 1" to
                 // proceed with the test.
-                while (testStepCommand.getCurrentTestStep() != 1)
+                while (testStepCommand->getCurrentTestStep() != 1)
                 {
                     renderer.doOneLoop();
                     ramses_internal::PlatformThread::Sleep(50);

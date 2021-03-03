@@ -25,7 +25,7 @@ namespace ramses
     {
     public:
         RenderGroupImpl(SceneImpl& scene, const char* name);
-        virtual ~RenderGroupImpl();
+        virtual ~RenderGroupImpl() override;
 
         void             initializeFrameworkData();
         virtual void     deinitializeFrameworkData() override;

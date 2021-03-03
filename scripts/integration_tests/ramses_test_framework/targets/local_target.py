@@ -18,6 +18,7 @@ from ramses_test_framework import log
 from ramses_test_framework.targets.target import Target
 from ramses_test_framework.local_application import LocalApplication
 
+
 class LocalTarget(Target):
 
     def __init__(self, targetInfo, ramsesInstallDir, resultDir, imagesDesiredDirs, imageDiffScaleFactor, logLevel):
@@ -28,15 +29,15 @@ class LocalTarget(Target):
     def setup(self, transfer_binaries=True):
         # add platform specific dll/so search path
         if platform.system() == "Windows":
-            self.defaultEnvironment = {'PATH' : os.environ.get('PATH', '') + ";" + os.path.join(self.ramsesInstallDir, 'lib')}
+            self.defaultEnvironment = {'PATH': os.environ.get('PATH', '') + ";" + os.path.join(self.ramsesInstallDir, 'lib')}
         elif platform.system() == "Linux":
-            self.defaultEnvironment = {'LD_LIBRARY_PATH' : os.environ.get('LD_LIBRARY_PATH', '') + ":" + os.path.join(self.ramsesInstallDir, 'lib')}
+            self.defaultEnvironment = {'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH', '') + ":" + os.path.join(self.ramsesInstallDir, 'lib')}
         else:
             log.warning("Unknown system {}: There might be shared library load errors".format(platform.system()))
 
         return True
 
-    def start_application(self, applicationName, args="", binaryDirectoryOnTarget= None, nameExtension="", env={}, dltAppID=None, prepend_unbuffer=False):
+    def start_application(self, applicationName, args="", binaryDirectoryOnTarget=None, nameExtension="", env={}, dltAppID=None, prepend_unbuffer=False):
         if prepend_unbuffer:
             log.warn("Unbuffer is not supported on this target! Will be ignored.")
 
@@ -88,7 +89,7 @@ class LocalTarget(Target):
         command = commandToExecute.split(' ')
         popenApp = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, cwd=cwd)
         if block:
-            (stdoutdata, stderrdata) = popenApp.communicate() #block till call is finished
+            (stdoutdata, stderrdata) = popenApp.communicate()  # block till call is finished
             return stdoutdata.decode('utf-8').splitlines(), stderrdata.decode('utf-8').splitlines(), popenApp.returncode
         return None
 

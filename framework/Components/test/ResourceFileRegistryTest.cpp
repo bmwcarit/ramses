@@ -84,11 +84,11 @@ namespace ramses_internal
         registry.registerResourceFile(resourceFileStream, toc, storage);
 
         ResourceFileEntry storedFileEntry;
-        BinaryFileInputStream* storedResourceFileStream(nullptr);
+        IInputStream* storedResourceFileStream(nullptr);
         EXPECT_EQ(EStatus::Ok, registry.getEntry(hash, storedResourceFileStream, storedFileEntry));
         EXPECT_TRUE(storedResourceFileStream != nullptr);
 
-        EXPECT_EQ(&resourceFileStream->resourceStream, storedResourceFileStream);
+        EXPECT_EQ(&resourceFileStream->getStream(), storedResourceFileStream);
         EXPECT_EQ(offset, storedFileEntry.offsetInBytes);
         EXPECT_EQ(size, storedFileEntry.sizeInBytes);
         EXPECT_EQ(resInfo, storedFileEntry.resourceInfo);

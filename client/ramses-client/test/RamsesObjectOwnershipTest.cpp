@@ -69,6 +69,9 @@
 #include "TextureCubeImpl.h"
 #include "EffectImpl.h"
 
+#include "RamsesObjectTypeTraits.h"
+#include "RamsesObjectTypeUtils.h"
+
 namespace ramses
 {
     using namespace testing;
@@ -189,39 +192,25 @@ namespace ramses
     TYPED_TEST(SceneOwnershipTest, creatingAndDestroyingObjectsUpdatesStatisticCounter)
     {
         this->m_scene.impl.getStatisticCollection().nextTimeInterval(); //object number is updated by nextTimeInterval()
-        ramses_internal::UInt32 initialNumber = this->m_scene.impl.getStatisticCollection().statObjectsNumber.getCounterValue();
-        ramses_internal::UInt32 initialResNumber = this->m_scene.impl.getStatisticCollection().statResourceObjectsNumber.getCounterValue();
+        ramses_internal::UInt32 initialNumber = this->m_scene.impl.getStatisticCollection().statObjectsCount.getCounterValue();
         EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statObjectsCreated.getCounterValue());
         EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statObjectsDestroyed.getCounterValue());
-        EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statResourceObjectsCreated.getCounterValue());
-        EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statResourceObjectsDestroyed.getCounterValue());
 
         auto obj = &this->template createObject<TypeParam>("objectName");
-        bool isResource = obj->isOfType(ERamsesObjectType_Resource);
         ramses_internal::UInt32 numberCreated = this->m_scene.impl.getStatisticCollection().statObjectsCreated.getCounterValue();
-        ramses_internal::UInt32 numberResCreated = this->m_scene.impl.getStatisticCollection().statResourceObjectsCreated.getCounterValue();
         EXPECT_LE(1u, numberCreated); //some types create multiple scene objects (e.g. RenderTarget)
-        EXPECT_LE(isResource ? 1u : 0u, numberResCreated); //some types create multiple scene objects (e.g. RenderTarget)
         EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statObjectsDestroyed.getCounterValue());
-        EXPECT_EQ(0u, this->m_scene.impl.getStatisticCollection().statResourceObjectsDestroyed.getCounterValue());
 
         this->m_scene.impl.getStatisticCollection().nextTimeInterval();
-        EXPECT_EQ(initialNumber + numberCreated, this->m_scene.impl.getStatisticCollection().statObjectsNumber.getCounterValue());
-        EXPECT_EQ(initialResNumber + numberResCreated, this->m_scene.impl.getStatisticCollection().statResourceObjectsNumber.getCounterValue());
+        EXPECT_EQ(initialNumber + numberCreated, this->m_scene.impl.getStatisticCollection().statObjectsCount.getCounterValue());
 
         this->m_scene.destroy(*obj);
 
         EXPECT_LE(1u, this->m_scene.impl.getStatisticCollection().statObjectsDestroyed.getCounterValue());
-        EXPECT_LE(isResource ? 1u : 0u, this->m_scene.impl.getStatisticCollection().statResourceObjectsDestroyed.getCounterValue());
 
         this->m_scene.impl.getStatisticCollection().nextTimeInterval();
-        EXPECT_GT(initialNumber + numberCreated, this->m_scene.impl.getStatisticCollection().statObjectsNumber.getCounterValue());
-        EXPECT_LE(initialNumber, this->m_scene.impl.getStatisticCollection().statObjectsNumber.getCounterValue());
-        if (isResource)
-        {
-            EXPECT_GT(initialResNumber + numberResCreated, this->m_scene.impl.getStatisticCollection().statResourceObjectsNumber.getCounterValue());
-            EXPECT_LE(initialResNumber, this->m_scene.impl.getStatisticCollection().statResourceObjectsNumber.getCounterValue());
-        }
+        EXPECT_GT(initialNumber + numberCreated, this->m_scene.impl.getStatisticCollection().statObjectsCount.getCounterValue());
+        EXPECT_LE(initialNumber, this->m_scene.impl.getStatisticCollection().statObjectsCount.getCounterValue());
     }
 
     TYPED_TEST(ClientOwnershipTest, clientContainsCreatedObject)

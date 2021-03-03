@@ -152,13 +152,13 @@ namespace ramses_internal
         m_renderer->doOneLoop();
     }
 
-    ramses::displayBufferId_t TestRenderer::createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount)
+    ramses::displayBufferId_t TestRenderer::createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount, ramses::EDepthBufferType depthBufferType)
     {
         ramses::displayBufferId_t offscreenBufferId;
         if (interruptible)
-            offscreenBufferId = m_renderer->createInterruptibleOffscreenBuffer(displayId, width, height);
+            offscreenBufferId = ramses::RamsesRenderer::createInterruptibleOffscreenBuffer(*m_renderer, displayId, width, height, depthBufferType);
         else
-            offscreenBufferId = m_renderer->createOffscreenBuffer(displayId, width, height, sampleCount);
+            offscreenBufferId = ramses::RamsesRenderer::createOffscreenBuffer(*m_renderer, displayId, width, height, sampleCount, depthBufferType);
         m_renderer->flush();
 
         ramses::RendererAndSceneTestEventHandler eventHandler(*m_renderer);
@@ -180,6 +180,12 @@ namespace ramses_internal
     {
         m_sceneControlAPI->setSceneDisplayBufferAssignment(sceneId, buffer, renderOrder);
         m_sceneControlAPI->flush();
+    }
+
+    void TestRenderer::setClearFlags(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, uint32_t clearFlags)
+    {
+        m_renderer->setDisplayBufferClearFlags(*m_renderer, displayId, buffer, clearFlags);
+        m_renderer->flush();
     }
 
     void TestRenderer::setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const ramses_internal::Vector4& clearColor)

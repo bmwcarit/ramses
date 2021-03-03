@@ -46,4 +46,4 @@ class TestDaemonDifferentTarget(test_classes.MultipleConnectionsTest):
     def impl_test(self):
         log.info("making screenshot on target 1")
         self.renderer.showScene(26)
-        self.validateScreenshotOnTarget(self.renderer,"testClient_threeTriangles.png", self.targets[1])
+        self.validateScreenshotOnTarget(self.renderer, "testClient_threeTriangles.png", self.targets[1])

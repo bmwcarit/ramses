@@ -7,12 +7,12 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/DisplayConfig.h"
-#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
     void DisplayConfig::setAntialiasingSampleCount(UInt32 samples)
     {
+        assert(ramses_internal::contains_c<uint32_t>({ 1u, 2u, 4u, 8u }, samples));
         m_antiAliasingSamples = samples;
     }
 
@@ -84,16 +84,6 @@ namespace ramses_internal
     void DisplayConfig::setBorderlessState(Bool state)
     {
         m_borderless = state;
-    }
-
-    EAntiAliasingMethod DisplayConfig::getAntialiasingMethod() const
-    {
-        return m_antiAliasingMethod;
-    }
-
-    void DisplayConfig::setAntialiasingMethod(EAntiAliasingMethod method)
-    {
-        m_antiAliasingMethod = method;
     }
 
     UInt32 DisplayConfig::getAntialiasingSampleCount() const
@@ -193,6 +183,16 @@ namespace ramses_internal
         return m_clearColor;
     }
 
+    void DisplayConfig::setDepthStencilBufferType(ERenderBufferType depthStencilBufferType)
+    {
+        m_depthStencilBufferType = depthStencilBufferType;
+    }
+
+    ERenderBufferType DisplayConfig::getDepthStencilBufferType() const
+    {
+        return m_depthStencilBufferType;
+    }
+
     void DisplayConfig::setWaylandDisplay(const String& waylandDisplay)
     {
         m_waylandDisplay = waylandDisplay;
@@ -219,7 +219,6 @@ namespace ramses_internal
             m_fullscreen                 == other.m_fullscreen &&
             m_borderless                 == other.m_borderless &&
             m_warpingEnabled             == other.m_warpingEnabled &&
-            m_antiAliasingMethod         == other.m_antiAliasingMethod &&
             m_antiAliasingSamples        == other.m_antiAliasingSamples &&
             m_desiredWindowWidth         == other.m_desiredWindowWidth &&
             m_desiredWindowHeight        == other.m_desiredWindowHeight &&
@@ -233,7 +232,8 @@ namespace ramses_internal
             m_gpuMemoryCacheSize         == other.m_gpuMemoryCacheSize &&
             m_clearColor                 == other.m_clearColor &&
             m_windowsWindowHandle        == other.m_windowsWindowHandle &&
-            m_waylandDisplay             == other.m_waylandDisplay;
+            m_waylandDisplay             == other.m_waylandDisplay &&
+            m_depthStencilBufferType     == other.m_depthStencilBufferType;
     }
 
     Bool DisplayConfig::operator != (const DisplayConfig& other) const

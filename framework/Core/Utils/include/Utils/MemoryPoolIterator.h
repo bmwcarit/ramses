@@ -11,7 +11,7 @@
 
 #include <type_traits>
 #include <iterator>
-#include <assert.h>
+#include <cassert>
 
 namespace ramses_internal
 {

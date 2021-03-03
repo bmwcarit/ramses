@@ -54,7 +54,7 @@ namespace ramses_internal
 
         for (size_t i = 0; i < texConsumerDataIds.size(); ++i)
         {
-            m_quadsWithTextureConsumerLinks[i].reset(new DynamicQuad_Resources(m_scene, subQuadsForTextureConsumers[i]));
+            m_quadsWithTextureConsumerLinks[i] = std::make_unique<DynamicQuad_Resources>(m_scene, subQuadsForTextureConsumers[i]);
             m_quadsWithTextureConsumerLinks[i]->createTextureDataConsumer(texConsumerDataIds[i]);
         }
 

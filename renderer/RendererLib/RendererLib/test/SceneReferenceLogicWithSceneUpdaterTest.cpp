@@ -24,6 +24,8 @@
 #include "RendererSceneEventSenderMock.h"
 #include "ResourceDeviceHandleAccessorMock.h"
 #include "Components/SceneUpdate.h"
+#include "Watchdog/ThreadAliveNotifierMock.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -40,10 +42,12 @@ namespace ramses_internal
             , m_expirationMonitor(m_scenes, m_eventCollector)
             , m_renderer(m_platform, m_scenes, m_eventCollector, m_expirationMonitor, m_rendererStatistics)
             , m_sceneStateExecutor(m_renderer, m_sceneEventSenderFromSceneUpdater, m_eventCollector)
-            , m_sceneUpdater(m_platform, m_renderer, m_scenes, m_sceneStateExecutor, m_eventCollector, m_frameTimer, m_expirationMonitor)
+            , m_sceneUpdater(m_platform, m_renderer, m_scenes, m_sceneStateExecutor, m_eventCollector, m_frameTimer, m_expirationMonitor, m_notifier)
             , m_sceneLogic(m_sceneUpdater)
             , m_sceneRefLogic(m_scenes, m_sceneLogic, m_sceneUpdater, m_sceneEventSenderFromSceneRefLogic, m_sceneRefOwnership)
         {
+            // caller is expected to have a display prefix for logs
+            ThreadLocalLog::SetPrefix(1);
             m_sceneUpdater.setSceneReferenceLogicHandler(m_sceneRefLogic);
         }
 
@@ -133,6 +137,7 @@ namespace ramses_internal
         StrictMock<RendererSceneEventSenderMock> m_sceneEventSenderFromSceneRefLogic;
         SceneStateExecutor m_sceneStateExecutor;
         FrameTimer m_frameTimer;
+        NiceMock<ThreadAliveNotifierMock> m_notifier;
         RendererSceneUpdater m_sceneUpdater;
 
         RendererSceneControlLogic m_sceneLogic;

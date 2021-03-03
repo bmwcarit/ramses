@@ -26,14 +26,6 @@ FUNCTION(ADD_FLAGS VAR)
     SET(${VAR} ${TMP} PARENT_SCOPE)
 ENDFUNCTION()
 
-FUNCTION(REMOVE_FLAGS VAR)
-    SET(TMP "${${VAR}}")
-    FOREACH(flags ${ARGN})
-        STRING(REPLACE "${flags}" "" TMP "${TMP}")
-    ENDFOREACH()
-    SET(${VAR} ${TMP} PARENT_SCOPE)
-ENDFUNCTION()
-
 FUNCTION(REMOVE_FROM_FLAGS flags toRemoveList outVar)
     string(REGEX REPLACE " +" ";" flags_LIST "${flags}")   # to list
     list(REMOVE_ITEM flags_LIST ${toRemoveList})           # filter list
@@ -103,7 +95,8 @@ ENDIF()
 # clang specific
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     target_compile_options(ramses-build-options-base INTERFACE
-        -Winconsistent-missing-override -Wmove)
+        -Winconsistent-missing-override -Wmove
+        -Winconsistent-missing-destructor-override)
 
     #  do not optimize debug build at all (-Og is wrong on clang)
     ADD_FLAGS(RAMSES_DEBUG_FLAGS "-O0")
@@ -113,6 +106,27 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         message(STATUS "+ clang source based coverage enabled")
         target_compile_options(ramses-build-options-base INTERFACE -fprofile-instr-generate -fcoverage-mapping)
         target_link_options(ramses-build-options-base INTERFACE -fprofile-instr-generate -fcoverage-mapping)
+    endif()
+
+    # handle sanitizers
+    if (ramses-sdk_ENABLE_SANITIZER AND NOT ramses-sdk_ENABLE_SANITIZER STREQUAL "")
+        if (ramses-sdk_ENABLE_SANITIZER STREQUAL "ubsan")
+            message(STATUS "+ Enable undefined behavior sanitizer (ubsan)")
+            set(ubsan_checks "bool,bounds,enum,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,vla-bound,float-cast-overflow,vptr,alignment,function")
+            set(sanitizer_options "-fsanitize=undefined -fno-sanitize-recover=${ubsan_checks}")
+
+        elseif(ramses-sdk_ENABLE_SANITIZER STREQUAL "tsan")
+            message(STATUS "+ Enable thread sanitizer (tsan)")
+            set(sanitizer_options "-fsanitize=thread")
+
+        elseif(ramses-sdk_ENABLE_SANITIZER STREQUAL "asan")
+            message(STATUS "+ Enable address sanitizer (asan)")
+            set(sanitizer_options "-fsanitize=address")
+
+        else()
+            message(FATAL_ERROR "Unknown value for ramses-sdk_ENABLE_SANITIZER '${ramses-sdk_ENABLE_SANITIZER}'")
+        endif()
+        ADD_FLAGS(RAMSES_C_CXX_FLAGS "-fno-omit-frame-pointer ${sanitizer_options}")
     endif()
 ENDIF()
 

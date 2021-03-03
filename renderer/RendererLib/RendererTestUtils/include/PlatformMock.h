@@ -46,7 +46,7 @@ namespace ramses_internal
         MOCK_METHOD(void, destroySystemCompositorController, (), (override));
         MOCK_METHOD(IWindow*, createWindow, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
         MOCK_METHOD(Bool, destroyWindow, (IWindow&), (override));
-        MOCK_METHOD(IContext*, createContext, (IWindow& window, IContext*), (override));
+        MOCK_METHOD(IContext*, createContext, (const DisplayConfig& displayConfig, IWindow& window, IContext*), (override));
         MOCK_METHOD(Bool, destroyContext, (IContext&), (override));
         MOCK_METHOD(IDevice*, createDevice, (IContext& context), (override));
         MOCK_METHOD(Bool, destroyDevice, (IDevice&), (override));

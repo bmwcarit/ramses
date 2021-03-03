@@ -15,7 +15,9 @@ from ramses_test_framework import image_utils
 from ramses_test_framework import log
 
 
-def compare_images(screenshotPath, desiredImagePath, percentageOfWrongPixelsAllowed, percentageOfRGBDifferenceAllowedPerPixel, numberOfRequiredUnequalPixels, imageDiffScaleFactor, compareForEquality):
+def compare_images(screenshotPath, desiredImagePath,
+                   percentageOfWrongPixelsAllowed, percentageOfRGBDifferenceAllowedPerPixel, numberOfRequiredUnequalPixels,
+                   imageDiffScaleFactor, compareForEquality):
     try:
         image = Image.open(screenshotPath)
         desiredImage = Image.open(desiredImagePath)
@@ -23,12 +25,12 @@ def compare_images(screenshotPath, desiredImagePath, percentageOfWrongPixelsAllo
     except IOError as e:
         log.errorAndAssert("Image file for comparison could not be opened ({} {})".format(e.strerror, e.filename))
 
-    #crop image if bigger than desiredImage
+    # crop image if bigger than desiredImage
     if (image.size[0] > desiredImage.size[0] and image.size[1] >= desiredImage.size[1]) or \
-        (image.size[1] > desiredImage.size[1] and image.size[0] >= desiredImage.size[0]):
+       (image.size[1] > desiredImage.size[1] and image.size[0] >= desiredImage.size[0]):
         log.info("Image is bigger than desired image, using cropped image")
         splittedImagePath = os.path.splitext(screenshotPath)
-        croppedImagePath = splittedImagePath[0]+"_cropped"+splittedImagePath[1]
+        croppedImagePath = splittedImagePath[0] + "_cropped" + splittedImagePath[1]
         image = image.crop((0, 0, desiredImage.size[0], desiredImage.size[1]))
         image.save(croppedImagePath)
     if compareForEquality:
@@ -43,33 +45,33 @@ def compare_images(screenshotPath, desiredImagePath, percentageOfWrongPixelsAllo
 
 
 def create_result_dir(basePath, resultsDir):
-    resultDir = os.path.normcase(basePath+"/"+resultsDir)
+    resultDir = os.path.normcase(basePath + "/" + resultsDir)
     if os.path.exists(resultDir):
-        #remove old directory
+        # remove old directory
         shutil.rmtree(os.path.normcase(resultDir))
-    #create new directory
+    # create new directory
     os.makedirs(resultDir)
     return resultDir
 
 
 def get_result_dir_subdirectory(baseResultsDir, subDirName):
-    resultDir = os.path.normcase(baseResultsDir+"/"+subDirName)
+    resultDir = os.path.normcase(baseResultsDir + "/" + subDirName)
     if not os.path.exists(resultDir):
         os.makedirs(resultDir)
     return resultDir
 
 
 def save_text_file(filePath, content):
-        fileDirectory = os.path.dirname(filePath)
-        if not os.path.exists(fileDirectory):
-            os.makedirs(fileDirectory)
-        file = codecs.open(filePath, 'w', encoding="utf-8", errors='ignore')
-        file.write(content)
-        file.close()
+    fileDirectory = os.path.dirname(filePath)
+    if not os.path.exists(fileDirectory):
+        os.makedirs(fileDirectory)
+    file = codecs.open(filePath, 'w', encoding="utf-8", errors='ignore')
+    file.write(content)
+    file.close()
 
 
 def get_env_var_setting_string(env):
-    result=""
+    result = ""
     for vname, vvalue in env.items():
-        result += vname + "=" + vvalue +" "
+        result += vname + "=" + vvalue + " "
     return result

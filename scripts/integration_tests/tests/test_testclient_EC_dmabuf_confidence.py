@@ -7,13 +7,12 @@
 #  -------------------------------------------------------------------------
 
 from tests.embedded_compositor_base import embedded_compositor_base
-import time
 
 
 # The test starts a RAMSES client, that shows several quads with different stream textures configurations
 class TestEmbeddedCompositorDmaBufConfidence(embedded_compositor_base.EmbeddedCompositorBase):
 
-    def __init__(self, methodName ='runTest'):
+    def __init__(self, methodName='runTest'):
         embedded_compositor_base.EmbeddedCompositorBase.__init__(self, methodName, 3)
 
     def impl_test(self):
@@ -23,7 +22,7 @@ class TestEmbeddedCompositorDmaBufConfidence(embedded_compositor_base.EmbeddedCo
         self.validateScreenshot(self.renderer, "testClient_compositing_allSurfacesFallbackTextures.png")
 
         # dma buf example should be composited
-        self._startDmaBufExample(iviID = 2, alternateColors = False)
+        self._startDmaBufExample(iviID=2, alternateColors=False)
         self.validateScreenshot(self.renderer, "testClient_compositing_threeSurfacesCompositingDmaBuf.png")
 
         # dma buf example is killed, fallback is shown again
@@ -31,15 +30,15 @@ class TestEmbeddedCompositorDmaBufConfidence(embedded_compositor_base.EmbeddedCo
         self.validateScreenshot(self.renderer, "testClient_compositing_allSurfacesFallbackTextures.png")
 
         # the other dma buf example is composited
-        self._startDmaBufExample(iviID = 4, alternateColors = True)
+        self._startDmaBufExample(iviID=4, alternateColors=True)
         self.validateScreenshot(self.renderer, "testClient_compositing_twoSurfacesCompositingDmaBuf.png")
 
         # the ivi gears is composited
-        self._startIviGears(iviID = 6, alternateColors = False)
+        self._startIviGears(iviID=6, alternateColors=False)
         self.validateScreenshot(self.renderer, "testClient_compositing_threeSurfacesCompositingDmaBufAndIviGears.png")
 
         # the first dma buf example is composited again
-        self._startDmaBufExample(iviID = 2, alternateColors = False)
+        self._startDmaBufExample(iviID=2, alternateColors=False)
         self.validateScreenshot(self.renderer, "testClient_compositing_fiveSurfacesCompositingDmaBufAndIviGears.png")
 
         # gears and dma buf are killed (this kills both dma buf applications), fallback is shown again

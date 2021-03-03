@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererCommands/SystemCompositorControllerSetSurfaceDestRectangle.h"
-#include "Ramsh/RamshInput.h"
 
 namespace ramses_internal
 {

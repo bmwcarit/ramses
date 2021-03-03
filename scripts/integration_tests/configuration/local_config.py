@@ -12,10 +12,11 @@ from ramses_test_framework.targets.local_target import LocalTarget
 from ramses_test_framework.targets.targetInfo import TargetInfo
 from configuration.common_config import Config
 
+
 class LocalConfig(Config):
     def __init__(self):
         Config.__init__(self)
-        #Default system settings
+        # Default system settings
 
         if platform.system() == "Windows":
             self.defaultPlatform = "windows-wgl-4-5"

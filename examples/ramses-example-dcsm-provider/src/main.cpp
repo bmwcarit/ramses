@@ -75,7 +75,7 @@ public:
         m_framework.connect();
     }
 
-    ~DCSMProviderExample()
+    ~DCSMProviderExample() override
     {
         // shutdown: stop distribution, free resources, unregister
         if (m_scene)

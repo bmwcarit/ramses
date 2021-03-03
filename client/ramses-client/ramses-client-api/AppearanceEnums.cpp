@@ -11,7 +11,7 @@
 
 namespace ramses
 {
-    const char* InputTypeNames[] =
+    static const char* InputTypeNames[] =
     {
         "Invalid",
         "Float",
@@ -42,7 +42,7 @@ namespace ramses
         "AttributeVector4f",
     };
 
-    const char* BlendOperationNames[] =
+    static const char* BlendOperationNames[] =
     {
         "Disabled",
         "Add",
@@ -52,7 +52,7 @@ namespace ramses
         "Max",
     };
 
-    const char* BlendFactorNames[] =
+    static const char* BlendFactorNames[] =
     {
         "Zero",
         "One",
@@ -71,7 +71,7 @@ namespace ramses
         "AlphaSaturate",
     };
 
-    const char* CullModeNames[] =
+    static const char* CullModeNames[] =
     {
         "Disabled",
         "FrontFacing",
@@ -79,19 +79,19 @@ namespace ramses
         "FrontAndBackFacing",
     };
 
-    const char* DepthWriteNames[] =
+    static const char* DepthWriteNames[] =
     {
         "Disabled",
         "Enabled",
     };
 
-    const char* ScissorTestNames[] =
+    static const char* ScissorTestNames[] =
     {
         "Disabled",
         "Enabled",
     };
 
-    const char* DepthFuncNames[] =
+    static const char* DepthFuncNames[] =
     {
         "Disabled",
         "Greater",
@@ -104,7 +104,7 @@ namespace ramses
         "Never",
     };
 
-    const char* StencilFuncNames[] =
+    static const char* StencilFuncNames[] =
     {
         "Disabled",
         "Never",
@@ -117,7 +117,7 @@ namespace ramses
         "GreaterEqual",
     };
 
-    const char* StencilOperationNames[] =
+    static const char* StencilOperationNames[] =
     {
         "Keep",
         "Zero",

@@ -34,7 +34,7 @@ namespace ramses
     {
     public:
         TextureSamplerImpl(SceneImpl& scene, ERamsesObjectType type, const char* name);
-        virtual ~TextureSamplerImpl();
+        virtual ~TextureSamplerImpl() override;
 
         void initializeFrameworkData(
             const ramses_internal::TextureSamplerStates& samplerStates,

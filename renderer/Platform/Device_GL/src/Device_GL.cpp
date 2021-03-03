@@ -11,7 +11,6 @@
 #include "Platform_Base/RenderTargetGpuResource.h"
 #include "Platform_Base/RenderBufferGPUResource.h"
 #include "Platform_Base/IndexBufferGPUResource.h"
-#include "Platform_Base/TextureSamplerGPUResource.h"
 
 #include "Device_GL/Device_GL_platform.h"
 #include "Device_GL/ShaderGPUResource_GL.h"
@@ -22,6 +21,7 @@
 #include "SceneAPI/PixelRectangle.h"
 #include "RendererAPI/IContext.h"
 #include "SceneAPI/RenderBuffer.h"
+#include "Resource/EffectResource.h"
 
 #include "Math3d/Vector2.h"
 #include "Math3d/Vector3.h"
@@ -33,10 +33,9 @@
 #include "Math3d/Matrix33f.h"
 #include "Math3d/Matrix44f.h"
 
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "Utils/TextureMathUtils.h"
 #include "PlatformAbstraction/PlatformStringUtils.h"
-
 #include "PlatformAbstraction/Macros.h"
 
 namespace ramses_internal
@@ -116,13 +115,14 @@ namespace ramses_internal
 
     Device_GL::~Device_GL()
     {
+        for (const auto& it : m_textureSamplerObjectsCache)
+            deleteTextureSampler(it.second);
+
         m_resourceMapper.deleteResource(m_framebufferRenderTarget);
     }
 
     Bool Device_GL::init()
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::init:");
-
         LOAD_ALL_API_PROCS(m_context);
 
         const Char* tmp = nullptr;
@@ -172,19 +172,25 @@ namespace ramses_internal
 
     void Device_GL::drawIndexedTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount)
     {
+        assert(m_activeIndexArraySizeBytes != 0 && m_activeIndexArrayElementSizeBytes != 0);
+        assert(m_activeIndexArrayHandle.isValid());
+        if (m_activeIndexArraySizeBytes < (startOffset + elementCount) * m_activeIndexArrayElementSizeBytes)
+        {
+            LOG_ERROR_P(CONTEXT_RENDERER, "Device_GL::drawIndexedTriangles: index buffer access out of bounds "
+                "[drawStartOffset={} drawElementCount={} IndexBufferElementCount={} IndexBufferDeviceHandle={}]",
+                startOffset, elementCount, m_activeIndexArraySizeBytes / m_activeIndexArrayElementSizeBytes, m_activeIndexArrayHandle);
+            return;
+        }
+
         const UInt startOffsetAddressAsUInt = startOffset * m_activeIndexArrayElementSizeBytes;
         const GLvoid* startOffsetAddress = reinterpret_cast<void*>(startOffsetAddressAsUInt);
 
         const GLenum drawModeGL = TypesConversion_GL::GetDrawMode(m_activePrimitiveDrawMode);
         const GLenum elementTypeGL = TypesConversion_GL::GetIndexElementType(m_activeIndexArrayElementSizeBytes);
         if (instanceCount > 1u)
-        {
             glDrawElementsInstanced(drawModeGL, elementCount, elementTypeGL, startOffsetAddress, static_cast<GLsizei>(instanceCount));
-        }
         else
-        {
             glDrawElements(drawModeGL, elementCount, elementTypeGL, startOffsetAddress);
-        }
 
         // For profiling/tests
         Device_Base::drawIndexedTriangles(startOffset, elementCount, instanceCount);
@@ -393,6 +399,8 @@ namespace ramses_internal
         default:
             assert(false && "Unknown render buffer format");
         }
+
+        sampleCount = checkAndClampNumberOfSamples(internalFormat, sampleCount);
 
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, sampleCount, internalFormat, width, height);
 
@@ -633,6 +641,24 @@ namespace ramses_internal
         glTexInfoOut.uploadParams.swizzle = swizzle;
     }
 
+    uint32_t Device_GL::checkAndClampNumberOfSamples(GLenum internalFormat, uint32_t numSamples) const
+    {
+        if (numSamples > 1)
+        {
+            GLint maxNumSamplesGL = 0;
+            glGetInternalformativ(GL_RENDERBUFFER, internalFormat, GL_SAMPLES, 1, &maxNumSamplesGL);
+            uint32_t maxNumSamples = static_cast<uint32_t>(maxNumSamplesGL);
+            if (numSamples > maxNumSamples)
+            {
+                LOG_WARN_P(CONTEXT_RENDERER, "Device_GL: clamping requested MSAA sample count {} "
+                    "to {}, a maximum number of samples supported by device for this format.", numSamples, maxNumSamples);
+                numSamples = maxNumSamples;
+            }
+        }
+
+        return numSamples;
+    }
+
     void Device_GL::allocateTextureStorage(const GLTextureInfo& texInfo, UInt32 mipLevels, UInt32 sampleCount) const
     {
         assert(!(sampleCount && mipLevels > 1));
@@ -652,6 +678,7 @@ namespace ramses_internal
             glTexStorage2D(texInfo.target, mipLevels, texInfo.uploadParams.sizedInternalFormat, texInfo.width, texInfo.height);
             break;
         case GL_TEXTURE_2D_MULTISAMPLE:
+            sampleCount = checkAndClampNumberOfSamples(texInfo.uploadParams.sizedInternalFormat, sampleCount);
             glTexStorage2DMultisample(texInfo.target, sampleCount, texInfo.uploadParams.sizedInternalFormat, texInfo.width, texInfo.height, ToGLboolean(true));
             break;
         case GL_TEXTURE_3D:
@@ -746,19 +773,73 @@ namespace ramses_internal
         m_resourceMapper.deleteResource(bufferHandle);
     }
 
-    DeviceResourceHandle Device_GL::uploadTextureSampler(EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel)
+    DeviceResourceHandle Device_GL::uploadTextureSampler(const TextureSamplerStates& samplerStates)
     {
         GLuint sampler;
         glGenSamplers(1, &sampler);
 
-        setTextureFiltering(sampler, wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel);
+        const GLenum wrappingModeR = TypesConversion_GL::GetWrapMode(samplerStates.m_addressModeR);
+        const GLenum wrappingModeU = TypesConversion_GL::GetWrapMode(samplerStates.m_addressModeU);
+        const GLenum wrappingModeV = TypesConversion_GL::GetWrapMode(samplerStates.m_addressModeV);
 
-        return m_resourceMapper.registerResource(std::make_unique<TextureSamplerGPUResource>(wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel, sampler, 0));
+        glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, wrappingModeU);
+        glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, wrappingModeV);
+        glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, wrappingModeR);
+
+        switch (samplerStates.m_minSamplingMode)
+        {
+        case ESamplingMethod::Nearest:
+            glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            break;
+        case ESamplingMethod::Linear:
+            glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            break;
+        case ESamplingMethod::Nearest_MipMapNearest:
+            glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+            break;
+        case ESamplingMethod::Nearest_MipMapLinear:
+            glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+            break;
+        case ESamplingMethod::Linear_MipMapNearest:
+            glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+            break;
+        case ESamplingMethod::Linear_MipMapLinear:
+            glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            break;
+        case ESamplingMethod::NUMBER_OF_ELEMENTS:
+            assert(false);
+        }
+
+        switch (samplerStates.m_magSamplingMode)
+        {
+        case ESamplingMethod::Nearest:
+            glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            break;
+        case ESamplingMethod::Linear:
+            glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            break;
+        case ESamplingMethod::Nearest_MipMapNearest:
+        case ESamplingMethod::Nearest_MipMapLinear:
+        case ESamplingMethod::Linear_MipMapNearest:
+        case ESamplingMethod::Linear_MipMapLinear:
+        case ESamplingMethod::NUMBER_OF_ELEMENTS:
+            assert(false);
+        }
+
+        // set anisotropy only if feature is supported
+        if (m_limits.getMaximumAnisotropy() > 1u)
+        {
+            // clamp anisotropy value to max supported range
+            const auto anisotropyLevel = std::min(samplerStates.m_anisotropyLevel, m_limits.getMaximumAnisotropy());
+            glSamplerParameteri(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropyLevel);
+        }
+
+        return m_resourceMapper.registerResource(std::make_unique<GPUResource>(sampler, 0u));
     }
 
     void Device_GL::deleteTextureSampler(DeviceResourceHandle handle)
     {
-        const TextureSamplerGPUResource& resource = m_resourceMapper.getResourceAs<TextureSamplerGPUResource>(handle);
+        const GPUResource& resource = m_resourceMapper.getResourceAs<GPUResource>(handle);
         const GLHandle glAddress = resource.getGPUAddress();
         glDeleteSamplers(1, &glAddress);
 
@@ -771,6 +852,20 @@ namespace ramses_internal
         assert(static_cast<UInt32>(textureSlot) < m_limits.getMaximumTextureUnits());
         const GLHandle glAddress = m_resourceMapper.getResource(handle).getGPUAddress();
         glBindSampler(textureSlot, glAddress);
+    }
+
+    void Device_GL::activateTextureSamplerObject(const TextureSamplerStates& samplerStates, DataFieldHandle field)
+    {
+        const auto samplerStatesHash = samplerStates.hash();
+        auto it = m_textureSamplerObjectsCache.find(samplerStatesHash);
+        if (it == m_textureSamplerObjectsCache.end())
+        {
+            m_textureSamplerObjectsCache[samplerStatesHash] = uploadTextureSampler(samplerStates);
+            it = m_textureSamplerObjectsCache.find(samplerStatesHash);
+            LOG_INFO(CONTEXT_RENDERER, "Device_GL::activateTextureSamplerObject: cached new sampler object, total count: " << m_textureSamplerObjectsCache.size());
+        }
+
+        activateTextureSampler(it->second, field);
     }
 
     Bool Device_GL::allBuffersHaveTheSameSize(const DeviceHandleVector& renderBuffers) const
@@ -943,68 +1038,6 @@ namespace ramses_internal
         renderTargetPair->readingIndex = (renderTargetPair->readingIndex + 1) % 2;
     }
 
-    void Device_GL::setTextureFiltering(GLenum target, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel)
-    {
-        const GLenum wrappingModeR = TypesConversion_GL::GetWrapMode(wrapR);
-        const GLenum wrappingModeU = TypesConversion_GL::GetWrapMode(wrapU);
-        const GLenum wrappingModeV = TypesConversion_GL::GetWrapMode(wrapV);
-
-        glTexParameteri(target, GL_TEXTURE_WRAP_S, wrappingModeU);
-        glTexParameteri(target, GL_TEXTURE_WRAP_T, wrappingModeV);
-        if (target == GL_TEXTURE_3D)
-        {
-            glTexParameteri(target, GL_TEXTURE_WRAP_R, wrappingModeR);
-        }
-
-        switch (minSampling)
-        {
-        case ESamplingMethod::Nearest:
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            break;
-        case ESamplingMethod::Linear:
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            break;
-        case ESamplingMethod::Nearest_MipMapNearest:
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-            break;
-        case ESamplingMethod::Nearest_MipMapLinear:
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-            break;
-        case ESamplingMethod::Linear_MipMapNearest:
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-            break;
-        case ESamplingMethod::Linear_MipMapLinear:
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            break;
-        default:
-            assert(false && "Unsupported texture sampling method");
-            break;
-        }
-
-        switch (magSampling)
-        {
-        case ESamplingMethod::Nearest:
-            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            break;
-        case ESamplingMethod::Linear:
-            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            break;
-        default:
-            assert(false && "Unsupported texture sampling method");
-            break;
-        }
-
-        // set anisotropy only
-        // - if not a 3D texture
-        // - if feature is supported
-        if ((target != GL_TEXTURE_3D) && m_limits.getMaximumAnisotropy() > 1u)
-        {
-            // clamp anisotropy value to max supported range
-            anisotropyLevel = std::min(anisotropyLevel, m_limits.getMaximumAnisotropy());
-            glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropyLevel);
-        }
-    }
-
     GLHandle Device_GL::generateAndBindTexture(GLenum target) const
     {
         GLHandle texID = InvalidGLHandle;
@@ -1013,14 +1046,6 @@ namespace ramses_internal
         glBindTexture(target, texID);
 
         return texID;
-    }
-
-    void Device_GL::setTextureSampling(DataFieldHandle field, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel)
-    {
-        // TODO violin try to remove dependency of sampling state to uniform input. Idea: provide texture explicitly, or use more modern sampler objects
-        const GLenum target = TypesConversion_GL::GetTextureTargetFromTextureInputType(m_activeShader->getTextureSlot(field).textureType);
-
-        setTextureFiltering(target, wrapU, wrapV, wrapR, minSampling, magSampling, anisotropyLevel);
     }
 
     DeviceResourceHandle Device_GL::allocateVertexBuffer(UInt32 totalSizeInBytes)
@@ -1107,6 +1132,8 @@ namespace ramses_internal
 
         m_activeIndexArrayElementSizeBytes = indexBufferGPUResource.getElementSizeInBytes();
         assert(m_activeIndexArrayElementSizeBytes == 2 || m_activeIndexArrayElementSizeBytes == 4);
+        m_activeIndexArraySizeBytes = indexBufferGPUResource.getTotalSizeInBytes();
+        m_activeIndexArrayHandle = handle;
     }
 
     std::unique_ptr<const GPUResource> Device_GL::uploadShader(const EffectResource& effect)
@@ -1304,6 +1331,10 @@ namespace ramses_internal
                 }
             }
         }
+
+        GLint maxMSAASamples{ 0 };
+        glGetIntegerv(GL_MAX_SAMPLES, &maxMSAASamples);
+        m_limits.setMaximumSamples(maxMSAASamples);
 
         GLint maxNumberOfBinaryFormats = 0;
         // binary shader formats

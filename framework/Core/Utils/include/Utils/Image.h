@@ -14,7 +14,7 @@
 #include "Math3d/Vector4i.h"
 #include <vector>
 #include <array>
-#include <assert.h>
+#include <cassert>
 
 namespace ramses_internal
 {

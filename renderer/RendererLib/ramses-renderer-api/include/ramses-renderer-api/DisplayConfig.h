@@ -98,18 +98,25 @@ namespace ramses
         status_t setWindowBorderless(bool borderless);
 
         /**
-        * @brief Set number of samples to be used with multisampled rendering.
+        * @brief   Set number of samples to be used for multisampled rendering.
+        * @details Valid values are 1, 2, 4 or 8. Default value is 1 meaning multisampling is disabled.
+        *          This value is just a hint for the device, the actual number of samples is guaranteed
+        *          to be at least the given value but can be also more than that depending on device driver
+        *          implementation.
+        *          Ramses cannot check the device capability before the display is created, therefore
+        *          exceeding the maximum number of samples supported by the device will likely result
+        *          in fatal error.
         *
-        * @param[in] numSamples Number of samples per pixel, valid values are 1, 2 and 4
+        * @param[in] numSamples Number of samples per pixel.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
         status_t setMultiSampling(uint32_t numSamples);
 
         /**
-        * @brief Get number of samples used with multisampled rendering.
+        * @brief Get number of samples currently set.
         *
-        * @param[out] numSamples Number of samples per pixel, valid values are 1, 2 and 4
+        * @param[out] numSamples Number of samples per pixel.
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
@@ -264,6 +271,25 @@ namespace ramses
         *          to resolve error message using getStatusMessage()
         */
         status_t setClearColor(float red, float green, float blue, float alpha);
+
+        /**
+        * @brief Sets whether depth/stencil buffer should be created for the framebuffer of the display.
+        *        The framebuffer always has a color buffer. By default depth-stencil buffer is
+        *        created as well.
+        *
+        *        The set configuration will be passed to WGL/EGL, which uses this information as a lower-limit
+        *        for the chosen configuration. If the configuration is not available exactly as requested, WGL/EGL
+        *        will try the nearest configuration with the requested capabilities or more, e.g., if depth buffer is requested
+        *        but stencil buffer is not it can happen that a stencil buffer will still be created because WGL/EGL does
+        *        not have a configuration with that specific description.
+        *
+        * @param[in] config The display config to call this method on. This API is temporarily added in static fashion for ABI compatibility.
+        * @param[in] depthBufferType Configure depth and stencil buffers.
+        *
+        * @return  StatusOK on success, otherwise the returned status can be used to resolve
+        *          to resolve error message using getStatusMessage()
+        */
+        static status_t setDepthStencilBufferType(DisplayConfig& config, EDepthBufferType depthBufferType);
 
         /**
         * @brief [Only for Windows] Set the HWND handle for custom display creation.

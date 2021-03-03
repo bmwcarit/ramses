@@ -10,7 +10,7 @@ from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
 from ramses_test_framework.targets.target import DEFAULT_TEST_SURFACE
-from ramses_test_framework.ramses_test_extensions import ensureSystemCompositorRoundTrip
+
 
 class TestRendererTwoDisplays(test_classes.OnAllDefaultTargetsTest):
 
@@ -19,8 +19,8 @@ class TestRendererTwoDisplays(test_classes.OnAllDefaultTargetsTest):
         self.ramsesDaemon = self.target.start_daemon()
         self.checkThatApplicationWasStarted(self.ramsesDaemon)
         self.addCleanup(self.target.kill_application, self.ramsesDaemon)
-        #The test needs 3 displays on wayland in order to use a display as a dummy black background
-        #those wayland ivi surface ids depend on workaround in standalone renderer that increments the ivi surface id by 1 for every created display
+        # The test needs 3 displays on wayland in order to use a display as a dummy black background
+        # those wayland ivi surface ids depend on workaround in standalone renderer that increments the ivi surface id by 1 for every created display
         self.displaysIviSurfaceIds = [DEFAULT_TEST_SURFACE, DEFAULT_TEST_SURFACE + 1, DEFAULT_TEST_SURFACE + 2]
         self.renderer = self.target.start_default_renderer("--numDisplays 3 -sid {0}".format(self.displaysIviSurfaceIds[0]))
         self.renderer.send_ramsh_command("skub 0", waitForRendererConfirmation=True)
@@ -47,18 +47,6 @@ class TestRendererTwoDisplays(test_classes.OnAllDefaultTargetsTest):
         self.renderer.showScene(21, 1)
         self.renderer.showScene(22, 2)
 
-        # Can't rely on system compositor behavior here. Especially given the fact that
-        # its scene is layouted with integers, which inevitably must be converted to
-        # floats and vertices somewhere -> float logic on target platforms can be different.
         self.percentageOfWrongPixelsAllowed = 0.001
         self.validateScreenshot(self.renderer, "testClient_twoScenes_displ0.png", displayNumber=1)
         self.validateScreenshot(self.renderer, "testClient_twoScenes_displ1.png", displayNumber=2)
-
-        if self.target.systemCompositorScreenshotSupported:
-            #dummy display covers whole screen
-            self.renderer.send_ramsh_command("screct {0} 000 0 1900 800".format(self.displaysIviSurfaceIds[0]), waitForRendererConfirmation=True)
-            #test displays are next to each other
-            self.renderer.send_ramsh_command("screct {0} 0 0 200 600".format(self.displaysIviSurfaceIds[1]), waitForRendererConfirmation=True)
-            self.renderer.send_ramsh_command("screct {0} 200 0 200 600".format(self.displaysIviSurfaceIds[2]), waitForRendererConfirmation=True)
-            ensureSystemCompositorRoundTrip(self.renderer, self.displaysIviSurfaceIds[2])
-            self.validateScreenshot(self.renderer, "testClient_twoDisplaysPlacedTogether.png", useSystemCompositorForScreenshot=True)

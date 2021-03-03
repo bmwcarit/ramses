@@ -118,7 +118,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     config.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
     config.setDLTApplicationID("REND");
     ramses::RamsesFramework framework(config);
-    ramses_internal::RamshCommandExit commandExit;
+    auto commandExit = std::make_shared<ramses_internal::RamshCommandExit>();
     framework.impl.getRamsh().add(commandExit);
 
     if (helpRequested)
@@ -169,13 +169,13 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
         Handler handler(dcsmContentControl);
         dcsmContentControl.update(0u, handler);
 
-        while (!commandExit.exitRequested() && handler.readyContents.empty())
+        while (!commandExit->exitRequested() && handler.readyContents.empty())
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
             dcsmContentControl.update(0, handler);
         }
 
-        while (!commandExit.exitRequested() && !handler.readyContents.empty())
+        while (!commandExit->exitRequested() && !handler.readyContents.empty())
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
             dcsmContentControl.update(0, handler);
@@ -196,7 +196,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
             rendererMate.setSceneState(command.sceneId, ramses::RendererSceneState::Rendered);
         }
 
-        while (!commandExit.exitRequested() && rendererMate.isRunning())
+        while (!commandExit->exitRequested() && rendererMate.isRunning())
         {
             rendererMate.dispatchAndFlush(dmEventHandler);
             ramses_internal::PlatformThread::Sleep(20u);

@@ -13,6 +13,7 @@
 #include "Resource/ArrayResource.h"
 #include "ResourceMock.h"
 #include "MockResourceHash.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -21,6 +22,12 @@ class ARendererResourceRegistry : public ::testing::Test
 {
 public:
 protected:
+    ARendererResourceRegistry()
+    {
+        // caller is expected to have a display prefix for logs
+        ThreadLocalLog::SetPrefix(1);
+    }
+
     void expectResourcesUsedByScene(SceneId sceneId, const ResourceContentHashVector& res)
     {
         if (res.empty())

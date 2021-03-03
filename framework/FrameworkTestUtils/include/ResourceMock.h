@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         ResourceMock(ResourceContentHash hash, EResourceType typeId);
-        virtual ~ResourceMock();
+        virtual ~ResourceMock() override;
 
         MOCK_METHOD(const ResourceBlob&, getResourceData, (), (const, override));
         MOCK_METHOD(const CompressedResourceBlob&, getCompressedResourceData, (), (const, override));

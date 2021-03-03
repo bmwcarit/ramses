@@ -8,9 +8,9 @@
 
 #include "Platform_Base/EmbeddedCompositor_Dummy.h"
 #include "RendererLib/RendererLogContext.h"
-#include "Utils/LogMacros.h"
 #include "RendererAPI/ITextureUploadingAdapter.h"
 #include "RendererAPI/Types.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {
@@ -32,8 +32,8 @@ namespace ramses_internal
 
     UInt32 EmbeddedCompositor_Dummy::uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, DeviceResourceHandle textureHandle, ITextureUploadingAdapter& textureUploadingAdapter)
     {
-        UNUSED(textureUploadingAdapter)
-        UNUSED(textureHandle)
+        UNUSED(textureUploadingAdapter);
+        UNUSED(textureHandle);
         LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::uploadCompositingContentForStreamTexture: " << streamTextureSourceId.getValue());
         return 0;
     }

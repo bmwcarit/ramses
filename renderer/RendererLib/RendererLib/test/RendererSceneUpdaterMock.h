@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         RendererSceneUpdaterMock();
-        virtual ~RendererSceneUpdaterMock();
+        virtual ~RendererSceneUpdaterMock() override;
 
         MOCK_METHOD(void, handleSceneUpdate, (SceneId sceneId, SceneUpdate&& sceneUpdate), (override));
         MOCK_METHOD(void, createDisplayContext, (const DisplayConfig& displayConfig, DisplayHandle handle, IBinaryShaderCache*), (override));
@@ -29,11 +29,12 @@ namespace ramses_internal
         MOCK_METHOD(void, handleScenePublished, (SceneId sceneId, EScenePublicationMode mode), (override));
         MOCK_METHOD(void, handleSceneUnpublished, (SceneId sceneId), (override));
         MOCK_METHOD(void, handleSceneReceived, (const SceneInfo& sceneInfo), (override));
-        MOCK_METHOD(bool, handleBufferCreateRequest, (OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered), (override));
+        MOCK_METHOD(bool, handleBufferCreateRequest, (OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType), (override));
         MOCK_METHOD(bool, handleBufferDestroyRequest, (OffscreenBufferHandle buffer, DisplayHandle display), (override));
         MOCK_METHOD(bool, handleBufferCreateRequest, (StreamBufferHandle buffer, DisplayHandle display, WaylandIviSurfaceId source), (override));
         MOCK_METHOD(bool, handleBufferDestroyRequest, (StreamBufferHandle buffer, DisplayHandle display), (override));
         MOCK_METHOD(bool, setStreamBufferState, (StreamBufferHandle buffer, DisplayHandle display, bool newState), (override));
+        MOCK_METHOD(void, handleSetClearFlags, (DisplayHandle display, OffscreenBufferHandle buffer, uint32_t), (override));
         MOCK_METHOD(void, handleSetClearColor, (DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor), (override));
         MOCK_METHOD(void, handleReadPixels, (DisplayHandle display, OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo), (override));
         MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, Vector2 coordsNormalizedToBufferSize), (override));

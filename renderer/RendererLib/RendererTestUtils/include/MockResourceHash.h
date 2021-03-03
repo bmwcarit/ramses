@@ -31,15 +31,15 @@ namespace MockResourceHash
     {
         std::unique_ptr<ResourceBase> res;
         if (hash == EffectHash)
-            res.reset(new EffectResource("", "", "", EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache));
+            res = std::make_unique<EffectResource>("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
         else if (hash == VertArrayHash || hash == VertArrayHash2)
-            res.reset(new ArrayResource(EResourceType_VertexArray, 0, EDataType::Float, nullptr, ResourceCacheFlag_DoNotCache, String()));
+            res = std::make_unique<ArrayResource>(EResourceType_VertexArray, 0, EDataType::Float, nullptr, ResourceCacheFlag_DoNotCache, String());
         else if (hash == IndexArrayHash || hash == IndexArrayHash2 || hash == IndexArrayHash3)
-            res.reset(new ArrayResource(EResourceType_IndexArray, 0, EDataType::UInt16, nullptr, ResourceCacheFlag_DoNotCache, String()));
+            res = std::make_unique<ArrayResource>(EResourceType_IndexArray, 0, EDataType::UInt16, nullptr, ResourceCacheFlag_DoNotCache, String());
         else if (hash == TextureHash)
-            res.reset(new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String()));
+            res = std::make_unique<TextureResource>(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String());
         else if (hash == TextureHash2)
-            res.reset(new TextureResource(EResourceType_Texture2D, TextureMetaInfo(2u, 2u, 1u, ETextureFormat::R8, true, {}, { 4u }), ResourceCacheFlag_DoNotCache, String()));
+            res = std::make_unique<TextureResource>(EResourceType_Texture2D, TextureMetaInfo(2u, 2u, 1u, ETextureFormat::R8, true, {}, { 4u }), ResourceCacheFlag_DoNotCache, String());
 
         if (res)
             res->setResourceData(ResourceBlob{ 1 }, hash);

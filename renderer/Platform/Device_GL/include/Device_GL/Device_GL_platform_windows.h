@@ -111,6 +111,7 @@
 #define glTexSubImage3D(...)            glTexSubImage3DNative(__VA_ARGS__)
 #define glCompressedTexSubImage2D(...)  glCompressedTexSubImage2DNative(__VA_ARGS__)
 #define glCompressedTexSubImage3D(...)  glCompressedTexSubImage3DNative(__VA_ARGS__)
+#define glGetInternalformativ(...)      glGetInternalformativNative(__VA_ARGS__)
 
 #define DECLARE_ALL_API_PROCS                                                                   \
 DECLARE_API_PROC(PFNGLGETSTRINGIPROC, glGetStringi);                                            \
@@ -196,6 +197,7 @@ DECLARE_API_PROC(PFNGLTEXSTORAGE3DPROC, glTexStorage3D);                        
 DECLARE_API_PROC(PFNGLTEXSUBIMAGE3DPROC, glTexSubImage3D);                                      \
 DECLARE_API_PROC(PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC, glCompressedTexSubImage2D);                  \
 DECLARE_API_PROC(PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC, glCompressedTexSubImage3D);                  \
+DECLARE_API_PROC(PFNGLGETINTERNALFORMATIVPROC, glGetInternalformativ);                          \
 
 #define LOAD_ALL_API_PROCS(CONTEXT)                                                               \
 LOAD_API_PROC(CONTEXT, PFNGLGETSTRINGIPROC, glGetStringi);                                        \
@@ -281,6 +283,7 @@ LOAD_API_PROC(CONTEXT, PFNGLTEXSTORAGE3DPROC, glTexStorage3D);                  
 LOAD_API_PROC(CONTEXT, PFNGLTEXSUBIMAGE3DPROC, glTexSubImage3D);                                  \
 LOAD_API_PROC(CONTEXT, PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC, glCompressedTexSubImage2D);              \
 LOAD_API_PROC(CONTEXT, PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC, glCompressedTexSubImage3D);              \
+LOAD_API_PROC(CONTEXT, PFNGLGETINTERNALFORMATIVPROC, glGetInternalformativ);                      \
 
 //In WGL (Windows), all api procs are static and need explicit definition in a source file
 #define DEFINE_ALL_API_PROCS                                                                   \
@@ -367,5 +370,6 @@ DEFINE_API_PROC(PFNGLTEXSTORAGE3DPROC, glTexStorage3D);                         
 DEFINE_API_PROC(PFNGLTEXSUBIMAGE3DPROC, glTexSubImage3D);                                      \
 DEFINE_API_PROC(PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC, glCompressedTexSubImage2D);                  \
 DEFINE_API_PROC(PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC, glCompressedTexSubImage3D);                  \
+DEFINE_API_PROC(PFNGLGETINTERNALFORMATIVPROC, glGetInternalformativ);                          \
 
 #endif

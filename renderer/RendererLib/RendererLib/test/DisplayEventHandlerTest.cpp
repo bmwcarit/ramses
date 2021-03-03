@@ -12,6 +12,7 @@
 #include "RendererEventCollector.h"
 #include "RendererLib/EKeyEventType.h"
 #include "RendererLib/EKeyModifier.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -23,6 +24,8 @@ protected:
         : m_displayHandle(5110u)
         , m_displayEventHandler(m_displayHandle, m_eventCollector)
     {
+        // caller is expected to have a display prefix for logs
+        ThreadLocalLog::SetPrefix(1);
     }
 
     const RendererEvent getRendererEvent(UInt32 index) const

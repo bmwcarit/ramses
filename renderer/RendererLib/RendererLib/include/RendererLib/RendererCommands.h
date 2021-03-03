@@ -10,6 +10,7 @@
 #define RAMSES_RENDERERCOMMANDS_H
 
 #include "SceneAPI/Handles.h"
+#include "SceneAPI/TextureEnums.h"
 #include "RendererAPI/Types.h"
 #include "Scene/EScenePublicationMode.h"
 #include "Components/SceneUpdate.h"
@@ -121,6 +122,7 @@ namespace ramses_internal
             uint32_t height;
             uint32_t sampleCount;
             bool interruptible;
+            ERenderBufferType depthStencilBufferType;
         };
 
         struct DestroyOffscreenBuffer
@@ -147,6 +149,13 @@ namespace ramses_internal
             DisplayHandle display;
             StreamBufferHandle streamBuffer;
             bool newState;
+        };
+
+        struct SetClearFlags
+        {
+            DisplayHandle display;
+            OffscreenBufferHandle offscreenBuffer;
+            uint32_t clearFlags;
         };
 
         struct SetClearColor
@@ -286,6 +295,7 @@ namespace ramses_internal
 
         struct ConfirmationEcho
         {
+            DisplayHandle display;
             String text;
         };
 
@@ -309,6 +319,7 @@ namespace ramses_internal
             CreateStreamBuffer,
             DestroyStreamBuffer,
             SetStreamBufferState,
+            SetClearFlags,
             SetClearColor,
             UpdateWarpingData,
             ReadPixels,

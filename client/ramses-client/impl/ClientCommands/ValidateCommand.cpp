@@ -8,7 +8,6 @@
 
 #include "ValidateCommand.h"
 #include "ramses-client-api/Scene.h"
-#include "Ramsh/RamshInput.h"
 #include "SceneImpl.h"
 #include "RamsesClientImpl.h"
 #include "Utils/LogMacros.h"

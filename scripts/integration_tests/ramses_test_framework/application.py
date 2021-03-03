@@ -13,6 +13,7 @@ from ramses_test_framework.asynchronousreader import AsynchronousPipeReader
 from ramses_test_framework.buffer import Buffer, BufferWatcher
 from ramses_test_framework import log
 
+
 class Application(object):
 
     DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT = 60
@@ -21,7 +22,7 @@ class Application(object):
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
-        self.name = name # executable name
+        self.name = name  # executable name
         self.nameExtension = nameExtension
         self.started = False
         self.initialised = True
@@ -39,14 +40,20 @@ class Application(object):
             self.stdoutBuffer = Buffer()
             self.stdoutBufferWatcher = BufferWatcher(self.stdoutBuffer)
             self.initialisationWatchID = self.start_watch_stdout()
-            self.stdoutReader = AsynchronousPipeReader(self.stdout, self.stdoutBuffer, "stdoutReader-"+self.name)
+            self.stdoutReader = AsynchronousPipeReader(self.stdout, self.stdoutBuffer, "stdoutReader-" + self.name)
 
         if self.stderr:
             self.stderrBuffer = Buffer()
             self.stderrBufferWatcher = BufferWatcher(self.stderrBuffer)
-            self.stderrReader = AsynchronousPipeReader(self.stderr, self.stderrBuffer, "stderrReader-"+self.name)
+            self.stderrReader = AsynchronousPipeReader(self.stderr, self.stderrBuffer, "stderrReader-" + self.name)
 
-    def send_ramsh_command(self, command, response_message=None, timeout=DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT, waitForRendererConfirmation=False):
+    def send_ramsh_command(
+            self,
+            command,
+            response_message=None,
+            timeout=DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT,
+            waitForRendererConfirmation=False,
+            confirmationDisplay=0):
         """optional arguments:
         response_message -- waits after sending command until response_message(string) appears in application stdout
             Cannot be used in combination with waitForRendererConfirmation
@@ -71,7 +78,7 @@ class Application(object):
 
             if waitForRendererConfirmation:
                 self.rendererConfirmationNr += 1
-                self._internal_send_ramsh_command("confirm {}".format(self.rendererConfirmationNr))
+                self._internal_send_ramsh_command("confirm {0} {1}".format(confirmationDisplay, self.rendererConfirmationNr))
 
             if response_message:
                 return self.wait_for_msg_in_stdout(watchId, response_message, timeout)
@@ -86,7 +93,7 @@ class Application(object):
 
     def showScene(self, sceneId, displayId=0, blockUntilShown=True, timeout=DEFAULT_WAIT_FOR_MESSAGE_TIMEOUT):
         ramshCommand = "showSceneOnDisplay -sceneId {0} -displayId {1}".format(sceneId, displayId)
-        if  blockUntilShown:
+        if blockUntilShown:
             confirm_message = "scene_{}_shown".format(sceneId)
             ramshCommand += " -confirm " + confirm_message
             log.info("sending showSceneOnDisplay command for scene {}, waiting for confirmation".format(sceneId))
@@ -97,14 +104,14 @@ class Application(object):
                 self.send_ramsh_command("rinfo")
             assert success, "Timeout waiting for show event of scene, check rinfo output in renderer log"
         else:
-            self.send_ramsh_command(ramshCommand, waitForRendererConfirmation=True, timeout=timeout)
+            self.send_ramsh_command(ramshCommand, waitForRendererConfirmation=True, confirmationDisplay=displayId, timeout=timeout)
 
     def _internal_send_ramsh_command(self, command):
         command = command + "\n"
         if sys.version_info >= (3, 0):
             command = bytes(command, 'utf-8')
         self.stdin.write(command)
-        #just to be sure
+        # just to be sure
         self.stdin.flush()
 
     def _get_buffer_data(self, buffer):
@@ -146,8 +153,8 @@ class Application(object):
                 log.info("initialisation message received")
         return self.initialised
 
-    #def shutdown(self):
-        #todo send Ramsh command for controlled shutdown
+    # def shutdown(self):
+    #    todo send Ramsh command for controlled shutdown
 
     def get_return_code_blocking(self):
         returnCode = self.stdout.channel.recv_exit_status()

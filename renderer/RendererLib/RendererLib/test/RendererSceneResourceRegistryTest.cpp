@@ -29,7 +29,6 @@ TEST_F(ARendererSceneResourceRegistry, doesNotContainAnythingInitially)
     StreamTextureHandleVector sts;
     DataBufferHandleVector dbs;
     TextureBufferHandleVector tbs;
-    TextureSamplerHandleVector tss;
 
     registry.getAllRenderBuffers(rbs);
     registry.getAllRenderTargets(rts);
@@ -37,7 +36,6 @@ TEST_F(ARendererSceneResourceRegistry, doesNotContainAnythingInitially)
     registry.getAllStreamTextures(sts);
     registry.getAllDataBuffers(dbs);
     registry.getAllTextureBuffers(tbs);
-    registry.getAllTextureSamplers(tss);
 
 
     EXPECT_TRUE(rbs.empty());
@@ -46,7 +44,6 @@ TEST_F(ARendererSceneResourceRegistry, doesNotContainAnythingInitially)
     EXPECT_TRUE(sts.empty());
     EXPECT_TRUE(dbs.empty());
     EXPECT_TRUE(tbs.empty());
-    EXPECT_TRUE(tss.empty());
 }
 
 TEST_F(ARendererSceneResourceRegistry, canAddAndRemoveRenderBuffer)
@@ -203,31 +200,4 @@ TEST_F(ARendererSceneResourceRegistry, canGetTextureBufferAttributes)
     EXPECT_EQ(deviceHandle, registry.getTextureBufferDeviceHandle(tb));
     EXPECT_EQ(ETextureFormat::RG8, registry.getTextureBufferFormat(tb));
     registry.removeTextureBuffer(tb);
-}
-
-TEST_F(ARendererSceneResourceRegistry, canAddAndRemoveTextureSamplers)
-{
-    const TextureSamplerHandle ts(13u);
-    const DeviceResourceHandle deviceHandle(123u);
-    registry.addTextureSampler(ts, deviceHandle);
-
-    TextureSamplerHandleVector tss;
-    registry.getAllTextureSamplers(tss);
-    ASSERT_EQ(1u, tss.size());
-    EXPECT_EQ(ts, tss[0]);
-    tss.clear();
-
-    registry.removeTextureSampler(ts);
-    registry.getAllTextureSamplers(tss);
-    EXPECT_TRUE(tss.empty());
-}
-
-TEST_F(ARendererSceneResourceRegistry, canGetTextureSamplerDeviceHandle)
-{
-    const TextureSamplerHandle ts(13u);
-    const DeviceResourceHandle deviceHandle(123u);
-    registry.addTextureSampler(ts, deviceHandle);
-
-    EXPECT_EQ(deviceHandle, registry.getTextureSamplerDeviceHandle(ts));
-    registry.removeTextureSampler(ts);
 }

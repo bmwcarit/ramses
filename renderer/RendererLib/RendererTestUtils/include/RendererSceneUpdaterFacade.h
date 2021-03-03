@@ -20,8 +20,8 @@ namespace ramses_internal
     class RendererSceneUpdaterPartialMock : public RendererSceneUpdater
     {
     public:
-        RendererSceneUpdaterPartialMock(IPlatform& platform, const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, const IRendererResourceCache* rendererResourceCache);
-        virtual ~RendererSceneUpdaterPartialMock();
+        RendererSceneUpdaterPartialMock(IPlatform& platform, const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, IThreadAliveNotifier& notifier, const IRendererResourceCache* rendererResourceCache);
+        virtual ~RendererSceneUpdaterPartialMock() override;
 
         MOCK_METHOD(void, handleSceneUpdate, (SceneId sceneId, SceneUpdate&& update), (override));
         MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, Vector2 coords), (override));
@@ -31,8 +31,8 @@ namespace ramses_internal
     class RendererSceneUpdaterFacade : public RendererSceneUpdaterPartialMock
     {
     public:
-        RendererSceneUpdaterFacade(IPlatform& platform, const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, const IRendererResourceCache* rendererResourceCache);
-        virtual ~RendererSceneUpdaterFacade();
+        RendererSceneUpdaterFacade(IPlatform& platform, const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, IThreadAliveNotifier& notifier, const IRendererResourceCache* rendererResourceCache);
+        virtual ~RendererSceneUpdaterFacade() override;
 
         virtual void handleSceneUpdate(SceneId sceneId, SceneUpdate&& update) override;
         virtual void handlePickEvent(SceneId sceneId, Vector2 coords) override;

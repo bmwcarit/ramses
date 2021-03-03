@@ -19,7 +19,7 @@ namespace ramses_internal
         description = "exit program";
     }
 
-    bool RamshCommandExit::executeInput(const RamshInput& input)
+    bool RamshCommandExit::executeInput(const std::vector<std::string>& input)
     {
         UNUSED(input);
         LOG_INFO(CONTEXT_RAMSH, "Received ramsh command exit");
@@ -33,7 +33,7 @@ namespace ramses_internal
         return m_exitRequested.load();
     }
 
-    void RamshCommandExit::waitForExitRequest(UInt32 timeoutMillisec)
+    void RamshCommandExit::waitForExitRequest(uint32_t timeoutMillisec)
     {
         m_exitEvent.wait(timeoutMillisec);
     }

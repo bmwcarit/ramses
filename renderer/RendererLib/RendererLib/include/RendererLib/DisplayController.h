@@ -38,7 +38,7 @@ namespace ramses_internal
         virtual void                    swapBuffers() override;
         virtual SceneRenderExecutionIterator renderScene(const RendererCachedScene& scene, DeviceResourceHandle buffer, const Viewport& viewport, const SceneRenderExecutionIterator& renderFrom = {}, const FrameTimer* frameTimer = nullptr) override;
         virtual void                    executePostProcessing() override;
-        virtual void                    clearBuffer(DeviceResourceHandle buffer, const Vector4& clearColor) override;
+        virtual void                    clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const Vector4& clearColor) override;
 
         virtual DeviceResourceHandle    getDisplayBuffer() const override final;
         virtual IRenderBackend&         getRenderBackend() const override;

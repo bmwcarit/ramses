@@ -70,11 +70,6 @@ namespace ramses_internal
         UInt32                          getTextureBufferByteSize    (TextureBufferHandle handle) const;
         void                            getAllTextureBuffers        (TextureBufferHandleVector& textureBuffers) const;
 
-        void                            addTextureSampler            (TextureSamplerHandle handle, DeviceResourceHandle deviceHandle);
-        void                            removeTextureSampler         (TextureSamplerHandle handle);
-        DeviceResourceHandle            getTextureSamplerDeviceHandle(TextureSamplerHandle handle) const;
-        void                            getAllTextureSamplers        (TextureSamplerHandleVector& textureSamplers) const;
-
         UInt32                          getSceneResourceMemoryUsage(ESceneResourceType resourceType) const;
 
     private:
@@ -119,7 +114,6 @@ namespace ramses_internal
         StreamTextureSourceMap m_streamTextures;
         DataBufferMap          m_dataBuffers;
         TextureBufferMap       m_textureBuffers;
-        TextureSamplerMap      m_textureSamplers;
     };
 }
 

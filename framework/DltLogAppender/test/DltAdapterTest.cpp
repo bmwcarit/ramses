@@ -33,7 +33,7 @@ public:
             adapter->uninitialize();
     }
 
-    ~ADltAdapter()
+    ~ADltAdapter() override
     {
         if (adapter && adapter->isInitialized())
             adapter->uninitialize();

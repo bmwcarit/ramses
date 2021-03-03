@@ -101,14 +101,17 @@ namespace ramses_internal
         statFlushesTriggered.reset();
         statObjectsCreated.reset();
         statObjectsDestroyed.reset();
-        statObjectsNumber.reset();
-        statResourceObjectsCreated.reset();
-        statResourceObjectsDestroyed.reset();
-        statResourceObjectsNumber.reset();
+        statObjectsCount.reset();
         statSceneActionsSent.reset();
         statSceneActionsSentSkipped.reset();
         statSceneActionsGenerated.reset();
         statSceneActionsGeneratedSize.reset();
+        for (size_t type = 0; type < EResourceStatisticIndex_NumIndices; type++)
+        {
+            statResourceCount[type].reset();
+            statResourceAvgSize[type].reset();
+            statResourceMaxSize[type].reset();
+        }
     }
 
     void StatisticCollectionScene::resetSummaries()
@@ -118,14 +121,18 @@ namespace ramses_internal
         statFlushesTriggered.getSummary().reset();
         statObjectsCreated.getSummary().reset();
         statObjectsDestroyed.getSummary().reset();
-        statObjectsNumber.getSummary().reset();
-        statResourceObjectsCreated.getSummary().reset();
-        statResourceObjectsDestroyed.getSummary().reset();
-        statResourceObjectsNumber.getSummary().reset();
+        statObjectsCount.getSummary().reset();
         statSceneActionsSent.getSummary().reset();
         statSceneActionsSentSkipped.getSummary().reset();
         statSceneActionsGenerated.getSummary().reset();
         statSceneActionsGeneratedSize.getSummary().reset();
+        for (size_t type = 0; type < EResourceStatisticIndex_NumIndices; type++)
+        {
+            statResourceCount[type].getSummary().reset();
+            statResourceAvgSize[type].getSummary().reset();
+            statResourceMaxSize[type].getSummary().reset();
+
+        }
     }
 
     void StatisticCollectionScene::nextTimeInterval()
@@ -135,19 +142,21 @@ namespace ramses_internal
         statFlushesTriggered.updateSummaryAndResetCounter();
         const UInt32 objectsCreated = statObjectsCreated.updateSummaryAndResetCounter();
         const UInt32 objectsDestroyed = statObjectsDestroyed.updateSummaryAndResetCounter();
-        const UInt32 resourcesCreated = statResourceObjectsCreated.updateSummaryAndResetCounter();
-        const UInt32 resourcesDestroyed = statResourceObjectsDestroyed.updateSummaryAndResetCounter();
 
         statSceneActionsSent.updateSummaryAndResetCounter();
         statSceneActionsSentSkipped.updateSummaryAndResetCounter();
         statSceneActionsGenerated.updateSummaryAndResetCounter();
         statSceneActionsGeneratedSize.updateSummaryAndResetCounter();
 
-        statObjectsNumber.incCounter(objectsCreated);
-        statObjectsNumber.decCounter(objectsDestroyed);
-        statObjectsNumber.updateSummary();
-        statResourceObjectsNumber.incCounter(resourcesCreated);
-        statResourceObjectsNumber.decCounter(resourcesDestroyed);
-        statResourceObjectsNumber.updateSummary();
+        statObjectsCount.incCounter(objectsCreated);
+        statObjectsCount.decCounter(objectsDestroyed);
+        statObjectsCount.updateSummary();
+
+        for (size_t type = 0; type < EResourceStatisticIndex_NumIndices; type++)
+        {
+            statResourceCount[type].updateSummaryAndResetCounter();
+            statResourceAvgSize[type].updateSummaryAndResetCounter();
+            statResourceMaxSize[type].updateSummaryAndResetCounter();
+        }
     }
 }

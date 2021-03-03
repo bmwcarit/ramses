@@ -13,15 +13,14 @@
 #include "Platform_Base/DeviceResourceMapper.h"
 #include "Types_GL.h"
 #include "DebugOutput.h"
+#include "SceneAPI/TextureSamplerStates.h"
+#include <unordered_map>
 
 namespace ramses_internal
 {
     class ShaderGPUResource_GL;
     class RenderBufferGPUResource;
     struct GLTextureInfo;
-
-    // TODO Violin fix this
-    using GLenum = unsigned int;
 
     class Device_GL final : public Device_Base
     {
@@ -52,7 +51,6 @@ namespace ramses_internal
         virtual void stencilOp             (EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) override;
         virtual void drawMode              (EDrawMode mode) override;
         virtual void setViewport           (UInt32 start, UInt32 end, UInt32 width, UInt32 height) override;
-        virtual void setTextureSampling    (DataFieldHandle field, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel) override;
 
         virtual void setConstant(DataFieldHandle field, UInt32 count, const Float*      value) override;
         virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector2*    value) override;
@@ -99,9 +97,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle    uploadRenderBuffer  (const RenderBuffer& renderBuffer) override;
         virtual void                    deleteRenderBuffer  (DeviceResourceHandle handle) override;
 
-        virtual DeviceResourceHandle    uploadTextureSampler(EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel) override;
-        virtual void                    deleteTextureSampler(DeviceResourceHandle handle) override;
-        virtual void                    activateTextureSampler(DeviceResourceHandle handle, DataFieldHandle field) override;
+        virtual void                    activateTextureSamplerObject(const TextureSamplerStates& samplerStates, DataFieldHandle field) override;
 
         virtual DeviceResourceHandle    getFramebufferRenderTarget() const override;
         virtual DeviceResourceHandle    uploadRenderTarget  (const DeviceHandleVector& renderBuffers) override;
@@ -135,9 +131,11 @@ namespace ramses_internal
         std::vector<RenderTargetPair> m_pairedRenderTargets;
 
         // Active states for upcoming draw call(s)
-        const ShaderGPUResource_GL* m_activeShader;
-        EDrawMode                   m_activePrimitiveDrawMode;
-        UInt32                      m_activeIndexArrayElementSizeBytes;
+        const ShaderGPUResource_GL* m_activeShader = nullptr;
+        EDrawMode                   m_activePrimitiveDrawMode = EDrawMode::Points;
+        uint32_t                    m_activeIndexArrayElementSizeBytes = 0u;
+        uint32_t                    m_activeIndexArraySizeBytes = 0u;
+        DeviceResourceHandle        m_activeIndexArrayHandle;
 
         const UInt8                 m_majorApiVersion;
         const UInt8                 m_minorApiVersion;
@@ -145,6 +143,8 @@ namespace ramses_internal
         DebugOutput                 m_debugOutput;
         HashSet<String>             m_apiExtensions;
         std::vector<GLint>          m_supportedBinaryProgramFormats;
+
+        std::unordered_map<uint64_t, DeviceResourceHandle> m_textureSamplerObjectsCache;
 
         Bool getUniformLocation(DataFieldHandle field, GLInputLocation& location) const;
         Bool getAttributeLocation(DataFieldHandle field, GLInputLocation& location) const;
@@ -156,10 +156,14 @@ namespace ramses_internal
         GLHandle createTexture(UInt32 width, UInt32 height, ETextureFormat storageFormat, UInt32 sampleCount) const;
         GLHandle createRenderBuffer(UInt32 width, UInt32 height, ETextureFormat format, UInt32 sampleCount);
 
+        DeviceResourceHandle    uploadTextureSampler(const TextureSamplerStates& samplerStates);
+        void                    deleteTextureSampler(DeviceResourceHandle handle);
+        void                    activateTextureSampler(DeviceResourceHandle handle, DataFieldHandle field);
+
         GLHandle generateAndBindTexture(GLenum target) const;
-        void setTextureFiltering(GLenum target, EWrapMethod wrapU, EWrapMethod wrapV, EWrapMethod wrapR, ESamplingMethod minSampling, ESamplingMethod magSampling, UInt32 anisotropyLevel);
 
         void fillGLInternalTextureInfo(GLenum target, UInt32 width, UInt32 height, UInt32 depth, ETextureFormat textureFormat, const TextureSwizzleArray& swizzle, GLTextureInfo& texInfoOut) const;
+        uint32_t checkAndClampNumberOfSamples(GLenum internalFormat, uint32_t numSamples) const;
 
         void allocateTextureStorage(const GLTextureInfo& texInfo, UInt32 mipLevels, UInt32 sampleCount = 0) const;
         void uploadTextureMipMapData(UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const GLTextureInfo& texInfo, const UInt8 *pData, UInt32 dataSize) const;

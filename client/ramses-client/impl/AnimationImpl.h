@@ -26,7 +26,7 @@ namespace ramses
     {
     public:
         explicit AnimationImpl(AnimationSystemImpl& animationSystem, const char* name);
-        virtual ~AnimationImpl();
+        virtual ~AnimationImpl() override;
 
         void             initializeFrameworkData(const AnimatedPropertyImpl& animatedProperty, ramses_internal::SplineHandle splineHandle, ramses_internal::EInterpolationType interpolationType);
         virtual void     deinitializeFrameworkData() override;

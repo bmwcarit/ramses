@@ -64,17 +64,21 @@ namespace ramses_internal
         virtual void                markBufferWithSceneAsModified(SceneId sceneId);
         void                        setSkippingOfUnmodifiedBuffers(Bool enable);
 
+        const IDisplayController&   getDisplayController() const;
+        IDisplayController&         getDisplayController();
+        bool                        hasDisplayController() const;
+        // TODO vaclav all these have single display, no need to pass display arg
         virtual void                createDisplayContext(const DisplayConfig& displayConfig, DisplayHandle display);
         virtual void                destroyDisplayContext(DisplayHandle display);
         const IDisplayController&   getDisplayController(DisplayHandle display) const;
         IDisplayController&         getDisplayController(DisplayHandle display);
-        UInt32                      getDisplayControllerCount() const;
         Bool                        hasDisplayController(DisplayHandle display) const;
         const DisplaySetup&         getDisplaySetup(DisplayHandle displayHandle) const;
 
         DisplayEventHandler&        getDisplayEventHandler(DisplayHandle display);
         void                        setWarpingMeshData(DisplayHandle display, const WarpingMeshData& meshData);
 
+        virtual void                setClearFlags(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags);
         virtual void                setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor);
         void                        scheduleScreenshot(DisplayHandle display, DeviceResourceHandle renderTargetHandle, ScreenshotInfo&& screenshot);
         std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> dispatchProcessedScreenshots(DisplayHandle display);
@@ -82,7 +86,7 @@ namespace ramses_internal
         Bool                        hasAnyBufferWithInterruptedRendering() const;
         void                        resetRenderInterruptState();
 
-        FrameProfileRenderer&       getFrameProfileRenderer(DisplayHandle display);
+        FrameProfileRenderer&       getFrameProfileRenderer();
 
         Bool hasSystemCompositorController() const;
         void updateSystemCompositorController() const;
@@ -122,8 +126,8 @@ namespace ramses_internal
 
         struct DisplayInfo
         {
-            IDisplayController*  displayController;
-            Bool                 couldRenderLastFrame;
+            IDisplayController*  displayController = nullptr;
+            bool                 couldRenderLastFrame = true;
             DeviceResourceHandle frameBufferDeviceHandle;
             DisplaySetup         buffersSetup;
             std::unordered_map<DeviceResourceHandle, ScreenshotInfo> screenshots;

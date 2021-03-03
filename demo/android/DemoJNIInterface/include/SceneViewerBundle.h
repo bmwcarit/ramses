@@ -24,7 +24,7 @@ class SceneViewerBundle : public RendererBundle {
 public:
     SceneViewerBundle(ANativeWindow* nativeWindow, int width, int height, const char *sceneFile);
 
-    virtual ~SceneViewerBundle();
+    virtual ~SceneViewerBundle() override;
 
     virtual void run() override;
 

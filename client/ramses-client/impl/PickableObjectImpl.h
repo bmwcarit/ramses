@@ -24,7 +24,7 @@ namespace ramses
     {
     public:
         PickableObjectImpl(SceneImpl& scene, const char* pickableObjectName);
-        virtual ~PickableObjectImpl() = default;
+        virtual ~PickableObjectImpl() override = default;
 
         void         initializeFrameworkData(const ArrayBufferImpl& geometryBuffer, pickableObjectId_t id);
         virtual void deinitializeFrameworkData() override;

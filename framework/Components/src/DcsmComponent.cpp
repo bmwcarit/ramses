@@ -15,6 +15,7 @@
 #include "ramses-framework-api/DcsmMetadataUpdate.h"
 #include "DcsmMetadataUpdateImpl.h"
 #include "CategoryInfoUpdateImpl.h"
+#include <chrono>
 
 // ensure internal and api types match
 static_assert(std::is_same<ramses::ContentID::BaseType, ramses_internal::ContentID::BaseType>::value, "ContentID type mismatch");
@@ -378,16 +379,14 @@ namespace ramses_internal
             return false;
         }
 
-        if (ci.contentDescriptor.isValid())
-        {
-            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentDescription: called on content " << contentID << " repeatedly without the content being released inbetween");
-            return false;
-        }
         if (!technicalContentDescriptor.isValid())
         {
             LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentDescription: called with invalid TechnicalContentDescriptor");
             return false;
         }
+
+        if (ci.contentDescriptor.isValid())
+            LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentDescription: switch content " << contentID << " technicalContentDescriptor " << ci.contentDescriptor << " -> " << technicalContentDescriptor);
 
         ci.contentDescriptor = technicalContentDescriptor;
 
@@ -642,7 +641,7 @@ namespace ramses_internal
 
         const Guid& to = getContentProviderID(contentID);
         LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendCanvasSizeChange: to " << to << ", ContentID " << contentID <<
-                 ", " << categoryInfo << ", ai [" << ai.startTimeStamp << ", " << ai.finishedTimeStamp << "]");
+                 ", ci " << categoryInfo << ", ai [" << ai.startTimeStamp << ", " << ai.finishedTimeStamp << "]");
 
         if (!m_localConsumerAvailable)
         {
@@ -686,7 +685,7 @@ namespace ramses_internal
 
         const Guid& to = getContentProviderID(contentID);
         LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendContentStateChange: to " << to << ", ContentID " << contentID <<
-                 ", EDcsmStatus " << state << ", ai [" << ai.startTimeStamp << ", " << ai.finishedTimeStamp << "]");
+                 ", EDcsmStatus " << state << ", ci " << categoryInfo << ", ai [" << ai.startTimeStamp << ", " << ai.finishedTimeStamp << "]");
 
         if (!m_localConsumerAvailable)
         {
@@ -783,6 +782,7 @@ namespace ramses_internal
         event.animation = ai;
         event.from      = consumerID;
         m_providerEvents.push_back(event);
+        m_providerEventsSignal.notify_one();
     }
 
     void DcsmComponent::addProviderEvent_ContentStateChange(ContentID contentID, EDcsmState status, CategoryInfo categoryInfo, AnimationInformation ai, const Guid& consumerID)
@@ -795,6 +795,7 @@ namespace ramses_internal
         event.animation = ai;
         event.from      = consumerID;
         m_providerEvents.push_back(event);
+        m_providerEventsSignal.notify_one();
     }
 
     void DcsmComponent::addConsumerEvent_OfferContent(ContentID contentID, Category category, ETechnicalContentType technicalContentType, const Guid& providerID)
@@ -806,6 +807,7 @@ namespace ramses_internal
         event.contentType = technicalContentType;
         event.from        = providerID;
         m_consumerEvents.push_back(event);
+        m_consumerEventsSignal.notify_one();
     }
 
     void DcsmComponent::addConsumerEvent_ContentDescription(ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID)
@@ -816,6 +818,7 @@ namespace ramses_internal
         event.descriptor = technicalContentDescriptor;
         event.from = providerID;
         m_consumerEvents.push_back(event);
+        m_consumerEventsSignal.notify_one();
     }
 
     void DcsmComponent::addConsumerEvent_ContentReady(ContentID contentID, const Guid& providerID)
@@ -825,6 +828,7 @@ namespace ramses_internal
         event.contentID   = contentID;
         event.from        = providerID;
         m_consumerEvents.push_back(event);
+        m_consumerEventsSignal.notify_one();
     }
 
     void DcsmComponent::addConsumerEvent_ContentEnableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID)
@@ -835,6 +839,7 @@ namespace ramses_internal
         event.focusRequest = focusRequest;
         event.from      = providerID;
         m_consumerEvents.push_back(event);
+        m_consumerEventsSignal.notify_one();
     }
 
     void DcsmComponent::addConsumerEvent_ContentDisableFocusRequest(ContentID contentID, int32_t focusRequest, const Guid& providerID)
@@ -845,6 +850,7 @@ namespace ramses_internal
         event.focusRequest = focusRequest;
         event.from = providerID;
         m_consumerEvents.push_back(event);
+        m_consumerEventsSignal.notify_one();
     }
 
     void DcsmComponent::addConsumerEvent_RequestStopOfferContent(ContentID contentID, const Guid& providerID)
@@ -854,6 +860,7 @@ namespace ramses_internal
         event.contentID = contentID;
         event.from      = providerID;
         m_consumerEvents.push_back(event);
+        m_consumerEventsSignal.notify_one();
     }
 
     void DcsmComponent::addConsumerEvent_ForceStopOfferContent(ContentID contentID, const Guid& providerID)
@@ -863,6 +870,7 @@ namespace ramses_internal
         event.contentID = contentID;
         event.from      = providerID;
         m_consumerEvents.push_back(event);
+        m_consumerEventsSignal.notify_one();
     }
 
     void DcsmComponent::addConsumerEvent_UpdateContentMetadata(ContentID contentID, DcsmMetadata metadata, const Guid& providerID)
@@ -873,6 +881,7 @@ namespace ramses_internal
         event.metadata  = std::move(metadata);
         event.from      = providerID;
         m_consumerEvents.push_back(event);
+        m_consumerEventsSignal.notify_one();
     }
 
     const char* DcsmComponent::EnumToString(EDcsmCommandType cmd) const
@@ -930,7 +939,7 @@ namespace ramses_internal
     void DcsmComponent::handleCanvasSizeChange(ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation ai, const Guid& consumerID)
     {
         LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleCanvasSizeChange: from " << consumerID << ", ContentID " << contentID <<
-                 ", " << categoryInfo << ", ai [" << ai.startTimeStamp << ", " << ai.finishedTimeStamp << "]");
+                 ", ci " << categoryInfo << ", ai [" << ai.startTimeStamp << ", " << ai.finishedTimeStamp << "]");
 
         const char* methodName = "handleCanvasSizeChange";
         if (!isAllowedToReceiveFrom(methodName, consumerID))
@@ -978,7 +987,7 @@ namespace ramses_internal
     void DcsmComponent::handleContentStateChange(ContentID contentID, EDcsmState state, const CategoryInfo& categoryInfo, AnimationInformation ai, const Guid& consumerID)
     {
         LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleContentStateChange: from " << consumerID << ", ContentID " << contentID <<
-                 ", EDcsmStatus " << state << ", ai [" << ai.startTimeStamp << ", " << ai.finishedTimeStamp << "]");
+                 ", EDcsmStatus " << state << ", ci " << categoryInfo << ", ai [" << ai.startTimeStamp << ", " << ai.finishedTimeStamp << "]");
 
         const char* methodName = "handleContentStateChange";
         if (!isAllowedToReceiveFrom(methodName, consumerID))
@@ -1095,7 +1104,7 @@ namespace ramses_internal
             addConsumerEvent_OfferContent(contentID, category, technicalContentType, providerID);
         }
 
-        m_contentRegistry.put(contentID, ContentInfo{contentID, category, friendlyName, ContentState::Offered, providerID, Guid(), DcsmMetadata{}, {}, false, ETechnicalContentType::RamsesSceneID, TechnicalContentDescriptor::Invalid() });
+        m_contentRegistry.put(contentID, ContentInfo{contentID, category, friendlyName, ContentState::Offered, providerID, Guid(), DcsmMetadata{}, {}, false, technicalContentType, TechnicalContentDescriptor::Invalid() });
     }
 
     void DcsmComponent::handleContentDescription(ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID)
@@ -1378,6 +1387,16 @@ namespace ramses_internal
 
     bool DcsmComponent::dispatchProviderEvents(IDcsmProviderEventHandler& handler)
     {
+        return DcsmComponent::dispatchProviderEvents(handler, std::chrono::milliseconds{0});
+    }
+
+    bool DcsmComponent::dispatchConsumerEvents(ramses::IDcsmConsumerEventHandler& handler)
+    {
+        return DcsmComponent::dispatchConsumerEvents(handler, std::chrono::milliseconds{0});
+    }
+
+    bool DcsmComponent::dispatchProviderEvents(IDcsmProviderEventHandler& handler, std::chrono::milliseconds timeout)
+    {
         if (!m_localProviderAvailable)
         {
             LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::dispatchProviderEvents: called without active local provider");
@@ -1387,6 +1406,8 @@ namespace ramses_internal
         std::vector<DcsmEvent> events;
         {
             PlatformGuard guard(m_frameworkLock);
+            if (timeout != std::chrono::milliseconds{0})
+                m_providerEventsSignal.wait_for(m_frameworkLock, timeout, [&]() { return !m_providerEvents.empty(); });
             m_providerEvents.swap(events);
         }
 
@@ -1422,7 +1443,7 @@ namespace ramses_internal
         return true;
     }
 
-    bool DcsmComponent::dispatchConsumerEvents(ramses::IDcsmConsumerEventHandler& handler)
+    bool DcsmComponent::dispatchConsumerEvents(ramses::IDcsmConsumerEventHandler& handler, std::chrono::milliseconds timeout)
     {
         if (!m_localConsumerAvailable)
         {
@@ -1433,6 +1454,8 @@ namespace ramses_internal
         std::vector<DcsmEvent> events;
         {
             PlatformGuard guard(m_frameworkLock);
+            if (timeout != std::chrono::milliseconds{0})
+                m_consumerEventsSignal.wait_for(m_frameworkLock, timeout, [&]() { return !m_consumerEvents.empty(); });
             m_consumerEvents.swap(events);
         }
 

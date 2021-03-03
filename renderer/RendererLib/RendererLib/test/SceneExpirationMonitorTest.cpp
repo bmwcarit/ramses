@@ -12,6 +12,7 @@
 #include "RendererLib/RendererScenes.h"
 #include "RendererEventCollector.h"
 #include "PlatformAbstraction/PlatformThread.h"
+#include "Utils/ThreadLocalLog.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -23,6 +24,9 @@ public:
         : rendererScenes(eventCollector)
         , expirationMonitor(rendererScenes, eventCollector)
     {
+        // caller is expected to have a display prefix for logs
+        ThreadLocalLog::SetPrefix(1);
+
         rendererScenes.createScene(SceneInfo{ scene1 });
         rendererScenes.createScene(SceneInfo{ scene2 });
         rendererScenes.createScene(SceneInfo{ scene3 });
@@ -204,6 +208,17 @@ TEST_F(ASceneExpirationMonitor, doesNotGenerateEventIfLimitNotExceeded)
     expirationMonitor.onRendered(scene1);
     expirationMonitor.checkExpiredScenes(currentFakeTime);
     expectNoEvent();
+}
+
+TEST_F(ASceneExpirationMonitor, AlwaysExpiresIfZeroTimeComesFromClock)
+{
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime, {}, 0);
+    expectEvents({ { scene1, ERendererEventType::SceneExpirationMonitoringEnabled } });
+    expirationMonitor.onRendered(scene1);
+
+    // Zero time comes when PTP is broken or has lost sync for too long
+    expirationMonitor.checkExpiredScenes( FlushTime::Clock::time_point{ std::chrono::milliseconds(0) });
+    expectEvents({ { scene1, ERendererEventType::SceneExpired } });
 }
 
 TEST_F(ASceneExpirationMonitor, canHandleTimeStampInFutureAndTreatsAsNotExceeded)

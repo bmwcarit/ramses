@@ -7,7 +7,6 @@
 #  -------------------------------------------------------------------------
 
 from tests.embedded_compositor_base import embedded_compositor_base
-from ramses_test_framework import log
 
 
 # The test starts a RAMSES client, that shows a cube with six stream textures. Initially, the stream textures
@@ -16,7 +15,7 @@ from ramses_test_framework import log
 # shown again.
 class TestEmbeddedCompositorLifecycleClientCleansUp(embedded_compositor_base.EmbeddedCompositorBase):
 
-    def __init__(self, methodName ='runTest'):
+    def __init__(self, methodName='runTest'):
         embedded_compositor_base.EmbeddedCompositorBase.__init__(self, methodName, 0)
 
     def impl_test(self):
@@ -26,7 +25,7 @@ class TestEmbeddedCompositorLifecycleClientCleansUp(embedded_compositor_base.Emb
         self.validateScreenshot(self.renderer, "testClient_compositing_fallbacktexture.png")
 
         # ivi gears should be composited
-        self._startIviGears(iviID = 2, alternateColors = False)
+        self._startIviGears(iviID=2, alternateColors=False)
         self.validateScreenshot(self.renderer, "testClient_streamtexture_1.png")
 
         # gears stops and properly cleans up everything, fallbacks are shown again

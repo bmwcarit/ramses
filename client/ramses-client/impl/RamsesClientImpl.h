@@ -80,7 +80,7 @@ namespace ramses
     class RamsesClientImpl final : public RamsesObjectImpl
     {
     public:
-        virtual ~RamsesClientImpl();
+        virtual ~RamsesClientImpl() override;
 
         void setHLObject(RamsesClient* hlClient);
 
@@ -132,7 +132,7 @@ namespace ramses
         ramses_internal::ManagedResource createManagedEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name, std::string& errorMessages);
 
         void writeLowLevelResourcesToStream(const ResourceObjects& resources, ramses_internal::BinaryFileOutputStream& resourceOutputStream, bool compress) const;
-        static bool ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::BinaryFileInputStream& inputStream, const ramses_internal::String& verboseFileName);
+        static bool ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::IInputStream& inputStream, const ramses_internal::String& verboseFileName);
         static void WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream);
 
         ResourceDataPool& getResourceDataPool();
@@ -187,12 +187,12 @@ namespace ramses
 
         SceneVector          m_scenes;
 
-        std::unique_ptr<ramses_internal::PrintSceneList> m_cmdPrintSceneList;
-        std::unique_ptr<ramses_internal::ValidateCommand> m_cmdPrintValidation;
-        std::unique_ptr<ramses_internal::ForceFallbackImage> m_cmdForceFallbackImage;
-        std::unique_ptr<ramses_internal::FlushSceneVersion> m_cmdFlushSceneVersion;
-        std::unique_ptr<ramses_internal::DumpSceneToFile> m_cmdDumpSceneToFile;
-        std::unique_ptr<ramses_internal::LogResourceMemoryUsage> m_cmdLogResourceMemoryUsage;
+        std::shared_ptr<ramses_internal::PrintSceneList> m_cmdPrintSceneList;
+        std::shared_ptr<ramses_internal::ValidateCommand> m_cmdPrintValidation;
+        std::shared_ptr<ramses_internal::ForceFallbackImage> m_cmdForceFallbackImage;
+        std::shared_ptr<ramses_internal::FlushSceneVersion> m_cmdFlushSceneVersion;
+        std::shared_ptr<ramses_internal::DumpSceneToFile> m_cmdDumpSceneToFile;
+        std::shared_ptr<ramses_internal::LogResourceMemoryUsage> m_cmdLogResourceMemoryUsage;
 
         RamsesFrameworkImpl& m_framework;
         mutable ramses_internal::PlatformLock m_clientLock;

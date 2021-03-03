@@ -19,7 +19,7 @@ namespace ramses_internal
     {
     public:
         TaskFinishHandlerDecorator(ITaskFinishHandler& finishHandler, ITask& TaskToWatch);
-        virtual ~TaskFinishHandlerDecorator();
+        virtual ~TaskFinishHandlerDecorator() override;
 
         virtual void execute() override;
 

@@ -20,7 +20,7 @@ namespace ramses_internal
     /** Stopping the threads of the consoles is done, to ensure that the original console settings are restored
      *  before the application terminates. Necessary on some platforms, otherwise input on the
      *  console is not displayed anymore after interrupting a RAMSES application by STRG-C, e.g. */
-    class RamshCommunicationChannelConsoleSignalHandler
+    class RamshCommunicationChannelConsoleSignalHandler final
     {
     public:
         /// Inserts a RamshCommunicationChannelConsole instance to the handler.

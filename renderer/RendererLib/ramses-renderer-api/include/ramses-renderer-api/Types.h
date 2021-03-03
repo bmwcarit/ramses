@@ -279,6 +279,17 @@ namespace ramses
         ELoopMode_UpdateAndRender = 0,  //!< Render loop with update content and render
         ELoopMode_UpdateOnly            //!< Render loop will update content without rendering
     };
+
+    /**
+    * @brief Specifies type of depth buffer created within an offscreen buffer
+    *
+    */
+    enum EDepthBufferType
+    {
+        EDepthBufferType_None = 0,
+        EDepthBufferType_Depth,
+        EDepthBufferType_DepthStencil
+    };
 }
 
 #endif

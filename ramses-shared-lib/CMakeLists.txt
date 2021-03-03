@@ -17,6 +17,14 @@ if (ramses-sdk_BUILD_FULL_SHARED_LIB)
         ${ramses-shared-lib-MIXIN}
         ${ramses-shared-lib-renderer-MIXIN}
         )
+
+    foreach(lib-suffix ${RENDERER_CONFIG_LIST})
+        set(tgt "ramses-shared-lib-${lib-suffix}")
+        if (TARGET ${tgt})
+            set_target_properties(${tgt} PROPERTIES RAMSES_VERSION "${ramses-sdk_VERSION}")
+        endif()
+    endforeach()
+
 endif()
 
 if (ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
@@ -31,6 +39,8 @@ if (ramses-sdk_BUILD_CLIENT_ONLY_SHARED_LIB)
 
         ${ramses-shared-lib-MIXIN}
         )
+
+    set_target_properties(${ramses-sdk_CLIENT_ONLY_LIB_NAME} PROPERTIES RAMSES_VERSION "${ramses-sdk_VERSION}")
 
     SET_TARGET_PROPERTIES(${ramses-sdk_CLIENT_ONLY_LIB_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
     GET_TARGET_PROPERTY(MYMODULE_SOVERSION ${ramses-sdk_CLIENT_ONLY_LIB_NAME} SOVERSION)

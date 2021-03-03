@@ -17,6 +17,7 @@
 #include "Components/SceneUpdate.h"
 #include "SceneUpdateSerializerTestHelper.h"
 #include "Resource/ArrayResource.h"
+#include "Resource/TextureResource.h"
 
 using namespace ramses_internal;
 
@@ -1143,8 +1144,12 @@ TEST_F(ASceneGraphComponent, returnsFalseForFlushOnWrongResolvedResourceNumber_S
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.handleCreateScene(scene, false, eventConsumer);
 
+    auto res = new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String());
+    res->setResourceData(ResourceBlob{ 1 }, { 1u, 1u });
+    ManagedResource manRes(res);
+
     scene.allocateStreamTexture(WaylandIviSurfaceId(123u), { 111, 111 }, StreamTextureHandle{ 0 });
-    EXPECT_CALL(resourceComponent, resolveResources(_)).Times(2).WillRepeatedly(Return(ManagedResourceVector{ nullptr }));
+    EXPECT_CALL(resourceComponent, resolveResources(_)).Times(3).WillRepeatedly(Return(ManagedResourceVector{ manRes }));
     EXPECT_TRUE(sceneGraphComponent.handleFlush(sceneId, {}, {}));
 
     scene.allocateStreamTexture(WaylandIviSurfaceId(124u), { 222, 222 }, StreamTextureHandle{ 1 });
@@ -1161,8 +1166,12 @@ TEST_F(ASceneGraphComponent, returnsFalseForFlushOnWrongResolvedResourceNumber_D
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.handleCreateScene(scene, true, eventConsumer);
 
+    auto res = new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String());
+    res->setResourceData(ResourceBlob{ 1 }, { 1u, 1u });
+    ManagedResource manRes(res);
+
     scene.allocateStreamTexture(WaylandIviSurfaceId(123u), { 111, 111 }, StreamTextureHandle{ 0 });
-    EXPECT_CALL(resourceComponent, resolveResources(_)).WillOnce(Return(ManagedResourceVector{ nullptr }));
+    EXPECT_CALL(resourceComponent, resolveResources(_)).Times(2).WillRepeatedly(Return(ManagedResourceVector{ manRes }));
     EXPECT_TRUE(sceneGraphComponent.handleFlush(sceneId, {}, {}));
 
     scene.allocateStreamTexture(WaylandIviSurfaceId(124u), { 222, 222 }, StreamTextureHandle{ 1 });

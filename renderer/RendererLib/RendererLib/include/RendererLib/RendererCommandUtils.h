@@ -11,6 +11,7 @@
 
 #include "RendererLib/RendererCommands.h"
 #include "RendererLib/RendererEvent.h"
+#include "absl/algorithm/container.h"
 
 namespace ramses_internal
 {
@@ -30,11 +31,12 @@ namespace ramses_internal
         inline std::string ToString(const RendererCommand::PickEvent& cmd) { return fmt::format("PickEvent (sceneId={} coords={})", cmd.scene, cmd.coordsNormalizedToBufferSize); }
         inline std::string ToString(const RendererCommand::CreateDisplay& cmd) { return fmt::format("CreateDisplay (displayId={})", cmd.display); }
         inline std::string ToString(const RendererCommand::DestroyDisplay& cmd) { return fmt::format("DestroyDisplay (displayId={})", cmd.display); }
-        inline std::string ToString(const RendererCommand::CreateOffscreenBuffer& cmd) { return fmt::format("CreateOffscreenBuffer (displayId={} OB={} wh={}x{} msaa={} interruptible={})", cmd.display, cmd.offscreenBuffer, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible); }
+        inline std::string ToString(const RendererCommand::CreateOffscreenBuffer& cmd) { return fmt::format("CreateOffscreenBuffer (displayId={} OB={} wh={}x{} msaa={} interruptible={} depthStencil={})", cmd.display, cmd.offscreenBuffer, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible, cmd.depthStencilBufferType); }
         inline std::string ToString(const RendererCommand::DestroyOffscreenBuffer& cmd) { return fmt::format("DestroyOffscreenBuffer (displayId={} OB={})", cmd.display, cmd.offscreenBuffer); }
         inline std::string ToString(const RendererCommand::CreateStreamBuffer& cmd) { return fmt::format("CreateStreamBuffer (displayId={} SB={})", cmd.display, cmd.streamBuffer); }
         inline std::string ToString(const RendererCommand::DestroyStreamBuffer& cmd) { return fmt::format("DestroyStreamBuffer (displayId={} SB={})", cmd.display, cmd.streamBuffer); }
         inline std::string ToString(const RendererCommand::SetStreamBufferState& cmd) { return fmt::format("SetStreamBufferState (displayId={} SB={} state={})", cmd.display, cmd.streamBuffer, cmd.newState); }
+        inline std::string ToString(const RendererCommand::SetClearFlags& cmd) { return fmt::format("SetClearEnabled (displayId={} OB={} flags={})", cmd.display, cmd.offscreenBuffer, cmd.clearFlags); }
         inline std::string ToString(const RendererCommand::SetClearColor& cmd) { return fmt::format("SetClearColor (displayId={} OB={} color={})", cmd.display, cmd.offscreenBuffer, cmd.clearColor); }
         inline std::string ToString(const RendererCommand::UpdateWarpingData& cmd) { return fmt::format("UpdateWarpingData (displayId={})", cmd.display); }
         inline std::string ToString(const RendererCommand::ReadPixels& cmd) { return fmt::format("ReadPixels (displayId={} OB={})", cmd.display, cmd.offscreenBuffer); }
@@ -57,7 +59,7 @@ namespace ramses_internal
         inline std::string ToString(const RendererCommand::FrameProfiler_TimingGraphHeight& cmd) { return fmt::format("FrameProfiler_TimingGraphHeight (height={})", cmd.height); }
         inline std::string ToString(const RendererCommand::FrameProfiler_CounterGraphHeight& cmd) { return fmt::format("FrameProfiler_CounterGraphHeight (height={})", cmd.height); }
         inline std::string ToString(const RendererCommand::FrameProfiler_RegionFilterFlags& cmd) { return fmt::format("FrameProfiler_RegionFilterFlags (flags={})", cmd.flags); }
-        inline std::string ToString(const RendererCommand::ConfirmationEcho& cmd) { return fmt::format("ConfirmationEcho (text={})", cmd.text); }
+        inline std::string ToString(const RendererCommand::ConfirmationEcho& cmd) { return fmt::format("ConfirmationEcho (display={} text={})", cmd.display, cmd.text); }
         inline std::string ToString(const RendererCommand::Variant& var)
         {
             return absl::visit([&](const auto& c) { return RendererCommandUtils::ToString(c); }, var);
@@ -127,6 +129,43 @@ namespace ramses_internal
         inline RendererEvent GenerateFailEventForCommand(const RendererCommand::Variant& var)
         {
             return absl::visit([&](const auto& c) { return RendererCommandUtils::GenerateFailEventForCommand(c); }, var);
+        }
+
+        inline void AddAndConsolidateCommandToStash(RendererCommand::Variant&& cmd, RendererCommands& commands)
+        {
+            // never filter publish or confirmation echo
+            if (absl::holds_alternative<RendererCommand::ScenePublished>(cmd))
+            {
+                commands.push_back(std::move(cmd));
+            }
+            // strike out unpublish of published scene
+            else if (absl::holds_alternative<RendererCommand::SceneUnpublished>(cmd))
+            {
+                const auto sceneId = absl::get<RendererCommand::SceneUnpublished>(cmd).scene;
+                const auto it = absl::c_find_if(commands, [sceneId](const auto& c) {
+                    return absl::holds_alternative<RendererCommand::ScenePublished>(c) && absl::get<RendererCommand::ScenePublished>(c).scene == sceneId;
+                });
+                if (it != commands.end())
+                    commands.erase(it);
+                else
+                    commands.push_back(std::move(cmd));
+            }
+            // do not stash single time commands and frame profiler
+            else if (absl::holds_alternative<RendererCommand::FrameProfiler_Toggle>(cmd) ||
+                absl::holds_alternative<RendererCommand::LogInfo>(cmd) ||
+                absl::holds_alternative<RendererCommand::LogStatistics>(cmd))
+            {
+            }
+            // keep always just the last cmd of all other types
+            else
+            {
+                const auto it = absl::c_find_if(commands, [&cmd](const auto& c) {
+                    return c.index() == cmd.index();
+                });
+                if (it != commands.end())
+                    commands.erase(it);
+                commands.push_back(std::move(cmd));
+            }
         }
     }
 }

@@ -23,7 +23,7 @@ namespace ramses
     {
     public:
         RenderTargetImpl(SceneImpl& scene, const char* name);
-        virtual ~RenderTargetImpl();
+        virtual ~RenderTargetImpl() override;
 
         void             initializeFrameworkData(const RenderTargetDescriptionImpl& rtDesc);
         virtual void     deinitializeFrameworkData() override;

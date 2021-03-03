@@ -231,9 +231,18 @@ int main(int argc, char* argv[])
     sceneControlAPI.flush();
 
     /// [Displays Example]
-
-    for (;;)
+    ramses::RamsesRenderer::setMaximumFramerate(renderer, 5, display2);
+    renderer.startThread();
+    renderer.flush();
+    //ramses::RamsesRenderer::setMaximumFramerate(renderer, 60, display1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    while (true)
     {
-        renderer.doOneLoop();
+        ramses::RamsesRenderer::setMaximumFramerate(renderer, 5, display2);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        ramses::RamsesRenderer::setMaximumFramerate(renderer, 60, display2);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        ramses::RamsesRenderer::setMaximumFramerate(renderer, 1, display2);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 }

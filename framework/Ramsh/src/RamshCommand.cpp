@@ -7,40 +7,27 @@
 //  -------------------------------------------------------------------------
 
 #include "Ramsh/RamshCommand.h"
-#include "Collections/StringOutputStream.h"
+#include "fmt/format.h"
 
 namespace ramses_internal
 {
 
-    void RamshCommand::registerKeyword(const String& keyword)
+    void RamshCommand::registerKeyword(const std::string& keyword)
     {
         m_keywords.push_back(keyword);
     }
 
-    String RamshCommand::keywordString() const
+    std::string RamshCommand::keywordString() const
     {
-        StringOutputStream ss;
-        StringVector::const_iterator iter = m_keywords.begin();
-        StringVector::const_iterator end = m_keywords.end();
-
-        while (iter != end)
-        {
-            ss << *iter;
-            ++iter;
-            if (iter != end)
-            {
-                ss << " | ";
-            }
-        }
-        return String(ss.release());
+        return fmt::format("{}", fmt::join(m_keywords, " | "));
     }
 
-    const StringVector& RamshCommand::keywords() const
+    const std::vector<std::string>& RamshCommand::keywords() const
     {
         return m_keywords;
     }
 
-    String RamshCommand::descriptionString() const
+    std::string RamshCommand::descriptionString() const
     {
         return description;
     }

@@ -16,4 +16,3 @@ class AdaptedArgParser(argparse.ArgumentParser):
         sys.stderr.write('error: %s\n' % message)
         self.print_help()
         sys.exit(2)
-

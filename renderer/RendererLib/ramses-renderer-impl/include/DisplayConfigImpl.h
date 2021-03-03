@@ -9,6 +9,7 @@
 #ifndef RAMSES_DISPLAYCONFIGIMPL_H
 #define RAMSES_DISPLAYCONFIGIMPL_H
 
+#include "ramses-renderer-api/Types.h"
 #include "RendererLib/DisplayConfig.h"
 #include "StatusObjectImpl.h"
 #include "Utils/CommandLineParser.h"
@@ -44,6 +45,7 @@ namespace ramses
         status_t setGPUMemoryCacheSize(uint64_t size);
         status_t setClearColor(float red, float green, float blue, float alpha);
         status_t setOffscreen(bool offscreenFlag);
+        status_t setDepthStencilBufferType(EDepthBufferType depthBufferType);
         status_t setWindowsWindowHandle(void* hwnd);
         void*    getWindowsWindowHandle() const;
 

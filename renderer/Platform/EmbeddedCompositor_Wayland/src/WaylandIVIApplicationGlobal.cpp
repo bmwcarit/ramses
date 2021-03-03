@@ -12,7 +12,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandIVIApplicationConnection.h"
 #include "EmbeddedCompositor_Wayland/IWaylandGlobal.h"
 #include "PlatformAbstraction/PlatformMath.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include <cassert>
 
 namespace ramses_internal
@@ -71,7 +71,7 @@ namespace ramses_internal
 
     void WaylandIVIApplicationGlobal::IVIApplicationBindCallback(wl_client* client, void* data, uint32_t version, uint32_t id)
     {
-        UNUSED(version)
+        UNUSED(version);
         WaylandIVIApplicationGlobal* shell = static_cast<WaylandIVIApplicationGlobal*>(data);
         WaylandClient waylandClient(client);
         shell->iviApplicationBind(waylandClient, version, id);

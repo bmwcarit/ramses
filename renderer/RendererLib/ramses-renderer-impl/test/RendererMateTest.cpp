@@ -29,9 +29,8 @@ public:
         , rendererMateRendererEventHandler(rendererMate)
         , rendererMateEventHandler(rendererMate)
     {
-        rendererMate.setSceneMapping(sceneId, displayId);
-
         displayId = renderer.createDisplay({});
+        rendererMate.setSceneMapping(sceneId, displayId);
         StrictMock<RendererCommandVisitorMock> visitor;
         EXPECT_CALL(visitor, createDisplayContext(_, _, _));
         visitor.visit(renderer.impl.getPendingCommands());
@@ -42,7 +41,7 @@ protected:
     void expectLogConfirmationCommand()
     {
         StrictMock<RendererCommandVisitorMock> visitor;
-        EXPECT_CALL(visitor, handleConfirmationEcho(_));
+        EXPECT_CALL(visitor, handleConfirmationEcho(DisplayHandle{ displayId.getValue() }, _));
         visitor.visit(renderer.impl.getPendingCommands());
         clearCommands();
     }
@@ -165,7 +164,7 @@ TEST_F(ARendererMate, canBeCalledFromAnotherThread)
         EXPECT_TRUE(rendererMate.setSceneState(sId, ramses::RendererSceneState::Ready));
         rendererMate.linkOffscreenBuffer(offscreenBufferId, sId, ramses::dataConsumerId_t{ 123 });
         rendererMate.linkData(sId, ramses::dataProviderId_t{ 123 }, ramses::sceneId_t{ sId.getValue() + 10 }, ramses::dataConsumerId_t{ 123 });
-        rendererMate.processConfirmationEchoCommand("foo");
+        rendererMate.processConfirmationEchoCommand(displayId, "foo");
         finishedBarrier.wait();
     };
 

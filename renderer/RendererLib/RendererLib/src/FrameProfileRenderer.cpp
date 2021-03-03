@@ -25,94 +25,94 @@ namespace ramses_internal
     static const Float CounterAreaHeight(150.f);
     static const Float CounterGridlinePixelDistance(120.f);
 
-    static const char* SimpleColorFragmentShader =  "       \n\
-        #version 300 es                                     \n\
-        precision highp float;                              \n\
-                                                            \n\
-        uniform vec4 color;                                 \n\
-        out vec4 fragColor;                                 \n\
-                                                            \n\
-        void main(void)                                     \n\
-        {                                                   \n\
-            fragColor = color;                              \n\
-        }";
+    static const char* SimpleColorFragmentShader =  R"GLSL(
+        #version 300 es
+        precision highp float;
 
-    static const char* IndexedColorFragmentShader = "       \n\
-        #version 300 es                                     \n\
-        precision highp float;                              \n\
-                                                            \n\
-        flat in int colorId;                                \n\
-        const vec4 colors[16] = vec4[16](                   \n\
-            vec4(0.0, 0.0, 0.0, 1.0),                       \n\
-            vec4(0.5, 1.0, 0.0, 0.5),        // RendererCommands                   \n\
-            vec4(1.0, 0.0, 0.0, 0.5),        // UpdateClientResources              \n\
-            vec4(0.0, 0.0, 1.0, 0.5),        // ApplySceneActions                  \n\
-            vec4(1.0, 0.0, 1.0, 0.5),        // UpdateSceneResources               \n\
-            vec4(0.0, 1.0, 1.0, 0.5),        // UpdateEmbeddedCompositingResources \n\
-            vec4(1.0, 0.5, 0.0, 0.5),        // UpdateStreamTextures               \n\
-            vec4(0.5, 0.0, 1.0, 0.25),       // UpdateScenesToBeMapped             \n\
-            vec4(0.25, 0.75, 0.25, 0.5),     // UpdateResourceCache                \n\
-            vec4(0.75, 0.25, 0.25, 0.5),     // UpdateAnimations                   \n\
-            vec4(0.25, 0.75, 0.75, 0.5),     // UpdateTransformations              \n\
-            vec4(1.0, 1.0, 0.0, 0.5),        // UpdateDataLinks                    \n\
-            vec4(0.0, 0.0, 0.0, 0.5),        // HandleDisplayEvents                \n\
-            vec4(0.0, 1.0, 0.0, 0.5),        // DrawScenes                         \n\
-            vec4(1.0, 1.0, 0.0, 0.25),       // SwapBuffersAndNotifyClients        \n\
-            vec4(1.0, 1.0, 1.0, 0.2) );      // MaxFramerateSleep                  \n\
-        out vec4 fragColor;                                 \n\
-                                                            \n\
-        void main(void)                                     \n\
-        {                                                   \n\
-            fragColor = colors[colorId];                    \n\
-        }";
+        uniform vec4 color;
+        out vec4 fragColor;
 
-    static const char* StackedTimingLineVertexShader = "    \n\
-        #version 300 es                                     \n\
-                                                            \n\
-        uniform mat4 mvpMatrix;                             \n\
-                                                            \n\
-        in float a_position;                                \n\
-        flat out int colorId;                               \n\
-                                                            \n\
-        void main()                                         \n\
-        {                                                   \n\
-            vec4 pos;                                       \n\
-            pos.x = float(gl_VertexID / 16);                \n\
-            pos.y = a_position;                             \n\
-            pos.z = 0.0;                                    \n\
-            pos.w = 1.0;                                    \n\
-            gl_Position = mvpMatrix * pos;                  \n\
-            colorId = gl_VertexID % 16;                     \n\
-        }";
+        void main(void)
+        {
+            fragColor = color;
+        })GLSL";
 
-    static const char* TimingLineVertexShader = "           \n\
-        #version 300 es                                     \n\
-                                                            \n\
-        uniform mat4 mvpMatrix;                             \n\
-                                                            \n\
-        in float a_position;                                \n\
-                                                            \n\
-        void main()                                         \n\
-        {                                                   \n\
-            vec4 pos;                                       \n\
-            pos.x = float(gl_VertexID);                     \n\
-            pos.y = a_position;                             \n\
-            pos.z = 0.0;                                    \n\
-            pos.w = 1.0;                                    \n\
-            gl_Position = mvpMatrix * pos;                  \n\
-        }";
+    static const char* IndexedColorFragmentShader = R"GLSL(
+        #version 300 es
+        precision highp float;
 
-    static const char* SimpleVertexShader = "               \n\
-        #version 300 es                                     \n\
-                                                            \n\
-        uniform mat4 mvpMatrix;                             \n\
-                                                            \n\
-        in vec2 a_position;                                 \n\
-                                                            \n\
-        void main()                                         \n\
-        {                                                   \n\
-            gl_Position = mvpMatrix * vec4(a_position, 0.0, 1.0); \n\
-        }";
+        flat in int colorId;
+        const vec4 colors[16] = vec4[16](
+            vec4(0.0, 0.0, 0.0, 1.0),
+            vec4(0.5, 1.0, 0.0, 0.5),        // RendererCommands
+            vec4(1.0, 0.0, 0.0, 0.5),        // UpdateClientResources
+            vec4(0.0, 0.0, 1.0, 0.5),        // ApplySceneActions
+            vec4(1.0, 0.0, 1.0, 0.5),        // UpdateSceneResources
+            vec4(0.0, 1.0, 1.0, 0.5),        // UpdateEmbeddedCompositingResources
+            vec4(1.0, 0.5, 0.0, 0.5),        // UpdateStreamTextures
+            vec4(0.5, 0.0, 1.0, 0.25),       // UpdateScenesToBeMapped
+            vec4(0.25, 0.75, 0.25, 0.5),     // UpdateResourceCache
+            vec4(0.75, 0.25, 0.25, 0.5),     // UpdateAnimations
+            vec4(0.25, 0.75, 0.75, 0.5),     // UpdateTransformations
+            vec4(1.0, 1.0, 0.0, 0.5),        // UpdateDataLinks
+            vec4(0.0, 0.0, 0.0, 0.5),        // HandleDisplayEvents
+            vec4(0.0, 1.0, 0.0, 0.5),        // DrawScenes
+            vec4(1.0, 1.0, 0.0, 0.25),       // SwapBuffersAndNotifyClients
+            vec4(1.0, 1.0, 1.0, 0.2) );      // MaxFramerateSleep
+        out vec4 fragColor;
+
+        void main(void)
+        {
+            fragColor = colors[colorId];
+        })GLSL";
+
+    static const char* StackedTimingLineVertexShader = R"GLSL(
+        #version 300 es
+
+        uniform mat4 mvpMatrix;
+
+        in float a_position;
+        flat out int colorId;
+
+        void main()
+        {
+            vec4 pos;
+            pos.x = float(gl_VertexID / 16);
+            pos.y = a_position;
+            pos.z = 0.0;
+            pos.w = 1.0;
+            gl_Position = mvpMatrix * pos;
+            colorId = gl_VertexID % 16;
+        })GLSL";
+
+    static const char* TimingLineVertexShader = R"GLSL(
+        #version 300 es
+
+        uniform mat4 mvpMatrix;
+
+        in float a_position;
+
+        void main()
+        {
+            vec4 pos;
+            pos.x = float(gl_VertexID);
+            pos.y = a_position;
+            pos.z = 0.0;
+            pos.w = 1.0;
+            gl_Position = mvpMatrix * pos;
+        })GLSL";
+
+    static const char* SimpleVertexShader = R"GLSL(
+        #version 300 es
+
+        uniform mat4 mvpMatrix;
+
+        in vec2 a_position;
+
+        void main()
+        {
+            gl_Position = mvpMatrix * vec4(a_position, 0.0, 1.0);
+        })GLSL";
 
     FrameProfileRenderer::FrameProfileRenderer(IDevice& device, UInt32 displayWidth, UInt32 displayHeight)
         : m_doReset(false)
@@ -150,8 +150,8 @@ namespace ramses_internal
         EffectInputInformationVector attributes;
         EffectInputInformation position("a_position", 1, EDataType::Float, EFixedSemantics::Invalid);
         attributes.push_back(position);
-        m_timingLineEffect = new EffectResource(TimingLineVertexShader, SimpleColorFragmentShader, "", uniforms, attributes, "overlayShader", ResourceCacheFlag_DoNotCache);
-        m_singleColorEffect = new EffectResource(SimpleVertexShader, SimpleColorFragmentShader, "", uniforms, attributes, "overlayShader", ResourceCacheFlag_DoNotCache);
+        m_timingLineEffect = new EffectResource(TimingLineVertexShader, SimpleColorFragmentShader, "", absl::nullopt, uniforms, attributes, "overlayShader", ResourceCacheFlag_DoNotCache);
+        m_singleColorEffect = new EffectResource(SimpleVertexShader, SimpleColorFragmentShader, "", absl::nullopt, uniforms, attributes, "overlayShader", ResourceCacheFlag_DoNotCache);
 
 
         EffectInputInformationVector iuniforms;
@@ -161,7 +161,7 @@ namespace ramses_internal
         EffectInputInformation iposition("a_position", FrameProfilerStatistics::NumberOfEntries, EDataType::Float, EFixedSemantics::Invalid);
         iAttributes.push_back(iposition);
 
-        m_stackedTimingLineEffect = new EffectResource(StackedTimingLineVertexShader, IndexedColorFragmentShader, "", iuniforms, iAttributes, "overlayShader", ResourceCacheFlag_DoNotCache);
+        m_stackedTimingLineEffect = new EffectResource(StackedTimingLineVertexShader, IndexedColorFragmentShader, "", absl::nullopt, iuniforms, iAttributes, "overlayShader", ResourceCacheFlag_DoNotCache);
 
 
         auto singleColorShaderResource = m_device->uploadShader(*m_singleColorEffect);
@@ -584,18 +584,6 @@ namespace ramses_internal
         if (m_enabled)
         {
             m_doReset = true;
-        }
-    }
-
-    void FrameProfileRenderer::ForAllFrameProfileRenderer(Renderer& renderer, const RendererFunc& rendererFunc)
-    {
-        for (auto displayId = 0u; displayId < renderer.getDisplayControllerCount(); displayId++)
-        {
-            const auto displayHandle = DisplayHandle(displayId);
-            if (renderer.hasDisplayController(displayHandle))
-            {
-                rendererFunc(renderer.getFrameProfileRenderer(displayHandle));
-            }
         }
     }
 }

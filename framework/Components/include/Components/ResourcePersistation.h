@@ -17,7 +17,6 @@ namespace ramses_internal
 {
     class IOutputStream;
     class IInputStream;
-    class BinaryFileInputStream;
     class BinaryFileOutputStream;
     struct ResourceFileEntry;
 
@@ -28,7 +27,7 @@ namespace ramses_internal
         static void WriteOneResourceToStream(IOutputStream& outStream, const ManagedResource& resource);
 
         static IResource* ReadOneResourceFromStream(IInputStream& inStream, const ResourceContentHash& hash);
-        static IResource* RetrieveResourceFromStream(BinaryFileInputStream& inStream, const ResourceFileEntry& entry);
+        static IResource* RetrieveResourceFromStream(IInputStream& inStream, const ResourceFileEntry& entry);
     };
 }
 

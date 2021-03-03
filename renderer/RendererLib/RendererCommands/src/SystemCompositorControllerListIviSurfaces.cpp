@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererCommands/SystemCompositorControllerListIviSurfaces.h"
-#include "Ramsh/RamshInput.h"
 
 namespace ramses_internal
 {
@@ -19,7 +18,7 @@ namespace ramses_internal
         registerKeyword("scl");
     }
 
-    Bool SystemCompositorControllerListIviSurfaces::executeInput(const RamshInput& input)
+    Bool SystemCompositorControllerListIviSurfaces::executeInput(const std::vector<std::string>& input)
     {
         UNUSED(input);
         m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SCListIviSurfaces{});

@@ -9,11 +9,12 @@
 from ramses_test_framework.targets.remote_target import RemoteTarget
 from ramses_test_framework import log
 
+
 class WindowsCygwinTarget(RemoteTarget):
 
     def setup(self, transfer_binaries=True):
         self.defaultPlatform = "windows-wgl-es-3-0"
-        self.defaultEnvironment = {"PATH" : "${HOME}/" + self.ramsesInstallDir + "/bin:${PATH}"}
+        self.defaultEnvironment = {"PATH": "${HOME}/" + self.ramsesInstallDir + "/bin:${PATH}"}
 
         # base implementation that includes setup of connection and transfer of binaries
         baseSetupSuccessful = RemoteTarget.setup(self, transfer_binaries)
@@ -38,7 +39,7 @@ class WindowsCygwinTarget(RemoteTarget):
         return True
 
     def get_install_dir(self):
-        return "${HOME}/{}".format(self.ramsesInstallDir)
+        return "${{HOME}}/{}".format(self.ramsesInstallDir)
 
     def _shutdown(self):
         self.execute_on_target("shutdown -t 3 -s", False)

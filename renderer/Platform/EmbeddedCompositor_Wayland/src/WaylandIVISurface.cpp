@@ -12,8 +12,7 @@
 #include "EmbeddedCompositor_Wayland/INativeWaylandResource.h"
 #include "EmbeddedCompositor_Wayland/IWaylandSurface.h"
 #include "EmbeddedCompositor_Wayland/IWaylandClient.h"
-
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {
@@ -132,7 +131,7 @@ namespace ramses_internal
 
     void WaylandIVISurface::IVISurfaceDestroyCallback(wl_client* client, wl_resource* iviSurfaceResource)
     {
-        UNUSED(client)
+        UNUSED(client);
         WaylandIVISurface* iviSurface = static_cast<WaylandIVISurface*>(wl_resource_get_user_data(iviSurfaceResource));
         delete iviSurface;
     }

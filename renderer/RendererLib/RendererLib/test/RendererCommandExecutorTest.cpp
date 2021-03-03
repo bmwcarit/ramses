@@ -31,6 +31,7 @@
 #include "EmbeddedCompositingManagerMock.h"
 #include "RendererSceneEventSenderMock.h"
 #include "RendererSceneUpdaterMock.h"
+#include "Utils/ThreadLocalLog.h"
 
 namespace ramses_internal {
 
@@ -44,6 +45,8 @@ public:
         , m_sceneStateExecutor(m_renderer, m_sceneEventSender, m_rendererEventCollector)
         , m_commandExecutor(m_renderer, m_commandBuffer, m_sceneUpdater, m_sceneControlLogic, m_rendererEventCollector, m_frameTimer)
     {
+        // caller is expected to have a display prefix for logs
+        ThreadLocalLog::SetPrefix(1);
     }
 
     void doCommandExecutorLoop()
@@ -146,7 +149,6 @@ TEST_F(ARendererCommandExecutor, updatesWarpingMeshDataOnDisplay)
 
     StrictMock<DisplayControllerMock>& displayControllerMock = *m_renderer.getDisplayMock(dummyDisplay).m_displayController;
     EXPECT_CALL(displayControllerMock, isWarpingEnabled()).WillRepeatedly(Return(true));
-    EXPECT_CALL(displayControllerMock, enableContext());
     EXPECT_CALL(displayControllerMock, setWarpingMeshData(_));
     doCommandExecutorLoop();
 
@@ -215,8 +217,8 @@ TEST_F(ARendererCommandExecutor, createOffscreenBufferAndGenerateEvent)
     constexpr DisplayHandle display{ 1 };
     constexpr OffscreenBufferHandle buffer{ 2 };
 
-    m_commandBuffer.enqueueCommand(RendererCommand::CreateOffscreenBuffer{ display, buffer, 1u, 2u, 3u, true });
-    EXPECT_CALL(m_sceneUpdater, handleBufferCreateRequest(buffer, display, 1u, 2u, 3u, true)).WillOnce(Return(true));
+    m_commandBuffer.enqueueCommand(RendererCommand::CreateOffscreenBuffer{ display, buffer, 1u, 2u, 3u, true, ERenderBufferType_DepthStencilBuffer });
+    EXPECT_CALL(m_sceneUpdater, handleBufferCreateRequest(buffer, display, 1u, 2u, 3u, true, ERenderBufferType_DepthStencilBuffer)).WillOnce(Return(true));
     doCommandExecutorLoop();
 
     const RendererEventVector events = consumeRendererEvents();
@@ -231,8 +233,8 @@ TEST_F(ARendererCommandExecutor, createOffscreenBufferAndGenerateEventOnFail)
     constexpr DisplayHandle display{ 1 };
     constexpr OffscreenBufferHandle buffer{ 2 };
 
-    m_commandBuffer.enqueueCommand(RendererCommand::CreateOffscreenBuffer{ display, buffer, 1u, 2u, 3u, true });
-    EXPECT_CALL(m_sceneUpdater, handleBufferCreateRequest(buffer, display, 1u, 2u, 3u, true)).WillOnce(Return(false));
+    m_commandBuffer.enqueueCommand(RendererCommand::CreateOffscreenBuffer{ display, buffer, 1u, 2u, 3u, true, ERenderBufferType_DepthBuffer });
+    EXPECT_CALL(m_sceneUpdater, handleBufferCreateRequest(buffer, display, 1u, 2u, 3u, true, ERenderBufferType_DepthBuffer)).WillOnce(Return(false));
     doCommandExecutorLoop();
 
     const RendererEventVector events = consumeRendererEvents();
@@ -497,6 +499,16 @@ TEST_F(ARendererCommandExecutor, callsSystemCompositorScreenshot)
         EXPECT_CALL(*systemCompositorMock, doScreenshot(firstName, 1));
         EXPECT_CALL(*systemCompositorMock, doScreenshot(otherName, -1));
     }
+    doCommandExecutorLoop();
+}
+
+TEST_F(ARendererCommandExecutor, setClearFlags)
+{
+    constexpr DisplayHandle display{ 1 };
+    constexpr OffscreenBufferHandle buffer{ 2 };
+
+    m_commandBuffer.enqueueCommand(RendererCommand::SetClearFlags{ display, buffer, EClearFlags_Color });
+    EXPECT_CALL(m_sceneUpdater, handleSetClearFlags(display, buffer, EClearFlags_Color));
     doCommandExecutorLoop();
 }
 

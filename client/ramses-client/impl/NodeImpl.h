@@ -34,7 +34,7 @@ namespace ramses
     {
     public:
         NodeImpl(SceneImpl& scene, ERamsesObjectType type, const char* nodeName);
-        virtual ~NodeImpl();
+        virtual ~NodeImpl() override;
 
         void             initializeFrameworkData();
         virtual void     deinitializeFrameworkData() override;

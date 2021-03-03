@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "Window_Wayland/InputHandling_Wayland.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Warnings.h"
 #include <linux/input.h>
 
@@ -85,26 +85,26 @@ namespace ramses_internal
 
     void InputHandling_Wayland::PointerHandleEnter(void* data, wl_pointer* pointer, uint32_t serial, wl_surface* surface, wl_fixed_t sx, wl_fixed_t sy)
     {
-        UNUSED(data)
-        UNUSED(pointer)
-        UNUSED(serial)
-        UNUSED(surface)
-        UNUSED(sx)
-        UNUSED(sy)
+        UNUSED(data);
+        UNUSED(pointer);
+        UNUSED(serial);
+        UNUSED(surface);
+        UNUSED(sx);
+        UNUSED(sy);
     }
 
     void InputHandling_Wayland::PointerHandleLeave(void* data, wl_pointer* pointer, uint32_t serial, wl_surface* surface)
     {
-        UNUSED(data)
-        UNUSED(pointer)
-        UNUSED(serial)
-        UNUSED(surface)
+        UNUSED(data);
+        UNUSED(pointer);
+        UNUSED(serial);
+        UNUSED(surface);
     }
 
     void InputHandling_Wayland::PointerHandleMotion(void *data, wl_pointer* pointer, uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
     {
-        UNUSED(pointer)
-        UNUSED(time)
+        UNUSED(pointer);
+        UNUSED(time);
 
         InputHandling_Wayland& inputHandling = *static_cast<InputHandling_Wayland*>(data);
         inputHandling.m_cursorPosX = wl_fixed_to_double(sx);
@@ -114,9 +114,9 @@ namespace ramses_internal
 
     void InputHandling_Wayland::PointerHandleButton(void *data, wl_pointer* pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
     {
-        UNUSED(pointer)
-        UNUSED(serial)
-        UNUSED(time)
+        UNUSED(pointer);
+        UNUSED(serial);
+        UNUSED(time);
 
         InputHandling_Wayland& inputHandling = *static_cast<InputHandling_Wayland*>(data);
         const bool buttonPressed = (state == WL_POINTER_BUTTON_STATE_PRESSED);
@@ -154,8 +154,8 @@ namespace ramses_internal
 
     void InputHandling_Wayland::PointerHandleAxis(void* data, wl_pointer* pointer, uint32_t time, uint32_t axis, wl_fixed_t value)
     {
-        UNUSED(pointer)
-        UNUSED(time)
+        UNUSED(pointer);
+        UNUSED(time);
 
         InputHandling_Wayland& inputHandling = *static_cast<InputHandling_Wayland*>(data);
 
@@ -178,38 +178,38 @@ namespace ramses_internal
 
     void InputHandling_Wayland::KeyboardHandleKeymap(void *data, wl_keyboard *keyboard, uint32_t format, int fd, uint32_t size)
     {
-        UNUSED(data)
-        UNUSED(keyboard)
-        UNUSED(format)
-        UNUSED(fd)
-        UNUSED(size)
+        UNUSED(data);
+        UNUSED(keyboard);
+        UNUSED(format);
+        UNUSED(fd);
+        UNUSED(size);
     }
 
     void InputHandling_Wayland::KeyboardHandleEnter(void *data, wl_keyboard *keyboard, uint32_t serial, wl_surface *surface, wl_array *keys)
     {
         LOG_TRACE(CONTEXT_RENDERER, "keyboard handle enter");
-        UNUSED(data)
-        UNUSED(keyboard)
-        UNUSED(serial)
-        UNUSED(surface)
-        UNUSED(keys)
+        UNUSED(data);
+        UNUSED(keyboard);
+        UNUSED(serial);
+        UNUSED(surface);
+        UNUSED(keys);
     }
 
     void InputHandling_Wayland::KeyboardHandleLeave(void *data, wl_keyboard *keyboard, uint32_t serial, wl_surface *surface)
     {
         LOG_TRACE(CONTEXT_RENDERER, "keyboard handle leave");
-        UNUSED(data)
-        UNUSED(keyboard)
-        UNUSED(serial)
-        UNUSED(surface)
+        UNUSED(data);
+        UNUSED(keyboard);
+        UNUSED(serial);
+        UNUSED(surface);
     }
 
     void InputHandling_Wayland::KeyboardHandleKey(void *data, wl_keyboard *keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state_w)
     {
-        UNUSED(data)
-        UNUSED(keyboard)
-        UNUSED(serial)
-        UNUSED(time)
+        UNUSED(data);
+        UNUSED(keyboard);
+        UNUSED(serial);
+        UNUSED(time);
 
         const EKeyCode ramsesKeyCode = RamsesKeyCodeFromWaylandKey(key);
 
@@ -253,13 +253,13 @@ namespace ramses_internal
 
     void InputHandling_Wayland::KeyboardHandleModifiers(void *data, wl_keyboard *keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group)
     {
-        UNUSED(data)
-        UNUSED(keyboard)
-        UNUSED(serial)
-        UNUSED(mods_depressed)
-        UNUSED(mods_latched)
-        UNUSED(mods_locked)
-        UNUSED(group)
+        UNUSED(data);
+        UNUSED(keyboard);
+        UNUSED(serial);
+        UNUSED(mods_depressed);
+        UNUSED(mods_latched);
+        UNUSED(mods_locked);
+        UNUSED(group);
     }
 
     void InputHandling_Wayland::SeatHandleCapabilities(void *data, wl_seat *seat, unsigned int caps)

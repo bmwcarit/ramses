@@ -9,6 +9,7 @@
 from builtins import object
 import re
 
+
 class TargetInfo(object):
 
     def __init__(self, classname, name, hostname, username, buildJobName, powerDevice=None, powerOutletNr=None, privateKey=None, password=None,
@@ -19,7 +20,7 @@ class TargetInfo(object):
         if re.match(r'^[\w-]+$', name) is None:
             raise RuntimeError("Target name '{}' not allowed".format(name))
         self.classname = classname
-        self.name = name # used to generate the names of the tests cases
+        self.name = name  # used to generate the names of the tests cases
         self.hostname = hostname
         self.username = username
         self.buildJobName = buildJobName
@@ -41,9 +42,9 @@ class TargetInfo(object):
 
 
 class BridgedTargetInfo(TargetInfo):
-    def __init__(self, targetInfoBridgeTarget, classname, name, hostname, username, buildJobName, powerDevice=None, powerOutletNr=None, privateKey=None, password=None,
+    def __init__(self, targetInfoBridgeTarget, classname, name, hostname, username, buildJobName,
+                 powerDevice=None, powerOutletNr=None, privateKey=None, password=None,
                  systemMonitorClassname=None, sshPort=22, someIPTestsInterfaceIp=None, tcpTestsInterfaceIp=None):
         TargetInfo.__init__(self, classname, name, hostname, username, buildJobName, powerDevice, powerOutletNr, privateKey,
                             password, systemMonitorClassname, sshPort, someIPTestsInterfaceIp, tcpTestsInterfaceIp)
         self.targetInfoBridgeTarget = targetInfoBridgeTarget
-

@@ -36,7 +36,7 @@ namespace ramses
     {
     public:
         explicit AnimationSequenceImpl(AnimationSystemImpl& animationSystem, const char* name);
-        virtual ~AnimationSequenceImpl();
+        virtual ~AnimationSequenceImpl() override;
 
         virtual void     deinitializeFrameworkData() override;
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;

@@ -1949,7 +1949,7 @@ namespace ramses
         ramses_internal::ResourceHashUsage hashUsage = getClientImpl().getClientApplication().getHashUsage(resource->getHash());
 
         ramses::EffectImpl& pimpl = *new ramses::EffectImpl(hashUsage, *this, name);
-        pimpl.initializeFromFrameworkData(effectRes->getUniformInputs(), effectRes->getAttributeInputs());
+        pimpl.initializeFromFrameworkData(effectRes->getUniformInputs(), effectRes->getAttributeInputs(), effectRes->getGeometryShaderInputType());
 
         Effect* effect = new Effect(pimpl);
         registerCreatedResourceObject(*effect);

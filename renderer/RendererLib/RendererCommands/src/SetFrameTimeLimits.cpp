@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererCommands/SetFrameTimeLimits.h"
-#include "Ramsh/RamshInput.h"
 #include "RendererLib/RendererCommandBuffer.h"
 
 namespace ramses_internal

@@ -54,9 +54,11 @@ namespace ramses_internal
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::CreateStreamBuffer& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::DestroyStreamBuffer& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetStreamBufferState& cmd) const { return cmd.display; }
+        absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetClearFlags& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SetClearColor& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::UpdateWarpingData& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::ReadPixels& cmd) const { return cmd.display; }
+        absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::ConfirmationEcho& cmd) const { return cmd.display; }
         // broadcast commands
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::ScenePublished&) const { return {}; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::SceneUnpublished&) const { return {}; }
@@ -79,7 +81,6 @@ namespace ramses_internal
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::FrameProfiler_TimingGraphHeight&) const { return {}; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::FrameProfiler_CounterGraphHeight&) const { return {}; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::FrameProfiler_RegionFilterFlags&) const { return {}; }
-        absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::ConfirmationEcho&) const { return {}; }
     };
 
     inline absl::optional<DisplayHandle> SceneDisplayTracker::determineDisplayFromRendererCommand(const RendererCommand::Variant& cmd) const

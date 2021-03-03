@@ -68,7 +68,7 @@ namespace ramses_internal
         return m_fileContents;
     }
 
-    bool ResourceTableOfContents::readTOCPosAndTOCFromStream(BinaryFileInputStream& instream)
+    bool ResourceTableOfContents::readTOCPosAndTOCFromStream(IInputStream& instream)
     {
         uint32_t numberOfEntries = 0;
         instream >> numberOfEntries;

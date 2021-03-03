@@ -14,7 +14,7 @@
 #include "RamsesFrameworkTypesImpl.h"
 #include "Utils/File.h"
 #include <fstream>
-#include <assert.h>
+#include <cassert>
 
 namespace ramses
 {

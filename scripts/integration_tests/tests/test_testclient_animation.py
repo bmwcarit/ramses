@@ -35,7 +35,6 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         self.save_application_output(self.ramsesDaemon)
         log.info("output saved")
 
-
     def impl_test(self):
         self.renderer.showScene(27)
         self.validateScreenshot(self.renderer, "testClient_animation.png")

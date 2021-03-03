@@ -10,6 +10,7 @@ from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
 
+
 class TestClass(test_classes.OnAllDefaultTargetsTest):
 
     @with_ramses_process_check
@@ -35,13 +36,13 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         log.info("output saved")
 
     def impl_test(self):
-        #renderer was started without auto-mapping, therefore nothing is visible
+        # renderer was started without auto-mapping, therefore nothing is visible
         self.validateScreenshot(self.renderer, "black.png")
 
-        #map scene then it has to get visible
+        # map scene then it has to get visible
         self.renderer.showScene(26)
         self.validateScreenshot(self.renderer, "testClient_threeTriangles.png")
 
-        #unmap scene, nothing is visible
+        # unmap scene, nothing is visible
         self.renderer.send_ramsh_command("releaseScene -sceneId 26", waitForRendererConfirmation=True)
         self.validateScreenshot(self.renderer, "black.png")

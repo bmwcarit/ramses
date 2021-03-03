@@ -25,10 +25,39 @@ namespace ramses_internal
     {
         CHECK_RETURN_ERR(parseLinkerObjectsForStage(program->getIntermediate(EShLangVertex)->getTreeRoot(), EShaderStage::Vertex)); // Parse data for vertex stage
         CHECK_RETURN_ERR(parseLinkerObjectsForStage(program->getIntermediate(EShLangFragment)->getTreeRoot(), EShaderStage::Fragment)); // Parse data for fragment stage
-        if(program->getIntermediate(EShLangGeometry))
-            CHECK_RETURN_ERR(parseLinkerObjectsForStage(program->getIntermediate(EShLangGeometry)->getTreeRoot(), EShaderStage::Geometry)); // Parse data for geometry stage
+        const glslang::TIntermediate* geomShader = program->getIntermediate(EShLangGeometry);
+        if(geomShader != nullptr)
+            CHECK_RETURN_ERR(parseLinkerObjectsForStage(geomShader->getTreeRoot(), EShaderStage::Geometry)); // Parse data for geometry stage
         CHECK_RETURN_ERR(replaceVertexAttributeWithBufferVariant()); // Post-process vertex attributes
         CHECK_RETURN_ERR(makeUniformsUnique()); // Post-process uniforms which are present in both stages
+
+        if (geomShader)
+        {
+            const glslang::TLayoutGeometry prim = geomShader->getInputPrimitive();
+
+            switch (prim)
+            {
+            case glslang::ElgPoints:
+                m_geometryShaderInputType = EDrawMode::Points;
+                break;
+            case glslang::ElgLines:
+                m_geometryShaderInputType = EDrawMode::Lines;
+                break;
+            case glslang::ElgTriangles:
+                m_geometryShaderInputType = EDrawMode::Triangles;
+                break;
+            case glslang::ElgNone:
+            case glslang::ElgLineStrip:
+            case glslang::ElgLinesAdjacency:
+            case glslang::ElgTriangleStrip:
+            case glslang::ElgTrianglesAdjacency:
+            case glslang::ElgQuads:
+            case glslang::ElgIsolines:
+                m_message << "Geometry shader has unsupported input primitive type [" << static_cast<int>(prim) << "]";
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -50,6 +79,11 @@ namespace ramses_internal
     const EffectInputInformationVector& GlslToEffectConverter::getAttributeInputs() const
     {
         return m_attributeInputs;
+    }
+
+    absl::optional<EDrawMode> GlslToEffectConverter::getGeometryShaderInputType() const
+    {
+        return m_geometryShaderInputType;
     }
 
     bool GlslToEffectConverter::parseLinkerObjectsForStage(const TIntermNode* node, EShaderStage stage)

@@ -7,11 +7,11 @@
 //  -------------------------------------------------------------------------
 
 #include "RendererLib/DisplayEventHandler.h"
-#include "Utils/LogMacros.h"
 #include "RendererAPI/IWindow.h"
 #include "RendererAPI/IWindowEventHandler.h"
 #include "RendererLib/EKeyModifier.h"
 #include "RendererEventCollector.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

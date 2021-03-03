@@ -52,7 +52,7 @@ namespace ramses_internal
         virtual IWindow*                     createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) = 0;
         virtual Bool                         destroyWindow(IWindow& window) = 0;
 
-        virtual IContext*                    createContext(IWindow& window, IContext* sharedContex = nullptr) = 0;
+        virtual IContext*                    createContext(const DisplayConfig& displayConfig, IWindow& window, IContext* sharedContex = nullptr) = 0;
         virtual Bool                         destroyContext(IContext& context) = 0;
 
         virtual ISurface*                    createSurface(IWindow& window, IContext& context) = 0;

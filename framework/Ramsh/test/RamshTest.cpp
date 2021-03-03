@@ -12,6 +12,7 @@
 #include "Ramsh/RamshCommandExit.h"
 #include "framework_common_gmock_header.h"
 #include "gmock/gmock.h"
+#include <gtest/gtest.h>
 #include "Ramsh/RamshTools.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Utils/RamsesLogger.h"
@@ -39,7 +40,7 @@ namespace ramses_internal
         {
         }
 
-        ~TypedTestCommand()
+        ~TypedTestCommand() override
         {
             delete data;
         }
@@ -60,7 +61,7 @@ namespace ramses_internal
 
     class DummyRamshCommand : public RamshCommand
     {
-        virtual bool executeInput(const RamshInput& /*input*/) override
+        virtual bool executeInput(const std::vector<std::string>& /*input*/) override
         {
             return true;
         }
@@ -71,95 +72,95 @@ namespace ramses_internal
     {
     protected:
         Ramsh ramsh;
-        DummyRamshCommand cmd;
-        RamshInput input;
+        std::shared_ptr<DummyRamshCommand> cmd = std::make_shared<DummyRamshCommand>();
+        std::vector<std::string> input;
     };
 
     TEST_F(RamshAPI, printHelp)
     {
         // help is built-in command of Ramsh
         // trigger command @ Ramsh
-        input.append("help");
+        input.push_back("help");
         EXPECT_TRUE(ramsh.execute(input));
     }
 
     TEST_F(RamshAPI, triggerCommandWithOneKeyword)
     {
         // register required commands @ Ramsh
-        cmd.registerKeyword("ABC");
-        ramsh.add(cmd);
+        cmd->registerKeyword("ABC");
+        EXPECT_TRUE(ramsh.add(cmd));
 
         // trigger command @ Ramsh
-        input.append("ABC");
+        input.push_back("ABC");
         EXPECT_TRUE(ramsh.execute(input));
     }
 
     TEST_F(RamshAPI, triggerCommandWithMultipleKeywordsUsingFirstKeyword)
     {
         // register required commands @ Ramsh
-        cmd.registerKeyword("long");
-        cmd.registerKeyword("thisisalongername");
-        cmd.registerKeyword("X");
-        ramsh.add(cmd);
+        cmd->registerKeyword("long");
+        cmd->registerKeyword("thisisalongername");
+        cmd->registerKeyword("X");
+        EXPECT_TRUE(ramsh.add(cmd));
 
         // trigger command @ Ramsh
-        input.append("long");
-        input.append("arg1");
-        input.append("arg2");
+        input.push_back("long");
+        input.push_back("arg1");
+        input.push_back("arg2");
         EXPECT_TRUE(ramsh.execute(input));
     }
 
     TEST_F(RamshAPI, triggerCommandWithMultipleKeywordsUsingMiddleKeyword)
     {
         // register required commands @ Ramsh
-        cmd.registerKeyword("long");
-        cmd.registerKeyword("thisisalongername");
-        cmd.registerKeyword("X");
-        ramsh.add(cmd);
+        cmd->registerKeyword("long");
+        cmd->registerKeyword("thisisalongername");
+        cmd->registerKeyword("X");
+        EXPECT_TRUE(ramsh.add(cmd));
 
         // trigger command @ Ramsh
-        input.append("thisisalongername");
+        input.push_back("thisisalongername");
         EXPECT_TRUE(ramsh.execute(input));
     }
 
     TEST_F(RamshAPI, triggerCommandWithMultipleKeywordsUsingLastKeyword)
     {
         // register required commands @ Ramsh
-        cmd.registerKeyword("long");
-        cmd.registerKeyword("thisisalongername");
-        cmd.registerKeyword("X");
-        ramsh.add(cmd);
+        cmd->registerKeyword("long");
+        cmd->registerKeyword("thisisalongername");
+        cmd->registerKeyword("X");
+        EXPECT_TRUE(ramsh.add(cmd));
 
         // trigger command @ Ramsh
-        input.append("X");
+        input.push_back("X");
         EXPECT_TRUE(ramsh.execute(input));
     }
 
     TEST_F(RamshAPI, triggerInvalidCommand)
     {
         // trigger command @ Ramsh
-        input.append("invalid");
+        input.push_back("invalid");
         EXPECT_FALSE(ramsh.execute(input));
     }
 
     TEST_F(RamshAPI, parseCommandStringTest)
     {
         String in1 = "  test    ' a b c'  -arg ''  ";
-        RamshInput result1 = RamshTools::parseCommandString(in1);
+        std::vector<std::string> result1 = RamshTools::parseCommandString(in1);
         EXPECT_EQ(String("test"), result1[0]);
         EXPECT_EQ(String(" a b c"), result1[1]);
         EXPECT_EQ(String("-arg"), result1[2]);
         EXPECT_EQ(String(), result1[3]);
 
         String in2 = R"(  "te-' 'st " abc' ' 'def'a   )";
-        RamshInput result2 = RamshTools::parseCommandString(in2);
+        std::vector<std::string> result2 = RamshTools::parseCommandString(in2);
         EXPECT_EQ(String("te-' 'st "), result2[0]);
         EXPECT_EQ(String("abc'"), result2[1]);
         EXPECT_EQ(String("'"), result2[2]);
         EXPECT_EQ(String("'def'a"), result2[3]);
 
         String in3 = R"(abc -arg "test argument" 'test argument' 'test "argument"' "test 'argument'")";
-        RamshInput result3 = RamshTools::parseCommandString(in3);
+        std::vector<std::string> result3 = RamshTools::parseCommandString(in3);
         EXPECT_EQ(String("abc"), result3[0]);
         EXPECT_EQ(String("-arg"), result3[1]);
         EXPECT_EQ(String("test argument"), result3[2]);
@@ -171,166 +172,199 @@ namespace ramses_internal
 
     TEST_F(RamshAPI, typedCommand)
     {
-        TypedTestCommand<uint32_t, bool, String, Float> typedCmd;
+        auto typedCmd = std::make_shared<TypedTestCommand<uint32_t, bool, String, Float>>();
 
-        typedCmd.registerKeyword("typed");
+        typedCmd->registerKeyword("typed");
 
-        typedCmd.getArgument<0>()
+        typedCmd->getArgument<0>()
             .registerKeyword("int");
 
-        typedCmd.getArgument<1>()
+        typedCmd->getArgument<1>()
             .registerKeyword("bool");
 
-        typedCmd.getArgument<2>()
+        typedCmd->getArgument<2>()
             .registerKeyword("string");
 
-        typedCmd.getArgument<3>()
+        typedCmd->getArgument<3>()
             .registerKeyword("float");
 
-        ramsh.add(typedCmd);
+        EXPECT_TRUE(ramsh.add(typedCmd));
 
-        input.append("typed");
+        input.push_back("typed");
 
         // arguments without flags
-        input.append("44");
-        input.append("-bool");
-        input.append("foobar");
-        input.append("1.337");
+        input.push_back("44");
+        input.push_back("-bool");
+        input.push_back("foobar");
+        input.push_back("1.337");
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_EQ(44u, typedCmd.data->a1);
-        EXPECT_TRUE(typedCmd.data->a2);
+        EXPECT_EQ(44u, typedCmd->data->a1);
+        EXPECT_TRUE(typedCmd->data->a2);
 
-        EXPECT_EQ(String("foobar"), typedCmd.data->a3);
+        EXPECT_EQ(String("foobar"), typedCmd->data->a3);
 
-        EXPECT_FLOAT_EQ(1.337f, typedCmd.data->a4);
+        EXPECT_FLOAT_EQ(1.337f, typedCmd->data->a4);
 
         input.clear();
 
-        input.append("typed");
+        input.push_back("typed");
 
         // scrambled arguments
-        input.append("-string");
-        input.append("foo");
-        input.append("-bool");
-        input.append("-float");
-        input.append("-1337");
-        input.append("-int");
-        input.append("123");
+        input.push_back("-string");
+        input.push_back("foo");
+        input.push_back("-bool");
+        input.push_back("-float");
+        input.push_back("-1337");
+        input.push_back("-int");
+        input.push_back("123");
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_EQ(123u, typedCmd.data->a1);
-        EXPECT_TRUE(typedCmd.data->a2);
+        EXPECT_EQ(123u, typedCmd->data->a1);
+        EXPECT_TRUE(typedCmd->data->a2);
 
-        EXPECT_EQ(String("foo"), typedCmd.data->a3);
+        EXPECT_EQ(String("foo"), typedCmd->data->a3);
 
-        EXPECT_FLOAT_EQ(-1337.f, typedCmd.data->a4);
+        EXPECT_FLOAT_EQ(-1337.f, typedCmd->data->a4);
 
         input.clear();
 
-        input.append("typed");
+        input.push_back("typed");
 
         // invalid argument
-        input.append("true");
-        input.append("-bool");
-        input.append("foobar");
-        input.append("-floata");
-        input.append("abcde");
+        input.push_back("true");
+        input.push_back("-bool");
+        input.push_back("foobar");
+        input.push_back("-floata");
+        input.push_back("abcde");
 
         EXPECT_FALSE(ramsh.execute(input));
 
         input.clear();
 
-        input.append("typed");
+        input.push_back("typed");
 
         // missing argument
-        input.append("-bool");
-        input.append("foobar");
-        input.append("-pair");
-        input.append("1.337;1,3,3,7");
+        input.push_back("-bool");
+        input.push_back("foobar");
+        input.push_back("-pair");
+        input.push_back("1.337;1,3,3,7");
 
         EXPECT_FALSE(ramsh.execute(input));
     }
 
     TEST_F(RamshAPI, typedCommandWithDefaultValues)
     {
-        TypedTestCommand<int32_t, bool, String, Float> typedCmd;
+        auto typedCmd = std::make_shared<TypedTestCommand<int32_t, bool, String, Float>>();
 
-        typedCmd.registerKeyword("typed");
+        typedCmd->registerKeyword("typed");
 
-        typedCmd.getArgument<0>()
+        typedCmd->getArgument<0>()
             .registerKeyword("int")
             .setDefaultValue(-1);
 
-        typedCmd.getArgument<1>()
+        typedCmd->getArgument<1>()
             .registerKeyword("bool")
             .setDefaultValue(true);
 
-        typedCmd.getArgument<2>()
+        typedCmd->getArgument<2>()
             .registerKeyword("string")
             .setDefaultValue(String("abcdef"));
 
-        typedCmd.getArgument<3>()
+        typedCmd->getArgument<3>()
             .registerKeyword("float")
             .setDefaultValue(-13.37f);
 
-        ramsh.add(typedCmd);
+        EXPECT_TRUE(ramsh.add(typedCmd));
 
         // no input, just default values
-        input.append("typed");
+        input.push_back("typed");
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_EQ(-1, typedCmd.data->a1);
-        EXPECT_TRUE(typedCmd.data->a2);
+        EXPECT_EQ(-1, typedCmd->data->a1);
+        EXPECT_TRUE(typedCmd->data->a2);
 
-        EXPECT_EQ(String("abcdef"), typedCmd.data->a3);
+        EXPECT_EQ(String("abcdef"), typedCmd->data->a3);
 
-        EXPECT_FLOAT_EQ(-13.37f, typedCmd.data->a4);
+        EXPECT_FLOAT_EQ(-13.37f, typedCmd->data->a4);
 
         input.clear();
 
         // flipped bool
-        input.append("typed");
-        input.append("-bool");
+        input.push_back("typed");
+        input.push_back("-bool");
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_EQ(-1, typedCmd.data->a1);
-        EXPECT_FALSE(typedCmd.data->a2);
+        EXPECT_EQ(-1, typedCmd->data->a1);
+        EXPECT_FALSE(typedCmd->data->a2);
 
-        EXPECT_EQ(String("abcdef"), typedCmd.data->a3);
+        EXPECT_EQ(String("abcdef"), typedCmd->data->a3);
 
-        EXPECT_FLOAT_EQ(-13.37f, typedCmd.data->a4);
+        EXPECT_FLOAT_EQ(-13.37f, typedCmd->data->a4);
 
         input.clear();
 
         // partially set arguments
-        input.append("typed");
+        input.push_back("typed");
 
-        input.append("-float");
-        input.append("-1337.1337");
-        input.append("-string");
-        input.append("foo");
-        input.append("-int");
-        input.append("90000");
+        input.push_back("-float");
+        input.push_back("-1337.1337");
+        input.push_back("-string");
+        input.push_back("foo");
+        input.push_back("-int");
+        input.push_back("90000");
 
         EXPECT_TRUE(ramsh.execute(input));
 
-        EXPECT_EQ(90000, typedCmd.data->a1);
-        EXPECT_TRUE(typedCmd.data->a2);
+        EXPECT_EQ(90000, typedCmd->data->a1);
+        EXPECT_TRUE(typedCmd->data->a2);
 
-        EXPECT_EQ(String("foo"), typedCmd.data->a3);
+        EXPECT_EQ(String("foo"), typedCmd->data->a3);
 
-        EXPECT_FLOAT_EQ(-1337.1337f, typedCmd.data->a4);
+        EXPECT_FLOAT_EQ(-1337.1337f, typedCmd->data->a4);
+    }
+
+    TEST_F(RamshAPI, commandIsNotAccessedAnymoreWhenSharedPtrGone)
+    {
+        struct RefCommand : public RamshCommand
+        {
+            explicit RefCommand(bool& b_)
+                : b(b_)
+            {}
+
+            virtual bool executeInput(const std::vector<std::string>& /*input*/) override
+            {
+                b = true;
+                return true;
+            }
+
+            bool& b;
+        };
+
+        bool value = false;
+        input.push_back("c");
+        {
+            auto refCmd = std::make_shared<RefCommand>(value);
+            refCmd->registerKeyword("c");
+            EXPECT_TRUE(ramsh.add(refCmd));
+
+            EXPECT_FALSE(value);
+            EXPECT_TRUE(ramsh.execute(input));
+            EXPECT_TRUE(value);
+            value = false;
+        }
+        EXPECT_FALSE(ramsh.execute(input));
+        EXPECT_FALSE(value);
     }
 
     class MockRamsh : public Ramsh
     {
     public:
-        MOCK_METHOD(bool, execute, (const RamshInput& input), (override));
+        MOCK_METHOD(bool, execute, (const std::vector<std::string>& input), (override));
     };
 
     class RamshCommunicationChannelConsoleTest : public ::testing::Test
@@ -354,7 +388,7 @@ namespace ramses_internal
             GetRamsesLogger();
         }
 
-        ~RamshCommunicationChannelConsoleTestThread()
+        ~RamshCommunicationChannelConsoleTestThread() override
         {
         }
 
@@ -376,10 +410,7 @@ namespace ramses_internal
     TEST_F(RamshCommunicationChannelConsoleTest, processInput)
     {
         String input = "help\nbla";
-        RamshInput expectedRamshInput;
-        expectedRamshInput.append("help"); //read stops at enter
-
-        EXPECT_CALL(ramsh, execute(Eq(expectedRamshInput)));
+        EXPECT_CALL(ramsh, execute(std::vector<std::string>{"help"}));
 
         for (UInt i = 0; i < input.size(); i++)
         {
@@ -409,11 +440,11 @@ namespace ramses_internal
     class ARamshAsyncTester : public ::testing::Test
     {
     public:
-        static RamshInput CreateInput(std::initializer_list<const char*> inpList)
+        static std::vector<std::string> CreateInput(std::initializer_list<const char*> inpList)
         {
-            RamshInput input;
+            std::vector<std::string> input;
             for (const auto& inp : inpList)
-                input.append(inp);
+                input.push_back(inp);
             return input;
         }
 
@@ -463,17 +494,50 @@ namespace ramses_internal
 
     TEST_F(ARamshAsyncTester, canTriggerExitCommand)
     {
-        RamshCommandExit cmdExit;
+        auto cmdExit = std::make_shared<RamshCommandExit>();
         rsh.add(cmdExit);
-        EXPECT_FALSE(cmdExit.exitRequested());
+        EXPECT_FALSE(cmdExit->exitRequested());
         std::thread t([&]() {
             rsh.execute(CreateInput({"exit"}));
         });
 
-        cmdExit.waitForExitRequest();
-        EXPECT_TRUE(cmdExit.exitRequested());
+        cmdExit->waitForExitRequest();
+        EXPECT_TRUE(cmdExit->exitRequested());
 
         t.join();
     }
 
+    TEST_F(RamshAPI, addCommandWithInvalidKeywordFails)
+    {
+        std::shared_ptr<DummyRamshCommand> cmd_1 = std::make_shared<DummyRamshCommand>();
+        EXPECT_FALSE(ramsh.add(cmd_1));
+
+        std::shared_ptr<DummyRamshCommand> cmd_2 = std::make_shared<DummyRamshCommand>();
+        cmd->registerKeyword("");
+        EXPECT_FALSE(ramsh.add(cmd_2));
+
+        std::shared_ptr<DummyRamshCommand> cmd_3 = std::make_shared<DummyRamshCommand>();
+        cmd->registerKeyword("a b");
+        EXPECT_FALSE(ramsh.add(cmd_3));
+
+        std::shared_ptr<DummyRamshCommand> cmd_4 = std::make_shared<DummyRamshCommand>();
+        cmd->registerKeyword("a\nb");
+        EXPECT_FALSE(ramsh.add(cmd_4));
+    }
+
+    TEST_F(RamshAPI, addingCommandWithDuplicateKeywordsFailsUnlessRequested)
+    {
+        cmd->registerKeyword("foo");
+        EXPECT_TRUE(ramsh.add(cmd));
+
+        std::shared_ptr<DummyRamshCommand> otherCmd = std::make_shared<DummyRamshCommand>();
+        otherCmd->registerKeyword("foo");
+        EXPECT_FALSE(ramsh.add(otherCmd, false));
+    }
+
+    TEST_F(RamshAPI, addingCommandWithUnusualCharactersWorks)
+    {
+        cmd->registerKeyword("a;?foo#%$&!~");
+        EXPECT_TRUE(ramsh.add(cmd));
+    }
 }

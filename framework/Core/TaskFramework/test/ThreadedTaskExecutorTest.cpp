@@ -13,6 +13,7 @@
 #include "ThreadWatchdogConfig.h"
 #include "PlatformWatchDogMock.h"
 #include "PlatformAbstraction/PlatformEvent.h"
+#include "Utils/ThreadBarrier.h"
 
 #include <thread>
 #include <chrono>
@@ -21,6 +22,12 @@ using namespace testing;
 
 namespace ramses_internal
 {
+    class TaskMock : public ITask
+    {
+    public:
+        MOCK_METHOD(void, execute, (), (override));
+    };
+
     class LongRunningTestTask : public ITask
     {
     public:
@@ -29,7 +36,7 @@ namespace ramses_internal
         {
             ON_CALL(*this, execute()).WillByDefault(Invoke(this, &LongRunningTestTask::doSomethingLong));
         }
-        virtual ~LongRunningTestTask(){};
+        virtual ~LongRunningTestTask() override = default;
         MOCK_METHOD(void, execute, (), (override));
         virtual void doSomethingLong()
         {
@@ -81,57 +88,40 @@ namespace ramses_internal
         EXPECT_CALL(mockCallback, unregisterThread(ramses::ERamsesThreadIdentifier_Workers));
     }
 
-    class CountingWatchdogNotifier : public ramses::IThreadWatchdogNotification
-    {
-    public:
-        explicit CountingWatchdogNotifier(std::atomic<uint32_t>& counter)
-            : m_counter(counter)
-        {
-        }
-
-        virtual void notifyThread(ramses::ERamsesThreadIdentifier) override
-        {
-            ++m_counter;
-        }
-
-        virtual void registerThread(ramses::ERamsesThreadIdentifier) override
-        {
-        }
-
-        virtual void unregisterThread(ramses::ERamsesThreadIdentifier) override
-        {
-        }
-        std::atomic<uint32_t>& m_counter;
-    };
-
     TEST(AThreadedTaskExecutor, doesNotReportToWatchDogIfOneThreadIsBlocked)
     {
-        std::atomic<uint32_t> counter(0);
-        CountingWatchdogNotifier mockCallback(counter);
+        std::atomic<uint32_t> notifyCounter(0);
+        NiceMock<PlatformWatchdogMockCallback> mockCallback;
+        ON_CALL(mockCallback, notifyThread(_)).WillByDefault([&](auto) { notifyCounter++; });
+
+        std::atomic<uint32_t> fastTasksCounter(0);
+        NiceMock<TaskMock> fastTask;
+        ON_CALL(fastTask, execute()).WillByDefault([&]() { fastTasksCounter++; });
+
         ThreadWatchdogConfig config;
+        config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, 0); // no time limitations - always notify
         config.setThreadWatchDogCallback(&mockCallback);
-        PlatformLock taskBlockingLock;
-
-        // take lock, so worker thread will block in execution
-        taskBlockingLock.lock();
-        PlatformEvent taskIsBeingWorkedEvent;
-        BlockingTask blockingTask(taskBlockingLock, taskIsBeingWorkedEvent);
         ThreadedTaskExecutor taskSystem(2, config);
+
+        ThreadBarrier barrier(2);
+        TaskMock blockingTask;
+        // blocking task will queue in 10 fast tasks which are executed in second worker thread
+        // second worker thread will notify thread watchdog in between every task,
+        // but there can be at most one more system watchdog notification while blocking task is running
+        EXPECT_CALL(blockingTask, execute()).WillOnce([&]()
+            {
+                uint32_t oldCounter = notifyCounter;
+                while (fastTasksCounter < 10)
+                {
+                    taskSystem.enqueue(fastTask);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                }
+                EXPECT_TRUE(notifyCounter == oldCounter || notifyCounter == oldCounter + 1);
+                barrier.wait();
+            });
+
         taskSystem.enqueue(blockingTask);
-
-        // wait for thread to go into blocked state during execution
-        EXPECT_TRUE(taskIsBeingWorkedEvent.wait(1000));
-
-        const uint32_t notificationsAtStartOfBlocking = counter;
-
-        // watchdog can still be called in this state if now blocked thread has already reported back, and now the second thread reports back
-        // so when we wait some more time at most one more call to watchdogNotifier can happen
-        PlatformThread::Sleep(200);
-
-        const uint32_t notificationsAfterWaitingInBlockedState = counter;
-        EXPECT_LE(notificationsAfterWaitingInBlockedState, notificationsAtStartOfBlocking + 1);
-
-        taskBlockingLock.unlock();
+        barrier.wait();
     }
 
     TEST(AThreadedTaskExecutor, executesEnqueuedTasks)
@@ -185,7 +175,7 @@ namespace ramses_internal
         t.join();
     }
 
-    TEST(ThreadedTaskExecutor, stoppingReleasesUnhandledTasks)
+    TEST(AThreadedTaskExecutor, stoppingReleasesUnhandledTasks)
     {
         ThreadedTaskExecutor* ex = new ThreadedTaskExecutor(1);
 

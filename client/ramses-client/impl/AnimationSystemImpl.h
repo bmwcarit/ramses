@@ -64,7 +64,7 @@ namespace ramses
     {
     public:
         AnimationSystemImpl(SceneImpl& sceneImpl, ERamsesObjectType type, const char* name);
-        virtual ~AnimationSystemImpl();
+        virtual ~AnimationSystemImpl() override;
 
         void             initializeFrameworkData(ramses_internal::IAnimationSystem& animationSystem);
         virtual void     deinitializeFrameworkData() override;

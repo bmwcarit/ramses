@@ -37,8 +37,10 @@ namespace ramses
     {
     public:
         /**
-        * @brief Prepare content to be rendered in next frame and render next frame.
-        *        This function can not be used in combination with startThread, stopThread and setMaximumFramerate.
+        * @brief   Prepare content to be rendered in next frame and render next frame.
+        * @details Update and render of all displays is executed sequentially in caller's thread.
+        *          For active rendering it is recommended to use threaded mode instead (#startThread).
+        *          Once this method is called a threaded mode cannot be used anymore.
         *
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
@@ -46,8 +48,10 @@ namespace ramses
         status_t doOneLoop();
 
         /**
-        * @brief Runs the renderer loop in a separate thread created and owned by the renderer.
-        *        This function can not be used in combination with doOneLoop.
+        * @brief   Starts update and render loop in threaded mode.
+        * @details Each display will update and render in its own thread.
+        *          First call to this method enables threaded mode, afterwards it is not possible to call
+        *          #doOneLoop anymore.
         *
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
@@ -55,9 +59,9 @@ namespace ramses
         status_t startThread();
 
         /**
-        * @brief Stops the thread running the renderer loop that was started by calling startThread.
-        *        A call to this function joins the renderer thread to wait for its termination.
-        *        This function can only be used if startThread was successfully called before.
+        * @brief   Stops thread(s) running the update and render of displays.
+        * @details This function can only be used if startThread was successfully called before.
+        *          The looping can be restarted by calling #startThread again.
         *
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
@@ -65,18 +69,18 @@ namespace ramses
         status_t stopThread();
 
         /**
-        * @brief Get the current state of render thread running
+        * @brief Get the current state of rendering thread(s) running
         *
         * @return Returns true if thread is running (started and not stopped), false otherwise.
         */
         bool isThreadRunning() const;
 
         /**
-        * @brief Sets the maximum frame rate per second for the render loop when it is running in renderer
-        *        thread using startThread. The parameter is of type float because it is possible to
-        *        specify numbers between 0 and 1 as well, which will result in FPS lower than 1, e.g. 0.5
-        *
-        *        This function can not be used in combination with doOneLoop.
+        * @brief   Sets the maximum frame rate per second for the update/render loop when in threaded mode.
+        * @details The parameter is of type float in order to specify any desired frame time (e.g. below 1 FPS).
+        *          The same maximum frame rate will be applied to all displays.
+        *          This function can only be used in threaded mode (#startThread).
+        *          The default value is 60 FPS.
         * @param maximumFramerate The maximum frame rate per second to set for the render loop.
         *
         * @return StatusOK for success, otherwise the returned status can be used
@@ -85,30 +89,41 @@ namespace ramses
         status_t setMaximumFramerate(float maximumFramerate);
 
         /**
-        * @brief Get the current value for maximum frame rate per second set by the user.
-        *        if the user did not set a value then it returs the default value.
+        * @brief   Sets the maximum frame rate per second for the update/render loop when in threaded mode for given display
+        * @details The maximumFramerate parameter is of type float in order to specify any desired frame time (e.g. below 1 FPS).
+        *          The maximum frame rate will be applied to the display thread responsible for given display id.
+        *          This function can only be used in threaded mode (#startThread).
+        *          The default value is 60 FPS.
+        * @param renderer The renderer to apply the value to. This api is added in static fashion for ABI compatibility.
+        * @param maximumFramerate The maximum frame rate per second to set for the render loop.
+        * @param displayId The display id the framerate should be applied to.
+        *
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        static status_t setMaximumFramerate(RamsesRenderer& renderer, float maximumFramerate, displayId_t displayId);
+
+        /**
+        * @brief Get the current value for maximum frame rate per second currently set (#setMaximumFramerate).
         *
         * @return Maximum frame rate per second
         */
         float getMaximumFramerate() const;
 
         /**
-        * @brief Sets the mode of operation for render loop. This function affects the behavior of
-        *        BOTH doOneLoop and startThread. Mode can be changed during run-time, in case of thread
-        *        rendering also while the thread is running.
-        *        By default loop mode is set to render and update.
-        *
-        *        For more details about each loop mode check enum.
+        * @brief   Sets the mode of operation for render loop.
+        * @details Mode can be changed during run-time, in case of threaded mode also while running
+        *          (no need to #stopThread).
+        *          By default loop mode is set to render and update.
         *
         * @param loopMode The mode to be used for render loop.
-        *
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
         status_t setLoopMode(ELoopMode loopMode);
 
         /**
-        * @brief Get the current value for loop mode set using setLoopMode
+        * @brief Get the current value for loop mode set using #setLoopMode
         *
         * @return The loop mode
         */
@@ -219,18 +234,41 @@ namespace ramses
         displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
 
         /**
-        * @brief Will create an offscreen buffer that can be used to render scenes into (see RamsesRenderer::assignSceneToDisplayBuffer)
-        *        and can be linked as input to a consumer texture sampler (see RamsesRenderer::linkOffscreenBufferToConsumer).
+        * @brief   Will create an offscreen buffer that can be used to render scenes into (see RamsesRenderer::assignSceneToDisplayBuffer)
+        *          and can be linked as input to a consumer texture sampler (see RamsesRenderer::linkOffscreenBufferToConsumer).
+        * @details The created offscreen buffer always has color, depth and stencil buffer attached.
+        *          A multisampled buffer will be created if sampleCount greater than 0, note that the value is just a hint for the device,
+        *          the actual number of samples might be different depending on device driver implementation.
+        *          If the number of samples exceeds device capabilities the number of samples it will be clamped to its
+        *          maximum supported (creation will succeeded with a warning log).
         *
         * @param[in] display id of display for which the buffer should be created
         * @param[in] width width of the buffer to be created (has to be higher than 0 and lower than 4096)
         * @param[in] height height of the buffer to be created (has to be higher than 0 and lower than 4096)
-        * @param[in] sampleCount Optional sample count for MSAA number of samples. Default value is Zero, which disables MSAA for the offscreen buffer.
+        * @param[in] sampleCount Optional sample count for MSAA. Default value is 0 for no MSAA.
         * @return Identifier of the created offscreen buffer.
         *         In case of unsupported resolution \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
         *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
         */
         displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount = 0u);
+
+        /**
+        * @brief Will create an offscreen buffer that can be used to render scenes into (see RamsesRenderer::assignSceneToDisplayBuffer)
+        *        and can be linked as input to a consumer texture sampler (see RamsesRenderer::linkOffscreenBufferToConsumer).
+        *
+        *        The created offscreen buffer always has a color buffer, but depth and stencil buffers can be configured.
+        *
+        * @param[in] renderer The renderer to call this method on. This API is temporarily added in static fashion for ABI compatibility.
+        * @param[in] display id of display for which the buffer should be created
+        * @param[in] width width of the buffer to be created (has to be higher than 0 and lower than 4096)
+        * @param[in] height height of the buffer to be created (has to be higher than 0 and lower than 4096)
+        * @param[in] sampleCount Optional sample count for MSAA number of samples. Default value is Zero, which disables MSAA for the offscreen buffer.
+        * @param[in] depthBufferType Optional setting to configure depth and stencil buffers.
+        * @return Identifier of the created offscreen buffer.
+        *         In case of unsupported resolution \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
+        *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
+        */
+        static displayBufferId_t createOffscreenBuffer(RamsesRenderer& renderer, displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount = 0u, EDepthBufferType depthBufferType = EDepthBufferType_DepthStencil);
 
         /**
         * @brief     Additional API to create an offscreen buffer as interruptible.
@@ -247,6 +285,8 @@ namespace ramses
         *            it is not guaranteed anymore that it will be fully rendered every frame.
         *            Essentially it is rendered with lower priority.
         *
+        *            The created offscreen buffer always has color, depth and stencil buffers.
+        *
         * @param[in] display  Id of display for which the buffer should be created
         * @param[in] width    Width of the buffer to be created (has to be higher than 0 and lower than 4096)
         * @param[in] height   Height of the buffer to be created (has to be higher than 0 and lower than 4096)
@@ -255,6 +295,34 @@ namespace ramses
         *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
         */
         displayBufferId_t createInterruptibleOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height);
+
+        /**
+        * @brief     Additional API to create an offscreen buffer as interruptible.
+        *            This allows the renderer to interrupt rendering of scenes to such offscreen buffer
+        *            if the time budget for rendering is exceeded within a frame (see SetFrameTimerLimits).
+        *            The rendering continues next frame starting from the interruption point.
+        *
+        *            The renderer creates two render targets on GPU (front and back) for every
+        *            interruptible offscreen buffer. It then renders into the back render target
+        *            of the offscreen buffer, while it is possible to read the content of front render target
+        *            with content from previous frame (or older if interrupted for several frames).
+        *
+        *            Note that whenever a scene gets assigned to interruptible offscreen buffer,
+        *            it is not guaranteed anymore that it will be fully rendered every frame.
+        *            Essentially it is rendered with lower priority.
+        *
+        *            The created offscreen buffer always has a color buffer, but depth and stencil buffers can be configured.
+        *
+        * @param[in] renderer The renderer to call this method on. This API is temporarily added in static fashion for ABI compatibility.
+        * @param[in] display  Id of display for which the buffer should be created
+        * @param[in] width    Width of the buffer to be created (has to be higher than 0 and lower than 4096)
+        * @param[in] height   Height of the buffer to be created (has to be higher than 0 and lower than 4096)
+        * @param[in] depthBufferType Optional setting to configure depth and stencil buffers.
+        * @return Identifier of the created offscreen buffer.
+        *         In case of unsupported resolution \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
+        *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
+        */
+        static displayBufferId_t createInterruptibleOffscreenBuffer(RamsesRenderer& renderer, displayId_t display, uint32_t width, uint32_t height, EDepthBufferType depthBufferType = EDepthBufferType_DepthStencil);
 
         /**
         * @brief Will destroy a previously created offscreen buffer.
@@ -268,6 +336,24 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
+
+        /**
+        * @brief   Sets clear flags for a display buffer (display's framebuffer or offscreen buffer).
+        * @details By default all display buffers' color, depth and stencil are cleared every frame when they are rendered to.
+        *          This can be overridden for performance or special effect reasons.
+        *          There is no event callback for this operation, the change can be assumed to be effective
+        *          in the next frame rendered after flushed.
+        *
+        * @param[in] renderer The renderer to call this method on. This API is temporarily added in static fashion for ABI compatibility.
+        * @param[in] display Id of display that the buffer to set clearing belongs to.
+        * @param[in] displayBuffer Id of display buffer to set clearing,
+        *                          if #ramses::displayBufferId_t::Invalid() is passed then the clearing is set for display's framebuffer.
+        * @param[in] clearFlags Bitmask of the #ramses::EClearFlags, use bit OR to select which buffer component to clear
+        *                       or #ramses::EClearFlags_All to clear all (default).
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        static status_t setDisplayBufferClearFlags(RamsesRenderer& renderer, displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags);
 
         /**
         * @brief   Sets clear color of a display buffer (display's framebuffer or offscreen buffer).

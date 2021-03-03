@@ -18,7 +18,7 @@
 #include "RendererAPI/IDisplayController.h"
 #include "RendererEventCollector.h"
 #include "Utils/Image.h"
-#include "Utils/LogMacros.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {
@@ -40,7 +40,7 @@ namespace ramses_internal
         m_rendererCommandBuffer.swapCommands(m_tmpCommands);
 
         const auto numCommandsToLog = std::count_if(m_tmpCommands.cbegin(), m_tmpCommands.cend(), [](const auto& cmd) {
-            return !absl::holds_alternative<RendererCommand::UpdateScene>(cmd);
+            return !absl::holds_alternative<RendererCommand::UpdateScene>(cmd) && !absl::holds_alternative<RendererCommand::LogInfo>(cmd);
         });
         if (numCommandsToLog > 0)
             LOG_INFO_P(CONTEXT_RENDERER, "RendererCommandExecutor executing {} commands, {} commands will be logged, rest is flush/sceneupdate commands", m_tmpCommands.size(), numCommandsToLog);
@@ -137,7 +137,7 @@ namespace ramses_internal
     void RendererCommandExecutor::operator()(const RendererCommand::CreateOffscreenBuffer& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        const bool succeeded = m_sceneUpdater.handleBufferCreateRequest(cmd.offscreenBuffer, cmd.display, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible);
+        const bool succeeded = m_sceneUpdater.handleBufferCreateRequest(cmd.offscreenBuffer, cmd.display, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible, cmd.depthStencilBufferType);
         m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType::OffscreenBufferCreated : ERendererEventType::OffscreenBufferCreateFailed), cmd.offscreenBuffer, cmd.display);
     }
 
@@ -166,6 +166,12 @@ namespace ramses_internal
         m_sceneUpdater.setStreamBufferState(cmd.streamBuffer, cmd.display, cmd.newState);
     }
 
+    void RendererCommandExecutor::operator()(const RendererCommand::SetClearFlags& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleSetClearFlags(cmd.display, cmd.offscreenBuffer, cmd.clearFlags);
+    }
+
     void RendererCommandExecutor::operator()(const RendererCommand::SetClearColor& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
@@ -177,8 +183,6 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
         if (m_renderer.hasDisplayController(cmd.display) && m_renderer.getDisplayController(cmd.display).isWarpingEnabled())
         {
-            // TODO vaclav REMOVE THIS when display thread done
-            m_renderer.getDisplayController(cmd.display).enableContext();
             m_renderer.setWarpingMeshData(cmd.display, std::move(cmd.data));
             m_rendererEventCollector.addDisplayEvent(ERendererEventType::WarpingDataUpdated, cmd.display);
         }
@@ -293,22 +297,22 @@ namespace ramses_internal
     void RendererCommandExecutor::operator()(const RendererCommand::FrameProfiler_Toggle& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        FrameProfileRenderer::ForAllFrameProfileRenderer(m_renderer,
-            [&](FrameProfileRenderer& renderer) { renderer.enable(cmd.toggle ? !renderer.isEnabled() : true); });
+        if (m_renderer.hasDisplayController())
+            m_renderer.getFrameProfileRenderer().enable(cmd.toggle ? !m_renderer.getFrameProfileRenderer().isEnabled() : true);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::FrameProfiler_TimingGraphHeight& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        FrameProfileRenderer::ForAllFrameProfileRenderer(m_renderer,
-            [&](FrameProfileRenderer& renderer) { renderer.setTimingGraphHeight(cmd.height); });
+        if (m_renderer.hasDisplayController())
+            m_renderer.getFrameProfileRenderer().setTimingGraphHeight(cmd.height);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::FrameProfiler_CounterGraphHeight& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        FrameProfileRenderer::ForAllFrameProfileRenderer(m_renderer,
-            [&](FrameProfileRenderer& renderer) { renderer.setCounterGraphHeight(cmd.height); });
+        if (m_renderer.hasDisplayController())
+            m_renderer.getFrameProfileRenderer().setCounterGraphHeight(cmd.height);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::FrameProfiler_RegionFilterFlags& cmd)

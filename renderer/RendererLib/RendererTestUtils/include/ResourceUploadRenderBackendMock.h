@@ -32,7 +32,7 @@ namespace ramses_internal
             EXPECT_CALL(*this, getContext()).Times(AnyNumber());
         }
 
-        virtual ~ResourceUploadRenderBackendMock(){}
+        virtual ~ResourceUploadRenderBackendMock() override = default;
         MOCK_METHOD(ramses_internal::IContext&, getContext, (), (const, override));
         MOCK_METHOD(ramses_internal::IDevice&, getDevice, (), (const, override));
 

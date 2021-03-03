@@ -10,6 +10,7 @@ from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
 
+
 class TestClass(test_classes.OnAllDefaultTargetsTest):
 
     @with_ramses_process_check
@@ -35,21 +36,20 @@ class TestClass(test_classes.OnAllDefaultTargetsTest):
         log.info("output saved")
 
     def impl_test(self):
-        #show scene then it has to get visible
+        # show scene then it has to get visible
         self.renderer.showScene(26)
         self.validateScreenshot(self.renderer, "testClient_threeTriangles.png")
 
-        #1. hide scene, nothing is visible
+        # 1. hide scene, nothing is visible
         self.renderer.send_ramsh_command("hideScene -sceneId 26", waitForRendererConfirmation=True)
         self.validateScreenshot(self.renderer, "black.png")
-        #show scene again then it has to get visible again
+        # show scene again then it has to get visible again
         self.renderer.showScene(26)
         self.validateScreenshot(self.renderer, "testClient_threeTriangles.png")
 
-        #2. release scene, nothing is visible
+        # 2. release scene, nothing is visible
         self.renderer.send_ramsh_command("releaseScene -sceneId 26", waitForRendererConfirmation=True)
         self.validateScreenshot(self.renderer, "black.png")
-        #show scene again then it has to get visible again
+        # show scene again then it has to get visible again
         self.renderer.showScene(26)
         self.validateScreenshot(self.renderer, "testClient_threeTriangles.png")
-

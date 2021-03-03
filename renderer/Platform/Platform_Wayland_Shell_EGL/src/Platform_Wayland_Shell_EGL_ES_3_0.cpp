@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2017 BMW Car IT GmbH
+//  Copyright (C) 2014 BMW Car IT GmbH
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,8 +7,9 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_Wayland_Shell_EGL/Platform_Wayland_Shell_EGL_ES_3_0.h"
-#include <EGL/eglext.h>
-#include "Utils/LogMacros.h"
+#include "Window_Wayland_Shell/Window_Wayland_Shell.h"
+#include "RendererLib/RendererConfig.h"
+#include "RendererLib/DisplayConfig.h"
 
 namespace ramses_internal
 {
@@ -18,39 +19,29 @@ namespace ramses_internal
     }
 
     Platform_Wayland_Shell_EGL_ES_3_0::Platform_Wayland_Shell_EGL_ES_3_0(const RendererConfig& rendererConfig)
-        : Platform_Wayland_Shell_EGL(rendererConfig)
+        : Platform_Wayland_EGL(rendererConfig)
     {
     }
 
-    std::vector<EGLint> Platform_Wayland_Shell_EGL_ES_3_0::getSurfaceAttributes(UInt32 msaaSampleCount) const
+    ISystemCompositorController* Platform_Wayland_Shell_EGL_ES_3_0::createSystemCompositorController()
     {
-        return std::vector<EGLint>
-        {
-            EGL_SURFACE_TYPE,
-            EGL_WINDOW_BIT,
+        return nullptr;
+    }
 
-            EGL_RENDERABLE_TYPE,
-            EGL_OPENGL_ES3_BIT_KHR,
+    IWindow* Platform_Wayland_Shell_EGL_ES_3_0::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
+    {
+        Window_Wayland_Shell* platformWindow = new Window_Wayland_Shell(displayConfig, windowEventHandler, m_windows.size());
+        if(nullptr == addPlatformWindow(platformWindow))
+            return nullptr;
 
-            EGL_RED_SIZE,
-            8,
+        m_windowEventsPollingManager.addWindow(platformWindow);
+        return platformWindow;
+    }
 
-            EGL_ALPHA_SIZE,
-            8,
+    Bool Platform_Wayland_Shell_EGL_ES_3_0::destroyWindow(IWindow &window)
+    {
+        m_windowEventsPollingManager.removeWindow(&static_cast<Window_Wayland&>(window));
 
-            EGL_DEPTH_SIZE,
-            1,
-
-            EGL_STENCIL_SIZE,
-            8,
-
-            EGL_SAMPLE_BUFFERS,
-            (msaaSampleCount > 1) ? 1 : 0,
-
-            EGL_SAMPLES,
-            static_cast<EGLint>(msaaSampleCount > 1 ? msaaSampleCount : 0),
-
-            EGL_NONE
-        };
+        return Platform_Wayland_EGL::destroyWindow(window);
     }
 }

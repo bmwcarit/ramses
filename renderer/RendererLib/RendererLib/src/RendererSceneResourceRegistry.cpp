@@ -220,34 +220,6 @@ namespace ramses_internal
         }
     }
 
-    void RendererSceneResourceRegistry::addTextureSampler(TextureSamplerHandle handle, DeviceResourceHandle deviceHandle)
-    {
-        assert(!m_textureSamplers.contains(handle));
-        m_textureSamplers.put(handle, { deviceHandle });
-    }
-
-    void RendererSceneResourceRegistry::removeTextureSampler(TextureSamplerHandle handle)
-    {
-        assert(m_textureSamplers.contains(handle));
-        m_textureSamplers.remove(handle);
-    }
-
-    DeviceResourceHandle RendererSceneResourceRegistry::getTextureSamplerDeviceHandle(TextureSamplerHandle handle) const
-    {
-        assert(m_textureSamplers.contains(handle));
-        return *m_textureSamplers.get(handle);
-    }
-
-    void RendererSceneResourceRegistry::getAllTextureSamplers(TextureSamplerHandleVector& textureSamplers) const
-    {
-        assert(textureSamplers.empty());
-        textureSamplers.reserve(m_textureSamplers.size());
-        for(const auto& ts: m_textureSamplers)
-        {
-            textureSamplers.push_back(ts.key);
-        }
-    }
-
     UInt32 RendererSceneResourceRegistry::getSceneResourceMemoryUsage(ESceneResourceType resourceType) const
     {
         UInt32 result = 0;

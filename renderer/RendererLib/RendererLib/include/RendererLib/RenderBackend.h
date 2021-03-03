@@ -17,7 +17,7 @@ namespace ramses_internal
     {
     public:
         RenderBackend(ISurface& visual, IDevice& device, IEmbeddedCompositor& embeddedCompositor, ITextureUploadingAdapter& textureUploadingAdapter);
-        virtual ~RenderBackend() {};
+        virtual ~RenderBackend()  override = default;
 
         virtual ISurface& getSurface() const override;
         virtual IDevice& getDevice() const override;

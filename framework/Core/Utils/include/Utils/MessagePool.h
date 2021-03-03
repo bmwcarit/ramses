@@ -15,7 +15,7 @@
 
 namespace ramses_internal
 {
-    struct MessageEntry
+    struct MessageEntry final
     {
         static const UInt32 MaxMessageLength = 128u;
 
@@ -23,7 +23,7 @@ namespace ramses_internal
     };
 
     template <UInt32 MaxEntries, UInt32 SuccessMessageEntryID>
-    class MessagePool
+    class MessagePool final
     {
     public:
         MessagePool();

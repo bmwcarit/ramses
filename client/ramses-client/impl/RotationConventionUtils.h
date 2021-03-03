@@ -11,7 +11,7 @@
 
 #include "ramses-client-api/ERotationConvention.h"
 #include "SceneAPI/ERotationConvention.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses
 {

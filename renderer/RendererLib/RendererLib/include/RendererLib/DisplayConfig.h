@@ -10,6 +10,7 @@
 #define RAMSES_DISPLAYCONFIG_H
 
 #include "RendererAPI/Types.h"
+#include "SceneAPI/TextureEnums.h"
 #include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Math3d/Vector4.h"
 
@@ -25,9 +26,6 @@ namespace ramses_internal
 
         Bool getBorderlessState() const ;
         void setBorderlessState(Bool state);
-
-        EAntiAliasingMethod getAntialiasingMethod() const;
-        void setAntialiasingMethod(EAntiAliasingMethod method);
 
         UInt32 getAntialiasingSampleCount() const;
         void setAntialiasingSampleCount(UInt32 samples);
@@ -80,6 +78,9 @@ namespace ramses_internal
         void setClearColor(const Vector4& clearColor);
         const Vector4& getClearColor() const;
 
+        void setDepthStencilBufferType(ERenderBufferType depthStencilBufferType);
+        ERenderBufferType getDepthStencilBufferType() const;
+
         Bool operator==(const DisplayConfig& other) const;
         Bool operator!=(const DisplayConfig& other) const;
 
@@ -102,12 +103,12 @@ namespace ramses_internal
         Bool m_startVisibleIvi = false;
         String m_waylandDisplay;
 
-        EAntiAliasingMethod m_antiAliasingMethod = EAntiAliasingMethod_PlainFramebuffer;
         UInt32 m_antiAliasingSamples = 1;
 
         Bool m_keepEffectsUploaded = true;
         UInt64 m_gpuMemoryCacheSize = 0u;
         Vector4 m_clearColor{ 0.f, 0.f, 0.f, 1.0f };
+        ERenderBufferType m_depthStencilBufferType = ERenderBufferType_DepthStencilBuffer;
     };
 }
 

@@ -46,7 +46,7 @@ namespace ramses_internal
     {
     public:
         Window_X11(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
-        ~Window_X11();
+        ~Window_X11() override;
 
         Bool init();
 

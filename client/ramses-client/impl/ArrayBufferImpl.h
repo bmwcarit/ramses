@@ -19,7 +19,7 @@ namespace ramses
     {
     public:
         ArrayBufferImpl(SceneImpl& scene, const char* databufferName);
-        virtual ~ArrayBufferImpl();
+        virtual ~ArrayBufferImpl() override;
 
         void             initializeFrameworkData(EDataType dataType, uint32_t numElements);
         virtual void     deinitializeFrameworkData() override;

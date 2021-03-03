@@ -31,7 +31,7 @@ namespace ramses
     {
     public:
         DataObjectImpl(SceneImpl& scene, ERamsesObjectType type, const char* name);
-        virtual ~DataObjectImpl();
+        virtual ~DataObjectImpl() override;
 
         void             initializeFrameworkData();
         virtual void     deinitializeFrameworkData() override;

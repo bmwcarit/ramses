@@ -11,6 +11,7 @@
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "Ramsh/Ramsh.h"
+#include "Collections/String.h"
 
 namespace ramses_internal
 {

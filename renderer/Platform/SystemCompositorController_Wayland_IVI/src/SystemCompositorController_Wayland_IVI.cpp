@@ -476,13 +476,13 @@ namespace ramses_internal
     void SystemCompositorController_Wayland_IVI::iviControllerHandleLayer(ivi_controller* controller, uint32_t id_layer)
     {
         UNUSED(controller);
-        UNUSED(id_layer)
+        UNUSED(id_layer);
         LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleLayer Detected ivi-layer: " << id_layer);
     }
 
     void SystemCompositorController_Wayland_IVI::iviControllerHandleSurface(ivi_controller* controller, uint32_t iviID)
     {
-        UNUSED(controller)
+        UNUSED(controller);
         LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleSurface Detected ivi-surface: " << iviID);
 
         getOrCreateControllerSurface(WaylandIviSurfaceId(iviID));
@@ -500,9 +500,9 @@ namespace ramses_internal
                                                                                     wl_registry* wl_registry,
                                                                                     uint32_t     name)
     {
-        UNUSED(data)
-        UNUSED(wl_registry)
-        UNUSED(name)
+        UNUSED(data);
+        UNUSED(wl_registry);
+        UNUSED(name);
     }
 
     void SystemCompositorController_Wayland_IVI::IVIControllerHandleScreenCallback(void*                  data,

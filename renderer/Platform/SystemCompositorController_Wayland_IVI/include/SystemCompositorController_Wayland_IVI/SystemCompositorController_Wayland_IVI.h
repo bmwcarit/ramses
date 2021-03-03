@@ -28,7 +28,7 @@ namespace ramses_internal
     {
     public:
         explicit SystemCompositorController_Wayland_IVI(const String& waylandDisplay = "");
-        virtual ~SystemCompositorController_Wayland_IVI();
+        virtual ~SystemCompositorController_Wayland_IVI() override;
 
         virtual Bool init();
         virtual void update() override;

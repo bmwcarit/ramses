@@ -12,7 +12,7 @@
 #include "ramses-client-api/EDataType.h"
 #include "SceneAPI/EDataType.h"
 #include "SceneAPI/EDataBufferType.h"
-#include <assert.h>
+#include <cassert>
 
 namespace ramses
 {

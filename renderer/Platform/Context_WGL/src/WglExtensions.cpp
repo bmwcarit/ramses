@@ -8,8 +8,8 @@
 
 #include "Context_WGL/WglExtensions.h"
 #include "Window_Windows/HiddenWindow.h"
-#include "Utils/LogMacros.h"
 #include "Platform_Base/Context_Base.h"
+#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {

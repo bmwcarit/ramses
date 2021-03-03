@@ -17,7 +17,7 @@
 
 namespace ramses_internal
 {
-    using RamshArgumentData = String;
+    using RamshArgumentData = std::string;
 }
 
 #define DEFINE_INT_CONVERTER(TYPE) \

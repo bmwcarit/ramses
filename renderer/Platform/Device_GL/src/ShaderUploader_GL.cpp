@@ -11,6 +11,7 @@
 
 #include "Resource/EffectResource.h"
 #include "Device_GL/ShaderProgramInfo.h"
+#include "Utils/ThreadLocalLogForced.h"
 
 namespace ramses_internal
 {

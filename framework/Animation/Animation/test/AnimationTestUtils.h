@@ -145,7 +145,7 @@ namespace ramses_internal
     {
     public:
         MockAnimationDataListener();
-        virtual ~MockAnimationDataListener();
+        virtual ~MockAnimationDataListener() override;
         MOCK_METHOD(void, preAnimationTimeRangeChange, (AnimationHandle handle), (override));
         MOCK_METHOD(void, onAnimationTimeRangeChanged, (AnimationHandle handle), (override));
         MOCK_METHOD(void, onAnimationPauseChanged, (AnimationHandle handle, bool pause), (override));
@@ -158,7 +158,7 @@ namespace ramses_internal
     {
     public:
         MockAnimationStateListener();
-        virtual ~MockAnimationStateListener();
+        virtual ~MockAnimationStateListener() override;
         MOCK_METHOD(void, onAnimationStarted, (AnimationHandle handle), (override));
         MOCK_METHOD(void, onAnimationFinished, (AnimationHandle handle), (override));
         MOCK_METHOD(void, onAnimationPaused, (AnimationHandle handle), (override));

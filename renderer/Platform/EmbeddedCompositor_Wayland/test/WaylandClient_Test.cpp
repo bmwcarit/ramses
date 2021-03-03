@@ -41,9 +41,9 @@ namespace ramses_internal
 
         static void CompositorBindCallback(wl_client* client, void* data, uint32_t version, uint32_t id)
         {
-            UNUSED(data)
-            UNUSED(version)
-            UNUSED(id)
+            UNUSED(data);
+            UNUSED(version);
+            UNUSED(id);
 
             WaylandClient waylandClient(client);
             waylandClient.postNoMemory();
@@ -56,7 +56,7 @@ namespace ramses_internal
 
         static void ResourceDestroyedListener(wl_listener* listener, void* data)
         {
-            UNUSED(data)
+            UNUSED(data);
             WARNINGS_PUSH
             WARNING_DISABLE_LINUX(-Winvalid-offsetof)
             WARNING_DISABLE_LINUX(-Wcast-align)
@@ -123,8 +123,8 @@ namespace ramses_internal
             static void RegistryHandleGlobalCallBack(
                 void* data, struct wl_registry* registry, uint32_t name, const char* interface, uint32_t version)
             {
-                UNUSED(data)
-                UNUSED(version)
+                UNUSED(data);
+                UNUSED(version);
 
                 if (strcmp(interface, "wl_compositor") == 0)
                 {
@@ -134,9 +134,9 @@ namespace ramses_internal
 
             static void RegistryHandleGlobalRemoveCallBack(void* data, struct wl_registry* registry, uint32_t name)
             {
-                UNUSED(data)
-                UNUSED(registry)
-                UNUSED(name)
+                UNUSED(data);
+                UNUSED(registry);
+                UNUSED(name);
             }
 
             int                            m_fd;

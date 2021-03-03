@@ -19,7 +19,7 @@ namespace ramses_internal
         description = "print build configuration";
     }
 
-    bool RamshCommandPrintBuildConfig::executeInput(const RamshInput&)
+    bool RamshCommandPrintBuildConfig::executeInput(const std::vector<std::string>&)
     {
         LOG_INFO(CONTEXT_RAMSH,
             "VERSION_STRING = "     << ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING << "\n" <<

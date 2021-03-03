@@ -10,6 +10,7 @@
 #define RAMSES_TASKEXECUTINGTHREAD_H
 
 #include "PlatformAbstraction/PlatformThread.h"
+#include "Watchdog/IThreadAliveNotifier.h"
 #include <mutex>
 
 namespace ramses_internal
@@ -19,16 +20,6 @@ namespace ramses_internal
     class ITaskExecutionObserver;
     class ProcessingTaskQueue;
 
-    class IThreadAliveNotifier
-    {
-    public:
-        virtual ~IThreadAliveNotifier()
-        {
-        }
-        virtual void notifyAlive(UInt16 threadIndex) = 0;
-        virtual UInt32 calculateTimeout() const = 0;
-    };
-
     /**
      * This class is an active thread and can execute ITask instances in this active thread context.
      */
@@ -36,8 +27,8 @@ namespace ramses_internal
     {
 
     public:
-        TaskExecutingThread(UInt16 workerIndex, IThreadAliveNotifier& aliveHandler);
-        ~TaskExecutingThread();
+        explicit TaskExecutingThread(IThreadAliveNotifier& aliveHandler);
+        ~TaskExecutingThread() override;
 
 
         /**
@@ -93,9 +84,9 @@ namespace ramses_internal
 
         std::mutex m_startStopLock;
 
-        UInt16 m_workerIndex;
-
         IThreadAliveNotifier& m_aliveHandler;
+        const uint64_t m_aliveIdentifier;
+
         /**
          * Flag whether the thread is started.
          */

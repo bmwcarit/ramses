@@ -8,7 +8,7 @@
 
 #include "ramses-client.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <thread>
 #include <cstdlib>
 #include <chrono>

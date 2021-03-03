@@ -13,13 +13,15 @@
 #include "Context_WGL/WglExtensions.h"
 
 #include "PlatformAbstraction/MinimalWindowsH.h"
+#include "SceneAPI/TextureEnums.h"
 
 namespace ramses_internal
 {
     class Context_WGL : public Context_Base
     {
     public:
-        Context_WGL(HDC displayHandle, WglExtensions procs, const Int32* contextAttributes, UInt32 msaaSampleCount, Context_WGL* sharedContext = NULL);
+        Context_WGL(ERenderBufferType depthStencilBufferType, HDC displayHandle, WglExtensions procs, const Int32* contextAttributes, UInt32 msaaSampleCount);
+        Context_WGL(Context_WGL& sharedContext, HDC displayHandle, WglExtensions procs, const Int32* contextAttributes, UInt32 msaaSampleCount);
         ~Context_WGL() override;
 
         Bool init();
@@ -42,8 +44,9 @@ namespace ramses_internal
         const Int32* m_contextAttributes;
         UInt32 m_msaaSampleCount;
 
-        HGLRC m_wglSharedContextHandle;
-        HGLRC m_wglContextHandle;
+        const HGLRC m_wglSharedContextHandle = 0;
+        HGLRC m_wglContextHandle = 0;
+        const ERenderBufferType m_depthStencilBufferType;
     };
 
 }
