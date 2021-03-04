@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.5</span>
+   &#160;<span id="projectnumber">27.0.100</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -151,7 +151,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a4df08e9083e85306fa3983d9287946fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the clear color of the <a class="el" href="classramses_1_1RenderPass.html" title="The RenderPass is a container used to collect meshes which are supposed to be rendered together.">RenderPass</a>.  <a href="classramses_1_1RenderPass.html#a4df08e9083e85306fa3983d9287946fd">More...</a><br /></td></tr>
 <tr class="separator:a4df08e9083e85306fa3983d9287946fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0bb72789d6253e0e4a6706a5268a09eb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RenderPass.html#a0bb72789d6253e0e4a6706a5268a09eb">setClearFlags</a> (uint32_t clearFlags)</td></tr>
-<tr class="memdesc:a0bb72789d6253e0e4a6706a5268a09eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the clear flags which enable/disable the clearing of the render target assigned to this RenderPass(default: EClearFlags_All)  <a href="classramses_1_1RenderPass.html#a0bb72789d6253e0e4a6706a5268a09eb">More...</a><br /></td></tr>
+<tr class="memdesc:a0bb72789d6253e0e4a6706a5268a09eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the clear flags which enable/disable the clearing of the render target assigned to this <a class="el" href="classramses_1_1RenderPass.html" title="The RenderPass is a container used to collect meshes which are supposed to be rendered together.">RenderPass</a>(default: <a class="el" href="namespaceramses.html#a5a24b250587d10d14d00389a8a74096aa556030bb8824a49b1306408794389ea3">ramses::EClearFlags_All</a>)  <a href="classramses_1_1RenderPass.html#a0bb72789d6253e0e4a6706a5268a09eb">More...</a><br /></td></tr>
 <tr class="separator:a0bb72789d6253e0e4a6706a5268a09eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acff01dd951d2252b39d2eec3d6ffb1e3"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RenderPass.html#acff01dd951d2252b39d2eec3d6ffb1e3">getClearFlags</a> () const</td></tr>
 <tr class="memdesc:acff01dd951d2252b39d2eec3d6ffb1e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the clear flags of the <a class="el" href="classramses_1_1RenderPass.html" title="The RenderPass is a container used to collect meshes which are supposed to be rendered together.">RenderPass</a>.  <a href="classramses_1_1RenderPass.html#acff01dd951d2252b39d2eec3d6ffb1e3">More...</a><br /></td></tr>
@@ -506,7 +506,7 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Returns the clear flags of the <a class="el" href="classramses_1_1RenderPass.html" title="The RenderPass is a container used to collect meshes which are supposed to be rendered together.">RenderPass</a>. </p>
-<dl class="section return"><dt>Returns</dt><dd>clear flags, which is a bitmask of the EClearFlags enum </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>clear flags, which is a bitmask of the <a class="el" href="namespaceramses.html#a5a24b250587d10d14d00389a8a74096a" title="Clear flags used to specify which components of a render target or display buffer should be cleared.">ramses::EClearFlags</a> enum </dd></dl>
 
 </div>
 </div>
@@ -796,11 +796,11 @@ Friends</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Set the clear flags which enable/disable the clearing of the render target assigned to this RenderPass(default: EClearFlags_All) </p>
+<p>Set the clear flags which enable/disable the clearing of the render target assigned to this <a class="el" href="classramses_1_1RenderPass.html" title="The RenderPass is a container used to collect meshes which are supposed to be rendered together.">RenderPass</a>(default: <a class="el" href="namespaceramses.html#a5a24b250587d10d14d00389a8a74096aa556030bb8824a49b1306408794389ea3">ramses::EClearFlags_All</a>) </p>
 <p>The clear flags have no effect on render passes with no render target assigned, i.e. it is not allowed to control clearing of display buffer (whether it is framebuffer or offscreen buffer) on renderer side from within scene's render pass.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">clearFlags</td><td>clear flags, which is a bitmask of the EClearFlags enum </td></tr>
+    <tr><td class="paramname">clearFlags</td><td>clear flags, which is a bitmask of the <a class="el" href="namespaceramses.html#a5a24b250587d10d14d00389a8a74096a" title="Clear flags used to specify which components of a render target or display buffer should be cleared.">ramses::EClearFlags</a> enum </td></tr>
   </table>
   </dd>
 </dl>

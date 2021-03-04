@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.5</span>
+   &#160;<span id="projectnumber">27.0.100</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -145,6 +145,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a81ef6d2e325393bdf792b35b21db365e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesFramework.html#a81ef6d2e325393bdf792b35b21db365e">destroyDcsmConsumer</a> (const <a class="el" href="classramses_1_1DcsmConsumer.html">DcsmConsumer</a> &amp;consumer)</td></tr>
 <tr class="memdesc:a81ef6d2e325393bdf792b35b21db365e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy a <a class="el" href="classramses_1_1DcsmConsumer.html" title="Class representing DCSM consumer side.">DcsmConsumer</a> created with this framework. This method will fail when handed an object created with another <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a>.  <a href="classramses_1_1RamsesFramework.html#a81ef6d2e325393bdf792b35b21db365e">More...</a><br /></td></tr>
 <tr class="separator:a81ef6d2e325393bdf792b35b21db365e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41f7c52ae448a77bb1873b7221ddddb4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesFramework.html#a41f7c52ae448a77bb1873b7221ddddb4">addRamshCommand</a> (const std::shared_ptr&lt; <a class="el" href="classramses_1_1IRamshCommand.html">IRamshCommand</a> &gt; &amp;command)</td></tr>
+<tr class="memdesc:a41f7c52ae448a77bb1873b7221ddddb4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a ramsh command that can be invoked via console and DLT injection.  <a href="classramses_1_1RamsesFramework.html#a41f7c52ae448a77bb1873b7221ddddb4">More...</a><br /></td></tr>
+<tr class="separator:a41f7c52ae448a77bb1873b7221ddddb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2062bb17601f5826cf67cad6f104d24"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesFramework.html#ab2062bb17601f5826cf67cad6f104d24">~RamsesFramework</a> () override</td></tr>
 <tr class="memdesc:ab2062bb17601f5826cf67cad6f104d24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor of <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a>.  <a href="classramses_1_1RamsesFramework.html#ab2062bb17601f5826cf67cad6f104d24">More...</a><br /></td></tr>
 <tr class="separator:ab2062bb17601f5826cf67cad6f104d24"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -352,6 +355,36 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a41f7c52ae448a77bb1873b7221ddddb4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a41f7c52ae448a77bb1873b7221ddddb4">&#9670;&nbsp;</a></span>addRamshCommand()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::RamsesFramework::addRamshCommand </td>
+          <td>(</td>
+          <td class="paramtype">const std::shared_ptr&lt; <a class="el" href="classramses_1_1IRamshCommand.html">IRamshCommand</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>command</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Register a ramsh command that can be invoked via console and DLT injection. </p>
+<p>This is for testing and debugging purpose only. Command injection is not guaranteed to work in production.</p>
+<p>The command has to be provided via shared_ptr to avoid lifetime issues. Internally ramses will only store a std::weak_ptr to the command. Therefore it is valid to let go of the shared_ptr on caller side and expect that no calls will happen in the command anymore. This allows to have user obejct references in the command implementation with a shorter lifetime than <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a>.</p>
+<p>It is not possible to delete commands. They are expected to be long-living and are bound to the lifetime of the <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a> object.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">command</td><td>the ramsh command </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK on success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
 <a id="a6687dcdae0b5d9f7e19fb91dcdca547f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6687dcdae0b5d9f7e19fb91dcdca547f">&#9670;&nbsp;</a></span>connect()</h2>
 

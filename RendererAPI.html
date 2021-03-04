@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.5</span>
+   &#160;<span id="projectnumber">27.0.100</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -124,7 +124,7 @@ Renderer API calls &amp; Events</h1>
 </ul>
 <h2><a class="anchor" id="autotoc_md131"></a>
 Renderer API transactions</h2>
-<p>The <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">ramses::RamsesRenderer</a> and <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes.">ramses::RendererSceneControl</a> calls are queued and only executed when committed. To commit a batch of calls use <a class="el" href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253" title="Submits renderer commands (API calls on this instance of RamsesRenderer) since previous flush to be e...">ramses::RamsesRenderer::flush()</a> and <a class="el" href="classramses_1_1RendererSceneControl.html#afae8c8a433e1a29ea4912d1db4be7311" title="Submits scene control commands (API calls on RendererSceneControl) since previous flush to be execute...">ramses::RendererSceneControl::flush()</a> respectively. All calls since the last flush will then be executed together (preserving order) in the very next renderer update loop (either <a class="el" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd" title="Prepare content to be rendered in next frame and render next frame. This function can not be used in ...">ramses::RamsesRenderer::doOneLoop()</a> or in render thread). </p>
+<p>The <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">ramses::RamsesRenderer</a> and <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes.">ramses::RendererSceneControl</a> calls are queued and only executed when committed. To commit a batch of calls use <a class="el" href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253" title="Submits renderer commands (API calls on this instance of RamsesRenderer) since previous flush to be e...">ramses::RamsesRenderer::flush()</a> and <a class="el" href="classramses_1_1RendererSceneControl.html#afae8c8a433e1a29ea4912d1db4be7311" title="Submits scene control commands (API calls on RendererSceneControl) since previous flush to be execute...">ramses::RendererSceneControl::flush()</a> respectively. All calls since the last flush will then be executed together (preserving order) in the very next renderer update loop (either <a class="el" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd" title="Prepare content to be rendered in next frame and render next frame.">ramses::RamsesRenderer::doOneLoop()</a> or in render thread). </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->

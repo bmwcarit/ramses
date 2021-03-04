@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.5</span>
+   &#160;<span id="projectnumber">27.0.100</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -148,7 +148,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a0adaad0223efd371bc567298a93eb5d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current setting of Wayland display name.  <a href="classramses_1_1RendererConfig.html#a0adaad0223efd371bc567298a93eb5d6">More...</a><br /></td></tr>
 <tr class="separator:a0adaad0223efd371bc567298a93eb5d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a44815c51d9332592b8c47dd6d34865"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RendererConfig.html#a4a44815c51d9332592b8c47dd6d34865">setRenderThreadLoopTimingReportingPeriod</a> (std::chrono::milliseconds period)</td></tr>
-<tr class="memdesc:a4a44815c51d9332592b8c47dd6d34865"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the desired reporting period for renderThread loop timings The values are reported via the renderer event 'RenderThreadPeriodicLoopTimes' A value of zero disables reporting and is the default.  <a href="classramses_1_1RendererConfig.html#a4a44815c51d9332592b8c47dd6d34865">More...</a><br /></td></tr>
+<tr class="memdesc:a4a44815c51d9332592b8c47dd6d34865"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the desired reporting period for first display loop timings.  <a href="classramses_1_1RendererConfig.html#a4a44815c51d9332592b8c47dd6d34865">More...</a><br /></td></tr>
 <tr class="separator:a4a44815c51d9332592b8c47dd6d34865"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae04626cee67b79c662c55b257aca62c8"><td class="memItemLeft" align="right" valign="top">std::chrono::milliseconds&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RendererConfig.html#ae04626cee67b79c662c55b257aca62c8">getRenderThreadLoopTimingReportingPeriod</a> () const</td></tr>
 <tr class="memdesc:ae04626cee67b79c662c55b257aca62c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current reporting period for renderThread loop timings.  <a href="classramses_1_1RendererConfig.html#ae04626cee67b79c662c55b257aca62c8">More...</a><br /></td></tr>
@@ -518,7 +518,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Set the desired reporting period for renderThread loop timings The values are reported via the renderer event 'RenderThreadPeriodicLoopTimes' A value of zero disables reporting and is the default. </p>
+<p>Set the desired reporting period for first display loop timings. </p>
+<p>The values are reported periodically via the renderer callback <a class="el" href="classramses_1_1IRendererEventHandler.html#acd771596542a3ddfa51b3979b56d2dca" title="This method will be called in period given to renderer config (ramses::RendererConfig::setRenderThrea...">ramses::IRendererEventHandler::renderThreadLoopTimings</a>. Only the first display is measured. A value of zero disables reporting and is the default.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">period</td><td>Cyclic time period after which timing information should be reported </td></tr>

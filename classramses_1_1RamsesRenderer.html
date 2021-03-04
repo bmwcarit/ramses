@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.5</span>
+   &#160;<span id="projectnumber">27.0.100</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -70,6 +70,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#friends">Friends</a> &#124;
 <a href="classramses_1_1RamsesRenderer-members.html">List of all members</a>  </div>
@@ -104,28 +105,28 @@ Collaboration diagram for ramses::RamsesRenderer:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a8bceaf9ed2fd659a05d2b12645a6bfdd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd">doOneLoop</a> ()</td></tr>
-<tr class="memdesc:a8bceaf9ed2fd659a05d2b12645a6bfdd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepare content to be rendered in next frame and render next frame. This function can not be used in combination with startThread, stopThread and setMaximumFramerate.  <a href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd">More...</a><br /></td></tr>
+<tr class="memdesc:a8bceaf9ed2fd659a05d2b12645a6bfdd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepare content to be rendered in next frame and render next frame.  <a href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd">More...</a><br /></td></tr>
 <tr class="separator:a8bceaf9ed2fd659a05d2b12645a6bfdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90489cf440602591c90f7a08bb5958ab"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a90489cf440602591c90f7a08bb5958ab">startThread</a> ()</td></tr>
-<tr class="memdesc:a90489cf440602591c90f7a08bb5958ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the renderer loop in a separate thread created and owned by the renderer. This function can not be used in combination with doOneLoop.  <a href="classramses_1_1RamsesRenderer.html#a90489cf440602591c90f7a08bb5958ab">More...</a><br /></td></tr>
+<tr class="memdesc:a90489cf440602591c90f7a08bb5958ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts update and render loop in threaded mode.  <a href="classramses_1_1RamsesRenderer.html#a90489cf440602591c90f7a08bb5958ab">More...</a><br /></td></tr>
 <tr class="separator:a90489cf440602591c90f7a08bb5958ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01dd58f37a2a782bcb77e25bea81175c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a01dd58f37a2a782bcb77e25bea81175c">stopThread</a> ()</td></tr>
-<tr class="memdesc:a01dd58f37a2a782bcb77e25bea81175c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stops the thread running the renderer loop that was started by calling startThread. A call to this function joins the renderer thread to wait for its termination. This function can only be used if startThread was successfully called before.  <a href="classramses_1_1RamsesRenderer.html#a01dd58f37a2a782bcb77e25bea81175c">More...</a><br /></td></tr>
+<tr class="memdesc:a01dd58f37a2a782bcb77e25bea81175c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stops thread(s) running the update and render of displays.  <a href="classramses_1_1RamsesRenderer.html#a01dd58f37a2a782bcb77e25bea81175c">More...</a><br /></td></tr>
 <tr class="separator:a01dd58f37a2a782bcb77e25bea81175c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2bd3f2d1e4f5782019544a52edb8bf2e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a2bd3f2d1e4f5782019544a52edb8bf2e">isThreadRunning</a> () const</td></tr>
-<tr class="memdesc:a2bd3f2d1e4f5782019544a52edb8bf2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current state of render thread running.  <a href="classramses_1_1RamsesRenderer.html#a2bd3f2d1e4f5782019544a52edb8bf2e">More...</a><br /></td></tr>
+<tr class="memdesc:a2bd3f2d1e4f5782019544a52edb8bf2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current state of rendering thread(s) running.  <a href="classramses_1_1RamsesRenderer.html#a2bd3f2d1e4f5782019544a52edb8bf2e">More...</a><br /></td></tr>
 <tr class="separator:a2bd3f2d1e4f5782019544a52edb8bf2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a96181331eab7ab60dd607a3bcab999a6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a96181331eab7ab60dd607a3bcab999a6">setMaximumFramerate</a> (float maximumFramerate)</td></tr>
-<tr class="memdesc:a96181331eab7ab60dd607a3bcab999a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the maximum frame rate per second for the render loop when it is running in renderer thread using startThread. The parameter is of type float because it is possible to specify numbers between 0 and 1 as well, which will result in FPS lower than 1, e.g. 0.5.  <a href="classramses_1_1RamsesRenderer.html#a96181331eab7ab60dd607a3bcab999a6">More...</a><br /></td></tr>
+<tr class="memdesc:a96181331eab7ab60dd607a3bcab999a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the maximum frame rate per second for the update/render loop when in threaded mode.  <a href="classramses_1_1RamsesRenderer.html#a96181331eab7ab60dd607a3bcab999a6">More...</a><br /></td></tr>
 <tr class="separator:a96181331eab7ab60dd607a3bcab999a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac8d5685d38fb82c58e13f9274ce087d5"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#ac8d5685d38fb82c58e13f9274ce087d5">getMaximumFramerate</a> () const</td></tr>
-<tr class="memdesc:ac8d5685d38fb82c58e13f9274ce087d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current value for maximum frame rate per second set by the user. if the user did not set a value then it returs the default value.  <a href="classramses_1_1RamsesRenderer.html#ac8d5685d38fb82c58e13f9274ce087d5">More...</a><br /></td></tr>
+<tr class="memdesc:ac8d5685d38fb82c58e13f9274ce087d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current value for maximum frame rate per second currently set (<a class="el" href="classramses_1_1RamsesRenderer.html#a96181331eab7ab60dd607a3bcab999a6" title="Sets the maximum frame rate per second for the update/render loop when in threaded mode.">setMaximumFramerate</a>).  <a href="classramses_1_1RamsesRenderer.html#ac8d5685d38fb82c58e13f9274ce087d5">More...</a><br /></td></tr>
 <tr class="separator:ac8d5685d38fb82c58e13f9274ce087d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2203f9f2e6a6ab233809e1ee85367d89"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a2203f9f2e6a6ab233809e1ee85367d89">setLoopMode</a> (<a class="el" href="namespaceramses.html#adcfa3b1b4a623dea062782aefa84e002">ELoopMode</a> loopMode)</td></tr>
-<tr class="memdesc:a2203f9f2e6a6ab233809e1ee85367d89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the mode of operation for render loop. This function affects the behavior of BOTH doOneLoop and startThread. Mode can be changed during run-time, in case of thread rendering also while the thread is running. By default loop mode is set to render and update.  <a href="classramses_1_1RamsesRenderer.html#a2203f9f2e6a6ab233809e1ee85367d89">More...</a><br /></td></tr>
+<tr class="memdesc:a2203f9f2e6a6ab233809e1ee85367d89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the mode of operation for render loop.  <a href="classramses_1_1RamsesRenderer.html#a2203f9f2e6a6ab233809e1ee85367d89">More...</a><br /></td></tr>
 <tr class="separator:a2203f9f2e6a6ab233809e1ee85367d89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af865674d0f4270c9e846a6f1b8ad2053"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#adcfa3b1b4a623dea062782aefa84e002">ELoopMode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#af865674d0f4270c9e846a6f1b8ad2053">getLoopMode</a> () const</td></tr>
-<tr class="memdesc:af865674d0f4270c9e846a6f1b8ad2053"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current value for loop mode set using setLoopMode.  <a href="classramses_1_1RamsesRenderer.html#af865674d0f4270c9e846a6f1b8ad2053">More...</a><br /></td></tr>
+<tr class="memdesc:af865674d0f4270c9e846a6f1b8ad2053"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current value for loop mode set using <a class="el" href="classramses_1_1RamsesRenderer.html#a2203f9f2e6a6ab233809e1ee85367d89" title="Sets the mode of operation for render loop.">setLoopMode</a>.  <a href="classramses_1_1RamsesRenderer.html#af865674d0f4270c9e846a6f1b8ad2053">More...</a><br /></td></tr>
 <tr class="separator:af865674d0f4270c9e846a6f1b8ad2053"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac371e5e8e6a581a8d16f39e9ece1ed99"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#ac371e5e8e6a581a8d16f39e9ece1ed99">setFrameTimerLimits</a> (uint64_t limitForSceneResourcesUpload, uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender)</td></tr>
 <tr class="memdesc:ac371e5e8e6a581a8d16f39e9ece1ed99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets time limits for time-out of different sections of render and update loop.  <a href="classramses_1_1RamsesRenderer.html#ac371e5e8e6a581a8d16f39e9ece1ed99">More...</a><br /></td></tr>
@@ -185,7 +186,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a56ef2b5e6b42052bd5ad6c7a61fe78f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the warping mesh for the warping postprocessing based on the new config.  <a href="classramses_1_1RamsesRenderer.html#a56ef2b5e6b42052bd5ad6c7a61fe78f2">More...</a><br /></td></tr>
 <tr class="separator:a56ef2b5e6b42052bd5ad6c7a61fe78f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7aeedaa36dd7cc51bbf657298b2a0419"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a7aeedaa36dd7cc51bbf657298b2a0419">dispatchEvents</a> (<a class="el" href="classramses_1_1IRendererEventHandler.html">IRendererEventHandler</a> &amp;rendererEventHandler)</td></tr>
-<tr class="memdesc:a7aeedaa36dd7cc51bbf657298b2a0419"><td class="mdescLeft">&#160;</td><td class="mdescRight">Most <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a> methods push commands to an internal queue which is submitted when calling <a class="el" href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253" title="Submits renderer commands (API calls on this instance of RamsesRenderer) since previous flush to be e...">RamsesRenderer::flush</a>. The commands are then executed during a render loop (<a class="el" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd" title="Prepare content to be rendered in next frame and render next frame. This function can not be used in ...">RamsesRenderer::doOneLoop</a> or in a render thread if used <a class="el" href="classramses_1_1RamsesRenderer.html#a90489cf440602591c90f7a08bb5958ab" title="Runs the renderer loop in a separate thread created and owned by the renderer. This function can not ...">RamsesRenderer::startThread</a>). Some of these calls result in an event (can be both informational and data). Such events and their result can be retrieved using the dispatchEvents call. <em>IMPORTANT</em> Renderer events must be regularly consumed by calling <a class="el" href="classramses_1_1RamsesRenderer.html#a7aeedaa36dd7cc51bbf657298b2a0419" title="Most RamsesRenderer methods push commands to an internal queue which is submitted when calling Ramses...">dispatchEvents()</a> in order to prevent buffer overflow of the internal event queue, even if the application is not interested in those events.  <a href="classramses_1_1RamsesRenderer.html#a7aeedaa36dd7cc51bbf657298b2a0419">More...</a><br /></td></tr>
+<tr class="memdesc:a7aeedaa36dd7cc51bbf657298b2a0419"><td class="mdescLeft">&#160;</td><td class="mdescRight">Most <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a> methods push commands to an internal queue which is submitted when calling <a class="el" href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253" title="Submits renderer commands (API calls on this instance of RamsesRenderer) since previous flush to be e...">RamsesRenderer::flush</a>. The commands are then executed during a render loop (<a class="el" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd" title="Prepare content to be rendered in next frame and render next frame.">RamsesRenderer::doOneLoop</a> or in a render thread if used <a class="el" href="classramses_1_1RamsesRenderer.html#a90489cf440602591c90f7a08bb5958ab" title="Starts update and render loop in threaded mode.">RamsesRenderer::startThread</a>). Some of these calls result in an event (can be both informational and data). Such events and their result can be retrieved using the dispatchEvents call. <em>IMPORTANT</em> Renderer events must be regularly consumed by calling <a class="el" href="classramses_1_1RamsesRenderer.html#a7aeedaa36dd7cc51bbf657298b2a0419" title="Most RamsesRenderer methods push commands to an internal queue which is submitted when calling Ramses...">dispatchEvents()</a> in order to prevent buffer overflow of the internal event queue, even if the application is not interested in those events.  <a href="classramses_1_1RamsesRenderer.html#a7aeedaa36dd7cc51bbf657298b2a0419">More...</a><br /></td></tr>
 <tr class="separator:a7aeedaa36dd7cc51bbf657298b2a0419"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6307f22a698040fc1f68f771a39ff253"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253">flush</a> ()</td></tr>
 <tr class="memdesc:a6307f22a698040fc1f68f771a39ff253"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submits renderer commands (API calls on this instance of <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a>) since previous flush to be executed in the next renderer update loop.  <a href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253">More...</a><br /></td></tr>
@@ -221,6 +222,21 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2e1d8fa3051147db0ecb18c1ce500ee2 inherit pub_methods_classramses_1_1StatusObject"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1StatusObject.html">StatusObject</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1StatusObject.html#a2e1d8fa3051147db0ecb18c1ce500ee2">operator=</a> (const <a class="el" href="classramses_1_1StatusObject.html">StatusObject</a> &amp;other)=delete</td></tr>
 <tr class="memdesc:a2e1d8fa3051147db0ecb18c1ce500ee2 inherit pub_methods_classramses_1_1StatusObject"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deleted copy assignment.  <a href="classramses_1_1StatusObject.html#a2e1d8fa3051147db0ecb18c1ce500ee2">More...</a><br /></td></tr>
 <tr class="separator:a2e1d8fa3051147db0ecb18c1ce500ee2 inherit pub_methods_classramses_1_1StatusObject"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:acabff95b658cc988622b64517cea5567"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#acabff95b658cc988622b64517cea5567">setMaximumFramerate</a> (<a class="el" href="classramses_1_1RamsesRenderer.html">RamsesRenderer</a> &amp;renderer, float maximumFramerate, <a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a> displayId)</td></tr>
+<tr class="memdesc:acabff95b658cc988622b64517cea5567"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the maximum frame rate per second for the update/render loop when in threaded mode for given display.  <a href="classramses_1_1RamsesRenderer.html#acabff95b658cc988622b64517cea5567">More...</a><br /></td></tr>
+<tr class="separator:acabff95b658cc988622b64517cea5567"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a471dd6ede67fd75a504ea6b412082a64"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceramses.html#af5114d3671e4be67752f61c301cd1581">displayBufferId_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#a471dd6ede67fd75a504ea6b412082a64">createOffscreenBuffer</a> (<a class="el" href="classramses_1_1RamsesRenderer.html">RamsesRenderer</a> &amp;renderer, <a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a> display, uint32_t width, uint32_t height, uint32_t sampleCount=0u, <a class="el" href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895">EDepthBufferType</a> depthBufferType=<a class="el" href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895aed4959723f8a2a25152521451635dcf1">EDepthBufferType_DepthStencil</a>)</td></tr>
+<tr class="memdesc:a471dd6ede67fd75a504ea6b412082a64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Will create an offscreen buffer that can be used to render scenes into (see RamsesRenderer::assignSceneToDisplayBuffer) and can be linked as input to a consumer texture sampler (see RamsesRenderer::linkOffscreenBufferToConsumer).  <a href="classramses_1_1RamsesRenderer.html#a471dd6ede67fd75a504ea6b412082a64">More...</a><br /></td></tr>
+<tr class="separator:a471dd6ede67fd75a504ea6b412082a64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf9eb8aa6d3aaa227250256556004ac1"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceramses.html#af5114d3671e4be67752f61c301cd1581">displayBufferId_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#adf9eb8aa6d3aaa227250256556004ac1">createInterruptibleOffscreenBuffer</a> (<a class="el" href="classramses_1_1RamsesRenderer.html">RamsesRenderer</a> &amp;renderer, <a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a> display, uint32_t width, uint32_t height, <a class="el" href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895">EDepthBufferType</a> depthBufferType=<a class="el" href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895aed4959723f8a2a25152521451635dcf1">EDepthBufferType_DepthStencil</a>)</td></tr>
+<tr class="memdesc:adf9eb8aa6d3aaa227250256556004ac1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Additional API to create an offscreen buffer as interruptible. This allows the renderer to interrupt rendering of scenes to such offscreen buffer if the time budget for rendering is exceeded within a frame (see SetFrameTimerLimits). The rendering continues next frame starting from the interruption point.  <a href="classramses_1_1RamsesRenderer.html#adf9eb8aa6d3aaa227250256556004ac1">More...</a><br /></td></tr>
+<tr class="separator:adf9eb8aa6d3aaa227250256556004ac1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac70f64e98a833178ea7729015fb1e7fe"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesRenderer.html#ac70f64e98a833178ea7729015fb1e7fe">setDisplayBufferClearFlags</a> (<a class="el" href="classramses_1_1RamsesRenderer.html">RamsesRenderer</a> &amp;renderer, <a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a> display, <a class="el" href="namespaceramses.html#af5114d3671e4be67752f61c301cd1581">displayBufferId_t</a> displayBuffer, uint32_t clearFlags)</td></tr>
+<tr class="memdesc:ac70f64e98a833178ea7729015fb1e7fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets clear flags for a display buffer (display's framebuffer or offscreen buffer).  <a href="classramses_1_1RamsesRenderer.html#ac70f64e98a833178ea7729015fb1e7fe">More...</a><br /></td></tr>
+<tr class="separator:ac70f64e98a833178ea7729015fb1e7fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -394,7 +410,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <a id="aba3e4d6c6573f9333034bc2d711101b0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aba3e4d6c6573f9333034bc2d711101b0">&#9670;&nbsp;</a></span>createInterruptibleOffscreenBuffer()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aba3e4d6c6573f9333034bc2d711101b0">&#9670;&nbsp;</a></span>createInterruptibleOffscreenBuffer() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -428,6 +444,7 @@ Additional Inherited Members</h2></td></tr>
 <p>Additional API to create an offscreen buffer as interruptible. This allows the renderer to interrupt rendering of scenes to such offscreen buffer if the time budget for rendering is exceeded within a frame (see SetFrameTimerLimits). The rendering continues next frame starting from the interruption point. </p>
 <p>The renderer creates two render targets on GPU (front and back) for every interruptible offscreen buffer. It then renders into the back render target of the offscreen buffer, while it is possible to read the content of front render target with content from previous frame (or older if interrupted for several frames).</p>
 <p>Note that whenever a scene gets assigned to interruptible offscreen buffer, it is not guaranteed anymore that it will be fully rendered every frame. Essentially it is rendered with lower priority.</p>
+<p>The created offscreen buffer always has color, depth and stencil buffers.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">display</td><td>Id of display for which the buffer should be created </td></tr>
@@ -440,8 +457,78 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<a id="adf9eb8aa6d3aaa227250256556004ac1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf9eb8aa6d3aaa227250256556004ac1">&#9670;&nbsp;</a></span>createInterruptibleOffscreenBuffer() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="namespaceramses.html#af5114d3671e4be67752f61c301cd1581">displayBufferId_t</a> ramses::RamsesRenderer::createInterruptibleOffscreenBuffer </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classramses_1_1RamsesRenderer.html">RamsesRenderer</a> &amp;&#160;</td>
+          <td class="paramname"><em>renderer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a>&#160;</td>
+          <td class="paramname"><em>display</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895">EDepthBufferType</a>&#160;</td>
+          <td class="paramname"><em>depthBufferType</em> = <code><a class="el" href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895aed4959723f8a2a25152521451635dcf1">EDepthBufferType_DepthStencil</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Additional API to create an offscreen buffer as interruptible. This allows the renderer to interrupt rendering of scenes to such offscreen buffer if the time budget for rendering is exceeded within a frame (see SetFrameTimerLimits). The rendering continues next frame starting from the interruption point. </p>
+<p>The renderer creates two render targets on GPU (front and back) for every interruptible offscreen buffer. It then renders into the back render target of the offscreen buffer, while it is possible to read the content of front render target with content from previous frame (or older if interrupted for several frames).</p>
+<p>Note that whenever a scene gets assigned to interruptible offscreen buffer, it is not guaranteed anymore that it will be fully rendered every frame. Essentially it is rendered with lower priority.</p>
+<p>The created offscreen buffer always has a color buffer, but depth and stencil buffers can be configured.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">renderer</td><td>The renderer to call this method on. This API is temporarily added in static fashion for ABI compatibility. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">display</td><td>Id of display for which the buffer should be created </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>Width of the buffer to be created (has to be higher than 0 and lower than 4096) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>Height of the buffer to be created (has to be higher than 0 and lower than 4096) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">depthBufferType</td><td>Optional setting to configure depth and stencil buffers. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Identifier of the created offscreen buffer. In case of unsupported resolution <code><a class="el" href="classramses_1_1StronglyTypedValue.html#af3fe119eff10ba4ef87f1fe6ab02f4f4" title="Static Getter for Invalid.">displayBufferId_t::Invalid()</a></code> will be returned with no renderer event generated. Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished. </dd></dl>
+
+</div>
+</div>
 <a id="addc19bf22f0c5fd8e4559e544703ac9a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#addc19bf22f0c5fd8e4559e544703ac9a">&#9670;&nbsp;</a></span>createOffscreenBuffer()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#addc19bf22f0c5fd8e4559e544703ac9a">&#9670;&nbsp;</a></span>createOffscreenBuffer() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -479,12 +566,88 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Will create an offscreen buffer that can be used to render scenes into (see RamsesRenderer::assignSceneToDisplayBuffer) and can be linked as input to a consumer texture sampler (see RamsesRenderer::linkOffscreenBufferToConsumer). </p>
+<p>The created offscreen buffer always has color, depth and stencil buffer attached. A multisampled buffer will be created if sampleCount greater than 0, note that the value is just a hint for the device, the actual number of samples might be different depending on device driver implementation. If the number of samples exceeds device capabilities the number of samples it will be clamped to its maximum supported (creation will succeeded with a warning log).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">display</td><td>id of display for which the buffer should be created </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>width of the buffer to be created (has to be higher than 0 and lower than 4096) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>height of the buffer to be created (has to be higher than 0 and lower than 4096) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sampleCount</td><td>Optional sample count for MSAA. Default value is 0 for no MSAA. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Identifier of the created offscreen buffer. In case of unsupported resolution <code><a class="el" href="classramses_1_1StronglyTypedValue.html#af3fe119eff10ba4ef87f1fe6ab02f4f4" title="Static Getter for Invalid.">displayBufferId_t::Invalid()</a></code> will be returned with no renderer event generated. Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished. </dd></dl>
+
+</div>
+</div>
+<a id="a471dd6ede67fd75a504ea6b412082a64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a471dd6ede67fd75a504ea6b412082a64">&#9670;&nbsp;</a></span>createOffscreenBuffer() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="namespaceramses.html#af5114d3671e4be67752f61c301cd1581">displayBufferId_t</a> ramses::RamsesRenderer::createOffscreenBuffer </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classramses_1_1RamsesRenderer.html">RamsesRenderer</a> &amp;&#160;</td>
+          <td class="paramname"><em>renderer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a>&#160;</td>
+          <td class="paramname"><em>display</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>sampleCount</em> = <code>0u</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895">EDepthBufferType</a>&#160;</td>
+          <td class="paramname"><em>depthBufferType</em> = <code><a class="el" href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895aed4959723f8a2a25152521451635dcf1">EDepthBufferType_DepthStencil</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Will create an offscreen buffer that can be used to render scenes into (see RamsesRenderer::assignSceneToDisplayBuffer) and can be linked as input to a consumer texture sampler (see RamsesRenderer::linkOffscreenBufferToConsumer). </p>
+<p>The created offscreen buffer always has a color buffer, but depth and stencil buffers can be configured.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">renderer</td><td>The renderer to call this method on. This API is temporarily added in static fashion for ABI compatibility. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">display</td><td>id of display for which the buffer should be created </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>width of the buffer to be created (has to be higher than 0 and lower than 4096) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>height of the buffer to be created (has to be higher than 0 and lower than 4096) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">sampleCount</td><td>Optional sample count for MSAA number of samples. Default value is Zero, which disables MSAA for the offscreen buffer. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">depthBufferType</td><td>Optional setting to configure depth and stencil buffers. </td></tr>
   </table>
   </dd>
 </dl>
@@ -573,7 +736,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Most <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a> methods push commands to an internal queue which is submitted when calling <a class="el" href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253" title="Submits renderer commands (API calls on this instance of RamsesRenderer) since previous flush to be e...">RamsesRenderer::flush</a>. The commands are then executed during a render loop (<a class="el" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd" title="Prepare content to be rendered in next frame and render next frame. This function can not be used in ...">RamsesRenderer::doOneLoop</a> or in a render thread if used <a class="el" href="classramses_1_1RamsesRenderer.html#a90489cf440602591c90f7a08bb5958ab" title="Runs the renderer loop in a separate thread created and owned by the renderer. This function can not ...">RamsesRenderer::startThread</a>). Some of these calls result in an event (can be both informational and data). Such events and their result can be retrieved using the dispatchEvents call. <em>IMPORTANT</em> Renderer events must be regularly consumed by calling <a class="el" href="classramses_1_1RamsesRenderer.html#a7aeedaa36dd7cc51bbf657298b2a0419" title="Most RamsesRenderer methods push commands to an internal queue which is submitted when calling Ramses...">dispatchEvents()</a> in order to prevent buffer overflow of the internal event queue, even if the application is not interested in those events. </p>
+<p>Most <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a> methods push commands to an internal queue which is submitted when calling <a class="el" href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253" title="Submits renderer commands (API calls on this instance of RamsesRenderer) since previous flush to be e...">RamsesRenderer::flush</a>. The commands are then executed during a render loop (<a class="el" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd" title="Prepare content to be rendered in next frame and render next frame.">RamsesRenderer::doOneLoop</a> or in a render thread if used <a class="el" href="classramses_1_1RamsesRenderer.html#a90489cf440602591c90f7a08bb5958ab" title="Starts update and render loop in threaded mode.">RamsesRenderer::startThread</a>). Some of these calls result in an event (can be both informational and data). Such events and their result can be retrieved using the dispatchEvents call. <em>IMPORTANT</em> Renderer events must be regularly consumed by calling <a class="el" href="classramses_1_1RamsesRenderer.html#a7aeedaa36dd7cc51bbf657298b2a0419" title="Most RamsesRenderer methods push commands to an internal queue which is submitted when calling Ramses...">dispatchEvents()</a> in order to prevent buffer overflow of the internal event queue, even if the application is not interested in those events. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">rendererEventHandler</td><td>User class that implements the callbacks that can be triggered if a corresponding event happened. Check <a class="el" href="classramses_1_1IRendererEventHandler.html" title="Provides an interface for handling the result of renderer events. Implementation of this interface mu...">ramses::IRendererEventHandler</a> documentation for more details. </td></tr>
@@ -601,7 +764,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Prepare content to be rendered in next frame and render next frame. This function can not be used in combination with startThread, stopThread and setMaximumFramerate. </p>
+<p>Prepare content to be rendered in next frame and render next frame. </p>
+<p>Update and render of all displays is executed sequentially in caller's thread. For active rendering it is recommended to use threaded mode instead (<a class="el" href="classramses_1_1RamsesRenderer.html#a90489cf440602591c90f7a08bb5958ab" title="Starts update and render loop in threaded mode.">startThread</a>). Once this method is called a threaded mode cannot be used anymore.</p>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
 <dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-datalink_2src_2main_8cpp-example.html#a9">ramses-example-local-datalink/src/main.cpp</a>, and <a class="el" href="ramses-example-local-viewport-link_2src_2main_8cpp-example.html#a7">ramses-example-local-viewport-link/src/main.cpp</a>.</dd>
 </dl>
@@ -672,7 +836,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get the current value for loop mode set using setLoopMode. </p>
+<p>Get the current value for loop mode set using <a class="el" href="classramses_1_1RamsesRenderer.html#a2203f9f2e6a6ab233809e1ee85367d89" title="Sets the mode of operation for render loop.">setLoopMode</a>. </p>
 <dl class="section return"><dt>Returns</dt><dd>The loop mode </dd></dl>
 
 </div>
@@ -692,7 +856,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get the current value for maximum frame rate per second set by the user. if the user did not set a value then it returs the default value. </p>
+<p>Get the current value for maximum frame rate per second currently set (<a class="el" href="classramses_1_1RamsesRenderer.html#a96181331eab7ab60dd607a3bcab999a6" title="Sets the maximum frame rate per second for the update/render loop when in threaded mode.">setMaximumFramerate</a>). </p>
 <dl class="section return"><dt>Returns</dt><dd>Maximum frame rate per second </dd></dl>
 
 </div>
@@ -736,7 +900,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get the current state of render thread running. </p>
+<p>Get the current state of rendering thread(s) running. </p>
 <dl class="section return"><dt>Returns</dt><dd>Returns true if thread is running (started and not stopped), false otherwise. </dd></dl>
 
 </div>
@@ -931,6 +1095,67 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<a id="ac70f64e98a833178ea7729015fb1e7fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac70f64e98a833178ea7729015fb1e7fe">&#9670;&nbsp;</a></span>setDisplayBufferClearFlags()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::RamsesRenderer::setDisplayBufferClearFlags </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classramses_1_1RamsesRenderer.html">RamsesRenderer</a> &amp;&#160;</td>
+          <td class="paramname"><em>renderer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a>&#160;</td>
+          <td class="paramname"><em>display</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#af5114d3671e4be67752f61c301cd1581">displayBufferId_t</a>&#160;</td>
+          <td class="paramname"><em>displayBuffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>clearFlags</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets clear flags for a display buffer (display's framebuffer or offscreen buffer). </p>
+<p>By default all display buffers' color, depth and stencil are cleared every frame when they are rendered to. This can be overridden for performance or special effect reasons. There is no event callback for this operation, the change can be assumed to be effective in the next frame rendered after flushed.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">renderer</td><td>The renderer to call this method on. This API is temporarily added in static fashion for ABI compatibility. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">display</td><td>Id of display that the buffer to set clearing belongs to. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">displayBuffer</td><td>Id of display buffer to set clearing, if <a class="el" href="classramses_1_1StronglyTypedValue.html#af3fe119eff10ba4ef87f1fe6ab02f4f4" title="Static Getter for Invalid.">ramses::displayBufferId_t::Invalid()</a> is passed then the clearing is set for display's framebuffer. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">clearFlags</td><td>Bitmask of the <a class="el" href="namespaceramses.html#a5a24b250587d10d14d00389a8a74096a" title="Clear flags used to specify which components of a render target or display buffer should be cleared.">ramses::EClearFlags</a>, use bit OR to select which buffer component to clear or <a class="el" href="namespaceramses.html#a5a24b250587d10d14d00389a8a74096aa556030bb8824a49b1306408794389ea3">ramses::EClearFlags_All</a> to clear all (default). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
 <a id="ac371e5e8e6a581a8d16f39e9ece1ed99"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac371e5e8e6a581a8d16f39e9ece1ed99">&#9670;&nbsp;</a></span>setFrameTimerLimits()</h2>
 
@@ -1038,11 +1263,11 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Sets the mode of operation for render loop. This function affects the behavior of BOTH doOneLoop and startThread. Mode can be changed during run-time, in case of thread rendering also while the thread is running. By default loop mode is set to render and update. </p>
-<p>For more details about each loop mode check enum.</p>
+<p>Sets the mode of operation for render loop. </p>
+<p>Mode can be changed during run-time, in case of threaded mode also while running (no need to <a class="el" href="classramses_1_1RamsesRenderer.html#a01dd58f37a2a782bcb77e25bea81175c" title="Stops thread(s) running the update and render of displays.">stopThread</a>). By default loop mode is set to render and update.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">loopMode</td><td>The mode to be used for render loop.</td></tr>
+    <tr><td class="paramname">loopMode</td><td>The mode to be used for render loop. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1051,7 +1276,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <a id="a96181331eab7ab60dd607a3bcab999a6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a96181331eab7ab60dd607a3bcab999a6">&#9670;&nbsp;</a></span>setMaximumFramerate()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a96181331eab7ab60dd607a3bcab999a6">&#9670;&nbsp;</a></span>setMaximumFramerate() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1066,10 +1291,65 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Sets the maximum frame rate per second for the render loop when it is running in renderer thread using startThread. The parameter is of type float because it is possible to specify numbers between 0 and 1 as well, which will result in FPS lower than 1, e.g. 0.5. </p>
-<p>This function can not be used in combination with doOneLoop. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Sets the maximum frame rate per second for the update/render loop when in threaded mode. </p>
+<p>The parameter is of type float in order to specify any desired frame time (e.g. below 1 FPS). The same maximum frame rate will be applied to all displays. This function can only be used in threaded mode (<a class="el" href="classramses_1_1RamsesRenderer.html#a90489cf440602591c90f7a08bb5958ab" title="Starts update and render loop in threaded mode.">startThread</a>). The default value is 60 FPS. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">maximumFramerate</td><td>The maximum frame rate per second to set for the render loop.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-displays_2src_2main_8cpp-example.html#a76">ramses-example-local-displays/src/main.cpp</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="acabff95b658cc988622b64517cea5567"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acabff95b658cc988622b64517cea5567">&#9670;&nbsp;</a></span>setMaximumFramerate() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::RamsesRenderer::setMaximumFramerate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classramses_1_1RamsesRenderer.html">RamsesRenderer</a> &amp;&#160;</td>
+          <td class="paramname"><em>renderer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>maximumFramerate</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ab30e8bb78242e4d57a4f006f10d1e9dc">displayId_t</a>&#160;</td>
+          <td class="paramname"><em>displayId</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets the maximum frame rate per second for the update/render loop when in threaded mode for given display. </p>
+<p>The maximumFramerate parameter is of type float in order to specify any desired frame time (e.g. below 1 FPS). The maximum frame rate will be applied to the display thread responsible for given display id. This function can only be used in threaded mode (<a class="el" href="classramses_1_1RamsesRenderer.html#a90489cf440602591c90f7a08bb5958ab" title="Starts update and render loop in threaded mode.">startThread</a>). The default value is 60 FPS. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">renderer</td><td>The renderer to apply the value to. This api is added in static fashion for ABI compatibility. </td></tr>
+    <tr><td class="paramname">maximumFramerate</td><td>The maximum frame rate per second to set for the render loop. </td></tr>
+    <tr><td class="paramname">displayId</td><td>The display id the framerate should be applied to.</td></tr>
   </table>
   </dd>
 </dl>
@@ -1293,7 +1573,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Runs the renderer loop in a separate thread created and owned by the renderer. This function can not be used in combination with doOneLoop. </p>
+<p>Starts update and render loop in threaded mode. </p>
+<p>Each display will update and render in its own thread. First call to this method enables threaded mode, afterwards it is not possible to call <a class="el" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd" title="Prepare content to be rendered in next frame and render next frame.">doOneLoop</a> anymore.</p>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
 <dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-client_2src_2main_8cpp-example.html#a12">ramses-example-local-client/src/main.cpp</a>, and <a class="el" href="ramses-example-local-geometry-shaders_2src_2main_8cpp-example.html#a12">ramses-example-local-geometry-shaders/src/main.cpp</a>.</dd>
 </dl>
@@ -1315,7 +1596,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Stops the thread running the renderer loop that was started by calling startThread. A call to this function joins the renderer thread to wait for its termination. This function can only be used if startThread was successfully called before. </p>
+<p>Stops thread(s) running the update and render of displays. </p>
+<p>This function can only be used if startThread was successfully called before. The looping can be restarted by calling <a class="el" href="classramses_1_1RamsesRenderer.html#a90489cf440602591c90f7a08bb5958ab" title="Starts update and render loop in threaded mode.">startThread</a> again.</p>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
 
 </div>

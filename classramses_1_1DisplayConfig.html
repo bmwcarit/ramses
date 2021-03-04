@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.5</span>
+   &#160;<span id="projectnumber">27.0.100</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -70,6 +70,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="classramses_1_1DisplayConfig-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -130,10 +131,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a211a48797909ef16f26eda72440f0694"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets window hints/properties to tell the window manager to disable window borders.  <a href="classramses_1_1DisplayConfig.html#a211a48797909ef16f26eda72440f0694">More...</a><br /></td></tr>
 <tr class="separator:a211a48797909ef16f26eda72440f0694"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc35c44048721812aae167536fa49f39"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#adc35c44048721812aae167536fa49f39">setMultiSampling</a> (uint32_t numSamples)</td></tr>
-<tr class="memdesc:adc35c44048721812aae167536fa49f39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set number of samples to be used with multisampled rendering.  <a href="classramses_1_1DisplayConfig.html#adc35c44048721812aae167536fa49f39">More...</a><br /></td></tr>
+<tr class="memdesc:adc35c44048721812aae167536fa49f39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set number of samples to be used for multisampled rendering.  <a href="classramses_1_1DisplayConfig.html#adc35c44048721812aae167536fa49f39">More...</a><br /></td></tr>
 <tr class="separator:adc35c44048721812aae167536fa49f39"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c95d6e46911f5a658fe8b13edbe9733"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#a7c95d6e46911f5a658fe8b13edbe9733">getMultiSamplingSamples</a> (uint32_t &amp;numSamples) const</td></tr>
-<tr class="memdesc:a7c95d6e46911f5a658fe8b13edbe9733"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get number of samples used with multisampled rendering.  <a href="classramses_1_1DisplayConfig.html#a7c95d6e46911f5a658fe8b13edbe9733">More...</a><br /></td></tr>
+<tr class="memdesc:a7c95d6e46911f5a658fe8b13edbe9733"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get number of samples currently set.  <a href="classramses_1_1DisplayConfig.html#a7c95d6e46911f5a658fe8b13edbe9733">More...</a><br /></td></tr>
 <tr class="separator:a7c95d6e46911f5a658fe8b13edbe9733"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1aef0dea197ab71961c876ed0066e58d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#a1aef0dea197ab71961c876ed0066e58d">enableWarpingPostEffect</a> ()</td></tr>
 <tr class="memdesc:a1aef0dea197ab71961c876ed0066e58d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable warping post effect. User has to set warping mesh data later in the display, otherwise the mesh is a fullscreen quad.  <a href="classramses_1_1DisplayConfig.html#a1aef0dea197ab71961c876ed0066e58d">More...</a><br /></td></tr>
@@ -208,6 +209,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2e1d8fa3051147db0ecb18c1ce500ee2 inherit pub_methods_classramses_1_1StatusObject"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1StatusObject.html">StatusObject</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1StatusObject.html#a2e1d8fa3051147db0ecb18c1ce500ee2">operator=</a> (const <a class="el" href="classramses_1_1StatusObject.html">StatusObject</a> &amp;other)=delete</td></tr>
 <tr class="memdesc:a2e1d8fa3051147db0ecb18c1ce500ee2 inherit pub_methods_classramses_1_1StatusObject"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deleted copy assignment.  <a href="classramses_1_1StatusObject.html#a2e1d8fa3051147db0ecb18c1ce500ee2">More...</a><br /></td></tr>
 <tr class="separator:a2e1d8fa3051147db0ecb18c1ce500ee2 inherit pub_methods_classramses_1_1StatusObject"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a3b521a446ba06c5e34cb8e126397e935"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DisplayConfig.html#a3b521a446ba06c5e34cb8e126397e935">setDepthStencilBufferType</a> (<a class="el" href="classramses_1_1DisplayConfig.html">DisplayConfig</a> &amp;config, <a class="el" href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895">EDepthBufferType</a> depthBufferType)</td></tr>
+<tr class="memdesc:a3b521a446ba06c5e34cb8e126397e935"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets whether depth/stencil buffer should be created for the framebuffer of the display. The framebuffer always has a color buffer. By default depth-stencil buffer is created as well.  <a href="classramses_1_1DisplayConfig.html#a3b521a446ba06c5e34cb8e126397e935">More...</a><br /></td></tr>
+<tr class="separator:a3b521a446ba06c5e34cb8e126397e935"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -418,10 +425,10 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get number of samples used with multisampled rendering. </p>
+<p>Get number of samples currently set. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">numSamples</td><td>Number of samples per pixel, valid values are 1, 2 and 4 </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">numSamples</td><td>Number of samples per pixel. </td></tr>
   </table>
   </dd>
 </dl>
@@ -723,6 +730,53 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<a id="a3b521a446ba06c5e34cb8e126397e935"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b521a446ba06c5e34cb8e126397e935">&#9670;&nbsp;</a></span>setDepthStencilBufferType()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::DisplayConfig::setDepthStencilBufferType </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classramses_1_1DisplayConfig.html">DisplayConfig</a> &amp;&#160;</td>
+          <td class="paramname"><em>config</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895">EDepthBufferType</a>&#160;</td>
+          <td class="paramname"><em>depthBufferType</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets whether depth/stencil buffer should be created for the framebuffer of the display. The framebuffer always has a color buffer. By default depth-stencil buffer is created as well. </p>
+<p>The set configuration will be passed to WGL/EGL, which uses this information as a lower-limit for the chosen configuration. If the configuration is not available exactly as requested, WGL/EGL will try the nearest configuration with the requested capabilities or more, e.g., if depth buffer is requested but stencil buffer is not it can happen that a stencil buffer will still be created because WGL/EGL does not have a configuration with that specific description.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">config</td><td>The display config to call this method on. This API is temporarily added in static fashion for ABI compatibility. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">depthBufferType</td><td>Configure depth and stencil buffers.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK on success, otherwise the returned status can be used to resolve to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a> </dd></dl>
+
+</div>
+</div>
 <a id="a3c77e0bd69515d1d71d7c0cbf46aa417"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3c77e0bd69515d1d71d7c0cbf46aa417">&#9670;&nbsp;</a></span>setGPUMemoryCacheSize()</h2>
 
@@ -795,10 +849,11 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Set number of samples to be used with multisampled rendering. </p>
+<p>Set number of samples to be used for multisampled rendering. </p>
+<p>Valid values are 1, 2, 4 or 8. Default value is 1 meaning multisampling is disabled. This value is just a hint for the device, the actual number of samples is guaranteed to be at least the given value but can be also more than that depending on device driver implementation. Ramses cannot check the device capability before the display is created, therefore exceeding the maximum number of samples supported by the device will likely result in fatal error.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">numSamples</td><td>Number of samples per pixel, valid values are 1, 2 and 4 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">numSamples</td><td>Number of samples per pixel. </td></tr>
   </table>
   </dd>
 </dl>

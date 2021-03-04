@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.5</span>
+   &#160;<span id="projectnumber">27.0.100</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -70,6 +70,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#friends">Friends</a> &#124;
@@ -176,6 +177,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2e1d8fa3051147db0ecb18c1ce500ee2 inherit pub_methods_classramses_1_1StatusObject"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1StatusObject.html">StatusObject</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1StatusObject.html#a2e1d8fa3051147db0ecb18c1ce500ee2">operator=</a> (const <a class="el" href="classramses_1_1StatusObject.html">StatusObject</a> &amp;other)=delete</td></tr>
 <tr class="memdesc:a2e1d8fa3051147db0ecb18c1ce500ee2 inherit pub_methods_classramses_1_1StatusObject"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deleted copy assignment.  <a href="classramses_1_1StatusObject.html#a2e1d8fa3051147db0ecb18c1ce500ee2">More...</a><br /></td></tr>
 <tr class="separator:a2e1d8fa3051147db0ecb18c1ce500ee2 inherit pub_methods_classramses_1_1StatusObject"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:adc3974274161bc3d49573e1d9354b628"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Effect.html#adc3974274161bc3d49573e1d9354b628">hasGeometryShader</a> (const <a class="el" href="classramses_1_1Effect.html">Effect</a> &amp;effect)</td></tr>
+<tr class="memdesc:adc3974274161bc3d49573e1d9354b628"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether the <code>effect</code> has a geometry shader attached to it.  <a href="classramses_1_1Effect.html#adc3974274161bc3d49573e1d9354b628">More...</a><br /></td></tr>
+<tr class="separator:adc3974274161bc3d49573e1d9354b628"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8334d932c135cd3cf762054d3e62fd72"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1Effect.html#a8334d932c135cd3cf762054d3e62fd72">getGeometryShaderInputType</a> (const <a class="el" href="classramses_1_1Effect.html">Effect</a> &amp;effect, <a class="el" href="namespaceramses.html#abd144adf1bc4137f1372ccb3eee01ec2">EDrawMode</a> &amp;expectedGeometryInputType)</td></tr>
+<tr class="memdesc:a8334d932c135cd3cf762054d3e62fd72"><td class="mdescLeft">&#160;</td><td class="mdescRight">If the <code>effect</code> has a geometry shader attached to it (see <a class="el" href="classramses_1_1Effect.html#adc3974274161bc3d49573e1d9354b628" title="Returns whether the effect has a geometry shader attached to it.">hasGeometryShader</a>) this method can be used to check the expected primitive type of the geometry shader. Use this to make sure that geometry-based effects get only paired with geometry which matches their expected type!  <a href="classramses_1_1Effect.html#a8334d932c135cd3cf762054d3e62fd72">More...</a><br /></td></tr>
+<tr class="separator:a8334d932c135cd3cf762054d3e62fd72"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -569,6 +579,53 @@ Friends</h2></td></tr>
 
 </div>
 </div>
+<a id="a8334d932c135cd3cf762054d3e62fd72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8334d932c135cd3cf762054d3e62fd72">&#9670;&nbsp;</a></span>getGeometryShaderInputType()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::Effect::getGeometryShaderInputType </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classramses_1_1Effect.html">Effect</a> &amp;&#160;</td>
+          <td class="paramname"><em>effect</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#abd144adf1bc4137f1372ccb3eee01ec2">EDrawMode</a> &amp;&#160;</td>
+          <td class="paramname"><em>expectedGeometryInputType</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>If the <code>effect</code> has a geometry shader attached to it (see <a class="el" href="classramses_1_1Effect.html#adc3974274161bc3d49573e1d9354b628" title="Returns whether the effect has a geometry shader attached to it.">hasGeometryShader</a>) this method can be used to check the expected primitive type of the geometry shader. Use this to make sure that geometry-based effects get only paired with geometry which matches their expected type! </p>
+<p>See also <a class="el" href="classramses_1_1Appearance.html#a220802fd2d20a2fe8e57720aaa5862b8" title="Sets the draw mode indicating by which primitive the mesh will be rendered Default draw mode is Trian...">ramses::Appearance::setDrawMode()</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">effect</td><td>effect to check for geometry input type </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">expectedGeometryInputType</td><td>geometry type expected by the geometry shader of /p effect </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
 <a id="ab2b8b286aad4f97b743de3e0005bc304"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab2b8b286aad4f97b743de3e0005bc304">&#9670;&nbsp;</a></span>getUniformInput()</h2>
 
@@ -628,6 +685,41 @@ Friends</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>Number of uniform inputs </dd></dl>
 <dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-local-offscreenbuffer_2src_2main_8cpp-example.html#a37">ramses-example-local-offscreenbuffer/src/main.cpp</a>.</dd>
 </dl>
+
+</div>
+</div>
+<a id="adc3974274161bc3d49573e1d9354b628"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc3974274161bc3d49573e1d9354b628">&#9670;&nbsp;</a></span>hasGeometryShader()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool ramses::Effect::hasGeometryShader </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classramses_1_1Effect.html">Effect</a> &amp;&#160;</td>
+          <td class="paramname"><em>effect</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns whether the <code>effect</code> has a geometry shader attached to it. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">effect</td><td>effect to check for existance of geometry shader </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the effect has a geometry shader attached to it, false otherwise </dd></dl>
 
 </div>
 </div>

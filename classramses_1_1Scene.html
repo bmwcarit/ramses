@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.5</span>
+   &#160;<span id="projectnumber">27.0.100</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -1461,6 +1461,7 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Create a <a class="el" href="classramses_1_1RenderBuffer.html" title="RenderBuffer can be used with RenderTarget as buffer for writing or with TextureSampler as buffer for...">RenderBuffer</a> to be used with <a class="el" href="classramses_1_1RenderTarget.html" title="The RenderTarget can be used as an output for a RenderPass.">RenderTarget</a> for rendering into and <a class="el" href="classramses_1_1TextureSampler.html" title="The TextureSampler holds a texture and its sampling parameters.">TextureSampler</a> for sampling from. </p>
+<p>A multisampled buffer will be created if sampleCount greater than 0, note that the value is just a hint for the device, the actual number of samples might be different depending on device driver implementation. If the number of samples exceeds device capabilities the number of samples it will be clamped to its maximum supported (creation will succeeded with a warning log).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>The width of the <a class="el" href="classramses_1_1RenderBuffer.html" title="RenderBuffer can be used with RenderTarget as buffer for writing or with TextureSampler as buffer for...">RenderBuffer</a> in pixel. </td></tr>
@@ -1468,7 +1469,7 @@ Friends</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bufferType</td><td>Type of the <a class="el" href="classramses_1_1RenderBuffer.html" title="RenderBuffer can be used with RenderTarget as buffer for writing or with TextureSampler as buffer for...">RenderBuffer</a> to be created (color, depth, depth/stecil). </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bufferFormat</td><td>Data format to use for the <a class="el" href="classramses_1_1RenderBuffer.html" title="RenderBuffer can be used with RenderTarget as buffer for writing or with TextureSampler as buffer for...">RenderBuffer</a> to be created. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">accessMode</td><td>Read/Write access mode of render buffer </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">sampleCount</td><td>Optional sample count for MSAA number of samples. Default value is Zero, which disables MSAA for the render buffer. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sampleCount</td><td>Optional sample count for MSAA number of samples. Default value is 0 for no MSAA. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Optional name of the object. </td></tr>
   </table>
   </dd>

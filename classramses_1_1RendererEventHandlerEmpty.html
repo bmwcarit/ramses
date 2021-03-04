@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.5</span>
+   &#160;<span id="projectnumber">27.0.100</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -136,7 +136,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ab70f71358aff3739d02b5a5281bf73ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called when a display's window has been closed.  <a href="classramses_1_1RendererEventHandlerEmpty.html#ab70f71358aff3739d02b5a5281bf73ff">More...</a><br /></td></tr>
 <tr class="separator:ab70f71358aff3739d02b5a5281bf73ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e3d1eaba77e68fb75b2d83a8f70f69e"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RendererEventHandlerEmpty.html#a6e3d1eaba77e68fb75b2d83a8f70f69e">renderThreadLoopTimings</a> (std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) override</td></tr>
-<tr class="memdesc:a6e3d1eaba77e68fb75b2d83a8f70f69e"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called in period given to renderer config and provides rough performance indicators. It only works when using render thread.  <a href="classramses_1_1RendererEventHandlerEmpty.html#a6e3d1eaba77e68fb75b2d83a8f70f69e">More...</a><br /></td></tr>
+<tr class="memdesc:a6e3d1eaba77e68fb75b2d83a8f70f69e"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method will be called in period given to renderer config (<a class="el" href="classramses_1_1RendererConfig.html#a4a44815c51d9332592b8c47dd6d34865" title="Set the desired reporting period for first display loop timings.">ramses::RendererConfig::setRenderThreadLoopTimingReportingPeriod</a>) and provides rough performance indicators - maximum and average loop (frame) time within that measure period. It only reports timings for first display.  <a href="classramses_1_1RendererEventHandlerEmpty.html#a6e3d1eaba77e68fb75b2d83a8f70f69e">More...</a><br /></td></tr>
 <tr class="separator:a6e3d1eaba77e68fb75b2d83a8f70f69e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classramses_1_1IRendererEventHandler"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classramses_1_1IRendererEventHandler')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classramses_1_1IRendererEventHandler.html">ramses::IRendererEventHandler</a></td></tr>
 <tr class="memitem:a3b961abd3281f4e663aaed15be9467c4 inherit pub_methods_classramses_1_1IRendererEventHandler"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1IRendererEventHandler.html#a3b961abd3281f4e663aaed15be9467c4">~IRendererEventHandler</a> ()=default</td></tr>
@@ -576,11 +576,11 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>This method will be called in period given to renderer config and provides rough performance indicators. It only works when using render thread. </p>
+<p>This method will be called in period given to renderer config (<a class="el" href="classramses_1_1RendererConfig.html#a4a44815c51d9332592b8c47dd6d34865" title="Set the desired reporting period for first display loop timings.">ramses::RendererConfig::setRenderThreadLoopTimingReportingPeriod</a>) and provides rough performance indicators - maximum and average loop (frame) time within that measure period. It only reports timings for first display. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">maximumLoopTime</td><td>The maximum time a loop of the renderthread took since the last event </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">averageLooptime</td><td>The average time a loop of the renderthread took since the last event </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">maximumLoopTime</td><td>The maximum time a loop of the first display within the last measure period </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">averageLooptime</td><td>The average time a loop of the first display within the last measure period </td></tr>
   </table>
   </dd>
 </dl>
