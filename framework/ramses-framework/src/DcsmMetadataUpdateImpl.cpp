@@ -119,6 +119,16 @@ namespace ramses
         return m_metadata.getStreamID();
     }
 
+    bool DcsmMetadataUpdateImpl::hasContentFlippedVertically() const
+    {
+        return m_metadata.hasContentFlippedVertically();
+    }
+
+    bool DcsmMetadataUpdateImpl::getContentFlippedVertically() const
+    {
+        return m_metadata.getContentFlippedVertically();
+    }
+
     void DcsmMetadataUpdateImpl::setMetadata(ramses_internal::DcsmMetadata metadata)
     {
         m_metadata = std::move(metadata);

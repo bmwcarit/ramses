@@ -74,17 +74,13 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t AnimatedPropertyImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t AnimatedPropertyImpl::validate() const
     {
-        status_t status = AnimationObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = AnimationObjectImpl::validate();
 
         const auto& dataBind = *getIAnimationSystem().getDataBinding(m_dataBindHandle);
         if (!dataBind.isPropertyValid())
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "property to animate does not exist in scene");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Error, "property to animate does not exist in scene");
         else
         {
             using ContainerTraitsClass = ramses_internal::DataBindContainerToTraitsSelector<ramses_internal::IScene>::ContainerTraitsClassType;
@@ -93,10 +89,7 @@ namespace ramses
                 const ramses_internal::TransformHandle transformHandle = static_cast<ramses_internal::TransformHandle>(dataBind.getHandle());
 
                 if (getIScene().getRotationConvention(transformHandle) != ramses_internal::ERotationConvention::Legacy_ZYX)
-                {
-                    addValidationMessage(EValidationSeverity_Error, indent, "trying to animate rotation for node that does not use legacy rotation convention");
-                    status = getValidationErrorStatus();
-                }
+                    status = addValidationMessage(EValidationSeverity_Error, "trying to animate rotation for node that does not use legacy rotation convention");
             }
         }
 
@@ -109,17 +102,12 @@ namespace ramses
             {
                 const ramses_internal::AnimationInstance& animInst = getIAnimationSystem().getAnimationInstance(animInstHandle);
                 if (contains_c(animInst.getDataBindings(), m_dataBindHandle))
-                {
                     ++propertyUsageCount;
-                }
             }
         }
 
         if (propertyUsageCount > 1u)
-        {
-            addValidationMessage(EValidationSeverity_Warning, indent, "this AnimatedProperty seems to be used by multiple animations, this is fine only if those animations do not overlap");
-            status = getValidationErrorStatus();
-        }
+            status = std::max(status, addValidationMessage(EValidationSeverity_Warning, "this AnimatedProperty seems to be used by multiple animations, this is fine only if those animations do not overlap"));
 
         return status;
     }

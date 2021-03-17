@@ -32,6 +32,7 @@ from check_api_export_symbols import check_api_export_symbols
 from check_comments import check_doxygen_singleline_comments
 from check_deprecated import check_deprecated
 from check_file_attributes import check_file_attributes
+from check_doxygen import check_doxygen
 
 
 def main():
@@ -171,6 +172,12 @@ def main():
     files_attribute_checking = common_modules.common.get_all_files_with_filter(sdk_root, path, {r'.*'}, {r'\.sh$', r'\.py$', r'/gradlew$', r'\.bat$'})
     for f in files_attribute_checking:
         check_file_attributes(f)
+
+    files_doxgen_checking = common_modules.common.get_all_files_with_filter(sdk_root, path, {r'\.dox$'}, {})
+    print(files_doxgen_checking)
+    for f in files_doxgen_checking:
+        file_contents, file_lines = common_modules.common.read_file(f)
+        check_doxygen(f, file_contents, file_lines)
 
     print('checked {0} files'.format(len(set(src_files) | set(files_formatting) | set(files_license_header))))
 

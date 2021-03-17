@@ -48,7 +48,7 @@ public:
     std::vector<std::vector<Byte>> actionsToChunks(const SceneActionCollection& actions, uint32_t chunkSize = 100000, const ManagedResourceVector& resources = {}, const FlushInformation& flushinfo = {})
     {
         SceneUpdate update{actions.copy(), resources, flushinfo.copy()};
-        return TestSerializeSceneUpdateToVectorChunked(SceneUpdateSerializer(update), chunkSize);
+        return TestSerializeSceneUpdateToVectorChunked(SceneUpdateSerializer(update, sceneStatistics), chunkSize);
     }
 
     void expectSendSceneActionsToNetwork(Guid remote, SceneId sceneId, const SceneActionCollection& expectedActions)
@@ -86,6 +86,7 @@ protected:
     SceneGraphComponent sceneGraphComponent;
     StrictMock<SceneRendererHandlerMock> consumer;
     StrictMock<SceneProviderEventConsumerMock> eventConsumer;
+    StatisticCollectionScene sceneStatistics;
 };
 
 
@@ -250,7 +251,7 @@ TEST_F(ASceneGraphComponent, sendsSceneActionToLocalConsumer)
     });
     SceneUpdate update;
     update.actions = list.copy();
-    sceneGraphComponent.sendSceneUpdate({ localParticipantID }, std::move(update), SceneId(666u), EScenePublicationMode_LocalOnly);
+    sceneGraphComponent.sendSceneUpdate({ localParticipantID }, std::move(update), SceneId(666u), EScenePublicationMode_LocalOnly, sceneStatistics);
 }
 
 TEST_F(ASceneGraphComponent, sendsResourcesUnCompressedToLocalConsumer)
@@ -272,7 +273,7 @@ TEST_F(ASceneGraphComponent, sendsResourcesUnCompressedToLocalConsumer)
         });
     SceneUpdate update;
     update.resources = resources;
-    sceneGraphComponent.sendSceneUpdate({ localParticipantID }, std::move(update), SceneId(666u), EScenePublicationMode_LocalOnly);
+    sceneGraphComponent.sendSceneUpdate({ localParticipantID }, std::move(update), SceneId(666u), EScenePublicationMode_LocalOnly, sceneStatistics);
 }
 
 TEST_F(ASceneGraphComponent, sendsResourcesCompressedToRemoteProvider)
@@ -296,7 +297,7 @@ TEST_F(ASceneGraphComponent, sendsResourcesCompressedToRemoteProvider)
         });
     SceneUpdate update;
     update.resources= resourcesToSend;
-    sceneGraphComponent.sendSceneUpdate({ remoteParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalAndRemote);
+    sceneGraphComponent.sendSceneUpdate({ remoteParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalAndRemote, sceneStatistics);
 }
 
 
@@ -306,7 +307,7 @@ TEST_F(ASceneGraphComponent, doesntSendSceneActionIfLocalConsumerIsntSet)
     EXPECT_CALL(consumer, handleSceneUpdate_rvr(_, _, _)).Times(0);
     SceneUpdate update;
     update.actions = list.copy();
-    sceneGraphComponent.sendSceneUpdate({ localParticipantID }, std::move(update), SceneId(666u), EScenePublicationMode_LocalOnly);
+    sceneGraphComponent.sendSceneUpdate({ localParticipantID }, std::move(update), SceneId(666u), EScenePublicationMode_LocalOnly, sceneStatistics);
 }
 
 TEST_F(ASceneGraphComponent, sendsSceneActionToRemoteProvider)
@@ -319,7 +320,7 @@ TEST_F(ASceneGraphComponent, sendsSceneActionToRemoteProvider)
     expectSendSceneActionsToNetwork(remoteParticipantID, sceneId, list);
     SceneUpdate update;
     update.actions = list.copy();
-    sceneGraphComponent.sendSceneUpdate({ remoteParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalAndRemote);
+    sceneGraphComponent.sendSceneUpdate({ remoteParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalAndRemote, sceneStatistics);
 }
 
 TEST_F(ASceneGraphComponent, sendsAllSceneActionsAtOnceToRemoteProvider)
@@ -332,7 +333,7 @@ TEST_F(ASceneGraphComponent, sendsAllSceneActionsAtOnceToRemoteProvider)
     expectSendSceneActionsToNetwork(remoteParticipantID, sceneId, list);
     SceneUpdate update;
     update.actions = list.copy();
-    sceneGraphComponent.sendSceneUpdate({ remoteParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalAndRemote);
+    sceneGraphComponent.sendSceneUpdate({ remoteParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalAndRemote, sceneStatistics);
 }
 
 TEST_F(ASceneGraphComponent, doesNotsendSceneUpdateToRemoteIfSceneWasPublishedLocalOnly)
@@ -343,7 +344,7 @@ TEST_F(ASceneGraphComponent, doesNotsendSceneUpdateToRemoteIfSceneWasPublishedLo
 
     SceneUpdate update;
     update.actions = list.copy();
-    sceneGraphComponent.sendSceneUpdate({ localParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalOnly);
+    sceneGraphComponent.sendSceneUpdate({ localParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalOnly, sceneStatistics);
 
     // expect noting for remote, check by strict mock
 }
@@ -364,7 +365,7 @@ TEST_F(ASceneGraphComponent, canSendSceneActionsToLocalAndRemote)
     });
     SceneUpdate update;
     update.actions = list.copy();
-    sceneGraphComponent.sendSceneUpdate({ remoteParticipantID, localParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalAndRemote);
+    sceneGraphComponent.sendSceneUpdate({ remoteParticipantID, localParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalAndRemote, sceneStatistics);
 }
 
 TEST_F(ASceneGraphComponent, canRepublishALocalOnlySceneToBeDistributedRemotely)
@@ -1147,9 +1148,12 @@ TEST_F(ASceneGraphComponent, returnsFalseForFlushOnWrongResolvedResourceNumber_S
     auto res = new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String());
     res->setResourceData(ResourceBlob{ 1 }, { 1u, 1u });
     ManagedResource manRes(res);
+    ResourceInfo info(res);
 
     scene.allocateStreamTexture(WaylandIviSurfaceId(123u), { 111, 111 }, StreamTextureHandle{ 0 });
-    EXPECT_CALL(resourceComponent, resolveResources(_)).Times(3).WillRepeatedly(Return(ManagedResourceVector{ manRes }));
+    EXPECT_CALL(resourceComponent, resolveResources(_)).Times(2).WillRepeatedly(Return(ManagedResourceVector{ manRes }));
+    EXPECT_CALL(resourceComponent, getResourceInfo(_)).WillOnce(ReturnRef(info));
+
     EXPECT_TRUE(sceneGraphComponent.handleFlush(sceneId, {}, {}));
 
     scene.allocateStreamTexture(WaylandIviSurfaceId(124u), { 222, 222 }, StreamTextureHandle{ 1 });
@@ -1169,12 +1173,30 @@ TEST_F(ASceneGraphComponent, returnsFalseForFlushOnWrongResolvedResourceNumber_D
     auto res = new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String());
     res->setResourceData(ResourceBlob{ 1 }, { 1u, 1u });
     ManagedResource manRes(res);
+    ResourceInfo info(res);
 
     scene.allocateStreamTexture(WaylandIviSurfaceId(123u), { 111, 111 }, StreamTextureHandle{ 0 });
-    EXPECT_CALL(resourceComponent, resolveResources(_)).Times(2).WillRepeatedly(Return(ManagedResourceVector{ manRes }));
+    EXPECT_CALL(resourceComponent, resolveResources(_)).Times(1).WillRepeatedly(Return(ManagedResourceVector{ manRes }));
+    EXPECT_CALL(resourceComponent, getResourceInfo(_)).WillOnce(ReturnRef(info));
     EXPECT_TRUE(sceneGraphComponent.handleFlush(sceneId, {}, {}));
 
     scene.allocateStreamTexture(WaylandIviSurfaceId(124u), { 222, 222 }, StreamTextureHandle{ 1 });
     EXPECT_CALL(resourceComponent, resolveResources(_)).WillOnce(Return(ManagedResourceVector{}));
     EXPECT_FALSE(sceneGraphComponent.handleFlush(sceneId, {}, {}));
+}
+
+TEST_F(ASceneGraphComponent, sendSceneUpdatePassesSceneStatisticsToSerializer)
+{
+    SceneId sceneId;
+    EXPECT_CALL(communicationSystem, sendInitializeScene(_, _)).Times(1);
+    sceneGraphComponent.sendCreateScene(remoteParticipantID, sceneId, EScenePublicationMode_LocalAndRemote);
+
+    EXPECT_CALL(communicationSystem, sendSceneUpdate(remoteParticipantID, sceneId, _)).WillOnce([&](auto, auto, auto& serializer) {
+        const auto& stats = static_cast<const SceneUpdateSerializer&>(serializer).getStatisticCollection();
+        EXPECT_EQ(&sceneStatistics, &stats);
+        return true;
+    });
+
+    SceneUpdate update;
+    sceneGraphComponent.sendSceneUpdate({ remoteParticipantID }, std::move(update), sceneId, EScenePublicationMode_LocalAndRemote, sceneStatistics);
 }

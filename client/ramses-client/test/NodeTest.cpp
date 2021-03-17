@@ -553,6 +553,69 @@ namespace ramses
         EXPECT_EQ(ERotationConvention::ZYX, conv);
     }
 
+    TYPED_TEST(NodeTest, settingScaleOrTranlationMayNotBreakGetRotationWithConvention)
+    {
+        Node& node = this->createNode("node");
+
+        float x;
+        float y;
+        float z;
+        ERotationConvention convention;
+        EXPECT_EQ(ramses::StatusOK, node.getRotation(x, y, z, convention));
+        EXPECT_EQ(0.f, x);
+        EXPECT_EQ(0.f, y);
+        EXPECT_EQ(0.f, z);
+        EXPECT_EQ(ERotationConvention::XYZ, convention);
+
+        EXPECT_EQ(ramses::StatusOK, node.setTranslation(2, 2, 2));
+        EXPECT_EQ(ramses::StatusOK, node.getRotation(x, y, z, convention));
+
+        EXPECT_EQ(0.f, x);
+        EXPECT_EQ(0.f, y);
+        EXPECT_EQ(0.f, z);
+        EXPECT_EQ(ERotationConvention::XYZ, convention);
+    }
+
+    TYPED_TEST(NodeTest, canSetAndGetNonLegacyRotationAfterSettingScaleOrTranlation)
+    {
+        Node& node = this->createNode("node");
+
+        EXPECT_EQ(ramses::StatusOK, node.setTranslation(2, 2, 2));
+
+        EXPECT_EQ(ramses::StatusOK, node.setRotation(1.f, 2.f, 3.f, ERotationConvention::ZYZ));
+
+        float x;
+        float y;
+        float z;
+        ERotationConvention convention;
+
+        EXPECT_EQ(ramses::StatusOK, node.getRotation(x, y, z, convention));
+
+        EXPECT_EQ(1.f, x);
+        EXPECT_EQ(2.f, y);
+        EXPECT_EQ(3.f, z);
+        EXPECT_EQ(ERotationConvention::ZYZ, convention);
+    }
+
+    TYPED_TEST(NodeTest, canSetAndGetLegacyRotationAfterSettingScaleOrTranlation)
+    {
+        Node& node = this->createNode("node");
+
+        EXPECT_EQ(ramses::StatusOK, node.setTranslation(2, 2, 2));
+
+        EXPECT_EQ(ramses::StatusOK, node.setRotation(1.f, 2.f, 3.f));
+
+        float x;
+        float y;
+        float z;
+
+        EXPECT_EQ(ramses::StatusOK, node.getRotation(x, y, z));
+
+        EXPECT_EQ(1.f, x);
+        EXPECT_EQ(2.f, y);
+        EXPECT_EQ(3.f, z);
+    }
+
     TYPED_TEST(NodeTest, getsIdentityInverseModelMatrixInitially)
     {
         Node& node = this->createNode("node");

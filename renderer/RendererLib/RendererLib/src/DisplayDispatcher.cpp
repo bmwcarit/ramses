@@ -119,14 +119,14 @@ namespace ramses_internal
         {
             // set scene ownership so that future commands are dispatched to its display
             const auto& cmdData = absl::get<RendererCommand::SetSceneMapping>(cmd);
-            m_sceneDisplayTracker.setSceneOwnership(cmdData.scene, cmdData.display);
+            m_sceneDisplayTrackerForCommands.setSceneOwnership(cmdData.scene, cmdData.display);
         }
         else if (absl::holds_alternative<RendererCommand::ReceiveScene>(cmd))
         {
             // Special handling of referenced scenes, refScenes are fully handled by internal logic within DisplayBundle/SceneRefLogic,
             // therefore their ownership is not known at dispatcher level. When a subscription of referenced scene arrives its master
             // is queried from a thread-safe shared ownership registry.
-            if (!m_sceneDisplayTracker.determineDisplayFromRendererCommand(cmd)->isValid())
+            if (!m_sceneDisplayTrackerForCommands.determineDisplayFromRendererCommand(cmd)->isValid())
             {
                 const auto refScene = absl::get<RendererCommand::ReceiveScene>(cmd).info.sceneID;
                 LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: missing scene {} display ownership when processing {}, assuming a referenced scene.", refScene, RendererCommandUtils::ToString(cmd));
@@ -136,13 +136,13 @@ namespace ramses_internal
                     const auto masterScene = displayBundle.findMasterSceneForReferencedScene(refScene);
                     if (masterScene.isValid())
                     {
-                        const auto masterDisplay = m_sceneDisplayTracker.getSceneOwnership(masterScene);
+                        const auto masterDisplay = m_sceneDisplayTrackerForCommands.getSceneOwnership(masterScene);
                         LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: found master scene {} for referenced scene {} when processing {}, setting display ownership to display {}",
                             masterScene, refScene, RendererCommandUtils::ToString(cmd), masterDisplay);
-                        m_sceneDisplayTracker.setSceneOwnership(refScene, masterDisplay);
+                        m_sceneDisplayTrackerForCommands.setSceneOwnership(refScene, masterDisplay);
                     }
                 }
-                if (!m_sceneDisplayTracker.getSceneOwnership(refScene).isValid())
+                if (!m_sceneDisplayTrackerForCommands.getSceneOwnership(refScene).isValid())
                 {
                     LOG_ERROR_P(CONTEXT_RENDERER, "DisplayDispatcher: could not find master scene for referenced scene {} when processing {}", refScene, RendererCommandUtils::ToString(cmd));
                 }
@@ -176,7 +176,7 @@ namespace ramses_internal
 
     void DisplayDispatcher::dispatchCommand(RendererCommand::Variant&& cmd)
     {
-        const auto cmdDisplay = m_sceneDisplayTracker.determineDisplayFromRendererCommand(cmd);
+        const auto cmdDisplay = m_sceneDisplayTrackerForCommands.determineDisplayFromRendererCommand(cmd);
         if (cmdDisplay)
         {
             if (m_displays.count(*cmdDisplay) == 0)
@@ -218,6 +218,16 @@ namespace ramses_internal
         }
     }
 
+    bool DisplayDispatcher::isSceneStateChangeEmittedFromOwningDisplay(SceneId sceneId, DisplayHandle emittingDisplay) const
+    {
+        const bool isFirstDisplay = (m_displays.cbegin()->first == emittingDisplay);
+        const auto owningDisplay = m_sceneDisplayTrackerForEvents.getSceneOwnership(sceneId);
+        if (owningDisplay.isValid())
+            return owningDisplay == emittingDisplay;
+        else
+            return isFirstDisplay;
+    }
+
     void DisplayDispatcher::dispatchRendererEvents(RendererEventVector& events)
     {
         {
@@ -227,17 +237,17 @@ namespace ramses_internal
             {
                 m_tmpEvents.clear();
                 display.second.displayBundle->dispatchRendererEvents(m_tmpEvents);
-
-                const bool isFirstDisplay = (display.first == m_displays.cbegin()->first);
                 for (auto&& evt : m_tmpEvents)
                 {
                     if (evt.eventType == ERendererEventType::DisplayDestroyed)
                     {
                         assert(evt.displayHandle == display.first);
                         destroyedDisplays.push_back(evt.displayHandle);
+                        m_sceneDisplayTrackerForCommands.unregisterDisplay(evt.displayHandle);
+                        m_sceneDisplayTrackerForEvents.unregisterDisplay(evt.displayHandle);
                     }
-                    if (isFirstDisplay || !SceneDisplayTracker::IsEventResultOfBroadcastCommand(evt.eventType))
-                        events.push_back(std::move(evt));
+
+                    events.push_back(std::move(evt));
                 }
             }
 
@@ -259,10 +269,23 @@ namespace ramses_internal
                 m_tmpEvents.clear();
                 display.second.displayBundle->dispatchSceneControlEvents(m_tmpEvents);
 
-                const bool isFirstDisplay = (display.first == m_displays.cbegin()->first);
                 for (auto&& evt : m_tmpEvents)
                 {
-                    if (isFirstDisplay || !SceneDisplayTracker::IsEventResultOfBroadcastCommand(evt.eventType))
+                    if (evt.eventType == ERendererEventType::SceneStateChanged)
+                    {
+                        // Available state can mean published or unsubscribed, the first will come from all displays (result of broadcast command publish),
+                        // the latter can only come from an owning display. To distinguish that and also avoid races with ownership of commands (aync flow of commands and events),
+                        // events have own tracking of ownership - scene is owned by display simply when it reached Ready on that display.
+                        // Scene state events are emitted only if coming from owning display or first display if not owned by any display.
+                        if (evt.state == RendererSceneState::Ready)
+                            m_sceneDisplayTrackerForEvents.setSceneOwnership(evt.sceneId, display.first);
+                        if (isSceneStateChangeEmittedFromOwningDisplay(evt.sceneId, display.first))
+                            events.push_back(std::move(evt));
+                        else
+                            LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher::dispatchSceneControlEvents: filtering scene state change event from non-owner display {}, scene {} change state to {}.",
+                                display.first, evt.sceneId, EnumToString(evt.state));
+                    }
+                    else
                         events.push_back(std::move(evt));
                 }
             }
@@ -352,6 +375,14 @@ namespace ramses_internal
         assert(!m_threadedDisplays);
         assert(m_displays.count(display) != 0);
         return m_displays[display].displayBundle->getEC(display);
+    }
+
+    bool DisplayDispatcher::hasSystemCompositorController() const
+    {
+        assert(!m_threadedDisplays);
+        assert(m_displays.size() != 0);
+        const IDisplayBundle& displayBundle = *m_displays.cbegin()->second.displayBundle;
+        return displayBundle.hasSystemCompositorController();
     }
 
     void DisplayDispatcher::registerRamshCommands(Ramsh& ramsh)

@@ -15,10 +15,12 @@
 
 namespace ramses_internal
 {
+    class StatisticCollectionScene;
+
     class SingleSceneUpdateWriter
     {
     public:
-        SingleSceneUpdateWriter(const SceneUpdate& update, absl::Span<Byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc);
+        SingleSceneUpdateWriter(const SceneUpdate& update, absl::Span<Byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc, StatisticCollectionScene& sceneStatistics);
 
         bool write();
 
@@ -49,6 +51,7 @@ namespace ramses_internal
         RawBinaryOutputStream              m_packetWriter;
         uint32_t                           m_packetNum = 1;
         std::vector<Byte>                  m_temporaryMemToSerializeDescription;  // optimization to avoid allocations
+        StatisticCollectionScene&          m_sceneStatistics;
     };
 }
 

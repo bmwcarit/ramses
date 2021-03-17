@@ -11,7 +11,16 @@
 
 TEST(ARamsesShaderFromGLSLShaderArguments, canLoadCorrectlyWhenAllParametersAreProvidedWithShortName)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-of", "res/ramses-shader-tools-out.fragmentshader", "-ot", "client", "-oe", "res/ramses-shader-tools-out.hash", "-on", "theName", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-test.vertexshader",
+                          "-if", "res/ramses-shader-tools-test.fragmentshader",
+                          "-ic", "res/ramses-shader-tools-test.config",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          "-ot", "client",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          "-on", "theName",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -27,7 +36,16 @@ TEST(ARamsesShaderFromGLSLShaderArguments, canLoadCorrectlyWhenAllParametersAreP
 
 TEST(ARamsesShaderFromGLSLShaderArguments, canLoadCorrectlyWhenAllParametersAreProvidedWithFullName)
 {
-    const char* argv[] = { "program.exe", "--in-vertex-shader", "res/ramses-shader-tools-test.vertexshader", "--in-fragment-shader", "res/ramses-shader-tools-test.fragmentshader", "--in-config", "res/ramses-shader-tools-test.config", "--out-vertex-shader", "res/ramses-shader-tools-out.vertexshader", "--out-fragment-shader", "res/ramses-shader-tools-out.fragmentshader", "--out-effect-id-type", "client", "--out-effect-id", "res/ramses-shader-tools-out.hash", "--out-effect-name", "theName", nullptr };
+    const char* argv[] = {"program.exe",
+                          "--in-vertex-shader", "res/ramses-shader-tools-test.vertexshader",
+                          "--in-fragment-shader", "res/ramses-shader-tools-test.fragmentshader",
+                          "--in-config", "res/ramses-shader-tools-test.config",
+                          "--out-vertex-shader", "res/ramses-shader-tools-out.vertexshader",
+                          "--out-fragment-shader", "res/ramses-shader-tools-out.fragmentshader",
+                          "--out-effect-id-type", "client",
+                          "--out-effect-id", "res/ramses-shader-tools-out.hash",
+                          "--out-effect-name", "theName",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -43,7 +61,14 @@ TEST(ARamsesShaderFromGLSLShaderArguments, canLoadCorrectlyWhenAllParametersAreP
 
 TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenInputVertexShaderIsNotAvailable)
 {
-    const char* argv[] = { "program.exe", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-of", "res/ramses-shader-tools-out.fragmentshader", "-ot", "client", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-if", "res/ramses-shader-tools-test.fragmentshader",
+                          "-ic", "res/ramses-shader-tools-test.config",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          "-ot", "client",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -52,7 +77,14 @@ TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenInputVertexShaderIsNo
 
 TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenInputFragmentShaderIsNotAvailable)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-ic", "res/ramses-shader-tools-test.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-of", "res/ramses-shader-tools-out.fragmentshader", "-ot", "client", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-test.vertexshader",
+                          "-ic", "res/ramses-shader-tools-test.config",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          "-ot", "client",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -61,7 +93,14 @@ TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenInputFragmentShaderIs
 
 TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenInputEffectConfigIsNotAvailable)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ov", "res/ramses-shader-tools-out.vertexshader", "-of", "res/ramses-shader-tools-out.fragmentshader", "-ot", "client", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-test.vertexshader",
+                          "-if", "res/ramses-shader-tools-test.fragmentshader",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          "-ot", "client",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -70,7 +109,14 @@ TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenInputEffectConfigIsNo
 
 TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenOutputVertexShaderIsNotAvailable)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-of", "res/ramses-shader-tools-out.fragmentshader", "-ot", "client", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-test.vertexshader",
+                          "-if", "res/ramses-shader-tools-test.fragmentshader",
+                          "-ic", "res/ramses-shader-tools-test.config",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          "-ot", "client",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -79,7 +125,14 @@ TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenOutputVertexShaderIsN
 
 TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenOutputFragmentShaderIsNotAvailable)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-ot", "client", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-test.vertexshader",
+                          "-if", "res/ramses-shader-tools-test.fragmentshader",
+                          "-ic", "res/ramses-shader-tools-test.config",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-ot", "client",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -88,7 +141,14 @@ TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenOutputFragmentShaderI
 
 TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenOutputHashIsNotAvailable)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-ot", "client", "-of", "res/ramses-shader-tools-out.fragmentshader", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-test.vertexshader",
+                          "-if", "res/ramses-shader-tools-test.fragmentshader",
+                          "-ic", "res/ramses-shader-tools-test.config",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-ot", "client",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -97,7 +157,15 @@ TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenOutputHashIsNotAvaila
 
 TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenInputVertexShaderDoesNotExist)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-nonexist.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-of", "res/ramses-shader-tools-out.fragmentshader", "-ot", "client", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-nonexist.vertexshader",
+                          "-if", "res/ramses-shader-tools-test.fragmentshader",
+                          "-ic", "res/ramses-shader-tools-test.config",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          "-ot", "client",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -106,7 +174,15 @@ TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenInputVertexShaderDoes
 
 TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenInputFragmentShaderDoesNotExist)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-nonexist.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-of", "res/ramses-shader-tools-out.fragmentshader", "-ot", "client", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-test.vertexshader",
+                          "-if", "res/ramses-shader-tools-nonexist.fragmentshader",
+                          "-ic", "res/ramses-shader-tools-test.config",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          "-ot", "client",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -115,7 +191,15 @@ TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenInputFragmentShaderDo
 
 TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenInputEffectConfigDoesNotExist)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-nonexist.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-of", "res/ramses-shader-tools-out.fragmentshader", "-ot", "client", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-test.vertexshader",
+                          "-if", "res/ramses-shader-tools-test.fragmentshader",
+                          "-ic", "res/ramses-shader-tools-nonexist.config",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          "-ot", "client",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -124,7 +208,15 @@ TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenInputEffectConfigDoes
 
 TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWheInputEffectConfigFileIsNotValid)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-invalid-attribute-semantic-invalid-keyword.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-ot", "client", "-of", "res/ramses-shader-tools-out.fragmentshader", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-test.vertexshader",
+                          "-if", "res/ramses-shader-tools-test.fragmentshader",
+                          "-ic", "res/ramses-shader-tools-invalid-attribute-semantic-invalid-keyword.config",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-ot", "client",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -133,7 +225,14 @@ TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWheInputEffectConfigFileI
 
 TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenEffectIdTypeMissing)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-of", "res/ramses-shader-tools-out.fragmentshader", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-test.vertexshader",
+                          "-if", "res/ramses-shader-tools-test.fragmentshader",
+                          "-ic", "res/ramses-shader-tools-test.config",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -142,7 +241,15 @@ TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenEffectIdTypeMissing)
 
 TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenEffectIdTypeUnknown)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-of", "res/ramses-shader-tools-out.fragmentshader", "-ot", "foobar", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-test.vertexshader",
+                          "-if", "res/ramses-shader-tools-test.fragmentshader",
+                          "-ic", "res/ramses-shader-tools-test.config",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          "-ot", "foobar",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;
@@ -152,7 +259,15 @@ TEST(ARamsesShaderFromGLSLShaderArguments, reportsErrorWhenEffectIdTypeUnknown)
 TEST(ARamsesShaderFromGLSLShaderArguments, supportsNecessaryEffectIdTypes)
 {
     {
-        const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-of", "res/ramses-shader-tools-out.fragmentshader", "-ot", "client", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+        const char* argv[] = {"program.exe",
+                              "-iv", "res/ramses-shader-tools-test.vertexshader",
+                              "-if", "res/ramses-shader-tools-test.fragmentshader",
+                              "-ic", "res/ramses-shader-tools-test.config",
+                              "-ov", "res/ramses-shader-tools-out.vertexshader",
+                              "-of", "res/ramses-shader-tools-out.fragmentshader",
+                              "-ot", "client",
+                              "-oe", "res/ramses-shader-tools-out.hash",
+                              nullptr};
         int argc = sizeof(argv) / sizeof(char*) - 1;
 
         RamsesShaderFromGLSLShaderArguments arguments;
@@ -160,7 +275,15 @@ TEST(ARamsesShaderFromGLSLShaderArguments, supportsNecessaryEffectIdTypes)
         EXPECT_EQ(EEffectIdType_Client, arguments.getOutEffectIDType());
     }
     {
-        const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-of", "res/ramses-shader-tools-out.fragmentshader", "-ot", "renderer", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+        const char* argv[] = {"program.exe",
+                              "-iv", "res/ramses-shader-tools-test.vertexshader",
+                              "-if", "res/ramses-shader-tools-test.fragmentshader",
+                              "-ic", "res/ramses-shader-tools-test.config",
+                              "-ov", "res/ramses-shader-tools-out.vertexshader",
+                              "-of", "res/ramses-shader-tools-out.fragmentshader",
+                              "-ot", "renderer",
+                              "-oe", "res/ramses-shader-tools-out.hash",
+                              nullptr};
         int argc = sizeof(argv) / sizeof(char*) - 1;
 
         RamsesShaderFromGLSLShaderArguments arguments;
@@ -171,7 +294,15 @@ TEST(ARamsesShaderFromGLSLShaderArguments, supportsNecessaryEffectIdTypes)
 
 TEST(ARamsesShaderFromGLSLShaderArguments, hasDefaultShaderName)
 {
-    const char* argv[] = { "program.exe", "-iv", "res/ramses-shader-tools-test.vertexshader", "-if", "res/ramses-shader-tools-test.fragmentshader", "-ic", "res/ramses-shader-tools-test.config", "-ov", "res/ramses-shader-tools-out.vertexshader", "-of", "res/ramses-shader-tools-out.fragmentshader", "-ot", "client", "-oe", "res/ramses-shader-tools-out.hash", nullptr };
+    const char* argv[] = {"program.exe",
+                          "-iv", "res/ramses-shader-tools-test.vertexshader",
+                          "-if", "res/ramses-shader-tools-test.fragmentshader",
+                          "-ic", "res/ramses-shader-tools-test.config",
+                          "-ov", "res/ramses-shader-tools-out.vertexshader",
+                          "-of", "res/ramses-shader-tools-out.fragmentshader",
+                          "-ot", "client",
+                          "-oe", "res/ramses-shader-tools-out.hash",
+                          nullptr};
     int argc = sizeof(argv) / sizeof(char*) - 1;
 
     RamsesShaderFromGLSLShaderArguments arguments;

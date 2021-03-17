@@ -96,6 +96,7 @@ namespace ramses
 
     RamsesClientImpl::~RamsesClientImpl()
     {
+        LOG_INFO(CONTEXT_CLIENT, "RamsesClientImpl::~RamsesClientImpl");
         m_deleteSceneQueue.disableAcceptingTasksAfterExecutingCurrentQueue();
         m_loadFromFileTaskQueue.disableAcceptingTasksAfterExecutingCurrentQueue();
 
@@ -105,7 +106,7 @@ namespace ramses
         {
             delete loadStatus.scene;
         }
-
+        LOG_INFO(CONTEXT_CLIENT, "RamsesClientImpl::~RamsesClientImpl deleting scenes");
         for (auto& scene : m_scenes)
         {
             delete scene;
@@ -568,37 +569,32 @@ namespace ramses
         return m_framework;
     }
 
-    status_t RamsesClientImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t RamsesClientImpl::validate() const
     {
-        status_t status = RamsesObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = RamsesObjectImpl::validate();
 
-        const status_t scenesStatus = validateScenes(indent, visitedObjects);
+        const status_t scenesStatus = validateScenes();
         if (StatusOK != scenesStatus)
-        {
             status = scenesStatus;
-        }
 
         return status;
     }
 
-    status_t RamsesClientImpl::validateScenes(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t RamsesClientImpl::validateScenes() const
     {
         ramses_internal::PlatformGuard g(m_clientLock);
 
         status_t status = StatusOK;
         for(const auto& scene : m_scenes)
         {
-            const status_t sceneStatus = addValidationOfDependentObject(indent, scene->impl, visitedObjects);
+            const status_t sceneStatus = addValidationOfDependentObject(scene->impl);
             if (StatusOK != sceneStatus)
-            {
                 status = sceneStatus;
-            }
         }
 
         ramses_internal::StringOutputStream msg;
         msg << "Contains " << m_scenes.size() << " scenes";
-        addValidationMessage(EValidationSeverity_Info, indent, msg.c_str());
+        addValidationMessage(EValidationSeverity_Info, ramses_internal::String{ msg.release() });
 
         return status;
     }

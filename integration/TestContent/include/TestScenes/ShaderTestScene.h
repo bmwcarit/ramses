@@ -25,7 +25,8 @@ namespace ramses_internal
             OPTIMIZED_INPUT,
             UNIFORM_WITH_SAME_NAME_IN_BOTH_STAGES,
             STRUCT_UNIFORM,
-            TEXTURE_SIZE
+            TEXTURE_SIZE,
+            BOOL_UNIFORM,
         };
 
     private:

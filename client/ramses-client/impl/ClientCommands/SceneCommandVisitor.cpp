@@ -44,11 +44,10 @@ namespace ramses_internal
 
     void SceneCommandVisitor::operator()(const SceneCommandValidationRequest& cmd)
     {
-        if (0 == cmd.optionalObjectName.size())
+        if (cmd.optionalObjectName.empty())
         {
             // no object, validate whole scene
-            ramses::StatusObjectImpl::StatusObjectSet visitedObjects;
-            m_scene.validate(0u, visitedObjects);
+            m_scene.validate();
             LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Validation:  " << m_scene.getValidationReport(cmd.severity));
         }
         else
@@ -59,7 +58,7 @@ namespace ramses_internal
                 LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Validation:  " << ro->getValidationReport(cmd.severity));
             }
             else
-                LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Validation could not find request object with name: " << cmd.optionalObjectName);
+                LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Validation could not find requested object with name: " << cmd.optionalObjectName);
         }
     }
 

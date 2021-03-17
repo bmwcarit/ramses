@@ -160,6 +160,11 @@ namespace ramses_internal
         return m_renderer.getDisplayController(display).getRenderBackend().getEmbeddedCompositor();
     }
 
+    bool DisplayBundle::hasSystemCompositorController() const
+    {
+        return m_renderer.hasSystemCompositorController();
+    }
+
     void DisplayBundle::updateTiming()
     {
         const auto lastFrameStart = m_frameTimer.getFrameStartTime();

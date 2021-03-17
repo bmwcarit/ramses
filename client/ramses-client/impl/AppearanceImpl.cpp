@@ -303,27 +303,13 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t AppearanceImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t AppearanceImpl::validate() const
     {
-        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
-
-        const status_t effectStatus = validateEffect(indent, visitedObjects);
-        if (StatusOK != effectStatus)
-        {
-            status = effectStatus;
-        }
-
-        const status_t uniformsStatus = validateUniforms(indent, visitedObjects);
-        if (StatusOK != uniformsStatus)
-        {
-            status = uniformsStatus;
-        }
-
-        return status;
+        const auto status = SceneObjectImpl::validate();
+        return std::max(status, std::max(validateEffect(), validateUniforms()));
     }
 
-    status_t AppearanceImpl::validateEffect(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t AppearanceImpl::validateEffect() const
     {
         ObjectIteratorImpl iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_Effect);
         RamsesObject* ramsesObject = iter.getNext();
@@ -331,18 +317,15 @@ namespace ramses
         {
             const Effect& effect = RamsesObjectTypeUtils::ConvertTo<Effect>(*ramsesObject);
             if (&effect.impl == m_effectImpl)
-            {
-                return addValidationOfDependentObject(indent, *m_effectImpl, visitedObjects);
-            }
+                return addValidationOfDependentObject(*m_effectImpl);
 
             ramsesObject = iter.getNext();
         }
 
-        addValidationMessage(EValidationSeverity_Error, indent, "Appearance is referring to an invalid Effect");
-        return getValidationErrorStatus();
+        return addValidationMessage(EValidationSeverity_Error, "Appearance is referring to an invalid Effect");
     }
 
-    status_t AppearanceImpl::validateUniforms(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t AppearanceImpl::validateUniforms() const
     {
         status_t status = StatusOK;
         const ramses_internal::DataLayout& layout = getIScene().getDataLayout(m_uniformLayout);
@@ -351,27 +334,18 @@ namespace ramses
         {
             const ramses_internal::EDataType dataType = layout.getField(fieldHandle).dataType;
             if (!IsTextureSamplerType(dataType))
-            {
                 continue;
-            }
 
             const ramses_internal::TextureSamplerHandle samplerHandle = getIScene().getDataTextureSamplerHandle(m_uniformInstance, fieldHandle);
             if (!getIScene().isTextureSamplerAllocated(samplerHandle))
-            {
-                addValidationMessage(EValidationSeverity_Error, indent, "Appearance is using a Texture Sampler that does not exist");
-                return getValidationErrorStatus();
-            }
+                return addValidationMessage(EValidationSeverity_Error, "Appearance is using a Texture Sampler that does not exist");
 
             RamsesObjectRegistryIterator iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_TextureSampler);
             while (const TextureSampler* sampler = iter.getNext<TextureSampler>())
             {
                 if (samplerHandle == sampler->impl.getTextureSamplerHandle())
                 {
-                    const status_t samplerStatus = addValidationOfDependentObject(indent, sampler->impl, visitedObjects);
-                    if (StatusOK != samplerStatus)
-                    {
-                        status = samplerStatus;
-                    }
+                    status = std::max(status, addValidationOfDependentObject(sampler->impl));
                     break;
                 }
             }
@@ -383,10 +357,7 @@ namespace ramses
             {
                 const ramses_internal::DataInstanceHandle boundInstance = getIScene().getDataReference(m_uniformInstance, ramses_internal::DataFieldHandle(bindableInput.key));
                 if (!getIScene().isDataInstanceAllocated(boundInstance))
-                {
-                    addValidationMessage(EValidationSeverity_Error, indent, "Appearance's input is bound to a DataObject that does not exist");
-                    return getValidationErrorStatus();
-                }
+                    return addValidationMessage(EValidationSeverity_Error, "Appearance's input is bound to a DataObject that does not exist");
 
                 ObjectIteratorImpl iterator(getSceneImpl().getObjectRegistry(), ERamsesObjectType_DataObject);
                 RamsesObject* ramsesObject = nullptr;
@@ -395,11 +366,7 @@ namespace ramses
                     const DataObject& dataObject = RamsesObjectTypeUtils::ConvertTo<DataObject>(*ramsesObject);
                     if (boundInstance == dataObject.impl.getDataReference())
                     {
-                        const status_t dataObjectStatus = addValidationOfDependentObject(indent, dataObject.impl, visitedObjects);
-                        if (StatusOK != dataObjectStatus)
-                        {
-                            status = dataObjectStatus;
-                        }
+                        status = std::max(status, addValidationOfDependentObject(dataObject.impl));
                         break;
                     }
                 }

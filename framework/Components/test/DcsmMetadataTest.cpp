@@ -34,6 +34,7 @@ namespace ramses_internal
             filledDm.setCarModelVisibility(true);
             filledDm.setExclusiveBackground(true);
             filledDm.setStreamID(49);
+            filledDm.setContentFlippedVertically(true);
         }
 
         DcsmMetadata serializeDeserialize(const DcsmMetadata& ref)
@@ -91,6 +92,7 @@ namespace ramses_internal
         EXPECT_FALSE(dm.hasCarModelVisibility());
         EXPECT_FALSE(dm.hasExclusiveBackground());
         EXPECT_FALSE(dm.hasStreamID());
+        EXPECT_FALSE(dm.hasContentFlippedVertically());
     }
 
     TEST_F(ADcsmMetadata, canSetGetPreviewImagePngHeader)
@@ -246,6 +248,14 @@ namespace ramses_internal
         dm.setStreamID(123);
         EXPECT_TRUE(dm.hasStreamID());
         EXPECT_EQ(123, dm.getStreamID());
+    }
+
+    TEST_F(ADcsmMetadata, canSetGeContentFlippedVertically)
+    {
+        DcsmMetadata dm;
+        dm.setContentFlippedVertically(true);
+        EXPECT_TRUE(dm.hasContentFlippedVertically());
+        EXPECT_EQ(true, dm.getContentFlippedVertically());
     }
 
     TEST_F(ADcsmMetadata, canCompare)
@@ -559,6 +569,20 @@ namespace ramses_internal
         EXPECT_TRUE(dm.hasStreamID());
         EXPECT_EQ(1, dm.getStreamID());
     }
+
+    TEST_F(ADcsmMetadata, canUpdateContentFlippedVerticallyFromOther)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setContentFlippedVertically(false));
+
+        DcsmMetadata otherDm;
+        EXPECT_TRUE(otherDm.setContentFlippedVertically(true));
+
+        dm.updateFromOther(otherDm);
+        EXPECT_TRUE(dm.hasContentFlippedVertically());
+        EXPECT_TRUE(dm.getContentFlippedVertically());
+    }
+
     TEST_F(ADcsmMetadata, canUpdateEmptyWithValues)
     {
         DcsmMetadata otherDm;
@@ -572,6 +596,7 @@ namespace ramses_internal
         EXPECT_TRUE(otherDm.setCarModelVisibility(true));
         EXPECT_TRUE(otherDm.setExclusiveBackground(true));
         EXPECT_TRUE(otherDm.setStreamID(45));
+        EXPECT_TRUE(otherDm.setContentFlippedVertically(true));
 
         DcsmMetadata dm;
         dm.updateFromOther(otherDm);
@@ -596,6 +621,8 @@ namespace ramses_internal
         EXPECT_TRUE(dm.getExclusiveBackground());
         EXPECT_TRUE(dm.hasStreamID());
         EXPECT_EQ(45, dm.getStreamID());
+        EXPECT_TRUE(dm.hasContentFlippedVertically());
+        EXPECT_TRUE(dm.getContentFlippedVertically());
     }
 
     TEST_F(ADcsmMetadata, canSkipDeserializeUnknownTypes)
@@ -645,6 +672,12 @@ namespace ramses_internal
         // ensure log contains streamid
         const std::string s = fmt::to_string(filledDm);
         EXPECT_NE(s.find("49"), std::string::npos);
+    }
+
+    TEST_F(ADcsmMetadata, containsContentFlippedVerticallywhenLogged)
+    {
+        const std::string s = fmt::to_string(filledDm);
+        EXPECT_NE(s.find("contentFlippedVertically:true"), std::string::npos);
     }
 
     TEST_F(ADcsmMetadata, containsFullSetOfCarviewWhenLogged)

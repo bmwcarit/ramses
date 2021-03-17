@@ -108,13 +108,18 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RamsesObjectImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t RamsesObjectImpl::validate() const
     {
-        const status_t status = StatusObjectImpl::validate(indent, visitedObjects);
-        ramses_internal::StringOutputStream msg;
-        msg << RamsesObjectTypeUtils::GetRamsesObjectTypeName(getType()) << ": '" << getName() << "'";
-        addValidationObjectName(indent, msg.c_str());
+        const status_t status = StatusObjectImpl::validate();
+        ramses_internal::String message{ fmt::format("{} '{}'", RamsesObjectTypeUtils::GetRamsesObjectTypeName(getType()), getName()) };
+        StatusObjectImpl::addValidationMessage(EValidationSeverity_Info, std::move(message));
 
         return status;
+    }
+
+    status_t RamsesObjectImpl::addValidationMessage(EValidationSeverity severity, ramses_internal::String message) const
+    {
+        message = fmt::format("{} '{}': {}", RamsesObjectTypeUtils::GetRamsesObjectTypeName(getType()), getName(), message.stdRef());
+        return StatusObjectImpl::addValidationMessage(severity, std::move(message));
     }
 }

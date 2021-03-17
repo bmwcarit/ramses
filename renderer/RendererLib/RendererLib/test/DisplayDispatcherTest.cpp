@@ -98,6 +98,16 @@ namespace ramses_internal
             EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(displayHandle), pushAndConsumeCommands(_)).Times(0);
         }
 
+        void simulateSceneStateEventFromDisplay(DisplayHandle display, SceneId sceneId, RendererSceneState state)
+        {
+            EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display), dispatchSceneControlEvents(_)).WillOnce(Invoke([sceneId, state](auto& evts)
+            {
+                RendererEvent evt{ ERendererEventType::SceneStateChanged, sceneId };
+                evt.state = state;
+                evts.push_back(std::move(evt));
+            }));
+        }
+
         void expectEvents(const RendererEventVector& expectedEvts, const RendererEventVector& evts)
         {
             ASSERT_EQ(expectedEvts.size(), evts.size());
@@ -377,133 +387,13 @@ namespace ramses_internal
 
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_)).WillOnce(Invoke([](auto& evts)
         {
-            evts.push_back(RendererEvent{ ERendererEventType::SceneStateChanged });
+            evts.push_back(RendererEvent{ ERendererEventType::SceneDataSlotConsumerCreated });
         }));
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_)).WillOnce(Invoke([](auto& evts)
         {
             evts.push_back(RendererEvent{ ERendererEventType::SceneDataLinked });
         }));
-        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged, ERendererEventType::SceneDataLinked });
-
-        // no more events
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_));
-        dispatchAndExpectSceneControlEvents({});
-    }
-
-    TEST_F(ADisplayDispatcher, rendererEventsAsResultOfBroadcastCommandAreEmittedOnlyOnceFromFirstDisplay)
-    {
-        constexpr DisplayHandle display1{ 1u };
-        constexpr DisplayHandle display2{ 2u };
-        createDisplay(display1);
-        createDisplay(display2);
-
-        // dispatch after both displays emit
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchRendererEvents(_)).WillOnce(Invoke([](auto& evts)
-        {
-            evts.push_back(RendererEvent{ ERendererEventType::ScenePublished });
-            evts.push_back(RendererEvent{ ERendererEventType::SceneUnpublished });
-        }));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchRendererEvents(_)).WillOnce(Invoke([](auto& evts)
-        {
-            evts.push_back(RendererEvent{ ERendererEventType::ScenePublished });
-            evts.push_back(RendererEvent{ ERendererEventType::SceneUnpublished });
-        }));
-        dispatchAndExpectRendererEvents({ ERendererEventType::ScenePublished, ERendererEventType::SceneUnpublished });
-
-        // dispatch after 1st display emits
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchRendererEvents(_)).WillOnce(Invoke([](auto& evts)
-        {
-            evts.push_back(RendererEvent{ ERendererEventType::ScenePublished });
-            evts.push_back(RendererEvent{ ERendererEventType::SceneUnpublished });
-        }));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchRendererEvents(_));
-        dispatchAndExpectRendererEvents({ ERendererEventType::ScenePublished, ERendererEventType::SceneUnpublished });
-        // 2nd display emits
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchRendererEvents(_));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchRendererEvents(_)).WillOnce(Invoke([](auto& evts)
-        {
-            evts.push_back(RendererEvent{ ERendererEventType::ScenePublished });
-            evts.push_back(RendererEvent{ ERendererEventType::SceneUnpublished });
-        }));
-        dispatchAndExpectRendererEvents({});
-
-        // dispatch after 2nd display emits before 1st display
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchRendererEvents(_));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchRendererEvents(_)).WillOnce(Invoke([](auto& evts)
-        {
-            evts.push_back(RendererEvent{ ERendererEventType::ScenePublished });
-            evts.push_back(RendererEvent{ ERendererEventType::SceneUnpublished });
-        }));
-        dispatchAndExpectRendererEvents({});
-        // 1st display emits
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchRendererEvents(_)).WillOnce(Invoke([](auto& evts)
-        {
-            evts.push_back(RendererEvent{ ERendererEventType::ScenePublished });
-            evts.push_back(RendererEvent{ ERendererEventType::SceneUnpublished });
-        }));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchRendererEvents(_));
-        dispatchAndExpectRendererEvents({ ERendererEventType::ScenePublished, ERendererEventType::SceneUnpublished });
-
-        // no more events
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchRendererEvents(_));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchRendererEvents(_));
-        dispatchAndExpectRendererEvents({});
-    }
-
-    TEST_F(ADisplayDispatcher, sceneControlEventsAsResultOfBroadcastCommandAreEmittedOnlyOnceFromFirstDisplay)
-    {
-        constexpr DisplayHandle display1{ 1u };
-        constexpr DisplayHandle display2{ 2u };
-        createDisplay(display1);
-        createDisplay(display2);
-
-        // dispatch after both displays emit
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_)).WillOnce(Invoke([](auto& evts)
-        {
-            evts.push_back(RendererEvent{ ERendererEventType::ScenePublished });
-            evts.push_back(RendererEvent{ ERendererEventType::SceneUnpublished });
-        }));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_)).WillOnce(Invoke([](auto& evts)
-        {
-            evts.push_back(RendererEvent{ ERendererEventType::ScenePublished });
-            evts.push_back(RendererEvent{ ERendererEventType::SceneUnpublished });
-        }));
-        dispatchAndExpectSceneControlEvents({ ERendererEventType::ScenePublished, ERendererEventType::SceneUnpublished });
-
-        // dispatch after 1st display emits
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_)).WillOnce(Invoke([](auto& evts)
-        {
-            evts.push_back(RendererEvent{ ERendererEventType::ScenePublished });
-            evts.push_back(RendererEvent{ ERendererEventType::SceneUnpublished });
-        }));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_));
-        dispatchAndExpectSceneControlEvents({ ERendererEventType::ScenePublished, ERendererEventType::SceneUnpublished });
-        // 2nd display emits
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_)).WillOnce(Invoke([](auto& evts)
-        {
-            evts.push_back(RendererEvent{ ERendererEventType::ScenePublished });
-            evts.push_back(RendererEvent{ ERendererEventType::SceneUnpublished });
-        }));
-        dispatchAndExpectSceneControlEvents({});
-
-        // dispatch after 2nd display emits before 1st display
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_)).WillOnce(Invoke([](auto& evts)
-        {
-            evts.push_back(RendererEvent{ ERendererEventType::ScenePublished });
-            evts.push_back(RendererEvent{ ERendererEventType::SceneUnpublished });
-        }));
-        dispatchAndExpectSceneControlEvents({});
-        // 1st display emits
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_)).WillOnce(Invoke([](auto& evts)
-        {
-            evts.push_back(RendererEvent{ ERendererEventType::ScenePublished });
-            evts.push_back(RendererEvent{ ERendererEventType::SceneUnpublished });
-        }));
-        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_));
-        dispatchAndExpectSceneControlEvents({ ERendererEventType::ScenePublished, ERendererEventType::SceneUnpublished });
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneDataSlotConsumerCreated, ERendererEventType::SceneDataLinked });
 
         // no more events
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_));
@@ -546,7 +436,7 @@ namespace ramses_internal
 
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_)).WillOnce(Invoke([](auto& evts)
         {
-            evts.push_back(RendererEvent{ ERendererEventType::SceneStateChanged });
+            evts.push_back(RendererEvent{ ERendererEventType::SceneDataSlotConsumerCreated });
         }));
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_)).WillOnce(Invoke([](auto& evts)
         {
@@ -555,7 +445,7 @@ namespace ramses_internal
 
         m_displayDispatcher.injectSceneControlEvent(RendererEvent{ ERendererEventType::StreamSurfaceAvailable });
 
-        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged, ERendererEventType::SceneDataLinked, ERendererEventType::StreamSurfaceAvailable });
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneDataSlotConsumerCreated, ERendererEventType::SceneDataLinked, ERendererEventType::StreamSurfaceAvailable });
 
         // no more events
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_));
@@ -664,5 +554,263 @@ namespace ramses_internal
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), enableContext());
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), doOneLoop(ELoopMode::UpdateAndRender, _));
         m_displayDispatcher.doOneLoop();
+    }
+
+    TEST_F(ADisplayDispatcher, sceneAvailableEventIsEmittedExactlyOnce)
+    {
+        constexpr SceneId scene1{ 123u };
+        constexpr DisplayHandle display1{ 1u };
+        constexpr DisplayHandle display2{ 2u };
+
+        createDisplay(display1);
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
+        expectCommandPushed(display1, RendererCommand::ScenePublished{});
+        m_displayDispatcher.dispatchCommands();
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Available);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        // will expect this command to be pushed to any new display
+        m_displayDispatcher.m_expectedBroadcastCommandsForNewDisplays.push_back(RendererCommand::ScenePublished{ scene1, {} });
+
+        createDisplay(display2);
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_)); // nothing from display1
+        simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Available);
+        // expect no redundant state change emitted
+        dispatchAndExpectSceneControlEvents({});
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Unavailable);
+        simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Unavailable);
+        // unavailable emitted also just once
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        // no more events
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_));
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_));
+        dispatchAndExpectSceneControlEvents({});
+    }
+
+    TEST_F(ADisplayDispatcher, sceneAvailableEventIsEmittedExactlyOnce_withOwnershipChange)
+    {
+        constexpr SceneId scene1{ 123u };
+        constexpr DisplayHandle display1{ 1u };
+        constexpr DisplayHandle display2{ 2u };
+
+        createDisplay(display1);
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
+        m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene1, display2 });
+        expectCommandPushed(display1, RendererCommand::ScenePublished{});
+        m_displayDispatcher.dispatchCommands();
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Available);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        // will expect this command to be pushed to any new display
+        m_displayDispatcher.m_expectedBroadcastCommandsForNewDisplays.push_back(RendererCommand::ScenePublished{ scene1, {} });
+        m_displayDispatcher.m_expectedCommandsForNextCreatedDisplay.push_back(RendererCommand::SetSceneMapping{});
+
+        // change 'ownership' of scene right before 2nd display creation
+        m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene1, display1 });
+        expectCommandPushed(display1, RendererCommand::SetSceneMapping{});
+        m_displayDispatcher.dispatchCommands();
+        createDisplay(display2);
+
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_)); // nothing from display1
+        simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Available);
+        // expect no redundant state change emitted
+        dispatchAndExpectSceneControlEvents({});
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Unavailable);
+        simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Unavailable);
+        // unavailable emitted also just once
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        // no more events
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_));
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_));
+        dispatchAndExpectSceneControlEvents({});
+    }
+
+    TEST_F(ADisplayDispatcher, sceneAvailableEventIsEmittedExactlyOnce_withLateOwnershipSet)
+    {
+        constexpr SceneId scene1{ 123u };
+        constexpr DisplayHandle display1{ 1u };
+        constexpr DisplayHandle display2{ 2u };
+
+        createDisplay(display1);
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
+        expectCommandPushed(display1, RendererCommand::ScenePublished{});
+        m_displayDispatcher.dispatchCommands();
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Available);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        // will expect this command to be pushed to any new display
+        m_displayDispatcher.m_expectedBroadcastCommandsForNewDisplays.push_back(RendererCommand::ScenePublished{ scene1, {} });
+
+        createDisplay(display2);
+
+        // change 'ownership' of scene after 2nd display creation
+        m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene1, display1 });
+        expectCommandPushed(display1, RendererCommand::SetSceneMapping{});
+        m_displayDispatcher.dispatchCommands();
+
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_)); // nothing from display1
+        simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Available);
+        // expect no redundant state change emitted
+        dispatchAndExpectSceneControlEvents({});
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Unavailable);
+        simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Unavailable);
+        // unavailable emitted also just once
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        // no more events
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_));
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_));
+        dispatchAndExpectSceneControlEvents({});
+    }
+
+    TEST_F(ADisplayDispatcher, sceneAvailableEventIsEmittedAgainAfterSceneRepublishedEvenIfOwningDisplayDestroyed)
+    {
+        constexpr SceneId scene1{ 123u };
+        constexpr DisplayHandle display1{ 1u };
+        constexpr DisplayHandle display2{ 2u };
+
+        createDisplay(display1);
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
+        expectCommandPushed(display1, RendererCommand::ScenePublished{});
+        m_displayDispatcher.dispatchCommands();
+        m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene1, display1 });
+        expectCommandPushed(display1, RendererCommand::SetSceneMapping{});
+        m_displayDispatcher.dispatchCommands();
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Available);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        // will expect this command to be pushed to any new display
+        m_displayDispatcher.m_expectedBroadcastCommandsForNewDisplays.push_back(RendererCommand::ScenePublished{ scene1, {} });
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Unavailable);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        destroyDisplay(display1);
+
+        createDisplay(display2);
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
+        expectCommandPushed(display2, RendererCommand::ScenePublished{});
+        m_displayDispatcher.dispatchCommands();
+
+        simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Available);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Unavailable);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        // no more events
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_));
+        dispatchAndExpectSceneControlEvents({});
+    }
+
+    TEST_F(ADisplayDispatcher, canHandleAvailableUnavailableOnTwoDisplays)
+    {
+        constexpr SceneId scene1{ 123u };
+        constexpr DisplayHandle display1{ 1u };
+        constexpr DisplayHandle display2{ 2u };
+
+        createDisplay(display1);
+        createDisplay(display2);
+
+        m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene1, display2 });
+        expectCommandPushed(display2, RendererCommand::SetSceneMapping{});
+        m_displayDispatcher.dispatchCommands();
+
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
+        expectCommandPushed(display1, RendererCommand::ScenePublished{});
+        expectCommandPushed(display2, RendererCommand::ScenePublished{});
+        m_displayDispatcher.dispatchCommands();
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Available);
+        simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Available);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Unavailable);
+        simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Unavailable);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        // no more events
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_));
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_));
+        dispatchAndExpectSceneControlEvents({});
+    }
+
+    TEST_F(ADisplayDispatcher, emitsSceneStateEventsCorrectlyForTwoScenesOnTwoDisplays)
+    {
+        constexpr SceneId scene1{ 123u };
+        constexpr SceneId scene2{ 124u };
+        constexpr DisplayHandle display1{ 1u };
+        constexpr DisplayHandle display2{ 2u };
+
+        createDisplay(display1);
+        createDisplay(display2);
+
+        // available
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
+        expectCommandPushed(display1, RendererCommand::ScenePublished{});
+        expectCommandPushed(display2, RendererCommand::ScenePublished{});
+        m_displayDispatcher.dispatchCommands();
+
+        m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene2, {} });
+        expectCommandPushed(display1, RendererCommand::ScenePublished{});
+        expectCommandPushed(display2, RendererCommand::ScenePublished{});
+        m_displayDispatcher.dispatchCommands();
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Available);
+        simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Available);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+        simulateSceneStateEventFromDisplay(display1, scene2, RendererSceneState::Available);
+        simulateSceneStateEventFromDisplay(display2, scene2, RendererSceneState::Available);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        // ready
+        m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene1, display1 });
+        expectCommandPushed(display1, RendererCommand::SetSceneMapping{});
+        m_displayDispatcher.dispatchCommands();
+
+        m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene2, display2 });
+        expectCommandPushed(display2, RendererCommand::SetSceneMapping{});
+        m_displayDispatcher.dispatchCommands();
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Ready);
+        simulateSceneStateEventFromDisplay(display2, scene2, RendererSceneState::Ready);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged, ERendererEventType::SceneStateChanged });
+
+        // rendered
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Rendered);
+        simulateSceneStateEventFromDisplay(display2, scene2, RendererSceneState::Rendered);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged, ERendererEventType::SceneStateChanged });
+
+        // unavailable
+        m_commandBuffer.enqueueCommand(RendererCommand::SceneUnpublished{ scene1 });
+        expectCommandPushed(display1, RendererCommand::SceneUnpublished{});
+        expectCommandPushed(display2, RendererCommand::SceneUnpublished{});
+        m_displayDispatcher.dispatchCommands();
+
+        m_commandBuffer.enqueueCommand(RendererCommand::SceneUnpublished{ scene2 });
+        expectCommandPushed(display1, RendererCommand::SceneUnpublished{});
+        expectCommandPushed(display2, RendererCommand::SceneUnpublished{});
+        m_displayDispatcher.dispatchCommands();
+
+        simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Unavailable);
+        simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Unavailable);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+        simulateSceneStateEventFromDisplay(display1, scene2, RendererSceneState::Unavailable);
+        simulateSceneStateEventFromDisplay(display2, scene2, RendererSceneState::Unavailable);
+        dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
+
+        // no more events
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_));
+        EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display2), dispatchSceneControlEvents(_));
+        dispatchAndExpectSceneControlEvents({});
     }
 }

@@ -32,7 +32,10 @@ namespace ramses_internal
             WidgetCarModelView = 7,
             WidgetCarModelVisibility = 8,
             WidgetExclusiveBackground = 9,
-            WidgetStreamID = 10
+            WidgetStreamID = 10,
+
+            // NOTE: Add new metadata after this one counting up for 27.0.100 and upwards
+            ContentFlippedVertically = 1001,
         };
 
         constexpr const uint32_t CurrentMetadataVersion = 1;
@@ -54,7 +57,8 @@ namespace ramses_internal
             !m_hasCarModelView &&
             !m_hasCarModelVisibility &&
             !m_hasExclusiveBackground &&
-            !m_hasStreamID;
+            !m_hasStreamID &&
+            !m_hasContentFlippedVertically;
     }
 
     std::vector<Byte> DcsmMetadata::toBinary() const
@@ -70,7 +74,8 @@ namespace ramses_internal
             (m_hasCarModelView ? 1 : 0) +
             (m_hasCarModelVisibility ? 1 : 0) +
             (m_hasExclusiveBackground ? 1 : 0) +
-            (m_hasStreamID ? 1 : 0);
+            (m_hasStreamID ? 1 : 0) +
+            (m_hasContentFlippedVertically ? 1 : 0);
         os << CurrentMetadataVersion
            << numEntries;
 
@@ -160,6 +165,14 @@ namespace ramses_internal
             os << DcsmMetadataType::WidgetStreamID
                 << size
                 << static_cast<int32_t>(m_streamID);
+        }
+        if (m_hasContentFlippedVertically)
+        {
+            constexpr uint32_t size = static_cast<uint32_t>(sizeof(int32_t));
+            const int32_t state = (m_contentFlippedVertically ? 1 : 0);
+            os << DcsmMetadataType::ContentFlippedVertically
+               << size
+               << state;
         }
         return os.release();
     }
@@ -259,6 +272,14 @@ namespace ramses_internal
                 is >> m_streamID;
                 break;
             }
+            case DcsmMetadataType::ContentFlippedVertically:
+            {
+                m_hasContentFlippedVertically = true;
+                int32_t state = 0;
+                is >> state;
+                m_contentFlippedVertically = (state == 0) ? false : true;
+                break;
+            }
             default:
                 LOG_WARN(CONTEXT_DCSM, "DcsmMetadata::fromBinary: skip unknown type " << static_cast<uint32_t>(type) << ", size " << size);
                 is.skip(size);
@@ -321,6 +342,11 @@ namespace ramses_internal
         {
             m_hasStreamID = true;
             m_streamID = other.m_streamID;
+        }
+        if (other.m_hasContentFlippedVertically)
+        {
+            m_hasContentFlippedVertically = true;
+            m_contentFlippedVertically = other.m_contentFlippedVertically;
         }
     }
 
@@ -446,6 +472,15 @@ namespace ramses_internal
         return true;
     }
 
+    bool DcsmMetadata::setContentFlippedVertically(bool state)
+    {
+        LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::setContentFlippedVertically: " << state);
+
+        m_contentFlippedVertically = state;
+        m_hasContentFlippedVertically = true;
+        return true;
+    }
+
     bool DcsmMetadata::hasPreviewImagePng() const
     {
         return m_hasPreviewImagePng;
@@ -494,6 +529,11 @@ namespace ramses_internal
     bool DcsmMetadata::hasStreamID() const
     {
         return m_hasStreamID;
+    }
+
+    bool DcsmMetadata::hasContentFlippedVertically() const
+    {
+        return m_hasContentFlippedVertically;
     }
 
     std::vector<unsigned char> DcsmMetadata::getPreviewImagePng() const
@@ -551,6 +591,11 @@ namespace ramses_internal
         return m_streamID;
     }
 
+    bool DcsmMetadata::getContentFlippedVertically() const
+    {
+        return m_contentFlippedVertically;
+    }
+
     bool DcsmMetadata::operator==(const DcsmMetadata& other) const
     {
         return m_hasPreviewImagePng == other.m_hasPreviewImagePng &&
@@ -573,7 +618,9 @@ namespace ramses_internal
             m_hasExclusiveBackground == other.m_hasExclusiveBackground &&
             m_exclusiveBackground == other.m_exclusiveBackground &&
             m_hasStreamID == other.m_hasStreamID &&
-            m_streamID == other.m_streamID;
+            m_streamID == other.m_streamID &&
+            m_hasContentFlippedVertically == other.m_hasContentFlippedVertically &&
+            m_contentFlippedVertically == other.m_contentFlippedVertically;
     }
 
     bool DcsmMetadata::operator!=(const DcsmMetadata& other) const

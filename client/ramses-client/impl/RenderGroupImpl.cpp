@@ -106,19 +106,18 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RenderGroupImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t RenderGroupImpl::validate() const
     {
-        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = SceneObjectImpl::validate();
 
         if (m_meshes.size() == 0u)
-        {
-            addValidationMessage(EValidationSeverity_Warning, indent, "rendergroup does not contain any meshes");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Warning, "rendergroup does not contain any meshes");
 
-        validateElements(indent, status, m_meshes, visitedObjects);
-        validateElements(indent, status, m_renderGroups, visitedObjects);
+        for (const auto& element : m_meshes)
+            status = std::max(status, addValidationOfDependentObject(*element));
+
+        for (const auto& element : m_renderGroups)
+            status = std::max(status, addValidationOfDependentObject(*element));
 
         return status;
     }
@@ -313,17 +312,5 @@ namespace ramses
         const ramses_internal::RenderGroupHandle renderGroupToRemove = (*iter)->getRenderGroupHandle();
         getIScene().removeRenderGroupFromRenderGroup(m_renderGroupHandle, renderGroupToRemove);
         m_renderGroups.erase(iter);
-    }
-
-    template <typename ELEMENT>
-    void RenderGroupImpl::validateElements(uint32_t& indent, status_t& status, const std::vector<const ELEMENT*>& elements, StatusObjectSet& visitedObjects) const
-    {
-        for(const auto& element : elements)
-        {
-            if (addValidationOfDependentObject(indent, *element, visitedObjects) != StatusOK)
-            {
-                status = getValidationErrorStatus();
-            }
-        }
     }
 }

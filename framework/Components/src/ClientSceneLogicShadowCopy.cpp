@@ -99,7 +99,7 @@ namespace ramses_internal
             else
             {
                 m_scene.getStatisticCollection().statSceneActionsSent.incCounter(sceneUpdate.actions.numberOfActions() * static_cast<UInt32>(m_subscribersActive.size()));
-                m_scenegraphSender.sendSceneUpdate(m_subscribersActive, std::move(sceneUpdate), m_sceneId, m_scenePublicationMode);
+                m_scenegraphSender.sendSceneUpdate(m_subscribersActive, std::move(sceneUpdate), m_sceneId, m_scenePublicationMode, m_scene.getStatisticCollection());
             }
         }
 

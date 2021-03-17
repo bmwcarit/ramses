@@ -180,6 +180,17 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t DisplayConfigImpl::setX11WindowHandle(unsigned long x11WindowHandle)
+    {
+        m_internalConfig.setX11WindowHandle(ramses_internal::X11WindowHandle(x11WindowHandle));
+        return StatusOK;
+    }
+
+    unsigned long DisplayConfigImpl::getX11WindowHandle() const
+    {
+        return m_internalConfig.getX11WindowHandle().getValue();
+    }
+
     status_t DisplayConfigImpl::setWindowsWindowHandle(void* hwnd)
     {
         m_internalConfig.setWindowsWindowHandle(ramses_internal::WindowsWindowHandle(hwnd));
@@ -200,5 +211,11 @@ namespace ramses
     const char* DisplayConfigImpl::getWaylandDisplay() const
     {
         return m_internalConfig.getWaylandDisplay().c_str();
+    }
+
+    status_t DisplayConfigImpl::setAsyncEffectUploadEnabled(bool enabled)
+    {
+        m_internalConfig.setAsyncEffectUploadEnabled(enabled);
+        return StatusOK;
     }
 }

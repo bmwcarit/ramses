@@ -30,6 +30,7 @@ private:
         EffectTest_ExplicitAttributeLocation,
         EffectTest_ExplicitAttributeLocationSwapped,
         EffectTest_StructUniform,
+        EffectTest_BoolUniform,
         EffectTest_TextureSize,
     };
 };

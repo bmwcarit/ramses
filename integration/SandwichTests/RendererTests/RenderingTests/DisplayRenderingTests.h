@@ -54,7 +54,8 @@ private:
         DisplayRenderingTest_RemapSceneToWarpedDisplay,
         DisplayRenderingTest_ResubscribeScene,
         DisplayRenderingTest_FramebufferWithoutDepthAndStencil,
-        DisplayRenderingTest_FramebufferWithoutStencil
+        DisplayRenderingTest_FramebufferWithoutStencil,
+        DisplayRenderingTest_AsyncEffectUploadDisabled
     };
 
     static constexpr uint32_t DisplayWidth = 128u;

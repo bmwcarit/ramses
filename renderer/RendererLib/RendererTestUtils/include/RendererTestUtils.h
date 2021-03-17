@@ -75,7 +75,6 @@ public:
     static const ramses::WarpingMeshData& CreateTestWarpingMesh();
 
     static void SetWaylandDisplayForSystemCompositorControllerForAllTests(const ramses_internal::String& wd);
-    static bool HasSystemCompositorEnabled();
 
     static const float DefaultMaxAveragePercentPerPixel;
 
@@ -85,7 +84,7 @@ private:
                                             float maxAveragePercentErrorPerPixel);
 
     static absl::optional<std::chrono::microseconds> MaxFrameCallbackPollingTime;
-    static ramses_internal::String WaylandDisplayForSystemCompositorController;
+    static absl::optional<ramses_internal::String> WaylandDisplayForSystemCompositorController;
     static std::vector<const char*> CommandLineArgs;
 };
 

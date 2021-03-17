@@ -46,7 +46,7 @@ namespace ramses
         virtual void     deinitializeFrameworkData() override;
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
-        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
+        virtual status_t validate() const override;
 
         ETextureAddressMode getWrapUMode() const;
         ETextureAddressMode getWrapVMode() const;
@@ -72,10 +72,10 @@ namespace ramses
             ramses_internal::ResourceContentHash textureHash,
             ramses_internal::MemoryHandle contentHandle);
 
-        status_t validateRenderBuffer(ramses_internal::RenderBufferHandle renderBufferHandle, uint32_t indent, StatusObjectSet& visitedObjects) const;
-        status_t validateStreamTexture(ramses_internal::StreamTextureHandle streamTextureHandle, uint32_t indent, StatusObjectSet& visitedObjects) const;
-        status_t validateTextureBuffer(ramses_internal::TextureBufferHandle textureBufferHandle, uint32_t indent, StatusObjectSet& visitedObjects) const;
-        status_t validateResource(const Resource* resource, uint32_t indent, StatusObjectSet& visitedObjects) const;
+        status_t validateRenderBuffer(ramses_internal::RenderBufferHandle renderBufferHandle) const;
+        status_t validateStreamTexture(ramses_internal::StreamTextureHandle streamTextureHandle) const;
+        status_t validateTextureBuffer(ramses_internal::TextureBufferHandle textureBufferHandle) const;
+        status_t validateResource(const Resource* resource) const;
 
         ERamsesObjectType m_textureType;
 

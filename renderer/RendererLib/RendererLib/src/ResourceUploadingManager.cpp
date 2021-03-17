@@ -76,6 +76,8 @@ namespace ramses_internal
         unloadResources(resourcesToUnload);
         uploadResources(resourcesToUpload);
         syncEffects();
+
+        m_stats.setVRAMUsage(m_resourceTotalUploadedSize, m_resourceCacheSize);
     }
 
     void ResourceUploadingManager::unloadResources(const ResourceContentHashVector& resourcesToUnload)

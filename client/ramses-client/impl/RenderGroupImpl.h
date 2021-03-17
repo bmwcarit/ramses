@@ -32,7 +32,7 @@ namespace ramses
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
         virtual status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
-        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
+        virtual status_t validate() const override;
 
         status_t                  addMeshNode(const MeshNodeImpl& mesh, int32_t orderWithinGroup);
         status_t                  remove(const MeshNodeImpl& mesh);
@@ -56,9 +56,6 @@ namespace ramses
     private:
         void removeInternal(MeshNodeImplVector::iterator iter);
         void removeInternal(RenderGroupImplVector::iterator iter);
-
-        template <typename ELEMENT>
-        void validateElements(uint32_t& indent, status_t& status, const std::vector<const ELEMENT*>& elements, StatusObjectSet& visitedObjects) const;
 
         ramses_internal::RenderGroupHandle  m_renderGroupHandle;
 

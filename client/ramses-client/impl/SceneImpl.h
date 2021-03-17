@@ -114,7 +114,7 @@ namespace ramses
         virtual void     deinitializeFrameworkData() override final;
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override final;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override final;
-        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
+        virtual status_t validate() const override;
 
         status_t            publish(EScenePublicationMode publicationMode = EScenePublicationMode_LocalAndRemote);
         status_t            unpublish();

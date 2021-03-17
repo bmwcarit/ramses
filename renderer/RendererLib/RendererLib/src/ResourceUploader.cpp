@@ -21,8 +21,9 @@
 
 namespace ramses_internal
 {
-    ResourceUploader::ResourceUploader(IBinaryShaderCache* binaryShaderCache)
-        : m_binaryShaderCache(binaryShaderCache)
+    ResourceUploader::ResourceUploader(bool asyncEffectUploadEnabled, IBinaryShaderCache* binaryShaderCache)
+        : m_asyncEffectUploadEnabled(asyncEffectUploadEnabled)
+        , m_binaryShaderCache(binaryShaderCache)
     {
     }
 
@@ -61,7 +62,11 @@ namespace ramses_internal
             if(binaryShaderDeviceHandle.isValid())
                 return binaryShaderDeviceHandle;
 
-            return absl::optional<DeviceResourceHandle>{};
+            if(m_asyncEffectUploadEnabled)
+                return {};
+
+            auto effectGpuRes = renderBackend.getDevice().uploadShader(*effectRes);
+            return renderBackend.getDevice().registerShader(std::move(effectGpuRes));
         }
         default:
             assert(false && "Unexpected resource type");

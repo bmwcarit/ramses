@@ -109,48 +109,25 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t RenderPassImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t RenderPassImpl::validate() const
     {
-        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = SceneObjectImpl::validate();
 
         if (nullptr == m_cameraImpl)
-        {
-            addValidationMessage(EValidationSeverity_Warning, indent, "renderpass does not have a camera set");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Warning, "renderpass does not have a camera set");
 
         if (0 == m_renderGroups.size())
-        {
-            addValidationMessage(EValidationSeverity_Warning, indent, "renderpass does not contain any rendergroups");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Warning, "renderpass does not contain any rendergroups");
         else
         {
-            for(const auto& renderGroup : m_renderGroups)
-            {
-                if (addValidationOfDependentObject(indent, *renderGroup, visitedObjects) != StatusOK)
-                {
-                    status = getValidationErrorStatus();
-                }
-            }
+            for (const auto& renderGroup : m_renderGroups)
+                status = std::max(status, addValidationOfDependentObject(*renderGroup));
         }
 
         if (nullptr != m_renderTargetImpl)
-        {
-            if (addValidationOfDependentObject(indent, *m_renderTargetImpl, visitedObjects) != StatusOK)
-            {
-                status = getValidationErrorStatus();
-            }
-        }
-        else
-        {
-            if(getClearFlags() != ramses_internal::EClearFlags_None)
-            {
-                addValidationMessage(EValidationSeverity_Warning, indent, "renderpass has clear flags enabled whithout any rendertarget, clear flags will have no effect");
-                status = getValidationErrorStatus();
-            }
-        }
+            status = std::max(status, addValidationOfDependentObject(*m_renderTargetImpl));
+        else if (getClearFlags() != ramses_internal::EClearFlags_None)
+            status = std::max(status, addValidationMessage(EValidationSeverity_Warning, "renderpass has clear flags enabled whithout any rendertarget, clear flags will have no effect"));
 
         return status;
     }
@@ -172,8 +149,7 @@ namespace ramses
         if (!isFromTheSameSceneAs(cameraImpl))
             return addErrorEntry("RenderPass::setCamera failed - camera is not from the same scene as this RenderPass");
 
-        StatusObjectSet visitedObjects;
-        const status_t cameraValidity = cameraImpl.validate(0u, visitedObjects);
+        const status_t cameraValidity = cameraImpl.validate();
         if (StatusOK == cameraValidity)
         {
             m_cameraImpl = &cameraImpl;

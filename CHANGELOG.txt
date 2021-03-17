@@ -1,3 +1,19 @@
+27.0.101
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - bool uniforms are parsed and available in effect source code
+
+        API changes
+        ------------------------------------------------------------------------
+        - Add DisplayConfig::get/setX11WindowHandle
+            - supports custom X11 window which ramses will use to render into
+        - Add contentFlippedVertically field to DCSM metadata
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fix Node::getRotation with convention failing if translate or scale are called before setting rotation
+
 27.0.100
 -------------------
         General changes
@@ -11,6 +27,17 @@
         Bugfixes
         ------------------------------------------------------------------------
         - Fix Node::setRotation with convention forgetting convention when identity values were set for angles
+
+27.0.9
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Add static DisplayConfig::setAsyncEffectUploadEnabled to allow enabling/disabling async effect upload.
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Renderer no longer wrongly reports an already available (and possibly ready/rendered) scene as Available
+          when a new display is created.
 
 27.0.8
 -------------------

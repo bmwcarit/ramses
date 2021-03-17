@@ -417,6 +417,50 @@ namespace ramses
         EXPECT_EQ(static_cast<Effect*>(nullptr), sharedTestState->getScene().impl.createEffect(effectDesc, ResourceCacheFlag_DoNotCache, ""));
     }
 
+    TEST_F(AnEffect, supportsBoolUniforms)
+    {
+        const char* vertShader = R"SHADER(
+            #version 320 es
+            uniform bool u_theBool;
+            void main(void)
+            {
+                if(u_theBool)
+                {
+                    gl_Position = vec4(0.0);
+                }
+                else
+                {
+                    gl_Position = vec4(1.0);
+                }
+            }
+            )SHADER";
+
+        const char* fragShader = R"SHADER(
+            #version 320 es
+            out lowp vec4 colorOut;
+            void main(void)
+            {
+                colorOut = vec4(0.0);
+            })SHADER";
+        EffectDescription effectDesc;
+        effectDesc.setVertexShader(vertShader);
+        effectDesc.setFragmentShader(fragShader);
+
+        Effect* effect = sharedTestState->getScene().createEffect(effectDesc);
+
+        EXPECT_EQ("", sharedTestState->getScene().getLastEffectErrorMessages());
+
+        ASSERT_NE(nullptr, effect);
+
+        UniformInput uniform;
+        EXPECT_EQ(StatusOK, effect->findUniformInput("u_theBool", uniform));
+
+        Appearance* appearance = sharedTestState->getScene().createAppearance(*effect);
+        ASSERT_NE(nullptr, appearance);
+
+        EXPECT_EQ(StatusOK, appearance->setInputValueInt32(uniform, 0));
+    }
+
     class AnEffectWithGeometryShader : public AnEffect
     {
     protected:

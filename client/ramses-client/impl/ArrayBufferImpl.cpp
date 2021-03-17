@@ -90,10 +90,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t ArrayBufferImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t ArrayBufferImpl::validate() const
     {
-        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = SceneObjectImpl::validate();
 
         const auto& iscene = getIScene();
 
@@ -136,16 +135,10 @@ namespace ramses
         }
 
         if (usedAsInput && !isInitialized)
-        {
-            addValidationMessage(EValidationSeverity_Warning, indent, "DataBuffer is used as geometry input but there is no data set, this could lead to graphical glitches if actually rendered.");
-            return getValidationErrorStatus();
-        }
+            return addValidationMessage(EValidationSeverity_Warning, "DataBuffer is used as geometry input but there is no data set, this could lead to graphical glitches if actually rendered.");
 
         if (!usedAsInput)
-        {
-            addValidationMessage(EValidationSeverity_Warning, indent, "DataBuffer is not used anywhere, destroy it if not needed.");
-            return getValidationErrorStatus();
-        }
+            return addValidationMessage(EValidationSeverity_Warning, "DataBuffer is not used anywhere, destroy it if not needed.");
 
         return status;
     }

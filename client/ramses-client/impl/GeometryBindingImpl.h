@@ -40,7 +40,7 @@ namespace ramses
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
         virtual status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
-        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
+        virtual status_t validate() const override;
 
         status_t setInputBuffer(const EffectInputImpl& input, const ArrayResourceImpl& bufferResource, uint32_t instancingDivisor, uint16_t offset, uint16_t stride);
         status_t setInputBuffer(const EffectInputImpl& input, const ArrayBufferImpl& dataBuffer, uint32_t instancingDivisor, uint16_t offset, uint16_t stride);
@@ -59,10 +59,10 @@ namespace ramses
     private:
         void createDataLayout();
 
-        status_t validateEffect(uint32_t indent, StatusObjectSet& visitedObjects) const;
-        status_t validateAttribute(uint32_t indent, StatusObjectSet& visitedObjects) const;
-        status_t validateResource(uint32_t indent, ramses_internal::ResourceContentHash resourceHash, StatusObjectSet& visitedObjects) const;
-        status_t validateDataBuffer(uint32_t indent, ramses_internal::DataBufferHandle dataBuffer, ramses_internal::EDataType fieldDataType, StatusObjectSet& visitedObjects) const;
+        status_t validateEffect() const;
+        status_t validateAttribute() const;
+        status_t validateResource(ramses_internal::ResourceContentHash resourceHash) const;
+        status_t validateDataBuffer(ramses_internal::DataBufferHandle dataBuffer, ramses_internal::EDataType fieldDataType) const;
         ArrayBufferImpl* findDataBuffer(ramses_internal::DataBufferHandle dataBufferHandle) const;
 
         static bool dataTypeMatchesInputType(ramses_internal::EDataType resourceType, ramses_internal::EDataType inputDataType);

@@ -18,10 +18,6 @@ namespace ramses_internal
     class MessagePoolTest : public testing::Test
     {
     protected:
-        MessagePoolTest()
-        {
-        }
-
         MessagePool<32u, 0u> m_messagePool;
     };
 
@@ -85,5 +81,16 @@ namespace ramses_internal
 
         EXPECT_STREQ(m_messagePool.getSuccessText(), m_messagePool.getMessage(m_messagePool.SuccessMessageID));
         EXPECT_STREQ(m_messagePool.getUnknownText(), m_messagePool.getMessage(maxMessages));
+    }
+
+    TEST_F(MessagePoolTest, willNotReturnSuccessMessageIdIfFilled)
+    {
+        const String msg("msg");
+        for (UInt32 i = 0u; i < 2 * m_messagePool.MaxMessageEntries; ++i)
+        {
+            const auto id = m_messagePool.addMessage(msg.c_str());
+            EXPECT_NE(uint32_t(m_messagePool.SuccessMessageID), id);
+            EXPECT_STREQ(msg.c_str(), m_messagePool.getMessage(id));
+        }
     }
 }

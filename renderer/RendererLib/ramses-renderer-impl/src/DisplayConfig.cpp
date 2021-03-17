@@ -120,6 +120,13 @@ namespace ramses
         return impl.getWaylandDisplay();
     }
 
+    status_t DisplayConfig::setAsyncEffectUploadEnabled(DisplayConfig& config, bool enabled)
+    {
+        const status_t status = config.impl.setAsyncEffectUploadEnabled(enabled);
+        LOG_HL_RENDERER_STATIC_API1(status, enabled);
+        return status;
+    }
+
     status_t DisplayConfig::setIntegrityRGLDeviceUnit(uint32_t rglDeviceUnit)
     {
         const status_t status = impl.setIntegrityRGLDeviceUnit(rglDeviceUnit);
@@ -182,6 +189,18 @@ namespace ramses
         const auto status = config.impl.setDepthStencilBufferType(depthBufferType);
         LOG_HL_RENDERER_STATIC_API1(status, depthBufferType);
         return status;
+    }
+
+    status_t DisplayConfig::setX11WindowHandle(unsigned long x11WindowHandle)
+    {
+        const status_t status = impl.setX11WindowHandle(x11WindowHandle);
+        LOG_HL_RENDERER_API1(status, x11WindowHandle);
+        return status;
+    }
+
+    unsigned long DisplayConfig::getX11WindowHandle() const
+    {
+        return impl.getX11WindowHandle();
     }
 
     status_t DisplayConfig::setWindowsWindowHandle(void* hwnd)

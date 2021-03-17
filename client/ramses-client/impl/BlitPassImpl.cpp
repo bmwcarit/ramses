@@ -138,24 +138,17 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t BlitPassImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t BlitPassImpl::validate() const
     {
-        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = SceneObjectImpl::validate();
 
         const ramses_internal::BlitPass& blitPass = getIScene().getBlitPass(m_blitPassHandle);
 
         if (!getIScene().isRenderBufferAllocated(blitPass.sourceRenderBuffer))
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "blitpass references a deleted source render buffer");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Error, "blitpass references a deleted source render buffer");
 
         if (!getIScene().isRenderBufferAllocated(blitPass.destinationRenderBuffer))
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "blitpass references a deleted destination render buffer");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Error, "blitpass references a deleted destination render buffer");
 
         return status;
     }

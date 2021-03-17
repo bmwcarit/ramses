@@ -303,4 +303,9 @@ namespace ramses_internal
     {
         return m_renderer->impl.getDisplayDispatcher().getECManager(ramses_internal::DisplayHandle{ displayId.getValue() });
     }
+
+    bool TestRenderer::hasSystemCompositorController() const
+    {
+        return m_renderer->impl.getDisplayDispatcher().hasSystemCompositorController();
+    }
 }

@@ -87,6 +87,12 @@ namespace ramses_internal
         }
     }
 
+    void RendererStatistics::setVRAMUsage(uint64_t totalUploaded, uint64_t gpuCacheSize)
+    {
+        m_totalResourceUploadedSize = totalUploaded;
+        m_gpuCacheSize = gpuCacheSize;
+    }
+
     void RendererStatistics::trackArrivedFlush(SceneId sceneId, UInt numSceneActions, UInt numAddedResources, UInt numRemovedResources, UInt numSceneResourceActions, std::chrono::milliseconds latency)
     {
         auto& sceneStats = m_sceneStatistics[sceneId];
@@ -243,6 +249,7 @@ namespace ramses_internal
             ", numFrames " << m_frameNumber;
         if (m_resourcesUploaded > 0u)
             str << ", resUploaded " << m_resourcesUploaded << " (" << m_resourcesBytesUploaded << " B)";
+        str << ", RC VRAM usage/cache (" << (m_totalResourceUploadedSize >> 20) << "/" << (m_gpuCacheSize >> 20) << " MB)";
         if (m_shadersCompiled > 0u)
         {
             str << ", shadersCompiled " << m_shadersCompiled << " for total ms:" << m_microsecondsForShaderCompilation / 1000;

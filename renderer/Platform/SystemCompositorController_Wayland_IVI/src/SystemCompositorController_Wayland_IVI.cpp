@@ -15,7 +15,10 @@
 #include "Collections/StringOutputStream.h"
 #include "Utils/StringUtils.h"
 #include "Utils/LogMacros.h"
+
+#include "absl/algorithm/container.h"
 #include "poll.h"
+
 #include <algorithm>
 #include <cassert>
 
@@ -29,22 +32,8 @@ namespace ramses_internal
 
     SystemCompositorController_Wayland_IVI::~SystemCompositorController_Wayland_IVI()
     {
-        for (auto controllerSurface : m_controllerSurfaces)
-        {
-            delete controllerSurface;
-        }
         m_controllerSurfaces.clear();
-
-        for (auto controllerScreen : m_controllerScreens)
-        {
-            delete controllerScreen;
-        }
         m_controllerScreens.clear();
-
-        for (auto waylandOutput : m_waylandOutputs)
-        {
-            delete waylandOutput;
-        }
         m_waylandOutputs.clear();
 
         if (nullptr != m_registry)
@@ -120,7 +109,7 @@ namespace ramses_internal
     {
         std::vector<uint32_t> sortedList;
         sortedList.reserve(m_controllerSurfaces.size());
-        for (auto controllerSurface : m_controllerSurfaces)
+        for (const auto& controllerSurface : m_controllerSurfaces)
         {
             sortedList.push_back(controllerSurface->getIVIId().getValue());
         }
@@ -136,7 +125,7 @@ namespace ramses_internal
                 }));
 
         // Log surface statistics
-        for (auto controllerSurface : m_controllerSurfaces)
+        for (const auto& controllerSurface : m_controllerSurfaces)
         {
             controllerSurface->sendStats();
         }
@@ -202,15 +191,15 @@ namespace ramses_internal
                          " failed because found " << m_controllerScreens.size() << " screens");
                 return false;
             }
-            screen = *m_controllerScreens.begin();
+            screen = m_controllerScreens.begin()->get();
         }
         else
         {
             // expect id exists
-            for (auto controllerScreen : m_controllerScreens)
+            for (const auto& controllerScreen : m_controllerScreens)
             {
                 if (controllerScreen->getScreenId() == static_cast<uint32_t>(screenIviId))
-                    screen = controllerScreen;
+                    screen = controllerScreen.get();
             }
             if (!screen)
             {
@@ -366,39 +355,36 @@ namespace ramses_internal
 
     void SystemCompositorController_Wayland_IVI::deleteControllerSurface(IVIControllerSurface& controllerSurface)
     {
-        if (m_controllerSurfaces.remove(&controllerSurface))
-        {
-            delete &controllerSurface;
-        }
-        else
+        auto it = absl::c_find_if(m_controllerSurfaces, [&](const auto& s){ return s.get() == & controllerSurface; });
+
+        if (it == m_controllerSurfaces.end())
         {
             LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::removeControllerSurface failed !");
             assert(false);
+            return;
         }
+
+        m_controllerSurfaces.erase(it);
     }
 
     IVIControllerSurface* SystemCompositorController_Wayland_IVI::getControllerSurface(WaylandIviSurfaceId iviId) const
     {
-        for (auto controllerSurface : m_controllerSurfaces)
-        {
-            if (controllerSurface->getIVIId() == iviId)
-            {
-                return controllerSurface;
-            }
-        }
-        return nullptr;
+        auto it = absl::c_find_if(m_controllerSurfaces, [&](const auto& s){ return s->getIVIId() == iviId; });
+
+        if (it == m_controllerSurfaces.end())
+            return nullptr;
+
+        return it->get();
     }
 
     IVIControllerScreen*  SystemCompositorController_Wayland_IVI::getControllerScreen(uint32_t screenId) const
     {
-        for (auto controllerScreen : m_controllerScreens)
-        {
-            if (controllerScreen->getScreenId() == screenId)
-            {
-                return controllerScreen;
-            }
-        }
-        return nullptr;
+        auto it = absl::c_find_if(m_controllerScreens, [&](const auto& s){ return s->getScreenId() == screenId; });
+
+        if (it == m_controllerScreens.end())
+            return nullptr;
+
+        return it->get();
     }
 
     IVIControllerSurface& SystemCompositorController_Wayland_IVI::getOrCreateControllerSurface(WaylandIviSurfaceId iviId)
@@ -415,7 +401,7 @@ namespace ramses_internal
 
             controllerSurface = new IVIControllerSurface(nativeControllerSurface, iviId, *this);
 
-            m_controllerSurfaces.put(controllerSurface);
+            m_controllerSurfaces.emplace_back(controllerSurface);
         }
         return *controllerSurface;
     }
@@ -436,7 +422,7 @@ namespace ramses_internal
         // Binding the wl_output is needed, otherwise the controller screens don't come in.
         if (String("wl_output") == interface)
         {
-            m_waylandOutputs.put(new WaylandOutput(registry, name));
+            m_waylandOutputs.emplace_back(std::make_unique<WaylandOutput>(registry, name));
         }
 
         if (String("ivi_controller") == interface)
@@ -468,9 +454,7 @@ namespace ramses_internal
             return;
         }
 
-        IVIControllerScreen* controllerScreen = new IVIControllerScreen(*nativeControllerScreen, id_screen);
-
-        m_controllerScreens.put(controllerScreen);
+        m_controllerScreens.emplace_back(std::make_unique<IVIControllerScreen>(*nativeControllerScreen, id_screen));
     }
 
     void SystemCompositorController_Wayland_IVI::iviControllerHandleLayer(ivi_controller* controller, uint32_t id_layer)

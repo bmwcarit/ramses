@@ -11,8 +11,6 @@
 
 #include "RendererAPI/ISystemCompositorController.h"
 #include "wayland-client-protocol.h"
-#include "Collections/HashMap.h"
-#include "Collections/HashSet.h"
 #include "Utils/Warnings.h"
 PUSH_DISABLE_C_STYLE_CAST_WARNING
 #include "ivi-controller-client-protocol.h"
@@ -76,13 +74,9 @@ namespace ramses_internal
         wl_registry*    m_registry   = nullptr;
         ivi_controller* m_controller = nullptr;
 
-        using ControllerScreens = HashSet<IVIControllerScreen *>;
-        using ControllerSurfaces = HashSet<IVIControllerSurface *>;
-        using WaylandOutputs = HashSet<WaylandOutput *>;
-
-        ControllerScreens  m_controllerScreens;
-        ControllerSurfaces m_controllerSurfaces;
-        WaylandOutputs     m_waylandOutputs;
+        std::vector<std::unique_ptr<IVIControllerScreen>>   m_controllerScreens;
+        std::vector<std::unique_ptr<IVIControllerSurface>>  m_controllerSurfaces;
+        std::vector<std::unique_ptr<WaylandOutput>>         m_waylandOutputs;
 
         const struct Registry_Listener : public wl_registry_listener
         {

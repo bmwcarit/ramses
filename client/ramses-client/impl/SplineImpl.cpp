@@ -406,17 +406,13 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t SplineImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t SplineImpl::validate() const
     {
-        status_t status = AnimationObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = AnimationObjectImpl::validate();
 
         const ramses_internal::SplineBase& spline = *getIAnimationSystem().getSpline(m_splineHandle);
         if (spline.getNumKeys() == 0u)
-        {
-            addValidationMessage(EValidationSeverity_Warning, indent, "spline has no keys assigned");
-            status = getValidationErrorStatus();
-        }
+            status = std::max(status, addValidationMessage(EValidationSeverity_Warning, "spline has no keys assigned"));
 
         return status;
     }

@@ -114,7 +114,7 @@ namespace ramses
         RamsesFrameworkImpl& getFramework();
         static RamsesClientImpl& createImpl(const char* name, RamsesFrameworkImpl& components);
 
-        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
+        virtual status_t validate() const override;
 
         template <typename T>
         void enqueueSceneCommand(sceneId_t sceneId, T cmd);
@@ -179,7 +179,7 @@ namespace ramses
         Scene* prepareSceneFromFile(const char* caller, std::string const& sceneFilename, bool localOnly);
         void finalizeLoadedScene(Scene* scene);
 
-        status_t validateScenes(uint32_t indent, StatusObjectSet& visitedObjects) const;
+        status_t validateScenes() const;
 
         RamsesClient* m_hlClient = nullptr;
         ramses_internal::ClientApplicationLogic m_appLogic;

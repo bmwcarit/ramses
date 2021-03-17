@@ -43,14 +43,9 @@ namespace ramses_internal
 
         statMessagesSent.reset();
         statMessagesReceived.reset();
-        statSendResourceMessagesReceived.reset();
-        statRequestResourceMessagesReceived.reset();
         statResourcesCreated.reset();
         statResourcesDestroyed.reset();
         statResourcesNumber.reset();
-        statResourcesSentNumber.reset();
-        statResourcesSentSize.reset();
-        statResourcesReceivedNumber.reset();
         statResourcesLoadedFromFileNumber.reset();
         statResourcesLoadedFromFileSize.reset();
     }
@@ -61,14 +56,9 @@ namespace ramses_internal
 
         statMessagesSent.getSummary().reset();
         statMessagesReceived.getSummary().reset();
-        statSendResourceMessagesReceived.getSummary().reset();
-        statRequestResourceMessagesReceived.getSummary().reset();
         statResourcesCreated.getSummary().reset();
         statResourcesDestroyed.getSummary().reset();
         statResourcesNumber.getSummary().reset();
-        statResourcesSentNumber.getSummary().reset();
-        statResourcesSentSize.getSummary().reset();
-        statResourcesReceivedNumber.getSummary().reset();
         statResourcesLoadedFromFileNumber.getSummary().reset();
         statResourcesLoadedFromFileSize.getSummary().reset();
     }
@@ -79,13 +69,8 @@ namespace ramses_internal
 
         statMessagesSent.updateSummaryAndResetCounter();
         statMessagesReceived.updateSummaryAndResetCounter();
-        statSendResourceMessagesReceived.updateSummaryAndResetCounter();
-        statRequestResourceMessagesReceived.updateSummaryAndResetCounter();
         const UInt32 resourcesCreated = statResourcesCreated.updateSummaryAndResetCounter();
         const UInt32 resourcesDestroyed = statResourcesDestroyed.updateSummaryAndResetCounter();
-        statResourcesSentNumber.updateSummaryAndResetCounter();
-        statResourcesSentSize.updateSummaryAndResetCounter();
-        statResourcesReceivedNumber.updateSummaryAndResetCounter();
         statResourcesLoadedFromFileNumber.updateSummaryAndResetCounter();
         statResourcesLoadedFromFileSize.updateSummaryAndResetCounter();
 
@@ -106,6 +91,8 @@ namespace ramses_internal
         statSceneActionsSentSkipped.reset();
         statSceneActionsGenerated.reset();
         statSceneActionsGeneratedSize.reset();
+        statSceneUpdatesGeneratedPackets.reset();
+        statSceneUpdatesGeneratedSize.reset();
         for (size_t type = 0; type < EResourceStatisticIndex_NumIndices; type++)
         {
             statResourceCount[type].reset();
@@ -126,6 +113,8 @@ namespace ramses_internal
         statSceneActionsSentSkipped.getSummary().reset();
         statSceneActionsGenerated.getSummary().reset();
         statSceneActionsGeneratedSize.getSummary().reset();
+        statSceneUpdatesGeneratedPackets.getSummary().reset();
+        statSceneUpdatesGeneratedSize.getSummary().reset();
         for (size_t type = 0; type < EResourceStatisticIndex_NumIndices; type++)
         {
             statResourceCount[type].getSummary().reset();
@@ -147,6 +136,8 @@ namespace ramses_internal
         statSceneActionsSentSkipped.updateSummaryAndResetCounter();
         statSceneActionsGenerated.updateSummaryAndResetCounter();
         statSceneActionsGeneratedSize.updateSummaryAndResetCounter();
+        statSceneUpdatesGeneratedPackets.updateSummaryAndResetCounter();
+        statSceneUpdatesGeneratedSize.updateSummaryAndResetCounter();
 
         statObjectsCount.incCounter(objectsCreated);
         statObjectsCount.decCounter(objectsDestroyed);

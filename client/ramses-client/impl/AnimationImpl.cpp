@@ -69,10 +69,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t AnimationImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t AnimationImpl::validate() const
     {
-        status_t status = AnimationObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = AnimationObjectImpl::validate();
 
         const ramses_internal::AnimationInstance& animInstance = getIAnimationSystem().getAnimationInstance(m_animationInstanceHandle);
 
@@ -82,27 +81,17 @@ namespace ramses
         {
             const AnimatedPropertyImpl* animProperty = findAnimatedProperty(dataBind);
             if (animProperty == nullptr)
-            {
-                addValidationMessage(EValidationSeverity_Error, indent, "assigned AnimatedProperty does not exist anymore, was probably destroyed but still used by Animation");
-                status = getValidationErrorStatus();
-            }
-            else if (addValidationOfDependentObject(indent, *animProperty, visitedObjects) != StatusOK)
-            {
-                status = getValidationErrorStatus();
-            }
+                status = addValidationMessage(EValidationSeverity_Error, "assigned AnimatedProperty does not exist anymore, was probably destroyed but still used by Animation");
+            else
+                status = addValidationOfDependentObject(*animProperty);
         }
 
         // validate assigned spline
         const SplineImpl* spline = findSpline(animInstance.getSplineHandle());
         if (spline == nullptr)
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "assigned Spline does not exist anymore, was probably destroyed but still used by Animation");
-            status = getValidationErrorStatus();
-        }
-        else if (addValidationOfDependentObject(indent, *spline, visitedObjects) != StatusOK)
-        {
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Error, "assigned Spline does not exist anymore, was probably destroyed but still used by Animation");
+        else
+            status = std::max(status, addValidationOfDependentObject(*spline));
 
         return status;
     }

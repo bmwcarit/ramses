@@ -80,27 +80,18 @@ namespace ramses
         return getIScene().getStreamTexture(m_streamTextureHandle).fallbackTexture;
     }
 
-    status_t StreamTextureImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t StreamTextureImpl::validate() const
     {
-        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = SceneObjectImpl::validate();
 
         const ramses_internal::ResourceContentHash fallbackTextureHash = getFallbackTextureHash();
         const Resource* resource = getSceneImpl().scanForResourceWithHash(fallbackTextureHash);
         if (!resource)
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "StreamTexture is using a fallback texture which does not exist");
-            return getValidationErrorStatus();
-        }
+            return addValidationMessage(EValidationSeverity_Error, "StreamTexture is using a fallback texture which does not exist");
 
         assert(resource->getType() == ERamsesObjectType_Texture2D);
         const Texture2D& texture = RamsesObjectTypeUtils::ConvertTo<Texture2D>(*resource);
-        status_t textureStatus = addValidationOfDependentObject(indent, texture.impl, visitedObjects);
-        if (StatusOK != textureStatus)
-        {
-            status = textureStatus;
-        }
-        return status;
+        return std::max(status, addValidationOfDependentObject(texture.impl));
     }
 
     status_t StreamTextureImpl::forceFallbackImage(bool forceFallbackImage)

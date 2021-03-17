@@ -12,23 +12,47 @@
 using namespace ramses;
 using namespace ramses_internal;
 
-class StatusObjectImplDummy : public StatusObjectImpl
+class TestStatusObject : public StatusObjectImpl
 {
 public:
-    void addValidationMessageForTesting(EValidationSeverity severity)
+    explicit TestStatusObject(String prefix = "", std::vector<const StatusObjectImpl*> dependentObjs = {}, EValidationSeverity validationSeverityToReturn = EValidationSeverity_Error)
+        : m_prefix(std::move(prefix))
+        , m_depObjs(std::move(dependentObjs))
+        , m_validationSeverityToReturn(validationSeverityToReturn)
     {
-        StatusObjectImpl::addValidationMessage(severity, 0u, "message");
     }
-    void addObjectNameToValidationReport()
+
+    virtual status_t validate() const override
     {
-        StatusObjectImpl::addValidationObjectName(0u, "ObjectName");
+        StatusObjectImpl::validate();
+        const auto infoStatus = addValidationMessage(EValidationSeverity_Info, m_prefix + "info");
+        const auto warnStatus = addValidationMessage(EValidationSeverity_Warning, m_prefix + "warn");
+        const auto errStatus = addValidationMessage(EValidationSeverity_Error, m_prefix + "err");
+
+        for (const auto depObj : m_depObjs)
+            addValidationOfDependentObject(*depObj);
+
+        switch (m_validationSeverityToReturn)
+        {
+        default:
+        case ramses::EValidationSeverity_Info:
+            return infoStatus;
+        case ramses::EValidationSeverity_Warning:
+            return warnStatus;
+        case ramses::EValidationSeverity_Error:
+            return errStatus;
+        }
     }
+
+    String m_prefix;
+    std::vector<const StatusObjectImpl*> m_depObjs;
+    EValidationSeverity m_validationSeverityToReturn;
 };
 
 class AStatusObject : public ::testing::Test
 {
 public:
-    StatusObjectImplDummy dummy;
+    TestStatusObject dummy;
 };
 
 TEST_F(AStatusObject, canAddAndGetStatusMessage)
@@ -69,58 +93,103 @@ TEST_F(AStatusObject, canUseWithFmtlib)
     EXPECT_STREQ("hello world", dummy.getStatusMessage(s));
 }
 
-TEST_F(AStatusObject, allValidationLevelsContainObjectNames)
+TEST_F(AStatusObject, generatesValidationReport_info)
 {
-    dummy.addObjectNameToValidationReport();
+    // hierarchy of dependent object to validate
+    // obj1 - obj3
+    //      \ obj2 - obj3
+    // obj3 exists twice in the tree
+    const TestStatusObject objLvl3{ "3" };
+    const TestStatusObject objLvl2{ "2", {&objLvl3} };
+    const TestStatusObject objLvl1{ "1", {&objLvl2, &objLvl3} };
 
-    const String infoReportAsString(dummy.getValidationReport(EValidationSeverity_Info));
-    EXPECT_NE(0u, infoReportAsString.size());
+    EXPECT_NE(StatusOK, objLvl1.validate());
+    String report = objLvl1.getValidationReport(EValidationSeverity_Info);
 
-    const String warningReportAsString(dummy.getValidationReport(EValidationSeverity_Warning));
-    EXPECT_NE(0u, warningReportAsString.size());
+    StringOutputStream expectedReport;
+    expectedReport << "1info\n" << "WARNING: 1warn\n" << "ERROR: 1err\n";
+    expectedReport << "- 2 dependent objects:\n";
+    expectedReport << "  2info\n" << "  WARNING: 2warn\n" << "  ERROR: 2err\n";
+    expectedReport << "  - 1 dependent objects:\n";
+    expectedReport << "    3info\n" << "    WARNING: 3warn\n" << "    ERROR: 3err\n";
+    expectedReport << "  3info\n" << "  WARNING: 3warn\n" << "  ERROR: 3err\n";
+    EXPECT_STREQ(expectedReport.c_str(), report.c_str());
 
-    const String errorReportAsString(dummy.getValidationReport(EValidationSeverity_Error));
-    EXPECT_NE(0u, errorReportAsString.size());
+    // obj3 only
+    EXPECT_NE(StatusOK, objLvl3.validate());
+    report = objLvl3.getValidationReport(EValidationSeverity_Info);
+    StringOutputStream expectedReport2;
+    expectedReport2 << "3info\n" << "WARNING: 3warn\n" << "ERROR: 3err\n";
+    EXPECT_STREQ(expectedReport2.c_str(), report.c_str());
 }
 
-TEST_F(AStatusObject, filteresValidationInfosCorrectly)
+TEST_F(AStatusObject, generatesValidationReport_warning)
 {
-    dummy.addValidationMessageForTesting(EValidationSeverity_Info);
+    // hierarchy of dependent object to validate
+    // obj1 - obj3
+    //      \ obj2 - obj3
+    // obj3 exists twice in the tree
+    const TestStatusObject objLvl3{ "3" };
+    const TestStatusObject objLvl2{ "2", {&objLvl3} };
+    const TestStatusObject objLvl1{ "1", {&objLvl2, &objLvl3} };
 
-    const String infoReportAsString(dummy.getValidationReport(EValidationSeverity_Info));
-    EXPECT_LT(0u, infoReportAsString.size());
+    EXPECT_NE(StatusOK, objLvl1.validate());
+    String report = objLvl1.getValidationReport(EValidationSeverity_Warning);
 
-    const String warningReportAsString(dummy.getValidationReport(EValidationSeverity_Warning));
-    EXPECT_EQ(0u, warningReportAsString.size());
+    // other than info level won't indent and won't add any extra messages
+    // it also won't report any object more than once
 
-    const String errorReportAsString(dummy.getValidationReport(EValidationSeverity_Error));
-    EXPECT_EQ(0u, errorReportAsString.size());
+    StringOutputStream expectedReport;
+    expectedReport << "WARNING: 1warn\n" << "ERROR: 1err\n";
+    expectedReport << "WARNING: 2warn\n" << "ERROR: 2err\n";
+    expectedReport << "WARNING: 3warn\n" << "ERROR: 3err\n";
+    EXPECT_STREQ(expectedReport.c_str(), report.c_str());
+
+    // obj3 only
+    EXPECT_NE(StatusOK, objLvl3.validate());
+    report = objLvl3.getValidationReport(EValidationSeverity_Warning);
+    StringOutputStream expectedReport2;
+    expectedReport2 << "WARNING: 3warn\n" << "ERROR: 3err\n";
+    EXPECT_STREQ(expectedReport2.c_str(), report.c_str());
 }
 
-TEST_F(AStatusObject, filteresValidationWarningsCorrectly)
+TEST_F(AStatusObject, generatesValidationReport_error)
 {
-    dummy.addValidationMessageForTesting(EValidationSeverity_Warning);
+    // hierarchy of dependent object to validate
+    // obj1 - obj3
+    //      \ obj2 - obj3
+    // obj3 exists twice in the tree
+    const TestStatusObject objLvl3{ "3" };
+    const TestStatusObject objLvl2{ "2", {&objLvl3} };
+    const TestStatusObject objLvl1{ "1", {&objLvl2, &objLvl3} };
 
-    const String infoReportAsString(dummy.getValidationReport(EValidationSeverity_Info));
-    EXPECT_LT(0u, infoReportAsString.size());
+    EXPECT_NE(StatusOK, objLvl1.validate());
+    String report = objLvl1.getValidationReport(EValidationSeverity_Error);
 
-    const String warningReportAsString(dummy.getValidationReport(EValidationSeverity_Warning));
-    EXPECT_LT(0u, warningReportAsString.size());
+    // other than info level won't indent and won't add any extra messages
+    // it also won't report any object more than once
 
-    const String errorReportAsString(dummy.getValidationReport(EValidationSeverity_Error));
-    EXPECT_EQ(0u, errorReportAsString.size());
+    StringOutputStream expectedReport;
+    expectedReport << "ERROR: 1err\n";
+    expectedReport << "ERROR: 2err\n";
+    expectedReport << "ERROR: 3err\n";
+    EXPECT_STREQ(expectedReport.c_str(), report.c_str());
+
+    // obj3 only
+    EXPECT_NE(StatusOK, objLvl3.validate());
+    report = objLvl3.getValidationReport(EValidationSeverity_Error);
+    StringOutputStream expectedReport2;
+    expectedReport2 << "ERROR: 3err\n";
+    EXPECT_STREQ(expectedReport2.c_str(), report.c_str());
 }
 
-TEST_F(AStatusObject, filteresValidationErrorsCorrectly)
+TEST_F(AStatusObject, reportsStatusBasedSeverityOfValidation)
 {
-    dummy.addValidationMessageForTesting(EValidationSeverity_Error);
+    const TestStatusObject objLvl1{ "1", {}, EValidationSeverity_Info };
+    const TestStatusObject objLvl2{ "2", {}, EValidationSeverity_Warning };
+    const TestStatusObject objLvl3{ "3", {}, EValidationSeverity_Error };
 
-    const String infoReportAsString(dummy.getValidationReport(EValidationSeverity_Info));
-    EXPECT_LT(0u, infoReportAsString.size());
-
-    const String warningReportAsString(dummy.getValidationReport(EValidationSeverity_Warning));
-    EXPECT_LT(0u, warningReportAsString.size());
-
-    const String errorReportAsString(dummy.getValidationReport(EValidationSeverity_Error));
-    EXPECT_LT(0u, errorReportAsString.size());
+    EXPECT_EQ(StatusOK, objLvl1.validate());
+    EXPECT_STREQ("Validation warning", objLvl2.getStatusMessage(objLvl2.validate()));
+    EXPECT_STREQ("Validation error", objLvl2.getStatusMessage(objLvl3.validate()));
 }

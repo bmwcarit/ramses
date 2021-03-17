@@ -1723,36 +1723,34 @@ namespace ramses_internal
         return false;
     }
 
-    void DcsmComponent::logInfo()
+    void DcsmComponent::writeStateForLog(StringOutputStream& sos)
     {
         PlatformGuard guard(m_frameworkLock);
-        LOG_INFO_F(CONTEXT_DCSM, ([&](StringOutputStream& sos) {
-            sos << "DcsmComponent(" << m_myID << ")::logInfo:\n"
-                << "  LocalProvider " << m_localProviderAvailable << " (events pending " << m_consumerEvents.size() << ")\n"
-                << "  LocalConsumer " << m_localConsumerAvailable << " (events pending " << m_providerEvents.size() << ")\n"
-                << "  Connected to network " << m_connected << "\n"
-                << "  Connected participants:\n";
-            for (const auto& p : m_connectedParticipants)
-                sos << "  - " << p << "\n";
-            sos << "  Known content:\n";
-            for (const auto& p : m_contentRegistry)
-            {
-                const auto& ci = p.value;
-                sos << "  - ContentID         " << ci.content << "\n"
-                    << "    Category          " << ci.category << "\n"
-                    << "    Name              " << ci.friendlyName << "\n"
-                    << "    State             " << EnumToString(ci.state) << "\n"
-                    << "    Provider          " << ci.providerID << "\n"
-                    << "    Consumer          " << ci.consumerID << "\n"
-                    << "    LocalOnly         " << ci.localOnly << "\n"
-                    << "    FocusRequests     ";
-                for (const auto& focusRequest : ci.m_currentFocusRequests)
-                    sos << focusRequest << "," ;
-                sos << "\n"
-                    << "    ContentType       " << ci.contentType << "\n"
-                    << "    ContentDescriptor " << ci.contentDescriptor << "\n";
-            }
-        }));
+        sos << "DcsmComponent(" << m_myID << ") state:\n"
+            << "  LocalProvider " << m_localProviderAvailable << " (events pending " << m_consumerEvents.size() << ")\n"
+            << "  LocalConsumer " << m_localConsumerAvailable << " (events pending " << m_providerEvents.size() << ")\n"
+            << "  Connected to network " << m_connected << "\n"
+            << "  Connected participants:\n";
+        for (const auto& p : m_connectedParticipants)
+            sos << "  - " << p << "\n";
+        sos << "  Known content:\n";
+        for (const auto& p : m_contentRegistry)
+        {
+            const auto& ci = p.value;
+            sos << "  - ContentID         " << ci.content << "\n"
+                << "    Category          " << ci.category << "\n"
+                << "    Name              " << ci.friendlyName << "\n"
+                << "    State             " << EnumToString(ci.state) << "\n"
+                << "    Provider          " << ci.providerID << "\n"
+                << "    Consumer          " << ci.consumerID << "\n"
+                << "    LocalOnly         " << ci.localOnly << "\n"
+                << "    FocusRequests     ";
+            for (const auto& focusRequest : ci.m_currentFocusRequests)
+                sos << focusRequest << "," ;
+            sos << "\n"
+                << "    ContentType       " << ci.contentType << "\n"
+                << "    ContentDescriptor " << ci.contentDescriptor << "\n";
+        }
     }
 
     void DcsmComponent::triggerLogMessageForPeriodicLog()

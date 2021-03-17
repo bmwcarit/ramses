@@ -221,10 +221,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t TextureSamplerImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t TextureSamplerImpl::validate() const
     {
-        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = SceneObjectImpl::validate();
 
         status_t contentStatus = StatusOK;
         const Resource* resource = nullptr;
@@ -234,30 +233,26 @@ namespace ramses
         case ramses_internal::TextureSampler::ContentType::ClientTexture:
             resource = getSceneImpl().scanForResourceWithHash(sampler.textureResource);
             if (resource == nullptr)
-            {
-                addValidationMessage(EValidationSeverity_Error, indent, "Client texture set in TextureSampler does not exist");
-                return getValidationErrorStatus();
-            }
-            contentStatus = validateResource(resource, indent, visitedObjects);
+                return addValidationMessage(EValidationSeverity_Error, "Client texture set in TextureSampler does not exist");
+            contentStatus = validateResource(resource);
             break;
         case ramses_internal::TextureSampler::ContentType::RenderBuffer:
-            contentStatus = validateRenderBuffer(ramses_internal::RenderBufferHandle(sampler.contentHandle), indent, visitedObjects);
+            contentStatus = validateRenderBuffer(ramses_internal::RenderBufferHandle(sampler.contentHandle));
             break;
         case ramses_internal::TextureSampler::ContentType::TextureBuffer:
-            contentStatus = validateTextureBuffer(ramses_internal::TextureBufferHandle(sampler.contentHandle), indent, visitedObjects);
+            contentStatus = validateTextureBuffer(ramses_internal::TextureBufferHandle(sampler.contentHandle));
             break;
         case ramses_internal::TextureSampler::ContentType::StreamTexture:
-            contentStatus = validateStreamTexture(ramses_internal::StreamTextureHandle(sampler.contentHandle), indent, visitedObjects);
+            contentStatus = validateStreamTexture(ramses_internal::StreamTextureHandle(sampler.contentHandle));
             break;
         default:
-            addValidationMessage(EValidationSeverity_Error, indent, "There is no valid content source set in TextureSampler");
-            return getValidationErrorStatus();
+            return addValidationMessage(EValidationSeverity_Error, "There is no valid content source set in TextureSampler");
         }
 
-        return (contentStatus != StatusOK ? contentStatus : status);
+        return std::max(status, contentStatus);
     }
 
-    ramses::status_t TextureSamplerImpl::validateRenderBuffer(ramses_internal::RenderBufferHandle renderBufferHandle, uint32_t indent, StatusObjectSet& visitedObjects) const
+    ramses::status_t TextureSamplerImpl::validateRenderBuffer(ramses_internal::RenderBufferHandle renderBufferHandle) const
     {
         status_t status = StatusOK;
         bool foundRenderBuffer = false;
@@ -271,28 +266,19 @@ namespace ramses
                 if (renderBufferHandle == renderBuffer->impl.getRenderBufferHandle())
                 {
                     foundRenderBuffer = true;
-                    const status_t renderBufferStatus = addValidationOfDependentObject(indent, renderBuffer->impl, visitedObjects);
-                    if (StatusOK != renderBufferStatus)
-                    {
-                        status = renderBufferStatus;
-                    }
+                    status = addValidationOfDependentObject(renderBuffer->impl);
                     break;
                 }
             }
         }
 
         if (!foundRenderBuffer)
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "Texture Sampler is using a RenderBuffer which does not exist");
-            return getValidationErrorStatus();
-        }
+            return addValidationMessage(EValidationSeverity_Error, "Texture Sampler is using a RenderBuffer which does not exist");
 
         return status;
     }
 
-    ramses::status_t TextureSamplerImpl::validateTextureBuffer(ramses_internal::TextureBufferHandle textureBufferHandle,
-                                                               uint32_t                             indent,
-                                                               StatusObjectSet& visitedObjects) const
+    ramses::status_t TextureSamplerImpl::validateTextureBuffer(ramses_internal::TextureBufferHandle textureBufferHandle) const
     {
         status_t status             = StatusOK;
         bool     foundTextureBuffer = false;
@@ -305,28 +291,20 @@ namespace ramses
             {
                 if (textureBufferHandle == textureBuffer->impl.getTextureBufferHandle())
                 {
-                    foundTextureBuffer                 = true;
-                    const status_t textureBufferStatus = addValidationOfDependentObject(indent, textureBuffer->impl, visitedObjects);
-                    if (StatusOK != textureBufferStatus)
-                    {
-                        status = textureBufferStatus;
-                    }
+                    foundTextureBuffer = true;
+                    status = addValidationOfDependentObject(textureBuffer->impl);
                     break;
                 }
             }
         }
 
         if (!foundTextureBuffer)
-        {
-            addValidationMessage(
-                EValidationSeverity_Error, indent, "Texture Sampler is using a TextureBuffer which does not exist");
-            return getValidationErrorStatus();
-        }
+            return addValidationMessage(EValidationSeverity_Error, "Texture Sampler is using a TextureBuffer which does not exist");
 
         return status;
     }
 
-    ramses::status_t TextureSamplerImpl::validateStreamTexture(ramses_internal::StreamTextureHandle streamTextureHandle, uint32_t indent, StatusObjectSet& visitedObjects) const
+    ramses::status_t TextureSamplerImpl::validateStreamTexture(ramses_internal::StreamTextureHandle streamTextureHandle) const
     {
         status_t status = StatusOK;
         bool foundStreamTexture = false;
@@ -340,27 +318,22 @@ namespace ramses
                 if (streamTextureHandle == streamTexture->impl.getHandle())
                 {
                     foundStreamTexture = true;
-                    status = addValidationOfDependentObject(indent, streamTexture->impl, visitedObjects);
+                    status = addValidationOfDependentObject(streamTexture->impl);
                     break;
                 }
             }
         }
 
         if (!foundStreamTexture)
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "Texture Sampler is using a StreamTexture which does not exist");
-            return getValidationErrorStatus();
-        }
+            return addValidationMessage(EValidationSeverity_Error, "Texture Sampler is using a StreamTexture which does not exist");
 
         return status;
     }
 
-    ramses::status_t TextureSamplerImpl::validateResource(const Resource* resource, uint32_t indent, StatusObjectSet& visitedObjects) const
+    ramses::status_t TextureSamplerImpl::validateResource(const Resource* resource) const
     {
         if (!resource)
-        {
             return StatusOK;
-        }
 
         status_t textureStatus = StatusOK;
         const ERamsesObjectType resourceType = resource->getType();
@@ -369,19 +342,19 @@ namespace ramses
         case ERamsesObjectType_Texture2D:
         {
             const Texture2D& texture = RamsesObjectTypeUtils::ConvertTo<Texture2D>(*resource);
-            textureStatus = addValidationOfDependentObject(indent, texture.impl, visitedObjects);
+            textureStatus = addValidationOfDependentObject(texture.impl);
             break;
         }
         case ERamsesObjectType_Texture3D:
         {
             const Texture3D& texture = RamsesObjectTypeUtils::ConvertTo<Texture3D>(*resource);
-            textureStatus = addValidationOfDependentObject(indent, texture.impl, visitedObjects);
+            textureStatus = addValidationOfDependentObject(texture.impl);
             break;
         }
         case ERamsesObjectType_TextureCube:
         {
             const TextureCube& texture = RamsesObjectTypeUtils::ConvertTo<TextureCube>(*resource);
-            textureStatus = addValidationOfDependentObject(indent, texture.impl, visitedObjects);
+            textureStatus = addValidationOfDependentObject(texture.impl);
             break;
         }
         default:
@@ -391,5 +364,4 @@ namespace ramses
 
         return textureStatus;
     }
-
 }

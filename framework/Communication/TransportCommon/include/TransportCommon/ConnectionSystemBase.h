@@ -34,6 +34,7 @@ namespace ramses_internal
     public:
         ~ConnectionSystemBase() override;
 
+        void writeStateForLog(StringOutputStream& sos);
         void logConnectionInfo();
         void logPeriodicInfo();
 
@@ -944,35 +945,42 @@ namespace ramses_internal
     }
 
     // Logging functions
+
+    template <typename Callbacks>
+    void ConnectionSystemBase<Callbacks>::writeStateForLog(StringOutputStream& sos)
+    {
+        std::unique_lock<std::recursive_mutex> l(m_frameworkLock);
+        sos << "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::logConnectionInfo:\n";
+        sos << "  ProtocolVersion: " << m_protocolVersion << "\n";
+        sos << "  ParticipantId: " << m_participantId.getParticipantId() << "/" << m_participantId.getParticipantName() << "\n";
+        sos << "  Known participants:";
+        if (m_connected)
+        {
+            for (const auto& p : m_knownParticipants)
+            {
+                const auto& pstate = *p.value;
+                sos << "\n  - Pid " << pstate.pid << ", iid " << pstate.iid;
+                if (m_availableInstances.contains(pstate.iid))
+                    sos << "+";
+                else
+                    sos << "-";
+                if (m_connectedParticipants.contains(pstate.pid))
+                    sos << ", Connected";
+                else
+                    sos << ", Not connected";
+            }
+        }
+        else
+            sos << "  Not connected";
+        sos << "\n";
+        m_stack->logConnectionState(sos);
+    }
+
     template <typename Callbacks>
     void ConnectionSystemBase<Callbacks>::logConnectionInfo()
     {
-        std::unique_lock<std::recursive_mutex> l(m_frameworkLock);
         LOG_INFO_F(m_logContext, ([&](StringOutputStream& sos) {
-            sos << "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::logConnectionInfo:\n";
-            sos << "  ProtocolVersion: " << m_protocolVersion << "\n";
-            sos << "  ParticipantId: " << m_participantId.getParticipantId() << "/" << m_participantId.getParticipantName() << "\n";
-            sos << "  Known participants:";
-            if (m_connected)
-            {
-                for (const auto& p : m_knownParticipants)
-                {
-                    const auto& pstate = *p.value;
-                    sos << "\n  - Pid " << pstate.pid << ", iid " << pstate.iid;
-                    if (m_availableInstances.contains(pstate.iid))
-                        sos << "+";
-                    else
-                        sos << "-";
-                    if (m_connectedParticipants.contains(pstate.pid))
-                        sos << ", Connected";
-                    else
-                        sos << ", Not connected";
-                }
-            }
-            else
-                sos << "  Not connected";
-            sos << "\n";
-            m_stack->logConnectionState(sos);
+            writeStateForLog(sos);
         }));
     }
 

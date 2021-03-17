@@ -103,7 +103,7 @@ namespace ramses_internal
         }
     }
 
-    void SceneGraphComponent::sendSceneUpdate(const std::vector<Guid>& toVec, SceneUpdate&& sceneUpdate, SceneId sceneId, EScenePublicationMode /*mode*/)
+    void SceneGraphComponent::sendSceneUpdate(const std::vector<Guid>& toVec, SceneUpdate&& sceneUpdate, SceneId sceneId, EScenePublicationMode /*mode*/, StatisticCollectionScene& sceneStatistics)
     {
         // send to network (no ownership transfer)
         bool sendToSelf = false;
@@ -124,7 +124,7 @@ namespace ramses_internal
                     }
                     alreadyCompressed = true;
                 }
-                m_communicationSystem.sendSceneUpdate(to, sceneId, SceneUpdateSerializer(sceneUpdate));
+                m_communicationSystem.sendSceneUpdate(to, sceneId, SceneUpdateSerializer(sceneUpdate, sceneStatistics));
             }
         }
 

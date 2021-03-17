@@ -25,7 +25,13 @@ WARNING_DISABLE_GCC(-Wshadow)
     {
         Invalid = 0,
 
+        // TODO Violin should make this a public type with 28+! Currently reported as Int32
+        //Bool,
         Int32,
+        // And while we are at it, we could as well fix all the types...
+        // Support non-square matrices
+        // Support unsigned int vectors (OR remove unsigned int scalars) - does not make sense to have one but not the other
+        // Handle 'double' properly, _OR_ forbid it in the parsing stage (we currently downcast to float -> bad idea
         UInt16,
         UInt32,
         Float,

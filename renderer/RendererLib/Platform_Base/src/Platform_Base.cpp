@@ -130,17 +130,24 @@ namespace ramses_internal
         IEmbeddedCompositor& embeddedCompositor = renderBackend.getEmbeddedCompositor();
         ITextureUploadingAdapter& textureUploadingAdapter = renderBackend.getTextureUploadingAdapter();
 
+        LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy texture uploadadapter");
         destroyTextureUploadingAdapter(textureUploadingAdapter);
+        LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy embeddedcompositor");
         destroyEmbeddedCompositor(embeddedCompositor);
+        LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy device");
         destroyDevice(device);
+        LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy surface");
         destroySurface(surface);
+        LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy context");
         destroyContext(context);
+        LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy window");
         destroyWindow(window);
 
         std::vector<IRenderBackend*>::iterator renderBackendIter = find_c(m_renderBackends, &renderBackend);
         assert(m_renderBackends.end() != renderBackendIter);
         m_renderBackends.erase(renderBackendIter);
         delete &renderBackend;
+        LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: done.");
     }
 
     IResourceUploadRenderBackend* Platform_Base::createResourceUploadRenderBackend(const IRenderBackend& mainRenderBackend)

@@ -19,6 +19,8 @@ g_re_unwanted_fmt_include = re.compile(r'#\s*include\s*["<]fmt/(?!(?:format|chro
 g_re_unwanted_system_include = re.compile(r'#\s*include\s*"[^\.]+"')
 g_re_unwanted_force_thread_local = re.compile(r'#include\s*["<"]Utils/ThreadLocalLogForced\.h[">]')
 
+g_max_line_length = 400
+
 
 def check_deprecated(filename, file_contents, clean_file_contents, file_lines, clean_file_lines):
     """ Check for usage of deprecated constructs """
@@ -50,9 +52,10 @@ def check_deprecated(filename, file_contents, clean_file_contents, file_lines, c
                                'found disallowed #include "Utils/ThreadLocalLogForced.h" in header"', file_lines[line_number].strip(" \t\r\n"))
 
         # TODO: Fix offenders and reduce limit until some reasonable length is reached
-        if len(line) > 503:
+        if len(line) > g_max_line_length:
             common.log_warning("check_deprecated", filename, line_number + 1,
-                               f'line of {len(line)} characters too long, add some linebreaks ', file_lines[line_number].strip(" \t\r\n"))
+                               f'line of {len(line)} characters too long (max allowed {g_max_line_length}), add some linebreaks ',
+                               file_lines[line_number].strip(" \t\r\n"))
 
 
 if __name__ == "__main__":

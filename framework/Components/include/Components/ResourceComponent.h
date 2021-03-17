@@ -38,6 +38,8 @@ namespace ramses_internal
         virtual void reserveResourceCount(uint32_t totalCount) override;
         virtual ManagedResourceVector resolveResources(ResourceContentHashVector& vec) override;
 
+        virtual ResourceInfo const& getResourceInfo(ResourceContentHash const& hash) override;
+
         ManagedResourceVector getResources();
 
     private:

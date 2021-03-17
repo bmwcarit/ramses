@@ -10,38 +10,15 @@
 #include "Utils/LogMacros.h"
 #include "Collections/StringOutputStream.h"
 
-namespace ramses_internal
-{
-    static EValidationSeverityInternal convertToInternalEnum(ramses::EValidationSeverity severity)
-    {
-        switch (severity)
-        {
-        case ramses::EValidationSeverity_Info: return ramses_internal::EValidationSeverityInternal_Info;
-        case ramses::EValidationSeverity_Warning: return ramses_internal::EValidationSeverityInternal_Warning;
-        case ramses::EValidationSeverity_Error: return ramses_internal::EValidationSeverityInternal_Error;
-        default: return EValidationSeverityInternal_Error;
-        }
-    }
-}
-
 namespace ramses
 {
     StatusObjectImpl::StatusCache StatusObjectImpl::m_statusCache;
-    std::mutex StatusObjectImpl::m_statusCacheLock;
-
-    StatusObjectImpl::StatusObjectImpl()
-        : m_hasErrorMessages(false)
-    {
-    }
-
-    StatusObjectImpl::~StatusObjectImpl()
-    {
-    }
+    std::recursive_mutex StatusObjectImpl::m_statusCacheLock;
 
     status_t StatusObjectImpl::addErrorEntry(const char* message) const
     {
         LOG_ERROR(ramses_internal::CONTEXT_CLIENT, message);
-        std::lock_guard<std::mutex> g(m_statusCacheLock);
+        std::lock_guard<std::recursive_mutex> g(m_statusCacheLock);
         m_hasErrorMessages = true;
         return m_statusCache.addMessage(message);
     }
@@ -53,107 +30,109 @@ namespace ramses
 
     const char* StatusObjectImpl::getStatusMessage(status_t status) const
     {
-        std::lock_guard<std::mutex> g(m_statusCacheLock);
+        std::lock_guard<std::recursive_mutex> g(m_statusCacheLock);
         return m_statusCache.getMessage(status);
     }
 
-    status_t StatusObjectImpl::validate(uint32_t indent, StatusObjectSet& /*visitedObjects*/) const
+    status_t StatusObjectImpl::validate() const
     {
         status_t status = StatusOK;
 
-        std::lock_guard<std::mutex> g(m_statusCacheLock);
+        m_dependentObjects.clear();
+
+        std::lock_guard<std::recursive_mutex> g(m_statusCacheLock);
         m_validationMessages.clear();
         if (m_hasErrorMessages)
         {
-            addValidationMessage(EValidationSeverity_Warning, indent, "Following object has error status entries signaling wrong API usage, please check your error logs:");
-            status = getValidationErrorStatusUnsafe();
+            status = addValidationMessage(EValidationSeverity_Warning, "Object has error status entries signaling wrong API usage, please check your error logs:");
             m_hasErrorMessages = false;
         }
 
         return status;
     }
 
-    const char* StatusObjectImpl::getValidationReport(EValidationSeverity severityFilter) const
+    const char* StatusObjectImpl::getValidationReport(EValidationSeverity minSeverity) const
     {
         ramses_internal::StringOutputStream stringStream;
-        for(const auto& message : m_validationMessages)
-        {
-            if (message.severity >= ramses_internal::convertToInternalEnum(severityFilter))
-            {
-                for (uint32_t i = 0u; i < message.indentation; ++i)
-                {
-                    stringStream << " ";
-                }
-
-                switch (message.severity)
-                {
-                default:
-                case ramses_internal::EValidationSeverityInternal_Info:
-                    break;
-                case ramses_internal::EValidationSeverityInternal_Warning:
-                    stringStream << "WARNING: ";
-                    break;
-                case ramses_internal::EValidationSeverityInternal_Error:
-                    stringStream << "ERROR: ";
-                    break;
-                }
-
-                stringStream << message.message;
-                stringStream << "\n";
-            }
-        }
-
+        std::unordered_set<const StatusObjectImpl*> visitedObjs;
+        writeMessagesToStream(minSeverity, stringStream, 0u, visitedObjs);
         m_validationReport = stringStream.c_str();
+
         return m_validationReport.c_str();
     }
 
-    void StatusObjectImpl::addValidationObjectName(uint32_t indent, const ramses_internal::String& message) const
+    status_t StatusObjectImpl::addValidationMessage(EValidationSeverity severity, ramses_internal::String message) const
     {
-        ValidationMessage validationMessage;
-        validationMessage.severity = ramses_internal::EValidationSeverityInternal_ObjectName;
-        validationMessage.indentation = indent;
-        validationMessage.message = message;
-
-        m_validationMessages.push_back(validationMessage);
-    }
-
-    void StatusObjectImpl::addValidationMessage(EValidationSeverity severity, uint32_t indent, const ramses_internal::String& message) const
-    {
-        ValidationMessage validationMessage;
-        validationMessage.severity = ramses_internal::convertToInternalEnum(severity);
-        validationMessage.indentation = indent;
-        validationMessage.message = message;
-
-        m_validationMessages.push_back(validationMessage);
-    }
-
-    status_t StatusObjectImpl::addValidationOfDependentObject(uint32_t indent, const StatusObjectImpl& dependentObject, StatusObjectSet& visitedObjects) const
-    {
-        if (visitedObjects.contains(&dependentObject))
-            return StatusOK;
-        visitedObjects.put(&dependentObject);
-
-        const status_t status = dependentObject.validate(indent, visitedObjects);
-
-        if (status != StatusOK)
+        m_validationMessages.push_back({ severity, std::move(message) });
+        std::lock_guard<std::recursive_mutex> g(m_statusCacheLock);
+        switch (severity)
         {
-            for(const auto& message : dependentObject.m_validationMessages)
+        default:
+        case ramses::EValidationSeverity_Info:
+            return StatusOK;
+        case ramses::EValidationSeverity_Warning:
+            return m_statusCache.addMessage("Validation warning");
+        case ramses::EValidationSeverity_Error:
+            return m_statusCache.addMessage("Validation error");
+        }
+    }
+
+    status_t StatusObjectImpl::addValidationOfDependentObject(const StatusObjectImpl& dependentObject) const
+    {
+        assert(&dependentObject != this);
+        m_dependentObjects.push_back(&dependentObject);
+
+        return dependentObject.validate();
+    }
+
+    EValidationSeverity StatusObjectImpl::getMaxValidationSeverity() const
+    {
+        EValidationSeverity maxSeverity = EValidationSeverity_Info;
+        for (const auto& msg : m_validationMessages)
+            maxSeverity = std::max(maxSeverity, msg.severity);
+
+        return maxSeverity;
+    }
+
+    void StatusObjectImpl::writeMessagesToStream(EValidationSeverity minSeverity, ramses_internal::StringOutputStream& stream, size_t indent, std::unordered_set<const StatusObjectImpl*>& visitedObjs) const
+    {
+        if (minSeverity > EValidationSeverity_Info && visitedObjs.count(this) != 0)
+            return;
+        visitedObjs.insert(this);
+
+        std::string indentStr;
+        if (minSeverity == EValidationSeverity_Info)
+            indentStr.assign(indent * 2u, ' ');
+
+        // write this object's messages
+        for (const auto& message : m_validationMessages)
+        {
+            if (message.severity >= minSeverity)
             {
-                m_validationMessages.push_back(message);
+                stream << indentStr;
+                switch (message.severity)
+                {
+                default:
+                case EValidationSeverity_Info:
+                    break;
+                case EValidationSeverity_Warning:
+                    stream << "WARNING: ";
+                    break;
+                case EValidationSeverity_Error:
+                    stream << "ERROR: ";
+                    break;
+                }
+                stream << message.message << "\n";
             }
         }
 
-        return status;
-    }
-
-    status_t StatusObjectImpl::getValidationErrorStatus() const
-    {
-        std::lock_guard<std::mutex> g(m_statusCacheLock);
-        return getValidationErrorStatusUnsafe();
-    }
-
-    status_t StatusObjectImpl::getValidationErrorStatusUnsafe() const
-    {
-        return m_statusCache.addMessage("Validation of object revealed issues, retrieve validation report by calling getValidationReport() on affected object");
+        // write all dependent objects' messages (recursively)
+        if (!m_dependentObjects.empty())
+        {
+            if (minSeverity == EValidationSeverity_Info)
+                stream << indentStr << "- " << m_dependentObjects.size() << " dependent objects:\n";
+            for (const auto& dep : m_dependentObjects)
+                dep->writeMessagesToStream(minSeverity, stream, indent + 1, visitedObjs);
+        }
     }
 }

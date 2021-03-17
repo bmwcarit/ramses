@@ -89,7 +89,10 @@ namespace ramses_internal
         in.versionTag = SceneVersionTag(2);
 
         EXPECT_EQ(fmt::to_string(in),
-            "FlushInformation:[valid:true;flushcounter:14;version:2;resChanges[+:1;-:1;resActions:1];refActions:1;time[0;exp:12345;int:54321];sizeInfo:[node=1 camera=2 transform=3 renderable=4 state=5 datalayout=6 datainstance=7 renderGroup=8 renderPass=9 blitPass=10 renderTarget=11 renderBuffer=12 textureSampler=13 streamTexture=14 dataSlot=15 dataBuffer=16 animationSystem=17 textureBuffer=18 pickableObjectCount=19 sceneReferenceCount=20]]");
+            "FlushInformation:[valid:true;flushcounter:14;version:2;"
+                "resChanges[+:1;-:1;resActions:1];refActions:1;time[0;exp:12345;int:54321];"
+                "sizeInfo:[node=1 camera=2 transform=3 renderable=4 state=5 datalayout=6 datainstance=7 renderGroup=8 renderPass=9 blitPass=10 renderTarget=11 renderBuffer=12 textureSampler=13 streamTexture=14 dataSlot=15 "
+                "dataBuffer=16 animationSystem=17 textureBuffer=18 pickableObjectCount=19 sceneReferenceCount=20]]");
     }
 
 }

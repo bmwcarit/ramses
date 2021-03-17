@@ -53,7 +53,7 @@ namespace ramses_internal
 
         // ISceneGraphSender
         virtual void sendCreateScene(const Guid& to, const SceneId& sceneId, EScenePublicationMode mode) override;
-        virtual void sendSceneUpdate(const std::vector<Guid>& toVec, SceneUpdate&& sceneUpdate, SceneId sceneId, EScenePublicationMode mode) override;
+        virtual void sendSceneUpdate(const std::vector<Guid>& toVec, SceneUpdate&& sceneUpdate, SceneId sceneId, EScenePublicationMode mode, StatisticCollectionScene& sceneStatistics) override;
         virtual void sendPublishScene(SceneId sceneId, EScenePublicationMode mode, const String& name) override;
         virtual void sendUnpublishScene(SceneId sceneId, EScenePublicationMode mode) override;
 

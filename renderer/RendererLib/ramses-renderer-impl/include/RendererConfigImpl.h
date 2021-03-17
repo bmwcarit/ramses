@@ -56,7 +56,7 @@ namespace ramses
         //impl methods
         const ramses_internal::RendererConfig& getInternalRendererConfig() const;
 
-        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
+        virtual status_t validate() const override;
 
     private:
         ramses_internal::RendererConfig    m_internalConfig;

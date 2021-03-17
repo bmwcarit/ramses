@@ -25,6 +25,7 @@ class TestNoInitialBlackFrame(test_classes.OnSelectedTargetsTest):
         self.percentageOfRGBDifferenceAllowedPerPixel = 0.008  # allows +/- 2 for rgb values (needed e.g. for ufo driver)
 
         self.testLayer = DEFAULT_TEST_LAYER + 1
+        self.testSurface = 101
 
         # Start black background renderer
         self.rendererbackground = self.target.start_default_renderer("--wayland-socket-embedded wayland-12")
@@ -32,7 +33,7 @@ class TestNoInitialBlackFrame(test_classes.OnSelectedTargetsTest):
         self.addCleanup(self.target.kill_application, self.rendererbackground)
 
         applicationName = "ramses-local-client-test-{}".format(self.target.defaultPlatform)
-        self.application = self.target.start_renderer(applicationName, args="-sid 101 -tn 4", automap=True)
+        self.application = self.target.start_renderer(applicationName, args="-sid {} -tn 4".format(self.testSurface), automap=True)
 
         self.checkThatApplicationWasStarted(self.application)
         self.addCleanup(self.target.kill_application, self.application)
@@ -49,6 +50,14 @@ class TestNoInitialBlackFrame(test_classes.OnSelectedTargetsTest):
 
         self.validateScreenshot(self.application, "black_rgb.png", useSystemCompositorForScreenshot=True)
 
-        self.assertTrue(self.application.send_ramsh_command("step 1", response_message="Surface with scene should now be visible"))
+        # Wait for handle configuration message on test surface, because it indicates that a surface with the right buffer size
+        # has been attached to the surface. This means that surface is already being rendered by system compositor.
+        # It is more correct to wait for frame callback, but this is not possible because renderer runs in update only mode
+        # (after rendering one and only one frame) so it does not poll for events on window connection socket to sys compositor, i.e., does
+        # not handle events from sys compositor to window. Instead, renderer still runs SCC update in update only mode, which receives events
+        # happening on SCC socket connection to sys compositor
+
+        handleConfigurationMessage = "IVIControllerSurface::HandleConfigurationCallback ivi-id: {} width: 1280 height: 480".format(self.testSurface)
+        self.assertTrue(self.application.send_ramsh_command("step 1", response_message=handleConfigurationMessage))
 
         self.validateScreenshot(self.application, "red_triangle_on_blue_background.png", useSystemCompositorForScreenshot=True)

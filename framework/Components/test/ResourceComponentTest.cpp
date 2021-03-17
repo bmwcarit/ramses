@@ -10,6 +10,7 @@
 #include "ResourceMock.h"
 #include "gmock/gmock.h"
 #include "Resource/ArrayResource.h"
+#include "Resource/TextureResource.h"
 #include "DummyResource.h"
 #include "Components/ResourceDeleterCallingCallback.h"
 #include "Components/SceneUpdate.h"
@@ -106,15 +107,16 @@ namespace ramses_internal
             EXPECT_CALL(*resource, getDecompressedDataSize()).Times(AnyNumber());
         }
 
-        static std::vector<std::vector<Byte>> SerializeResources(const ManagedResourceVector& resVec, uint32_t chunkSize = 100000)
+        std::vector<std::vector<Byte>> serializeResources(const ManagedResourceVector& resVec, uint32_t chunkSize = 100000)
         {
             SceneUpdate update{SceneActionCollection(), resVec, {}};
-            return TestSerializeSceneUpdateToVectorChunked(SceneUpdateSerializer(update), chunkSize);
+            return TestSerializeSceneUpdateToVectorChunked(SceneUpdateSerializer(update, sceneStatistics), chunkSize);
         }
 
     protected:
         PlatformLock frameworkLock;
         const String resourceFileName;
+        StatisticCollectionScene sceneStatistics;
     };
 
     class AResourceComponentTest : public ResourceComponentTestBase
@@ -141,7 +143,7 @@ namespace ramses_internal
             const IResource* res = resVec.front().get();
             const ResourceContentHash hash = res->getHash();
 
-            const auto dataVec = SerializeResources(resVec);
+            const auto dataVec = serializeResources(resVec);
             assert(1u == dataVec.size());
 
             return{ dataVec[0], hash };
@@ -507,5 +509,54 @@ namespace ramses_internal
         ASSERT_EQ(2u, resolved.size());
         EXPECT_TRUE(resolved[0]->getHash() == hashes[0]);
         EXPECT_TRUE(resolved[1]->getHash() == hashes[1]);
+    }
+
+    TEST_F(AResourceComponentTest, getsResourceInfoForResourceHashVector)
+    {
+        IResource* tex = new TextureResource(EResourceType_Texture2D, TextureMetaInfo(1u, 1u, 1u, ETextureFormat::R8, false, {}, { 1u }), ResourceCacheFlag_DoNotCache, String());
+        tex->setResourceData(ResourceBlob{ 2 }, { 4u, 4u });
+        auto res1 = localResourceComponent.manageResource(*CreateTestResource());
+        auto res2 = localResourceComponent.manageResource(*CreateTestResource(1.0f, 2));
+        auto res3 = localResourceComponent.manageResource(*tex);
+
+        for (auto& res : { res1, res2, res3 })
+        {
+            ResourceInfo info = localResourceComponent.getResourceInfo(res->getHash());
+
+            EXPECT_EQ(info.hash, res->getHash());
+            EXPECT_EQ(info.compressedSize, res->getCompressedDataSize());
+            EXPECT_EQ(info.decompressedSize, res->getDecompressedDataSize());
+            EXPECT_EQ(info.type, res->getTypeID());
+        }
+    }
+
+    TEST_F(AResourceComponentTest, getsResourceInfoForResourcesLoadedFromFile)
+    {
+        auto hash = setupTest(resourceFileName, localResourceComponent);
+
+        // resource info available before loading the file
+        EXPECT_EQ(localResourceComponent.getResource(hash), ManagedResource{});
+        ResourceInfo infoBefore = localResourceComponent.getResourceInfo(hash);
+        EXPECT_EQ(infoBefore.hash, hash);
+        EXPECT_EQ(infoBefore.compressedSize, 0u);
+        EXPECT_EQ(infoBefore.decompressedSize, 36u);
+        EXPECT_EQ(infoBefore.type, EResourceType_VertexArray);
+
+        ManagedResource fromfile = localResourceComponent.loadResource(hash);
+
+        ResourceInfo info = localResourceComponent.getResourceInfo(hash);
+        EXPECT_EQ(info.hash, fromfile->getHash());
+        EXPECT_EQ(info.compressedSize, fromfile->getCompressedDataSize());
+        EXPECT_EQ(info.decompressedSize, fromfile->getDecompressedDataSize());
+        EXPECT_EQ(info.type, fromfile->getTypeID());
+        EXPECT_EQ(info, infoBefore);
+
+
+        // infos stay available when unloading
+        fromfile.reset();
+        EXPECT_EQ(localResourceComponent.getResource(hash), ManagedResource{});
+
+        info = localResourceComponent.getResourceInfo(hash);
+        EXPECT_EQ(info, infoBefore);
     }
 }

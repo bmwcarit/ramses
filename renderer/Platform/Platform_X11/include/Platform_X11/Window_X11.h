@@ -73,6 +73,7 @@ namespace ramses_internal
         Bool m_bLButtonDown;
         Bool m_bRButtonDown;
         Bool m_bMButtonDown;
+        X11WindowHandle m_userProvidedWindowHandle;
     };
 }
 

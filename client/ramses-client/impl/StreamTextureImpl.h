@@ -28,7 +28,7 @@ namespace ramses
 
         void initializeFrameworkData(waylandIviSurfaceId_t source, const Texture2DImpl& fallbackTexture);
         virtual void deinitializeFrameworkData() override;
-        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
+        virtual status_t validate() const override;
 
         status_t forceFallbackImage(bool forceFallbackImage);
         bool getForceFallbackImage() const;

@@ -153,7 +153,6 @@ int main(int argc, const char* argv[])
                 renderer.doOneLoop();
                 renderer.setLoopMode(ramses::ELoopMode_UpdateOnly);
 
-                LOG_INFO(ramses_internal::CONTEXT_SMOKETEST, "Surface with scene should now be visible");
                 // The integration test checks here, if the surface with the scene is now visible on the screen
                 // by doing a screenshot from the system compositor.
 

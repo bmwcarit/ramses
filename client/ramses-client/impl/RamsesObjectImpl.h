@@ -57,7 +57,10 @@ namespace ramses
 
         virtual void deinitializeFrameworkData() = 0;
 
-        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
+        virtual status_t validate() const override;
+
+    protected:
+        virtual status_t addValidationMessage(EValidationSeverity severity, ramses_internal::String message) const override;
 
     private:
         ERamsesObjectType       m_type;

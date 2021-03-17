@@ -56,8 +56,7 @@ namespace ramses
 
     TEST_F(ARamsesClient, canBeValidated)
     {
-        ramses::StatusObjectImpl::StatusObjectSet visitedObjects;
-        EXPECT_EQ(StatusOK, m_client.impl.validate(0, visitedObjects));
+        EXPECT_EQ(StatusOK, m_client.validate());
     }
 
     TEST_F(ARamsesClient, failsValidationWhenContainsSceneWithInvalidRenderPass)

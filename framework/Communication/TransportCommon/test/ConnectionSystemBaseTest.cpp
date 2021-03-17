@@ -6,6 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#include "Collections/StringOutputStream.h"
 #include "Utils/StatisticCollection.h"
 #include "ConnectionSystemTestCommon.h"
 #include "ScopedLogContextLevel.h"
@@ -478,6 +479,14 @@ namespace ramses_internal
         EXPECT_CALL(stack, logConnectionState(_));
         connsys->logConnectionInfo();
         connsys->logPeriodicInfo();
+    }
+
+    TEST_F(AConnectionSystem, canWriteStateForLog)
+    {
+        StringOutputStream sos;
+        EXPECT_CALL(stack, logConnectionState(_));
+        connsys->writeStateForLog(sos);
+        EXPECT_FALSE(sos.release().empty());
     }
 
     TEST_F(AConnectionSystemConnected, disconnectsOnUnicastSendFailure)

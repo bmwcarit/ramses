@@ -88,6 +88,8 @@ namespace ramses_internal
         IEmbeddedCompositor& getEmbeddedCompositor(ramses::displayId_t displayId);
         IEmbeddedCompositingManager& getEmbeddedCompositorManager(ramses::displayId_t displayId);
 
+        bool hasSystemCompositorController() const;
+
     private:
         ramses::RamsesRenderer* m_renderer = nullptr;
         ramses::RendererSceneControl* m_sceneControlAPI = nullptr;

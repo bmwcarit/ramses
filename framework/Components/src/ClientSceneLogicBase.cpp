@@ -142,7 +142,7 @@ namespace ramses_internal
             m_scenegraphSender.sendCreateScene(subscriber, m_sceneId, m_scenePublicationMode);
         }
         m_scene.getStatisticCollection().statSceneActionsSent.incCounter(sceneUpdate.actions.numberOfActions()*static_cast<UInt32>(m_subscribersWaitingForScene.size()));
-        m_scenegraphSender.sendSceneUpdate(m_subscribersWaitingForScene, std::move(sceneUpdate), m_sceneId, m_scenePublicationMode);
+        m_scenegraphSender.sendSceneUpdate(m_subscribersWaitingForScene, std::move(sceneUpdate), m_sceneId, m_scenePublicationMode, m_scene.getStatisticCollection());
 
         m_subscribersActive.insert(m_subscribersActive.end(), m_subscribersWaitingForScene.begin(), m_subscribersWaitingForScene.end());
         m_subscribersWaitingForScene.clear();
@@ -205,13 +205,11 @@ namespace ramses_internal
         std::fill(m_resourceMaxSize.begin(), m_resourceMaxSize.end(), 0);
         std::fill(m_resourceDataSize.begin(), m_resourceDataSize.end(), 0);
 
-        ManagedResourceVector resVector = m_resourceComponent.resolveResources(m_newResources);
-        for (auto const& res : resVector)
+        for (auto const& hash : m_newResources)
         {
-            assert(res);
-
+            ResourceInfo const& info = m_resourceComponent.getResourceInfo(hash);
             EResourceStatisticIndex index = EResourceStatisticIndex_ArrayResource;
-            switch (res->getTypeID())
+            switch (info.type)
             {
             case EResourceType_VertexArray:
             case EResourceType_IndexArray:
@@ -229,7 +227,7 @@ namespace ramses_internal
             case EResourceType_NUMBER_OF_ELEMENTS:
                 assert(0);
             }
-            const auto size = res->getDecompressedDataSize();
+            const auto size = info.decompressedSize;
 
             m_resourceCount[index]++;
             m_resourceDataSize[index] += size;

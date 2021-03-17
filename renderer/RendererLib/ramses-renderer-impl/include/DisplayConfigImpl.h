@@ -46,8 +46,11 @@ namespace ramses
         status_t setClearColor(float red, float green, float blue, float alpha);
         status_t setOffscreen(bool offscreenFlag);
         status_t setDepthStencilBufferType(EDepthBufferType depthBufferType);
+        status_t setX11WindowHandle(unsigned long x11WindowHandle);
+        unsigned long getX11WindowHandle() const;
         status_t setWindowsWindowHandle(void* hwnd);
         void*    getWindowsWindowHandle() const;
+        status_t setAsyncEffectUploadEnabled(bool enabled);
 
         //impl methods
         const ramses_internal::DisplayConfig& getInternalDisplayConfig() const;

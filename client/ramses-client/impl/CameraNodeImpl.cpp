@@ -131,34 +131,21 @@ namespace ramses
         NodeImpl::deinitializeFrameworkData();
     }
 
-    status_t CameraNodeImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t CameraNodeImpl::validate() const
     {
-        status_t status = NodeImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = NodeImpl::validate();
 
         if (!m_frustumInitialized && !isFrustumPlanesBound())
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "Camera frustum is not initialized!");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Error, "Camera frustum is not initialized!");
 
         if (!getProjectionParams().isValid())
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "Camera frustum invalid!");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Error, "Camera frustum invalid!");
 
         if (!m_viewportInitialized && !(isViewportOffsetBound() && isViewportSizeBound()))
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "Camera viewport is not initialized!");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Error, "Camera viewport is not initialized!");
 
         if (getViewportWidth() == 0 || getViewportHeight() == 0)
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "Camera viewport invalid!");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Error, "Camera viewport invalid!");
 
         return status;
     }

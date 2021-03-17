@@ -37,6 +37,10 @@ void DisplayRenderingTests::setUpTestCases(RendererTestsFramework& testFramework
     displayConfigWithoutStencil.setWindowRectangle(0, 0, ramses_internal::IntegrationScene::DefaultViewportWidth, ramses_internal::IntegrationScene::DefaultViewportHeight);
     ramses::DisplayConfig::setDepthStencilBufferType(displayConfigWithoutStencil, ramses::EDepthBufferType_Depth);
 
+    ramses::DisplayConfig displayConfigWithoutAsyncEffectUpload = RendererTestUtils::CreateTestDisplayConfig(3);
+    displayConfigWithoutAsyncEffectUpload.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
+    ramses::DisplayConfig::setAsyncEffectUploadEnabled(displayConfigWithoutAsyncEffectUpload, false);
+
     testFramework.createTestCase(DisplayRenderingTest_TwoScenes, *this, "DisplayRenderingTest_TwoScenes").m_displayConfigs.push_back(displayConfig1);
     testFramework.createTestCase(DisplayRenderingTest_UnpublishScene, *this, "DisplayRenderingTest_UnpublishScene").m_displayConfigs.push_back(displayConfig1);
     testFramework.createTestCase(DisplayRenderingTest_HideScene, *this, "DisplayRenderingTest_HideScene").m_displayConfigs.push_back(displayConfig1);
@@ -78,12 +82,15 @@ void DisplayRenderingTests::setUpTestCases(RendererTestsFramework& testFramework
 
     testFramework.createTestCase(DisplayRenderingTest_FramebufferWithoutDepthAndStencil, *this, "DisplayRenderingTest_FramebufferWithoutDepthAndStencil").m_displayConfigs.push_back(displayConfigWithoutDepthAndStencil);
     testFramework.createTestCase(DisplayRenderingTest_FramebufferWithoutStencil , *this, "DisplayRenderingTest_FramebufferWithoutStencil").m_displayConfigs.push_back(displayConfigWithoutStencil);
+
+    testFramework.createTestCase(DisplayRenderingTest_AsyncEffectUploadDisabled, *this, "DisplayRenderingTest_AsyncEffectUploadDisabled").m_displayConfigs.push_back(displayConfigWithoutAsyncEffectUpload);
 }
 
 bool DisplayRenderingTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)
 {
     switch (testCase.m_id)
     {
+    case DisplayRenderingTest_AsyncEffectUploadDisabled:
     case DisplayRenderingTest_TwoScenes:
         return runTwoScenesTest(testFramework);
     case DisplayRenderingTest_UnpublishScene:

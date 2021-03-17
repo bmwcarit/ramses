@@ -110,6 +110,7 @@ namespace ramses_internal
             DisplayHandle display,
             bool keepEffectsUploaded,
             uint64_t gpuCacheSize,
+            bool asyncEffectUploadEnabled,
             IBinaryShaderCache* binaryShaderCache);
 
     private:

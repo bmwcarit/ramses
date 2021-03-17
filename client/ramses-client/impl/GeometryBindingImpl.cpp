@@ -97,26 +97,22 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t GeometryBindingImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t GeometryBindingImpl::validate() const
     {
-        status_t status = SceneObjectImpl::validate(indent, visitedObjects);
+        status_t status = SceneObjectImpl::validate();
 
-        const status_t effectStatus = validateEffect(indent, visitedObjects);
+        const status_t effectStatus = validateEffect();
         if (StatusOK != effectStatus)
-        {
             status = effectStatus;
-        }
 
-        const status_t attributeStatus = validateAttribute(indent, visitedObjects);
+        const status_t attributeStatus = validateAttribute();
         if (StatusOK != attributeStatus)
-        {
             status = attributeStatus;
-        }
 
         return status;
     }
 
-    status_t GeometryBindingImpl::validateEffect(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t GeometryBindingImpl::validateEffect() const
     {
         ObjectIteratorImpl iter(getSceneImpl().getObjectRegistry(), ERamsesObjectType_Effect);
         RamsesObject* ramsesObject = iter.getNext();
@@ -124,18 +120,15 @@ namespace ramses
         {
             const Effect& effect = RamsesObjectTypeUtils::ConvertTo<Effect>(*ramsesObject);
             if (&effect.impl == m_effectImpl)
-            {
-                return addValidationOfDependentObject(indent, *m_effectImpl, visitedObjects);
-            }
+                return addValidationOfDependentObject(*m_effectImpl);
 
             ramsesObject = iter.getNext();
         }
 
-        addValidationMessage(EValidationSeverity_Error, indent, "GeometryBinding is referring to an invalid Effect");
-        return getValidationErrorStatus();
+        return addValidationMessage(EValidationSeverity_Error, "GeometryBinding is referring to an invalid Effect");
     }
 
-    status_t GeometryBindingImpl::validateAttribute(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t GeometryBindingImpl::validateAttribute() const
     {
         status_t status = StatusOK;
         const ramses_internal::DataLayout& layout = getIScene().getDataLayout(m_attributeLayout);
@@ -149,21 +142,17 @@ namespace ramses
             {
                 const ramses_internal::EDataType fieldDataType = layout.getField(fieldIndex).dataType;
                 const status_t dataBufferStatus =
-                    validateDataBuffer(indent, dataResource.dataBuffer, fieldDataType, visitedObjects);
+                    validateDataBuffer(dataResource.dataBuffer, fieldDataType);
                 if (StatusOK != dataBufferStatus)
-                {
                     status = dataBufferStatus;
-                }
             }
             else
             {
                 if (dataResource.hash.isValid())
                 {
-                    const status_t resourceStatus = validateResource(indent, dataResource.hash, visitedObjects);
+                    const status_t resourceStatus = validateResource(dataResource.hash);
                     if (StatusOK != resourceStatus)
-                    {
                         status = resourceStatus;
-                    }
                 }
             }
         }
@@ -171,37 +160,28 @@ namespace ramses
         return status;
     }
 
-    status_t GeometryBindingImpl::validateResource(uint32_t indent, ramses_internal::ResourceContentHash resourceHash, StatusObjectSet& visitedObjects) const
+    status_t GeometryBindingImpl::validateResource(ramses_internal::ResourceContentHash resourceHash) const
     {
         const Resource* resource = getSceneImpl().scanForResourceWithHash(resourceHash);
         if (nullptr == resource)
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "GeometryBinding is referring to resource that does not exist");
-            return getValidationErrorStatus();
-        }
+            return addValidationMessage(EValidationSeverity_Error, "GeometryBinding is referring to resource that does not exist");
 
-        return addValidationOfDependentObject(indent, resource->impl, visitedObjects);
+        return addValidationOfDependentObject(resource->impl);
     }
 
-    status_t GeometryBindingImpl::validateDataBuffer(uint32_t indent, ramses_internal::DataBufferHandle dataBuffer, ramses_internal::EDataType fieldDataType, StatusObjectSet& visitedObjects) const
+    status_t GeometryBindingImpl::validateDataBuffer(ramses_internal::DataBufferHandle dataBuffer, ramses_internal::EDataType fieldDataType) const
     {
         if (!getIScene().isDataBufferAllocated(dataBuffer))
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "GeometryBinding is referring to data buffer that does not exist");
-            return getValidationErrorStatus();
-        }
+            return addValidationMessage(EValidationSeverity_Error, "GeometryBinding is referring to data buffer that does not exist");
 
         const auto dataBufferType = getIScene().getDataBuffer(dataBuffer).dataType;
         if (!dataTypeMatchesInputType(dataBufferType, fieldDataType))
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "GeometryBinding is referring to data buffer with type that does not match data layout field type");
-            return getValidationErrorStatus();
-        }
+            return addValidationMessage(EValidationSeverity_Error, "GeometryBinding is referring to data buffer with type that does not match data layout field type");
 
         const ArrayBufferImpl* dataBufferImpl = findDataBuffer(dataBuffer);
         assert(nullptr != dataBufferImpl);
 
-        return addValidationOfDependentObject(indent, *dataBufferImpl, visitedObjects);
+        return addValidationOfDependentObject(*dataBufferImpl);
     }
 
     ramses::ArrayBufferImpl* GeometryBindingImpl::findDataBuffer(ramses_internal::DataBufferHandle dataBufferHandle) const

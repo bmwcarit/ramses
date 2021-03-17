@@ -14,6 +14,7 @@
 #include "Components/ResourceDeleterCallingCallback.h"
 #include "ResourceMock.h"
 #include "ResourceSerializationTestHelper.h"
+#include "Utils/StatisticCollection.h"
 #include "gmock/gmock.h"
 
 namespace ramses_internal
@@ -23,7 +24,7 @@ namespace ramses_internal
     public:
         bool serialize(size_t pktSize)
         {
-            SceneUpdateSerializer sus(update);
+            SceneUpdateSerializer sus(update, sceneStatistics);
             std::vector<Byte> vec(pktSize);
             return sus.writeToPackets({vec.data(), vec.size()}, [&](size_t s) {
                 data.push_back(vec);
@@ -103,6 +104,7 @@ namespace ramses_internal
         SceneUpdateStreamDeserializer deser;
         ResourceDeleterCallingCallback deleterMock;
         SceneUpdate update;
+        StatisticCollectionScene sceneStatistics;
         std::vector<std::vector<Byte>> data;
     };
 
@@ -160,9 +162,38 @@ namespace ramses_internal
         expectDeserializeToSame();
     }
 
+    TEST_F(ASceneUpdateSerialization, updatesStatisticsForSinglePacket)
+    {
+        EXPECT_TRUE(serialize(100));
+        EXPECT_EQ(1u, sceneStatistics.statSceneUpdatesGeneratedPackets.getCounterValue());
+        size_t curSize = data.front().size();
+        data.clear();
+        EXPECT_EQ(curSize, sceneStatistics.statSceneUpdatesGeneratedSize.getCounterValue());
+
+        EXPECT_TRUE(serialize(100));
+        EXPECT_EQ(2u, sceneStatistics.statSceneUpdatesGeneratedPackets.getCounterValue());
+        curSize += data.front().size();
+        data.clear();
+        EXPECT_EQ(curSize, sceneStatistics.statSceneUpdatesGeneratedSize.getCounterValue());
+
+        addTestActions();
+        EXPECT_TRUE(serialize(100));
+        EXPECT_EQ(3u, sceneStatistics.statSceneUpdatesGeneratedPackets.getCounterValue());
+        curSize += data.front().size();
+        EXPECT_EQ(curSize, sceneStatistics.statSceneUpdatesGeneratedSize.getCounterValue());
+    }
+
+    TEST_F(ASceneUpdateSerialization, updatesStatisticsForMultiplePackets)
+    {
+        for (size_t i = 0; i < 100; ++i)
+            addTestActions();
+        EXPECT_TRUE(serialize(100));
+        EXPECT_EQ(data.size(), sceneStatistics.statSceneUpdatesGeneratedPackets.getCounterValue());
+    }
+
     TEST_F(ASceneUpdateSerialization, failsSerializeWhenWriteFunctionFailsOnFirstPacket)
     {
-        SceneUpdateSerializer sus(update);
+        SceneUpdateSerializer sus(update, sceneStatistics);
         std::vector<Byte> vec(60);
         EXPECT_FALSE(sus.writeToPackets({vec.data(), vec.size()}, [&](size_t) {
             return false;
@@ -172,7 +203,7 @@ namespace ramses_internal
     TEST_F(ASceneUpdateSerialization, failsSerializeWhenWriteFunctionFailsOnLaterPacketInResource)
     {
         update.resources.push_back(CreateTestResource(2500));
-        SceneUpdateSerializer sus(update);
+        SceneUpdateSerializer sus(update, sceneStatistics);
         std::vector<Byte> vec(60);
         int cnt = 0;
         EXPECT_FALSE(sus.writeToPackets({vec.data(), vec.size()}, [&](size_t) {
@@ -186,7 +217,7 @@ namespace ramses_internal
     {
         for (size_t i = 0; i < 100; ++i)
             addTestActions();
-        SceneUpdateSerializer sus(update);
+        SceneUpdateSerializer sus(update, sceneStatistics);
         std::vector<Byte> vec(60);
         int cnt = 0;
         EXPECT_FALSE(sus.writeToPackets({vec.data(), vec.size()}, [&](size_t) {

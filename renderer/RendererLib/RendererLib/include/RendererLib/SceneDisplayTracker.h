@@ -23,17 +23,12 @@ namespace ramses_internal
     public:
         void setSceneOwnership(SceneId scene, DisplayHandle display);
         DisplayHandle getSceneOwnership(SceneId scene) const;
+        void unregisterDisplay(DisplayHandle display);
 
         // 3 return types - valid display, invalid display (error), no value (broadcast)
         absl::optional<DisplayHandle> determineDisplayFromRendererCommand(const RendererCommand::Variant& cmd) const;
 
-        // Some commands (e.g. publish/unpublish) are broadcast to all displays (there is no relevant scene ownership),
-        // this is to query if an event is a result of such command
-        static bool IsEventResultOfBroadcastCommand(ERendererEventType eventType);
-
     private:
-        std::unordered_map<SceneId, DisplayHandle> m_sceneToDisplay;
-
         // scene commands
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::ReceiveScene& cmd) const { return getSceneOwnership(cmd.info.sceneID); }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::UpdateScene& cmd) const { return getSceneOwnership(cmd.scene); }
@@ -81,6 +76,8 @@ namespace ramses_internal
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::FrameProfiler_TimingGraphHeight&) const { return {}; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::FrameProfiler_CounterGraphHeight&) const { return {}; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::FrameProfiler_RegionFilterFlags&) const { return {}; }
+
+        std::unordered_map<SceneId, DisplayHandle> m_sceneToDisplay;
     };
 
     inline absl::optional<DisplayHandle> SceneDisplayTracker::determineDisplayFromRendererCommand(const RendererCommand::Variant& cmd) const

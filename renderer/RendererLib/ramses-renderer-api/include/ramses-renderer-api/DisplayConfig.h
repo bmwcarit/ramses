@@ -292,10 +292,31 @@ namespace ramses
         static status_t setDepthStencilBufferType(DisplayConfig& config, EDepthBufferType depthBufferType);
 
         /**
-        * @brief [Only for Windows] Set the HWND handle for custom display creation.
+        * @brief [Only for X11] Set the X11 window handle to create a ramses display from an existing X11 window.
         *
-        * - This is the HWND variable (very platform dependent)
-        * - On other systems except for Windows, the value has no meaning
+        * - This method is platform dependent!
+        * - On other backends except for X11, the value has no meaning
+        *
+        * @param[in] x11WindowHandle native X11 window id to use for the display window.
+        *   The type is equivalent to \verbatim ::Window \endverbatim from the X11 headers.
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setX11WindowHandle(unsigned long x11WindowHandle);
+
+        /**
+        * @brief [Only for X11] Get the current setting of the X11 window handle
+        *
+        * @return the current setting of the X11 window handle, returns numerical maximum value if no value has been set yet.
+        * The returned type is equivalent to \verbatim ::Window \endverbatim from the X11 headers.
+        */
+        unsigned long getX11WindowHandle() const;
+
+        /**
+        * @brief [Only for Windows] Set the HWND handle to create a ramses display from an existing HWND window on a Window platform.
+        *
+        * - This method is platform dependent!
+        * - On other systems except for Windows, calling this method has no meaning
         *
         * @param[in] hwnd Windows window handle to use for the display window
         * @return StatusOK on success, otherwise the returned status can be used
@@ -326,6 +347,31 @@ namespace ramses
         * @return Wayland display name to use for connection, empty means default
         */
         const char* getWaylandDisplay() const;
+
+        /**
+        * @brief   Sets whether async shader/effect compilation and upload should be enabled.
+        *          By default async effect compile and upload is enabled.
+        * @details Shader compilation can be a relatively slow and computationally intense task on some platforms.
+        *          This can lead to undesirable performance overhead, i.e., if shader compilation stalls rendering
+        *          and upload of other resources.
+        *
+        *          Enabling async effect upload lets the renderer create a shared context and a separate
+        *          thread that are used exclusively for shader compilation and upload.
+        *
+        *          It is recommended to leave async effect compile and upload enabled, and to disable it only for
+        *          development and debugging purposes when necessary.
+        *          If async effect compile and upload is disabled using this function the renderer will still create
+        *          the components normally used for this purpose, i.e., a shared context
+        *          and an additional thread, but their logic will not be triggered.
+        *          Instead, shaders will be compiled and uploaded within the rendering loop, i.e. potentially stalling rendering.
+        *
+        * @param[in] config The display config to call this method on. This API is temporarily added in static fashion for ABI compatibility.
+        * @param[in] enabled Set to true to enable async effect upload, false to disable it.
+        *
+        * @return  StatusOK on success, otherwise the returned status can be used to resolve
+        *          to resolve error message using getStatusMessage()
+        */
+        static status_t setAsyncEffectUploadEnabled(DisplayConfig& config, bool enabled);
 
         /**
         * Stores internal data for implementation specifics of DisplayConfig.

@@ -56,6 +56,9 @@ namespace ramses_internal
     struct IntegrityEglDisplayIdTag {};
     using IntegrityRGLDeviceUnit = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), IntegrityEglDisplayIdTag>;
 
+    struct X11WindowHandleTag {};
+    using X11WindowHandle = StronglyTypedValue<unsigned long, std::numeric_limits<unsigned long>::max(), X11WindowHandleTag>;
+
     struct WindowsWindowHandleTag {};
     using WindowsWindowHandle = StronglyTypedValue<void *, nullptr, WindowsWindowHandleTag>;
 

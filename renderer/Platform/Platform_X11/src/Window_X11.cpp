@@ -173,6 +173,7 @@ namespace ramses_internal
         , m_bLButtonDown(false)
         , m_bRButtonDown(false)
         , m_bMButtonDown(false)
+        , m_userProvidedWindowHandle(displayConfig.getX11WindowHandle())
     {
         LOG_DEBUG(CONTEXT_RENDERER, "Window_X11::Window_X11");
     }
@@ -199,6 +200,29 @@ namespace ramses_internal
 
     Bool Window_X11::init()
     {
+        if(m_userProvidedWindowHandle.isValid())
+        {
+            m_X11WindowData.window = m_userProvidedWindowHandle.getValue();
+
+            LOG_INFO(CONTEXT_RENDERER, "Window_X11::init from existing X11 window: " << m_X11WindowData.window);
+            m_X11WindowData.display = XOpenDisplay(nullptr);
+
+            if (!m_X11WindowData.display)
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "Error: Unable to open X display\n");
+                return false;
+            }
+
+            XWindowAttributes windowAttributes;
+            XGetWindowAttributes(m_X11WindowData.display, m_X11WindowData.window, &windowAttributes);
+            m_posX = windowAttributes.x;
+            m_posY = windowAttributes.y;
+            m_width = windowAttributes.width;
+            m_height = windowAttributes.height;
+
+            return true;
+        }
+
         LOG_DEBUG(CONTEXT_RENDERER, "Window_X11::initX11WindowAndGetNativeHandles XOpenDisplay");
         m_X11WindowData.display = XOpenDisplay(nullptr);
         if (!m_X11WindowData.display)
@@ -216,6 +240,7 @@ namespace ramses_internal
         XSetWindowAttributes windowAttributes;
         PlatformMemory::Set(&windowAttributes, 0, sizeof(windowAttributes));
 
+        // TODO Violin/Mohamed this is only used during creation, should not store here
         m_X11WindowData.screen = XDefaultScreen(m_X11WindowData.display);
 
         // Get the root window parameters

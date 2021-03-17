@@ -8,6 +8,7 @@
 
 #include "Components/LogDcsmInfo.h"
 #include "Components/DcsmComponent.h"
+#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
@@ -21,7 +22,9 @@ namespace ramses_internal
 
     bool LogDcsmInfo::executeInput(const std::vector<std::string>& /*input*/)
     {
-        m_dcsmComponent.logInfo();
+        LOG_INFO_F(CONTEXT_DCSM, ([&](StringOutputStream& sos) {
+            m_dcsmComponent.writeStateForLog(sos);
+        }));
         return true;
     }
 }

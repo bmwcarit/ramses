@@ -134,6 +134,14 @@ namespace ramses_internal
     }
 
     // log triggers
+    void SomeIPConnectionSystemMultiplexer::writeStateForLog(StringOutputStream& sos)
+    {
+        if (m_ramsesConnectionSystem)
+            m_ramsesConnectionSystem->writeStateForLog(sos);
+        if (m_dcsmConnectionSystem)
+            m_dcsmConnectionSystem->writeStateForLog(sos);
+    }
+
     void SomeIPConnectionSystemMultiplexer::logConnectionInfo()
     {
         if (m_ramsesConnectionSystem)

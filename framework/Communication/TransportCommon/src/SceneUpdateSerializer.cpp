@@ -11,14 +11,15 @@
 
 namespace ramses_internal
 {
-    SceneUpdateSerializer::SceneUpdateSerializer(const SceneUpdate& update)
+    SceneUpdateSerializer::SceneUpdateSerializer(const SceneUpdate& update, StatisticCollectionScene& sceneStatistics)
         : m_update(update)
+        , m_sceneStatistics(sceneStatistics)
     {
     }
 
     bool SceneUpdateSerializer::writeToPackets(absl::Span<Byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc) const
     {
-        SingleSceneUpdateWriter writer(m_update, packetMem, writeDoneFunc);
+        SingleSceneUpdateWriter writer(m_update, packetMem, writeDoneFunc, m_sceneStatistics);
         return writer.write();
     }
 
@@ -27,4 +28,8 @@ namespace ramses_internal
         return m_update;
     }
 
+    const StatisticCollectionScene& SceneUpdateSerializer::getStatisticCollection() const
+    {
+        return m_sceneStatistics;
+    }
 }

@@ -133,4 +133,9 @@ namespace ramses_internal
 
         return result;
     }
+
+    ResourceInfo const& ResourceComponent::getResourceInfo(ResourceContentHash const& hash)
+    {
+        return m_resourceStorage.getResourceInfo(hash);
+    }
 }

@@ -44,6 +44,7 @@ namespace ramses_internal
         virtual void enableContext() = 0;
         virtual IEmbeddedCompositingManager& getECManager(DisplayHandle display) = 0;
         virtual IEmbeddedCompositor& getEC(DisplayHandle display) = 0;
+        virtual bool hasSystemCompositorController() const = 0;
 
         virtual ~IDisplayBundle() = default;
     };
@@ -65,6 +66,9 @@ namespace ramses_internal
         // needed for EC tests...
         virtual IEmbeddedCompositingManager& getECManager(DisplayHandle display) override;
         virtual IEmbeddedCompositor& getEC(DisplayHandle display) override;
+
+        // needed for Renderer lifecycle tests...
+        virtual bool hasSystemCompositorController() const override;
 
     private:
         void update();

@@ -45,11 +45,11 @@ The ramses-resource-packer expects a config file which holds all input resource 
 a list of filenames separated by new lines. A valid resource files config file looks like this:
 
 \code
-res/effect-resource-1.res<br>
-res/effect-resource-2.res<br>
-res/texture-1.res<br>
-res/texture-2.res<br>
-res/texture-3.res<br>
+res/effect-resource-1.res
+res/effect-resource-2.res
+res/texture-1.res
+res/texture-2.res
+res/texture-3.res
 \endcode
 
 */

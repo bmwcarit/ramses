@@ -8,15 +8,17 @@
 
 #include "TransportCommon/SingleSceneUpdateWriter.h"
 #include "TransportCommon/SceneUpdateSerializationHelper.h"
+#include "Utils/StatisticCollection.h"
 #include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
-    SingleSceneUpdateWriter::SingleSceneUpdateWriter(const SceneUpdate& update, absl::Span<Byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc)
+    SingleSceneUpdateWriter::SingleSceneUpdateWriter(const SceneUpdate& update, absl::Span<Byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc, StatisticCollectionScene& sceneStatistics)
         : m_update(update)
         , m_packetMem(packetMem)
         , m_writeDoneFunc(writeDoneFunc)
         , m_packetWriter(m_packetMem.data(), static_cast<uint32_t>(m_packetMem.size()))
+        , m_sceneStatistics(sceneStatistics)
     {
         /*
           Packet format
@@ -177,6 +179,8 @@ namespace ramses_internal
             LOG_ERROR_P(CONTEXT_COMMUNICATION, "SingleSceneUpdateWriter::finalizePacket: Packet write failed (size {})", m_packetWriter.getBytesWritten());
             return false;
         }
+        m_sceneStatistics.statSceneUpdatesGeneratedSize.incCounter(static_cast<uint32_t>(m_packetWriter.getBytesWritten()));
+        m_sceneStatistics.statSceneUpdatesGeneratedPackets.incCounter(1);
 
         ++m_packetNum;
         return true;

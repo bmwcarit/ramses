@@ -46,6 +46,7 @@ namespace ramses_internal
         bool setCarModelVisibility(bool visibility);
         bool setExclusiveBackground(bool state);
         bool setStreamID(int32_t streamID);
+        bool setContentFlippedVertically(bool state);
 
         bool hasPreviewImagePng() const;
         bool hasPreviewDescription() const;
@@ -57,6 +58,7 @@ namespace ramses_internal
         bool hasCarModelVisibility() const;
         bool hasExclusiveBackground() const;
         bool hasStreamID() const;
+        bool hasContentFlippedVertically() const;
 
         std::vector<unsigned char> getPreviewImagePng() const;
         std::u32string getPreviewDescription() const;
@@ -69,6 +71,7 @@ namespace ramses_internal
         bool getCarModelVisibility() const;
         bool getExclusiveBackground() const;
         int32_t getStreamID() const;
+        bool getContentFlippedVertically() const;
 
         bool operator==(const DcsmMetadata& other) const;
         bool operator!=(const DcsmMetadata& other) const;
@@ -93,6 +96,7 @@ namespace ramses_internal
         AnimationInformation m_carModelViewTiming = {};
         bool m_exclusiveBackground = false;
         bool m_carModelVisibility = false;
+        bool m_contentFlippedVertically = false;
 
         bool m_hasCarModelView = false;
         bool m_hasPreviewImagePng = false;
@@ -104,6 +108,7 @@ namespace ramses_internal
         bool m_hasCarModelVisibility = false;
         bool m_hasExclusiveBackground = false;
         bool m_hasStreamID = false;
+        bool m_hasContentFlippedVertically = false;
     };
 
     static_assert(std::is_nothrow_move_constructible<DcsmMetadata>::value, "DcsmMetadata must be movable");
@@ -148,6 +153,8 @@ struct fmt::formatter<ramses_internal::DcsmMetadata> : public ramses_internal::S
             fmt::format_to(ctx.out(), "exclBG:{}; ", dm.m_exclusiveBackground);
         if (dm.hasStreamID())
             fmt::format_to(ctx.out(), "streamID:{}; ", dm.m_streamID);
+        if (dm.hasContentFlippedVertically())
+            fmt::format_to(ctx.out(), "contentFlippedVertically:{}; ", dm.m_contentFlippedVertically);
         return fmt::format_to(ctx.out(), "]");
     }
 };

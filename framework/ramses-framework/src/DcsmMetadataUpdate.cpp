@@ -129,4 +129,13 @@ namespace ramses
         return impl.getStreamID();
     }
 
+    bool DcsmMetadataUpdate::hasContentFlippedVertically() const
+    {
+        return impl.hasContentFlippedVertically();
+    }
+
+    bool DcsmMetadataUpdate::getContentFlippedVertically() const
+    {
+        return impl.getContentFlippedVertically();
+    }
 }

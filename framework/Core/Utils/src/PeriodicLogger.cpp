@@ -144,10 +144,6 @@ namespace ramses_internal
                     UInt32 numberTimeIntervals = m_statisticCollection.getNumberTimeIntervalsSinceLastSummaryReset();
                     output << "msgIn ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statMessagesReceived.getSummary(), numberTimeIntervals);
-                    output << " srMsgIn ";
-                    logStatisticSummaryEntry(output, m_statisticCollection.statSendResourceMessagesReceived.getSummary(), numberTimeIntervals);
-                    output << " rrMsgIn ";
-                    logStatisticSummaryEntry(output, m_statisticCollection.statRequestResourceMessagesReceived.getSummary(), numberTimeIntervals);
                     output << " msgO ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statMessagesSent.getSummary(), numberTimeIntervals);
                     output << " res+ ";
@@ -156,12 +152,6 @@ namespace ramses_internal
                     logStatisticSummaryEntry(output, m_statisticCollection.statResourcesDestroyed.getSummary(), numberTimeIntervals);
                     output << " resNr ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statResourcesNumber.getSummary(), numberTimeIntervals);
-                    output << " resOS ";
-                    logStatisticSummaryEntry(output, m_statisticCollection.statResourcesSentSize.getSummary(), numberTimeIntervals);
-                    output << " resONr ";
-                    logStatisticSummaryEntry(output, m_statisticCollection.statResourcesSentNumber.getSummary(), numberTimeIntervals);
-                    output << " resINr ";
-                    logStatisticSummaryEntry(output, m_statisticCollection.statResourcesReceivedNumber.getSummary(), numberTimeIntervals);
                     output << " resF ";
                     logStatisticSummaryEntry(output, m_statisticCollection.statResourcesLoadedFromFileNumber.getSummary(), numberTimeIntervals);
                     output << " resFS ";
@@ -193,6 +183,10 @@ namespace ramses_internal
                             logStatisticSummaryEntry(output, entry.value->statSceneActionsSent.getSummary(), numberTimeIntervals);
                             output << " actSkp ";
                             logStatisticSummaryEntry(output, entry.value->statSceneActionsSentSkipped.getSummary(), numberTimeIntervals);
+                            output << " suG ";
+                            logStatisticSummaryEntry(output, entry.value->statSceneUpdatesGeneratedPackets.getSummary(), numberTimeIntervals);
+                            output << " suGS ";
+                            logStatisticSummaryEntry(output, entry.value->statSceneUpdatesGeneratedSize.getSummary(), numberTimeIntervals);
                             output << " ar# ";
                             logStatisticSummaryEntry(output, entry.value->statResourceCount[EResourceStatisticIndex_ArrayResource].getSummary(), numberTimeIntervals);
                             output << " aras ";

@@ -166,18 +166,11 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
             ramses::CategoryInfoUpdate categoryInfo{{ ci.renderSize }, { ci.categoryRect }};
             dcsmContentControl.addContentCategory(ramses::Category(ci.category), ci.display, categoryInfo);
         }
-        Handler handler(dcsmContentControl);
-        dcsmContentControl.update(0u, handler);
 
-        while (!commandExit->exitRequested() && handler.readyContents.empty())
+        Handler handler(dcsmContentControl);
+        while (!commandExit->exitRequested())
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
-            dcsmContentControl.update(0, handler);
-        }
-
-        while (!commandExit->exitRequested() && !handler.readyContents.empty())
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
             dcsmContentControl.update(0, handler);
         }
     }

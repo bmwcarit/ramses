@@ -105,16 +105,13 @@ namespace ramses
         return m_hashUsage.getHash();
     }
 
-    status_t ResourceImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t ResourceImpl::validate() const
     {
-        const status_t status = SceneObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        const status_t status = SceneObjectImpl::validate();
         ramses_internal::StringOutputStream stringStream;
         stringStream << "Resource ID: " << m_resourceId;
         stringStream << "  Resource Hash: " << m_hashUsage.getHash();
-        stringStream << "  Resource Type: " << getType();
-        stringStream << "  Name: " << getName();
-        addValidationMessage(EValidationSeverity_Info, indent, stringStream.c_str());
+        addValidationMessage(EValidationSeverity_Info, ramses_internal::String{ stringStream.release() });
         return status;
     }
 

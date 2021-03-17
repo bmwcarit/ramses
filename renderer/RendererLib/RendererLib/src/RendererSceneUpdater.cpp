@@ -123,7 +123,14 @@ namespace ramses_internal
                 return;
             }
             // ownership of uploadStrategy is transferred into RendererResourceManager
-            auto resourceManager = createResourceManager(renderBackend, *asyncEffectUploader, embeddedCompositingManager, handle, displayConfig.getKeepEffectsUploaded(), displayConfig.getGPUMemoryCacheSize(), binaryShaderCache);
+            auto resourceManager = createResourceManager(renderBackend,
+                                                        *asyncEffectUploader,
+                                                        embeddedCompositingManager,
+                                                        handle,
+                                                        displayConfig.getKeepEffectsUploaded(),
+                                                        displayConfig.getGPUMemoryCacheSize(),
+                                                        displayConfig.isAsyncEffectUploadEnabled(),
+                                                        binaryShaderCache);
 
             m_asyncEffectUploaders.insert({ handle , std::move(asyncEffectUploader) });
             m_displayResourceManagers.insert({ handle, std::move(resourceManager) });
@@ -146,11 +153,12 @@ namespace ramses_internal
         DisplayHandle,
         bool keepEffectsUploaded,
         uint64_t gpuCacheSize,
+        bool asyncEffectUploadEnabled,
         IBinaryShaderCache* binaryShaderCache)
     {
         return std::make_unique<RendererResourceManager>(
             renderBackend,
-            std::make_unique<ResourceUploader>(binaryShaderCache),
+            std::make_unique<ResourceUploader>(asyncEffectUploadEnabled, binaryShaderCache),
             asyncEffectUploader,
             embeddedCompositingManager,
             keepEffectsUploaded,

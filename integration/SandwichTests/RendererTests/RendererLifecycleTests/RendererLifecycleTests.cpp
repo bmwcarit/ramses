@@ -1128,10 +1128,10 @@ namespace ramses_internal
 
         testScenesAndRenderer.initializeRenderer(rendererConfig);
 
-        if (RendererTestUtils::HasSystemCompositorEnabled())
-        {
-            createDisplayForWindow(0u, false);
+        createDisplayForWindow(0u, false);
 
+        if (testRenderer.hasSystemCompositorController())
+        {
             const auto startTime = std::chrono::steady_clock::now();
 
             testRenderer.flushRenderer();
@@ -1154,11 +1154,11 @@ namespace ramses_internal
 
         testScenesAndRenderer.initializeRenderer(rendererConfig);
 
-        if (RendererTestUtils::HasSystemCompositorEnabled())
-        {
-            createDisplayForWindow(0u, false);
-            createDisplayForWindow(1u, false);
+        createDisplayForWindow(0u, false);
+        createDisplayForWindow(1u, false);
 
+        if (testRenderer.hasSystemCompositorController())
+        {
             const auto startTime = std::chrono::steady_clock::now();
 
             testRenderer.flushRenderer();
@@ -1173,81 +1173,6 @@ namespace ramses_internal
         testScenesAndRenderer.destroyRenderer();
     }
 
-    TEST_F(ARendererLifecycleTest, PollingFrameCallbacks_UnreadyDisplayDoesNotBlockReadyDisplay)
-    {
-        const std::chrono::seconds largePollingTime{100u};
-        auto rendererConfig = RendererTestUtils::CreateTestRendererConfig();
-        rendererConfig.setFrameCallbackMaxPollTime(std::chrono::duration_cast<std::chrono::microseconds>(largePollingTime).count());
-
-        testScenesAndRenderer.initializeRenderer(rendererConfig);
-
-        if (RendererTestUtils::HasSystemCompositorEnabled())
-        {
-            const ramses::displayId_t display1 = createDisplayForWindow(0u, true);
-            createDisplayForWindow(1u, false);
-
-            const ramses::sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, Vector3(0.0f, 0.0f, 5.0f));
-
-            testScenesAndRenderer.publish(sceneId);
-            testScenesAndRenderer.flush(sceneId);
-            testRenderer.setSceneMapping(sceneId, display1);
-            ASSERT_TRUE(testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered));
-
-            const auto startTime = std::chrono::steady_clock::now();
-
-            testRenderer.flushRenderer();
-            testRenderer.doOneLoop();
-
-            testScenesAndRenderer.getScenesRegistry().setSceneState<MultipleTrianglesScene>(sceneId, MultipleTrianglesScene::TRIANGLES_REORDERED);
-            testScenesAndRenderer.flush(sceneId);
-            ASSERT_TRUE(checkScreenshot(display1, "ARendererInstance_Triangles_reordered"));
-
-            const auto timeElapsed  = std::chrono::steady_clock::now() - startTime;
-
-            const auto maximumExpectedTime = largePollingTime / 2;
-            ASSERT_TRUE(timeElapsed < maximumExpectedTime);
-        }
-
-        testScenesAndRenderer.destroyRenderer();
-    }
-
-    TEST_F(ARendererLifecycleTest, PollingFrameCallbacks_UnreadyDisplayDoesNotBlockReadyDisplay_DisplaysInOtherOrder)
-    {
-        const std::chrono::seconds largePollingTime{100u};
-        auto rendererConfig = RendererTestUtils::CreateTestRendererConfig();
-        rendererConfig.setFrameCallbackMaxPollTime(std::chrono::duration_cast<std::chrono::microseconds>(largePollingTime).count());
-
-        testScenesAndRenderer.initializeRenderer(rendererConfig);
-
-        if (RendererTestUtils::HasSystemCompositorEnabled())
-        {
-            createDisplayForWindow(0u, false);
-            const ramses::displayId_t display2 = createDisplayForWindow(1u, true);
-
-            const ramses::sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, Vector3(0.0f, 0.0f, 5.0f));
-
-            testScenesAndRenderer.publish(sceneId);
-            testScenesAndRenderer.flush(sceneId);
-            testRenderer.setSceneMapping(sceneId, display2);
-            ASSERT_TRUE(testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered));
-
-            const auto startTime = std::chrono::steady_clock::now();
-
-            testRenderer.flushRenderer();
-            testRenderer.doOneLoop();
-
-            testScenesAndRenderer.getScenesRegistry().setSceneState<MultipleTrianglesScene>(sceneId, MultipleTrianglesScene::TRIANGLES_REORDERED);
-            testScenesAndRenderer.flush(sceneId);
-            ASSERT_TRUE(checkScreenshot(display2, "ARendererInstance_Triangles_reordered"));
-
-            const auto timeElapsed  = std::chrono::steady_clock::now() - startTime;
-            const auto maximumExpectedTime = largePollingTime / 2;
-            ASSERT_TRUE(timeElapsed < maximumExpectedTime);
-        }
-
-        testScenesAndRenderer.destroyRenderer();
-    }
-
     TEST_F(ARendererLifecycleTest, PollingFrameCallbacks_ReadyDisplayDoesNotStarveOtherDisplay)
     {
         const std::chrono::milliseconds nonTrivialPollingTime{50u};
@@ -1256,11 +1181,11 @@ namespace ramses_internal
 
         testScenesAndRenderer.initializeRenderer(rendererConfig);
 
-        if (RendererTestUtils::HasSystemCompositorEnabled())
-        {
-            const ramses::displayId_t display1 = createDisplayForWindow(0u, true);
-            createDisplayForWindow(1u, true); //nothing gets rendered on it, so it is ALWAYS ready (except right after clearing)
+        const ramses::displayId_t display1 = createDisplayForWindow(0u, true);
+        createDisplayForWindow(1u, true); //nothing gets rendered on it, so it is ALWAYS ready (except right after clearing)
 
+        if (testRenderer.hasSystemCompositorController())
+        {
             ASSERT_TRUE(checkScreenshot(display1, "ARendererDisplays_Black"));
 
             const ramses::sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, Vector3(0.0f, 0.0f, 5.0f));
@@ -1290,11 +1215,11 @@ namespace ramses_internal
 
         testScenesAndRenderer.initializeRenderer(rendererConfig);
 
-        if (RendererTestUtils::HasSystemCompositorEnabled())
-        {
-            createDisplayForWindow(0u, true); //nothing gets rendered on it, so it is ALWAYS ready (except right after clearing)
-            const ramses::displayId_t display2 = createDisplayForWindow(1u, true);
+        createDisplayForWindow(0u, true); //nothing gets rendered on it, so it is ALWAYS ready (except right after clearing)
+        const ramses::displayId_t display2 = createDisplayForWindow(1u, true);
 
+        if (testRenderer.hasSystemCompositorController())
+        {
             ASSERT_TRUE(checkScreenshot(display2, "ARendererDisplays_Black"));
 
             const ramses::sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, Vector3(0.0f, 0.0f, 5.0f));

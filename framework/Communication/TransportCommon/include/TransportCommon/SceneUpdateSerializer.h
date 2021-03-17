@@ -14,16 +14,19 @@
 namespace ramses_internal
 {
     struct SceneUpdate;
+    class StatisticCollectionScene;
 
     class SceneUpdateSerializer : public ISceneUpdateSerializer
     {
     public:
-        explicit SceneUpdateSerializer(const SceneUpdate& update);
+        explicit SceneUpdateSerializer(const SceneUpdate& update, StatisticCollectionScene& sceneStatistics);
         bool writeToPackets(absl::Span<Byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc) const override;
 
         const SceneUpdate& getUpdate() const;
+        const StatisticCollectionScene& getStatisticCollection() const;
     private:
         const SceneUpdate& m_update;
+        StatisticCollectionScene& m_sceneStatistics;
     };
 }
 

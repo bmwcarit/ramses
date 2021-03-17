@@ -131,6 +131,15 @@ namespace ramses
         status_t setStreamID(int32_t streamID);
 
         /**
+         * @brief Set the contentFlippedVertically metadata entry. Requests to show widget mirrored on Y-axis.
+         *
+         * @param state true to request consumer to flip content vertically, false to not flip.
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t setContentFlippedVertically(bool state);
+
+        /**
          * @brief Deleted move constructor
          * @param other unused
          */

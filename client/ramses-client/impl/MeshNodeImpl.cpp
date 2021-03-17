@@ -87,47 +87,26 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t MeshNodeImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t MeshNodeImpl::validate() const
     {
-        status_t status = NodeImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = NodeImpl::validate();
         if (nullptr == m_appearanceImpl)
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "meshnode does not have an appearance set");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Error, "meshnode does not have an appearance set");
         else
-        {
-            if (addValidationOfDependentObject(indent, *m_appearanceImpl, visitedObjects) != StatusOK)
-            {
-                status = getValidationErrorStatus();
-            }
-        }
+            status = std::max(status, addValidationOfDependentObject(*m_appearanceImpl));
 
         if (nullptr == m_geometryImpl)
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "meshnode does not have a geometryBinding set");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Error, "meshnode does not have a geometryBinding set");
         else
         {
-            if (addValidationOfDependentObject(indent, *m_geometryImpl, visitedObjects) != StatusOK)
-            {
-                status = getValidationErrorStatus();
-            }
+            status = std::max(status, addValidationOfDependentObject(*m_geometryImpl));
 
             const bool hasIndexArray = m_geometryImpl->getIndicesCount() > 0;
             if (hasIndexArray && (m_geometryImpl->getIndicesCount() < getStartIndex() + getIndexCount()))
-            {
-                addValidationMessage(EValidationSeverity_Error, indent, "startIndex + indexCount exceeds indices of indexarray");
-                status = getValidationErrorStatus();
-            }
+                status = addValidationMessage(EValidationSeverity_Error, "startIndex + indexCount exceeds indices of indexarray");
 
             if (getIndexCount() == 0)
-            {
-                addValidationMessage(EValidationSeverity_Error, indent, "indexCount must be greater 0");
-                status = getValidationErrorStatus();
-            }
+                status = addValidationMessage(EValidationSeverity_Error, "indexCount must be greater 0");
         }
         return status;
     }

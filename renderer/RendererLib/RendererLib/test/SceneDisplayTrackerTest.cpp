@@ -105,7 +105,7 @@ namespace ramses_internal
         EXPECT_FALSE(tracker.determineDisplayFromRendererCommand(RendererCommand::FrameProfiler_RegionFilterFlags{}));
     }
 
-    TEST_F(ASceneDisplayTracker, returnsInvalidDisplayIfNoOwnershio)
+    TEST_F(ASceneDisplayTracker, returnsInvalidDisplayIfNoOwnership)
     {
         constexpr SceneId sceneId{ 123 };
         const auto disp = tracker.determineDisplayFromRendererCommand(RendererCommand::ReceiveScene{ SceneInfo{ sceneId } });
@@ -113,11 +113,24 @@ namespace ramses_internal
         EXPECT_FALSE(disp->isValid());
     }
 
-    TEST_F(ASceneDisplayTracker, checksIfEventIsResultOfBroadcastCommand)
+    TEST_F(ASceneDisplayTracker, returnsInvalidDisplayIfNoOwnerDisplayUnregistered)
     {
-        EXPECT_FALSE(tracker.IsEventResultOfBroadcastCommand(ERendererEventType::DisplayCreated));
-        EXPECT_FALSE(tracker.IsEventResultOfBroadcastCommand(ERendererEventType::SceneStateChanged));
-        EXPECT_TRUE(tracker.IsEventResultOfBroadcastCommand(ERendererEventType::ScenePublished));
-        EXPECT_TRUE(tracker.IsEventResultOfBroadcastCommand(ERendererEventType::SceneUnpublished));
+        constexpr SceneId sceneId1{ 123 };
+        constexpr SceneId sceneId2{ 124 };
+        constexpr DisplayHandle display1{ 2u };
+        constexpr DisplayHandle display2{ 3u };
+
+        tracker.setSceneOwnership(sceneId1, display1);
+        tracker.setSceneOwnership(sceneId2, display2);
+        EXPECT_EQ(display1, tracker.getSceneOwnership(sceneId1));
+        EXPECT_EQ(display2, tracker.getSceneOwnership(sceneId2));
+
+        tracker.unregisterDisplay(display2);
+        EXPECT_EQ(display1, tracker.getSceneOwnership(sceneId1));
+        EXPECT_FALSE(tracker.getSceneOwnership(sceneId2).isValid());
+
+        tracker.unregisterDisplay(display1);
+        EXPECT_FALSE(tracker.getSceneOwnership(sceneId1).isValid());
+        EXPECT_FALSE(tracker.getSceneOwnership(sceneId2).isValid());
     }
 }

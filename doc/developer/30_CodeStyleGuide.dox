@@ -289,7 +289,7 @@ class MyClass
 - Style Checker: N/A
 
 
-### Always use <b>const</b> wherever possible.
+### Always use const wherever possible.
 Mutable is allowed in specific cases (caching, locks) but must keep
 'logical' constness - changes may not be visible to the outside.
 

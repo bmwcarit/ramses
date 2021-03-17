@@ -9,6 +9,7 @@
 #ifndef RAMSES_SOMEIPCONNECTIONSYSTEMMULTIPLEXER_H
 #define RAMSES_SOMEIPCONNECTIONSYSTEMMULTIPLEXER_H
 
+#include "Collections/StringOutputStream.h"
 #include "TransportCommon/ICommunicationSystem.h"
 #include "Common/ParticipantIdentifier.h"
 #include "PlatformAbstraction/PlatformLock.h"
@@ -69,6 +70,7 @@ namespace ramses_internal
 
 
         // log triggers
+        void writeStateForLog(StringOutputStream& sos);
         virtual void logConnectionInfo() override;
         virtual void triggerLogMessageForPeriodicLog() override;
 

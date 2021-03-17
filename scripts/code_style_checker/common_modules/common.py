@@ -106,7 +106,7 @@ def get_all_files_with_filter(sdk_root, root, positive, negative):
     """
 
     positive_re = re.compile("|".join(["({})".format(p) for p in positive]))
-    negative_re = re.compile("|".join(["({})".format(n) for n in negative]))
+    negative_re = negative and re.compile("|".join(["({})".format(n) for n in negative]))
 
     filenames = []
     for f in subprocess.check_output(['git', 'ls-files', '--full-name', root], cwd=root, shell=False).decode('utf-8').split('\n'):
@@ -115,7 +115,7 @@ def get_all_files_with_filter(sdk_root, root, positive, negative):
             neg_match = False
             relative_path = f.replace('\\', '/')
             pos_match = positive_re.search(relative_path)
-            neg_match = negative_re.search(relative_path)
+            neg_match = negative_re and negative_re.search(relative_path)
             if pos_match and not neg_match:
                 filenames.append(os.path.join(sdk_root, relative_path))
 

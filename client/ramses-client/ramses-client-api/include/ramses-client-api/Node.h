@@ -162,6 +162,8 @@ namespace ramses
         * @deprecated This function is deprecated and will be removed in one of the next
         *             major releases. It is encouraged if possible to already migrate to using
         *             #ramses::Node::setRotation(float,float,float,ERotationConvention) and #ramses::Node::getRotation(float&,float&,float&,ERotationConvention&)const.
+        *             If this function is used it is strongly advised to use it for node rotation in the whole scene, i.e., to completely avoid using set/get rotation
+        *             with custom convention within same scene.
         *
         * @param[in] x The value in degrees for the rotation around x-axis.
         * @param[in] y The value in degrees for the rotation around y-axis.
@@ -175,6 +177,9 @@ namespace ramses
         * @brief Sets the absolute rotation in all three directions for right-handed rotation using the chosen Euler
         *        angles rotation convention. If this function is used to set, then only
         *        #ramses::Node::getRotation(float&,float&,float&,ERotationConvention&)const can be used to get node rotation.
+        *
+        *        It is possible to use different rotation conventions on different nodes within the same scene. However, it is strongly
+        *        advised not to mix this function with set/get rotation with legacy convention within same scene.
         *
         * @param[in] x The value in degrees for the rotation around x-axis in case of Tait-Bryan conventions, for Proper Euler conventions specifies
                        the rotation angle for the first angle in the convention name.
@@ -200,6 +205,8 @@ namespace ramses
         * @deprecated This function is deprecated and will be removed in one of the next
         *             major releases. It is encouraged if possible to already migrate to using
         *             #ramses::Node::setRotation(float,float,float,ERotationConvention) and #ramses::Node::getRotation(float&,float&,float&,ERotationConvention&)const.
+        *             If this function is used it is strongly advised to use it for node rotation in the whole scene, i.e., to completely avoid using set/get rotation
+        *             with custom convention.
         *
         * @param[out] x Current value in degrees on x-axis.
         * @param[out] y Current value in degrees on y-axis.
@@ -215,6 +222,9 @@ namespace ramses
         *        if #ramses::Node::setRotation(float,float,float,ERotationConvention) is used to set node rotation.
         *
         *        Default value is 0 for all components and ERotationConvention::XYZ.
+        *
+        *        It is possible to use different rotation conventions on different nodes within the same scene. However, it is strongly
+        *        advised not to mix this function with set/get rotation with legacy convention within same scene.
         *
         * @param[out] x Current value in degrees for rotation around x-axis in case of Tait-Bryan conventions, in case of Proper Euler conventions gets
                        the rotation angle for the first angle in the convention name.

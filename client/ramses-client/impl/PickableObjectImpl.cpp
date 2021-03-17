@@ -82,31 +82,21 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t PickableObjectImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t PickableObjectImpl::validate() const
     {
-        status_t status = NodeImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = NodeImpl::validate();
 
         const ramses_internal::PickableObject& pickableObject = getIScene().getPickableObject(m_pickableObjectHandle);
 
         if (!getIScene().isDataBufferAllocated(pickableObject.geometryHandle))
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "pickable object references a deleted geometry buffer");
-            status = getValidationErrorStatus();
-        }
-        else if (addValidationOfDependentObject(indent, *m_geometryBufferImpl, visitedObjects) != StatusOK)
-            status = getValidationErrorStatus();
+            status = addValidationMessage(EValidationSeverity_Error, "pickable object references a deleted geometry buffer");
+        else
+            status = std::max(status, addValidationOfDependentObject(*m_geometryBufferImpl));
 
         if (!pickableObject.cameraHandle.isValid())
-        {
-            addValidationMessage(EValidationSeverity_Warning, indent, "pickable object references no camera, a valid camera must be set");
-            status = getValidationErrorStatus();
-        }
+            status = std::max(status, addValidationMessage(EValidationSeverity_Warning, "pickable object references no camera, a valid camera must be set"));
         else if (!getIScene().isCameraAllocated(pickableObject.cameraHandle))
-        {
-            addValidationMessage(EValidationSeverity_Error, indent, "pickable object references a deleted camera");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Error, "pickable object references a deleted camera");
 
         return status;
     }
@@ -124,8 +114,7 @@ namespace ramses
             return addErrorEntry("PickableObject::setCamera failed - camera is not from the same scene as this PickableObject");
         }
 
-        StatusObjectSet visitedObjects;
-        const status_t cameraValidity = cameraImpl.validate(0u, visitedObjects);
+        const status_t cameraValidity = cameraImpl.validate();
         if (StatusOK == cameraValidity)
         {
             m_cameraImpl = &cameraImpl;

@@ -23,11 +23,6 @@ namespace ramses
 {
     class ATexture2DBuffer : public LocalTestClientWithScene, public testing::Test
     {
-    protected:
-        ATexture2DBuffer()
-            : LocalTestClientWithScene()
-        {
-        }
     };
 
     TEST_F(ATexture2DBuffer, IsAllocatedOnInternalSceneAfterCreation)

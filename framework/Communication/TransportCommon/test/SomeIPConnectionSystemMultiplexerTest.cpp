@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "TransportCommon/SomeIPConnectionSystemMultiplexer.h"
+#include "Collections/StringOutputStream.h"
 #include "TransportCommon/DcsmConnectionSystem.h"
 #include "TransportCommon/RamsesConnectionSystem.h"
 #include "Utils/StatisticCollection.h"
@@ -391,5 +392,11 @@ namespace ramses_internal
         csm->logConnectionInfo();
 
         csm->triggerLogMessageForPeriodicLog();
+
+        StringOutputStream sos;
+        EXPECT_CALL(*dcsmStack, logConnectionState(_));
+        EXPECT_CALL(*ramsesStack, logConnectionState(_));
+        csm->writeStateForLog(sos);
+        EXPECT_FALSE(sos.release().empty());
     }
 }

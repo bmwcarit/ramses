@@ -38,6 +38,7 @@ namespace ramses_internal
     TEST_P(ACommunicationSystem, sendFunctionsFailWhenNotYetConnected)
     {
         Guid to(5);
+        StatisticCollectionScene sceneStatistics;
         auto csw = std::make_unique<CommunicationSystemTestWrapper>(*state);
         EXPECT_FALSE(csw->commSystem->broadcastNewScenesAvailable(SceneInfoVector()));
         EXPECT_FALSE(csw->commSystem->broadcastScenesBecameUnavailable(SceneInfoVector()));
@@ -45,7 +46,7 @@ namespace ramses_internal
         EXPECT_FALSE(csw->commSystem->sendSubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendUnsubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendInitializeScene(to, SceneId()));
-        EXPECT_FALSE(csw->commSystem->sendSceneUpdate(to, SceneId(123), SceneUpdateSerializer(SceneUpdate())));
+        EXPECT_FALSE(csw->commSystem->sendSceneUpdate(to, SceneId(123), SceneUpdateSerializer(SceneUpdate(), sceneStatistics)));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}, ETechnicalContentType::Invalid, ""));
         EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}, ETechnicalContentType::Invalid, ""));
         EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}));
@@ -60,6 +61,7 @@ namespace ramses_internal
     TEST_P(ACommunicationSystem, sendFunctionsFailAfterCallingDisconnect)
     {
         Guid to(5);
+        StatisticCollectionScene sceneStatistics;
         auto csw = std::make_unique<CommunicationSystemTestWrapper>(*state);
         csw->commSystem->connectServices();
         csw->commSystem->disconnectServices();
@@ -70,7 +72,7 @@ namespace ramses_internal
         EXPECT_FALSE(csw->commSystem->sendSubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendUnsubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendInitializeScene(to, SceneId()));
-        EXPECT_FALSE(csw->commSystem->sendSceneUpdate(to, SceneId(123), SceneUpdateSerializer(SceneUpdate())));
+        EXPECT_FALSE(csw->commSystem->sendSceneUpdate(to, SceneId(123), SceneUpdateSerializer(SceneUpdate(), sceneStatistics)));
         EXPECT_FALSE(csw->commSystem->sendDcsmBroadcastOfferContent(ContentID{}, Category{}, ETechnicalContentType::Invalid, ""));
         EXPECT_FALSE(csw->commSystem->sendDcsmOfferContent(to, ContentID{}, Category{}, ETechnicalContentType::Invalid, ""));
         EXPECT_FALSE(csw->commSystem->sendDcsmContentReady(to, ContentID{}));

@@ -126,24 +126,17 @@ namespace ramses
         return m_internalConfig;
     }
 
-    status_t RendererConfigImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t RendererConfigImpl::validate() const
     {
-        status_t status = StatusObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = StatusObjectImpl::validate();
 
         const ramses_internal::String& embeddedCompositorFilename = m_internalConfig.getWaylandSocketEmbedded();
         int embeddedCompositorFileDescriptor                      = m_internalConfig.getWaylandSocketEmbeddedFD();
 
         if(embeddedCompositorFilename.size() == 0u && embeddedCompositorFileDescriptor < 0)
-        {
-            addValidationMessage(EValidationSeverity_Warning, indent, "no socket information for EmbeddedCompositor set (neither file descriptor nor file name). No embedded compositor available.");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Warning, "no socket information for EmbeddedCompositor set (neither file descriptor nor file name). No embedded compositor available.");
         else if(embeddedCompositorFilename.size() > 0u && embeddedCompositorFileDescriptor >= 0)
-        {
-            addValidationMessage(EValidationSeverity_Warning, indent, "Competing settings for EmbeddedCompositor are set (file descriptor and file name). File descriptor setting will be preferred.");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Warning, "Competing settings for EmbeddedCompositor are set (file descriptor and file name). File descriptor setting will be preferred.");
 
         return status;
     }

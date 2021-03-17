@@ -71,7 +71,9 @@ namespace ramses_internal
         bool initializeEgl();
         bool queryEglExtensions();
         bool bindEglAPI();
+        void logAllFoundEglConfigs() const;
         bool chooseEglConfig();
+        void logUnmatchedEglConfigParams(const EGLint* surfaceAttributes) const;
         bool createEglSurface();
         bool createEglContext();
 

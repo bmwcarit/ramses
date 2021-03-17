@@ -40,6 +40,7 @@ namespace ramses_internal
         void sceneResourceUploaded(SceneId sceneId, UInt byteSize);
         void streamTextureUpdated(WaylandIviSurfaceId sourceId, UInt numUpdates);
         void shaderCompiled(std::chrono::microseconds microsecondsUsed, const String& name, SceneId sceneid);
+        void setVRAMUsage(uint64_t totalUploaded, uint64_t gpuCacheSize);
 
         void untrackScene(SceneId sceneId);
         void untrackOffscreenBuffer(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer);
@@ -60,6 +61,8 @@ namespace ramses_internal
         UInt m_resourcesUploaded = 0u;
         UInt m_resourcesBytesUploaded = 0u;
         UInt m_shadersCompiled = 0u;
+        uint64_t m_totalResourceUploadedSize = 0u;
+        uint64_t m_gpuCacheSize = 0u;
         UInt64 m_microsecondsForShaderCompilation = 0u;
         String m_maximumDurationShaderName;
         std::chrono::microseconds m_maximumDurationShaderTime = {};

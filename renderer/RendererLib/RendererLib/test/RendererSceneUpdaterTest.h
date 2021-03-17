@@ -404,7 +404,7 @@ protected:
 
     void createDisplayAndExpectSuccess(DisplayHandle displayHandle = DisplayHandle1, const DisplayConfig& displayConfig = DisplayConfig())
     {
-        EXPECT_CALL(*rendererSceneUpdater, createResourceManager(_, _, _, displayHandle, _, _, _));
+        EXPECT_CALL(*rendererSceneUpdater, createResourceManager(_, _, _, displayHandle, _, _, _, _));
         EXPECT_CALL(platformFactoryMock, createResourceUploadRenderBackend(_));
         rendererSceneUpdater->createDisplayContext(displayConfig, displayHandle, nullptr);
         EXPECT_TRUE(renderer.hasDisplayController(displayHandle));

@@ -74,9 +74,13 @@ namespace ramses_internal
         IEmbeddedCompositingManager& getECManager(DisplayHandle display);
         IEmbeddedCompositor& getEC(DisplayHandle display);
 
+        // needed for Renderer lifecycle tests...
+        bool hasSystemCompositorController() const;
+
     protected:
         void preprocessCommand(const RendererCommand::Variant& cmd);
         void dispatchCommand(RendererCommand::Variant&& cmd);
+        bool isSceneStateChangeEmittedFromOwningDisplay(SceneId sceneId, DisplayHandle emittingDisplay) const;
 
         struct Display
         {
@@ -92,7 +96,8 @@ namespace ramses_internal
         RendererCommandBuffer& m_pendingCommandsToDispatch;
         IRendererSceneEventSender& m_rendererSceneSender;
 
-        SceneDisplayTracker m_sceneDisplayTracker;
+        SceneDisplayTracker m_sceneDisplayTrackerForCommands;
+        SceneDisplayTracker m_sceneDisplayTrackerForEvents;
         // use map to keep displays ordered
         std::map<DisplayHandle, Display> m_displays;
 

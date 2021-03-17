@@ -89,7 +89,8 @@ class AResourceUploader : public ::testing::Test
 {
 public:
     AResourceUploader()
-        : dummyManagedResourceCallback(managedResourceDeleter)
+        : uploader(true)
+        , dummyManagedResourceCallback(managedResourceDeleter)
     {
         // caller is expected to have a display prefix for logs
         ThreadLocalLog::SetPrefix(1);
@@ -265,7 +266,7 @@ TEST_F(AResourceUploader, canStoreBinaryShader)
     EXPECT_CALL(renderer.deviceMock, getBinaryShader(DeviceMock::FakeShaderDeviceHandle, _, _)).WillOnce(DoAll(SetArgReferee<1>(UInt8Vector(10)), Return(true)));
     EXPECT_CALL(binaryShaderProvider, storeBinaryShader(_, sceneUsingResource, _, _, _));
 
-    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider(true, &binaryShaderProvider);
     uploaderWithBinaryProvider.storeShaderInBinaryShaderCache(renderer, DeviceMock::FakeShaderDeviceHandle, res.getHash(), sceneUsingResource);
 }
 
@@ -280,7 +281,7 @@ TEST_F(AResourceUploader, doesNoStoreBinaryShaderIfFailedToGetBinaryShaderFromDe
     EXPECT_CALL(renderer.deviceMock, getBinaryShader(DeviceMock::FakeShaderDeviceHandle, _, _)).WillOnce(Return(false));
     EXPECT_CALL(binaryShaderProvider, storeBinaryShader(_, sceneUsingResource, _, _, _)).Times(0);
 
-    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider(true, &binaryShaderProvider);
     uploaderWithBinaryProvider.storeShaderInBinaryShaderCache(renderer, DeviceMock::FakeShaderDeviceHandle, res.getHash(), sceneUsingResource);
 }
 
@@ -294,7 +295,7 @@ TEST_F(AResourceUploader, ifShaderShouldNotBeCachedNoDownloadWillHappen)
     EXPECT_CALL(renderer.deviceMock, getBinaryShader(DeviceMock::FakeShaderDeviceHandle, _, _)).Times(0);
     EXPECT_CALL(binaryShaderProvider, storeBinaryShader(_, sceneUsingResource, _, _, _)).Times(0);
 
-    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider(true, &binaryShaderProvider);
     uploaderWithBinaryProvider.storeShaderInBinaryShaderCache(renderer, DeviceMock::FakeShaderDeviceHandle, res.getHash(), sceneUsingResource);
 }
 
@@ -317,10 +318,24 @@ TEST_F(AResourceUploader, doesNotReturnDeviceHandleForEffectResourceWithoutBinar
     EXPECT_FALSE(uploader.uploadResource(renderer, resourceObject, vramSize).has_value());
 }
 
+TEST_F(AResourceUploader, uploadsShaderWithoutBinaryShaderCacheIfAsyncUploadDisabled)
+{
+    ResourceUploader uploaderWithoutCacheOrAsyncUpload(false);
+
+    EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
+    ResourceDescriptor resourceObject;
+    resourceObject.resource = managedRes;
+    EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
+    EXPECT_CALL(renderer.deviceMock, uploadShader(_));
+    EXPECT_CALL(renderer.deviceMock, registerShader(_));
+    EXPECT_EQ(DeviceMock::FakeShaderDeviceHandle, uploaderWithoutCacheOrAsyncUpload.uploadResource(renderer, resourceObject, vramSize));
+}
+
 TEST_F(AResourceUploader, doesNotReturnDeviceHandleIfShaderIsNotCached)
 {
     BinaryShaderProviderFake binaryShaderProvider;
-    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider(true, &binaryShaderProvider);
 
     EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
@@ -333,6 +348,26 @@ TEST_F(AResourceUploader, doesNotReturnDeviceHandleIfShaderIsNotCached)
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_FALSE(uploaderWithBinaryProvider.uploadResource(renderer, resourceObject, vramSize).has_value());
+}
+
+TEST_F(AResourceUploader, uploadShaderIfShaderIsNotCachedAndAsyncUploadDisabled)
+{
+    BinaryShaderProviderFake binaryShaderProvider;
+    ResourceUploader uploaderWithCacheButNoAsyncUpload(false, &binaryShaderProvider);
+
+    EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
+    EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
+
+    EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported());
+    EXPECT_CALL(binaryShaderProvider, deviceSupportsBinaryShaderFormats(std::vector<BinaryShaderFormatID>{ DeviceMock::FakeSupportedBinaryShaderFormat }));
+    EXPECT_CALL(binaryShaderProvider, hasBinaryShader(res.getHash())).WillOnce(Return(false));
+
+    ManagedResource managedRes{ &res, dummyManagedResourceCallback };
+    ResourceDescriptor resourceObject;
+    resourceObject.resource = managedRes;
+    EXPECT_CALL(renderer.deviceMock, uploadShader(_));
+    EXPECT_CALL(renderer.deviceMock, registerShader(_));
+    EXPECT_EQ(DeviceMock::FakeShaderDeviceHandle, uploaderWithCacheButNoAsyncUpload.uploadResource(renderer, resourceObject, vramSize));
 }
 
 TEST_F(AResourceUploader, uploadsEffectResourceFromBinaryShaderCacheWhenCacheHit)
@@ -360,7 +395,7 @@ TEST_F(AResourceUploader, uploadsEffectResourceFromBinaryShaderCacheWhenCacheHit
 
     EXPECT_CALL(renderer.deviceMock, uploadBinaryShader(_, _, _, _)).WillOnce(Return(DeviceResourceHandle(123)));
 
-    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider(true, &binaryShaderProvider);
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     EXPECT_EQ(123u, uploaderWithBinaryProvider.uploadResource(renderer, resourceObject, vramSize));
@@ -394,7 +429,7 @@ TEST_F(AResourceUploader, doesNotReturnDeviceHandleForEffectResourceWithBrokenBi
     EXPECT_CALL(renderer.deviceMock, uploadBinaryShader(_, _, _, _)).WillOnce(Return(DeviceResourceHandle::Invalid()));
     EXPECT_CALL(binaryShaderProvider, binaryShaderUploaded(_, false)).Times(1);
 
-    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider(true, &binaryShaderProvider);
     ResourceDescriptor resourceObject;
     resourceObject.resource = managedRes;
     resourceObject.sceneUsage = { sceneUsingResource };
@@ -404,7 +439,7 @@ TEST_F(AResourceUploader, doesNotReturnDeviceHandleForEffectResourceWithBrokenBi
 TEST_F(AResourceUploader, providesSupportedBinaryShaderFormatsOnlyOnce)
 {
     BinaryShaderProviderFake binaryShaderProvider;
-    ResourceUploader uploaderWithBinaryProvider(&binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider(true, &binaryShaderProvider);
 
     EffectResource res("", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(3);
@@ -431,9 +466,9 @@ TEST_F(AResourceUploader, providesSupportedBinaryShaderFormatsOnlyOnceFromMultip
 {
     BinaryShaderProviderFake binaryShaderProvider;
 
-    ResourceUploader uploaderWithBinaryProvider1(&binaryShaderProvider);
-    ResourceUploader uploaderWithBinaryProvider2(&binaryShaderProvider);
-    ResourceUploader uploaderWithBinaryProvider3(&binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider1(true, &binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider2(true, &binaryShaderProvider);
+    ResourceUploader uploaderWithBinaryProvider3(true, &binaryShaderProvider);
 
     EffectResource res1("1", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);
     EffectResource res2("2", "", "", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "", ResourceCacheFlag_DoNotCache);

@@ -213,6 +213,26 @@ namespace ramses_internal
         return m_windowsWindowHandle;
     }
 
+    void DisplayConfig::setX11WindowHandle(X11WindowHandle windowHandle)
+    {
+        m_x11WindowHandle = windowHandle;
+    }
+
+    X11WindowHandle DisplayConfig::getX11WindowHandle() const
+    {
+        return m_x11WindowHandle;
+    }
+
+    void DisplayConfig::setAsyncEffectUploadEnabled(bool enabled)
+    {
+        m_asyncEffectUploadEnabled = enabled;
+    }
+
+    bool DisplayConfig::isAsyncEffectUploadEnabled() const
+    {
+        return m_asyncEffectUploadEnabled;
+    }
+
     Bool DisplayConfig::operator == (const DisplayConfig& other) const
     {
         return
@@ -233,7 +253,8 @@ namespace ramses_internal
             m_clearColor                 == other.m_clearColor &&
             m_windowsWindowHandle        == other.m_windowsWindowHandle &&
             m_waylandDisplay             == other.m_waylandDisplay &&
-            m_depthStencilBufferType     == other.m_depthStencilBufferType;
+            m_depthStencilBufferType     == other.m_depthStencilBufferType &&
+            m_asyncEffectUploadEnabled   == other.m_asyncEffectUploadEnabled;
     }
 
     Bool DisplayConfig::operator != (const DisplayConfig& other) const

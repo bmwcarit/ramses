@@ -13,6 +13,7 @@
 #include "Components/ResourceFileInputStream.h"
 #include "ManagedResource.h"
 #include "Collections/String.h"
+#include "Resource/ResourceInfo.h"
 
 namespace ramses_internal
 {
@@ -37,7 +38,7 @@ namespace ramses_internal
         virtual void reserveResourceCount(uint32_t totalCount) = 0;
 
         virtual ManagedResourceVector resolveResources(ResourceContentHashVector& vec) = 0;
-
+        virtual ResourceInfo const& getResourceInfo(ResourceContentHash const& hash) = 0;
     };
 }
 

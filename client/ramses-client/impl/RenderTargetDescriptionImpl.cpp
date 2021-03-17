@@ -23,26 +23,19 @@ namespace ramses
     {
     }
 
-    status_t RenderTargetDescriptionImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t RenderTargetDescriptionImpl::validate() const
     {
-        status_t status = StatusObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = StatusObjectImpl::validate();
 
         if (m_renderBuffers.empty())
-        {
-            addValidationMessage(EValidationSeverity_Warning, indent, "there is no RenderBuffer added");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Warning, "there is no RenderBuffer added");
         else
         {
             assert(m_scene != nullptr);
             for(const auto& rb : m_renderBuffers)
             {
                 if (!m_scene->getIScene().isRenderBufferAllocated(rb))
-                {
-                    addValidationMessage(EValidationSeverity_Error, indent, "referencing one or more RenderBuffers that do not exist in scene anymore");
-                    status = getValidationErrorStatus();
-                }
+                    status = addValidationMessage(EValidationSeverity_Error, "referencing one or more RenderBuffers that do not exist in scene anymore");
             }
         }
 

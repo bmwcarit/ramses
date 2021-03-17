@@ -23,7 +23,7 @@ namespace ramses_internal
     class ResourceUploader : public IResourceUploader
     {
     public:
-        explicit ResourceUploader(IBinaryShaderCache* binaryShaderCache = nullptr);
+        explicit ResourceUploader(bool asyncEffectUploadEnabled, IBinaryShaderCache* binaryShaderCache = nullptr);
 
         virtual absl::optional<DeviceResourceHandle> uploadResource(IRenderBackend& renderBackend, const ResourceDescriptor& resourceObject, UInt32& outVRAMSize) override;
         virtual void                 unloadResource(IRenderBackend& renderBackend, EResourceType type, ResourceContentHash hash, DeviceResourceHandle handle) override;
@@ -35,6 +35,7 @@ namespace ramses_internal
 
         static UInt32 EstimateGPUAllocatedSizeOfTexture(const TextureResource& texture, UInt32 numMipLevelsToAllocate);
 
+        const bool m_asyncEffectUploadEnabled;
         IBinaryShaderCache* const m_binaryShaderCache;
     };
 }

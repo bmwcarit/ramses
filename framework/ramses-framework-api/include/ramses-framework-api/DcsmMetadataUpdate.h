@@ -193,6 +193,24 @@ namespace ramses
         bool hasStreamID() const;
 
         /**
+         * @brief Check if object contains a contentFlippedVertically entry.
+         *
+         * @return true when has content flipped vertically metadata, false when not
+         */
+        bool hasContentFlippedVertically() const;
+
+        /**
+         * @brief Get contentFlippedVertically metadata entry.
+         *        Value is undefined when not hasContentFlippedVertically().
+         *
+         * When set provider requests to flip content on Y-axis before displaying.
+         *
+         * @return content flipped vertically state
+         */
+        bool getContentFlippedVertically() const;
+
+
+        /**
          * @brief Deleted default constructor
          */
         DcsmMetadataUpdate() = delete;

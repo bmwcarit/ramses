@@ -51,6 +51,8 @@ namespace ramses_internal
             return "ramses-test-client-structUniform";
         case TEXTURE_SIZE:
             return "ramses-test-client-textureSize";
+        case BOOL_UNIFORM:
+            return "ramses-test-client-boolUniform";
         default:
             assert(false && "Unknown state!");
             return "";
@@ -134,6 +136,17 @@ namespace ramses_internal
             // Pass in the texture size as a uniform, which allows us to compare against the output of the "textureSize" method in the shader.
             appearance.getEffect().findUniformInput("texSizeFromApplication", texInput);
             appearance.setInputValueVector2i(texInput, texture.getWidth(), texture.getHeight());
+        }
+        else if (state == BOOL_UNIFORM)
+        {
+            // Tests that bool uniforms work
+            ramses::status_t status = m_effect.findUniformInput("makeSemiTransparent", input);
+            assert(status == ramses::StatusOK);
+            if (status == ramses::StatusOK)
+            {
+                status = appearance.setInputValueInt32(input, 1);
+                assert(status == ramses::StatusOK);
+            }
         }
     }
 }

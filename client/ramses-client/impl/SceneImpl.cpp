@@ -134,6 +134,7 @@ namespace ramses
 
     SceneImpl::~SceneImpl()
     {
+        LOG_INFO(CONTEXT_CLIENT, "SceneImpl::~SceneImpl");
         RamsesObjectVector objects;
         m_objectRegistry.getObjectsOfType(objects, ERamsesObjectType_SceneObject);
         for (const auto it : objects)
@@ -373,10 +374,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t SceneImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t SceneImpl::validate() const
     {
-        status_t status = ClientObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = ClientObjectImpl::validate();
 
         uint32_t objectCount[ERamsesObjectType_NUMBER_OF_TYPES];
         for (uint32_t i = 0u; i < ERamsesObjectType_NUMBER_OF_TYPES; ++i)
@@ -390,10 +390,7 @@ namespace ramses
                 RamsesObjectRegistryIterator iter(getObjectRegistry(), ERamsesObjectType(i));
                 while (const RamsesObject* obj = iter.getNext())
                 {
-                    if (addValidationOfDependentObject(indent, obj->impl, visitedObjects) != StatusOK)
-                    {
-                        status = getValidationErrorStatus();
-                    }
+                    status = std::max(status, addValidationOfDependentObject(obj->impl));
                     ++objectCount[i];
                 }
             }
@@ -408,7 +405,7 @@ namespace ramses
             {
                 ramses_internal::StringOutputStream msg;
                 msg << "Number of " << RamsesObjectTypeUtils::GetRamsesObjectTypeName(type) << " instances: " << objectCount[i];
-                addValidationMessage(EValidationSeverity_Info, indent, msg.c_str());
+                addValidationMessage(EValidationSeverity_Info, msg.c_str());
             }
         }
 
@@ -861,8 +858,7 @@ namespace ramses
 
     RenderTarget* SceneImpl::createRenderTarget(const RenderTargetDescriptionImpl& rtDesc, const char* name)
     {
-        StatusObjectSet visitedObjects;
-        if (rtDesc.validate(0u, visitedObjects) != StatusOK)
+        if (rtDesc.validate() != StatusOK)
         {
             LOG_ERROR(CONTEXT_CLIENT, "Scene::createRenderTarget failed, RenderTargetDescription is invalid.");
             return nullptr;
@@ -2061,6 +2057,7 @@ namespace ramses
             return;
 
         getClientImpl().getClientApplication().removeResourceFile(m_sceneFilename.c_str());
+        LOG_INFO(CONTEXT_CLIENT, "SceneImpl::closeSceneFile closed: " << m_sceneFilename);
         m_sceneFilename.clear();
     }
 

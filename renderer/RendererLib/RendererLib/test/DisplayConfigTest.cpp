@@ -38,6 +38,7 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_EQ(ramses_internal::Vector4(0.f,0.f,0.f,1.f), m_config.getClearColor());
     EXPECT_STREQ("", m_config.getWaylandDisplay().c_str());
     EXPECT_EQ(ramses_internal::ERenderBufferType_DepthStencilBuffer, m_config.getDepthStencilBufferType());
+    EXPECT_TRUE(m_config.isAsyncEffectUploadEnabled());
 
     // this value is used in HL API, so test that value does not change unnoticed
     EXPECT_TRUE(ramses_internal::IntegrityRGLDeviceUnit::Invalid().getValue() == 0xFFFFFFFF);
@@ -96,6 +97,9 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
 
     m_config.setWaylandDisplay("ramses display");
     EXPECT_STREQ("ramses display", m_config.getWaylandDisplay().c_str());
+
+    m_config.setAsyncEffectUploadEnabled(false);
+    EXPECT_FALSE(m_config.isAsyncEffectUploadEnabled());
 }
 
 TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)

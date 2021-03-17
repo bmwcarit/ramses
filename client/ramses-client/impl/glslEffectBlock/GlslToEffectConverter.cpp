@@ -389,6 +389,9 @@ namespace ramses_internal
             case glslang::EbtDouble:
                 input.dataType = EDataType::Float;
                 return true;
+            case glslang::EbtBool:
+                input.dataType = EDataType::Int32;
+                return true;
             case glslang::EbtInt:
                 input.dataType = EDataType::Int32;
                 return true;

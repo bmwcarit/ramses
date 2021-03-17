@@ -94,4 +94,10 @@ namespace ramses
         return status;
     }
 
+    status_t DcsmMetadataCreator::setContentFlippedVertically(bool state)
+    {
+        const auto status = impl.setContentFlippedVertically(state);
+        LOG_HL_CLIENT_API1(status, state);
+        return status;
+    }
 }

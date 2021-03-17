@@ -85,7 +85,7 @@ namespace ramses_internal
         virtual bool dispatchConsumerEvents(ramses::IDcsmConsumerEventHandler& handler, std::chrono::milliseconds timeout) override;
 
         // for logging
-        void logInfo();
+        void writeStateForLog(StringOutputStream& sos);
         virtual void triggerLogMessageForPeriodicLog() override;
 
         // For testing only

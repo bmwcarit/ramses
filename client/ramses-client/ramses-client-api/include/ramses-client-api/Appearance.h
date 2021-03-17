@@ -22,7 +22,10 @@ namespace ramses
     class Effect;
 
     /**
-     * @brief The Appearance describes how an object should look like
+     * @brief The Appearance describes how an object should look like. This includes GLSL uniform values,
+     * and GPU states such as blending, buffer configurations, masks etc. The API to set uniform values
+     * is aligned to the glUniformX API of OpenGL. Beware that boolean values are reported and handled
+     * as int (0 is false, anything else is true) - similar to OpenGL conventions.
      *
      * It provides mechanisms for creating effects
     */

@@ -29,7 +29,7 @@ relations, as well as API for rendering content from distributed sources.
 - @ref DCSMProtocol
 - @ref SceneReferencing
 
-# <b>RAMSES</b> - <b>R</b>endering <b>A</b>rchitecture for <b>M</b>ulti-<b>S</b>creen <b>E</b>nvironment<b>S</b>
+# RAMSES> - Rendering Architecture for Multi-Screen EnvironmentS
 
 RAMSES is a framework for distributed rendering of 3D content.
 It was created to enable future automotive use cases with application content being rendered on any display that is available in the car.

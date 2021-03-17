@@ -15,6 +15,7 @@ namespace ramses_internal
 {
     class Guid;
     struct SceneUpdate;
+    class StatisticCollectionScene;
 
     class ISceneGraphSender
     {
@@ -23,7 +24,7 @@ namespace ramses_internal
         virtual void sendPublishScene        (SceneId sceneId, EScenePublicationMode publicationMode, const String& name) = 0;
         virtual void sendUnpublishScene      (SceneId sceneId, EScenePublicationMode publicationMode) = 0;
         virtual void sendCreateScene         (const Guid& to, const SceneId& sceneId, EScenePublicationMode publicationMode) = 0;
-        virtual void sendSceneUpdate         (const std::vector<Guid>& to, SceneUpdate&& sceneUpdate, SceneId sceneId, EScenePublicationMode mode) = 0;
+        virtual void sendSceneUpdate         (const std::vector<Guid>& to, SceneUpdate&& sceneUpdate, SceneId sceneId, EScenePublicationMode mode, StatisticCollectionScene& sceneStatistics) = 0;
     };
 }
 

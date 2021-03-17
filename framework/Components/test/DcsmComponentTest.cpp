@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "Components/DcsmComponent.h"
+#include "Collections/StringOutputStream.h"
 #include "TransportCommon/FakeConnectionStatusUpdateNotifier.h"
 #include "RamsesFrameworkTypesImpl.h"
 #include "MockConnectionStatusUpdateNotifier.h"
@@ -2282,7 +2283,9 @@ namespace ramses_internal
         EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(ContentID(11)));
         EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(11)));
         EXPECT_TRUE(comp.sendContentStateChange(ContentID(11), EDcsmState::AcceptStopOffer, CategoryInfo{}, AnimationInformation{4, 5}));
-        comp.logInfo();
+        StringOutputStream sos;
+        comp.writeStateForLog(sos);
+        EXPECT_FALSE(sos.release().empty());
         comp.triggerLogMessageForPeriodicLog();
         ignorePendingEvents();
     }

@@ -41,6 +41,9 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
 
     EXPECT_FALSE(defaultDisplayConfig.getWaylandIviSurfaceID().isValid());
     EXPECT_FALSE(defaultDisplayConfig.getWaylandIviLayerID().isValid());
+
+    EXPECT_FALSE(defaultDisplayConfig.getWindowsWindowHandle().isValid());
+    EXPECT_FALSE(defaultDisplayConfig.getX11WindowHandle().isValid());
 }
 
 TEST_F(ADisplayConfig, setsFullscreenState)
@@ -159,6 +162,13 @@ TEST_F(ADisplayConfig, setsAndGetsWaylandIviLayerId)
     EXPECT_EQ(ramses_internal::WaylandIviLayerId(36), config.impl.getInternalDisplayConfig().getWaylandIviLayerID());
 }
 
+TEST_F(ADisplayConfig, setsAndGetsX11WindowHandle)
+{
+    EXPECT_EQ(ramses::StatusOK, config.setX11WindowHandle(42u));
+    EXPECT_EQ(42u, config.getX11WindowHandle());
+    EXPECT_EQ(ramses_internal::X11WindowHandle(42), config.impl.getInternalDisplayConfig().getX11WindowHandle());
+}
+
 TEST_F(ADisplayConfig, IsValidUponConstruction)
 {
     EXPECT_EQ(ramses::StatusOK, config.validate());
@@ -190,4 +200,10 @@ TEST_F(ADisplayConfig, setDepthStencilBufferType)
 {
     EXPECT_EQ(ramses::StatusOK, ramses::DisplayConfig::setDepthStencilBufferType(config, ramses::EDepthBufferType_Depth));
     EXPECT_EQ(ramses_internal::ERenderBufferType_DepthBuffer, config.impl.getInternalDisplayConfig().getDepthStencilBufferType());
+}
+
+TEST_F(ADisplayConfig, setAsyncEffectUploadEnabled)
+{
+    EXPECT_EQ(ramses::StatusOK, ramses::DisplayConfig::setAsyncEffectUploadEnabled(config, false));
+    EXPECT_FALSE(config.impl.getInternalDisplayConfig().isAsyncEffectUploadEnabled());
 }

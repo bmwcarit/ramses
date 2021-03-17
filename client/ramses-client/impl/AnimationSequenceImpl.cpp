@@ -82,29 +82,20 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t AnimationSequenceImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t AnimationSequenceImpl::validate() const
     {
-        status_t status = AnimationObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = AnimationObjectImpl::validate();
 
         if (m_animations.size() == 0u)
-        {
-            addValidationMessage(EValidationSeverity_Warning, indent, "sequence does not contain any animations");
-            status = getValidationErrorStatus();
-        }
+            status = addValidationMessage(EValidationSeverity_Warning, "sequence does not contain any animations");
 
         for(const auto& animation : m_animations)
         {
             const AnimationImpl* anim = findAnimation(animation.key);
             if (anim == nullptr)
-            {
-                addValidationMessage(EValidationSeverity_Error, indent, "animation contained in sequence does not exist anymore, was probably destroyed but still used by it");
-                status = getValidationErrorStatus();
-            }
-            else if (addValidationOfDependentObject(indent, *anim, visitedObjects) != StatusOK)
-            {
-                status = getValidationErrorStatus();
-            }
+                status = addValidationMessage(EValidationSeverity_Error, "animation contained in sequence does not exist anymore, was probably destroyed but still used by it");
+            else
+                status = std::max(status, addValidationOfDependentObject(*anim));
         }
 
         RamsesObjectRegistryIterator iter(getAnimationSystemImpl().getObjectRegistry(), ERamsesObjectType_AnimationSequence);
@@ -116,10 +107,7 @@ namespace ramses
                 for(const auto& animation : m_animations)
                 {
                     if (sequenceImpl.m_animations.contains(animation.key))
-                    {
-                        addValidationMessage(EValidationSeverity_Warning, indent, "animation seems to be contained in more than one sequence, this is fine only if usage of those sequences does not overlap");
-                        status = getValidationErrorStatus();
-                    }
+                        status = std::max(status, addValidationMessage(EValidationSeverity_Warning, "animation seems to be contained in more than one sequence, this is fine only if usage of those sequences does not overlap"));
                 }
             }
         }

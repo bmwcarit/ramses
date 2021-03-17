@@ -83,14 +83,28 @@ namespace ramses_internal
         memoryInfos.push_back(createMemInfo("StreamTextures",  iscene.getStreamTextureCount(),  [](uint32_t){return sizeof(StreamTexture);}));
         memoryInfos.push_back(createMemInfo("DataSlots",       iscene.getDataSlotCount(),       [](uint32_t){return sizeof(DataSlot);}));
 
-        memoryInfos.push_back(createMemInfo("Nodes",           iscene.getNodeCount(),           [&iscene](uint32_t h){return sizeof(TopologyNode)          + (iscene.isNodeAllocated(NodeHandle(h))                   ? iscene.getChildCount(NodeHandle(h)) * sizeof(NodeHandle) : 0u);}));
-        memoryInfos.push_back(createMemInfo("RenderGroups",    iscene.getRenderGroupCount(),    [&iscene](uint32_t h){return sizeof(RenderGroup)           + (iscene.isRenderGroupAllocated(RenderGroupHandle(h))     ? iscene.getRenderGroup(RenderGroupHandle(h)).renderables.size() * sizeof(RenderableOrderEntry) + iscene.getRenderGroup(RenderGroupHandle(h)).renderGroups.size() * sizeof(RenderGroupOrderEntry) : 0u);}));
-        memoryInfos.push_back(createMemInfo("RenderPasses",    iscene.getRenderPassCount(),     [&iscene](uint32_t h){return sizeof(RenderPass)            + (iscene.isRenderPassAllocated(RenderPassHandle(h))       ? iscene.getRenderPass(RenderPassHandle(h)).renderGroups.size() * sizeof(RenderGroupOrderEntry) : 0u);}));
-        memoryInfos.push_back(createMemInfo("RenderTargets",   iscene.getRenderTargetCount(),   [&iscene](uint32_t h){return sizeof(RenderTarget)          + (iscene.isRenderTargetAllocated(RenderTargetHandle(h))   ? iscene.getRenderTargetRenderBufferCount(RenderTargetHandle(h)) * sizeof(RenderBufferHandle) : 0u);}));
-        memoryInfos.push_back(createMemInfo("TextureBuffers",  iscene.getTextureBufferCount(),  [&iscene](uint32_t h){return sizeof(TextureBuffer)         + (iscene.isTextureBufferAllocated(TextureBufferHandle(h)) ? TextureBuffer::GetMipMapDataSizeInBytes(iscene.getTextureBuffer(TextureBufferHandle(h))) : 0u);}));
-        memoryInfos.push_back(createMemInfo("DataBuffers",     iscene.getDataBufferCount(),     [&iscene](uint32_t h){return sizeof(GeometryDataBuffer)    + (iscene.isDataBufferAllocated(DataBufferHandle(h))       ? iscene.getDataBuffer(DataBufferHandle(h)).data.size() : 0u);}));
-        memoryInfos.push_back(createMemInfo("DataLayouts",     iscene.getDataLayoutCount(),     [&iscene](uint32_t h){return sizeof(DataLayout)            + (iscene.isDataLayoutAllocated(DataLayoutHandle(h))       ? iscene.getDataLayout(DataLayoutHandle(h)).getFieldCount() * (sizeof(DataFieldInfo) + sizeof(uint32_t)) : 0u);}));
-        memoryInfos.push_back(createMemInfo("DataInstances",   iscene.getDataInstanceCount(),   [&iscene](uint32_t h){
+        memoryInfos.push_back(createMemInfo("Nodes",           iscene.getNodeCount(), [&iscene](uint32_t h){
+            return sizeof(TopologyNode)          + (iscene.isNodeAllocated(NodeHandle(h))                   ? iscene.getChildCount(NodeHandle(h)) * sizeof(NodeHandle) : 0u);
+        }));
+        memoryInfos.push_back(createMemInfo("RenderGroups",    iscene.getRenderGroupCount(), [&iscene](uint32_t h){
+            return sizeof(RenderGroup)           + (iscene.isRenderGroupAllocated(RenderGroupHandle(h))     ? iscene.getRenderGroup(RenderGroupHandle(h)).renderables.size() * sizeof(RenderableOrderEntry) + iscene.getRenderGroup(RenderGroupHandle(h)).renderGroups.size() * sizeof(RenderGroupOrderEntry) : 0u);
+        }));
+        memoryInfos.push_back(createMemInfo("RenderPasses",    iscene.getRenderPassCount(), [&iscene](uint32_t h){
+            return sizeof(RenderPass)            + (iscene.isRenderPassAllocated(RenderPassHandle(h))       ? iscene.getRenderPass(RenderPassHandle(h)).renderGroups.size() * sizeof(RenderGroupOrderEntry) : 0u);
+        }));
+        memoryInfos.push_back(createMemInfo("RenderTargets",   iscene.getRenderTargetCount(), [&iscene](uint32_t h){
+            return sizeof(RenderTarget)          + (iscene.isRenderTargetAllocated(RenderTargetHandle(h))   ? iscene.getRenderTargetRenderBufferCount(RenderTargetHandle(h)) * sizeof(RenderBufferHandle) : 0u);
+        }));
+        memoryInfos.push_back(createMemInfo("TextureBuffers",  iscene.getTextureBufferCount(), [&iscene](uint32_t h){
+            return sizeof(TextureBuffer)         + (iscene.isTextureBufferAllocated(TextureBufferHandle(h)) ? TextureBuffer::GetMipMapDataSizeInBytes(iscene.getTextureBuffer(TextureBufferHandle(h))) : 0u);
+        }));
+        memoryInfos.push_back(createMemInfo("DataBuffers",     iscene.getDataBufferCount(), [&iscene](uint32_t h){
+            return sizeof(GeometryDataBuffer)    + (iscene.isDataBufferAllocated(DataBufferHandle(h))       ? iscene.getDataBuffer(DataBufferHandle(h)).data.size() : 0u);
+        }));
+        memoryInfos.push_back(createMemInfo("DataLayouts",     iscene.getDataLayoutCount(), [&iscene](uint32_t h){
+            return sizeof(DataLayout)            + (iscene.isDataLayoutAllocated(DataLayoutHandle(h))       ? iscene.getDataLayout(DataLayoutHandle(h)).getFieldCount() * (sizeof(DataFieldInfo) + sizeof(uint32_t)) : 0u);
+        }));
+        memoryInfos.push_back(createMemInfo("DataInstances",   iscene.getDataInstanceCount(), [&iscene](uint32_t h){
             uint32_t memoryUsage = sizeof(DataInstance);
             if(iscene.isDataInstanceAllocated(DataInstanceHandle(h)))
             {

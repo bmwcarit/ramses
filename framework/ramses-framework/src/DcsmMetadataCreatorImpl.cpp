@@ -84,6 +84,13 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t DcsmMetadataCreatorImpl::setContentFlippedVertically(bool state)
+    {
+        if (!m_metadata.setContentFlippedVertically(state))
+            return addErrorEntry("DcsmMetadataCreatorImpl::setContentFlippedVertically: input not valid");
+        return StatusOK;
+    }
+
     ramses_internal::DcsmMetadata DcsmMetadataCreatorImpl::getMetadata() const
     {
         return m_metadata;

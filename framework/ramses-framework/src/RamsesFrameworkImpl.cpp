@@ -68,7 +68,9 @@ namespace ramses
         if (m_connected)
             disconnect();
 
+        LOG_INFO(CONTEXT_CLIENT, "RamsesFramework::~RamsesFramework: deleting clients");
         m_ramsesClients.clear();
+        LOG_INFO(CONTEXT_CLIENT, "RamsesFramework::~RamsesFramework: deleting renderer");
         m_ramsesRenderer.reset();
 
         m_periodicLogger.removePeriodicLogSupplier(m_communicationSystem.get());

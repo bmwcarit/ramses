@@ -22,7 +22,7 @@ namespace ramses_internal
         if(nullptr != sharedContext)
         {
             const EGLContext contextHandleToShare = sharedContext->m_eglSurfaceData.eglContext;
-            LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::Context_EGL Sharing new context with existing context " << contextHandleToShare);
+            LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::Context_EGL Sharing new context with existing context: " << contextHandleToShare);
             m_eglSurfaceData.eglSharedContext = contextHandleToShare;
         }
     }
@@ -41,6 +41,9 @@ namespace ramses_internal
         if(!bindEglAPI())
             return false;
 
+        if(!m_eglSurfaceData.eglSharedContext)
+            logAllFoundEglConfigs();
+
         if(!chooseEglConfig())
             return false;
 
@@ -53,7 +56,7 @@ namespace ramses_internal
         if (!enable())
            return false;
 
-        LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::init(): Setting egl swap interval to :" << m_swapInterval);
+        LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::init(): Setting egl swap interval to: " << m_swapInterval);
         eglSwapInterval(m_eglSurfaceData.eglDisplay, m_swapInterval);
 
         LOG_INFO(CONTEXT_RENDERER, "Context_EGL::init(): EGL context creation succeeded");
@@ -71,17 +74,18 @@ namespace ramses_internal
 
             const bool isSharedContext = m_eglSurfaceData.eglSharedContext != nullptr;
 
+            LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglDestroySurface if !isSharedContext:" << isSharedContext);
             if (!isSharedContext && !eglDestroySurface(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglSurface))
             {
                 LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::destroy eglDestroySurface failed. Error code: " << eglGetError());
             }
+            LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglDestroyContext");
             if (!eglDestroyContext(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglContext))
             {
                 LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::destroy eglDestroyContext failed. Error code: " << eglGetError());
             }
 
-            LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::terminateEGLDisplayIfNotUsedAnymore calling eglTerminate ");
-
+            LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglTerminate");
             if (!isSharedContext && !eglTerminate(m_eglSurfaceData.eglDisplay))
             {
                 LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::terminateEGLDisplayIfNotUsedAnymore eglTerminate() failed! Error code: " << eglGetError());
@@ -92,6 +96,7 @@ namespace ramses_internal
             /// Not initialized, so nothing to destroy.
             LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::~Context_EGL Context was not successfully initialized  before.");
         }
+        LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL done.");
     }
 
     Bool Context_EGL::swapBuffers()
@@ -109,7 +114,7 @@ namespace ramses_internal
         const auto success = eglMakeCurrent(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglSurface, m_eglSurfaceData.eglSurface, m_eglSurfaceData.eglContext);
         if (success != EGL_TRUE)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::enable Error: eglMakeCurrent() failed. Error code " << eglGetError());
+            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::enable Error: eglMakeCurrent() failed. Error code: " << eglGetError());
             return false;
         }
 
@@ -125,7 +130,7 @@ namespace ramses_internal
             const auto success = eglMakeCurrent(m_eglSurfaceData.eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
             if (success != EGL_TRUE)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::disable Error: eglMakeCurrent() failed. Error code " << eglGetError());
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::disable Error: eglMakeCurrent() failed. Error code: " << eglGetError());
                 return false;
             }
         }
@@ -155,7 +160,7 @@ namespace ramses_internal
 
         if (EGL_NO_DISPLAY == m_eglSurfaceData.eglDisplay)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglGetDisplay with arg:" << m_nativeDisplay << " returned EGL_NO_DISPLAY");
+            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglGetDisplay with arg: " << m_nativeDisplay << " returned EGL_NO_DISPLAY");
             return false;
         }
 
@@ -203,6 +208,58 @@ namespace ramses_internal
         return true;
     }
 
+    void Context_EGL::logAllFoundEglConfigs() const
+    {
+        constexpr std::size_t maxConfigCount = 32u;
+        EGLConfig configsResult[maxConfigCount];
+
+        EGLint configCountResult = 0;
+
+        if(EGL_TRUE != eglChooseConfig(m_eglSurfaceData.eglDisplay, nullptr, configsResult, maxConfigCount, &configCountResult))
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL: eglChooseConfig() failed. Could not retrieve available EGL configurations");
+            return;
+        }
+
+        LOG_INFO(CONTEXT_RENDERER, "Context_EGL: found: " << configCountResult << " EGL configurations");
+        for(EGLint i = 0; i < configCountResult; ++i)
+        {
+            EGLint surfaceType = 0;
+            EGLint renderableType = 0;
+            EGLint bufferSize = 0;
+            EGLint redSize = 0;
+            EGLint greenSize = 0;
+            EGLint blueSize = 0;
+            EGLint alphaSize = 0;
+            EGLint depthSize = 0;
+            EGLint stencilSize = 0;
+            EGLint sampleCount = 0;
+
+            eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_SURFACE_TYPE, &surfaceType);
+            eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_RENDERABLE_TYPE, &renderableType);
+            eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_BUFFER_SIZE, &bufferSize);
+            eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_RED_SIZE, &redSize);
+            eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_GREEN_SIZE, &greenSize);
+            eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_BLUE_SIZE, &blueSize);
+            eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_ALPHA_SIZE, &alphaSize);
+            eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_DEPTH_SIZE, &depthSize);
+            eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_STENCIL_SIZE, &stencilSize);
+            eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_SAMPLES, &sampleCount);
+
+            LOG_INFO(CONTEXT_RENDERER, "Context_EGL: Config idx: " << i
+                     << ", SURFACE_TYPE: " << surfaceType
+                     << ", RENDERABLE_TYPE: " << renderableType
+                     << ", BUFFER_SIZE: " << bufferSize
+                     << ", RED_SIZE: " << redSize
+                     << ", GREEN_SIZE: " << greenSize
+                     << ", BLUE_SIZE: " << blueSize
+                     << ", ALPHA_SIZE: " << alphaSize
+                     << ", DEPTH_SIZE: " << depthSize
+                     << ", STENCIL_SIZE: " << stencilSize
+                     << ", EGL_SAMPLES: " << sampleCount);
+        }
+    }
+
     bool Context_EGL::chooseEglConfig()
     {
         const EGLint* surfaceAttributes = m_surfaceAttributes;
@@ -248,7 +305,75 @@ namespace ramses_internal
             return false;
         }
 
+        logUnmatchedEglConfigParams(surfaceAttributes);
+
         return true;
+    }
+
+    void Context_EGL::logUnmatchedEglConfigParams(const EGLint* surfaceAttributes) const
+    {
+        const EGLint* configParamToQuery = surfaceAttributes;
+        while(EGL_NONE != *configParamToQuery)
+        {
+            const EGLint configParamRequestedValue = *(configParamToQuery + 1);
+
+            EGLint configParamActualValue = 0;
+            eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglConfig, *configParamToQuery, &configParamActualValue);
+
+            auto logOnFailure = [&](bool condition, const char* paramName){
+                if(!condition)
+                {
+                    LOG_WARN(CONTEXT_RENDERER, "Context_EGL eglChooseConfig(): The chosen config does not have requested value for param: " << *configParamToQuery
+                             << (paramName == nullptr? "" : "[")
+                             << (paramName == nullptr? "" : paramName)
+                             << (paramName == nullptr? "" : "]")
+                             << ", requested value: " << configParamRequestedValue
+                             << ", actual value: " << configParamActualValue);
+                }
+            };
+
+            switch(*configParamToQuery)
+            {
+            case EGL_SURFACE_TYPE:
+                logOnFailure((configParamRequestedValue & configParamActualValue) != 0, "EGL_SURFACE_TYPE");
+                break;
+            case EGL_RENDERABLE_TYPE:
+                logOnFailure((configParamRequestedValue & configParamActualValue) != 0, "EGL_RENDERABLE_TYPE");
+                break;
+            case  EGL_BUFFER_SIZE:
+                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_BUFFER_SIZE");
+                break;
+            case EGL_RED_SIZE:
+                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_RED_SIZE");
+                break;
+            case EGL_GREEN_SIZE:
+                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_GREEN_SIZE");
+                break;
+            case EGL_BLUE_SIZE:
+                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_BLUE_SIZE");
+                break;
+            case EGL_ALPHA_SIZE:
+                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_ALPHA_SIZE");
+                break;
+            case EGL_DEPTH_SIZE:
+                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_DEPTH_SIZE");
+                break;
+            case EGL_STENCIL_SIZE:
+                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_STENCIL_SIZE");
+                break;
+            case EGL_SAMPLE_BUFFERS:
+                logOnFailure(configParamRequestedValue == configParamActualValue, "EGL_SAMPLE_BUFFERS");
+                break;
+            case EGL_SAMPLES:
+                logOnFailure(configParamRequestedValue <= configParamActualValue, "EGL_SAMPLES");
+                break;
+            default:
+                logOnFailure(configParamRequestedValue == configParamActualValue, nullptr);
+                break;
+            }
+
+            configParamToQuery += 2;
+        }
     }
 
     bool Context_EGL::createEglSurface()

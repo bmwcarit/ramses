@@ -116,10 +116,9 @@ namespace ramses
         return StatusOK;
     }
 
-    status_t AnimationSystemImpl::validate(uint32_t indent, StatusObjectSet& visitedObjects) const
+    status_t AnimationSystemImpl::validate() const
     {
-        status_t status = ClientObjectImpl::validate(indent, visitedObjects);
-        indent += IndentationStep;
+        status_t status = ClientObjectImpl::validate();
 
         uint32_t objectCount[ERamsesObjectType_NUMBER_OF_TYPES];
         for (uint32_t i = 0u; i < ERamsesObjectType_NUMBER_OF_TYPES; ++i)
@@ -132,10 +131,7 @@ namespace ramses
                 RamsesObjectRegistryIterator iter(getObjectRegistry(), ERamsesObjectType(i));
                 while (const RamsesObject* obj = iter.getNext())
                 {
-                    if (addValidationOfDependentObject(indent, obj->impl, visitedObjects) != StatusOK)
-                    {
-                        status = getValidationErrorStatus();
-                    }
+                    status = std::max(status, addValidationOfDependentObject(obj->impl));
                     ++objectCount[i];
                 }
             }
@@ -149,7 +145,7 @@ namespace ramses
             {
                 ramses_internal::StringOutputStream msg;
                 msg << "Number of " << RamsesObjectTypeUtils::GetRamsesObjectTypeName(type) << " instances: " << objectCount[i];
-                addValidationMessage(EValidationSeverity_Info, indent, ramses_internal::String(msg.release()));
+                addValidationMessage(EValidationSeverity_Info, ramses_internal::String(msg.release()));
             }
         }
 

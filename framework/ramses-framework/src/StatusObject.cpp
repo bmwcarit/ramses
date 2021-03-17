@@ -27,14 +27,12 @@ namespace ramses
 
     status_t StatusObject::validate() const
     {
-        StatusObjectImpl::StatusObjectSet visitedObjects;
-        visitedObjects.put(&impl);
-        return impl.validate(0u, visitedObjects);
+        return impl.validate();
     }
 
-    const char* StatusObject::getValidationReport(EValidationSeverity severity) const
+    const char* StatusObject::getValidationReport(EValidationSeverity minSeverity) const
     {
-        return impl.getValidationReport(severity);
+        return impl.getValidationReport(minSeverity);
     }
 
     const char* StatusObject::getStatusMessage(status_t status) const

@@ -21,6 +21,7 @@ void EffectRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     testFramework.createTestCaseWithDefaultDisplay(EffectTest_ExplicitAttributeLocation, *this, "EffectTest_ExplicitAttributeLocation");
     testFramework.createTestCaseWithDefaultDisplay(EffectTest_ExplicitAttributeLocationSwapped, *this, "EffectTest_ExplicitAttributeLocationSwapped");
     testFramework.createTestCaseWithDefaultDisplay(EffectTest_StructUniform, *this, "EffectTest_StructUniform");
+    testFramework.createTestCaseWithDefaultDisplay(EffectTest_BoolUniform, *this, "EffectTest_BoolUniform");
     testFramework.createTestCaseWithDefaultDisplay(EffectTest_TextureSize, *this, "EffectTest_TextureSize");
     testFramework.createTestCaseWithDefaultDisplay(EffectTest_OptimizedInput, *this, "EffectTest_OptimizedInput");
 }
@@ -43,6 +44,8 @@ bool EffectRenderingTests::run(RendererTestsFramework& testFramework, const Rend
         return runBasicTest<CustomShaderTestScene>(testFramework, CustomShaderTestScene::EXPLICIT_ATTRIBUTE_LOCATION_SWAPPED, "ShaderTestScene_TexturedQuad");
     case EffectTest_StructUniform:
         return runBasicTest<ShaderTestScene>(testFramework, ShaderTestScene::STRUCT_UNIFORM, "ShaderTestScene_StructUniform");
+    case EffectTest_BoolUniform:
+        return runBasicTest<ShaderTestScene>(testFramework, ShaderTestScene::BOOL_UNIFORM, "ShaderTestScene_BoolUniform");
     case EffectTest_TextureSize:
         return runBasicTest<ShaderTestScene>(testFramework, ShaderTestScene::TEXTURE_SIZE, "ShaderTestScene_TextureSize");
     default:

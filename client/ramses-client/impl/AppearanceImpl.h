@@ -46,7 +46,7 @@ namespace ramses
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         virtual status_t deserialize(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
         virtual status_t resolveDeserializationDependencies(DeserializationContext& serializationContext) override;
-        virtual status_t validate(uint32_t indent, StatusObjectSet& visitedObjects) const override;
+        virtual status_t validate() const override;
 
         const EffectImpl* getEffectImpl() const;
         const Effect& getEffect() const;
@@ -111,8 +111,8 @@ namespace ramses
         status_t bindInputInternal(const EffectInputImpl& input, const DataObjectImpl& dataObject);
         status_t unbindInputInternal(const EffectInputImpl& input);
 
-        status_t validateEffect(uint32_t indent, StatusObjectSet& visitedObjects) const;
-        status_t validateUniforms(uint32_t indent, StatusObjectSet& visitedObjects) const;
+        status_t validateEffect() const;
+        status_t validateUniforms() const;
 
         const EffectImpl* m_effectImpl;
         ramses_internal::RenderStateHandle      m_renderStateHandle;

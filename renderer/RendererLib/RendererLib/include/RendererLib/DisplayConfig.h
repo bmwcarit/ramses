@@ -57,6 +57,9 @@ namespace ramses_internal
         void setWindowsWindowHandle(WindowsWindowHandle hwnd);
         WindowsWindowHandle getWindowsWindowHandle() const;
 
+        void setX11WindowHandle(X11WindowHandle x11WindowHandle);
+        X11WindowHandle getX11WindowHandle() const;
+
         AndroidNativeWindowPtr getAndroidNativeWindow() const;
         void setAndroidNativeWindow(AndroidNativeWindowPtr nativeWindowPtr);
 
@@ -81,6 +84,9 @@ namespace ramses_internal
         void setDepthStencilBufferType(ERenderBufferType depthStencilBufferType);
         ERenderBufferType getDepthStencilBufferType() const;
 
+        void setAsyncEffectUploadEnabled(bool enabled);
+        bool isAsyncEffectUploadEnabled() const;
+
         Bool operator==(const DisplayConfig& other) const;
         Bool operator!=(const DisplayConfig& other) const;
 
@@ -99,6 +105,7 @@ namespace ramses_internal
         WaylandIviSurfaceId m_waylandIviSurfaceID;
         IntegrityRGLDeviceUnit m_integrityRGLDeviceUnit;
         WindowsWindowHandle m_windowsWindowHandle;
+        X11WindowHandle m_x11WindowHandle;
         AndroidNativeWindowPtr m_androidNativeWindowPtr;
         Bool m_startVisibleIvi = false;
         String m_waylandDisplay;
@@ -109,6 +116,7 @@ namespace ramses_internal
         UInt64 m_gpuMemoryCacheSize = 0u;
         Vector4 m_clearColor{ 0.f, 0.f, 0.f, 1.0f };
         ERenderBufferType m_depthStencilBufferType = ERenderBufferType_DepthStencilBuffer;
+        bool m_asyncEffectUploadEnabled = true;
     };
 }
 

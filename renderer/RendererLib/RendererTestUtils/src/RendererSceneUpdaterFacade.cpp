@@ -25,7 +25,15 @@ namespace ramses_internal
         const SceneExpirationMonitor& expirationMonitor,
         IThreadAliveNotifier& notifier,
         const IRendererResourceCache* rendererResourceCache)
-        : RendererSceneUpdater(platform, const_cast<Renderer&>(renderer), const_cast<RendererScenes&>(rendererScenes), const_cast<SceneStateExecutor&>(sceneStateExecutor), const_cast<RendererEventCollector&>(rendererEventCollector), const_cast<FrameTimer&>(frameTimer), const_cast<SceneExpirationMonitor&>(expirationMonitor), const_cast<IThreadAliveNotifier&>(notifier), const_cast<IRendererResourceCache*>(rendererResourceCache))
+        : RendererSceneUpdater(platform,
+                               const_cast<Renderer&>(renderer),
+                               const_cast<RendererScenes&>(rendererScenes),
+                               const_cast<SceneStateExecutor&>(sceneStateExecutor),
+                               const_cast<RendererEventCollector&>(rendererEventCollector),
+                               const_cast<FrameTimer&>(frameTimer),
+                               const_cast<SceneExpirationMonitor&>(expirationMonitor),
+                               const_cast<IThreadAliveNotifier&>(notifier),
+                               const_cast<IRendererResourceCache*>(rendererResourceCache))
     {
     }
 
@@ -70,9 +78,10 @@ namespace ramses_internal
         DisplayHandle display,
         bool keepEffectsUploaded,
         uint64_t gpuCacheSize,
+        bool asyncEffectUploadEnabled,
         IBinaryShaderCache* binaryShaderCache)
     {
-        RendererSceneUpdaterPartialMock::createResourceManager(renderBackend, asyncEffectUploader, embeddedCompositingManager, display, keepEffectsUploaded, gpuCacheSize, binaryShaderCache);
+        RendererSceneUpdaterPartialMock::createResourceManager(renderBackend, asyncEffectUploader, embeddedCompositingManager, display, keepEffectsUploaded, gpuCacheSize, asyncEffectUploadEnabled, binaryShaderCache);
         testing::StrictMock<RendererResourceManagerRefCountMock>* resMgrMock = new testing::StrictMock<RendererResourceManagerRefCountMock>;
         assert(!m_resourceManagerMocks.count(display));
         m_resourceManagerMocks[display] = resMgrMock;

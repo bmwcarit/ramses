@@ -410,7 +410,19 @@ namespace ramses
             return StatusOK;
         }
         else if (ramses_internal::ERotationConvention::Legacy_ZYX == getIScene().getRotationConvention(m_transformHandle))
+        {
+            if (getIScene().getRotation(m_transformHandle) == IdentityRotation)
+            {
+                x = IdentityRotation.x;
+                y = IdentityRotation.y;
+                z = IdentityRotation.z;
+                rotationConvention = ramses::ERotationConvention::XYZ;
+
+                return StatusOK;
+            }
+
             return addErrorEntry("Node::getRotation(float,float,float,ERotationConvention) can only be used with right-handed rotation conventions: setRotation(float,float,float,ERotationConvention)");
+        }
 
         const ramses_internal::Vector3& value = getIScene().getRotation(m_transformHandle);
         x = value[0];
