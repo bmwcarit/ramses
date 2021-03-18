@@ -6,7 +6,7 @@
 <area shape="rect" id="node3" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling." alt="" coords="5,1247,167,1273"/>
 <area shape="rect" id="node6" href="$classramses_1_1AnimationObject.html" title="The AnimationObject is a base class for all client API objects owned by an AnimationSystem." alt="" coords="855,563,1041,589"/>
 <area shape="rect" id="node36" href="$classramses_1_1AnimationSystem.html" title="The AnimationSystem holds all animation related data." alt="" coords="851,765,1045,792"/>
-<area shape="rect" id="node38" href="$classramses_1_1Appearance.html" title="The Appearance describes how an object should look like." alt="" coords="871,917,1025,944"/>
+<area shape="rect" id="node38" href="$classramses_1_1Appearance.html" title="The Appearance describes how an object should look like. This includes GLSL uniform values,..." alt="" coords="871,917,1025,944"/>
 <area shape="rect" id="node39" href="$classramses_1_1ArrayBuffer.html" title="The ArrayBuffer is a data object used to provide vertex or index data to ramses::GeometryBinding::set..." alt="" coords="872,968,1024,995"/>
 <area shape="rect" id="node40" href="$classramses_1_1BlitPass.html" title="The BlitPass blits contents of one RendeBuffer to another. The source and destination RenderBuffer ob..." alt="" coords="883,1019,1013,1045"/>
 <area shape="rect" id="node41" href="$classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene." alt="" coords="873,1069,1023,1096"/>

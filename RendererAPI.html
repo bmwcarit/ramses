@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.100</span>
+   &#160;<span id="projectnumber">27.0.101</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -109,7 +109,7 @@ Transformation Linking</h3>
 <p>For transformation data linking the provided scene content is the transformation matrix of a scenegraph node (any <a class="el" href="classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it...">ramses::Node</a> typed object in scene), which can be consumed by node(s) of consumer scene(s). The consumer node (and all its children in scenegraph topology) will transform using the provider node's transformation.</p>
 <h3><a class="anchor" id="autotoc_md128"></a>
 DataObject Linking</h3>
-<p><a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene.">ramses::DataObject</a> can be used to set values of <a class="el" href="classramses_1_1Appearance.html" title="The Appearance describes how an object should look like.">ramses::Appearance</a> uniforms or <a class="el" href="classramses_1_1Camera.html" title="The Camera base class is part of a scene and defines a view into the scene defined by the client appl...">ramses::Camera</a> parameters which can also be linked across scenes. As long as data type is matched a data value stored in a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene.">ramses::DataObject</a> of one scene can be used as uniform input of an <a class="el" href="classramses_1_1Appearance.html" title="The Appearance describes how an object should look like.">ramses::Appearance</a> in another scene.</p>
+<p><a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene.">ramses::DataObject</a> can be used to set values of <a class="el" href="classramses_1_1Appearance.html" title="The Appearance describes how an object should look like. This includes GLSL uniform values,...">ramses::Appearance</a> uniforms or <a class="el" href="classramses_1_1Camera.html" title="The Camera base class is part of a scene and defines a view into the scene defined by the client appl...">ramses::Camera</a> parameters which can also be linked across scenes. As long as data type is matched a data value stored in a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene.">ramses::DataObject</a> of one scene can be used as uniform input of an <a class="el" href="classramses_1_1Appearance.html" title="The Appearance describes how an object should look like. This includes GLSL uniform values,...">ramses::Appearance</a> in another scene.</p>
 <h3><a class="anchor" id="autotoc_md129"></a>
 Texture Linking</h3>
 <p>Texture resources can be tagged as data providers and can be consumed in another scene by <a class="el" href="classramses_1_1TextureSampler.html" title="The TextureSampler holds a texture and its sampling parameters.">ramses::TextureSampler</a>.</p>

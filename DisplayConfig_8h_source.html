@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.100</span>
+   &#160;<span id="projectnumber">27.0.101</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -144,21 +144,27 @@ $(function() {
 <div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160; </div>
 <div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        <span class="keyword">static</span> <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setDepthStencilBufferType(<a class="code" href="classramses_1_1DisplayConfig.html">DisplayConfig</a>&amp; config, <a class="code" href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895">EDepthBufferType</a> depthBufferType);</div>
 <div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160; </div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setWindowsWindowHandle(<span class="keywordtype">void</span>* hwnd);</div>
-<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160; </div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;        <span class="keywordtype">void</span>* getWindowsWindowHandle() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160; </div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setWaylandDisplay(<span class="keyword">const</span> <span class="keywordtype">char</span>* waylandDisplay);</div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160; </div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;        <span class="keyword">const</span> <span class="keywordtype">char</span>* getWaylandDisplay() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160; </div>
-<div class="line"><a name="l00333"></a><span class="lineno"><a class="line" href="classramses_1_1DisplayConfig.html#a34f22be295f778aee0c9ba153582244c">  333</a></span>&#160;        <span class="keyword">class </span>DisplayConfigImpl&amp; <a class="code" href="classramses_1_1DisplayConfig.html#a34f22be295f778aee0c9ba153582244c">impl</a>;</div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160; </div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;        <a class="code" href="classramses_1_1DisplayConfig.html">DisplayConfig</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1DisplayConfig.html">DisplayConfig</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;    };</div>
-<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;}</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setX11WindowHandle(<span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> x11WindowHandle);</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160; </div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;        <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> getX11WindowHandle() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160; </div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setWindowsWindowHandle(<span class="keywordtype">void</span>* hwnd);</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160; </div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;        <span class="keywordtype">void</span>* getWindowsWindowHandle() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160; </div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setWaylandDisplay(<span class="keyword">const</span> <span class="keywordtype">char</span>* waylandDisplay);</div>
 <div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160; </div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;        <span class="keyword">const</span> <span class="keywordtype">char</span>* getWaylandDisplay() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160; </div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;        <span class="keyword">static</span> <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setAsyncEffectUploadEnabled(<a class="code" href="classramses_1_1DisplayConfig.html">DisplayConfig</a>&amp; config, <span class="keywordtype">bool</span> enabled);</div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160; </div>
+<div class="line"><a name="l00379"></a><span class="lineno"><a class="line" href="classramses_1_1DisplayConfig.html#a34f22be295f778aee0c9ba153582244c">  379</a></span>&#160;        <span class="keyword">class </span>DisplayConfigImpl&amp; <a class="code" href="classramses_1_1DisplayConfig.html#a34f22be295f778aee0c9ba153582244c">impl</a>;</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160; </div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;        <a class="code" href="classramses_1_1DisplayConfig.html">DisplayConfig</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1DisplayConfig.html">DisplayConfig</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;    };</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;}</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160; </div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassramses_1_1StatusObject_html"><div class="ttname"><a href="classramses_1_1StatusObject.html">ramses::StatusObject</a></div><div class="ttdoc">The StatusObject provides status message handling.</div><div class="ttdef"><b>Definition:</b> StatusObject.h:21</div></div>
 <div class="ttc" id="aclassramses_1_1DisplayConfig_html"><div class="ttname"><a href="classramses_1_1DisplayConfig.html">ramses::DisplayConfig</a></div><div class="ttdoc">The DisplayConfig holds a set of parameters to be used to initialize a display.</div><div class="ttdef"><b>Definition:</b> DisplayConfig.h:21</div></div>
@@ -166,7 +172,7 @@ $(function() {
 <div class="ttc" id="anamespaceramses_html"><div class="ttname"><a href="namespaceramses.html">ramses</a></div><div class="ttdoc">The RAMSES namespace contains all client side objects and functions used to implement RAMSES applicat...</div><div class="ttdef"><b>Definition:</b> AnimatedProperty.h:14</div></div>
 <div class="ttc" id="anamespaceramses_html_a2778df9cdbae5cb361850633bfde5895"><div class="ttname"><a href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895">ramses::EDepthBufferType</a></div><div class="ttdeci">EDepthBufferType</div><div class="ttdoc">Specifies type of depth buffer created within an offscreen buffer.</div><div class="ttdef"><b>Definition:</b> Types.h:287</div></div>
 <div class="ttc" id="aAPIExport_8h_html_a721d93a66de17b98189db7bd091cf29f"><div class="ttname"><a href="APIExport_8h.html#a721d93a66de17b98189db7bd091cf29f">RAMSES_API</a></div><div class="ttdeci">#define RAMSES_API</div><div class="ttdef"><b>Definition:</b> APIExport.h:35</div></div>
-<div class="ttc" id="aclassramses_1_1DisplayConfig_html_a34f22be295f778aee0c9ba153582244c"><div class="ttname"><a href="classramses_1_1DisplayConfig.html#a34f22be295f778aee0c9ba153582244c">ramses::DisplayConfig::impl</a></div><div class="ttdeci">class DisplayConfigImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> DisplayConfig.h:333</div></div>
+<div class="ttc" id="aclassramses_1_1DisplayConfig_html_a34f22be295f778aee0c9ba153582244c"><div class="ttname"><a href="classramses_1_1DisplayConfig.html#a34f22be295f778aee0c9ba153582244c">ramses::DisplayConfig::impl</a></div><div class="ttdeci">class DisplayConfigImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> DisplayConfig.h:379</div></div>
 <div class="ttc" id="aclassramses_1_1StronglyTypedValue_html"><div class="ttname"><a href="classramses_1_1StronglyTypedValue.html">ramses::StronglyTypedValue</a></div><div class="ttdoc">Helper class to create strongly typed values out of various types.</div><div class="ttdef"><b>Definition:</b> StronglyTypedValue.h:22</div></div>
 <div class="ttc" id="anamespaceramses_html_a4f09a899b38b8d7bc61f01a2d181ea22"><div class="ttname"><a href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">ramses::status_t</a></div><div class="ttdeci">uint32_t status_t</div><div class="ttdoc">Status is a handle to the result of an API call.</div><div class="ttdef"><b>Definition:</b> RamsesFrameworkTypes.h:25</div></div>
 <div class="ttc" id="aRamsesFrameworkTypes_8h_html"><div class="ttname"><a href="RamsesFrameworkTypes_8h.html">RamsesFrameworkTypes.h</a></div></div>
