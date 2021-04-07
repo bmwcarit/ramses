@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.101</span>
+   &#160;<span id="projectnumber">27.0.102</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -101,8 +101,14 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a8a7c5d446961516bf4a81198194eb30d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new empty <a class="el" href="classramses_1_1Scene.html" title="The Scene holds a scene graph. It is the essential class for distributing content to the ramses syste...">Scene</a>.  <a href="classramses_1_1RamsesClient.html#a8a7c5d446961516bf4a81198194eb30d">More...</a><br /></td></tr>
 <tr class="separator:a8a7c5d446961516bf4a81198194eb30d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4d20aea10f20a4852521a25d69539c0c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1Scene.html">Scene</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesClient.html#a4d20aea10f20a4852521a25d69539c0c">loadSceneFromFile</a> (const char *fileName, bool localOnly=false)</td></tr>
-<tr class="memdesc:a4d20aea10f20a4852521a25d69539c0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loads scene contents and resources from a file. The file format has to match current Ramses SDK version in major and minor version number. This method is not back compatible and will fail if trying to load scene files saved using older Ramses SDK version.  <a href="classramses_1_1RamsesClient.html#a4d20aea10f20a4852521a25d69539c0c">More...</a><br /></td></tr>
+<tr class="memdesc:a4d20aea10f20a4852521a25d69539c0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loads scene contents and resources from a file.  <a href="classramses_1_1RamsesClient.html#a4d20aea10f20a4852521a25d69539c0c">More...</a><br /></td></tr>
 <tr class="separator:a4d20aea10f20a4852521a25d69539c0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af50725b54bda2d49f6516de9933d177a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1Scene.html">Scene</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesClient.html#af50725b54bda2d49f6516de9933d177a">loadSceneFromMemory</a> (std::unique_ptr&lt; unsigned char[], void(*)(const unsigned char *)&gt; data, size_t size, bool localOnly=false)</td></tr>
+<tr class="memdesc:af50725b54bda2d49f6516de9933d177a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loads scene contents and resources from a memory buffer.  <a href="classramses_1_1RamsesClient.html#af50725b54bda2d49f6516de9933d177a">More...</a><br /></td></tr>
+<tr class="separator:af50725b54bda2d49f6516de9933d177a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8866a963116fdbea2a3db5808ca12485"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classramses_1_1Scene.html">Scene</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesClient.html#a8866a963116fdbea2a3db5808ca12485">loadSceneFromFileDescriptor</a> (int fd, size_t offset, size_t length, bool localOnly=false)</td></tr>
+<tr class="memdesc:a8866a963116fdbea2a3db5808ca12485"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loads scene contents and resources from an open file descriptor.  <a href="classramses_1_1RamsesClient.html#a8866a963116fdbea2a3db5808ca12485">More...</a><br /></td></tr>
+<tr class="separator:a8866a963116fdbea2a3db5808ca12485"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8e9afdc0997597d6c14dfc0562478cbc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesClient.html#a8e9afdc0997597d6c14dfc0562478cbc">loadSceneFromFileAsync</a> (const char *fileName, bool localOnly=false)</td></tr>
 <tr class="memdesc:a8e9afdc0997597d6c14dfc0562478cbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loads scene contents and resources asynchronously from a file. The file format has to match current Ramses SDK version in major and minor version number. This method is not backwards compatible and will fail if trying to load scene files saved using older Ramses SDK version.  <a href="classramses_1_1RamsesClient.html#a8e9afdc0997597d6c14dfc0562478cbc">More...</a><br /></td></tr>
 <tr class="separator:a8e9afdc0997597d6c14dfc0562478cbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -532,7 +538,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Loads scene contents and resources from a file. The file format has to match current Ramses SDK version in major and minor version number. This method is not back compatible and will fail if trying to load scene files saved using older Ramses SDK version. </p>
+<p>Loads scene contents and resources from a file. </p>
+<p>The file format has to match current Ramses SDK version in major and minor version number. This method is not back compatible and will fail if trying to load scene files saved using older Ramses SDK version.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">fileName</td><td>File name to load the scene from. </td></tr>
@@ -580,6 +587,109 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a8866a963116fdbea2a3db5808ca12485"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8866a963116fdbea2a3db5808ca12485">&#9670;&nbsp;</a></span>loadSceneFromFileDescriptor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classramses_1_1Scene.html">Scene</a>* ramses::RamsesClient::loadSceneFromFileDescriptor </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>fd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>localOnly</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Loads scene contents and resources from an open file descriptor. </p>
+<p>The file format has to match current Ramses SDK version in major and minor version number. This method is not back compatible and will fail if trying to load scene files saved using older Ramses SDK version.</p>
+<p>The ramses scene must be in the already opened filedescriptor at absolute position offset within the file. The filedescriptor must be opened for read access and may not be modified anymore after this call. The filedescriptor must support seeking. Ramses takes ownership of the filedescriptor and will close it when not needed anymore.</p>
+<p>The behavior is undefined if the filedescriptor does not contain a complete serialized ramses scene at offset.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">fd</td><td>Open and readable filedescriptor. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">offset</td><td>Absolute starting position of ramses scenen within fd. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Size of the scene data within fd. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">localOnly</td><td>Marks the scene to be loaded as valid for local only optimization. This has the same effect as calling SceneConfig::setPublicationMode(EScenePublicationMode_LocalOnly) before saving. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>New instance of scene with contents loaded from a file. </dd></dl>
+
+</div>
+</div>
+<a id="af50725b54bda2d49f6516de9933d177a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af50725b54bda2d49f6516de9933d177a">&#9670;&nbsp;</a></span>loadSceneFromMemory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classramses_1_1Scene.html">Scene</a>* ramses::RamsesClient::loadSceneFromMemory </td>
+          <td>(</td>
+          <td class="paramtype">std::unique_ptr&lt; unsigned char[], void(*)(const unsigned char *)&gt;&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>localOnly</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Loads scene contents and resources from a memory buffer. </p>
+<p>The file format has to match current Ramses SDK version in major and minor version number. This method is not back compatible and will fail if trying to load scene files saved using older Ramses SDK version.</p>
+<p>Ramses takes ownership of the memory buffer passed in via data and will delete it via the provided deleter from unique_ptr when not used anymore. The caller may not modify the referenced memory anymore after this call. The behavior is undefined if data does not contain a complete serialized ramses scene or if size does not match the size of the scene data in bytes.</p>
+<p>The deleter on data allows safe memory ownership passing on windows when ramses is used as dll. For more details and a convenience wrapper see <a class="el" href="classramses_1_1RamsesUtils.html#a6a3f874ecfb883354b54e55c16873364" title="Convenience wrapper for RamsesClient::loadSceneFromMemory with automatic deleter.">ramses::RamsesUtils::LoadSceneFromMemory</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Memory buffer to load the scene from. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>The size in bytes of the data memory. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">localOnly</td><td>Marks the scene to be loaded as valid for local only optimization. This has the same effect as calling SceneConfig::setPublicationMode(EScenePublicationMode_LocalOnly) before saving. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>New instance of scene with contents loaded from a file. </dd></dl>
 
 </div>
 </div>

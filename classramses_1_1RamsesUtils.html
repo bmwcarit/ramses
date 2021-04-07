@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.101</span>
+   &#160;<span id="projectnumber">27.0.102</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -121,6 +121,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a8ddcdb0c8ba1dea7d75e494f8f1df494"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#a8ddcdb0c8ba1dea7d75e494f8f1df494">SetPerspectiveCameraFrustumToDataObjects</a> (float fov, float aspectRatio, float nearPlane, float farPlane, <a class="el" href="classramses_1_1DataVector4f.html">DataVector4f</a> &amp;frustumPlanesData, <a class="el" href="classramses_1_1DataVector2f.html">DataVector2f</a> &amp;nearFarPlanesData)</td></tr>
 <tr class="memdesc:a8ddcdb0c8ba1dea7d75e494f8f1df494"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience method to set perspective camera frustum using FOV and aspect ratio (like in <a class="el" href="classramses_1_1PerspectiveCamera.html#aea24c939692f0a046b473cf6d0e16267" title="An alternative method (see ramses::Camera::setFrustum) to set the perspective view frustum of the cam...">ramses::PerspectiveCamera::setFrustum</a>) to two <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene.">ramses::DataObject</a> instances which are or will be bound to a <a class="el" href="classramses_1_1PerspectiveCamera.html" title="The PerspectiveCamera is a local camera which defines a perspective view into the scene.">ramses::PerspectiveCamera</a> using <a class="el" href="classramses_1_1Camera.html#adf40de96c98b73e671cbde40e262e160" title="Binds ramses::DataObject to be used as source for frustum planes values.">ramses::Camera::bindFrustumPlanes</a>.  <a href="classramses_1_1RamsesUtils.html#a8ddcdb0c8ba1dea7d75e494f8f1df494">More...</a><br /></td></tr>
 <tr class="separator:a8ddcdb0c8ba1dea7d75e494f8f1df494"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a3f874ecfb883354b54e55c16873364"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classramses_1_1Scene.html">Scene</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RamsesUtils.html#a6a3f874ecfb883354b54e55c16873364">LoadSceneFromMemory</a> (<a class="el" href="classramses_1_1RamsesClient.html">RamsesClient</a> &amp;client, std::unique_ptr&lt; unsigned char[]&gt; data, size_t size, bool localOnly)</td></tr>
+<tr class="memdesc:a6a3f874ecfb883354b54e55c16873364"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience wrapper for <a class="el" href="classramses_1_1RamsesClient.html#af50725b54bda2d49f6516de9933d177a" title="Loads scene contents and resources from a memory buffer.">RamsesClient::loadSceneFromMemory</a> with automatic deleter.  <a href="classramses_1_1RamsesUtils.html#a6a3f874ecfb883354b54e55c16873364">More...</a><br /></td></tr>
+<tr class="separator:a6a3f874ecfb883354b54e55c16873364"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Temporary functions for convenience. All of these can be implemented on top of the RAMSES Client API, but are offered here as convenience. </p>
@@ -505,6 +508,68 @@ Static Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the identifier of the given node. </dd></dl>
+
+</div>
+</div>
+<a id="a6a3f874ecfb883354b54e55c16873364"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a3f874ecfb883354b54e55c16873364">&#9670;&nbsp;</a></span>LoadSceneFromMemory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classramses_1_1Scene.html">Scene</a> * ramses::RamsesUtils::LoadSceneFromMemory </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classramses_1_1RamsesClient.html">RamsesClient</a> &amp;&#160;</td>
+          <td class="paramname"><em>client</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::unique_ptr&lt; unsigned char[]&gt;&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>localOnly</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Convenience wrapper for <a class="el" href="classramses_1_1RamsesClient.html#af50725b54bda2d49f6516de9933d177a" title="Loads scene contents and resources from a memory buffer.">RamsesClient::loadSceneFromMemory</a> with automatic deleter. </p>
+<p>For details refer to <a class="el" href="classramses_1_1RamsesClient.html#af50725b54bda2d49f6516de9933d177a" title="Loads scene contents and resources from a memory buffer.">ramses::RamsesClient::loadSceneFromMemory</a>. This helper function automatically adds a deleter to the provided unique_ptr that is compiled into caller side and uses the caller heap. This methods can be used on all platforms as a convenience helper for memory that was allocated with new[].</p>
+<p>On Windows this allows safe passing of ownership from caller into ramses when ramses is used as dll. This method should not be used when memory was not allocated with new[]. A custom deleter should also be provided when used on windows and the memory originates from yet another dll than the direct caller.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The ramses client to use for loading the scene </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Memory buffer with scene data. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Size in bytes of the scene data within data buffer </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">localOnly</td><td>Mark for local only optimization </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The loaded ramses <a class="el" href="classramses_1_1Scene.html" title="The Scene holds a scene graph. It is the essential class for distributing content to the ramses syste...">Scene</a> or nullptr on error </dd></dl>
 
 </div>
 </div>
