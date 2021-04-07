@@ -24,6 +24,7 @@
 #include "Components/DcsmTypes.h"
 #include "RendererSceneControlImpl.h"
 #include <map>
+#include "ramses-framework-api/DcsmApiTypes.h"
 
 namespace ramses
 {
@@ -82,6 +83,7 @@ namespace ramses
         // todo (jonathan) cleanup with next major version
         // IRendererSceneControlEventHandler_SpecialForWayland
         virtual void streamBufferLinked(streamBufferId_t streamBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId, bool success) override;
+        virtual void streamBufferEnabled(streamBufferId_t streamBufferId, bool state) override;
 
         void executePendingCommands();
         void dispatchPendingEvents(IDcsmContentControlEventHandler& eventHandler);
@@ -93,11 +95,17 @@ namespace ramses
         ContentState determineCurrentContentState(ContentID contentID) const;
         void processTimedOutRequests();
 
-        TechnicalContentDescriptor findTechnicaIdentifierAssociatedWithContent(ContentID contentID) const;
-        sceneId_t getSceneAssociatedWithContent(ContentID contentID) const;
-        std::vector<ContentID> findContentsAssociatingScene(sceneId_t sceneId) const;
+        TechnicalContentDescriptor getTechnicalContentAssociatedWithContent(ContentID contentID) const;
+        std::vector<ContentID> findContentsAssociatingSceneId(sceneId_t sceneId) const;
+        std::vector<ContentID> findContentsAssociatingSurfaceId(waylandIviSurfaceId_t surfaceId) const;
+        std::vector<ContentID> findContentsAssociatingTechnicalIdAndType(TechnicalContentDescriptor descriptor, ETechnicalContentType type) const;
 
-        void goToConsolidatedDesiredSceneState(sceneId_t sceneId);
+        void goToConsolidatedDesiredState(TechnicalContentDescriptor techId);
+        void goToConsolidatedDesiredSceneState(TechnicalContentDescriptor techId);
+        void goToConsolidatedDesiredStreamState(TechnicalContentDescriptor techId);
+        void applyTechnicalStateChange(TechnicalContentDescriptor techId, RendererSceneState state);
+
+        void createStreamBuffer(displayId_t displayId, waylandIviSurfaceId_t surfaceId);
 
         IRendererSceneControl& m_sceneControl;
         IDcsmConsumerImpl& m_dcsmConsumer;
@@ -119,6 +127,10 @@ namespace ramses
             Ready,
             Shown
         };
+        static_assert(ContentDcsmState::Assigned < ContentDcsmState::ReadyRequested &&
+            ContentDcsmState::ReadyRequested < ContentDcsmState::Ready&&
+            ContentDcsmState::Ready < ContentDcsmState::Shown,
+            "Comparison operator in use, make sure to not break order");
 
         struct ContentInfo
         {
@@ -139,18 +151,23 @@ namespace ramses
         };
         std::vector<OfferedContents> m_offeredContentsForOtherCategories;
 
-        struct SceneInfo
+        struct TechnicalContentInfo
         {
+            ETechnicalContentType techType;
             SharedSceneState sharedState;
             displayId_t display;
             std::unordered_set<ContentID> associatedContents;
         };
-        std::unordered_map<sceneId_t, SceneInfo> m_scenes;
+
+        std::unordered_map<TechnicalContentDescriptor, TechnicalContentInfo> m_techContents;
+        std::unordered_map<waylandIviSurfaceId_t, streamBufferId_t> m_streamBuffers;
+        std::unordered_set<waylandIviSurfaceId_t> m_availableStreams;
 
         struct SceneStateChangeCommand
         {
             uint64_t timePoint;
-            sceneId_t sceneId;
+            ETechnicalContentType techType;
+            TechnicalContentDescriptor technicalId;
             RendererSceneState sceneState = RendererSceneState::Unavailable;
         };
         std::map<ContentIdentifier, SceneStateChangeCommand> m_pendingSceneStateChangeCommands;
@@ -176,7 +193,8 @@ namespace ramses
             ContentExpirationMonitoringDisabled,
             ContentExpired,
             ContentRecoveredFromExpiration,
-            StreamAvailable
+            StreamAvailable,
+            ContentLinkedToTextureConsumer
         };
 
         struct Event

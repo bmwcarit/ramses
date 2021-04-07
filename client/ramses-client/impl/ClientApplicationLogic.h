@@ -11,8 +11,9 @@
 
 #include "Components/ManagedResource.h"
 #include "Components/ResourceHashUsage.h"
-#include "Components/ResourceFileInputStream.h"
+#include "Components/InputStreamContainer.h"
 #include "Components/ISceneProviderEventConsumer.h"
+#include "Components/SceneFileHandle.h"
 
 #include "SceneAPI/SceneVersionTag.h"
 #include "Scene/EScenePublicationMode.h"
@@ -61,11 +62,11 @@ namespace ramses_internal
         ManagedResource         getResource(ResourceContentHash hash) const;
         ManagedResource         loadResource(const ResourceContentHash& hash) const;
         ResourceHashUsage       getHashUsage(const ResourceContentHash& hash) const;
-        void                    addResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ResourceTableOfContents& toc);
-        void                    removeResourceFile(const String& resourceFileName);
-        void                    loadResourceFromFile(const String& resourceFileName);
-        bool                    hasResourceFile(const String& resourceFileName) const;
+        SceneFileHandle         addResourceFile(InputStreamContainerSPtr resourceFileInputStream, const ResourceTableOfContents& toc);
+        void                    removeResourceFile(SceneFileHandle handle);
+        void                    loadResourceFromFile(SceneFileHandle handle);
         void                    reserveResourceCount(uint32_t totalCount);
+        bool                    hasResourceFile(SceneFileHandle handle) const;
 
         std::vector<ramses_internal::SceneReferenceEvent> popSceneReferenceEvents();
 

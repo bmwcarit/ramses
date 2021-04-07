@@ -412,6 +412,39 @@ TEST_F(AClientSceneLogic_ShadowCopy, unskippableEmptyFlushesGeneratesSceneAction
     this->expectSceneUnpublish();
 }
 
+TEST_F(AClientSceneLogic_ShadowCopy, fluhsNotSkippedIfEmptyWithExpirationEnabledOrDisabled)
+{
+    // has and checks first flush
+    this->publishAndAddSubscriberWithoutPendingActions();
+
+    this->m_scene.allocateNode();
+
+    FlushTimeInformation flushTimeInfo = { FlushTime::InvalidTimestamp, {}, {} };
+
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(std::vector<Guid>{ this->m_rendererID }, _, this->m_sceneId, _, _));
+    // flush with change
+    this->m_sceneLogic.flushSceneActions(flushTimeInfo, {});
+    Mock::VerifyAndClearExpectations(&this->m_sceneGraphProviderComponent);
+
+    // empty -> nothing sent
+    this->m_sceneLogic.flushSceneActions(flushTimeInfo, {});
+
+    // enable expiration
+    flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point{ std::chrono::milliseconds{1} };
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, _, this->m_sceneId, _, _));
+    this->m_sceneLogic.flushSceneActions(flushTimeInfo, {});
+
+    // empty -> nothing sent
+    this->m_sceneLogic.flushSceneActions(flushTimeInfo, {});
+
+    // disable expiration
+    flushTimeInfo.expirationTimestamp = FlushTime::Clock::time_point{ std::chrono::milliseconds{0} };
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, _, this->m_sceneId, _, _));
+    this->m_sceneLogic.flushSceneActions(flushTimeInfo, {});
+
+    this->expectSceneUnpublish();
+}
+
 TEST_F(AClientSceneLogic_ShadowCopy, skippedFlushesAreCounted)
 {
     this->publish();

@@ -174,7 +174,6 @@ def main():
         check_file_attributes(f)
 
     files_doxgen_checking = common_modules.common.get_all_files_with_filter(sdk_root, path, {r'\.dox$'}, {})
-    print(files_doxgen_checking)
     for f in files_doxgen_checking:
         file_contents, file_lines = common_modules.common.read_file(f)
         check_doxygen(f, file_contents, file_lines)

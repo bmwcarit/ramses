@@ -140,6 +140,17 @@ namespace ramses
         status_t setContentFlippedVertically(bool state);
 
         /**
+         * @brief   Set displayed data flags metadata entry.
+         * @details Used to determine what type(s) of data is currently displayed
+         *          to avoid showing redundant content in some use cases.
+         *
+         * @param flags Bitmask of types of data, concrete values must be defined on application level between provider and consumer.
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t setDisplayedDataFlags(uint32_t flags);
+
+        /**
          * @brief Deleted move constructor
          * @param other unused
          */

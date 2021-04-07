@@ -91,7 +91,7 @@ namespace ramses_internal
         pushToSceneControlEventQueue(std::move(event));
     }
 
-    void RendererEventCollector::addBufferLinkEvent(ERendererEventType eventType, OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
+    void RendererEventCollector::addBufferEvent(ERendererEventType eventType, OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
     {
         LOG_INFO(CONTEXT_RENDERER, eventType << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " offscreenBufferHandle=" << providerBuffer);
 
@@ -102,7 +102,7 @@ namespace ramses_internal
         pushToSceneControlEventQueue(std::move(event));
     }
 
-    void RendererEventCollector::addBufferLinkEvent(ERendererEventType eventType, StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
+    void RendererEventCollector::addBufferEvent(ERendererEventType eventType, StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
     {
         LOG_INFO(CONTEXT_RENDERER, eventType << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " streamBufferHandle=" << providerBuffer);
 

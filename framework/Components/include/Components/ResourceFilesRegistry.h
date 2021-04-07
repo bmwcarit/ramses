@@ -13,9 +13,10 @@
 #include "ManagedResource.h"
 #include "Components/ResourceHashUsage.h"
 #include "ResourceTableOfContents.h"
-#include "ResourceFileInputStream.h"
+#include "Components/InputStreamContainer.h"
 #include "Utils/File.h"
 #include "Collections/Pair.h"
+#include "Components/SceneFileHandle.h"
 
 #include <algorithm>
 #include <unordered_map>
@@ -32,94 +33,74 @@ namespace ramses_internal
             , hashUsage(hashUsage_)
         {}
     };
+
     using FileContentsMap = HashMap<ResourceContentHash, ResourceRegistryEntry>;
-    using ResourceFileInputStreamToFileContentMap = std::unordered_map<ResourceFileInputStreamSPtr, FileContentsMap>;
+
+    struct ResourceRegistryFileEntry
+    {
+        InputStreamContainerSPtr stream;
+        FileContentsMap resources;
+    };
 
     class ResourceFilesRegistry
     {
     public:
-        void registerResourceFile(const ResourceFileInputStreamSPtr& resourceFileInputStream, const ResourceTableOfContents& toc, ResourceStorage& resourceStorage);
-        void unregisterResourceFile(const ResourceFileInputStreamSPtr& resourceFileInputStream);
-        void unregisterResourceFile(const String& filename);
-        bool hasResourceFile(const String& resourceFileName) const;
-        const FileContentsMap* getContentsOfResourceFile(const String& filename) const;
+        SceneFileHandle registerResourceFile(const InputStreamContainerSPtr& resourceFileInputStream, const ResourceTableOfContents& toc, ResourceStorage& resourceStorage);
+        void unregisterResourceFile(SceneFileHandle handle);
+        const FileContentsMap* getContentsOfResourceFile(SceneFileHandle handle) const;
         EStatus getEntry(const ResourceContentHash& hash, IInputStream*& resourceStream, ResourceFileEntry& fileEntry) const;
     private:
-        ResourceFileInputStreamToFileContentMap m_resourceFiles;
+        std::unordered_map<SceneFileHandle, ResourceRegistryFileEntry> m_resourceFiles;
+        SceneFileHandle m_nextHandle{1};
     };
 
     inline
-    void ResourceFilesRegistry::registerResourceFile(const ResourceFileInputStreamSPtr& resourceFileInputStream, const ResourceTableOfContents& toc, ResourceStorage& resourceStorage)
+    SceneFileHandle ResourceFilesRegistry::registerResourceFile(const InputStreamContainerSPtr& resourceFileInputStream, const ResourceTableOfContents& toc, ResourceStorage& resourceStorage)
     {
         assert(resourceFileInputStream);
 
-        FileContentsMap fileContentsMap;
-        for (const auto& iter : toc.getFileContents())
-        {
-            ResourceRegistryEntry entry(iter.value, resourceStorage.getResourceHashUsage(iter.key));
-            fileContentsMap.put(iter.key, entry);
-        }
-        m_resourceFiles.insert({ resourceFileInputStream, fileContentsMap });
+        const auto& tocContent = toc.getFileContents();
+        FileContentsMap fileContentsMap(tocContent.size());
+        for (const auto& p : tocContent)
+            fileContentsMap.put(p.key, ResourceRegistryEntry{p.value, resourceStorage.getResourceHashUsage(p.key)});
+
+        SceneFileHandle handle = m_nextHandle;
+        m_resourceFiles.insert({ handle, ResourceRegistryFileEntry{resourceFileInputStream, std::move(fileContentsMap)} });
+        ++m_nextHandle.getReference();
+        return handle;
     }
 
     inline
-    void ResourceFilesRegistry::unregisterResourceFile(const String& filename)
+    void ResourceFilesRegistry::unregisterResourceFile(SceneFileHandle handle)
     {
-        for (auto iter = m_resourceFiles.begin(); iter != m_resourceFiles.end(); iter++)
-        {
-            if (iter->first->getResourceFileName() == filename)
-            {
-                m_resourceFiles.erase(iter);
-                break;
-            }
-        }
+        m_resourceFiles.erase(handle);
     }
 
     inline
-    const FileContentsMap* ResourceFilesRegistry::getContentsOfResourceFile(const String& filename) const
+    const FileContentsMap* ResourceFilesRegistry::getContentsOfResourceFile(SceneFileHandle handle) const
     {
-        auto it = std::find_if(m_resourceFiles.begin(), m_resourceFiles.end(), [&filename](auto const& entry) {
-            return entry.first->getResourceFileName() == filename;
-        });
-        return it == m_resourceFiles.end() ? nullptr : &it->second;
-    }
-
-    inline
-    void ResourceFilesRegistry::unregisterResourceFile(const ResourceFileInputStreamSPtr& resourceFileInputStream)
-    {
-        m_resourceFiles.erase(resourceFileInputStream);
-    }
-
-    inline
-    bool ResourceFilesRegistry::hasResourceFile(const String& resourceFileName) const
-    {
-        for (const auto& iter : m_resourceFiles)
-        {
-            if (iter.first->getResourceFileName() == resourceFileName)
-            {
-                return true;
-            }
-        }
-        return false;
+        const auto it = m_resourceFiles.find(handle);
+        if (it == m_resourceFiles.end())
+            return nullptr;
+        return &it->second.resources;
     }
 
     inline
     EStatus ResourceFilesRegistry::getEntry(const ResourceContentHash& hash, IInputStream*& resourceStream, ResourceFileEntry& fileEntry) const
     {
-        for (const auto& iter : m_resourceFiles)
+        for (auto& iter : m_resourceFiles)
         {
-            const FileContentsMap& fileContents = iter.second;
+            const FileContentsMap& fileContents = iter.second.resources;
             ResourceRegistryEntry* entry = fileContents.get(hash);
             if (entry != nullptr)
             {
-                resourceStream = &iter.first->getStream();
+                resourceStream = &iter.second.stream->getStream();
                 fileEntry = entry->fileEntry;
                 return EStatus::Ok;
             }
         }
         return EStatus::NotExist;
     }
-
 }
 
 #endif

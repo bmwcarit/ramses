@@ -691,7 +691,64 @@ TEST_F(ASceneExpirationMonitor, canReenableMonitoringAfterDisable)
     expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1), {}, 0);
     expectEvents({ { scene1, ERendererEventType::SceneExpirationMonitoringEnabled } });
 
+    // now it triggers exceeded
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(10));
+    expectEvents({ { scene1, ERendererEventType::SceneExpired } });
+}
+
+TEST_F(ASceneExpirationMonitor, willNotReportRecoveredIfExpiredThenDisabledAndReenabled)
+{
+    RendererEventVector events;
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1), {}, 0);
+    expectEvents({ { scene1, ERendererEventType::SceneExpirationMonitoringEnabled } });
+    expirationMonitor.onRendered(scene1);
+
+    // make expired
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(10));
+    expectEvents({ { scene1, ERendererEventType::SceneExpired } });
+
+    // disable
+    expirationMonitor.onFlushApplied(scene1, FlushTime::InvalidTimestamp, {}, 0);
+    expectEvents({ { scene1, ERendererEventType::SceneExpirationMonitoringDisabled } });
+
     // this would trigger exceeded event if still monitored
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(10));
+    expectNoEvent();
+
+    // re-enable
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1), {}, 0);
+    expectEvents({ { scene1, ERendererEventType::SceneExpirationMonitoringEnabled } });
+
+    // if monitored the whole time this would trigger recovered event
+    // but there won't be any event because monitoring was disabled before
+    expirationMonitor.checkExpiredScenes(currentFakeTime - std::chrono::milliseconds(10));
+    expectNoEvent();
+}
+
+TEST_F(ASceneExpirationMonitor, willReportExpiredIfReenabledWhileExpired)
+{
+    RendererEventVector events;
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1), {}, 0);
+    expectEvents({ { scene1, ERendererEventType::SceneExpirationMonitoringEnabled } });
+    expirationMonitor.onRendered(scene1);
+
+    // make expired
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(10));
+    expectEvents({ { scene1, ERendererEventType::SceneExpired } });
+
+    // disable
+    expirationMonitor.onFlushApplied(scene1, FlushTime::InvalidTimestamp, {}, 0);
+    expectEvents({ { scene1, ERendererEventType::SceneExpirationMonitoringDisabled } });
+
+    // this would trigger exceeded event if still monitored
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(10));
+    expectNoEvent();
+
+    // re-enable
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1), {}, 0);
+    expectEvents({ { scene1, ERendererEventType::SceneExpirationMonitoringEnabled } });
+
+    // scene is expired already before it was re-enabled, a new expire event will be emitted
     expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(10));
     expectEvents({ { scene1, ERendererEventType::SceneExpired } });
 }

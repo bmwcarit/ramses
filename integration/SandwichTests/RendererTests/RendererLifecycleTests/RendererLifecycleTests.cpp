@@ -1513,6 +1513,8 @@ namespace ramses_internal
 
         // disable expiration together with scene changes
         testScenesAndRenderer.getScenesRegistry().setSceneState<MultipleTrianglesScene>(sceneId, MultipleTrianglesScene::TRIANGLES_REORDERED);
+        testScenesAndRenderer.flush(sceneId);
+        // intentionally send empty flush with expiration disabling only
         testScenesAndRenderer.setExpirationTimestamp(sceneId, FlushTime::InvalidTimestamp);
         testScenesAndRenderer.flush(sceneId);
         testRenderer.doOneLoop();

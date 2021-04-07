@@ -6,27 +6,29 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-ACME_MODULE(
+IF(ramses-sdk_ENABLE_WAYLAND_IVI)
+    ACME_MODULE(
 
-    #==========================================================================
-    # general module information
-    #==========================================================================
-    NAME                    Window_Wayland_IVI
-    TYPE                    STATIC_LIBRARY
-    ENABLE_INSTALL          OFF
+        #==========================================================================
+        # general module information
+        #==========================================================================
+        NAME                    Window_Wayland_IVI
+        TYPE                    STATIC_LIBRARY
+        ENABLE_INSTALL          OFF
 
-    #==========================================================================
-    # files of this module
-    #==========================================================================
-    FILES_PRIVATE_HEADER    include/Window_Wayland_IVI/*.h
-    FILES_SOURCE            src/*.cpp
+        #==========================================================================
+        # files of this module
+        #==========================================================================
+        FILES_PRIVATE_HEADER    include/Window_Wayland_IVI/*.h
+        FILES_SOURCE            src/*.cpp
 
-    #==========================================================================
-    # dependencies
-    #==========================================================================
-    DEPENDENCIES            Window_Wayland
-                            wayland-ivi-extension
-)
+        #==========================================================================
+        # dependencies
+        #==========================================================================
+        DEPENDENCIES            Window_Wayland
+                                wayland-ivi-extension
+    )
+ENDIF()
 
 ACME_MODULE(
 

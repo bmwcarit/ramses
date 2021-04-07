@@ -236,6 +236,32 @@ namespace ramses_internal
         EXPECT_FALSE(RamsesVersion::ReadFromStream(in, info));
     }
 
+    TEST_F(ARamsesVersion, failsWhenStartsWithZeroBytes)
+    {
+        const std::string str = "[RamsesVersion:0.0.0]\n[GitHash:d89398fd]\n";
+        BinaryOutputStream out;
+        uint32_t zeroData = 0;
+        out.write(&zeroData, sizeof(zeroData));
+        out.write(str.data(), str.size());
+
+        BinaryInputStream in(out.getData());
+        EXPECT_FALSE(RamsesVersion::ReadFromStream(in, info));
+    }
+
+    TEST_F(ARamsesVersion, failsWhenStartsContainsZeroBytes)
+    {
+        const std::string str_1 = "[RamsesVersi";
+        const std::string str_2 = "on:0.0.0]\n[GitHash:d89398fd]\n";
+        BinaryOutputStream out;
+        uint32_t zeroData = 0;
+        out.write(str_1.data(), str_1.size());
+        out.write(&zeroData, sizeof(zeroData));
+        out.write(str_2.data(), str_2.size());
+
+        BinaryInputStream in(out.getData());
+        EXPECT_FALSE(RamsesVersion::ReadFromStream(in, info));
+    }
+
     TEST_F(ARamsesVersion, failsWhenStreamInvalid)
     {
         File f("this_file_should_not_exist");

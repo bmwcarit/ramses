@@ -17,13 +17,13 @@
 #include "ramses-client-api/MipLevelData.h"
 #include "ramses-client-api/TextureSwizzle.h"
 
-
 // internal
 #include "ClientObjectImpl.h"
 #include "RamsesObjectRegistry.h"
 #include "ClientCommands/SceneCommandBuffer.h"
 #include "AppearanceImpl.h"
 #include "Components/FlushTimeInformation.h"
+#include "Components/SceneFileHandle.h"
 
 // ramses framework
 #include "SceneAPI/Handles.h"
@@ -285,8 +285,9 @@ namespace ramses
         template <typename ObjectType, typename ObjectImplType>
         status_t createAndDeserializeObjectImpls(ramses_internal::IInputStream& inStream, DeserializationContext& serializationContext, uint32_t count);
 
-        void setSceneFileName(std::string const& sceneFilename);
+        void setSceneFileHandle(ramses_internal::SceneFileHandle handle);
         void closeSceneFile();
+        ramses_internal::SceneFileHandle getSceneFileHandle() const;
 
         void updateResourceId(resourceId_t const& oldId, Resource& resourceWithNewId);
 
@@ -358,7 +359,7 @@ namespace ramses
         NodeVisibilityInfoVector m_dataStackForSubTreeVisibilityApplying;
         EScenePublicationMode m_futurePublicationMode;
 
-        ramses_internal::FlushTime::Clock::time_point m_expirationTimestamp;
+        ramses_internal::FlushTime::Clock::time_point m_expirationTimestamp{ ramses_internal::FlushTime::InvalidTimestamp };
 
         ramses_internal::HashMap<sceneId_t, SceneReference*> m_sceneReferences;
 
@@ -366,7 +367,7 @@ namespace ramses
 
         std::string m_effectErrorMessages;
 
-        std::string m_sceneFilename;
+        ramses_internal::SceneFileHandle m_sceneFileHandle;
     };
 
     // define here to allow inlining
@@ -385,7 +386,6 @@ namespace ramses
     {
         m_commandBuffer.enqueueCommand(std::move(cmd));
     }
-
 }
 
 #endif

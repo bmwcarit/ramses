@@ -11,6 +11,7 @@
 
 #include "ramses-client-api/TextureEnums.h"
 #include "ramses-client-api/TextureSwizzle.h"
+#include "ramses-client-api/RamsesClient.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "ramses-framework-api/APIExport.h"
 
@@ -186,7 +187,34 @@ namespace ramses
         * @return True for success, false otherwise.
         */
         static bool SetPerspectiveCameraFrustumToDataObjects(float fov, float aspectRatio, float nearPlane, float farPlane, DataVector4f& frustumPlanesData, DataVector2f& nearFarPlanesData);
+
+        /**
+         * @brief Convenience wrapper for RamsesClient::loadSceneFromMemory with automatic deleter
+         *
+         * For details refer to #ramses::RamsesClient::loadSceneFromMemory.
+         * This helper function automatically adds a deleter to the provided unique_ptr that is compiled into caller side
+         * and uses the caller heap.
+         * This methods can be used on all platforms as a convenience helper for memory that was allocated with new[].
+         *
+         * On Windows this allows safe passing of ownership from caller into ramses when ramses is used as dll.
+         * This method should not be used when memory was not allocated with new[]. A custom deleter should also be
+         * provided when used on windows and the memory originates from yet another dll than the direct caller.
+         *
+         * @param[in] client The ramses client to use for loading the scene
+         * @param[in] data Memory buffer with scene data.
+         * @param[in] size Size in bytes of the scene data within data buffer
+         * @param[in] localOnly Mark for local only optimization
+         * @return The loaded ramses Scene or nullptr on error
+         *
+         */
+        static Scene* LoadSceneFromMemory(RamsesClient& client, std::unique_ptr<unsigned char[]> data, size_t size, bool localOnly);
     };
+
+    inline Scene* RamsesUtils::LoadSceneFromMemory(RamsesClient& client, std::unique_ptr<unsigned char[]> data, size_t size, bool localOnly)
+    {
+        std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> dataWithDeleter(data.release(), [](const unsigned char* ptr) { delete[] ptr; });
+        return client.loadSceneFromMemory(std::move(dataWithDeleter), size, localOnly);
+    }
 }
 
 #endif

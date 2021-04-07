@@ -101,6 +101,9 @@ namespace ramses
         status_t destroy(Scene& scene);
 
         Scene* loadSceneFromFile(const char* fileName, bool localOnly);
+        Scene* loadSceneFromMemory(std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> data, size_t size, bool localOnly);
+        Scene* loadSceneFromFileDescriptor(int fd, size_t offset, size_t length, bool localOnly);
+
         status_t loadSceneFromFileAsync(const char* fileName, bool localOnly);
 
         status_t dispatchEvents(IClientEventHandler& clientEventHandler);
@@ -142,16 +145,24 @@ namespace ramses
         friend class ClientFactory;
         RamsesClientImpl(RamsesFrameworkImpl& ramsesFramework, const char* applicationName);
 
+        struct SceneCreationConfig
+        {
+            std::string caller;
+            std::string dataSource;
+            ramses_internal::InputStreamContainerSPtr streamContainer;
+            bool prefetchData;
+            bool localOnly;
+        };
+
         class LoadSceneRunnable : public ramses_internal::ITask
         {
         public:
-            LoadSceneRunnable(RamsesClientImpl& client, std::string const& sceneFilename, bool localOnly);
+            LoadSceneRunnable(RamsesClientImpl& client, SceneCreationConfig&& cconfig);
             virtual void execute() override;
 
         private:
             RamsesClientImpl& m_client;
-            std::string m_sceneFilename;
-            bool m_localOnly;
+            SceneCreationConfig m_cconfig;
         };
 
         class DeleteSceneRunnable : public ramses_internal::ITask
@@ -175,8 +186,12 @@ namespace ramses
 
         ramses_internal::ManagedResource manageResource(const ramses_internal::IResource* res);
 
-        Scene* prepareSceneFromInputStream(const char* caller, std::string const& filename, ramses_internal::IInputStream& inputStream, bool localOnly);
-        Scene* prepareSceneFromFile(const char* caller, std::string const& sceneFilename, bool localOnly);
+        Scene* loadSceneSynchonousCommon(const SceneCreationConfig& cconf);
+        Scene* loadSceneFromCreationConfig(const SceneCreationConfig& cconf);
+        Scene* loadSceneObjectFromStream(const std::string& caller,
+                                         std::string const& filename,
+                                         ramses_internal::IInputStream& inputStream,
+                                         bool localOnly);
         void finalizeLoadedScene(Scene* scene);
 
         status_t validateScenes() const;

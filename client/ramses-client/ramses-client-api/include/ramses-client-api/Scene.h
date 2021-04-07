@@ -217,17 +217,20 @@ namespace ramses
         status_t destroy(SceneObject& object);
 
         /**
-         * @brief Expiration timestamp is a point in time till which the scene is considered to be up-to-date.
-         *        Logic on renderer side will check the time every frame and in case it detects the scene
-         *        to be rendered after its expiration timestamp it will generate an event (#ramses::IRendererSceneControlEventHandler::sceneExpired).
+         * @brief   Expiration timestamp is a point in time till which the scene is considered to be up-to-date.
+         * @details Logic on renderer side will check the time every frame and in case it detects the scene
+         *          to be rendered after its expiration timestamp it will generate an event (#ramses::IRendererSceneControlEventHandler::sceneExpired).
          *
-         *        IMPORTANT: Expiration timestamp value is bound to current state of scene (once it is flushed) and for all subsequent flushes until changed again or disabled.
-         *                   Once expiration timestamp is set to non-zero all subscribed renderers will periodically check it from that point on.
-         *                   User is responsible for calling this method to keep the expiration reasonably in future.
+         *          IMPORTANT: Expiration timestamp value is bound to current state of scene (once it is flushed) and for all subsequent flushes until changed again or disabled.
+         *                     Once expiration timestamp is set to non-zero all subscribed renderers will periodically check it from that point on.
+         *                     User is responsible for calling this method to keep the expiration reasonably in future.
          *
-         *        Setting the expiration timestamp to non-zero value enables the monitoring (#ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringEnabled),
-         *        to disable the expiration monitoring set expiration timestamp to 0 followed by a flush.
-         *        By default the expiration checking is disabled.
+         *          Setting the expiration timestamp to non-zero value enables the monitoring (#ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringEnabled),
+         *          to disable the expiration monitoring set expiration timestamp to 0 followed by a flush.
+         *          By default the expiration checking is disabled.
+         *          If an expired scene recovers while monitoring is disabled, there will be no event of recovery after monitoring re-enabled.
+         *          If scene is expired at the moment monitoring is enabled, there will be event of expiration
+         *          (after #ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringEnabled).
          *
          * @param[in] ptpExpirationTimestampInMilliseconds Expiration timestamp in milliseconds from synchronized clock.
          *                                                 To avoid issues, keep this up-to-date reasonably enough in future.

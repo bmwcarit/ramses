@@ -311,9 +311,9 @@ namespace ramses_internal
 
         /**
          * Constructor.
-         *                   return NO_MEMORY if too many items were added.
+         * Always allocated at least DefaultHashMapCapacity even when less is requested.
          */
-        explicit HashMap(const size_t capcity);
+        explicit HashMap(const size_t minimumCapacity);
 
         /**
          * Destructor.
@@ -426,7 +426,7 @@ namespace ramses_internal
          * Reserve space for given number of bits elements. Does nothing if the
          * HashMap is already bigger.
          */
-        void reserve(size_t capacity);
+        void reserve(size_t minimumCapacity);
 
         RNODISCARD size_t capacity() const;
 
@@ -537,8 +537,8 @@ namespace ramses_internal
     }
 
     template <class Key, class T>
-    inline HashMap<Key, T>::HashMap(const size_t capacity)
-        : mBitCount(BitSizeFromElementCount(capacity))
+    inline HashMap<Key, T>::HashMap(const size_t minimumCapacity)
+        : mBitCount(BitSizeFromElementCount(minimumCapacity))
         , mSize(static_cast<size_t>(1) << mBitCount)
         , mThreshold(static_cast<size_t>(mSize * DefaultHashMapMaxLoadFactor))
         , mBuckets(new HashMapEntry*[mSize])
@@ -958,6 +958,10 @@ namespace ramses_internal
     template <class Key, class T>
     inline uint8_t HashMap<Key, T>::BitSizeFromElementCount(size_t count)
     {
+        // HashMap always allocates memory even for 0 elements. To reduce allocation cost
+        // never go below default capacity (also count==0 would fail in calculation)
+        if (count < DefaultHashMapCapacity)
+            count = DefaultHashMapCapacity;
         const size_t countRespectingLoadFactor = static_cast<size_t>(std::ceil(count / DefaultHashMapMaxLoadFactor));
         return static_cast<uint8_t>(std::ceil(std::log2(countRespectingLoadFactor)));
     }

@@ -379,9 +379,9 @@ TEST(HashSet, TestMoveAssign)
 
 TEST(HashSet, TestReserve)
 {
-    HashSet<uint32_t> set(10);
-    EXPECT_GE(set.capacity(), 10u);
-    EXPECT_LE(set.capacity(), 2 * 10u);
+    HashSet<uint32_t> set(40);
+    EXPECT_GE(set.capacity(), 40u);
+    EXPECT_LE(set.capacity(), 2 * 40u);
 
     set.reserve(100);
     EXPECT_GE(set.capacity(), 100u);

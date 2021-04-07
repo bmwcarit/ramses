@@ -11,6 +11,7 @@
 #include "Utils/CommandLineParser.h"
 #include "Utils/Argument.h"
 #include "RendererTestUtils.h"
+#include "Utils/ThreadLocalLog.h"
 
 int main(int argc, char* argv[])
 {
@@ -18,6 +19,9 @@ int main(int argc, char* argv[])
     RendererTestUtils::SetCommandLineParamsForAllTests(argc, argv);
 
     testing::InitGoogleMock(&argc, argv);
+
+    // set log prefix for all tests
+    ramses_internal::ThreadLocalLog::SetPrefix(1);
 
     return RUN_ALL_TESTS();
 }

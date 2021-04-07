@@ -17,7 +17,8 @@
 
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 
-#include "Components/ResourceFileInputStream.h"
+#include "Components/InputStreamContainer.h"
+#include "Components/SceneFileHandle.h"
 #include "Collections/HashMap.h"
 #include "ResourceObjects.h"
 #include "Components/ManagedResource.h"
@@ -66,8 +67,9 @@ namespace ramses
 
         struct ResourceFileAddress
         {
-            ramses_internal::ResourceFileInputStreamSPtr file;
+            ramses_internal::InputStreamContainerSPtr file;
             uint64_t offset;
+            ramses_internal::SceneFileHandle fileHandle;
         };
 
         ramses::Resource* createResourceForScene(Scene& scene, ResourceFileAddress const& address, resourceId_t const& id) const;
@@ -81,6 +83,7 @@ namespace ramses
         ramses_internal::HashMap<resourceId_t, std::vector<ResourceFileAddress>> m_resourceFileAddressRegister;
         ramses_internal::HashMap<std::string, std::vector<resourceId_t>> m_resourceDataFileContent;
         ramses_internal::HashMap<resourceId_t, ResourceData> m_resourcePoolData;
+        ramses_internal::HashMap<std::string, ramses_internal::SceneFileHandle> m_filenameToHandle;
     };
 }
 

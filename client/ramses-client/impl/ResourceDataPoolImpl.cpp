@@ -22,6 +22,7 @@
 #include "RamsesClientImpl.h"
 #include "ResourceImpl.h"
 #include "RamsesClientTypesImpl.h"
+#include "Components/FileInputStreamContainer.h"
 
 namespace ramses
 {
@@ -108,13 +109,15 @@ namespace ramses
 
     bool ResourceDataPoolImpl::addResourceDataFile(std::string const& filename)
     {
-        if (m_client.getClientApplication().hasResourceFile(filename.c_str()))
+        LOG_INFO(CONTEXT_CLIENT, "ResourceDataPool::addResourceDataFile '" << filename << "'");
+
+        if (m_filenameToHandle.find(filename) != m_filenameToHandle.end())
         {
             LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::addResourceDataFile '" << filename << "' failed, resource file has been already added.");
             return false;
         }
 
-        ramses_internal::ResourceFileInputStreamSPtr resourceFileStream = std::make_shared<ramses_internal::ResourceFileInputStream>(ramses_internal::String(filename));
+        ramses_internal::InputStreamContainerSPtr resourceFileStream = std::make_shared<ramses_internal::FileInputStreamContainer>(ramses_internal::String(filename));
         ramses_internal::IInputStream& inputStream = resourceFileStream->getStream();
         if (inputStream.getState() != ramses_internal::EStatus::Ok)
         {
@@ -134,6 +137,18 @@ namespace ramses
         inputStream >> offsetForHLToc;
         inputStream >> offsetForLLResourceBlock;
 
+        // register resource file for on-demand loading (LL-Resources)
+        inputStream.seek(static_cast<ramses_internal::Int>(offsetForLLResourceBlock), ramses_internal::IInputStream::Seek::FromBeginning);
+        ramses_internal::ResourceTableOfContents loadedTOC;
+        if (!loadedTOC.readTOCPosAndTOCFromStream(inputStream))
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::addResourceDataFile '" << filename << "' failed, file did not contain valid resource data");
+            return false;
+        }
+
+        const ramses_internal::SceneFileHandle fileHandle = m_client.getClientApplication().addResourceFile(resourceFileStream, loadedTOC);
+        m_filenameToHandle.put(filename, fileHandle);
+
         // read HL Resources
         inputStream.seek(static_cast<ramses_internal::Int>(offsetForHLToc), ramses_internal::IInputStream::Seek::FromBeginning);
 
@@ -146,39 +161,35 @@ namespace ramses
             uint64_t offset;
             inputStream >> id.highPart >> id.lowPart >> offset;
 
-            m_resourceFileAddressRegister[id].push_back({ resourceFileStream, offset });
+            m_resourceFileAddressRegister[id].push_back({ resourceFileStream, offset, fileHandle });
             m_resourceDataFileContent[filename].push_back(id);
         }
-
-        inputStream.seek(static_cast<ramses_internal::Int>(offsetForLLResourceBlock), ramses_internal::IInputStream::Seek::FromBeginning);
-        // register resource file for on-demand loading (LL-Resources)
-        ramses_internal::ResourceTableOfContents loadedTOC;
-        if (!loadedTOC.readTOCPosAndTOCFromStream(inputStream))
-        {
-            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::addResourceDataFile '" << filename << "' failed, file did not contain valid resource data");
-            return false;
-        }
-
-        m_client.getClientApplication().addResourceFile(resourceFileStream, loadedTOC);
 
         return true;
     }
 
     bool ResourceDataPoolImpl::forceLoadResourcesFromResourceDataFile(std::string const& filename)
     {
-        m_client.getClientApplication().loadResourceFromFile(filename.c_str());
+        LOG_INFO(CONTEXT_CLIENT, "ResourceDataPool::forceLoadResourcesFromResourceDataFile '" << filename << "'");
+
+        const auto it = m_filenameToHandle.find(filename);
+        if (it == m_filenameToHandle.end())
+            return false;
+        m_client.getClientApplication().loadResourceFromFile(it->value);
         return true;
     }
 
     bool ResourceDataPoolImpl::removeResourceDataFile(std::string const& filename)
     {
-        if (!m_resourceDataFileContent.contains(filename))
+        LOG_INFO(CONTEXT_CLIENT, "ResourceDataPool::removeResourceDataFile '" << filename << "'");
+
+        const auto handleIt = m_filenameToHandle.find(filename);
+        if (handleIt == m_filenameToHandle.end())
         {
-            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::removeResourceDataFile: file is unknown and can't be closed.");
+            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::removeResourceDataFile: file '" << filename << "' is unknown and can't be closed.");
             return false;
         }
-
-        assert(m_client.getClientApplication().hasResourceFile(filename.c_str()));
+        const ramses_internal::SceneFileHandle fileHandle = handleIt->value;
 
         // delete from file content map
         auto fileIt = m_resourceDataFileContent.find(filename);
@@ -192,8 +203,8 @@ namespace ramses
             {
                 auto& addresses = it->value;
                 auto address = std::remove_if(addresses.begin(), addresses.end(),
-                    [&filename](auto const& entry) {
-                        return entry.file->getResourceFileName() == filename;
+                    [&fileHandle](auto const& entry) {
+                        return entry.fileHandle == fileHandle;
                     });
                 addresses.erase(address, addresses.end());
 
@@ -202,7 +213,9 @@ namespace ramses
             }
         }
 
-        m_client.getClientApplication().removeResourceFile(filename.c_str());
+        m_client.getClientApplication().removeResourceFile(handleIt->value);
+        m_filenameToHandle.remove(handleIt);
+
         return true;
     }
 
@@ -210,9 +223,9 @@ namespace ramses
     {
         LOG_INFO(ramses_internal::CONTEXT_CLIENT, "ResourceDataPool::saveResourceDataFile: " << filename << " numResources:" << resources.size());
 
-        if (m_client.getClientApplication().hasResourceFile(filename.c_str()))
+        if (m_filenameToHandle.find(filename) != m_filenameToHandle.end())
         {
-            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::saveResourceDataFile: Cannot write resources to file, its already opened by the resource data pool.");
+            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::saveResourceDataFile: Cannot write resources to file '" << filename << "', its already opened by the resource data pool.");
             return false;
         }
 
@@ -220,7 +233,7 @@ namespace ramses
         ramses_internal::BinaryFileOutputStream resourceDataFileOutStream(resourceDataFileOut);
         if (!resourceDataFileOut.isOpen())
         {
-            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::saveResourceDataFile: Could not open file for writing resources");
+            LOG_ERROR(CONTEXT_CLIENT, "ResourceDataPool::saveResourceDataFile: Could not open file '" << filename << "' for writing resources");
             return false;
         }
 

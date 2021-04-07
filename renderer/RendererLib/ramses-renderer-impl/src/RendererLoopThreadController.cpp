@@ -82,9 +82,16 @@ namespace ramses_internal
     void RendererLoopThreadController::run()
     {
         UInt64 loopStartTime = PlatformTime::GetMicrosecondsMonotonic();
-#if defined(__ghs__) && defined(RAMSES_RENDER_THREAD_PRIORITY)
+
+#ifdef __ghs__
+#   ifdef RAMSES_RENDER_THREAD_PRIORITY
         setThreadPriorityIntegrity(RAMSES_RENDER_THREAD_PRIORITY, "renderer loop thread controller thread");
+#   endif
+#   ifdef RAMSES_RENDER_THREAD_CORE_BINDING
+        setThreadCoreBindingIntegrity(RAMSES_RENDER_THREAD_CORE_BINDING, "renderer loop thread controller thread");
+#   endif
 #endif
+
         while (!isCancelRequested())
         {
             Bool doRendering = false;

@@ -98,6 +98,12 @@ namespace ramses_internal
 
         for (const auto effectRes : effectsToUpload)
         {
+            if (isCancelRequested())
+            {
+                LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader uploading cancelled");
+                break;
+            }
+
             const auto& effectHash = effectRes->getHash();
             LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader uploading: " << effectHash);
 
@@ -168,8 +174,13 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader resource upload render backend created successfully");
         m_creationSuccess.set_value(true);
 
-#if defined(__ghs__) && defined(RAMSES_ASYNC_SHADERCOMPILE_THREAD_PRIORITY)
+#ifdef __ghs__
+#   ifdef RAMSES_ASYNC_SHADERCOMPILE_THREAD_PRIORITY
         setThreadPriorityIntegrity(RAMSES_ASYNC_SHADERCOMPILE_THREAD_PRIORITY, "async shader compiler thread");
+#   endif
+#   ifdef RAMSES_ASYNC_SHADERCOMPILE_THREAD_CORE_BINDING
+        setThreadCoreBindingIntegrity(RAMSES_ASYNC_SHADERCOMPILE_THREAD_CORE_BINDING, "async shader compiler thread");
+#   endif
 #endif
 
         while (!isCancelRequested())

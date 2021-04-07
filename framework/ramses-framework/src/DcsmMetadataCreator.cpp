@@ -100,4 +100,11 @@ namespace ramses
         LOG_HL_CLIENT_API1(status, state);
         return status;
     }
+
+    status_t DcsmMetadataCreator::setDisplayedDataFlags(uint32_t flags)
+    {
+        const auto status = impl.setDisplayedDataFlags(flags);
+        LOG_HL_CLIENT_API1(status, flags);
+        return status;
+    }
 }

@@ -21,6 +21,7 @@
 #include "Resource/ResourceInfo.h"
 #include "Utils/ThreadLocalLogForced.h"
 #include "Utils/TextureMathUtils.h"
+#include "Utils/LogMacros.h"
 #include "Math3d/Vector4.h"
 #include <memory>
 
@@ -98,47 +99,35 @@ namespace ramses_internal
         {
             RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
 
-            RenderBufferHandleVector renderBuffers;
-            sceneResources.getAllRenderBuffers(renderBuffers);
-            for(const auto& rb : renderBuffers)
-            {
-                unloadRenderTargetBuffer(rb, sceneId);
-            }
-
             RenderTargetHandleVector renderTargets;
             sceneResources.getAllRenderTargets(renderTargets);
             for (const auto& rt : renderTargets)
-            {
                 unloadRenderTarget(rt, sceneId);
-            }
 
             BlitPassHandleVector blitPasses;
             sceneResources.getAllBlitPasses(blitPasses);
             for (const auto& bp : blitPasses)
-            {
                 unloadBlitPassRenderTargets(bp, sceneId);
-            }
+
+            RenderBufferHandleVector renderBuffers;
+            sceneResources.getAllRenderBuffers(renderBuffers);
+            for(const auto& rb : renderBuffers)
+                unloadRenderTargetBuffer(rb, sceneId);
 
             StreamTextureHandleVector streamTextures;
             sceneResources.getAllStreamTextures(streamTextures);
             for (const auto& st : streamTextures)
-            {
                 unloadStreamTexture(st, sceneId);
-            }
 
             DataBufferHandleVector dataBuffers;
             sceneResources.getAllDataBuffers(dataBuffers);
             for (const auto db : dataBuffers)
-            {
                 unloadDataBuffer(db, sceneId);
-            }
 
             TextureBufferHandleVector textureBuffers;
             sceneResources.getAllTextureBuffers(textureBuffers);
             for (const auto tb : textureBuffers)
-            {
                 unloadTextureBuffer(tb, sceneId);
-            }
 
             m_sceneResourceRegistryMap.remove(sceneId);
         }
@@ -266,16 +255,13 @@ namespace ramses_internal
 
     void RendererResourceManager::uploadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer)
     {
+        const UInt32 memSize = renderBuffer.width * renderBuffer.height * GetTexelSizeFromFormat(renderBuffer.format) * std::max(1u, renderBuffer.sampleCount);
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::uploadRenderTargetBuffer sceneId={} handle={} {}x{} {} {} samples={} estimatedSize={}KB", sceneId, renderBufferHandle,
+            renderBuffer.width, renderBuffer.height, EnumToString(renderBuffer.type), EnumToString(renderBuffer.format), renderBuffer.sampleCount, memSize/1024);
+
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
         IDevice& device = m_renderBackend.getDevice();
         const DeviceResourceHandle deviceHandle = device.uploadRenderBuffer(renderBuffer);
-
-        UInt32 memSize = renderBuffer.width * renderBuffer.height * GetTexelSizeFromFormat(renderBuffer.format);
-        const UInt32 sampleCount = renderBuffer.sampleCount;
-        if (0 != sampleCount)
-        {
-            memSize *= sampleCount;
-        }
 
         sceneResources.addRenderBuffer(renderBufferHandle, deviceHandle, memSize, ERenderBufferAccessMode_WriteOnly == renderBuffer.accessMode);
         m_stats.sceneResourceUploaded(sceneId, memSize);
@@ -283,6 +269,8 @@ namespace ramses_internal
 
     void RendererResourceManager::unloadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId)
     {
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::unloadRenderTargetBuffer sceneId={} handle={}", sceneId, renderBufferHandle);
+
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
 
@@ -293,6 +281,12 @@ namespace ramses_internal
 
     void RendererResourceManager::uploadRenderTarget(RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId)
     {
+        LOG_INFO_PF(CONTEXT_RENDERER, ([&](auto& out) {
+            fmt::format_to(out, "RendererResourceManager::uploadRenderTarget sceneId={} handle={} renderBufferHandles:", sceneId, renderTarget);
+            for (const auto rb : rtBufferHandles)
+                fmt::format_to(out, " {}", rb);
+        }));
+
         assert(!rtBufferHandles.empty());
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
@@ -314,6 +308,8 @@ namespace ramses_internal
 
     void RendererResourceManager::unloadRenderTarget(RenderTargetHandle renderTarget, SceneId sceneId)
     {
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::unloadRenderTarget sceneId={} handle={}", sceneId, renderTarget);
+
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
         const DeviceResourceHandle rtDeviceHandle = sceneResources.getRenderTargetDeviceHandle(renderTarget);
@@ -331,6 +327,7 @@ namespace ramses_internal
         OffscreenBufferDescriptor& offscreenBufferDesc = *m_offscreenBuffers.getMemory(bufferHandle);
 
         offscreenBufferDesc.m_colorBufferHandle[0] = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, sampleCount));
+        uint32_t texelSize = GetTexelSizeFromFormat(ETextureFormat::RGBA8) * (isDoubleBuffered ? 2u : 1u); // only color buffer is double
         switch (depthStencilBufferType)
         {
         case ERenderBufferType_InvalidBuffer:
@@ -338,17 +335,20 @@ namespace ramses_internal
             break;
         case ERenderBufferType_DepthBuffer:
             offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_WriteOnly, sampleCount));
+            texelSize += 4; // using 32bits for memory estimation which is probably what driver will allocate anyway
             break;
         case ERenderBufferType_DepthStencilBuffer:
             offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, sampleCount));
+            texelSize += 4;
             break;
         case ERenderBufferType_ColorBuffer:
         case ERenderBufferType_NUMBER_OF_ELEMENTS:
             assert(false);
         }
 
-        const UInt32 sampleMultiplier = (sampleCount == 0) ? 1u : sampleCount;
-        offscreenBufferDesc.m_estimatedVRAMUsage = width * height * ((isDoubleBuffered ? 2u : 1u) * GetTexelSizeFromFormat(ETextureFormat::RGBA8) * sampleMultiplier + GetTexelSizeFromFormat(ETextureFormat::Depth24_Stencil8) * sampleMultiplier);
+        offscreenBufferDesc.m_estimatedVRAMUsage = width * height * std::max(1u, sampleCount) * texelSize;
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::uploadOffscreenBuffer handle={} {}x{} samples={} interruptible={} depthType={} estimatedSize={}KB", bufferHandle,
+            width, height, sampleCount, isDoubleBuffered, EnumToString(depthStencilBufferType), offscreenBufferDesc.m_estimatedVRAMUsage / 1024);
 
         DeviceHandleVector bufferDeviceHandles;
         bufferDeviceHandles.push_back(offscreenBufferDesc.m_colorBufferHandle[0]);
@@ -390,6 +390,8 @@ namespace ramses_internal
 
     void RendererResourceManager::unloadOffscreenBuffer(OffscreenBufferHandle bufferHandle)
     {
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::unloadOffscreenBuffer handle={}", bufferHandle);
+
         assert(m_offscreenBuffers.isAllocated(bufferHandle));
         IDevice& device = m_renderBackend.getDevice();
         const OffscreenBufferDescriptor& offscreenBufferDesc = *m_offscreenBuffers.getMemory(bufferHandle);
@@ -413,6 +415,8 @@ namespace ramses_internal
 
     void RendererResourceManager::uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId source)
     {
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::uploadStreamBuffer handle={} source={}", bufferHandle, source);
+
         assert(!m_streamBuffers.isAllocated(bufferHandle));
         m_streamBuffers.allocate(bufferHandle);
         *m_streamBuffers.getMemory(bufferHandle) = source;
@@ -425,6 +429,8 @@ namespace ramses_internal
 
     void RendererResourceManager::unloadStreamBuffer(StreamBufferHandle bufferHandle)
     {
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::unloadStreamBuffer handle={}", bufferHandle);
+
         assert(m_streamBuffers.isAllocated(bufferHandle));
         const auto source = *m_streamBuffers.getMemory(bufferHandle);
         m_streamBuffers.release(bufferHandle);
@@ -438,6 +444,8 @@ namespace ramses_internal
 
     void RendererResourceManager::uploadStreamTexture(StreamTextureHandle handle, WaylandIviSurfaceId source, SceneId sceneId)
     {
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::uploadStreamTexture sceneId={} handle={} source={}", sceneId, handle, source);
+
         assert(handle.isValid());
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
         sceneResources.addStreamTexture(handle, source);
@@ -450,6 +458,8 @@ namespace ramses_internal
 
     void RendererResourceManager::unloadStreamTexture(StreamTextureHandle handle, SceneId sceneId)
     {
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::unloadStreamTexture sceneId={} handle={}", sceneId, handle);
+
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
         const WaylandIviSurfaceId source = sceneResources.getStreamTextureSourceId(handle);
@@ -466,6 +476,8 @@ namespace ramses_internal
 
     void RendererResourceManager::uploadBlitPassRenderTargets(BlitPassHandle blitPass, RenderBufferHandle sourceRenderBuffer, RenderBufferHandle destinationRenderBuffer, SceneId sceneId)
     {
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::uploadBlitPassRenderTargets sceneId={} handle={} srcBufferHandle={} dstBufferHandle={}", sceneId, blitPass, sourceRenderBuffer, destinationRenderBuffer);
+
         assert(blitPass.isValid());
         assert(sourceRenderBuffer.isValid());
         assert(destinationRenderBuffer.isValid());
@@ -488,6 +500,8 @@ namespace ramses_internal
 
     void RendererResourceManager::unloadBlitPassRenderTargets(BlitPassHandle blitPass, SceneId sceneId)
     {
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::unloadBlitPassRenderTargets sceneId={} handle={}", sceneId, blitPass);
+
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
 

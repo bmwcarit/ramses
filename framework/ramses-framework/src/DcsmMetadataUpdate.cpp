@@ -138,4 +138,14 @@ namespace ramses
     {
         return impl.getContentFlippedVertically();
     }
+
+    bool DcsmMetadataUpdate::hasDisplayedDataFlags() const
+    {
+        return impl.hasDisplayedDataFlags();
+    }
+
+    uint32_t DcsmMetadataUpdate::getDisplayedDataFlags() const
+    {
+        return impl.getDisplayedDataFlags();
+    }
 }

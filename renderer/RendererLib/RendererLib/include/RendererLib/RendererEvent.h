@@ -85,6 +85,7 @@ namespace ramses_internal
         WindowResizeEvent,
         StreamSurfaceAvailable,
         StreamSurfaceUnavailable,
+        StreamBufferEnabled,
         ObjectsPicked,
         FrameTimingReport,
         NUMBER_OF_ELEMENTS
@@ -146,6 +147,7 @@ namespace ramses_internal
         "WindowResizeEvent",
         "StreamSurfaceAvailable",
         "StreamSurfaceUnavailable",
+        "StreamBufferEnabled",
         "ObjectsPicked",
         "FrameTimingReport",
     };

@@ -208,6 +208,10 @@ if (DEFINED ramses-sdk_WORKER_THREAD_PRIORITY AND NOT ramses-sdk_WORKER_THREAD_P
     target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_WORKER_THREAD_PRIORITY=${ramses-sdk_WORKER_THREAD_PRIORITY}")
 endif()
 
+if (DEFINED ramses-sdk_WORKER_THREAD_CORE_BINDING AND NOT ramses-sdk_WORKER_THREAD_CORE_BINDING STREQUAL "")
+    target_compile_definitions(ramses-framework PRIVATE "-DRAMSES_WORKER_THREAD_CORE_BINDING=${ramses-sdk_WORKER_THREAD_CORE_BINDING}")
+endif()
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(ramses-framework PRIVATE "-Wsuggest-override")
 endif()

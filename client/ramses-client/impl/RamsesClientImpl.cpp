@@ -31,6 +31,9 @@
 #include "Components/ResourcePersistation.h"
 #include "Components/ManagedResource.h"
 #include "Components/ResourceTableOfContents.h"
+#include "Components/FileInputStreamContainer.h"
+#include "Components/MemoryInputStreamContainer.h"
+#include "Components/OffsetFileInputStreamContainer.h"
 #include "Animation/AnimationSystemFactory.h"
 #include "Resource/IResource.h"
 #include "ClientCommands/PrintSceneList.h"
@@ -234,7 +237,10 @@ namespace ramses
         return m_appLogic.getResource(hash);
     }
 
-    Scene* RamsesClientImpl::prepareSceneFromInputStream(const char* caller, std::string const& filename, ramses_internal::IInputStream& inputStream, bool localOnly)
+    Scene* RamsesClientImpl::loadSceneObjectFromStream(const std::string& caller,
+                                                       std::string const& filename,
+                                                       ramses_internal::IInputStream& inputStream,
+                                                       bool localOnly)
     {
         LOG_TRACE(ramses_internal::CONTEXT_CLIENT, "RamsesClient::prepareSceneFromInputStream:  start loading scene from input stream");
 
@@ -289,20 +295,19 @@ namespace ramses
         return new Scene(pimpl);
     }
 
-    Scene* RamsesClientImpl::prepareSceneFromFile(const char* caller, std::string const& sceneFilename, bool localOnly)
+    Scene* RamsesClientImpl::loadSceneFromCreationConfig(const SceneCreationConfig& cconfig)
     {
-        // this file contains scene data AND resource data and will be handed over to and held open by resource component as resource stream
-        ramses_internal::ResourceFileInputStreamSPtr sceneAndResourceFileStream = std::make_shared<ramses_internal::ResourceFileInputStream>(ramses_internal::String(sceneFilename));
-        ramses_internal::IInputStream& inputStream = sceneAndResourceFileStream->getStream();
+        // this stream contains scene data AND resource data and will be handed over to and held open by resource component as resource stream
+        ramses_internal::IInputStream& inputStream = cconfig.streamContainer->getStream();
         if (inputStream.getState() != ramses_internal::EStatus::Ok)
         {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << caller << ":  failed to open file");
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << cconfig.caller << ":  failed to open scene source " << cconfig.dataSource);
             return nullptr;
         }
 
         if (!ReadRamsesVersionAndPrintWarningOnMismatch(inputStream, "scene file"))
         {
-            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << caller << ": failed to read from file");
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << cconfig.caller << ": failed to read from scene source " << cconfig.dataSource);
             return nullptr;
         }
 
@@ -312,35 +317,101 @@ namespace ramses
         inputStream >> llResourceStart;
 
         Scene* scene = nullptr;
-        const bool minimizeReads = true; // hard coded for now
-        if (minimizeReads)
+        if (cconfig.prefetchData)
         {
             std::vector<ramses_internal::Byte> sceneData(static_cast<size_t>(llResourceStart - sceneObjectStart));
             inputStream.read(sceneData.data(), sceneData.size());
             ramses_internal::BinaryInputStream sceneDataStream(sceneData.data());
 
-            scene = prepareSceneFromInputStream(caller, sceneFilename, sceneDataStream, localOnly);
+            scene = loadSceneObjectFromStream(cconfig.caller, cconfig.dataSource, sceneDataStream, cconfig.localOnly);
         }
-        else // this path will be used in the future when creating scene from user provided stream
-            scene = prepareSceneFromInputStream(caller, sceneFilename, inputStream, localOnly);
+        else
+        {
+            // this path will be used in the future when creating scene from user provided stream
+            scene = loadSceneObjectFromStream(cconfig.caller, cconfig.dataSource, inputStream, cconfig.localOnly);
+        }
+        if (!scene)
+        {
+            LOG_ERROR_P(ramses_internal::CONTEXT_CLIENT, "RamsesClient::{}: scene creation for '{}' failed", cconfig.caller, cconfig.dataSource);
+            return nullptr;
+        }
 
         // calls on m_appLogic are thread safe
-        if (!m_appLogic.hasResourceFile(sceneFilename.c_str()))
-        {
-            // register resource file for on-demand loading (LL-Resources)
-            ramses_internal::ResourceTableOfContents loadedTOC;
-            loadedTOC.readTOCPosAndTOCFromStream(inputStream);
-            m_appLogic.addResourceFile(sceneAndResourceFileStream, loadedTOC);
-            scene->impl.setSceneFileName(sceneFilename);
-        }
+        // register stream for on-demand resource loading (LL-Resources)
+        ramses_internal::ResourceTableOfContents loadedTOC;
+        loadedTOC.readTOCPosAndTOCFromStream(inputStream);
+        const ramses_internal::SceneFileHandle fileHandle = m_appLogic.addResourceFile(cconfig.streamContainer, loadedTOC);
+        scene->impl.setSceneFileHandle(fileHandle);
 
         return scene;
     }
 
     Scene* RamsesClientImpl::loadSceneFromFile(const char* fileName, bool localOnly)
     {
+        const std::string stdFilename(fileName ? fileName : "");
+        if (stdFilename.empty())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFile: filename may not be empty");
+            return nullptr;
+        }
+
+        return loadSceneSynchonousCommon({
+                "loadSceneFromFile",
+                stdFilename,
+                std::make_shared<ramses_internal::FileInputStreamContainer>(ramses_internal::String(std::move(stdFilename))),
+                true,
+                localOnly,
+            });
+    }
+
+    Scene* RamsesClientImpl::loadSceneFromMemory(std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> data, size_t size, bool localOnly)
+    {
+        if (!data)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromMemory: data may not be null");
+            return nullptr;
+        }
+        if (size == 0)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromMemory: size may not be 0");
+            return nullptr;
+        }
+
+        return loadSceneSynchonousCommon({
+                "loadSceneFromMemory",
+                fmt::format("<memorybuffer size:{}>", size),
+                std::make_shared<ramses_internal::MemoryInputStreamContainer>(std::move(data)),
+                false,
+                localOnly
+            });
+    }
+
+    Scene* RamsesClientImpl::loadSceneFromFileDescriptor(int fd, size_t offset, size_t length, bool localOnly)
+    {
+        if (fd <= 0)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileDescriptor: filedescriptor must be valid " << fd);
+            return nullptr;
+        }
+        if (length == 0)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileDescriptor: length may not be 0");
+            return nullptr;
+        }
+
+        return loadSceneSynchonousCommon(SceneCreationConfig{
+                "loadSceneFromFileDescriptor",
+                fmt::format("<filedescriptor fd:{} offset:{} length:{}>", fd, offset, length),
+                std::make_shared<ramses_internal::OffsetFileInputStreamContainer>(fd, offset, length),
+                true,
+                localOnly,
+            });
+    }
+
+    Scene* RamsesClientImpl::loadSceneSynchonousCommon(const SceneCreationConfig& cconfig)
+    {
         const ramses_internal::UInt64 start = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
-        Scene* scene = prepareSceneFromFile("loadSceneFromFile", fileName ? fileName : "", localOnly);
+        Scene* scene = loadSceneFromCreationConfig(cconfig);
         if (!scene)
         {
             return nullptr;
@@ -348,7 +419,7 @@ namespace ramses
         finalizeLoadedScene(scene);
 
         const ramses_internal::UInt64 end = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
-        LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFile  Scene loaded from '" << fileName << "' in " << (end - start) << " ms");
+        LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::" << cconfig.caller << " Scene loaded from '" << cconfig.dataSource << "' in " << (end - start) << " ms");
 
         return scene;
     }
@@ -387,7 +458,18 @@ namespace ramses
 
     status_t RamsesClientImpl::loadSceneFromFileAsync(const char* fileName, bool localOnly)
     {
-        LoadSceneRunnable* task = new LoadSceneRunnable(*this, fileName, localOnly);
+        const std::string stdFilename(fileName ? fileName : "");
+        if (stdFilename.empty())
+            return addErrorEntry("RamsesClient::loadSceneFromFileAsync: filename may not be empty");
+
+        LoadSceneRunnable* task =
+            new LoadSceneRunnable(*this, SceneCreationConfig{
+                    "loadSceneFromFileAsync",
+                    stdFilename,
+                    std::make_shared<ramses_internal::FileInputStreamContainer>(ramses_internal::String(std::move(stdFilename))),
+                    true,
+                    localOnly
+                });
         m_loadFromFileTaskQueue.enqueue(*task);
         task->release();
         return StatusOK;
@@ -474,27 +556,28 @@ namespace ramses
         return StatusOK;
     }
 
-    RamsesClientImpl::LoadSceneRunnable::LoadSceneRunnable(RamsesClientImpl& client, std::string const& sceneFilename, bool localOnly)
+    RamsesClientImpl::LoadSceneRunnable::LoadSceneRunnable(RamsesClientImpl& client, SceneCreationConfig&& cconfig)
         : m_client(client)
-        , m_sceneFilename(sceneFilename)
-        , m_localOnly(localOnly)
+        , m_cconfig(std::move(cconfig))
     {
     }
 
     void RamsesClientImpl::LoadSceneRunnable::execute()
     {
         const ramses_internal::UInt64 start = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
-        Scene* scene = m_client.prepareSceneFromFile("loadSceneFromFileAsync", m_sceneFilename, m_localOnly);
+        Scene* scene = m_client.loadSceneFromCreationConfig(m_cconfig);
         const ramses_internal::UInt64 end = ramses_internal::PlatformTime::GetMillisecondsMonotonic();
 
         if (scene)
         {
-            LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileAsync: Scene loaded from '" << m_sceneFilename <<
+            LOG_INFO(ramses_internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileAsync: Scene loaded from '" << m_cconfig.dataSource <<
                      "' (sceneName: " << scene->getName() << ", sceneId " << scene->getSceneId() << ") in " << (end - start) << " ms");
         }
 
         ramses_internal::PlatformGuard g(m_client.m_clientLock);
-        m_client.m_asyncSceneLoadStatusVec.push_back({scene, m_sceneFilename});
+        // NOTE: only used for real files by name for now, not sure how to report other cases to user.
+        // therefore can assume dataSource is the filename
+        m_client.m_asyncSceneLoadStatusVec.push_back({scene, m_cconfig.dataSource});
     }
 
     SceneVector RamsesClientImpl::getListOfScenes() const

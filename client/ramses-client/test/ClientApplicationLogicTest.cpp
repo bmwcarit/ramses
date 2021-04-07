@@ -19,6 +19,7 @@
 #include "Resource/TextureResource.h"
 #include "TransportCommon/FakeConnectionSystem.h"
 #include "TransportCommon/FakeConnectionStatusUpdateNotifier.h"
+#include "Components/FileInputStreamContainer.h"
 
 using namespace ramses_internal;
 
@@ -106,7 +107,7 @@ TEST_F(AClientApplicationLogic, forwardsAddingOfResourceFileToResourceComponent)
     ResourceTableOfContents resourceToc;
     resourceToc.registerContents(resourceInfo, 0u, 1u);
     const String fileName("resourceFile");
-    ResourceFileInputStreamSPtr resourceFileStream(new ResourceFileInputStream(fileName));
+    InputStreamContainerSPtr resourceFileStream(std::make_shared<FileInputStreamContainer>(fileName));
 
     EXPECT_CALL(resourceComponent, addResourceFile(resourceFileStream, Ref(resourceToc)));
     logic.addResourceFile(resourceFileStream, resourceToc);
@@ -130,14 +131,14 @@ TEST_F(AClientApplicationLogic, triesToGetHashUsageFromResourceComponent)
 
 TEST_F(AClientApplicationLogic, addsAndRemovesResourceFilesFromComponent)
 {
-    ResourceFileInputStreamSPtr resourceFileInputStream;
+    InputStreamContainerSPtr resourceFileInputStream;
     ResourceTableOfContents toc;
 
     EXPECT_CALL(resourceComponent, addResourceFile(_,_));
-    logic.addResourceFile(resourceFileInputStream, toc);
+    const auto handle = logic.addResourceFile(resourceFileInputStream, toc);
 
-    EXPECT_CALL(resourceComponent, removeResourceFile(String("testfilename")));
-    logic.removeResourceFile("testfilename");
+    EXPECT_CALL(resourceComponent, removeResourceFile(handle));
+    logic.removeResourceFile(handle);
 }
 
 TEST_F(AClientApplicationLogic, gathersSceneReferenceEventsInAContainer)

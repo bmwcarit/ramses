@@ -60,6 +60,7 @@ namespace ramses
         status_t setDisplayBufferClearFlags(displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags);
         status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
 
+        streamBufferId_t allocateStreamBuffer();
         streamBufferId_t createStreamBuffer(displayId_t display, waylandIviSurfaceId_t source);
         status_t destroyStreamBuffer(displayId_t display, streamBufferId_t streamBuffer);
         status_t setStreamBufferState(displayId_t display, streamBufferId_t streamBufferId, bool state);

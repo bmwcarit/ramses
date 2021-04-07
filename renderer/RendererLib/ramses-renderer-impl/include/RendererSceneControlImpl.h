@@ -33,6 +33,7 @@ namespace ramses
     {
     public:
         virtual void streamBufferLinked(streamBufferId_t streamBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId, bool success) = 0;
+        virtual void streamBufferEnabled(streamBufferId_t streamBufferId, bool success) = 0;
         virtual ~IRendererSceneControlEventHandler_SpecialForWayland() = default;
     };
 

@@ -54,23 +54,10 @@ namespace ramses_internal
     IInputStream&
     BinaryFileInputStream::read(void* data, size_t size)
     {
-        if (EStatus::Ok == m_state)
-        {
-            size_t readBytes = 0;
-            size_t numBytes = 0;
-            while (readBytes < size)
-            {
-                EStatus retVal = m_file.read(static_cast<Byte*>(data) + readBytes, size, numBytes);
-                readBytes += numBytes;
-                if (retVal != EStatus::Ok)
-                {
-                    // error reading file, abort read method
-                    // EOF is no error, but a valid return value, so we need a special handling here
-                    m_state = retVal;
-                    break;
-                }
-            }
-        }
+        if (m_state != EStatus::Ok)
+            return *this;
+        size_t numBytesRead = 0;
+        m_state = m_file.read(data, size, numBytesRead);
         return *this;
     }
 

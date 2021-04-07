@@ -40,6 +40,7 @@ namespace ramses
         EXPECT_FALSE(dmp.hasCarModelVisibility());
         EXPECT_FALSE(dmp.hasExclusiveBackground());
         EXPECT_FALSE(dmp.hasStreamID());
+        EXPECT_FALSE(dmp.hasDisplayedDataFlags());
         EXPECT_FALSE(dmp.hasContentFlippedVertically());
     }
 
@@ -136,5 +137,13 @@ namespace ramses
         dmp.impl.setMetadata(md);
         EXPECT_TRUE(dmp.hasContentFlippedVertically());
         EXPECT_TRUE(dmp.getContentFlippedVertically());
+    }
+
+    TEST_F(ADcsmMetadataUpdate, returnsDisplayedDataFlags)
+    {
+        EXPECT_TRUE(md.setDisplayedDataFlags(13));
+        dmp.impl.setMetadata(md);
+        EXPECT_TRUE(dmp.hasDisplayedDataFlags());
+        EXPECT_EQ(13u, dmp.getDisplayedDataFlags());
     }
 }

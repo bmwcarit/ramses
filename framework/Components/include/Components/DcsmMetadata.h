@@ -47,6 +47,7 @@ namespace ramses_internal
         bool setExclusiveBackground(bool state);
         bool setStreamID(int32_t streamID);
         bool setContentFlippedVertically(bool state);
+        bool setDisplayedDataFlags(uint32_t flags);
 
         bool hasPreviewImagePng() const;
         bool hasPreviewDescription() const;
@@ -59,6 +60,7 @@ namespace ramses_internal
         bool hasExclusiveBackground() const;
         bool hasStreamID() const;
         bool hasContentFlippedVertically() const;
+        bool hasDisplayedDataFlags() const;
 
         std::vector<unsigned char> getPreviewImagePng() const;
         std::u32string getPreviewDescription() const;
@@ -72,6 +74,7 @@ namespace ramses_internal
         bool getExclusiveBackground() const;
         int32_t getStreamID() const;
         bool getContentFlippedVertically() const;
+        uint32_t getDisplayedDataFlags() const;
 
         bool operator==(const DcsmMetadata& other) const;
         bool operator!=(const DcsmMetadata& other) const;
@@ -97,6 +100,7 @@ namespace ramses_internal
         bool m_exclusiveBackground = false;
         bool m_carModelVisibility = false;
         bool m_contentFlippedVertically = false;
+        uint32_t m_displayedDataFlags = 0;
 
         bool m_hasCarModelView = false;
         bool m_hasPreviewImagePng = false;
@@ -109,6 +113,7 @@ namespace ramses_internal
         bool m_hasExclusiveBackground = false;
         bool m_hasStreamID = false;
         bool m_hasContentFlippedVertically = false;
+        bool m_hasDisplayedDataFlags = false;
     };
 
     static_assert(std::is_nothrow_move_constructible<DcsmMetadata>::value, "DcsmMetadata must be movable");
@@ -155,6 +160,8 @@ struct fmt::formatter<ramses_internal::DcsmMetadata> : public ramses_internal::S
             fmt::format_to(ctx.out(), "streamID:{}; ", dm.m_streamID);
         if (dm.hasContentFlippedVertically())
             fmt::format_to(ctx.out(), "contentFlippedVertically:{}; ", dm.m_contentFlippedVertically);
+        if (dm.hasDisplayedDataFlags())
+            fmt::format_to(ctx.out(), "displayedDataFlags:{}; ", dm.m_displayedDataFlags);
         return fmt::format_to(ctx.out(), "]");
     }
 };

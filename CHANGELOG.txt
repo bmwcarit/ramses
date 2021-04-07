@@ -1,3 +1,13 @@
+27.0.102
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - DcsmContentControl now supports new content type WaylandSurface
+
+        API changes
+        ------------------------------------------------------------------------
+        - Add RamsesClient::loadSceneFromMemory and RamsesClient::loadSceneFromFileDescriptor.
+
 27.0.101
 -------------------
         General changes
@@ -27,6 +37,17 @@
         Bugfixes
         ------------------------------------------------------------------------
         - Fix Node::setRotation with convention forgetting convention when identity values were set for angles
+
+27.0.10
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Added displayed data flags to Dcsm metadata, to be used with displaycluster::DisplayedDataFlags
+          - DcsmMetadataCreator::setDisplayedDataFlags, DcsmMetadataUpdate::hasDisplayedDataFlags, DcsmMetadataUpdate::getDisplayedDataFlags
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fix possible mem access violation if display destroyed while shaders are being compiled
 
 27.0.9
 -------------------

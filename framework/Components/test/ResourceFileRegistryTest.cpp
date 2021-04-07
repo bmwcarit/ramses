@@ -11,6 +11,7 @@
 #include "Components/ResourceStorage.h"
 #include "Components/ResourceTableOfContents.h"
 #include "Components/ResourceFilesRegistry.h"
+#include "Components/FileInputStreamContainer.h"
 
 namespace ramses_internal
 {
@@ -32,7 +33,8 @@ namespace ramses_internal
 
     TEST_F(AResourceFileRegistry, CannotFindNotRegisteredResourceFile)
     {
-        EXPECT_FALSE(registry.hasResourceFile("testfile"));
+        EXPECT_EQ(nullptr, registry.getContentsOfResourceFile(SceneFileHandle(123)));
+        EXPECT_EQ(nullptr, registry.getContentsOfResourceFile(SceneFileHandle()));
     }
 
     TEST_F(AResourceFileRegistry, FindRegisteredResourceFile)
@@ -43,10 +45,10 @@ namespace ramses_internal
         String resourceFileName("testfile");
         toc.registerContents(ResourceInfo(EResourceType_VertexArray, hash, 22, 11), 0, 10);
 
-        ResourceFileInputStreamSPtr resourceFileStream(new ResourceFileInputStream(resourceFileName));
-        registry.registerResourceFile(resourceFileStream, toc, storage);
+        InputStreamContainerSPtr resourceFileStream(std::make_shared<FileInputStreamContainer>(resourceFileName));
+        const auto handle = registry.registerResourceFile(resourceFileStream, toc, storage);
 
-        EXPECT_TRUE(registry.hasResourceFile(resourceFileName));
+        EXPECT_NE(nullptr, registry.getContentsOfResourceFile(handle));
     }
 
     TEST_F(AResourceFileRegistry, keepsHashUsageOfRegisteredResources)
@@ -56,8 +58,8 @@ namespace ramses_internal
         ResourceTableOfContents toc;
         toc.registerContents(ResourceInfo(EResourceType_VertexArray, hash, 22, 11), 0, 10);
 
-        ResourceFileInputStreamSPtr resourceFileStream(new ResourceFileInputStream("testfile"));
-        registry.registerResourceFile(resourceFileStream, toc, storage);
+        InputStreamContainerSPtr resourceFileStream(std::make_shared<FileInputStreamContainer>("testfile"));
+        const auto handle = registry.registerResourceFile(resourceFileStream, toc, storage);
 
         //get a hash usage and release it, this would trigger deletion of entry
         ResourceHashUsage hashUsage = storage.getResourceHashUsage(hash);
@@ -65,7 +67,7 @@ namespace ramses_internal
 
         EXPECT_EQ(1u, storage.getAllResourceInfo().size());
 
-        registry.unregisterResourceFile(resourceFileStream);
+        registry.unregisterResourceFile(handle);
 
         EXPECT_EQ(0u, storage.getAllResourceInfo().size());
     }
@@ -76,7 +78,7 @@ namespace ramses_internal
         ResourceInfo resInfo(EResourceType_VertexArray, hash, 22, 11);
         UInt32 offset = 11u;
         UInt32 size = 22u;
-        ResourceFileInputStreamSPtr resourceFileStream(new ResourceFileInputStream("testfile"));
+        InputStreamContainerSPtr resourceFileStream(std::make_shared<FileInputStreamContainer>("testfile"));
 
         ResourceTableOfContents toc;
         toc.registerContents(resInfo, offset, size);
@@ -94,36 +96,32 @@ namespace ramses_internal
         EXPECT_EQ(resInfo, storedFileEntry.resourceInfo);
     }
 
-    TEST_F(AResourceFileRegistry, getsContentsOfResourceFileReturnNullptrIfNoFileKnown)
-    {
-        EXPECT_FALSE(registry.getContentsOfResourceFile("testfile1"));
-    }
-
     TEST_F(AResourceFileRegistry, getsContentsOfResourceFileReturnNullptrIfFileUnknown)
     {
-        ResourceFileInputStreamSPtr resourceFileStream(new ResourceFileInputStream("testfile"));
+        InputStreamContainerSPtr resourceFileStream(std::make_shared<FileInputStreamContainer>("testfile"));
         ResourceTableOfContents toc;
 
         toc.registerContents({ EResourceType_VertexArray, { 2, 2 }, 22, 11 }, 0, 10);
-        registry.registerResourceFile(resourceFileStream, toc, storage);
+        const SceneFileHandle handle = registry.registerResourceFile(resourceFileStream, toc, storage);
 
-        EXPECT_FALSE(registry.getContentsOfResourceFile("testfile2"));
+        EXPECT_EQ(nullptr, registry.getContentsOfResourceFile(SceneFileHandle(handle.getValue() + 1)));
     }
 
     TEST_F(AResourceFileRegistry, getsContentOfResourceFile)
     {
-        ResourceFileInputStreamSPtr resourceFileStream(new ResourceFileInputStream("testfile"));
+        InputStreamContainerSPtr resourceFileStream(std::make_shared<FileInputStreamContainer>("testfile"));
         ResourceTableOfContents toc;
         ResourceInfo info{ EResourceType_VertexArray, { 2, 2 }, 22, 11 };
         toc.registerContents(info, 0, 10);
-        registry.registerResourceFile(resourceFileStream, toc, storage);
+        const auto handle_1 = registry.registerResourceFile(resourceFileStream, toc, storage);
 
-        ResourceFileInputStreamSPtr resourceFileStream2(new ResourceFileInputStream("testfile2"));
+        InputStreamContainerSPtr resourceFileStream2(std::make_shared<FileInputStreamContainer>("testfile2"));
         ResourceTableOfContents toc2;
         toc2.registerContents({ EResourceType_VertexArray, { 3, 3 }, 23, 13 }, 2, 12);
-        registry.registerResourceFile(resourceFileStream2, toc2, storage);
+        const auto handle_2 = registry.registerResourceFile(resourceFileStream2, toc2, storage);
+        (void)handle_2;
 
-        auto content = registry.getContentsOfResourceFile("testfile");
+        auto content = registry.getContentsOfResourceFile(handle_1);
         EXPECT_EQ(content->size(), 1u);
         EXPECT_EQ(content->begin()->key, ResourceContentHash(2, 2));
         EXPECT_EQ(content->begin()->value.fileEntry.resourceInfo, info);
@@ -133,20 +131,21 @@ namespace ramses_internal
 
     TEST_F(AResourceFileRegistry, getsMultipleContentsOfResourceFile)
     {
-        ResourceFileInputStreamSPtr resourceFileStream(new ResourceFileInputStream("testfile"));
+        InputStreamContainerSPtr resourceFileStream(std::make_shared<FileInputStreamContainer>("testfile"));
         ResourceTableOfContents toc;
         toc.registerContents({ EResourceType_VertexArray, { 2, 2 }, 22, 11 }, 0, 10);
         toc.registerContents({ EResourceType_VertexArray, { 5, 5 }, 22, 11 }, 10, 10);
         toc.registerContents({ EResourceType_VertexArray, { 1, 1 }, 22, 11 }, 20, 10);
-        registry.registerResourceFile(resourceFileStream, toc, storage);
+        const auto handle_1 = registry.registerResourceFile(resourceFileStream, toc, storage);
 
-        ResourceFileInputStreamSPtr resourceFileStream2(new ResourceFileInputStream("testfile2"));
+        InputStreamContainerSPtr resourceFileStream2(std::make_shared<FileInputStreamContainer>("testfile2"));
         ResourceTableOfContents toc2;
         toc2.registerContents({ EResourceType_VertexArray, { 3, 3 }, 23, 13 }, 2, 12);
         toc2.registerContents({ EResourceType_VertexArray, { 5, 5 }, 23, 13 }, 14, 12);
-        registry.registerResourceFile(resourceFileStream2, toc2, storage);
+        const auto handle_2 = registry.registerResourceFile(resourceFileStream2, toc2, storage);
+        (void)handle_2;
 
-        auto content = registry.getContentsOfResourceFile("testfile");
+        auto content = registry.getContentsOfResourceFile(handle_1);
         EXPECT_EQ(content->size(), 3u);
         for (auto const& entry : { ResourceContentHash{ 2, 2 }, ResourceContentHash{ 5, 5 }, ResourceContentHash{ 1, 1 } })
             EXPECT_NE(content->find(entry), content->end());

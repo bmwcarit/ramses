@@ -25,13 +25,19 @@ inline void setThreadPriorityIntegrity(int priority, absl::string_view threadnam
 {
     const Error ret = SetPriorityAndWeight(CurrentTask(), priority, 1, true);
     if (ret != Success)
-    {
         LOG_ERROR(ramses_internal::CONTEXT_FRAMEWORK, "setThreadPriorityIntegrity: " << threadname.data() << " setting thread priority failed:" << ret);
-    }
     else
-    {
         LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "setThreadPriorityIntegrity: " << threadname.data() << " set thread priority to:" << priority);
-    }
+}
+
+inline void setThreadCoreBindingIntegrity(int subset, absl::string_view threadname)
+{
+    // bind the thread to the passed processor (core) subset
+    const Error ret = SetTaskProcessorSubsetBinding(CurrentTask(), true, subset);
+    if (ret != Success)
+        LOG_ERROR(ramses_internal::CONTEXT_FRAMEWORK, "setThreadCoreBindingIntegrity: " << threadname.data() << " setting thread core binding failed:" << ret);
+    else
+        LOG_INFO(ramses_internal::CONTEXT_FRAMEWORK, "setThreadCoreBindingIntegrity: " << threadname.data() << " bind thread to processor subset:" << subset);
 }
 #endif
 

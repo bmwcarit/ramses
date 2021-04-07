@@ -33,6 +33,7 @@ MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::resourceCacheFlag_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::binaryShaderFormatId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::waylandIviSurfaceId_t);
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::waylandIviLayerId_t);
+MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses::streamBufferId_t);
 
 template <>
 struct fmt::formatter<ramses::CategoryInfoUpdate> : public ramses_internal::SimpleFormatterBase

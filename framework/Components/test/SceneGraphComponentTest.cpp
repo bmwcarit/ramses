@@ -476,7 +476,7 @@ TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublish
     EXPECT_CALL(consumer, handleInitializeScene(sceneInfo, _));
     EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(1), _,  _));
 
-    const FlushTimeInformation flushTimesWithExpirationToPreventFlushOptimizazion {FlushTime::Clock::time_point {std::chrono::milliseconds{1}}, FlushTime::Clock::time_point {}, FlushTime::Clock::getClockType() };
+    FlushTimeInformation flushTimesWithExpirationToPreventFlushOptimizazion {FlushTime::Clock::time_point {std::chrono::milliseconds{1}}, FlushTime::Clock::time_point {}, FlushTime::Clock::getClockType() };
     EXPECT_TRUE(sceneGraphComponent.handleFlush(SceneId(1), flushTimesWithExpirationToPreventFlushOptimizazion, {}));
 
     // disconnect
@@ -484,6 +484,7 @@ TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublish
     sceneGraphComponent.disconnectFromNetwork();
 
     // local flushing unaffected, nothing sent to network
+    flushTimesWithExpirationToPreventFlushOptimizazion.expirationTimestamp += std::chrono::milliseconds{ 1 };
     EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(1), _, _));
     EXPECT_TRUE(sceneGraphComponent.handleFlush(SceneId(1), flushTimesWithExpirationToPreventFlushOptimizazion, {}));
 
@@ -496,6 +497,7 @@ TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublish
     sceneGraphComponent.handleSubscribeScene(SceneId(1), remoteParticipantID);
 
     // flush again
+    flushTimesWithExpirationToPreventFlushOptimizazion.expirationTimestamp += std::chrono::milliseconds{ 1 };
     EXPECT_CALL(communicationSystem, sendSceneUpdate(remoteParticipantID, SceneId(1), _)).WillOnce(Return(1));
     EXPECT_CALL(consumer, handleSceneUpdate_rvr(SceneId(1), _, _));
     EXPECT_TRUE(sceneGraphComponent.handleFlush(SceneId(1), flushTimesWithExpirationToPreventFlushOptimizazion, {}));

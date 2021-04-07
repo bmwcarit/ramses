@@ -9,6 +9,7 @@
 #include "Components/ResourceComponent.h"
 #include "Components/ResourceTableOfContents.h"
 #include "Components/ResourceFilesRegistry.h"
+#include "Components/SceneFileHandle.h"
 #include "Utils/LogMacros.h"
 
 namespace ramses_internal
@@ -43,30 +44,25 @@ namespace ramses_internal
         return m_resourceStorage.manageResource(resource, deletionAllowed);
     }
 
-    void ResourceComponent::addResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ramses_internal::ResourceTableOfContents& toc)
+    SceneFileHandle ResourceComponent::addResourceFile(InputStreamContainerSPtr resourceFileInputStream, const ramses_internal::ResourceTableOfContents& toc)
     {
         for (const auto& item : toc.getFileContents())
         {
             m_resourceStorage.storeResourceInfo(item.key, item.value.resourceInfo);
         }
-        m_resourceFiles.registerResourceFile(resourceFileInputStream, toc, m_resourceStorage);
+        return m_resourceFiles.registerResourceFile(resourceFileInputStream, toc, m_resourceStorage);
     }
 
-    bool ResourceComponent::hasResourceFile(const String& resourceFileName) const
-    {
-        return m_resourceFiles.hasResourceFile(resourceFileName);
-    }
-
-    void ResourceComponent::loadResourceFromFile(const String& resourceFileName)
+    void ResourceComponent::loadResourceFromFile(SceneFileHandle handle)
     {
         // If resources of a file are loaded, check if they are in use by any scene object (=hashusage) or as a resource
         // a) If they are in use, we need to load them from file, also remove the deletion allowed flag from
         // them, because they is not supposed to be loadable anymore.
         // b) If a resource is unused, nothing is to be done since there wouldn't be any entry in the resource storage for it
-        const FileContentsMap* content = m_resourceFiles.getContentsOfResourceFile(resourceFileName);
+        const FileContentsMap* content = m_resourceFiles.getContentsOfResourceFile(handle);
         if (!content)
         {
-            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::loadResourceFromFile: " << resourceFileName << " unknown, can't force load");
+            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::loadResourceFromFile: handle " << handle << " unknown, can't force load");
             return;
         }
 
@@ -84,9 +80,14 @@ namespace ramses_internal
         }
     }
 
-    void ResourceComponent::removeResourceFile(const String& resourceFileName)
+    void ResourceComponent::removeResourceFile(SceneFileHandle handle)
     {
-        m_resourceFiles.unregisterResourceFile(resourceFileName);
+        m_resourceFiles.unregisterResourceFile(handle);
+    }
+
+    bool ResourceComponent::hasResourceFile(SceneFileHandle handle) const
+    {
+        return m_resourceFiles.getContentsOfResourceFile(handle) != nullptr;
     }
 
     ManagedResource ResourceComponent::loadResource(const ResourceContentHash& hash)

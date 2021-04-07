@@ -212,4 +212,26 @@ namespace ramses
         uint32_t height = 0u;
         EXPECT_NE(StatusOK, textureBuffer.getMipLevelSize(4, width, height));
     }
+
+    TEST_F(ATexture2DBuffer, CanBeValidated)
+    {
+        Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 4, 4, 1);
+        EXPECT_EQ(StatusOK, textureBuffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()));
+        m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, textureBuffer);
+        EXPECT_EQ(StatusOK, textureBuffer.validate());
+    }
+
+    TEST_F(ATexture2DBuffer, ReportsWarningIfNotUsedInSampler)
+    {
+        Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 4, 4, 1);
+        EXPECT_EQ(StatusOK, textureBuffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()));
+        EXPECT_NE(StatusOK, textureBuffer.validate());
+    }
+
+    TEST_F(ATexture2DBuffer, ReportsWarningIfUsedInSamplerButNotInitialized)
+    {
+        Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 4, 4, 1);
+        m_scene.createTextureSampler(ETextureAddressMode_Clamp, ETextureAddressMode_Clamp, ETextureSamplingMethod_Linear, ETextureSamplingMethod_Linear, textureBuffer);
+        EXPECT_NE(StatusOK, textureBuffer.validate());
+    }
 }

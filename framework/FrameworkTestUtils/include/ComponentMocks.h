@@ -38,10 +38,10 @@ namespace ramses_internal
         MOCK_METHOD(ManagedResource, getResource, (ResourceContentHash hash), (override));
         MOCK_METHOD(ManagedResource, loadResource, (const ResourceContentHash&), (override));
         MOCK_METHOD(ResourceHashUsage, getResourceHashUsage, (const ResourceContentHash&), (override));
-        MOCK_METHOD(void, addResourceFile, (ResourceFileInputStreamSPtr resourceFileStream, const ResourceTableOfContents& toc), (override));
-        MOCK_METHOD(bool, hasResourceFile, (const String&), (const, override));
-        MOCK_METHOD(void, removeResourceFile, (const String& resourceFileName), (override));
-        MOCK_METHOD(void, loadResourceFromFile, (const String& resourceFileName), (override));
+        MOCK_METHOD(SceneFileHandle, addResourceFile, (InputStreamContainerSPtr inputStream, const ResourceTableOfContents& toc), (override));
+        MOCK_METHOD(bool, hasResourceFile, (SceneFileHandle), (const, override));
+        MOCK_METHOD(void, removeResourceFile, (SceneFileHandle), (override));
+        MOCK_METHOD(void, loadResourceFromFile, (SceneFileHandle), (override));
         virtual void reserveResourceCount(uint32_t) override {};
         MOCK_METHOD(ManagedResourceVector, resolveResources, (ResourceContentHashVector& vec), (override));
         MOCK_METHOD(ResourceInfo const&, getResourceInfo, (ResourceContentHash const& hash), (override));

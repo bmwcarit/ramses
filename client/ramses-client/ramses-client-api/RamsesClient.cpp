@@ -51,6 +51,20 @@ namespace ramses
         return scene;
     }
 
+    ramses::Scene* RamsesClient::loadSceneFromMemory(std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> data, size_t size, bool localOnly)
+    {
+        auto scene = impl.loadSceneFromMemory(std::move(data), size, localOnly);
+        LOG_HL_CLIENT_API2(LOG_API_RAMSESOBJECT_PTR_STRING(scene), size, localOnly);
+        return scene;
+    }
+
+    ramses::Scene* RamsesClient::loadSceneFromFileDescriptor(int fd, size_t offset, size_t length, bool localOnly)
+    {
+        auto scene = impl.loadSceneFromFileDescriptor(fd, offset, length, localOnly);
+        LOG_HL_CLIENT_API4(LOG_API_RAMSESOBJECT_PTR_STRING(scene), fd, offset, length, localOnly);
+        return scene;
+    }
+
     status_t RamsesClient::loadSceneFromFileAsync(const char* fileName, bool localOnly)
     {
         auto status = impl.loadSceneFromFileAsync(fileName, localOnly);

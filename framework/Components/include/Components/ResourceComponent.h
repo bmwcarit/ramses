@@ -30,10 +30,10 @@ namespace ramses_internal
         virtual ManagedResource loadResource(const ResourceContentHash& hash) override;
 
         virtual ResourceHashUsage getResourceHashUsage(const ResourceContentHash& hash) override;
-        virtual void addResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ramses_internal::ResourceTableOfContents& toc) override;
-        virtual bool hasResourceFile(const String& resourceFileName) const override;
-        virtual void loadResourceFromFile(const String& resourceFileName) override;
-        virtual void removeResourceFile(const String& resourceFileName) override;
+        virtual SceneFileHandle addResourceFile(InputStreamContainerSPtr resourceFileInputStream, const ramses_internal::ResourceTableOfContents& toc) override;
+        virtual void loadResourceFromFile(SceneFileHandle handle) override;
+        virtual void removeResourceFile(SceneFileHandle handle) override;
+        virtual bool hasResourceFile(SceneFileHandle handle) const override;
 
         virtual void reserveResourceCount(uint32_t totalCount) override;
         virtual ManagedResourceVector resolveResources(ResourceContentHashVector& vec) override;

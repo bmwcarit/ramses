@@ -28,8 +28,8 @@ namespace ramses_internal
         void addSceneEvent(ERendererEventType eventType, SceneId sceneId, RendererSceneState state);
         void addSceneExpirationEvent(ERendererEventType eventType, SceneId sceneId);
         void addDataLinkEvent(ERendererEventType eventType, SceneId providerSceneId, SceneId consumerSceneId, DataSlotId providerdataId, DataSlotId consumerdataId);
-        void addBufferLinkEvent(ERendererEventType eventType, OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId);
-        void addBufferLinkEvent(ERendererEventType eventType, StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId);
+        void addBufferEvent(ERendererEventType eventType, OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId);
+        void addBufferEvent(ERendererEventType eventType, StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId);
         void addOBEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display);
         void addSceneFlushEvent(ERendererEventType eventType, SceneId sceneId, SceneVersionTag sceneVersionTag);
         void addWindowEvent(ERendererEventType eventType, DisplayHandle display, MouseEvent mouseEvent);

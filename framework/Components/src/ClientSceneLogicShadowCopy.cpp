@@ -63,12 +63,15 @@ namespace ramses_internal
                 }));
         }
 
+        const bool hasExpirationTSChange = (flushTimeInfo.expirationTimestamp != m_lastFlushedExpirationTimestamp);
+        m_lastFlushedExpirationTimestamp = flushTimeInfo.expirationTimestamp;
+
         const bool skipSceneActionSend =
             m_flushCounter != 0 &&      // never skip first flush (might block renderer side transition subscription pending -> subscibed)
             m_resourceChanges.empty() &&   // no resource changes (client+scene)
             sceneUpdate.actions.empty() &&  // no other sceneactions yet
             m_scene.getSceneReferenceActions().empty() &&  // no scenereference updates
-            flushTimeInfo.expirationTimestamp == FlushTime::InvalidTimestamp &&  // no expiration monitoring enabled (otherwise must always send to keep scene valid)
+            !hasExpirationTSChange && // no expiration monitoring change
             versionTag == SceneVersionTag::Invalid();  // no scene version
 
         ++m_flushCounter;

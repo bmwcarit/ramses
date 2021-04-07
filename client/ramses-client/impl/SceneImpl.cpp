@@ -1395,14 +1395,6 @@ namespace ramses
 
     status_t SceneImpl::setExpirationTimestamp(uint64_t ptpExpirationTimestampInMilliseconds)
     {
-        if (ptpExpirationTimestampInMilliseconds == 0 && m_expirationTimestamp != ramses_internal::FlushTime::InvalidTimestamp)
-        {
-            LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Scene::setExpirationTimestamp: sceneId " << m_scene.getSceneId() << " disabled expiration checking (ts " << ptpExpirationTimestampInMilliseconds << ")");
-        }
-        else if (ptpExpirationTimestampInMilliseconds != 0 && m_expirationTimestamp == ramses_internal::FlushTime::InvalidTimestamp)
-        {
-            LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Scene::setExpirationTimestamp: sceneId " << m_scene.getSceneId() << " enabled expiration checking (ts " << ptpExpirationTimestampInMilliseconds << ")");
-        }
         m_expirationTimestamp = ramses_internal::FlushTime::Clock::time_point(std::chrono::milliseconds{ ptpExpirationTimestampInMilliseconds });
         return StatusOK;
     }
@@ -2046,19 +2038,24 @@ namespace ramses
         return getClientImpl().getResourceDataPool().impl.saveResourceDataFile(fileName, resources, compress);
     }
 
-    void SceneImpl::setSceneFileName(std::string const& sceneFilename)
+    void SceneImpl::setSceneFileHandle(ramses_internal::SceneFileHandle handle)
     {
-        m_sceneFilename = sceneFilename;
+        m_sceneFileHandle = handle;
     }
 
     void SceneImpl::closeSceneFile()
     {
-        if (m_sceneFilename.empty())
+        if (!m_sceneFileHandle.isValid())
             return;
 
-        getClientImpl().getClientApplication().removeResourceFile(m_sceneFilename.c_str());
-        LOG_INFO(CONTEXT_CLIENT, "SceneImpl::closeSceneFile closed: " << m_sceneFilename);
-        m_sceneFilename.clear();
+        getClientImpl().getClientApplication().removeResourceFile(m_sceneFileHandle);
+        LOG_INFO(CONTEXT_CLIENT, "SceneImpl::closeSceneFile closed: " << m_sceneFileHandle);
+        m_sceneFileHandle = ramses_internal::SceneFileHandle::Invalid();
+    }
+
+    ramses_internal::SceneFileHandle SceneImpl::getSceneFileHandle() const
+    {
+        return m_sceneFileHandle;
     }
 
     bool SceneImpl::removeResourceWithIdFromResources(resourceId_t const& id, Resource& resource)

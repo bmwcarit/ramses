@@ -116,7 +116,7 @@ namespace ramses_internal
         const SceneId consumerSceneId(1u);
         const DataSlotId consumerdataId(3u);
 
-        m_rendererEventCollector.addBufferLinkEvent(ERendererEventType::SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerdataId);
+        m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerdataId);
         const RendererEventVector resultEvents = consumeSceneControlEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(ERendererEventType::SceneDataBufferLinked, resultEvents[0].eventType);
@@ -132,7 +132,7 @@ namespace ramses_internal
         const SceneId consumerSceneId(1u);
         const DataSlotId consumerdataId(3u);
 
-        m_rendererEventCollector.addBufferLinkEvent(ERendererEventType::SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerdataId);
+        m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerdataId);
         const RendererEventVector resultEvents = consumeSceneControlEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(ERendererEventType::SceneDataBufferLinked, resultEvents[0].eventType);
@@ -246,15 +246,15 @@ namespace ramses_internal
         EXPECT_EQ(streamId, resultEvents[0].streamSourceId);
     }
 
-    TEST_F(ARendererEventCollector, CanAddStreamSurfaceUnavailableEvent)
+    TEST_F(ARendererEventCollector, CanAddStreamBufferEnabledEvent)
     {
         const WaylandIviSurfaceId streamId(794u);
 
-        m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamSurfaceUnavailable, streamId);
+        m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamBufferEnabled, streamId);
         const RendererEventVector resultEvents = consumeSceneControlEvents();
 
         ASSERT_EQ(1u, resultEvents.size());
-        EXPECT_EQ(ERendererEventType::StreamSurfaceUnavailable, resultEvents[0].eventType);
+        EXPECT_EQ(ERendererEventType::StreamBufferEnabled, resultEvents[0].eventType);
         EXPECT_EQ(streamId, resultEvents[0].streamSourceId);
     }
 
@@ -319,6 +319,20 @@ namespace ramses_internal
         EXPECT_EQ(maxTime, resultEvents[0].frameTimings.maximumLoopTimeWithinPeriod);
         EXPECT_EQ(avgTime, resultEvents[0].frameTimings.averageLoopTimeWithinPeriod);
     }
+
+    TEST_F(ARendererEventCollector, CanAddStreamSurfaceUnavailableEvent)
+    {
+        const WaylandIviSurfaceId streamId(794u);
+
+        m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamSurfaceUnavailable, streamId);
+        const RendererEventVector resultEvents = consumeSceneControlEvents();
+
+        ASSERT_EQ(1u, resultEvents.size());
+        EXPECT_EQ(ERendererEventType::StreamSurfaceUnavailable, resultEvents[0].eventType);
+        EXPECT_EQ(streamId, resultEvents[0].streamSourceId);
+    }
+
+
 
     TEST_F(ARendererEventCollector, QueuesUpInternalSceneEvents)
     {

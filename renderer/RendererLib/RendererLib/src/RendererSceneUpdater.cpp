@@ -167,6 +167,11 @@ namespace ramses_internal
             gpuCacheSize);
     }
 
+    void RendererSceneUpdater::destroyResourceManager(DisplayHandle display)
+    {
+        m_displayResourceManagers.erase(display);
+    }
+
     void RendererSceneUpdater::destroyDisplayContext(DisplayHandle display)
     {
         if (!m_renderer.hasDisplayController(display))
@@ -207,11 +212,11 @@ namespace ramses_internal
             return;
         }
 
-        m_displayResourceManagers.erase(display);
-
         auto asyncEffectUploaderIt = m_asyncEffectUploaders.find(display);
         asyncEffectUploaderIt->second->destroyResourceUploadRenderBackendAndStopThread();
         m_asyncEffectUploaders.erase(asyncEffectUploaderIt);
+
+        destroyResourceManager(display);
 
         m_renderer.resetRenderInterruptState();
         m_renderer.destroyDisplayContext(display);
@@ -1170,11 +1175,11 @@ namespace ramses_internal
         return true;
     }
 
-    bool RendererSceneUpdater::setStreamBufferState(StreamBufferHandle /*buffer*/, DisplayHandle /*display*/, bool /*newState*/)
+    bool RendererSceneUpdater::setStreamBufferState(StreamBufferHandle buffer, DisplayHandle /*display*/, bool /*newState*/)
     {
         LOG_WARN(CONTEXT_RENDERER, "RendererSceneUpdater::setStreamBufferState not implemented yet ");
-        // TODO (vaclav)
-        // TODO (jonathan)
+        // TODO (vaclav, jonathan) implement stream hiding
+        m_rendererEventCollector.addBufferEvent(ERendererEventType::StreamBufferEnabled, buffer, {}, {});
         return true;
     }
 
@@ -1370,7 +1375,7 @@ namespace ramses_internal
         if (!display.isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Link offscreen buffer failed: consumer scene (Scene: " << consumerSceneId << ") has to be mapped!");
-            m_rendererEventCollector.addBufferLinkEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
+            m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
 
@@ -1378,7 +1383,7 @@ namespace ramses_internal
         if (!resourceManager.getOffscreenBufferDeviceHandle(buffer).isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Link offscreen buffer failed: offscreen buffer " << buffer << " has to exist on the same display where the consumer scene " << consumerSceneId << " is mapped!");
-            m_rendererEventCollector.addBufferLinkEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
+            m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
 
@@ -1393,7 +1398,7 @@ namespace ramses_internal
         if (!display.isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Link stream buffer failed: consumer scene (Scene: " << consumerSceneId << ") has to be mapped!");
-            m_rendererEventCollector.addBufferLinkEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
+            m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
 
@@ -1401,7 +1406,7 @@ namespace ramses_internal
         if (!resourceManager.getStreamBufferDeviceHandle(buffer).isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Link stream buffer failed: stream buffer " << buffer << " has to exist on the same display where the consumer scene " << consumerSceneId << " is mapped!");
-            m_rendererEventCollector.addBufferLinkEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
+            m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
 

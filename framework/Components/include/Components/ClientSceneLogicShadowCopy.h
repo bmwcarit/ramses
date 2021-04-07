@@ -30,6 +30,7 @@ namespace ramses_internal
         FlushTimeInformation m_flushTimeInfoOfLastFlush;
         SceneVersionTag m_lastVersionTag;
         ManagedResourceVector m_lastFlushUsedResources;
+        ramses_internal::FlushTime::Clock::time_point m_lastFlushedExpirationTimestamp{ ramses_internal::FlushTime::InvalidTimestamp };
     };
 }
 

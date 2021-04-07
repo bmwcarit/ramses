@@ -113,6 +113,8 @@ namespace ramses_internal
             bool asyncEffectUploadEnabled,
             IBinaryShaderCache* binaryShaderCache);
 
+        virtual void destroyResourceManager(DisplayHandle display);
+
     private:
         void destroyScene(SceneId sceneID);
         void unloadSceneResourcesAndUnrefSceneResources(SceneId sceneId);

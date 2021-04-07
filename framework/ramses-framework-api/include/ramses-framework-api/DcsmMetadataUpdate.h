@@ -178,6 +178,13 @@ namespace ramses
         bool getExclusiveBackground() const;
 
         /**
+         * @brief Check if object contains streamID metadata entry.
+         *
+         * @return true when has streamID metadata, false when not
+         */
+        bool hasStreamID() const;
+
+        /**
          * @brief Get streamID metadata entry.
          *        Value is undefined when not hasStreamID().
          *
@@ -186,11 +193,19 @@ namespace ramses
         int32_t getStreamID() const;
 
         /**
-         * @brief Check if object contains streamID metadata entry.
-         *
-         * @return true when has streamID metadata, false when not
-         */
-        bool hasStreamID() const;
+        * @brief Check if object contains displayed data flags metadata entry.
+        *
+        * @return true when has displayed data flags metadata, false when not
+        */
+        bool hasDisplayedDataFlags() const;
+
+        /**
+        * @brief Get displayed data flags.
+        *        Value is undefined when not #hasDisplayedDataFlags().
+        *
+        * @return displayed data flags
+        */
+        uint32_t getDisplayedDataFlags() const;
 
         /**
          * @brief Check if object contains a contentFlippedVertically entry.

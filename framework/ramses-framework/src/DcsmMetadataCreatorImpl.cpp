@@ -91,6 +91,13 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t DcsmMetadataCreatorImpl::setDisplayedDataFlags(uint32_t flags)
+    {
+        if (!m_metadata.setDisplayedDataFlags(flags))
+            return addErrorEntry("DcsmMetadataCreatorImpl::setDisplayedDataFlags: input not valid");
+        return StatusOK;
+    }
+
     ramses_internal::DcsmMetadata DcsmMetadataCreatorImpl::getMetadata() const
     {
         return m_metadata;

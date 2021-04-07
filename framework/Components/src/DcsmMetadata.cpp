@@ -33,6 +33,7 @@ namespace ramses_internal
             WidgetCarModelVisibility = 8,
             WidgetExclusiveBackground = 9,
             WidgetStreamID = 10,
+            DisplayedDataFlags = 11,
 
             // NOTE: Add new metadata after this one counting up for 27.0.100 and upwards
             ContentFlippedVertically = 1001,
@@ -58,6 +59,7 @@ namespace ramses_internal
             !m_hasCarModelVisibility &&
             !m_hasExclusiveBackground &&
             !m_hasStreamID &&
+            !m_hasDisplayedDataFlags &&
             !m_hasContentFlippedVertically;
     }
 
@@ -75,6 +77,7 @@ namespace ramses_internal
             (m_hasCarModelVisibility ? 1 : 0) +
             (m_hasExclusiveBackground ? 1 : 0) +
             (m_hasStreamID ? 1 : 0) +
+            (m_hasDisplayedDataFlags ? 1 : 0) +
             (m_hasContentFlippedVertically ? 1 : 0);
         os << CurrentMetadataVersion
            << numEntries;
@@ -166,6 +169,12 @@ namespace ramses_internal
                 << size
                 << static_cast<int32_t>(m_streamID);
         }
+        if (m_hasDisplayedDataFlags)
+        {
+            os << DcsmMetadataType::DisplayedDataFlags
+                << static_cast<uint32_t>(sizeof(m_displayedDataFlags))
+                << m_displayedDataFlags;
+        }
         if (m_hasContentFlippedVertically)
         {
             constexpr uint32_t size = static_cast<uint32_t>(sizeof(int32_t));
@@ -174,6 +183,7 @@ namespace ramses_internal
                << size
                << state;
         }
+
         return os.release();
     }
 
@@ -272,6 +282,12 @@ namespace ramses_internal
                 is >> m_streamID;
                 break;
             }
+            case DcsmMetadataType::DisplayedDataFlags:
+            {
+                m_hasDisplayedDataFlags = true;
+                is >> m_displayedDataFlags;
+                break;
+            }
             case DcsmMetadataType::ContentFlippedVertically:
             {
                 m_hasContentFlippedVertically = true;
@@ -342,6 +358,11 @@ namespace ramses_internal
         {
             m_hasStreamID = true;
             m_streamID = other.m_streamID;
+        }
+        if (other.m_hasDisplayedDataFlags)
+        {
+            m_hasDisplayedDataFlags = true;
+            m_displayedDataFlags = other.m_displayedDataFlags;
         }
         if (other.m_hasContentFlippedVertically)
         {
@@ -472,6 +493,15 @@ namespace ramses_internal
         return true;
     }
 
+    bool DcsmMetadata::setDisplayedDataFlags(uint32_t flags)
+    {
+        LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::setDisplayedDataFlags: " << flags);
+
+        m_displayedDataFlags = flags;
+        m_hasDisplayedDataFlags = true;
+        return true;
+    }
+
     bool DcsmMetadata::setContentFlippedVertically(bool state)
     {
         LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::setContentFlippedVertically: " << state);
@@ -536,6 +566,11 @@ namespace ramses_internal
         return m_hasContentFlippedVertically;
     }
 
+    bool DcsmMetadata::hasDisplayedDataFlags() const
+    {
+        return m_hasDisplayedDataFlags;
+    }
+
     std::vector<unsigned char> DcsmMetadata::getPreviewImagePng() const
     {
         return m_previewImagePng;
@@ -596,6 +631,11 @@ namespace ramses_internal
         return m_contentFlippedVertically;
     }
 
+    uint32_t DcsmMetadata::getDisplayedDataFlags() const
+    {
+        return m_displayedDataFlags;
+    }
+
     bool DcsmMetadata::operator==(const DcsmMetadata& other) const
     {
         return m_hasPreviewImagePng == other.m_hasPreviewImagePng &&
@@ -619,6 +659,8 @@ namespace ramses_internal
             m_exclusiveBackground == other.m_exclusiveBackground &&
             m_hasStreamID == other.m_hasStreamID &&
             m_streamID == other.m_streamID &&
+            m_hasDisplayedDataFlags == other.m_hasDisplayedDataFlags &&
+            m_displayedDataFlags == other.m_displayedDataFlags &&
             m_hasContentFlippedVertically == other.m_hasContentFlippedVertically &&
             m_contentFlippedVertically == other.m_contentFlippedVertically;
     }

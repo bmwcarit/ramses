@@ -21,7 +21,7 @@ namespace ramses_internal
         description = "validate a scene, or object within scene";
         registerKeyword("validate");
         getArgument<0>().setDescription("scene id");
-        getArgument<1>().setDescription("severityLevel(info||debug||error)");
+        getArgument<1>().setDescription("severityLevel(info||warning||error)");
         getArgument<1>().setDefaultValue("error");
         getArgument<2>().setDescription("object name");
         getArgument<2>().setDefaultValue("");
@@ -45,7 +45,7 @@ namespace ramses_internal
         }
         else
         {
-            LOG_ERROR(CONTEXT_CLIENT, "Wrong value for severity parameter, must be info, debug or error");
+            LOG_ERROR(CONTEXT_CLIENT, "Wrong value for severity parameter, must be info, warning or error");
             return false;
         }
 

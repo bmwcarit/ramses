@@ -26,8 +26,6 @@ namespace ramses
         explicit SceneObjectImpl(SceneImpl& scene, ERamsesObjectType type, const char* name);
         virtual ~SceneObjectImpl() override;
 
-
-
         // impl methods
         const SceneImpl& getSceneImpl() const;
         SceneImpl&       getSceneImpl();

@@ -433,6 +433,7 @@ protected:
         if (!expectFail)
         {
             EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
+            EXPECT_CALL(*rendererSceneUpdater, destroyResourceManager(displayHandle));
             rendererSceneUpdater->m_resourceManagerMocks[displayHandle]->expectNoResourceReferences();
         }
         rendererSceneUpdater->destroyDisplayContext(displayHandle);

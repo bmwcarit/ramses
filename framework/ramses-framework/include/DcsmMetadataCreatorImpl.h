@@ -31,6 +31,7 @@ namespace ramses
         status_t setCarModelVisibility(bool visibility);
         status_t setExclusiveBackground(bool state);
         status_t setStreamID(int32_t streamID);
+        status_t setDisplayedDataFlags(uint32_t flags);
         status_t setContentFlippedVertically(bool state);
 
         ramses_internal::DcsmMetadata getMetadata() const;

@@ -17,7 +17,7 @@
 #include "SceneUpdateSerializerTestHelper.h"
 #include "TransportCommon/SceneUpdateSerializer.h"
 #include "TransportCommon/SceneUpdateStreamDeserializer.h"
-
+#include "Components/FileInputStreamContainer.h"
 
 namespace ramses_internal
 {
@@ -80,9 +80,9 @@ namespace ramses_internal
             }
 
             ramses_internal::ResourceTableOfContents resourceFileToc;
-            ResourceFileInputStreamSPtr resourceInputStream(new ResourceFileInputStream(resourceFileName));
-            resourceFileToc.readTOCPosAndTOCFromStream(resourceInputStream->getStream());
-            localResourceComponent.addResourceFile(resourceInputStream, resourceFileToc);
+            InputStreamContainerSPtr inputStream(std::make_shared<FileInputStreamContainer>(resourceFileName));
+            resourceFileToc.readTOCPosAndTOCFromStream(inputStream->getStream());
+            localResourceComponent.addResourceFile(inputStream, resourceFileToc);
 
             return hashes;
         }
@@ -275,7 +275,7 @@ namespace ramses_internal
         EXPECT_EQ(hash, hashUsage.getHash());
     }
 
-    ResourceContentHash setupTest(String const& resourceFileName, ResourceComponent& localResourceComponent)
+    std::pair<SceneFileHandle, ResourceContentHash> setupTest(String const& resourceFileName, ResourceComponent& localResourceComponent)
     {
         // setup test
         const Float vertexData[] = {
@@ -301,29 +301,30 @@ namespace ramses_internal
             delete resource;
         }
 
+        SceneFileHandle handle;
         {
             ramses_internal::ResourceTableOfContents resourceFileToc;
-            ResourceFileInputStreamSPtr resourceInputStream(new ResourceFileInputStream(resourceFileName));
-            resourceFileToc.readTOCPosAndTOCFromStream(resourceInputStream->getStream());
+            InputStreamContainerSPtr inputStream(std::make_shared<FileInputStreamContainer>(resourceFileName));
+            resourceFileToc.readTOCPosAndTOCFromStream(inputStream->getStream());
 
-            localResourceComponent.addResourceFile(resourceInputStream, resourceFileToc);
+            handle = localResourceComponent.addResourceFile(inputStream, resourceFileToc);
         }
 
-        return hash;
+        return {handle, hash};
     }
 
     TEST_F(AResourceComponentTest, canRemoveResourceFile)
     {
-        auto hash = setupTest(resourceFileName, localResourceComponent);
+        auto handleAndHash = setupTest(resourceFileName, localResourceComponent);
 
         const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
-        ManagedResource fromfile = localResourceComponent.loadResource(hash);
+        ManagedResource fromfile = localResourceComponent.loadResource(handleAndHash.second);
         EXPECT_TRUE(fromfile);
-        EXPECT_TRUE(localResourceComponent.hasResourceFile(resourceFileName));
+        EXPECT_TRUE(localResourceComponent.hasResourceFile(handleAndHash.first));
         EXPECT_EQ(1u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
 
-        localResourceComponent.removeResourceFile(resourceFileName);
-        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
+        localResourceComponent.removeResourceFile(handleAndHash.first);
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(handleAndHash.first));
 
         EXPECT_TRUE(fromfile);
         fromfile = ManagedResource();
@@ -332,127 +333,127 @@ namespace ramses_internal
 
     TEST_F(AResourceComponentTest, removingFileWillMakeUnloadedResourceUnusable)
     {
-        auto hash = setupTest(resourceFileName, localResourceComponent);
+        auto handleAndHash = setupTest(resourceFileName, localResourceComponent);
 
-        auto fakeUsage = localResourceComponent.getResourceHashUsage(hash);
+        auto fakeUsage = localResourceComponent.getResourceHashUsage(handleAndHash.second);
         const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
 
-        localResourceComponent.removeResourceFile(resourceFileName);
+        localResourceComponent.removeResourceFile(handleAndHash.first);
         EXPECT_EQ(0u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
-        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(handleAndHash.first));
 
-        EXPECT_FALSE(localResourceComponent.getResource(hash));
-        EXPECT_FALSE(localResourceComponent.loadResource(hash));
+        EXPECT_FALSE(localResourceComponent.getResource(handleAndHash.second));
+        EXPECT_FALSE(localResourceComponent.loadResource(handleAndHash.second));
     }
 
     TEST_F(AResourceComponentTest, canLoadResourceBecauseOfHashUsage)
     {
-        auto hash = setupTest(resourceFileName, localResourceComponent);
+        auto handleAndHash = setupTest(resourceFileName, localResourceComponent);
 
-        auto fakeUsage = localResourceComponent.getResourceHashUsage(hash);
+        auto fakeUsage = localResourceComponent.getResourceHashUsage(handleAndHash.second);
         const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
 
-        localResourceComponent.loadResourceFromFile(resourceFileName);
+        localResourceComponent.loadResourceFromFile(handleAndHash.first);
         EXPECT_EQ(1u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
-        EXPECT_TRUE(localResourceComponent.hasResourceFile(resourceFileName));
-        EXPECT_TRUE(localResourceComponent.getResource(hash));
+        EXPECT_TRUE(localResourceComponent.hasResourceFile(handleAndHash.first));
+        EXPECT_TRUE(localResourceComponent.getResource(handleAndHash.second));
     }
 
     TEST_F(AResourceComponentTest, canLoadResourceBecauseOfHashUsageAndRemoveFile)
     {
-        auto hash = setupTest(resourceFileName, localResourceComponent);
+        auto handleAndHash = setupTest(resourceFileName, localResourceComponent);
 
-        auto fakeUsage = localResourceComponent.getResourceHashUsage(hash);
+        auto fakeUsage = localResourceComponent.getResourceHashUsage(handleAndHash.second);
         const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
 
-        localResourceComponent.loadResourceFromFile(resourceFileName);
-        localResourceComponent.removeResourceFile(resourceFileName);
+        localResourceComponent.loadResourceFromFile(handleAndHash.first);
+        localResourceComponent.removeResourceFile(handleAndHash.first);
         EXPECT_EQ(1u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
-        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(handleAndHash.first));
 
-        EXPECT_TRUE(localResourceComponent.getResource(hash));
-        EXPECT_FALSE(localResourceComponent.loadResource(hash));
+        EXPECT_TRUE(localResourceComponent.getResource(handleAndHash.second));
+        EXPECT_FALSE(localResourceComponent.loadResource(handleAndHash.second));
     }
 
     TEST_F(AResourceComponentTest, canRemoveResourceFileAndKeepsResourceBecauseOfResourceUsage)
     {
-        auto hash = setupTest(resourceFileName, localResourceComponent);
+        auto handleAndHash = setupTest(resourceFileName, localResourceComponent);
 
-        ManagedResource fromfile = localResourceComponent.loadResource(hash);
+        ManagedResource fromfile = localResourceComponent.loadResource(handleAndHash.second);
         const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
 
-        localResourceComponent.removeResourceFile(resourceFileName);
+        localResourceComponent.removeResourceFile(handleAndHash.first);
         EXPECT_EQ(0u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
-        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(handleAndHash.first));
 
-        EXPECT_TRUE(localResourceComponent.getResource(hash));
-        EXPECT_FALSE(localResourceComponent.loadResource(hash));
+        EXPECT_TRUE(localResourceComponent.getResource(handleAndHash.second));
+        EXPECT_FALSE(localResourceComponent.loadResource(handleAndHash.second));
     }
 
     TEST_F(AResourceComponentTest, canLoadResourceFileAndKeepsResourceBecauseOfResourceUsage)
     {
-        auto hash = setupTest(resourceFileName, localResourceComponent);
+        auto handleAndHash = setupTest(resourceFileName, localResourceComponent);
 
-        ManagedResource fromfile = localResourceComponent.loadResource(hash);
+        ManagedResource fromfile = localResourceComponent.loadResource(handleAndHash.second);
         const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
 
-        localResourceComponent.loadResourceFromFile(resourceFileName);
+        localResourceComponent.loadResourceFromFile(handleAndHash.first);
         EXPECT_EQ(0u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
-        EXPECT_TRUE(localResourceComponent.hasResourceFile(resourceFileName));
+        EXPECT_TRUE(localResourceComponent.hasResourceFile(handleAndHash.first));
 
-        EXPECT_TRUE(localResourceComponent.getResource(hash));
-        EXPECT_TRUE(localResourceComponent.loadResource(hash));
+        EXPECT_TRUE(localResourceComponent.getResource(handleAndHash.second));
+        EXPECT_TRUE(localResourceComponent.loadResource(handleAndHash.second));
     }
 
     TEST_F(AResourceComponentTest, canLoadAndRemoveAndKeepsResourceBecauseOfResourceUsage)
     {
-        auto hash = setupTest(resourceFileName, localResourceComponent);
+        auto handleAndHash = setupTest(resourceFileName, localResourceComponent);
 
-        ManagedResource fromfile = localResourceComponent.loadResource(hash);
+        ManagedResource fromfile = localResourceComponent.loadResource(handleAndHash.second);
         const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
 
-        localResourceComponent.loadResourceFromFile(resourceFileName);
-        localResourceComponent.removeResourceFile(resourceFileName);
+        localResourceComponent.loadResourceFromFile(handleAndHash.first);
+        localResourceComponent.removeResourceFile(handleAndHash.first);
         EXPECT_EQ(0u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
-        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(handleAndHash.first));
 
-        EXPECT_TRUE(localResourceComponent.getResource(hash));
-        EXPECT_FALSE(localResourceComponent.loadResource(hash));
+        EXPECT_TRUE(localResourceComponent.getResource(handleAndHash.second));
+        EXPECT_FALSE(localResourceComponent.loadResource(handleAndHash.second));
     }
 
     TEST_F(AResourceComponentTest, canRemoveResourceFileAndDeletesResourceBecauseNoUsage)
     {
-        auto hash = setupTest(resourceFileName, localResourceComponent);
+        auto handleAndHash = setupTest(resourceFileName, localResourceComponent);
 
         const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
 
-        localResourceComponent.removeResourceFile(resourceFileName);
+        localResourceComponent.removeResourceFile(handleAndHash.first);
         EXPECT_EQ(0u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
-        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(handleAndHash.first));
 
-        EXPECT_FALSE(localResourceComponent.getResource(hash));
-        EXPECT_FALSE(localResourceComponent.loadResource(hash));
+        EXPECT_FALSE(localResourceComponent.getResource(handleAndHash.second));
+        EXPECT_FALSE(localResourceComponent.loadResource(handleAndHash.second));
     }
 
     TEST_F(AResourceComponentTest, canRemoveResourceFileAndKeepsResourceBecauseAvailableInOtherFile)
     {
-        auto hash = setupTest(resourceFileName, localResourceComponent);
-        auto hash2 = setupTest("test2.resource", localResourceComponent);
-        EXPECT_EQ(hash, hash2);
+        auto handleAndHash = setupTest(resourceFileName, localResourceComponent);
+        auto handleAndHash2 = setupTest("test2.resource", localResourceComponent);
+        EXPECT_EQ(handleAndHash.second, handleAndHash2.second);
 
         const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
 
-        localResourceComponent.removeResourceFile(resourceFileName);
+        localResourceComponent.removeResourceFile(handleAndHash.first);
         EXPECT_EQ(0u, statistics.statResourcesLoadedFromFileNumber.getCounterValue() - loadedResourcesBefore);
-        EXPECT_FALSE(localResourceComponent.hasResourceFile(resourceFileName));
-        EXPECT_TRUE(localResourceComponent.hasResourceFile("test2.resource"));
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(handleAndHash.first));
+        EXPECT_TRUE(localResourceComponent.hasResourceFile(handleAndHash2.first));
 
-        EXPECT_FALSE(localResourceComponent.getResource(hash));
-        auto res = localResourceComponent.loadResource(hash);
+        EXPECT_FALSE(localResourceComponent.getResource(handleAndHash.second));
+        auto res = localResourceComponent.loadResource(handleAndHash.second);
         EXPECT_TRUE(res);
-        EXPECT_TRUE(localResourceComponent.getResource(hash));
+        EXPECT_TRUE(localResourceComponent.getResource(handleAndHash.second));
         res = {};
-        EXPECT_FALSE(localResourceComponent.getResource(hash));
+        EXPECT_FALSE(localResourceComponent.getResource(handleAndHash.second));
     }
 
     TEST_F(AResourceComponentTest, canResolveLocalResource)
@@ -532,19 +533,19 @@ namespace ramses_internal
 
     TEST_F(AResourceComponentTest, getsResourceInfoForResourcesLoadedFromFile)
     {
-        auto hash = setupTest(resourceFileName, localResourceComponent);
+        auto handleAndHash = setupTest(resourceFileName, localResourceComponent);
 
         // resource info available before loading the file
-        EXPECT_EQ(localResourceComponent.getResource(hash), ManagedResource{});
-        ResourceInfo infoBefore = localResourceComponent.getResourceInfo(hash);
-        EXPECT_EQ(infoBefore.hash, hash);
+        EXPECT_EQ(localResourceComponent.getResource(handleAndHash.second), ManagedResource{});
+        ResourceInfo infoBefore = localResourceComponent.getResourceInfo(handleAndHash.second);
+        EXPECT_EQ(infoBefore.hash, handleAndHash.second);
         EXPECT_EQ(infoBefore.compressedSize, 0u);
         EXPECT_EQ(infoBefore.decompressedSize, 36u);
         EXPECT_EQ(infoBefore.type, EResourceType_VertexArray);
 
-        ManagedResource fromfile = localResourceComponent.loadResource(hash);
+        ManagedResource fromfile = localResourceComponent.loadResource(handleAndHash.second);
 
-        ResourceInfo info = localResourceComponent.getResourceInfo(hash);
+        ResourceInfo info = localResourceComponent.getResourceInfo(handleAndHash.second);
         EXPECT_EQ(info.hash, fromfile->getHash());
         EXPECT_EQ(info.compressedSize, fromfile->getCompressedDataSize());
         EXPECT_EQ(info.decompressedSize, fromfile->getDecompressedDataSize());
@@ -554,9 +555,9 @@ namespace ramses_internal
 
         // infos stay available when unloading
         fromfile.reset();
-        EXPECT_EQ(localResourceComponent.getResource(hash), ManagedResource{});
+        EXPECT_EQ(localResourceComponent.getResource(handleAndHash.second), ManagedResource{});
 
-        info = localResourceComponent.getResourceInfo(hash);
+        info = localResourceComponent.getResourceInfo(handleAndHash.second);
         EXPECT_EQ(info, infoBefore);
     }
 }

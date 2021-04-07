@@ -132,4 +132,24 @@ namespace ramses
         const auto& mip = mipMaps[mipLevel];
         return mip.width * mip.height * GetTexelSizeFromFormat(getIScene().getTextureBuffer(m_textureBufferHandle).textureFormat);
     }
+
+    status_t Texture2DBufferImpl::validate() const
+    {
+        status_t status = SceneObjectImpl::validate();
+
+        const auto& iscene = getIScene();
+        const auto& mips = iscene.getTextureBuffer(getTextureBufferHandle()).mipMaps;
+        const bool isInitialized = (std::accumulate(mips.cbegin(), mips.cend(), 0, [](int32_t area, const auto& m) { return area + m.usedRegion.getArea(); }) > 0);
+        const bool usedAsInput = std::any_of(iscene.getTextureSamplers().cbegin(), iscene.getTextureSamplers().cend(), [handle=getTextureBufferHandle()](const auto& ts) {
+            return ts.second->contentType == ramses_internal::TextureSampler::ContentType::TextureBuffer && ts.second->contentHandle == handle;
+        });
+
+        if (usedAsInput && !isInitialized)
+            return addValidationMessage(EValidationSeverity_Warning, "TextureBuffer is used in a sampler but there is no data set, this could lead to graphical glitches if actually rendered.");
+
+        if (!usedAsInput)
+            return addValidationMessage(EValidationSeverity_Warning, "TextureBuffer is not used anywhere, destroy it if not needed.");
+
+        return status;
+    }
 }

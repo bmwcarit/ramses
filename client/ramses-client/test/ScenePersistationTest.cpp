@@ -8,6 +8,7 @@
 
 #include <array>
 
+#include "PlatformAbstraction/PlatformError.h"
 #include "ramses-client-api/MeshNode.h"
 #include "ramses-client-api/AnimationSystemRealTime.h"
 #include "ramses-client-api/TextureSampler.h"
@@ -45,6 +46,7 @@
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "ramses-client-api/PickableObject.h"
 #include "ramses-client-api/ArrayResource.h"
+#include "ramses-utils.h"
 
 #include "ScenePersistationTest.h"
 #include "CameraNodeImpl.h"
@@ -87,10 +89,75 @@
 #include "ramses-hmi-utils.h"
 
 #include <fstream>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 namespace ramses
 {
     using namespace testing;
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canWriteAndReadSceneFromFile)
+    {
+        EXPECT_EQ(StatusOK, m_scene.saveToFile("someTemporaryFile.ram", false));
+        EXPECT_NE(nullptr, m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", false));
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canWriteAndReadSceneFromMemoryWithExplicitDeleter)
+    {
+        EXPECT_EQ(StatusOK, m_scene.saveToFile("someTemporaryFile.ram", false));
+
+        ramses_internal::File f("someTemporaryFile.ram");
+        size_t fileSize = 0;
+        EXPECT_TRUE(f.getSizeInBytes(fileSize));
+
+        std::unique_ptr<unsigned char[], void(*)(const unsigned char*)> data(new unsigned char[fileSize], [](const unsigned char* ptr) { delete[] ptr; });
+        size_t numBytesRead = 0;
+        EXPECT_TRUE(f.open(ramses_internal::File::Mode::ReadOnlyBinary));
+        EXPECT_EQ(ramses_internal::EStatus::Ok, f.read(data.get(), fileSize, numBytesRead));
+        EXPECT_NE(nullptr, m_clientForLoading.loadSceneFromMemory(std::move(data), fileSize, false));
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canWriteAndReadSceneFromMemoryWithImplicitDeleter)
+    {
+        EXPECT_EQ(StatusOK, m_scene.saveToFile("someTemporaryFile.ram", false));
+
+        ramses_internal::File f("someTemporaryFile.ram");
+        size_t fileSize = 0;
+        EXPECT_TRUE(f.getSizeInBytes(fileSize));
+
+        std::unique_ptr<unsigned char[]> data(new unsigned char[fileSize]);
+        size_t numBytesRead = 0;
+        EXPECT_TRUE(f.open(ramses_internal::File::Mode::ReadOnlyBinary));
+        EXPECT_EQ(ramses_internal::EStatus::Ok, f.read(data.get(), fileSize, numBytesRead));
+        EXPECT_NE(nullptr, RamsesUtils::LoadSceneFromMemory(m_clientForLoading, std::move(data), fileSize, false));
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, canWriteAndReadSceneFromFileDescriptor)
+    {
+        EXPECT_EQ(StatusOK, m_scene.saveToFile("someTemporaryFile.ram", false));
+
+        size_t fileSize = 0;
+        {
+            // write to a file with some offset
+            ramses_internal::File inFile("someTemporaryFile.ram");
+            EXPECT_TRUE(inFile.getSizeInBytes(fileSize));
+            std::vector<unsigned char> data(fileSize);
+            size_t numBytesRead = 0;
+            EXPECT_TRUE(inFile.open(ramses_internal::File::Mode::ReadOnlyBinary));
+            EXPECT_EQ(ramses_internal::EStatus::Ok, inFile.read(data.data(), fileSize, numBytesRead));
+
+            ramses_internal::File outFile("someTemporaryFileWithOffset.ram");
+            EXPECT_TRUE(outFile.open(ramses_internal::File::Mode::WriteOverWriteOldBinary));
+
+            uint32_t zeroData = 0;
+            EXPECT_TRUE(outFile.write(&zeroData, sizeof(zeroData)));
+            EXPECT_TRUE(outFile.write(data.data(), data.size()));
+            EXPECT_TRUE(outFile.write(&zeroData, sizeof(zeroData)));
+        }
+
+        const int fd = ::open("someTemporaryFileWithOffset.ram", O_RDONLY);
+        EXPECT_NE(nullptr, m_clientForLoading.loadSceneFromFileDescriptor(fd, 4, fileSize, false));
+    }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteAScene)
     {
@@ -1104,8 +1171,24 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, doesNotLoadSceneFromFileWithoutFileName)
     {
-        ramses::Scene* scene = client.loadSceneFromFile(nullptr);
-        EXPECT_TRUE(nullptr == scene);
+        EXPECT_EQ(nullptr, client.loadSceneFromFile(nullptr));
+        EXPECT_EQ(nullptr, client.loadSceneFromFile(""));
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, doesNotLoadSceneFromInvalidMemory)
+    {
+        auto deleter = [](const unsigned char* ptr) { delete[] ptr; };
+        EXPECT_EQ(nullptr, client.loadSceneFromMemory(std::unique_ptr<unsigned char[], void(*)(const unsigned char*)>(nullptr, deleter), 1, false));
+        EXPECT_EQ(nullptr, client.loadSceneFromMemory(std::unique_ptr<unsigned char[], void(*)(const unsigned char*)>(new unsigned char[1], deleter), 0, false));
+
+        EXPECT_EQ(nullptr, RamsesUtils::LoadSceneFromMemory(client, std::unique_ptr<unsigned char[]>(nullptr), 1, false));
+        EXPECT_EQ(nullptr, RamsesUtils::LoadSceneFromMemory(client, std::unique_ptr<unsigned char[]>(new unsigned char[1]), 0, false));
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, doesNotLoadSceneFromInvalidFileDescriptor)
+    {
+        EXPECT_EQ(nullptr, client.loadSceneFromFileDescriptor(-1, 0, 1, false));
+        EXPECT_EQ(nullptr, client.loadSceneFromFileDescriptor(1, 0, 0, false));
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, doesNotLoadSceneFromUnexistingFile)
@@ -1127,6 +1210,42 @@ namespace ramses
 
         ramses::Scene* scene = client.loadSceneFromFile(filename);
         EXPECT_TRUE(scene == nullptr);
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, cannotLoadSameFileTwice)
+    {
+        const sceneId_t sceneId = ramses::sceneId_t(1ULL << 63);
+        ramses::Scene* scene = client.createScene(sceneId);
+        const status_t status = scene->saveToFile("someTempararyFile.ram", false);
+        EXPECT_EQ(StatusOK, status);
+
+        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram");
+        EXPECT_NE(nullptr, m_sceneLoaded);
+
+        EXPECT_EQ(nullptr, m_clientForLoading.loadSceneFromFile("someTempararyFile.ram"));
+    }
+
+    TEST_F(ASceneAndAnimationSystemLoadedFromFile, cannotLoadScenesWithSameSceneIdTwice)
+    {
+        const sceneId_t sceneId = ramses::sceneId_t(1ULL << 63);
+
+        {
+            ramses::Scene* scene = client.createScene(sceneId);
+            const status_t status = scene->saveToFile("someTempararyFile.ram", false);
+            EXPECT_EQ(StatusOK, status);
+            client.destroy(*scene);
+        }
+        {
+            ramses::Scene* scene = client.createScene(sceneId);
+            const status_t status = scene->saveToFile("someTempararyFile_2.ram", false);
+            EXPECT_EQ(StatusOK, status);
+            client.destroy(*scene);
+        }
+
+        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTempararyFile.ram");
+        EXPECT_NE(nullptr, m_sceneLoaded);
+
+        EXPECT_EQ(nullptr, m_clientForLoading.loadSceneFromFile("someTempararyFile_2.ram"));
     }
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canHandleAllZeroFileOnResourceLoad)
@@ -1597,7 +1716,8 @@ namespace ramses
         m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", {});
         ASSERT_TRUE(nullptr != m_sceneLoaded);
 
-        EXPECT_TRUE(m_clientForLoading.impl.getClientApplication().hasResourceFile("someTemporaryFile.ram"));
+        const ramses_internal::SceneFileHandle handle = m_sceneLoaded->impl.getSceneFileHandle();
+        EXPECT_TRUE(m_clientForLoading.impl.getClientApplication().hasResourceFile(handle));
         m_clientForLoading.destroy(*m_sceneLoaded);
 
         // scene gets destroyed asynchronously, so we can't just test after the destroy
@@ -1607,7 +1727,7 @@ namespace ramses
         for (; ticks > 0; --ticks)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            if (!m_clientForLoading.impl.getClientApplication().hasResourceFile("someTemporaryFile.ram"))
+            if (!m_clientForLoading.impl.getClientApplication().hasResourceFile(handle))
                 break;
         }
         EXPECT_GT(ticks, 0u);

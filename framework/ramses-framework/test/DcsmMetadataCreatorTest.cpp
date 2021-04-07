@@ -140,4 +140,14 @@ namespace ramses
         dm.setContentFlippedVertically(true);
         EXPECT_EQ(dm, dmf.impl.getMetadata());
     }
+
+    TEST_F(ADcsmMetadataCreator, canSetDisplayedDataFlags)
+    {
+        DcsmMetadataCreator dmf;
+        EXPECT_EQ(StatusOK, dmf.setDisplayedDataFlags(123));
+
+        ramses_internal::DcsmMetadata dm;
+        dm.setDisplayedDataFlags(123);
+        EXPECT_EQ(dm, dmf.impl.getMetadata());
+    }
 }

@@ -273,4 +273,40 @@ namespace ramses_internal
         destroyResourceUploadingRenderBackend();
         EXPECT_EQ(notifyCounter, timeoutCounter);
     }
+
+    TEST_F(AnAsyncEffectUploader, DestructionCancelsUpcomingShaderUploads)
+    {
+        createResourceUploadingRenderBackend();
+        constexpr uint32_t effectCount = 10u;
+        const auto effects = createUniqueEffects(effectCount);
+
+        constexpr std::chrono::milliseconds nonTrivialTime{ 100u };
+        EXPECT_CALL(platformMock.resourceUploadRenderBackendMock.deviceMock, uploadShader(_)).Times(AnyNumber()).WillRepeatedly(Invoke([&](const auto&) {
+                std::this_thread::sleep_for(nonTrivialTime);
+                return std::make_unique<const GPUResource>(1u, 2u);
+            }));
+
+        //destroy can be called only AFTER shader upload has started, otherwise the whole logic of shader upload might not be triggered
+        //so test needs to block main thread till 1st shader upload
+        std::promise<void> barrierDestroyCanBeCalled;
+        const auto& effectToUploadAndBlock = effects[0];
+        EXPECT_CALL(platformMock.resourceUploadRenderBackendMock.deviceMock, uploadShader(Ref(*effectToUploadAndBlock))).WillOnce(Invoke([&](const auto&) {
+            //unblock main thread to allow destroy to be called while thread is busy with shader upload
+            barrierDestroyCanBeCalled.set_value();
+
+            return std::make_unique<const GPUResource>(1u, 2u);
+            })).RetiresOnSaturation();
+
+        submitForUploadAndExpectNoShaderWereUploaded(effects);
+
+        //block main thread till it is confirmed that upload thread is busy uploading the submitted shader
+        barrierDestroyCanBeCalled.get_future().get();
+
+        const auto timeBeforeDestroyCall = std::chrono::steady_clock::now();
+        destroyResourceUploadingRenderBackend();
+        const auto durationDestroyCallBlocked = std::chrono::steady_clock::now() - timeBeforeDestroyCall;
+
+        const auto maxDurationShaderUpload = nonTrivialTime * (effectCount - 1u);
+        EXPECT_TRUE(durationDestroyCallBlocked < maxDurationShaderUpload);
+    }
 }

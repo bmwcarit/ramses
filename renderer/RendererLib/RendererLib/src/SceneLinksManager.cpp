@@ -102,7 +102,7 @@ namespace ramses_internal
         if (!consumerSlotHandle.isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "SceneLinksManager::createBufferLink failed: consumer data id is invalid! (consumer scene: " << consumerSceneId << ")");
-            m_rendererEventCollector.addBufferLinkEvent(ERendererEventType::SceneDataBufferLinkFailed, providerBuffer, consumerSceneId, consumerId);
+            m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, providerBuffer, consumerSceneId, consumerId);
             return;
         }
 
@@ -110,7 +110,7 @@ namespace ramses_internal
         if (consumerSlotType != EDataSlotType_TextureConsumer)
         {
             LOG_ERROR(CONTEXT_RENDERER, "SceneLinksManager::createBufferLink failed: consumer data " << consumerId << " refers to a slot that is not of texture type! (consumer scene: " << consumerSceneId << ")");
-            m_rendererEventCollector.addBufferLinkEvent(ERendererEventType::SceneDataBufferLinkFailed, providerBuffer, consumerSceneId, consumerId);
+            m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, providerBuffer, consumerSceneId, consumerId);
             return;
         }
 
@@ -118,7 +118,7 @@ namespace ramses_internal
         removeAnyDataLinkFromConsumer(consumerSceneId, consumerSlotHandle);
 
         m_textureLinkManager.createBufferLink(providerBuffer, consumerSceneId, consumerSlotHandle);
-        m_rendererEventCollector.addBufferLinkEvent(ERendererEventType::SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerId);
+        m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinked, providerBuffer, consumerSceneId, consumerId);
     }
 
     void SceneLinksManager::removeDataLink(SceneId consumerSceneId, DataSlotId consumerId)

@@ -27,6 +27,7 @@
 #include "ClientEventHandlerMock.h"
 #include "TestEffects.h"
 #include "PlatformAbstraction/PlatformThread.h"
+#include "Utils/File.h"
 
 namespace ramses
 {

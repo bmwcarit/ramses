@@ -129,6 +129,16 @@ namespace ramses
         return m_metadata.getContentFlippedVertically();
     }
 
+    bool DcsmMetadataUpdateImpl::hasDisplayedDataFlags() const
+    {
+        return m_metadata.hasDisplayedDataFlags();
+    }
+
+    uint32_t DcsmMetadataUpdateImpl::getDisplayedDataFlags() const
+    {
+        return m_metadata.getDisplayedDataFlags();
+    }
+
     void DcsmMetadataUpdateImpl::setMetadata(ramses_internal::DcsmMetadata metadata)
     {
         m_metadata = std::move(metadata);

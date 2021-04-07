@@ -54,11 +54,15 @@ namespace ramses
         bool hasStreamID() const;
         int32_t getStreamID() const;
 
+        bool hasDisplayedDataFlags() const;
+        uint32_t getDisplayedDataFlags() const;
+
         bool hasContentFlippedVertically() const;
         bool getContentFlippedVertically() const;
 
         void setMetadata(ramses_internal::DcsmMetadata metadata);
         ramses_internal::DcsmMetadata getMetadata() const;
+
     private:
         ramses_internal::DcsmMetadata m_metadata;
     };

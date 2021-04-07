@@ -105,28 +105,28 @@ namespace ramses_internal
         return m_resourceComponent->getResourceHashUsage(hash);
     }
 
-    void ClientApplicationLogic::addResourceFile(ResourceFileInputStreamSPtr resourceFileInputStream, const ResourceTableOfContents& toc)
+    SceneFileHandle ClientApplicationLogic::addResourceFile(InputStreamContainerSPtr resourceFileInputStream, const ResourceTableOfContents& toc)
     {
         PlatformGuard guard(m_frameworkLock);
-        m_resourceComponent->addResourceFile(std::move(resourceFileInputStream), toc);
+        return m_resourceComponent->addResourceFile(std::move(resourceFileInputStream), toc);
     }
 
-    void ClientApplicationLogic::removeResourceFile(const String& resourceFileName)
+    void ClientApplicationLogic::removeResourceFile(SceneFileHandle handle)
     {
         PlatformGuard guard(m_frameworkLock);
-        m_resourceComponent->removeResourceFile(resourceFileName);
+        m_resourceComponent->removeResourceFile(handle);
     }
 
-    void ClientApplicationLogic::loadResourceFromFile(const String& resourceFileName)
+    void ClientApplicationLogic::loadResourceFromFile(SceneFileHandle handle)
     {
         PlatformGuard guard(m_frameworkLock);
-        m_resourceComponent->loadResourceFromFile(resourceFileName);
+        m_resourceComponent->loadResourceFromFile(handle);
     }
 
-    bool ClientApplicationLogic::hasResourceFile(const String& resourceFileName) const
+    bool  ClientApplicationLogic::hasResourceFile(SceneFileHandle handle) const
     {
         PlatformGuard guard(m_frameworkLock);
-        return m_resourceComponent->hasResourceFile(resourceFileName);
+        return m_resourceComponent->hasResourceFile(handle);
     }
 
     void ClientApplicationLogic::reserveResourceCount(uint32_t totalCount)

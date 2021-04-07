@@ -87,4 +87,10 @@ namespace ramses_internal
         m_resourceManagerMocks[display] = resMgrMock;
         return std::unique_ptr<IRendererResourceManager>{ resMgrMock };
     }
+
+    void RendererSceneUpdaterFacade::destroyResourceManager(DisplayHandle handle)
+    {
+        RendererSceneUpdaterPartialMock::destroyResourceManager(handle);
+        RendererSceneUpdater::destroyResourceManager(handle); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater
+    }
 }

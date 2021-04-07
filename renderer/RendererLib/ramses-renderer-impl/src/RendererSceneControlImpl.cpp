@@ -217,6 +217,9 @@ namespace ramses
             case ramses_internal::ERendererEventType::StreamSurfaceUnavailable:
                 eventHandler.streamAvailabilityChanged(ramses::waylandIviSurfaceId_t(event.streamSourceId.getValue()), false);
                 break;
+            case ramses_internal::ERendererEventType::StreamBufferEnabled:
+                m_waylandEvents.push_back(event);
+                break;
             default:
                 assert(false);
                 break;
@@ -238,6 +241,9 @@ namespace ramses
                 case ramses_internal::ERendererEventType::SceneDataBufferLinkFailed:
                     eventHandler.streamBufferLinked(streamBufferId_t(event.streamBuffer.asMemoryHandle()), sceneId_t(event.consumerSceneId.getValue()), dataConsumerId_t(event.consumerdataId.getValue()), false);
                     break;
+                case ramses_internal::ERendererEventType::StreamBufferEnabled:
+                    eventHandler.streamBufferEnabled(streamBufferId_t(event.streamBuffer.asMemoryHandle()), true);
+                    break;
                 default:
                     LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlImpl::dispatchSpecialEvents: skipping unknown type" );
             }
@@ -254,17 +260,28 @@ namespace ramses
 
     ramses::streamBufferId_t RendererSceneControlImpl::createStreamBuffer(displayId_t display, waylandIviSurfaceId_t source)
     {
-        return m_renderer.createStreamBuffer(display, source);
+        ramses::streamBufferId_t bufferId = m_renderer.allocateStreamBuffer();
+        const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
+        const ramses_internal::StreamBufferHandle bufferHandle{ bufferId.getValue() };
+        const ramses_internal::WaylandIviSurfaceId sourceLL{ source.getValue() };
+        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::CreateStreamBuffer{ displayHandle, bufferHandle, sourceLL });
+        return bufferId;
     }
 
     ramses::status_t RendererSceneControlImpl::destroyStreamBuffer(displayId_t display, streamBufferId_t streamBuffer)
     {
-        return m_renderer.destroyStreamBuffer(display, streamBuffer);
+        const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
+        const ramses_internal::StreamBufferHandle bufferHandle{ streamBuffer.getValue() };
+        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::DestroyStreamBuffer{ displayHandle, bufferHandle });
+        return StatusOK;
     }
 
     ramses::status_t RendererSceneControlImpl::setStreamBufferState(displayId_t display, streamBufferId_t streamBufferId, bool state)
     {
-        return m_renderer.setStreamBufferState(display, streamBufferId, state);
+        const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
+        const ramses_internal::StreamBufferHandle bufferHandle{ streamBufferId.getValue() };
+        m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::SetStreamBufferState{ displayHandle, bufferHandle, state });
+        return StatusOK;
     }
 
 }

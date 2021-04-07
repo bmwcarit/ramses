@@ -172,9 +172,9 @@ TEST_F(HashMapTest, TestMoveAssign)
 
 TEST_F(HashMapTest, TestReserve)
 {
-    HashMap<int32_t, int32_t> map(10);
-    EXPECT_GE(map.capacity(), 10u);
-    EXPECT_LE(map.capacity(), 2*10u);
+    HashMap<int32_t, int32_t> map(40);
+    EXPECT_GE(map.capacity(), 40u);
+    EXPECT_LE(map.capacity(), 2*40u);
 
     map.reserve(100);
     EXPECT_GE(map.capacity(), 100u);
@@ -969,6 +969,21 @@ TEST_F(HashMapTest, swapKeepsNumberOfObjectsUnchanged)
     expectRefCnt(3);
     first.swap(second);
     expectRefCnt(3);
+}
+
+TEST_F(HashMapTest, canConstructWithZeroCapacity)
+{
+    HashMap<RCKey, RCValue> ht(0);
+    EXPECT_EQ(0u, ht.size());
+    EXPECT_GE(ht.capacity(), ht.DefaultHashMapCapacity);
+}
+
+TEST_F(HashMapTest, constructWithCapacityHasAtLeastDefaultCapacity)
+{
+    using HM = HashMap<RCKey, RCValue>;
+    HM ht(HM::DefaultHashMapCapacity - 1);
+    EXPECT_EQ(0u, ht.size());
+    EXPECT_GE(ht.capacity(), HM::DefaultHashMapCapacity);
 }
 
 } // namespace ramses_internal

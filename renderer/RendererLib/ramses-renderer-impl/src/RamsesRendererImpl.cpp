@@ -295,12 +295,18 @@ namespace ramses
         return StatusOK;
     }
 
+    ramses::streamBufferId_t RamsesRendererImpl::allocateStreamBuffer()
+    {
+        const streamBufferId_t bufferId = m_nextStreamBufferId;
+        m_nextStreamBufferId.getReference() = m_nextStreamBufferId.getValue() + 1;
+        return bufferId;
+    }
+
     streamBufferId_t RamsesRendererImpl::createStreamBuffer(displayId_t display, waylandIviSurfaceId_t source)
     {
+        ramses::streamBufferId_t bufferId = allocateStreamBuffer();
         const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
-        const streamBufferId_t bufferId = m_nextStreamBufferId;
         const ramses_internal::StreamBufferHandle bufferHandle{ bufferId.getValue() };
-        m_nextStreamBufferId.getReference() = m_nextStreamBufferId.getValue() + 1;
         const ramses_internal::WaylandIviSurfaceId sourceLL{ source.getValue() };
         m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::CreateStreamBuffer{ displayHandle, bufferHandle, sourceLL });
 
