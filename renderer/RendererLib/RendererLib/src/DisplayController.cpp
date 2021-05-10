@@ -9,8 +9,8 @@
 #include "RendererLib/DisplayController.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/IDevice.h"
-#include "RendererAPI/ISurface.h"
 #include "RendererAPI/IWindow.h"
+#include "RendererAPI/IContext.h"
 #include "RendererLib/RendererConfig.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/LoggingDevice.h"
@@ -24,32 +24,31 @@ namespace ramses_internal
         : m_renderBackend(renderer)
         , m_device(m_renderBackend.getDevice())
         , m_embeddedCompositingManager(m_device, m_renderBackend.getEmbeddedCompositor(), m_renderBackend.getTextureUploadingAdapter())
-        , m_displayWidth(m_renderBackend.getSurface().getWindow().getWidth())
-        , m_displayHeight(m_renderBackend.getSurface().getWindow().getHeight())
+        , m_displayWidth(m_renderBackend.getWindow().getWidth())
+        , m_displayHeight(m_renderBackend.getWindow().getHeight())
         , m_postProcessing(new Postprocessing(postProcessingEffectIds, m_displayWidth, m_displayHeight, m_device))
     {
     }
 
     void DisplayController::handleWindowEvents()
     {
-        m_renderBackend.getSurface().getWindow().handleEvents();
+        m_renderBackend.getWindow().handleEvents();
     }
 
     Bool DisplayController::canRenderNewFrame() const
     {
-        return m_renderBackend.getSurface().canRenderNewFrame();
+        return m_renderBackend.getWindow().canRenderNewFrame();
     }
 
     void DisplayController::enableContext()
     {
-        m_renderBackend.getSurface().enable();
+        m_renderBackend.getContext().enable();
     }
 
     void DisplayController::swapBuffers()
     {
-        ISurface& surface = m_renderBackend.getSurface();
-        surface.swapBuffers();
-        surface.frameRendered();
+        m_renderBackend.getContext().swapBuffers();
+        m_renderBackend.getWindow().frameRendered();
 
         validateRenderingStatusHealthy();
     }

@@ -62,12 +62,12 @@ namespace ramses_internal
             return m_totalSize;
         }
 
-        void setEffectHash(ResourceContentHash newHash)
+        void setEffectHash(const ResourceContentHash& newHash)
         {
             effectHash = newHash;
         }
 
-        ResourceContentHash getEffectHash() const
+        const ResourceContentHash& getEffectHash() const
         {
             return effectHash;
         }

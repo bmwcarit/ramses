@@ -22,7 +22,7 @@ namespace ramses_internal
         Window_Android(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
         ~Window_Android() final;
 
-        Bool init();
+        virtual bool init() override;
 
         void handleEvents() override final;
 

@@ -132,6 +132,11 @@ namespace ramses_internal
             return true;
         }
 
+        virtual bool sendDcsmContentStatus(const Guid& /*to*/, ContentID /*contentID*/, uint64_t /*messageid*/, std::vector<Byte> const& /*message*/) override
+        {
+            return true;
+        }
+
         virtual bool sendDcsmUpdateContentMetadata(const Guid& /*to*/, ContentID /*contentID*/, const DcsmMetadata& /*metadata*/) override
         {
             return true;

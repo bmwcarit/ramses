@@ -20,7 +20,7 @@ namespace ramses_internal
     class DisplayDispatcherMock : public DisplayDispatcher
     {
     public:
-        DisplayDispatcherMock(const RendererConfig& config, RendererCommandBuffer& commandBuffer, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier);
+        DisplayDispatcherMock(const RendererConfig& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier);
         virtual ~DisplayDispatcherMock() override;
 
         MOCK_METHOD(Display, createDisplayBundle, (DisplayHandle), (override));
@@ -29,7 +29,7 @@ namespace ramses_internal
     class DisplayDispatcherFacade : public DisplayDispatcherMock
     {
     public:
-        DisplayDispatcherFacade(const RendererConfig& config, RendererCommandBuffer& commandBuffer, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier ,bool threaded);
+        DisplayDispatcherFacade(const RendererConfig& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier ,bool threaded);
         virtual ~DisplayDispatcherFacade() override;
 
         virtual Display createDisplayBundle(DisplayHandle displayHandle) override;

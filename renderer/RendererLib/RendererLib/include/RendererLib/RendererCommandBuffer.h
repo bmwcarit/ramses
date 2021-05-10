@@ -11,6 +11,7 @@
 
 #include "RendererLib/RendererCommands.h"
 #include <mutex>
+#include <condition_variable>
 
 namespace ramses_internal
 {
@@ -20,12 +21,16 @@ namespace ramses_internal
         template <typename T>
         void enqueueCommand(T cmd);
         void addAndConsumeCommandsFrom(RendererCommands& cmds);
-
         void swapCommands(RendererCommands& cmds);
+
+        std::tuple<std::mutex&, std::condition_variable&> getCVarForNewCommands();
+        void swapCommands_unsafe(RendererCommands& cmds);
 
     private:
         std::mutex m_lock;
         RendererCommands m_commands;
+
+        std::condition_variable m_newCommandsCvar;
     };
 
     template <typename T>
@@ -33,6 +38,7 @@ namespace ramses_internal
     {
         std::lock_guard<std::mutex> lock(m_lock);
         m_commands.push_back(std::move(cmd));
+        m_newCommandsCvar.notify_all();
     }
 }
 

@@ -12,7 +12,6 @@
 #include "SceneUtils/ResourceUtils.h"
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/IDisplayController.h"
-#include "RendererAPI/ISurface.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "RendererAPI/IRendererResourceCache.h"
 #include "RendererLib/RendererCachedScene.h"
@@ -43,6 +42,7 @@
 namespace ramses_internal
 {
     RendererSceneUpdater::RendererSceneUpdater(
+        DisplayHandle display,
         IPlatform& platform,
         Renderer& renderer,
         RendererScenes& rendererScenes,
@@ -53,7 +53,8 @@ namespace ramses_internal
         IThreadAliveNotifier& notifier,
         IRendererResourceCache* rendererResourceCache
         )
-        : m_platform(platform)
+        : m_display{ display }
+        , m_platform(platform)
         , m_renderer(renderer)
         , m_rendererScenes(rendererScenes)
         , m_sceneStateExecutor(sceneStateExecutor)
@@ -75,16 +76,16 @@ namespace ramses_internal
         }
         assert(m_scenesToBeMapped.size() == 0u);
 
-        while (0u != m_displayResourceManagers.size())
-        {
-            const DisplayHandle display = m_displayResourceManagers.begin()->first;
-            destroyDisplayContext(display);
-        }
+        if (m_displayResourceManager)
+            destroyDisplayContext();
     }
 
     void RendererSceneUpdater::handleSceneUpdate(SceneId sceneId, SceneUpdate&& sceneUpdate)
     {
         ESceneState sceneState = m_sceneStateExecutor.getSceneState(sceneId);
+
+        LOG_TRACE_P(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneUpdate: for sceneId {}, flushCounter {}, sceneState {}",
+                    sceneId, sceneUpdate.flushInfos.flushCounter, EnumToString(sceneState));
 
         if (sceneState == ESceneState::SubscriptionPending)
         {
@@ -103,54 +104,47 @@ namespace ramses_internal
             LOG_ERROR_P(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneActions could not apply scene actions because scene {} is neither subscribed nor mapped", sceneId);
     }
 
-    void RendererSceneUpdater::createDisplayContext(const DisplayConfig& displayConfig, DisplayHandle handle, IBinaryShaderCache* binaryShaderCache)
+    void RendererSceneUpdater::createDisplayContext(const DisplayConfig& displayConfig, IBinaryShaderCache* binaryShaderCache)
     {
-        assert(m_displayResourceManagers.count(handle) == 0);
+        assert(!m_displayResourceManager);
+        assert(!m_asyncEffectUploader);
         m_renderer.resetRenderInterruptState();
-        m_renderer.createDisplayContext(displayConfig, handle);
+        m_renderer.createDisplayContext(displayConfig);
 
-        if (m_renderer.hasDisplayController(handle))
+        if (m_renderer.hasDisplayController())
         {
-            IDisplayController& displayController = m_renderer.getDisplayController(handle);
+            IDisplayController& displayController = m_renderer.getDisplayController();
             IRenderBackend& renderBackend = displayController.getRenderBackend();
             IEmbeddedCompositingManager& embeddedCompositingManager = displayController.getEmbeddedCompositingManager();
 
-            auto asyncEffectUploader = std::make_unique<AsyncEffectUploader>(m_platform, renderBackend, m_notifier, static_cast<int>(handle.asMemoryHandle()));
-            if (!asyncEffectUploader->createResourceUploadRenderBackendAndStartThread())
+            m_asyncEffectUploader = std::make_unique<AsyncEffectUploader>(m_platform, renderBackend, m_notifier, static_cast<int>(m_display.asMemoryHandle()));
+            if (!m_asyncEffectUploader->createResourceUploadRenderBackendAndStartThread())
             {
-                m_renderer.destroyDisplayContext(handle);
-                m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreateFailed, handle);
+                m_renderer.destroyDisplayContext();
+                m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreateFailed, m_display);
                 return;
             }
             // ownership of uploadStrategy is transferred into RendererResourceManager
-            auto resourceManager = createResourceManager(renderBackend,
-                                                        *asyncEffectUploader,
+            m_displayResourceManager = createResourceManager(renderBackend,
                                                         embeddedCompositingManager,
-                                                        handle,
                                                         displayConfig.getKeepEffectsUploaded(),
                                                         displayConfig.getGPUMemoryCacheSize(),
                                                         displayConfig.isAsyncEffectUploadEnabled(),
                                                         binaryShaderCache);
 
-            m_asyncEffectUploaders.insert({ handle , std::move(asyncEffectUploader) });
-            m_displayResourceManagers.insert({ handle, std::move(resourceManager) });
-            m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreated, handle);
+            m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreated, m_display);
 
-            LOG_INFO_P(CONTEXT_RENDERER, "Created display {}: {}x{}{}{} MSAA{}",
-                handle, displayController.getDisplayWidth(), displayController.getDisplayHeight(), (displayConfig.getFullscreenState() ? " fullscreen" : ""),
+            LOG_INFO_P(CONTEXT_RENDERER, "Created display: {}x{}{}{} MSAA{}",
+                displayController.getDisplayWidth(), displayController.getDisplayHeight(), (displayConfig.getFullscreenState() ? " fullscreen" : ""),
                 (displayConfig.isWarpingEnabled() ? " warped" : ""), displayConfig.getAntialiasingSampleCount());
         }
         else
-        {
-            m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreateFailed, handle);
-        }
+            m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreateFailed, m_display);
     }
 
     std::unique_ptr<IRendererResourceManager> RendererSceneUpdater::createResourceManager(
         IRenderBackend& renderBackend,
-        AsyncEffectUploader& asyncEffectUploader,
         IEmbeddedCompositingManager& embeddedCompositingManager,
-        DisplayHandle,
         bool keepEffectsUploaded,
         uint64_t gpuCacheSize,
         bool asyncEffectUploadEnabled,
@@ -159,7 +153,7 @@ namespace ramses_internal
         return std::make_unique<RendererResourceManager>(
             renderBackend,
             std::make_unique<ResourceUploader>(asyncEffectUploadEnabled, binaryShaderCache),
-            asyncEffectUploader,
+            *m_asyncEffectUploader,
             embeddedCompositingManager,
             keepEffectsUploaded,
             m_frameTimer,
@@ -167,61 +161,43 @@ namespace ramses_internal
             gpuCacheSize);
     }
 
-    void RendererSceneUpdater::destroyResourceManager(DisplayHandle display)
+    void RendererSceneUpdater::destroyResourceManager()
     {
-        m_displayResourceManagers.erase(display);
+        m_displayResourceManager.reset();
     }
 
-    void RendererSceneUpdater::destroyDisplayContext(DisplayHandle display)
+    void RendererSceneUpdater::destroyDisplayContext()
     {
-        if (!m_renderer.hasDisplayController(display))
+        if (!m_renderer.hasDisplayController())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::destroyDisplayContext cannot destroy display " << display << " which does not exist");
-            m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayDestroyFailed, display);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::destroyDisplayContext cannot destroy display context which was not created.");
+            m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayDestroyFailed, m_display);
             return;
         }
-        assert(m_displayResourceManagers.count(display));
 
-        Bool displayHasMappedScene = false;
-        for (const auto& it : m_scenesToBeMapped)
+        // are there any scenes waiting to be mapped or mapping/mapped/rendered
+        bool displayHasMappedScene = !m_scenesToBeMapped.empty();
+        for (const auto& it : m_rendererScenes)
         {
-            if (it.value.display == display)
-            {
+            if (m_sceneStateExecutor.getSceneState(it.key) >= ESceneState::MappingAndUploading)
                 displayHasMappedScene = true;
-                break;
-            }
-        }
-
-        if (!displayHasMappedScene)
-        {
-            for (const auto& it : m_rendererScenes)
-            {
-                const SceneId sceneId = it.key;
-                if (m_renderer.getDisplaySceneIsAssignedTo(sceneId) == display)
-                {
-                    displayHasMappedScene = true;
-                    break;
-                }
-            }
         }
 
         if (displayHasMappedScene)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::destroyDisplayContext cannot destroy display " << display << ", there is one or more scenes mapped (or being mapped) to it, unmap all scenes from it first.");
-            m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayDestroyFailed, display);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::destroyDisplayContext cannot destroy display, there is one or more scenes mapped (or being mapped) to it, unmap all scenes from it first.");
+            m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayDestroyFailed, m_display);
             return;
         }
 
-        auto asyncEffectUploaderIt = m_asyncEffectUploaders.find(display);
-        asyncEffectUploaderIt->second->destroyResourceUploadRenderBackendAndStopThread();
-        m_asyncEffectUploaders.erase(asyncEffectUploaderIt);
-
-        destroyResourceManager(display);
+        m_asyncEffectUploader->destroyResourceUploadRenderBackendAndStopThread();
+        m_asyncEffectUploader.reset();
+        destroyResourceManager();
 
         m_renderer.resetRenderInterruptState();
-        m_renderer.destroyDisplayContext(display);
-        assert(!m_renderer.hasDisplayController(display));
-        m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayDestroyed, display);
+        m_renderer.destroyDisplayContext();
+        assert(!m_renderer.hasDisplayController());
+        m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayDestroyed, m_display);
     }
 
     void RendererSceneUpdater::updateScenes()
@@ -295,9 +271,19 @@ namespace ramses_internal
         for (const auto scene : m_modifiedScenesToRerender)
         {
             if (m_sceneStateExecutor.getSceneState(scene) == ESceneState::Rendered)
-                m_renderer.markBufferWithSceneAsModified(scene);
+                m_renderer.markBufferWithSceneForRerender(scene);
         }
         m_modifiedScenesToRerender.clear();
+
+        if (!m_skipUnmodifiedScenes)
+        {
+            // Mark all shown scenes for re-render regardless if modified or not
+            for (const auto& scene : m_rendererScenes)
+            {
+                if (m_sceneStateExecutor.getSceneState(scene.key) == ESceneState::Rendered)
+                    m_renderer.markBufferWithSceneForRerender(scene.key);
+            }
+        }
     }
 
     void RendererSceneUpdater::logTooManyFlushesAndUnsubscribeIfRemoteScene(SceneId sceneId, std::size_t numPendingFlushes)
@@ -354,7 +340,7 @@ namespace ramses_internal
         m_renderer.getStatistics().trackArrivedFlush(sceneID, numActions, resourceChanges.m_resourcesAdded.size(), resourceChanges.m_resourcesRemoved.size(), resourceChanges.m_sceneResourceActions.size(), flushLatencyMs);
 
         LOG_TRACE_F(CONTEXT_RENDERER, ([&](StringOutputStream& logStream) {
-            logStream << "Flush " << flushInfo.flushIndex << " for scene " << sceneID << " arrived ";
+            logStream << "Flush " << flushInfo.flushIndex << " for scene " << sceneID << " arrived (latency " << flushLatencyMs.count() << ") ";
             logStream << "[actions:" << numActions << "(" << sceneUpdate.actions.collectionData().size() << " bytes)]";
             logStream << "[addRefs res (" << resourceChanges.m_resourcesAdded.size() << "):";
             for (const auto& hash : resourceChanges.m_resourcesAdded)
@@ -421,10 +407,10 @@ namespace ramses_internal
         }
     }
 
-    void RendererSceneUpdater::referenceAndProvidePendingResourceData(SceneId sceneID, DisplayHandle display)
+    void RendererSceneUpdater::referenceAndProvidePendingResourceData(SceneId sceneID)
     {
         // collect and provide resource data to resource manager
-        auto& resMgr = *m_displayResourceManagers.find(display)->second;
+        assert(m_displayResourceManager);
         std::vector<ManagedResourceVector*> resourcesToProvide;
 
         // collect from staged data for scene to be mapped
@@ -434,7 +420,7 @@ namespace ramses_internal
             auto& resDataToMap = stagingInfo.resourcesToUploadOnceMapping;
             ResourceContentHashVector hashesToMap{ resDataToMap.size() };
             std::transform(resDataToMap.cbegin(), resDataToMap.cend(), hashesToMap.begin(), [](const auto& mr) { return mr->getHash(); });
-            resMgr.referenceResourcesForScene(sceneID, hashesToMap);
+            m_displayResourceManager->referenceResourcesForScene(sceneID, hashesToMap);
             resourcesToProvide.push_back(&resDataToMap);
         }
 
@@ -443,7 +429,7 @@ namespace ramses_internal
         {
             if (!pendingFlush.resourceDataToProvide.empty())
             {
-                resMgr.referenceResourcesForScene(sceneID, pendingFlush.resourcesAdded);
+                m_displayResourceManager->referenceResourcesForScene(sceneID, pendingFlush.resourcesAdded);
                 resourcesToProvide.push_back(&pendingFlush.resourceDataToProvide);
             }
         }
@@ -453,7 +439,7 @@ namespace ramses_internal
         {
             for (const auto& mr : *resList)
             {
-                resMgr.provideResourceData(mr);
+                m_displayResourceManager->provideResourceData(mr);
                 uint32_t dummySize = 0;
                 if (m_rendererResourceCache && !m_rendererResourceCache->hasResource(mr->getHash(), dummySize))
                     RendererResourceManagerUtils::StoreResource(m_rendererResourceCache, mr.get(), sceneID);
@@ -465,59 +451,53 @@ namespace ramses_internal
 
     void RendererSceneUpdater::requestAndUploadAndUnloadResources()
     {
+        if (!m_displayResourceManager)
+            return;
+
         for (const auto& rendererScene : m_rendererScenes)
         {
             const SceneId sceneID = rendererScene.key;
-            const auto display = m_renderer.getDisplaySceneIsAssignedTo(sceneID);
-            if (!display.isValid())
+            if (m_sceneStateExecutor.getSceneState(sceneID) < ESceneState::MappingAndUploading)
                 consolidateResourceDataForMapping(sceneID);
             else
-                referenceAndProvidePendingResourceData(sceneID, display);
+                referenceAndProvidePendingResourceData(sceneID);
         }
 
         // if there are resources to upload, unload and upload pending resources
-        for(const auto& it : m_displayResourceManagers)
-        {
-            IRendererResourceManager& resourceManager = *it.second;
-            if (resourceManager.hasResourcesToBeUploaded())
-                resourceManager.uploadAndUnloadPendingResources();
-        }
+        if (m_displayResourceManager->hasResourcesToBeUploaded())
+            m_displayResourceManager->uploadAndUnloadPendingResources();
     }
 
     void RendererSceneUpdater::uploadUpdatedECStreams()
     {
-        for(const auto& displayResourceManager : m_displayResourceManagers)
+        if (!m_renderer.hasDisplayController())
+            return;
+
+        IEmbeddedCompositingManager& embeddedCompositingManager = m_renderer.getDisplayController().getEmbeddedCompositingManager();
+        if (embeddedCompositingManager.hasRealCompositor())
         {
-            const DisplayHandle displayHandle = displayResourceManager.first;
-            assert(m_renderer.hasDisplayController(displayHandle));
-            const auto& resMgr = *displayResourceManager.second;
-
-            IEmbeddedCompositingManager& embeddedCompositingManager = m_renderer.getDisplayController(displayHandle).getEmbeddedCompositingManager();
-            if (embeddedCompositingManager.hasRealCompositor())
+            embeddedCompositingManager.processClientRequests();
+            if (embeddedCompositingManager.hasUpdatedContentFromStreamSourcesToUpload())
             {
-                embeddedCompositingManager.processClientRequests();
-                if (embeddedCompositingManager.hasUpdatedContentFromStreamSourcesToUpload())
-                {
-                    m_streamUpdates.clear();
-                    embeddedCompositingManager.uploadResourcesAndGetUpdates(m_streamUpdates);
+                m_streamUpdates.clear();
+                embeddedCompositingManager.uploadResourcesAndGetUpdates(m_streamUpdates);
 
-                    const auto& texLinks = m_rendererScenes.getSceneLinksManager().getTextureLinkManager();
-                    StreamBufferLinkVector links;
-                    for (const auto& updatedSource : m_streamUpdates)
+                const auto& texLinks = m_rendererScenes.getSceneLinksManager().getTextureLinkManager();
+                StreamBufferLinkVector links;
+                for (const auto& updatedSource : m_streamUpdates)
+                {
+                    m_renderer.getStatistics().streamTextureUpdated(updatedSource.first, updatedSource.second);
+                    const auto& streamUsage = m_displayResourceManager->getStreamUsage(updatedSource.first);
+                    // mark all scenes with stream textures using updated source as modified
+                    for (const auto& sceneUsage : streamUsage.sceneUsages)
+                        m_modifiedScenesToRerender.put(sceneUsage.first);
+                    // mark all scenes linked as consumer to updated source as modified
+                    for (const auto streamBuffer : streamUsage.streamBufferUsages)
                     {
-                        m_renderer.getStatistics().streamTextureUpdated(updatedSource.first, updatedSource.second);
-                        const auto& streamUsage = resMgr.getStreamUsage(updatedSource.first);
-                        // mark all scenes with stream textures using updated source as modified
-                        for (const auto& sceneUsage : streamUsage.sceneUsages)
-                            m_modifiedScenesToRerender.put(sceneUsage.first);
-                        // mark all scenes linked as consumer to updated source as modified
-                        for (const auto streamBuffer : streamUsage.streamBufferUsages)
-                        {
-                            links.clear();
-                            texLinks.getStreamBufferLinks().getLinkedConsumers(streamBuffer, links);
-                            for (const auto& link : links)
-                                m_modifiedScenesToRerender.put(link.consumerSceneId);
-                        }
+                        links.clear();
+                        texLinks.getStreamBufferLinks().getLinkedConsumers(streamBuffer, links);
+                        for (const auto& link : links)
+                            m_modifiedScenesToRerender.put(link.consumerSceneId);
                     }
                 }
             }
@@ -643,72 +623,67 @@ namespace ramses_internal
     {
         // if scene is mapped unreference client resources that are no longer needed
         // and execute collected scene resource actions
-        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneID);
         PendingData& pendingData = stagingInfo.pendingData;
-        if (displayHandle.isValid())
+        if (m_sceneStateExecutor.getSceneState(sceneID) >= ESceneState::MappingAndUploading)
         {
-            IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(displayHandle)->second;
+            assert(m_displayResourceManager);
             for (const auto& pendingFlush : pendingData.pendingFlushes)
-                resourceManager.unreferenceResourcesForScene(sceneID, pendingFlush.resourcesRemoved);
+                m_displayResourceManager->unreferenceResourcesForScene(sceneID, pendingFlush.resourcesRemoved);
 
-            PendingSceneResourcesUtils::ApplySceneResourceActions(pendingData.sceneResourceActions, m_rendererScenes.getScene(sceneID), resourceManager);
+            PendingSceneResourcesUtils::ApplySceneResourceActions(pendingData.sceneResourceActions, m_rendererScenes.getScene(sceneID), *m_displayResourceManager);
         }
     }
 
     void RendererSceneUpdater::handleECStreamAvailabilityChanges()
     {
-        for(const auto& displayResourceManager : m_displayResourceManagers)
+        if (!m_renderer.hasDisplayController())
+            return;
+
+        IEmbeddedCompositingManager& embeddedCompositingManager = m_renderer.getDisplayController().getEmbeddedCompositingManager();
+        if (embeddedCompositingManager.hasRealCompositor())
         {
-            const DisplayHandle displayHandle = displayResourceManager.first;
-            assert(m_renderer.hasDisplayController(displayHandle));
-            const auto& resMgr = *displayResourceManager.second;
+            WaylandIviSurfaceIdVector streamsWithAvailabilityChanged;
+            WaylandIviSurfaceIdVector newStreams;
+            WaylandIviSurfaceIdVector obsoleteStreams;
+            embeddedCompositingManager.dispatchStateChangesOfSources(streamsWithAvailabilityChanged, newStreams, obsoleteStreams);
 
-            IEmbeddedCompositingManager& embeddedCompositingManager = m_renderer.getDisplayController(displayHandle).getEmbeddedCompositingManager();
-            if (embeddedCompositingManager.hasRealCompositor())
+            for (const auto stream : newStreams)
             {
-                WaylandIviSurfaceIdVector streamsWithAvailabilityChanged;
-                WaylandIviSurfaceIdVector newStreams;
-                WaylandIviSurfaceIdVector obsoleteStreams;
-                embeddedCompositingManager.dispatchStateChangesOfSources(streamsWithAvailabilityChanged, newStreams, obsoleteStreams);
+                m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamSurfaceAvailable, stream);
+            }
+            for (const auto stream : obsoleteStreams)
+            {
+                m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamSurfaceUnavailable, stream);
+                m_renderer.getStatistics().untrackStreamTexture(stream);
+            }
 
-                for (const auto stream : newStreams)
+            auto& texLinks = m_rendererScenes.getSceneLinksManager().getTextureLinkManager();
+            StreamBufferLinkVector links;
+
+            for (const auto changedStream : streamsWithAvailabilityChanged)
+            {
+                const auto& streamUsage = m_displayResourceManager->getStreamUsage(changedStream);
+                // mark renderables using stream texture with changed availability as dirty
+                for (const auto& sceneUsage : streamUsage.sceneUsages)
                 {
-                    m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamSurfaceAvailable, stream);
+                    const auto& rendererScene = m_rendererScenes.getScene(sceneUsage.first);
+                    for (const auto sceneTex : sceneUsage.second)
+                        rendererScene.setRenderableResourcesDirtyByStreamTexture(sceneTex);
+
+                    m_modifiedScenesToRerender.put(sceneUsage.first);
                 }
-                for (const auto stream : obsoleteStreams)
+                // force unlink all consumers using source that became unavailable
+                if (!embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(changedStream).isValid())
                 {
-                    m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamSurfaceUnavailable, stream);
-                    m_renderer.getStatistics().untrackStreamTexture(stream);
-                }
-
-                auto& texLinks = m_rendererScenes.getSceneLinksManager().getTextureLinkManager();
-                StreamBufferLinkVector links;
-
-                for (const auto changedStream : streamsWithAvailabilityChanged)
-                {
-                    const auto& streamUsage = resMgr.getStreamUsage(changedStream);
-                    // mark renderables using stream texture with changed availability as dirty
-                    for (const auto& sceneUsage : streamUsage.sceneUsages)
+                    for (const auto streamBuffer : streamUsage.streamBufferUsages)
                     {
-                        const auto& rendererScene = m_rendererScenes.getScene(sceneUsage.first);
-                        for (const auto sceneTex : sceneUsage.second)
-                            rendererScene.setRenderableResourcesDirtyByStreamTexture(sceneTex);
+                        links.clear();
+                        texLinks.getStreamBufferLinks().getLinkedConsumers(streamBuffer, links);
+                        for (const auto& link : links)
+                            m_modifiedScenesToRerender.put(link.consumerSceneId);
 
-                        m_modifiedScenesToRerender.put(sceneUsage.first);
-                    }
-                    // force unlink all consumers using source that became unavailable
-                    if (!embeddedCompositingManager.getCompositedTextureDeviceHandleForStreamTexture(changedStream).isValid())
-                    {
-                        for (const auto streamBuffer : streamUsage.streamBufferUsages)
-                        {
-                            links.clear();
-                            texLinks.getStreamBufferLinks().getLinkedConsumers(streamBuffer, links);
-                            for (const auto& link : links)
-                                m_modifiedScenesToRerender.put(link.consumerSceneId);
-
-                            LOG_INFO_P(CONTEXT_RENDERER, "Unlinking stream buffer handle {} from all consumers due to its source {} became unavailable.", streamBuffer, changedStream);
-                            m_rendererScenes.getSceneLinksManager().handleBufferDestroyedOrSourceUnavailable(streamBuffer);
-                        }
+                        LOG_INFO_P(CONTEXT_RENDERER, "Unlinking stream buffer handle {} from all consumers due to its source {} became unavailable.", streamBuffer, changedStream);
+                        m_rendererScenes.getSceneLinksManager().handleBufferDestroyedOrSourceUnavailable(streamBuffer);
                     }
                 }
             }
@@ -724,12 +699,9 @@ namespace ramses_internal
             // update resource cache only if scene is actually rendered
             if (m_sceneStateExecutor.getSceneState(sceneId) == ESceneState::Rendered)
             {
-                const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
-                assert(displayHandle.isValid());
-                const IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(displayHandle)->second;
-                const IEmbeddedCompositingManager& embeddedCompositingManager = m_renderer.getDisplayController(displayHandle).getEmbeddedCompositingManager();
+                const IEmbeddedCompositingManager& embeddedCompositingManager = m_renderer.getDisplayController().getEmbeddedCompositingManager();
                 RendererCachedScene& rendererScene = *(sceneIt.value.scene);
-                rendererScene.updateRenderablesAndResourceCache(resourceManager, embeddedCompositingManager);
+                rendererScene.updateRenderablesAndResourceCache(*m_displayResourceManager, embeddedCompositingManager);
             }
         }
     }
@@ -740,8 +712,7 @@ namespace ramses_internal
         SceneIdVector scenesToForceUnsubscribe;
         for (const auto& it : m_scenesToBeMapped)
         {
-            const SceneId sceneId = it.key;
-            const SceneMapRequest& mapRequest = it.value;
+            const SceneId sceneId = it.first;
             const ESceneState sceneState = m_sceneStateExecutor.getSceneState(sceneId);
 
             switch (sceneState)
@@ -749,8 +720,8 @@ namespace ramses_internal
             case ESceneState::MapRequested:
             {
                 assert(m_rendererScenes.getStagingInfo(sceneId).pendingData.pendingFlushes.empty());
-                const IDisplayController& displayController = m_renderer.getDisplayController(mapRequest.display);
-                m_renderer.assignSceneToDisplayBuffer(sceneId, mapRequest.display, displayController.getDisplayBuffer(), 0);
+                const IDisplayController& displayController = m_renderer.getDisplayController();
+                m_renderer.assignSceneToDisplayBuffer(sceneId, displayController.getDisplayBuffer(), 0);
                 m_sceneStateExecutor.setMappingAndUploading(sceneId);
                 // mapping a scene needs re-request of all its resources at the new resource manager
                 if (!markClientAndSceneResourcesForReupload(sceneId))
@@ -763,9 +734,7 @@ namespace ramses_internal
                 break;
             case ESceneState::MappingAndUploading:
             {
-                assert(m_renderer.getDisplaySceneIsAssignedTo(sceneId) == mapRequest.display);
-
-                const IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(mapRequest.display)->second;
+                const IRendererResourceManager& resourceManager = *m_displayResourceManager;
                 const StagingInfo& stagingInfo = m_rendererScenes.getStagingInfo(sceneId);
 
                 bool canBeMapped = false;
@@ -808,7 +777,7 @@ namespace ramses_internal
 
         for (const auto sceneId : scenesMapped)
         {
-            m_scenesToBeMapped.remove(sceneId);
+            m_scenesToBeMapped.erase(sceneId);
 
             const auto& pendingFlushes = m_rendererScenes.getStagingInfo(sceneId).pendingData.pendingFlushes;
             if (!pendingFlushes.empty())
@@ -824,18 +793,18 @@ namespace ramses_internal
             constexpr std::chrono::seconds MappingLogPeriod{ 1u };
             constexpr size_t MaxNumResourcesToLog = 20u;
 
-            auto& mapRequest = sceneMapReq.value;
+            auto& mapRequest = sceneMapReq.second;
             const auto currentFrameTime = m_frameTimer.getFrameStartTime();
             if (currentFrameTime - mapRequest.lastLogTimeStamp > MappingLogPeriod)
             {
                 LOG_WARN_F(CONTEXT_RENDERER, [&](ramses_internal::StringOutputStream& logger)
                 {
                     const auto totalWaitingTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentFrameTime - mapRequest.requestTimeStamp);
-                    const IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(mapRequest.display)->second;
+                    const IRendererResourceManager& resourceManager = *m_displayResourceManager;
 
-                    logger << "Scene " << sceneMapReq.key << " waiting " << totalWaitingTime.count() << " ms for resources in order to be mapped: ";
+                    logger << "Scene " << sceneMapReq.first << " waiting " << totalWaitingTime.count() << " ms for resources in order to be mapped: ";
                     size_t numResourcesWaiting = 0u;
-                    const auto usedResources = resourceManager.getResourcesInUseByScene(sceneMapReq.key);
+                    const auto usedResources = resourceManager.getResourcesInUseByScene(sceneMapReq.first);
                     if (usedResources)
                     {
                         for (const auto& res : *usedResources)
@@ -909,10 +878,10 @@ namespace ramses_internal
             break;
         }
 
-        if (m_scenesToBeMapped.contains(sceneID))
+        if (m_scenesToBeMapped.count(sceneID) != 0)
         {
             assert(sceneState == ESceneState::MapRequested || sceneState == ESceneState::MappingAndUploading);
-            m_scenesToBeMapped.remove(sceneID);
+            m_scenesToBeMapped.erase(sceneID);
         }
 
         m_expirationMonitor.onDestroyed(sceneID);
@@ -922,9 +891,7 @@ namespace ramses_internal
     {
         assert(m_rendererScenes.hasScene(sceneId));
         assert(SceneStateIsAtLeast(m_sceneStateExecutor.getSceneState(sceneId), ESceneState::MappingAndUploading));
-        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
-        assert(displayHandle.isValid());
-        IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(displayHandle)->second;
+        IRendererResourceManager& resourceManager = *m_displayResourceManager;
 
         resourceManager.unloadAllSceneResourcesForScene(sceneId);
         resourceManager.unreferenceAllResourcesForScene(sceneId);
@@ -937,10 +904,7 @@ namespace ramses_internal
     {
         assert(m_rendererScenes.hasScene(sceneId));
         assert(ESceneState::MappingAndUploading == m_sceneStateExecutor.getSceneState(sceneId));
-
-        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
-        assert(displayHandle.isValid());
-        IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(displayHandle)->second;
+        IRendererResourceManager& resourceManager = *m_displayResourceManager;
 
         // collect all scene resources in scene and upload them
         const auto& scene = m_rendererScenes.getScene(sceneId);
@@ -1030,13 +994,13 @@ namespace ramses_internal
         m_sceneStateExecutor.setUnsubscribed(sceneId, indirect);
     }
 
-    void RendererSceneUpdater::handleSceneMappingRequest(SceneId sceneId, DisplayHandle handle)
+    void RendererSceneUpdater::handleSceneMappingRequest(SceneId sceneId)
     {
-        if (m_sceneStateExecutor.checkIfCanBeMapRequested(sceneId, handle))
+        if (m_sceneStateExecutor.checkIfCanBeMapRequested(sceneId))
         {
-            m_sceneStateExecutor.setMapRequested(sceneId, handle);
-            assert(!m_scenesToBeMapped.contains(sceneId));
-            m_scenesToBeMapped.put(sceneId, { handle, m_frameTimer.getFrameStartTime(), m_frameTimer.getFrameStartTime() });
+            m_sceneStateExecutor.setMapRequested(sceneId);
+            assert(m_scenesToBeMapped.count(sceneId) == 0);
+            m_scenesToBeMapped.insert({ sceneId, { m_frameTimer.getFrameStartTime(), m_frameTimer.getFrameStartTime() } });
         }
     }
 
@@ -1049,7 +1013,7 @@ namespace ramses_internal
             {
                 // scene unmap requested before reaching mapped state (cancel mapping), emit map failed event
                 m_rendererEventCollector.addInternalSceneEvent(ERendererEventType::SceneMapFailed, sceneId);
-                m_scenesToBeMapped.remove(sceneId);
+                m_scenesToBeMapped.erase(sceneId);
             }
 
             switch (sceneState)
@@ -1108,15 +1072,16 @@ namespace ramses_internal
         }
     }
 
-    bool RendererSceneUpdater::handleBufferCreateRequest(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType)
+    bool RendererSceneUpdater::handleBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType)
     {
-        if (!m_displayResourceManagers.count(display))
+        if (!m_renderer.hasDisplayController())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest cannot create an offscreen buffer on unknown display " << display);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest cannot create an offscreen buffer on invalid display.");
             return false;
         }
 
-        IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(display)->second;
+        assert(m_displayResourceManager);
+        IRendererResourceManager& resourceManager = *m_displayResourceManager;
         if (resourceManager.getOffscreenBufferDeviceHandle(buffer).isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest an offscreen buffer with the same ID (" << buffer << ") already exists!");
@@ -1126,7 +1091,7 @@ namespace ramses_internal
         resourceManager.uploadOffscreenBuffer(buffer, width, height, sampleCount, isDoubleBuffered, depthStencilBufferType);
         const DeviceResourceHandle deviceHandle = resourceManager.getOffscreenBufferDeviceHandle(buffer);
         m_renderer.resetRenderInterruptState();
-        m_renderer.registerOffscreenBuffer(display, deviceHandle, width, height, isDoubleBuffered);
+        m_renderer.registerOffscreenBuffer(deviceHandle, width, height, isDoubleBuffered);
 
         LOG_INFO(CONTEXT_RENDERER, "Created offscreen buffer " << buffer.asMemoryHandle() << " (device handle " << deviceHandle.asMemoryHandle() << "): " << width << "x" << height
             << (isDoubleBuffered ? " interruptible" : ""));
@@ -1134,48 +1099,43 @@ namespace ramses_internal
         return true;
     }
 
-    bool RendererSceneUpdater::handleBufferDestroyRequest(OffscreenBufferHandle buffer, DisplayHandle display)
+    bool RendererSceneUpdater::handleBufferDestroyRequest(OffscreenBufferHandle buffer)
     {
-        if (!m_displayResourceManagers.count(display))
+        if (!m_renderer.hasDisplayController())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest cannot destroy an offscreen buffer on unknown display " << display);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest cannot destroy an offscreen buffer on invalid display.");
             return false;
         }
 
-        IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(display)->second;
+        assert(m_displayResourceManager);
+        IRendererResourceManager& resourceManager = *m_displayResourceManager;
         const auto bufferDeviceHandle = resourceManager.getOffscreenBufferDeviceHandle(buffer);
         if (!bufferDeviceHandle.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest could not find buffer with ID " << buffer << " on given display " << display);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest could not find buffer with ID " << buffer);
             return false;
         }
 
         for (const auto& rendererScene : m_rendererScenes)
         {
             const SceneId sceneId = rendererScene.key;
-            DisplayHandle sceneDisplay;
-            const auto sceneDisplayBuffer = m_renderer.getBufferSceneIsAssignedTo(sceneId, &sceneDisplay);
-            if (sceneDisplay.isValid())
+            const auto sceneDisplayBuffer = m_renderer.getBufferSceneIsAssignedTo(sceneId);
+            if (sceneDisplayBuffer == bufferDeviceHandle)
             {
-                assert(SceneStateIsAtLeast(m_sceneStateExecutor.getSceneState(sceneId), ESceneState::MappingAndUploading));
-
-                if (sceneDisplay == display && sceneDisplayBuffer == bufferDeviceHandle)
-                {
-                    LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest cannot destroy buffer " << buffer << ", there is one or more scenes assigned to it, unmap or reassign them first.");
-                    return false;
-                }
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest cannot destroy buffer " << buffer << ", there is one or more scenes assigned to it, unmap or reassign them first.");
+                return false;
             }
         }
 
         m_rendererScenes.getSceneLinksManager().handleBufferDestroyed(buffer);
         m_renderer.resetRenderInterruptState();
-        m_renderer.unregisterOffscreenBuffer(display, bufferDeviceHandle);
+        m_renderer.unregisterOffscreenBuffer(bufferDeviceHandle);
         resourceManager.unloadOffscreenBuffer(buffer);
 
         return true;
     }
 
-    bool RendererSceneUpdater::setStreamBufferState(StreamBufferHandle buffer, DisplayHandle /*display*/, bool /*newState*/)
+    bool RendererSceneUpdater::setStreamBufferState(StreamBufferHandle buffer, bool /*newState*/)
     {
         LOG_WARN(CONTEXT_RENDERER, "RendererSceneUpdater::setStreamBufferState not implemented yet ");
         // TODO (vaclav, jonathan) implement stream hiding
@@ -1183,15 +1143,16 @@ namespace ramses_internal
         return true;
     }
 
-    bool RendererSceneUpdater::handleBufferCreateRequest(StreamBufferHandle buffer, DisplayHandle display, WaylandIviSurfaceId source)
+    bool RendererSceneUpdater::handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source)
     {
-        if (!m_displayResourceManagers.count(display))
+        if (!m_renderer.hasDisplayController())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest cannot create an stream buffer on unknown display " << display);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest cannot create a stream buffer on invalid display.");
             return false;
         }
 
-        IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(display)->second;
+        assert(m_displayResourceManager);
+        IRendererResourceManager& resourceManager = *m_displayResourceManager;
         resourceManager.uploadStreamBuffer(buffer, source);
 
         const DeviceResourceHandle deviceHandle = resourceManager.getStreamBufferDeviceHandle(buffer);
@@ -1200,33 +1161,34 @@ namespace ramses_internal
         return true;
     }
 
-    bool RendererSceneUpdater::handleBufferDestroyRequest(StreamBufferHandle buffer, DisplayHandle display)
+    bool RendererSceneUpdater::handleBufferDestroyRequest(StreamBufferHandle buffer)
     {
-        if (!m_displayResourceManagers.count(display))
+        if (!m_renderer.hasDisplayController())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest cannot destroy an stream buffer on unknown display " << display);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest cannot destroy a stream buffer on invalid display.");
             return false;
         }
 
-        IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(display)->second;
+        assert(m_displayResourceManager);
+        IRendererResourceManager& resourceManager = *m_displayResourceManager;
         resourceManager.unloadStreamBuffer(buffer);
         m_rendererScenes.getSceneLinksManager().handleBufferDestroyedOrSourceUnavailable(buffer);
 
         return true;
     }
 
-    void RendererSceneUpdater::handleSetClearFlags(DisplayHandle display, OffscreenBufferHandle buffer, uint32_t clearFlags)
+    void RendererSceneUpdater::handleSetClearFlags(OffscreenBufferHandle buffer, uint32_t clearFlags)
     {
-        if (!m_renderer.hasDisplayController(display))
+        if (!m_renderer.hasDisplayController())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearEnabled failed, unknown display " << display);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearFlags cannot set clear flags on invalid display.");
             return;
         }
 
         DeviceResourceHandle bufferDeviceHandle;
         if (buffer.isValid())
         {
-            bufferDeviceHandle = m_displayResourceManagers.find(display)->second->getOffscreenBufferDeviceHandle(buffer);
+            bufferDeviceHandle = m_displayResourceManager->getOffscreenBufferDeviceHandle(buffer);
             if (!bufferDeviceHandle.isValid())
             {
                 LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearEnabled cannot enable/disable clear for unknown offscreen buffer " << buffer);
@@ -1234,24 +1196,24 @@ namespace ramses_internal
             }
         }
         else
-            bufferDeviceHandle = m_renderer.getDisplayController(display).getDisplayBuffer();
+            bufferDeviceHandle = m_renderer.getDisplayController().getDisplayBuffer();
 
         assert(bufferDeviceHandle.isValid());
-        m_renderer.setClearFlags(display, bufferDeviceHandle, clearFlags);
+        m_renderer.setClearFlags(bufferDeviceHandle, clearFlags);
     }
 
-    void RendererSceneUpdater::handleSetClearColor(DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor)
+    void RendererSceneUpdater::handleSetClearColor(OffscreenBufferHandle buffer, const Vector4& clearColor)
     {
-        if (!m_renderer.hasDisplayController(display))
+        if (!m_renderer.hasDisplayController())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearColor failed, unknown display " << display);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearColor cannot set clear color on invalid display.");
             return;
         }
 
         DeviceResourceHandle bufferDeviceHandle;
         if (buffer.isValid())
         {
-            bufferDeviceHandle = m_displayResourceManagers.find(display)->second->getOffscreenBufferDeviceHandle(buffer);
+            bufferDeviceHandle = m_displayResourceManager->getOffscreenBufferDeviceHandle(buffer);
             if (!bufferDeviceHandle.isValid())
             {
                 LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearColor cannot set clear color for unknown offscreen buffer " << buffer);
@@ -1259,20 +1221,20 @@ namespace ramses_internal
             }
         }
         else
-            bufferDeviceHandle = m_renderer.getDisplayController(display).getDisplayBuffer();
+            bufferDeviceHandle = m_renderer.getDisplayController().getDisplayBuffer();
 
         assert(bufferDeviceHandle.isValid());
-        m_renderer.setClearColor(display, bufferDeviceHandle, clearColor);
+        m_renderer.setClearColor(bufferDeviceHandle, clearColor);
     }
 
-    void RendererSceneUpdater::handleReadPixels(DisplayHandle display, OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo)
+    void RendererSceneUpdater::handleReadPixels(OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo)
     {
         bool readPixelsFailed = false;
         DeviceResourceHandle renderTargetHandle{};
-        if (m_renderer.hasDisplayController(display))
+        if (m_renderer.hasDisplayController())
         {
-            const auto& displayResourceManager = *m_displayResourceManagers.find(display)->second;
-            const auto& displayController = m_renderer.getDisplayController(display);
+            const auto& displayResourceManager = *m_displayResourceManager;
+            const auto& displayController = m_renderer.getDisplayController();
 
             if (buffer.isValid())
                 renderTargetHandle = displayResourceManager.getOffscreenBufferDeviceHandle(buffer);
@@ -1281,7 +1243,7 @@ namespace ramses_internal
 
             if (renderTargetHandle.isValid())
             {
-                const auto& bufferViewport = m_renderer.getDisplaySetup(display).getDisplayBuffer(renderTargetHandle).viewport;
+                const auto& bufferViewport = m_renderer.getDisplaySetup().getDisplayBuffer(renderTargetHandle).viewport;
                 if (screenshotInfo.fullScreen)
                     screenshotInfo.rectangle = { 0u, 0u, bufferViewport.width, bufferViewport.height };
                 else if (screenshotInfo.rectangle.x + screenshotInfo.rectangle.width > bufferViewport.width
@@ -1297,42 +1259,37 @@ namespace ramses_internal
                 readPixelsFailed = true;
             }
         }
-        else
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::readPixels failed, unknown display " << display.asMemoryHandle());
-            readPixelsFailed = true;
-        }
 
         if (readPixelsFailed)
         {
             if (screenshotInfo.filename.empty())
                 // only generate event when not saving pixels to file!
-                m_rendererEventCollector.addReadPixelsEvent(ERendererEventType::ReadPixelsFromFramebufferFailed, display, buffer, {});
+                m_rendererEventCollector.addReadPixelsEvent(ERendererEventType::ReadPixelsFromFramebufferFailed, m_display, buffer, {});
         }
         else
-            m_renderer.scheduleScreenshot(display, renderTargetHandle, std::move(screenshotInfo));
+            m_renderer.scheduleScreenshot(renderTargetHandle, std::move(screenshotInfo));
     }
 
     Bool RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest(SceneId sceneId, OffscreenBufferHandle buffer, int32_t sceneRenderOrder)
     {
-        const DisplayHandle display = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
-        if (!display.isValid())
+        if (!m_renderer.hasDisplayController() || !m_rendererScenes.hasScene(sceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest cannot assign scene " << sceneId << " to an offscreen buffer; It must be mapped to a display first!");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest cannot assign scene " << sceneId << " to a display buffer, display invalid or scene is not mapped.");
             return false;
         }
 
-        const IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(display)->second;
+        assert(m_displayResourceManager);
+        const IRendererResourceManager& resourceManager = *m_displayResourceManager;
         // determine if assigning to display's framebuffer or an offscreen buffer
-        const DeviceResourceHandle bufferDeviceHandle = (buffer.isValid() ? resourceManager.getOffscreenBufferDeviceHandle(buffer) : m_renderer.getDisplayController(display).getDisplayBuffer());
+        const DeviceResourceHandle bufferDeviceHandle = (buffer.isValid() ? resourceManager.getOffscreenBufferDeviceHandle(buffer) : m_renderer.getDisplayController().getDisplayBuffer());
         if (!bufferDeviceHandle.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest could not find buffer " << buffer << " on display " << display << " where scene " << sceneId << " is currently mapped");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest cannot assign scene to render buffer, buffer " << buffer << " not found on this display.");
             return false;
         }
 
         m_renderer.resetRenderInterruptState();
-        m_renderer.assignSceneToDisplayBuffer(sceneId, display, bufferDeviceHandle, sceneRenderOrder);
+        m_renderer.assignSceneToDisplayBuffer(sceneId, bufferDeviceHandle, sceneRenderOrder);
 
         return true;
     }
@@ -1347,16 +1304,11 @@ namespace ramses_internal
             if (providerSlotHandle.isValid() && consumerSlotHandle.isValid())
             {
                 const EDataSlotType providerSlotType = DataLinkUtils::GetDataSlot(providerSceneId, providerSlotHandle, m_rendererScenes).type;
-                const EDataSlotType consumerSlotType = DataLinkUtils::GetDataSlot(consumerSceneId, consumerSlotHandle, m_rendererScenes).type;
-
-                if (providerSlotType == EDataSlotType_TextureProvider && consumerSlotType == EDataSlotType_TextureConsumer)
+                if (providerSlotType == EDataSlotType_TextureProvider)
                 {
-                    const DisplayHandle providerDisplay = m_renderer.getDisplaySceneIsAssignedTo(providerSceneId);
-                    const DisplayHandle consumerDisplay = m_renderer.getDisplaySceneIsAssignedTo(consumerSceneId);
-                    if (!providerDisplay.isValid() || !consumerDisplay.isValid()
-                        || providerDisplay != consumerDisplay)
+                    if (m_sceneStateExecutor.getSceneState(providerSceneId) < ESceneState::Mapped)
                     {
-                        LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: both provider and consumer scenes have to be mapped to same display when using texture linking!  (Provider scene: " << providerSceneId << ") (Consumer scene: " << consumerSceneId << ")");
+                        LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: provider scene providing a texture must be fully mapped before linking! (Provider scene: " << providerSceneId << ") (Consumer scene: " << consumerSceneId << ")");
                         m_rendererEventCollector.addDataLinkEvent(ERendererEventType::SceneDataLinkFailed, providerSceneId, consumerSceneId, providerId, consumerId);
                         return;
                     }
@@ -1371,15 +1323,15 @@ namespace ramses_internal
 
     void RendererSceneUpdater::handleBufferToSceneDataLinkRequest(OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId)
     {
-        const DisplayHandle display = m_renderer.getDisplaySceneIsAssignedTo(consumerSceneId);
-        if (!display.isValid())
+        if (!m_renderer.hasDisplayController() || !m_rendererScenes.hasScene(consumerSceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Link offscreen buffer failed: consumer scene (Scene: " << consumerSceneId << ") has to be mapped!");
+            LOG_ERROR(CONTEXT_RENDERER, "Link offscreen buffer to consumer scene " << consumerSceneId << " failed, invalid display or scene not mapped.");
             m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
 
-        const IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(display)->second;
+        assert(m_displayResourceManager);
+        const IRendererResourceManager& resourceManager = *m_displayResourceManager;
         if (!resourceManager.getOffscreenBufferDeviceHandle(buffer).isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Link offscreen buffer failed: offscreen buffer " << buffer << " has to exist on the same display where the consumer scene " << consumerSceneId << " is mapped!");
@@ -1394,15 +1346,15 @@ namespace ramses_internal
 
     void RendererSceneUpdater::handleBufferToSceneDataLinkRequest(StreamBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId)
     {
-        const DisplayHandle display = m_renderer.getDisplaySceneIsAssignedTo(consumerSceneId);
-        if (!display.isValid())
+        if (!m_renderer.hasDisplayController() || !m_rendererScenes.hasScene(consumerSceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Link stream buffer failed: consumer scene (Scene: " << consumerSceneId << ") has to be mapped!");
+            LOG_ERROR(CONTEXT_RENDERER, "Link stream buffer to consumer scene " << consumerSceneId << " failed, invalid display or scene not mapped.");
             m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
 
-        const IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(display)->second;
+        assert(m_displayResourceManager);
+        const IRendererResourceManager& resourceManager = *m_displayResourceManager;
         if (!resourceManager.getStreamBufferDeviceHandle(buffer).isValid())
         {
             LOG_ERROR(CONTEXT_RENDERER, "Link stream buffer failed: stream buffer " << buffer << " has to exist on the same display where the consumer scene " << consumerSceneId << " is mapped!");
@@ -1424,22 +1376,14 @@ namespace ramses_internal
 
     void RendererSceneUpdater::handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize)
     {
-        if (!m_rendererScenes.hasScene(sceneId))
+        const auto bufferHandle = m_renderer.getBufferSceneIsAssignedTo(sceneId);
+        if (!m_rendererScenes.hasScene(sceneId) || !bufferHandle.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handlePickEvent could not process pick event for scene " << sceneId << " which is not known to renderer.");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handlePickEvent could not process pick event for scene " << sceneId << " which is not assigned to any display buffer.");
             return;
         }
 
-        auto display = DisplayHandle::Invalid();
-        const auto bufferHandle = m_renderer.getBufferSceneIsAssignedTo(sceneId, &display);
-        if (!display.isValid())
-        {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handlePickEvent could not process pick event for scene " << sceneId << " because it is not mapped to any display.");
-            return;
-        }
-        assert(bufferHandle.isValid());
-
-        const auto& buffer = m_renderer.getDisplaySetup(display).getDisplayBuffer(bufferHandle);
+        const auto& buffer = m_renderer.getDisplaySetup().getDisplayBuffer(bufferHandle);
         const Vector2i coordsInBufferSpace = { static_cast<Int32>(std::lroundf((coordsNormalizedToBufferSize.x + 1.f) * buffer.viewport.width / 2.f)) ,
                                                 static_cast<Int32>(std::lroundf((coordsNormalizedToBufferSize.y + 1.f) * buffer.viewport.height / 2.f)) };
 
@@ -1472,6 +1416,11 @@ namespace ramses_internal
         RendererLogger::LogTopic(*this, topic, verbose, nodeFilter);
     }
 
+    void RendererSceneUpdater::setSkippingOfUnmodifiedScenes(bool enable)
+    {
+        m_skipUnmodifiedScenes = enable;
+    }
+
     void RendererSceneUpdater::setSceneReferenceLogicHandler(ISceneReferenceLogic& sceneRefLogic)
     {
         assert(m_sceneReferenceLogic == nullptr);
@@ -1480,13 +1429,10 @@ namespace ramses_internal
 
     bool RendererSceneUpdater::areResourcesFromPendingFlushesUploaded(SceneId sceneId) const
     {
-        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
-        const IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(displayHandle)->second;
-
         const auto& pendingData = m_rendererScenes.getStagingInfo(sceneId).pendingData;
         for (const auto& pendingFlush : pendingData.pendingFlushes)
             for (const auto& res : pendingFlush.resourcesAdded)
-                if (resourceManager.getResourceStatus(res) != EResourceStatus::Uploaded)
+                if (m_displayResourceManager->getResourceStatus(res) != EResourceStatus::Uploaded)
                     return false;
 
         return true;
@@ -1602,10 +1548,8 @@ namespace ramses_internal
     {
         auto findOffscreenBufferSceneIsMappedTo = [this](SceneId sceneId)
         {
-            DisplayHandle displayHandle;
-            const auto displayBuffer = m_renderer.getBufferSceneIsAssignedTo(sceneId, &displayHandle);
-            const IResourceDeviceHandleAccessor& resMgr = *m_displayResourceManagers[displayHandle];
-            return resMgr.getOffscreenBufferHandle(displayBuffer);
+            const auto displayBuffer = m_renderer.getBufferSceneIsAssignedTo(sceneId);
+            return m_displayResourceManager->getOffscreenBufferHandle(displayBuffer);
         };
 
         //initially mark all modified scenes as to be visited
@@ -1648,9 +1592,8 @@ namespace ramses_internal
 
     void RendererSceneUpdater::logMissingResources(const ResourceContentHashVector& neededResources, SceneId sceneId) const
     {
-        const DisplayHandle displayHandle = m_renderer.getDisplaySceneIsAssignedTo(sceneId);
-        assert(displayHandle.isValid());
-        const IRendererResourceManager& resourceManager = *m_displayResourceManagers.find(displayHandle)->second;
+        assert(m_displayResourceManager);
+        const IRendererResourceManager& resourceManager = *m_displayResourceManager;
 
         constexpr UInt MaxMissingResourcesToLog = 10u;
 
@@ -1685,45 +1628,40 @@ namespace ramses_internal
 
     void RendererSceneUpdater::processScreenshotResults()
     {
-        for (const auto& resourceManagerIt : m_displayResourceManagers)
+        if (!m_displayResourceManager)
+            return;
+
+        const IRendererResourceManager& resourceManager = *m_displayResourceManager;
+        auto screenshots = m_renderer.dispatchProcessedScreenshots();
+        for (auto& bufferScreenshot : screenshots)
         {
-            const DisplayHandle display = resourceManagerIt.first;
-            const IRendererResourceManager& resourceManager = *resourceManagerIt.second;
+            const DeviceResourceHandle renderTargetHandle = bufferScreenshot.first;
+            auto& screenshot = bufferScreenshot.second;
 
-            auto screenshots = m_renderer.dispatchProcessedScreenshots(display);
-
-            for (auto& bufferScreenshot : screenshots)
+            if (!screenshot.filename.empty())
             {
-                const DeviceResourceHandle renderTargetHandle = bufferScreenshot.first;
-                auto& screenshot = bufferScreenshot.second;
-
-                if (!screenshot.filename.empty())
+                // flip image vertically so that the layout read from frame buffer (bottom-up)
+                // is converted to layout normally used in image files (top-down)
+                const Image bitmap(screenshot.rectangle.width, screenshot.rectangle.height, screenshot.pixelData.cbegin(), screenshot.pixelData.cend(), true);
+                bitmap.saveToFilePNG(screenshot.filename);
+                LOG_INFO(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot successfully saved to file: " << screenshot.filename);
+                if (screenshot.sendViaDLT)
                 {
-                    // flip image vertically so that the layout read from frame buffer (bottom-up)
-                    // is converted to layout normally used in image files (top-down)
-                    const Image bitmap(screenshot.rectangle.width, screenshot.rectangle.height, screenshot.pixelData.cbegin(), screenshot.pixelData.cend(), true);
-                    bitmap.saveToFilePNG(screenshot.filename);
-                    LOG_INFO(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot successfully saved to file: " << screenshot.filename);
-                    if (screenshot.sendViaDLT)
+                    if (GetRamsesLogger().transmitFile(screenshot.filename, false))
                     {
-                        if (GetRamsesLogger().transmitFile(screenshot.filename, false))
-                        {
-                            LOG_INFO(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot file successfully send via dlt: " << screenshot.filename);
-                        }
-                        else
-                        {
-                            LOG_WARN(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot file could not send via dlt: " << screenshot.filename);
-                        }
+                        LOG_INFO(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot file successfully send via dlt: " << screenshot.filename);
+                    }
+                    else
+                    {
+                        LOG_WARN(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot file could not send via dlt: " << screenshot.filename);
                     }
                 }
-                else
-                {
-                    const OffscreenBufferHandle obHandle = resourceManager.getOffscreenBufferHandle(renderTargetHandle);
-                    m_rendererEventCollector.addReadPixelsEvent(ERendererEventType::ReadPixelsFromFramebuffer, display, obHandle, std::move(screenshot.pixelData));
-                }
             }
-
+            else
+            {
+                const OffscreenBufferHandle obHandle = resourceManager.getOffscreenBufferHandle(renderTargetHandle);
+                m_rendererEventCollector.addReadPixelsEvent(ERendererEventType::ReadPixelsFromFramebuffer, m_display, obHandle, std::move(screenshot.pixelData));
+            }
         }
     }
-
 }

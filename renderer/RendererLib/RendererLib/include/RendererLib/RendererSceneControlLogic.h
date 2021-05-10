@@ -22,9 +22,8 @@ namespace ramses_internal
     {
     public:
         virtual void setSceneState(SceneId sceneId, RendererSceneState state) = 0;
-        virtual void setSceneMapping(SceneId sceneId, DisplayHandle displayId) = 0;
         virtual void setSceneDisplayBufferAssignment(SceneId sceneId, OffscreenBufferHandle displayBuffer, int32_t sceneRenderOrder) = 0;
-        virtual void getSceneInfo(SceneId sceneId, RendererSceneState& targetState, DisplayHandle& displayToMap, OffscreenBufferHandle& bufferToAssign, int32_t& renderOrder) const = 0;
+        virtual void getSceneInfo(SceneId sceneId, RendererSceneState& targetState, OffscreenBufferHandle& bufferToAssign, int32_t& renderOrder) const = 0;
 
         virtual ~IRendererSceneControlLogic() = default;
     };
@@ -35,9 +34,8 @@ namespace ramses_internal
         explicit RendererSceneControlLogic(IRendererSceneStateControl& sceneStateControl);
 
         virtual void setSceneState(SceneId sceneId, RendererSceneState state) override;
-        virtual void setSceneMapping(SceneId sceneId, DisplayHandle displayId) override;
         virtual void setSceneDisplayBufferAssignment(SceneId sceneId, OffscreenBufferHandle displayBuffer, int32_t sceneRenderOrder) override;
-        virtual void getSceneInfo(SceneId sceneId, RendererSceneState& targetState, DisplayHandle& displayToMap, OffscreenBufferHandle& bufferToAssign, int32_t& renderOrder) const override;
+        virtual void getSceneInfo(SceneId sceneId, RendererSceneState& targetState, OffscreenBufferHandle& bufferToAssign, int32_t& renderOrder) const override;
 
         enum class EventResult { OK, Failed, Indirect };
 
@@ -61,9 +59,8 @@ namespace ramses_internal
         void consumeEvents(Events& eventsOut);
 
     private:
-        struct MappingInfo
+        struct BufferAssignmentInfo
         {
-            DisplayHandle display;
             OffscreenBufferHandle displayBuffer;
             int32_t renderOrder = 0;
         };
@@ -94,7 +91,7 @@ namespace ramses_internal
             ESceneStateInternal currentState = ESceneStateInternal::Unpublished;
             ESceneStateInternal targetState = ESceneStateInternal::Unpublished;
             ESceneStateCommand lastCommandWaitigForReply = ESceneStateCommand::None;
-            MappingInfo mappingInfo;
+            BufferAssignmentInfo assignmentInfo;
         };
 
         ESceneStateInternal getCurrentSceneState(SceneId sceneId) const;

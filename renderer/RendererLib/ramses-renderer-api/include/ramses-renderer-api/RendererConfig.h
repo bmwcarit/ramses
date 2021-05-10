@@ -151,6 +151,11 @@ namespace ramses
         * The format should be the same as expected by chmod() mode argument. Permissions value may not
         * be 0. If not set "user+group can read/write (0660)" is used as default.
         *
+        * The socket should be readable and writable for the required users, some examples values are:
+        * * Only user r/w:  384u (or in octal 0600)
+        * * User+Group r/w: 432u (or in octal 0660)
+        * * Everyone r/w:   438u (or in octal 0666)
+        *
         * This value is only used when socket is given as name, e.g. via
         * setWaylandEmbeddedCompositingSocketName(), not when passed in as filedescriptor.
         *

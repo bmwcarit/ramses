@@ -15,23 +15,51 @@ namespace ramses_internal
     Platform_BaseMock::Platform_BaseMock(const RendererConfig& config)
         : Platform_Base(config)
     {
-        ON_CALL(*this, createSystemCompositorController()).WillByDefault(Invoke(this, &Platform_BaseMock::createSystemCompositorController_fake));
-        ON_CALL(*this, createWindow(_, _)).WillByDefault(Invoke(this, &Platform_BaseMock::createWindow_fake));
-        ON_CALL(*this, createContext(_, _, _)).WillByDefault(Invoke(this, &Platform_BaseMock::createContext_fake));
-        ON_CALL(*this, createDevice(_)).WillByDefault(Invoke(this, &Platform_BaseMock::createDevice_fake));
-        ON_CALL(*this, createEmbeddedCompositor(_, _)).WillByDefault(Invoke(this, &Platform_BaseMock::createEmbeddedCompositor_fake));
-        ON_CALL(*this, createTextureUploadingAdapter(_, _, _)).WillByDefault(Invoke(this, &Platform_BaseMock::createTextureUploadingAdapter_fake));
+        ON_CALL(*this, createWindow(_, _)).WillByDefault(Invoke([this](auto&, auto&) {
+            assert(!m_window);
+            m_window = std::move(windowOwningPtr);
+            return true;
+        }));
+
+        ON_CALL(*this, createContext(_)).WillByDefault(Invoke([this](auto&) {
+            assert(!m_context);
+            m_context = std::move(contextOwningPtr);
+            return true;
+        }));
+        ON_CALL(*this, createContextUploading()).WillByDefault(Invoke([this]() {
+            assert(!m_contextUploading);
+            m_contextUploading = std::move(contextUploadingOwningPtr);
+            return true;
+        }));
+
+        ON_CALL(*this, createDevice()).WillByDefault(Invoke([this]() {
+            assert(!m_device);
+            m_device = std::move(deviceOwningPtr);
+            return true;
+        }));
+        ON_CALL(*this, createDeviceUploading()).WillByDefault(Invoke([this]() {
+            assert(!m_deviceUploading);
+            m_deviceUploading = std::move(deviceUploadingOwningPtr);
+            return true;
+        }));
+
+        ON_CALL(*this, createEmbeddedCompositor(_)).WillByDefault(Invoke([this](auto&) {
+            assert(!m_embeddedCompositor);
+            m_embeddedCompositor = std::move(embeddedCompositorOwningPtr);
+            return true;
+        }));
+
+        ON_CALL(*this, createSystemCompositorController()).WillByDefault(Invoke([this]() {
+            assert(!m_systemCompositorController);
+            m_systemCompositorController = std::move(systemCompositorControllerOwningPtr);
+            return m_systemCompositorController.get();
+        }));
+
+        ON_CALL(*this, createTextureUploadingAdapter()).WillByDefault(Invoke([this]() {
+            assert(!m_textureUploadingAdapter);
+            m_textureUploadingAdapter = std::move(textureUploadingAdapterOwningPtr);
+        }));
     }
 
-    Platform_BaseMock::~Platform_BaseMock()
-    {
-    }
-
-    void Platform_BaseMock::createRenderBackendMockObjects()
-    {
-        window                      = createMockObjectHelper<WindowMockWithDestructor>();
-        context                     = createMockObjectHelper<ContextMockWithDestructor>();
-        device                      = createMockObjectHelper<DeviceMockWithDestructor>();
-        embeddedCompositor          = createMockObjectHelper<EmbeddedCompositorMockWithDestructor>();
-    }
+    Platform_BaseMock::~Platform_BaseMock() = default;
 }

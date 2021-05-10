@@ -24,8 +24,7 @@ namespace ramses_internal
         Window_Windows(const DisplayConfig& displayConfig, IWindowEventHandler& eventHandler, UInt32 id);
         ~Window_Windows() override;
 
-        // Can be overridden for special windows (used by RAMSES Studio with window provided by Qt)
-        virtual Bool init();
+        virtual bool init() override;
 
         Bool setFullscreen(Bool fullscreen) override;
         void handleEvents() override;

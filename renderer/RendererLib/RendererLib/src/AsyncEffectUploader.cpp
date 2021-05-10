@@ -11,7 +11,7 @@
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/IResourceUploadRenderBackend.h"
 #include "RendererAPI/IDevice.h"
-#include "RendererAPI/ISurface.h"
+#include "RendererAPI/IContext.h"
 #include "RendererAPI/IPlatform.h"
 #include "Resource/EffectResource.h"
 #include "Watchdog/IThreadAliveNotifier.h"
@@ -41,7 +41,7 @@ namespace ramses_internal
         assert(!m_thread.isRunning());
 
         //disable main context to be able to create shared context in new thread
-        m_renderBackend.getSurface().disable();
+        m_renderBackend.getContext().disable();
         m_thread.start(*this);
 
         const auto success = m_creationSuccess.get_future().get();
@@ -49,7 +49,7 @@ namespace ramses_internal
             m_thread.join();
 
         // re-enable main context
-        m_renderBackend.getSurface().enable();
+        m_renderBackend.getContext().enable();
 
         return success;
     }
@@ -164,7 +164,7 @@ namespace ramses_internal
         ThreadLocalLog::SetPrefix(m_logPrefixID);
 
         LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader creating render backend for resource uploading");
-        auto resourceUploadRenderBackend = m_platform.createResourceUploadRenderBackend(m_renderBackend);
+        auto resourceUploadRenderBackend = m_platform.createResourceUploadRenderBackend();
         if (!resourceUploadRenderBackend)
         {
             LOG_ERROR(CONTEXT_RENDERER, "AsyncEffectUploader failed creating resource upload render backend");
@@ -187,7 +187,7 @@ namespace ramses_internal
             uploadEffectsOrWait(*resourceUploadRenderBackend);
 
         LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader will destroy resource upload render backend");
-        m_platform.destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
+        m_platform.destroyResourceUploadRenderBackend();
         LOG_TRACE(CONTEXT_RENDERER, "AsyncEffectUploader::run: exiting thread");
     }
 }

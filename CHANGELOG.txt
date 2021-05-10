@@ -1,3 +1,24 @@
+27.0.103
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Added tracing and logging for potentially hanging renderer threads
+        - API check to forbid creating a scene reference of self
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Make renderer destroy and recreate work when local scenes stay published
+        - Camera::setViewport reports error when passing size numbers which exceed maximum (32768)
+        - Renderer does not crash in Debug mode when viewport size exceeds allowed maximum
+
+        Known issues
+        ------------------------------------------------------------------------
+        - There will be no IRendererSceneControlEventHandler::sceneStateChanged callback
+          with state Available for any published scenes until a display is created and running.
+        - If a display is destroyed and created again and it was the only display on renderer
+          there will be IRendererSceneControlEventHandler::sceneStateChanged callbacks for
+          all previously published scenes again.
+
 27.0.102
 -------------------
         General changes
@@ -37,6 +58,12 @@
         Bugfixes
         ------------------------------------------------------------------------
         - Fix Node::setRotation with convention forgetting convention when identity values were set for angles
+
+27.0.11
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fix dcsm content state handling when disconnecting/reconnecting or locally removing/readding dcsm consumers
 
 27.0.10
 -------------------

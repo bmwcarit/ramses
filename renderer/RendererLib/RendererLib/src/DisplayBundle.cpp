@@ -15,12 +15,18 @@
 
 namespace ramses_internal
 {
-    DisplayBundle::DisplayBundle(IRendererSceneEventSender& rendererSceneSender, IPlatform& platform, IThreadAliveNotifier& notifier, std::chrono::milliseconds timingReportingPeriod, const String& kpiFilename)
+    DisplayBundle::DisplayBundle(
+        DisplayHandle display,
+        IRendererSceneEventSender& rendererSceneSender,
+        IPlatform& platform,
+        IThreadAliveNotifier& notifier,
+        std::chrono::milliseconds timingReportingPeriod,
+        const String& kpiFilename)
         : m_rendererScenes(m_rendererEventCollector)
         , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector)
-        , m_renderer(platform, m_rendererScenes, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, m_rendererStatistics)
+        , m_renderer(display, platform, m_rendererScenes, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, m_rendererStatistics)
         , m_sceneStateExecutor(m_renderer, rendererSceneSender, m_rendererEventCollector)
-        , m_rendererSceneUpdater(platform, m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, notifier)
+        , m_rendererSceneUpdater(display, platform, m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, notifier)
         , m_sceneControlLogic(m_rendererSceneUpdater)
         , m_rendererCommandExecutor(m_renderer, m_pendingCommands, m_rendererSceneUpdater, m_sceneControlLogic, m_rendererEventCollector, m_frameTimer)
         , m_sceneReferenceLogic(m_rendererScenes, m_sceneControlLogic, m_rendererSceneUpdater, rendererSceneSender, m_sceneReferenceOwnership)
@@ -84,28 +90,26 @@ namespace ramses_internal
         m_renderer.getStatistics().frameFinished(drawCalls);
         m_renderer.getProfilerStatistics().markFrameFinished(sleepTime);
 
-        UInt32 drawCallCount(0u);
-        UInt32 usedGPUMemory(0u);
         if (m_renderer.hasDisplayController())
         {
             auto& device = m_renderer.getDisplayController().getRenderBackend().getDevice();
-            drawCallCount += device.getAndResetDrawCallCount();
-            usedGPUMemory += device.getTotalGpuMemoryUsageInKB();
-        }
+            const auto drawCallCount = device.getAndResetDrawCallCount();
+            const auto usedGPUMemory = device.getTotalGpuMemoryUsageInKB();
 
-        m_renderer.getProfilerStatistics().setCounterValue(FrameProfilerStatistics::ECounter::DrawCalls, drawCallCount);
-        m_renderer.getProfilerStatistics().setCounterValue(FrameProfilerStatistics::ECounter::UsedGPUMemory, usedGPUMemory / 1024);
+            m_renderer.getProfilerStatistics().setCounterValue(FrameProfilerStatistics::ECounter::DrawCalls, drawCallCount);
+            m_renderer.getProfilerStatistics().setCounterValue(FrameProfilerStatistics::ECounter::UsedGPUMemory, usedGPUMemory / 1024);
 
-        if (m_kpiMonitor)
-        {
-            const auto timeNowMs = PlatformTime::GetMillisecondsMonotonic();
-            if (timeNowMs > m_lastUpdateTimeStampMilliSec + MonitorUpdateIntervalInMilliSec)
+            if (m_kpiMonitor)
             {
-                const auto& stats = m_renderer.getStatistics();
-                const GpuMemorySample memorySample(m_rendererSceneUpdater);
-                m_renderer.getMemoryStatistics().addMemorySample(memorySample);
-                m_kpiMonitor->recordFrameInfo({ PlatformTime::GetMillisecondsAbsolute(), stats.getFps(), stats.getDrawCallsPerFrame(), usedGPUMemory });
-                m_lastUpdateTimeStampMilliSec = timeNowMs;
+                const auto timeNowMs = PlatformTime::GetMillisecondsMonotonic();
+                if (timeNowMs > m_lastUpdateTimeStampMilliSec + MonitorUpdateIntervalInMilliSec)
+                {
+                    const auto& stats = m_renderer.getStatistics();
+                    const GpuMemorySample memorySample(m_rendererSceneUpdater);
+                    m_renderer.getMemoryStatistics().addMemorySample(memorySample);
+                    m_kpiMonitor->recordFrameInfo({ PlatformTime::GetMillisecondsAbsolute(), stats.getFps(), stats.getDrawCallsPerFrame(), usedGPUMemory });
+                    m_lastUpdateTimeStampMilliSec = timeNowMs;
+                }
             }
         }
     }
@@ -150,14 +154,14 @@ namespace ramses_internal
             m_renderer.getDisplayController().enableContext();
     }
 
-    IEmbeddedCompositingManager& DisplayBundle::getECManager(DisplayHandle display)
+    IEmbeddedCompositingManager& DisplayBundle::getECManager()
     {
-        return m_renderer.getDisplayController(display).getEmbeddedCompositingManager();
+        return m_renderer.getDisplayController().getEmbeddedCompositingManager();
     }
 
-    IEmbeddedCompositor& DisplayBundle::getEC(DisplayHandle display)
+    IEmbeddedCompositor& DisplayBundle::getEC()
     {
-        return m_renderer.getDisplayController(display).getRenderBackend().getEmbeddedCompositor();
+        return m_renderer.getDisplayController().getRenderBackend().getEmbeddedCompositor();
     }
 
     bool DisplayBundle::hasSystemCompositorController() const

@@ -18,7 +18,6 @@
 #include "Collections/String.h"
 #include "RendererAndSceneTestEventHandler.h"
 #include "RendererAPI/IRenderBackend.h"
-#include "RendererAPI/ISurface.h"
 #include "ReadPixelCallbackHandler.h"
 
 using namespace ramses_internal;

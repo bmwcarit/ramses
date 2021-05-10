@@ -9,6 +9,7 @@
 #include "AbstractSenderAndReceiverTest.h"
 #include "ServiceHandlerMocks.h"
 #include "PlatformAbstraction/PlatformThread.h"
+#include <numeric>
 
 namespace ramses_internal
 {
@@ -176,4 +177,23 @@ namespace ramses_internal
         EXPECT_TRUE(sender.sendDcsmContentStateChange(receiverId, contentID, status, si, ai));
         ASSERT_TRUE(waitForEvent());
     }
+
+    TEST_P(ADcsmSenderAndReceiverTest, sendContentStatus)
+    {
+        ContentID contentID(987);
+        uint64_t messageID(23);
+        std::vector<Byte> message(8);
+        std::iota(message.begin(), message.end(), static_cast<Byte>(0u));
+        {
+            PlatformGuard g(receiverExpectCallLock);
+            EXPECT_CALL(providerHandler, handleContentStatus(contentID, messageID, _, senderId)).WillOnce([&](auto, auto, absl::Span<const Byte> msg, auto)
+                {
+                    EXPECT_THAT(message, ElementsAreArray(msg));
+                    sendEvent();
+                });
+        }
+        EXPECT_TRUE(sender.sendDcsmContentStatus(receiverId, contentID, messageID, message));
+        ASSERT_TRUE(waitForEvent());
+    }
+
 }

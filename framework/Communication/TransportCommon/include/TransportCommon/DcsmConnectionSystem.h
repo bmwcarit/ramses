@@ -34,9 +34,11 @@ namespace ramses_internal
         bool sendBroadcastRequestStopOfferContent(ContentID content, bool forceStopOffer);
 
         bool sendCanvasSizeChange(const Guid& to, ContentID content, const CategoryInfo& categoryInfo, uint16_t dpi, const AnimationInformation& animation);
+        bool sendContentStateChange(const Guid& to, ContentID content, EDcsmState state, const CategoryInfo& categoryInfo, const AnimationInformation& animation);
+        bool sendContentStatus(const Guid& to, ContentID contentID, uint64_t messageID, std::vector<ramses_internal::Byte> const& message);
+
         bool sendContentDescription(const Guid& to, ContentID content, TechnicalContentDescriptor technicalContentDescriptor);
         bool sendContentReady(const Guid& to, ContentID content);
-        bool sendContentStateChange(const Guid& to, ContentID content, EDcsmState state, const CategoryInfo& categoryInfo, const AnimationInformation& animation);
         bool sendContentEnableFocusRequest(const Guid& to, ContentID content, int32_t focusRequest);
         bool sendContentDisableFocusRequest(const Guid& to, ContentID content, int32_t focusRequest);
 
@@ -64,6 +66,7 @@ namespace ramses_internal
         virtual void handleContentEnableFocusRequest(const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest) override;
         virtual void handleContentDisableFocusRequest(const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest) override;
         virtual void handleResponse(const SomeIPMsgHeader& header, uint64_t originalMessageId, uint64_t originalSessionId, uint64_t responseCode) override;
+        virtual void handleContentStatus(const SomeIPMsgHeader& header, ContentID content, uint64_t messageID, absl::Span<const Byte> message) override;
 
         std::shared_ptr<ISomeIPDcsmStack> m_stack;
         IDcsmProviderServiceHandler* m_dcsmProviderHandler = nullptr;

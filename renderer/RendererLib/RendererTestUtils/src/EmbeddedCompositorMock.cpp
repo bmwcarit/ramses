@@ -22,11 +22,4 @@ namespace ramses_internal
     }
 
     EmbeddedCompositorMock::~EmbeddedCompositorMock() = default;
-
-    EmbeddedCompositorMockWithDestructor::EmbeddedCompositorMockWithDestructor() = default;
-
-    EmbeddedCompositorMockWithDestructor::~EmbeddedCompositorMockWithDestructor()
-    {
-        Die();
-    }
 }

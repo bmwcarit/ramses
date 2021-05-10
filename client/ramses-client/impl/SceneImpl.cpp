@@ -1401,6 +1401,10 @@ namespace ramses
 
     status_t SceneImpl::flush(sceneVersionTag_t sceneVersion)
     {
+        const auto timestampOfFlushCall = ramses_internal::FlushTime::Clock::now();
+
+        LOG_DEBUG_P(CONTEXT_CLIENT, "Scene::flush: sceneVersion {}, prevSceneVersion {}, syncFlushTime {}", sceneVersion, m_nextSceneVersion, ramses_internal::asMilliseconds(timestampOfFlushCall));
+
         if (m_nextSceneVersion != InvalidSceneVersionTag && sceneVersion == InvalidSceneVersionTag)
         {
             sceneVersion = m_nextSceneVersion;
@@ -1412,7 +1416,6 @@ namespace ramses
         m_commandBuffer.execute(ramses_internal::SceneCommandVisitor(*this));
         applyHierarchicalVisibility();
 
-        const auto timestampOfFlushCall = ramses_internal::FlushTime::Clock::now();
         const ramses_internal::FlushTimeInformation flushTimeInfo { m_expirationTimestamp, timestampOfFlushCall, ramses_internal::FlushTime::Clock::getClockType() };
 
         if (!getClientImpl().getClientApplication().flush(m_scene.getSceneId(), flushTimeInfo, sceneVersionInternal))
@@ -1730,6 +1733,12 @@ namespace ramses
             return nullptr;
         }
 
+        if (referencedScene == getSceneId())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_CLIENT, "Scene::createSceneReference: cannot self reference.");
+            return nullptr;
+        }
+
         const auto scenes = getClientImpl().getListOfScenes();
         for (const auto scene : scenes)
         {
@@ -1740,6 +1749,8 @@ namespace ramses
                 return nullptr;
             }
         }
+
+        LOG_INFO_P(ramses_internal::CONTEXT_CLIENT, "Scene::createSceneReference: creating scene reference (master {} / ref {})", getSceneId(), referencedScene);
 
         SceneReferenceImpl& pimpl = *new SceneReferenceImpl(*this, name);
         pimpl.initializeFrameworkData(referencedScene);

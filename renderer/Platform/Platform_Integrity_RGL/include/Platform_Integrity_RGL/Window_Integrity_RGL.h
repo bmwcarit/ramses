@@ -27,7 +27,7 @@ namespace ramses_internal
         Window_Integrity_RGL(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler);
         ~Window_Integrity_RGL();
 
-        Bool init();
+        virtual bool init() override;
 
         const EGLNativeDisplayType    getNativeDisplayHandle() const;
         const EGLNativeWindowType     getNativeWindowHandle() const;

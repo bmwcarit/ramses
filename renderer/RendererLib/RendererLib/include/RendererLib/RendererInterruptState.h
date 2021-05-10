@@ -18,9 +18,8 @@ namespace ramses_internal
     class RendererInterruptState
     {
     public:
-        explicit RendererInterruptState(DisplayHandle display = DisplayHandle::Invalid(), DeviceResourceHandle displayBuffer = DeviceResourceHandle::Invalid(), SceneId sceneId = SceneId::Invalid(), const SceneRenderExecutionIterator& executorState = {})
-            : m_display(display)
-            , m_displayBuffer(displayBuffer)
+        explicit RendererInterruptState(DeviceResourceHandle displayBuffer = DeviceResourceHandle::Invalid(), SceneId sceneId = SceneId::Invalid(), const SceneRenderExecutionIterator& executorState = {})
+            : m_displayBuffer(displayBuffer)
             , m_sceneId(sceneId)
             , m_executorState(executorState)
         {
@@ -31,19 +30,14 @@ namespace ramses_internal
             return IsInterrupted(m_executorState);
         }
 
-        Bool isInterrupted(DisplayHandle display) const
+        Bool isInterrupted(DeviceResourceHandle displayBuffer) const
         {
-            return display == m_display;
+            return displayBuffer == m_displayBuffer;
         }
 
-        Bool isInterrupted(DisplayHandle display, DeviceResourceHandle displayBuffer) const
+        Bool isInterrupted(DeviceResourceHandle displayBuffer, SceneId sceneId) const
         {
-            return display == m_display && displayBuffer == m_displayBuffer;
-        }
-
-        Bool isInterrupted(DisplayHandle display, DeviceResourceHandle displayBuffer, SceneId sceneId) const
-        {
-            return display == m_display && displayBuffer == m_displayBuffer && sceneId == m_sceneId;
+            return displayBuffer == m_displayBuffer && sceneId == m_sceneId;
         }
 
         const SceneRenderExecutionIterator& getExecutorState() const
@@ -62,7 +56,6 @@ namespace ramses_internal
         }
 
     private:
-        DisplayHandle        m_display;
         DeviceResourceHandle m_displayBuffer;
         SceneId              m_sceneId;
         SceneRenderExecutionIterator m_executorState;

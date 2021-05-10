@@ -24,24 +24,12 @@ namespace ramses_internal
         goToTargetState(sceneId);
     }
 
-    void RendererSceneControlLogic::setSceneMapping(SceneId sceneId, DisplayHandle displayId)
-    {
-        MappingInfo mappingInfo;
-        mappingInfo.display = displayId;
-        // if newly mapping (to a different display potentially) reset buffer assignment
-        mappingInfo.displayBuffer = OffscreenBufferHandle::Invalid();
-        mappingInfo.renderOrder = 0;
-
-        m_scenesInfo[sceneId].mappingInfo = mappingInfo;
-    }
-
     void RendererSceneControlLogic::setSceneDisplayBufferAssignment(SceneId sceneId, OffscreenBufferHandle displayBuffer, int32_t sceneRenderOrder)
     {
-        auto& mapInfo = m_scenesInfo[sceneId].mappingInfo;
-        assert(mapInfo.display.isValid());
-        // update mapping info for scene
-        mapInfo.displayBuffer = displayBuffer;
-        mapInfo.renderOrder = sceneRenderOrder;
+        auto& assignmentInfo = m_scenesInfo[sceneId].assignmentInfo;
+        // update assignment info for scene
+        assignmentInfo.displayBuffer = displayBuffer;
+        assignmentInfo.renderOrder = sceneRenderOrder;
 
         // if scene already mapped/assigned and not requested to unmap, execute new assignment right away
         const auto currState = getCurrentSceneState(sceneId);
@@ -50,20 +38,18 @@ namespace ramses_internal
             m_sceneStateControl.handleSceneDisplayBufferAssignmentRequest(sceneId, displayBuffer, sceneRenderOrder);
     }
 
-    void RendererSceneControlLogic::getSceneInfo(SceneId sceneId, RendererSceneState& targetState, DisplayHandle& displayToMap, OffscreenBufferHandle& bufferToAssign, int32_t& renderOrder) const
+    void RendererSceneControlLogic::getSceneInfo(SceneId sceneId, RendererSceneState& targetState, OffscreenBufferHandle& bufferToAssign, int32_t& renderOrder) const
     {
         targetState = RendererSceneState::Unavailable;
-        displayToMap = {};
         bufferToAssign = {};
         renderOrder = 0;
         const auto it = m_scenesInfo.find(sceneId);
         if (it != m_scenesInfo.cend())
         {
             targetState = GetSceneStateFromInternal(it->second.targetState);
-            const auto& mappingInfo = it->second.mappingInfo;
-            displayToMap = mappingInfo.display;
-            bufferToAssign = mappingInfo.displayBuffer;
-            renderOrder = mappingInfo.renderOrder;
+            const auto& assignmentInfo = it->second.assignmentInfo;
+            bufferToAssign = assignmentInfo.displayBuffer;
+            renderOrder = assignmentInfo.renderOrder;
         }
     }
 
@@ -130,8 +116,8 @@ namespace ramses_internal
             case ESceneStateInternal::Rendered:
             {
                 assert(m_scenesInfo.count(sceneId) > 0);
-                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic initiating map of scene " << sceneId << " to display " << sceneInfo.mappingInfo.display);
-                m_sceneStateControl.handleSceneMappingRequest(sceneId, sceneInfo.mappingInfo.display);
+                LOG_INFO(ramses_internal::CONTEXT_RENDERER, "RendererSceneControlLogic initiating mapping of scene " << sceneId);
+                m_sceneStateControl.handleSceneMappingRequest(sceneId);
                 sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Map;
                 break;
             }
@@ -209,9 +195,9 @@ namespace ramses_internal
         assert(m_scenesInfo.count(sceneId) > 0);
         assert(getCurrentSceneState(sceneId) == ESceneStateInternal::Mapped);
         SceneInfo& sceneInfo = m_scenesInfo[sceneId];
-        MappingInfo& mapInfo = sceneInfo.mappingInfo;
+        BufferAssignmentInfo& assignmentInfo = sceneInfo.assignmentInfo;
 
-        if (m_sceneStateControl.handleSceneDisplayBufferAssignmentRequest(sceneId, mapInfo.displayBuffer, mapInfo.renderOrder))
+        if (m_sceneStateControl.handleSceneDisplayBufferAssignmentRequest(sceneId, assignmentInfo.displayBuffer, assignmentInfo.renderOrder))
         {
             setCurrentSceneState(sceneId, ESceneStateInternal::MappedAndAssigned);
             goToTargetState(sceneId);

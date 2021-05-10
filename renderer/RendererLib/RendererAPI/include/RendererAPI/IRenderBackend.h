@@ -11,7 +11,8 @@
 
 namespace ramses_internal
 {
-    class ISurface;
+    class IWindow;
+    class IContext;
     class IDevice;
     class IEmbeddedCompositor;
     class ITextureUploadingAdapter;
@@ -19,10 +20,11 @@ namespace ramses_internal
     class IRenderBackend
     {
     public:
-        virtual ~IRenderBackend() {};
+        virtual ~IRenderBackend() = default;
 
         // Get components
-        virtual ISurface&                       getSurface() const = 0;
+        virtual IWindow&                        getWindow() const = 0;
+        virtual IContext&                       getContext() const = 0;
         virtual IDevice&                        getDevice() const = 0;
         virtual IEmbeddedCompositor&            getEmbeddedCompositor() const = 0;
         virtual ITextureUploadingAdapter&       getTextureUploadingAdapter()  const = 0;

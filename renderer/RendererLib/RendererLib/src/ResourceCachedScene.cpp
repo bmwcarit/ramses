@@ -15,9 +15,6 @@ namespace ramses_internal
 {
     ResourceCachedScene::ResourceCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo)
         : DataReferenceLinkCachedScene(sceneLinksManager, sceneInfo)
-        , m_renderableResourcesDirtinessNeedsUpdate(false)
-        , m_renderTargetsDirty(false)
-        , m_blitPassesDirty(false)
     {
     }
 

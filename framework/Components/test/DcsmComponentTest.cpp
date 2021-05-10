@@ -850,7 +850,7 @@ namespace ramses_internal
         EXPECT_EQ(localId, comp.getContentProviderID(ContentID(2)));
         EXPECT_EQ(localId, comp.getContentConsumerID(ContentID(2)));
 
-        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)). WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(metadata, mdp.impl.getMetadata()); }));
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)).WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(metadata, mdp.impl.getMetadata()); }));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
         EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Assigned, _, ramses::AnimationInformation{ 1, 2 })).WillOnce([&](const auto&, const auto&, const auto& infoupdate, const auto&) {
             ramses::CategoryInfoUpdate categoryInfo{};
@@ -3222,5 +3222,150 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalProviderAvailability(false));
     }
 
-    // TODO: test everything force stop offer on disconnect(?)
+    class ADcsmComponentWithDifferentTargetStates : public ADcsmComponent, public ::testing::WithParamInterface<DcsmComponent::ContentState> {};
+
+    TEST_P(ADcsmComponentWithDifferentTargetStates, resendsMetaDataAfterReconnect)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_LPRC(2, GetParam());
+
+        EXPECT_CALL(comm, sendDcsmUpdateContentMetadata(remoteId, ContentID(2), metadata));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
+
+        EXPECT_CALL(comm, sendDcsmContentEnableFocusRequest(remoteId, ContentID(2), 32));
+        EXPECT_TRUE(comp.sendContentEnableFocusRequest(ContentID(2), 32));
+
+        //content is assigned, now disconnect and connect
+        EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(2)));
+        EXPECT_TRUE(comp.disconnect());
+
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Offered, _, ramses::AnimationInformation{ 0, 0 }));
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+
+        EXPECT_TRUE(comp.connect());
+
+        // the old participant reconnects and assigns itself the content again
+        EXPECT_CALL(comm, sendDcsmOfferContent(remoteId, ContentID(2), Category(3), ETechnicalContentType::RamsesSceneID, "mycontent"));
+        comp.newParticipantHasConnected(remoteId);
+
+        EXPECT_CALL(comm, sendDcsmUpdateContentMetadata(remoteId, ContentID(2), metadata));
+        EXPECT_CALL(comm, sendDcsmContentDescription(remoteId, ContentID(2), TechnicalContentDescriptor(5)));
+        EXPECT_CALL(comm, sendDcsmContentEnableFocusRequest(remoteId, ContentID(2), 32));
+        comp.handleContentStateChange(ContentID(2), EDcsmState::Assigned, CategoryInfo{ 2, 3 }, AnimationInformation{ 1, 2 }, remoteId);
+
+        EXPECT_EQ(CS::Assigned, comp.getContentState(ContentID(2)));
+
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Assigned, _, ramses::AnimationInformation{ 1, 2 })).WillOnce([&](const auto&, const auto&, const auto& infoupdate, const auto&) {
+            ramses::CategoryInfoUpdate categoryInfo{};
+            categoryInfo.setCategoryRect({ 0u, 0u, 2u, 3u });
+            EXPECT_EQ(categoryInfo, infoupdate);
+            });
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+    }
+
+    TEST_P(ADcsmComponentWithDifferentTargetStates, resendsMetaDataAfterLocalConsumerBecomesAvailableAgain)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_LPLC(2, GetParam());
+
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)).WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(metadata, mdp.impl.getMetadata()); }));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
+
+        EXPECT_CALL(consumer, contentEnableFocusRequest(ramses::ContentID(2), 32));
+        EXPECT_TRUE(comp.sendContentEnableFocusRequest(ContentID(2), 32));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+
+        //content is in target state, now remove and readd consumer
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
+
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Offered, _, ramses::AnimationInformation{ 0, 0 }));
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+
+        // the old participant reconnects and assigns itself the content again
+        EXPECT_CALL(comm, sendDcsmOfferContent(remoteId, ContentID(2), Category(3), ETechnicalContentType::RamsesSceneID, "mycontent"));
+        comp.newParticipantHasConnected(remoteId);
+
+        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(2), ramses::Category{ 3 }, _));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+
+        EXPECT_TRUE(comp.sendContentStateChange(ContentID(2), EDcsmState::Assigned, CategoryInfo{ 2, 3 }, AnimationInformation{ 1, 2 }));
+
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)).WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(metadata, mdp.impl.getMetadata()); }));
+        EXPECT_CALL(consumer, contentDescription(ramses::ContentID(2), ramses::TechnicalContentDescriptor(5)));
+        EXPECT_CALL(consumer, contentEnableFocusRequest(ramses::ContentID(2), 32));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::Assigned, _, ramses::AnimationInformation{ 1, 2 })).WillOnce([&](const auto&, const auto&, const auto& infoupdate, const auto&) {
+            ramses::CategoryInfoUpdate categoryInfo{};
+            categoryInfo.setCategoryRect({ 0u, 0u, 2u, 3u });
+            EXPECT_EQ(categoryInfo, infoupdate);
+            });
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+        EXPECT_EQ(CS::Assigned, comp.getContentState(ContentID(2)));
+    }
+
+    INSTANTIATE_TEST_SUITE_P(ADcsmComponentWithDifferentTargetStatesTest, ADcsmComponentWithDifferentTargetStates,
+        ::testing::Values(DcsmComponent::ContentState::Assigned, DcsmComponent::ContentState::ReadyRequested, DcsmComponent::ContentState::Ready, DcsmComponent::ContentState::Shown));
+
+    TEST_F(ADcsmComponent, disconnectWhileRequestStopOfferResultsInStopOffering)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_LPRC(2, CS::StopOfferRequested);
+
+        EXPECT_CALL(comm, sendDcsmUpdateContentMetadata(remoteId, ContentID(2), metadata));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
+
+        EXPECT_CALL(comm, sendDcsmContentEnableFocusRequest(remoteId, ContentID(2), 32));
+        EXPECT_TRUE(comp.sendContentEnableFocusRequest(ContentID(2), 32));
+
+        //content is in stop offer requested, now disconnect and connect
+        EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(2)));
+        EXPECT_TRUE(comp.disconnect());
+
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::AcceptStopOffer, _, ramses::AnimationInformation{ 0, 0 }));
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+        EXPECT_EQ(CS::Unknown, comp.getContentState(ContentID(2)));
+    }
+
+    TEST_F(ADcsmComponent, localConsumerAvailabilityChangeWhileRequestStopOfferResultsInStopOffering)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_LPLC(2, CS::StopOfferRequested);
+
+        EXPECT_CALL(consumer, contentMetadataUpdated(ramses::ContentID(2), _)).WillOnce(Invoke([&](auto, auto& mdp) { EXPECT_EQ(metadata, mdp.impl.getMetadata()); }));
+        EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
+
+        EXPECT_CALL(consumer, contentEnableFocusRequest(ramses::ContentID(2), 32));
+        EXPECT_TRUE(comp.sendContentEnableFocusRequest(ContentID(2), 32));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+
+        //content is stop offer requested, now remove and readd consumer
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(false));
+
+        EXPECT_CALL(provider, contentStateChange(ramses::ContentID(2), EDcsmState::AcceptStopOffer, _, ramses::AnimationInformation{ 0, 0 }));
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+        EXPECT_EQ(CS::Unknown, comp.getContentState(ContentID(2)));
+    }
+
+
+    TEST_F(ADcsmComponent, doesNotResetStateOfLocallyConsumedContentOnDisconnect)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_LPLC(2, CS::Assigned);
+
+        //content is assigned, now disconnect and connect
+        EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(2)));
+        EXPECT_TRUE(comp.disconnect());
+        EXPECT_TRUE(comp.connect());
+
+        EXPECT_EQ(CS::Assigned, comp.getContentState(ContentID(2)));
+    }
 }
+

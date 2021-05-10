@@ -437,7 +437,9 @@ namespace ramses_internal
 
         if (!m_connectedParticipants.contains(pstate->pid))
         {
-            LOG_WARN(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::processReceivedMessageHeader(" << callerMethod << "): ignore from not connected pid " << pstate->pid);
+
+            LOG_WARN(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::processReceivedMessageHeader(" << callerMethod <<
+                     "): ignore from not connected pid " << pstate->pid << " " << header);
             return nullptr;
         }
         assert(pstate->expectedRecvSessionId != 0);  // expected == 0 can only happen when not connected (anymore)

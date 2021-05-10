@@ -10,7 +10,6 @@
 #include "RendererLib/SceneStateExecutor.h"
 #include "RendererLib/RendererLogContext.h"
 #include "RendererLib/RendererScenes.h"
-#include "RendererLib/DisplayEventHandlerManager.h"
 #include "RendererLib/SceneExpirationMonitor.h"
 #include "RendererEventCollector.h"
 #include "ComponentMocks.h"
@@ -26,10 +25,10 @@ namespace ramses_internal
     protected:
         ASceneStateExecutor()
             : senderID(1000)
-            , mapDisplayHandle(1u)
+            , displayHandle(1u)
             , rendererScenes(rendererEventCollector)
             , expirationMonitor(rendererScenes, rendererEventCollector)
-            , renderer(platform, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
+            , renderer(displayHandle, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
             , sceneStateExecutor(renderer, rendererSceneSender, rendererEventCollector)
         {
             // caller is expected to have a display prefix for logs
@@ -99,7 +98,7 @@ namespace ramses_internal
 
         void requestMapScene()
         {
-            sceneStateExecutor.setMapRequested(sceneId, mapDisplayHandle);
+            sceneStateExecutor.setMapRequested(sceneId);
             expectNoRendererEvent();
             EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(sceneId));
         }
@@ -141,21 +140,21 @@ namespace ramses_internal
 
         void createDisplay()
         {
-            const DisplayConfig config;
-            renderer.createDisplayContext(config, mapDisplayHandle);
+            ASSERT_FALSE(renderer.hasDisplayController());
+            renderer.createDisplayContext({});
         }
 
         void destroyDisplay()
         {
-            renderer.destroyDisplayContext(mapDisplayHandle);
+            ASSERT_TRUE(renderer.hasDisplayController());
+            renderer.destroyDisplayContext();
         }
 
         const Guid senderID;
         static constexpr SceneId sceneId{ 123u };
 
-        const DisplayHandle mapDisplayHandle;
+        const DisplayHandle displayHandle;
 
-        NiceMock<PlatformNiceMockWithPerRendererComponents> platform;
         RendererEventCollector rendererEventCollector;
         RendererScenes rendererScenes;
         SceneExpirationMonitor expirationMonitor;
@@ -511,7 +510,7 @@ namespace ramses_internal
         subscribeScene();
         receiveScene();
         receiveFlush();
-        EXPECT_TRUE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId, mapDisplayHandle));
+        EXPECT_TRUE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId));
         expectNoRendererEvent();
         destroyDisplay();
     }
@@ -523,7 +522,7 @@ namespace ramses_internal
         subscribeScene();
         receiveScene();
         receiveFlush();
-        EXPECT_TRUE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId, mapDisplayHandle));
+        EXPECT_TRUE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId));
         requestMapScene();
         expectNoRendererEvent();
         destroyDisplay();
@@ -531,12 +530,11 @@ namespace ramses_internal
 
     TEST_F(ASceneStateExecutor, canNotMapSubscribedSceneOnNonExistingDisplay)
     {
-        const DisplayHandle unknownDisplayHandle(10u);
         publishScene();
         subscribeScene();
         receiveScene();
         receiveFlush();
-        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId, unknownDisplayHandle));
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId));
         expectRendererEvent(ERendererEventType::SceneMapFailed);
     }
 
@@ -559,7 +557,7 @@ namespace ramses_internal
     {
         createDisplay();
         publishScene();
-        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId, mapDisplayHandle));
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId));
         expectRendererEvent(ERendererEventType::SceneMapFailed);
         destroyDisplay();
     }
@@ -569,7 +567,7 @@ namespace ramses_internal
         createDisplay();
         publishScene();
         subscribeScene();
-        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId, mapDisplayHandle));
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId));
         expectRendererEvent(ERendererEventType::SceneMapFailed);
         destroyDisplay();
     }
@@ -579,7 +577,7 @@ namespace ramses_internal
         createDisplay();
         publishScene();
         subscribeScene();
-        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId, mapDisplayHandle));
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId));
         expectRendererEvent(ERendererEventType::SceneMapFailed);
         destroyDisplay();
     }
@@ -588,7 +586,7 @@ namespace ramses_internal
     {
         createDisplay();
         const SceneId sceneIdForUnknownScene(1u);
-        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapRequested(sceneIdForUnknownScene, mapDisplayHandle));
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapRequested(sceneIdForUnknownScene));
         expectRendererEvent(ERendererEventType::SceneMapFailed, sceneIdForUnknownScene);
         destroyDisplay();
     }
@@ -600,9 +598,9 @@ namespace ramses_internal
         subscribeScene();
         receiveScene();
         receiveFlush();
-        EXPECT_TRUE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId, mapDisplayHandle));
+        EXPECT_TRUE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId));
         requestMapScene();
-        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId, mapDisplayHandle));
+        EXPECT_FALSE(sceneStateExecutor.checkIfCanBeMapRequested(sceneId));
         expectNoRendererEvent();
         destroyDisplay();
     }
@@ -1273,7 +1271,7 @@ namespace ramses_internal
         subscribeScene();
         receiveScene();
         receiveFlush();
-        sceneStateExecutor.setMapRequested(sceneId, mapDisplayHandle);
+        sceneStateExecutor.setMapRequested(sceneId);
         expectNoRendererEvent();
 
         destroyDisplay();

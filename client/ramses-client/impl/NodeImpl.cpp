@@ -54,6 +54,18 @@ namespace ramses
         serializationContext.addForDependencyResolve(this);
         serializationContext.addNodeHandleToNodeImplMapping(m_nodeHandle, this);
 
+        if (m_transformHandle.isValid())
+        {
+            m_hasNonIdentityScaling = (getIScene().getScaling(m_transformHandle) != IdentityScaling);
+            m_hasNonIdentityRotation = (getIScene().getRotation(m_transformHandle) != IdentityRotation);
+        }
+        else
+        {
+            m_hasNonIdentityScaling = false;
+            m_hasNonIdentityRotation = false;
+        }
+        conditionallyLogNonTrivialRotationAndScaling("RamsesClient::loadSceneFromFile[*]");
+
         return StatusOK;
     }
 
@@ -298,6 +310,14 @@ namespace ramses
         {
             getIScene().setRotation(m_transformHandle, rotation, rotationConventionInternal);
         }
+
+        if (rotation != IdentityRotation)
+        {
+            m_hasNonIdentityRotation = true;
+        }
+
+        conditionallyLogNonTrivialRotationAndScaling("Node::setRotationInternal");
+
         return StatusOK;
     }
 
@@ -365,7 +385,15 @@ namespace ramses
             return addErrorEntry("Node::rotate() can only be used with legacy left-handed rotation: setRotation(float,float,float)");
 
         const ramses_internal::Vector3& previous = getIScene().getRotation(m_transformHandle);
-        getIScene().setRotation(m_transformHandle, previous + ramses_internal::Vector3(x, y, z), ramses_internal::ERotationConvention::Legacy_ZYX);
+        ramses_internal::Vector3 increment(x, y, z);
+        getIScene().setRotation(m_transformHandle, previous + increment, ramses_internal::ERotationConvention::Legacy_ZYX);
+        if (increment != IdentityRotation)
+        {
+            m_hasNonIdentityRotation = true;
+        }
+
+        conditionallyLogNonTrivialRotationAndScaling("Node::rotate");
+
         return StatusOK;
     }
 
@@ -444,7 +472,15 @@ namespace ramses
             initializeTransform();
         }
         const ramses_internal::Vector3& previous = getIScene().getScaling(m_transformHandle);
-        getIScene().setScaling(m_transformHandle, previous * ramses_internal::Vector3(x, y, z));
+        ramses_internal::Vector3 factor(x, y, z);
+        getIScene().setScaling(m_transformHandle, previous * factor);
+        if (factor != IdentityScaling)
+        {
+            m_hasNonIdentityScaling = true;
+        }
+
+        conditionallyLogNonTrivialRotationAndScaling("Node::scale");
+
         return StatusOK;
     }
 
@@ -463,7 +499,30 @@ namespace ramses
         {
             getIScene().setScaling(m_transformHandle, newValue);
         }
+
+        if (newValue != IdentityScaling)
+        {
+            m_hasNonIdentityScaling = true;
+        }
+
+        conditionallyLogNonTrivialRotationAndScaling("Node::setScaling");
+
         return StatusOK;
+    }
+
+    void NodeImpl::conditionallyLogNonTrivialRotationAndScaling(const char* functionName)
+    {
+        if (m_hasNonIdentityScaling && m_hasNonIdentityRotation && !m_loggedUsageOfNonTrivialRotationAndScaling)
+        {
+            const ramses_internal::Vector3& rotation = getIScene().getRotation(m_transformHandle);
+            const ramses_internal::Vector3& scaling = getIScene().getScaling(m_transformHandle);
+            LOG_INFO_P(CONTEXT_CLIENT, "{}: Non-trivial use of scaling and rotation for node '{}' (rotation: {}, {}, {} scaling: {}, {}, {})",
+                functionName,
+                getName(),
+                rotation.x, rotation.y, rotation.z,
+                scaling.x, scaling.y, scaling.z);
+            m_loggedUsageOfNonTrivialRotationAndScaling = true;
+        }
     }
 
     status_t NodeImpl::getScaling(float& x, float& y, float& z) const

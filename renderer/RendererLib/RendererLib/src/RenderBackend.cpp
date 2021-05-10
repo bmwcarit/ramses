@@ -9,21 +9,26 @@
 #include "RendererLib/RenderBackend.h"
 #include "RendererAPI/IContext.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
-#include "RendererAPI/ISurface.h"
 
 namespace ramses_internal
 {
-    RenderBackend::RenderBackend(ISurface& surface, IDevice& device, IEmbeddedCompositor& embeddedCompositor, ITextureUploadingAdapter& textureUploadingAdapter)
-        : m_surface(surface)
+    RenderBackend::RenderBackend(IWindow& window, IContext& context, IDevice& device, IEmbeddedCompositor& embeddedCompositor, ITextureUploadingAdapter& textureUploadingAdapter)
+        : m_window(window)
+        , m_context(context)
         , m_device(device)
         , m_embeddedCompositor(embeddedCompositor)
         , m_textureUploadingAdapter(textureUploadingAdapter)
     {
     }
 
-    ISurface& RenderBackend::getSurface() const
+    IWindow& RenderBackend::getWindow() const
     {
-        return m_surface;
+        return m_window;
+    }
+
+    IContext& RenderBackend::getContext() const
+    {
+        return m_context;
     }
 
     IDevice& RenderBackend::getDevice() const

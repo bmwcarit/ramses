@@ -19,6 +19,7 @@
 #include "Resource/ResourceInfo.h"
 #include "Resource/IResource.h"
 #include "Components/SingleResourceSerialization.h"
+#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
@@ -95,6 +96,13 @@ namespace ramses_internal
         inStream.seek(fileEntry.offsetInBytes, IInputStream::Seek::FromBeginning);
 
         IResource* resource = ReadOneResourceFromStream(inStream, fileEntry.resourceInfo.hash);
+
+        if (inStream.getState() != EStatus::Ok)
+        {
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: resource deserialization failed.");
+            delete resource;
+            return nullptr;
+        }
 
         UInt currentPosAfterRead = 0;
         inStream.getPos(currentPosAfterRead);

@@ -53,6 +53,7 @@ namespace ramses_internal
         virtual ~IDcsmProviderServiceHandler() {};
         virtual void handleCanvasSizeChange(ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID) = 0;
         virtual void handleContentStateChange(ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID) = 0;
+        virtual void handleContentStatus(ContentID contentID, uint64_t messageID, absl::Span<const Byte> message, const Guid& consumerID) = 0;
     };
 
     class IDcsmConsumerServiceHandler

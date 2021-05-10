@@ -57,6 +57,7 @@ namespace ramses_internal
         MOCK_METHOD(void, handleContentEnableFocusRequest, (const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest), (override));
         MOCK_METHOD(void, handleContentDisableFocusRequest, (const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest), (override));
         MOCK_METHOD(void, handleResponse, (const SomeIPMsgHeader& header, uint64_t originalMessageId, uint64_t originalSessionId, uint64_t responseCode), (override));
+        MOCK_METHOD(void, handleContentStatus, (const SomeIPMsgHeader& header, ContentID content, uint64_t messageID, absl::Span<const Byte> message), (override));
     };
 
     class SomeIPDcsmStackMock : public ISomeIPDcsmStack
@@ -87,6 +88,7 @@ namespace ramses_internal
         MOCK_METHOD(bool, sendContentEnableFocusRequest, (DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest), (override));
         MOCK_METHOD(bool, sendContentDisableFocusRequest, (DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest), (override));
         MOCK_METHOD(bool, sendResponse, (DcsmInstanceId to, const SomeIPMsgHeader& header, uint64_t originalMessageId, uint64_t originalSessionId, uint64_t responseCode), (override));
+        MOCK_METHOD(bool, sendContentStatus, (DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, uint64_t messageID, std::vector<Byte> const& message), (override));
     };
 
     class SomeIPRamsesStackCallbacksMock : public ISomeIPRamsesStackCallbacks

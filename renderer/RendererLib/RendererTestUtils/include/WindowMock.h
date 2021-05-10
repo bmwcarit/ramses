@@ -22,7 +22,7 @@ namespace ramses_internal
         WindowMock();
         ~WindowMock() override;
 
-        MOCK_METHOD(Bool, init, ()); // Does not exist in IWindow, needed for only for testing
+        MOCK_METHOD(Bool, init, ());
         MOCK_METHOD(Bool, setFullscreen, (Bool), (override));
         MOCK_METHOD(Bool, canRenderNewFrame, (), (const, override));
         MOCK_METHOD(void, handleEvents, (), (override));
@@ -44,14 +44,6 @@ namespace ramses_internal
 
     private:
         void createDefaultMockCalls();
-    };
-
-    class WindowMockWithDestructor : public WindowMock
-    {
-    public:
-        WindowMockWithDestructor();
-        ~WindowMockWithDestructor() override;
-        MOCK_METHOD(void, Die, ());
     };
 }
 

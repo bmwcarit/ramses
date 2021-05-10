@@ -63,7 +63,7 @@ namespace ramses_internal
         MOCK_METHOD(void, scissorTest, (EScissorTest, const RenderState::ScissorRegion&), (override));
         MOCK_METHOD(void, stencilOp, (EStencilOp, EStencilOp, EStencilOp), (override));
         MOCK_METHOD(void, drawMode, (EDrawMode), (override));
-        MOCK_METHOD(void, setViewport, (UInt32, UInt32, UInt32, UInt32), (override));
+        MOCK_METHOD(void, setViewport, (int32_t, int32_t, uint32_t, uint32_t), (override));
 
         MOCK_METHOD(DeviceResourceHandle, allocateVertexBuffer, (UInt32), (override));
         MOCK_METHOD(void, uploadVertexBufferData, (DeviceResourceHandle, const Byte*, UInt32), (override));
@@ -131,15 +131,6 @@ namespace ramses_internal
 
     private:
         void createDefaultMockCalls();
-    };
-
-    class DeviceMockWithDestructor : public DeviceMock
-    {
-    public:
-        DeviceMockWithDestructor();
-        ~DeviceMockWithDestructor();
-
-        MOCK_METHOD(void, Die, ());
     };
 }
 

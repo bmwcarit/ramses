@@ -19,9 +19,7 @@ namespace ramses_internal
     protected:
         explicit Platform_X11_EGL(const RendererConfig& rendererConfig);
 
-        ISystemCompositorController* createSystemCompositorController() override final;
-        IWindow*    createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
-        IEmbeddedCompositor*    createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) override;
+        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
     };
 }
 

@@ -145,4 +145,15 @@ IF (ramses-sdk_BUILD_TESTS)
             ENDIF()
         ENDIF()
     ENDFOREACH()
+
+    if (TARGET RenderingTests-wayland-ivi-egl-es-3-0)
+        # Disable LSAN leak detection inside ASAN because it segfaults on destruction for this test only.
+        # Crash seems to be caused when traversing DTLS info for a potentially unmapped thread stack.
+        message(STATUS "Disable leak detection for RenderingTests-wayland-ivi-egl-es-3-0_RNDSANDWICHTEST_SWRAST")
+
+        get_test_property(RenderingTests-wayland-ivi-egl-es-3-0_RNDSANDWICHTEST_SWRAST ENVIRONMENT CURRENT_ENV)
+        set_tests_properties(RenderingTests-wayland-ivi-egl-es-3-0_RNDSANDWICHTEST_SWRAST
+            PROPERTIES ENVIRONMENT "ASAN_OPTIONS=$ENV{ASAN_OPTIONS}:detect_leaks=0;${CURRENT_ENV}")
+    endif()
+
 ENDIF()

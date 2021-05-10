@@ -110,18 +110,27 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
     # handle sanitizers
     if (ramses-sdk_ENABLE_SANITIZER AND NOT ramses-sdk_ENABLE_SANITIZER STREQUAL "")
+
+        set(ubsan_checks "bool,bounds,enum,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,vla-bound,float-cast-overflow,vptr,alignment,function")
+        set(ubsan_options "-fsanitize=undefined -fno-sanitize-recover=${ubsan_checks}")
+        set(tsan_options "-fsanitize=thread")
+        set(asan_options "-fsanitize=address")
+
         if (ramses-sdk_ENABLE_SANITIZER STREQUAL "ubsan")
             message(STATUS "+ Enable undefined behavior sanitizer (ubsan)")
-            set(ubsan_checks "bool,bounds,enum,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,vla-bound,float-cast-overflow,vptr,alignment,function")
-            set(sanitizer_options "-fsanitize=undefined -fno-sanitize-recover=${ubsan_checks}")
+            set(sanitizer_options "${ubsan_options}")
 
         elseif(ramses-sdk_ENABLE_SANITIZER STREQUAL "tsan")
             message(STATUS "+ Enable thread sanitizer (tsan)")
-            set(sanitizer_options "-fsanitize=thread")
+            set(sanitizer_options "${tsan_options}")
 
         elseif(ramses-sdk_ENABLE_SANITIZER STREQUAL "asan")
             message(STATUS "+ Enable address sanitizer (asan)")
-            set(sanitizer_options "-fsanitize=address")
+            set(sanitizer_options "${asan_options}")
+
+        elseif(ramses-sdk_ENABLE_SANITIZER STREQUAL "asan+ubsan")
+            message(STATUS "+ Enable address and undefined behavior sanitizers (asan+ubsan)")
+            set(sanitizer_options "${asan_options} ${ubsan_options}")
 
         else()
             message(FATAL_ERROR "Unknown value for ramses-sdk_ENABLE_SANITIZER '${ramses-sdk_ENABLE_SANITIZER}'")

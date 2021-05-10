@@ -19,14 +19,5 @@ namespace ramses_internal
     ContextMock::~ContextMock()
     {
     }
-
-    ContextMockWithDestructor::ContextMockWithDestructor()
-    {
-    }
-
-    ContextMockWithDestructor::~ContextMockWithDestructor()
-    {
-        Die();
-    }
 }
 

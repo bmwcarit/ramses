@@ -62,7 +62,7 @@ namespace ramses_internal
         // dcsm consumer -> provider
         virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation) = 0;
         virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo&, AnimationInformation) = 0;
-
+        virtual bool sendDcsmContentStatus(const Guid& to, ContentID contentID, uint64_t messageID, std::vector<Byte> const& message) = 0;
 
         // set service handlers
         virtual void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) = 0;

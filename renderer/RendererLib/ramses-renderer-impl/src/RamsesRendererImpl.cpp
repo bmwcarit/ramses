@@ -33,6 +33,7 @@
 #include "RamsesRendererUtils.h"
 #include "RendererFactory.h"
 #include "FrameworkFactoryRegistry.h"
+#include "Ramsh/Ramsh.h"
 #include <chrono>
 
 namespace ramses
@@ -46,34 +47,38 @@ namespace ramses
         , m_pendingRendererCommands()
         , m_rendererFrameworkLogic(framework.getScenegraphComponent(), m_rendererCommandBuffer, framework.getFrameworkLock())
         , m_threadWatchdog(framework.getThreadWatchdogConfig(), ERamsesThreadIdentifier_Renderer)
-        , m_displayDispatcher{ std::make_unique<ramses_internal::DisplayDispatcher>(config.impl.getInternalRendererConfig(), m_rendererCommandBuffer, m_rendererFrameworkLogic, m_threadWatchdog) }
+        , m_displayDispatcher{ std::make_unique<ramses_internal::DisplayDispatcher>(config.impl.getInternalRendererConfig(), m_rendererFrameworkLogic, m_threadWatchdog) }
         , m_systemCompositorEnabled(config.impl.getInternalRendererConfig().getSystemCompositorControlEnabled())
         , m_loopMode(ramses_internal::ELoopMode::UpdateAndRender)
-        , m_rendererLoopThreadController(*m_displayDispatcher, m_threadWatchdog)
         , m_rendererLoopThreadType(ERendererLoopThreadType_Undefined)
         , m_periodicLogSupplier(framework.getPeriodicLogger(), m_rendererCommandBuffer)
     {
         assert(!framework.isConnected());
 
         { //Add ramsh commands to ramsh, independent of whether it is enabled or not.
-
-            m_displayDispatcher->registerRamshCommands(framework.getRamsh());
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::Screenshot>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::LogRendererInfo>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::ShowFrameProfiler>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::PrintStatistics>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::TriggerPickEvent>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SetClearColor>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SetSkippingOfUnmodifiedBuffers>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SystemCompositorControllerListIviSurfaces>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SystemCompositorControllerSetLayerVisibility>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SystemCompositorControllerSetSurfaceVisibility>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SystemCompositorControllerSetSurfaceOpacity>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SystemCompositorControllerSetSurfaceDestRectangle>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SystemCompositorControllerScreenshot>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SystemCompositorControllerAddSurfaceToLayer>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SystemCompositorControllerRemoveSurfaceFromLayer>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SystemCompositorControllerDestroySurface>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SetFrameTimeLimits>(m_rendererCommandBuffer));
+            for (const auto& cmd : m_ramshCommands)
+                m_framework.getRamsh().add(cmd);
             LOG_INFO(ramses_internal::CONTEXT_SMOKETEST, "Ramsh commands registered from RamsesRenderer");
         }
 
         LOG_TRACE(ramses_internal::CONTEXT_PROFILING, "RamsesRenderer::RamsesRenderer finished initializing renderer");
-    }
-
-    RamsesRendererImpl::~RamsesRendererImpl()
-    {
-        if (m_rendererLoopThreadType == ERendererLoopThreadType_InRendererOwnThread)
-        {
-            // Explicitly do NOT delete WindowedRenderer here in thread mode because will be deleted by RendererLoopThreadController.
-            // Needed because OpenGL context must be always accessed from same thread. Must ignore result here to make clang-tidy happy.
-            (void)m_displayDispatcher.release();
-            m_rendererLoopThreadController.stopRendering();
-            m_rendererLoopThreadController.destroyRenderer();
-        }
     }
 
     status_t RamsesRendererImpl::doOneLoop()
@@ -84,7 +89,7 @@ namespace ramses
         }
 
         m_rendererLoopThreadType = ERendererLoopThreadType_UsingDoOneLoop;
-        m_displayDispatcher->dispatchCommands();
+        m_displayDispatcher->dispatchCommands(m_rendererCommandBuffer);
         m_displayDispatcher->doOneLoop();
         return StatusOK;
     }
@@ -500,40 +505,34 @@ namespace ramses
 
     status_t RamsesRendererImpl::startThread()
     {
-        if (ERendererLoopThreadType_UsingDoOneLoop == m_rendererLoopThreadType)
-        {
+        if (m_rendererLoopThreadType == ERendererLoopThreadType_UsingDoOneLoop)
             return addErrorEntry("RamsesRenderer::startThread Can not call startThread if doOneLoop is called before!");
-        }
+
+        // first time starting thread, create dispatching thread
+        if (m_rendererLoopThreadType == ERendererLoopThreadType_Undefined)
+            m_commandDispatchingThread = std::make_unique<ramses_internal::CommandDispatchingThread>(*m_displayDispatcher, m_rendererCommandBuffer, m_threadWatchdog);
 
         m_rendererLoopThreadType = ERendererLoopThreadType_InRendererOwnThread;
         m_displayDispatcher->startDisplayThreadsUpdating();
-        if (m_rendererLoopThreadController.startRendering())
-        {
-            return StatusOK;
-        }
+        m_diplayThreadUpdating = true;
 
-        return addErrorEntry("RamsesRenderer::startThread could not start rendering thread!");
+        return StatusOK;
     }
 
     status_t RamsesRendererImpl::stopThread()
     {
         if (ERendererLoopThreadType_InRendererOwnThread != m_rendererLoopThreadType)
-        {
             return addErrorEntry("RamsesRenderer::stopThread Can not call stopThread if startThread was not called before!");
-        }
 
         m_displayDispatcher->stopDisplayThreadsUpdating();
-        if (m_rendererLoopThreadController.stopRendering())
-        {
-            return StatusOK;
-        }
+        m_diplayThreadUpdating = false;
 
-        return addErrorEntry("RamsesRenderer::stopThread could not stop rendering thread!");
+        return StatusOK;
     }
 
     bool RamsesRendererImpl::isThreadRunning() const
     {
-        return m_rendererLoopThreadController.isRendering();
+        return m_diplayThreadUpdating;
     }
 
     bool RamsesRendererImpl::isThreaded() const
@@ -544,39 +543,33 @@ namespace ramses
     status_t RamsesRendererImpl::setMaximumFramerate(float maximumFramerate)
     {
         if (maximumFramerate <= 0.0f)
-        {
             return addErrorEntry("RamsesRenderer::setMaximumFramerate must specify a positive maximumFramerate!");
-        }
 
         if (ERendererLoopThreadType_UsingDoOneLoop == m_rendererLoopThreadType)
-        {
             return addErrorEntry("RamsesRenderer::setMaximumFramerate Can not call setMaximumFramerate if doOneLoop is called before because it can only control framerate for rendering thread!");
-        }
 
         m_displayDispatcher->setMinFrameDuration(std::chrono::microseconds{ std::lround(1000000 / maximumFramerate) });
-        m_rendererLoopThreadController.setMaximumFramerate(maximumFramerate);
+        m_maxFramerate = maximumFramerate;
+
         return StatusOK;
     }
 
     status_t RamsesRendererImpl::setMaximumFramerate(float maximumFramerate, displayId_t display)
     {
         if (maximumFramerate <= 0.0f)
-        {
             return addErrorEntry("RamsesRenderer::setMaximumFramerate must specify a positive maximumFramerate!");
-        }
 
         if (ERendererLoopThreadType_UsingDoOneLoop == m_rendererLoopThreadType)
-        {
             return addErrorEntry("RamsesRenderer::setMaximumFramerate Can not call setMaximumFramerate if doOneLoop is called before because it can only control framerate for rendering thread!");
-        }
 
         m_displayDispatcher->setMinFrameDuration(std::chrono::microseconds{ std::lround(1000000 / maximumFramerate) }, ramses_internal::DisplayHandle{ display.getValue() });
+
         return StatusOK;
     }
 
     float RamsesRendererImpl::getMaximumFramerate() const
     {
-        return m_rendererLoopThreadController.getMaximumFramerate();
+        return m_maxFramerate;
     }
 
     status_t RamsesRendererImpl::setLoopMode(ELoopMode loopMode)

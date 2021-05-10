@@ -101,7 +101,10 @@ namespace ramses_internal
             m_statistics.statResourcesLoadedFromFileSize.incCounter(entry.sizeInBytes);
 
             IResource* lowLevelResource = ResourcePersistation::RetrieveResourceFromStream(*resourceStream, entry);
-            return m_resourceStorage.manageResource(*lowLevelResource, true);
+            if (lowLevelResource)
+                return m_resourceStorage.manageResource(*lowLevelResource, true);
+            else
+                LOG_ERROR_P(CONTEXT_CLIENT, "ResourceComponent::loadResource: RetrieveResourceFromStream failed for {} ({})", entry.resourceInfo.type, entry.resourceInfo.hash);
         }
 
         return ManagedResource();

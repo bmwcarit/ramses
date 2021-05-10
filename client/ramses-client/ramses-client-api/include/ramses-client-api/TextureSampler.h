@@ -89,15 +89,15 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t setTextureData(const Texture2D& dataSource);
-        /// @copydoc setTextureData(const Texture2D&)
+        /// @copybrief setTextureData(const Texture2D&)
         status_t setTextureData(const Texture3D& dataSource);
-        /// @copydoc setTextureData(const Texture2D&)
+        /// @copybrief setTextureData(const Texture2D&)
         status_t setTextureData(const TextureCube& dataSource);
-        /// @copydoc setTextureData(const Texture2D&)
+        /// @copybrief setTextureData(const Texture2D&)
         status_t setTextureData(const Texture2DBuffer& dataSource);
-        /// @copydoc setTextureData(const Texture2D&)
+        /// @copybrief setTextureData(const Texture2D&)
         status_t setTextureData(const RenderBuffer& dataSource);
-        /// @copydoc setTextureData(const Texture2D&)
+        /// @copybrief setTextureData(const Texture2D&)
         status_t setTextureData(const StreamTexture& dataSource);
 
         /**

@@ -31,23 +31,23 @@ namespace ramses_internal
         m_sceneStatistics[sceneId].numRendered++;
     }
 
-    void RendererStatistics::offscreenBufferSwapped(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer, bool isInterruptible)
+    void RendererStatistics::offscreenBufferSwapped(DeviceResourceHandle offscreenBuffer, bool isInterruptible)
     {
-        auto& obStat = m_displayStatistics[displayHandle].offscreenBufferStatistics[offscreenBuffer];
+        auto& obStat = m_displayStatistics.offscreenBufferStatistics[offscreenBuffer];
         obStat.numSwapped++;
         obStat.isInterruptible = isInterruptible;
     }
 
-    void RendererStatistics::offscreenBufferInterrupted(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer)
+    void RendererStatistics::offscreenBufferInterrupted(DeviceResourceHandle offscreenBuffer)
     {
-        auto& obStat = m_displayStatistics[displayHandle].offscreenBufferStatistics[offscreenBuffer];
+        auto& obStat = m_displayStatistics.offscreenBufferStatistics[offscreenBuffer];
         obStat.numInterrupted++;
         obStat.isInterruptible = true;
     }
 
-    void RendererStatistics::framebufferSwapped(DisplayHandle display)
+    void RendererStatistics::framebufferSwapped()
     {
-        m_displayStatistics[display].numFrameBufferSwapped++;
+        m_displayStatistics.numFrameBufferSwapped++;
     }
 
     void RendererStatistics::resourceUploaded(UInt byteSize)
@@ -141,9 +141,9 @@ namespace ramses_internal
         m_sceneStatistics.erase(sceneId);
     }
 
-    void RendererStatistics::untrackOffscreenBuffer(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer)
+    void RendererStatistics::untrackOffscreenBuffer(DeviceResourceHandle offscreenBuffer)
     {
-        m_displayStatistics[displayHandle].offscreenBufferStatistics.erase(offscreenBuffer);
+        m_displayStatistics.offscreenBufferStatistics.erase(offscreenBuffer);
     }
 
     void RendererStatistics::untrackStreamTexture(WaylandIviSurfaceId sourceId)
@@ -217,14 +217,11 @@ namespace ramses_internal
             sceneStat.numRendered = 0u;
         }
 
-        for (auto& dispStat : m_displayStatistics)
+        m_displayStatistics.numFrameBufferSwapped = 0u;
+        for (auto& obStat : m_displayStatistics.offscreenBufferStatistics)
         {
-            dispStat.second.numFrameBufferSwapped = 0u;
-            for (auto& obStat : dispStat.second.offscreenBufferStatistics)
-            {
-                obStat.second.numSwapped = 0u;
-                obStat.second.numInterrupted = 0u;
-            }
+            obStat.second.numSwapped = 0u;
+            obStat.second.numInterrupted = 0u;
         }
 
         for (auto& strTexStat : m_streamTextureStatistics)
@@ -258,17 +255,14 @@ namespace ramses_internal
         }
         str << "\n";
 
-        for (const auto& dbStat : m_displayStatistics)
+        str << "FB: " << m_displayStatistics.numFrameBufferSwapped;
+        for (const auto& obStat : m_displayStatistics.offscreenBufferStatistics)
         {
-            str << "FB" << dbStat.first << ": " << dbStat.second.numFrameBufferSwapped;
-            for (const auto& obStat : dbStat.second.offscreenBufferStatistics)
-            {
-                str << "; OB" << obStat.first << ": " << obStat.second.numSwapped;
-                if (obStat.second.isInterruptible)
-                    str << " (intr: " << obStat.second.numInterrupted << ")";
-            }
-            str << "\n";
+            str << "; OB" << obStat.first << ": " << obStat.second.numSwapped;
+            if (obStat.second.isInterruptible)
+                str << " (intr: " << obStat.second.numInterrupted << ")";
         }
+        str << "\n";
 
         for (const auto& sceneStatsIt : m_sceneStatistics)
         {

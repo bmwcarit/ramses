@@ -22,7 +22,7 @@ namespace ramses_internal
 
         MOCK_METHOD(void, handleSceneSubscriptionRequest, (SceneId sceneId), (override));
         MOCK_METHOD(void, handleSceneUnsubscriptionRequest, (SceneId sceneId, bool indirect), (override));
-        MOCK_METHOD(void, handleSceneMappingRequest, (SceneId sceneId, DisplayHandle handle), (override));
+        MOCK_METHOD(void, handleSceneMappingRequest, (SceneId sceneId), (override));
         MOCK_METHOD(void, handleSceneUnmappingRequest, (SceneId sceneId), (override));
         MOCK_METHOD(void, handleSceneShowRequest, (SceneId sceneId), (override));
         MOCK_METHOD(void, handleSceneHideRequest, (SceneId sceneId), (override));

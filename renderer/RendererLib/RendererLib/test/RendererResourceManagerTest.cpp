@@ -38,9 +38,9 @@ public:
         ThreadLocalLog::SetPrefix(1);
 
         InSequence s;
-        EXPECT_CALL(platform.renderBackendMock.surfaceMock, disable()).WillOnce(Return(true));
-        EXPECT_CALL(platform, createResourceUploadRenderBackend(Ref(platform.renderBackendMock)));
-        EXPECT_CALL(platform.renderBackendMock.surfaceMock, enable()).WillOnce(Return(true));
+        EXPECT_CALL(platform.renderBackendMock.contextMock, disable()).WillOnce(Return(true));
+        EXPECT_CALL(platform, createResourceUploadRenderBackend());
+        EXPECT_CALL(platform.renderBackendMock.contextMock, enable()).WillOnce(Return(true));
         const bool status = asyncEffectUploader.createResourceUploadRenderBackendAndStartThread();
         EXPECT_TRUE(status);
     }
@@ -50,7 +50,7 @@ public:
         // no actual unload expected but clears internal lists
         resourceManager.unloadAllSceneResourcesForScene(fakeSceneId);
 
-        EXPECT_CALL(platform, destroyResourceUploadRenderBackend(Ref(platform.resourceUploadRenderBackendMock)));
+        EXPECT_CALL(platform, destroyResourceUploadRenderBackend());
         asyncEffectUploader.destroyResourceUploadRenderBackendAndStopThread();
     }
 

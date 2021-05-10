@@ -102,6 +102,12 @@ namespace ramses
 
         ramses_internal::TransformHandle m_transformHandle;
 
+        // TODO (Violin) remove this once we have collected data about usage of non-trivial rotation and scaling combinations
+        bool m_hasNonIdentityScaling = false;
+        bool m_hasNonIdentityRotation = false;
+        bool m_loggedUsageOfNonTrivialRotationAndScaling = false;
+        void conditionallyLogNonTrivialRotationAndScaling(const char* functionName);
+
         //The actual visibility
         EVisibilityMode m_visibilityMode;
     };

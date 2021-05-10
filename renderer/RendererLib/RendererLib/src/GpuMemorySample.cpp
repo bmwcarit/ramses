@@ -18,44 +18,41 @@ namespace ramses_internal
         // A realistic estimate of number of scenes
         m_memUsedPerScene.reserve(100);
 
-        for (const auto& resourceManagerEntry : updater.m_displayResourceManagers)
+        const RendererResourceManager* resourceManager = static_cast<const RendererResourceManager*>(updater.m_displayResourceManager.get());
+
+        // Add uploaded client resources
+        for (auto& resourceDescIter : resourceManager->m_resourceRegistry.getAllResourceDescriptors())
         {
-            const RendererResourceManager* resourceManager = static_cast<const RendererResourceManager*>(resourceManagerEntry.second.get());
+            const auto& resourceDescriptor = resourceDescIter.value;
 
-            // Add uploaded client resources
-            for (auto& resourceDescIter : resourceManager->m_resourceRegistry.getAllResourceDescriptors())
+            if (EResourceStatus::Uploaded == resourceDescriptor.status)
             {
-                const auto& resourceDescriptor = resourceDescIter.value;
-
-                if (EResourceStatus::Uploaded == resourceDescriptor.status)
+                for (const auto& sceneUsage : resourceDescriptor.sceneUsage)
                 {
-                    for (const auto& sceneUsage : resourceDescriptor.sceneUsage)
-                    {
-                        increaseSceneMemUsageForClientResource(sceneUsage, resourceDescriptor.type, resourceDescriptor.vramSize);
-                    }
+                    increaseSceneMemUsageForClientResource(sceneUsage, resourceDescriptor.type, resourceDescriptor.vramSize);
                 }
             }
+        }
 
-            // Add all scene resources, assume they are uploaded
-            for (auto& sceneResourceUsageIter : resourceManager->m_sceneResourceRegistryMap)
+        // Add all scene resources, assume they are uploaded
+        for (auto& sceneResourceUsageIter : resourceManager->m_sceneResourceRegistryMap)
+        {
+            SceneId sceneId = sceneResourceUsageIter.key;
+            const RendererSceneResourceRegistry& sceneResourceUsage = sceneResourceUsageIter.value;
+
+            increaseSceneMemUsageForSceneRenderBuffer(sceneId, sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_RenderBuffer_WriteOnly));
+            increaseSceneMemUsageForSceneDataBuffer(sceneId, sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_DataBuffer));
+            increaseSceneMemUsageForSceneTextureBuffer(sceneId,
+                sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_TextureBuffer) +
+                sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_RenderBuffer_ReadWrite) +
+                sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_StreamTexture));
+        }
+
+        for (OffscreenBufferHandle i(0); i < resourceManager->m_offscreenBuffers.getTotalCount(); ++i)
+        {
+            if (resourceManager->m_offscreenBuffers.isAllocated(i))
             {
-                SceneId sceneId = sceneResourceUsageIter.key;
-                const RendererSceneResourceRegistry& sceneResourceUsage = sceneResourceUsageIter.value;
-
-                increaseSceneMemUsageForSceneRenderBuffer(sceneId, sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_RenderBuffer_WriteOnly));
-                increaseSceneMemUsageForSceneDataBuffer(sceneId, sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_DataBuffer));
-                increaseSceneMemUsageForSceneTextureBuffer(sceneId,
-                    sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_TextureBuffer) +
-                    sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_RenderBuffer_ReadWrite) +
-                    sceneResourceUsage.getSceneResourceMemoryUsage(ESceneResourceType_StreamTexture));
-            }
-
-            for (OffscreenBufferHandle i(0); i < resourceManager->m_offscreenBuffers.getTotalCount(); ++i)
-            {
-                if (resourceManager->m_offscreenBuffers.isAllocated(i))
-                {
-                    increaseMemUsageForOffscreenBuffer(resourceManager->m_offscreenBuffers.getMemory(i)->m_estimatedVRAMUsage);
-                }
+                increaseMemUsageForOffscreenBuffer(resourceManager->m_offscreenBuffers.getMemory(i)->m_estimatedVRAMUsage);
             }
         }
     }

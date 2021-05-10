@@ -59,17 +59,20 @@ namespace ramses_internal
                 local.swap(queue);
             }
 
-            StringOutputStream stream;
-            for (const auto& entry : local)
+            if (!local.empty())
             {
-                stream << entry.timestamp << ", "
-                    << entry.framerate << ", "
-                    << entry.avgDrawCalls << ", "
-                    << entry.gpuMemoryUsed << "\n";
+                StringOutputStream stream;
+                for (const auto& entry : local)
+                {
+                    stream << entry.timestamp << ", "
+                        << entry.framerate << ", "
+                        << entry.avgDrawCalls << ", "
+                        << entry.gpuMemoryUsed << "\n";
+                }
+                if (!file.write(stream.c_str(), stream.size()))
+                    LOG_WARN(CONTEXT_FRAMEWORK, "Monitor::run: Writing to output file failed");
+                file.flush();
             }
-            if (!file.write(stream.c_str(), stream.size()))
-                LOG_WARN(CONTEXT_FRAMEWORK, "Monitor::run: Writing to output file failed");
-            file.flush();
 
             PlatformThread::Sleep(100);
         }

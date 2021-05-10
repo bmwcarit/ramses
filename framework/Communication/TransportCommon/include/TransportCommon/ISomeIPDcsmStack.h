@@ -35,6 +35,7 @@ namespace ramses_internal
         virtual void handleContentEnableFocusRequest(const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest) = 0;
         virtual void handleContentDisableFocusRequest(const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest) = 0;
         virtual void handleResponse(const SomeIPMsgHeader& header, uint64_t originalMessageId, uint64_t originalSessionId, uint64_t responseCode) = 0;
+        virtual void handleContentStatus(const SomeIPMsgHeader& header, ContentID content, uint64_t messageID, absl::Span<const Byte> message) = 0;
     };
 
     struct DcsmStackSendDataSizes
@@ -59,6 +60,7 @@ namespace ramses_internal
         virtual bool sendContentEnableFocusRequest(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest) = 0;
         virtual bool sendContentDisableFocusRequest(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, int32_t focusRequest) = 0;
         virtual bool sendResponse(DcsmInstanceId to, const SomeIPMsgHeader& header, uint64_t originalMessageId, uint64_t originalSessionId, uint64_t responseCode) = 0;
+        virtual bool sendContentStatus(DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, uint64_t messageId, std::vector<Byte> const& message) = 0;
     };
 }
 

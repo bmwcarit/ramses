@@ -15,6 +15,8 @@
 #include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "ramses-client-api/RamsesClient.h"
+#include "ramses-client-api/Scene.h"
 
 #include "RendererLib/RendererCommands.h"
 #include "RamsesRendererImpl.h"
@@ -22,6 +24,7 @@
 #include "PlatformAbstraction/PlatformEvent.h"
 #include "RendererCommandVisitorMock.h"
 #include "SceneAPI/RenderState.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 
 using namespace testing;
 
@@ -608,6 +611,45 @@ TEST(ARamsesRendererWithSeparateRendererThread, willNotReportsFrameTimingsIfDisa
     EXPECT_FALSE(eventHandler.timingReported);
 
     EXPECT_EQ(ramses::StatusOK, renderer.stopThread());
+    framework.destroyRenderer(renderer);
+}
+
+TEST(ARamsesRendererWithSeparateRendererThread, TSAN_periodicallyDispatchEvents)
+{
+    // this test is meant for TSAN
+    // - run renderer with display in thread with 30fps
+    // - keep dispatching events with higher frequency
+
+    ramses::RamsesFramework framework;
+    ramses::RamsesRenderer& renderer(*framework.createRenderer({}));
+    ramses::RamsesClient& client(*framework.createClient({}));
+    framework.connect();
+
+    auto scene = client.createScene(ramses::sceneId_t{ 321u });
+    scene->createNode();
+    scene->flush();
+    scene->publish(ramses::EScenePublicationMode_LocalOnly);
+
+    renderer.setFrameTimerLimits(std::numeric_limits<uint64_t>::max(), std::numeric_limits<uint64_t>::max(), std::numeric_limits<uint64_t>::max());
+    renderer.setLoopMode(ramses::ELoopMode_UpdateOnly);
+    renderer.setMaximumFramerate(30.f);
+    renderer.createDisplay({});
+    renderer.flush();
+
+    renderer.startThread();
+
+    ramses::RendererEventHandlerEmpty dummyHandler;
+    ramses::RendererSceneControlEventHandlerEmpty dummyHandler2;
+    const auto startTS = std::chrono::steady_clock::now();
+    while (std::chrono::steady_clock::now() - startTS < std::chrono::seconds{ 5 })
+    {
+        renderer.dispatchEvents(dummyHandler);
+        renderer.getSceneControlAPI()->dispatchEvents(dummyHandler2);
+        std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
+    }
+
+    renderer.stopThread();
+    framework.disconnect();
     framework.destroyRenderer(renderer);
 }
 

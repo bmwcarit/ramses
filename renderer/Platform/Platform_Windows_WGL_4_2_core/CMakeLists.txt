@@ -29,6 +29,6 @@ ACME_MODULE(
     #==========================================================================
     # dependencies
     #==========================================================================
-    DEPENDENCIES            Surface_Windows_WGL
+    DEPENDENCIES            Platform_Windows_WGL
                             Device_GL
 )

@@ -359,9 +359,16 @@ namespace ramses_internal
         m_activePrimitiveDrawMode = mode;
     }
 
-    void Device_GL::setViewport(UInt32 x, UInt32 y, UInt32 width, UInt32 height)
+    void Device_GL::setViewport(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
-        glViewport(x, y, width, height);
+        if (width > m_limits.getMaxViewportWidth() || height > m_limits.getMaxViewportHeight())
+        {
+            LOG_WARN_P(CONTEXT_RENDERER, "Device_GL::setViewport: viewport size out of bounds "
+                "[width={} height={}], clamping to [maxW={} maxH={}]",
+                width, height, m_limits.getMaxViewportWidth(), m_limits.getMaxViewportHeight());
+        }
+
+        glViewport(x, y, std::min(width, m_limits.getMaxViewportWidth()), std::min(height, m_limits.getMaxViewportHeight()));
     }
 
     GLHandle Device_GL::createTexture(UInt32 width, UInt32 height, ETextureFormat storageFormat, UInt32 sampleCount) const
@@ -1335,6 +1342,11 @@ namespace ramses_internal
         GLint maxMSAASamples{ 0 };
         glGetIntegerv(GL_MAX_SAMPLES, &maxMSAASamples);
         m_limits.setMaximumSamples(maxMSAASamples);
+
+
+        std::array<GLint, 2> maxViewport;
+        glGetIntegerv(GL_MAX_VIEWPORT_DIMS, maxViewport.data());
+        m_limits.setMaxViewport(maxViewport[0], maxViewport[1]);
 
         GLint maxNumberOfBinaryFormats = 0;
         // binary shader formats

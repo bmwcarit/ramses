@@ -19,12 +19,9 @@ namespace ramses_internal
     class Platform_Android_EGL : public Platform_EGL<Window_Android>
     {
     protected:
-        Platform_Android_EGL(const RendererConfig& rendererConfig);
+        explicit Platform_Android_EGL(const RendererConfig& rendererConfig);
 
-        ISystemCompositorController* createSystemCompositorController() override final;
-        IWindow*    createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
-        IEmbeddedCompositor*    createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) override;
-
+        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
         virtual uint32_t getSwapInterval() const override;
     };
 }

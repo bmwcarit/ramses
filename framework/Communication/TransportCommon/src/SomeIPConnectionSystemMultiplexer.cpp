@@ -331,6 +331,14 @@ namespace ramses_internal
         return false;
     }
 
+    bool SomeIPConnectionSystemMultiplexer::sendDcsmContentStatus(const Guid& to, ContentID content, uint64_t messageID, std::vector<ramses_internal::Byte> const& message)
+    {
+        if (m_dcsmConnectionSystem)
+            return m_dcsmConnectionSystem->sendContentStatus(to, content, messageID, message);
+        LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentStatus: dcsm not enabled");
+        return false;
+    }
+
     void SomeIPConnectionSystemMultiplexer::setDcsmProviderServiceHandler(IDcsmProviderServiceHandler* handler)
     {
         if (m_dcsmConnectionSystem)

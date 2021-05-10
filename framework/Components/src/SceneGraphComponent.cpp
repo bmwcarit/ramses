@@ -67,9 +67,18 @@ namespace ramses_internal
 
         if (m_sceneRendererHandler)
         {
-
+            // new renderer: publish all scenes
             for (const auto& sceneInfo : m_locallyPublishedScenes)
                 m_sceneRendererHandler->handleNewSceneAvailable(sceneInfo.value, m_myID);
+        }
+        else
+        {
+            // renderer gone: unsubscribe self from all scenes
+            for(const auto& publishedScene : m_locallyPublishedScenes)
+            {
+                if (ClientSceneLogicBase** sceneLogic = m_clientSceneLogicMap.get(publishedScene.key))
+                    (*sceneLogic)->removeSubscriber(m_myID);
+            }
         }
     }
 
@@ -580,5 +589,11 @@ namespace ramses_internal
     void SceneGraphComponent::handleSceneNotAvailable(const SceneId& sceneId, const Guid& providerID)
     {
         LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneNotAvailable: ignoring from sceneId: " << sceneId <<",  by " << providerID);
+    }
+
+    const ClientSceneLogicBase* SceneGraphComponent::getClientSceneLogicForScene(SceneId sceneId) const
+    {
+        ClientSceneLogicBase const* const* result = m_clientSceneLogicMap.get(sceneId);
+        return result ? *result : nullptr;
     }
 }

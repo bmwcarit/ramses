@@ -10,7 +10,6 @@
 #define RAMSES_PLATFORMMOCK_H
 
 #include "renderer_common_gmock_header.h"
-#include "SurfaceMock.h"
 #include "DeviceMock.h"
 #include "EmbeddedCompositorMock.h"
 #include "RendererAPI/IPlatform.h"
@@ -35,51 +34,21 @@ namespace ramses_internal
         explicit PlatformMock();
         ~PlatformMock() override;
 
-        MOCK_METHOD(Bool, createPerRendererComponents, (), (override));
-        MOCK_METHOD(void, destroyPerRendererComponents, (), (override));
         MOCK_METHOD(IRenderBackend*, createRenderBackend, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
-        MOCK_METHOD(void, destroyRenderBackend, (IRenderBackend& renderBackend), (override));
-        MOCK_METHOD(IResourceUploadRenderBackend*, createResourceUploadRenderBackend, (const IRenderBackend&), (override));
-        MOCK_METHOD(void, destroyResourceUploadRenderBackend, (IResourceUploadRenderBackend& ), (override));
-
-        MOCK_METHOD(ISystemCompositorController* , createSystemCompositorController, (), (override));
-        MOCK_METHOD(void, destroySystemCompositorController, (), (override));
-        MOCK_METHOD(IWindow*, createWindow, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
-        MOCK_METHOD(Bool, destroyWindow, (IWindow&), (override));
-        MOCK_METHOD(IContext*, createContext, (const DisplayConfig& displayConfig, IWindow& window, IContext*), (override));
-        MOCK_METHOD(Bool, destroyContext, (IContext&), (override));
-        MOCK_METHOD(IDevice*, createDevice, (IContext& context), (override));
-        MOCK_METHOD(Bool, destroyDevice, (IDevice&), (override));
-        MOCK_METHOD(ISurface*, createSurface, (IWindow& window, IContext& context), (override));
-        MOCK_METHOD(Bool, destroySurface, (ISurface& surface), (override));
-        MOCK_METHOD(IEmbeddedCompositor*, createEmbeddedCompositor,(const DisplayConfig& displayConfig, IContext& context), (override));
-        MOCK_METHOD(Bool, destroyEmbeddedCompositor, (IEmbeddedCompositor& compositor), (override));
-        MOCK_METHOD(ITextureUploadingAdapter*, createTextureUploadingAdapter, (IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window), (override));
-        MOCK_METHOD(Bool, destroyTextureUploadingAdapter, (ITextureUploadingAdapter& textureUploadingAdapter), (override));
-        MOCK_METHOD(ISystemCompositorController*, getSystemCompositorController, (), (const, override));
+        MOCK_METHOD(void, destroyRenderBackend, (), (override));
+        MOCK_METHOD(IResourceUploadRenderBackend*, createResourceUploadRenderBackend, (), (override));
+        MOCK_METHOD(void, destroyResourceUploadRenderBackend, (), (override));
+        MOCK_METHOD(ISystemCompositorController*, getSystemCompositorController, (), (override));
         MOCK_METHOD(const IWindowEventsPollingManager*, getWindowEventsPollingManager, (), (const, override));
 
-        MOCK_TYPE<SystemCompositorControllerMock>   systemCompositorControllerMock;
         MOCK_TYPE<WindowEventsPollingManagerMock>   windowEventsPollingManagerMock;
         MOCK_TYPE<RenderBackendMock<MOCK_TYPE>>     renderBackendMock;
         MOCK_TYPE<ResourceUploadRenderBackendMock<MOCK_TYPE>> resourceUploadRenderBackendMock;
-
-    private:
-        void createDefaultMockCalls();
+        MOCK_TYPE<SystemCompositorControllerMock>   systemCompositorControllerMock;
     };
 
     using PlatformNiceMock = PlatformMock< ::testing::NiceMock>;
     using PlatformStrictMock = PlatformMock< ::testing::StrictMock>;
-
-    template <template<typename> class MOCK_TYPE>
-    class PlatformMockWithPerRendererComponents : public PlatformMock<MOCK_TYPE>
-    {
-    public:
-        explicit PlatformMockWithPerRendererComponents(bool testPerRendererComponents = true);
-    };
-
-    using PlatformNiceMockWithPerRendererComponents = PlatformMockWithPerRendererComponents<::testing::NiceMock>;
-    using PlatformStrictMockWithPerRendererComponents = PlatformMockWithPerRendererComponents<::testing::StrictMock>;
 }
 
 #endif

@@ -29,11 +29,11 @@ namespace ramses_internal
         }
     };
 
-    template <typename _InstanceIdType>
+    template <typename InstanceIdT>
     class ISomeIPStackCallbacksCommon
     {
     public:
-        using InstanceIdType = _InstanceIdType;
+        using InstanceIdType = InstanceIdT;
 
         virtual ~ISomeIPStackCallbacksCommon() = default;
 
@@ -44,11 +44,11 @@ namespace ramses_internal
         virtual void handleKeepAlive(const SomeIPMsgHeader& header, uint64_t timestampNow) = 0;
     };
 
-    template <typename _InstanceIdType>
+    template <typename InstanceIdT>
     class ISomeIPStackCommon
     {
     public:
-        using InstanceIdType = _InstanceIdType;
+        using InstanceIdType = InstanceIdT;
 
         virtual ~ISomeIPStackCommon() = default;
 

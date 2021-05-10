@@ -24,19 +24,19 @@ namespace ramses_internal
         virtual ~RendererSceneUpdaterMock() override;
 
         MOCK_METHOD(void, handleSceneUpdate, (SceneId sceneId, SceneUpdate&& sceneUpdate), (override));
-        MOCK_METHOD(void, createDisplayContext, (const DisplayConfig& displayConfig, DisplayHandle handle, IBinaryShaderCache*), (override));
-        MOCK_METHOD(void, destroyDisplayContext, (DisplayHandle handle), (override));
+        MOCK_METHOD(void, createDisplayContext, (const DisplayConfig& displayConfig, IBinaryShaderCache*), (override));
+        MOCK_METHOD(void, destroyDisplayContext, (), (override));
         MOCK_METHOD(void, handleScenePublished, (SceneId sceneId, EScenePublicationMode mode), (override));
         MOCK_METHOD(void, handleSceneUnpublished, (SceneId sceneId), (override));
         MOCK_METHOD(void, handleSceneReceived, (const SceneInfo& sceneInfo), (override));
-        MOCK_METHOD(bool, handleBufferCreateRequest, (OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType), (override));
-        MOCK_METHOD(bool, handleBufferDestroyRequest, (OffscreenBufferHandle buffer, DisplayHandle display), (override));
-        MOCK_METHOD(bool, handleBufferCreateRequest, (StreamBufferHandle buffer, DisplayHandle display, WaylandIviSurfaceId source), (override));
-        MOCK_METHOD(bool, handleBufferDestroyRequest, (StreamBufferHandle buffer, DisplayHandle display), (override));
-        MOCK_METHOD(bool, setStreamBufferState, (StreamBufferHandle buffer, DisplayHandle display, bool newState), (override));
-        MOCK_METHOD(void, handleSetClearFlags, (DisplayHandle display, OffscreenBufferHandle buffer, uint32_t), (override));
-        MOCK_METHOD(void, handleSetClearColor, (DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor), (override));
-        MOCK_METHOD(void, handleReadPixels, (DisplayHandle display, OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo), (override));
+        MOCK_METHOD(bool, handleBufferCreateRequest, (OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType), (override));
+        MOCK_METHOD(bool, handleBufferDestroyRequest, (OffscreenBufferHandle buffer), (override));
+        MOCK_METHOD(bool, handleBufferCreateRequest, (StreamBufferHandle buffer, WaylandIviSurfaceId source), (override));
+        MOCK_METHOD(bool, handleBufferDestroyRequest, (StreamBufferHandle buffer), (override));
+        MOCK_METHOD(bool, setStreamBufferState, (StreamBufferHandle buffer, bool newState), (override));
+        MOCK_METHOD(void, handleSetClearFlags, (OffscreenBufferHandle buffer, uint32_t), (override));
+        MOCK_METHOD(void, handleSetClearColor, (OffscreenBufferHandle buffer, const Vector4& clearColor), (override));
+        MOCK_METHOD(void, handleReadPixels, (OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo), (override));
         MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, Vector2 coordsNormalizedToBufferSize), (override));
         MOCK_METHOD(void, handleSceneDataLinkRequest, (SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId), (override));
         MOCK_METHOD(void, handleBufferToSceneDataLinkRequest, (OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId), (override));
@@ -44,6 +44,7 @@ namespace ramses_internal
         MOCK_METHOD(void, handleDataUnlinkRequest, (SceneId consumerSceneId, DataSlotId consumerId), (override));
         MOCK_METHOD(void, setLimitFlushesForceApply, (UInt limitForPendingFlushesForceApply), (override));
         MOCK_METHOD(void, setLimitFlushesForceUnsubscribe, (UInt limitForPendingFlushesForceUnsubscribe), (override));
+        MOCK_METHOD(void, setSkippingOfUnmodifiedScenes, (bool enable), (override));
         MOCK_METHOD(void, logRendererInfo, (ERendererLogTopic topic, bool verbose, NodeHandle nodeFilter), (const, override));
     };
 }

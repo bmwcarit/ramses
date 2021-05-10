@@ -18,23 +18,23 @@ using namespace testing;
 
 const FrameTimer RendererMock::FrameTimerInstance;
 
-RendererMock::RendererMock(const IPlatform& platform, const RendererScenes& rendererScenes,
+RendererMock::RendererMock(DisplayHandle display, const IPlatform& platform, const RendererScenes& rendererScenes,
     const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics)
-    : Renderer(const_cast<IPlatform&>(platform), const_cast<RendererScenes&>(rendererScenes),
+    : Renderer(display, const_cast<IPlatform&>(platform), const_cast<RendererScenes&>(rendererScenes),
         const_cast<RendererEventCollector&>(eventCollector), FrameTimerInstance, const_cast<SceneExpirationMonitor&>(expirationMonitor), const_cast<RendererStatistics&>(statistics))
 {
     // by default do not track modified scenes, concrete tests will override
-    EXPECT_CALL(*this, markBufferWithSceneAsModified(_)).Times(AnyNumber());
+    EXPECT_CALL(*this, markBufferWithSceneForRerender(_)).Times(AnyNumber());
     // by default do not track set clear color, concrete tests will override
-    EXPECT_CALL(*this, setClearColor(_, _, _)).Times(AnyNumber());
+    EXPECT_CALL(*this, setClearColor(_, _)).Times(AnyNumber());
 }
 
 RendererMock::~RendererMock() = default;
 
 template <template<typename> class MOCK_TYPE>
-RendererMockWithMockDisplay<MOCK_TYPE>::RendererMockWithMockDisplay(const IPlatform& platform, const RendererScenes& rendererScenes,
+RendererMockWithMockDisplay<MOCK_TYPE>::RendererMockWithMockDisplay(DisplayHandle display, const RendererScenes& rendererScenes,
     const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics)
-    : RendererMock(const_cast<IPlatform&>(platform), const_cast<RendererScenes&>(rendererScenes),
+    : RendererMock(display, m_platform, const_cast<RendererScenes&>(rendererScenes),
         const_cast<RendererEventCollector&>(eventCollector), const_cast<SceneExpirationMonitor&>(expirationMonitor), const_cast<RendererStatistics&>(statistics))
 {
 }
@@ -43,74 +43,48 @@ template <template<typename> class MOCK_TYPE>
 RendererMockWithMockDisplay<MOCK_TYPE>::~RendererMockWithMockDisplay() = default;
 
 template <template<typename> class MOCK_TYPE>
-void RendererMockWithMockDisplay<MOCK_TYPE>::createDisplayContext(const DisplayConfig& displayConfig, DisplayHandle displayHandle)
+IDisplayController* RendererMockWithMockDisplay<MOCK_TYPE>::createDisplayControllerFromConfig(const DisplayConfig& displayConfig)
 {
-    UNUSED(displayConfig);
-    MOCK_TYPE< RenderBackendMock<MOCK_TYPE> >* renderBackend = new MOCK_TYPE < RenderBackendMock<MOCK_TYPE> > ;
-    MOCK_TYPE< EmbeddedCompositingManagerMock >* embeddedCompositingManager = new MOCK_TYPE< EmbeddedCompositingManagerMock >;
-    MOCK_TYPE< DisplayControllerMock >* displayController = new MOCK_TYPE < DisplayControllerMock >;
-    EXPECT_CALL(*displayController, getDisplayWidth()).Times(AnyNumber()).WillRepeatedly(Return(displayConfig.getDesiredWindowWidth()));
-    EXPECT_CALL(*displayController, getDisplayHeight()).Times(AnyNumber()).WillRepeatedly(Return(displayConfig.getDesiredWindowHeight()));
-    EXPECT_CALL(*displayController, getDisplayBuffer()).Times(AnyNumber());
-    EXPECT_CALL(*displayController, getRenderBackend()).Times(AnyNumber());
-    EXPECT_CALL(*displayController, getEmbeddedCompositingManager()).Times(AnyNumber());
-    EXPECT_CALL(renderBackend->surfaceMock, disable()).Times(AtMost(1)).WillRepeatedly(Return(true));
-    EXPECT_CALL(renderBackend->surfaceMock, enable()).Times(AtMost(1)).WillRepeatedly(Return(true));
-    ON_CALL(*displayController, getRenderBackend()).WillByDefault(ReturnRef(*renderBackend));
-    ON_CALL(*displayController, getEmbeddedCompositingManager()).WillByDefault(ReturnRef(*embeddedCompositingManager));
+    assert(m_displayController == nullptr);
+    m_displayController = new MOCK_TYPE < DisplayControllerMock >;
 
-    Renderer::addDisplayController(*displayController, displayHandle);
-    EXPECT_TRUE(hasDisplayController(displayHandle));
+    ON_CALL(*m_displayController, getRenderBackend()).WillByDefault(ReturnRef(m_platform.renderBackendMock));
+    ON_CALL(*m_displayController, getEmbeddedCompositingManager()).WillByDefault(ReturnRef(m_embeddedCompositingManager));
 
-    DisplayMockInfo<MOCK_TYPE> displayMock;
-    displayMock.m_displayController = displayController;
-    displayMock.m_renderBackend = renderBackend;
-    displayMock.m_embeddedCompositingManager = embeddedCompositingManager;
-    m_displayControllers.put(displayHandle, displayMock);
+    EXPECT_CALL(*m_displayController, getDisplayWidth()).Times(AnyNumber()).WillRepeatedly(Return(displayConfig.getDesiredWindowWidth()));
+    EXPECT_CALL(*m_displayController, getDisplayHeight()).Times(AnyNumber()).WillRepeatedly(Return(displayConfig.getDesiredWindowHeight()));
+    EXPECT_CALL(*m_displayController, getDisplayBuffer()).Times(AnyNumber());
+    EXPECT_CALL(*m_displayController, getRenderBackend()).Times(AnyNumber());
+    EXPECT_CALL(*m_displayController, getEmbeddedCompositingManager()).Times(AnyNumber());
+
+    EXPECT_CALL(m_platform.renderBackendMock.contextMock, disable()).Times(AtMost(1)).WillRepeatedly(Return(true));
+    EXPECT_CALL(m_platform.renderBackendMock.contextMock, enable()).Times(AtMost(1)).WillRepeatedly(Return(true));
+
+    EXPECT_CALL(*this, setClearColor(_, displayConfig.getClearColor()));
+
+    return m_displayController;
 }
 
 template <template<typename> class MOCK_TYPE>
-void RendererMockWithMockDisplay<MOCK_TYPE>::destroyDisplayContext(DisplayHandle handle)
+void RendererMockWithMockDisplay<MOCK_TYPE>::markBufferWithSceneForRerender(SceneId sceneId)
 {
-    DisplayMockInfo<MOCK_TYPE>& displayMock = *m_displayControllers.get(handle);
-    MOCK_TYPE<DisplayControllerMock>& displayController = *displayMock.m_displayController;
-
-    EXPECT_CALL(displayController, validateRenderingStatusHealthy());
-    removeDisplayController(handle);
-    delete &displayController;
-    delete displayMock.m_renderBackend;
-    delete displayMock.m_embeddedCompositingManager;
+    Renderer::markBufferWithSceneForRerender(sceneId);  // NOLINT clang-tidy: We really mean to call into Renderer
+    RendererMock::markBufferWithSceneForRerender(sceneId);
 }
 
 template <template<typename> class MOCK_TYPE>
-void RendererMockWithMockDisplay<MOCK_TYPE>::markBufferWithSceneAsModified(SceneId sceneId)
+void ramses_internal::RendererMockWithMockDisplay<MOCK_TYPE>::setClearFlags(DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags)
 {
-    Renderer::markBufferWithSceneAsModified(sceneId);  // NOLINT clang-tidy: We really mean to call into Renderer
-    RendererMock::markBufferWithSceneAsModified(sceneId);
+    Renderer::setClearFlags(bufferDeviceHandle, clearFlags);  // NOLINT clang-tidy: We really mean to call into Renderer
+    RendererMock::setClearFlags(bufferDeviceHandle, clearFlags);
 }
 
 template <template<typename> class MOCK_TYPE>
-void ramses_internal::RendererMockWithMockDisplay<MOCK_TYPE>::setClearFlags(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags)
+void ramses_internal::RendererMockWithMockDisplay<MOCK_TYPE>::setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor)
 {
-    Renderer::setClearFlags(displayHandle, bufferDeviceHandle, clearFlags);  // NOLINT clang-tidy: We really mean to call into Renderer
-    RendererMock::setClearFlags(displayHandle, bufferDeviceHandle, clearFlags);
+    Renderer::setClearColor(bufferDeviceHandle, clearColor);  // NOLINT clang-tidy: We really mean to call into Renderer
+    RendererMock::setClearColor(bufferDeviceHandle, clearColor);
 }
-
-template <template<typename> class MOCK_TYPE>
-void ramses_internal::RendererMockWithMockDisplay<MOCK_TYPE>::setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor)
-{
-    Renderer::setClearColor(displayHandle, bufferDeviceHandle, clearColor);  // NOLINT clang-tidy: We really mean to call into Renderer
-    RendererMock::setClearColor(displayHandle, bufferDeviceHandle, clearColor);
-}
-
-template <template<typename> class MOCK_TYPE>
-DisplayMockInfo<MOCK_TYPE>& RendererMockWithMockDisplay<MOCK_TYPE>::getDisplayMock(DisplayHandle handle)
-{
-    return *m_displayControllers.get(handle);
-}
-
-template struct DisplayMockInfo < NiceMock >;
-template struct DisplayMockInfo < StrictMock >;
 
 template class RendererMockWithMockDisplay < NiceMock >;
 template class RendererMockWithMockDisplay < StrictMock >;

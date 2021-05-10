@@ -27,22 +27,15 @@ namespace ramses_internal
         return 1u;
     }
 
-    ISystemCompositorController* Platform_Integrity_RGL_EGL_ES_3_0::createSystemCompositorController()
+    bool Platform_Integrity_RGL_EGL_ES_3_0::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
     {
-        return nullptr;
-    }
+        auto window = std::make_unique<Window_Integrity_RGL>(displayConfig, windowEventHandler);
+        if (window->init())
+        {
+            m_window = std::move(window);
+            return true;
+        }
 
-    IWindow* Platform_Integrity_RGL_EGL_ES_3_0::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
-    {
-        Window_Integrity_RGL* platformWindow = new Window_Integrity_RGL(displayConfig, windowEventHandler);
-        return addPlatformWindow(platformWindow);
-    }
-
-    IEmbeddedCompositor* Platform_Integrity_RGL_EGL_ES_3_0::createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context)
-    {
-        UNUSED(displayConfig);
-        UNUSED(context);
-        EmbeddedCompositor_Dummy* compositor = new EmbeddedCompositor_Dummy();
-        return addEmbeddedCompositor(compositor);
+        return false;
     }
 }

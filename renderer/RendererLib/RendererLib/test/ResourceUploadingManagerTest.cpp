@@ -41,16 +41,16 @@ public:
         ThreadLocalLog::SetPrefix(1);
 
         InSequence s;
-        EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, disable()).WillOnce(Return(true));
-        EXPECT_CALL(platformMock, createResourceUploadRenderBackend(Ref(platformMock.renderBackendMock)));
-        EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, enable()).WillOnce(Return(true));
+        EXPECT_CALL(platformMock.renderBackendMock.contextMock, disable()).WillOnce(Return(true));
+        EXPECT_CALL(platformMock, createResourceUploadRenderBackend());
+        EXPECT_CALL(platformMock.renderBackendMock.contextMock, enable()).WillOnce(Return(true));
         const bool status = asyncEffectUploader.createResourceUploadRenderBackendAndStartThread();
         EXPECT_TRUE(status);
     }
 
     ~AResourceUploadingManager()
     {
-        EXPECT_CALL(platformMock, destroyResourceUploadRenderBackend(Ref(platformMock.resourceUploadRenderBackendMock)));
+        EXPECT_CALL(platformMock, destroyResourceUploadRenderBackend());
         asyncEffectUploader.destroyResourceUploadRenderBackendAndStopThread();
     }
 

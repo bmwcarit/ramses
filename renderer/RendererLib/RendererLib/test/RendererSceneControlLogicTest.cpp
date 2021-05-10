@@ -27,7 +27,6 @@ namespace ramses_internal
 
         virtual void SetUp() override
         {
-            m_logic.setSceneMapping(sceneId, displayId);
             m_logic.setSceneDisplayBufferAssignment(sceneId, OffscreenBufferHandle{}, sceneRenderOrder);
         }
 
@@ -64,7 +63,7 @@ namespace ramses_internal
             if (state != RendererSceneState::Available)
             {
                 EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
-                EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+                EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
                 EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
                 if (state != RendererSceneState::Ready)
                     EXPECT_CALL(m_logicOutput, handleSceneShowRequest(sceneId));
@@ -149,7 +148,6 @@ namespace ramses_internal
 
         const SceneId sceneId{ 33 };
         const DisplayHandle displayId{ 1u };
-        const DisplayHandle otherDisplayId{ 3u };
         const OffscreenBufferHandle offscreenBufferId{ 19u };
         const int sceneRenderOrder{ -3 };
     };
@@ -168,7 +166,7 @@ namespace ramses_internal
 
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.setSceneState(sceneId, RendererSceneState::Rendered);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
         EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
         EXPECT_CALL(m_logicOutput, handleSceneShowRequest(sceneId));
@@ -203,7 +201,7 @@ namespace ramses_internal
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::Failed);
 
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
         EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
         EXPECT_CALL(m_logicOutput, handleSceneShowRequest(sceneId));
@@ -224,10 +222,10 @@ namespace ramses_internal
         m_logic.scenePublished(sceneId);
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.setSceneState(sceneId, RendererSceneState::Rendered);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
 
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneMapped(sceneId, RendererSceneControlLogic::EventResult::Failed);
 
         EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
@@ -249,7 +247,7 @@ namespace ramses_internal
         m_logic.scenePublished(sceneId);
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.setSceneState(sceneId, RendererSceneState::Rendered);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
         EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
         EXPECT_CALL(m_logicOutput, handleSceneShowRequest(sceneId));
@@ -275,7 +273,7 @@ namespace ramses_internal
 
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.setSceneState(sceneId, RendererSceneState::Rendered);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
         EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
         EXPECT_CALL(m_logicOutput, handleSceneShowRequest(sceneId));
@@ -305,7 +303,7 @@ namespace ramses_internal
 
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.setSceneState(sceneId, RendererSceneState::Rendered);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
         EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
         EXPECT_CALL(m_logicOutput, handleSceneShowRequest(sceneId));
@@ -343,7 +341,7 @@ namespace ramses_internal
 
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.setSceneState(sceneId, RendererSceneState::Rendered);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
         EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
         EXPECT_CALL(m_logicOutput, handleSceneShowRequest(sceneId));
@@ -426,59 +424,6 @@ namespace ramses_internal
         doAnotherFullCycleFromUnpublishToShownWithShowTriggered(LastSuccessfulCommand::Unmap);
     }
 
-    TEST_F(ARendererSceneControlLogic, canChangeMappingPropertiesWhenSceneAvailableAndNotSetToReadyOrRenderedYet)
-    {
-        m_logic.setSceneState(sceneId, RendererSceneState::Available);
-        publishAndExpectToGetToState(RendererSceneState::Available);
-
-        m_logic.setSceneMapping(sceneId, otherDisplayId);
-        m_logic.setSceneDisplayBufferAssignment(sceneId, OffscreenBufferHandle{}, 666);
-
-        // will map scene to other display
-        EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, otherDisplayId));
-        m_logic.setSceneState(sceneId, RendererSceneState::Ready);
-        // will assign scene to other display's framebuffer with given render order
-        EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, 666));
-        m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
-        m_logic.sceneMapped(sceneId, RendererSceneControlLogic::EventResult::OK);
-
-        RendererSceneControlLogic::Events expectedEvents;
-        expectedEvents.push_back({ sceneId, RendererSceneState::Ready });
-        expectEvents(expectedEvents);
-    }
-
-    TEST_F(ARendererSceneControlLogic, canChangeMappingPropertiesForReadySceneAfterGettingItToAvailableFirst)
-    {
-        m_logic.setSceneState(sceneId, RendererSceneState::Ready);
-        publishAndExpectToGetToState(RendererSceneState::Ready);
-
-        EXPECT_CALL(m_logicOutput, handleSceneUnmappingRequest(sceneId));
-        EXPECT_CALL(m_logicOutput, handleSceneUnsubscriptionRequest(sceneId, false));
-        m_logic.setSceneState(sceneId, RendererSceneState::Available);
-        m_logic.sceneUnmapped(sceneId, RendererSceneControlLogic::EventResult::OK);
-        m_logic.sceneUnsubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
-
-        RendererSceneControlLogic::Events expectedEvents;
-        expectedEvents.push_back({ sceneId, RendererSceneState::Available });
-        expectEvents(expectedEvents);
-
-        // now can change mapping
-        m_logic.setSceneMapping(sceneId, otherDisplayId);
-        m_logic.setSceneDisplayBufferAssignment(sceneId, OffscreenBufferHandle{}, 666);
-
-        EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, otherDisplayId));
-        m_logic.setSceneState(sceneId, RendererSceneState::Ready);
-        EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, 666));
-        m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
-        m_logic.sceneMapped(sceneId, RendererSceneControlLogic::EventResult::OK);
-
-        expectedEvents.clear();
-        expectedEvents.push_back({ sceneId, RendererSceneState::Ready });
-        expectEvents(expectedEvents);
-    }
-
     /////////
     // Tests where scene is unpublished during a state transition, state transition fail is reported back
     // and scene gets re-published.
@@ -507,7 +452,7 @@ namespace ramses_internal
         m_logic.setSceneState(sceneId, RendererSceneState::Ready);
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.scenePublished(sceneId);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
 
         RendererSceneControlLogic::Events expectedEvents;
@@ -529,7 +474,7 @@ namespace ramses_internal
         m_logic.setSceneState(sceneId, RendererSceneState::Rendered);
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.scenePublished(sceneId);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
         EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
         EXPECT_CALL(m_logicOutput, handleSceneShowRequest(sceneId));
@@ -642,7 +587,7 @@ namespace ramses_internal
 
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.scenePublished(sceneId);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
 
         RendererSceneControlLogic::Events expectedEvents;
@@ -667,7 +612,7 @@ namespace ramses_internal
 
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.scenePublished(sceneId);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
         EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, sceneRenderOrder));
         EXPECT_CALL(m_logicOutput, handleSceneShowRequest(sceneId));
@@ -771,7 +716,7 @@ namespace ramses_internal
 
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
         m_logic.scenePublished(sceneId);
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
 
         m_logic.setSceneDisplayBufferAssignment(sceneId, offscreenBufferId, 11);
@@ -785,49 +730,15 @@ namespace ramses_internal
         expectEvents(expectedEvents);
     }
 
-    TEST_F(ARendererSceneControlLogic, mappingSceneToAnotherDisplayResetsDisplayBufferAssignmentAndRenderOrder)
-    {
-        m_logic.setSceneState(sceneId, RendererSceneState::Ready);
-        publishAndExpectToGetToState(RendererSceneState::Ready);
-
-        // assign to OB + render order
-        EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, offscreenBufferId, 11));
-        m_logic.setSceneDisplayBufferAssignment(sceneId, offscreenBufferId, 11);
-
-        // unmap scene
-        EXPECT_CALL(m_logicOutput, handleSceneUnmappingRequest(sceneId));
-        EXPECT_CALL(m_logicOutput, handleSceneUnsubscriptionRequest(sceneId, false));
-        m_logic.setSceneState(sceneId, RendererSceneState::Available);
-        m_logic.sceneUnmapped(sceneId, RendererSceneControlLogic::EventResult::OK);
-        m_logic.sceneUnsubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
-
-        expectEvents({ { sceneId, RendererSceneState::Available } });
-
-        // set mapping to other display
-        m_logic.setSceneMapping(sceneId, otherDisplayId);
-
-        // map scene
-        EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, otherDisplayId));
-        m_logic.setSceneState(sceneId, RendererSceneState::Ready);
-        m_logic.sceneSubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
-        EXPECT_CALL(m_logicOutput, handleSceneDisplayBufferAssignmentRequest(sceneId, OffscreenBufferHandle{}, 0));
-        m_logic.sceneMapped(sceneId, RendererSceneControlLogic::EventResult::OK);
-
-        expectEvents({ { sceneId, RendererSceneState::Ready } });
-    }
-
     TEST_F(ARendererSceneControlLogic, getsInitialSceneInfoForUnknownScene)
     {
         constexpr SceneId someScene{ 666 };
         RendererSceneState state = RendererSceneState::Ready;
-        DisplayHandle display{ 1 };
         OffscreenBufferHandle ob{ 2 };
         int32_t renderOrder = -1;
 
-        m_logic.getSceneInfo(someScene, state, display, ob, renderOrder);
+        m_logic.getSceneInfo(someScene, state, ob, renderOrder);
         EXPECT_EQ(RendererSceneState::Unavailable, state);
-        EXPECT_EQ(DisplayHandle::Invalid(), display);
         EXPECT_EQ(OffscreenBufferHandle::Invalid(), ob);
         EXPECT_EQ(0, renderOrder);
     }
@@ -836,25 +747,21 @@ namespace ramses_internal
     {
         constexpr SceneId someScene{ 666 };
         RendererSceneState state;
-        DisplayHandle display;
         OffscreenBufferHandle ob;
         int32_t renderOrder = -1;
 
         m_logic.setSceneState(someScene, RendererSceneState::Available);
 
-        m_logic.getSceneInfo(someScene, state, display, ob, renderOrder);
+        m_logic.getSceneInfo(someScene, state, ob, renderOrder);
         EXPECT_EQ(RendererSceneState::Available, state);
-        EXPECT_EQ(DisplayHandle::Invalid(), display);
         EXPECT_EQ(OffscreenBufferHandle::Invalid(), ob);
         EXPECT_EQ(0, renderOrder);
 
-        m_logic.setSceneMapping(someScene, otherDisplayId);
         m_logic.setSceneDisplayBufferAssignment(someScene, offscreenBufferId, -13);
         m_logic.setSceneState(someScene, RendererSceneState::Ready);
 
-        m_logic.getSceneInfo(someScene, state, display, ob, renderOrder);
+        m_logic.getSceneInfo(someScene, state, ob, renderOrder);
         EXPECT_EQ(RendererSceneState::Ready, state);
-        EXPECT_EQ(otherDisplayId, display);
         EXPECT_EQ(offscreenBufferId, ob);
         EXPECT_EQ(-13, renderOrder);
     }
@@ -870,7 +777,7 @@ namespace ramses_internal
         m_logic.setSceneState(sceneId, RendererSceneState::Available);
         m_logic.sceneUnmapped(sceneId, RendererSceneControlLogic::EventResult::OK);
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.setSceneState(sceneId, RendererSceneState::Ready);
         m_logic.sceneUnsubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
 
@@ -893,7 +800,7 @@ namespace ramses_internal
         EXPECT_CALL(m_logicOutput, handleSceneUnsubscriptionRequest(sceneId, false));
         m_logic.setSceneState(sceneId, RendererSceneState::Available);
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         m_logic.setSceneState(sceneId, RendererSceneState::Ready);
         m_logic.sceneUnmapped(sceneId, RendererSceneControlLogic::EventResult::OK);
         m_logic.sceneUnsubscribed(sceneId, RendererSceneControlLogic::EventResult::OK);
@@ -911,7 +818,7 @@ namespace ramses_internal
     {
         m_logic.setSceneState(sceneId, RendererSceneState::Ready);
         EXPECT_CALL(m_logicOutput, handleSceneSubscriptionRequest(sceneId));
-        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId, displayId));
+        EXPECT_CALL(m_logicOutput, handleSceneMappingRequest(sceneId));
         EXPECT_CALL(m_logicOutput, handleSceneUnmappingRequest(sceneId));
         EXPECT_CALL(m_logicOutput, handleSceneUnsubscriptionRequest(sceneId, false));
 

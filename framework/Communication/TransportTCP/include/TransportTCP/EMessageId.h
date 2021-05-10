@@ -38,13 +38,14 @@ namespace ramses_internal
         // dcsm
         DcsmRegisterContent,
         DcsmCanvasSizeChange,
-        DcsmContentStatusChange,
+        DcsmContentStateChange,
         DcsmContentAvailable,
         DcsmContentDescription,
         DcsmCategoryContentSwitchRequest,
         DcsmRequestUnregisterContent,
         DcsmForceUnregisterContent,
         DcsmUpdateContentMetadata,
+        DcsmContentStatus,
 
         NUM_ELEMENTS
     };
@@ -72,6 +73,7 @@ namespace ramses_internal
         "DcsmRequestUnregisterContent",
         "DcsmForceUnregisterContent",
         "DcsmUpdateContentMetadata",
+        "DcsmContentStatus",
     };
 
     inline IOutputStream& operator<<(IOutputStream& outputStream, EMessageId messageId)

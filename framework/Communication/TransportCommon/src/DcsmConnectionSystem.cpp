@@ -114,6 +114,15 @@ namespace ramses_internal
         });
     }
 
+    bool DcsmConnectionSystem::sendContentStatus(const Guid& to, ContentID content, uint64_t messageID, std::vector<ramses_internal::Byte> const& message)
+    {
+        LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendContentStatus: to " << to << ", content " << content << ", message id  " << messageID <<
+            ", data with size" << message.size() << "]");
+        return sendUnicast("sendDcsmContentStatus", to, [&](DcsmInstanceId iid, SomeIPMsgHeader hdr) {
+            return m_stack->sendContentStatus(iid, hdr, content, messageID, message);
+            });
+    }
+
     bool DcsmConnectionSystem::sendContentEnableFocusRequest(const Guid& to, ContentID content, int32_t focusRequest)
     {
         LOG_INFO(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::sendContentEnableFocusRequest: to " << to << ", content " << content << ", focusRequest " << focusRequest);
@@ -224,5 +233,12 @@ namespace ramses_internal
     {
         if (const Guid* pid = processReceivedMessageHeader(header, "handleResponse"))
             LOG_WARN(CONTEXT_DCSM, "DcsmConnectionSystem(" << m_communicationUserID << ")::handleResponse: unexpected message from " << *pid);
+    }
+
+    void DcsmConnectionSystem::handleContentStatus(const SomeIPMsgHeader& header, ContentID content, uint64_t messageID, absl::Span<const Byte> message)
+    {
+        assert(m_dcsmProviderHandler);
+        if (const Guid* pid = processReceivedMessageHeader(header, "handleContentStatus"))
+            m_dcsmProviderHandler->handleContentStatus(content, messageID, message, *pid);
     }
 }

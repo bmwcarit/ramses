@@ -19,6 +19,7 @@ namespace ramses_internal
     public:
         virtual ~IWindow(){}
 
+        virtual bool init() = 0;
         virtual Bool setFullscreen(Bool fullscreen) = 0;
         virtual Bool canRenderNewFrame() const = 0;
         virtual void handleEvents() = 0;

@@ -148,10 +148,12 @@ namespace ramses_internal
         m_subscribersWaitingForScene.clear();
     }
 
-    void ClientSceneLogicBase::printFlushInfo(StringOutputStream& sos, const char* name, const SceneActionCollection& collection) const
+    void ClientSceneLogicBase::printFlushInfo(StringOutputStream& sos, const char* name, const SceneUpdate& update) const
     {
         sos << name << ": SceneID " << m_sceneId << ", flushIdx " << m_flushCounter
-            << ", numActions " << collection.numberOfActions() << ", sizeActions " << collection.collectionData().size() << "; ActionCountPerType:\n";
+            << ", numActions " << update.actions.numberOfActions() << ", sizeActions " << update.actions.collectionData().size() <<
+            ", numResources " << update.resources.size() <<
+            " ; ActionCountPerType:\n";
 
         struct ActionInfo {
             ActionInfo() : count(0), size(0) {}
@@ -159,7 +161,7 @@ namespace ramses_internal
             UInt32 size;
         };
         std::vector<ActionInfo> sceneActionCountPerType(NumOfSceneActionTypes);
-        for (const auto& action : collection)
+        for (const auto& action : update.actions)
         {
             ActionInfo& info = sceneActionCountPerType[static_cast<uint32_t>(action.type())];
             ++info.count;

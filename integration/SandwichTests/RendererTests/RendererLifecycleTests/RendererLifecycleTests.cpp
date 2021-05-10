@@ -1707,4 +1707,34 @@ namespace ramses_internal
 
         testScenesAndRenderer.destroyRenderer();
     }
+
+    TEST_F(ARendererLifecycleTest, canDestroyAndRecreateRendererOnSameFramework)
+    {
+        const ramses::sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, Vector3(0.0f, 0.0f, 5.0f));
+        testScenesAndRenderer.initializeRenderer();
+        const ramses::displayId_t display_1 = createDisplayForWindow();
+        ASSERT_TRUE(display_1 != ramses::displayId_t::Invalid());
+
+        testScenesAndRenderer.publish(sceneId);
+        testScenesAndRenderer.flush(sceneId);
+        testRenderer.setSceneMapping(sceneId, display_1);
+        ASSERT_TRUE(testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered));
+
+        ASSERT_TRUE(checkScreenshot(display_1, "ARendererInstance_Three_Triangles"));
+
+        // destroy and recreate renderer
+        testScenesAndRenderer.destroyRenderer();
+        testScenesAndRenderer.initializeRenderer();
+
+        const ramses::displayId_t display_2 = createDisplayForWindow();
+        ASSERT_TRUE(display_2 != ramses::displayId_t::Invalid());
+
+        testRenderer.setSceneMapping(sceneId, display_2);
+        ASSERT_TRUE(testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered));
+
+        ASSERT_TRUE(checkScreenshot(display_2, "ARendererInstance_Three_Triangles"));
+
+        testScenesAndRenderer.unpublish(sceneId);
+        testScenesAndRenderer.destroyRenderer();
+    }
 }

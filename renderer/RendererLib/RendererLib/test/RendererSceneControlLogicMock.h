@@ -21,9 +21,8 @@ namespace ramses_internal
         virtual ~RendererSceneControlLogicMock() override;
 
         MOCK_METHOD(void, setSceneState, (SceneId, RendererSceneState), (override));
-        MOCK_METHOD(void, setSceneMapping, (SceneId, DisplayHandle), (override));
         MOCK_METHOD(void, setSceneDisplayBufferAssignment, (SceneId, OffscreenBufferHandle, int32_t), (override));
-        MOCK_METHOD(void, getSceneInfo, (SceneId, RendererSceneState&, DisplayHandle&, OffscreenBufferHandle&, int32_t&), (const, override));
+        MOCK_METHOD(void, getSceneInfo, (SceneId, RendererSceneState&, OffscreenBufferHandle&, int32_t&), (const, override));
     };
 }
 

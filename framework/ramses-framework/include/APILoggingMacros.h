@@ -15,7 +15,7 @@
 //utils
 #include "Utils/LogMacros.h"
 
-#define _LOG_API_LOGLEVEL LOG_TRACE
+#define LOG_API_LOGLEVEL LOG_TRACE
 
 #ifdef _WIN32
 #define CLASS_FUNCTION_NAME __FUNCTION__
@@ -39,78 +39,78 @@
 #define LOG_API_RESOURCE_PTR_STRING(PTR) \
     LOG_API_RAMSESOBJECT_PTR_STRING(PTR) << " with resID " << ((PTR) ? fmt::to_string((PTR)->getResourceId()) : "<invalid>")
 
-#define _LOG_API_SEPERATOR << " ; " <<
+#define LOG_API_SEPERATOR << " ; " <<
 
-#define _LOG_API_BASE(retval) \
+#define LOG_API_BASE(retval) \
         CLASS_FUNCTION_NAME << " at " << LOG_API_GENERIC_PTR_STRING(this) << " ret " << retval
-#define _LOG_STATIC_API_BASE(retval) \
+#define LOG_STATIC_API_BASE(retval) \
         CLASS_FUNCTION_NAME << " ret " << retval
-#define _LOG_API_ARGUMENTS(arguments) \
+#define LOG_API_ARGUMENTS(arguments) \
         " ( args: " << arguments << " )"
 
 // Client side macros
-#define _LOG_HL_CLIENT_API_STR(str) \
-        _LOG_API_LOGLEVEL(ramses_internal::CONTEXT_HLAPI_CLIENT, str)
+#define LOG_HL_CLIENT_API_STR(str) \
+        LOG_API_LOGLEVEL(ramses_internal::CONTEXT_HLAPI_CLIENT, str)
 
 #define LOG_HL_CLIENT_API_NOARG(retval) \
-        _LOG_HL_CLIENT_API_STR(_LOG_API_BASE(retval))
+        LOG_HL_CLIENT_API_STR(LOG_API_BASE(retval))
 #define LOG_HL_CLIENT_API1(retval, arg1) \
-        _LOG_HL_CLIENT_API_STR(_LOG_API_BASE(retval) << _LOG_API_ARGUMENTS(arg1))
+        LOG_HL_CLIENT_API_STR(LOG_API_BASE(retval) << LOG_API_ARGUMENTS(arg1))
 #define LOG_HL_CLIENT_API2(retval, arg1, arg2) \
-        LOG_HL_CLIENT_API1(retval, arg1 _LOG_API_SEPERATOR arg2)
+        LOG_HL_CLIENT_API1(retval, arg1 LOG_API_SEPERATOR arg2)
 #define LOG_HL_CLIENT_API3(retval, arg1, arg2, arg3) \
-        LOG_HL_CLIENT_API2(retval, arg1, arg2 _LOG_API_SEPERATOR arg3)
+        LOG_HL_CLIENT_API2(retval, arg1, arg2 LOG_API_SEPERATOR arg3)
 #define LOG_HL_CLIENT_API4(retval, arg1, arg2, arg3, arg4) \
-        LOG_HL_CLIENT_API3(retval, arg1, arg2, arg3 _LOG_API_SEPERATOR arg4)
+        LOG_HL_CLIENT_API3(retval, arg1, arg2, arg3 LOG_API_SEPERATOR arg4)
 #define LOG_HL_CLIENT_API5(retval, arg1, arg2, arg3, arg4, arg5) \
-        LOG_HL_CLIENT_API4(retval, arg1, arg2, arg3, arg4 _LOG_API_SEPERATOR arg5)
+        LOG_HL_CLIENT_API4(retval, arg1, arg2, arg3, arg4 LOG_API_SEPERATOR arg5)
 #define LOG_HL_CLIENT_API6(retval, arg1, arg2, arg3, arg4, arg5, arg6) \
-        LOG_HL_CLIENT_API5(retval, arg1, arg2, arg3, arg4, arg5 _LOG_API_SEPERATOR arg6)
+        LOG_HL_CLIENT_API5(retval, arg1, arg2, arg3, arg4, arg5 LOG_API_SEPERATOR arg6)
 #define LOG_HL_CLIENT_API7(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7) \
-        LOG_HL_CLIENT_API6(retval, arg1, arg2, arg3, arg4, arg5, arg6 _LOG_API_SEPERATOR arg7)
+        LOG_HL_CLIENT_API6(retval, arg1, arg2, arg3, arg4, arg5, arg6 LOG_API_SEPERATOR arg7)
 #define LOG_HL_CLIENT_API8(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) \
-        LOG_HL_CLIENT_API7(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7 _LOG_API_SEPERATOR arg8)
+        LOG_HL_CLIENT_API7(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7 LOG_API_SEPERATOR arg8)
 #define LOG_HL_CLIENT_API9(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) \
-        LOG_HL_CLIENT_API8(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 _LOG_API_SEPERATOR arg9)
+        LOG_HL_CLIENT_API8(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 LOG_API_SEPERATOR arg9)
 #define LOG_HL_CLIENT_API10(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10) \
-        LOG_HL_CLIENT_API9 (retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9 _LOG_API_SEPERATOR arg10)
+        LOG_HL_CLIENT_API9 (retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9 LOG_API_SEPERATOR arg10)
 #define LOG_HL_CLIENT_API11(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11) \
-        LOG_HL_CLIENT_API10(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 _LOG_API_SEPERATOR arg11)
+        LOG_HL_CLIENT_API10(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 LOG_API_SEPERATOR arg11)
 
 // Renderer side macros
-#define _LOG_HL_RENDERER_API_STR(str) \
-        _LOG_API_LOGLEVEL(ramses_internal::CONTEXT_HLAPI_RENDERER, str)
+#define LOG_HL_RENDERER_API_STR(str) \
+        LOG_API_LOGLEVEL(ramses_internal::CONTEXT_HLAPI_RENDERER, str)
 
 #define LOG_HL_RENDERER_API_NOARG(retval) \
-        _LOG_HL_RENDERER_API_STR(_LOG_API_BASE(retval))
+        LOG_HL_RENDERER_API_STR(LOG_API_BASE(retval))
 #define LOG_HL_RENDERER_API1(retval, arg1) \
-        _LOG_HL_RENDERER_API_STR(_LOG_API_BASE(retval) << _LOG_API_ARGUMENTS(arg1))
+        LOG_HL_RENDERER_API_STR(LOG_API_BASE(retval) << LOG_API_ARGUMENTS(arg1))
 #define LOG_HL_RENDERER_API2(retval, arg1, arg2) \
-        LOG_HL_RENDERER_API1(retval, arg1 _LOG_API_SEPERATOR arg2)
+        LOG_HL_RENDERER_API1(retval, arg1 LOG_API_SEPERATOR arg2)
 #define LOG_HL_RENDERER_API3(retval, arg1, arg2, arg3) \
-        LOG_HL_RENDERER_API2(retval, arg1, arg2 _LOG_API_SEPERATOR arg3)
+        LOG_HL_RENDERER_API2(retval, arg1, arg2 LOG_API_SEPERATOR arg3)
 #define LOG_HL_RENDERER_API4(retval, arg1, arg2, arg3, arg4) \
-        LOG_HL_RENDERER_API3(retval, arg1, arg2, arg3 _LOG_API_SEPERATOR arg4)
+        LOG_HL_RENDERER_API3(retval, arg1, arg2, arg3 LOG_API_SEPERATOR arg4)
 #define LOG_HL_RENDERER_API5(retval, arg1, arg2, arg3, arg4, arg5) \
-        LOG_HL_RENDERER_API4(retval, arg1, arg2, arg3, arg4 _LOG_API_SEPERATOR arg5)
+        LOG_HL_RENDERER_API4(retval, arg1, arg2, arg3, arg4 LOG_API_SEPERATOR arg5)
 #define LOG_HL_RENDERER_API6(retval, arg1, arg2, arg3, arg4, arg5, arg6) \
-        LOG_HL_RENDERER_API5(retval, arg1, arg2, arg3, arg4, arg5 _LOG_API_SEPERATOR arg6)
+        LOG_HL_RENDERER_API5(retval, arg1, arg2, arg3, arg4, arg5 LOG_API_SEPERATOR arg6)
 #define LOG_HL_RENDERER_API7(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7) \
-        LOG_HL_RENDERER_API6(retval, arg1, arg2, arg3, arg4, arg5, arg6 _LOG_API_SEPERATOR arg7)
+        LOG_HL_RENDERER_API6(retval, arg1, arg2, arg3, arg4, arg5, arg6 LOG_API_SEPERATOR arg7)
 #define LOG_HL_RENDERER_API8(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) \
-        LOG_HL_RENDERER_API7(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7 _LOG_API_SEPERATOR arg8)
+        LOG_HL_RENDERER_API7(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7 LOG_API_SEPERATOR arg8)
 #define LOG_HL_RENDERER_API9(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) \
-        LOG_HL_RENDERER_API8(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 _LOG_API_SEPERATOR arg9)
+        LOG_HL_RENDERER_API8(retval, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 LOG_API_SEPERATOR arg9)
 
 #define LOG_HL_RENDERER_STATIC_API1(retval, arg1) \
-        _LOG_HL_RENDERER_API_STR(_LOG_STATIC_API_BASE(retval) << _LOG_API_ARGUMENTS(arg1))
+        LOG_HL_RENDERER_API_STR(LOG_STATIC_API_BASE(retval) << LOG_API_ARGUMENTS(arg1))
 #define LOG_HL_RENDERER_STATIC_API2(retval, arg1, arg2) \
-        LOG_HL_RENDERER_STATIC_API1(retval, arg1 _LOG_API_SEPERATOR arg2)
+        LOG_HL_RENDERER_STATIC_API1(retval, arg1 LOG_API_SEPERATOR arg2)
 #define LOG_HL_RENDERER_STATIC_API3(retval, arg1, arg2, arg3) \
-        LOG_HL_RENDERER_STATIC_API2(retval, arg1, arg2 _LOG_API_SEPERATOR arg3)
+        LOG_HL_RENDERER_STATIC_API2(retval, arg1, arg2 LOG_API_SEPERATOR arg3)
 #define LOG_HL_RENDERER_STATIC_API4(retval, arg1, arg2, arg3, arg4) \
-        LOG_HL_RENDERER_STATIC_API3(retval, arg1, arg2, arg3 _LOG_API_SEPERATOR arg4)
+        LOG_HL_RENDERER_STATIC_API3(retval, arg1, arg2, arg3 LOG_API_SEPERATOR arg4)
 #define LOG_HL_RENDERER_STATIC_API5(retval, arg1, arg2, arg3, arg4, arg5) \
-        LOG_HL_RENDERER_STATIC_API4(retval, arg1, arg2, arg3, arg4 _LOG_API_SEPERATOR arg5)
+        LOG_HL_RENDERER_STATIC_API4(retval, arg1, arg2, arg3, arg4 LOG_API_SEPERATOR arg5)
 
 #endif

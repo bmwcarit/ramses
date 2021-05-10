@@ -169,7 +169,7 @@ namespace ramses_internal
         }
     }
 
-    void LoggingDevice::setViewport(UInt32 x, UInt32 y, UInt32 width, UInt32 height)
+    void LoggingDevice::setViewport(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
         m_logContext << "set viewport: [x: " << x << "; y: " << y << "; w: " << width << "; h: " << height << " ]" <<RendererLogContext::NewLine;
     }

@@ -17,7 +17,7 @@
 
 namespace ramses_internal
 {
-    template <typename T, typename _uniqueId = void>
+    template <typename T, typename UniqueIdT = void>
     class HeapArray final
     {
         static_assert(std::is_integral<T>::value, "only integral types allowed");
@@ -44,9 +44,9 @@ namespace ramses_internal
         std::unique_ptr<T[]> m_data;
     };
 
-    template <typename T, typename _uniqueId>
+    template <typename T, typename UniqueIdT>
     inline
-    HeapArray<T, _uniqueId>::HeapArray(UInt size, const T* data)
+    HeapArray<T, UniqueIdT>::HeapArray(UInt size, const T* data)
         : m_size(size)
         , m_data(m_size > 0 ? new T[m_size] : nullptr)
     {
@@ -56,9 +56,9 @@ namespace ramses_internal
         }
     }
 
-    template <typename T, typename _uniqueId>
+    template <typename T, typename UniqueIdT>
     inline
-    HeapArray<T, _uniqueId>::HeapArray(UInt size, HeapArray&& other)
+    HeapArray<T, UniqueIdT>::HeapArray(UInt size, HeapArray&& other)
         : m_size(size)
         , m_data(std::move(other.m_data))
     {
@@ -66,9 +66,9 @@ namespace ramses_internal
         other.m_size = 0;
     }
 
-    template <typename T, typename _uniqueId>
+    template <typename T, typename UniqueIdT>
     inline
-    HeapArray<T, _uniqueId>::HeapArray(HeapArray&& o) noexcept
+    HeapArray<T, UniqueIdT>::HeapArray(HeapArray&& o) noexcept
         : m_size(o.m_size)
         , m_data(std::move(o.m_data))
     {
@@ -76,9 +76,9 @@ namespace ramses_internal
         o.m_size = 0;
     }
 
-    template <typename T, typename _uniqueId>
+    template <typename T, typename UniqueIdT>
     inline
-    HeapArray<T, _uniqueId>& HeapArray<T, _uniqueId>::operator=(HeapArray&& o) noexcept
+    HeapArray<T, UniqueIdT>& HeapArray<T, UniqueIdT>::operator=(HeapArray&& o) noexcept
     {
         if (&o != this)
         {
@@ -89,37 +89,37 @@ namespace ramses_internal
         return *this;
     }
 
-    template <typename T, typename _uniqueId>
+    template <typename T, typename UniqueIdT>
     inline
-    UInt HeapArray<T, _uniqueId>::size() const
+    UInt HeapArray<T, UniqueIdT>::size() const
     {
         return m_size;
     }
 
-    template <typename T, typename _uniqueId>
+    template <typename T, typename UniqueIdT>
     inline
-    T* HeapArray<T, _uniqueId>::data()
+    T* HeapArray<T, UniqueIdT>::data()
     {
         return m_data.get();
     }
 
-    template <typename T, typename _uniqueId>
+    template <typename T, typename UniqueIdT>
     inline
-    const T* HeapArray<T, _uniqueId>::data() const
+    const T* HeapArray<T, UniqueIdT>::data() const
     {
         return m_data.get();
     }
 
-    template <typename T, typename _uniqueId>
+    template <typename T, typename UniqueIdT>
     inline
-    absl::Span<const T> HeapArray<T, _uniqueId>::span() const
+    absl::Span<const T> HeapArray<T, UniqueIdT>::span() const
     {
         return {m_data.get(), m_size};
     }
 
-    template <typename T, typename _uniqueId>
+    template <typename T, typename UniqueIdT>
     inline
-    void HeapArray<T, _uniqueId>::setZero()
+    void HeapArray<T, UniqueIdT>::setZero()
     {
         if (m_data)
         {

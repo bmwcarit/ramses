@@ -72,12 +72,33 @@ namespace ramses_internal
         // network broadcast force stop offer for all contents offered locally
         for (auto& ci : m_contentRegistry)
         {
-            if (ci.value.providerID == m_myID && !ci.value.localOnly)
-            {
-                LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::disconnect: network ForceStopOfferContent for local content " << ci.value.content << ", consumer " <<
-                         ci.value.consumerID << ", state " << EnumToString(ci.value.state));
+            if (ci.value.state == ContentState::Unknown) // obsolete, unoffered contents - don't touch
+                continue;
 
-                m_communicationSystem.sendDcsmBroadcastForceStopOfferContent(ci.value.content);
+            if (ci.value.providerID != m_myID || ci.value.localOnly)
+                continue;
+
+            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::disconnect: network ForceStopOfferContent for local content " << ci.value.content << ", consumer " <<
+                ci.value.consumerID << ", state " << EnumToString(ci.value.state));
+
+            m_communicationSystem.sendDcsmBroadcastForceStopOfferContent(ci.value.content);
+
+            if (!ci.value.consumerID.isValid() || ci.value.consumerID == m_myID) // no remote consumer, nothing else to do
+                continue;
+
+            ci.value.consumerID = Guid();
+            if (ci.value.state == ContentState::StopOfferRequested)
+            {
+                ci.value.state = ContentState::Unknown;
+                ci.value.contentDescriptor = TechnicalContentDescriptor::Invalid();
+                ci.value.metadata = DcsmMetadata{};
+                ci.value.m_currentFocusRequests.clear();
+                addProviderEvent_ContentStateChange(ci.value.content, EDcsmState::AcceptStopOffer, CategoryInfo{}, AnimationInformation{ 0, 0 }, m_myID);
+            }
+            else
+            {
+                ci.value.state = ContentState::Offered;
+                addProviderEvent_ContentStateChange(ci.value.content, EDcsmState::Offered, CategoryInfo{}, AnimationInformation{ 0, 0 }, m_myID);
             }
         }
 
@@ -1069,6 +1090,11 @@ namespace ramses_internal
         }
 
         addProviderEvent_ContentStateChange(contentID, state, categoryInfo, ai, consumerID);
+    }
+
+    void DcsmComponent::handleContentStatus(ContentID /*contentID*/, uint64_t /*messageID*/, absl::Span<const Byte> /*message*/, const Guid& /*consumerID*/)
+    {
+
     }
 
     void DcsmComponent::handleOfferContent(ContentID contentID, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, const Guid& providerID)

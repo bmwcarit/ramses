@@ -18,6 +18,7 @@
 #include "SceneUpdateSerializerTestHelper.h"
 #include "Resource/ArrayResource.h"
 #include "Resource/TextureResource.h"
+#include "Components/ClientSceneLogicBase.h"
 
 using namespace ramses_internal;
 
@@ -83,10 +84,10 @@ protected:
     StrictMock<CommunicationSystemMock> communicationSystem;
     NiceMock<MockConnectionStatusUpdateNotifier> connectionStatusUpdateNotifier;
     NiceMock<ResourceProviderComponentMock> resourceComponent;
-    SceneGraphComponent sceneGraphComponent;
     StrictMock<SceneRendererHandlerMock> consumer;
     StrictMock<SceneProviderEventConsumerMock> eventConsumer;
     StatisticCollectionScene sceneStatistics;
+    SceneGraphComponent sceneGraphComponent;
 };
 
 
@@ -156,6 +157,31 @@ TEST_F(ASceneGraphComponent, alreadyPublishedSceneGetsRepublishedWhenLocalConsum
 
     EXPECT_CALL(consumer, handleNewSceneAvailable(localSceneIdInfo, _));
     sceneGraphComponent.setSceneRendererHandler(&consumer);
+}
+
+TEST_F(ASceneGraphComponent, locallySubscribedScenesGetUnsubscibedWhenLocalConsumerIsRemoved)
+{
+    sceneGraphComponent.setSceneRendererHandler(&consumer);
+
+    SceneId sceneId(1);
+    SceneInfo sceneInfo(SceneInfo(sceneId, "foo"));
+    ClientScene scene(sceneInfo);
+
+    sceneGraphComponent.handleCreateScene(scene, false, eventConsumer);
+    EXPECT_CALL(consumer, handleNewSceneAvailable(sceneInfo, _));
+    EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(SceneInfoVector{ sceneInfo }));
+    sceneGraphComponent.handlePublishScene(SceneId(1), EScenePublicationMode_LocalAndRemote);
+
+    const auto* logic = sceneGraphComponent.getClientSceneLogicForScene(sceneId);
+    ASSERT_TRUE(logic);
+
+    sceneGraphComponent.subscribeScene(localParticipantID, sceneId);
+    EXPECT_EQ(1u, logic->getWaitingAndActiveSubscribers().size());
+
+    sceneGraphComponent.setSceneRendererHandler(nullptr);
+    EXPECT_EQ(0u, logic->getWaitingAndActiveSubscribers().size());
+
+    EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(_));
 }
 
 TEST_F(ASceneGraphComponent, unpublishesSceneAtLocalConsumer)

@@ -67,6 +67,7 @@ namespace ramses_internal
         // IDcsmProviderServiceHandler implementation
         virtual void handleCanvasSizeChange(ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID) override;
         virtual void handleContentStateChange(ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID) override;
+        virtual void handleContentStatus(ContentID contentID, uint64_t messageID, absl::Span<const Byte> message, const Guid& consumerID) override;
 
         // IDcsmConsumerServiceHandler implementation
         virtual void handleOfferContent(ContentID contentID, Category, ETechnicalContentType technicalContentType, const std::string& friendlyName, const Guid& providerID) override;

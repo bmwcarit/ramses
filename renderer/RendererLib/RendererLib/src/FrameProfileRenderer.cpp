@@ -115,19 +115,8 @@ namespace ramses_internal
         })GLSL";
 
     FrameProfileRenderer::FrameProfileRenderer(IDevice& device, UInt32 displayWidth, UInt32 displayHeight)
-        : m_doReset(false)
-        , m_initialized(false)
-        , m_enabled(false)
-        , m_device(&device)
+        : m_device(&device)
         , m_displayWidth(static_cast<Float>(displayWidth))
-        , m_timingLinesIndexBuffer(DeviceResourceHandle::Invalid())
-        , m_stackedTimingLineIndexBuffer(DeviceResourceHandle::Invalid())
-        , m_timingLineShaderHandle(DeviceResourceHandle::Invalid())
-        , m_stackedTimingLineShaderHandle(DeviceResourceHandle::Invalid())
-        , m_singleColorShaderHandle(DeviceResourceHandle::Invalid())
-        , m_timingLineEffect(nullptr)
-        , m_stackedTimingLineEffect(nullptr)
-        , m_singleColorEffect(nullptr)
     {
         const ProjectionParams params = ProjectionParams::Frustum(ECameraProjectionType::Orthographic, 0.0f, m_displayWidth, 0.0f, static_cast<Float>(displayHeight), 0.0f, 1.0f);
         m_projectionMatrix = CameraMatrixHelper::ProjectionMatrix(params);

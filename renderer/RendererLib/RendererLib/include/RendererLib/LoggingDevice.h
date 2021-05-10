@@ -46,7 +46,7 @@ namespace ramses_internal
         virtual void stencilFunc(EStencilFunc func, UInt8 ref, UInt8 mask) override;
         virtual void stencilOp(EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) override;
         virtual void drawMode(EDrawMode mode) override;
-        virtual void setViewport(UInt32 x, UInt32 y, UInt32 width, UInt32 height) override;
+        virtual void setViewport(int32_t x, int32_t y, uint32_t width, uint32_t height) override;
 
         virtual DeviceResourceHandle allocateVertexBuffer(UInt32 totalSizeInBytes) override;
         virtual void uploadVertexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) override;

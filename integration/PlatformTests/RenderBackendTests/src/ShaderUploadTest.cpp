@@ -102,7 +102,7 @@ namespace ramses_internal
         {
             testDevice = nullptr;
 
-            platform->destroyRenderBackend(*renderBackend);
+            platform->destroyRenderBackend();
             renderBackend = nullptr;
 
             delete platform;

@@ -77,7 +77,7 @@ namespace ramses_internal
             m_scene.getStatisticCollection().statSceneActionsGeneratedSize.incCounter(static_cast<UInt32>(sceneUpdate.actions.collectionData().size()));
         }
 
-        LOG_DEBUG_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) { printFlushInfo(sos, "ClientSceneLogicDirect::flushSceneActions", sceneUpdate.actions); }));
+        LOG_DEBUG_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) { printFlushInfo(sos, "ClientSceneLogicDirect::flushSceneActions", sceneUpdate); }));
 
         if (isPublished() && !m_subscribersActive.empty())
         {

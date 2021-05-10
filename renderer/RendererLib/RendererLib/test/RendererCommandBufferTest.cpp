@@ -245,4 +245,73 @@ TEST_F(ARendererCommandBuffer, addCommandsFromVariousContainersToContainerInAnot
     cmdConsumerAndProducer.join();
     cmdConsumer.join();
 }
+
+TEST_F(ARendererCommandBuffer, notifiesAnotherThreadAboutNewCommands)
+{
+    RendererCommandBuffer buffer;
+
+    ThreadBarrier initialCommandsBarrier{ 2 };
+    ThreadBarrier otherCommandsBarrier{ 2 };
+    ThreadBarrier doneBarrier{ 2 };
+
+    bool producerCanContinue = false;
+    std::mutex producerCanContinueLock;
+    std::condition_variable producerCanContinueCvar;
+
+    std::thread cmdProducer{ [&]()
+    {
+        // some init cmd
+        buffer.enqueueCommand(RendererCommand::ScenePublished{ sceneId, EScenePublicationMode_LocalAndRemote });
+        initialCommandsBarrier.wait();
+
+        // add another cmd and wait for listener set
+        buffer.enqueueCommand(RendererCommand::SceneUnpublished{ sceneId });
+        {
+            std::unique_lock<std::mutex> lk{ producerCanContinueLock };
+            producerCanContinueCvar.wait(lk, [&] { return producerCanContinue; });
+        }
+
+        // this cmd is guaranteed to be pushed after consumer waiting using cvar
+        buffer.enqueueCommand(RendererCommand::DestroyDisplay{ DisplayHandle{} });
+        otherCommandsBarrier.wait();
+
+        buffer.enqueueCommand(RendererCommand::DestroyDisplay{ DisplayHandle{} });
+        doneBarrier.wait();
+    } };
+
+    std::thread cmdListener{ [&]()
+    {
+        initialCommandsBarrier.wait();
+
+        std::mutex& newCommandsMutex = std::get<0>(buffer.getCVarForNewCommands());
+        std::condition_variable& newCommandsCvar = std::get<1>(buffer.getCVarForNewCommands());
+
+        while (true)
+        {
+            // lock mutex first before notifying producer to continue to make sure this test thread gets to sleep on cvar before more commands pushed
+            std::unique_lock<std::mutex> l{ newCommandsMutex };
+            {
+                std::unique_lock<std::mutex> lk{ producerCanContinueLock };
+                producerCanContinue = true;
+                producerCanContinueCvar.notify_one();
+            }
+
+            // wait till new command comes and do something with it
+            newCommandsCvar.wait(l);
+            RendererCommands cmds;
+            buffer.swapCommands_unsafe(cmds);
+
+            if (!cmds.empty())
+                break;
+        }
+
+        // any other commands will be pushed without notification
+        otherCommandsBarrier.wait();
+
+        doneBarrier.wait();
+    } };
+
+    cmdProducer.join();
+    cmdListener.join();
+}
 }

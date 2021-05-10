@@ -23,12 +23,24 @@ namespace ramses_internal
     {
     }
 
-    IDevice* Platform_Windows_WGL_4_2_core::createDevice(IContext& context)
+    bool Platform_Windows_WGL_4_2_core::createDevice()
     {
-        Context_WGL* platformContext = getPlatformContext<Context_WGL>(context);
-        assert(0 != platformContext);
-        Device_GL* device = new Device_GL(*platformContext, 4, 2, false);
-        return addPlatformDevice(device);
+        assert(m_context);
+        auto device = std::make_unique<Device_GL>(*m_context, uint8_t{ 4 }, uint8_t{ 2 }, false);
+        if (device->init())
+            m_device = std::move(device);
+
+        return m_device.get() != nullptr;
+    }
+
+    bool Platform_Windows_WGL_4_2_core::createDeviceUploading()
+    {
+        assert(m_contextUploading);
+        auto device = std::make_unique<Device_GL>(*m_contextUploading, uint8_t{ 4 }, uint8_t{ 2 }, false);
+        if (device->init())
+            m_deviceUploading = std::move(device);
+
+        return m_deviceUploading.get() != nullptr;
     }
 
     const Int32* Platform_Windows_WGL_4_2_core::getContextAttributes()

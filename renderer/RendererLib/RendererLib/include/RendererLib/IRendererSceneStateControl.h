@@ -20,7 +20,7 @@ namespace ramses_internal
     public:
         virtual void handleSceneSubscriptionRequest(SceneId sceneId) = 0;
         virtual void handleSceneUnsubscriptionRequest(SceneId sceneId, bool indirect) = 0;
-        virtual void handleSceneMappingRequest(SceneId sceneId, DisplayHandle handle) = 0;
+        virtual void handleSceneMappingRequest(SceneId sceneId) = 0;
         virtual void handleSceneUnmappingRequest(SceneId sceneId) = 0;
         virtual void handleSceneShowRequest(SceneId sceneId) = 0;
         virtual void handleSceneHideRequest(SceneId sceneId) = 0;

@@ -20,10 +20,7 @@ namespace ramses_internal
         explicit Platform_Integrity_RGL_EGL_ES_3_0(const RendererConfig& rendererConfig);
 
     protected:
-        ISystemCompositorController* createSystemCompositorController() override final;
-        IWindow*    createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) final;
-        IEmbeddedCompositor* createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) final;
-
+        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
         virtual uint32_t getSwapInterval() const override;
     };
 }

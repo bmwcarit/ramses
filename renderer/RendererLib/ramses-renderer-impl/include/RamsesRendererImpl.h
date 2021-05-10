@@ -13,13 +13,30 @@
 #include "ramses-renderer-api/RendererSceneControl.h"
 #include "ramses-renderer-api/DcsmContentControl.h"
 #include "StatusObjectImpl.h"
-#include "RendererLoopThreadController.h"
+#include "CommandDispatchingThread.h"
 #include "RendererLib/RendererCommandBuffer.h"
 #include "RendererLib/DisplayDispatcher.h"
 #include "RendererLib/RendererPeriodicLogSupplier.h"
 #include "RendererAPI/ELoopMode.h"
 #include "RendererFramework/RendererFrameworkLogic.h"
 #include "Watchdog/ThreadWatchdog.h"
+#include "RendererCommands/Screenshot.h"
+#include "RendererCommands/LogRendererInfo.h"
+#include "RendererCommands/PrintStatistics.h"
+#include "RendererCommands/TriggerPickEvent.h"
+#include "RendererCommands/SetClearColor.h"
+#include "RendererCommands/SetSkippingOfUnmodifiedBuffers.h"
+#include "RendererCommands/ShowFrameProfiler.h"
+#include "RendererCommands/SystemCompositorControllerListIviSurfaces.h"
+#include "RendererCommands/SystemCompositorControllerSetLayerVisibility.h"
+#include "RendererCommands/SystemCompositorControllerSetSurfaceVisibility.h"
+#include "RendererCommands/SystemCompositorControllerSetSurfaceOpacity.h"
+#include "RendererCommands/SystemCompositorControllerSetSurfaceDestRectangle.h"
+#include "RendererCommands/SystemCompositorControllerScreenshot.h"
+#include "RendererCommands/SystemCompositorControllerAddSurfaceToLayer.h"
+#include "RendererCommands/SystemCompositorControllerRemoveSurfaceFromLayer.h"
+#include "RendererCommands/SystemCompositorControllerDestroySurface.h"
+#include "RendererCommands/SetFrameTimeLimits.h"
 #include <memory>
 
 namespace ramses_internal
@@ -40,7 +57,6 @@ namespace ramses
     {
     public:
         RamsesRendererImpl(RamsesFrameworkImpl& framework, const RendererConfig& config);
-        virtual ~RamsesRendererImpl();
 
         status_t doOneLoop();
         status_t flush();
@@ -116,8 +132,11 @@ namespace ramses
         streamBufferId_t                                                            m_nextStreamBufferId{ 0u };
         DisplayFrameBufferMap                                                       m_displayFramebuffers;
         bool                                                                        m_systemCompositorEnabled;
+
         ramses_internal::ELoopMode                                                  m_loopMode;
-        ramses_internal::RendererLoopThreadController                               m_rendererLoopThreadController;
+        std::unique_ptr<ramses_internal::CommandDispatchingThread>                  m_commandDispatchingThread;
+        float m_maxFramerate = 1000000.f / ramses_internal::DefaultMinFrameDuration.count();
+        bool m_diplayThreadUpdating = false;
 
         enum ERendererLoopThreadType
         {
@@ -136,6 +155,8 @@ namespace ramses
 
         // keep allocated containers which are used to swap internal data
         ramses_internal::RendererEventVector m_tempRendererEvents;
+
+        std::vector < std::shared_ptr<ramses_internal::RamshCommand> > m_ramshCommands;
     };
 }
 

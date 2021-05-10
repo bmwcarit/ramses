@@ -48,7 +48,7 @@ namespace ramses_internal
             m_scenes.createScene(SceneInfo{ RefSceneId22 });
 
             // ignore this unless overridden by test
-            EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; });
+            EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _)).WillRepeatedly([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; });
         }
 
     protected:
@@ -59,7 +59,7 @@ namespace ramses_internal
             Mock::VerifyAndClearExpectations(&m_sceneUpdater);
 
             // ignore this unless overridden by test
-            EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; });
+            EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _)).WillRepeatedly([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; });
         }
 
         void expectSceneRefEventSent(SceneId refScene, SceneId expectedMasterScene)
@@ -108,12 +108,12 @@ namespace ramses_internal
 
     TEST_F(ASceneReferenceLogic, updatesScansScenesForReferencesToUpdate)
     {
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _, _));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _, _));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId21, _, _, _, _));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId22, _, _, _, _));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId21, _, _, _));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId22, _, _, _));
         updateLogicAndVerifyExpectations();
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
         EXPECT_EQ(MasterSceneId1, m_ownership.getSceneOwner(RefSceneId11));
@@ -162,7 +162,7 @@ namespace ramses_internal
     TEST_F(ASceneReferenceLogic, requestsStateChangeForReferencedScene)
     {
         // simulate master scene Ready
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Ready;
         }));
@@ -180,7 +180,7 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
 
         // simulate master scene Available
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Ready;
         }));
@@ -192,7 +192,7 @@ namespace ramses_internal
     TEST_F(ASceneReferenceLogic, reactsToMasterSceneStateChangeSoThatReferencedScenesNeverHaveHigherStateThanMaster_fromAvailableUp)
     {
         // simulate master scene Available
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Available;
         }));
@@ -202,11 +202,11 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
 
         // next query ref scenes will report their requested states
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; }));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
 
         // simulate master scene state Ready
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Ready;
         }));
@@ -217,11 +217,11 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
 
         // next query ref scenes will report their requested states
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
 
         // simulate master scene state to Rendered
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Rendered;
         }));
@@ -234,7 +234,7 @@ namespace ramses_internal
     TEST_F(ASceneReferenceLogic, reactsToMasterSceneStateChangeSoThatReferencedScenesNeverHaveHigherStateThanMaster_fromRenderedDown)
     {
         // simulate master scene Rendered
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Rendered;
         }));
@@ -247,11 +247,11 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
 
         // next query ref scenes will report their requested states
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Rendered; }));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Rendered; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
 
         // simulate master scene state dropped to Ready
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Ready;
         }));
@@ -261,11 +261,11 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
 
         // next query ref scenes will report their requested states
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
 
         // simulate master scene state dropped to Available
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Available;
         }));
@@ -276,67 +276,17 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
     }
 
-    TEST_F(ASceneReferenceLogic, referencedScenesInheritMappingInformationFromMasterScene)
+    TEST_F(ASceneReferenceLogic, referencedScenesInheritAssignmentInformationFromMasterScene)
     {
-        constexpr DisplayHandle display{ 2 };
         constexpr OffscreenBufferHandle ob{ 3 };
 
         // simulate master scene has mapping set
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([&](auto, auto&, auto& display_, auto& ob_, auto& renderOrder)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([&](auto, auto&, auto& ob_, auto& renderOrder)
         {
-            display_ = display;
             ob_ = ob;
             renderOrder = -13;
         }));
 
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId11, display));
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId12, display));
-        EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId11, ob, -13));
-        EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId12, ob, -13));
-        updateLogicAndVerifyExpectations();
-    }
-
-    TEST_F(ASceneReferenceLogic, referencedScenesGetUpdatedDisplayMappingFromMasterScene)
-    {
-        constexpr DisplayHandle display1{ 2 };
-        constexpr DisplayHandle display2{ 3 };
-        constexpr OffscreenBufferHandle ob{ 4 };
-
-        // simulate master scene has mapping set
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([&](auto, auto&, auto& display_, auto& ob_, auto& renderOrder)
-        {
-            display_ = display1;
-            ob_ = ob;
-            renderOrder = -13;
-        }));
-
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId11, display1));
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId12, display1));
-        EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId11, ob, -13));
-        EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId12, ob, -13));
-        updateLogicAndVerifyExpectations();
-
-        // from now on both master and ref scenes have same mapping set
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly(Invoke([&](auto, auto& state, auto& display_, auto& ob_, auto& renderOrder)
-        {
-            state = RendererSceneState::Unavailable; // scene state is irrelevant for this test
-            display_ = display1;
-            ob_ = ob;
-            renderOrder = -13;
-        }));
-        // do not clear expectations
-        m_logic.update();
-
-        // simulate master scene has new mapping set
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([&](auto, auto&, auto& display_, auto& ob_, auto& renderOrder)
-        {
-            display_ = display2;
-            ob_ = ob;
-            renderOrder = -13;
-        }));
-
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId11, display2));
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId12, display2));
         EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId11, ob, -13));
         EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId12, ob, -13));
         updateLogicAndVerifyExpectations();
@@ -344,29 +294,24 @@ namespace ramses_internal
 
     TEST_F(ASceneReferenceLogic, referencedScenesGetUpdatedBufferAssignmentFromMasterScene)
     {
-        constexpr DisplayHandle display{ 2 };
         constexpr OffscreenBufferHandle ob1{ 4 };
         constexpr OffscreenBufferHandle ob2{ 5 };
 
         // simulate master scene has mapping set
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([&](auto, auto&, auto& display_, auto& ob_, auto& renderOrder)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([&](auto, auto&, auto& ob_, auto& renderOrder)
         {
-            display_ = display;
             ob_ = ob1;
             renderOrder = -13;
         }));
 
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId11, display));
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId12, display));
         EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId11, ob1, -13));
         EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId12, ob1, -13));
         updateLogicAndVerifyExpectations();
 
         // from now on both master and ref scenes have same mapping set
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly(Invoke([&](auto, auto& state, auto& display_, auto& ob_, auto& renderOrder)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _)).WillRepeatedly(Invoke([&](auto, auto& state, auto& ob_, auto& renderOrder)
         {
             state = RendererSceneState::Unavailable; // scene state is irrelevant for this test
-            display_ = display;
             ob_ = ob1;
             renderOrder = -13;
         }));
@@ -374,9 +319,8 @@ namespace ramses_internal
         m_logic.update();
 
         // simulate master scene has new buffer set
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([&](auto, auto&, auto& display_, auto& ob_, auto& renderOrder)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([&](auto, auto&, auto& ob_, auto& renderOrder)
         {
-            display_ = display;
             ob_ = ob2;
             renderOrder = -13;
         }));
@@ -388,28 +332,23 @@ namespace ramses_internal
 
     TEST_F(ASceneReferenceLogic, referencedScenesGetUpdatedRenderOrderFromMasterScene)
     {
-        constexpr DisplayHandle display{ 2 };
         constexpr OffscreenBufferHandle ob{ 4 };
 
         // simulate master scene has mapping set
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([&](auto, auto&, auto& display_, auto& ob_, auto& renderOrder)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([&](auto, auto&, auto& ob_, auto& renderOrder)
         {
-            display_ = display;
             ob_ = ob;
             renderOrder = -13;
         }));
 
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId11, display));
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId12, display));
         EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId11, ob, -13));
         EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId12, ob, -13));
         updateLogicAndVerifyExpectations();
 
         // from now on both master and ref scenes have same mapping set
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly(Invoke([&](auto, auto& state, auto& display_, auto& ob_, auto& renderOrder)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _)).WillRepeatedly(Invoke([&](auto, auto& state, auto& ob_, auto& renderOrder)
         {
             state = RendererSceneState::Unavailable; // scene state is irrelevant for this test
-            display_ = display;
             ob_ = ob;
             renderOrder = -13;
         }));
@@ -417,9 +356,8 @@ namespace ramses_internal
         m_logic.update();
 
         // simulate master scene has new render order set
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillOnce(Invoke([&](auto, auto&, auto& display_, auto& ob_, auto& renderOrder)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillOnce(Invoke([&](auto, auto&, auto& ob_, auto& renderOrder)
         {
-            display_ = display;
             ob_ = ob;
             renderOrder = -3;
         }));
@@ -431,36 +369,30 @@ namespace ramses_internal
 
     TEST_F(ASceneReferenceLogic, setsRenderOrderForReferencedScene)
     {
-        constexpr DisplayHandle display1{ 2 };
         constexpr OffscreenBufferHandle ob1{ 4 };
 
         // first set mapping information for master scene which will trigger setting mapping info on its references
         // scene render order can be set only after mapping info available
         {
             // simulate master scene has mapping set
-            EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([&](auto, auto&, auto& display_, auto& ob_, auto& renderOrder)
+            EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([&](auto, auto&, auto& ob_, auto& renderOrder)
             {
-                display_ = display1;
                 ob_ = ob1;
                 renderOrder = -13;
             }));
 
-            EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId11, display1));
-            EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId12, display1));
             EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId11, ob1, -13)); // requested render order is relative to master
             EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId12, ob1, -13)); // requested render order is relative to master
             m_logic.update();
 
             // next time a ref scene is queried for mapping info use the last requested values
-            EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillRepeatedly(Invoke([&](auto, auto&, auto& display_, auto& ob_, auto& renderOrder)
+            EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([&](auto, auto&, auto& ob_, auto& renderOrder)
             {
-                display_ = display1;
                 ob_ = ob1;
                 renderOrder = -13;
             }));
-            EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _, _)).WillRepeatedly(Invoke([&](auto, auto&, auto& display_, auto& ob_, auto& renderOrder)
+            EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillRepeatedly(Invoke([&](auto, auto&, auto& ob_, auto& renderOrder)
             {
-                display_ = display1;
                 ob_ = ob1;
                 renderOrder = -13;
             }));
@@ -477,9 +409,8 @@ namespace ramses_internal
         m_logic.update();
 
         // simulate master scene render order changed
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([&](auto, auto&, auto& display_, auto& ob_, auto& renderOrder)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([&](auto, auto&, auto& ob_, auto& renderOrder)
         {
-            display_ = display1;
             ob_ = ob1;
             renderOrder = 123;
         }));
@@ -490,40 +421,14 @@ namespace ramses_internal
         m_logic.update();
     }
 
-    TEST_F(ASceneReferenceLogic, delaysSettingRenderOrderForReferencedSceneUntilMasterSceneMappingIsKnown)
-    {
-        constexpr DisplayHandle display1{ 2 };
-        constexpr OffscreenBufferHandle ob1{ 4 };
-
-        // set render order
-        m_scenes.getScene(MasterSceneId1).setSceneReferenceRenderOrder(RefSceneHandle11, -666);
-        // no expectations as mapping is not known yet
-        updateLogicAndVerifyExpectations();
-
-        // simulate master scene has mapping set
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([&](auto, auto&, auto& display_, auto& ob_, auto& renderOrder)
-        {
-            display_ = display1;
-            ob_ = ob1;
-            renderOrder = -13;
-        }));
-
-        // now will set render order together with mapping
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId11, display1));
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId12, display1));
-        EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId11, ob1, -13 - 666));
-        EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId12, ob1, -13)); // requested render order is relative to master
-        updateLogicAndVerifyExpectations();
-    }
-
     TEST_F(ASceneReferenceLogic, requestsAvailableStateForAllReferencedScenesOfDestroyedMasterScene)
     {
         // simulate master scenes Ready
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Ready;
         }));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Ready;
         }));
@@ -540,7 +445,7 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
 
         // now report every scene as requested ready
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Ready;
         }));
@@ -561,7 +466,7 @@ namespace ramses_internal
     TEST_F(ASceneReferenceLogic, canHandleMasterWithRefsAfterItWasDestroyedAndMadeAvailableAgain)
     {
         // simulate master scene Ready
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
 
         // request ref scenes Ready
         m_scenes.getScene(MasterSceneId1).requestSceneReferenceState(RefSceneHandle11, RendererSceneState::Ready);
@@ -571,8 +476,8 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
 
         // now report ref scenes as requested Ready
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
 
         // destroy master
         m_scenes.destroyScene(MasterSceneId1);
@@ -581,8 +486,8 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
 
         // now report ref scenes as requested Ready
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; }));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
 
         // recreate master with refs
         SceneAllocateHelper masterScene1{ m_scenes.createScene(SceneInfo{ MasterSceneId1 }) };
@@ -593,7 +498,7 @@ namespace ramses_internal
         EXPECT_EQ(MasterSceneId1, m_ownership.getSceneOwner(RefSceneId12));
 
         // simulate master scene Available
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
 
         // request ref scenes available in new cycle
         m_scenes.getScene(MasterSceneId1).requestSceneReferenceState(RefSceneHandle11, RendererSceneState::Ready);
@@ -603,8 +508,8 @@ namespace ramses_internal
         updateLogicAndVerifyExpectations();
 
         // now report ref scenes as requested available
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
 
         // destroy master second time
         m_scenes.destroyScene(MasterSceneId1);
@@ -1483,16 +1388,16 @@ namespace ramses_internal
     TEST_F(ASceneReferenceLogic, referenceCanBeControlledUnderNewMasterWhenRereferenced)
     {
         // other scenes not relevant for this test, keep available
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
 
         // simulate original master and ref scene Rendered
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Rendered;
         }));
 
         m_scenes.getScene(MasterSceneId1).requestSceneReferenceState(RefSceneHandle11, RendererSceneState::Rendered);
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Rendered; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Rendered; }));
         m_logic.update();
 
         // release ref from original master
@@ -1511,7 +1416,7 @@ namespace ramses_internal
         EXPECT_EQ(MasterSceneId2, m_ownership.getSceneOwner(RefSceneId11));
 
         // simulate new master Ready
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Ready;
         }));
@@ -1529,16 +1434,16 @@ namespace ramses_internal
         // test handover from one master to another while READY, which is expected to be common use case, however would work in any other state
 
         // other scenes not relevant for this test, keep unavailable
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
 
         // simulate original master and ref scene READY
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Ready;
         }));
 
         m_scenes.getScene(MasterSceneId1).requestSceneReferenceState(RefSceneHandle11, RendererSceneState::Ready);
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
         m_logic.update();
 
         // release ref from original master
@@ -1548,7 +1453,7 @@ namespace ramses_internal
         m_logic.update();
 
         // new master must already be ready before handover - simulate new master READY
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Ready;
         }));
@@ -1574,16 +1479,16 @@ namespace ramses_internal
     TEST_F(ASceneReferenceLogic, referenceCanBeControlledUnderNewMasterWhenRereferencedAfterOldMasterDestroyed)
     {
         // other scenes not relevant for this test, keep available
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
 
         // simulate original master and ref scene Rendered
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Rendered;
         }));
 
         m_scenes.getScene(MasterSceneId2).requestSceneReferenceState(RefSceneHandle21, RendererSceneState::Rendered);
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId21, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Rendered; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId21, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Rendered; }));
         m_logic.update();
 
         // destroy original master
@@ -1603,7 +1508,7 @@ namespace ramses_internal
         EXPECT_EQ(MasterSceneId1, m_ownership.getSceneOwner(RefSceneId21));
 
         // simulate new master Ready
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Ready;
         }));
@@ -1616,33 +1521,29 @@ namespace ramses_internal
         expectSceneRefEventSent(RefSceneId21, MasterSceneId1);
     }
 
-    TEST_F(ASceneReferenceLogic, referenceGetsMappingFromNewMasterWhenRereferenced)
+    TEST_F(ASceneReferenceLogic, referenceGetsAssignmentFromNewMasterWhenRereferenced)
     {
         // remove non-relevant ref scenes to simplify this test
         m_scenes.getScene(MasterSceneId1).releaseSceneReference(RefSceneHandle12);
         m_scenes.getScene(MasterSceneId2).releaseSceneReference(RefSceneHandle21);
         m_scenes.getScene(MasterSceneId2).releaseSceneReference(RefSceneHandle22);
 
-        constexpr DisplayHandle display1{ 1 };
-        constexpr DisplayHandle display2{ 2 };
         constexpr OffscreenBufferHandle ob1{ 3 };
         constexpr OffscreenBufferHandle ob2{ 4 };
         constexpr int32_t renderOrder1{ 5 };
         constexpr int32_t renderOrder2{ 6 };
 
         // simulate original master and ref scene Rendered and mapped
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([&](auto, auto& targetState, auto& disp, auto& ob, auto& renderOrder)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([&](auto, auto& targetState, auto& ob, auto& renderOrder)
         {
             targetState = RendererSceneState::Rendered;
-            disp = display1;
             ob = ob1;
             renderOrder = renderOrder1;
         }));
         m_scenes.getScene(MasterSceneId1).requestSceneReferenceState(RefSceneHandle11, RendererSceneState::Rendered);
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillRepeatedly(Invoke([&](auto, auto& targetState, auto& disp, auto& ob, auto& renderOrder)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([&](auto, auto& targetState, auto& ob, auto& renderOrder)
         {
             targetState = RendererSceneState::Rendered;
-            disp = display1;
             ob = ob1;
             renderOrder = renderOrder1;
         }));
@@ -1660,20 +1561,20 @@ namespace ramses_internal
 
         // ref scene is now under new master which did not request any state for it yet, i.e. default is unavailable
         EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId11, RendererSceneState::Available));
+        // default buffer assignement will be used initially
+        EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId11, OffscreenBufferHandle::Invalid(), 0));
         m_logic.update();
 
-        // simulate new master Ready with different mapping parameters
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _, _)).WillRepeatedly(Invoke([&](auto, auto& targetState, auto& disp, auto& ob, auto& renderOrder)
+        // simulate new master Ready with different assignment parameters
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId2, _, _, _)).WillRepeatedly(Invoke([&](auto, auto& targetState, auto& ob, auto& renderOrder)
         {
             targetState = RendererSceneState::Rendered;
-            disp = display2;
             ob = ob2;
             renderOrder = renderOrder2;
         }));
 
         // request ref ready from new master now
         m_scenes.getScene(MasterSceneId2).requestSceneReferenceState(otherRefHandle, RendererSceneState::Ready);
-        EXPECT_CALL(m_sceneLogic, setSceneMapping(RefSceneId11, display2));
         EXPECT_CALL(m_sceneLogic, setSceneDisplayBufferAssignment(RefSceneId11, ob2, renderOrder2));
         EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId11, RendererSceneState::Ready));
         m_logic.update();
@@ -1682,16 +1583,16 @@ namespace ramses_internal
     TEST_F(ASceneReferenceLogic, ignoresActionsThatArriveAfterReferenceReleased)
     {
         // other scenes not relevant for this test, keep available
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(_, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
 
         // simulate original master and ref scene Rendered
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&)
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&)
         {
             targetState = RendererSceneState::Rendered;
         }));
 
         m_scenes.getScene(MasterSceneId1).requestSceneReferenceState(RefSceneHandle11, RendererSceneState::Rendered);
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Rendered; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Rendered; }));
         m_logic.update();
 
         // add some action
@@ -1714,7 +1615,7 @@ namespace ramses_internal
         // ref scene is now under new master which did not request any state for it yet, i.e. default is available
         EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId11, RendererSceneState::Available));
         m_logic.update();
-        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&, auto&) { targetState = RendererSceneState::Available; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
 
         // expect nothing
         m_logic.update();

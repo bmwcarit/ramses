@@ -100,13 +100,13 @@ namespace ramses_internal
         DeviceHandleVector         m_renderTargetCache;
         DeviceHandleVector         m_blitPassCache;
 
-        mutable Bool       m_renderableResourcesDirtinessNeedsUpdate;
+        mutable Bool       m_renderableResourcesDirtinessNeedsUpdate = false;
         mutable BoolVector m_renderableResourcesDirty;
         mutable BoolVector m_dataInstancesDirty;
         mutable BoolVector m_textureSamplersDirty;
 
-        Bool m_renderTargetsDirty;
-        Bool m_blitPassesDirty;
+        Bool m_renderTargetsDirty = false;
+        Bool m_blitPassesDirty = false;
     };
 }
 

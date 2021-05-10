@@ -53,6 +53,7 @@ namespace ramses_internal
 
         MOCK_METHOD(void, handleCanvasSizeChange, (ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID), (override));
         MOCK_METHOD(void, handleContentStateChange, (ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID), (override));
+        MOCK_METHOD(void, handleContentStatus, (ContentID contentID, uint64_t messageID, absl::Span<const Byte> message, const Guid& consumerID), (override));
     };
 
     class DcsmConsumerServiceHandlerMock : public IDcsmConsumerServiceHandler

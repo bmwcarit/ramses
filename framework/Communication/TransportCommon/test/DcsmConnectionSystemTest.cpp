@@ -105,6 +105,7 @@ namespace ramses_internal
         EXPECT_FALSE(connsys->sendBroadcastRequestStopOfferContent(ContentID(9), true));
         EXPECT_FALSE(connsys->sendBroadcastUpdateContentMetadata(ContentID(55), metadata));
         EXPECT_FALSE(connsys->sendUpdateContentMetadata(Guid(10), ContentID(56), metadata));
+        EXPECT_FALSE(connsys->sendContentStatus(Guid(10), ContentID(88), 23u, std::vector<Byte>(2)));
     }
 
     TEST_F(ADcsmConnectionSystemConnected, canSendUnicastMessagesToConnectedParticipant)
@@ -136,6 +137,10 @@ namespace ramses_internal
 
         EXPECT_CALL(stack, sendContentDescription(DcsmInstanceId(3), SomeIPMsgHeader{pid, firstHdr.sessionId, 9u}, ContentID(88), TechnicalContentDescriptor(21))).WillOnce(Return(true));
         EXPECT_TRUE(connsys->sendContentDescription(Guid(10), ContentID(88), TechnicalContentDescriptor(21)));
+
+        std::vector<Byte> message{ 1, 2 ,3, 4 };
+        EXPECT_CALL(stack, sendContentStatus(DcsmInstanceId(3), SomeIPMsgHeader{ pid, firstHdr.sessionId, 10u }, ContentID(88), 23u, message)).WillOnce(Return(true));
+        EXPECT_TRUE(connsys->sendContentStatus(Guid(10), ContentID(88), 23u, message));
 
         expectRemoteDisconnects({2, 10});
     }
@@ -185,6 +190,7 @@ namespace ramses_internal
         EXPECT_FALSE(connsys->sendContentEnableFocusRequest(Guid(2), ContentID(42434), 32));
         EXPECT_FALSE(connsys->sendContentDisableFocusRequest(Guid(2), ContentID(42434), 32));
         EXPECT_FALSE(connsys->sendUpdateContentMetadata(Guid(2), ContentID(65464), metadata));
+        EXPECT_FALSE(connsys->sendContentStatus(Guid(10), ContentID(42434), 32u, std::vector<Byte>(2)));
     }
 
     TEST_F(ADcsmConnectionSystemConnected, passesThroughMessagesFromConnectedParticipant)
@@ -218,8 +224,15 @@ namespace ramses_internal
         EXPECT_CALL(consumer, handleUpdateContentMetadata(ContentID(3543), metadata, Guid(10)));
         fromStack.handleUpdateContentMetadata(SomeIPMsgHeader{10, 123, 10}, ContentID(3543), metadata.toBinary());
 
+        EXPECT_CALL(consumer, handleContentDescription(ContentID(3543), TechnicalContentDescriptor{ 5 }, Guid(10)));
+        fromStack.handleContentDescription(SomeIPMsgHeader{ 10, 123, 11 }, ContentID(3543), TechnicalContentDescriptor{ 5 });
+
+        std::vector<Byte> message{ 1, 2 ,3, 4 };
+        EXPECT_CALL(provider, handleContentStatus(ContentID(3543), 23u, absl::Span<const Byte>{ message.data(), message.size() }, Guid(10)));
+        fromStack.handleContentStatus(SomeIPMsgHeader{ 10, 123, 12 }, ContentID(3543), 23u, absl::Span<const Byte>{ message.data(), message.size() });
+
         // no handler yet
-        fromStack.handleResponse(SomeIPMsgHeader{10, 123, 11  }, 0, 0, 0);
+        fromStack.handleResponse(SomeIPMsgHeader{ 10, 123, 13 }, 0, 0, 0);
 
         expectRemoteDisconnects({10});
     }

@@ -40,9 +40,9 @@ namespace ramses_internal
         {
             {
                 InSequence s;
-                EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, disable()).WillOnce(Return(true));
-                EXPECT_CALL(platformMock, createResourceUploadRenderBackend(Ref(platformMock.renderBackendMock)));
-                EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, enable()).WillOnce(Return(true));
+                EXPECT_CALL(platformMock.renderBackendMock.contextMock, disable()).WillOnce(Return(true));
+                EXPECT_CALL(platformMock, createResourceUploadRenderBackend());
+                EXPECT_CALL(platformMock.renderBackendMock.contextMock, enable()).WillOnce(Return(true));
             }
             if (expectNotifications)
             {
@@ -55,7 +55,7 @@ namespace ramses_internal
 
         void destroyResourceUploadingRenderBackend()
         {
-            EXPECT_CALL(platformMock, destroyResourceUploadRenderBackend(Ref(platformMock.resourceUploadRenderBackendMock)));
+            EXPECT_CALL(platformMock, destroyResourceUploadRenderBackend());
             asyncEffectUploader.destroyResourceUploadRenderBackendAndStopThread();
             Mock::VerifyAndClearExpectations(&notifier);
         }
@@ -142,9 +142,9 @@ namespace ramses_internal
     TEST_F(AnAsyncEffectUploader, FailIfCanNotCreateResourceUpoadRenderBackend)
     {
         InSequence s;
-        EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, disable()).WillOnce(Return(true));
-        EXPECT_CALL(platformMock, createResourceUploadRenderBackend(Ref(platformMock.renderBackendMock))).WillOnce(Return(nullptr));
-        EXPECT_CALL(platformMock.renderBackendMock.surfaceMock, enable()).WillOnce(Return(true));
+        EXPECT_CALL(platformMock.renderBackendMock.contextMock, disable()).WillOnce(Return(true));
+        EXPECT_CALL(platformMock, createResourceUploadRenderBackend()).WillOnce(Return(nullptr));
+        EXPECT_CALL(platformMock.renderBackendMock.contextMock, enable()).WillOnce(Return(true));
         const bool status = asyncEffectUploader.createResourceUploadRenderBackendAndStartThread();
         EXPECT_FALSE(status);
     }

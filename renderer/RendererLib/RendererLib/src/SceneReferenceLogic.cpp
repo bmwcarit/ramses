@@ -180,10 +180,9 @@ namespace ramses_internal
 
             const auto masterSceneId = sceneIt.key;
             RendererSceneState masterTargetState;
-            DisplayHandle masterDisplay;
             OffscreenBufferHandle masterOB;
             int32_t masterRenderOrder = 0;
-            m_sceneLogic.getSceneInfo(masterSceneId, masterTargetState, masterDisplay, masterOB, masterRenderOrder);
+            m_sceneLogic.getSceneInfo(masterSceneId, masterTargetState, masterOB, masterRenderOrder);
             auto& masterSceneInfo = m_masterScenes[masterSceneId];
             masterSceneInfo.destroyed = false;
 
@@ -210,31 +209,19 @@ namespace ramses_internal
                 }
 
                 RendererSceneState refTargetState;
-                DisplayHandle refDisplay;
                 OffscreenBufferHandle refOB;
                 int32_t refRenderOrder = 0;
-                m_sceneLogic.getSceneInfo(refSceneId, refTargetState, refDisplay, refOB, refRenderOrder);
+                m_sceneLogic.getSceneInfo(refSceneId, refTargetState, refOB, refRenderOrder);
 
-                // referenced scene inherits display mapping and OB assignment
+                // referenced scene inherits OB assignment
                 // render order is not inherited but has to be set when setting new mapping or it changed
-                if (masterDisplay.isValid())
+                // render order to request for referenced scene is relative to master scene
+                const int toBeRequestedRefRenderOrder = masterRenderOrder + refData.renderOrder;
+                if (refOB != masterOB || refRenderOrder != toBeRequestedRefRenderOrder)
                 {
-                    // render order to request for referenced scene is relative to master scene
-                    const int toBeRequestedRefRenderOrder = masterRenderOrder + refData.renderOrder;
-
-                    if (refDisplay != masterDisplay)
-                    {
-                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic::updateReferencedScenes: setting mapping and assignment/renderOrder (master {} / ref {}) to display {}, buffer {}, renderOrder {}",
-                            masterSceneId, refSceneId, masterDisplay, masterOB, toBeRequestedRefRenderOrder);
-                        m_sceneLogic.setSceneMapping(refSceneId, masterDisplay);
-                        m_sceneLogic.setSceneDisplayBufferAssignment(refSceneId, masterOB, toBeRequestedRefRenderOrder);
-                    }
-                    else if (refOB != masterOB || refRenderOrder != toBeRequestedRefRenderOrder)
-                    {
-                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic::updateReferencedScenes: setting assignment/renderOrder (master {} / ref {}) to buffer {}, renderOrder {}",
-                            masterSceneId, refSceneId, masterOB, toBeRequestedRefRenderOrder);
-                        m_sceneLogic.setSceneDisplayBufferAssignment(refSceneId, masterOB, toBeRequestedRefRenderOrder);
-                    }
+                    LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic::updateReferencedScenes: setting assignment/renderOrder (master {} / ref {}) to buffer {}, renderOrder {}",
+                        masterSceneId, refSceneId, masterOB, toBeRequestedRefRenderOrder);
+                    m_sceneLogic.setSceneDisplayBufferAssignment(refSceneId, masterOB, toBeRequestedRefRenderOrder);
                 }
 
                 if (refTargetState != refData.requestedState || refTargetState > masterTargetState)

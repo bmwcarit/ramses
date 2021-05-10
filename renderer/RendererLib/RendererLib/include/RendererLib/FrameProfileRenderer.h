@@ -44,8 +44,9 @@ namespace ramses_internal
 
         struct Geometry
         {
-            DeviceResourceHandle vertexBufferHandle = DeviceResourceHandle::Invalid();
-            DeviceResourceHandle indexBufferHandle = DeviceResourceHandle::Invalid();
+            DeviceResourceHandle vertexBufferHandle;
+            DeviceResourceHandle indexBufferHandle;
+            DeviceResourceHandle vertexArrayHandle;
             EDrawMode drawMode = EDrawMode::Triangles;
             EDataType dataType = EDataType::Invalid;
             UInt32 indexCount = 0;
@@ -53,10 +54,10 @@ namespace ramses_internal
 
         struct Look
         {
-            DataFieldHandle positionHandle = DataFieldHandle::Invalid();
-            DataFieldHandle colorHandle = DataFieldHandle::Invalid();
-            DataFieldHandle mvpHandle = DataFieldHandle::Invalid();
-            DeviceResourceHandle shaderHandle = DeviceResourceHandle::Invalid();
+            DataFieldHandle positionHandle;
+            DataFieldHandle colorHandle;
+            DataFieldHandle mvpHandle;
+            DeviceResourceHandle shaderHandle;
         };
 
         struct Renderable
@@ -67,9 +68,9 @@ namespace ramses_internal
             Vector4 color;
         };
 
-        Bool m_doReset;
-        Bool m_initialized;
-        Bool m_enabled;
+        Bool m_doReset = false;
+        Bool m_initialized = false;
+        Bool m_enabled = false;
         IDevice* m_device;
         Matrix44f m_projectionMatrix;
         Float m_displayWidth;
@@ -86,9 +87,9 @@ namespace ramses_internal
         DeviceResourceHandle m_timingLineShaderHandle;
         DeviceResourceHandle m_stackedTimingLineShaderHandle;
         DeviceResourceHandle m_singleColorShaderHandle;
-        EffectResource* m_timingLineEffect;
-        EffectResource* m_stackedTimingLineEffect;
-        EffectResource* m_singleColorEffect;
+        EffectResource* m_timingLineEffect = nullptr;
+        EffectResource* m_stackedTimingLineEffect = nullptr;
+        EffectResource* m_singleColorEffect = nullptr;
 
         Geometry m_unitCubeGeometry;
         Geometry m_filledUnitCubeGeometry;

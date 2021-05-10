@@ -31,7 +31,7 @@ namespace ramses_internal
         void setSubscriptionPending           (SceneId sceneId);
         void setSubscribed                    (SceneId sceneId);
         void setUnsubscribed                  (SceneId sceneId, bool indirect);
-        void setMapRequested                  (SceneId sceneId, DisplayHandle handle);
+        void setMapRequested                  (SceneId sceneId);
         void setMappingAndUploading           (SceneId sceneId);
         void setMapped                        (SceneId sceneId);
         void setUnmapped                      (SceneId sceneId);
@@ -45,7 +45,7 @@ namespace ramses_internal
         Bool checkIfCanBeSubscriptionPending  (SceneId sceneId) const;
         Bool checkIfCanBeSubscribed           (SceneId sceneId) const;
         Bool checkIfCanBeUnsubscribed         (SceneId sceneId) const;
-        Bool checkIfCanBeMapRequested         (SceneId sceneId, DisplayHandle handle) const;
+        Bool checkIfCanBeMapRequested         (SceneId sceneId) const;
         Bool checkIfCanBeMapped               (SceneId sceneId) const;
         Bool checkIfCanBeUnmapped             (SceneId sceneId) const;
         Bool checkIfCanBeRenderedRequested    (SceneId sceneId) const;
@@ -60,7 +60,7 @@ namespace ramses_internal
 
         Bool canBeSubscriptionRequested(SceneId sceneId) const;
         Bool canBeUnsubscribed         (SceneId sceneId) const;
-        Bool canBeMapRequested         (SceneId sceneId, DisplayHandle handle) const;
+        Bool canBeMapRequested         (SceneId sceneId) const;
         Bool canBeMappingAndUploading  (SceneId sceneId) const;
         Bool canBeMapped               (SceneId sceneId) const;
         Bool canBeUnmapped             (SceneId sceneId) const;

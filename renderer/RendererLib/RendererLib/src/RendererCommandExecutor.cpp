@@ -80,10 +80,9 @@ namespace ramses_internal
         m_sceneControlLogic.setSceneState(cmd.scene, cmd.state);
     }
 
-    void RendererCommandExecutor::operator()(const RendererCommand::SetSceneMapping& cmd)
+    void RendererCommandExecutor::operator()(const RendererCommand::SetSceneMapping&)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_sceneControlLogic.setSceneMapping(cmd.scene, cmd.display);
+        // command sets scene ownership on dispatcher level, noop here
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetSceneDisplayBufferAssignment& cmd)
@@ -125,65 +124,65 @@ namespace ramses_internal
     void RendererCommandExecutor::operator()(const RendererCommand::CreateDisplay& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_sceneUpdater.createDisplayContext(cmd.config, cmd.display, cmd.binaryShaderCache);
+        m_sceneUpdater.createDisplayContext(cmd.config, cmd.binaryShaderCache);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::DestroyDisplay& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_sceneUpdater.destroyDisplayContext(cmd.display);
+        m_sceneUpdater.destroyDisplayContext();
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::CreateOffscreenBuffer& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        const bool succeeded = m_sceneUpdater.handleBufferCreateRequest(cmd.offscreenBuffer, cmd.display, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible, cmd.depthStencilBufferType);
+        const bool succeeded = m_sceneUpdater.handleBufferCreateRequest(cmd.offscreenBuffer, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible, cmd.depthStencilBufferType);
         m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType::OffscreenBufferCreated : ERendererEventType::OffscreenBufferCreateFailed), cmd.offscreenBuffer, cmd.display);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::DestroyOffscreenBuffer& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        const bool succeeded = m_sceneUpdater.handleBufferDestroyRequest(cmd.offscreenBuffer, cmd.display);
+        const bool succeeded = m_sceneUpdater.handleBufferDestroyRequest(cmd.offscreenBuffer);
         m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType::OffscreenBufferDestroyed : ERendererEventType::OffscreenBufferDestroyFailed), cmd.offscreenBuffer, cmd.display);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::CreateStreamBuffer& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_sceneUpdater.handleBufferCreateRequest(cmd.streamBuffer, cmd.display, cmd.source);
+        m_sceneUpdater.handleBufferCreateRequest(cmd.streamBuffer, cmd.source);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::DestroyStreamBuffer& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_sceneUpdater.handleBufferDestroyRequest(cmd.streamBuffer, cmd.display);
+        m_sceneUpdater.handleBufferDestroyRequest(cmd.streamBuffer);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetStreamBufferState& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_sceneUpdater.setStreamBufferState(cmd.streamBuffer, cmd.display, cmd.newState);
+        m_sceneUpdater.setStreamBufferState(cmd.streamBuffer, cmd.newState);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetClearFlags& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_sceneUpdater.handleSetClearFlags(cmd.display, cmd.offscreenBuffer, cmd.clearFlags);
+        m_sceneUpdater.handleSetClearFlags(cmd.offscreenBuffer, cmd.clearFlags);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetClearColor& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_sceneUpdater.handleSetClearColor(cmd.display, cmd.offscreenBuffer, cmd.clearColor);
+        m_sceneUpdater.handleSetClearColor(cmd.offscreenBuffer, cmd.clearColor);
     }
 
     void RendererCommandExecutor::operator()(RendererCommand::UpdateWarpingData& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        if (m_renderer.hasDisplayController(cmd.display) && m_renderer.getDisplayController(cmd.display).isWarpingEnabled())
+        if (m_renderer.hasDisplayController() && m_renderer.getDisplayController().isWarpingEnabled())
         {
-            m_renderer.setWarpingMeshData(cmd.display, std::move(cmd.data));
+            m_renderer.setWarpingMeshData(std::move(cmd.data));
             m_rendererEventCollector.addDisplayEvent(ERendererEventType::WarpingDataUpdated, cmd.display);
         }
         else
@@ -198,13 +197,13 @@ namespace ramses_internal
         screenshot.filename = std::move(cmd.filename);
         screenshot.sendViaDLT = cmd.sendViaDLT;
         screenshot.fullScreen = cmd.fullScreen;
-        m_sceneUpdater.handleReadPixels(cmd.display, cmd.offscreenBuffer, std::move(screenshot));
+        m_sceneUpdater.handleReadPixels(cmd.offscreenBuffer, std::move(screenshot));
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetSkippingOfUnmodifiedBuffers& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_renderer.setSkippingOfUnmodifiedBuffers(cmd.enable);
+        m_sceneUpdater.setSkippingOfUnmodifiedScenes(cmd.enable);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::LogStatistics& cmd)

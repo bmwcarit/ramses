@@ -14,9 +14,9 @@
 #include "RendererAPI/EDeviceTypeId.h"
 #include "RendererLib/RendererStatistics.h"
 #include "RendererLib/FrameProfilerStatistics.h"
-#include "RendererLib/DisplayEventHandlerManager.h"
 #include "RendererLib/RendererInterruptState.h"
 #include "RendererLib/DisplaySetup.h"
+#include "RendererLib/DisplayEventHandler.h"
 #include "FrameProfileRenderer.h"
 #include "MemoryStatistics.h"
 #include "Collections/Vector.h"
@@ -33,8 +33,6 @@ namespace ramses_internal
     class IPlatform;
     class IWindowEventsPollingManager;
     class RendererScenes;
-    class DisplayEventHandler;
-    class DisplayEventHandlerManager;
     class RendererEventCollector;
     class FrameTimer;
     class SceneExpirationMonitor;
@@ -45,43 +43,44 @@ namespace ramses_internal
         friend class RendererLogger;
 
     public:
-        Renderer(IPlatform& platform, const RendererScenes& rendererScenes, RendererEventCollector& eventCollector, const FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, RendererStatistics& rendererStatistics);
+        Renderer(
+            DisplayHandle display,
+            IPlatform& platform,
+            const RendererScenes& rendererScenes,
+            RendererEventCollector& eventCollector,
+            const FrameTimer& frameTimer,
+            SceneExpirationMonitor& expirationMonitor,
+            RendererStatistics& rendererStatistics);
         virtual ~Renderer();
 
-        void                        registerOffscreenBuffer    (DisplayHandle display, DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, Bool isInterruptible);
-        void                        unregisterOffscreenBuffer  (DisplayHandle display, DeviceResourceHandle bufferDeviceHandle);
+        void                        registerOffscreenBuffer    (DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, Bool isInterruptible);
+        void                        unregisterOffscreenBuffer  (DeviceResourceHandle bufferDeviceHandle);
 
         void                        doOneRenderLoop();
 
-        void                        assignSceneToDisplayBuffer  (SceneId sceneId, DisplayHandle displayHandle, DeviceResourceHandle buffer, Int32 globalSceneOrder);
+        void                        assignSceneToDisplayBuffer  (SceneId sceneId, DeviceResourceHandle buffer, Int32 globalSceneOrder);
         void                        unassignScene               (SceneId sceneId);
-        DisplayHandle               getDisplaySceneIsAssignedTo (SceneId sceneId) const;
-        DeviceResourceHandle        getBufferSceneIsAssignedTo  (SceneId sceneId, DisplayHandle* displayHandleOut = nullptr) const;
+        DeviceResourceHandle        getBufferSceneIsAssignedTo  (SceneId sceneId) const;
         Bool                        isSceneAssignedToInterruptibleOffscreenBuffer(SceneId sceneId) const;
         Int32                       getSceneGlobalOrder         (SceneId sceneId) const;
         void                        setSceneShown               (SceneId sceneId, Bool show);
 
-        virtual void                markBufferWithSceneAsModified(SceneId sceneId);
-        void                        setSkippingOfUnmodifiedBuffers(Bool enable);
+        virtual void                markBufferWithSceneForRerender(SceneId sceneId);
 
         const IDisplayController&   getDisplayController() const;
         IDisplayController&         getDisplayController();
         bool                        hasDisplayController() const;
-        // TODO vaclav all these have single display, no need to pass display arg
-        virtual void                createDisplayContext(const DisplayConfig& displayConfig, DisplayHandle display);
-        virtual void                destroyDisplayContext(DisplayHandle display);
-        const IDisplayController&   getDisplayController(DisplayHandle display) const;
-        IDisplayController&         getDisplayController(DisplayHandle display);
-        Bool                        hasDisplayController(DisplayHandle display) const;
-        const DisplaySetup&         getDisplaySetup(DisplayHandle displayHandle) const;
+        const DisplaySetup&         getDisplaySetup() const;
+        void                        createDisplayContext(const DisplayConfig& displayConfig);
+        void                        destroyDisplayContext();
 
-        DisplayEventHandler&        getDisplayEventHandler(DisplayHandle display);
-        void                        setWarpingMeshData(DisplayHandle display, const WarpingMeshData& meshData);
+        DisplayEventHandler&        getDisplayEventHandler();
+        void                        setWarpingMeshData(const WarpingMeshData& meshData);
 
-        virtual void                setClearFlags(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags);
-        virtual void                setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor);
-        void                        scheduleScreenshot(DisplayHandle display, DeviceResourceHandle renderTargetHandle, ScreenshotInfo&& screenshot);
-        std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> dispatchProcessedScreenshots(DisplayHandle display);
+        virtual void                setClearFlags(DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags);
+        virtual void                setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor);
+        void                        scheduleScreenshot(DeviceResourceHandle renderTargetHandle, ScreenshotInfo&& screenshot);
+        std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> dispatchProcessedScreenshots();
 
         Bool                        hasAnyBufferWithInterruptedRendering() const;
         void                        resetRenderInterruptState();
@@ -108,56 +107,39 @@ namespace ramses_internal
         static const Vector4 DefaultClearColor;
 
     protected:
-        void addDisplayController(IDisplayController& display, DisplayHandle displayHandle);
-        void removeDisplayController(DisplayHandle display);
+        virtual IDisplayController* createDisplayControllerFromConfig(const DisplayConfig& config);
 
     private:
-        void handleDisplayEvents(DisplayHandle displayHandle);
-        void renderToFramebuffer(DisplayHandle displayHandle, DisplayHandle& activeDisplay);
-        void renderToOffscreenBuffers(DisplayHandle displayHandle, DisplayHandle& activeDisplay);
-        void renderToInterruptibleOffscreenBuffers(DisplayHandle displayHandle, DisplayHandle& activeDisplay, Bool& interrupted);
-        IDisplayController* createDisplayControllerFromConfig(const DisplayConfig& config, DisplayEventHandler& displayEventHandler);
-        void processScheduledScreenshots(DeviceResourceHandle renderTargetHandle, IDisplayController& controller, DisplayHandle displayHandle);
-        Bool hasAnyOffscreenBufferToRerender(DisplayHandle display, Bool interruptible) const;
+        void handleDisplayEvents();
+        bool renderToFramebuffer();
+        void renderToOffscreenBuffers();
+        void renderToInterruptibleOffscreenBuffers();
+        void processScheduledScreenshots(DeviceResourceHandle renderTargetHandle);
         void onSceneWasRendered(const RendererCachedScene& scene);
 
-        static void ActivateDisplayContext(DisplayHandle displayToActivate, DisplayHandle& activeDisplay, IDisplayController& dispController);
-        static void ReorderDisplaysToStartWith(std::vector<DisplayHandle>& displays, DisplayHandle displayToStartWith);
-
-        struct DisplayInfo
-        {
-            IDisplayController*  displayController = nullptr;
-            bool                 couldRenderLastFrame = true;
-            DeviceResourceHandle frameBufferDeviceHandle;
-            DisplaySetup         buffersSetup;
-            std::unordered_map<DeviceResourceHandle, ScreenshotInfo> screenshots;
-        };
-        using Displays = std::map<DisplayHandle, DisplayInfo>;
-
+        DisplayHandle                          m_display;
         IPlatform&                             m_platform;
 
-        ISystemCompositorController*           m_systemCompositorController;
-        const IWindowEventsPollingManager*     m_windowEventsPollingManager;
-        Displays                               m_displays;
+        std::unique_ptr<IDisplayController>    m_displayController;
+        bool                                   m_canRenderFrame = true;
+        DeviceResourceHandle                   m_frameBufferDeviceHandle;
+        DisplaySetup                           m_displayBuffersSetup;
+        std::unordered_map<DeviceResourceHandle, ScreenshotInfo> m_screenshots;
 
         const RendererScenes&                  m_rendererScenes;
-        DisplayEventHandlerManager             m_displayHandlerManager;
+        DisplayEventHandler                    m_displayEventHandler;
 
         RendererStatistics&                    m_statistics;
         FrameProfilerStatistics                m_profilerStatistics;
         MemoryStatistics                       m_memoryStatistics;
 
-        Bool                                   m_skipUnmodifiedBuffers = true;
         RendererInterruptState                 m_rendererInterruptState;
         const FrameTimer&                      m_frameTimer;
         SceneExpirationMonitor&                m_expirationMonitor;
 
-        using FrameProfilerMap = HashMap<DisplayHandle, FrameProfileRenderer*>;
-        FrameProfilerMap m_frameProfileRenderer;
+        std::unique_ptr<FrameProfileRenderer> m_frameProfileRenderer;
 
         // temporary containers kept to avoid re-allocations
-        std::vector<DisplayHandle> m_tempDisplaysToRender; // used in RendererLogger - adapt if changing behavior
-        std::vector<DisplayHandle> m_tempDisplaysToSwapBuffers;
         std::vector<SceneId> m_tempScenesRendered;
     };
 }

@@ -23,14 +23,14 @@ namespace ramses
 
     TEST_F(ASceneReference, createSceneReference)
     {
-        SceneReference* sceneReference = this->m_scene.createSceneReference(sceneId_t(123),"testSceneReference");
+        SceneReference* sceneReference = this->m_scene.createSceneReference(sceneId_t(444),"testSceneReference");
         ASSERT_NE(nullptr, sceneReference);
 
         const auto sceneRefHandle = sceneReference->impl.getSceneReferenceHandle();
         EXPECT_TRUE(sceneRefHandle.isValid());
         ASSERT_TRUE(this->getInternalScene().isSceneReferenceAllocated(sceneRefHandle));
         const auto& sceneRef = this->getInternalScene().getSceneReference(sceneRefHandle);
-        EXPECT_EQ(123u, sceneRef.sceneId.getValue());
+        EXPECT_EQ(444u, sceneRef.sceneId.getValue());
         EXPECT_EQ(ramses_internal::RendererSceneState::Available, sceneRef.requestedState);
         EXPECT_EQ(0, sceneRef.renderOrder);
         EXPECT_FALSE(sceneRef.flushNotifications);
@@ -39,15 +39,21 @@ namespace ramses
         EXPECT_FALSE(this->getInternalScene().isSceneReferenceAllocated(sceneRefHandle));
     }
 
+    TEST_F(ASceneReference, failsToCreateSceneReferenceReferencingSelf)
+    {
+        const auto sceneReference = this->m_scene.createSceneReference(this->m_scene.getSceneId());
+        EXPECT_EQ(nullptr, sceneReference);
+    }
+
     TEST_F(ASceneReference, failsToCreateSceneReferenceUsingSceneIdAlreadyReferenced)
     {
-        EXPECT_NE(nullptr, this->m_scene.createSceneReference(sceneId_t{ 123 }));
+        EXPECT_NE(nullptr, this->m_scene.createSceneReference(sceneId_t{ 444 }));
 
-        EXPECT_EQ(nullptr, this->m_scene.createSceneReference(sceneId_t{ 123 }));
-        EXPECT_EQ(nullptr, this->m_scene.createSceneReference(sceneId_t{ 123 }));
+        EXPECT_EQ(nullptr, this->m_scene.createSceneReference(sceneId_t{ 444 }));
+        EXPECT_EQ(nullptr, this->m_scene.createSceneReference(sceneId_t{ 444 }));
 
         auto otherScene = getClient().createScene(sceneId_t(555));
-        EXPECT_EQ(nullptr, otherScene->createSceneReference(sceneId_t(123)));
+        EXPECT_EQ(nullptr, otherScene->createSceneReference(sceneId_t(444)));
     }
 
     TEST_F(ASceneReference, failsToCreateSceneReferenceUsingInvalidSceneId)
@@ -58,19 +64,19 @@ namespace ramses
 
     TEST_F(ASceneReference, canGetReferencedSceneSceneId)
     {
-        SceneReference* sceneReference = this->m_scene.createSceneReference(sceneId_t(123), "testSceneReference");
-        ASSERT_EQ(sceneId_t(123), sceneReference->getReferencedSceneId());
+        SceneReference* sceneReference = this->m_scene.createSceneReference(sceneId_t(444), "testSceneReference");
+        ASSERT_EQ(sceneId_t(444), sceneReference->getReferencedSceneId());
     }
 
     TEST_F(ASceneReference, getsInitialRequestedSceneState)
     {
-        SceneReference* sceneReference = this->m_scene.createSceneReference(sceneId_t(123), "testSceneReference");
+        SceneReference* sceneReference = this->m_scene.createSceneReference(sceneId_t(444), "testSceneReference");
         ASSERT_EQ(RendererSceneState::Available, sceneReference->getRequestedState());
     }
 
     TEST_F(ASceneReference, canGetRequestedSceneState)
     {
-        SceneReference* sceneReference = this->m_scene.createSceneReference(sceneId_t(123), "testSceneReference");
+        SceneReference* sceneReference = this->m_scene.createSceneReference(sceneId_t(444), "testSceneReference");
         sceneReference->requestState(RendererSceneState::Ready);
         ASSERT_EQ(RendererSceneState::Ready, sceneReference->getRequestedState());
 
@@ -153,7 +159,7 @@ namespace ramses
 
     TEST_F(ASceneReference, requestsVersionNotification)
     {
-        constexpr sceneId_t sceneId{ 123 };
+        constexpr sceneId_t sceneId{ 444 };
         auto reference = m_scene.createSceneReference(sceneId);
         ASSERT_NE(nullptr, reference);
         const auto sceneRefHandle = reference->impl.getSceneReferenceHandle();
@@ -168,7 +174,7 @@ namespace ramses
 
     TEST_F(ASceneReference, setsRenderOrder)
     {
-        constexpr sceneId_t sceneId{ 123 };
+        constexpr sceneId_t sceneId{ 444 };
         auto reference = m_scene.createSceneReference(sceneId);
         ASSERT_NE(nullptr, reference);
 
@@ -181,7 +187,7 @@ namespace ramses
 
     TEST_F(ASceneReference, createsActionForLinkData)
     {
-        constexpr sceneId_t sceneId1{ 123 };
+        constexpr sceneId_t sceneId1{ 444 };
         constexpr sceneId_t sceneId2{ 124 };
         constexpr dataProviderId_t providerId{ 12 };
         constexpr dataConsumerId_t consumerId{ 13 };
@@ -222,7 +228,7 @@ namespace ramses
 
     TEST_F(ASceneReference, createsActionForUnlinkData)
     {
-        constexpr sceneId_t sceneId{ 123 };
+        constexpr sceneId_t sceneId{ 444 };
         constexpr dataConsumerId_t consumerId{ 13 };
         auto reference = m_scene.createSceneReference(sceneId);
         ASSERT_NE(nullptr, reference);

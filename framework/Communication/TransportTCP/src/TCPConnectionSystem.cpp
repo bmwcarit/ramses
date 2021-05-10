@@ -659,8 +659,8 @@ namespace ramses_internal
         case EMessageId::DcsmCanvasSizeChange:
             handleDcsmCanvasSizeChange(pp, stream);
             break;
-        case EMessageId::DcsmContentStatusChange:
-            handleDcsmContentStatusChange(pp, stream);
+        case EMessageId::DcsmContentStateChange:
+            handleDcsmContentStateChange(pp, stream);
             break;
         case EMessageId::DcsmContentDescription:
             handleDcsmContentDescription(pp, stream);
@@ -679,6 +679,9 @@ namespace ramses_internal
             break;
         case EMessageId::DcsmUpdateContentMetadata:
             handleDcsmUpdateContentMetadata(pp, stream);
+            break;
+        case EMessageId::DcsmContentStatus:
+            handleDcsmContentStatus(pp, stream);
             break;
         default:
             LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleReceivedMessage: Invalid messagetype " << messageType << " From " << pp->address.getParticipantId());
@@ -1173,7 +1176,7 @@ namespace ramses_internal
     // --
     bool TCPConnectionSystem::sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation ai)
     {
-        OutMessage msg(to, EMessageId::DcsmContentStatusChange);
+        OutMessage msg(to, EMessageId::DcsmContentStateChange);
         const auto blob = categoryInfo.toBinary();
         const uint64_t blobSize = blob.size();
         msg.stream << contentID.getValue()
@@ -1185,7 +1188,7 @@ namespace ramses_internal
         return postMessageForSending(std::move(msg));
     }
 
-    void TCPConnectionSystem::handleDcsmContentStatusChange(const ParticipantPtr& pp, BinaryInputStream& stream)
+    void TCPConnectionSystem::handleDcsmContentStateChange(const ParticipantPtr& pp, BinaryInputStream& stream)
     {
         if (m_dcsmProviderHandler)
         {
@@ -1202,11 +1205,46 @@ namespace ramses_internal
             uint64_t blobSize = 0;
             stream >> blobSize;
 
+            //TODO(Carsten): remove piggybacking for next major version
+            if (static_cast<uint64_t>(statusInfo) == 27012501u && blobSize == 0)
+                return handleDcsmContentStatus(pp, stream);
+
             CategoryInfo categoryInfo({stream.readPosition(), static_cast<size_t>(blobSize)});
             stream.skip(blobSize);
 
             PlatformGuard guard(m_frameworkLock);
             m_dcsmProviderHandler->handleContentStateChange(contentID, statusInfo, categoryInfo, ai, pp->address.getParticipantId());
+        }
+    }
+
+    bool TCPConnectionSystem::sendDcsmContentStatus(const Guid& to, ContentID contentID, uint64_t messageID, std::vector<Byte> const& message)
+    {
+        // content status change piggybacking - write empty contentStateChange message first
+        // TODO(Carsten): implement properly for next major version
+        OutMessage msg(to, EMessageId::DcsmContentStateChange);
+        msg.stream << uint64_t(0) << uint64_t(27012501) << uint64_t(0) << uint64_t(0) << uint64_t(0);
+
+        const uint32_t usedSize = static_cast<uint32_t>(message.size());
+        msg.stream << contentID.getValue() << messageID << usedSize;
+        msg.stream.write(message.data(), usedSize);
+
+        return postMessageForSending(std::move(msg));
+    }
+
+    void TCPConnectionSystem::handleDcsmContentStatus(const ParticipantPtr& pp, BinaryInputStream& stream)
+    {
+        if (m_dcsmProviderHandler)
+        {
+            ContentID contentID;
+            uint64_t messageID;
+            uint32_t usedSize;
+
+            stream >> contentID.getReference() >> messageID >> usedSize;
+            std::vector<Byte> message(usedSize);
+            stream.read(message.data(), usedSize);
+
+            PlatformGuard guard(m_frameworkLock);
+            m_dcsmProviderHandler->handleContentStatus(contentID, messageID, message, pp->address.getParticipantId());
         }
     }
 

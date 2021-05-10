@@ -209,7 +209,8 @@ namespace ramses
 
     status_t CameraNodeImpl::setViewport(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
-        if (width > 0 && height > 0)
+        // Set a sane upper limit for viewport to avoid GL_INVALID_VALUE in glViewport()
+        if (width > 0 && width <= 32768u && height > 0 && height <= 32768u )
         {
             getIScene().setDataSingleVector2i(m_viewportOffsetDataReference, ramses_internal::DataFieldHandle{ 0 }, { x, y });
             getIScene().setDataSingleVector2i(m_viewportSizeDataReference, ramses_internal::DataFieldHandle{ 0 }, { int32_t(width), int32_t(height) });
@@ -217,7 +218,7 @@ namespace ramses
         }
         else
         {
-            return addErrorEntry("Camera::setViewport failed - width and height must not be 0!");
+            return addErrorEntry("Camera::setViewport failed - width and height must be within [1, 32768]!");
         }
 
         return StatusOK;

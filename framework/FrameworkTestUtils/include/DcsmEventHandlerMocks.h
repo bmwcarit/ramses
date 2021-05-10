@@ -41,7 +41,7 @@ namespace ramses_internal
         MOCK_METHOD(void, contentDisableFocusRequest, (ramses::ContentID, int32_t focusRequest), (override));
         MOCK_METHOD(void, contentStopOfferRequest, (ramses::ContentID), (override));
         MOCK_METHOD(void, forceContentOfferStopped, (ramses::ContentID), (override));
-        MOCK_METHOD(void , contentMetadataUpdated, (ramses::ContentID contentID, const ramses::DcsmMetadataUpdate& metadataUpdate), (override));
+        MOCK_METHOD(void, contentMetadataUpdated, (ramses::ContentID contentID, const ramses::DcsmMetadataUpdate& metadataUpdate), (override));
     };
 }
 

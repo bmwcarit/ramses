@@ -11,6 +11,7 @@
 
 #include "Platform_Base/Platform_Base.h"
 #include "RendererLib/RendererConfig.h"
+#include "RendererLib/DisplayConfig.h"
 #include "Context_EGL/Context_EGL.h"
 #include "Device_GL/Device_GL.h"
 
@@ -27,46 +28,69 @@ namespace ramses_internal
         {
         }
 
-        virtual IContext* createContext(const DisplayConfig& displayConfig, IWindow& window, IContext* sharedContext) override final
+        virtual bool createContext(const DisplayConfig& displayConfig) override final
         {
-            WindowT* platformWindow = getPlatformWindow<WindowT>(window);
-            assert(nullptr != platformWindow);
-
-            const auto swapInterval = getSwapInterval();
-            const std::vector<EGLint> contextAttributes = GetContextAttributes();
-            const std::vector<EGLint> surfaceAttributes = GetSurfaceAttributes(platformWindow->getMSAASampleCount(), displayConfig.getDepthStencilBufferType());
-            Context_EGL* platformSharedContext = nullptr;
-
-            if(sharedContext)
-            {
-                platformSharedContext = getPlatformContext<Context_EGL>(*sharedContext);
-                assert(platformSharedContext);
-            }
-
-
-            Context_EGL* platformContext = new Context_EGL(
-                        platformWindow->getNativeDisplayHandle(),
-                        reinterpret_cast<Context_EGL::Generic_EGLNativeWindowType>(platformWindow->getNativeWindowHandle()),
-                        contextAttributes.data(),
-                        surfaceAttributes.data(),
-                        nullptr,
-                        swapInterval,
-                        platformSharedContext);
-
-            return addPlatformContext(platformContext);
+            m_context = createContextInternal(displayConfig, nullptr);
+            return m_context != nullptr;
         }
 
-        virtual IDevice* createDevice(IContext& context) override final
+        virtual bool createContextUploading() override final
         {
-            Context_EGL* platformContext = getPlatformContext<Context_EGL>(context);
-            assert(nullptr != platformContext);
-            Device_GL* device = new Device_GL(*platformContext, 3, 0, true);
-            return addPlatformDevice(device);
+            assert(m_context);
+            m_contextUploading = createContextInternal(DisplayConfig{}, static_cast<Context_EGL*>(m_context.get()));
+            return m_contextUploading != nullptr;
+        }
+
+        virtual bool createDevice() override final
+        {
+            assert(m_context);
+            m_device = createDeviceInternal(*m_context);
+            return m_device != nullptr;
+        }
+
+        virtual bool createDeviceUploading() override final
+        {
+            assert(m_contextUploading);
+            m_deviceUploading = createDeviceInternal(*m_contextUploading);
+            return m_deviceUploading != nullptr;
         }
 
         virtual uint32_t getSwapInterval() const = 0;
 
     private:
+        std::unique_ptr<IContext> createContextInternal(const DisplayConfig& displayConfig, Context_EGL* sharedContext)
+        {
+            assert(m_window);
+            WindowT* platformWindow = static_cast<WindowT*>(m_window.get());
+
+            const auto swapInterval = getSwapInterval();
+            const std::vector<EGLint> contextAttributes = GetContextAttributes();
+            const std::vector<EGLint> surfaceAttributes = GetSurfaceAttributes(platformWindow->getMSAASampleCount(), displayConfig.getDepthStencilBufferType());
+
+            auto context = std::make_unique<Context_EGL>(
+                platformWindow->getNativeDisplayHandle(),
+                reinterpret_cast<Context_EGL::Generic_EGLNativeWindowType>(platformWindow->getNativeWindowHandle()),
+                contextAttributes.data(),
+                surfaceAttributes.data(),
+                nullptr,
+                swapInterval,
+                sharedContext);
+
+            if (context->init())
+                return context;
+
+            return {};
+        }
+
+        std::unique_ptr<Device_GL> createDeviceInternal(IContext& context)
+        {
+            auto device = std::make_unique<Device_GL>(context, uint8_t{ 3 }, uint8_t{ 0 }, true);
+            if (device->init())
+                return device;
+
+            return {};
+        }
+
         static std::vector<EGLint> GetContextAttributes()
         {
             return {

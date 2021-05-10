@@ -32,9 +32,9 @@ namespace ramses_internal
         void flushApplied(SceneId sceneId);
         void flushBlocked(SceneId sceneId);
 
-        void offscreenBufferSwapped(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer, bool isInterruptible);
-        void offscreenBufferInterrupted(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer);
-        void framebufferSwapped(DisplayHandle display);
+        void offscreenBufferSwapped(DeviceResourceHandle offscreenBuffer, bool isInterruptible);
+        void offscreenBufferInterrupted(DeviceResourceHandle offscreenBuffer);
+        void framebufferSwapped();
 
         void resourceUploaded(UInt byteSize);
         void sceneResourceUploaded(SceneId sceneId, UInt byteSize);
@@ -43,7 +43,7 @@ namespace ramses_internal
         void setVRAMUsage(uint64_t totalUploaded, uint64_t gpuCacheSize);
 
         void untrackScene(SceneId sceneId);
-        void untrackOffscreenBuffer(DisplayHandle displayHandle, DeviceResourceHandle offscreenBuffer);
+        void untrackOffscreenBuffer(DeviceResourceHandle offscreenBuffer);
         void untrackStreamTexture(WaylandIviSurfaceId sourceId);
 
         void frameFinished(UInt32 drawCalls);
@@ -127,7 +127,7 @@ namespace ramses_internal
 
         // using map so that items are logged ordered
         std::map< SceneId, SceneStatistics, StronglyTypedValueComparator<SceneId> > m_sceneStatistics;
-        std::map< DisplayHandle, DisplayStatistics > m_displayStatistics;
+        DisplayStatistics m_displayStatistics;
         std::map< WaylandIviSurfaceId, StreamTextureStatistics, StronglyTypedValueComparator<WaylandIviSurfaceId> > m_streamTextureStatistics;
     };
 }

@@ -135,10 +135,9 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "Scene " << sceneId << " is in state PUBLISHED caused by command UNSUBSCRIBE (indirect: " << indirect << ")");
     }
 
-    void SceneStateExecutor::setMapRequested(SceneId sceneId, DisplayHandle handle)
+    void SceneStateExecutor::setMapRequested(SceneId sceneId)
     {
-        UNUSED(handle);
-        assert(canBeMapRequested(sceneId, handle));
+        assert(canBeMapRequested(sceneId));
         m_scenesStateInfo.setSceneState(sceneId, ESceneState::MapRequested);
         LOG_INFO(CONTEXT_RENDERER, "Scene " << sceneId << " is in state MAP REQUESTED");
     }
@@ -264,9 +263,9 @@ namespace ramses_internal
         return true;
     }
 
-    Bool SceneStateExecutor::checkIfCanBeMapRequested(SceneId sceneId, DisplayHandle handle) const
+    Bool SceneStateExecutor::checkIfCanBeMapRequested(SceneId sceneId) const
     {
-        if (!canBeMapRequested(sceneId, handle))
+        if (!canBeMapRequested(sceneId))
         {
             if (getSceneState(sceneId) == ESceneState::MapRequested || getSceneState(sceneId) == ESceneState::MappingAndUploading)
             {
@@ -421,17 +420,15 @@ namespace ramses_internal
         return false;
     }
 
-    Bool SceneStateExecutor::canBeMapRequested(SceneId sceneId, DisplayHandle handle) const
+    Bool SceneStateExecutor::canBeMapRequested(SceneId sceneId) const
     {
         if (m_scenesStateInfo.hasScene(sceneId) && ESceneState::Subscribed == m_scenesStateInfo.getSceneState(sceneId))
         {
-            if (m_renderer.hasDisplayController(handle))
-            {
+            if (m_renderer.hasDisplayController())
                 return true;
-            }
             else
             {
-                LOG_WARN(CONTEXT_RENDERER, "Map scene with id :" << sceneId << " on display : " << handle.asMemoryHandle() << " might fail because the display does not exist!");
+                LOG_WARN(CONTEXT_RENDERER, "Map scene with id " << sceneId << " might fail because the display seems invalid!");
             }
         }
         else

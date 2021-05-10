@@ -34,7 +34,7 @@ namespace ramses_internal
 
     Bool Context_WGL::init()
     {
-        LOG_DEBUG(CONTEXT_RENDERER, " Surface_Windows_WGL::init:  initializing Context_WGL");
+        LOG_DEBUG(CONTEXT_RENDERER, " Context_WGL::init:  initializing Context_WGL");
 
         if (!m_ext.areLoaded() || 0 == m_contextAttributes)
         {
@@ -69,7 +69,7 @@ namespace ramses_internal
         {
             if (m_ext.procs.wglSwapIntervalEXT(1) == FALSE)
             {
-                LOG_WARN(CONTEXT_RENDERER, "Surface_Windows_WGL::Surface_Windows_WGL:  could not set swap interval!");
+                LOG_WARN(CONTEXT_RENDERER, "Context_WGL::Context_WGL:  could not set swap interval!");
             }
         }
 
@@ -78,7 +78,7 @@ namespace ramses_internal
 
     Context_WGL::~Context_WGL()
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "Surface_Windows_WGL::~Surface_Windows_WGL:");
+        LOG_DEBUG(CONTEXT_RENDERER, "Context_WGL::~Context_WGL:");
 
         disable();
         wglDeleteContext(m_wglContextHandle);
@@ -239,7 +239,7 @@ namespace ramses_internal
 
         if (!SetPixelFormat(m_displayHandle, pixelFormat, &pfd))   // Are We Able To Set The Pixel Format?
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Surface_Windows_WGL::initCustomPixelFormat:  can't set the pixelformat");
+            LOG_ERROR(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  can't set the pixelformat");
             return false;
         }
 

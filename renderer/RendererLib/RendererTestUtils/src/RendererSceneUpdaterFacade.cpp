@@ -16,6 +16,7 @@
 namespace ramses_internal
 {
     RendererSceneUpdaterPartialMock::RendererSceneUpdaterPartialMock(
+        DisplayHandle display,
         IPlatform& platform,
         const Renderer& renderer,
         const RendererScenes& rendererScenes,
@@ -25,7 +26,8 @@ namespace ramses_internal
         const SceneExpirationMonitor& expirationMonitor,
         IThreadAliveNotifier& notifier,
         const IRendererResourceCache* rendererResourceCache)
-        : RendererSceneUpdater(platform,
+        : RendererSceneUpdater(display,
+                               platform,
                                const_cast<Renderer&>(renderer),
                                const_cast<RendererScenes&>(rendererScenes),
                                const_cast<SceneStateExecutor&>(sceneStateExecutor),
@@ -40,6 +42,7 @@ namespace ramses_internal
     RendererSceneUpdaterPartialMock::~RendererSceneUpdaterPartialMock() = default;
 
     RendererSceneUpdaterFacade::RendererSceneUpdaterFacade(
+        DisplayHandle display,
         IPlatform& platform,
         const Renderer& renderer,
         const RendererScenes& rendererScenes,
@@ -49,7 +52,7 @@ namespace ramses_internal
         const SceneExpirationMonitor& expirationMonitor,
         IThreadAliveNotifier& notifier,
         const IRendererResourceCache* rendererResourceCache)
-        : RendererSceneUpdaterPartialMock(platform, renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor, notifier, rendererResourceCache)
+        : RendererSceneUpdaterPartialMock(display, platform, renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor, notifier, rendererResourceCache)
     {
     }
 
@@ -73,24 +76,22 @@ namespace ramses_internal
 
     std::unique_ptr<IRendererResourceManager> RendererSceneUpdaterFacade::createResourceManager(
         IRenderBackend& renderBackend,
-        AsyncEffectUploader& asyncEffectUploader,
         IEmbeddedCompositingManager& embeddedCompositingManager,
-        DisplayHandle display,
         bool keepEffectsUploaded,
         uint64_t gpuCacheSize,
         bool asyncEffectUploadEnabled,
         IBinaryShaderCache* binaryShaderCache)
     {
-        RendererSceneUpdaterPartialMock::createResourceManager(renderBackend, asyncEffectUploader, embeddedCompositingManager, display, keepEffectsUploaded, gpuCacheSize, asyncEffectUploadEnabled, binaryShaderCache);
+        RendererSceneUpdaterPartialMock::createResourceManager(renderBackend, embeddedCompositingManager, keepEffectsUploaded, gpuCacheSize, asyncEffectUploadEnabled, binaryShaderCache);
         testing::StrictMock<RendererResourceManagerRefCountMock>* resMgrMock = new testing::StrictMock<RendererResourceManagerRefCountMock>;
-        assert(!m_resourceManagerMocks.count(display));
-        m_resourceManagerMocks[display] = resMgrMock;
+        assert(m_resourceManagerMock == nullptr);
+        m_resourceManagerMock = resMgrMock;
         return std::unique_ptr<IRendererResourceManager>{ resMgrMock };
     }
 
-    void RendererSceneUpdaterFacade::destroyResourceManager(DisplayHandle handle)
+    void RendererSceneUpdaterFacade::destroyResourceManager()
     {
-        RendererSceneUpdaterPartialMock::destroyResourceManager(handle);
-        RendererSceneUpdater::destroyResourceManager(handle); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater
+        RendererSceneUpdaterPartialMock::destroyResourceManager();
+        RendererSceneUpdater::destroyResourceManager(); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater
     }
 }

@@ -10,8 +10,8 @@
 #include "RendererAPI/IRenderBackend.h"
 #include "RendererAPI/ISystemCompositorController.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
-#include "RendererAPI/ISurface.h"
 #include "RendererAPI/IWindow.h"
+#include "RendererAPI/IContext.h"
 #include "RendererAPI/IDevice.h"
 #include "RendererAPI/IWindowEventsPollingManager.h"
 #include "RendererLib/RendererCachedScene.h"
@@ -28,328 +28,219 @@ namespace ramses_internal
 {
     const Vector4 Renderer::DefaultClearColor = { 0.f, 0.f, 0.f, 1.f };
 
-    Renderer::Renderer(IPlatform& platform, const RendererScenes& rendererScenes, RendererEventCollector& eventCollector, const FrameTimer& frameTimer, SceneExpirationMonitor& expirationMonitor, RendererStatistics& rendererStatistics)
-        : m_platform(platform)
-        , m_systemCompositorController(nullptr)
+    Renderer::Renderer(
+        DisplayHandle display,
+        IPlatform& platform,
+        const RendererScenes& rendererScenes,
+        RendererEventCollector& eventCollector,
+        const FrameTimer& frameTimer,
+        SceneExpirationMonitor& expirationMonitor,
+        RendererStatistics& rendererStatistics)
+        : m_display(display)
+        , m_platform(platform)
         , m_rendererScenes(rendererScenes)
-        , m_displayHandlerManager(eventCollector)
+        , m_displayEventHandler(m_display, eventCollector)
         , m_statistics(rendererStatistics)
         , m_frameTimer(frameTimer)
         , m_expirationMonitor(expirationMonitor)
     {
-        m_platform.createPerRendererComponents();
-        m_systemCompositorController = platform.getSystemCompositorController();
-        m_windowEventsPollingManager = platform.getWindowEventsPollingManager();
     }
 
     Renderer::~Renderer()
     {
-        assert(m_displays.empty());
-        m_platform.destroyPerRendererComponents();
+        assert(!hasDisplayController());
     }
 
-    void Renderer::registerOffscreenBuffer(DisplayHandle display, DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, Bool isInterruptible)
+    void Renderer::registerOffscreenBuffer(DeviceResourceHandle bufferDeviceHandle, UInt32 width, UInt32 height, Bool isInterruptible)
     {
-        assert(m_displays.find(display) != m_displays.cend());
+        assert(hasDisplayController());
         assert(!hasAnyBufferWithInterruptedRendering());
-        auto& displayInfo = m_displays.find(display)->second;
-        displayInfo.buffersSetup.registerDisplayBuffer(bufferDeviceHandle, { 0, 0, width, height }, DefaultClearColor, true, isInterruptible);
+        m_displayBuffersSetup.registerDisplayBuffer(bufferDeviceHandle, { 0, 0, width, height }, DefaultClearColor, true, isInterruptible);
         // no need to re-render OB as long as no scene is assigned to it, OB is cleared at creation time
-        displayInfo.buffersSetup.setDisplayBufferToBeRerendered(bufferDeviceHandle, false);
+        m_displayBuffersSetup.setDisplayBufferToBeRerendered(bufferDeviceHandle, false);
     }
 
-    void Renderer::unregisterOffscreenBuffer(DisplayHandle display, DeviceResourceHandle bufferDeviceHandle)
+    void Renderer::unregisterOffscreenBuffer(DeviceResourceHandle bufferDeviceHandle)
     {
-        assert(m_displays.find(display) != m_displays.cend());
+        assert(hasDisplayController());
         assert(!hasAnyBufferWithInterruptedRendering());
-        auto& displayInfo = m_displays[display];
-        displayInfo.buffersSetup.unregisterDisplayBuffer(bufferDeviceHandle);
-        m_statistics.untrackOffscreenBuffer(display, bufferDeviceHandle);
-
-        displayInfo.screenshots.erase(bufferDeviceHandle);
+        m_displayBuffersSetup.unregisterDisplayBuffer(bufferDeviceHandle);
+        m_statistics.untrackOffscreenBuffer(bufferDeviceHandle);
+        m_screenshots.erase(bufferDeviceHandle);
     }
 
     const IDisplayController& Renderer::getDisplayController() const
     {
-        assert(m_displays.size() == 1u);
-        return *m_displays.cbegin()->second.displayController;
+        assert(hasDisplayController());
+        return *m_displayController;
     }
 
     IDisplayController& Renderer::getDisplayController()
     {
-        // non-const version of getDisplayController cast to its const version to avoid duplicating code
-        return const_cast<IDisplayController&>((const_cast<const Renderer&>(*this)).getDisplayController());
+        assert(hasDisplayController());
+        return *m_displayController;
     }
 
     bool Renderer::hasDisplayController() const
     {
-        return !m_displays.empty();
+        return m_displayController != nullptr;
     }
 
-    const IDisplayController& Renderer::getDisplayController(DisplayHandle display) const
+    DisplayEventHandler& Renderer::getDisplayEventHandler()
     {
-        assert(m_displays.find(display) != m_displays.cend());
-        return *m_displays.find(display)->second.displayController;
+        return m_displayEventHandler;
     }
 
-    IDisplayController& Renderer::getDisplayController(DisplayHandle display)
+    void Renderer::setWarpingMeshData(const WarpingMeshData& meshData)
     {
-        // non-const version of getDisplayController cast to its const version to avoid duplicating code
-        return const_cast<IDisplayController&>((const_cast<const Renderer&>(*this)).getDisplayController(display));
-    }
-
-    DisplayEventHandler& Renderer::getDisplayEventHandler(DisplayHandle display)
-    {
-        return m_displayHandlerManager.getHandler(display);
-    }
-
-    void Renderer::setWarpingMeshData(DisplayHandle display, const WarpingMeshData& meshData)
-    {
-        auto& displayController = getDisplayController(display);
+        auto& displayController = getDisplayController();
         assert(displayController.isWarpingEnabled());
         displayController.setWarpingMeshData(meshData);
         // re-render framebuffer of the display
-        auto& displayInfo = m_displays.find(display)->second;
-        displayInfo.buffersSetup.setDisplayBufferToBeRerendered(displayInfo.frameBufferDeviceHandle, true);
+        m_displayBuffersSetup.setDisplayBufferToBeRerendered(m_frameBufferDeviceHandle, true);
     }
 
-    void Renderer::addDisplayController(IDisplayController& display, DisplayHandle displayHandle)
-    {
-        assert(m_displays.find(displayHandle) == m_displays.cend());
-        assert(!hasAnyBufferWithInterruptedRendering());
-
-        DisplayInfo& displayInfo = m_displays[displayHandle];
-        displayInfo.displayController = &display;
-        displayInfo.frameBufferDeviceHandle = display.getDisplayBuffer();
-        displayInfo.buffersSetup.registerDisplayBuffer(displayInfo.frameBufferDeviceHandle, { 0, 0, display.getDisplayWidth(), display.getDisplayHeight() }, DefaultClearColor, false, false);
-
-        auto profileRenderer = new FrameProfileRenderer(display.getRenderBackend().getDevice(), display.getDisplayWidth(), display.getDisplayHeight());
-        m_frameProfileRenderer.put(displayHandle, profileRenderer);
-    }
-
-    void Renderer::createDisplayContext(const DisplayConfig& displayConfig, DisplayHandle display)
+    void Renderer::createDisplayContext(const DisplayConfig& displayConfig)
     {
         LOG_TRACE(CONTEXT_PROFILING, "Renderer::createDisplayContext start creating display");
 
-        DisplayEventHandler& displayHandler = m_displayHandlerManager.createHandler(display);
-        IDisplayController* displayController = createDisplayControllerFromConfig(displayConfig, displayHandler);
-        if (!displayController)
+        assert(!m_displayController);
+        m_displayController.reset(createDisplayControllerFromConfig(displayConfig));
+        if (!m_displayController)
         {
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::createDisplayContext: failed to create a display controller");
             return;
         }
 
-        addDisplayController(*displayController, display);
-        setClearColor(display, displayController->getDisplayBuffer(), displayConfig.getClearColor());
+        m_frameBufferDeviceHandle = m_displayController->getDisplayBuffer();
+        m_displayBuffersSetup.registerDisplayBuffer(m_frameBufferDeviceHandle, { 0, 0, m_displayController->getDisplayWidth(), m_displayController->getDisplayHeight() }, DefaultClearColor, false, false);
+        setClearColor(m_frameBufferDeviceHandle, displayConfig.getClearColor());
+
+        m_frameProfileRenderer = std::make_unique<FrameProfileRenderer>(m_displayController->getRenderBackend().getDevice(), m_displayController->getDisplayWidth(), m_displayController->getDisplayHeight());
 
         LOG_TRACE(CONTEXT_PROFILING, "RamsesRenderer::createDisplayContext finished creating display");
     }
 
-    void Renderer::destroyDisplayContext(DisplayHandle display)
+    void Renderer::destroyDisplayContext()
     {
-        IDisplayController& displayController = getDisplayController(display);
-        removeDisplayController(display);
-
-        IRenderBackend& renderBackend = displayController.getRenderBackend();
-
-        if (m_systemCompositorController != nullptr)
-        {
-            // ivi systemcompositor case
-            const WaylandIviSurfaceId surfaceId = renderBackend.getSurface().getWindow().getWaylandIviSurfaceID();
-            systemCompositorDestroyIviSurface(surfaceId);
-        }
-
-        delete &displayController;
-        m_platform.destroyRenderBackend(renderBackend);
-        m_displayHandlerManager.destroyHandler(display);
-    }
-
-    void Renderer::removeDisplayController(DisplayHandle display)
-    {
-        assert(m_displays.find(display) != m_displays.cend());
-        DisplayInfo& displayInfo = m_displays.find(display)->second;
+        assert(hasDisplayController());
         assert(!hasAnyBufferWithInterruptedRendering());
 
-        IDisplayController& displayController = *displayInfo.displayController;
-        displayController.validateRenderingStatusHealthy();
+        m_frameProfileRenderer.reset();
 
-        m_displays.erase(display);
-        assert(m_frameProfileRenderer.contains(display));
-        auto renderer = *m_frameProfileRenderer.get(display);
-        delete renderer;
-        m_frameProfileRenderer.remove(display);
+        if (m_platform.getSystemCompositorController() != nullptr)
+            systemCompositorDestroyIviSurface(m_displayController->getRenderBackend().getWindow().getWaylandIviSurfaceID());
+
+        m_displayController.reset();
+        m_platform.destroyRenderBackend();
     }
 
-    const DisplaySetup& Renderer::getDisplaySetup(DisplayHandle displayHandle) const
+    const DisplaySetup& Renderer::getDisplaySetup() const
     {
-        assert(m_displays.count(displayHandle) > 0);
-        return m_displays.find(displayHandle)->second.buffersSetup;
-    }
-
-    Bool Renderer::hasDisplayController(DisplayHandle display) const
-    {
-        return m_displays.find(display) != m_displays.cend();
+        assert(hasDisplayController());
+        return m_displayBuffersSetup;
     }
 
     void Renderer::systemCompositorListIviSurfaces() const
     {
-        if(nullptr != m_systemCompositorController)
-        {
-            m_systemCompositorController->listIVISurfaces();
-        }
+        if (m_platform.getSystemCompositorController())
+            m_platform.getSystemCompositorController()->listIVISurfaces();
         else
-        {
-            // TODO Violin refactor this code (comment is old, but still relevant)
-            // This happens in the (frequent) case that the system compositor, a highly platform-specific feature,
-            // was not created for whatever reason (there are a lot of reasons, such as socket locks, embedded
-            // compositor dependency problems, wrong wayland version, ...)
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorListIviSurfaces: system compositor is not available");
-        }
     }
 
     void Renderer::systemCompositorSetIviSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility) const
     {
-        if(nullptr != m_systemCompositorController)
-        {
-            m_systemCompositorController->setSurfaceVisibility(surfaceId, visibility);
-        }
+        if (m_platform.getSystemCompositorController())
+            m_platform.getSystemCompositorController()->setSurfaceVisibility(surfaceId, visibility);
         else
-        {
-            // See above ^^^^
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorSetSurfaceVisibility: system compositor is not available");
-        }
     }
 
     void Renderer::systemCompositorSetIviSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity) const
     {
-        if(nullptr != m_systemCompositorController)
-        {
-            m_systemCompositorController->setSurfaceOpacity(surfaceId, opacity);
-        }
+        if (m_platform.getSystemCompositorController())
+            m_platform.getSystemCompositorController()->setSurfaceOpacity(surfaceId, opacity);
         else
-        {
-            // See above ^^^
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorSetOpacity: system compositor is not available");
-        }
     }
 
     void Renderer::systemCompositorSetIviSurfaceDestRectangle(WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height) const
     {
-        if(nullptr != m_systemCompositorController)
-        {
-            m_systemCompositorController->setSurfaceDestinationRectangle(surfaceId, x, y, width, height);
-        }
+        if (m_platform.getSystemCompositorController())
+            m_platform.getSystemCompositorController()->setSurfaceDestinationRectangle(surfaceId, x, y, width, height);
         else
-        {
-            // See above ^^
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorSetRectangle: system compositor is not available");
-        }
     }
 
     void Renderer::systemCompositorSetIviLayerVisibility(WaylandIviLayerId layerId, Bool visibility) const
     {
-        if(nullptr != m_systemCompositorController)
-        {
-            m_systemCompositorController->setLayerVisibility(layerId, visibility);
-        }
+        if (m_platform.getSystemCompositorController())
+            m_platform.getSystemCompositorController()->setLayerVisibility(layerId, visibility);
         else
-        {
-            // See above ^^^^
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorSetLayerVisibility: system compositor is not available");
-        }
     }
 
     void Renderer::systemCompositorScreenshot(const String& fileName, int32_t screenIviId) const
     {
-        if(nullptr != m_systemCompositorController)
-        {
-            m_systemCompositorController->doScreenshot(fileName, screenIviId);
-        }
+        if (m_platform.getSystemCompositorController())
+            m_platform.getSystemCompositorController()->doScreenshot(fileName, screenIviId);
         else
-        {
-            // See above ^
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorScreenshot: system compositor is not available");
-        }
     }
 
     Bool Renderer::systemCompositorAddIviSurfaceToIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const
     {
-        if(nullptr != m_systemCompositorController)
-        {
-            return m_systemCompositorController->addSurfaceToLayer(surfaceId, layerId);
-        }
+        if (m_platform.getSystemCompositorController())
+            return m_platform.getSystemCompositorController()->addSurfaceToLayer(surfaceId, layerId);
         else
-        {
-            // See above ^
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorAddSurfaceToLayer: system compositor is not available");
-        }
 
         return true;
     }
 
     void Renderer::systemCompositorRemoveIviSurfaceFromIviLayer(WaylandIviSurfaceId surfaceId, WaylandIviLayerId layerId) const
     {
-        if(nullptr != m_systemCompositorController)
-        {
-            m_systemCompositorController->removeSurfaceFromLayer(surfaceId, layerId);
-        }
+        if (m_platform.getSystemCompositorController())
+            m_platform.getSystemCompositorController()->removeSurfaceFromLayer(surfaceId, layerId);
         else
-        {
-            // See above ^
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorRemoveSurfaceFromLayer: system compositor is not available");
-        }
     }
 
     void Renderer::systemCompositorDestroyIviSurface(WaylandIviSurfaceId surfaceId) const
     {
-        if(nullptr != m_systemCompositorController)
-        {
-            m_systemCompositorController->destroySurface(surfaceId);
-        }
+        if (m_platform.getSystemCompositorController())
+            m_platform.getSystemCompositorController()->destroySurface(surfaceId);
         else
-        {
-            // See above ^
             LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::systemCompositorDestroySurface: system compositor is not available");
-        }
     }
 
-    void Renderer::handleDisplayEvents(DisplayHandle displayHandle)
+    void Renderer::handleDisplayEvents()
     {
-        auto& displayInfo = m_displays.find(displayHandle)->second;
-        IDisplayController& display = *displayInfo.displayController;
-
-        display.handleWindowEvents();
-        const Bool canRenderFrame = display.canRenderNewFrame();
-        if (canRenderFrame != displayInfo.couldRenderLastFrame)
+        m_displayController->handleWindowEvents();
+        const bool canRenderFrame = m_displayController->canRenderNewFrame();
+        if (canRenderFrame != m_canRenderFrame)
         {
-            displayInfo.couldRenderLastFrame = canRenderFrame;
+            m_canRenderFrame = canRenderFrame;
             if (canRenderFrame)
-            {
-                LOG_INFO(CONTEXT_RENDERER, "      Renderer::doOneRenderLoop start rendering frames on display " << displayHandle.asMemoryHandle());
-            }
+                LOG_INFO(CONTEXT_RENDERER, "Renderer::doOneRenderLoop start rendering frames on display");
             else
-            {
-                LOG_INFO(CONTEXT_RENDERER, "      Renderer::doOneRenderLoop will skip frames because window is not ready for rendering on display " << displayHandle.asMemoryHandle());
-            }
+                LOG_INFO(CONTEXT_RENDERER, "Renderer::doOneRenderLoop will skip frames because window is not ready for rendering on display");
         }
     }
 
-    void Renderer::renderToFramebuffer(DisplayHandle displayHandle, DisplayHandle& activeDisplay)
+    bool Renderer::renderToFramebuffer()
     {
-        auto& displayInfo = m_displays.find(displayHandle)->second;
-        assert(displayInfo.couldRenderLastFrame);
-        IDisplayController& display = *displayInfo.displayController;
-        const DisplayBufferInfo& displayBufferInfo = displayInfo.buffersSetup.getDisplayBuffer(displayInfo.frameBufferDeviceHandle);
+        assert(m_canRenderFrame);
+        const DisplayBufferInfo& displayBufferInfo = m_displayBuffersSetup.getDisplayBuffer(m_frameBufferDeviceHandle);
         if (!displayBufferInfo.needsRerender)
         {
             // notify clients even if nothing rendered but frame was consumed
-            display.getEmbeddedCompositingManager().notifyClients();
-            return;
+            m_displayController->getEmbeddedCompositingManager().notifyClients();
+            return false;
         }
 
-        ActivateDisplayContext(displayHandle, activeDisplay, display);
-
-        display.clearBuffer(displayInfo.frameBufferDeviceHandle, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
+        m_displayController->clearBuffer(m_frameBufferDeviceHandle, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
 
         m_tempScenesRendered.clear();
         const auto& assignedScenes = displayBufferInfo.scenes;
@@ -358,45 +249,41 @@ namespace ramses_internal
             if (sceneInfo.shown)
             {
                 const RendererCachedScene& scene = m_rendererScenes.getScene(sceneInfo.sceneId);
-                display.renderScene(scene, displayInfo.frameBufferDeviceHandle, displayBufferInfo.viewport);
+                m_displayController->renderScene(scene, m_frameBufferDeviceHandle, displayBufferInfo.viewport);
                 onSceneWasRendered(scene);
                 m_tempScenesRendered.push_back(sceneInfo.sceneId);
             }
         }
         LOG_TRACE_F(CONTEXT_PROFILING, ([&](StringOutputStream& logStream)
         {
-            logStream << "Renderer::renderToFramebuffer (display " << displayHandle.asMemoryHandle() << ") rendered scenes:";
+            logStream << "Renderer::renderToFramebuffer rendered scenes:";
             for (auto sceneId : m_tempScenesRendered)
                 logStream << " " << sceneId;
         }));
 
-        display.executePostProcessing();
+        m_displayController->executePostProcessing();
 
-        auto profileRenderer = *m_frameProfileRenderer.get(displayHandle);
-        profileRenderer->renderStatistics(m_profilerStatistics);
+        m_frameProfileRenderer->renderStatistics(m_profilerStatistics);
 
-        processScheduledScreenshots(displayInfo.frameBufferDeviceHandle, display, activeDisplay);
+        processScheduledScreenshots(m_frameBufferDeviceHandle);
 
-        m_tempDisplaysToSwapBuffers.push_back(displayHandle);
-        displayInfo.buffersSetup.setDisplayBufferToBeRerendered(displayInfo.frameBufferDeviceHandle, false);
+        m_displayBuffersSetup.setDisplayBufferToBeRerendered(m_frameBufferDeviceHandle, false);
+
+        return true;
     }
 
-    void Renderer::renderToOffscreenBuffers(DisplayHandle displayHandle, DisplayHandle& activeDisplay)
+    void Renderer::renderToOffscreenBuffers()
     {
-        auto& displayInfo = m_displays.find(displayHandle)->second;
-        assert(displayInfo.couldRenderLastFrame);
-        IDisplayController& display = *displayInfo.displayController;
+        assert(m_canRenderFrame);
 
-        const auto& displayBuffersToRender = displayInfo.buffersSetup.getNonInterruptibleOffscreenBuffersToRender();
+        const auto& displayBuffersToRender = m_displayBuffersSetup.getNonInterruptibleOffscreenBuffersToRender();
         if (displayBuffersToRender.empty())
             return;
 
-        ActivateDisplayContext(displayHandle, activeDisplay, display);
-
         for (const auto displayBuffer : displayBuffersToRender)
         {
-            const auto& displayBufferInfo = displayInfo.buffersSetup.getDisplayBuffer(displayBuffer);
-            display.clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
+            const auto& displayBufferInfo = m_displayBuffersSetup.getDisplayBuffer(displayBuffer);
+            m_displayController->clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
 
             m_tempScenesRendered.clear();
             const auto& assignedScenes = displayBufferInfo.scenes;
@@ -405,48 +292,44 @@ namespace ramses_internal
                 if (sceneInfo.shown)
                 {
                     const RendererCachedScene& scene = m_rendererScenes.getScene(sceneInfo.sceneId);
-                    display.renderScene(scene, displayBuffer, displayBufferInfo.viewport);
+                    m_displayController->renderScene(scene, displayBuffer, displayBufferInfo.viewport);
                     onSceneWasRendered(scene);
                     m_tempScenesRendered.push_back(sceneInfo.sceneId);
                 }
             }
             LOG_TRACE_F(CONTEXT_PROFILING, ([&](StringOutputStream& logStream)
             {
-                logStream << "Renderer::renderToOffscreenBuffers (display " << displayHandle.asMemoryHandle() << ") OB" << displayBuffer.asMemoryHandle() << " rendered scenes:";
+                logStream << "Renderer::renderToOffscreenBuffers OB" << displayBuffer.asMemoryHandle() << " rendered scenes:";
                 for (auto sceneId : m_tempScenesRendered)
                     logStream << " " << sceneId;
             }));
 
-            processScheduledScreenshots(displayBuffer, display, activeDisplay);
+            processScheduledScreenshots(displayBuffer);
 
-            m_statistics.offscreenBufferSwapped(displayHandle, displayBuffer, false);
-            displayInfo.buffersSetup.setDisplayBufferToBeRerendered(displayBuffer, false);
+            m_statistics.offscreenBufferSwapped(displayBuffer, false);
+            m_displayBuffersSetup.setDisplayBufferToBeRerendered(displayBuffer, false);
         }
     }
 
-    void Renderer::renderToInterruptibleOffscreenBuffers(DisplayHandle displayHandle, DisplayHandle& activeDisplay, Bool& interrupted)
+    void Renderer::renderToInterruptibleOffscreenBuffers()
     {
-        auto& displayInfo = m_displays.find(displayHandle)->second;
-        assert(displayInfo.couldRenderLastFrame);
-        IDisplayController& display = *displayInfo.displayController;
+        assert(m_canRenderFrame);
 
-        const auto& displayBuffersToRender = displayInfo.buffersSetup.getInterruptibleOffscreenBuffersToRender(m_rendererInterruptState.getInterruptedDisplayBuffer());
+        const auto& displayBuffersToRender = m_displayBuffersSetup.getInterruptibleOffscreenBuffersToRender(m_rendererInterruptState.getInterruptedDisplayBuffer());
         if (displayBuffersToRender.empty())
             return;
 
-        ActivateDisplayContext(displayHandle, activeDisplay, display);
-
         for (const auto displayBuffer : displayBuffersToRender)
         {
-            const auto& displayBufferInfo = displayInfo.buffersSetup.getDisplayBuffer(displayBuffer);
+            const auto& displayBufferInfo = m_displayBuffersSetup.getDisplayBuffer(displayBuffer);
 
-            if (!m_rendererInterruptState.isInterrupted(displayHandle, displayBuffer))
+            if (!m_rendererInterruptState.isInterrupted(displayBuffer))
             {
                 // remove buffer from list of buffers to re-render as soon as we start rendering into it (even if it gets interrupted later on)
-                displayInfo.buffersSetup.setDisplayBufferToBeRerendered(displayBuffer, false);
+                m_displayBuffersSetup.setDisplayBufferToBeRerendered(displayBuffer, false);
                 // clear buffer only if we just started rendering into it
-                display.clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
-                LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers (display " << displayHandle.asMemoryHandle() << ") interruptible OB " << displayBuffer.asMemoryHandle() << " cleared");
+                m_displayController->clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
+                LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers interruptible OB " << displayBuffer.asMemoryHandle() << " cleared");
             }
 
             const auto& assignedScenes = displayBufferInfo.scenes;
@@ -457,114 +340,83 @@ namespace ramses_internal
 
                 // if there was any rendering interrupted, skip till get to the interrupted scene
                 const SceneId sceneId = sceneInfo.sceneId;
-                if (m_rendererInterruptState.isInterrupted() && !m_rendererInterruptState.isInterrupted(displayHandle, displayBuffer, sceneId))
+                if (m_rendererInterruptState.isInterrupted() && !m_rendererInterruptState.isInterrupted(displayBuffer, sceneId))
                     continue;
 
                 const RendererCachedScene& scene = m_rendererScenes.getScene(sceneId);
-                const SceneRenderExecutionIterator interruptState = display.renderScene(scene, displayBuffer, displayBufferInfo.viewport, m_rendererInterruptState.getExecutorState(), &m_frameTimer);
+                const SceneRenderExecutionIterator interruptState = m_displayController->renderScene(scene, displayBuffer, displayBufferInfo.viewport, m_rendererInterruptState.getExecutorState(), &m_frameTimer);
 
                 if (RendererInterruptState::IsInterrupted(interruptState))
                 {
-                    m_rendererInterruptState = RendererInterruptState{ displayHandle, displayBuffer, sceneId, interruptState };
-                    LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers interrupted rendering to OB " << displayBuffer.asMemoryHandle() << " on display " << displayHandle.asMemoryHandle() << ", scene " << sceneId.getValue());
-                    interrupted = true;
-                    m_statistics.offscreenBufferInterrupted(displayHandle, displayBuffer);
+                    m_rendererInterruptState = RendererInterruptState{ displayBuffer, sceneId, interruptState };
+                    LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers interrupted rendering to OB " << displayBuffer.asMemoryHandle() << ", scene " << sceneId.getValue());
+                    m_statistics.offscreenBufferInterrupted(displayBuffer);
                     break;
                 }
                 m_rendererInterruptState = RendererInterruptState{};
 
                 onSceneWasRendered(scene);
-                LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers scene fully rendered to interruptible OB " << displayBuffer.asMemoryHandle() << " on display " << displayHandle.asMemoryHandle() << ", scene " << sceneId.getValue());
+                LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers scene fully rendered to interruptible OB " << displayBuffer.asMemoryHandle() << ", scene " << sceneId.getValue());
             }
 
             if (m_rendererInterruptState.isInterrupted())
                 break;
 
-            processScheduledScreenshots(displayBuffer, display, activeDisplay);
+            processScheduledScreenshots(displayBuffer);
 
-            displayInfo.displayController->getRenderBackend().getDevice().swapDoubleBufferedRenderTarget(displayBuffer);
-            m_statistics.offscreenBufferSwapped(displayHandle, displayBuffer, true);
+            m_displayController->getRenderBackend().getDevice().swapDoubleBufferedRenderTarget(displayBuffer);
+            m_statistics.offscreenBufferSwapped(displayBuffer, true);
             LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers interruptible OB " << displayBuffer.asMemoryHandle() << " swapped");
 
             //re-render framebuffer in next frame to reflect (finished!) changes in OB
-            displayInfo.buffersSetup.setDisplayBufferToBeRerendered(displayInfo.frameBufferDeviceHandle, true);
+            m_displayBuffersSetup.setDisplayBufferToBeRerendered(m_frameBufferDeviceHandle, true);
         }
     }
 
     void Renderer::doOneRenderLoop()
     {
+        if (!hasDisplayController())
+            return;
+
         LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop begin");
 
-        if (!m_skipUnmodifiedBuffers)
-        {
-            //mark all displays as modified (and hence re-render everything)
-            for (auto& display : m_displays)
-            {
-                auto& displayBufferSetup = display.second.buffersSetup;
-                for (const auto& buffer : displayBufferSetup.getDisplayBuffers())
-                    displayBufferSetup.setDisplayBufferToBeRerendered(buffer.first, true);
-            }
-        }
-
-        DisplayHandle activeDisplay;
-        m_tempDisplaysToSwapBuffers.clear();
-        m_tempDisplaysToRender.clear();
 
         m_profilerStatistics.startRegion(FrameProfilerStatistics::ERegion::HandleDisplayEvents);
-
-        if(nullptr != m_windowEventsPollingManager)
-            m_windowEventsPollingManager->pollWindowsTillAnyCanRender();
-
-        for (const auto& displayIt : m_displays)
         {
-            handleDisplayEvents(displayIt.first);
-            if (displayIt.second.couldRenderLastFrame)
-                m_tempDisplaysToRender.push_back(displayIt.first);
+            if (m_platform.getWindowEventsPollingManager())
+                m_platform.getWindowEventsPollingManager()->pollWindowsTillAnyCanRender();
+            handleDisplayEvents();
         }
         m_profilerStatistics.endRegion(FrameProfilerStatistics::ERegion::HandleDisplayEvents);
 
         m_profilerStatistics.startRegion(FrameProfilerStatistics::ERegion::DrawScenes);
-        // FRAMEBUFFER AND OFFSCREEN BUFFERS
-        for (auto displayHandle : m_tempDisplaysToRender)
+        bool swapBuffers = false;
+        if (m_canRenderFrame)
         {
-            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop begin frame to offscreen buffers on display " << displayHandle.asMemoryHandle());
-            renderToOffscreenBuffers(displayHandle, activeDisplay);
-            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop finished frame to offscreen buffers on display " << displayHandle.asMemoryHandle());
+            // FRAMEBUFFER AND OFFSCREEN BUFFERS
+            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop begin frame to offscreen buffers");
+            renderToOffscreenBuffers();
+            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop finished frame to offscreen buffers");
 
-            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop begin frame to backbuffer on display " << displayHandle.asMemoryHandle());
-            renderToFramebuffer(displayHandle, activeDisplay);
-            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop finished frame to backbuffer on display " << displayHandle.asMemoryHandle());
-        }
+            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop begin frame to backbuffer");
+            swapBuffers = renderToFramebuffer();
+            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop finished frame to backbuffer");
 
-        // INTERRUPTIBLE OFFSCREEN BUFFERS
-        // Interruptible OBs cannot be reordered to minimize context switches as the interruption state relies on unmodified order of rendering
-        for (auto displayHandle : m_tempDisplaysToRender)
-        {
-            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop begin frame to interruptible offscreen buffers on display " << displayHandle.asMemoryHandle());
-
-            if (!m_rendererInterruptState.isInterrupted() || m_rendererInterruptState.isInterrupted(displayHandle))
-            {
-                Bool interrupted = false;
-                renderToInterruptibleOffscreenBuffers(displayHandle, activeDisplay, interrupted);
-                if (interrupted)
-                    break;
-            }
-
-            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop finished frame to interruptible offscreen buffers on display " << displayHandle.asMemoryHandle());
+            // INTERRUPTIBLE OFFSCREEN BUFFERS
+            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop begin frame to interruptible offscreen buffers");
+            renderToInterruptibleOffscreenBuffers();
+            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop finished frame to interruptible offscreen buffers");
         }
         m_profilerStatistics.endRegion(FrameProfilerStatistics::ERegion::DrawScenes);
 
         // SWAP BUFFERS
         m_profilerStatistics.startRegion(FrameProfilerStatistics::ERegion::SwapBuffersAndNotifyClients);
-        ReorderDisplaysToStartWith(m_tempDisplaysToSwapBuffers, activeDisplay);
-        for (auto displayHandle : m_tempDisplaysToSwapBuffers)
+        if (swapBuffers)
         {
-            IDisplayController& displayController = getDisplayController(displayHandle);
-            ActivateDisplayContext(displayHandle, activeDisplay, displayController);
-            displayController.swapBuffers();
-            m_statistics.framebufferSwapped(displayHandle);
-            displayController.getEmbeddedCompositingManager().notifyClients();
-            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop swapBuffers on display " << displayHandle.asMemoryHandle());
+            m_displayController->swapBuffers();
+            m_statistics.framebufferSwapped();
+            m_displayController->getEmbeddedCompositingManager().notifyClients();
+            LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop swapBuffers");
         }
         m_profilerStatistics.endRegion(FrameProfilerStatistics::ERegion::SwapBuffersAndNotifyClients);
 
@@ -578,113 +430,57 @@ namespace ramses_internal
         m_statistics.sceneRendered(scene.getSceneId());
     }
 
-    void Renderer::ActivateDisplayContext(DisplayHandle displayToActivate, DisplayHandle& activeDisplay, IDisplayController&)
+    void Renderer::assignSceneToDisplayBuffer(SceneId sceneId, DeviceResourceHandle buffer, Int32 globalSceneOrder)
     {
-        // TODO vaclav clean all this up when multidisplay support removed from internal components
-        if (displayToActivate != activeDisplay)
-            activeDisplay = displayToActivate;
-    }
-
-    void Renderer::ReorderDisplaysToStartWith(std::vector<DisplayHandle>& displays, DisplayHandle displayToStartWith)
-    {
-        const auto displayToStartWithIt = std::find(displays.begin(), displays.end(), displayToStartWith);
-        if (displayToStartWithIt != displays.end())
-            std::iter_swap(displays.begin(), displayToStartWithIt);
-    }
-
-    void Renderer::assignSceneToDisplayBuffer(SceneId sceneId, DisplayHandle displayHandle, DeviceResourceHandle buffer, Int32 globalSceneOrder)
-    {
-        assert(m_displays.find(displayHandle) != m_displays.cend());
+        assert(hasDisplayController());
         assert(m_rendererScenes.hasScene(sceneId));
 
-        auto& displayInfo = m_displays.find(displayHandle)->second;
-        DisplayHandle currentDisplaySceneIsAssignedTo;
-        getBufferSceneIsAssignedTo(sceneId, &currentDisplaySceneIsAssignedTo);
-        assert(!currentDisplaySceneIsAssignedTo.isValid() || currentDisplaySceneIsAssignedTo == displayHandle);
-        displayInfo.buffersSetup.assignSceneToDisplayBuffer(sceneId, buffer, globalSceneOrder);
+        getBufferSceneIsAssignedTo(sceneId);
+        m_displayBuffersSetup.assignSceneToDisplayBuffer(sceneId, buffer, globalSceneOrder);
     }
 
     void Renderer::unassignScene(SceneId sceneId)
     {
         assert(m_rendererScenes.hasScene(sceneId));
-        const DisplayHandle displayHandle = getDisplaySceneIsAssignedTo(sceneId);
-        assert(displayHandle.isValid());
-        auto& displayInfo = m_displays.find(displayHandle)->second;
-        displayInfo.buffersSetup.unassignScene(sceneId);
+        m_displayBuffersSetup.unassignScene(sceneId);
     }
 
     void Renderer::setSceneShown(SceneId sceneId, Bool show)
     {
         assert(m_rendererScenes.hasScene(sceneId));
-        DisplayHandle displayHandle;
-        const auto displayBuffer = getBufferSceneIsAssignedTo(sceneId, &displayHandle);
+        assert(getBufferSceneIsAssignedTo(sceneId).isValid());
+        m_displayBuffersSetup.setSceneShown(sceneId, show);
+    }
+
+    void Renderer::markBufferWithSceneForRerender(SceneId sceneId)
+    {
+        const auto displayBuffer = getBufferSceneIsAssignedTo(sceneId);
         assert(displayBuffer.isValid());
-        UNUSED(displayBuffer);
-        auto& displayInfo = m_displays.find(displayHandle)->second;
-        displayInfo.buffersSetup.setSceneShown(sceneId, show);
+        m_displayBuffersSetup.setDisplayBufferToBeRerendered(displayBuffer, true);
     }
 
-    void Renderer::markBufferWithSceneAsModified(SceneId sceneId)
+    DeviceResourceHandle Renderer::getBufferSceneIsAssignedTo(SceneId sceneId) const
     {
-        DisplayHandle displayHandle;
-        const auto displayBuffer = getBufferSceneIsAssignedTo(sceneId, &displayHandle);
-        assert(displayHandle.isValid());
-        assert(displayBuffer.isValid());
-        auto& displayInfo = m_displays.find(displayHandle)->second;
-        displayInfo.buffersSetup.setDisplayBufferToBeRerendered(displayBuffer, true);
-    }
-
-    void Renderer::setSkippingOfUnmodifiedBuffers(Bool enable)
-    {
-        m_skipUnmodifiedBuffers = enable;
-    }
-
-    DisplayHandle Renderer::getDisplaySceneIsAssignedTo(SceneId sceneId) const
-    {
-        DisplayHandle display;
-        getBufferSceneIsAssignedTo(sceneId, &display);
-        return display;
-    }
-
-    DeviceResourceHandle Renderer::getBufferSceneIsAssignedTo(SceneId sceneId, DisplayHandle* displayHandleOut) const
-    {
-        for (const auto& displayInfoPair : m_displays)
-        {
-            const auto& buffers = displayInfoPair.second.buffersSetup;
-            const auto displayBuffer = buffers.findDisplayBufferSceneIsAssignedTo(sceneId);
-            if (displayBuffer.isValid())
-            {
-                if (displayHandleOut != nullptr)
-                    *displayHandleOut = displayInfoPair.first;
-                return displayBuffer;
-            }
-        }
-
-        return DeviceResourceHandle::Invalid();
+        return m_displayBuffersSetup.findDisplayBufferSceneIsAssignedTo(sceneId);
     }
 
     Bool Renderer::isSceneAssignedToInterruptibleOffscreenBuffer(SceneId sceneId) const
     {
-        DisplayHandle displayHandle;
-        const auto displayBuffer = getBufferSceneIsAssignedTo(sceneId, &displayHandle);
-        assert(displayHandle.isValid());
+        const auto displayBuffer = getBufferSceneIsAssignedTo(sceneId);
         assert(displayBuffer.isValid());
 
-        const auto& displayBuffers = m_displays.find(displayHandle)->second.buffersSetup;
-        return displayBuffers.getDisplayBuffer(displayBuffer).isInterruptible;
+        return m_displayBuffersSetup.getDisplayBuffer(displayBuffer).isInterruptible;
     }
 
     Int32 Renderer::getSceneGlobalOrder(SceneId sceneId) const
     {
-        DisplayHandle displayHandle;
-        const auto displayBuffer = getBufferSceneIsAssignedTo(sceneId, &displayHandle);
-        assert(displayHandle.isValid());
+        const auto displayBuffer = getBufferSceneIsAssignedTo(sceneId);
         assert(displayBuffer.isValid());
 
-        const auto& displayBuffers = m_displays.find(displayHandle)->second.buffersSetup;
-        const auto& assignedScenes = displayBuffers.getDisplayBuffer(displayBuffer).scenes;
+        const auto& assignedScenes = m_displayBuffersSetup.getDisplayBuffer(displayBuffer).scenes;
         const auto it = std::find_if(assignedScenes.cbegin(), assignedScenes.cend(), [sceneId](const auto& a) { return a.sceneId == sceneId; });
         assert(it != assignedScenes.cend());
+
         return it->globalSceneOrder;
     }
 
@@ -705,26 +501,22 @@ namespace ramses_internal
 
     Bool Renderer::hasSystemCompositorController() const
     {
-        return nullptr != m_systemCompositorController;
+        return m_platform.getSystemCompositorController() != nullptr;
     }
 
-    IDisplayController* Renderer::createDisplayControllerFromConfig(const DisplayConfig& config, DisplayEventHandler& displayEventHandler)
+    IDisplayController* Renderer::createDisplayControllerFromConfig(const DisplayConfig& config)
     {
-        IRenderBackend* renderBackend = m_platform.createRenderBackend(config, displayEventHandler);
+        IRenderBackend* renderBackend = m_platform.createRenderBackend(config, m_displayEventHandler);
         if (nullptr == renderBackend)
-        {
             return nullptr;
-        }
 
-        if (m_systemCompositorController != nullptr)
+        if (m_platform.getSystemCompositorController())
         {
             const WaylandIviSurfaceId rendererSurfaceIVIID(config.getWaylandIviSurfaceID());
             const WaylandIviLayerId rendererLayerIVIID(config.getWaylandIviLayerID());
 
             if (!systemCompositorAddIviSurfaceToIviLayer(rendererSurfaceIVIID, rendererLayerIVIID))
-            {
                 return nullptr;
-            }
 
             systemCompositorSetIviSurfaceVisibility(rendererSurfaceIVIID, config.getStartVisibleIvi());
             systemCompositorSetIviSurfaceDestRectangle(rendererSurfaceIVIID, config.getWindowPositionX(), config.getWindowPositionY(), config.getDesiredWindowWidth(), config.getDesiredWindowHeight());
@@ -732,7 +524,7 @@ namespace ramses_internal
 
         // Enable the context of the render backend that was just created
         // The initialization of display controller below needs active context
-        renderBackend->getSurface().enable();
+        renderBackend->getContext().enable();
 
         const UInt32 postProcessorEffects = config.isWarpingEnabled() ? EPostProcessingEffect_Warping : EPostProcessingEffect_None;
         const UInt32 numSamples = config.getAntialiasingSampleCount();
@@ -740,42 +532,36 @@ namespace ramses_internal
         return new DisplayController(*renderBackend, numSamples, postProcessorEffects);
     }
 
-    void Renderer::setClearFlags(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags)
+    void Renderer::setClearFlags(DeviceResourceHandle bufferDeviceHandle, uint32_t clearFlags)
     {
-        assert(m_displays.find(displayHandle) != m_displays.cend());
-        auto& displayInfo = m_displays.find(displayHandle)->second;
-        displayInfo.buffersSetup.setClearFlags(bufferDeviceHandle, clearFlags);
+        assert(hasDisplayController());
+        m_displayBuffersSetup.setClearFlags(bufferDeviceHandle, clearFlags);
     }
 
-    void Renderer::setClearColor(DisplayHandle displayHandle, DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor)
+    void Renderer::setClearColor(DeviceResourceHandle bufferDeviceHandle, const Vector4& clearColor)
     {
-        assert(m_displays.find(displayHandle) != m_displays.cend());
-        auto& displayInfo = m_displays.find(displayHandle)->second;
-        displayInfo.buffersSetup.setClearColor(bufferDeviceHandle, clearColor);
+        assert(hasDisplayController());
+        m_displayBuffersSetup.setClearColor(bufferDeviceHandle, clearColor);
     }
 
-    void Renderer::scheduleScreenshot(DisplayHandle display, DeviceResourceHandle renderTargetHandle, ScreenshotInfo&& screenshot)
+    void Renderer::scheduleScreenshot(DeviceResourceHandle renderTargetHandle, ScreenshotInfo&& screenshot)
     {
-        assert(hasDisplayController(display));
-        auto& displayInfo = m_displays.find(display)->second;
+        assert(hasDisplayController());
+        if (m_screenshots.count(renderTargetHandle))
+            LOG_WARN(CONTEXT_RENDERER, "Renderer::scheduleScreenshot: will overwrite previous screenshot request that was not executed yet (buffer=" << renderTargetHandle << ")");
 
-        if (displayInfo.screenshots.count(renderTargetHandle))
-            LOG_WARN(CONTEXT_RENDERER, "Renderer::scheduleScreenshot: will overwrite previous screenshot request that was not executed yet (display=" << display << ", buffer=" << renderTargetHandle << ")");
-
-        displayInfo.screenshots[renderTargetHandle] = std::move(screenshot);
+        m_screenshots[renderTargetHandle] = std::move(screenshot);
 
         // re-render all buffers that the screenshot might depend on
-        auto& displayBufferSetup = m_displays.find(display)->second.buffersSetup;
-        for (const auto& buffer : displayBufferSetup.getDisplayBuffers())
-            displayBufferSetup.setDisplayBufferToBeRerendered(buffer.first, true);
+        for (const auto& buffer : m_displayBuffersSetup.getDisplayBuffers())
+            m_displayBuffersSetup.setDisplayBufferToBeRerendered(buffer.first, true);
     }
 
-    void Renderer::processScheduledScreenshots(DeviceResourceHandle renderTargetHandle, IDisplayController& controller, DisplayHandle displayHandle)
+    void Renderer::processScheduledScreenshots(DeviceResourceHandle renderTargetHandle)
     {
-        assert(m_displays.count(displayHandle));
-        auto& displayInfo = m_displays[displayHandle];
-        auto it = displayInfo.screenshots.find(renderTargetHandle);
-        if (it == displayInfo.screenshots.end())
+        assert(hasDisplayController());
+        auto it = m_screenshots.find(renderTargetHandle);
+        if (it == m_screenshots.end())
             return;
 
         ScreenshotInfo& screenshot = it->second;
@@ -783,19 +569,14 @@ namespace ramses_internal
         if (!screenshot.pixelData.empty())
             return;
 
-        controller.readPixels(renderTargetHandle, screenshot.rectangle.x, screenshot.rectangle.y, screenshot.rectangle.width, screenshot.rectangle.height, screenshot.pixelData);
+        m_displayController->readPixels(renderTargetHandle, screenshot.rectangle.x, screenshot.rectangle.y, screenshot.rectangle.width, screenshot.rectangle.height, screenshot.pixelData);
         assert(!screenshot.pixelData.empty());
     }
 
-    std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> Renderer::dispatchProcessedScreenshots(DisplayHandle display)
+    std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> Renderer::dispatchProcessedScreenshots()
     {
-        auto displayIt = m_displays.find(display);
-        if (displayIt == m_displays.end())
-            return {};
-        auto& displayInfo = displayIt->second;
-
         std::vector<std::pair<DeviceResourceHandle, ScreenshotInfo>> result;
-        for (auto& it : displayInfo.screenshots)
+        for (auto& it : m_screenshots)
         {
             const auto rtHandle = it.first;
             auto& screenshot = it.second;
@@ -804,7 +585,7 @@ namespace ramses_internal
         }
 
         for (const auto& it : result)
-            displayInfo.screenshots.erase(it.first);
+            m_screenshots.erase(it.first);
 
         return result;
     }
@@ -822,16 +603,16 @@ namespace ramses_internal
 
     FrameProfileRenderer& Renderer::getFrameProfileRenderer()
     {
-        assert(m_frameProfileRenderer.size() == 1u);
-        return *m_frameProfileRenderer.begin()->value;
+        assert(m_frameProfileRenderer);
+        return *m_frameProfileRenderer;
     }
 
     void Renderer::updateSystemCompositorController() const
     {
-        if (nullptr != m_systemCompositorController)
+        if (m_platform.getSystemCompositorController())
         {
             LOG_TRACE(CONTEXT_PROFILING, "Renderer::updateSystemCompositorController update system compositor controller");
-            m_systemCompositorController->update();
+            m_platform.getSystemCompositorController()->update();
         }
     }
 }

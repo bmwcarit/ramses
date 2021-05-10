@@ -18,23 +18,16 @@ namespace ramses_internal
     {
     }
 
-    ISystemCompositorController* Platform_Android_EGL::createSystemCompositorController()
+    bool Platform_Android_EGL::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
     {
-        return nullptr;
-    }
+        auto window = std::make_unique<Window_Android>(displayConfig, windowEventHandler, 0u);
+        if (window->init())
+        {
+            m_window = std::move(window);
+            return true;
+        }
 
-    IWindow* Platform_Android_EGL::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
-    {
-        Window_Android* platformWindow = new Window_Android(displayConfig, windowEventHandler, m_windows.size());
-        return addPlatformWindow(platformWindow);
-    }
-
-    IEmbeddedCompositor* Platform_Android_EGL::createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context)
-    {
-        UNUSED(displayConfig);
-        UNUSED(context);
-        EmbeddedCompositor_Dummy* compositor = new EmbeddedCompositor_Dummy();
-        return addEmbeddedCompositor(compositor);
+        return false;
     }
 
     uint32_t Platform_Android_EGL::getSwapInterval() const

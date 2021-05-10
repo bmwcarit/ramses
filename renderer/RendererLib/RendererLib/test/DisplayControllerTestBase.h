@@ -27,12 +27,10 @@ namespace ramses_internal
         {
             ::testing::InSequence seq;
             EXPECT_CALL(m_renderBackend, getDevice());
-            EXPECT_CALL(m_renderBackend, getSurface());
-            EXPECT_CALL(m_renderBackend.surfaceMock, getWindow());
-            EXPECT_CALL(m_renderBackend.surfaceMock.windowMock, getWidth());
-            EXPECT_CALL(m_renderBackend, getSurface());
-            EXPECT_CALL(m_renderBackend.surfaceMock, getWindow());
-            EXPECT_CALL(m_renderBackend.surfaceMock.windowMock, getHeight());
+            EXPECT_CALL(m_renderBackend, getWindow());
+            EXPECT_CALL(m_renderBackend.windowMock, getWidth());
+            EXPECT_CALL(m_renderBackend, getWindow());
+            EXPECT_CALL(m_renderBackend.windowMock, getHeight());
             EXPECT_CALL(m_renderBackend.deviceMock, getFramebufferRenderTarget());
         }
 

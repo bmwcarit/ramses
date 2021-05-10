@@ -34,15 +34,6 @@ namespace ramses_internal
         MOCK_METHOD(Bool, setLayerVisibility, (WaylandIviLayerId, Bool), (override));
         MOCK_METHOD(void, listIVISurfaces, (), (const, override));
     };
-
-    class SystemCompositorControllerMockWithDestructor : public SystemCompositorControllerMock
-    {
-    public:
-        SystemCompositorControllerMockWithDestructor();
-        virtual ~SystemCompositorControllerMockWithDestructor() override;
-
-        MOCK_METHOD(void, Die, ());
-    };
 }
 
 #endif

@@ -43,40 +43,41 @@ namespace ramses_internal
         return areConfigParametersForEmbeddedCompositorSet;
     }
 
-    IEmbeddedCompositor* Platform_Wayland_EGL::createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context)
+    bool Platform_Wayland_EGL::createEmbeddedCompositor(const DisplayConfig& displayConfig)
     {
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
         if (!isCreatingWaylandEmbeddedCompositorRequired())
         {
             LOG_INFO(CONTEXT_RENDERER, "Embedded compositor not created because RendererConfig parameters were not set");
-            EmbeddedCompositor_Dummy* compositor = new EmbeddedCompositor_Dummy();
-            return addEmbeddedCompositor(compositor);
+            return Platform_EGL<Window_Wayland>::createEmbeddedCompositor(displayConfig);
         }
         else
         {
-            EmbeddedCompositor_Wayland* compositor = new EmbeddedCompositor_Wayland(m_rendererConfig, displayConfig, context);
-            return addEmbeddedCompositor(compositor);
+            auto compositor = std::make_unique<EmbeddedCompositor_Wayland>(m_rendererConfig, displayConfig, *m_context);
+            if (compositor->init())
+                m_embeddedCompositor = std::move(compositor);
+
+            return m_embeddedCompositor != nullptr;
         }
     }
 
-    ITextureUploadingAdapter* Platform_Wayland_EGL::createTextureUploadingAdapter(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window)
+    void Platform_Wayland_EGL::createTextureUploadingAdapter()
     {
+        assert(m_device);
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
         if (!isCreatingWaylandEmbeddedCompositorRequired())
         {
-            ITextureUploadingAdapter* textureUploadingAdapter = new TextureUploadingAdapter_Base(device);
-            return addTextureUploadingAdapter(textureUploadingAdapter);
+            Platform_EGL<Window_Wayland>::createTextureUploadingAdapter();
         }
         else
         {
-            const Window_Wayland* platformWindow = getPlatformWindow<Window_Wayland>(window);
-            const EmbeddedCompositor_Wayland* platformEmbeddedCompositor = getEmbeddedCompositor<EmbeddedCompositor_Wayland>(embeddedCompositor);
+            const Window_Wayland* platformWindow = static_cast<const Window_Wayland*>(m_window.get());
+            const EmbeddedCompositor_Wayland* platformEmbeddedCompositor = static_cast<EmbeddedCompositor_Wayland*>(m_embeddedCompositor.get());
 
             wl_display* windowWaylandDisplay = platformWindow->getNativeDisplayHandle();
             wl_display* embeddedCompositingDisplay = platformEmbeddedCompositor->getEmbeddedCompositingDisplay();
 
-            ITextureUploadingAdapter* textureUploadingAdapter = new TextureUploadingAdapter_Wayland(device, windowWaylandDisplay, embeddedCompositingDisplay);
-            return addTextureUploadingAdapter(textureUploadingAdapter);
+            m_textureUploadingAdapter = std::make_unique<TextureUploadingAdapter_Wayland>(*m_device, windowWaylandDisplay, embeddedCompositingDisplay);
         }
     }
 

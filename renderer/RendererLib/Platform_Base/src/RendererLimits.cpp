@@ -41,6 +41,22 @@ namespace ramses_internal
         m_maximumAnisotropy = anisotropy;
     }
 
+    void RendererLimits::setMaxViewport(uint32_t maxWidth, uint32_t maxHeight)
+    {
+        m_maxViewportWidth = maxWidth;
+        m_maxViewportHeight = maxHeight;
+    }
+
+    uint32_t RendererLimits::getMaxViewportWidth() const
+    {
+        return m_maxViewportWidth;
+    }
+
+    uint32_t RendererLimits::getMaxViewportHeight() const
+    {
+        return m_maxViewportHeight;
+    }
+
     bool RendererLimits::isTextureFormatAvailable(ETextureFormat format) const
     {
         return m_availableTextureFormats.contains(format);
@@ -57,6 +73,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "  - maximum number of texture units:            " << m_maximumTextureUnits);
         LOG_INFO(CONTEXT_RENDERER, "  - maximum number of MSAA samples:             " << m_maximumSamples);
         LOG_INFO(CONTEXT_RENDERER, "  - maximum number of anisotropy samples:       " << m_maximumAnisotropy);
+        LOG_INFO(CONTEXT_RENDERER, "  - maximum viewport size:                      " << m_maxViewportWidth << " x " << m_maxViewportHeight);
 
         LOG_INFO(CONTEXT_RENDERER, "  - supported texture formats: " << m_availableTextureFormats.size());
         for(const auto& texture : m_availableTextureFormats)

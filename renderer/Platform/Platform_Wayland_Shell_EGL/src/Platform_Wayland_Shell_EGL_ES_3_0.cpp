@@ -23,25 +23,22 @@ namespace ramses_internal
     {
     }
 
-    ISystemCompositorController* Platform_Wayland_Shell_EGL_ES_3_0::createSystemCompositorController()
+    bool Platform_Wayland_Shell_EGL_ES_3_0::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
     {
-        return nullptr;
+        auto window = std::make_unique<Window_Wayland_Shell>(displayConfig, windowEventHandler, 0u);
+        if (window->init())
+        {
+            m_windowEventsPollingManager.addWindow(window.get());
+            m_window = std::move(window);
+            return true;
+        }
+
+        return false;
     }
 
-    IWindow* Platform_Wayland_Shell_EGL_ES_3_0::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
+    void Platform_Wayland_Shell_EGL_ES_3_0::destroyWindow()
     {
-        Window_Wayland_Shell* platformWindow = new Window_Wayland_Shell(displayConfig, windowEventHandler, m_windows.size());
-        if(nullptr == addPlatformWindow(platformWindow))
-            return nullptr;
-
-        m_windowEventsPollingManager.addWindow(platformWindow);
-        return platformWindow;
-    }
-
-    Bool Platform_Wayland_Shell_EGL_ES_3_0::destroyWindow(IWindow &window)
-    {
-        m_windowEventsPollingManager.removeWindow(&static_cast<Window_Wayland&>(window));
-
-        return Platform_Wayland_EGL::destroyWindow(window);
+        m_windowEventsPollingManager.removeWindow(static_cast<Window_Wayland*>(m_window.get()));
+        Platform_Wayland_EGL::destroyWindow();
     }
 }

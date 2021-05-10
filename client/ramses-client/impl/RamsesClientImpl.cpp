@@ -321,8 +321,14 @@ namespace ramses
         {
             std::vector<ramses_internal::Byte> sceneData(static_cast<size_t>(llResourceStart - sceneObjectStart));
             inputStream.read(sceneData.data(), sceneData.size());
-            ramses_internal::BinaryInputStream sceneDataStream(sceneData.data());
 
+            if (inputStream.getState() != ramses_internal::EStatus::Ok)
+            {
+                LOG_ERROR_P(ramses_internal::CONTEXT_CLIENT, "RamsesClient::{}: Failed reading scene from file: {} ", cconfig.caller, inputStream.getState());
+                return nullptr;
+            }
+
+            ramses_internal::BinaryInputStream sceneDataStream(sceneData.data());
             scene = loadSceneObjectFromStream(cconfig.caller, cconfig.dataSource, sceneDataStream, cconfig.localOnly);
         }
         else
@@ -637,7 +643,7 @@ namespace ramses
     ramses_internal::ManagedResource RamsesClientImpl::manageResource(const ramses_internal::IResource* res)
     {
         ramses_internal::ManagedResource managedRes = m_appLogic.addResource(res);
-        _LOG_HL_CLIENT_API_STR("Created resource with internal hash " << managedRes->getHash() << ", name: " << managedRes->getName());
+        LOG_HL_CLIENT_API_STR("Created resource with internal hash " << managedRes->getHash() << ", name: " << managedRes->getName());
 
         return managedRes;
     }

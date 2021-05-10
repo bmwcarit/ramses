@@ -39,12 +39,12 @@ namespace ramses_internal
 
         static void LogSceneStates(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogDisplays(const RendererSceneUpdater& updater, RendererLogContext& context);
-        static void LogDisplayBuffer(const RendererSceneUpdater& updater, DisplayHandle display, DeviceResourceHandle bufferHandle, const DisplayBufferInfo& dispBufferInfo, RendererLogContext& context);
+        static void LogDisplayBuffer(const RendererSceneUpdater& updater, DeviceResourceHandle bufferHandle, const DisplayBufferInfo& dispBufferInfo, RendererLogContext& context);
         static void LogClientResources(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogSceneResources(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogMissingResources(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogRenderQueue(const RendererSceneUpdater& updater, RendererLogContext& context);
-        static void LogRenderQueueOfScenesRenderedToBuffer(const RendererSceneUpdater& updater, RendererLogContext& context, DisplayHandle display, DeviceResourceHandle buffer);
+        static void LogRenderQueueOfScenesRenderedToBuffer(const RendererSceneUpdater& updater, RendererLogContext& context, DeviceResourceHandle buffer);
         static void LogLinks(const RendererScenes& scenes, RendererLogContext& context);
         static void LogEmbeddedCompositor(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogEventQueue(const RendererSceneUpdater& updater, RendererLogContext& context);

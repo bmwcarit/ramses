@@ -12,7 +12,6 @@
 #include "RendererLib/DisplayConfig.h"
 #include "RendererLib/RenderBackend.h"
 #include "RendererLib/ResourceUploadRenderBackend.h"
-#include "RendererAPI/ISurface.h"
 #include "RendererAPI/IContext.h"
 #include "RendererAPI/IDevice.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
@@ -72,9 +71,9 @@ namespace ramses_internal
             return platform->createRenderBackend(displayConfig, eventHandlerMock);
         }
 
-        IResourceUploadRenderBackend* createResourceUploadRenderBackend(const IRenderBackend& mainRenderBackend)
+        IResourceUploadRenderBackend* createResourceUploadRenderBackend()
         {
-            return platform->createResourceUploadRenderBackend(mainRenderBackend);
+            return platform->createResourceUploadRenderBackend();
         }
 
         std::unique_ptr<const GPUResource> uploadEffectAndExpectSuccess(IDevice& device)
@@ -119,27 +118,7 @@ namespace ramses_internal
     {
         IRenderBackend* renderBackend = createRenderBackend();
         ASSERT_NE(nullptr, renderBackend);
-        platform->destroyRenderBackend(*renderBackend);
-    }
-
-    TEST_F(APlatform, CanCreateMultipleRenderBackends)
-    {
-        IRenderBackend* renderBackend = createRenderBackend();
-        ASSERT_NE(nullptr, renderBackend);
-
-        IRenderBackend* secondRenderBackend = createRenderBackend(false, true);
-        ASSERT_NE(nullptr, secondRenderBackend);
-
-        platform->destroyRenderBackend(*renderBackend);
-        platform->destroyRenderBackend(*secondRenderBackend);
-    }
-
-    // TODO Violin This does not work on systems which don't have support for multisampling... Needs to be filtered properly
-    TEST_F(APlatform, DISABLED_IsEnabledAfterCreationMSAA)
-    {
-        IRenderBackend* renderBackend = createRenderBackend(true);
-        ASSERT_NE(nullptr, renderBackend);
-        platform->destroyRenderBackend(*renderBackend);
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, CanRecreatePlatformFactories)
@@ -147,12 +126,12 @@ namespace ramses_internal
         {
             IRenderBackend* renderBackend = createRenderBackend();
             ASSERT_NE(nullptr, renderBackend);
-            platform->destroyRenderBackend(*renderBackend);
+            platform->destroyRenderBackend();
         }
         {
             IRenderBackend* renderBackend = createRenderBackend();
             ASSERT_NE(nullptr, renderBackend);
-            platform->destroyRenderBackend(*renderBackend);
+            platform->destroyRenderBackend();
         }
     }
 
@@ -161,11 +140,11 @@ namespace ramses_internal
         IRenderBackend* renderBackend = createRenderBackend();
         ASSERT_NE(nullptr, renderBackend);
 
-        EXPECT_TRUE(renderBackend->getSurface().enable());
-        EXPECT_TRUE(renderBackend->getSurface().enable());
-        EXPECT_TRUE(renderBackend->getSurface().enable());
+        EXPECT_TRUE(renderBackend->getContext().enable());
+        EXPECT_TRUE(renderBackend->getContext().enable());
+        EXPECT_TRUE(renderBackend->getContext().enable());
 
-        platform->destroyRenderBackend(*renderBackend);
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, CanBeDisabled)
@@ -173,9 +152,9 @@ namespace ramses_internal
         IRenderBackend* renderBackend = createRenderBackend();
         ASSERT_NE(nullptr, renderBackend);
 
-        EXPECT_TRUE(renderBackend->getSurface().disable());
+        EXPECT_TRUE(renderBackend->getContext().disable());
 
-        platform->destroyRenderBackend(*renderBackend);
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, Confidence_CanBeEnabledAndDisabledMultipleTimes)
@@ -184,41 +163,21 @@ namespace ramses_internal
         IRenderBackend* renderBackend = createRenderBackend();
         ASSERT_NE(nullptr, renderBackend);
 
-        EXPECT_TRUE(renderBackend->getSurface().enable());
-        EXPECT_TRUE(renderBackend->getSurface().disable());
-        EXPECT_TRUE(renderBackend->getSurface().enable());
+        EXPECT_TRUE(renderBackend->getContext().enable());
+        EXPECT_TRUE(renderBackend->getContext().disable());
+        EXPECT_TRUE(renderBackend->getContext().enable());
 
-        platform->destroyRenderBackend(*renderBackend);
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, CanCreateAndInitializeResourceUploadRenderBackend)
     {
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
-        IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
+        IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
         ASSERT_NE(nullptr, resourceUploadRenderBackend);
-        platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
-        platform->destroyRenderBackend(*mainRenderBackend);
-    }
-
-    TEST_F(APlatform, CanCreateResourceUploadRenderBackendsForMultipleRenderBackends)
-    {
-        IRenderBackend* mainRenderBackend = createRenderBackend();
-        ASSERT_NE(nullptr, mainRenderBackend);
-
-        IRenderBackend* mainRenderBackend2 = createRenderBackend(false, true);
-        ASSERT_NE(nullptr, mainRenderBackend2);
-
-        IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
-        ASSERT_NE(nullptr, resourceUploadRenderBackend);
-        IResourceUploadRenderBackend* resourceUploadRenderBackend2 = createResourceUploadRenderBackend(*mainRenderBackend2);
-        ASSERT_NE(nullptr, resourceUploadRenderBackend2);
-
-        platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend2);
-        platform->destroyRenderBackend(*mainRenderBackend2);
-
-        platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
-        platform->destroyRenderBackend(*mainRenderBackend);
+        platform->destroyResourceUploadRenderBackend();
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, CanRecreateRenderBackendsWithResourceUploadRenderBackends)
@@ -227,21 +186,21 @@ namespace ramses_internal
             IRenderBackend* renderBackend = createRenderBackend();
             ASSERT_NE(nullptr, renderBackend);
 
-            IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*renderBackend);
+            IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
             ASSERT_NE(nullptr, resourceUploadRenderBackend);
 
-            platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
-            platform->destroyRenderBackend(*renderBackend);
+            platform->destroyResourceUploadRenderBackend();
+            platform->destroyRenderBackend();
         }
         {
             IRenderBackend* renderBackend = createRenderBackend();
             ASSERT_NE(nullptr, renderBackend);
 
-            IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*renderBackend);
+            IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
             ASSERT_NE(nullptr, resourceUploadRenderBackend);
 
-            platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
-            platform->destroyRenderBackend(*renderBackend);
+            platform->destroyResourceUploadRenderBackend();
+            platform->destroyRenderBackend();
         }
     }
 
@@ -250,18 +209,18 @@ namespace ramses_internal
         IRenderBackend* renderBackend = createRenderBackend();
         ASSERT_NE(nullptr, renderBackend);
 
-        IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*renderBackend);
+        IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
         ASSERT_NE(nullptr, resourceUploadRenderBackend);
 
         //try different sequences of alternating between contexts
-        EXPECT_TRUE(renderBackend->getSurface().enable());
+        EXPECT_TRUE(renderBackend->getContext().enable());
         EXPECT_TRUE(resourceUploadRenderBackend->getContext().enable());
         EXPECT_TRUE(resourceUploadRenderBackend->getContext().enable());
-        EXPECT_TRUE(renderBackend->getSurface().enable());
+        EXPECT_TRUE(renderBackend->getContext().enable());
         EXPECT_TRUE(resourceUploadRenderBackend->getContext().enable());
 
-        platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
-        platform->destroyRenderBackend(*renderBackend);
+        platform->destroyResourceUploadRenderBackend();
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, ResourceUploadRenderBackendCanBeDisabled)
@@ -269,13 +228,13 @@ namespace ramses_internal
         IRenderBackend* renderBackend = createRenderBackend();
         ASSERT_NE(nullptr, renderBackend);
 
-        IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*renderBackend);
+        IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
         ASSERT_NE(nullptr, resourceUploadRenderBackend);
 
         EXPECT_TRUE(resourceUploadRenderBackend->getContext().disable());
 
-        platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
-        platform->destroyRenderBackend(*renderBackend);
+        platform->destroyResourceUploadRenderBackend();
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, ResourceUploadRenderBackendCanBeEnabledAndDisabledMultipleTimes)
@@ -284,22 +243,22 @@ namespace ramses_internal
         IRenderBackend* renderBackend = createRenderBackend();
         ASSERT_NE(nullptr, renderBackend);
 
-        IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*renderBackend);
+        IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
         ASSERT_NE(nullptr, resourceUploadRenderBackend);
 
         EXPECT_TRUE(resourceUploadRenderBackend->getContext().enable());
         EXPECT_TRUE(resourceUploadRenderBackend->getContext().disable());
         EXPECT_TRUE(resourceUploadRenderBackend->getContext().enable());
 
-        platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
-        platform->destroyRenderBackend(*renderBackend);
+        platform->destroyResourceUploadRenderBackend();
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, CanCreateAndInitializeResourceUploadRenderBackendInOtherThreads)
     {
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
-        EXPECT_TRUE(mainRenderBackend->getSurface().disable());
+        EXPECT_TRUE(mainRenderBackend->getContext().disable());
 
         std::promise<bool> success;
 
@@ -308,28 +267,28 @@ namespace ramses_internal
                 // caller is expected to have a display prefix for logs
                 ThreadLocalLog::SetPrefix(2);
 
-                IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
+                IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
                 if (!resourceUploadRenderBackend)
                 {
                     success.set_value(false);
                     return;
                 }
 
-                platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
+                platform->destroyResourceUploadRenderBackend();
                 success.set_value(true);
             });
 
         EXPECT_TRUE(success.get_future().get());
 
         resourceUploadThread.join();
-        platform->destroyRenderBackend(*mainRenderBackend);
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, CanEnableRenderBackendsInSameTimeInDifferentThreads)
     {
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
-        EXPECT_TRUE(mainRenderBackend->getSurface().disable());
+        EXPECT_TRUE(mainRenderBackend->getContext().disable());
 
         std::promise<bool> successMainThread;
         std::promise<bool> successResourceUploadThread;
@@ -339,7 +298,7 @@ namespace ramses_internal
                 // caller is expected to have a display prefix for logs
                 ThreadLocalLog::SetPrefix(2);
 
-                IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
+                IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
                 if (!resourceUploadRenderBackend)
                 {
                     successResourceUploadThread.set_value(false);
@@ -352,24 +311,24 @@ namespace ramses_internal
                 //block till main context is enabled, to make sure both got enabled succesfully at the same time
                 //before the resource upload render backend gets destroyed
                 EXPECT_TRUE(successMainThread.get_future().get());
-                platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
+                platform->destroyResourceUploadRenderBackend();
             });
 
         //block till resource upload render backend is created
         EXPECT_TRUE(successResourceUploadThread.get_future().get());
-        const bool enableStatus = mainRenderBackend->getSurface().enable();
+        const bool enableStatus = mainRenderBackend->getContext().enable();
         EXPECT_TRUE(enableStatus);
         successMainThread.set_value(enableStatus);
 
         resourceUploadThread.join();
-        platform->destroyRenderBackend(*mainRenderBackend);
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, CanUploadResourcesToRenderBackendsInDifferentThreads)
     {
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
-        EXPECT_TRUE(mainRenderBackend->getSurface().disable());
+        EXPECT_TRUE(mainRenderBackend->getContext().disable());
 
         std::promise<bool> success;
 
@@ -378,7 +337,7 @@ namespace ramses_internal
                 // caller is expected to have a display prefix for logs
                 ThreadLocalLog::SetPrefix(2);
 
-                IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
+                IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
                 if (!resourceUploadRenderBackend)
                 {
                     success.set_value(false);
@@ -388,23 +347,23 @@ namespace ramses_internal
                 const auto shaderResource = uploadEffectAndExpectSuccess(resourceUploadRenderBackend->getDevice());
                 success.set_value(shaderResource != nullptr);
 
-                platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
+                platform->destroyResourceUploadRenderBackend();
             });
 
         EXPECT_TRUE(success.get_future().get());
 
-        EXPECT_TRUE(mainRenderBackend->getSurface().enable());
+        EXPECT_TRUE(mainRenderBackend->getContext().enable());
         uploadEffectAndExpectSuccess(mainRenderBackend->getDevice());
 
         resourceUploadThread.join();
-        platform->destroyRenderBackend(*mainRenderBackend);
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, EnableContextInMainThreadDoesNotBlockResourceUploadInOtherThread)
     {
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
-        EXPECT_TRUE(mainRenderBackend->getSurface().disable());
+        EXPECT_TRUE(mainRenderBackend->getContext().disable());
 
         std::promise<bool> successMainThread;
         std::promise<bool> successCreation;
@@ -415,7 +374,7 @@ namespace ramses_internal
                 // caller is expected to have a display prefix for logs
                 ThreadLocalLog::SetPrefix(2);
 
-                IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
+                IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
                 if (!resourceUploadRenderBackend)
                 {
                     successCreation.set_value(false);
@@ -430,28 +389,28 @@ namespace ramses_internal
                 const auto shaderResource = uploadEffectAndExpectSuccess(resourceUploadRenderBackend->getDevice());
                 successResourceUpload.set_value(shaderResource != nullptr);
 
-                platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
+                platform->destroyResourceUploadRenderBackend();
             });
 
         //block till resource upload thread create resource upload render backend
         EXPECT_TRUE(successCreation.get_future().get());
 
         //enable main context
-        EXPECT_TRUE(mainRenderBackend->getSurface().enable());
+        EXPECT_TRUE(mainRenderBackend->getContext().enable());
         //unblock resource upload in resource upload thread
         successMainThread.set_value(true);
 
         EXPECT_TRUE(successResourceUpload.get_future().get());
 
         resourceUploadThread.join();
-        platform->destroyRenderBackend(*mainRenderBackend);
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, CanUploadResourceInOneRenderBackendAndUseItInDifferentOneInDifferentThreads)
     {
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
-        EXPECT_TRUE(mainRenderBackend->getSurface().disable());
+        EXPECT_TRUE(mainRenderBackend->getContext().disable());
 
         std::promise<std::unique_ptr<const GPUResource>> shaderResource;
         std::promise<bool> resourceUsedSuccess;
@@ -461,7 +420,7 @@ namespace ramses_internal
                 // caller is expected to have a display prefix for logs
                 ThreadLocalLog::SetPrefix(2);
 
-                IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
+                IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
                 if (!resourceUploadRenderBackend)
                 {
                     shaderResource.set_value(nullptr);
@@ -474,7 +433,7 @@ namespace ramses_internal
                 //block till resource is used to make sure behavior is deterministic
                 EXPECT_TRUE(resourceUsedSuccess.get_future().get());
 
-                platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
+                platform->destroyResourceUploadRenderBackend();
             });
 
 
@@ -486,19 +445,19 @@ namespace ramses_internal
         const auto deviceHandle = mainDevice.registerShader(std::move(resource));
         EXPECT_TRUE(deviceHandle.isValid());
 
-        EXPECT_TRUE(mainRenderBackend->getSurface().enable());
+        EXPECT_TRUE(mainRenderBackend->getContext().enable());
         activateShaderAndExpectSucces(mainDevice, deviceHandle);
         resourceUsedSuccess.set_value(true);
 
         resourceUploadThread.join();
-        platform->destroyRenderBackend(*mainRenderBackend);
+        platform->destroyRenderBackend();
     }
 
     TEST_F(APlatform, CanUploadResourceInOneRenderBackendAndUseItInDifferentOneInDifferentThreads_AfterResourceUploadRenderBackendDestroyed)
     {
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
-        EXPECT_TRUE(mainRenderBackend->getSurface().disable());
+        EXPECT_TRUE(mainRenderBackend->getContext().disable());
 
         std::promise<std::unique_ptr<const GPUResource>> shaderResource;
 
@@ -507,7 +466,7 @@ namespace ramses_internal
                 // caller is expected to have a display prefix for logs
                 ThreadLocalLog::SetPrefix(2);
 
-                IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend(*mainRenderBackend);
+                IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
                 if (!resourceUploadRenderBackend)
                 {
                     shaderResource.set_value(nullptr);
@@ -517,12 +476,12 @@ namespace ramses_internal
                 auto resource= uploadEffectAndExpectSuccess(resourceUploadRenderBackend->getDevice());
                 shaderResource.set_value(std::move(resource));
 
-                platform->destroyResourceUploadRenderBackend(*resourceUploadRenderBackend);
+                platform->destroyResourceUploadRenderBackend();
             });
 
         resourceUploadThread.join();
 
-        EXPECT_TRUE(mainRenderBackend->getSurface().enable());
+        EXPECT_TRUE(mainRenderBackend->getContext().enable());
         auto resource = shaderResource.get_future().get();
         EXPECT_NE(nullptr, resource);
 
@@ -531,6 +490,6 @@ namespace ramses_internal
         const auto deviceHandle = mainDevice.registerShader(std::move(resource));
         activateShaderAndExpectSucces(mainDevice, deviceHandle);
 
-        platform->destroyRenderBackend(*mainRenderBackend);
+        platform->destroyRenderBackend();
     }
 }

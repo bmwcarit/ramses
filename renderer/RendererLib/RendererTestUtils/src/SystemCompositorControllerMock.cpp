@@ -20,13 +20,4 @@ namespace ramses_internal
     SystemCompositorControllerMock::~SystemCompositorControllerMock()
     {
     }
-
-    SystemCompositorControllerMockWithDestructor::SystemCompositorControllerMockWithDestructor()
-    {
-    }
-
-    SystemCompositorControllerMockWithDestructor::~SystemCompositorControllerMockWithDestructor()
-    {
-        Die();
-    }
 }

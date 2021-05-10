@@ -15,10 +15,9 @@ namespace ramses_internal
     RendererSceneControlLogicMock::RendererSceneControlLogicMock()
     {
         // by default scene is unknown and logic returns invalid/default parameters
-        ON_CALL(*this, getSceneInfo(_, _, _, _, _)).WillByDefault(Invoke([](auto, auto& targetState, auto& display, auto& ob, auto& renderOrder)
+        ON_CALL(*this, getSceneInfo(_, _, _, _)).WillByDefault(Invoke([](auto, auto& targetState, auto& ob, auto& renderOrder)
         {
             targetState = RendererSceneState::Unavailable;
-            display = DisplayHandle::Invalid();
             ob = OffscreenBufferHandle::Invalid();
             renderOrder = 0;
         }));

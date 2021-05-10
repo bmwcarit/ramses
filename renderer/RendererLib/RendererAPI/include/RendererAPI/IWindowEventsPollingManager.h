@@ -16,9 +16,7 @@ namespace ramses_internal
     class IWindowEventsPollingManager
     {
     public:
-        virtual ~IWindowEventsPollingManager()
-        {
-        }
+        virtual ~IWindowEventsPollingManager() = default;
 
         virtual void pollWindowsTillAnyCanRender() const = 0;
     };

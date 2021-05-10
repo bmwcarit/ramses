@@ -56,6 +56,7 @@ Checks:
     bugprone-spuriously-wake-up-functions,
     bugprone-suspicious-include,
     bugprone-misplaced-pointer-arithmetic-in-alloc,
+    bugprone-reserved-identifier,
 
     cert-dcl16-c,
     cert-dcl21-cpp,

@@ -28,8 +28,6 @@ protected:
     RendererStatistics stats;
     const SceneId sceneId1{ 11 };
     const SceneId sceneId2{ 22 };
-    const DisplayHandle disp1{ 1 };
-    const DisplayHandle disp2{ 2 };
     const DeviceResourceHandle ob1{ 11 };
     const DeviceResourceHandle ob2{ 22 };
     const DeviceResourceHandle ob3{ 33 };
@@ -192,30 +190,29 @@ TEST_F(ARendererStatistics, tracksMaximumConsecutiveFramesWhereSceneFlushBlocked
 
 TEST_F(ARendererStatistics, tracksFramebufferAndOffscreenBufferSwapCounts)
 {
-    stats.framebufferSwapped(disp1);
-    stats.offscreenBufferSwapped(disp1,  ob1, false);
-    stats.framebufferSwapped(disp2);
-    stats.offscreenBufferSwapped(disp2, ob2, false);
-    stats.offscreenBufferSwapped(disp2, ob3, false);
+    stats.framebufferSwapped();
+    stats.offscreenBufferSwapped(ob1, false);
+    stats.framebufferSwapped();
+    stats.offscreenBufferSwapped(ob2, false);
+    stats.offscreenBufferSwapped(ob3, false);
     stats.frameFinished(0u);
 
-    stats.framebufferSwapped(disp1);
-    stats.offscreenBufferSwapped(disp1, ob1, false);
+    stats.framebufferSwapped();
+    stats.offscreenBufferSwapped(ob1, false);
     stats.frameFinished(0u);
 
-    EXPECT_THAT(logOutput(), HasSubstr("FB1: 2; OB11: 2"));
-    EXPECT_THAT(logOutput(), HasSubstr("FB2: 1; OB22: 1; OB33: 1"));
+    EXPECT_THAT(logOutput(), HasSubstr("FB: 3; OB11: 2; OB22: 1; OB33: 1"));
 }
 
 TEST_F(ARendererStatistics, tracksInterruptibleOffscreenBuffer)
 {
-    stats.offscreenBufferInterrupted(disp1, ob1);
+    stats.offscreenBufferInterrupted(ob1);
     stats.frameFinished(0u);
-    stats.offscreenBufferSwapped(disp1, ob1, true);
+    stats.offscreenBufferSwapped(ob1, true);
     stats.frameFinished(0u);
-    stats.offscreenBufferInterrupted(disp1, ob1);
+    stats.offscreenBufferInterrupted(ob1);
     stats.frameFinished(0u);
-    stats.offscreenBufferSwapped(disp1, ob1, true);
+    stats.offscreenBufferSwapped(ob1, true);
     stats.frameFinished(0u);
 
     EXPECT_THAT(logOutput(), HasSubstr("OB11: 2 (intr: 2)"));
@@ -223,11 +220,11 @@ TEST_F(ARendererStatistics, tracksInterruptibleOffscreenBuffer)
 
 TEST_F(ARendererStatistics, untracksOffscreenBuffer)
 {
-    stats.offscreenBufferSwapped(disp1, ob1, false);
-    stats.offscreenBufferSwapped(disp2, ob2, false);
-    stats.offscreenBufferSwapped(disp2, ob3, false);
+    stats.offscreenBufferSwapped(ob1, false);
+    stats.offscreenBufferSwapped(ob2, false);
+    stats.offscreenBufferSwapped(ob3, false);
     stats.frameFinished(0u);
-    stats.untrackOffscreenBuffer(disp2, ob2);
+    stats.untrackOffscreenBuffer(ob2);
 
     EXPECT_THAT(logOutput(), Not(HasSubstr("OB22")));
 }
@@ -342,7 +339,7 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
         stats.trackArrivedFlush(sceneId2, 6, 7, 8, 9, std::chrono::milliseconds{5});
         stats.flushBlocked(sceneId1);
         stats.flushApplied(sceneId2);
-        stats.framebufferSwapped(disp1);
+        stats.framebufferSwapped();
         stats.frameFinished(0);
 
         stats.resourceUploaded(2u);
@@ -353,7 +350,7 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
         stats.trackArrivedFlush(sceneId1, 123, 5, 3, 4, std::chrono::milliseconds{3});
         stats.flushBlocked(sceneId1);
         stats.sceneRendered(sceneId2);
-        stats.framebufferSwapped(disp2);
+        stats.framebufferSwapped();
         stats.frameFinished(100);
 
         stats.trackArrivedFlush(sceneId1, 123, 5, 3, 4, std::chrono::milliseconds{6});
@@ -362,9 +359,9 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
         stats.flushBlocked(sceneId2);
         stats.sceneRendered(sceneId1);
         stats.sceneRendered(sceneId2);
-        stats.framebufferSwapped(disp1);
-        stats.offscreenBufferInterrupted(disp1, ob1);
-        stats.framebufferSwapped(disp2);
+        stats.framebufferSwapped();
+        stats.offscreenBufferInterrupted(ob1);
+        stats.framebufferSwapped();
         stats.frameFinished(0);
 
         stats.sceneResourceUploaded(sceneId1, 3u);
@@ -372,8 +369,8 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
         stats.sceneResourceUploaded(sceneId2, 200u);
 
         stats.sceneRendered(sceneId1);
-        stats.framebufferSwapped(disp1);
-        stats.offscreenBufferSwapped(disp1, ob1, true);
+        stats.framebufferSwapped();
+        stats.offscreenBufferSwapped(ob1, true);
         stats.frameFinished(0);
 
         EXPECT_THAT(logOutput(), HasSubstr("Avg framerate: "));
@@ -383,8 +380,7 @@ TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
         EXPECT_THAT(logOutput(), HasSubstr("resUploaded 2 (79 B)"));
         EXPECT_THAT(logOutput(), HasSubstr("shadersCompiled 2"));
         EXPECT_THAT(logOutput(), HasSubstr("for total ms:1"));
-        EXPECT_THAT(logOutput(), HasSubstr("FB1: 3; OB11: 1 (intr: 1)"));
-        EXPECT_THAT(logOutput(), HasSubstr("FB2: 2"));
+        EXPECT_THAT(logOutput(), HasSubstr("FB: 5; OB11: 1 (intr: 1)"));
         EXPECT_THAT(logOutput(), HasSubstr("Scene 11: rendered 2, framesFArrived 3, framesFApplied 1, framesFBlocked 2, maxFramesWithNoFApplied 2, maxFramesFBlocked 2, FArrived 3, FApplied 1, actions/F (123/123/123), dt/F (2/6/3.6666667), RC+/F (5/5/5), RC-/F (3/3/3), RS/F (4/4/4), RSUploaded 2 (80 B)"));
         EXPECT_THAT(logOutput(), HasSubstr("Scene 22: rendered 2, framesFArrived 2, framesFApplied 1, framesFBlocked 1, maxFramesWithNoFApplied 3, maxFramesFBlocked 1, FArrived 2, FApplied 1, actions/F (6/6/6), dt/F (5/11/8), RC+/F (7/7/7), RC-/F (8/8/8), RS/F (9/9/9), RSUploaded 1 (200 B)"));
         EXPECT_THAT(logOutput(), HasSubstr("slow effect"));

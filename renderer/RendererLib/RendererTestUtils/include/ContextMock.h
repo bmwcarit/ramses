@@ -32,16 +32,6 @@ namespace ramses_internal
         MOCK_METHOD(DeviceResourceMapper&, getResources, (), (override));
         MOCK_METHOD(void*, getProcAddress, (const Char*), (const, override));
     };
-
-
-    class ContextMockWithDestructor : public ContextMock
-    {
-    public:
-        ContextMockWithDestructor();
-        ~ContextMockWithDestructor() override;
-
-        MOCK_METHOD(void, Die, ());
-    };
 }
 
 #endif

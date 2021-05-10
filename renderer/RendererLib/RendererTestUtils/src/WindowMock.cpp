@@ -31,14 +31,5 @@ namespace ramses_internal
     WindowMock::~WindowMock()
     {
     }
-
-    WindowMockWithDestructor::WindowMockWithDestructor()
-    {
-    }
-
-    WindowMockWithDestructor::~WindowMockWithDestructor()
-    {
-        Die();
-    }
 }
 

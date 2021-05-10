@@ -21,7 +21,7 @@ namespace ramses_internal
         Window_Wayland(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
         ~Window_Wayland() override;
 
-        virtual Bool init() final;
+        virtual bool init() override final;
 
         Bool canRenderNewFrame() const override final;
         void dispatchWaylandDisplayEvents(Bool dispatchNewEventsFromDisplayFD) const;

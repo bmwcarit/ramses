@@ -12,7 +12,6 @@
 #include "RendererAPI/Types.h"
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "SceneAPI/SceneId.h"
-#include "Collections/HashMap.h"
 #include "Animation/AnimationSystemFactory.h"
 #include "RendererLib/StagingInfo.h"
 #include "RendererLib/BufferLinks.h"
@@ -52,6 +51,7 @@ namespace ramses_internal
 
     public:
         RendererSceneUpdater(
+            DisplayHandle display,
             IPlatform& platform,
             Renderer& renderer,
             RendererScenes& rendererScenes,
@@ -65,19 +65,19 @@ namespace ramses_internal
 
         // IRendererSceneUpdater
         virtual void handleSceneUpdate(SceneId sceneId, SceneUpdate&& sceneUpdate) override;
-        virtual void createDisplayContext(const DisplayConfig& displayConfig, DisplayHandle handle, IBinaryShaderCache* binaryShaderCache) override;
-        virtual void destroyDisplayContext(DisplayHandle handle) override;
+        virtual void createDisplayContext(const DisplayConfig& displayConfig, IBinaryShaderCache* binaryShaderCache) override;
+        virtual void destroyDisplayContext() override;
         virtual void handleScenePublished(SceneId sceneId, EScenePublicationMode mode) override;
         virtual void handleSceneUnpublished(SceneId sceneId) override;
         virtual void handleSceneReceived(const SceneInfo& sceneInfo) override;
-        virtual bool handleBufferCreateRequest(OffscreenBufferHandle buffer, DisplayHandle display, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
-        virtual bool handleBufferDestroyRequest(OffscreenBufferHandle buffer, DisplayHandle display) override;
-        virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, DisplayHandle display, WaylandIviSurfaceId source) override;
-        virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer, DisplayHandle display) override;
-        virtual bool setStreamBufferState(StreamBufferHandle buffer, DisplayHandle display, bool newState) override;
-        virtual void handleSetClearFlags(DisplayHandle display, OffscreenBufferHandle buffer, uint32_t clearFlags) override;
-        virtual void handleSetClearColor(DisplayHandle display, OffscreenBufferHandle buffer, const Vector4& clearColor) override;
-        virtual void handleReadPixels(DisplayHandle display, OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo) override;
+        virtual bool handleBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
+        virtual bool handleBufferDestroyRequest(OffscreenBufferHandle buffer) override;
+        virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source) override;
+        virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer) override;
+        virtual bool setStreamBufferState(StreamBufferHandle buffer, bool newState) override;
+        virtual void handleSetClearFlags(OffscreenBufferHandle buffer, uint32_t clearFlags) override;
+        virtual void handleSetClearColor(OffscreenBufferHandle buffer, const Vector4& clearColor) override;
+        virtual void handleReadPixels(OffscreenBufferHandle buffer, ScreenshotInfo&& screenshotInfo) override;
         virtual void handlePickEvent(SceneId sceneId, Vector2 coordsNormalizedToBufferSize) override;
         virtual void handleSceneDataLinkRequest(SceneId providerSceneId, DataSlotId providerId, SceneId consumerSceneId, DataSlotId consumerId) override;
         virtual void handleBufferToSceneDataLinkRequest(OffscreenBufferHandle buffer, SceneId consumerSceneId, DataSlotId consumerId) override;
@@ -85,12 +85,13 @@ namespace ramses_internal
         virtual void handleDataUnlinkRequest(SceneId consumerSceneId, DataSlotId consumerId) override;
         virtual void setLimitFlushesForceApply(UInt limitForPendingFlushesForceApply) override;
         virtual void setLimitFlushesForceUnsubscribe(UInt limitForPendingFlushesForceUnsubscribe) override;
+        virtual void setSkippingOfUnmodifiedScenes(bool enable) override;
         virtual void logRendererInfo(ERendererLogTopic topic, bool verbose, NodeHandle nodeFilter) const override;
 
         // IRendererSceneStateControl
         virtual void handleSceneSubscriptionRequest     (SceneId sceneId) override;
         virtual void handleSceneUnsubscriptionRequest   (SceneId sceneId, bool indirect) override;
-        virtual void handleSceneMappingRequest          (SceneId sceneId, DisplayHandle handle) override;
+        virtual void handleSceneMappingRequest          (SceneId sceneId) override;
         virtual void handleSceneUnmappingRequest        (SceneId sceneId) override;
         virtual void handleSceneShowRequest             (SceneId sceneId) override;
         virtual void handleSceneHideRequest             (SceneId sceneId) override;
@@ -105,15 +106,13 @@ namespace ramses_internal
     protected:
         virtual std::unique_ptr<IRendererResourceManager> createResourceManager(
             IRenderBackend& renderBackend,
-            AsyncEffectUploader& asyncEffectUploader,
             IEmbeddedCompositingManager& embeddedCompositingManager,
-            DisplayHandle display,
             bool keepEffectsUploaded,
             uint64_t gpuCacheSize,
             bool asyncEffectUploadEnabled,
             IBinaryShaderCache* binaryShaderCache);
 
-        virtual void destroyResourceManager(DisplayHandle display);
+        virtual void destroyResourceManager();
 
     private:
         void destroyScene(SceneId sceneID);
@@ -130,7 +129,7 @@ namespace ramses_internal
         void logTooManyFlushesAndUnsubscribeIfRemoteScene(SceneId sceneId, std::size_t numPendingFlushes);
         void consolidatePendingSceneActions(SceneId sceneID, SceneUpdate&& sceneUpdate);
         void consolidateResourceDataForMapping(SceneId sceneID);
-        void referenceAndProvidePendingResourceData(SceneId sceneID, DisplayHandle display);
+        void referenceAndProvidePendingResourceData(SceneId sceneID);
         void requestAndUploadAndUnloadResources();
         void uploadUpdatedECStreams();
         void tryToApplyPendingFlushes();
@@ -149,6 +148,8 @@ namespace ramses_internal
         void logMissingResources(const PendingData& pendingData, SceneId sceneId) const;
         void logMissingResources(const ResourceContentHashVector& neededResources, SceneId sceneId) const;
 
+        DisplayHandle m_display;
+
         IPlatform&                                        m_platform;
         Renderer&                                         m_renderer;
         RendererScenes&                                   m_rendererScenes;
@@ -161,21 +162,20 @@ namespace ramses_internal
 
         AnimationSystemFactory                            m_animationSystemFactory;
 
-        std::unordered_map<DisplayHandle, std::unique_ptr<IRendererResourceManager>> m_displayResourceManagers;
-        std::unordered_map<DisplayHandle, std::unique_ptr<AsyncEffectUploader>> m_asyncEffectUploaders;
+        std::unique_ptr<IRendererResourceManager> m_displayResourceManager;
+        std::unique_ptr<AsyncEffectUploader> m_asyncEffectUploader;
 
         struct SceneMapRequest
         {
-            DisplayHandle display;
             FrameTimer::Clock::time_point requestTimeStamp;
             FrameTimer::Clock::time_point lastLogTimeStamp;
         };
-        using SceneMapRequests = HashMap<SceneId, SceneMapRequest>;
-        SceneMapRequests m_scenesToBeMapped;
+        std::unordered_map<SceneId, SceneMapRequest> m_scenesToBeMapped;
 
         // extracted from RendererSceneUpdater::updateScenesTransformationCache to avoid per frame allocation
         HashSet<SceneId> m_scenesNeedingTransformationCacheUpdate;
 
+        bool m_skipUnmodifiedScenes = true;
         HashSet<SceneId> m_modifiedScenesToRerender;
         //used as caches for algorithms that mark scenes as modified
         std::vector<SceneId> m_offscreeenBufferModifiedScenesVisitingCache;

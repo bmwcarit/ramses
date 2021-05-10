@@ -17,22 +17,15 @@ namespace ramses_internal
     {
     }
 
-    ISystemCompositorController* Platform_X11_EGL::createSystemCompositorController()
+    bool Platform_X11_EGL::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
     {
-        return nullptr;
-    }
+        auto window = std::make_unique<Window_X11>(displayConfig, windowEventHandler, 0u);
+        if (window->init())
+        {
+            m_window = std::move(window);
+            return true;
+        }
 
-    IWindow* Platform_X11_EGL::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
-    {
-        Window_X11* platformWindow = new Window_X11(displayConfig, windowEventHandler, m_windows.size());
-        return addPlatformWindow(platformWindow);
-    }
-
-    IEmbeddedCompositor* Platform_X11_EGL::createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context)
-    {
-        UNUSED(displayConfig);
-        UNUSED(context);
-        EmbeddedCompositor_Dummy* compositor = new EmbeddedCompositor_Dummy();
-        return addEmbeddedCompositor(compositor);
+        return false;
     }
 }

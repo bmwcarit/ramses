@@ -20,38 +20,38 @@ namespace ramses_internal
     class RendererSceneUpdaterPartialMock : public RendererSceneUpdater
     {
     public:
-        RendererSceneUpdaterPartialMock(IPlatform& platform, const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, IThreadAliveNotifier& notifier, const IRendererResourceCache* rendererResourceCache);
+        RendererSceneUpdaterPartialMock(DisplayHandle display, IPlatform& platform, const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor,
+            const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, IThreadAliveNotifier& notifier, const IRendererResourceCache* rendererResourceCache);
         virtual ~RendererSceneUpdaterPartialMock() override;
 
         MOCK_METHOD(void, handleSceneUpdate, (SceneId sceneId, SceneUpdate&& update), (override));
         MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, Vector2 coords), (override));
-        MOCK_METHOD(std::unique_ptr<IRendererResourceManager>, createResourceManager, (IRenderBackend&, AsyncEffectUploader&, IEmbeddedCompositingManager&, DisplayHandle, bool, uint64_t, bool, IBinaryShaderCache*), (override));
-        MOCK_METHOD(void, destroyResourceManager, (DisplayHandle), (override));
+        MOCK_METHOD(std::unique_ptr<IRendererResourceManager>, createResourceManager, (IRenderBackend&, IEmbeddedCompositingManager&, bool, uint64_t, bool, IBinaryShaderCache*), (override));
+        MOCK_METHOD(void, destroyResourceManager, (), (override));
     };
 
     class RendererSceneUpdaterFacade : public RendererSceneUpdaterPartialMock
     {
     public:
-        RendererSceneUpdaterFacade(IPlatform& platform, const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor, const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, IThreadAliveNotifier& notifier, const IRendererResourceCache* rendererResourceCache);
+        RendererSceneUpdaterFacade(DisplayHandle display, IPlatform& platform, const Renderer& renderer, const RendererScenes& rendererScenes, const SceneStateExecutor& sceneStateExecutor,
+            const RendererEventCollector& rendererEventCollector, const FrameTimer& frameTimer, const SceneExpirationMonitor& expirationMonitor, IThreadAliveNotifier& notifier, const IRendererResourceCache* rendererResourceCache);
         virtual ~RendererSceneUpdaterFacade() override;
 
         virtual void handleSceneUpdate(SceneId sceneId, SceneUpdate&& update) override;
         virtual void handlePickEvent(SceneId sceneId, Vector2 coords) override;
 
-        std::unordered_map<DisplayHandle, testing::StrictMock<RendererResourceManagerRefCountMock>*> m_resourceManagerMocks;
+        testing::StrictMock<RendererResourceManagerRefCountMock>* m_resourceManagerMock = nullptr;
 
     protected:
         virtual std::unique_ptr<IRendererResourceManager> createResourceManager(
             IRenderBackend& renderBackend,
-            AsyncEffectUploader& asyncEffectUploader,
             IEmbeddedCompositingManager& embeddedCompositingManager,
-            DisplayHandle display,
             bool keepEffectsUploaded,
             uint64_t gpuCacheSize,
             bool asyncEffectUploadEnabled,
             IBinaryShaderCache* binaryShaderCache) override;
 
-        virtual void destroyResourceManager(DisplayHandle handle) override;
+        virtual void destroyResourceManager() override;
     };
 }
 

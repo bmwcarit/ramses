@@ -62,10 +62,13 @@ namespace ramses
         *          the value set here will not be effective until unbound again, bound values are always overridden by values
         *          from bound data object. Bound values can only be modified via the #ramses::DataObject bound to them.
         *
+        *          The viewport position (\p x and \p y) are relative offsets to the destination render buffer's lower left pixel.
+        *          The viewport size (\p width and \p height) must be positive numbers in the range [1, 32768].
+        *
         * @param[in] x horizontal offset of the viewport rectangle in pixels (zero = leftmost pixel)
         * @param[in] y vertical offset of the viewport rectangle in pixels (zero = bottommost pixel)
-        * @param[in] width horizontal size of the viewport rectangle in pixels
-        * @param[in] height vertical size of the viewport rectangle in pixels
+        * @param[in] width horizontal size of the viewport rectangle in pixels (min 1, max 32768)
+        * @param[in] height vertical size of the viewport rectangle in pixels (min 1, max 32768)
         * @return StatusOK for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */

@@ -9,7 +9,6 @@
 #include "RendererLib/DisplayDispatcher.h"
 #include "RendererLib/RendererCommandBuffer.h"
 #include "RendererLib/RendererCommandUtils.h"
-#include "Ramsh/Ramsh.h"
 #include "Platform_Base/Platform_Base.h"
 #include "Utils/ThreadLocalLog.h"
 
@@ -17,29 +16,32 @@ namespace ramses_internal
 {
     DisplayDispatcher::DisplayDispatcher(
         const RendererConfig& config,
-        RendererCommandBuffer& commandBuffer,
         IRendererSceneEventSender& rendererSceneSender,
         IThreadAliveNotifier& notifier)
         : m_rendererConfig{ config }
-        , m_pendingCommandsToDispatch{ commandBuffer }
         , m_rendererSceneSender{ rendererSceneSender }
         , m_notifier{ notifier }
     {
     }
 
-    void DisplayDispatcher::dispatchCommands()
+    void DisplayDispatcher::dispatchCommands(RendererCommandBuffer& cmds)
     {
         m_tmpCommands.clear();
-        m_pendingCommandsToDispatch.swapCommands(m_tmpCommands);
+        cmds.swapCommands(m_tmpCommands);
+        dispatchCommands(m_tmpCommands);
+    }
+
+    void DisplayDispatcher::dispatchCommands(RendererCommands& cmds)
+    {
         // log only if there are commands other than scene update or periodic log
-        const bool logCommands = std::any_of(m_tmpCommands.cbegin(), m_tmpCommands.cend(), [&](const auto& c) {
+        const bool logCommands = std::any_of(cmds.cbegin(), cmds.cend(), [&](const auto& c) {
             return !absl::holds_alternative<RendererCommand::UpdateScene>(c) && !absl::holds_alternative<RendererCommand::LogInfo>(c);
         });
         if (logCommands)
-            LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: dispatching {} commands (only other than scene update commands will be logged)", m_tmpCommands.size());
+            LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: dispatching {} commands (only other than scene update commands will be logged)", cmds.size());
 
         std::lock_guard<std::mutex> lock{ m_displaysAccessLock };
-        for (auto&& cmd : m_tmpCommands)
+        for (auto&& cmd : cmds)
         {
             if (logCommands && !absl::holds_alternative<RendererCommand::UpdateScene>(cmd))
                 LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: dispatching command [{}]", RendererCommandUtils::ToString(cmd));
@@ -159,6 +161,7 @@ namespace ramses_internal
         LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: creating display bundle of components for display {}", displayHandle);
         const bool firstDisplay = m_displays.empty(); // allow time report and KPI monitoring only for 1st display
         bundle.displayBundle = DisplayBundleShared{ std::make_unique<DisplayBundle>(
+            displayHandle,
             m_rendererSceneSender,
             *bundle.platform,
             m_notifier,
@@ -367,14 +370,14 @@ namespace ramses_internal
     {
         assert(!m_threadedDisplays);
         assert(m_displays.count(display) != 0);
-        return m_displays[display].displayBundle->getECManager(display);
+        return m_displays[display].displayBundle->getECManager();
     }
 
     IEmbeddedCompositor& DisplayDispatcher::getEC(DisplayHandle display)
     {
         assert(!m_threadedDisplays);
         assert(m_displays.count(display) != 0);
-        return m_displays[display].displayBundle->getEC(display);
+        return m_displays[display].displayBundle->getEC();
     }
 
     bool DisplayDispatcher::hasSystemCompositorController() const
@@ -383,26 +386,5 @@ namespace ramses_internal
         assert(m_displays.size() != 0);
         const IDisplayBundle& displayBundle = *m_displays.cbegin()->second.displayBundle;
         return displayBundle.hasSystemCompositorController();
-    }
-
-    void DisplayDispatcher::registerRamshCommands(Ramsh& ramsh)
-    {
-        ramsh.add(m_cmdPrintStatistics);
-        ramsh.add(m_cmdTriggerPickEvent);
-        ramsh.add(m_cmdSetClearColor);
-        ramsh.add(m_cmdSkippingOfUnmodifiedBuffers);
-        ramsh.add(m_cmdScreenshot);
-        ramsh.add(m_cmdLogRendererInfo);
-        ramsh.add(m_cmdShowFrameProfiler);
-        ramsh.add(m_cmdSystemCompositorControllerListIviSurfaces);
-        ramsh.add(m_cmdSystemCompositorControllerSetLayerVisibility);
-        ramsh.add(m_cmdSystemCompositorControllerSetSurfaceVisibility);
-        ramsh.add(m_cmdSystemCompositorControllerSetSurfaceOpacity);
-        ramsh.add(m_cmdSystemCompositorControllerSetSurfaceDestRectangle);
-        ramsh.add(m_cmdSystemCompositorControllerScreenshot);
-        ramsh.add(m_cmdSystemCompositorControllerAddSurfaceToLayer);
-        ramsh.add(m_cmdSystemCompositorControllerRemoveSurfaceFromLayer);
-        ramsh.add(m_cmdSystemCompositorControllerDestroySurface);
-        ramsh.add(m_cmdSetFrametimerValues);
     }
 }

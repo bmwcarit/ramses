@@ -33,8 +33,8 @@ namespace ramses_internal
         IDisplayController& displayController = createDisplayController();
 
         InSequence seq;
-        EXPECT_CALL(m_renderBackend, getSurface());
-        EXPECT_CALL(m_renderBackend.surfaceMock, canRenderNewFrame()).WillOnce(Return(false));
+        EXPECT_CALL(m_renderBackend, getWindow());
+        EXPECT_CALL(m_renderBackend.windowMock, canRenderNewFrame()).WillOnce(Return(false));
 
         EXPECT_FALSE(displayController.canRenderNewFrame());
 
@@ -44,7 +44,7 @@ namespace ramses_internal
     TEST_F(ADisplayController, doesNotEnableContextOnBeginFrame)
     {
         IDisplayController& displayController = createDisplayController();
-        EXPECT_CALL(m_renderBackend.surfaceMock, enable()).Times(0);
+        EXPECT_CALL(m_renderBackend.contextMock, enable()).Times(0);
         destroyDisplayController(displayController);
     }
 
@@ -100,9 +100,10 @@ namespace ramses_internal
         IDisplayController& displayController = createDisplayController();
 
         InSequence seq;
-        EXPECT_CALL(m_renderBackend, getSurface());
-        EXPECT_CALL(m_renderBackend.surfaceMock, swapBuffers());
-        EXPECT_CALL(m_renderBackend.surfaceMock, frameRendered());
+        EXPECT_CALL(m_renderBackend, getContext());
+        EXPECT_CALL(m_renderBackend.contextMock, swapBuffers());
+        EXPECT_CALL(m_renderBackend, getWindow());
+        EXPECT_CALL(m_renderBackend.windowMock, frameRendered());
         EXPECT_CALL(m_renderBackend, getDevice());
         EXPECT_CALL(m_renderBackend.deviceMock, validateDeviceStatusHealthy());
 
@@ -116,9 +117,8 @@ namespace ramses_internal
         IDisplayController& displayController = createDisplayController();
 
         InSequence seq;
-        EXPECT_CALL(m_renderBackend, getSurface());
-        EXPECT_CALL(m_renderBackend.surfaceMock, getWindow());
-        EXPECT_CALL(m_renderBackend.surfaceMock.windowMock, handleEvents());
+        EXPECT_CALL(m_renderBackend, getWindow());
+        EXPECT_CALL(m_renderBackend.windowMock, handleEvents());
 
         displayController.handleWindowEvents();
 

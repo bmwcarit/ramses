@@ -10,15 +10,15 @@
 #include "RendererAPI/IWindow.h"
 #include "RendererAPI/IContext.h"
 #include "RendererAPI/IDevice.h"
-#include "RendererAPI/ISurface.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "RendererAPI/ISystemCompositorController.h"
 #include "RendererAPI/IWindowEventsPollingManager.h"
 #include "RendererLib/RenderBackend.h"
 #include "RendererLib/ResourceUploadRenderBackend.h"
 #include "RendererLib/RendererConfig.h"
+#include "RendererLib/DisplayConfig.h"
 #include "Platform_Base/TextureUploadingAdapter_Base.h"
-#include "Platform_Base/Surface.h"
+#include "Platform_Base/EmbeddedCompositor_Dummy.h"
 #include "Utils/ThreadLocalLog.h"
 
 namespace ramses_internal
@@ -30,169 +30,128 @@ namespace ramses_internal
 
     Platform_Base::~Platform_Base()
     {
-        assert(nullptr == m_systemCompositorController);
-        assert(m_renderBackends.empty());
-        assert(m_resourceUploadRenderBackends.empty());
-    }
-
-    Bool Platform_Base::createPerRendererComponents()
-    {
-        if(m_rendererConfig.getSystemCompositorControlEnabled())
-        {
-            m_systemCompositorController = createSystemCompositorController();
-            if(m_systemCompositorControllerFailedCreation)
-            {
-                LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createPerRendererComponents:  system compositor controller creation failed");
-
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    void Platform_Base::destroyPerRendererComponents()
-    {
-        destroySystemCompositorController();
+        assert(!m_systemCompositorController);
+        assert(!m_embeddedCompositor);
+        assert(!m_window);
+        assert(!m_renderBackend);
+        assert(!m_resourceUploadRenderBackend);
+        assert(!m_textureUploadingAdapter);
     }
 
     IRenderBackend* Platform_Base::createRenderBackend(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
     {
-        if(m_systemCompositorControllerFailedCreation)
+        if (m_rendererConfig.getSystemCompositorControlEnabled() && !createSystemCompositorController())
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: will not create display because system compositor controller creation failed");
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: will not create render backend components because system compositor controller creation failed");
             return nullptr;
         }
 
-        IWindow* window = createWindow(displayConfig, windowEventHandler);
-        if (nullptr == window)
+        assert(!m_window);
+        if (!createWindow(displayConfig, windowEventHandler))
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  window creation failed");
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: window creation failed");
             return nullptr;
         }
 
-        IContext* context = createContext(displayConfig, *window);
-        if (nullptr == context)
+        assert(!m_context);
+        if (!createContext(displayConfig))
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  context creation failed");
-            destroyWindow(*window);
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: context creation failed");
+            destroyWindow();
             return nullptr;
         }
 
-        ISurface* surface = createSurface(*window, *context);
-        if (nullptr == surface)
+        m_context->enable();
+
+        assert(!m_device);
+        if (!createDevice())
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  window + context creation failed");
-            destroyContext(*context);
-            destroyWindow(*window);
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: device creation failed");
+            m_context->disable();
+            m_context.reset();
+            destroyWindow();
             return nullptr;
         }
 
-        // Surface enable is required so that device and texture adapter can load their extensions
-        surface->enable();
-
-        IDevice* device = createDevice(*context);
-        if (nullptr == device)
+        assert(!m_embeddedCompositor);
+        if (!createEmbeddedCompositor(displayConfig))
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  device creation failed");
-            destroySurface(*surface);
-            destroyContext(*context);
-            destroyWindow(*window);
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: embedded compositor creation failed");
+            m_device.reset();
+            m_context->disable();
+            m_context.reset();
+            destroyWindow();
             return nullptr;
         }
 
-        IEmbeddedCompositor* embeddedCompositor = createEmbeddedCompositor(displayConfig, *context);
+        assert(!m_textureUploadingAdapter);
+        createTextureUploadingAdapter();
 
-        if (nullptr == embeddedCompositor)
-        {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend:  embedded compositor creation failed");
-            destroyDevice(*device);
-            destroySurface(*surface);
-            destroyContext(*context);
-            destroyWindow(*window);
-            return nullptr;
-        }
+        assert(!m_renderBackend);
+        m_renderBackend = std::make_unique<RenderBackend>(*m_window, *m_context, *m_device, *m_embeddedCompositor, *m_textureUploadingAdapter);
 
-        ITextureUploadingAdapter* textureUploadingAdapter = createTextureUploadingAdapter(*device, *embeddedCompositor, *window);
-
-        IRenderBackend* renderBackend = new RenderBackend(*surface, *device, *embeddedCompositor, *textureUploadingAdapter);
-        m_renderBackends.push_back(renderBackend);
-
-        return renderBackend;
+        return m_renderBackend.get();
     }
 
-    void Platform_Base::destroyRenderBackend(IRenderBackend& renderBackend)
+    void Platform_Base::destroyRenderBackend()
     {
-        ISurface& surface = renderBackend.getSurface();
-        IWindow& window = surface.getWindow();
-        IContext& context = surface.getContext();
-        IDevice& device = renderBackend.getDevice();
-        IEmbeddedCompositor& embeddedCompositor = renderBackend.getEmbeddedCompositor();
-        ITextureUploadingAdapter& textureUploadingAdapter = renderBackend.getTextureUploadingAdapter();
-
+        assert(m_renderBackend);
         LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy texture uploadadapter");
-        destroyTextureUploadingAdapter(textureUploadingAdapter);
+        m_textureUploadingAdapter.reset();
         LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy embeddedcompositor");
-        destroyEmbeddedCompositor(embeddedCompositor);
+        m_embeddedCompositor.reset();
         LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy device");
-        destroyDevice(device);
-        LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy surface");
-        destroySurface(surface);
+        m_device.reset();
         LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy context");
-        destroyContext(context);
+        m_context->disable();
+        m_context.reset();
         LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy window");
-        destroyWindow(window);
+        destroyWindow();
 
-        std::vector<IRenderBackend*>::iterator renderBackendIter = find_c(m_renderBackends, &renderBackend);
-        assert(m_renderBackends.end() != renderBackendIter);
-        m_renderBackends.erase(renderBackendIter);
-        delete &renderBackend;
+        m_renderBackend.reset();
+
+        LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy system compositor");
+        m_systemCompositorController.reset();
+
         LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: done.");
     }
 
-    IResourceUploadRenderBackend* Platform_Base::createResourceUploadRenderBackend(const IRenderBackend& mainRenderBackend)
+    IResourceUploadRenderBackend* Platform_Base::createResourceUploadRenderBackend()
     {
-        IWindow& window = mainRenderBackend.getSurface().getWindow();
-        IContext& mainContext = mainRenderBackend.getSurface().getContext();
-        DisplayConfig dummyDisplayConfig;
-        auto context = createContext(dummyDisplayConfig, window, &mainContext);
-        if(!context)
-            return nullptr;
-
-        context->enable();
-        auto device = createDevice(*context);
-
-        if(!device)
+        assert(!m_contextUploading);
+        if (!createContextUploading())
         {
-            context->disable();
-            destroyContext(*context);
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createResourceUploadRenderBackend: context creation failed");
             return nullptr;
         }
 
-        IResourceUploadRenderBackend* renderBackend = new ResourceUploadRenderBackend(*context, *device);
-        m_resourceUploadRenderBackends.push_back(renderBackend);
+        m_contextUploading->enable();
+        if (!createDeviceUploading())
+        {
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createResourceUploadRenderBackend: device creation failed");
+            m_contextUploading->disable();
+            m_contextUploading.reset();
+            return nullptr;
+        }
 
-        return renderBackend;
+        assert(!m_resourceUploadRenderBackend);
+        m_resourceUploadRenderBackend = std::make_unique<ResourceUploadRenderBackend>(*m_contextUploading, *m_deviceUploading);
+
+        return m_resourceUploadRenderBackend.get();
     }
 
-    void Platform_Base::destroyResourceUploadRenderBackend(IResourceUploadRenderBackend& renderBackend)
+    void Platform_Base::destroyResourceUploadRenderBackend()
     {
-        IContext& context = renderBackend.getContext();
-        IDevice& device = renderBackend.getDevice();
-
-        destroyDevice(device);
-        context.disable();
-        destroyContext(context);
-
-        std::vector<IResourceUploadRenderBackend*>::iterator renderBackendIter = find_c(m_resourceUploadRenderBackends, &renderBackend);
-        assert(m_resourceUploadRenderBackends.end() != renderBackendIter);
-        m_resourceUploadRenderBackends.erase(renderBackendIter);
-        delete &renderBackend;
+        assert(m_resourceUploadRenderBackend);
+        m_deviceUploading.reset();
+        m_contextUploading->disable();
+        m_contextUploading.reset();
+        m_resourceUploadRenderBackend.reset();
     }
 
-    ISystemCompositorController* Platform_Base::getSystemCompositorController() const
+    ISystemCompositorController* Platform_Base::getSystemCompositorController()
     {
-        return m_systemCompositorController;
+        return m_systemCompositorController.get();
     }
 
     const IWindowEventsPollingManager* Platform_Base::getWindowEventsPollingManager() const
@@ -200,104 +159,28 @@ namespace ramses_internal
         return nullptr;
     }
 
-    ITextureUploadingAdapter* Platform_Base::createTextureUploadingAdapter(IDevice& device, IEmbeddedCompositor& /*embeddedCompositor*/, IWindow& /*window*/)
+    void Platform_Base::createTextureUploadingAdapter()
     {
-        ITextureUploadingAdapter* textureUploadingAdapter = new TextureUploadingAdapter_Base(device);
-        return addTextureUploadingAdapter(textureUploadingAdapter);
+        assert(!m_textureUploadingAdapter);
+        m_textureUploadingAdapter = std::make_unique<TextureUploadingAdapter_Base>(*m_device);
     }
 
-    ISurface* Platform_Base::createSurface(IWindow& window, IContext& context)
+    bool Platform_Base::createEmbeddedCompositor(const DisplayConfig&)
     {
-        Surface* platformSurface = new Surface(window, context);
-        return addPlatformSurface(platformSurface);
+        auto embeddedCompositor = std::make_unique<EmbeddedCompositor_Dummy>();
+        if (embeddedCompositor->init())
+            m_embeddedCompositor = std::move(embeddedCompositor);
+
+        return m_embeddedCompositor != nullptr;
     }
 
-    Bool ramses_internal::Platform_Base::destroyWindow(IWindow& window)
+    bool Platform_Base::createSystemCompositorController()
     {
-        std::vector<IWindow*>::iterator iter = find_c(m_windows, &window);
-        if (m_windows.end() != iter)
-        {
-            IWindow* windowToDelete = *iter;
-            m_windows.erase(iter);
-            delete windowToDelete;
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
-    Bool Platform_Base::destroyContext(IContext& context)
+    void Platform_Base::destroyWindow()
     {
-        std::vector<IContext*>::iterator iter = find_c(m_contexts, &context);
-        if (m_contexts.end() != iter)
-        {
-            IContext* contextToDelete = *iter;
-            m_contexts.erase(iter);
-            delete contextToDelete;
-            return true;
-        }
-
-        return false;
-    }
-
-    Bool Platform_Base::destroyDevice(IDevice& device)
-    {
-        std::vector<IDevice*>::iterator iter = find_c(m_devices, &device);
-        if (m_devices.end() != iter)
-        {
-            IDevice* deviceToDelete = *iter;
-            m_devices.erase(iter);
-            delete deviceToDelete;
-            return true;
-        }
-
-        return false;
-    }
-
-    Bool Platform_Base::destroySurface(ISurface& surface)
-    {
-        std::vector<ISurface*>::iterator iter = find_c(m_surfaces, &surface);
-        if (m_surfaces.end() != iter)
-        {
-            ISurface* surfaceToDelete = *iter;
-            m_surfaces.erase(iter);
-            delete surfaceToDelete;
-            return true;
-        }
-
-        return false;
-    }
-
-    void Platform_Base::destroySystemCompositorController()
-    {
-        delete m_systemCompositorController;
-        m_systemCompositorController = nullptr;
-    }
-
-    Bool Platform_Base::destroyEmbeddedCompositor(IEmbeddedCompositor& compositor)
-    {
-        std::vector<IEmbeddedCompositor*>::iterator iter = find_c(m_embeddedCompositors, &compositor);
-        if (m_embeddedCompositors.end() != iter)
-        {
-            IEmbeddedCompositor* compositorToDelete = *iter;
-            m_embeddedCompositors.erase(iter);
-            delete compositorToDelete;
-            return true;
-        }
-
-        return false;
-    }
-
-    Bool Platform_Base::destroyTextureUploadingAdapter(ITextureUploadingAdapter& textureUploadingAdapter)
-    {
-        auto iter = find_c(m_textureUploadingAdapters, &textureUploadingAdapter);
-        if (m_textureUploadingAdapters.end() != iter)
-        {
-            delete *iter;
-            m_textureUploadingAdapters.erase(iter);
-            return true;
-        }
-
-        return false;
+        m_window.reset();
     }
 }

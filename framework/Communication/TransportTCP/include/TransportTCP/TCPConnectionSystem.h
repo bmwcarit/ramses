@@ -69,6 +69,7 @@ namespace ramses_internal
         // dcsm renderer -> client
         virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& sizeinfo, AnimationInformation ai) override;
         virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo& si, AnimationInformation ai) override;
+        virtual bool sendDcsmContentStatus(const Guid& to, ContentID contentID, uint64_t messageID, std::vector<Byte> const& message) override;
 
         // set service handlers
         void setSceneProviderServiceHandler(ISceneProviderServiceHandler* handler) override;
@@ -193,7 +194,8 @@ namespace ramses_internal
         void handleRendererEvent(const ParticipantPtr& pp, BinaryInputStream& stream);
 
         void handleDcsmCanvasSizeChange(const ParticipantPtr& pp, BinaryInputStream& stream);
-        void handleDcsmContentStatusChange(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmContentStateChange(const ParticipantPtr& pp, BinaryInputStream& stream);
+        void handleDcsmContentStatus(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmRegisterContent(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmContentDescription(const ParticipantPtr& pp, BinaryInputStream& stream);
         void handleDcsmContentAvailable(const ParticipantPtr& pp, BinaryInputStream& stream);

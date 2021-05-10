@@ -10,7 +10,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 SET(RAMSES_VERSION_MAJOR 27)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 102)
+SET(RAMSES_VERSION_PATCH 103)
 SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
@@ -77,7 +77,7 @@ SET(ramses-sdk_CONSOLE_LOGLEVEL "" CACHE STRING "Console log level.")
 SET_PROPERTY(CACHE ramses-sdk_CONSOLE_LOGLEVEL PROPERTY STRINGS "off" "fatal" "error" "warn" "info" "debug" "trace" "")
 
 SET(ramses-sdk_ENABLE_SANITIZER "" CACHE STRING "Enable build with a clang sanitizer.")
-SET_PROPERTY(CACHE ramses-sdk_ENABLE_SANITIZER PROPERTY STRINGS "" "ubsan" "tsan" "asan")
+SET_PROPERTY(CACHE ramses-sdk_ENABLE_SANITIZER PROPERTY STRINGS "" "ubsan" "tsan" "asan" "asan+ubsan")
 
 SET(RAMSES_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}${RAMSES_VERSION_POSTFIX}")
 set(ramses-sdk_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}" CACHE STRING "Ramses version" FORCE)
@@ -175,10 +175,8 @@ ACME2_PROJECT(
                                 AUTO renderer/Platform/Window_Wayland_IVI
                                 AUTO renderer/Platform/Window_Wayland_Shell
 
-                                # Surface Components
-                                AUTO renderer/Platform/Surface_Windows_WGL
-
                                 # Platforms
+                                AUTO renderer/Platform/Platform_Windows_WGL
                                 AUTO renderer/Platform/Platform_Windows_WGL_4_2_core
                                 AUTO renderer/Platform/Platform_Windows_WGL_4_5
                                 AUTO renderer/Platform/Platform_Windows_WGL_ES_3_0

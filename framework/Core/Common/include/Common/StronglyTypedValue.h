@@ -18,11 +18,11 @@
 
 namespace ramses_internal
 {
-    template <typename _baseType, _baseType _invalid, typename _uniqueId>
+    template <typename BaseT, BaseT _invalid, typename UniqueIdT>
     class StronglyTypedValue final
     {
     public:
-        using BaseType = _baseType;
+        using BaseType = BaseT;
 
         static constexpr StronglyTypedValue Invalid() noexcept
         {
@@ -87,13 +87,13 @@ namespace ramses_internal
 
 namespace std
 {
-    template <typename _BaseType, _BaseType _DefaultValue, typename _UniqueId>
-    struct hash<ramses_internal::StronglyTypedValue<_BaseType, _DefaultValue, _UniqueId>>
+    template <typename BaseT, BaseT DefaultValue, typename UniqueIdT>
+    struct hash<ramses_internal::StronglyTypedValue<BaseT, DefaultValue, UniqueIdT>>
     {
     public:
-        size_t operator()(const ramses_internal::StronglyTypedValue<_BaseType, _DefaultValue, _UniqueId>& v) const
+        size_t operator()(const ramses_internal::StronglyTypedValue<BaseT, DefaultValue, UniqueIdT>& v) const
         {
-            return static_cast<size_t>(hash<_BaseType>()(v.getValue()));
+            return static_cast<size_t>(hash<BaseT>()(v.getValue()));
         }
     };
 }

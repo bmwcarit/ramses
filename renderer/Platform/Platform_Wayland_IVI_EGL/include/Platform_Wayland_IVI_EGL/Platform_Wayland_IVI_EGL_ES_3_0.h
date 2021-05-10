@@ -13,15 +13,15 @@
 
 namespace ramses_internal
 {
-    class Platform_Wayland_IVI_EGL_ES_3_0 : public Platform_Wayland_EGL
+    class Platform_Wayland_IVI_EGL_ES_3_0 final : public Platform_Wayland_EGL
     {
     public:
         explicit Platform_Wayland_IVI_EGL_ES_3_0(const RendererConfig& rendererConfig);
 
     protected:
-        ISystemCompositorController* createSystemCompositorController() override final;
-        IWindow*                     createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override final;
-        Bool                         destroyWindow(IWindow& window) override final;
+        bool createSystemCompositorController() override;
+        bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
+        void destroyWindow() override;
     };
 }
 

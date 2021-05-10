@@ -1574,7 +1574,7 @@ namespace ramses
 
     TEST_F(ASceneAndAnimationSystemLoadedFromFile, canReadWriteSceneReferences)
     {
-        constexpr ramses::sceneId_t referencedSceneId(123);
+        constexpr ramses::sceneId_t referencedSceneId(444);
         auto sr1 = this->m_scene.createSceneReference(referencedSceneId, "scene ref");
         sr1->requestState(RendererSceneState::Ready);
 

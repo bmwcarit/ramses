@@ -284,6 +284,9 @@ namespace ramses_internal
         EXPECT_CALL(*dcsmStack, sendUpdateContentMetadata(DcsmInstanceId(1), _, ContentID(56), metadata.toBinary())).WillOnce(Return(true));
         EXPECT_TRUE(csm->sendDcsmUpdateContentMetadata(Guid(1), ContentID(56), metadata));
 
+        std::vector<Byte> message{ 1, 2, 3, 4 };
+        EXPECT_CALL(*dcsmStack, sendContentStatus(DcsmInstanceId(1), _, ContentID(2), 23u, message)).WillOnce(Return(true));
+        EXPECT_TRUE(csm->sendDcsmContentStatus(Guid(1), ContentID(2), 23u, message));
 
         // dcsm messages from stack must be passed to handler
         EXPECT_CALL(csm->consumer, handleForceStopOfferContent(ContentID(123), Guid(1)));
@@ -371,6 +374,7 @@ namespace ramses_internal
         EXPECT_FALSE(csm->sendDcsmBroadcastRequestStopOfferContent(ContentID(9)));
         EXPECT_FALSE(csm->sendDcsmBroadcastForceStopOfferContent(ContentID(9)));
         EXPECT_FALSE(csm->sendDcsmUpdateContentMetadata(Guid(1), ContentID(56), metadata));
+        EXPECT_FALSE(csm->sendDcsmContentStatus(Guid(1), ContentID(56), 23u, std::vector<Byte>(2)));
 
 
         // disconnect

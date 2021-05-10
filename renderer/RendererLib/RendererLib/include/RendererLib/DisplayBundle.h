@@ -42,8 +42,8 @@ namespace ramses_internal
         virtual void dispatchSceneControlEvents(RendererEventVector& events) = 0;
         virtual SceneId findMasterSceneForReferencedScene(SceneId refScene) const = 0;
         virtual void enableContext() = 0;
-        virtual IEmbeddedCompositingManager& getECManager(DisplayHandle display) = 0;
-        virtual IEmbeddedCompositor& getEC(DisplayHandle display) = 0;
+        virtual IEmbeddedCompositingManager& getECManager() = 0;
+        virtual IEmbeddedCompositor& getEC() = 0;
         virtual bool hasSystemCompositorController() const = 0;
 
         virtual ~IDisplayBundle() = default;
@@ -52,7 +52,13 @@ namespace ramses_internal
     class DisplayBundle final : public IDisplayBundle
     {
     public:
-        DisplayBundle(IRendererSceneEventSender& rendererSceneSender, IPlatform& platform, IThreadAliveNotifier& notifier, std::chrono::milliseconds timingReportingPeriod, const String& kpiFilename = {});
+        DisplayBundle(
+            DisplayHandle display,
+            IRendererSceneEventSender& rendererSceneSender,
+            IPlatform& platform,
+            IThreadAliveNotifier& notifier,
+            std::chrono::milliseconds timingReportingPeriod,
+            const String& kpiFilename = {});
 
         virtual void doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime) override;
 
@@ -64,8 +70,8 @@ namespace ramses_internal
         virtual void enableContext() override;
 
         // needed for EC tests...
-        virtual IEmbeddedCompositingManager& getECManager(DisplayHandle display) override;
-        virtual IEmbeddedCompositor& getEC(DisplayHandle display) override;
+        virtual IEmbeddedCompositingManager& getECManager() override;
+        virtual IEmbeddedCompositor& getEC() override;
 
         // needed for Renderer lifecycle tests...
         virtual bool hasSystemCompositorController() const override;
@@ -79,6 +85,7 @@ namespace ramses_internal
         void updateSceneControlLogic();
         void updateTiming();
 
+        DisplayHandle             m_display;
         FrameTimer                m_frameTimer;
         RendererEventCollector    m_rendererEventCollector;
         RendererScenes            m_rendererScenes;

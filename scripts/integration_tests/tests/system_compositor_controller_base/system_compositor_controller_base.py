@@ -44,7 +44,8 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         self.expectedSurfaceIds = set(self.target.ivi_control.getSurfaceIds())
 
         # Start black background renderer
-        self.rendererbackground = self.target.start_default_renderer("--waylandIviSurfaceID {}".format(self.testSurfaceIVIIds["rendererbackground"]))
+        self.rendererbackground = self.target.start_default_renderer("--waylandIviSurfaceID {}".format(self.testSurfaceIVIIds["rendererbackground"]),
+                                                                     nameExtension="bg")
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)
         self.expectedSurfaceIds.add("{0}".format(self.testSurfaceIVIIds["rendererbackground"]))
@@ -113,6 +114,10 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
 
         # wait until all started applications have been registered in scc
         self.assertTrue(self.wait_on_surfaces_beeing_registered_in_scc())
+        self.target.ivi_control.setLayerVisibility(self.testLayer, visible=False)
+        self.target.ivi_control.flush()
+        self.target.ivi_control.setLayerVisibility(self.testLayer, visible=True)
+        self.target.ivi_control.flush()
 
     def impl_tearDown(self):
         self.target.ivi_control.cleanup()
@@ -129,6 +134,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         log.info("all applications killed")
         self.save_application_output(self.testClient)
         self.save_application_output(self.renderer)
+        self.save_application_output(self.rendererbackground)
         self.save_application_output(self.ramsesDaemon)
         log.info("output saved")
 

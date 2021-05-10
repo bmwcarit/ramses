@@ -20,7 +20,7 @@ namespace ramses_internal
     {
     public:
         ADisplayDispatcher()
-            : m_displayDispatcher(RendererConfig{}, m_commandBuffer, m_sceneEventSender, m_notifier, false)
+            : m_displayDispatcher(RendererConfig{}, m_sceneEventSender, m_notifier, false)
         {
             m_displayDispatcher.setLoopMode(ELoopMode::UpdateOnly);
             m_displayDispatcher.m_expectedLoopModeForNewDisplays = ELoopMode::UpdateOnly;
@@ -28,7 +28,7 @@ namespace ramses_internal
 
         void update()
         {
-            m_displayDispatcher.dispatchCommands();
+            m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
             for (const auto d : m_displayDispatcher.getDisplays())
             {
@@ -565,7 +565,7 @@ namespace ramses_internal
         createDisplay(display1);
         m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
         expectCommandPushed(display1, RendererCommand::ScenePublished{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Available);
         dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
@@ -600,7 +600,7 @@ namespace ramses_internal
         m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
         m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene1, display2 });
         expectCommandPushed(display1, RendererCommand::ScenePublished{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Available);
         dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
@@ -612,7 +612,7 @@ namespace ramses_internal
         // change 'ownership' of scene right before 2nd display creation
         m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene1, display1 });
         expectCommandPushed(display1, RendererCommand::SetSceneMapping{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
         createDisplay(display2);
 
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_)); // nothing from display1
@@ -640,7 +640,7 @@ namespace ramses_internal
         createDisplay(display1);
         m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
         expectCommandPushed(display1, RendererCommand::ScenePublished{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Available);
         dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
@@ -653,7 +653,7 @@ namespace ramses_internal
         // change 'ownership' of scene after 2nd display creation
         m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene1, display1 });
         expectCommandPushed(display1, RendererCommand::SetSceneMapping{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchSceneControlEvents(_)); // nothing from display1
         simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Available);
@@ -680,10 +680,10 @@ namespace ramses_internal
         createDisplay(display1);
         m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
         expectCommandPushed(display1, RendererCommand::ScenePublished{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
         m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene1, display1 });
         expectCommandPushed(display1, RendererCommand::SetSceneMapping{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Available);
         dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
@@ -699,7 +699,7 @@ namespace ramses_internal
         createDisplay(display2);
         m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
         expectCommandPushed(display2, RendererCommand::ScenePublished{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Available);
         dispatchAndExpectSceneControlEvents({ ERendererEventType::SceneStateChanged });
@@ -723,12 +723,12 @@ namespace ramses_internal
 
         m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene1, display2 });
         expectCommandPushed(display2, RendererCommand::SetSceneMapping{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
         expectCommandPushed(display1, RendererCommand::ScenePublished{});
         expectCommandPushed(display2, RendererCommand::ScenePublished{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Available);
         simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Available);
@@ -758,12 +758,12 @@ namespace ramses_internal
         m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene1, {} });
         expectCommandPushed(display1, RendererCommand::ScenePublished{});
         expectCommandPushed(display2, RendererCommand::ScenePublished{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         m_commandBuffer.enqueueCommand(RendererCommand::ScenePublished{ scene2, {} });
         expectCommandPushed(display1, RendererCommand::ScenePublished{});
         expectCommandPushed(display2, RendererCommand::ScenePublished{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Available);
         simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Available);
@@ -775,11 +775,11 @@ namespace ramses_internal
         // ready
         m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene1, display1 });
         expectCommandPushed(display1, RendererCommand::SetSceneMapping{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         m_commandBuffer.enqueueCommand(RendererCommand::SetSceneMapping{ scene2, display2 });
         expectCommandPushed(display2, RendererCommand::SetSceneMapping{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Ready);
         simulateSceneStateEventFromDisplay(display2, scene2, RendererSceneState::Ready);
@@ -794,12 +794,12 @@ namespace ramses_internal
         m_commandBuffer.enqueueCommand(RendererCommand::SceneUnpublished{ scene1 });
         expectCommandPushed(display1, RendererCommand::SceneUnpublished{});
         expectCommandPushed(display2, RendererCommand::SceneUnpublished{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         m_commandBuffer.enqueueCommand(RendererCommand::SceneUnpublished{ scene2 });
         expectCommandPushed(display1, RendererCommand::SceneUnpublished{});
         expectCommandPushed(display2, RendererCommand::SceneUnpublished{});
-        m_displayDispatcher.dispatchCommands();
+        m_displayDispatcher.dispatchCommands(m_commandBuffer);
 
         simulateSceneStateEventFromDisplay(display1, scene1, RendererSceneState::Unavailable);
         simulateSceneStateEventFromDisplay(display2, scene1, RendererSceneState::Unavailable);

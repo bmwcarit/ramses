@@ -55,7 +55,7 @@ namespace ramses_internal
         MOCK_METHOD(bool, sendDcsmUpdateContentMetadata, (const Guid& to, ContentID contentID, const DcsmMetadata& metadata), (override));
         MOCK_METHOD(bool, sendDcsmCanvasSizeChange, (const Guid& to, ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation), (override));
         MOCK_METHOD(bool, sendDcsmContentStateChange, (const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo&, AnimationInformation), (override));
-
+        MOCK_METHOD(bool, sendDcsmContentStatus, (const Guid& to, ContentID contentID, uint64_t messageID, std::vector<Byte> const& message), (override));
         MOCK_METHOD(void, logConnectionInfo, (), (override));
         MOCK_METHOD(void, triggerLogMessageForPeriodicLog, (), (override));
 

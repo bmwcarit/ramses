@@ -24,8 +24,8 @@ namespace ramses_internal
         explicit Platform_Wayland_EGL(const RendererConfig& rendererConfig);
         virtual ~Platform_Wayland_EGL() override;
 
-        IEmbeddedCompositor*         createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) override final;
-        ITextureUploadingAdapter*    createTextureUploadingAdapter(IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window) override final;
+        virtual bool createEmbeddedCompositor(const DisplayConfig& displayConfig) override final;
+        virtual void createTextureUploadingAdapter() override final;
 
         virtual uint32_t getSwapInterval() const override final;
 

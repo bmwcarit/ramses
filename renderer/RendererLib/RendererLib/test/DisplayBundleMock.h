@@ -28,8 +28,8 @@ namespace ramses_internal
         MOCK_METHOD(void, dispatchSceneControlEvents, (RendererEventVector& events), (override));
         MOCK_METHOD(SceneId, findMasterSceneForReferencedScene, (SceneId refScene), (const, override));
         MOCK_METHOD(void, enableContext, (), (override));
-        MOCK_METHOD(IEmbeddedCompositingManager&, getECManager, (DisplayHandle display), (override));
-        MOCK_METHOD(IEmbeddedCompositor&, getEC, (DisplayHandle display), (override));
+        MOCK_METHOD(IEmbeddedCompositingManager&, getECManager, (), (override));
+        MOCK_METHOD(IEmbeddedCompositor&, getEC, (), (override));
         MOCK_METHOD(bool, hasSystemCompositorController, (), (const, override));
     };
 }

@@ -31,6 +31,12 @@ namespace ramses
         *          number of state transitions needed between the previous state and target state
         *          when calling #ramses::RendererSceneControl::setSceneState.
         *
+        * Limitation: This callback will not be executed if there is no display created and running.
+        *             All published scenes (Available state) will be announced only after a display
+        *             is created and running.
+        *             Also all published scenes will be announced again if display is destroyed
+        *             and created again and it is the only display on renderer.
+        *
         * @param sceneId The ID of scene with changed state
         * @param state New state of the scene
         */

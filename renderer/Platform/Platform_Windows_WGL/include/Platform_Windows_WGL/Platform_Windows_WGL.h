@@ -17,11 +17,11 @@ namespace ramses_internal
     class Platform_Windows_WGL : public Platform_Base
     {
     protected:
-        Platform_Windows_WGL(const RendererConfig& rendererConfig);
-        ISystemCompositorController* createSystemCompositorController() override final;
-        IWindow*    createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
-        IContext*   createContext(const DisplayConfig& displayConfig, IWindow& window, IContext* sharedContext) override;
-        IEmbeddedCompositor*    createEmbeddedCompositor(const DisplayConfig& displayConfig, IContext& context) override;
+        explicit Platform_Windows_WGL(const RendererConfig& rendererConfig);
+
+        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
+        virtual bool createContext(const DisplayConfig& displayConfig) override;
+        virtual bool createContextUploading() override;
 
         WglExtensions m_wglExtensions;
 

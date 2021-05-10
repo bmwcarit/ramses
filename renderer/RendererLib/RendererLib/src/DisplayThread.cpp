@@ -15,7 +15,7 @@ namespace ramses_internal
     DisplayThread::DisplayThread(DisplayBundleShared displayBundle, DisplayHandle displayHandle, IThreadAliveNotifier& notifier)
         : m_displayHandle{ displayHandle }
         , m_display{ std::move(displayBundle) }
-        , m_thread{ String{ fmt::format("R_DisplayThrd{}", displayHandle) } }
+        , m_thread{ String{ fmt::format("R_DispThrd{}", displayHandle) } }
         , m_notifier{ notifier }
         , m_aliveIdentifier{ notifier.registerThread() }
     {
@@ -25,23 +25,28 @@ namespace ramses_internal
     {
         if (m_thread.isRunning())
         {
+            LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread stopping", m_displayHandle);
             {
                 std::lock_guard<std::mutex> lock{ m_lock };
                 m_thread.cancel();
                 m_sleepConditionVar.notify_one();
             }
             m_thread.join();
+            LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread stopped", m_displayHandle);
         }
         m_notifier.unregisterThread(m_aliveIdentifier);
     }
 
     void DisplayThread::startUpdating()
     {
-        LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread starting", m_displayHandle);
-
         if (!m_thread.isRunning())
+        {
+            LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread starting", m_displayHandle);
             m_thread.start(*this);
+            LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread started", m_displayHandle);
+        }
 
+        LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread start update", m_displayHandle);
         std::lock_guard<std::mutex> lock{ m_lock };
         m_isUpdating = true;
         m_sleepConditionVar.notify_one();
@@ -49,7 +54,7 @@ namespace ramses_internal
 
     void DisplayThread::stopUpdating()
     {
-        LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread stopping", m_displayHandle);
+        LOG_INFO_P(CONTEXT_RENDERER, "{}: DisplayThread stop update", m_displayHandle);
         std::lock_guard<std::mutex> lock{ m_lock };
         m_isUpdating = false;
     }

@@ -11,8 +11,7 @@
 
 namespace ramses_internal {
 
-const DisplayHandle ARendererSceneUpdater::DisplayHandle1(0u);
-const DisplayHandle ARendererSceneUpdater::DisplayHandle2(1u);
+constexpr DisplayHandle ARendererSceneUpdater::Display;
 
 ///////////////////////////
 // General tests
@@ -175,15 +174,16 @@ TEST_F(ARendererSceneUpdater, canCreateAndDestroyDisplayContext)
 
 TEST_F(ARendererSceneUpdater, createDisplayFailsIfCreationOfResourceUploadRenderBackendFails)
 {
-    EXPECT_CALL(platformFactoryMock, createResourceUploadRenderBackend(_)).WillOnce(Return(nullptr));
-    rendererSceneUpdater->createDisplayContext({}, DisplayHandle1, nullptr);
-    EXPECT_FALSE(renderer.hasDisplayController(DisplayHandle1));
+    EXPECT_CALL(renderer.m_platform, createResourceUploadRenderBackend()).WillOnce(Return(nullptr));
+    EXPECT_CALL(renderer.m_platform, destroyRenderBackend());
+    rendererSceneUpdater->createDisplayContext({}, nullptr);
+    EXPECT_FALSE(renderer.hasDisplayController());
     expectEvent(ERendererEventType::DisplayCreateFailed);
 }
 
 TEST_F(ARendererSceneUpdater, canNotDestroyNonExistantDisplay)
 {
-    destroyDisplay(DisplayHandle1, true);
+    destroyDisplay(true);
 }
 
 TEST_F(ARendererSceneUpdater, canNotDestroyDisplayIfItHasMapRequestedScenes)
@@ -192,12 +192,12 @@ TEST_F(ARendererSceneUpdater, canNotDestroyDisplayIfItHasMapRequestedScenes)
     createPublishAndSubscribeScene();
     requestMapScene();
 
-    destroyDisplay(DisplayHandle1, true);
+    destroyDisplay(true);
 
     unpublishMapRequestedScene();
     destroyDisplay();
 
-    EXPECT_FALSE(renderer.hasDisplayController(DisplayHandle1));
+    EXPECT_FALSE(renderer.hasDisplayController());
 }
 
 TEST_F(ARendererSceneUpdater, canNotDestroyDisplayIfItHasMappedScenes)
@@ -206,12 +206,12 @@ TEST_F(ARendererSceneUpdater, canNotDestroyDisplayIfItHasMappedScenes)
     createPublishAndSubscribeScene();
     mapScene();
 
-    destroyDisplay(DisplayHandle1, true);
+    destroyDisplay(true);
 
     unmapScene();
     destroyDisplay();
 
-    EXPECT_FALSE(renderer.hasDisplayController(DisplayHandle1));
+    EXPECT_FALSE(renderer.hasDisplayController());
 }
 
 TEST_F(ARendererSceneUpdater, canNotDestroyDisplayIfItHasRenderedScenes)
@@ -221,14 +221,14 @@ TEST_F(ARendererSceneUpdater, canNotDestroyDisplayIfItHasRenderedScenes)
     mapScene();
     showScene();
 
-    destroyDisplay(DisplayHandle1, true);
-    EXPECT_TRUE(renderer.hasDisplayController(DisplayHandle1));
+    destroyDisplay(true);
+    EXPECT_TRUE(renderer.hasDisplayController());
 
     hideScene();
     unmapScene();
     destroyDisplay();
 
-    EXPECT_FALSE(renderer.hasDisplayController(DisplayHandle1));
+    EXPECT_FALSE(renderer.hasDisplayController());
 }
 
 TEST_F(ARendererSceneUpdater, canDestroyDisplayIfMappedSceneGetsUnmapped)
@@ -255,11 +255,11 @@ TEST_F(ARendererSceneUpdater, destroyingSceneUpdaterUnmapsAnyMappedSceneFromRend
     createPublishAndSubscribeScene();
     mapScene();
 
-    EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
+    EXPECT_CALL(renderer.m_platform, destroyResourceUploadRenderBackend());
     expectUnloadOfSceneResources();
     destroySceneUpdater();
 
-    EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(getSceneId()).isValid());
+    EXPECT_FALSE(renderer.getBufferSceneIsAssignedTo(getSceneId()).isValid());
 }
 
 TEST_F(ARendererSceneUpdater, destroyingSceneUpdaterDestroysAllDisplayContexts)
@@ -268,11 +268,11 @@ TEST_F(ARendererSceneUpdater, destroyingSceneUpdaterDestroysAllDisplayContexts)
     createPublishAndSubscribeScene();
     mapScene();
 
-    EXPECT_CALL(platformFactoryMock, destroyResourceUploadRenderBackend(_));
+    EXPECT_CALL(renderer.m_platform, destroyResourceUploadRenderBackend());
     expectUnloadOfSceneResources();
     destroySceneUpdater();
 
-    EXPECT_FALSE(renderer.hasDisplayController(DisplayHandle1));
+    EXPECT_FALSE(renderer.hasDisplayController());
 }
 
 TEST_F(ARendererSceneUpdater, updateScenesWillUpdateRealTimeAnimationSystems)
@@ -460,8 +460,8 @@ TEST_F(ARendererSceneUpdater, canCreateOffscreenBuffer_WithColorBufferOnly)
     createDisplayAndExpectSuccess();
 
     const OffscreenBufferHandle buffer(1u);
-    expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, false, ERenderBufferType_InvalidBuffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 4u, false, ERenderBufferType_InvalidBuffer));
+    expectOffscreenBufferUploaded(buffer, DeviceMock::FakeRenderTargetDeviceHandle, false, ERenderBufferType_InvalidBuffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 4u, false, ERenderBufferType_InvalidBuffer));
 
     destroyDisplay();
 }
@@ -472,7 +472,7 @@ TEST_F(ARendererSceneUpdater, canCreateOffscreenBuffer_WithDepthStencilBuffers)
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 4u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 4u, false, ERenderBufferType_DepthStencilBuffer));
 
     destroyDisplay();
 }
@@ -482,8 +482,8 @@ TEST_F(ARendererSceneUpdater, canCreateDoubleBufferedOffscreenBuffer_WithColorBu
     createDisplayAndExpectSuccess();
 
     const OffscreenBufferHandle buffer(1u);
-    expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, true, ERenderBufferType_InvalidBuffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, true, ERenderBufferType_InvalidBuffer));
+    expectOffscreenBufferUploaded(buffer, DeviceMock::FakeRenderTargetDeviceHandle, true, ERenderBufferType_InvalidBuffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, true, ERenderBufferType_InvalidBuffer));
 
     destroyDisplay();
 }
@@ -493,8 +493,8 @@ TEST_F(ARendererSceneUpdater, canCreateDoubleBufferedOffscreenBuffer_WithDepthSt
     createDisplayAndExpectSuccess();
 
     const OffscreenBufferHandle buffer(1u);
-    expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, true, ERenderBufferType_DepthStencilBuffer));
+    expectOffscreenBufferUploaded(buffer, DeviceMock::FakeRenderTargetDeviceHandle, true);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, true, ERenderBufferType_DepthStencilBuffer));
 
     destroyDisplay();
 }
@@ -502,7 +502,7 @@ TEST_F(ARendererSceneUpdater, canCreateDoubleBufferedOffscreenBuffer_WithDepthSt
 TEST_F(ARendererSceneUpdater, failsToCreateOffscreenBufferOnUnknownDisplay)
 {
     const OffscreenBufferHandle buffer(1u);
-    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 }
 
 TEST_F(ARendererSceneUpdater, failsToCreateOffscreenBufferWithSameID)
@@ -511,9 +511,9 @@ TEST_F(ARendererSceneUpdater, failsToCreateOffscreenBufferWithSameID)
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
-    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     destroyDisplay();
 }
@@ -524,10 +524,10 @@ TEST_F(ARendererSceneUpdater, canDestroyOffscreenBuffer)
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -537,11 +537,11 @@ TEST_F(ARendererSceneUpdater, canDestroyDoubleBufferedOffscreenBuffer)
     createDisplayAndExpectSuccess();
 
     const OffscreenBufferHandle buffer(1u);
-    expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, true);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, true, ERenderBufferType_DepthStencilBuffer));
+    expectOffscreenBufferUploaded(buffer, DeviceMock::FakeRenderTargetDeviceHandle, true);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, true, ERenderBufferType_DepthStencilBuffer));
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -549,7 +549,7 @@ TEST_F(ARendererSceneUpdater, canDestroyDoubleBufferedOffscreenBuffer)
 TEST_F(ARendererSceneUpdater, failsToDestroyOffscreenBufferOnUnknownDisplay)
 {
     const OffscreenBufferHandle buffer(1u);
-    EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 }
 
 TEST_F(ARendererSceneUpdater, failsToDestroyUnknownOffscreenBuffer)
@@ -557,8 +557,8 @@ TEST_F(ARendererSceneUpdater, failsToDestroyUnknownOffscreenBuffer)
     createDisplayAndExpectSuccess();
 
     const OffscreenBufferHandle buffer(1u);
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
-    EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -569,7 +569,7 @@ TEST_F(ARendererSceneUpdater, canAssignSceneToOffscreenBuffer)
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     createPublishAndSubscribeScene();
     mapScene(0u);
@@ -585,7 +585,7 @@ TEST_F(ARendererSceneUpdater, canAssignSceneToFramebuffer_MultipleTimes)
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     createPublishAndSubscribeScene();
     mapScene(0u);
@@ -598,24 +598,45 @@ TEST_F(ARendererSceneUpdater, canAssignSceneToFramebuffer_MultipleTimes)
     destroyDisplay();
 }
 
+TEST_F(ARendererSceneUpdater, failsToAssignSceneToDisplayBufferOnInvalidDisplay)
+{
+    createPublishAndSubscribeScene();
+    EXPECT_FALSE(assignSceneToDisplayBuffer(0));
+}
+
+TEST_F(ARendererSceneUpdater, failsToAssignSceneToNonExistingDisplayBuffer)
+{
+    createDisplayAndExpectSuccess();
+
+    const OffscreenBufferHandle buffer(1u);
+
+    createPublishAndSubscribeScene();
+    mapScene(0u);
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_FALSE(assignSceneToDisplayBuffer(0, buffer));
+
+    unmapScene(0u);
+    destroyDisplay();
+}
+
 TEST_F(ARendererSceneUpdater, confidence_failsToDestroyOffscreenBufferIfScenesAreAssignedToIt_DestroysAfterSceneIsAssignedToFramebuffer)
 {
     createDisplayAndExpectSuccess();
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     createPublishAndSubscribeScene();
     mapScene(0u);
     EXPECT_TRUE(assignSceneToDisplayBuffer(0, buffer));
 
-    EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     EXPECT_TRUE(assignSceneToDisplayBuffer(0));
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     unmapScene(0u);
     destroyDisplay();
@@ -627,13 +648,13 @@ TEST_F(ARendererSceneUpdater, setsClearFlagsForOB)
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
-    EXPECT_CALL(renderer, setClearFlags(DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, EClearFlags_Color));
-    rendererSceneUpdater->handleSetClearFlags(DisplayHandle1, buffer, EClearFlags_Color);
+    EXPECT_CALL(renderer, setClearFlags(DeviceMock::FakeRenderTargetDeviceHandle, EClearFlags_Color));
+    rendererSceneUpdater->handleSetClearFlags(buffer, EClearFlags_Color);
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -644,13 +665,13 @@ TEST_F(ARendererSceneUpdater, setsClearFlagsForFBIfNoOBSpecified)
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
-    EXPECT_CALL(renderer, setClearFlags(DisplayHandle1, renderer.getDisplayController(DisplayHandle1).getDisplayBuffer(), EClearFlags_Color));
-    rendererSceneUpdater->handleSetClearFlags(DisplayHandle1, OffscreenBufferHandle::Invalid(), EClearFlags_Color);
+    EXPECT_CALL(renderer, setClearFlags(renderer.getDisplayController().getDisplayBuffer(), EClearFlags_Color));
+    rendererSceneUpdater->handleSetClearFlags(OffscreenBufferHandle::Invalid(), EClearFlags_Color);
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -660,11 +681,17 @@ TEST_F(ARendererSceneUpdater, doesNotSetClearFlagsIfOBSpecifiedButNotFound)
     createDisplayAndExpectSuccess();
 
     constexpr OffscreenBufferHandle invalidOB{ 1234u };
-    EXPECT_CALL(renderer, setClearFlags(_, _, _)).Times(0u);
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getOffscreenBufferDeviceHandle(invalidOB)).WillOnce(Return(DeviceResourceHandle::Invalid()));
-    rendererSceneUpdater->handleSetClearFlags(DisplayHandle1, invalidOB, EClearFlags_Color);
+    EXPECT_CALL(renderer, setClearFlags(_, _)).Times(0u);
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(invalidOB)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    rendererSceneUpdater->handleSetClearFlags(invalidOB, EClearFlags_Color);
 
     destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, doesNotSetClearFlagsIfDisplayInvalid)
+{
+    EXPECT_CALL(renderer, setClearFlags(_, _)).Times(0u);
+    rendererSceneUpdater->handleSetClearFlags({}, EClearFlags_Color);
 }
 
 TEST_F(ARendererSceneUpdater, setsClearColorForOB)
@@ -673,13 +700,13 @@ TEST_F(ARendererSceneUpdater, setsClearColorForOB)
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
-    EXPECT_CALL(renderer, setClearColor(DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, Vector4{ 1, 2, 3, 4 }));
-    rendererSceneUpdater->handleSetClearColor(DisplayHandle1, buffer, { 1, 2, 3, 4 });
+    EXPECT_CALL(renderer, setClearColor(DeviceMock::FakeRenderTargetDeviceHandle, Vector4{ 1, 2, 3, 4 }));
+    rendererSceneUpdater->handleSetClearColor(buffer, { 1, 2, 3, 4 });
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -690,13 +717,13 @@ TEST_F(ARendererSceneUpdater, setsClearColorForFBIfNoOBSpecified)
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
-    EXPECT_CALL(renderer, setClearColor(DisplayHandle1, renderer.getDisplayController(DisplayHandle1).getDisplayBuffer(), Vector4{ 1, 2, 3, 4 }));
-    rendererSceneUpdater->handleSetClearColor(DisplayHandle1, OffscreenBufferHandle::Invalid(), { 1, 2, 3, 4 });
+    EXPECT_CALL(renderer, setClearColor(renderer.getDisplayController().getDisplayBuffer(), Vector4{ 1, 2, 3, 4 }));
+    rendererSceneUpdater->handleSetClearColor(OffscreenBufferHandle::Invalid(), { 1, 2, 3, 4 });
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -706,11 +733,17 @@ TEST_F(ARendererSceneUpdater, doesNotSetClearColorIfOBSpecifiedButNotFound)
     createDisplayAndExpectSuccess();
 
     constexpr OffscreenBufferHandle invalidOB{ 1234u };
-    EXPECT_CALL(renderer, setClearColor(_, _, _)).Times(0u);
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getOffscreenBufferDeviceHandle(invalidOB)).WillOnce(Return(DeviceResourceHandle::Invalid()));
-    rendererSceneUpdater->handleSetClearColor(DisplayHandle1, invalidOB, { 1, 2, 3, 4 });
+    EXPECT_CALL(renderer, setClearColor(_, _)).Times(0u);
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(invalidOB)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    rendererSceneUpdater->handleSetClearColor(invalidOB, { 1, 2, 3, 4 });
 
     destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, doesNotSetClearColorIfDisplayInvalid)
+{
+    EXPECT_CALL(renderer, setClearColor(_, _)).Times(0u);
+    rendererSceneUpdater->handleSetClearColor({}, { 1, 2, 3, 4 });
 }
 
 TEST_F(ARendererSceneUpdater, readPixelsFromDisplayFramebuffer)
@@ -725,11 +758,11 @@ TEST_F(ARendererSceneUpdater, readPixelsFromDisplayFramebuffer)
     const Bool sendViaDLT = false;
     const String& filename = "";
 
-    readPixels(DisplayHandle1, {}, x, y, width, height, fullScreen, sendViaDLT, filename);
-    expectDisplayControllerReadPixels(DisplayHandle1, DisplayControllerMock::FakeFrameBufferHandle, x, y, width, height);
+    readPixels({}, x, y, width, height, fullScreen, sendViaDLT, filename);
+    expectDisplayControllerReadPixels(DisplayControllerMock::FakeFrameBufferHandle, x, y, width, height);
     doRenderLoop();
     rendererSceneUpdater->processScreenshotResults();
-    expectReadPixelsEvents({ {DisplayHandle1, {}, true} });
+    expectReadPixelsEvents({ {OffscreenBufferHandle::Invalid(), true} });
 
     destroyDisplay();
 }
@@ -740,7 +773,7 @@ TEST_F(ARendererSceneUpdater, readPixelsFromOffscreenbuffer)
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 10u, 10u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 10u, 10u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     const UInt32 x = 1u;
     const UInt32 y = 2u;
@@ -750,38 +783,11 @@ TEST_F(ARendererSceneUpdater, readPixelsFromOffscreenbuffer)
     const Bool sendViaDLT = false;
     const String& filename = "";
 
-    readPixels(DisplayHandle1, buffer, x, y, width, height, fullScreen, sendViaDLT, filename);
-    expectDisplayControllerReadPixels(DisplayHandle1, DeviceMock::FakeRenderTargetDeviceHandle, x, y, width, height);
+    readPixels(buffer, x, y, width, height, fullScreen, sendViaDLT, filename);
+    expectDisplayControllerReadPixels(DeviceMock::FakeRenderTargetDeviceHandle, x, y, width, height);
     doRenderLoop();
     rendererSceneUpdater->processScreenshotResults();
-    expectReadPixelsEvents({ {DisplayHandle1, buffer, true} });
-
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfInvalidDisplay)
-{
-    createDisplayAndExpectSuccess();
-
-    const UInt32 x = 1u;
-    const UInt32 y = 2u;
-    const UInt32 width = 3u;
-    const UInt32 height = 4u;
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
-    const String& filename = "";
-
-    const DisplayHandle dummyDisplay(779u);
-    readPixels(dummyDisplay, {}, x, y, width, height, fullScreen, sendViaDLT, filename);
-
-    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
-    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
-    doRenderLoop();
-
-    expectReadPixelsEvents({ {dummyDisplay, {}, false} });
-
-    rendererSceneUpdater->processScreenshotResults();
-    expectNoEvent();
+    expectReadPixelsEvents({ {buffer, true} });
 
     destroyDisplay();
 }
@@ -800,13 +806,12 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfInvalidOffscreenBuff
     const Bool sendViaDLT = false;
     const String& filename = "";
 
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
-    readPixels(DisplayHandle1, buffer, x, y, width, height, fullScreen, sendViaDLT, filename);
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    readPixels(buffer, x, y, width, height, fullScreen, sendViaDLT, filename);
 
-    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
-    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*renderer.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
     doRenderLoop();
-    expectReadPixelsEvents({ {DisplayHandle1, buffer, false} });
+    expectReadPixelsEvents({ {buffer, false} });
 
     rendererSceneUpdater->processScreenshotResults();
     expectNoEvent();
@@ -821,26 +826,25 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfRectangleIsOutOfDisp
     DisplayConfig dispConfig;
     dispConfig.setDesiredWindowWidth(displayWidth);
     dispConfig.setDesiredWindowHeight(displayHeight);
-    createDisplayAndExpectSuccess(DisplayHandle1, dispConfig);
+    createDisplayAndExpectSuccess(dispConfig);
 
     const Bool fullScreen = false;
     const Bool sendViaDLT = false;
     const String& filename = "";
 
 
-    readPixels(DisplayHandle1, {}, displayWidth, 0u, 1u, 1u, fullScreen, sendViaDLT, filename);
-    readPixels(DisplayHandle1, {}, 0u, displayHeight, 1u, 1u, fullScreen, sendViaDLT, filename);
-    readPixels(DisplayHandle1, {}, 0u, 0u, displayWidth + 1u, 1u, fullScreen, sendViaDLT, filename);
-    readPixels(DisplayHandle1, {}, 0u, 0u, 0u, displayHeight + 1u, fullScreen, sendViaDLT, filename);
+    readPixels({}, displayWidth, 0u, 1u, 1u, fullScreen, sendViaDLT, filename);
+    readPixels({}, 0u, displayHeight, 1u, 1u, fullScreen, sendViaDLT, filename);
+    readPixels({}, 0u, 0u, displayWidth + 1u, 1u, fullScreen, sendViaDLT, filename);
+    readPixels({}, 0u, 0u, 0u, displayHeight + 1u, fullScreen, sendViaDLT, filename);
 
-    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
-    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*renderer.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
     doRenderLoop();
 
-    expectReadPixelsEvents({ {DisplayHandle1, {}, false },
-                            {DisplayHandle1, {}, false },
-                            {DisplayHandle1, {}, false },
-                            {DisplayHandle1, {}, false } });
+    expectReadPixelsEvents({ { OffscreenBufferHandle::Invalid(), false },
+                            { OffscreenBufferHandle::Invalid(), false },
+                            { OffscreenBufferHandle::Invalid(), false },
+                            { OffscreenBufferHandle::Invalid(), false } });
 
     rendererSceneUpdater->processScreenshotResults();
     expectNoEvent();
@@ -854,26 +858,25 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfRectangleIsOutOfOffs
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 10u, 10u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 10u, 10u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     const Bool fullScreen = false;
     const Bool sendViaDLT = false;
     const String& filename = "";
 
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getOffscreenBufferDeviceHandle(buffer)).Times(4).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
-    readPixels(DisplayHandle1, buffer, 10, 0u, 1u, 1u, fullScreen, sendViaDLT, filename);
-    readPixels(DisplayHandle1, buffer, 0u, 10, 1u, 1u, fullScreen, sendViaDLT, filename);
-    readPixels(DisplayHandle1, buffer, 0u, 0u, 11u, 1u, fullScreen, sendViaDLT, filename);
-    readPixels(DisplayHandle1, buffer, 0u, 0u, 0u, 11u, fullScreen, sendViaDLT, filename);
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(buffer)).Times(4).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
+    readPixels(buffer, 10, 0u, 1u, 1u, fullScreen, sendViaDLT, filename);
+    readPixels(buffer, 0u, 10, 1u, 1u, fullScreen, sendViaDLT, filename);
+    readPixels(buffer, 0u, 0u, 11u, 1u, fullScreen, sendViaDLT, filename);
+    readPixels(buffer, 0u, 0u, 0u, 11u, fullScreen, sendViaDLT, filename);
 
-    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
-    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*renderer.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
     doRenderLoop();
 
-    expectReadPixelsEvents({ {DisplayHandle1, buffer, false },
-                            {DisplayHandle1, buffer, false },
-                            {DisplayHandle1, buffer, false },
-                            {DisplayHandle1, buffer, false } });
+    expectReadPixelsEvents({ { buffer, false },
+                            { buffer, false },
+                            { buffer, false },
+                            { buffer, false } });
 
     rendererSceneUpdater->processScreenshotResults();
     expectNoEvent();
@@ -893,8 +896,8 @@ TEST_F(ARendererSceneUpdater, readPixelsFromDisplayAndSaveToFileWithoutGeneratin
     const Bool sendViaDLT = false;
     const String& filename = "testScreenshot";
 
-    readPixels(DisplayHandle1, {}, x, y, width, height, fullScreen, sendViaDLT, filename);
-    expectDisplayControllerReadPixels(DisplayHandle1, DisplayControllerMock::FakeFrameBufferHandle, x, y, width, height);
+    readPixels({}, x, y, width, height, fullScreen, sendViaDLT, filename);
+    expectDisplayControllerReadPixels(DisplayControllerMock::FakeFrameBufferHandle, x, y, width, height);
     doRenderLoop();
     expectNoEvent();
 
@@ -911,7 +914,7 @@ TEST_F(ARendererSceneUpdater, readPixelsFromDisplayFullscreen)
     DisplayConfig dispConfig;
     dispConfig.setDesiredWindowWidth(displayWidth);
     dispConfig.setDesiredWindowHeight(displayHeight);
-    createDisplayAndExpectSuccess(DisplayHandle1, dispConfig);
+    createDisplayAndExpectSuccess(dispConfig);
 
     const UInt32 x = 1u;
     const UInt32 y = 2u;
@@ -921,37 +924,12 @@ TEST_F(ARendererSceneUpdater, readPixelsFromDisplayFullscreen)
     const Bool sendViaDLT = false;
     const String& filename = "";
 
-    readPixels(DisplayHandle1, {}, x, y, width, height, fullScreen, sendViaDLT, filename);
-    expectDisplayControllerReadPixels(DisplayHandle1, DisplayControllerMock::FakeFrameBufferHandle, 0, 0, WindowMock::FakeWidth, WindowMock::FakeHeight);
+    readPixels({}, x, y, width, height, fullScreen, sendViaDLT, filename);
+    expectDisplayControllerReadPixels(DisplayControllerMock::FakeFrameBufferHandle, 0, 0, WindowMock::FakeWidth, WindowMock::FakeHeight);
     doRenderLoop();
 
     rendererSceneUpdater->processScreenshotResults();
-    expectReadPixelsEvents({ {DisplayHandle1, {}, true} });
-
-    destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, doesNotCreateReadPixelsFailedEventIfInvalidDisplayAndSavingToFile)
-{
-    createDisplayAndExpectSuccess();
-
-    const UInt32 x = 1u;
-    const UInt32 y = 2u;
-    const UInt32 width = 3u;
-    const UInt32 height = 4u;
-    const Bool fullScreen = false;
-    const Bool sendViaDLT = false;
-    const String& filename = "testScreenshot";
-
-    const DisplayHandle dummyDisplay(779u);
-    readPixels(dummyDisplay, {}, x, y, width, height, fullScreen, sendViaDLT, filename);
-
-    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle1);
-    EXPECT_CALL(*displayMock.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
-    doRenderLoop();
-
-    rendererSceneUpdater->processScreenshotResults();
-    expectNoEvent();
+    expectReadPixelsEvents({ {OffscreenBufferHandle::Invalid(), true} });
 
     destroyDisplay();
 }
@@ -967,7 +945,7 @@ TEST_F(ARendererSceneUpdater, canCreateStreamBuffer)
     constexpr StreamBufferHandle buffer{ 1u };
     constexpr WaylandIviSurfaceId source{ 2u };
     expectStreamBufferUploaded(buffer, source);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, source));
 
     destroyDisplay();
 }
@@ -976,7 +954,7 @@ TEST_F(ARendererSceneUpdater, failsToCreateStreamBufferOnUnknownDisplay)
 {
     constexpr StreamBufferHandle buffer{ 1u };
     constexpr WaylandIviSurfaceId source{ 2u };
-    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, source));
 }
 
 TEST_F(ARendererSceneUpdater, canDestroyStreamBuffer)
@@ -986,10 +964,10 @@ TEST_F(ARendererSceneUpdater, canDestroyStreamBuffer)
     constexpr StreamBufferHandle buffer{ 1u };
     constexpr WaylandIviSurfaceId source{ 2u };
     expectStreamBufferUploaded(buffer, source);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, source));
 
     expectStreamBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -997,7 +975,7 @@ TEST_F(ARendererSceneUpdater, canDestroyStreamBuffer)
 TEST_F(ARendererSceneUpdater, failsToDestroyStreamBufferOnUnknownDisplay)
 {
     constexpr StreamBufferHandle buffer{ 1u };
-    EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 }
 
 ///////////////////////////
@@ -1173,30 +1151,6 @@ TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfProviderSceneNotMapped)
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfConsumerSceneNotMapped)
-{
-    createDisplayAndExpectSuccess();
-
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene();
-
-    mapScene(0u);
-    showScene(0u);
-
-    expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash });
-    createTextureSlotsAndLinkThem(nullptr, 0u, 1u, false);
-    update();
-
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToConsumer(getSceneId(0u)));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToProvider(getSceneId(0u)));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToConsumer(getSceneId(1u)));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToProvider(getSceneId(1u)));
-
-    hideScene(0u);
-    unmapScene(0u);
-    destroyDisplay();
-}
-
 TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfBothProviderAndConsumerSceneNotMapped)
 {
     createPublishAndSubscribeScene();
@@ -1209,33 +1163,6 @@ TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfBothProviderAndConsumerS
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToProvider(getSceneId(0u)));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToConsumer(getSceneId(1u)));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToProvider(getSceneId(1u)));
-}
-
-TEST_F(ARendererSceneUpdater, failsToCreateTextureLinkIfProviderSceneMappedToDifferentDisplayThanConsumerScene)
-{
-    createDisplayAndExpectSuccess(DisplayHandle1);
-    createDisplayAndExpectSuccess(DisplayHandle2);
-
-    createPublishAndSubscribeScene();
-    createPublishAndSubscribeScene();
-
-    mapScene(0u, DisplayHandle1);
-    mapScene(1u, DisplayHandle2);
-
-    expectResourcesReferencedAndProvided({ MockResourceHash::TextureHash });
-    createTextureSlotsAndLinkThem(nullptr, 0u, 1u, false);
-    update();
-
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToConsumer(getSceneId(0u)));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToProvider(getSceneId(0u)));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToConsumer(getSceneId(1u)));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getSceneLinks().hasAnyLinksToProvider(getSceneId(1u)));
-
-    unmapScene(0u, DisplayHandle1);
-    unmapScene(1u, DisplayHandle2);
-
-    destroyDisplay(DisplayHandle1);
-    destroyDisplay(DisplayHandle2);
 }
 
 TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed_OB)
@@ -1256,7 +1183,7 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed_OB)
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
@@ -1270,7 +1197,7 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed_OB)
     EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
@@ -1303,7 +1230,7 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed_SB)
     constexpr StreamBufferHandle buffer{ 1u };
     constexpr WaylandIviSurfaceId source{ 2u };
     expectStreamBufferUploaded(buffer, source);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, source));
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
@@ -1317,7 +1244,7 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed_SB)
     EXPECT_TRUE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(1u)));
 
     expectStreamBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
@@ -1349,7 +1276,7 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenConsumerSceneUnmapp
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
@@ -1393,7 +1320,7 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenConsumerSceneUnmapp
     constexpr StreamBufferHandle buffer{ 1u };
     constexpr WaylandIviSurfaceId source{ 2u };
     expectStreamBufferUploaded(buffer, source);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, source));
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
@@ -1418,94 +1345,73 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenConsumerSceneUnmapp
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotMapped_OB)
+TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotOnDisplay_OB)
 {
     createDisplayAndExpectSuccess();
-    createPublishAndSubscribeScene();
-    const DataSlotId consumerId = createTextureConsumer(0u);
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
-    createBufferLink(buffer, getSceneId(), consumerId, true);
+    createBufferLink(buffer, SceneId{ 666u }, DataSlotId{ 1u }, true);
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId()));
 
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotMapped_SB)
+TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotOnDisplay_SB)
+{
+    createDisplayAndExpectSuccess();
+
+    constexpr StreamBufferHandle buffer{ 1u };
+    constexpr WaylandIviSurfaceId source{ 2u };
+    expectStreamBufferUploaded(buffer, source);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, source));
+
+    createBufferLink(buffer, SceneId{ 666u }, DataSlotId{ 1u }, true);
+
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfDisplayInvalid)
+{
+    createBufferLink(OffscreenBufferHandle{ 3u }, SceneId{ 666u }, DataSlotId{ 1u }, true);
+    createBufferLink(StreamBufferHandle{ 3u }, SceneId{ 666u }, DataSlotId{ 1u }, true);
+}
+
+TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfBufferUnknown_OB)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
-    const DataSlotId consumerId = createTextureConsumer(0u);
+    mapScene();
 
-    constexpr StreamBufferHandle buffer{ 1u };
-    constexpr WaylandIviSurfaceId source{ 2u };
-    expectStreamBufferUploaded(buffer, source);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
+    constexpr OffscreenBufferHandle buffer{ 123u };
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    createBufferLink(buffer, getSceneId(), DataSlotId{ 1u }, true);
 
-    createBufferLink(buffer, getSceneId(), consumerId, true);
+    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
 
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId()));
-
+    unmapScene();
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfProviderBufferIsFromAnotherDisplay_OB)
+TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfBufferUnknown_SB)
 {
-    createDisplayAndExpectSuccess(DisplayHandle1);
-    createDisplayAndExpectSuccess(DisplayHandle2);
-
+    createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
     mapScene();
 
-    const DataSlotId consumerId = createTextureConsumer(0u);
-
-    const OffscreenBufferHandle buffer(1u);
-    expectOffscreenBufferUploaded(buffer, DisplayHandle2);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle2, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
-
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
-    createBufferLink(buffer, getSceneId(), consumerId, true);
-
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId()));
-
-    unmapScene();
-
-    destroyDisplay(DisplayHandle1);
-    destroyDisplay(DisplayHandle2);
-}
-
-TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfProviderBufferIsFromAnotherDisplay_SB)
-{
-    createDisplayAndExpectSuccess(DisplayHandle1);
-    createDisplayAndExpectSuccess(DisplayHandle2);
-
-    createPublishAndSubscribeScene();
-    mapScene();
-
-    const DataSlotId consumerId = createTextureConsumer(0u);
-
-    constexpr StreamBufferHandle buffer{ 1u };
-    constexpr WaylandIviSurfaceId source{ 2u };
-    expectStreamBufferUploaded(buffer, source);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, source));
-
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
-    createBufferLink(buffer, getSceneId(), consumerId, true);
+    constexpr StreamBufferHandle buffer{ 123u };
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    createBufferLink(buffer, getSceneId(), DataSlotId{ 1u }, true);
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToConsumer(buffer));
-    EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getStreamBufferLinks().hasAnyLinksToProvider(getSceneId()));
 
     unmapScene();
-
-    destroyDisplay(DisplayHandle1);
-    destroyDisplay(DisplayHandle2);
+    destroyDisplay();
 }
 
 /////////////////////////////////////////////
@@ -1523,7 +1429,7 @@ TEST_F(ARendererSceneUpdater, updateSceneStreamTexturesDirtinessGeneratesEventsF
 
     expectNoEvent();
 
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(DoAll(SetArgReferee<1>(newStreams), SetArgReferee<2>(obsoleteStreams)));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(DoAll(SetArgReferee<1>(newStreams), SetArgReferee<2>(obsoleteStreams)));
 
     update();
 
@@ -1600,7 +1506,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamTextureStateIsN
     expectRenderableResourcesClean();
 
     {
-        EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _));
+        EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _));
 
         expectNoModifiedScenesReportedToRenderer();
         update();
@@ -1627,9 +1533,9 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdate
     const StreamUsage fakeStreamUsage{ { { getSceneId(0u), { tex1 } }, { getSceneId(1u), { tex2 } } }, {} };
 
     StreamSourceUpdates updates{ {source, 1u } };
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(true));
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, uploadResourcesAndGetUpdates(_)).WillOnce(SetArgReferee<0>(updates));
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(true));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, uploadResourcesAndGetUpdates(_)).WillOnce(SetArgReferee<0>(updates));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
 
     expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
@@ -1664,9 +1570,9 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceContentIsUpdate
     update();
 
     StreamSourceUpdates updates{ {source, 1u } };
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(true));
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, uploadResourcesAndGetUpdates(_)).WillOnce(SetArgReferee<0>(updates));
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, hasUpdatedContentFromStreamSourcesToUpload()).WillOnce(Return(true));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, uploadResourcesAndGetUpdates(_)).WillOnce(SetArgReferee<0>(updates));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
 
     expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
@@ -1694,9 +1600,9 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityCha
     const StreamUsage fakeStreamUsage{ { { getSceneId(0u), { tex1 } }, { getSceneId(1u), { tex2 } } }, {} };
 
     WaylandIviSurfaceIdVector changedSources{ source };
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
 
     expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
@@ -1731,9 +1637,9 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfStreamSourceAvailabilityCha
     update();
 
     WaylandIviSurfaceIdVector changedSources{ source };
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
 
     expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
@@ -1768,9 +1674,9 @@ TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfStreamSourceBecameUnavail
     update();
 
     WaylandIviSurfaceIdVector changedSources{ source };
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source)).WillOnce(ReturnRef(fakeStreamUsage));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(DeviceResourceHandle::Invalid()));
 
     expectModifiedScenesReportedToRenderer({ 0u, 1u });
     update();
@@ -1810,12 +1716,12 @@ TEST_F(ARendererSceneUpdater, WillUnlinkStreamBuffer_IfOneOfStreamSourcesBecameU
     update();
 
     const WaylandIviSurfaceIdVector changedSources{ source1, source2 };
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source1)).WillOnce(ReturnRef(fakeStreamUsage1));
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getStreamUsage(source2)).WillOnce(ReturnRef(fakeStreamUsage2));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, dispatchStateChangesOfSources(_, _, _)).WillOnce(SetArgReferee<0>(changedSources));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source1)).WillOnce(ReturnRef(fakeStreamUsage1));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamUsage(source2)).WillOnce(ReturnRef(fakeStreamUsage2));
     // only source2 is unavailable
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(source1)).WillOnce(Return(DeviceMock::FakeRenderTargetDeviceHandle));
-    EXPECT_CALL(*renderer.getDisplayMock(DisplayHandle1).m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(source2)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(source1)).WillOnce(Return(DeviceMock::FakeRenderTargetDeviceHandle));
+    EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(source2)).WillOnce(Return(DeviceResourceHandle::Invalid()));
 
     expectModifiedScenesReportedToRenderer({ 1u });
     update();
@@ -2462,7 +2368,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_IfScene
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2505,7 +2411,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_IfScene
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2552,7 +2458,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_OffscreenBufferLinking_
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2595,7 +2501,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_TwoCons
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2648,12 +2554,12 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Indirec
 
     const OffscreenBufferHandle buffer1(1u);
     expectOffscreenBufferUploaded(buffer1);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer1, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     const OffscreenBufferHandle buffer2(2u);
     const DeviceResourceHandle offscreenBufferDeviceHandle(5556u);
-    expectOffscreenBufferUploaded(buffer2, DisplayHandle1, offscreenBufferDeviceHandle);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectOffscreenBufferUploaded(buffer2, offscreenBufferDeviceHandle);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2708,13 +2614,13 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_OffscreenBufferLinking_
 
     const OffscreenBufferHandle buffer1(1u);
     expectOffscreenBufferUploaded(buffer1);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer1, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     const OffscreenBufferHandle buffer2(2u);
     const DeviceResourceHandle offscreenBufferDeviceHandle(5556u);
-    expectOffscreenBufferUploaded(buffer2, DisplayHandle1, offscreenBufferDeviceHandle);
+    expectOffscreenBufferUploaded(buffer2, offscreenBufferDeviceHandle);
 
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2766,8 +2672,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     const std::array<OffscreenBufferHandle, 3> buffers{ { OffscreenBufferHandle{ 1u }, OffscreenBufferHandle{ 2u }, OffscreenBufferHandle{ 3u } } };
     for (const auto buffer : buffers)
     {
-        expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceResourceHandle(buffer.asMemoryHandle()));
-        EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+        expectOffscreenBufferUploaded(buffer, DeviceResourceHandle(buffer.asMemoryHandle()));
+        EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     }
 
     for (UInt32 i = 0u; i < 6; ++i)
@@ -2837,8 +2743,8 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     const std::array<OffscreenBufferHandle, 3> buffers{ { OffscreenBufferHandle{ 1u }, OffscreenBufferHandle{ 2u }, OffscreenBufferHandle{ 3u } } };
     for (const auto buffer : buffers)
     {
-        expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceResourceHandle(buffer.asMemoryHandle()));
-        EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+        expectOffscreenBufferUploaded(buffer, DeviceResourceHandle(buffer.asMemoryHandle()));
+        EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     }
 
     for (UInt32 i = 0u; i < 5; ++i)
@@ -2925,7 +2831,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferLinkedToScen
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     EXPECT_TRUE(assignSceneToDisplayBuffer(scene2, buffer));
 
     const DataSlotId consumer = createTextureConsumer(scene1);
@@ -2949,7 +2855,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferLinkedToScen
     unmapScene(scene2);
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -2964,7 +2870,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferUnlinkedFrom
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     EXPECT_TRUE(assignSceneToDisplayBuffer(scene2, buffer));
 
     const DataSlotId consumer = createTextureConsumer(scene1);
@@ -2995,7 +2901,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferUnlinkedFrom
     unmapScene(scene2);
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -3012,7 +2918,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_WhenProviderSceneAssignedToOB
 
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     EXPECT_TRUE(assignSceneToDisplayBuffer(scene2, buffer));
 
     expectNoModifiedScenesReportedToRenderer();
@@ -3037,7 +2943,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_WhenProviderSceneAssignedToOB
     unmapScene(scene2);
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -3146,6 +3052,77 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_IfTextureConsumerAndProviderLi
     hideScene(consumerScene);
     unmapScene(providerScene);
     unmapScene(consumerScene);
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfModifiedSceneNotShown)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+    update();
+
+    performFlushWithCreateNodeAction();
+    expectNoModifiedScenesReportedToRenderer();
+    update();
+
+    expectNoModifiedScenesReportedToRenderer();
+    update();
+
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfSceneNotModifiedButSkippingDisabled)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+    showScene();
+    update();
+
+    performFlushWithCreateNodeAction();
+    expectModifiedScenesReportedToRenderer();
+    update();
+
+    expectNoModifiedScenesReportedToRenderer();
+    update();
+
+    // no change to scene but disabled skipping feature
+    rendererSceneUpdater->setSkippingOfUnmodifiedScenes(false);
+    expectModifiedScenesReportedToRenderer();
+    update();
+
+    expectModifiedScenesReportedToRenderer();
+    update();
+
+    rendererSceneUpdater->setSkippingOfUnmodifiedScenes(true);
+    expectNoModifiedScenesReportedToRenderer();
+    update();
+
+    hideScene();
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfSkippingDisabledButSceneNotShown)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+    mapScene();
+    update();
+
+    performFlushWithCreateNodeAction();
+    expectNoModifiedScenesReportedToRenderer();
+    update();
+
+    // no change to scene but disabled skipping feature
+    rendererSceneUpdater->setSkippingOfUnmodifiedScenes(false);
+    // still not reported to re-render because not shown
+    expectNoModifiedScenesReportedToRenderer();
+    update();
+
+    unmapScene();
     destroyDisplay();
 }
 
@@ -3312,8 +3289,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneAssignedTo
     mapScene(sceneToAssign);
 
     const OffscreenBufferHandle buffer(1u);
-    expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceResourceHandle(321u));
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectOffscreenBufferUploaded(buffer, DeviceResourceHandle(321u));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     EXPECT_TRUE(assignSceneToDisplayBuffer(sceneToAssign, buffer));
 
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
@@ -3329,7 +3306,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneAssignedTo
     unmapScene(sceneToAssign);
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -3397,8 +3374,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneUnlinkedFr
     mapScene(sceneToUnlink);
 
     const OffscreenBufferHandle buffer(1u);
-    expectOffscreenBufferUploaded(buffer, DisplayHandle1, DeviceResourceHandle(321u));
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectOffscreenBufferUploaded(buffer, DeviceResourceHandle(321u));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
     const DataSlotId texConsumer = createTextureConsumer(sceneToUnlink);
     createBufferLink(buffer, getSceneId(sceneToUnlink), texConsumer);
 
@@ -3415,7 +3392,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneUnlinkedFr
     unmapScene(sceneToUnlink);
 
     expectOffscreenBufferDeleted(buffer);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     destroyDisplay();
 }
@@ -3603,8 +3580,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferCreated
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
     const OffscreenBufferHandle buffer2(1u);
-    expectOffscreenBufferUploaded(buffer2, DisplayHandle1, DeviceResourceHandle(321u));
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectOffscreenBufferUploaded(buffer2, DeviceResourceHandle(321u));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
@@ -3614,7 +3591,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferCreated
     unmapScene(sceneInterrupted);
 
     expectOffscreenBufferDeleted(buffer2);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer2, DisplayHandle1));
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer2));
 
     destroyDisplay();
 }
@@ -3625,8 +3602,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferDeleted
 
     constexpr OffscreenBufferHandle buffer(1u);
     constexpr DeviceResourceHandle bufferDeviceHandle{ 321u };
-    expectOffscreenBufferUploaded(buffer, DisplayHandle1, bufferDeviceHandle);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, DisplayHandle1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectOffscreenBufferUploaded(buffer, bufferDeviceHandle);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
 
     const UInt32 scene = createPublishAndSubscribeScene();
     const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
@@ -3637,8 +3614,8 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferDeleted
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
-    expectOffscreenBufferDeleted(buffer, DisplayHandle1, bufferDeviceHandle);
-    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer, DisplayHandle1));
+    expectOffscreenBufferDeleted(buffer, bufferDeviceHandle);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
 
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
@@ -3648,63 +3625,6 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferDeleted
     unmapScene(sceneInterrupted);
 
     destroyDisplay();
-}
-
-TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfDisplayCreated)
-{
-    createDisplayAndExpectSuccess(DisplayHandle1);
-
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
-
-    mapScene(scene);
-    mapScene(sceneInterrupted);
-
-    showAndInitiateInterruptedRendering(scene, sceneInterrupted);
-    EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
-
-    createDisplayAndExpectSuccess(DisplayHandle2);
-
-    EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
-
-    hideScene(scene);
-    hideScene(sceneInterrupted);
-    unmapScene(scene);
-    unmapScene(sceneInterrupted);
-
-    destroyDisplay(DisplayHandle2);
-    destroyDisplay(DisplayHandle1);
-}
-
-TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfDisplayDestroyed)
-{
-    createDisplayAndExpectSuccess(DisplayHandle1);
-    createDisplayAndExpectSuccess(DisplayHandle2);
-
-    const UInt32 scene = createPublishAndSubscribeScene();
-    const UInt32 sceneInterrupted = createPublishAndSubscribeScene();
-
-    mapScene(scene);
-    mapScene(sceneInterrupted);
-
-    // just to match mocks for the second display
-    DisplayStrictMockInfo& displayMock = renderer.getDisplayMock(DisplayHandle2);
-    EXPECT_CALL(*displayMock.m_displayController, handleWindowEvents());
-    EXPECT_CALL(*displayMock.m_displayController, canRenderNewFrame()).WillOnce(Return(false));
-
-    showAndInitiateInterruptedRendering(scene, sceneInterrupted);
-    EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
-
-    destroyDisplay(DisplayHandle2);
-
-    EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
-
-    hideScene(scene);
-    hideScene(sceneInterrupted);
-    unmapScene(scene);
-    unmapScene(sceneInterrupted);
-
-    destroyDisplay(DisplayHandle1);
 }
 
 TEST_F(ARendererSceneUpdater, blocksFlushesForSceneAssignedToInterruptibleOBWhenThereIsInterruption)
@@ -3811,7 +3731,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
 
     // will force apply and log blocking resources
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[DisplayHandle1], getResourceType(_)).Times(AnyNumber());
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getResourceType(_)).Times(AnyNumber());
     expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash }, sceneInterrupted);
     for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
     {
@@ -4793,11 +4713,10 @@ TEST_F(ARendererSceneUpdater, reportsNoPickedObjectsForSceneWithNoPickableObject
 
 TEST_F(ARendererSceneUpdater, reportsPickedObjects)
 {
-    const DisplayHandle display = DisplayHandle1;
     DisplayConfig config;
     config.setDesiredWindowWidth(1280u);
     config.setDesiredWindowHeight(480u);
-    createDisplayAndExpectSuccess(display, config);
+    createDisplayAndExpectSuccess(config);
     const auto sceneIdx = createPublishAndSubscribeScene();
     mapScene();
 
@@ -4839,8 +4758,8 @@ TEST_F(ARendererSceneUpdater, reportsPickedObjects)
     iscene.setPickableObjectCamera(pickableHandle2, cameraHandle);
     performFlush();
 
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], uploadDataBuffer(_, _, _, _, _));
-    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMocks[display], updateDataBuffer(_, _, _, _));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadDataBuffer(_, _, _, _, _));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, updateDataBuffer(_, _, _, _));
     update();
 
     EXPECT_CALL(*rendererSceneUpdater, handlePickEvent(_, _));
@@ -4875,7 +4794,7 @@ TEST_F(ARendererSceneUpdater, emitsSequenceOfSceneStateChangesWhenRepublished_fr
     rendererSceneUpdater->handleSceneUnpublished(sceneId);
     rendererSceneUpdater->handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote);
     expectInternalSceneStateEvents({ ERendererEventType::SceneUnmappedIndirect, ERendererEventType::SceneUnsubscribedIndirect, ERendererEventType::SceneUnpublished, ERendererEventType::ScenePublished });
-    EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
+    EXPECT_FALSE(renderer.getBufferSceneIsAssignedTo(sceneId).isValid());
 
     destroyDisplay();
 }
@@ -4894,7 +4813,7 @@ TEST_F(ARendererSceneUpdater, emitsSequenceOfSceneStateChangesWhenRepublished_fr
     rendererSceneUpdater->handleSceneUnpublished(sceneId);
     rendererSceneUpdater->handleScenePublished(sceneId, EScenePublicationMode_LocalAndRemote);
     expectInternalSceneStateEvents({ ERendererEventType::SceneHiddenIndirect, ERendererEventType::SceneUnmappedIndirect, ERendererEventType::SceneUnsubscribedIndirect, ERendererEventType::SceneUnpublished, ERendererEventType::ScenePublished });
-    EXPECT_FALSE(renderer.getDisplaySceneIsAssignedTo(sceneId).isValid());
+    EXPECT_FALSE(renderer.getBufferSceneIsAssignedTo(sceneId).isValid());
 
     destroyDisplay();
 }

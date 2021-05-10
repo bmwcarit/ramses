@@ -43,7 +43,7 @@ namespace ramses_internal
     protected:
         virtual void postAddSubscriber() {};
         void sendSceneToWaitingSubscribers(const IScene& scene, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag);
-        void printFlushInfo(StringOutputStream& sos, const char* name, const SceneActionCollection& collection) const;
+        void printFlushInfo(StringOutputStream& sos, const char* name, const SceneUpdate& update) const;
         bool verifyAndGetResourceChanges(SceneUpdate& sceneUpdate, bool hasNewActions);
         void updateResourceStatistics();
         void fillStatisticsCollection();

@@ -65,6 +65,24 @@ namespace ramses
         EXPECT_NE(StatusOK, this->camera->validate());
     }
 
+    TYPED_TEST(ACamera, reportsErrorWhenViewportWidthExceedsMaximum)
+    {
+        this->camera->setFrustum(-0.01f, 0.01f, -0.01f, 0.01f, 0.1f, 1000.f);
+        EXPECT_NE(StatusOK, this->camera->setViewport(0u, 0u, 32768 + 1, 16u));
+        // Keeps default values
+        EXPECT_EQ(16u, this->camera->getViewportWidth());
+        EXPECT_EQ(16u, this->camera->getViewportHeight());
+    }
+
+    TYPED_TEST(ACamera, reportsErrorWhenViewportHeightExceedsMaximum)
+    {
+        this->camera->setFrustum(-0.01f, 0.01f, -0.01f, 0.01f, 0.1f, 1000.f);
+        EXPECT_NE(StatusOK, this->camera->setViewport(0u, 0u, 16u, 32768 + 1));
+        // Keeps default values
+        EXPECT_EQ(16u, this->camera->getViewportWidth());
+        EXPECT_EQ(16u, this->camera->getViewportHeight());
+    }
+
     TYPED_TEST(ACamera, canSetItsViewport)
     {
         EXPECT_EQ(StatusOK, this->camera->setViewport(1, -2, 100, 200));

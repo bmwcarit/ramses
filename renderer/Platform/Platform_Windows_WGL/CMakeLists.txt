@@ -11,14 +11,14 @@ ACME_MODULE(
     #==========================================================================
     # general module information
     #==========================================================================
-    NAME                    Surface_Windows_WGL
+    NAME                    Platform_Windows_WGL
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
 
     #==========================================================================
     # files of this module
     #==========================================================================
-    FILES_PRIVATE_HEADER    include/Surface_Windows_WGL/*.h
+    FILES_PRIVATE_HEADER    include/Platform_Windows_WGL/*.h
     FILES_SOURCE            src/*.cpp
 
     #==========================================================================

@@ -28,6 +28,10 @@ namespace ramses_internal
         UInt32   getMaximumAnisotropy() const;
         void     setMaximumAnisotropy(uint32_t anisotropy);
 
+        void setMaxViewport(uint32_t maxWidth, uint32_t maxHeight);
+        uint32_t getMaxViewportWidth() const;
+        uint32_t getMaxViewportHeight() const;
+
         // Texture formats
         bool isTextureFormatAvailable(ETextureFormat format) const;
         void addTextureFormat(ETextureFormat format);
@@ -38,6 +42,8 @@ namespace ramses_internal
         uint32_t m_maximumTextureUnits = 1u;
         uint32_t m_maximumSamples = 1u;
         uint32_t m_maximumAnisotropy = 1u;
+        uint32_t m_maxViewportWidth = 16u;
+        uint32_t m_maxViewportHeight = 16u;
         HashSet<ETextureFormat> m_availableTextureFormats;
     };
 }

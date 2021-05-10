@@ -41,15 +41,6 @@ namespace ramses_internal
         MOCK_METHOD(void, logInfos, (RendererLogContext&), (const, override));
         MOCK_METHOD(bool, isRealCompositor, (), (const, override));
     };
-
-    class EmbeddedCompositorMockWithDestructor : public EmbeddedCompositorMock
-    {
-    public:
-        EmbeddedCompositorMockWithDestructor();
-        virtual ~EmbeddedCompositorMockWithDestructor();
-
-        MOCK_METHOD(void, Die, ());
-    };
 }
 
 #endif

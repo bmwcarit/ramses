@@ -50,7 +50,7 @@ namespace ramses_internal
         virtual void stencilFunc           (EStencilFunc func, UInt8 ref, UInt8 mask) override;
         virtual void stencilOp             (EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) override;
         virtual void drawMode              (EDrawMode mode) override;
-        virtual void setViewport           (UInt32 start, UInt32 end, UInt32 width, UInt32 height) override;
+        virtual void setViewport           (int32_t x, int32_t y, uint32_t width, uint32_t height) override;
 
         virtual void setConstant(DataFieldHandle field, UInt32 count, const Float*      value) override;
         virtual void setConstant(DataFieldHandle field, UInt32 count, const Vector2*    value) override;

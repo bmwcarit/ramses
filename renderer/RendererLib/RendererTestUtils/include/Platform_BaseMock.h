@@ -12,6 +12,7 @@
 #include "gmock/gmock.h"
 #include "renderer_common_gmock_header.h"
 #include "Platform_Base/Platform_Base.h"
+#include "Platform_Base/TextureUploadingAdapter_Base.h"
 #include "RendererAPI/IWindowEventHandler.h"
 #include "RendererLib/RendererConfig.h"
 #include "WindowMock.h"
@@ -19,8 +20,6 @@
 #include "EmbeddedCompositorMock.h"
 #include "SystemCompositorControllerMock.h"
 #include "DeviceMock.h"
-#include "WindowEventsPollingManagerMock.h"
-#include "Platform_Base/TextureUploadingAdapter_Base.h"
 
 namespace ramses_internal
 {
@@ -30,60 +29,34 @@ namespace ramses_internal
         explicit Platform_BaseMock(const RendererConfig& config);
         virtual ~Platform_BaseMock() override;
 
-        template <typename MockT>
-        MockT* createMockObjectHelper()
-        {
-            MockT* mockObject = new ::testing::StrictMock<MockT>();
-            return mockObject;
-        }
+        MOCK_METHOD(bool, createWindow, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
+        MOCK_METHOD(bool, createContext, (const DisplayConfig& displayConfig), (override));
+        MOCK_METHOD(bool, createContextUploading, (), (override));
+        MOCK_METHOD(bool, createDevice, (), (override));
+        MOCK_METHOD(bool, createDeviceUploading, (), (override));
+        MOCK_METHOD(bool, createEmbeddedCompositor, (const DisplayConfig& displayConfig), (override));
+        MOCK_METHOD(bool, createSystemCompositorController, (), (override));
+        MOCK_METHOD(void, createTextureUploadingAdapter, (), (override));
 
-        void createRenderBackendMockObjects();
-
-        MOCK_METHOD(ISystemCompositorController* , createSystemCompositorController, (), (override));
-        MOCK_METHOD(IWindow*, createWindow, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
-        MOCK_METHOD(IContext*, createContext, (const DisplayConfig& displayConfig, IWindow& window, IContext*), (override));
-        MOCK_METHOD(IDevice*, createDevice, (IContext& context), (override));
-        MOCK_METHOD(IEmbeddedCompositor*, createEmbeddedCompositor, (const DisplayConfig& displayConfig, IContext& context), (override));
-        MOCK_METHOD(ITextureUploadingAdapter*, createTextureUploadingAdapter, (IDevice& device, IEmbeddedCompositor& embeddedCompositor, IWindow& window), (override));
-
-        WindowMockWithDestructor*                     window                  = nullptr;
-        ContextMockWithDestructor*                    context                 = nullptr;
-        DeviceMockWithDestructor*                     device                  = nullptr;
-        EmbeddedCompositorMockWithDestructor*         embeddedCompositor      = nullptr;
-        ::testing::StrictMock<DeviceMock>             deviceMock;
-        TextureUploadingAdapter_Base                  textureUploadingAdapter = TextureUploadingAdapter_Base(deviceMock);
-        SystemCompositorControllerMockWithDestructor* systemCompositorController = nullptr;
+        WindowMock*                     window                     = new ::testing::StrictMock<WindowMock>;
+        ContextMock*                    context                    = new ::testing::StrictMock<ContextMock>;
+        ContextMock*                    contextUploading           = new ::testing::StrictMock<ContextMock>;
+        DeviceMock*                     device                     = new ::testing::StrictMock<DeviceMock>;
+        DeviceMock*                     deviceUploading            = new ::testing::StrictMock<DeviceMock>;
+        EmbeddedCompositorMock*         embeddedCompositor         = new ::testing::StrictMock<EmbeddedCompositorMock>;
+        SystemCompositorControllerMock* systemCompositorController = new ::testing::StrictMock<SystemCompositorControllerMock>;
+        TextureUploadingAdapter_Base*   textureUploadingAdapter    = new TextureUploadingAdapter_Base(*device);
 
     private:
-        ISystemCompositorController* createSystemCompositorController_fake()
-        {
-            return setPlatformSystemCompositorController(systemCompositorController);
-        }
-
-        IWindow* createWindow_fake(const DisplayConfig& /*displayConfig*/, IWindowEventHandler& /*windowEventHandler*/)
-        {
-            return addPlatformWindow(window);
-        }
-
-        IDevice* createDevice_fake(IContext& /*context*/)
-        {
-            return addPlatformDevice(device);
-        }
-
-        IContext* createContext_fake(const DisplayConfig&, IWindow& /*window*/, IContext*)
-        {
-            return addPlatformContext(context);
-        }
-
-        IEmbeddedCompositor* createEmbeddedCompositor_fake(const DisplayConfig&, IContext& /*context*/)
-        {
-            return addEmbeddedCompositor(embeddedCompositor);
-        }
-
-        ITextureUploadingAdapter* createTextureUploadingAdapter_fake(IDevice& /*device*/, IEmbeddedCompositor& /*embeddedCompositor*/, IWindow& /*window*/)
-        {
-            return &textureUploadingAdapter;
-        }
+        // ownership of component X goes to platform on createX call, keep rest owned here for proper cleanup
+        std::unique_ptr<WindowMock>                     windowOwningPtr{ window };
+        std::unique_ptr<ContextMock>                    contextOwningPtr{ context };
+        std::unique_ptr<ContextMock>                    contextUploadingOwningPtr{ contextUploading };
+        std::unique_ptr<DeviceMock>                     deviceOwningPtr{ device };
+        std::unique_ptr<DeviceMock>                     deviceUploadingOwningPtr{ deviceUploading };
+        std::unique_ptr<EmbeddedCompositorMock>         embeddedCompositorOwningPtr{ embeddedCompositor };
+        std::unique_ptr<SystemCompositorControllerMock> systemCompositorControllerOwningPtr{ systemCompositorController };
+        std::unique_ptr<TextureUploadingAdapter_Base>   textureUploadingAdapterOwningPtr{ textureUploadingAdapter };
     };
 }
 

@@ -41,8 +41,12 @@ namespace ramses_internal
         if(!bindEglAPI())
             return false;
 
+// Due to a bug in the Android emulator, calling eglChooseConfig with nullptr as surface
+// attributes kills the emulator.
+#ifndef __ANDROID__
         if(!m_eglSurfaceData.eglSharedContext)
             logAllFoundEglConfigs();
+#endif
 
         if(!chooseEglConfig())
             return false;

@@ -23,6 +23,7 @@
 #include "RendererLib/RendererCommands.h"
 #include "RendererSceneControlEventHandlerMock.h"
 #include "RendererCommandVisitorMock.h"
+#include "Utils/ThreadLocalLog.h"
 #include <thread>
 
 using namespace testing;
@@ -38,6 +39,8 @@ namespace ramses
             , m_pendingCommands(m_sceneControlAPI.impl.getPendingCommands())
             , m_displayId(m_renderer.createDisplay(DisplayConfig{}))
         {
+            ramses_internal::ThreadLocalLog::SetPrefix(2);
+
             m_renderer.setLoopMode(ELoopMode_UpdateOnly);
         }
 

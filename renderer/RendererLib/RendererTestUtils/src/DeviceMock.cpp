@@ -55,11 +55,4 @@ namespace ramses_internal
         EXPECT_CALL(*this, getSupportedBinaryProgramFormats(_)).Times(AnyNumber());
         ON_CALL(*this, getSupportedBinaryProgramFormats(_)).WillByDefault(Invoke([](auto& formats) { formats = { FakeSupportedBinaryShaderFormat }; }));
     }
-
-    DeviceMockWithDestructor::DeviceMockWithDestructor() = default;
-
-    DeviceMockWithDestructor::~DeviceMockWithDestructor()
-    {
-        Die();
-    }
 }

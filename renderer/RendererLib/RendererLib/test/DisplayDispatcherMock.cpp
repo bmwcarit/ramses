@@ -10,14 +10,14 @@
 
 namespace ramses_internal
 {
-    DisplayDispatcherMock::DisplayDispatcherMock(const RendererConfig& config, RendererCommandBuffer& commandBuffer, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier)
-        : DisplayDispatcher(config, commandBuffer, rendererSceneSender, notifier)
+    DisplayDispatcherMock::DisplayDispatcherMock(const RendererConfig& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier)
+        : DisplayDispatcher(config, rendererSceneSender, notifier)
     {
     }
     DisplayDispatcherMock::~DisplayDispatcherMock() = default;
 
-    DisplayDispatcherFacade::DisplayDispatcherFacade(const RendererConfig& config, RendererCommandBuffer& commandBuffer, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier, bool threaded)
-        : DisplayDispatcherMock(config, commandBuffer, rendererSceneSender, notifier)
+    DisplayDispatcherFacade::DisplayDispatcherFacade(const RendererConfig& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier, bool threaded)
+        : DisplayDispatcherMock(config, rendererSceneSender, notifier)
         , m_threaded{ threaded }
     {
     }
