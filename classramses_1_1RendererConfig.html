@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.102</span>
+   &#160;<span id="projectnumber">27.0.103</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -661,6 +661,11 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Request that the embedded compositing display socket obtains the permissions given. </p>
 <p>The format should be the same as expected by chmod() mode argument. Permissions value may not be 0. If not set "user+group can read/write (0660)" is used as default.</p>
+<p>The socket should be readable and writable for the required users, some examples values are:</p><ul>
+<li>Only user r/w: 384u (or in octal 0600)</li>
+<li>User+Group r/w: 432u (or in octal 0660)</li>
+<li>Everyone r/w: 438u (or in octal 0666)</li>
+</ul>
 <p>This value is only used when socket is given as name, e.g. via <a class="el" href="classramses_1_1RendererConfig.html#a97146e70d5a577718c9f6f7cf631a986" title="Set the name to be used for the embedded compositing display socket name.">setWaylandEmbeddedCompositingSocketName()</a>, not when passed in as filedescriptor.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -689,7 +694,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/home/q479079/sources/ramses-oss/renderer/RendererLib/ramses-renderer-api/include/ramses-renderer-api/<a class="el" href="RendererConfig_8h_source.html">RendererConfig.h</a></li>
+<li>/c/src/mirror/renderer/RendererLib/ramses-renderer-api/include/ramses-renderer-api/<a class="el" href="RendererConfig_8h_source.html">RendererConfig.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

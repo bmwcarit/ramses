@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.102</span>
+   &#160;<span id="projectnumber">27.0.103</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -925,12 +925,13 @@ Friends</h2></td></tr>
 <p>Sets the viewport to be used when rendering with this camera. </p>
 <p>The viewport size does not have to match the size of the destination render buffer (<a class="el" href="classramses_1_1RenderTarget.html" title="The RenderTarget can be used as an output for a RenderPass.">ramses::RenderTarget</a> or display's framebuffer). However when the size matches, the projected camera frustum will fill destination buffer fully. The viewport is aligned with the lower left corner of the destination render buffer.</p>
 <p>Important note: if viewport data is bound (see <a class="el" href="classramses_1_1Camera.html#a09084369e97fb72a9f5cf7325cdadb6a" title="Binds a ramses::DataObject to be used as source for viewport offset values.">bindViewportOffset</a> or <a class="el" href="classramses_1_1Camera.html#ad44d784316a1a9f7ac8b93ec5a7b34ea" title="Binds a ramses::DataObject to be used as source for viewport size values.">bindViewportSize</a>) the value set here will not be effective until unbound again, bound values are always overridden by values from bound data object. Bound values can only be modified via the <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene.">ramses::DataObject</a> bound to them.</p>
+<p>The viewport position (<code>x</code> and <code>y</code>) are relative offsets to the destination render buffer's lower left pixel. The viewport size (<code>width</code> and <code>height</code>) must be positive numbers in the range [1, 32768].</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>horizontal offset of the viewport rectangle in pixels (zero = leftmost pixel) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>vertical offset of the viewport rectangle in pixels (zero = bottommost pixel) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>horizontal size of the viewport rectangle in pixels </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>vertical size of the viewport rectangle in pixels </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>horizontal size of the viewport rectangle in pixels (min 1, max 32768) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>vertical size of the viewport rectangle in pixels (min 1, max 32768) </td></tr>
   </table>
   </dd>
 </dl>
@@ -1042,7 +1043,7 @@ Friends</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/home/q479079/sources/ramses-oss/client/ramses-client/ramses-client-api/include/ramses-client-api/<a class="el" href="Camera_8h_source.html">Camera.h</a></li>
+<li>/c/src/mirror/client/ramses-client/ramses-client-api/include/ramses-client-api/<a class="el" href="Camera_8h_source.html">Camera.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
