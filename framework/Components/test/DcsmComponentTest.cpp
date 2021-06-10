@@ -7,23 +7,28 @@
 //  -------------------------------------------------------------------------
 
 #include "Components/DcsmComponent.h"
+#include "Components/CategoryInfo.h"
 #include "Collections/StringOutputStream.h"
-#include "TransportCommon/FakeConnectionStatusUpdateNotifier.h"
+#include "DcsmMetadataUpdateImpl.h"
 #include "RamsesFrameworkTypesImpl.h"
+#include "DcsmStatusMessageImpl.h"
+
+#include "TransportCommon/FakeConnectionStatusUpdateNotifier.h"
 #include "MockConnectionStatusUpdateNotifier.h"
 #include "CommunicationSystemMock.h"
 #include "DcsmEventHandlerMocks.h"
-#include "gmock/gmock.h"
 #include "DcsmGmockPrinter.h"
-#include "DcsmMetadataUpdateImpl.h"
 #include "TestPngHeader.h"
 
-#include <array>
 #include <chrono>
 #include "Utils/CommandLineParser.h"
 #include "Utils/RamsesLogger.h"
+
 #include "ramses-framework-api/CategoryInfoUpdate.h"
-#include "Components/CategoryInfo.h"
+#include "ramses-framework-api/DcsmStatusMessage.h"
+
+#include "gmock/gmock.h"
+#include <array>
 
 namespace ramses_internal
 {
@@ -3180,6 +3185,236 @@ namespace ramses_internal
         EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
         EXPECT_CALL(consumer, contentOffered(ramses::ContentID(1), ramses::Category(2), ramses::ETechnicalContentType::RamsesSceneID));
         EXPECT_TRUE(comp.dispatchConsumerEvents(consumer, std::chrono::milliseconds{1000000000}));
+    }
+
+    TEST_F(ADcsmComponent, sendsContentStatusToLocalProvider)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_LPLC(2, CS::Assigned);
+
+        ramses::StreamStatusMessage msg(ramses::StreamStatusMessage::Status::ChannelError);
+        EXPECT_TRUE(comp.sendContentStatus(ContentID(2), *msg.impl));
+
+        EXPECT_CALL(provider, contentStatus(ramses::ContentID(2), _)).WillOnce([](auto, auto impl)
+            {
+                auto received = ramses::DcsmStatusMessageImpl::CreateMessage(std::move(impl));
+                ASSERT_TRUE(received);
+                EXPECT_EQ(ramses::DcsmStatusMessageImpl::Type::StreamStatus, received->impl->getType());
+                auto receivedType = received->getAsStreamStatus();
+                ASSERT_TRUE(receivedType);
+                EXPECT_EQ(ramses::StreamStatusMessage::Status::ChannelError, receivedType->getStreamStatus());
+            });
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+    }
+
+    TEST_F(ADcsmComponent, sendsContentStatusToRemoteProvider)
+    {
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_RPLC(2, CS::Assigned);
+
+        ramses::StreamStatusMessage msg(ramses::StreamStatusMessage::Status::ChannelError);
+        EXPECT_CALL(comm, sendDcsmContentStatus(remoteId, ContentID(2), _, _)).WillOnce([](auto, auto, uint64_t type, std::vector<Byte> const& data)
+            {
+                auto impl = std::make_unique<ramses::DcsmStatusMessageImpl>(type, absl::Span<const Byte>{ data.data(), data.size() });
+                auto received = ramses::DcsmStatusMessageImpl::CreateMessage(std::move(impl));
+                EXPECT_TRUE(received);
+                EXPECT_EQ(ramses::DcsmStatusMessageImpl::Type::StreamStatus, received->impl->getType());
+                auto receivedType = received->getAsStreamStatus();
+                EXPECT_TRUE(receivedType);
+                EXPECT_EQ(ramses::StreamStatusMessage::Status::ChannelError, receivedType->getStreamStatus());
+                return true;
+            });
+        EXPECT_TRUE(comp.sendContentStatus(ContentID(2), *msg.impl));
+    }
+
+    TEST_F(ADcsmComponent, receivesContentStatusFromRemoteConsumer)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_LPRC(2, CS::Assigned);
+
+        ramses::StreamStatusMessage msg(ramses::StreamStatusMessage::Status::ChannelError);
+        comp.handleContentStatus(ContentID(2), static_cast<uint64_t>(msg.impl->getType()), { msg.impl->getData().data(), msg.impl->getData().size() }, remoteId);
+
+        EXPECT_CALL(provider, contentStatus(ramses::ContentID(2), _)).WillOnce([](auto, auto impl)
+            {
+                auto received = ramses::DcsmStatusMessageImpl::CreateMessage(std::move(impl));
+                ASSERT_TRUE(received);
+                EXPECT_EQ(ramses::DcsmStatusMessageImpl::Type::StreamStatus, received->impl->getType());
+                auto receivedType = received->getAsStreamStatus();
+                ASSERT_TRUE(receivedType);
+                EXPECT_EQ(ramses::StreamStatusMessage::Status::ChannelError, receivedType->getStreamStatus());
+            });
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+    }
+
+    TEST_F(ADcsmComponent, doesNotHandleContentStatusIfNoProvider)
+    {
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_RPLC(2, CS::Assigned);
+
+        ramses::StreamStatusMessage msg(ramses::StreamStatusMessage::Status::ChannelError);
+        comp.handleContentStatus(ContentID(2), static_cast<uint64_t>(msg.impl->getType()), { msg.impl->getData().data(), msg.impl->getData().size() }, remoteId);
+        EXPECT_FALSE(comp.dispatchProviderEvents(provider));
+    }
+
+    TEST_F(ADcsmComponent, doesNotHandleContentStatusIfContentUnknown)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+
+        ramses::StreamStatusMessage msg(ramses::StreamStatusMessage::Status::ChannelError);
+        comp.handleContentStatus(ContentID(2), static_cast<uint64_t>(msg.impl->getType()), { msg.impl->getData().data(), msg.impl->getData().size() }, remoteId);
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+    }
+
+    TEST_F(ADcsmComponent, doesNotHandleContentStatusIfNotProviderOfContent)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_RPLC(2, CS::Assigned);
+
+        ramses::StreamStatusMessage msg(ramses::StreamStatusMessage::Status::ChannelError);
+        comp.handleContentStatus(ContentID(2), static_cast<uint64_t>(msg.impl->getType()), { msg.impl->getData().data(), msg.impl->getData().size() }, remoteId);
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+    }
+
+    TEST_F(ADcsmComponent, doesNotHandleContentStatusIfFromInvalidSender)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_RPLC(2, CS::Assigned);
+
+        ramses::StreamStatusMessage msg(ramses::StreamStatusMessage::Status::ChannelError);
+        comp.handleContentStatus(ContentID(2), 0xb4d, { msg.impl->getData().data(), msg.impl->getData().size() }, localId);
+        comp.handleContentStatus(ContentID(2), 0xb4d, { msg.impl->getData().data(), msg.impl->getData().size() }, otherRemoteId);
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+    }
+
+    TEST_F(ADcsmComponent, doesNotHandleContentStatusIfMessageTypeUnknown)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_RPLC(2, CS::Assigned);
+
+        ramses::StreamStatusMessage msg(ramses::StreamStatusMessage::Status::ChannelError);
+        comp.handleContentStatus(ContentID(2), 0xb4d, { msg.impl->getData().data(), msg.impl->getData().size() }, remoteId);
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+    }
+
+    TEST_F(ADcsmComponent, failsSendingContentStatusIfNoLocalConsumer)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_LPRC(2, CS::Assigned);
+
+        ramses::StreamStatusMessage msg(ramses::StreamStatusMessage::Status::ChannelError);
+        EXPECT_FALSE(comp.sendContentStatus(ContentID(2), *msg.impl));
+    }
+
+    TEST_F(ADcsmComponent, failsSendingContentStatusIfContentUnknownOrNotAssigned)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+
+        ramses::StreamStatusMessage msg(ramses::StreamStatusMessage::Status::ChannelError);
+        EXPECT_FALSE(comp.sendContentStatus(ContentID(2), *msg.impl));
+
+        getContentToState_LPLC(2, CS::Offered);
+        EXPECT_FALSE(comp.sendContentStatus(ContentID(2), *msg.impl));
+
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
+    }
+
+    TEST_F(ADcsmComponent, doesNotEmitForceOfferStoppedForUnknownContent)
+    {
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_RPLC(2, CS::Offered);
+
+        EXPECT_CALL(consumer, forceContentOfferStopped(ramses::ContentID(2))).Times(1);
+        comp.participantHasDisconnected(remoteId);
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+        ensureNoEventsPending();
+
+        comp.participantHasDisconnected(remoteId);
+        comp.participantHasDisconnected(remoteId);
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+        ensureNoEventsPending();
+    }
+
+    TEST_F(ADcsmComponent, doesNotEmitForceOfferStoppedForUnknownContent_RemoteProviderOff)
+    {
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_RPLC(2, CS::Offered);
+
+        EXPECT_CALL(consumer, forceContentOfferStopped(ramses::ContentID(2))).Times(1);
+        comp.handleForceStopOfferContent(ContentID(2), remoteId);
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+        ensureNoEventsPending();
+
+        comp.handleForceStopOfferContent(ContentID(2), remoteId);
+        comp.handleForceStopOfferContent(ContentID(2), remoteId);
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+        ensureNoEventsPending();
+    }
+
+    TEST_F(ADcsmComponent, doesNotEmitForceOfferStoppedForUnknownContent_Local)
+    {
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        getContentToState_LPLC(2, CS::Offered);
+
+        EXPECT_CALL(consumer, forceContentOfferStopped(ramses::ContentID(2))).Times(1);
+        EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(2))).Times(1);
+        comp.setLocalProviderAvailability(false);
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+        ensureNoEventsPending();
+
+        comp.setLocalProviderAvailability(false);
+        comp.setLocalProviderAvailability(false);
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+        ensureNoEventsPending();
+    }
+
+    TEST_F(ADcsmComponent, doesNotEmitEventsForOldSessionAfterForceStopOffer)
+    {
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_RPLC(2, CS::Offered);
+        getContentToState_LPLC(3, CS::Offered);
+
+        EXPECT_CALL(comm, sendDcsmOfferContent(_, _, _, _, _)).Times(AnyNumber());
+        EXPECT_CALL(comm, sendDcsmBroadcastRequestStopOfferContent(_)).Times(AnyNumber());
+        EXPECT_CALL(provider, contentStateChange(_, _, _, _)).Times(AnyNumber());
+
+        comp.participantHasDisconnected(remoteId); // no event will be triggered
+        comp.newParticipantHasConnected(remoteId);
+        comp.handleOfferContent(ContentID(2), Category(3), ETechnicalContentType::RamsesSceneID, "mycontent", remoteId); // no event will be triggered
+
+        comp.sendRequestStopOfferContent(ContentID(3)); // other contents trigger events normally
+
+        comp.participantHasDisconnected(remoteId); // no event will be triggered
+        comp.newParticipantHasConnected(remoteId);
+        comp.handleOfferContent(ContentID(2), Category(3), ETechnicalContentType::RamsesSceneID, "mycontent", remoteId); // no event will be triggered
+
+        comp.participantHasDisconnected(remoteId); // this will trigger force stop offer
+        comp.newParticipantHasConnected(remoteId);
+        comp.handleOfferContent(ContentID(2), Category(3), ETechnicalContentType::RamsesSceneID, "mycontent", remoteId); // this will trigger contentOffered
+
+        EXPECT_CALL(consumer, contentStopOfferRequest(ramses::ContentID(3))).Times(1);
+        EXPECT_CALL(consumer, forceContentOfferStopped(ramses::ContentID(2))).Times(1);
+        EXPECT_CALL(consumer, contentOffered(ramses::ContentID(2), ramses::Category(3), ramses::ETechnicalContentType::RamsesSceneID)).Times(1);
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+        EXPECT_TRUE(comp.dispatchProviderEvents(provider));
     }
 
     class ADcsmComponentNotConnected : public ADcsmComponent

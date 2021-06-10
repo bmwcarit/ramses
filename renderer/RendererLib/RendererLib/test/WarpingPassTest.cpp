@@ -26,6 +26,7 @@ public:
         EXPECT_CALL(device, uploadIndexBufferData(_, _, _));
         EXPECT_CALL(device, allocateVertexBuffer(_)).Times(2);
         EXPECT_CALL(device, uploadVertexBufferData(_, _, _)).Times(2);
+        EXPECT_CALL(device, allocateVertexArray(_));
 
         ramses_internal::WarpingMeshData meshData;
         pass = new WarpingPass(device, meshData);
@@ -33,6 +34,7 @@ public:
 
     ~AWarpingPass()
     {
+        EXPECT_CALL(device, deleteVertexArray(_));
         EXPECT_CALL(device, deleteIndexBuffer(_));
         EXPECT_CALL(device, deleteVertexBuffer(_)).Times(2);
         EXPECT_CALL(device, deleteShader(_));
@@ -45,7 +47,6 @@ protected:
     WarpingPass* pass;
 };
 
-
 TEST_F(AWarpingPass, ValidRenderBackendCallsOnExecute)
 {
     const DeviceResourceHandle inputColorBuffer(1);
@@ -57,8 +58,7 @@ TEST_F(AWarpingPass, ValidRenderBackendCallsOnExecute)
     const TextureSamplerStates expectedSamplerStates(EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp, ESamplingMethod::Linear, ESamplingMethod::Linear, 1u);
     EXPECT_CALL(device, activateTextureSamplerObject(Property(&TextureSamplerStates::hash, Eq(expectedSamplerStates.hash())), Ne(DataFieldHandle::Invalid())));
 
-    EXPECT_CALL(device, activateIndexBuffer(Ne(DeviceResourceHandle::Invalid())));
-    EXPECT_CALL(device, activateVertexBuffer(Ne(DeviceResourceHandle::Invalid()), Ne(DataFieldHandle::Invalid()), 0u, 0u, _, 0u, 0u)).Times(2);
+    EXPECT_CALL(device, activateVertexArray(Ne(DeviceResourceHandle::Invalid())));
     EXPECT_CALL(device, drawIndexedTriangles(0, 6, 1u)); // element count for default WarpingMeshData
 
     pass->execute(inputColorBuffer);

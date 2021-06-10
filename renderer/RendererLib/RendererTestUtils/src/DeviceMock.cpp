@@ -15,6 +15,7 @@ namespace ramses_internal
     const DeviceResourceHandle DeviceMock::FakeShaderDeviceHandle(1111u);
     const DeviceResourceHandle DeviceMock::FakeVertexBufferDeviceHandle(2222u);
     const DeviceResourceHandle DeviceMock::FakeIndexBufferDeviceHandle(3333u);
+    const DeviceResourceHandle DeviceMock::FakeVertexArrayDeviceHandle(3334u);
     const DeviceResourceHandle DeviceMock::FakeTextureDeviceHandle(4444u);
     const DeviceResourceHandle DeviceMock::FakeFrameBufferRenderTargetDeviceHandle(5555u);
     const DeviceResourceHandle DeviceMock::FakeRenderTargetDeviceHandle(6666u);
@@ -44,6 +45,7 @@ namespace ramses_internal
         // fake uploads
         ON_CALL(*this, allocateVertexBuffer(_)).WillByDefault(Return(FakeVertexBufferDeviceHandle));
         ON_CALL(*this, allocateIndexBuffer(_, _)).WillByDefault(Return(FakeIndexBufferDeviceHandle));
+        ON_CALL(*this, allocateVertexArray(_)).WillByDefault(Return(FakeVertexArrayDeviceHandle));
         ON_CALL(*this, uploadShader(_)).WillByDefault(Invoke([](const auto&){return std::make_unique<const GPUResource>(1u, 2u);}));
         ON_CALL(*this, registerShader(_)).WillByDefault(Return(FakeShaderDeviceHandle));
         ON_CALL(*this, uploadBinaryShader(_, _, _, _)).WillByDefault(Return(FakeShaderDeviceHandle));

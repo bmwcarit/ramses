@@ -373,16 +373,23 @@ bool SceneRenderingTests::run(RendererTestsFramework& testFramework, const Rende
     case DataBuffer_InterleavedVertexAttribute_StartVertexOffset:
         return runBasicTest<DataBufferScene>(testFramework, DataBufferScene::VERTEX_DATA_BUFFER_INTERLEAVED_START_VERTEX, "DataBufferScene_RedTriangle", 0.0f, Vector3(2, -1, 18));
     case Display_SetClearColor:
-    {
         return testFramework.renderAndCompareScreenshot("Display_SetClearColor", 0u, 0.4f);
-    }
     case FrameProfiler_Show:
     {
         testFramework.getTestRenderer().toggleRendererFrameProfiler();
-        bool profilerIsVisible = !runBasicTest<SingleAppearanceScene>(testFramework, SingleAppearanceScene::RED_TRIANGLES, "SingleAppearanceScene_RedTriangles");
+        bool res = !runBasicTest<SingleAppearanceScene>(testFramework, SingleAppearanceScene::RED_TRIANGLES, "SingleAppearanceScene_RedTriangles",
+            RendererTestUtils::DefaultMaxAveragePercentPerPixel, Vector3{ 0.f }, false);
         testFramework.getTestRenderer().toggleRendererFrameProfiler();
-        bool profilerIsInvisible = runBasicTest<SingleAppearanceScene>(testFramework, SingleAppearanceScene::RED_TRIANGLES, "SingleAppearanceScene_RedTriangles");
-        return profilerIsInvisible && profilerIsVisible;
+        res &= runBasicTest<SingleAppearanceScene>(testFramework, SingleAppearanceScene::RED_TRIANGLES, "SingleAppearanceScene_RedTriangles");
+
+        // another cycle with different graph properties
+        testFramework.getTestRenderer().toggleRendererFrameProfiler(33u, 80u);
+        res &= !runBasicTest<SingleAppearanceScene>(testFramework, SingleAppearanceScene::RED_TRIANGLES, "SingleAppearanceScene_RedTriangles",
+            RendererTestUtils::DefaultMaxAveragePercentPerPixel, Vector3{ 0.f }, false);
+        testFramework.getTestRenderer().toggleRendererFrameProfiler();
+        res &= runBasicTest<SingleAppearanceScene>(testFramework, SingleAppearanceScene::RED_TRIANGLES, "SingleAppearanceScene_RedTriangles");
+
+        return res;
     }
     case GeometryShaderGlslV320_PointsInTriangleStripOut:
         return runBasicTest<GeometryShaderScene>(testFramework, GeometryShaderScene::GLSL320_POINTS_IN_TRIANGLE_STRIP_OUT, "GeometryShaderScene_PointsInTriangleStripOut", 0.f);
@@ -421,8 +428,9 @@ bool SceneRenderingTests::runBasicTest(
     UInt32 sceneState,
     const String& expectedImageName,
     float maxAveragePercentErrorPerPixel,
-    const Vector3& cameraTranslation)
+    const Vector3& cameraTranslation,
+    bool saveDiffOnError)
 {
     testFramework.createAndShowScene<INTEGRATION_SCENE>(sceneState, cameraTranslation);
-    return testFramework.renderAndCompareScreenshot(expectedImageName, 0u, maxAveragePercentErrorPerPixel);
+    return testFramework.renderAndCompareScreenshot(expectedImageName, 0u, maxAveragePercentErrorPerPixel, false, saveDiffOnError);
 }

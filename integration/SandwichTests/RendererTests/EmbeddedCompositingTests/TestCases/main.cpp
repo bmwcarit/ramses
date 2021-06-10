@@ -39,10 +39,8 @@ int main(int argc, const char *argv[])
 
     RendererTestUtils::SetCommandLineParamsForAllTests(argc, argv);
 
-    std::vector<ramses_internal::String>  filterInTestStrings;
-    std::vector<ramses_internal::String>  filterOutTestStrings;
-    ramses_internal::StringUtils::Tokenize(filterInTest, filterInTestStrings, ':');
-    ramses_internal::StringUtils::Tokenize(filterOutTest, filterOutTestStrings, ':');
+    std::vector<ramses_internal::String> filterInTestStrings = ramses_internal::StringUtils::Tokenize(filterInTest, ':');
+    std::vector<ramses_internal::String> filterOutTestStrings = ramses_internal::StringUtils::Tokenize(filterOutTest, ':');
 
     RendererTestUtils::SetMaxFrameCallbackPollingTimeForAllTests(std::chrono::microseconds{10000000});
 

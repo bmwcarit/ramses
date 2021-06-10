@@ -552,6 +552,23 @@ TEST_F(ARendererResourceManager, canUploadAndUnloadRenderTargetWithBuffers)
     resourceManager.unloadRenderTarget(targetHandle, fakeSceneId);
 }
 
+TEST_F(ARendererResourceManager, canUploadAndUnloadVertexArray)
+{
+    VertexArrayInfo vaInfo;
+    vaInfo.shader = DeviceMock::FakeShaderDeviceHandle;
+    vaInfo.indexBuffer = DeviceMock::FakeIndexBufferDeviceHandle;
+    vaInfo.vertexBuffers.push_back({ DeviceMock::FakeVertexBufferDeviceHandle,DataFieldHandle{2u}, 3u, 4u, EDataType::Vector2F, 5u, 6u });
+
+    const RenderableHandle renderable{ 123u };
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateVertexArray(Ref(vaInfo)));
+    resourceManager.uploadVertexArray(renderable, vaInfo, fakeSceneId);
+
+    EXPECT_EQ(DeviceMock::FakeVertexArrayDeviceHandle, resourceManager.getVertexArrayDeviceHandle(renderable, fakeSceneId));
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteVertexArray(DeviceMock::FakeVertexArrayDeviceHandle));
+    resourceManager.unloadVertexArray(renderable, fakeSceneId);
+}
+
 TEST_F(ARendererResourceManager, GetsInvalidDeviceHandleForUnknownOffscreenBuffer)
 {
     const OffscreenBufferHandle bufferHandle(1u);
@@ -1140,6 +1157,16 @@ TEST_F(ARendererResourceManager, unloadsAllSceneResources)
     EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateTexture2D(_, _, _, _, _, _));
     resourceManager.uploadTextureBuffer(textureBufferHandle, 1u, 2u, ETextureFormat::RGBA8, 1u, fakeSceneId);
 
+    //upload vertex array
+    VertexArrayInfo vaInfo;
+    vaInfo.shader = DeviceMock::FakeShaderDeviceHandle;
+    vaInfo.indexBuffer = DeviceMock::FakeIndexBufferDeviceHandle;
+    vaInfo.vertexBuffers.push_back({ DeviceMock::FakeVertexBufferDeviceHandle,DataFieldHandle{2u}, 3u, 4u, EDataType::Vector2F, 5u, 6u });
+
+    const RenderableHandle renderable{ 123u };
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateVertexArray(Ref(vaInfo)));
+    resourceManager.uploadVertexArray(renderable, vaInfo, fakeSceneId);
+
     // unload all scene resources
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_)).Times(2);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderTarget(_)).Times(3);
@@ -1147,6 +1174,7 @@ TEST_F(ARendererResourceManager, unloadsAllSceneResources)
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteIndexBuffer(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteVertexBuffer(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteTexture(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteVertexArray(_));
     resourceManager.unloadAllSceneResourcesForScene(fakeSceneId);
 
     // Make sure the resource was deleted before the resourceManager gets out of scope

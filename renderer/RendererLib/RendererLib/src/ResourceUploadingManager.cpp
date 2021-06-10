@@ -175,10 +175,13 @@ namespace ramses_internal
         LOG_TRACE(CONTEXT_PROFILING, "        ResourceUploadingManager::uploadResource upload resource of type " << EnumToString(rd.type));
 
         const IResource* pResource = rd.resource.get();
+        // decompress resource if needed
+        pResource->decompress();
         assert(pResource->isDeCompressedAvailable());
 
         const UInt32 resourceSize = pResource->getDecompressedDataSize();
         UInt32 vramSize = 0;
+        // upload to GPU
         const auto deviceHandle = m_uploader->uploadResource(m_renderBackend, rd, vramSize);
         if (deviceHandle.has_value())
         {
@@ -186,6 +189,7 @@ namespace ramses_internal
             {
                 m_resourceSizes.put(rd.hash, resourceSize);
                 m_resourceTotalUploadedSize += resourceSize;
+                // will also release reference to data (release from system memory if last holder)
                 m_resources.setResourceUploaded(rd.hash, deviceHandle.value(), vramSize);
             }
             else
@@ -196,6 +200,7 @@ namespace ramses_internal
         }
         else
         {
+            // effect not found in cache, schedule for upload in uploader thread
             assert(rd.type == EResourceType_Effect);
             assert(absl::c_find_if(m_effectsToUpload, [&](const auto& e){ return e->getHash() == rd.hash;}) == m_effectsToUpload.cend());
             m_effectsToUpload.push_back(pResource->convertTo<const EffectResource>());
@@ -263,9 +268,7 @@ namespace ramses_internal
             const ResourceDescriptor& rd = m_resources.getResourceDescriptor(resource);
             assert(rd.status == EResourceStatus::Provided);
             assert(rd.resource);
-            const IResource* resourceObj = rd.resource.get();
-            resourceObj->decompress();
-            totalSize += resourceObj->getDecompressedDataSize();
+            totalSize += rd.resource->getDecompressedDataSize();
 
             resourcesToUpload.push_back(resource);
         }

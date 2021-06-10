@@ -52,12 +52,14 @@ RendererResourceManagerMock::RendererResourceManagerMock()
     ON_CALL(*this, getOffscreenBufferColorBufferDeviceHandle(_)).WillByDefault(Return(DeviceMock::FakeRenderBufferDeviceHandle));
     ON_CALL(*this, getOffscreenBufferHandle(DeviceResourceHandle::Invalid())).WillByDefault(Return(OffscreenBufferHandle::Invalid()));
     ON_CALL(*this, getStreamBufferDeviceHandle(_)).WillByDefault(Return(DeviceMock::FakeRenderTargetDeviceHandle));
+    ON_CALL(*this, getVertexArrayDeviceHandle(_, _)).WillByDefault(Return(DeviceMock::FakeVertexArrayDeviceHandle));
 
     ON_CALL(*this, getBlitPassRenderTargetsDeviceHandle(_, _, _, _)).WillByDefault(DoAll(SetArgReferee<2>(DeviceMock::FakeBlitPassRenderTargetDeviceHandle), SetArgReferee<3>(DeviceMock::FakeBlitPassRenderTargetDeviceHandle)));
 
     // no need to strictly test getters
     EXPECT_CALL(*this, getResourceDeviceHandle(_)).Times(AnyNumber());
     EXPECT_CALL(*this, getDataBufferDeviceHandle(_, _)).Times(AnyNumber());
+    EXPECT_CALL(*this, getVertexArrayDeviceHandle(_, _)).Times(AnyNumber());
     EXPECT_CALL(*this, getTextureBufferDeviceHandle(_, _)).Times(AnyNumber());
     EXPECT_CALL(*this, getRenderTargetDeviceHandle(_, _)).Times(AnyNumber());
     EXPECT_CALL(*this, getRenderTargetBufferDeviceHandle(_, _)).Times(AnyNumber());

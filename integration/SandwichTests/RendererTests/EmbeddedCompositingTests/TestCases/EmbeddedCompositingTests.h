@@ -20,6 +20,7 @@
 #include "WaylandOutputTests.h"
 #include "SharedMemoryBufferTests.h"
 #include "StreamBufferTests.h"
+#include "MultiDisplayStreamTextureTests.h"
 
 namespace ramses_internal
 {
@@ -42,6 +43,7 @@ namespace ramses_internal
             m_waylandOutputTests.setUpEmbeddedCompositingTestCases(m_testFramework);
             m_sharedMemoryBufferTests.setUpEmbeddedCompositingTestCases(m_testFramework);
             m_streamBufferTests.setUpEmbeddedCompositingTestCases(m_testFramework);
+            m_multiDisplayStreamTextureTests.setUpEmbeddedCompositingTestCases(m_testFramework);
 
             m_testFramework.filterTestCases(filterIn, filterOut);
         }
@@ -69,6 +71,7 @@ namespace ramses_internal
         WaylandOutputTests                          m_waylandOutputTests;
         SharedMemoryBufferTests                     m_sharedMemoryBufferTests;
         StreamBufferTests                           m_streamBufferTests;
+        MultiDisplayStreamTextureTests              m_multiDisplayStreamTextureTests;
     };
 }
 

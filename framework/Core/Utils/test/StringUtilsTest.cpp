@@ -27,8 +27,7 @@ namespace ramses_internal
     TEST(StringUtilsTest, tokenizeStringToSet)
     {
         const String testString(" test1 test2   test3");
-        StringSet tokens;
-        StringUtils::Tokenize(testString, tokens);
+        StringSet tokens = StringUtils::TokenizeToSet(testString);
         EXPECT_EQ(3u, tokens.size());
         EXPECT_TRUE(tokens.contains("test1"));
         EXPECT_TRUE(tokens.contains("test2"));
@@ -39,32 +38,28 @@ namespace ramses_internal
     TEST(StringUtilsTest, tokenizeString)
     {
         const String testString(" test1 test2   test3");
-        std::vector<String> tokens;
-        StringUtils::Tokenize(testString, tokens);
+        std::vector<String> tokens = StringUtils::Tokenize(testString);
         EXPECT_EQ(tokens, std::vector<String>({"test1", "test2", "test3"}));
     }
 
     TEST(StringUtilsTest, tokenizeEmptyString)
     {
         const String testString("");
-        std::vector<String> tokens;
-        StringUtils::Tokenize(testString, tokens);
+        std::vector<String> tokens = StringUtils::Tokenize(testString);
         EXPECT_EQ(0u, tokens.size());
     }
 
     TEST(StringUtilsTest, WithNonDefaultSplitChar)
     {
         const String testString(",test1,,test2,test3");
-        std::vector<String> tokens;
-        StringUtils::Tokenize(testString, tokens, ',');
+        std::vector<String> tokens = StringUtils::Tokenize(testString, ',');
         EXPECT_EQ(tokens, std::vector<String>({"test1", "test2", "test3"}));
     }
 
     TEST(StringUtilsTest, tokenizeStringToSetWithNonDefaultSplitChar)
     {
         const String testString(",test1,,test2,test3,,");
-        StringSet tokens;
-        StringUtils::Tokenize(testString, tokens, ',');
+        StringSet tokens = StringUtils::TokenizeToSet(testString, ',');
         EXPECT_EQ(3u, tokens.size());
         EXPECT_TRUE(tokens.contains("test1"));
         EXPECT_TRUE(tokens.contains("test2"));
@@ -75,8 +70,7 @@ namespace ramses_internal
     TEST(StringUtilsTest, tokenizeStringWithSingleCharElements)
     {
         const String testString(",1,,2,3");
-        StringSet tokens;
-        StringUtils::Tokenize(testString, tokens, ',');
+        StringSet tokens = StringUtils::TokenizeToSet(testString, ',');
         EXPECT_EQ(3u, tokens.size());
         EXPECT_TRUE(tokens.contains("1"));
         EXPECT_TRUE(tokens.contains("2"));

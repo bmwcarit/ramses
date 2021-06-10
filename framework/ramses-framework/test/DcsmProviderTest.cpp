@@ -17,7 +17,7 @@
 #include "gtest/gtest.h"
 #include <chrono>
 #include "ramses-framework-api/CategoryInfoUpdate.h"
-
+#include "DcsmStatusMessageImpl.h"
 
 namespace ramses
 {
@@ -36,6 +36,7 @@ namespace ramses
 
         MOCK_METHOD(bool, sendCanvasSizeChange, (ramses_internal::ContentID, const ramses_internal::CategoryInfo&, ramses_internal::AnimationInformation), (override));
         MOCK_METHOD(bool, sendContentStateChange, (ramses_internal::ContentID, ramses_internal::EDcsmState, const ramses_internal::CategoryInfo&, ramses_internal::AnimationInformation), (override));
+        MOCK_METHOD(bool, sendContentStatus, (ramses_internal::ContentID, DcsmStatusMessageImpl const&), (override));
         MOCK_METHOD(bool, dispatchConsumerEvents, (IDcsmConsumerEventHandler&), (override));
         MOCK_METHOD(bool, dispatchConsumerEvents, (IDcsmConsumerEventHandler&, std::chrono::milliseconds), (override));
 
@@ -928,6 +929,26 @@ namespace ramses
         EXPECT_CALL(compMock, sendOfferContent(ramses_internal::ContentID(123), ramses_internal::Category(567), ramses_internal::ETechnicalContentType::RamsesSceneID, "", false)).WillOnce(Return(true));
         EXPECT_CALL(compMock, sendContentDescription(_, _)).WillOnce(Return(true));
         EXPECT_EQ(provider->offerContent(id, Category(567), sceneId_t(432), EDcsmOfferingMode::LocalAndRemote), StatusOK);
+    }
+
+    TEST_F(ADcsmProvider, emitsContentStatusMessageIfComponentEmitsContentStatusEvent)
+    {
+        EXPECT_CALL(compMock, dispatchProviderEvents(_)).WillOnce([this](auto&)
+            {
+                StreamStatusMessage msg(StreamStatusMessage::Status::Halted);
+                auto impl = std::make_unique<DcsmStatusMessageImpl>(static_cast<uint64_t>(msg.impl->getType()), absl::Span<const ramses_internal::Byte>{ msg.impl->getData().data(), msg.impl->getData().size() });
+                provider->impl.contentStatus(ContentID(123), std::move(impl));
+                return true;
+            });
+        EXPECT_CALL(handler, contentStatus(ContentID(123), _)).WillOnce([](auto, auto const& message)
+            {
+                EXPECT_EQ(message.impl->getType(), DcsmStatusMessageImpl::Type::StreamStatus);
+                auto highptr = message.getAsStreamStatus();
+                ASSERT_TRUE(highptr);
+                EXPECT_EQ(highptr->getStreamStatus(), StreamStatusMessage::Status::Halted);
+            });
+
+        EXPECT_EQ(provider->dispatchEvents(handler), StatusOK);
     }
 
     class ADcsmProviderFromFramework : public Test

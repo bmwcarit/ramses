@@ -237,24 +237,51 @@ namespace ramses_internal
         return deviceHandle;
     }
 
-    void FrameProfileRenderer::updateTimingLineVertexBuffer(Geometry& geometry, const FrameProfilerStatistics::RegionTimings& timingData)
+    DeviceResourceHandle FrameProfileRenderer::createVertexArray(const Geometry& geometry, const Look& look)
     {
+        assert(look.shaderHandle.isValid());
+        assert(geometry.indexBufferHandle.isValid());
+        assert(geometry.vertexBufferHandle.isValid());
+        assert(IsBufferDataType(geometry.dataType));
+        VertexArrayInfo vaInfo;
+        vaInfo.shader = look.shaderHandle;
+        vaInfo.indexBuffer = geometry.indexBufferHandle;
+        vaInfo.vertexBuffers.push_back({ geometry.vertexBufferHandle, look.positionHandle, 0u, 0u, geometry.dataType, 0u, 0u });
+
+        const auto vertexArrayHandle = m_device->allocateVertexArray(vaInfo);
+        m_vertexArrayHandles.push_back(vertexArrayHandle);
+
+        return vertexArrayHandle;
+    }
+
+    void FrameProfileRenderer::updateTimingLineVertexBuffer(Renderable& renderable, const FrameProfilerStatistics::RegionTimings& timingData)
+    {
+        const auto& look = renderable.look;
+        auto& geometry = renderable.geometry;
         const ArrayResource res(EResourceType_VertexArray, static_cast<UInt32>(timingData.size()), EDataType::Float, timingData.data(), ResourceCacheFlag_DoNotCache, String());
         if (!geometry.vertexBufferHandle.isValid())
         {
             geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getDecompressedDataSize());
             geometry.dataType = EDataType::FloatBuffer;
+
+            assert(!renderable.vertexArrayHandle.isValid());
+            renderable.vertexArrayHandle = createVertexArray(geometry, look);
         }
         m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData().data(), res.getDecompressedDataSize());
     }
 
-    void FrameProfileRenderer::updateCounterLineVertexBuffer(Geometry& geometry, const FrameProfilerStatistics::CounterValues& counterValues)
+    void FrameProfileRenderer::updateCounterLineVertexBuffer(Renderable& renderable, const FrameProfilerStatistics::CounterValues& counterValues)
     {
+        const auto& look = renderable.look;
+        auto& geometry = renderable.geometry;
         const ArrayResource res(EResourceType_VertexArray, static_cast<UInt32>(counterValues.size()), EDataType::Float, counterValues.data(), ResourceCacheFlag_DoNotCache, String());
         if (!geometry.vertexBufferHandle.isValid())
         {
             geometry.vertexBufferHandle = m_device->allocateVertexBuffer(res.getDecompressedDataSize());
             geometry.dataType = EDataType::FloatBuffer;
+
+            assert(!renderable.vertexArrayHandle.isValid());
+            renderable.vertexArrayHandle = createVertexArray(geometry, look);
         }
         m_device->uploadVertexBufferData(geometry.vertexBufferHandle, res.getResourceData().data(), res.getDecompressedDataSize());
     }
@@ -364,6 +391,9 @@ namespace ramses_internal
         renderable.look = look;
         renderable.color = color;
         renderable.mvpMatrix = createMVPMatrix(translation, scale);
+
+        renderable.vertexArrayHandle = {};
+
         return renderable;
     }
 
@@ -395,7 +425,7 @@ namespace ramses_internal
             // using scissor test to prevent graph rendering outside its box
             m_device->scissorTest(EScissorTest::Enabled, { static_cast<Int16>(translation.x), static_cast<Int16>(translation.y), UInt16(FrameProfilerStatistics::NumberOfFrames), static_cast<UInt16>(TimingAreaHeight) });
 
-            updateTimingLineVertexBuffer(renderable.geometry, statistics.getRegionTimings());
+            updateTimingLineVertexBuffer(renderable, statistics.getRegionTimings());
             render(renderable);
 
             m_device->scissorTest(EScissorTest::Disabled, {});
@@ -412,7 +442,7 @@ namespace ramses_internal
             m_device->scissorTest(EScissorTest::Enabled, { static_cast<Int16>(translation.x), static_cast<Int16>(translation.y), UInt16(FrameProfilerStatistics::NumberOfFrames), static_cast<UInt16>(CounterAreaHeight) });
 
             const FrameProfilerStatistics::CounterValues& counterValues = statistics.getCounterValues(counter);
-            updateCounterLineVertexBuffer(renderable.geometry, counterValues);
+            updateCounterLineVertexBuffer(renderable, counterValues);
             render(renderable);
 
             m_device->scissorTest(EScissorTest::Disabled, {});
@@ -454,6 +484,10 @@ namespace ramses_internal
             destroyGeometry(m_verticalLineGeometry);
             destroyGeometry(m_horizontalLineGeometry);
             destroyEffects();
+
+            for (const auto& vaHandle : m_vertexArrayHandles)
+                m_device->deleteVertexArray(vaHandle);
+            m_vertexArrayHandles.clear();
 
             m_renderables.clear();
             m_initialized = false;
@@ -531,6 +565,9 @@ namespace ramses_internal
 
     void FrameProfileRenderer::render(const Renderable& drawable)
     {
+        if (!drawable.vertexArrayHandle.isValid())
+            return;
+
         m_device->activateShader(drawable.look.shaderHandle);
         if (drawable.look.colorHandle != DataFieldHandle::Invalid())
         {
@@ -540,9 +577,7 @@ namespace ramses_internal
 
         m_device->drawMode(drawable.geometry.drawMode);
 
-        assert(IsBufferDataType(drawable.geometry.dataType));
-        m_device->activateVertexBuffer(drawable.geometry.vertexBufferHandle, drawable.look.positionHandle, 0u, 0u, drawable.geometry.dataType, 0u, 0u);
-        m_device->activateIndexBuffer(drawable.geometry.indexBufferHandle);
+        m_device->activateVertexArray(drawable.vertexArrayHandle);
         m_device->drawIndexedTriangles(0, drawable.geometry.indexCount, 0);
     }
 

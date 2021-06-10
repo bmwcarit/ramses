@@ -12,6 +12,7 @@
 #include "Utils/File.h"
 #include "Utils/LoggingUtils.h"
 #include "Utils/LogMacros.h"
+#include "absl/strings/match.h"
 
 namespace ramses_internal
 {
@@ -50,9 +51,10 @@ namespace ramses_internal
 
         void CheckSocketFileExists(const String& xdgRuntimeDir, const String& socketFilename)
         {
-            const auto socketFullPath = (socketFilename.startsWith("/")? socketFilename : (xdgRuntimeDir + "/" + socketFilename));
+            const bool socketIsAbsolute = absl::StartsWith(socketFilename, "/");
+            const auto socketFullPath = (socketIsAbsolute ? socketFilename : (xdgRuntimeDir + "/" + socketFilename));
 
-            if(!socketFilename.startsWith("/"))
+            if(!socketIsAbsolute)
                 if(!CheckXDGRuntimeDir())
                     return;
 

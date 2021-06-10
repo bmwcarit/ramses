@@ -21,6 +21,8 @@
 
 namespace ramses_internal
 {
+    enum class EDataType;
+
     enum EPostProcessingEffect
     {
         EPostProcessingEffect_None = 0,
@@ -83,6 +85,24 @@ namespace ramses_internal
     using ScreenshotInfoVector = std::vector<ScreenshotInfo>;
 
     using BinaryShaderFormatID = StronglyTypedValue<UInt32, 0, struct BinaryShaderFormatIDTag>;
+
+    struct VertexBufferInfo
+    {
+        DeviceResourceHandle deviceHandle;
+        DataFieldHandle field;
+        UInt32 instancingDivisor;
+        UInt32 startVertex;
+        EDataType bufferDataType;
+        UInt16 offsetWithinElement;
+        UInt16 stride;
+    };
+
+    struct VertexArrayInfo
+    {
+        DeviceResourceHandle shader;
+        DeviceResourceHandle indexBuffer;
+        std::vector<VertexBufferInfo> vertexBuffers;
+    };
 
     enum class ERendererLogTopic
     {

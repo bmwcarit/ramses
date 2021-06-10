@@ -12,6 +12,7 @@
 #include "gmock/gmock.h"
 #include "IDcsmConsumerImpl.h"
 #include "ramses-framework-api/CategoryInfoUpdate.h"
+#include "ramses-framework-api/DcsmStatusMessage.h"
 
 namespace ramses
 {
@@ -27,6 +28,7 @@ namespace ramses
         MOCK_METHOD(status_t, contentSizeChange, (ContentID, const CategoryInfoUpdate&, AnimationInformation), (override));
         MOCK_METHOD(status_t, contentStateChange, (ContentID, EDcsmState status, AnimationInformation), (override));
         MOCK_METHOD(status_t, acceptStopOffer, (ContentID, AnimationInformation), (override));
+        MOCK_METHOD(status_t, sendContentStatus, (ContentID, DcsmStatusMessage const&), (override));
     };
 }
 

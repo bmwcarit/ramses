@@ -101,10 +101,10 @@ namespace ramses_internal
         ThreadWatchdogConfig config;
         config.setWatchdogNotificationInterval(ramses::ERamsesThreadIdentifier_Workers, 0); // no time limitations - always notify
         config.setThreadWatchDogCallback(&mockCallback);
+        TaskMock blockingTask;
         ThreadedTaskExecutor taskSystem(2, config);
 
         ThreadBarrier barrier(2);
-        TaskMock blockingTask;
         // blocking task will queue in 10 fast tasks which are executed in second worker thread
         // second worker thread will notify thread watchdog in between every task,
         // but there can be at most one more system watchdog notification while blocking task is running

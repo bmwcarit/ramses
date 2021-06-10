@@ -10,6 +10,6 @@
 # this is default for wayland projects.
 
 find_package(PkgConfig QUIET)
-IF(PKG_CONFIG_FOUND)
+IF(NOT WIN32 AND PKG_CONFIG_FOUND)
     pkg_check_modules(libdrm libdrm)
 ENDIF()

@@ -26,6 +26,7 @@ namespace ramses_internal
 
         MOCK_METHOD(void, contentSizeChange, (ramses::ContentID, const ramses::CategoryInfoUpdate&, ramses::AnimationInformation), (override));
         MOCK_METHOD(void, contentStateChange, (ramses::ContentID, ramses_internal::EDcsmState, const ramses::CategoryInfoUpdate&, ramses::AnimationInformation), (override));
+        MOCK_METHOD(void, contentStatus, (ramses::ContentID, std::unique_ptr<ramses::DcsmStatusMessageImpl>&&), (override));
     };
 
     class DcsmConsumerEventHandlerMock : public ramses::IDcsmConsumerEventHandler
@@ -47,7 +48,7 @@ namespace ramses_internal
 
 namespace ramses
 {
-    class DcsmProviderEventHandlerMock : public IDcsmProviderEventHandler
+    class DcsmProviderEventHandlerMock : public IDcsmProviderEventHandlerExtended
     {
     public:
         DcsmProviderEventHandlerMock();
@@ -59,6 +60,7 @@ namespace ramses
         MOCK_METHOD(void, contentSizeChange, (ContentID, const CategoryInfoUpdate&, AnimationInformation), (override));
         MOCK_METHOD(void, stopOfferAccepted, (ContentID, AnimationInformation), (override));
         MOCK_METHOD(void, contentReadyRequested, (ContentID), (override));
+        MOCK_METHOD(void, contentStatus, (ContentID, DcsmStatusMessage const&), (override));
     };
 }
 

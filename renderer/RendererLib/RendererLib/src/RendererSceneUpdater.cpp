@@ -38,6 +38,7 @@
 #include "PlatformAbstraction/PlatformTime.h"
 #include "PlatformAbstraction/Macros.h"
 #include "absl/algorithm/container.h"
+#include "RendererLib/SceneResourceUploader.h"
 
 namespace ramses_internal
 {
@@ -248,6 +249,7 @@ namespace ramses_internal
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update scenes resource cache");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateResourceCache);
             updateScenesResourceCache();
+            uploadAndUnloadVertexArrays();
         }
 
         {
@@ -371,8 +373,12 @@ namespace ramses_internal
         flushInfo.resourcesRemoved = std::move(resourceChanges.m_resourcesRemoved);
         flushInfo.sceneActions = std::move(sceneUpdate.actions);
 
-        if (pendingFlushes.size() > m_maximumPendingFlushesToKillScene)
-            logTooManyFlushesAndUnsubscribeIfRemoteScene(sceneID, stagingInfo.pendingData.pendingFlushes.size());
+        if (stagingInfo.pendingData.pendingFlushes.size() > m_maximumPendingFlushesToKillScene)
+        {
+            const auto numPendingFlushes = getNumberOfPendingNonEmptyFlushes(sceneID);
+            if (numPendingFlushes > m_maximumPendingFlushesToKillScene)
+                logTooManyFlushesAndUnsubscribeIfRemoteScene(sceneID, numPendingFlushes);
+        }
     }
 
     void RendererSceneUpdater::consolidateResourceDataForMapping(SceneId sceneID)
@@ -536,14 +542,17 @@ namespace ramses_internal
         if (sceneIsRenderedOrRequested && m_renderer.hasAnyBufferWithInterruptedRendering())
             canApplyFlushes &= !m_renderer.isSceneAssignedToInterruptibleOffscreenBuffer(sceneID);
 
-        const PendingFlushes& pendingFlushes = stagingInfo.pendingData.pendingFlushes;
-        if (!canApplyFlushes && sceneIsMapped && pendingFlushes.size() > m_maximumPendingFlushes)
+        if (!canApplyFlushes && sceneIsMapped && stagingInfo.pendingData.pendingFlushes.size() > m_maximumPendingFlushes)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Force applying pending flushes! Scene " << sceneID << " has " << pendingFlushes.size() << " pending flushes, renderer cannot catch up with resource updates.");
-            logMissingResources(stagingInfo.pendingData, sceneID);
+            const auto numPendingFlushes = getNumberOfPendingNonEmptyFlushes(sceneID);
+            if (numPendingFlushes > m_maximumPendingFlushes)
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "Force applying pending flushes! Scene " << sceneID << " has " << numPendingFlushes << " pending flushes, renderer cannot catch up with resource updates.");
+                logMissingResources(stagingInfo.pendingData, sceneID);
 
-            canApplyFlushes = true;
-            m_renderer.resetRenderInterruptState();
+                canApplyFlushes = true;
+                m_renderer.resetRenderInterruptState();
+            }
         }
 
         if (canApplyFlushes)
@@ -690,6 +699,55 @@ namespace ramses_internal
         }
     }
 
+    void RendererSceneUpdater::uploadAndUnloadVertexArrays()
+    {
+        for (const auto& sceneIt : m_rendererScenes)
+        {
+            const SceneId sceneId = sceneIt.key;
+            if (m_sceneStateExecutor.getSceneState(sceneId) == ESceneState::Rendered)
+            {
+                RendererCachedScene& rendererScene = *(sceneIt.value.scene);
+
+                if (rendererScene.hasDirtyVertexArrays())
+                {
+                    assert(m_displayResourceManager);
+                    m_tempRenderablesWithUpdatedVertexArrays.clear();
+
+                    const auto& vertexArraysDirtinessFlags = rendererScene.getVertexArraysDirtinessFlags();
+                    for (RenderableHandle renderable(0u); renderable < rendererScene.getRenderableCount(); ++renderable)
+                    {
+                        if (vertexArraysDirtinessFlags[renderable.asMemoryHandle()])
+                        {
+                            bool updated = false;
+
+                            // first delete current VAO
+                            const auto& obsoleteVertexArray = rendererScene.getCachedHandlesForVertexArrays()[renderable.asMemoryHandle()];
+                            if (obsoleteVertexArray.deviceHandle.isValid())
+                            {
+                                m_displayResourceManager->unloadVertexArray(renderable, sceneId);
+                                updated = true;
+                            }
+
+                            // upload new VAO based on updated parameters
+                            if (rendererScene.isRenderableAllocated(renderable)
+                                && !rendererScene.renderableResourcesDirty(renderable)
+                                && rendererScene.getRenderable(renderable).visibilityMode != EVisibilityMode::Off)
+                            {
+                                SceneResourceUploader::UploadVertexArray(rendererScene, renderable, *m_displayResourceManager);
+                                updated = true;
+                            }
+
+                            if (updated)
+                                m_tempRenderablesWithUpdatedVertexArrays.push_back(renderable);
+                        }
+                    }
+
+                    rendererScene.updateRenderableVertexArrays(*m_displayResourceManager, m_tempRenderablesWithUpdatedVertexArrays);
+                }
+            }
+        }
+    }
+
     void RendererSceneUpdater::updateScenesResourceCache()
     {
         // update renderer scenes renderables and resource cache
@@ -746,14 +804,18 @@ namespace ramses_internal
                         [&](const auto& res) { return resourceManager.getResourceStatus(res) == EResourceStatus::Uploaded; });
                 }
 
-                if (!canBeMapped && stagingInfo.pendingData.pendingFlushes.size() > m_maximumPendingFlushes)
+                if (!canBeMapped)
                 {
-                    LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene " << sceneId << " due to " << stagingInfo.pendingData.pendingFlushes.size() << " pending flushes, renderer cannot catch up with resource updates.");
-                    const auto usedResources = resourceManager.getResourcesInUseByScene(sceneId);
-                    if (usedResources)
-                        logMissingResources(*usedResources, sceneId);
+                    const auto numPendingFlushes = getNumberOfPendingNonEmptyFlushes(sceneId);
+                    if (numPendingFlushes > m_maximumPendingFlushes)
+                    {
+                        LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene " << sceneId << " due to " << numPendingFlushes << " pending flushes, renderer cannot catch up with resource updates.");
+                        const auto usedResources = resourceManager.getResourcesInUseByScene(sceneId);
+                        if (usedResources)
+                            logMissingResources(*usedResources, sceneId);
 
-                    canBeMapped = true;
+                        canBeMapped = true;
+                    }
                 }
 
                 if (canBeMapped)
@@ -1624,6 +1686,16 @@ namespace ramses_internal
             if (numMissingResources > missingResourcesToLog.size())
                 sos << " ...\n";
         }));
+    }
+
+    uint32_t RendererSceneUpdater::getNumberOfPendingNonEmptyFlushes(SceneId sceneId) const
+    {
+        const auto& pendingFlushes = m_rendererScenes.getStagingInfo(sceneId).pendingData.pendingFlushes;
+        const auto numFlushes = std::count_if(pendingFlushes.cbegin(), pendingFlushes.cend(), [](const auto& pendingFlush) {
+            return pendingFlush.sceneActions.numberOfActions() > 0u;
+        });
+
+        return static_cast<uint32_t>(numFlushes);
     }
 
     void RendererSceneUpdater::processScreenshotResults()

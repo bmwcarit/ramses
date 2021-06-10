@@ -453,13 +453,13 @@ protected:
         }
     }
 
-    void createRenderable(UInt32 sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false)
+    void createRenderable(UInt32 sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false, EVisibilityMode visibility = EVisibilityMode::Visible)
     {
-        createRenderableNoFlush(sceneIndex, withVertexArray, withTextureSampler);
+        createRenderableNoFlush(sceneIndex, withVertexArray, withTextureSampler, visibility);
         performFlush(sceneIndex);
     }
 
-    void createRenderableNoFlush(UInt32 sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false)
+    void createRenderableNoFlush(UInt32 sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false, EVisibilityMode visibility = EVisibilityMode::Visible)
     {
         const NodeHandle renderableNode(1u);
         const RenderPassHandle renderPassHandle(2u);
@@ -502,6 +502,7 @@ protected:
         scene.allocateDataLayout(geometryDataFields, MockResourceHash::EffectHash, geometryDataLayoutHandle);
         scene.allocateDataInstance(geometryDataLayoutHandle, geometryDataInstanceHandle);
         scene.setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Geometry, geometryDataInstanceHandle);
+        scene.setRenderableVisibility(renderableHandle, visibility);
     }
 
     void destroyRenderable(UInt32 sceneIndex = 0u)
@@ -643,6 +644,16 @@ protected:
     {
         static constexpr DeviceResourceHandle FakeStreamTextureDeviceHandle{ 987 };
         EXPECT_CALL(renderer.m_embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillRepeatedly(Return(FakeStreamTextureDeviceHandle));
+    }
+
+    void expectVertexArrayUploaded(UInt32 sceneIdx = 0u)
+    {
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadVertexArray(_, _, getSceneId(sceneIdx)));
+    }
+
+    void expectVertexArrayUnloaded(UInt32 sceneIdx = 0u)
+    {
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, unloadVertexArray(_, getSceneId(sceneIdx)));
     }
 
     void createRenderTargetWithBuffers(UInt32 sceneIndex = 0u, RenderTargetHandle renderTargetHandle = RenderTargetHandle{ 0u }, RenderBufferHandle bufferHandle = RenderBufferHandle{ 0u }, RenderBufferHandle depthHandle = RenderBufferHandle{ 1u })

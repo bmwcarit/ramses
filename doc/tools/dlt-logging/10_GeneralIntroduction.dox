@@ -8,7 +8,7 @@
 
 /**
 
-@page GeneralIntroduction General introduction to Diagnostic Log and Trace (DLT)
+@page DltIntroduction General introduction to Diagnostic Log and Trace (DLT)
 
 DLT is an open source trace and logging framework developed within the GENIVI alliance.
 It consists of a daemon connected to user applications. A tool called "dlt viewer" is used

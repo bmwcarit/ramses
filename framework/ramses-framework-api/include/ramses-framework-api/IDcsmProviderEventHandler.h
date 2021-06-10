@@ -11,6 +11,7 @@
 
 #include "ramses-framework-api/DcsmApiTypes.h"
 #include "ramses-framework-api/CategoryInfoUpdate.h"
+#include "ramses-framework-api/DcsmStatusMessage.h"
 
 namespace ramses
 {
@@ -103,6 +104,24 @@ namespace ramses
          */
         virtual ~IDcsmProviderEventHandler() = default;
     };
-}
 
+    /**
+     * @brief An Interface for a class, whose functions are called as reaction to
+     *        a DcsmConsumer message after calling dispatchEventsAndMessage() on a
+     *        DcsmProvider object.
+     *
+     *        This class is deprecated and will be merged into IDcsmProviderEventHandler.
+     */
+    class RAMSES_API IDcsmProviderEventHandlerExtended : public IDcsmProviderEventHandler
+    {
+    public:
+        /**
+         * @brief Called if a consumer sent a status message
+         *
+         * @param contentID The ID of the content being hidden.
+         * @param message The message. See #ramses::DcsmStatusMessage for details.
+         */
+        virtual void contentStatus(ContentID contentID, DcsmStatusMessage const& message) = 0;
+    };
+}
 #endif

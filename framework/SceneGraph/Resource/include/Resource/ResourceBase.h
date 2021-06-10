@@ -12,6 +12,7 @@
 #include "IResource.h"
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "SceneAPI/IScene.h"
+#include <mutex>
 
 namespace ramses_internal
 {
@@ -80,6 +81,7 @@ namespace ramses_internal
 
         virtual UInt32 getCompressedDataSize() const override
         {
+            std::unique_lock<std::mutex> l(m_compressionLock);
             if (m_compressedData.data())
                 return static_cast<uint32_t>(m_compressedData.size());
             // 0 == not compressed
@@ -99,11 +101,13 @@ namespace ramses_internal
 
         bool isCompressedAvailable() const final override
         {
+            std::unique_lock<std::mutex> l(m_compressionLock);
             return m_compressedData.data() != nullptr;
         }
 
         bool isDeCompressedAvailable() const final override
         {
+            std::unique_lock<std::mutex> l(m_compressionLock);
             return m_data.data() != nullptr;
         }
 
@@ -134,6 +138,7 @@ namespace ramses_internal
         uint32_t m_uncompressedSize = 0;
         ResourceCacheFlag m_cacheFlag;
         String m_name;
+        mutable std::mutex m_compressionLock;
     };
 }
 

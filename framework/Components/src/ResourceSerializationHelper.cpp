@@ -17,8 +17,6 @@ namespace ramses_internal
 {
     namespace ResourceSerializationHelper
     {
-        static IResource*(*gInvalidResourceFun)(IInputStream&, ResourceCacheFlag, const String&) = nullptr;
-
         void SerializeResourceMetadata(IOutputStream& output, const IResource& resource)
         {
             output << static_cast<UInt32>(resource.getTypeID());
@@ -60,7 +58,7 @@ namespace ramses_internal
             const EResourceType resourceType = static_cast<EResourceType>(resourceTypeValue);
             const EResourceCompressionStatus compressionStatus = static_cast<EResourceCompressionStatus>(compressionStatusValue);
 
-            IResource* resource = nullptr;
+            std::unique_ptr<IResource> resource;
             switch (resourceType)
             {
             case EResourceType_Texture2D:
@@ -75,32 +73,16 @@ namespace ramses_internal
             case EResourceType_Effect:
                 resource = EffectResource::CreateResourceFromMetadataStream(input, cacheFlag, name);
                 break;
-            case EResourceType_Invalid:
-                if (gInvalidResourceFun)
-                {
-                    resource = gInvalidResourceFun(input, cacheFlag, name);
-                }
-                else
-                {
-                    LOG_ERROR(CONTEXT_FRAMEWORK, "ResourceSerializationHelper::ResourceFromMetadataStream: Failed to deserialize unknown resource type " << resourceType);
-                    assert(false);
-                }
-                break;
             default:
-                assert(false);
+                LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceSerializationHelper::ResourceFromMetadataStream: Failed for unknown resource type {}", resourceType);
             }
 
             DeserializedResourceHeader result;
-            result.resource = resource;
+            result.resource = std::move(resource);
             result.compressionStatus = compressionStatus;
             result.decompressedSize = decompressedSize;
             result.compressedSize = compressedSize;
             return result;
-        }
-
-        void SetInvalidCreateResourceFromMetadataStreamFunction(IResource*(*fun)(IInputStream&, ResourceCacheFlag, const String&))
-        {
-            gInvalidResourceFun = fun;
         }
     }
 }

@@ -217,6 +217,8 @@ namespace ramses_internal
                 assert(binaryShader.size() != 0u);
                 m_binaryShaderCache->storeBinaryShader(hash, sceneid, &binaryShader.front(), static_cast<UInt32>(binaryShader.size()), format);
             }
+            else
+                LOG_WARN_P(CONTEXT_RENDERER, "ResourceUploader::storeShaderInBinaryShaderCache: failed to retrieve binary shader from device, shader cannot be stored in cache (deviceHandle={} hash={} sceneId={})", deviceHandle, hash, sceneid);
         }
     }
 

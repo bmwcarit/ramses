@@ -44,30 +44,29 @@ namespace ramses_internal
         }
     }
 
-    IResource* SingleResourceSerialization::DeserializeResource(IInputStream& input, ResourceContentHash hash)
+    std::unique_ptr<IResource> SingleResourceSerialization::DeserializeResource(IInputStream& input, ResourceContentHash hash)
     {
         // header
         ResourceSerializationHelper::DeserializedResourceHeader header = ResourceSerializationHelper::ResourceFromMetadataStream(input);
-        assert(header.resource != nullptr);
+        if (!header.resource)
+            return {};
 
-        if (header.resource)
+        // data blob
+        if (header.compressionStatus == EResourceCompressionStatus_Compressed)
         {
-            // data blob
-            if (header.compressionStatus == EResourceCompressionStatus_Compressed)
-            {
-                // read compressed data from stream
-                CompressedResourceBlob compressedData(header.compressedSize);
-                input.read(reinterpret_cast<char*>(compressedData.data()), static_cast<uint32_t>(compressedData.size()));
-                header.resource->setCompressedResourceData(std::move(compressedData), IResource::CompressionLevel::Offline, header.decompressedSize, hash);
-            }
-            else
-            {
-                // read uncompressed data from stream
-                ResourceBlob uncompressedData(header.decompressedSize);
-                input.read(reinterpret_cast<char*>(uncompressedData.data()), static_cast<uint32_t>(uncompressedData.size()));
-                header.resource->setResourceData(std::move(uncompressedData), hash);
-            }
+            // read compressed data from stream
+            CompressedResourceBlob compressedData(header.compressedSize);
+            input.read(reinterpret_cast<char*>(compressedData.data()), static_cast<uint32_t>(compressedData.size()));
+            header.resource->setCompressedResourceData(std::move(compressedData), IResource::CompressionLevel::Offline, header.decompressedSize, hash);
         }
-        return header.resource;
+        else
+        {
+            // read uncompressed data from stream
+            ResourceBlob uncompressedData(header.decompressedSize);
+            input.read(reinterpret_cast<char*>(uncompressedData.data()), static_cast<uint32_t>(uncompressedData.size()));
+            header.resource->setResourceData(std::move(uncompressedData), hash);
+        }
+
+        return std::move(header.resource);
     }
 }

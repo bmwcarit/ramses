@@ -349,6 +349,8 @@ namespace ramses
         const ramses_internal::SceneFileHandle fileHandle = m_appLogic.addResourceFile(cconfig.streamContainer, loadedTOC);
         scene->impl.setSceneFileHandle(fileHandle);
 
+        LOG_INFO_P(CONTEXT_CLIENT, "RamsesClient::{}: Source '{}' has handle {}", cconfig.caller, cconfig.dataSource, fileHandle);
+
         return scene;
     }
 

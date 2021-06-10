@@ -67,8 +67,7 @@ bool EffectConfig::parseConfigLine(int lineNumber, const ramses_internal::String
         return true;
     }
 
-    std::vector<ramses_internal::String> tokens;
-    ramses_internal::StringUtils::GetLineTokens(line, ' ', tokens);
+    std::vector<ramses_internal::String> tokens = ramses_internal::StringUtils::TokenizeTrimmed(line, ' ');
     if (tokens.empty())
     {
         return true;

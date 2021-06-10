@@ -11,6 +11,7 @@
 #include "Platform_Base/RenderTargetGpuResource.h"
 #include "Platform_Base/RenderBufferGPUResource.h"
 #include "Platform_Base/IndexBufferGPUResource.h"
+#include "Platform_Base/VertexArrayGPUResource.h"
 
 #include "Device_GL/Device_GL_platform.h"
 #include "Device_GL/ShaderGPUResource_GL.h"
@@ -173,12 +174,11 @@ namespace ramses_internal
     void Device_GL::drawIndexedTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount)
     {
         assert(m_activeIndexArraySizeBytes != 0 && m_activeIndexArrayElementSizeBytes != 0);
-        assert(m_activeIndexArrayHandle.isValid());
         if (m_activeIndexArraySizeBytes < (startOffset + elementCount) * m_activeIndexArrayElementSizeBytes)
         {
             LOG_ERROR_P(CONTEXT_RENDERER, "Device_GL::drawIndexedTriangles: index buffer access out of bounds "
-                "[drawStartOffset={} drawElementCount={} IndexBufferElementCount={} IndexBufferDeviceHandle={}]",
-                startOffset, elementCount, m_activeIndexArraySizeBytes / m_activeIndexArrayElementSizeBytes, m_activeIndexArrayHandle);
+                "[drawStartOffset={} drawElementCount={} IndexBufferElementCount={}]",
+                startOffset, elementCount, m_activeIndexArraySizeBytes / m_activeIndexArrayElementSizeBytes);
             return;
         }
 
@@ -1069,6 +1069,7 @@ namespace ramses_internal
         const auto& vertexBuffer = m_resourceMapper.getResource(handle);
         assert(dataSize <= vertexBuffer.getTotalSizeInBytes());
 
+        glBindVertexArray(0u); // make sure no VAO affected
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.getGPUAddress());
         glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
     }
@@ -1080,29 +1081,84 @@ namespace ramses_internal
         m_resourceMapper.deleteResource(handle);
     }
 
-    void Device_GL::activateVertexBuffer(DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 startVertex, EDataType bufferDataType, UInt16 offsetWithinElement, UInt16 stride)
+    DeviceResourceHandle Device_GL::allocateVertexArray(const VertexArrayInfo& vertexArrayInfo)
     {
-        assert(IsBufferDataType(bufferDataType));
+        const auto& shaderResource = m_resourceMapper.getResourceAs<const ShaderGPUResource_GL>(vertexArrayInfo.shader);
 
-        GLInputLocation vertexInputAddress;
-        if (getAttributeLocation(field, vertexInputAddress))
+        GLuint vertexArrayAddress = 0u;
+        glGenVertexArrays(1, &vertexArrayAddress);
+        glBindVertexArray(vertexArrayAddress);
+
+        if (vertexArrayInfo.indexBuffer.isValid())
         {
-            assert(m_activeShader != nullptr);
-            const GPUResource& arrayResource = m_resourceMapper.getResource(handle);
+            const IndexBufferGPUResource& indexBufferGPUResource = m_resourceMapper.getResourceAs<IndexBufferGPUResource>(vertexArrayInfo.indexBuffer);
+            const GLHandle resourceAddress = indexBufferGPUResource.getGPUAddress();
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resourceAddress);
+        }
 
-            const auto attributeDataType = BufferTypeToElementType(bufferDataType);
-            const auto elementSize = (stride != 0u ? stride : EnumToSize(attributeDataType));
+        for (const auto& vb : vertexArrayInfo.vertexBuffers)
+        {
+            assert(IsBufferDataType(vb.bufferDataType));
 
-            const std::intptr_t offsetInBytes = startVertex * elementSize + offsetWithinElement ;
+            const GLInputLocation vertexInputAddress = shaderResource.getAttributeLocation(vb.field);
+            if (!vertexInputAddress.isValid())
+            {
+                //In case attribute is optimized out by shader compiler, e.g., because it is unused
+                LOG_DEBUG_P(CONTEXT_RENDERER, "Device_GL::allocateVertexArray could not find attrib location for field: {}. Field will be ignored in vertex array.", vb.field);
+                continue;
+            }
+
+            const GPUResource& arrayResource = m_resourceMapper.getResource(vb.deviceHandle);
+
+            const auto attributeDataType = BufferTypeToElementType(vb.bufferDataType);
+            const auto elementSize = (vb.stride != 0u ? vb.stride : EnumToSize(attributeDataType));
+
+            const std::intptr_t offsetInBytes = vb.startVertex * elementSize + vb.offsetWithinElement;
             const void* offsetAsPointer = reinterpret_cast<const void*>(offsetInBytes);
             const auto attributeNumComponents = EnumToNumComponents(attributeDataType);
 
             glBindBuffer(GL_ARRAY_BUFFER, arrayResource.getGPUAddress());
             glEnableVertexAttribArray(vertexInputAddress.getValue());
-            glVertexAttribPointer(vertexInputAddress.getValue(), attributeNumComponents, GL_FLOAT, GL_FALSE, stride, offsetAsPointer);
+            glVertexAttribPointer(vertexInputAddress.getValue(), attributeNumComponents, GL_FLOAT, GL_FALSE, vb.stride, offsetAsPointer);
 
-            glVertexAttribDivisor(vertexInputAddress.getValue(), instancingDivisor);
+            glVertexAttribDivisor(vertexInputAddress.getValue(), vb.instancingDivisor);
         }
+
+        glBindVertexArray(0u);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
+        glBindBuffer(GL_ARRAY_BUFFER, 0u);
+
+        return m_resourceMapper.registerResource(std::make_unique<VertexArrayGPUResource>(vertexArrayAddress, vertexArrayInfo.indexBuffer));
+    }
+
+    void Device_GL::activateVertexArray(DeviceResourceHandle handle)
+    {
+        assert(handle.isValid());
+        const VertexArrayGPUResource& vertexArrayResource = m_resourceMapper.getResourceAs<VertexArrayGPUResource>(handle);
+        glBindVertexArray(vertexArrayResource.getGPUAddress());
+
+        const auto indexBuffer = vertexArrayResource.getIndexBufferHandle();
+        if (indexBuffer.isValid())
+        {
+            const IndexBufferGPUResource& indexBufferGPUResource = m_resourceMapper.getResourceAs<IndexBufferGPUResource>(indexBuffer);
+            m_activeIndexArrayElementSizeBytes = indexBufferGPUResource.getElementSizeInBytes();
+            assert(m_activeIndexArrayElementSizeBytes == 2 || m_activeIndexArrayElementSizeBytes == 4);
+            m_activeIndexArraySizeBytes = indexBufferGPUResource.getTotalSizeInBytes();
+        }
+        else
+        {
+            m_activeIndexArrayElementSizeBytes = 0u;
+            m_activeIndexArraySizeBytes = 0u;
+        }
+    }
+
+    void Device_GL::deleteVertexArray(DeviceResourceHandle handle)
+    {
+        const GPUResource& vertexArrayResource = m_resourceMapper.getResource(handle);
+        const GLuint vertexArray = vertexArrayResource.getGPUAddress();
+        glDeleteVertexArrays(1, &vertexArray);
+
+        m_resourceMapper.deleteResource(handle);
     }
 
     DeviceResourceHandle Device_GL::allocateIndexBuffer(EDataType dataType, UInt32 sizeInBytes)
@@ -1120,6 +1176,7 @@ namespace ramses_internal
         const auto& indexBuffer = m_resourceMapper.getResource(handle);
         assert(dataSize <= indexBuffer.getTotalSizeInBytes());
 
+        glBindVertexArray(0u); // make sure no VAO affected
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.getGPUAddress());
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
     }
@@ -1129,18 +1186,6 @@ namespace ramses_internal
         const GLHandle resourceAddress = m_resourceMapper.getResource(handle).getGPUAddress();
         glDeleteBuffers(1, &resourceAddress);
         m_resourceMapper.deleteResource(handle);
-    }
-
-    void Device_GL::activateIndexBuffer(DeviceResourceHandle handle)
-    {
-        const IndexBufferGPUResource& indexBufferGPUResource = m_resourceMapper.getResourceAs<IndexBufferGPUResource>(handle);
-        const GLHandle resourceAddress = indexBufferGPUResource.getGPUAddress();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resourceAddress);
-
-        m_activeIndexArrayElementSizeBytes = indexBufferGPUResource.getElementSizeInBytes();
-        assert(m_activeIndexArrayElementSizeBytes == 2 || m_activeIndexArrayElementSizeBytes == 4);
-        m_activeIndexArraySizeBytes = indexBufferGPUResource.getTotalSizeInBytes();
-        m_activeIndexArrayHandle = handle;
     }
 
     std::unique_ptr<const GPUResource> Device_GL::uploadShader(const EffectResource& effect)
@@ -1176,7 +1221,7 @@ namespace ramses_internal
         }
         else
         {
-            LOG_INFO(CONTEXT_RENDERER, "Device_GL::uploadShader: renderer failed to upload binary shader for effect " << effect.getName() << "\n Error was: " << debugErrorLog);
+            LOG_INFO(CONTEXT_RENDERER, "Device_GL::uploadShader: renderer failed to upload binary shader for effect " << effect.getName() << ". Error was: " << debugErrorLog);
             return DeviceResourceHandle::Invalid();
         }
     }
@@ -1244,7 +1289,7 @@ namespace ramses_internal
         }
         else
         {
-            LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::activateTexture could not find uniform location for field :" << field.asMemoryHandle() << ").\n");
+            LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::activateTexture could not find uniform location for field :" << field.asMemoryHandle() << ").");
         }
     }
 

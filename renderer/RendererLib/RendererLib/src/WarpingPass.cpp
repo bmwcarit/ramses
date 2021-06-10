@@ -25,6 +25,7 @@ namespace ramses_internal
 
     WarpingPass::~WarpingPass()
     {
+        m_device.deleteVertexArray(m_vertexArrayResource);
         m_device.deleteVertexBuffer(m_texcoordBufferResource);
         m_device.deleteIndexBuffer(m_indexBufferResource);
         m_device.deleteVertexBuffer(m_vertexBufferResource);
@@ -51,6 +52,13 @@ namespace ramses_internal
         m_indexBufferResource = m_device.allocateIndexBuffer(indexArrayRes.getElementType(), indexArrayRes.getDecompressedDataSize());
         assert(m_indexBufferResource.isValid());
         m_device.uploadIndexBufferData(m_indexBufferResource, indexArrayRes.getResourceData().data(), indexArrayRes.getDecompressedDataSize());
+
+        VertexArrayInfo vertexArrayInfo;
+        vertexArrayInfo.shader = m_shaderResource;
+        vertexArrayInfo.indexBuffer = m_indexBufferResource;
+        vertexArrayInfo.vertexBuffers.push_back({ m_vertexBufferResource, m_vertexPositionField, 0u, 0u, EDataType::Vector3Buffer, 0u, 0u });
+        vertexArrayInfo.vertexBuffers.push_back({ m_texcoordBufferResource, m_texcoordField, 0u, 0u, EDataType::Vector2Buffer, 0u, 0u });
+        m_vertexArrayResource = m_device.allocateVertexArray(vertexArrayInfo);
     }
 
     void WarpingPass::initEffect()
@@ -128,9 +136,7 @@ namespace ramses_internal
         const TextureSamplerStates samplerState(EWrapMethod::Clamp, EWrapMethod::Clamp, EWrapMethod::Clamp, ESamplingMethod::Linear, ESamplingMethod::Linear, isotropicFilteringLevel);
         m_device.activateTextureSamplerObject(samplerState, m_inputRenderBufferField);
 
-        m_device.activateIndexBuffer(m_indexBufferResource);
-        m_device.activateVertexBuffer(m_vertexBufferResource, m_vertexPositionField, 0u, 0u, EDataType::Vector3Buffer, 0u, 0u);
-        m_device.activateVertexBuffer(m_texcoordBufferResource, m_texcoordField, 0u, 0u, EDataType::Vector2Buffer, 0u, 0u);
+        m_device.activateVertexArray(m_vertexArrayResource);
         m_device.drawIndexedTriangles(0, m_indexCount, 1u);
     }
 }

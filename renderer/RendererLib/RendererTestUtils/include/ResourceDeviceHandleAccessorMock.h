@@ -29,6 +29,7 @@ public:
     MOCK_METHOD(DeviceResourceHandle, getStreamBufferDeviceHandle, (StreamBufferHandle bufferHandle), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getDataBufferDeviceHandle, (DataBufferHandle dataBufferHandle, SceneId sceneId), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getTextureBufferDeviceHandle, (TextureBufferHandle textureBufferHandle, SceneId sceneId), (const, override));
+    MOCK_METHOD(DeviceResourceHandle, getVertexArrayDeviceHandle, (RenderableHandle renderableHandle, SceneId sceneId), (const, override));
 };
 
 }

@@ -209,6 +209,9 @@ namespace ramses_internal
 
         for (auto const& hash : m_newResources)
         {
+            if (!m_resourceComponent.knowsResource(hash))
+                continue; // no log, this will be logged when trying to load it
+
             ResourceInfo const& info = m_resourceComponent.getResourceInfo(hash);
             EResourceStatisticIndex index = EResourceStatisticIndex_ArrayResource;
             switch (info.type)

@@ -50,6 +50,7 @@ namespace ramses_internal
 
         void markDeletionDisallowed(const ResourceContentHash& hash);
         bool isFileResourceInUseAnywhereElse(const ResourceContentHash& hash);
+        bool knowsResource(const ResourceContentHash& hash) const;
 
     private:
         ManagedResource createManagedResource(const IResource* resource);

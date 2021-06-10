@@ -10,6 +10,7 @@
 #include "CategoryInfoUpdateImpl.h"
 #include "RamsesFrameworkImpl.h"
 #include "ramses-framework-api/CategoryInfoUpdate.h"
+#include "ramses-framework-api/DcsmStatusMessage.h"
 
 namespace ramses
 {
@@ -90,4 +91,10 @@ namespace ramses
         return StatusOK;
     }
 
+    ramses::status_t DcsmConsumerImpl::sendContentStatus(ContentID contentID, DcsmStatusMessage const& message)
+    {
+        if (!m_component.sendContentStatus(ramses_internal::ContentID(contentID.getValue()), *message.impl))
+            return addErrorEntry("DcsmConsumer::sendContentStatus failed");
+        return StatusOK;
+    }
 }

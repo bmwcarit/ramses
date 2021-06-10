@@ -7,6 +7,8 @@
 //  -------------------------------------------------------------------------
 
 #include "ramses-text-api/FontRegistry.h"
+#include "Utils/File.h"
+#include "FileDescriptorHelper.h"
 #include "gtest/gtest.h"
 
 namespace ramses
@@ -30,7 +32,58 @@ namespace ramses
         ASSERT_TRUE(fontId.isValid());
         const FontInstanceId fontInstanceId = m_fontRegistry.createFreetype2FontInstance(fontId, 12u);
         ASSERT_TRUE(fontInstanceId.isValid());
-        m_fontAccessor.getFontInstance(fontInstanceId);
+        EXPECT_TRUE(m_fontAccessor.getFontInstance(fontInstanceId));
+
+        EXPECT_TRUE(m_fontRegistry.deleteFontInstance(fontInstanceId));
+        EXPECT_TRUE(m_fontRegistry.deleteFont(fontId));
+    }
+
+    TEST_F(AFontRegistry, CreatesAndDestroysFreetype2FontInstanceFromFileDescriptor)
+    {
+        const char* path = "./res/ramses-text-Roboto-Bold.ttf";
+        const int fd = ramses_internal::FileDescriptorHelper::OpenFileDescriptorBinary(path);
+        size_t fileSize = 0;
+        EXPECT_TRUE(ramses_internal::File(path).getSizeInBytes(fileSize));
+
+        const FontId fontId = m_fontRegistry.createFreetype2FontFromFileDescriptor(fd, 0, fileSize);
+        ASSERT_TRUE(fontId.isValid());
+
+        const FontInstanceId fontInstanceId = m_fontRegistry.createFreetype2FontInstance(fontId, 12u);
+        ASSERT_TRUE(fontInstanceId.isValid());
+        EXPECT_TRUE(m_fontAccessor.getFontInstance(fontInstanceId));
+
+        EXPECT_TRUE(m_fontRegistry.deleteFontInstance(fontInstanceId));
+        EXPECT_TRUE(m_fontRegistry.deleteFont(fontId));
+    }
+
+    TEST_F(AFontRegistry, CreatesAndDestroysFreetype2FontInstanceFromFileDescriptorWithOffset)
+    {
+        size_t fileSize = 0;
+        {
+            // write to a file with some offset
+            ramses_internal::File inFile("./res/ramses-text-Roboto-Bold.ttf");
+            EXPECT_TRUE(inFile.getSizeInBytes(fileSize));
+            std::vector<unsigned char> data(fileSize);
+            size_t numBytesRead = 0;
+            EXPECT_TRUE(inFile.open(ramses_internal::File::Mode::ReadOnlyBinary));
+            EXPECT_EQ(ramses_internal::EStatus::Ok, inFile.read(data.data(), fileSize, numBytesRead));
+
+            ramses_internal::File outFile("fontFileWithOffset.ttf");
+            EXPECT_TRUE(outFile.open(ramses_internal::File::Mode::WriteOverWriteOldBinary));
+
+            uint32_t zeroData = 0;
+            EXPECT_TRUE(outFile.write(&zeroData, sizeof(zeroData)));
+            EXPECT_TRUE(outFile.write(data.data(), data.size()));
+            EXPECT_TRUE(outFile.write(&zeroData, sizeof(zeroData)));
+        }
+
+        const int fd = ramses_internal::FileDescriptorHelper::OpenFileDescriptorBinary("fontFileWithOffset.ttf");
+        const FontId fontId = m_fontRegistry.createFreetype2FontFromFileDescriptor(fd, 4, fileSize);
+        ASSERT_TRUE(fontId.isValid());
+
+        const FontInstanceId fontInstanceId = m_fontRegistry.createFreetype2FontInstance(fontId, 12u);
+        ASSERT_TRUE(fontInstanceId.isValid());
+        EXPECT_TRUE(m_fontAccessor.getFontInstance(fontInstanceId));
 
         EXPECT_TRUE(m_fontRegistry.deleteFontInstance(fontInstanceId));
         EXPECT_TRUE(m_fontRegistry.deleteFont(fontId));
@@ -46,8 +99,8 @@ namespace ramses
         const FontInstanceId fontInstanceId2 = m_fontRegistry.createFreetype2FontInstance(fontId2, 14u);
         ASSERT_TRUE(fontInstanceId1.isValid());
         ASSERT_TRUE(fontInstanceId2.isValid());
-        m_fontAccessor.getFontInstance(fontInstanceId1);
-        m_fontAccessor.getFontInstance(fontInstanceId2);
+        EXPECT_TRUE(m_fontAccessor.getFontInstance(fontInstanceId1));
+        EXPECT_TRUE(m_fontAccessor.getFontInstance(fontInstanceId2));
 
         EXPECT_TRUE(m_fontRegistry.deleteFontInstance(fontInstanceId1));
         EXPECT_TRUE(m_fontRegistry.deleteFontInstance(fontInstanceId2));
@@ -63,6 +116,18 @@ namespace ramses
     TEST_F(AFontRegistry, FailsToCreateFontFromWrongPath)
     {
         const FontId fontId = m_fontRegistry.createFreetype2Font("./res/i_dont_exist.ttf");
+        EXPECT_FALSE(fontId.isValid());
+    }
+
+    TEST_F(AFontRegistry, FailsToCreateFontFromWrongFileDescriptor)
+    {
+        const FontId fontId = m_fontRegistry.createFreetype2FontFromFileDescriptor(-1, 0, 10);
+        EXPECT_FALSE(fontId.isValid());
+    }
+
+    TEST_F(AFontRegistry, FailsToCreateFontFromWrongFileDescriptorLength)
+    {
+        const FontId fontId = m_fontRegistry.createFreetype2FontFromFileDescriptor(1, 0, 0);
         EXPECT_FALSE(fontId.isValid());
     }
 
@@ -99,7 +164,7 @@ namespace ramses
         ASSERT_TRUE(fontId.isValid());
         const FontInstanceId fontInstanceId = m_fontRegistry.createFreetype2FontInstance(fontId, 12u);
         ASSERT_TRUE(fontInstanceId.isValid());
-        m_fontAccessor.getFontInstance(fontInstanceId);
+        EXPECT_TRUE(m_fontAccessor.getFontInstance(fontInstanceId));
 
         // Other font registry
         FontRegistry otherFontRegistry;
@@ -107,7 +172,7 @@ namespace ramses
         ASSERT_TRUE(fontId2.isValid());
         const FontInstanceId fontInstanceId2 = otherFontRegistry.createFreetype2FontInstance(fontId2, 12u);
         ASSERT_TRUE(fontInstanceId2.isValid());
-        otherFontRegistry.getFontInstance(fontInstanceId2);
+        EXPECT_TRUE(otherFontRegistry.getFontInstance(fontInstanceId2));
 
         EXPECT_TRUE(m_fontRegistry.deleteFontInstance(fontInstanceId));
         EXPECT_TRUE(m_fontRegistry.deleteFont(fontId));
@@ -122,7 +187,7 @@ namespace ramses
         ASSERT_TRUE(fontId.isValid());
         const FontInstanceId fontInstanceId = m_fontRegistry.createFreetype2FontInstanceWithHarfBuzz(fontId, 12u);
         ASSERT_TRUE(fontInstanceId.isValid());
-        m_fontAccessor.getFontInstance(fontInstanceId);
+        EXPECT_TRUE(m_fontAccessor.getFontInstance(fontInstanceId));
 
         EXPECT_TRUE(m_fontRegistry.deleteFontInstance(fontInstanceId));
         EXPECT_TRUE(m_fontRegistry.deleteFont(fontId));
@@ -138,8 +203,8 @@ namespace ramses
         const FontInstanceId fontInstanceId2 = m_fontRegistry.createFreetype2FontInstanceWithHarfBuzz(fontId2, 14u);
         ASSERT_TRUE(fontInstanceId1.isValid());
         ASSERT_TRUE(fontInstanceId2.isValid());
-        m_fontAccessor.getFontInstance(fontInstanceId1);
-        m_fontAccessor.getFontInstance(fontInstanceId2);
+        EXPECT_TRUE(m_fontAccessor.getFontInstance(fontInstanceId1));
+        EXPECT_TRUE(m_fontAccessor.getFontInstance(fontInstanceId2));
 
         EXPECT_TRUE(m_fontRegistry.deleteFontInstance(fontInstanceId1));
         EXPECT_TRUE(m_fontRegistry.deleteFontInstance(fontInstanceId2));
@@ -155,8 +220,8 @@ namespace ramses
         const FontInstanceId fontInstanceId2 = m_fontRegistry.createFreetype2FontInstanceWithHarfBuzz(fontId, 14u);
         ASSERT_TRUE(fontInstanceId1.isValid());
         ASSERT_TRUE(fontInstanceId2.isValid());
-        m_fontAccessor.getFontInstance(fontInstanceId1);
-        m_fontAccessor.getFontInstance(fontInstanceId2);
+        EXPECT_TRUE(m_fontAccessor.getFontInstance(fontInstanceId1));
+        EXPECT_TRUE(m_fontAccessor.getFontInstance(fontInstanceId2));
 
         EXPECT_TRUE(m_fontRegistry.deleteFontInstance(fontInstanceId1));
         EXPECT_TRUE(m_fontRegistry.deleteFontInstance(fontInstanceId2));

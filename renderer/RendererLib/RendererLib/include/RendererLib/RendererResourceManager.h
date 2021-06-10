@@ -88,6 +88,10 @@ namespace ramses_internal
         virtual void                 updateTextureBuffer(TextureBufferHandle textureBufferHandle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data, SceneId sceneId) override;
         virtual DeviceResourceHandle getTextureBufferDeviceHandle(TextureBufferHandle textureBufferHandle, SceneId sceneId) const override;
 
+        virtual void                 uploadVertexArray(RenderableHandle renderableHandle, const VertexArrayInfo& vertexArrayInfo, SceneId sceneId) override;
+        virtual void                 unloadVertexArray(RenderableHandle renderableHandle, SceneId sceneId) override;
+        virtual DeviceResourceHandle getVertexArrayDeviceHandle(RenderableHandle renderableHandle, SceneId sceneId) const override;
+
         virtual void                 unloadAllSceneResourcesForScene(SceneId sceneId) override;
         virtual void                 unreferenceAllResourcesForScene(SceneId sceneId) override;
         virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const override;

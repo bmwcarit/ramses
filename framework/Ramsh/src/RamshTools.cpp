@@ -71,7 +71,7 @@ namespace ramses_internal
 
         for(UInt pos = 0; pos < inputLength;)
         {
-            Int endpos = -1;
+            size_t endpos = String::npos;
             pos = leadingSpacesPosition(msg, pos);
             Char c = message.at(pos);
 
@@ -80,10 +80,10 @@ namespace ramses_internal
             case '"':
             case '\'':
                 endpos = message.find(String(1,c).append(" "), pos+1); // look for next special separator inside the string
-                if(-1 == endpos)
+                if(String::npos == endpos)
                 {
                     endpos = message.rfind(c); // if no separator found inside, look for special separator on message end
-                    if(static_cast<Int>(inputLength) - 1 != endpos)
+                    if(inputLength - 1 != endpos)
                     {
                         endpos = message.find(String(1,' '), pos+1); // if no ending separator found, treat as normal
                         pos--;
@@ -95,7 +95,7 @@ namespace ramses_internal
                 endpos = message.find(String(1,' '), pos+1); // look for next separator
             }
 
-            if(-1 == endpos)
+            if(String::npos == endpos)
             {
                 endpos = inputLength; // if no separator found, take all the rest
             }

@@ -17,12 +17,12 @@ namespace ramses_internal
     class IResourceDeviceHandleAccessor;
     class IEmbeddedCompositingManager;
 
-    struct VertexAttribCacheEntry
+    struct VertexArrayCacheEntry
     {
         DeviceResourceHandle deviceHandle;
-        EDataType dataType;
+        bool usesIndexArray = false;
     };
-    using DataInstanceVertexAttribs = std::vector<VertexAttribCacheEntry>;
+    using VertexArrayCache = std::vector<VertexArrayCacheEntry>;
 
     class ResourceCachedScene : public DataReferenceLinkCachedScene
     {
@@ -34,6 +34,7 @@ namespace ramses_internal
         virtual RenderableHandle            allocateRenderable          (NodeHandle nodeHandle, RenderableHandle handle = RenderableHandle::Invalid()) override;
         virtual void                        releaseRenderable           (RenderableHandle renderableHandle) override;
         virtual void                        setRenderableVisibility     (RenderableHandle renderableHandle, EVisibilityMode visibility) override;
+        virtual void                        setRenderableStartVertex    (RenderableHandle renderableHandle, UInt32 startVertex) override;
         virtual DataInstanceHandle          allocateDataInstance        (DataLayoutHandle handle, DataInstanceHandle instanceHandle = DataInstanceHandle::Invalid()) override;
         virtual void                        releaseDataInstance         (DataInstanceHandle dataInstanceHandle) override;
         virtual TextureSamplerHandle        allocateTextureSampler      (const TextureSampler& sampler, TextureSamplerHandle handle) override;
@@ -56,34 +57,40 @@ namespace ramses_internal
         Bool                                renderableResourcesDirty    (const RenderableVector& handles) const;
 
         DeviceResourceHandle                getRenderableEffectDeviceHandle(RenderableHandle renderable) const;
-        const DataInstanceVertexAttribs&    getCachedHandlesForVertexAttributes(DataInstanceHandle dataInstance) const;
+        const VertexArrayCache&             getCachedHandlesForVertexArrays() const;
         const DeviceHandleVector&           getCachedHandlesForTextureSamplers() const;
         const DeviceHandleVector&           getCachedHandlesForRenderTargets() const;
         const DeviceHandleVector&           getCachedHandlesForBlitPassRenderTargets() const;
+        const BoolVector&                   getVertexArraysDirtinessFlags() const;
 
         void updateRenderableResources(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager);
         void updateRenderablesResourcesDirtiness();
         void setRenderableResourcesDirtyByTextureSampler(TextureSamplerHandle textureSamplerHandle) const;
         void setRenderableResourcesDirtyByStreamTexture(StreamTextureHandle streamTextureHandle) const;
 
+        bool hasDirtyVertexArrays() const;
+        bool isRenderableVertexArrayDirty(RenderableHandle renderable) const;
+        void updateRenderableVertexArrays(const IResourceDeviceHandleAccessor& resourceAccessor, const RenderableVector& renderablesWithUpdatedVertexArrays);
+
     protected:
         Bool resolveTextureSamplerResourceDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, TextureSamplerHandle sampler, DeviceResourceHandle& deviceHandleInOut);
 
     private:
         void setRenderableResourcesDirtyFlag(RenderableHandle handle, Bool dirty) const;
+        void setRenderableVertexArrayDirtyFlag(RenderableHandle handle, bool dirty) const;
         void setDataInstanceDirtyFlag(DataInstanceHandle handle, Bool dirty) const;
         void setTextureSamplerDirtyFlag(TextureSamplerHandle handle, Bool dirty) const;
-        Bool doesRenderableReferToDirtyDataInstance(RenderableHandle handle) const;
+        bool doesRenderableReferToDirtyUniforms(RenderableHandle handle) const;
+        bool doesRenderableReferToDirtyGeometry(RenderableHandle handle) const;
         Bool doesDataInstanceReferToDirtyTextureSampler(DataInstanceHandle handle) const;
         Bool isDataInstanceDirty(DataInstanceHandle handle) const;
         Bool isTextureSamplerDirty(TextureSamplerHandle handle) const;
         Bool isGeometryDataLayout(const DataLayout& layout) const;
         static Bool CheckAndUpdateDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, DeviceResourceHandle& deviceHandleInOut, const ResourceContentHash& resourceHash);
-        static Bool CheckAndUpdateBufferDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, DeviceResourceHandle& deviceHandleInOut, const ResourceContentHash& resourceHash, SceneId sceneId, DataBufferHandle dataBufferHandle);
 
-        Bool checkAndUpdateRenderableResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
+        Bool checkAndUpdateEffectResource(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
         Bool checkAndUpdateTextureResources(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, RenderableHandle renderable);
-        Bool checkAndUpdateGeometryResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
+        bool checkGeometryResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
         void checkAndUpdateRenderTargetResources(const IResourceDeviceHandleAccessor& resourceAccessor);
         void checkAndUpdateBlitPassResources(const IResourceDeviceHandleAccessor& resourceAccessor);
 
@@ -92,18 +99,18 @@ namespace ramses_internal
         Bool updateTextureSamplerResourceAsTextureBuffer(const IResourceDeviceHandleAccessor& resourceAccessor, const TextureBufferHandle bufferHandle, DeviceResourceHandle& deviceHandleOut);
         Bool updateTextureSamplerResourceAsStreamTexture(const IResourceDeviceHandleAccessor& resourceAccessor, const IEmbeddedCompositingManager& embeddedCompositingManager, const StreamTextureHandle streamTextureHandle, DeviceResourceHandle& deviceHandleInOut);
 
-        using VertexAttribsCache = std::vector<DataInstanceVertexAttribs>;
-
         DeviceHandleVector         m_effectDeviceHandleCache;
-        VertexAttribsCache         m_deviceHandleCacheForVertexAttributes;
+        VertexArrayCache           m_vertexArrayCache;
         mutable DeviceHandleVector m_deviceHandleCacheForTextures;
         DeviceHandleVector         m_renderTargetCache;
         DeviceHandleVector         m_blitPassCache;
 
         mutable Bool       m_renderableResourcesDirtinessNeedsUpdate = false;
+        mutable Bool       m_renderableVertexArraysDirty = false;
         mutable BoolVector m_renderableResourcesDirty;
         mutable BoolVector m_dataInstancesDirty;
         mutable BoolVector m_textureSamplersDirty;
+        mutable BoolVector m_renderableVertexArrayDirty;
 
         Bool m_renderTargetsDirty = false;
         Bool m_blitPassesDirty = false;

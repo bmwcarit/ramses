@@ -45,7 +45,25 @@ namespace ramses
         * @param[in] fontPath The file path to the font
         * @return The font id, FontId::Invalid() on error
         */
-        FontId                  createFreetype2Font(const char* fontPath);
+        FontId createFreetype2Font(const char* fontPath);
+
+        /**
+        * @brief Load Freetype2 font from an open file descriptor.
+        *
+        * The font file must be in the already opened filedescriptor at absolute position offset within
+        * the file. The filedescriptor must be opened for read access and may not be modified anymore after
+        * this call. The filedescriptor must support seeking.
+        * Ramses takes ownership of the filedescriptor and will close it when not needed anymore.
+        *
+        * The behavior is undefined if the filedescriptor does not contain a complete and valid font
+        * at offset.
+        *
+        * @param[in] fd Open and readable filedescriptor.
+        * @param[in] offset Absolute starting position of the font data within fd.
+        * @param[in] length Size of the font data within fd.
+        * @return The font id, FontId::Invalid() on error
+        */
+        FontId createFreetype2FontFromFileDescriptor(int fd, size_t offset, size_t length);
 
         /**
         * @brief Create Freetype2 font instance

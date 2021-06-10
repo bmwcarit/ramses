@@ -404,12 +404,12 @@ namespace ramses
         if (programName.size() > 0)
         {
             participantName = programName;
-            Int slash = participantName.rfind('/');
-            if (slash < 0)
+            size_t slash = participantName.rfind('/');
+            if (slash == String::npos)
             {
                 slash = participantName.rfind('\\');
             }
-            if (slash >= 0)
+            if (slash != String::npos)
             {
                 participantName = participantName.substr(slash + 1, participantName.size() - slash - 1);
             }

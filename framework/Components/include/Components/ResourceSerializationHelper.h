@@ -25,7 +25,7 @@ namespace ramses_internal
     {
         struct DeserializedResourceHeader
         {
-            IResource* resource;
+            std::unique_ptr<IResource> resource;
             EResourceCompressionStatus compressionStatus;
             UInt32 decompressedSize;
             UInt32 compressedSize;
@@ -35,8 +35,6 @@ namespace ramses_internal
         UInt32 ResourceMetadataSize(const IResource& resource);
 
         DeserializedResourceHeader ResourceFromMetadataStream(IInputStream& input);
-
-        void SetInvalidCreateResourceFromMetadataStreamFunction(IResource*(*fun)(IInputStream&, ResourceCacheFlag, const String&));
     }
 }
 

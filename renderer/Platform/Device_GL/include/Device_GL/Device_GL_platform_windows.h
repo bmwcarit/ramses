@@ -71,6 +71,7 @@
 #define glGetShaderiv(...)              glGetShaderivNative(__VA_ARGS__)
 #define glGenVertexArrays(...)          glGenVertexArraysNative(__VA_ARGS__)
 #define glBindVertexArray(...)          glBindVertexArrayNative(__VA_ARGS__)
+#define glDeleteVertexArrays(...)       glDeleteVertexArraysNative(__VA_ARGS__)
 #define glGenBuffers(...)               glGenBuffersNative(__VA_ARGS__)
 #define glBindBuffer(...)               glBindBufferNative(__VA_ARGS__)
 #define glBufferData(...)               glBufferDataNative(__VA_ARGS__)
@@ -157,6 +158,7 @@ DECLARE_API_PROC(PFNGLCOMPILESHADERPROC, glCompileShader);                      
 DECLARE_API_PROC(PFNGLGETSHADERIVPROC, glGetShaderiv);                                          \
 DECLARE_API_PROC(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays);                                  \
 DECLARE_API_PROC(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray);                                  \
+DECLARE_API_PROC(PFNGLDELETEVERTEXARRAYSPROC, glDeleteVertexArrays);                            \
 DECLARE_API_PROC(PFNGLGENBUFFERSPROC, glGenBuffers);                                            \
 DECLARE_API_PROC(PFNGLBINDBUFFERPROC, glBindBuffer);                                            \
 DECLARE_API_PROC(PFNGLBUFFERDATAPROC, glBufferData);                                            \
@@ -243,6 +245,7 @@ LOAD_API_PROC(CONTEXT, PFNGLCOMPILESHADERPROC, glCompileShader);                
 LOAD_API_PROC(CONTEXT, PFNGLGETSHADERIVPROC, glGetShaderiv);                                      \
 LOAD_API_PROC(CONTEXT, PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays);                              \
 LOAD_API_PROC(CONTEXT, PFNGLBINDVERTEXARRAYPROC, glBindVertexArray);                              \
+LOAD_API_PROC(CONTEXT, PFNGLDELETEVERTEXARRAYSPROC, glDeleteVertexArrays);                        \
 LOAD_API_PROC(CONTEXT, PFNGLGENBUFFERSPROC, glGenBuffers);                                        \
 LOAD_API_PROC(CONTEXT, PFNGLBINDBUFFERPROC, glBindBuffer);                                        \
 LOAD_API_PROC(CONTEXT, PFNGLBUFFERDATAPROC, glBufferData);                                        \
@@ -330,6 +333,7 @@ DEFINE_API_PROC(PFNGLCOMPILESHADERPROC, glCompileShader);                       
 DEFINE_API_PROC(PFNGLGETSHADERIVPROC, glGetShaderiv);                                          \
 DEFINE_API_PROC(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays);                                  \
 DEFINE_API_PROC(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray);                                  \
+DEFINE_API_PROC(PFNGLDELETEVERTEXARRAYSPROC, glDeleteVertexArrays);                            \
 DEFINE_API_PROC(PFNGLGENBUFFERSPROC, glGenBuffers);                                            \
 DEFINE_API_PROC(PFNGLBINDBUFFERPROC, glBindBuffer);                                            \
 DEFINE_API_PROC(PFNGLBUFFERDATAPROC, glBufferData);                                            \

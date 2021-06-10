@@ -138,14 +138,6 @@ TEST_F(Vector2iTest, Length)
     EXPECT_FLOAT_EQ(5, length);
 }
 
-TEST_F(Vector2iTest, Angle)
-{
-    ramses_internal::Vector2i vec2(1, 0);
-    ramses_internal::Vector2i vec3(0, 1);
-    ramses_internal::Float angle = ramses_internal::PlatformMath::Rad2Deg(vec2.angle(vec3));
-    EXPECT_FLOAT_EQ(90, angle);
-}
-
 TEST_F(Vector2iTest, Equality)
 {
     ramses_internal::Vector2i vec2(1, 2);

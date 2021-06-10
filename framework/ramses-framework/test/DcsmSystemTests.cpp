@@ -9,6 +9,7 @@
 #include "ramses-framework-api/RamsesFramework.h"
 #include "ramses-framework-api/DcsmConsumer.h"
 #include "ramses-framework-api/DcsmProvider.h"
+#include "ramses-framework-api/DcsmStatusMessage.h"
 
 #include "DcsmEventHandlerMocks.h"
 
@@ -246,5 +247,28 @@ namespace ramses
         showContent(id, AnimationInformation{200, 300});
 
         stopOfferByProvider(id, AnimationInformation{200, 300});
+    }
+
+    TEST_F(ADcsmSystem, canSendMessageFromConsumerToProvider)
+    {
+        offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
+        assignContentToConsumer(id, categoryInfo, AnimationInformation(), sceneId_t(18));
+        dispatch();
+
+        EXPECT_EQ(StatusOK, consumer.sendContentStatus(id, StreamStatusMessage(StreamStatusMessage::Status::Invalid)));
+
+        EXPECT_CALL(provHandler, contentStatus(_, _)).WillOnce([&](ContentID contentID, DcsmStatusMessage const& message)
+            {
+                EXPECT_EQ(contentID, id);
+                EXPECT_EQ(message.getAsStreamStatus()->getStreamStatus(), StreamStatusMessage::Status::Invalid);
+            });
+        dispatch();
+    }
+
+    TEST_F(ADcsmSystem, canNotSendMessageFromConsumerToProviderWhenContentUnknownOrOffered)
+    {
+        EXPECT_NE(StatusOK, consumer.sendContentStatus(id, StreamStatusMessage(StreamStatusMessage::Status::Invalid)));
+        offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
+        EXPECT_NE(StatusOK, consumer.sendContentStatus(id, StreamStatusMessage(StreamStatusMessage::Status::Invalid)));
     }
 }

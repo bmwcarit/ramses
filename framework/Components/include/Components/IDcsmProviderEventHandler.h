@@ -11,6 +11,7 @@
 
 #include "ramses-framework-api/DcsmApiTypes.h"
 #include "ramses-framework-api/CategoryInfoUpdate.h"
+#include "ramses-framework-api/DcsmStatusMessage.h"
 #include "DcsmTypes.h"
 
 namespace ramses_internal
@@ -24,6 +25,7 @@ namespace ramses_internal
 
         virtual void contentSizeChange(ramses::ContentID, const ramses::CategoryInfoUpdate&, ramses::AnimationInformation) = 0;
         virtual void contentStateChange(ramses::ContentID, ramses_internal::EDcsmState, const ramses::CategoryInfoUpdate&, ramses::AnimationInformation) = 0;
+        virtual void contentStatus(ramses::ContentID, std::unique_ptr<ramses::DcsmStatusMessageImpl>&&) = 0;
     };
 }
 

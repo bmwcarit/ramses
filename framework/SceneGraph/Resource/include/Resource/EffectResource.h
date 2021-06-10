@@ -38,7 +38,7 @@ namespace ramses_internal
         DataFieldHandle getAttributeDataFieldHandleByName(const String& name) const;
 
         virtual void serializeResourceMetadataToStream(IOutputStream& output) const override;
-        static IResource* CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, const String& name);
+        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, const String& name);
 
     private:
         EffectResource(const EffectInputInformationVector& uniformInputs, const EffectInputInformationVector& attributeInputs, absl::optional<EDrawMode> geometryShaderInputType,

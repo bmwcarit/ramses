@@ -22,6 +22,7 @@ namespace ramses_internal
         assert(m_blitPasses.size() == 0u);
         assert(m_dataBuffers.size() == 0u);
         assert(m_textureBuffers.size() == 0u);
+        assert(m_vertexArrays.size() == 0u);
     }
 
     void RendererSceneResourceRegistry::addRenderBuffer(RenderBufferHandle handle, DeviceResourceHandle deviceHandle, UInt32 size, bool writeOnly)
@@ -218,6 +219,32 @@ namespace ramses_internal
         {
             textureBuffers.push_back(tb.key);
         }
+    }
+
+    void RendererSceneResourceRegistry::addVertexArray(RenderableHandle renderableHandle, DeviceResourceHandle deviceHandle)
+    {
+        assert(!m_vertexArrays.contains(renderableHandle));
+        m_vertexArrays.put(renderableHandle, deviceHandle);
+    }
+
+    void RendererSceneResourceRegistry::removeVertexArray(RenderableHandle renderableHandle)
+    {
+        assert(m_vertexArrays.contains(renderableHandle));
+        m_vertexArrays.remove(renderableHandle);
+    }
+
+    DeviceResourceHandle RendererSceneResourceRegistry::getVertexArrayDeviceHandle(RenderableHandle renderableHandle) const
+    {
+        assert(m_vertexArrays.contains(renderableHandle));
+        return *m_vertexArrays.get(renderableHandle);
+    }
+
+    void RendererSceneResourceRegistry::getAllVertexArrayRenderables(RenderableVector& vertexArrayRenderables) const
+    {
+        assert(vertexArrayRenderables.empty());
+        vertexArrayRenderables.reserve(m_vertexArrays.size());
+        for (const auto& va : m_vertexArrays)
+            vertexArrayRenderables.push_back(va.key);
     }
 
     UInt32 RendererSceneResourceRegistry::getSceneResourceMemoryUsage(ESceneResourceType resourceType) const

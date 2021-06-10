@@ -83,17 +83,19 @@ namespace ramses_internal
         ResourceTableOfContents toc;
         toc.registerContents(resInfo, offset, size);
 
-        registry.registerResourceFile(resourceFileStream, toc, storage);
+        const SceneFileHandle handle = registry.registerResourceFile(resourceFileStream, toc, storage);
 
         ResourceFileEntry storedFileEntry;
         IInputStream* storedResourceFileStream(nullptr);
-        EXPECT_EQ(EStatus::Ok, registry.getEntry(hash, storedResourceFileStream, storedFileEntry));
+        SceneFileHandle outHandle;
+        EXPECT_EQ(EStatus::Ok, registry.getEntry(hash, storedResourceFileStream, storedFileEntry, outHandle));
         EXPECT_TRUE(storedResourceFileStream != nullptr);
 
         EXPECT_EQ(&resourceFileStream->getStream(), storedResourceFileStream);
         EXPECT_EQ(offset, storedFileEntry.offsetInBytes);
         EXPECT_EQ(size, storedFileEntry.sizeInBytes);
         EXPECT_EQ(resInfo, storedFileEntry.resourceInfo);
+        EXPECT_EQ(handle, outHandle);
     }
 
     TEST_F(AResourceFileRegistry, getsContentsOfResourceFileReturnNullptrIfFileUnknown)

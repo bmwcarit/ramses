@@ -105,8 +105,8 @@ namespace ramses
         obj.validate();
         const ramses_internal::String validationReport = obj.getValidationReport(EValidationSeverity_Info);
 
-        EXPECT_TRUE(validationReport.find(RamsesObjectTypeUtils::GetRamsesObjectTypeName(obj.getType())) >= 0);
-        EXPECT_TRUE(validationReport.find(obj.getName()) >= 0);
+        EXPECT_THAT(validationReport.stdRef(), ::testing::HasSubstr(RamsesObjectTypeUtils::GetRamsesObjectTypeName(obj.getType())));
+        EXPECT_THAT(validationReport.stdRef(), ::testing::HasSubstr(obj.getName()));
     }
 
     TYPED_TEST_P(RamsesObjectTest, validationFailsIfThereWasAnyWrongAPIUsage)

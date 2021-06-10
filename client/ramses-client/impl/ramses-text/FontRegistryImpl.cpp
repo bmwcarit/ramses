@@ -66,7 +66,30 @@ namespace ramses
             return {};
         }
 
-        auto face = std::make_unique<FreetypeFontFace>(fontPath, m_ft2Library.get());
+        LOG_INFO_P(CONTEXT_CLIENT, "FontRegistry::createFreetype2Font: path {}", fontPath);
+        return createFreetype2FontCommon(std::make_unique<ramses_internal::FreetypeFontFaceFilePath>(fontPath, m_ft2Library.get()));
+    }
+
+    FontId FontRegistryImpl::createFreetype2FontFromFileDescriptor(int fd, size_t offset, size_t length)
+    {
+        // basic checks
+        if (fd <= 0)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "FontRegistry::createFreetype2FontFromFileDescriptor: filedescriptor must be valid " << fd);
+            return {};
+        }
+        if (length == 0)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "FontRegistry::createFreetype2FontFromFileDescriptor: length may not be 0");
+            return {};
+        }
+
+        LOG_INFO_P(CONTEXT_CLIENT, "FontRegistry::createFreetype2FontFromFileDescriptor: fd {}, offset {}, length {}", fd, offset, length);
+        return createFreetype2FontCommon(std::make_unique<ramses_internal::FreetypeFontFaceFileDescriptor>(fd, offset, length, m_ft2Library.get()));
+    }
+
+    FontId FontRegistryImpl::createFreetype2FontCommon(std::unique_ptr<ramses_internal::FreetypeFontFace> face)
+    {
         if (!face->init())
             return {};
 

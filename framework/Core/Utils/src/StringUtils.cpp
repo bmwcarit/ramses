@@ -9,6 +9,7 @@
 #include "Utils/StringUtils.h"
 #include "PlatformAbstraction/PlatformStringUtils.h"
 #include "Collections/StringOutputStream.h"
+#include "absl/strings/str_split.h"
 
 namespace ramses_internal
 {
@@ -23,58 +24,36 @@ namespace ramses_internal
         return String(std::move(result));
     }
 
-    void StringUtils::Tokenize(const String& string, StringVector& tokens, const char splitChar)
+    std::vector<String> StringUtils::Tokenize(const String& string, const char splitChar)
     {
-        const Int strLength = static_cast<Int>(string.size());
-        Int nEnd = 0;
-        Int nStart = 0;
-
-        while (nStart < strLength)
-        {
-            nEnd = string.find(splitChar, nStart);
-
-            if (nEnd < 0)
-            {
-                nEnd = string.size();
-            }
-
-            if (nEnd > nStart)
-            {
-                String token = string.substr(nStart, nEnd - nStart);
-                tokens.push_back(token);
-            }
-
-            nStart = nEnd;
-
-            while (nStart < strLength && string.at(nStart) == splitChar)
-                ++nStart;
-        }
+        return absl::StrSplit(string.stdRef(), splitChar, absl::SkipWhitespace());
     }
 
-    void StringUtils::Tokenize(const String& string, StringSet& tokens, const char split)
+    HashSet<String> StringUtils::TokenizeToSet(const String& string, const char split)
     {
-        StringVector vectorOfTokens;
-        Tokenize(string, vectorOfTokens, split);
+        const StringVector vectorOfTokens = Tokenize(string, split);
+        HashSet<String> result;
         for(const auto& token : vectorOfTokens)
         {
-            tokens.put(token);
+            result.put(token);
         }
+        return result;
     }
 
-    void StringUtils::GetLineTokens(const ramses_internal::String& line, char split, std::vector<ramses_internal::String>& tokens)
+    std::vector<String> StringUtils::TokenizeTrimmed(const ramses_internal::String& line, char split)
     {
-        std::vector<ramses_internal::String> allTokens;
-        ramses_internal::StringUtils::Tokenize(line, allTokens, split);
+        const std::vector<ramses_internal::String> allTokens = ramses_internal::StringUtils::Tokenize(line, split);
 
         // we have to filter out empty tokens
-        tokens.clear();
+        std::vector<ramses_internal::String> result;
         for(const auto& token : allTokens)
         {
             ramses_internal::String trimmedToken = ramses_internal::StringUtils::Trim(token.c_str());
             if (trimmedToken.size() > 0)
             {
-                tokens.push_back(trimmedToken);
+                result.push_back(trimmedToken);
             }
         }
+        return result;
     }
 }

@@ -28,7 +28,7 @@ namespace ramses_internal
         SingleResourceSerialization::SerializeResource(outStream, *resource.get());
     }
 
-    IResource* ResourcePersistation::ReadOneResourceFromStream(IInputStream& inStream, const ResourceContentHash& hash)
+    std::unique_ptr<IResource> ResourcePersistation::ReadOneResourceFromStream(IInputStream& inStream, const ResourceContentHash& hash)
     {
         return SingleResourceSerialization::DeserializeResource(inStream, hash);
     }
@@ -91,22 +91,33 @@ namespace ramses_internal
         }
     }
 
-    IResource* ResourcePersistation::RetrieveResourceFromStream(IInputStream& inStream, const ResourceFileEntry& fileEntry)
+    std::unique_ptr<IResource> ResourcePersistation::RetrieveResourceFromStream(IInputStream& inStream, const ResourceFileEntry& fileEntry)
     {
-        inStream.seek(fileEntry.offsetInBytes, IInputStream::Seek::FromBeginning);
+        if (inStream.seek(fileEntry.offsetInBytes, IInputStream::Seek::FromBeginning) != EStatus::Ok)
+        {
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: seek failed for resource {}", fileEntry.resourceInfo.hash);
+            return {};
+        }
 
-        IResource* resource = ReadOneResourceFromStream(inStream, fileEntry.resourceInfo.hash);
+        std::unique_ptr<IResource> resource = ReadOneResourceFromStream(inStream, fileEntry.resourceInfo.hash);
+        if (!resource)
+            return {};
 
         if (inStream.getState() != EStatus::Ok)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: resource deserialization failed.");
-            delete resource;
-            return nullptr;
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: resource deserialization failed for {}", fileEntry.resourceInfo.hash);
+            return {};
         }
 
         UInt currentPosAfterRead = 0;
-        inStream.getPos(currentPosAfterRead);
-        assert(currentPosAfterRead - fileEntry.offsetInBytes == fileEntry.sizeInBytes);
+        const EStatus posStatus = inStream.getPos(currentPosAfterRead);
+        if (posStatus != EStatus::Ok || currentPosAfterRead - fileEntry.offsetInBytes != fileEntry.sizeInBytes)
+        {
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: read position fail for {}, state {} (resOffset {}, resSize {}, filePos{})",
+                        fileEntry.resourceInfo.hash, posStatus, fileEntry.offsetInBytes, fileEntry.sizeInBytes, currentPosAfterRead);
+            return {};
+        }
+
         return resource;
     }
 }

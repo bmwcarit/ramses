@@ -141,12 +141,12 @@ namespace ramses_internal
 
     bool GlslEffect::createShaderParts(ShaderParts& outParts, const String& defineString, const String& userShader) const
     {
-        Int versionStringStart;
+        size_t versionStringStart;
         String versionString;
-        if ((versionStringStart = userShader.find("#version")) != -1)
+        if ((versionStringStart = userShader.find("#version")) != String::npos)
         {
-            Int versionStringEnd = userShader.find('\n', versionStringStart);
-            if (versionStringEnd == -1)
+            size_t versionStringEnd = userShader.find('\n', versionStringStart);
+            if (versionStringEnd == String::npos)
             {
                 m_errorMessages << "[GLSL Compiler] " << m_name << " Shader contains #version without newline \n";
                 return false;

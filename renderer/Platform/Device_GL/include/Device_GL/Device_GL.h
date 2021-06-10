@@ -69,12 +69,14 @@ namespace ramses_internal
         virtual DeviceResourceHandle    allocateVertexBuffer  (UInt32 totalSizeInBytes) override;
         virtual void                    uploadVertexBufferData(DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) override;
         virtual void                    deleteVertexBuffer    (DeviceResourceHandle handle) override;
-        virtual void                    activateVertexBuffer  (DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 startVertex, EDataType bufferDataType, UInt16 offsetWithinElement, UInt16 stride) override;
+
+        virtual DeviceResourceHandle    allocateVertexArray   (const VertexArrayInfo& vertexArrayInfo) override;
+        virtual void                    activateVertexArray   (DeviceResourceHandle handle) override;
+        virtual void                    deleteVertexArray     (DeviceResourceHandle handle) override;
 
         virtual DeviceResourceHandle    allocateIndexBuffer   (EDataType dataType, UInt32 sizeInBytes) override;
         virtual void                    uploadIndexBufferData (DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) override;
         virtual void                    deleteIndexBuffer     (DeviceResourceHandle handle) override;
-        virtual void                    activateIndexBuffer   (DeviceResourceHandle handle) override;
 
         virtual std::unique_ptr<const GPUResource> uploadShader(const EffectResource& shader) override;
         virtual DeviceResourceHandle    registerShader      (std::unique_ptr<const GPUResource> shaderResource) override;
@@ -135,7 +137,6 @@ namespace ramses_internal
         EDrawMode                   m_activePrimitiveDrawMode = EDrawMode::Points;
         uint32_t                    m_activeIndexArrayElementSizeBytes = 0u;
         uint32_t                    m_activeIndexArraySizeBytes = 0u;
-        DeviceResourceHandle        m_activeIndexArrayHandle;
 
         const UInt8                 m_majorApiVersion;
         const UInt8                 m_minorApiVersion;

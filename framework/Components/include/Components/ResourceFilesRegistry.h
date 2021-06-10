@@ -48,7 +48,7 @@ namespace ramses_internal
         SceneFileHandle registerResourceFile(const InputStreamContainerSPtr& resourceFileInputStream, const ResourceTableOfContents& toc, ResourceStorage& resourceStorage);
         void unregisterResourceFile(SceneFileHandle handle);
         const FileContentsMap* getContentsOfResourceFile(SceneFileHandle handle) const;
-        EStatus getEntry(const ResourceContentHash& hash, IInputStream*& resourceStream, ResourceFileEntry& fileEntry) const;
+        EStatus getEntry(const ResourceContentHash& hash, IInputStream*& resourceStream, ResourceFileEntry& fileEntry, SceneFileHandle& fileHandle) const;
     private:
         std::unordered_map<SceneFileHandle, ResourceRegistryFileEntry> m_resourceFiles;
         SceneFileHandle m_nextHandle{1};
@@ -86,7 +86,7 @@ namespace ramses_internal
     }
 
     inline
-    EStatus ResourceFilesRegistry::getEntry(const ResourceContentHash& hash, IInputStream*& resourceStream, ResourceFileEntry& fileEntry) const
+    EStatus ResourceFilesRegistry::getEntry(const ResourceContentHash& hash, IInputStream*& resourceStream, ResourceFileEntry& fileEntry, SceneFileHandle& fileHandle) const
     {
         for (auto& iter : m_resourceFiles)
         {
@@ -96,6 +96,7 @@ namespace ramses_internal
             {
                 resourceStream = &iter.second.stream->getStream();
                 fileEntry = entry->fileEntry;
+                fileHandle = iter.first;
                 return EStatus::Ok;
             }
         }

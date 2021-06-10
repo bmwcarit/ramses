@@ -108,76 +108,6 @@ TEST(String, MoveAssignment)
     EXPECT_EQ(3u, b.size());
 }
 
-TEST(String, TestToLowerCase1)
-{
-    String str("abcDEF");
-    str.toLowerCase();
-    EXPECT_EQ(String("abcdef"), str);
-}
-
-TEST(String, TestToLowerCase2)
-{
-    String str("");
-    str.toLowerCase();
-    EXPECT_EQ(String(""), str);
-}
-
-TEST(String, TestToLowerCase3)
-{
-    String str("ABC");
-    str.toLowerCase();
-    EXPECT_EQ(String("abc"), str);
-}
-
-TEST(String, TestToLowerCase4)
-{
-    String str("AbC");
-    str.toLowerCase();
-    EXPECT_EQ(String("abc"), str);
-}
-
-TEST(String, TestToLowerCase5)
-{
-    String str("Abc");
-    str.toLowerCase();
-    EXPECT_EQ(String("abc"), str);
-}
-
-TEST(String, TestToUpperCase1)
-{
-    String str("abcDEF");
-    str.toUpperCase();
-    EXPECT_EQ(String("ABCDEF"), str);
-}
-
-TEST(String, TestToUpperCase2)
-{
-    String str("");
-    str.toUpperCase();
-    EXPECT_EQ(String(""), str);
-}
-
-TEST(String, TestToUpperCase3)
-{
-    String str("ABC");
-    str.toUpperCase();
-    EXPECT_EQ(String("ABC"), str);
-}
-
-TEST(String, TestToUpperCase4)
-{
-    String str("AbC");
-    str.toUpperCase();
-    EXPECT_EQ(String("ABC"), str);
-}
-
-TEST(String, TestToUpperCase5)
-{
-    String str("Abc");
-    str.toUpperCase();
-    EXPECT_EQ(String("ABC"), str);
-}
-
 TEST(String, TestAssignOperator2)
 {
     String str("asdf");
@@ -496,10 +426,10 @@ TEST(String, FindChar)
     String str2("hello world");
     String str3("");
 
-    EXPECT_EQ(-1, str1.find('a'));
-    EXPECT_EQ(4, str2.find('o'));
-    EXPECT_EQ(-1, str2.find('O'));
-    EXPECT_EQ(-1, str3.find('o'));
+    EXPECT_EQ(String::npos, str1.find('a'));
+    EXPECT_EQ(4u, str2.find('o'));
+    EXPECT_EQ(String::npos, str2.find('O'));
+    EXPECT_EQ(String::npos, str3.find('o'));
 }
 
 TEST(String, FindCharOffset)
@@ -508,14 +438,14 @@ TEST(String, FindCharOffset)
     String str2("hello world");
     String str3("");
 
-    EXPECT_EQ(-1, str1.find('o', 12));
-    EXPECT_EQ(-1, str1.find('o', 0));
+    EXPECT_EQ(String::npos, str1.find('o', 12));
+    EXPECT_EQ(String::npos, str1.find('o', 0));
 
-    EXPECT_EQ(4, str2.find('o',  1));
-    EXPECT_EQ(5, str2.find(' ', 0));
-    EXPECT_EQ(7, str2.find('o', 5));
+    EXPECT_EQ(4u, str2.find('o',  1));
+    EXPECT_EQ(5u, str2.find(' ', 0));
+    EXPECT_EQ(7u, str2.find('o', 5));
 
-    EXPECT_EQ(-1, str2.find('o', 20));
+    EXPECT_EQ(String::npos, str2.find('o', 20));
 
 }
 
@@ -523,20 +453,20 @@ TEST(String, FindStringOffset)
 {
     String str("hello world I am your old man");
 
-    EXPECT_EQ(5, str.find(" ", 0));
-    EXPECT_EQ(11, str.find(" ", 6));
-    EXPECT_EQ(13, str.find(" ", 12));
-    EXPECT_EQ(16, str.find(" ", 14));
-    EXPECT_EQ(21, str.find(" ", 17));
-    EXPECT_EQ(25, str.find(" ", 22));
+    EXPECT_EQ(5u, str.find(" ", 0));
+    EXPECT_EQ(11u, str.find(" ", 6));
+    EXPECT_EQ(13u, str.find(" ", 12));
+    EXPECT_EQ(16u, str.find(" ", 14));
+    EXPECT_EQ(21u, str.find(" ", 17));
+    EXPECT_EQ(25u, str.find(" ", 22));
 
-    EXPECT_EQ(9, str.find("ld",  0));
-    EXPECT_EQ(23, str.find("ld", 10));
+    EXPECT_EQ(9u, str.find("ld",  0));
+    EXPECT_EQ(23u, str.find("ld", 10));
 
-    EXPECT_EQ(-1, str.find("ld", 25));
+    EXPECT_EQ(String::npos, str.find("ld", 25));
 
-    EXPECT_EQ(-1, str.find("ld", 29));
-    EXPECT_EQ(-1, str.find("ld", 30));
+    EXPECT_EQ(String::npos, str.find("ld", 29));
+    EXPECT_EQ(String::npos, str.find("ld", 30));
 
 }
 
@@ -546,42 +476,42 @@ TEST(String, RFindChar)
     String str2("hello world");
     String str3("");
 
-    EXPECT_EQ(-1, str1.rfind('a'));
-    EXPECT_EQ(-1, str1.rfind(0));
-    EXPECT_EQ(7, str2.rfind('o'));
-    EXPECT_EQ(-1, str2.rfind(0));
-    EXPECT_EQ(-1, str2.rfind('O'));
-    EXPECT_EQ(-1, str3.rfind('o'));
-    EXPECT_EQ(-1, str3.rfind(0));
+    EXPECT_EQ(String::npos, str1.rfind('a'));
+    EXPECT_EQ(String::npos, str1.rfind(0));
+    EXPECT_EQ(7u, str2.rfind('o'));
+    EXPECT_EQ(String::npos, str2.rfind(0));
+    EXPECT_EQ(String::npos, str2.rfind('O'));
+    EXPECT_EQ(String::npos, str3.rfind('o'));
+    EXPECT_EQ(String::npos, str3.rfind(0));
 }
 
 TEST(String, FindSubstring)
 {
     String str1("hello c++ world.");
-    EXPECT_EQ(6, str1.find("c++"));
+    EXPECT_EQ(6u, str1.find("c++"));
 
     // test when the substring is at the start of the string
     String str2("hello c++ world.");
-    EXPECT_EQ(0, str2.find("hello"));
+    EXPECT_EQ(0u, str2.find("hello"));
 
     // test when the substring is at the end of the string
     String str3("hello c++ world.");
-    EXPECT_EQ(10, str3.find("world."));
+    EXPECT_EQ(10u, str3.find("world."));
 
     // test substring not found
     String str4("hello c++ world.");
-    EXPECT_EQ(-1, str4.find("nosubstring"));
+    EXPECT_EQ(String::npos, str4.find("nosubstring"));
 
     // test substring is empty
     String str5("hello c++ world.");
-    EXPECT_EQ(0, str5.find(""));
+    EXPECT_EQ(0u, str5.find(""));
 
     // test string is empty
     String str6("");
-    EXPECT_EQ(-1, str6.find("hello"));
+    EXPECT_EQ(String::npos, str6.find("hello"));
 
     String str7("");
-    EXPECT_EQ(0, str7.find(""));
+    EXPECT_EQ(0u, str7.find(""));
 }
 
 TEST(String, GetSubstring)
@@ -596,7 +526,7 @@ TEST(String, GetSubstring)
     EXPECT_EQ(0u, substr2.size());
 
     // test negative length
-    String substr3 = str1.substr(6, -1);
+    String substr3 = str1.substr(6, String::npos);
     EXPECT_STREQ("c++ world.", substr3.c_str());
 
     // test when length is too large
@@ -620,35 +550,30 @@ TEST(String, GetSubstring)
     EXPECT_STREQ("", substr8.c_str());
 }
 
-TEST(String, StartsWith)
+TEST(String, convertToStringView)
 {
-    String str("hello c++ world.");
+    String s1("asd");
+    absl::string_view sv1 = s1;
+    EXPECT_EQ(s1, sv1);
 
-
-    EXPECT_TRUE(str.startsWith("hello"));
-    EXPECT_TRUE(str.startsWith("h"));
-    EXPECT_TRUE(str.startsWith("hello c++ world."));
-    EXPECT_FALSE(str.startsWith("c++"));
-
+    const String s2("asd");
+    absl::string_view sv2 = s2;
+    EXPECT_EQ(s2, sv2);
 }
 
-TEST(String, EndsWith)
+TEST(String, compareWithStringView)
 {
-    String str("hello c++ world.");
+    String s("asd");
+    absl::string_view sv1("asd");
+    absl::string_view sv2("def");
 
-    EXPECT_TRUE(str.endsWith("."));
-    EXPECT_TRUE(str.endsWith("world."));
-    EXPECT_TRUE(str.endsWith("hello c++ world."));
-    EXPECT_FALSE(str.endsWith("c++"));
+    EXPECT_TRUE(s == sv1);
+    EXPECT_TRUE(sv1 == s);
+    EXPECT_TRUE(s != sv2);
 
-    String path("D:");
-    EXPECT_FALSE(path.endsWith("\\"));
-
-    String path2(R"(D:\dir1\dir2)");
-    EXPECT_FALSE(path2.endsWith("\\"));
-
-    String path3(R"(D:\dir1\dir2\)");
-    EXPECT_TRUE(path3.endsWith("\\"));
+    EXPECT_FALSE(s != sv1);
+    EXPECT_FALSE(sv1 != s);
+    EXPECT_FALSE(s == sv2);
 }
 
 TEST(String, TestDataGetterOnEmptyString)
@@ -792,6 +717,12 @@ TEST(String, HashMapWithStdString)
     EXPECT_EQ(static_cast<uint32_t>(0), map.size());
 }
 
+TEST(String, constructFromStringView)
+{
+    absl::string_view sv("asd");
+    String s(sv);
+    EXPECT_EQ(s, "asd");
+}
 
 class AString : public ::testing::Test, public IOStreamTesterBase
 {

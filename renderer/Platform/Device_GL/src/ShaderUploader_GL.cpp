@@ -192,9 +192,9 @@ namespace ramses_internal
     {
         UInt32 lineNumber = 1;
         Int prevNewLine = 0;
-        Int nextNewLine = source.find("\n");
+        size_t nextNewLine = source.find("\n");
 
-        while (-1 != nextNewLine)
+        while (nextNewLine != String::npos)
         {
             LOG_ERROR(CONTEXT_RENDERER, "Device_Base::PrintShaderSourceWithLineNumbers:  L" << lineNumber << ": " << source.substr(prevNewLine, nextNewLine - prevNewLine));
 

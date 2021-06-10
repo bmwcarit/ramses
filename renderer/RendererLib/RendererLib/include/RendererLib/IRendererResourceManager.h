@@ -67,6 +67,9 @@ namespace ramses_internal
         virtual void             unloadTextureBuffer(TextureBufferHandle textureBufferHandle, SceneId sceneId) = 0;
         virtual void             updateTextureBuffer(TextureBufferHandle textureBufferHandle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data, SceneId sceneId) = 0;
 
+        virtual void             uploadVertexArray(RenderableHandle renderableHandle, const VertexArrayInfo& vertexArrayInfo, SceneId sceneId) = 0;
+        virtual void             unloadVertexArray(RenderableHandle renderableHandle, SceneId sceneId) = 0;
+
         virtual void             unloadAllSceneResourcesForScene(SceneId sceneId) = 0;
         virtual void             unreferenceAllResourcesForScene(SceneId sceneId) = 0;
         virtual const ResourceContentHashVector* getResourcesInUseByScene(SceneId sceneId) const = 0;

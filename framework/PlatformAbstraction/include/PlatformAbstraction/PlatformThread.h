@@ -52,7 +52,7 @@ namespace ramses_internal
     PlatformThread::PlatformThread(const String& threadName)
         : m_name(threadName.stdRef())
     {
-        assert(threadName.find(' ') == -1 && "PlatformThread name may not contain spaces");
+        assert(threadName.find(' ') == String::npos && "PlatformThread name may not contain spaces");
         assert(threadName.size() < 16u);
     }
 

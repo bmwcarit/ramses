@@ -78,7 +78,7 @@ namespace ramses_internal
         {
             // The input parameter can contain newlines characters, so checking for endsWith() can fail.
             static String esIdentifier(" es");
-            return glslVersion.find(esIdentifier, 0u) != -1;
+            return glslVersion.find(esIdentifier, 0u) != String::npos;
         }
 
     private:

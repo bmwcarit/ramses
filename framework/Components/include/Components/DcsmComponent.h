@@ -23,7 +23,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <unordered_map>
-
+#include "DcsmStatusMessageImpl.h"
 
 namespace ramses
 {
@@ -54,6 +54,7 @@ namespace ramses_internal
         // Local consumer send methods
         virtual bool sendCanvasSizeChange(ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation ai) override;
         virtual bool sendContentStateChange(ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation ai) override;
+        virtual bool sendContentStatus(ContentID contentID, ramses::DcsmStatusMessageImpl const& message) override;
 
         // Local provider send methods
         virtual bool sendOfferContent(ContentID contentID, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, bool localOnly) override;
@@ -132,25 +133,28 @@ namespace ramses_internal
             StopOfferContentRequest,
             ForceStopOfferContent,
             UpdateContentMetadata,
+            ContentStatus,
         };
 
         struct DcsmEvent
         {
-            EDcsmCommandType           cmdType;
-            ContentID                  contentID;
-            Category                   category;
-            TechnicalContentDescriptor descriptor;
-            ETechnicalContentType      contentType = ETechnicalContentType::RamsesSceneID;
-            EDcsmState                 state       = EDcsmState::Offered;
-            CategoryInfo               categoryInfo;
-            AnimationInformation       animation  {0, 0};
-            DcsmMetadata               metadata;
-            int32_t                    focusRequest = 0;
-            Guid                       from;
+            EDcsmCommandType                                cmdType;
+            ContentID                                       contentID;
+            Category                                        category;
+            TechnicalContentDescriptor                      descriptor;
+            ETechnicalContentType                           contentType = ETechnicalContentType::RamsesSceneID;
+            EDcsmState                                      state       = EDcsmState::Offered;
+            CategoryInfo                                    categoryInfo;
+            AnimationInformation                            animation  {0, 0};
+            DcsmMetadata                                    metadata;
+            int32_t                                         focusRequest = 0;
+            Guid                                            from;
+            std::unique_ptr<ramses::DcsmStatusMessageImpl>  contentStatus;
         };
 
         void addProviderEvent_CanvasSizeChange(ContentID contentID, CategoryInfo categoryInfo, AnimationInformation, const Guid& consumerID);
         void addProviderEvent_ContentStateChange(ContentID contentID, EDcsmState status, CategoryInfo categoryInfo,AnimationInformation, const Guid& consumerID);
+        void addProviderEvent_ContentStatus(ContentID contentID, uint64_t messageID, absl::Span<const Byte> message, const Guid& consumerID);
         void addConsumerEvent_OfferContent(ContentID contentID, Category, ETechnicalContentType technicalContentType, const Guid& providerID);
         void addConsumerEvent_ContentDescription(ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID);
         void addConsumerEvent_ContentReady(ContentID contentID, const Guid& providerID);
@@ -170,6 +174,7 @@ namespace ramses_internal
         bool isLocallyProvidingContent(const char* callerMethod, ContentID content) const;
         bool isValidContent(const char* callerMethod, ContentID content) const;
         bool isValidStateTransition(const char* callerMethod, const ContentInfo& ci, EDcsmState transition, ContentState& newState) const;
+        bool isContentStatusMessageKnown(const char* callerMethod, uint64_t messageID) const;
 
         const Guid m_myID;
         ICommunicationSystem& m_communicationSystem;

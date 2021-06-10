@@ -131,4 +131,11 @@ namespace ramses
         return status;
     }
 
+    status_t DcsmContentControl::sendContentStatus(ContentID contentID, DcsmStatusMessage const& message)
+    {
+        const auto status = m_impl.sendContentStatus(contentID, message);
+        LOG_HL_RENDERER_API2(status, contentID, LOG_API_GENERIC_OBJECT_STRING(message));
+        return status;
+    }
+
 }

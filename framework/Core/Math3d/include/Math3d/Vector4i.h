@@ -57,9 +57,7 @@ namespace ramses_internal
         constexpr bool operator!=(const Vector4i& other) const;
 
         constexpr Int32 dot(const Vector4i& other) const;
-        constexpr Vector4i cross(const Vector4i& other) const;
         Float length() const;
-        Float angle(const Vector4i& other) const; ///< in radians
 
         constexpr Int32& operator[](const UInt32 index);
         constexpr const Int32& operator[](const UInt32 index) const;
@@ -178,15 +176,6 @@ namespace ramses_internal
         return x * other.x + y * other.y + z * other.z + w * other.w;
     }
 
-    constexpr inline Vector4i Vector4i::cross(const Vector4i& other) const
-    {
-        return Vector4i(y * other.z - z * other.y + z * other.w - w * other.z + y * other.w - w * other.y
-            , z * other.x - x * other.z + w * other.x - x * other.w + z * other.w - w * other.z
-            , x * other.y - y * other.x + w * other.y - y * other.w + w * other.x - x * other.w
-            , x * other.y - y * other.x + y * other.z - z * other.y + x * other.z - z * other.x
-            );
-    }
-
     constexpr inline void Vector4i::operator*=(const Int32 scalar)
     {
         x *= scalar;
@@ -209,11 +198,6 @@ namespace ramses_internal
             , y / other.y
             , z / other.z
             , w / other.w);
-    }
-
-    inline Float Vector4i::angle(const Vector4i& other) const
-    {
-        return std::acos(dot(other) / (length() * other.length()));
     }
 
     inline

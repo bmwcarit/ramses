@@ -44,10 +44,8 @@ namespace ramses_internal
         ramses_internal::String eglExtensionsString(eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
         ramses_internal::String glExtensionsString(reinterpret_cast<const ramses_internal::Char*>(glGetString(GL_EXTENSIONS)));
 
-        StringSet eglExtensions;
-        StringSet glExtensions;
-        StringUtils::Tokenize(eglExtensionsString, eglExtensions);
-        StringUtils::Tokenize(glExtensionsString, glExtensions);
+        const StringSet eglExtensions = StringUtils::TokenizeToSet(eglExtensionsString);
+        const StringSet glExtensions = StringUtils::TokenizeToSet(glExtensionsString);
 
         if (CheckExtensionAvailable(glExtensions, "GL_OES_EGL_image") &&
             CheckExtensionAvailable(eglExtensions, "EGL_KHR_image_base") &&

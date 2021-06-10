@@ -41,6 +41,7 @@ namespace ramses_internal
         IDevice& m_device;
 
         DeviceResourceHandle m_shaderResource;
+        DeviceResourceHandle m_vertexArrayResource;
         DeviceResourceHandle m_vertexBufferResource;
         DeviceResourceHandle m_indexBufferResource;
         DataFieldHandle m_vertexPositionField;

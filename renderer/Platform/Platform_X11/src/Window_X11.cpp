@@ -182,19 +182,25 @@ namespace ramses_internal
     {
         LOG_DEBUG(CONTEXT_RENDERER, "Window_X11::~Window_X11");
 
-        if (m_X11WindowData.window && m_X11WindowData.display)
+        if (m_userProvidedWindowHandle.isValid())
         {
-            XDestroyWindow(m_X11WindowData.display, m_X11WindowData.window);
-            XSync(m_X11WindowData.display, static_cast<int>(true));
-
-            LOG_DEBUG(CONTEXT_RENDERER, "Window_X11::destroyLastInstance XCloseDisplay");
-            XCloseDisplay(m_X11WindowData.display);
-            m_X11WindowData.display = nullptr;
+            LOG_INFO(CONTEXT_RENDERER, "Window_X11::~Window_X11: Skip destruction because has user provided window handle");
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Error closing X11 window");
-            return;
+            if (m_X11WindowData.window && m_X11WindowData.display)
+            {
+                XDestroyWindow(m_X11WindowData.display, m_X11WindowData.window);
+                XSync(m_X11WindowData.display, static_cast<int>(true));
+
+                LOG_DEBUG(CONTEXT_RENDERER, "Window_X11::~Window_X11: XCloseDisplay");
+                XCloseDisplay(m_X11WindowData.display);
+                m_X11WindowData.display = nullptr;
+            }
+            else
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "Window_X11::~Window_X11: Error closing X11 window");
+            }
         }
     }
 

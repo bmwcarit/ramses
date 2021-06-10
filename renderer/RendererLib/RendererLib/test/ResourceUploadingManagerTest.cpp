@@ -452,7 +452,7 @@ TEST_F(AResourceUploadingManager, checksTimeBudgetForEachLargeResourceWhenUpload
     EXPECT_CALL(*uploader, unloadResource(_, _, _, _)).Times(2);
 }
 
-TEST_F(AResourceUploadingManager, uploadsOnlyResourcesFittingIntoTimeBudgetInOneUpdate)
+TEST_F(AResourceUploadingManager, uploadsOnlyResourcesFittingIntoTimeBudgetInOneUpdate_uploadSlow)
 {
     const std::vector<UInt32> dummyData(ResourceUploadingManager::LargeResourceByteSizeThreshold / 4 + 1, 0u);
     const ArrayResource largeResource(EResourceType_IndexArray, static_cast<UInt32>(dummyData.size()), EDataType::UInt32, dummyData.data(), ResourceCacheFlag_DoNotCache, "");
@@ -485,6 +485,64 @@ TEST_F(AResourceUploadingManager, uploadsOnlyResourcesFittingIntoTimeBudgetInOne
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<UInt64>::max());
     EXPECT_CALL(*uploader, uploadResource(_, _, _)).Times(AtLeast(1)).WillRepeatedly(Return(ResourceUploaderMock::FakeResourceDeviceHandle));
     frameTimer.startFrame();
+    rendererResourceUploader.uploadAndUnloadPendingResources();
+    expectResourceUploaded(res2);
+    expectResourceUploaded(res3);
+    expectResourceUploaded(res4);
+
+    makeResourceUnused(res1);
+    makeResourceUnused(res2);
+    makeResourceUnused(res3);
+    makeResourceUnused(res4);
+
+    EXPECT_CALL(*uploader, unloadResource(_, _, _, _)).Times(4);
+}
+
+TEST_F(AResourceUploadingManager, uploadsOnlyResourcesFittingIntoTimeBudgetInOneUpdate_decompressSlow)
+{
+    const ResourceContentHash res1(1234u, 0u);
+    const ResourceContentHash res2(1235u, 0u);
+    const ResourceContentHash res3(1236u, 0u);
+    const ResourceContentHash res4(1237u, 0u);
+
+    NiceMock<ResourceMock> resource1{ res1, EResourceType_IndexArray };
+    NiceMock<ResourceMock> resource2{ res2, EResourceType_IndexArray };
+    NiceMock<ResourceMock> resource3{ res3, EResourceType_IndexArray };
+    NiceMock<ResourceMock> resource4{ res4, EResourceType_IndexArray };
+
+    // simulate large resources so that time budget checks happen on every resources, not just once per batch
+    ON_CALL(resource1, getDecompressedDataSize()).WillByDefault(Return(ResourceUploadingManager::LargeResourceByteSizeThreshold + 1));
+    ON_CALL(resource2, getDecompressedDataSize()).WillByDefault(Return(ResourceUploadingManager::LargeResourceByteSizeThreshold + 1));
+    ON_CALL(resource3, getDecompressedDataSize()).WillByDefault(Return(ResourceUploadingManager::LargeResourceByteSizeThreshold + 1));
+    ON_CALL(resource4, getDecompressedDataSize()).WillByDefault(Return(ResourceUploadingManager::LargeResourceByteSizeThreshold + 1));
+    ON_CALL(resource1, isDeCompressedAvailable()).WillByDefault(Return(true));
+    ON_CALL(resource2, isDeCompressedAvailable()).WillByDefault(Return(true));
+    ON_CALL(resource3, isDeCompressedAvailable()).WillByDefault(Return(true));
+    ON_CALL(resource4, isDeCompressedAvailable()).WillByDefault(Return(true));
+
+    registerAndProvideResource(res1, false, &resource1);
+    registerAndProvideResource(res2, false, &resource2);
+    registerAndProvideResource(res3, false, &resource3);
+    registerAndProvideResource(res4, false, &resource4);
+
+    const UInt32 sectionTimeBudgetMiillis = 10u;
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, sectionTimeBudgetMiillis * 1000u);
+
+    //make sure that not all resources will be uploaded
+    EXPECT_CALL(resource1, decompress()).Times(AtMost(3)).WillRepeatedly(InvokeWithoutArgs([]() { PlatformThread::Sleep(10); }));
+
+    frameTimer.startFrame();
+    EXPECT_CALL(*uploader, uploadResource(_, _, _)).Times(AtLeast(1)).WillRepeatedly(Return(ResourceUploaderMock::FakeResourceDeviceHandle));
+    rendererResourceUploader.uploadAndUnloadPendingResources();
+    // expect first res uploaded
+    expectResourceUploaded(res1);
+    // expect last res not uploaded
+    expectResourceStatus(res4, EResourceStatus::Provided);
+
+    // upload rest
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, std::numeric_limits<UInt64>::max());
+    frameTimer.startFrame();
+    EXPECT_CALL(*uploader, uploadResource(_, _, _)).Times(AtLeast(1)).WillRepeatedly(Return(ResourceUploaderMock::FakeResourceDeviceHandle));
     rendererResourceUploader.uploadAndUnloadPendingResources();
     expectResourceUploaded(res2);
     expectResourceUploaded(res3);

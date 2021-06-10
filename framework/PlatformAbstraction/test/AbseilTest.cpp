@@ -12,6 +12,9 @@
 #include "absl/types/span.h"
 #include "absl/strings/string_view.h"
 #include "absl/algorithm/container.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
+#include "Collections/String.h"
 
 namespace ramses_internal
 {
@@ -61,5 +64,39 @@ namespace ramses_internal
         std::vector<int> v = {1, 2, 3, 4};
         EXPECT_EQ(v.begin() + 1, absl::c_find(v, 2));
         EXPECT_EQ(v.end(), absl::c_find(v, 0));
+    }
+
+    TEST(AAbseil, stringToLower)
+    {
+        EXPECT_EQ("ascdef!123", absl::AsciiStrToLower("ascDEF!123"));
+        EXPECT_EQ("ascdef!123", absl::AsciiStrToLower(String("ascDEF!123")));
+        EXPECT_EQ("ascdef!123", absl::AsciiStrToLower(std::string("ascDEF!123")));
+    }
+
+    TEST(AAbseil, stringToUpper)
+    {
+        EXPECT_EQ("ASCDEF!123", absl::AsciiStrToUpper("ascDEF!123"));
+        EXPECT_EQ("ASCDEF!123", absl::AsciiStrToUpper(String("ascDEF!123")));
+        EXPECT_EQ("ASCDEF!123", absl::AsciiStrToUpper(std::string("ascDEF!123")));
+    }
+
+    TEST(AAbseil, stringStartsWith)
+    {
+        EXPECT_TRUE(absl::StartsWith("", ""));
+        EXPECT_TRUE(absl::StartsWith("abcde", ""));
+        EXPECT_TRUE(absl::StartsWith("abc", "abc"));
+        EXPECT_TRUE(absl::StartsWith("abcde", "abc"));
+        EXPECT_FALSE(absl::StartsWith("", "abc"));
+        EXPECT_FALSE(absl::StartsWith("def", "abc"));
+    }
+
+    TEST(AAbseil, stringEndsWith)
+    {
+        EXPECT_TRUE(absl::EndsWith("", ""));
+        EXPECT_TRUE(absl::EndsWith("abcde", ""));
+        EXPECT_TRUE(absl::EndsWith("abc", "abc"));
+        EXPECT_TRUE(absl::EndsWith("abcde", "de"));
+        EXPECT_FALSE(absl::EndsWith("", "abc"));
+        EXPECT_FALSE(absl::EndsWith("abc", "def"));
     }
 }

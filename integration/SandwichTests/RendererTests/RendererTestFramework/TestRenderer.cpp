@@ -238,7 +238,14 @@ namespace ramses_internal
         m_renderer->flush();
     }
 
-    bool TestRenderer::performScreenshotCheck(ramses::displayId_t displayId, ramses::displayBufferId_t bufferId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& comparisonImageFile, float maxAveragePercentErrorPerPixel, bool readPixelsTwice)
+    bool TestRenderer::performScreenshotCheck(
+        ramses::displayId_t displayId,
+        ramses::displayBufferId_t bufferId,
+        uint32_t x, uint32_t y, uint32_t width, uint32_t height,
+        const String& comparisonImageFile,
+        float maxAveragePercentErrorPerPixel,
+        bool readPixelsTwice,
+        bool saveDiffOnError)
     {
         // In some cases (interruptible OB) taking screenshot needs to be delayed to guarantee that the last state was rendered to framebuffer,
         // reading pixels twice before checking result guarantees that.
@@ -254,7 +261,8 @@ namespace ramses_internal
             width,
             height,
             comparisonImageFile,
-            maxAveragePercentErrorPerPixel);
+            maxAveragePercentErrorPerPixel,
+            saveDiffOnError);
     }
 
     void TestRenderer::saveScreenshotForDisplay(ramses::displayId_t displayId, ramses::displayBufferId_t bufferId, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const String& imageFile)
@@ -270,10 +278,12 @@ namespace ramses_internal
             imageFile);
     }
 
-    void TestRenderer::toggleRendererFrameProfiler()
+    void TestRenderer::toggleRendererFrameProfiler(uint32_t timeHeight, uint32_t counterHeight)
     {
         RendererCommands cmds;
         cmds.push_back(RendererCommand::FrameProfiler_Toggle{ true });
+        cmds.push_back(RendererCommand::FrameProfiler_TimingGraphHeight{ timeHeight });
+        cmds.push_back(RendererCommand::FrameProfiler_CounterGraphHeight{ counterHeight });
         m_renderer->impl.pushAndConsumeRendererCommands(cmds);
     }
 

@@ -1,10 +1,37 @@
-27.0.103
+27.0.105
 -------------------
         General changes
         ------------------------------------------------------------------------
-        - Added tracing and logging for potentially hanging renderer threads
-        - API check to forbid creating a scene reference of self
+        - Display creation does not fail if EC creation fails
+            - This is a temporary measure to enable having multi displays with EC
+              on 1st display
+            - If several displays are created while EC is enabled on renderer config, only the 1st display
+              can have EC succesfully created. Other displays will attempt and fail EC creation since they
+              re-use the same config as the 1st display and the socket is already in use by EC in the 1st display.
+        - added DCSM content status message sending from consumer to provider of a content
+            - added sendContentStatus to DcsmConsumer and DcsmContentControl to allow sending
+            - added new IDcsmStatusMessageHandler and another dispatchEvents to DcsmProvider to allow handling of arriving DcsmStatusMessages
+            - added DcsmStatusMessage base class and StreamStatusMessage as its first implementation
 
+27.0.104
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - All geometry attributes are now using OpenGL vertex array objects
+          - internal optimization, no action on application side needed
+        - Disable pkg-config usage on windows to prevent configuration issues
+
+        API changes
+        ------------------------------------------------------------------------
+        - Add FontRegistry::createFreetype2FontFromFileDescriptor to load font from open
+          filedescriptor
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Do not destroy user provided window on X11
+
+27.0.103
+-------------------
         Bugfixes
         ------------------------------------------------------------------------
         - Make renderer destroy and recreate work when local scenes stay published
@@ -58,6 +85,31 @@
         Bugfixes
         ------------------------------------------------------------------------
         - Fix Node::setRotation with convention forgetting convention when identity values were set for angles
+
+27.0.14
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Resources are decompressed before uploading to GPU in a way that the decompress time is considered for upload
+          interruption to prevent stalls if too many resources need to be decompressed at once
+
+27.0.13
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - fix loading resources and removing resource file from ResourceDataPool, when multiple files have the same file name
+
+27.0.12
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - IDcsmContentControlEventHandler::contentExpirationMonitoringEnabled and IRendererSceneControlEventHandlerLLsceneExpirationMonitoringDisabled
+          will be emitted also when content/scene drops to state available from ready (or canceled transition to ready).
+        - Force applying flushes, force mapping scene or force unsubscribing scene if too many pending flushes rules changed:
+          - only non-empty flushes are counted for threshold
+          - threshold increased to 120 pending flushes to force apply and force map, 5*120 pending flushes to force unsubscribe
+        - Added tracing and logging for potentially hanging renderer threads
+        - API check to forbid creating a scene reference of self
 
 27.0.11
 -------------------

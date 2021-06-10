@@ -12,6 +12,7 @@
 #include "SceneAPI/IScene.h"
 #include "SceneAPI/TextureBuffer.h"
 #include "SceneAPI/BlitPass.h"
+#include "Scene/DataLayout.h"
 
 namespace ramses_internal
 {
@@ -61,5 +62,41 @@ namespace ramses_internal
             const auto& mip = mipMaps[mipLevel];
             resourceManager.updateTextureBuffer(handle, mipLevel, 0u, 0u, mip.width, mip.height, texBuffer.mipMaps[mipLevel].data.data(), scene.getSceneId());
         }
+    }
+
+    void SceneResourceUploader::UploadVertexArray(const IScene& scene, RenderableHandle renderableHandle, IRendererResourceManager& resourceManager)
+    {
+        const auto& renderable = scene.getRenderable(renderableHandle);
+        const auto geometryInstance = renderable.dataInstances[ERenderableDataSlotType_Geometry];
+        const auto& geometryLayout = scene.getDataLayout(scene.getLayoutOfDataInstance(geometryInstance));
+        const auto& effectHash = geometryLayout.getEffectHash();
+
+        VertexArrayInfo vertexArrayInfo;
+        vertexArrayInfo.shader = resourceManager.getResourceDeviceHandle(effectHash);
+
+        const UInt attributesCount = geometryLayout.getFieldCount();
+        for (DataFieldHandle attributeField(0u); attributeField < attributesCount; ++attributeField)
+        {
+            const auto& dataField = geometryLayout.getField(attributeField);
+            const auto& dataResource = scene.getDataResource(geometryInstance, attributeField);
+
+            DeviceResourceHandle bufferHandle;
+            if (dataResource.dataBuffer.isValid())
+                bufferHandle = resourceManager.getDataBufferDeviceHandle(dataResource.dataBuffer, scene.getSceneId());
+            else if (dataResource.hash.isValid())
+                bufferHandle = resourceManager.getResourceDeviceHandle(dataResource.hash);
+
+            //all buffers must have valid device handles, except for index buffer since it's possible to have vertex array
+            //without index buffer
+            assert(bufferHandle.isValid() || attributeField == 0u);
+
+            //indices are always in the 1st field (field Zero)
+            if (attributeField == 0u)
+                vertexArrayInfo.indexBuffer = bufferHandle;
+            else
+                vertexArrayInfo.vertexBuffers.push_back({ bufferHandle, attributeField - 1, dataResource.instancingDivisor, renderable.startVertex, dataField.dataType, dataResource.offsetWithinElementInBytes, dataResource.stride });
+        }
+
+        resourceManager.uploadVertexArray(renderableHandle, vertexArrayInfo, scene.getSceneId());
     }
 }

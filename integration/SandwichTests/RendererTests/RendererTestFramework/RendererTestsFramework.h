@@ -67,7 +67,12 @@ public:
     void setClearColor(uint32_t testDisplayIdx, ramses::displayBufferId_t ob, const ramses_internal::Vector4& clearColor);
     void publishAndFlushScene(ramses::sceneId_t sceneId);
     void flushRendererAndDoOneLoop();
-    bool renderAndCompareScreenshot(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx = 0u, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel, bool readPixelsTwice = false);
+    bool renderAndCompareScreenshot(
+        const ramses_internal::String& expectedImageName,
+        uint32_t testDisplayIdx = 0u,
+        float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel,
+        bool readPixelsTwice = false,
+        bool saveDiffOnError = true);
     bool renderAndCompareScreenshotOffscreenBuffer(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx, ramses::displayBufferId_t bufferId, uint32_t width, uint32_t height, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel);
     bool renderAndCompareScreenshotSubimage(const ramses_internal::String& expectedImageName, ramses_internal::UInt32 subimageX, ramses_internal::UInt32 subimageY, ramses_internal::UInt32 subimageWidth, ramses_internal::UInt32 subimageHeight, float maxAveragePercentErrorPerPixel = RendererTestUtils::DefaultMaxAveragePercentPerPixel, bool readPixelsTwice = false);
     void setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender);
@@ -121,7 +126,8 @@ private:
         ramses_internal::UInt32 subimageY,
         ramses_internal::UInt32 subimageWidth,
         ramses_internal::UInt32 subimageHeight,
-        bool readPixelsTwice);
+        bool readPixelsTwice,
+        bool saveDiffOnError);
 
     void sortTestCases();
     bool currentDisplaySetupMatchesTestCase(const RenderingTestCase& testCase) const;

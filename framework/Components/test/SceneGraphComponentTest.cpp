@@ -1179,6 +1179,7 @@ TEST_F(ASceneGraphComponent, returnsFalseForFlushOnWrongResolvedResourceNumber_S
     ResourceInfo info(res);
 
     scene.allocateStreamTexture(WaylandIviSurfaceId(123u), { 111, 111 }, StreamTextureHandle{ 0 });
+    EXPECT_CALL(resourceComponent, knowsResource(_)).WillOnce(Return(true));
     EXPECT_CALL(resourceComponent, resolveResources(_)).Times(2).WillRepeatedly(Return(ManagedResourceVector{ manRes }));
     EXPECT_CALL(resourceComponent, getResourceInfo(_)).WillOnce(ReturnRef(info));
 
@@ -1204,6 +1205,7 @@ TEST_F(ASceneGraphComponent, returnsFalseForFlushOnWrongResolvedResourceNumber_D
     ResourceInfo info(res);
 
     scene.allocateStreamTexture(WaylandIviSurfaceId(123u), { 111, 111 }, StreamTextureHandle{ 0 });
+    EXPECT_CALL(resourceComponent, knowsResource(_)).WillOnce(Return(true));
     EXPECT_CALL(resourceComponent, resolveResources(_)).Times(1).WillRepeatedly(Return(ManagedResourceVector{ manRes }));
     EXPECT_CALL(resourceComponent, getResourceInfo(_)).WillOnce(ReturnRef(info));
     EXPECT_TRUE(sceneGraphComponent.handleFlush(sceneId, {}, {}));

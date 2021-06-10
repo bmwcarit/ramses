@@ -165,7 +165,7 @@ namespace ramses_internal
     }
 
 
-    TEST_F(APlatformTest, RenderBackendCreationFailsIfEmbeddedCompositorFailsInitialization)
+    TEST_F(APlatformTest, DISABLED_RenderBackendCreationFailsIfEmbeddedCompositorFailsInitialization)
     {
         StrictMock<Platform_BaseMock> platform(rendererConfig);
 

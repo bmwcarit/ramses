@@ -271,4 +271,9 @@ namespace ramses_internal
         return entry->hashUsages > 1 || entry->refCount != 0;
     }
 
+    bool ResourceStorage::knowsResource(const ResourceContentHash& hash) const
+    {
+        PlatformGuard lock(m_resourceMapLock);
+        return m_resourceMap.get(hash) != nullptr;
+    }
 }

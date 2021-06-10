@@ -60,9 +60,7 @@ namespace ramses_internal
         constexpr const Int32& operator[](const UInt32 index) const;
 
         constexpr Int32 dot(const Vector3i& other) const;
-        constexpr Vector3i cross(const Vector3i& other) const;
         Float length() const;
-        Float angle(const Vector3i& other) const; ///< in radians
 
         friend constexpr Vector3i operator*(const Int32 scalar, const Vector3i&);
     };
@@ -150,13 +148,6 @@ namespace ramses_internal
         return x * other.x + y * other.y + z * other.z;
     }
 
-    constexpr inline Vector3i Vector3i::cross(const Vector3i& other) const
-    {
-        return Vector3i( y * other.z - z * other.y
-                        , z * other.x - x * other.z
-                        , x * other.y - y * other.x);
-    }
-
     constexpr inline void Vector3i::operator*=(const Int32 scalar)
     {
         x *= scalar;
@@ -188,11 +179,6 @@ namespace ramses_internal
         x *= vec.x;
         y *= vec.y;
         z *= vec.z;
-    }
-
-    inline Float Vector3i::angle(const Vector3i& other) const
-    {
-        return std::acos(dot(other) / (length() * other.length()));
     }
 
     constexpr inline

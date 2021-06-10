@@ -113,6 +113,7 @@ public:
         , m_resInfo(1)
     {
         EXPECT_CALL(this->m_resourceComponent, resolveResources(_)).Times(AnyNumber()).WillRepeatedly(Return(ManagedResourceVector{}));
+        EXPECT_CALL(this->m_resourceComponent, knowsResource(_)).Times(AnyNumber()).WillRepeatedly(Return(true));
         EXPECT_CALL(this->m_resourceComponent, getResourceInfo(_)).Times(AnyNumber()).WillRepeatedly(ReturnRef(this->m_resInfo[0]));
         this->m_arrayResourceRaw->setResourceData(ResourceBlob{ 1 }, { 1u, 1u });
         this->m_textureResourceRaw->setResourceData(ResourceBlob{ 1 }, { 2u, 2u });
@@ -205,6 +206,7 @@ protected:
 
             for (auto const& hash : allHashes)
             {
+                EXPECT_CALL(this->m_resourceComponent, knowsResource(hash)).WillOnce(Return(true));
                 EXPECT_CALL(this->m_resourceComponent, getResourceInfo(hash)).WillOnce([allResources, this](auto const& hash_) -> ResourceInfo const&
                     {
                         auto it = std::find_if(allResources.begin(), allResources.end(), [&hash_](auto const& res) { return res->getHash() == hash_; });
@@ -1906,3 +1908,27 @@ TYPED_TEST(AClientSceneLogic_All, clientSceneStatisticsIsPassedToSceneGraphCompo
 
     this->expectSceneUnpublish();
 }
+
+TYPED_TEST(AClientSceneLogic_All, doesNotCallGetContentInfoWhenComponentDoesNotKnowResource)
+{
+    EXPECT_CALL(this->m_sceneGraphProviderComponent, sendSceneUpdate_rvr(_, _, _, _, _)).Times(AnyNumber());
+    this->publish();
+    this->m_scene.allocateNode();
+    this->expectSceneSend();
+    this->m_sceneLogic.addSubscriber(this->m_rendererID);
+    this->flush();
+
+    this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_textureResource->getHash());
+    auto tex2 = this->m_scene.allocateStreamTexture(WaylandIviSurfaceId(0), this->m_effectResource->getHash());
+    this->expectResourceQueries({ this->m_textureResource,  this->m_effectResource });
+    this->flush();
+
+    this->m_scene.releaseStreamTexture(tex2);
+    Mock::VerifyAndClearExpectations(&this->m_resourceComponent);
+    EXPECT_CALL(this->m_resourceComponent, knowsResource(this->m_textureResource->getHash())).WillOnce(Return(false));
+    EXPECT_CALL(this->m_resourceComponent, resolveResources(_)).Times(AtLeast(0)).WillRepeatedly(Return(ManagedResourceVector{ this->m_textureResource }));
+
+    this->flush();
+    this->expectSceneUnpublish();
+}
+

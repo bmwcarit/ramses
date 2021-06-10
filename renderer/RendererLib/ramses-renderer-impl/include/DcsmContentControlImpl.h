@@ -52,6 +52,7 @@ namespace ramses
         status_t unlinkData(ContentID consumerContentID, dataConsumerId_t consumerId);
         status_t handlePickEvent(ContentID contentID, float bufferNormalizedCoordX, float bufferNormalizedCoordY);
         status_t update(uint64_t timeStampNow, IDcsmContentControlEventHandler& eventHandler);
+        status_t sendContentStatus(ContentID contentID, DcsmStatusMessage const& message);
 
     private:
         // IDcsmConsumerEventHandler

@@ -18,6 +18,8 @@
 #include "TransportCommon/SceneUpdateSerializer.h"
 #include "TransportCommon/SceneUpdateStreamDeserializer.h"
 #include "Components/FileInputStreamContainer.h"
+#include "InputStreamMock.h"
+#include "InputStreamContainerMock.h"
 
 namespace ramses_internal
 {
@@ -27,6 +29,9 @@ namespace ramses_internal
     public:
         ResourceComponentTestBase()
             : resourceFileName("test.resource")
+            , anotherResFileName("test2.resource")
+            , subDirName("test/")
+            , equallyNamedResFileInSubDir(subDirName + resourceFileName)
         {
         }
 
@@ -96,9 +101,19 @@ namespace ramses_internal
         {
             File resourceFile(resourceFileName);
             if (resourceFile.exists())
-            {
                 resourceFile.remove();
-            }
+
+            File resourceFile2(anotherResFileName);
+            if (resourceFile2.exists())
+                resourceFile2.remove();
+
+            File resourceFile3(equallyNamedResFileInSubDir);
+            if (resourceFile3.exists())
+                resourceFile3.remove();
+
+            File subDir(subDirName);
+            if (subDir.isDirectory())
+                subDir.remove();
         }
 
         void expectResourceSizeCalls(const ResourceMock* resource)
@@ -116,6 +131,9 @@ namespace ramses_internal
     protected:
         PlatformLock frameworkLock;
         const String resourceFileName;
+        const String anotherResFileName;
+        const String subDirName;
+        const String equallyNamedResFileInSubDir;
         StatisticCollectionScene sceneStatistics;
     };
 
@@ -438,7 +456,7 @@ namespace ramses_internal
     TEST_F(AResourceComponentTest, canRemoveResourceFileAndKeepsResourceBecauseAvailableInOtherFile)
     {
         auto handleAndHash = setupTest(resourceFileName, localResourceComponent);
-        auto handleAndHash2 = setupTest("test2.resource", localResourceComponent);
+        auto handleAndHash2 = setupTest(anotherResFileName, localResourceComponent);
         EXPECT_EQ(handleAndHash.second, handleAndHash2.second);
 
         const auto loadedResourcesBefore = statistics.statResourcesLoadedFromFileNumber.getCounterValue();
@@ -559,5 +577,46 @@ namespace ramses_internal
 
         info = localResourceComponent.getResourceInfo(handleAndHash.second);
         EXPECT_EQ(info, infoBefore);
+    }
+
+    TEST_F(AResourceComponentTest, properlyClosesMultipleEquallyNamedFiles)
+    {
+        File subDir(subDirName);
+        if (!subDir.isDirectory())
+            subDir.createDirectory();
+
+        auto handleAndHash = setupTest(resourceFileName, localResourceComponent);
+        auto handleAndHashSubDir = setupTest(equallyNamedResFileInSubDir, localResourceComponent);
+
+        EXPECT_NE(handleAndHash.first, handleAndHashSubDir.first);
+
+        EXPECT_TRUE(localResourceComponent.hasResourceFile(handleAndHash.first));
+        EXPECT_TRUE(localResourceComponent.hasResourceFile(handleAndHashSubDir.first));
+
+        localResourceComponent.removeResourceFile(handleAndHash.first);
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(handleAndHash.first));
+        EXPECT_TRUE(localResourceComponent.hasResourceFile(handleAndHashSubDir.first));
+
+        localResourceComponent.removeResourceFile(handleAndHashSubDir.first);
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(handleAndHash.first));
+        EXPECT_FALSE(localResourceComponent.hasResourceFile(handleAndHashSubDir.first));
+    }
+
+    TEST_F(AResourceComponentTest, loadResourceCanHandlePersistationErrors)
+    {
+        ResourceContentHash hash(1, 2);
+
+        auto streamContainer = std::make_shared<InputStreamContainerMock>();
+        StrictMock<InputStreamMock> stream;
+        EXPECT_CALL(*streamContainer, getStream()).WillRepeatedly(ReturnRef(stream));
+
+        ResourceTableOfContents toc;
+        toc.registerContents(ResourceInfo(EResourceType_Effect, hash, 10, 0), 0, 5);
+
+        localResourceComponent.addResourceFile(streamContainer, toc);
+
+        EXPECT_CALL(stream, seek(_, _)).WillOnce(Return(EStatus::Error));
+        EXPECT_CALL(stream, getState()).WillRepeatedly(Return(EStatus::Ok));
+        EXPECT_FALSE(localResourceComponent.loadResource(hash));
     }
 }

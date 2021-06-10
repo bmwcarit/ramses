@@ -10,6 +10,7 @@
 #include "Utils/BinaryOffsetFileInputStream.h"
 #include "WindowsInvalidParameterCheckSuppression.h"
 #include "Collections/IInputStream.h"
+#include "FileDescriptorHelper.h"
 #include "Utils/File.h"
 #include "gtest/gtest.h"
 #include <sys/stat.h>
@@ -36,7 +37,7 @@ namespace ramses_internal
         void openFile(int flags = O_RDONLY)
         {
             assert(fd == -1);
-            fd = open(testFileName, flags);
+            fd = ramses_internal::FileDescriptorHelper::OpenFileDescriptorBinary(testFileName, flags);
             ASSERT_NE(-1, fd);
         }
 

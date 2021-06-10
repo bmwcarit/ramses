@@ -35,7 +35,8 @@ namespace ramses_internal
         resizeContainerIfSmaller(m_dataInstancesDirty, sizeInfo.datainstanceCount);
         resizeContainerIfSmaller(m_textureSamplersDirty, sizeInfo.textureSamplerCount);
         resizeContainerIfSmaller(m_effectDeviceHandleCache, sizeInfo.renderableCount);
-        resizeContainerIfSmaller(m_deviceHandleCacheForVertexAttributes, sizeInfo.datainstanceCount);
+        resizeContainerIfSmaller(m_renderableVertexArrayDirty, sizeInfo.renderableCount);
+        resizeContainerIfSmaller(m_vertexArrayCache, sizeInfo.renderableCount);
         resizeContainerIfSmaller(m_deviceHandleCacheForTextures, sizeInfo.textureSamplerCount);
         resizeContainerIfSmaller(m_renderTargetCache, sizeInfo.renderTargetCount);
         resizeContainerIfSmaller(m_blitPassCache, sizeInfo.blitPassCount * 2u);
@@ -49,6 +50,7 @@ namespace ramses_internal
         assert(indexIntoCache < m_effectDeviceHandleCache.size());
         m_effectDeviceHandleCache[indexIntoCache] = DeviceResourceHandle::Invalid();
         setRenderableResourcesDirtyFlag(renderable, true);
+        setRenderableVertexArrayDirtyFlag(renderable, true);
         return renderable;
     }
 
@@ -56,34 +58,29 @@ namespace ramses_internal
     {
         DataReferenceLinkCachedScene::releaseRenderable(renderableHandle);
         setRenderableResourcesDirtyFlag(renderableHandle, false);
+        setRenderableVertexArrayDirtyFlag(renderableHandle, true);
     }
 
     void ResourceCachedScene::setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visibility)
     {
         // make sure resources get updated if switching from off to other state
         if (getRenderable(renderableHandle).visibilityMode == EVisibilityMode::Off && visibility != EVisibilityMode::Off)
+        {
             setRenderableResourcesDirtyFlag(renderableHandle, true);
+            setRenderableVertexArrayDirtyFlag(renderableHandle, true);
+        }
         DataReferenceLinkCachedScene::setRenderableVisibility(renderableHandle, visibility);
+    }
+
+    void ResourceCachedScene::setRenderableStartVertex(RenderableHandle renderableHandle, UInt32 startVertex)
+    {
+        DataReferenceLinkCachedScene::setRenderableStartVertex(renderableHandle, startVertex);
+        setRenderableVertexArrayDirtyFlag(renderableHandle, true);
     }
 
     DataInstanceHandle ResourceCachedScene::allocateDataInstance(DataLayoutHandle handle, DataInstanceHandle instanceHandle)
     {
         const DataInstanceHandle dataInstance = DataReferenceLinkCachedScene::allocateDataInstance(handle, instanceHandle);
-        const DataLayout& layout = getDataLayout(handle);
-        const UInt32 fieldCount = layout.getFieldCount();
-        if (fieldCount > 0u && isGeometryDataLayout(layout))
-        {
-            const UInt32 indexIntoCache = dataInstance.asMemoryHandle();
-            assert(indexIntoCache < m_deviceHandleCacheForVertexAttributes.size());
-            auto& vtxCache = m_deviceHandleCacheForVertexAttributes[indexIntoCache];
-            vtxCache.resize(fieldCount);
-            for (DataFieldHandle field{ 0 }; field < fieldCount; ++field)
-            {
-                vtxCache[field.asMemoryHandle()].deviceHandle = DeviceResourceHandle::Invalid();
-                vtxCache[field.asMemoryHandle()].dataType = layout.getField(field).dataType;
-            }
-        }
-
         setDataInstanceDirtyFlag(dataInstance, true);
 
         return dataInstance;
@@ -128,20 +125,12 @@ namespace ramses_internal
         m_effectDeviceHandleCache[indexIntoCache] = DeviceResourceHandle::Invalid();
 
         setRenderableResourcesDirtyFlag(renderableHandle, true);
+        setRenderableVertexArrayDirtyFlag(renderableHandle, true);
     }
 
     void ResourceCachedScene::setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride)
     {
         DataReferenceLinkCachedScene::setDataResource(dataInstanceHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
-
-        const UInt32 indexIntoCache = dataInstanceHandle.asMemoryHandle();
-        assert(indexIntoCache < m_deviceHandleCacheForVertexAttributes.size());
-
-        //TODO violin this is too implicit
-        auto& instanceDeviceCache = m_deviceHandleCacheForVertexAttributes[indexIntoCache];
-        const UInt32 indexIntoBufferCache = field.asMemoryHandle();
-        assert(indexIntoBufferCache < instanceDeviceCache.size());
-        instanceDeviceCache[indexIntoBufferCache].deviceHandle = DeviceResourceHandle::Invalid();
         setDataInstanceDirtyFlag(dataInstanceHandle, true);
     }
 
@@ -208,10 +197,9 @@ namespace ramses_internal
         return m_effectDeviceHandleCache[renderableAsIndex];
     }
 
-    const DataInstanceVertexAttribs& ResourceCachedScene::getCachedHandlesForVertexAttributes(DataInstanceHandle dataInstance) const
+    const VertexArrayCache& ResourceCachedScene::getCachedHandlesForVertexArrays() const
     {
-        assert(dataInstance.asMemoryHandle() < m_deviceHandleCacheForVertexAttributes.size());
-        return m_deviceHandleCacheForVertexAttributes[dataInstance.asMemoryHandle()];
+        return m_vertexArrayCache;
     }
 
     const DeviceHandleVector& ResourceCachedScene::getCachedHandlesForTextureSamplers() const
@@ -229,6 +217,11 @@ namespace ramses_internal
         return m_blitPassCache;
     }
 
+    const BoolVector& ResourceCachedScene::getVertexArraysDirtinessFlags() const
+    {
+        return m_renderableVertexArrayDirty;
+    }
+
     Bool ResourceCachedScene::CheckAndUpdateDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, DeviceResourceHandle& deviceHandleInOut, const ResourceContentHash& resourceHash)
     {
         deviceHandleInOut = DeviceResourceHandle::Invalid();
@@ -238,18 +231,7 @@ namespace ramses_internal
         return deviceHandleInOut.isValid();
     }
 
-    Bool ResourceCachedScene::CheckAndUpdateBufferDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, DeviceResourceHandle& deviceHandleInOut, const ResourceContentHash& resourceHash, SceneId sceneId, DataBufferHandle dataBufferHandle)
-    {
-        deviceHandleInOut = DeviceResourceHandle::Invalid();
-        if (resourceHash.isValid())
-            deviceHandleInOut = resourceAccessor.getResourceDeviceHandle(resourceHash);
-        else if (dataBufferHandle.isValid())
-            deviceHandleInOut = resourceAccessor.getDataBufferDeviceHandle(dataBufferHandle, sceneId);
-
-        return deviceHandleInOut.isValid();
-    }
-
-    Bool ResourceCachedScene::checkAndUpdateRenderableResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable)
+    Bool ResourceCachedScene::checkAndUpdateEffectResource(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable)
     {
         const DataInstanceHandle dataInstance = getRenderable(renderable).dataInstances[ERenderableDataSlotType_Geometry];
         ResourceContentHash effectHash = ResourceContentHash::Invalid();
@@ -289,19 +271,15 @@ namespace ramses_internal
         return true;
     }
 
-    Bool ResourceCachedScene::checkAndUpdateGeometryResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable)
+    bool ResourceCachedScene::checkGeometryResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable)
     {
         const DataInstanceHandle dataInstance = getRenderable(renderable).dataInstances[ERenderableDataSlotType_Geometry];
         if (!dataInstance.isValid())
-        {
             return false;
-        }
 
         const DataLayoutHandle geometryLayoutHandle = getLayoutOfDataInstance(dataInstance);
         assert(geometryLayoutHandle.isValid());
         const DataLayout& geometryLayout = getDataLayout(geometryLayoutHandle);
-
-        auto& vertexAttributesCache = m_deviceHandleCacheForVertexAttributes[dataInstance.asMemoryHandle()];
 
         // there has to be always at least indices field in geometry data layout
         static const DataFieldHandle indicesDataField(0u);
@@ -310,8 +288,6 @@ namespace ramses_internal
 
         const UInt32 numberOfGeometryFields = geometryLayout.getFieldCount();
         assert(numberOfGeometryFields >= 1u);
-        assert(numberOfGeometryFields == vertexAttributesCache.size());
-
         const SceneId sceneId = getSceneId();
         for (DataFieldHandle attributeField = indicesDataField; attributeField < numberOfGeometryFields; ++attributeField)
         {
@@ -319,7 +295,7 @@ namespace ramses_internal
             const ResourceField& dataResource = getDataResource(dataInstance, attributeField);
 
             const bool isIndicesField = indicesDataField == attributeField;
-            const bool usesIndices = dataResource.hash.isValid() || DataBufferHandle::Invalid() != dataResource.dataBuffer;
+            const bool usesIndices = dataResource.hash.isValid() || dataResource.dataBuffer.isValid();
 
             if (isIndicesField && !usesIndices)
             {
@@ -327,8 +303,13 @@ namespace ramses_internal
                 continue;
             }
 
-            const bool deviceHandleValid = CheckAndUpdateBufferDeviceHandle(resourceAccessor, vertexAttributesCache[attributeField.asMemoryHandle()].deviceHandle, dataResource.hash, sceneId, dataResource.dataBuffer);
-            if (!deviceHandleValid)
+            DeviceResourceHandle deviceHandle;
+            if (dataResource.hash.isValid())
+                deviceHandle = resourceAccessor.getResourceDeviceHandle(dataResource.hash);
+            else if (dataResource.dataBuffer.isValid())
+                deviceHandle = resourceAccessor.getDataBufferDeviceHandle(dataResource.dataBuffer, sceneId);
+
+            if (!deviceHandle.isValid())
                 return false;
         }
 
@@ -478,9 +459,9 @@ namespace ramses_internal
             const UInt32 renderableAsIndex = renderable.asMemoryHandle();
             if (m_renderableResourcesDirty[renderableAsIndex] && renderableIt.second->visibilityMode != EVisibilityMode::Off)
             {
-                if (checkAndUpdateRenderableResources(resourceAccessor, renderable) &&
+                if (checkAndUpdateEffectResource(resourceAccessor, renderable) &&
                     checkAndUpdateTextureResources(resourceAccessor, embeddedCompositingManager, renderable) &&
-                    checkAndUpdateGeometryResources(resourceAccessor, renderable))
+                    checkGeometryResources(resourceAccessor, renderable))
                 {
                     setRenderableResourcesDirtyFlag(renderable, false);
                 }
@@ -507,9 +488,16 @@ namespace ramses_internal
             const UInt32 totalRenderableCount = getRenderableCount();
             for (RenderableHandle r(0u); r < totalRenderableCount; ++r)
             {
-                if (doesRenderableReferToDirtyDataInstance(r))
+                if(isRenderableAllocated(r))
                 {
-                    setRenderableResourcesDirtyFlag(r, true);
+                    if (doesRenderableReferToDirtyUniforms(r))
+                        setRenderableResourcesDirtyFlag(r, true);
+
+                    if (doesRenderableReferToDirtyGeometry(r))
+                    {
+                        setRenderableResourcesDirtyFlag(r, true);
+                        setRenderableVertexArrayDirtyFlag(r, true);
+                    }
                 }
             }
 
@@ -535,6 +523,15 @@ namespace ramses_internal
         m_renderableResourcesDirty[indexIntoCache] = dirty;
     }
 
+    void ResourceCachedScene::setRenderableVertexArrayDirtyFlag(RenderableHandle handle, bool dirty) const
+    {
+        const UInt32 indexIntoCache = handle.asMemoryHandle();
+        assert(indexIntoCache < m_renderableVertexArrayDirty.size());
+        m_renderableVertexArrayDirty[indexIntoCache] = dirty;
+
+        m_renderableVertexArraysDirty |= dirty;
+    }
+
     void ResourceCachedScene::setDataInstanceDirtyFlag(DataInstanceHandle handle, Bool dirty) const
     {
         const UInt32 indexIntoCache = handle.asMemoryHandle();
@@ -553,24 +550,18 @@ namespace ramses_internal
         m_renderableResourcesDirtinessNeedsUpdate |= dirty;
     }
 
-    Bool ResourceCachedScene::doesRenderableReferToDirtyDataInstance(RenderableHandle handle) const
+    Bool ResourceCachedScene::doesRenderableReferToDirtyUniforms(RenderableHandle handle) const
     {
-        if (isRenderableAllocated(handle))
-        {
-            const DataInstanceHandle uniformsDataInstance = getRenderable(handle).dataInstances[ERenderableDataSlotType_Uniforms];
-            if (uniformsDataInstance.isValid() && isDataInstanceDirty(uniformsDataInstance))
-            {
-                return true;
-            }
+        assert(isRenderableAllocated(handle));
+        const DataInstanceHandle uniformsDataInstance = getRenderable(handle).dataInstances[ERenderableDataSlotType_Uniforms];
+        return uniformsDataInstance.isValid() && isDataInstanceDirty(uniformsDataInstance);
+    }
 
-            const DataInstanceHandle geometryDataInstance = getRenderable(handle).dataInstances[ERenderableDataSlotType_Geometry];
-            if (geometryDataInstance.isValid() && isDataInstanceDirty(geometryDataInstance))
-            {
-                return true;
-            }
-        }
-
-        return false;
+    Bool ResourceCachedScene::doesRenderableReferToDirtyGeometry(RenderableHandle handle) const
+    {
+        assert(isRenderableAllocated(handle));
+        const DataInstanceHandle geometryDataInstance = getRenderable(handle).dataInstances[ERenderableDataSlotType_Geometry];
+        return geometryDataInstance.isValid() && isDataInstanceDirty(geometryDataInstance);
     }
 
     Bool ResourceCachedScene::isDataInstanceDirty(DataInstanceHandle handle) const
@@ -618,6 +609,50 @@ namespace ramses_internal
         }
     }
 
+    bool ResourceCachedScene::hasDirtyVertexArrays() const
+    {
+        return m_renderableVertexArraysDirty;
+    }
+
+    bool ResourceCachedScene::isRenderableVertexArrayDirty(RenderableHandle renderable) const
+    {
+        const UInt32 indexIntoCache = renderable.asMemoryHandle();
+        assert(indexIntoCache < m_renderableVertexArrayDirty.size());
+        return m_renderableVertexArrayDirty[indexIntoCache];
+    }
+
+    void ResourceCachedScene::updateRenderableVertexArrays(const IResourceDeviceHandleAccessor& resourceAccessor, const RenderableVector& renderablesWithUpdatedVertexArrays)
+    {
+        bool dirtyVaoLeft = false;
+        for (const auto renderableHandle : renderablesWithUpdatedVertexArrays)
+        {
+            const UInt32 renderableAsIndex = renderableHandle.asMemoryHandle();
+            assert(m_renderableVertexArrayDirty[renderableAsIndex]);
+
+            m_vertexArrayCache[renderableAsIndex].deviceHandle = {};
+            const bool renderableResourcesUploaded = !m_renderableResourcesDirty[renderableAsIndex];
+            if (isRenderableAllocated(renderableHandle) && renderableResourcesUploaded)
+            {
+                assert(getRenderable(renderableHandle).visibilityMode != EVisibilityMode::Off);
+                const auto geometryInstance = getRenderable(renderableHandle).dataInstances[ERenderableDataSlotType_Geometry];
+
+                //indices are always in the 1st field (field Zero)
+                const ResourceField& indicesDataResource = getDataResource(geometryInstance, DataFieldHandle{ 0u });
+                const bool usesIndices = indicesDataResource.hash.isValid() || indicesDataResource.dataBuffer.isValid();
+
+                m_vertexArrayCache[renderableAsIndex].usesIndexArray = usesIndices;
+                m_vertexArrayCache[renderableAsIndex].deviceHandle = resourceAccessor.getVertexArrayDeviceHandle(renderableHandle, getSceneId());
+            }
+
+            if (renderableResourcesUploaded)
+                setRenderableVertexArrayDirtyFlag(renderableHandle, false);
+            else
+                dirtyVaoLeft = true;
+        }
+
+        m_renderableVertexArraysDirty = dirtyVaoLeft;
+    }
+
     Bool ResourceCachedScene::doesDataInstanceReferToDirtyTextureSampler(DataInstanceHandle handle) const
     {
         if (isDataInstanceAllocated(handle))
@@ -648,16 +683,14 @@ namespace ramses_internal
         for (const auto& renderableIt : renderables)
         {
             m_renderableResourcesDirty[renderableIt.first.asMemoryHandle()] = true;
+            m_renderableVertexArrayDirty[renderableIt.first.asMemoryHandle()] = true;
         }
 
         std::fill(m_effectDeviceHandleCache.begin(), m_effectDeviceHandleCache.end(), DeviceResourceHandle::Invalid());
+        std::fill(m_vertexArrayCache.begin(), m_vertexArrayCache.end(), VertexArrayCacheEntry{});
         std::fill(m_deviceHandleCacheForTextures.begin(), m_deviceHandleCacheForTextures.end(), DeviceResourceHandle::Invalid());
         std::fill(m_renderTargetCache.begin(), m_renderTargetCache.end(), DeviceResourceHandle::Invalid());
         std::fill(m_blitPassCache.begin(), m_blitPassCache.end(), DeviceResourceHandle::Invalid());
-
-        for (auto& vtxCache : m_deviceHandleCacheForVertexAttributes)
-            for (auto& attribCache : vtxCache)
-                attribCache.deviceHandle = DeviceResourceHandle::Invalid();
 
         m_renderTargetsDirty = !m_renderTargetCache.empty();
         m_blitPassesDirty = !m_blitPassCache.empty();

@@ -129,7 +129,8 @@ namespace ramses_internal
         Bool hasExceededTimeBudgetForRendering() const;
 
         CachedState < DeviceResourceHandle >    shaderDeviceHandle;
-        CachedState < DeviceResourceHandle >    indexBufferDeviceHandle;
+        DeviceResourceHandle                    vertexArrayDeviceHandle;
+        bool                                    vertexArrayUsesIndices = false;
         CachedState < ScissorState >            scissorState;
         CachedState < EDepthFunc >              depthFuncState;
         CachedState < EDepthWrite >             depthWriteState;

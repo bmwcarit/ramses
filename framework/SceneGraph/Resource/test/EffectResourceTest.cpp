@@ -32,19 +32,19 @@ namespace ramses_internal
             attributeInputs.push_back(attributeA);
         }
 
-        EffectResource* serializeDeserialize(const EffectResource& effectResource, const String& name)
+        std::unique_ptr<EffectResource> serializeDeserialize(const EffectResource& effectResource, const String& name)
         {
             BinaryOutputStream outStream;
             effectResource.serializeResourceMetadataToStream(outStream);
             BinaryInputStream inStream(outStream.getData());
-            IResource* resource = EffectResource::CreateResourceFromMetadataStream(inStream, effectResource.getCacheFlag(), name);
+            std::unique_ptr<IResource> resource = EffectResource::CreateResourceFromMetadataStream(inStream, effectResource.getCacheFlag(), name);
             if (!resource)
             {
                 return nullptr;
             }
             const auto& resourceData = effectResource.getResourceData();
             resource->setResourceData(ResourceBlob(resourceData.size(), resourceData.data()));
-            return resource->convertTo<EffectResource>();
+            return std::unique_ptr<EffectResource>(static_cast<EffectResource*>(resource.release()));
         }
 
         EffectInputInformationVector uniformInputs;

@@ -6,6 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#include "Utils/BinaryInputStream.h"
 #include "framework_common_gmock_header.h"
 #include "Components/ResourcePersistation.h"
 #include "Resource/TextureResource.h"
@@ -17,7 +18,10 @@
 #include "Components/ResourceDeleterCallingCallback.h"
 #include "Utils/BinaryFileOutputStream.h"
 #include "Utils/BinaryFileInputStream.h"
+#include "Utils/BinaryOutputStream.h"
 #include "ResourceMock.h"
+#include "InputStreamMock.h"
+#include <cstring>
 
 using namespace testing;
 
@@ -31,9 +35,9 @@ namespace ramses_internal
         {
         }
 
-        IResource* readWriteResource(const ManagedResource& inResource)
+        std::unique_ptr<IResource> readWriteResource(const ManagedResource& inResource)
         {
-            IResource* loaded = nullptr;
+            std::unique_ptr<IResource> loaded;
 
             {
                 File file("filename");
@@ -47,22 +51,22 @@ namespace ramses_internal
                 loaded = ResourcePersistation::ReadOneResourceFromStream(stream, inResource->getHash());
             }
 
-            EXPECT_TRUE(nullptr != loaded);
+            EXPECT_TRUE(loaded);
 
             return loaded;
         }
 
         template <typename ResourceType>
-        const ResourceType* createLoadedResource(const IResource& res, const EResourceType resourceType)
+        std::unique_ptr<const ResourceType> createLoadedResource(const IResource& res, const EResourceType resourceType)
         {
             ManagedResource managedRes{ &res, m_deleterMock };
-            IResource* loadedResource = readWriteResource(managedRes);
+            std::unique_ptr<IResource> loadedResource = readWriteResource(managedRes);
             EXPECT_EQ(res.getResourceData().span(), loadedResource->getResourceData().span());
 
             EXPECT_EQ(resourceType, loadedResource->getTypeID());
             EXPECT_EQ(res.getCacheFlag(), loadedResource->getCacheFlag());
 
-            return loadedResource->convertTo<ResourceType>();
+            return std::unique_ptr<ResourceType>(static_cast<ResourceType*>(loadedResource.release()));
         }
 
     private:
@@ -86,7 +90,7 @@ namespace ramses_internal
         ASSERT_EQ(pixels.size(), res.getResourceData().size());
         res.setResourceData(std::move(pixels));
 
-        const TextureResource* loadedTextureResource = createLoadedResource<TextureResource>(res, EResourceType_Texture3D);
+        auto loadedTextureResource = createLoadedResource<TextureResource>(res, EResourceType_Texture3D);
 
         ASSERT_EQ(res.getWidth(), loadedTextureResource->getWidth());
         ASSERT_EQ(res.getHeight(), loadedTextureResource->getHeight());
@@ -100,8 +104,6 @@ namespace ramses_internal
         ASSERT_EQ(texDesc.m_dataSizes, loadedTextureResource->getMipDataSizes());
         ASSERT_EQ(flag, loadedTextureResource->getCacheFlag());
         EXPECT_EQ(String("resName"), loadedTextureResource->getName());
-
-        delete loadedTextureResource;
     }
 
     TEST_F(AResourcePersistation, WriteRead_TextureResourceCube)
@@ -117,7 +119,7 @@ namespace ramses_internal
         ASSERT_EQ(pixels.size(), res.getResourceData().size());
         res.setResourceData(std::move(pixels));
 
-        const TextureResource* loadedTextureResource = createLoadedResource<TextureResource>(res, EResourceType_TextureCube);
+        auto loadedTextureResource = createLoadedResource<TextureResource>(res, EResourceType_TextureCube);
 
         ASSERT_EQ(res.getWidth(), loadedTextureResource->getWidth());
         ASSERT_EQ(ETextureFormat::RGB8, loadedTextureResource->getTextureFormat());
@@ -125,8 +127,6 @@ namespace ramses_internal
         ASSERT_EQ(texDesc.m_dataSizes, loadedTextureResource->getMipDataSizes());
         ASSERT_EQ(flag, loadedTextureResource->getCacheFlag());
         EXPECT_EQ(String("resName"), loadedTextureResource->getName());
-
-        delete loadedTextureResource;
     }
 
     TEST_F(AResourcePersistation, WriteRead_VertexArrayResource)
@@ -142,14 +142,12 @@ namespace ramses_internal
         }
         res.setResourceData(std::move(vertices));
 
-        const ArrayResource* loadedVertexArrayResource = createLoadedResource<ArrayResource>(res, EResourceType_VertexArray);
+        auto loadedVertexArrayResource = createLoadedResource<ArrayResource>(res, EResourceType_VertexArray);
 
         ASSERT_EQ(res.getElementCount(), loadedVertexArrayResource->getElementCount());
         ASSERT_EQ(EDataType::Vector2F, loadedVertexArrayResource->getElementType());
         ASSERT_EQ(flag, loadedVertexArrayResource->getCacheFlag());
         EXPECT_EQ(String("resName"), loadedVertexArrayResource->getName());
-
-        delete loadedVertexArrayResource;
     }
 
     TEST_F(AResourcePersistation, WriteRead_Index16ArrayResource)
@@ -165,14 +163,12 @@ namespace ramses_internal
         }
         res.setResourceData(std::move(indices));
 
-        const ArrayResource* loadedIndexArrayResource = createLoadedResource<ArrayResource>(res, EResourceType_IndexArray);
+        auto loadedIndexArrayResource = createLoadedResource<ArrayResource>(res, EResourceType_IndexArray);
 
         ASSERT_EQ(res.getElementCount(), loadedIndexArrayResource->getElementCount());
         ASSERT_EQ(EDataType::UInt16, loadedIndexArrayResource->getElementType());
         ASSERT_EQ(flag, loadedIndexArrayResource->getCacheFlag());
         EXPECT_EQ(String("resName"), loadedIndexArrayResource->getName());
-
-        delete loadedIndexArrayResource;
     }
 
     TEST_F(AResourcePersistation, WriteRead_Index32ArrayResource)
@@ -188,14 +184,12 @@ namespace ramses_internal
         }
         res.setResourceData(std::move(indices));
 
-        const ArrayResource* loadedIndexArrayResource = createLoadedResource<ArrayResource>(res, EResourceType_IndexArray);
+        auto loadedIndexArrayResource = createLoadedResource<ArrayResource>(res, EResourceType_IndexArray);
 
         ASSERT_EQ(res.getElementCount(), loadedIndexArrayResource->getElementCount());
         ASSERT_EQ(EDataType::UInt32, loadedIndexArrayResource->getElementType());
         ASSERT_EQ(flag, loadedIndexArrayResource->getCacheFlag());
         EXPECT_EQ(String("resName"), loadedIndexArrayResource->getName());
-
-        delete loadedIndexArrayResource;
     }
 
     TEST_F(AResourcePersistation, WriteRead_EffectResource)
@@ -203,15 +197,13 @@ namespace ramses_internal
         const ResourceCacheFlag flag(15u);
         EffectResource effectResource("vertexBla", "fragmentFoo", "geometryFoo", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", flag);
 
-        const EffectResource* loadedEffectResource = createLoadedResource<EffectResource>(effectResource, EResourceType_Effect);
+        auto loadedEffectResource = createLoadedResource<EffectResource>(effectResource, EResourceType_Effect);
 
         EXPECT_STREQ(effectResource.getVertexShader(), loadedEffectResource->getVertexShader());
         EXPECT_STREQ(effectResource.getFragmentShader(), loadedEffectResource->getFragmentShader());
         EXPECT_STREQ(effectResource.getGeometryShader(), loadedEffectResource->getGeometryShader());
         ASSERT_EQ(flag, loadedEffectResource->getCacheFlag());
         EXPECT_EQ(String("effect name"), loadedEffectResource->getName());
-
-        delete loadedEffectResource;
     }
 
     TEST(ResourcePersistation, sandwich_writeThreeResources_ReadOneBackBasedTableOfContentsInformation)
@@ -260,26 +252,149 @@ namespace ramses_internal
         BinaryFileInputStream instream(tempFile);
         loadedTOC.readTOCPosAndTOCFromStream(instream);
 
-        ASSERT_TRUE(loadedTOC.containsResource(hash));
-        IResource* loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash));
-        ASSERT_EQ(absl::MakeSpan(reinterpret_cast<const uint8_t*>(dataA), sizeof(dataA)), loadedResource->getResourceData().span());
-        ASSERT_EQ(flag1, loadedResource->getCacheFlag());
-        EXPECT_EQ(String("res1"), loadedResource->getName());
-        delete loadedResource;
+        {
+            ASSERT_TRUE(loadedTOC.containsResource(hash));
+            auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash));
+            ASSERT_EQ(absl::MakeSpan(reinterpret_cast<const uint8_t*>(dataA), sizeof(dataA)), loadedResource->getResourceData().span());
+            ASSERT_EQ(flag1, loadedResource->getCacheFlag());
+            EXPECT_EQ(String("res1"), loadedResource->getName());
+        }
 
-        ASSERT_TRUE(loadedTOC.containsResource(hash2));
-        loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash2));
-        ASSERT_EQ(absl::MakeSpan(reinterpret_cast<const uint8_t*>(dataB), sizeof(dataB)), loadedResource->getResourceData().span());
-        ASSERT_EQ(flag2, loadedResource->getCacheFlag());
-        EXPECT_EQ(String("res2"), loadedResource->getName());
-        delete loadedResource;
+        {
+            ASSERT_TRUE(loadedTOC.containsResource(hash2));
+            auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash2));
+            ASSERT_EQ(absl::MakeSpan(reinterpret_cast<const uint8_t*>(dataB), sizeof(dataB)), loadedResource->getResourceData().span());
+            ASSERT_EQ(flag2, loadedResource->getCacheFlag());
+            EXPECT_EQ(String("res2"), loadedResource->getName());
+        }
 
-        ASSERT_TRUE(loadedTOC.containsResource(hash3));
-        loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash3));
-        EXPECT_STREQ(res3.getVertexShader(), loadedResource->convertTo<EffectResource>()->getVertexShader());
-        EXPECT_STREQ(res3.getFragmentShader(), loadedResource->convertTo<EffectResource>()->getFragmentShader());
-        ASSERT_EQ(flag3, loadedResource->getCacheFlag());
-        EXPECT_EQ(String("Some effect with a name"), loadedResource->getName());
-        delete loadedResource;
+        {
+            ASSERT_TRUE(loadedTOC.containsResource(hash3));
+            auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash3));
+            EXPECT_STREQ(res3.getVertexShader(), loadedResource->convertTo<EffectResource>()->getVertexShader());
+            EXPECT_STREQ(res3.getFragmentShader(), loadedResource->convertTo<EffectResource>()->getFragmentShader());
+            ASSERT_EQ(flag3, loadedResource->getCacheFlag());
+            EXPECT_EQ(String("Some effect with a name"), loadedResource->getName());
+        }
+    }
+
+    static std::pair<std::vector<Byte>, ResourceFileEntry> getDummyResourceData()
+    {
+        BinaryOutputStream outStream;
+        EffectResource res("foo", "bar", "qux", absl::nullopt, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", ResourceCacheFlag(0));
+        NiceMock<ManagedResourceDeleterCallbackMock> managedResourceDeleter;
+        ResourceDeleterCallingCallback dummyManagedResourceCallback(managedResourceDeleter);
+        ManagedResource managedRes{ &res, dummyManagedResourceCallback };
+        ResourcePersistation::WriteOneResourceToStream(outStream, managedRes);
+        auto data = outStream.release();
+
+        const uint32_t dataSize = static_cast<uint32_t>(data.size());
+        ResourceFileEntry entry{0, dataSize,
+                                ResourceInfo(EResourceType_Effect, res.getHash(), dataSize, 0)};
+        return {data, entry};
+    }
+
+    TEST(ResourcePersistation, retrieveResourceFromStreamCanLoadDummyData)
+    {
+        const auto dummyResource = getDummyResourceData();
+        InputStreamMock stream;
+        BinaryInputStream resStream(dummyResource.first.data());
+        EXPECT_CALL(stream, seek(_, _)).WillRepeatedly([&](Int offset, auto origin) {
+            return resStream.seek(offset, origin);
+        });
+        EXPECT_CALL(stream, getState()).WillRepeatedly([&]() {
+            return resStream.getState();
+        });
+        EXPECT_CALL(stream, getPos(_)).WillRepeatedly([&](size_t& pos) {
+            return resStream.getPos(pos);
+        });
+        EXPECT_CALL(stream, read(_, _)).WillRepeatedly([&](void* data, size_t size) -> IInputStream& {
+            resStream.read(data, size);
+            return stream;
+        });
+        EXPECT_TRUE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second));
+    }
+
+    TEST(ResourcePersistation, retrieveResourceFromStreamCanHandleSeekErrors)
+    {
+        const auto dummyResource = getDummyResourceData();
+        InputStreamMock stream;
+        BinaryInputStream resStream(dummyResource.first.data());
+        EXPECT_CALL(stream, seek(_, _)).WillRepeatedly(Return(EStatus::Error));
+        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second));
+    }
+
+    TEST(ResourcePersistation, retrieveResourceFromStreamCanHandleGetPosErrors)
+    {
+        const auto dummyResource = getDummyResourceData();
+        InputStreamMock stream;
+        BinaryInputStream resStream(dummyResource.first.data());
+        EXPECT_CALL(stream, seek(_, _)).WillRepeatedly([&](Int offset, auto origin) {
+            return resStream.seek(offset, origin);
+        });
+        EXPECT_CALL(stream, getState()).WillRepeatedly([&]() {
+            return resStream.getState();
+        });
+        EXPECT_CALL(stream, getPos(_)).WillRepeatedly(Return(EStatus::Error));
+        EXPECT_CALL(stream, read(_, _)).WillRepeatedly([&](void* data, size_t size) -> IInputStream& {
+            resStream.read(data, size);
+            return stream;
+        });
+        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second));
+    }
+
+    TEST(ResourcePersistation, retrieveResourceFromStreamCanHandleGetPosWrongData)
+    {
+        const auto dummyResource = getDummyResourceData();
+        InputStreamMock stream;
+        BinaryInputStream resStream(dummyResource.first.data());
+        EXPECT_CALL(stream, seek(_, _)).WillRepeatedly([&](Int offset, auto origin) {
+            return resStream.seek(offset, origin);
+        });
+        EXPECT_CALL(stream, getState()).WillRepeatedly([&]() {
+            return resStream.getState();
+        });
+        EXPECT_CALL(stream, getPos(_)).WillRepeatedly([&](size_t& pos) {
+            const auto res = resStream.getPos(pos);
+            ++pos;
+            return res;
+        });
+        EXPECT_CALL(stream, read(_, _)).WillRepeatedly([&](void* data, size_t size) -> IInputStream& {
+            resStream.read(data, size);
+            return stream;
+        });
+        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second));
+    }
+
+    TEST(ResourcePersistation, retrieveResourceFromStreamCanHandleGetStateErrors)
+    {
+        const auto dummyResource = getDummyResourceData();
+        InputStreamMock stream;
+        BinaryInputStream resStream(dummyResource.first.data());
+        EXPECT_CALL(stream, seek(_, _)).WillRepeatedly([&](Int offset, auto origin) {
+            return resStream.seek(offset, origin);
+        });
+        EXPECT_CALL(stream, getState()).WillRepeatedly(Return(EStatus::Error));
+        EXPECT_CALL(stream, read(_, _)).WillRepeatedly([&](void* data, size_t size) -> IInputStream& {
+            resStream.read(data, size);
+            return stream;
+        });
+        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second));
+    }
+
+    TEST(ResourcePersistation, retrieveResourceFromStreamCanHandleZeroReader)
+    {
+        const auto dummyResource = getDummyResourceData();
+        InputStreamMock stream;
+        BinaryInputStream resStream(dummyResource.first.data());
+        EXPECT_CALL(stream, seek(_, _)).WillRepeatedly([&](Int offset, auto origin) {
+            return resStream.seek(offset, origin);
+        });
+        EXPECT_CALL(stream, read(_, _)).WillRepeatedly([&](void* data, size_t size) -> IInputStream& {
+            resStream.read(data, size);
+            std::memset(data, 0, size);
+            return stream;
+        });
+        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second));
     }
 }

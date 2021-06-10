@@ -24,10 +24,8 @@ int main(int argc, const char *argv[])
     ArgumentString filterOutTest(parser, "fo", "filterOut", "");
     ArgumentUInt32 repeatTestCount(parser, "rc", "repeatCount", 1);
 
-    std::vector<ramses_internal::String>  filterInTestStrings;
-    std::vector<ramses_internal::String>  filterOutTestStrings;
-    StringUtils::Tokenize(filterInTest, filterInTestStrings, ':');
-    StringUtils::Tokenize(filterOutTest, filterOutTestStrings, ':');
+    std::vector<ramses_internal::String> filterInTestStrings = StringUtils::Tokenize(filterInTest, ':');
+    std::vector<ramses_internal::String> filterOutTestStrings = StringUtils::Tokenize(filterOutTest, ':');
 
     // TODO Violin try to find better solution than this
     // Convenience filtering for desktop debugging

@@ -237,7 +237,7 @@ void RendererTestsFramework::flushRendererAndDoOneLoop()
     m_testRenderer.doOneLoop();
 }
 
-bool RendererTestsFramework::renderAndCompareScreenshot(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx, float maxAveragePercentErrorPerPixel, bool readPixelsTwice)
+bool RendererTestsFramework::renderAndCompareScreenshot(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx, float maxAveragePercentErrorPerPixel, bool readPixelsTwice, bool saveDiffOnError)
 {
     assert(testDisplayIdx < m_displays.size());
     const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
@@ -252,7 +252,8 @@ bool RendererTestsFramework::renderAndCompareScreenshot(const ramses_internal::S
         0u,
         displayConfig.impl.getInternalDisplayConfig().getDesiredWindowWidth(),
         displayConfig.impl.getInternalDisplayConfig().getDesiredWindowHeight(),
-        readPixelsTwice);
+        readPixelsTwice,
+        saveDiffOnError);
 }
 
 bool RendererTestsFramework::renderAndCompareScreenshotOffscreenBuffer(const ramses_internal::String& expectedImageName, uint32_t testDisplayIdx, ramses::displayBufferId_t displayBuffer, uint32_t width, uint32_t height, float maxAveragePercentErrorPerPixel)
@@ -269,12 +270,13 @@ bool RendererTestsFramework::renderAndCompareScreenshotOffscreenBuffer(const ram
         0u,
         width,
         height,
-        false);
+        false,
+        true);
 }
 
 bool RendererTestsFramework::renderAndCompareScreenshotSubimage(const ramses_internal::String& expectedImageName, ramses_internal::UInt32 subimageX, ramses_internal::UInt32 subimageY, ramses_internal::UInt32 subimageWidth, ramses_internal::UInt32 subimageHeight, float maxAveragePercentErrorPerPixel, bool readPixelsTwice)
 {
-    return compareScreenshotInternal(expectedImageName, m_displays[0].displayId, {}, maxAveragePercentErrorPerPixel, subimageX, subimageY, subimageWidth, subimageHeight, readPixelsTwice);
+    return compareScreenshotInternal(expectedImageName, m_displays[0].displayId, {}, maxAveragePercentErrorPerPixel, subimageX, subimageY, subimageWidth, subimageHeight, readPixelsTwice, true);
 }
 
 void RendererTestsFramework::setFrameTimerLimits(uint64_t limitForClientResourcesUpload, uint64_t limitForOffscreenBufferRender)
@@ -292,7 +294,8 @@ bool RendererTestsFramework::compareScreenshotInternal(
     ramses_internal::UInt32 subimageY,
     ramses_internal::UInt32 subimageWidth,
     ramses_internal::UInt32 subimageHeight,
-    bool readPixelsTwice)
+    bool readPixelsTwice,
+    bool saveDiffOnError)
 {
     if (m_generateScreenshots)
     {
@@ -300,9 +303,9 @@ bool RendererTestsFramework::compareScreenshotInternal(
         return true;
     }
 
-    bool comparisonResult = m_testRenderer.performScreenshotCheck(displayId, bufferId, subimageX, subimageY, subimageWidth, subimageHeight, expectedImageName, maxAveragePercentErrorPerPixel, readPixelsTwice);
+    const bool comparisonResult = m_testRenderer.performScreenshotCheck(displayId, bufferId, subimageX, subimageY, subimageWidth, subimageHeight, expectedImageName, maxAveragePercentErrorPerPixel, readPixelsTwice, saveDiffOnError);
 
-    if (!comparisonResult)
+    if (!comparisonResult && saveDiffOnError)
     {
         assert(m_activeTestCase != nullptr);
         LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "Screenshot comparison failed for rendering test case: " << m_activeTestCase->m_name << " -> expected screenshot: " << expectedImageName);
@@ -320,7 +323,7 @@ bool RendererTestsFramework::NameMatchesFilter(const ramses_internal::String& na
 
     for(const auto& filter : filters)
     {
-        if (name.find(filter) >= 0)
+        if (name.find(filter) != ramses_internal::String::npos)
         {
             return true;
         }

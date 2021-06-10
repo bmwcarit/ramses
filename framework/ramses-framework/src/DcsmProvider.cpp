@@ -98,4 +98,11 @@ namespace ramses
         return status;
     }
 
+    status_t DcsmProvider::dispatchEvents(IDcsmProviderEventHandlerExtended& handler)
+    {
+        auto status = impl.dispatchEvents(handler);
+        LOG_HL_CLIENT_API1(status, LOG_API_GENERIC_OBJECT_STRING(handler));
+        return status;
+    }
+
 }

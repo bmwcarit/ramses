@@ -31,6 +31,11 @@ namespace ramses
         return impl.createFreetype2Font(fontPath);
     }
 
+    FontId FontRegistry::createFreetype2FontFromFileDescriptor(int fd, size_t offset, size_t length)
+    {
+        return impl.createFreetype2FontFromFileDescriptor(fd, offset, length);
+    }
+
     bool FontRegistry::deleteFont(FontId fontId)
     {
         return impl.deleteFont(fontId);

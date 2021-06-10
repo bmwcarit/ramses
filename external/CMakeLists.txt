@@ -80,7 +80,8 @@ foreach(lib
         memory
         meta
         span optional variant
-        utility)
+        utility
+        strings_internal int128 strings)
     target_link_libraries(ramses-abseil INTERFACE absl::${lib})
 endforeach()
 

@@ -80,8 +80,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
 
     std::vector<MappingCommand> mappingCommands;
     {
-        std::vector<ramses_internal::String> tokens;
-        ramses_internal::StringUtils::Tokenize(mappingToParse, tokens, ',');
+        std::vector<ramses_internal::String> tokens = ramses_internal::StringUtils::Tokenize(mappingToParse, ',');
         int tokenIndex = 0;
         while (tokens.size() - tokenIndex >= 3)
         {
@@ -95,8 +94,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
 
     std::vector<CategoryData> categories;
     {
-        std::vector<ramses_internal::String> tokens;
-        ramses_internal::StringUtils::Tokenize(categoriesToParse, tokens, ',');
+        std::vector<ramses_internal::String> tokens = ramses_internal::StringUtils::Tokenize(categoriesToParse, ',');
         int tokenIndex = 0;
         while (tokens.size() - tokenIndex >= 8)
         {

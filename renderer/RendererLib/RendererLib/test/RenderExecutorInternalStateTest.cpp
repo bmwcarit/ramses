@@ -515,10 +515,6 @@ namespace ramses_internal
         m_executorState.shaderDeviceHandle.setState(DeviceResourceHandle(0u));
         EXPECT_TRUE(m_executorState.shaderDeviceHandle.hasChanged());
         EXPECT_EQ(0u, m_executorState.shaderDeviceHandle.getState());
-
-        m_executorState.indexBufferDeviceHandle.setState(DeviceResourceHandle(0u));
-        EXPECT_TRUE(m_executorState.indexBufferDeviceHandle.hasChanged());
-        EXPECT_EQ(0u, m_executorState.indexBufferDeviceHandle.getState());
     }
 
     TEST_F(ARenderExecutorInternalState, deviceHandlesMarkedAsUnchangedIfSetToSameValue)
@@ -527,11 +523,6 @@ namespace ramses_internal
         EXPECT_TRUE(m_executorState.shaderDeviceHandle.hasChanged());
         m_executorState.shaderDeviceHandle.setState(DeviceResourceHandle(123u));
         EXPECT_FALSE(m_executorState.shaderDeviceHandle.hasChanged());
-
-        m_executorState.indexBufferDeviceHandle.setState(DeviceResourceHandle(123u));
-        EXPECT_TRUE(m_executorState.indexBufferDeviceHandle.hasChanged());
-        m_executorState.indexBufferDeviceHandle.setState(DeviceResourceHandle(123u));
-        EXPECT_FALSE(m_executorState.indexBufferDeviceHandle.hasChanged());
     }
 
     TEST_F(ARenderExecutorInternalState, deviceHandlesMarkedAsChangedIfSetToDifferentValue)
@@ -540,11 +531,6 @@ namespace ramses_internal
         EXPECT_TRUE(m_executorState.shaderDeviceHandle.hasChanged());
         m_executorState.shaderDeviceHandle.setState(DeviceResourceHandle(567u));
         EXPECT_TRUE(m_executorState.shaderDeviceHandle.hasChanged());
-
-        m_executorState.indexBufferDeviceHandle.setState(DeviceResourceHandle(123u));
-        EXPECT_TRUE(m_executorState.indexBufferDeviceHandle.hasChanged());
-        m_executorState.indexBufferDeviceHandle.setState(DeviceResourceHandle(567u));
-        EXPECT_TRUE(m_executorState.indexBufferDeviceHandle.hasChanged());
     }
 
     TEST_F(ARenderExecutorInternalState, initialSetToRenderTargetTriggersChange)

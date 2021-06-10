@@ -19,6 +19,7 @@ namespace ramses
     class RamsesFramework;
     class IDcsmContentControlEventHandler;
     class IRendererEventHandler;
+    class DcsmStatusMessage;
 
     /** @brief DcsmContentControl provides way to interact with both Dcsm (as consumer) and renderer content control
     *          (replaces #ramses::RendererSceneControl).
@@ -336,6 +337,17 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t update(uint64_t timeStampNow, IDcsmContentControlEventHandler& eventHandler);
+
+        /**
+         * @brief Send a message to the provider of the content assigned to this content control.
+         *
+         * @param contentID Content for which the message should be sent.
+         * @param message An implementation of DcsmStatusMessage, containing data to be carried to the provider.
+         *
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t sendContentStatus(ContentID contentID, DcsmStatusMessage const& message);
 
         /// Deleted default constructor
         DcsmContentControl() = delete;

@@ -22,6 +22,7 @@
 #include "Utils/BinaryOutputStream.h"
 #include "RamsesObjectTypeUtils.h"
 #include "city.h"
+#include "Utils/LogMacros.h"
 
 namespace ramses
 {
@@ -40,6 +41,7 @@ namespace ramses
 
     ResourceImpl::~ResourceImpl()
     {
+        LOG_DEBUG_P(CONTEXT_FRAMEWORK, "Destroy resource type {}, hl {}, ll {}", getType(), m_resourceId, getLowlevelResourceHash());
     }
 
     resourceId_t ResourceImpl::getResourceId() const

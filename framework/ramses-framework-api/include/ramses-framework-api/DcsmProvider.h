@@ -184,19 +184,40 @@ namespace ramses
         status_t disableFocusRequest(ContentID contentID, int32_t focusRequest);
 
         /**
-         * @brief Communication from DcsmConsumer will be handled by a
-         *        DcsmProvider.  Some of this communication results in
-         *        an event. Calls handler functions synchronously in
-         *        the caller context for DCSM events which were
-         *        received asynchronously.  This function must be
-         *        called regularly to avoid buffer overflow of the
-         *        internal queue.
+         * @brief Calls a callback function for every internal event
+         *        except the content status event, which will be discarded.
+         *
+         * Communication from DcsmConsumer will be handled by a
+         * DcsmProvider.  Some of this communication results in
+         * an event. Calls handler functions synchronously in
+         * the caller context for DCSM events which were
+         * received asynchronously.  This function must be
+         * called regularly to avoid buffer overflow of the
+         * internal queue.
          *
          * @param handler A class which handles feedback from DcsmProvider
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
         status_t dispatchEvents(IDcsmProviderEventHandler& handler);
+
+        /**
+         * @brief Calls a callback function for every internal event
+         *        including the content status event.
+         *
+         * Communication from DcsmConsumer will be handled by a
+         * DcsmProvider.  Some of this communication results in
+         * an event. Calls handler functions synchronously in
+         * the caller context for DCSM events which were
+         * received asynchronously.  This function must be
+         * called regularly to avoid buffer overflow of the
+         * internal queue.
+         *
+         * @param handler A class which handles feedback from DcsmProvider
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t dispatchEvents(IDcsmProviderEventHandlerExtended& handler);
 
         /**
          * @brief Constructor of DcsmProvider

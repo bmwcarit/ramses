@@ -91,6 +91,7 @@ namespace ramses_internal
             const RenderableHandle renderableHandle = orderedRenderables[m_state.m_currentRenderIterator.getRenderableIdx()];
             if (!scene.renderableResourcesDirty(renderableHandle))
             {
+                assert(!scene.isRenderableVertexArrayDirty(renderableHandle));
                 setRenderableInternalStates(renderableHandle);
                 setSemanticDataFields();
                 executeRenderable();
@@ -202,26 +203,12 @@ namespace ramses_internal
         IDevice& device = m_state.getDevice();
         const Renderable& renderable = renderScene.getRenderable(m_state.getRenderable());
         const DataInstanceHandle uniformData = renderable.dataInstances[ERenderableDataSlotType_Uniforms];
-        const DataInstanceHandle vertexData = renderable.dataInstances[ERenderableDataSlotType_Geometry];
         assert(uniformData.isValid());
-        assert(vertexData.isValid());
 
         if (m_state.shaderDeviceHandle.hasChanged())
-        {
             device.activateShader(m_state.shaderDeviceHandle.getState());
-        }
 
-        const auto& vtxCache = renderScene.getCachedHandlesForVertexAttributes(vertexData);
-        // Vertex attributes cache contains indices as first element, therefore the vertex attributes are shifted by 1 when accessing them
-        assert(vtxCache.size() > 0);
-        const UInt attributesCount = vtxCache.size() - 1;
-        for (DataFieldHandle attributeField(0u); attributeField < attributesCount ; ++attributeField)
-        {
-            const auto& attribCache = vtxCache[attributeField.asMemoryHandle() + 1];
-            assert(attribCache.deviceHandle.isValid());
-            const auto& resourceField = renderScene.getDataResource(vertexData, attributeField + 1);
-            device.activateVertexBuffer(attribCache.deviceHandle, attributeField, resourceField.instancingDivisor, renderable.startVertex, attribCache.dataType, resourceField.offsetWithinElementInBytes, resourceField.stride);
-        }
+        device.activateVertexArray(m_state.vertexArrayDeviceHandle);
 
         const DataLayoutHandle dataLayoutHandle = renderScene.getLayoutOfDataInstance(uniformData);
         const DataLayout& dataLayout = renderScene.getDataLayout(dataLayoutHandle);
@@ -370,21 +357,10 @@ namespace ramses_internal
         const auto& renderScene = m_state.getScene();
         const Renderable& renderable = renderScene.getRenderable(m_state.getRenderable());
 
-        const bool hasIndexArray = m_state.indexBufferDeviceHandle.getState() != DeviceResourceHandle::Invalid();
-
-        if (hasIndexArray && m_state.indexBufferDeviceHandle.hasChanged())
-        {
-            device.activateIndexBuffer(m_state.indexBufferDeviceHandle.getState());
-        }
-
-        if (hasIndexArray)
-        {
+        if (m_state.vertexArrayUsesIndices)
             device.drawIndexedTriangles(renderable.startIndex, renderable.indexCount, renderable.instanceCount);
-        }
         else
-        {
             device.drawTriangles(renderable.startIndex, renderable.indexCount, renderable.instanceCount);
-        }
     }
 
     void RenderExecutor::setGlobalInternalStates(const RendererCachedScene& scene) const
@@ -402,12 +378,11 @@ namespace ramses_internal
         const DeviceResourceHandle effectDeviceHandle = renderScene.getRenderableEffectDeviceHandle(renderableHandle);
         m_state.shaderDeviceHandle.setState(effectDeviceHandle);
 
-        const DataInstanceHandle vertexData = renderable.dataInstances[ERenderableDataSlotType_Geometry];
-        const auto& vtxCache = renderScene.getCachedHandlesForVertexAttributes(vertexData);
-        m_state.indexBufferDeviceHandle.setState(vtxCache.front().deviceHandle);
+        const auto& vertexArray = renderScene.getCachedHandlesForVertexArrays()[m_state.getRenderable().asMemoryHandle()];
+        m_state.vertexArrayDeviceHandle = vertexArray.deviceHandle;
+        m_state.vertexArrayUsesIndices = vertexArray.usesIndexArray;
 
         const RenderState& renderState = renderScene.getRenderState(renderable.renderState);
-
         ScissorState scissorState;
         scissorState.m_scissorTest = renderState.scissorTest;
         scissorState.m_scissorRegion = renderState.scissorRegion;

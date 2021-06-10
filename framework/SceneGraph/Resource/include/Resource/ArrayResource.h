@@ -40,7 +40,7 @@ namespace ramses_internal
             output << static_cast<UInt32>(getElementType());
         }
 
-        static IResource* CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, EResourceType arrayType, const String& name)
+        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, EResourceType arrayType, const String& name)
         {
             UInt32 elementCount = 0;
             UInt32 elementTypeAsUInt = 0;
@@ -51,7 +51,7 @@ namespace ramses_internal
             const EDataType indexElementType = static_cast<EDataType>(elementTypeAsUInt);
 
             // Data for resource will be filled later
-            return new ArrayResource(arrayType, elementCount, indexElementType, nullptr, cacheFlag, name);
+            return std::make_unique<ArrayResource>(arrayType, elementCount, indexElementType, nullptr, cacheFlag, name);
         }
 
     private:

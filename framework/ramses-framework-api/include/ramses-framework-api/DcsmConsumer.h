@@ -17,6 +17,7 @@
 
 namespace ramses
 {
+    class DcsmStatusMessage;
     class DcsmConsumerImpl;
 
     /**
@@ -93,6 +94,17 @@ namespace ramses
          *         to resolve error message using getStatusMessage().
          */
         status_t acceptStopOffer(ContentID contentID, AnimationInformation animationInformation);
+
+        /**
+         * @brief Send a message to the provider of the content assigned to this consumer.
+         *
+         * @param contentID Content for which the message should be sent.
+         * @param message An implementation of DcsmStatusMessage, containing data to be carried to the provider.
+         *
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t sendContentStatus(ContentID contentID, DcsmStatusMessage const& message);
 
         /**
          * @brief Deleted default constructor

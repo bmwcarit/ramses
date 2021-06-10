@@ -78,6 +78,7 @@
 #include "AnimationSequenceImpl.h"
 #include "Utils/File.h"
 #include "ramses-utils.h"
+#include "FileDescriptorHelper.h"
 
 #include "ArrayBufferImpl.h"
 #include "Texture2DBufferImpl.h"
@@ -155,7 +156,7 @@ namespace ramses
             EXPECT_TRUE(outFile.write(&zeroData, sizeof(zeroData)));
         }
 
-        const int fd = ::open("someTemporaryFileWithOffset.ram", O_RDONLY);
+        const int fd = ramses_internal::FileDescriptorHelper::OpenFileDescriptorBinary ("someTemporaryFileWithOffset.ram");
         EXPECT_NE(nullptr, m_clientForLoading.loadSceneFromFileDescriptor(fd, 4, fileSize, false));
     }
 

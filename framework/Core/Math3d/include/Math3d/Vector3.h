@@ -66,7 +66,6 @@ namespace ramses_internal
         constexpr Vector3 inverse() const;
         constexpr Vector3 cross(const Vector3& other) const;
 
-        Float angle(const Vector3& other) const;  ///< in radians
         Float length() const;
         Vector3 normalize() const;
 
@@ -197,11 +196,6 @@ namespace ramses_internal
         x *= vec.x;
         y *= vec.y;
         z *= vec.z;
-    }
-
-    inline Float Vector3::angle(const Vector3& other) const
-    {
-        return std::acos(dot(other) / (length() * other.length()));
     }
 
     inline

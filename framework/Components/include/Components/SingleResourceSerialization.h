@@ -11,6 +11,7 @@
 
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "SceneAPI/ResourceContentHash.h"
+#include <memory>
 
 namespace ramses_internal
 {
@@ -24,7 +25,7 @@ namespace ramses_internal
         static UInt32 SizeOfSerializedResource(const IResource& resource);
         static void SerializeResource(IOutputStream& output, const IResource& resource);
 
-        static IResource* DeserializeResource(IInputStream& input, ResourceContentHash hash);
+        static std::unique_ptr<IResource> DeserializeResource(IInputStream& input, ResourceContentHash hash);
     };
 }
 

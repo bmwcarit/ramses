@@ -46,7 +46,6 @@ namespace ramses_internal
         {
             DeviceResourceHandle vertexBufferHandle;
             DeviceResourceHandle indexBufferHandle;
-            DeviceResourceHandle vertexArrayHandle;
             EDrawMode drawMode = EDrawMode::Triangles;
             EDataType dataType = EDataType::Invalid;
             UInt32 indexCount = 0;
@@ -66,6 +65,7 @@ namespace ramses_internal
             Look look;
             Matrix44f mvpMatrix;
             Vector4 color;
+            DeviceResourceHandle vertexArrayHandle;
         };
 
         Bool m_doReset = false;
@@ -90,6 +90,7 @@ namespace ramses_internal
         EffectResource* m_timingLineEffect = nullptr;
         EffectResource* m_stackedTimingLineEffect = nullptr;
         EffectResource* m_singleColorEffect = nullptr;
+        DeviceHandleVector m_vertexArrayHandles;
 
         Geometry m_unitCubeGeometry;
         Geometry m_filledUnitCubeGeometry;
@@ -105,6 +106,7 @@ namespace ramses_internal
         void createEffects();
         DeviceResourceHandle createLineIndexBuffer(UInt32 segmentCount);
         DeviceResourceHandle createStackedLinesIndexBuffer(UInt32 lineCount, UInt32 segmentPerLineCount);
+        DeviceResourceHandle createVertexArray(const Geometry& geometry, const Look& look);
         Look createLookFromEffect(const EffectResource& effect, DeviceResourceHandle shaderHandle);
         Geometry createGraphGeometry();
         Geometry createStackedGraphGeometry();
@@ -118,8 +120,8 @@ namespace ramses_internal
         void addDynamicRenderable(const Geometry& geometry, const Look& look, const Vector4& color, const Vector2& translation, const Vector2& scale);
         void addStackedGraphRenderable(const Look& look, const Vector4& color, const Vector2& translation, const Vector2& scale);
         void addGraphRenderableForCounter(const Look& look, const Vector4& color, const Vector2& translation, const Vector2& scale, FrameProfilerStatistics::ECounter counter);
-        void updateTimingLineVertexBuffer(Geometry& geometry, const FrameProfilerStatistics::RegionTimings& timingData);
-        void updateCounterLineVertexBuffer(Geometry& geometry, const FrameProfilerStatistics::CounterValues& counterValues);
+        void updateTimingLineVertexBuffer(Renderable& renderable, const FrameProfilerStatistics::RegionTimings& timingData);
+        void updateCounterLineVertexBuffer(Renderable& renderable, const FrameProfilerStatistics::CounterValues& counterValues);
         void updateTranslationForCurrentFrame(Matrix44f& mvpMatrix, UInt32 currentFrameId);
 
         void render(const Renderable& drawable);

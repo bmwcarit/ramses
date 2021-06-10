@@ -3508,3 +3508,11 @@ TEST_P(ADcsmContentControlP, canNotChangeStateOfUnknownContent)
     m_dcsmHandler.contentStopOfferRequest(ContentID{ 0xf00ba2 });
     EXPECT_NE(StatusOK, m_dcsmContentControl.acceptStopOffer(ContentID{ 0xf00ba2 }, AnimationInformation{ 0, 0 }));
 }
+
+TEST_F(ADcsmContentControl, simplyPipesThroughSendContentStatusCallToConsumer)
+{
+    StreamStatusMessage msg(StreamStatusMessage::Status::Ready);
+    EXPECT_CALL(m_dcsmConsumerMock, sendContentStatus(m_contentID1, Ref(msg))).WillOnce(Return(status_t{ 43 }));
+    EXPECT_EQ(status_t{ 43 }, m_dcsmContentControl.sendContentStatus(m_contentID1, msg));
+}
+

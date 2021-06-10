@@ -145,7 +145,11 @@ namespace ramses_internal
 
     void SceneExpirationMonitor::onDestroyed(SceneId sceneId)
     {
-        m_monitoredScenes.erase(sceneId);
+        if (m_monitoredScenes.erase(sceneId) != 0)
+        {
+            LOG_INFO_P(CONTEXT_RENDERER, "SceneExpirationMonitor: expiration monitoring for scene {} disabled because scene was unsubscribed from renderer", sceneId);
+            m_eventCollector.addSceneExpirationEvent(ERendererEventType::SceneExpirationMonitoringDisabled, sceneId);
+        }
     }
 
     FlushTime::Clock::time_point SceneExpirationMonitor::getExpirationTimestampOfRenderedScene(SceneId sceneId) const

@@ -120,7 +120,7 @@ namespace ramses_internal
         //}
     }
 
-    IResource* EffectResource::CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, const String& name)
+    std::unique_ptr<IResource> EffectResource::CreateResourceFromMetadataStream(IInputStream& input, ResourceCacheFlag cacheFlag, const String& name)
     {
         EffectInputInformationVector uniformInputs;
         ReadInputVector(input, uniformInputs);
@@ -141,7 +141,7 @@ namespace ramses_internal
         //    geometryShaderInputTypeOpt = static_cast<EDrawMode>(geometryShaderInputTypeInt);
         //}
 
-        return new EffectResource(uniformInputs, attributeInputs, geometryShaderInputTypeOpt, name, fragementShaderOffset, geometryShaderOffset, cacheFlag);
+        return std::unique_ptr<EffectResource>(new EffectResource(uniformInputs, attributeInputs, geometryShaderInputTypeOpt, name, fragementShaderOffset, geometryShaderOffset, cacheFlag));
     }
 
     void EffectResource::WriteInputVector(IOutputStream& stream, const EffectInputInformationVector& inputVector)

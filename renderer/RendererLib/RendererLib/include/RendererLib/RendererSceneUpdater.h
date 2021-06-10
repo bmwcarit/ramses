@@ -135,6 +135,7 @@ namespace ramses_internal
         void tryToApplyPendingFlushes();
         void processStagedResourceChangesFromAppliedFlushes();
         void handleECStreamAvailabilityChanges();
+        void uploadAndUnloadVertexArrays();
         void updateScenesResourceCache();
         void updateScenesRealTimeAnimationSystems();
         void updateScenesTransformationCache();
@@ -147,6 +148,7 @@ namespace ramses_internal
 
         void logMissingResources(const PendingData& pendingData, SceneId sceneId) const;
         void logMissingResources(const ResourceContentHashVector& neededResources, SceneId sceneId) const;
+        uint32_t getNumberOfPendingNonEmptyFlushes(SceneId sceneId) const;
 
         DisplayHandle m_display;
 
@@ -181,13 +183,14 @@ namespace ramses_internal
         std::vector<SceneId> m_offscreeenBufferModifiedScenesVisitingCache;
         OffscreenBufferLinkVector m_offscreenBufferConsumerSceneLinksCache;
 
-        UInt m_maximumPendingFlushes = 60u;
-        UInt m_maximumPendingFlushesToKillScene = 5 * 60u;
-
-        // keep as members to avoid reallocs
-        StreamSourceUpdates m_streamUpdates;
+        UInt m_maximumPendingFlushes = 120u;
+        UInt m_maximumPendingFlushesToKillScene = 5 * m_maximumPendingFlushes;
 
         IThreadAliveNotifier& m_notifier;
+
+        // keep as members to avoid runtime re-allocs
+        StreamSourceUpdates m_streamUpdates;
+        RenderableVector m_tempRenderablesWithUpdatedVertexArrays;
     };
 }
 

@@ -61,6 +61,7 @@ namespace ramses_internal
             EXPECT_CALL(m_renderBackend.deviceMock, uploadVertexBufferData(_, _, _));
             EXPECT_CALL(m_renderBackend.deviceMock, allocateIndexBuffer(_, _));
             EXPECT_CALL(m_renderBackend.deviceMock, uploadIndexBufferData(_, _, _));
+            EXPECT_CALL(m_renderBackend.deviceMock, allocateVertexArray(_));
 
             IDisplayController& controller = *new DisplayController(m_renderBackend, 1u, EPostProcessingEffect_Warping);
             const DeviceResourceHandle expectedRenderTargetHandle = DeviceMock::FakeRenderTargetDeviceHandle;
@@ -78,6 +79,7 @@ namespace ramses_internal
         {
             using namespace testing;
             InSequence seq;
+            EXPECT_CALL(m_renderBackend.deviceMock, deleteVertexArray(_));
             EXPECT_CALL(m_renderBackend.deviceMock, deleteVertexBuffer(_));
             EXPECT_CALL(m_renderBackend.deviceMock, deleteIndexBuffer(_));
             EXPECT_CALL(m_renderBackend.deviceMock, deleteVertexBuffer(_));

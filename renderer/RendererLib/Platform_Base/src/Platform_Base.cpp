@@ -76,16 +76,16 @@ namespace ramses_internal
         assert(!m_embeddedCompositor);
         if (!createEmbeddedCompositor(displayConfig))
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: embedded compositor creation failed");
-            m_device.reset();
-            m_context->disable();
-            m_context.reset();
-            destroyWindow();
-            return nullptr;
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: embedded compositor creation failed, it cannot be used on this display");
+            // create dummy EC implementation
+            Platform_Base::createEmbeddedCompositor(displayConfig);
+            Platform_Base::createTextureUploadingAdapter();
         }
-
-        assert(!m_textureUploadingAdapter);
-        createTextureUploadingAdapter();
+        else
+        {
+            assert(!m_textureUploadingAdapter);
+            createTextureUploadingAdapter();
+        }
 
         assert(!m_renderBackend);
         m_renderBackend = std::make_unique<RenderBackend>(*m_window, *m_context, *m_device, *m_embeddedCompositor, *m_textureUploadingAdapter);

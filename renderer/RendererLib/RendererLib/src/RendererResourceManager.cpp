@@ -119,6 +119,11 @@ namespace ramses_internal
             for (const auto& st : streamTextures)
                 unloadStreamTexture(st, sceneId);
 
+            RenderableVector vertexArrayRenderables;
+            sceneResources.getAllVertexArrayRenderables(vertexArrayRenderables);
+            for (const auto r : vertexArrayRenderables)
+                unloadVertexArray(r, sceneId);
+
             DataBufferHandleVector dataBuffers;
             sceneResources.getAllDataBuffers(dataBuffers);
             for (const auto db : dataBuffers)
@@ -653,5 +658,28 @@ namespace ramses_internal
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
         return sceneResources.getTextureBufferDeviceHandle(textureBufferHandle);
+    }
+
+    void RendererResourceManager::uploadVertexArray(RenderableHandle renderableHandle, const VertexArrayInfo& vertexArrayInfo, SceneId sceneId)
+    {
+        const auto deviceHandle = m_renderBackend.getDevice().allocateVertexArray(vertexArrayInfo);
+        RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
+        sceneResources.addVertexArray(renderableHandle, deviceHandle);
+    }
+
+    void RendererResourceManager::unloadVertexArray(RenderableHandle renderableHandle, SceneId sceneId)
+    {
+        assert(m_sceneResourceRegistryMap.contains(sceneId));
+        RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
+        const auto deviceHandle = sceneResources.getVertexArrayDeviceHandle(renderableHandle);
+        m_renderBackend.getDevice().deleteVertexArray(deviceHandle);
+        sceneResources.removeVertexArray(renderableHandle);
+    }
+
+    DeviceResourceHandle RendererResourceManager::getVertexArrayDeviceHandle(RenderableHandle renderableHandle, SceneId sceneId) const
+    {
+        assert(m_sceneResourceRegistryMap.contains(sceneId));
+        const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
+        return sceneResources.getVertexArrayDeviceHandle(renderableHandle);
     }
 }

@@ -130,6 +130,9 @@ namespace ramses
         * @brief This method will be called whenever a scene which was previously monitored for expiration has requested
         *        to stop being monitored by sending a scene flush with invalid expiration timestamp (#ramses::Scene::setExpirationTimestamp)
         *        and that flush was applied on renderer side.
+        *        This method will also be called if a previously monitored scene is unsubscribed from the renderer,
+        *        i.e. drops state to #ramses::RendererSceneState::Available from previous #ramses::RendererSceneState::Ready
+        *        (or potentially after canceled transition to #ramses::RendererSceneState::Ready).
         *        From this point on, the scene will not be monitored anymore, regardless if it previously expired or not,
         *        i.e. there will be no expiration events (#sceneExpired, #sceneRecoveredFromExpiration) until monitoring
         *        enabled again (#sceneExpirationMonitoringEnabled).

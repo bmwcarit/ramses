@@ -262,10 +262,10 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, animationSystem.validate());
         const ramses_internal::String validationReport = animationSystem.getValidationReport();
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_Animation instances: 2") >= 0);
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimationSequence instances: 1") >= 0);
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimatedProperty instances: 3") >= 0);
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_SplineLinearVector3f instances: 4") >= 0);
+        EXPECT_THAT(validationReport.stdRef(), HasSubstr("Number of ERamsesObjectType_Animation instances: 2"));
+        EXPECT_THAT(validationReport.stdRef(), HasSubstr("Number of ERamsesObjectType_AnimationSequence instances: 1"));
+        EXPECT_THAT(validationReport.stdRef(), HasSubstr("Number of ERamsesObjectType_AnimatedProperty instances: 3"));
+        EXPECT_THAT(validationReport.stdRef(), HasSubstr("Number of ERamsesObjectType_SplineLinearVector3f instances: 4"));
     }
 
     TEST_F(AnimationSystemTest, failsToValidateIfOneOfItsObjectsNotValidated)
@@ -279,10 +279,10 @@ namespace ramses
         EXPECT_NE(StatusOK, animationSystem.validate());
 
         const ramses_internal::String validationReport = animationSystem.getValidationReport();
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_Animation instances: 0") >= 0);
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimationSequence instances: 1") >= 0);
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimatedProperty instances: 1") >= 0);
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_SplineLinearVector3f instances: 1") >= 0);
+        EXPECT_THAT(validationReport.stdRef(), HasSubstr("Number of ERamsesObjectType_Animation instances: 0"));
+        EXPECT_THAT(validationReport.stdRef(), HasSubstr("Number of ERamsesObjectType_AnimationSequence instances: 1"));
+        EXPECT_THAT(validationReport.stdRef(), HasSubstr("Number of ERamsesObjectType_AnimatedProperty instances: 1"));
+        EXPECT_THAT(validationReport.stdRef(), HasSubstr("Number of ERamsesObjectType_SplineLinearVector3f instances: 1"));
     }
 
     TEST_F(AnimationSystemTest, failsToValidateIfDataBindingIsNotValid)
@@ -295,9 +295,9 @@ namespace ramses
         EXPECT_NE(StatusOK, animationSystem.validate());
 
         const ramses_internal::String validationReport = animationSystem.getValidationReport();
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimationSequence instances: 1") >= 0);
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_AnimatedProperty instances: 1") >= 0);
-        EXPECT_TRUE(validationReport.find("Number of ERamsesObjectType_SplineLinearVector3f instances: 1") >= 0);
+        EXPECT_THAT(validationReport.stdRef(), HasSubstr("Number of ERamsesObjectType_AnimationSequence instances: 1"));
+        EXPECT_THAT(validationReport.stdRef(), HasSubstr("Number of ERamsesObjectType_AnimatedProperty instances: 1"));
+        EXPECT_THAT(validationReport.stdRef(), HasSubstr("Number of ERamsesObjectType_SplineLinearVector3f instances: 1"));
     }
 
     TEST_F(AnimationSystemTest, failsToValidateIfNodeRotatesUsingNonLegacyConvention)
@@ -310,7 +310,7 @@ namespace ramses
         EXPECT_NE(StatusOK, animationSystem.validate());
 
         const ramses_internal::String validationReport = animationSystem.getValidationReport();
-        EXPECT_TRUE(validationReport.find("trying to animate rotation for node that does not use legacy rotation convention") >= 0);
+        EXPECT_THAT(validationReport.stdRef(), HasSubstr("trying to animate rotation for node that does not use legacy rotation convention"));
     }
 
     TEST_F(AnimationSystemTestClientSideProcessing, createAnimationSystemWithClientSideProcessingAndCheckInterpolationResults)

@@ -170,10 +170,10 @@ TEST_F(AGlslEffect, usesProvidedDefines)
     std::unique_ptr<EffectResource> res(ge.createEffectResource(ResourceCacheFlag(0u)));
     ASSERT_TRUE(res);
 
-    EXPECT_TRUE(String(res->getVertexShader()).find(compilerDefines[0]) != -1);
-    EXPECT_TRUE(String(res->getVertexShader()).find(compilerDefines[1]) != -1);
-    EXPECT_TRUE(String(res->getFragmentShader()).find(compilerDefines[0]) != -1);
-    EXPECT_TRUE(String(res->getFragmentShader()).find(compilerDefines[1]) != -1);
+    EXPECT_THAT(res->getVertexShader(), ::testing::HasSubstr(compilerDefines[0].stdRef()));
+    EXPECT_THAT(res->getVertexShader(), ::testing::HasSubstr(compilerDefines[1].stdRef()));
+    EXPECT_THAT(res->getFragmentShader(), ::testing::HasSubstr(compilerDefines[0].stdRef()));
+    EXPECT_THAT(res->getFragmentShader(), ::testing::HasSubstr(compilerDefines[1].stdRef()));
 }
 
 TEST_F(AGlslEffect, generatedShaderWithDefaultVersionAndDefinesEmbedded)

@@ -9,6 +9,7 @@
 #include "DcsmContentControlImpl.h"
 #include "ramses-renderer-api/IDcsmContentControlEventHandler.h"
 #include "ramses-framework-api/DcsmMetadataUpdate.h"
+#include "ramses-framework-api/DcsmStatusMessage.h"
 #include "DcsmMetadataUpdateImpl.h"
 #include "IDcsmConsumerImpl.h"
 #include "RendererSceneControlImpl.h"
@@ -1414,5 +1415,10 @@ namespace ramses
 
         auto state = status ? RendererSceneState::Rendered : RendererSceneState::Ready;
         applyTechnicalStateChange(TechnicalContentDescriptor{ streamIt->first.getValue() }, state);
+    }
+
+    status_t DcsmContentControlImpl::sendContentStatus(ContentID contentID, DcsmStatusMessage const& message)
+    {
+        return m_dcsmConsumer.sendContentStatus(contentID, message);
     }
 }

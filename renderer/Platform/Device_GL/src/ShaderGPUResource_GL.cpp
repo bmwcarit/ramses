@@ -125,20 +125,21 @@ namespace ramses_internal
 
     bool ShaderGPUResource_GL::getBinaryInfo(UInt8Vector& binaryShader, BinaryShaderFormatID& binaryShaderFormat) const
     {
-        GLint length = -1;
-        glGetProgramiv(m_shaderProgramInfo.shaderProgramHandle, GL_PROGRAM_BINARY_LENGTH, &length);
+        GLint sizeInBytes = -1;
+        glGetProgramiv(m_shaderProgramInfo.shaderProgramHandle, GL_PROGRAM_BINARY_LENGTH, &sizeInBytes);
 
-        if (length == 0)
+        if (sizeInBytes <= 0)
         {
+            LOG_WARN_P(CONTEXT_RENDERER, "ShaderGPUResource_GL::getBinaryInfo: invalid binary shader size ({}) retrieved from device.", sizeInBytes);
             return false;
         }
 
         GLenum binaryFormat;
-        GLsizei binarySize;
+        GLsizei actualSize = 0;
 
-        binaryShader.resize(length);
-        glGetProgramBinary(m_shaderProgramInfo.shaderProgramHandle, length, &binarySize, &binaryFormat, &binaryShader.front());
+        binaryShader.resize(static_cast<size_t>(sizeInBytes));
+        glGetProgramBinary(m_shaderProgramInfo.shaderProgramHandle, sizeInBytes, &actualSize, &binaryFormat, &binaryShader.front());
         binaryShaderFormat = BinaryShaderFormatID{ binaryFormat };
-        return binarySize == length;
+        return actualSize == sizeInBytes;
     }
 }

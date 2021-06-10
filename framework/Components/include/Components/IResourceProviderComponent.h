@@ -40,6 +40,8 @@ namespace ramses_internal
 
         virtual ManagedResourceVector resolveResources(ResourceContentHashVector& vec) = 0;
         virtual ResourceInfo const& getResourceInfo(ResourceContentHash const& hash) = 0;
+
+        virtual bool knowsResource(const ResourceContentHash& hash) const = 0;
     };
 }
 

@@ -15,7 +15,7 @@ namespace ramses_internal
     ShowFrameProfiler::ShowFrameProfiler(RendererCommandBuffer& commandBuffer)
         : m_commandBuffer(commandBuffer)
     {
-        description = "Usage: [ -th (timing graph height, uint32, optional), -ch (counter graph height, uint32, optional), -fi (region filter flags, uint32, optional)) - Show live frame profiler";
+        description = "Usage: [ -th (timing graph height in milliseconds, default 16), -ch (counter graph height in pixels, default 500), -fi (region filter flags ERegion, default all)) - Show live frame profiler";
         registerKeyword("showFrameProfiler");
         registerKeyword("fp");
     }

@@ -39,8 +39,10 @@ namespace ramses_internal
         virtual ManagedResourceVector resolveResources(ResourceContentHashVector& vec) override;
 
         virtual ResourceInfo const& getResourceInfo(ResourceContentHash const& hash) override;
+        virtual bool knowsResource(const ResourceContentHash& hash) const override;
 
         ManagedResourceVector getResources();
+
 
     private:
         ResourceStorage m_resourceStorage;

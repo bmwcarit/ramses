@@ -106,7 +106,7 @@ namespace ramses_internal
             output << m_generateMipChain;
         }
 
-        static IResource* CreateResourceFromMetadataStream(IInputStream& input, EResourceType typeID, ResourceCacheFlag cacheFlag, const String& name)
+        static std::unique_ptr<IResource> CreateResourceFromMetadataStream(IInputStream& input, EResourceType typeID, ResourceCacheFlag cacheFlag, const String& name)
         {
             TextureMetaInfo texDesc(1u, 1u, 1u);
             UInt32 texelFormat = 0;
@@ -148,7 +148,7 @@ namespace ramses_internal
 
             input >> texDesc.m_generateMipChain;
 
-            return new TextureResource(typeID, texDesc, cacheFlag, name);
+            return std::make_unique<TextureResource>(typeID, texDesc, cacheFlag, name);
         }
 
     private:

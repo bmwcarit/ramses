@@ -70,6 +70,11 @@ namespace ramses_internal
         UInt32                          getTextureBufferByteSize    (TextureBufferHandle handle) const;
         void                            getAllTextureBuffers        (TextureBufferHandleVector& textureBuffers) const;
 
+        void                            addVertexArray(RenderableHandle renderableHandle, DeviceResourceHandle deviceHandle);
+        void                            removeVertexArray(RenderableHandle renderableHandle);
+        DeviceResourceHandle            getVertexArrayDeviceHandle(RenderableHandle renderableHandle) const;
+        void                            getAllVertexArrayRenderables(RenderableVector& vertexArrayRenderables) const;
+
         UInt32                          getSceneResourceMemoryUsage(ESceneResourceType resourceType) const;
 
     private:
@@ -107,6 +112,7 @@ namespace ramses_internal
         using DataBufferMap          = HashMap<DataBufferHandle,     DataBufferEntry>;
         using TextureBufferMap       = HashMap<TextureBufferHandle,  TextureBufferEntry>;
         using TextureSamplerMap      = HashMap<TextureSamplerHandle, DeviceResourceHandle>;
+        using VertexArrayMap         = HashMap<RenderableHandle,   DeviceResourceHandle>;
 
         RenderBufferMap        m_renderBuffers;
         RenderTargetMap        m_renderTargets;
@@ -114,6 +120,7 @@ namespace ramses_internal
         StreamTextureSourceMap m_streamTextures;
         DataBufferMap          m_dataBuffers;
         TextureBufferMap       m_textureBuffers;
+        VertexArrayMap         m_vertexArrays;
     };
 }
 

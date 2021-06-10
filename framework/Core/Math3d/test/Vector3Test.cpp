@@ -171,14 +171,6 @@ TEST_F(Vector3Test, Length)
     EXPECT_FLOAT_EQ(6.f, length);
 }
 
-TEST_F(Vector3Test, Angle)
-{
-    ramses_internal::Vector3 vec2(1.f, 0.f, 0.f);
-    ramses_internal::Vector3 vec3(0.f, 1.f, 0.f);
-    ramses_internal::Float angle = ramses_internal::PlatformMath::Rad2Deg(vec2.angle(vec3));
-    EXPECT_FLOAT_EQ(90.f, angle);
-}
-
 TEST_F(Vector3Test, Equality)
 {
     ramses_internal::Vector3 vec2(1.f, 2.f, 3.f);

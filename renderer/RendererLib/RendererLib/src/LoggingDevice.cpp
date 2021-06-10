@@ -195,25 +195,20 @@ namespace ramses_internal
         m_logContext << "delete vertex buffer [handle: " << handle << "]" << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::activateVertexBuffer(DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 startVertex, EDataType bufferDataType, UInt16 offsetWithinElement, UInt16 stride)
+    DeviceResourceHandle LoggingDevice::allocateVertexArray(const VertexArrayInfo&)
     {
-        if (m_logContext.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
-        {
-            m_logContext << "activate vertex buffer [handle: " << handle;
+        m_logContext << "allocate vertex array" << RendererLogContext::NewLine;
+        return {};
+    }
 
-            if (field.isValid())
-            {
-                m_logContext << " for input: " << field;
-            }
+    void LoggingDevice::activateVertexArray(DeviceResourceHandle handle)
+    {
+        m_logContext << "activate vertex array [handle: " << handle << "]" << RendererLogContext::NewLine;
+    }
 
-            m_logContext << " divisor: " << instancingDivisor;
-            m_logContext << " startVertex: " << startVertex;
-            m_logContext << " bufferDataType: " << bufferDataType;
-            m_logContext << " offsetWithinElement: " << offsetWithinElement;
-            m_logContext << " stride: " << stride;
-
-            m_logContext << RendererLogContext::NewLine;
-        }
+    void LoggingDevice::deleteVertexArray(DeviceResourceHandle handle)
+    {
+        m_logContext << "delete vertex array [handle: " << handle << "]" << RendererLogContext::NewLine;
     }
 
     DeviceResourceHandle LoggingDevice::allocateIndexBuffer(EDataType dataType, UInt32 sizeInBytes)
@@ -230,11 +225,6 @@ namespace ramses_internal
     void LoggingDevice::deleteIndexBuffer(DeviceResourceHandle handle)
     {
         m_logContext << "delete index buffer [handle: " << handle << "]" << RendererLogContext::NewLine;
-    }
-
-    void LoggingDevice::activateIndexBuffer(DeviceResourceHandle handle)
-    {
-        logResourceActivation("index buffer", handle, DataFieldHandle::Invalid());
     }
 
     std::unique_ptr<const GPUResource> LoggingDevice::uploadShader(const EffectResource& effect)

@@ -60,7 +60,6 @@ namespace ramses_internal
 
         constexpr Float dot(const Vector2& other) const;
         Float length() const;
-        Float angle(const Vector2& other) const; ///< in radians
         Vector2 normalize() const;
 
         friend constexpr Vector2 operator*(const Float scalar, const Vector2&);
@@ -164,11 +163,6 @@ namespace ramses_internal
     {
         x *= vec.x;
         y *= vec.y;
-    }
-
-    inline Float Vector2::angle(const Vector2& other) const
-    {
-        return std::acos(dot(other) / (length() * other.length()));
     }
 
     inline

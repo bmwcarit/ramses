@@ -7,9 +7,12 @@
 //  -------------------------------------------------------------------------
 
 /**
-@page ToolsMain Shader Tools
+@page ToolsAndDebugging Tools and debugging
 
-# Summary
+In addition to the core libraries, Ramses offers binary utilities for resource and shader
+baking, as well as runtime logging based on DLT.
+
+# Resource and shader tools
 
 Compiling shaders typically consumes a lot of compute time and resources.
 RAMSES provides a chain of command line tools to help reduce the time for
@@ -27,5 +30,10 @@ into files, but also other types of RAMSES resources.
 @ref ResourcePacker
 
 @ref ExampleUsageAllTools
+
+# Logging
+
+Ramses uses DLT to publish logs. See @ref DltIntroduction for an overview of DLT in general, and @ref UsingDLT for
+details on usage of DLT in the Ramses context.
 
  */

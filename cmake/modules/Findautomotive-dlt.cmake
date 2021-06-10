@@ -8,7 +8,7 @@
 
 IF (ramses-sdk_ENABLE_DLT)
     find_package(PkgConfig QUIET)
-    IF(PKG_CONFIG_FOUND)
+    IF(NOT WIN32 AND PKG_CONFIG_FOUND)
 
         pkg_check_modules(automotive-dlt automotive-dlt QUIET)
         IF(${automotive-dlt_FOUND})

@@ -6,11 +6,15 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#include "Utils/LogMacros.h"
 #include "framework_common_gmock_header.h"
 #include "Resource/ResourceBase.h"
+#include "Utils/ThreadBarrier.h"
 #include "gtest/gtest.h"
+#include <memory>
 #include <numeric>
 #include <random>
+#include <thread>
 
 namespace ramses_internal
 {
@@ -304,5 +308,124 @@ namespace ramses_internal
     {
         EXPECT_GT(IResource::CompressionLevel::Realtime, IResource::CompressionLevel::None);
         EXPECT_GT(IResource::CompressionLevel::Offline, IResource::CompressionLevel::Realtime);
+    }
+
+    class AResourceThreaded : public ::testing::Test
+    {
+    public:
+        AResourceThreaded()
+        {
+            constexpr size_t numResources = 100;
+            constexpr size_t resourceSize = 2000;
+            for (size_t i = 0; i < numResources; ++i)
+            {
+                auto res = std::make_unique<TestResource>(EResourceType_Effect, ResourceCacheFlag(0), "");
+                ResourceBlob blob(resourceSize);
+                std::iota(blob.data(), blob.data() + blob.size(), static_cast<uint8_t>(10));
+                res->setResourceData(std::move(blob));
+                resources.push_back(std::move(res));
+            }
+        }
+
+        void run()
+        {
+            std::vector<std::thread> threads(funcs.size());
+            ThreadBarrier startBarrier(static_cast<uint32_t>(threads.size()));
+            for (size_t i = 0; i < threads.size(); ++i)
+                threads[i] = std::thread([func = std::move(funcs[i]), &startBarrier]() {
+                    startBarrier.wait();
+                    func();
+                });
+            for (auto& t : threads)
+                t.join();
+        }
+
+        void makeCompressedOnly()
+        {
+            for (size_t i = 0; i < resources.size(); ++i)
+            {
+                auto& res = resources[i];
+                res->compress(IResource::CompressionLevel::Realtime);
+                auto compressedRes = std::make_unique<TestResource>(res->getTypeID(), res->getCacheFlag(), res->getName());
+                CompressedResourceBlob compressedData(res->getCompressedResourceData().size(), res->getCompressedResourceData().data());
+                compressedRes->setCompressedResourceData(std::move(compressedData), IResource::CompressionLevel::Realtime,
+                                                         res->getDecompressedDataSize(), res->getHash());
+                resources[i] = std::move(compressedRes);
+            }
+        }
+
+        std::vector<std::unique_ptr<TestResource>> resources;
+        std::vector<std::function<void()>> funcs;
+    };
+
+    TEST_F(AResourceThreaded, simultaneousCompression)
+    {
+        for (size_t i = 0; i < 2; ++i)
+            funcs.push_back([&]() {
+                size_t value = 0;
+                for (auto& res : resources)
+                {
+                    res->compress(IResource::CompressionLevel::Realtime);
+                    value += res->getCompressedResourceData().data()[0];
+                }
+                LOG_DEBUG(CONTEXT_FRAMEWORK, "Test result " << value);
+            });
+        run();
+    }
+
+    TEST_F(AResourceThreaded, simultaneousDecompression)
+    {
+        makeCompressedOnly();
+        for (size_t i = 0; i < 2; ++i)
+            funcs.push_back([&]() {
+                size_t value = 0;
+                for (auto& res : resources)
+                {
+                    res->decompress();
+                    value += res->getResourceData().data()[0];
+                    value += res->getDecompressedDataSize();
+                }
+                LOG_DEBUG(CONTEXT_FRAMEWORK, "Test result " << value);
+            });
+        run();
+    }
+
+    TEST_F(AResourceThreaded, simultaneousCompressAndRead)
+    {
+        for (size_t i = 0; i < 2; ++i)
+            funcs.push_back([&]() {
+                size_t value = 0;
+                for (auto& res : resources)
+                {
+                    value += res->getCompressedDataSize();
+                    value += res->isCompressedAvailable() ? 1: 0;
+                    if (res->isCompressedAvailable())
+                        value += res->getCompressedResourceData().size();
+                    else
+                        res->compress(IResource::CompressionLevel::Realtime);
+                }
+                LOG_DEBUG(CONTEXT_FRAMEWORK, "Test result " << value);
+            });
+        run();
+    }
+
+    TEST_F(AResourceThreaded, simultaneousRecompressAndDecompress)
+    {
+        makeCompressedOnly();
+        funcs.push_back([&]() {
+            for (auto& res : resources)
+                res->compress(IResource::CompressionLevel::Offline);
+        });
+        funcs.push_back([&]() {
+            size_t value = 0;
+            for (auto& res : resources)
+            {
+                res->decompress();
+                value += res->getResourceData().data()[0];
+                value += res->getDecompressedDataSize();
+            }
+            LOG_DEBUG(CONTEXT_FRAMEWORK, "Test result " << value);
+        });
+        run();
     }
 }

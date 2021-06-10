@@ -208,8 +208,8 @@ namespace ramses_internal
 
     String File::getExtension() const
     {
-        const auto position = m_path.rfind('.');
-        if (position == -1)
+        const size_t position = m_path.rfind('.');
+        if (position == String::npos)
         {
             // index not found
             return String();
@@ -219,11 +219,11 @@ namespace ramses_internal
 
     String File::getFileName() const
     {
-        Int lastSeparator = m_path.rfind('/');
-        if (lastSeparator == -1)
+        size_t lastSeparator = m_path.rfind('/');
+        if (lastSeparator == String::npos)
             lastSeparator = m_path.rfind('\\');
 
-        if (lastSeparator != -1)
+        if (lastSeparator != String::npos)
             return String(std::string(m_path.stdRef(), lastSeparator + 1));
 
         return m_path;

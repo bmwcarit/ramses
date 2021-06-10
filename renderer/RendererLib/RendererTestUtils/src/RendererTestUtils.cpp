@@ -41,13 +41,20 @@ void RendererTestUtils::SaveScreenshotForDisplay(ramses::RamsesRenderer& rendere
     screenshotBitmap.saveToFilePNG("./res/" + screenshotFileName + ".PNG");
 }
 
-bool RendererTestUtils::PerformScreenshotTestForDisplay(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId, ramses::displayBufferId_t displayBuffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const String& screenshotFileName, float maxAveragePercentErrorPerPixel)
+bool RendererTestUtils::PerformScreenshotTestForDisplay(
+    ramses::RamsesRenderer& renderer,
+    ramses::displayId_t displayId,
+    ramses::displayBufferId_t displayBuffer,
+    UInt32 x, UInt32 y, UInt32 width, UInt32 height,
+    const String& screenshotFileName,
+    float maxAveragePercentErrorPerPixel,
+    bool saveDiffOnError)
 {
     const Image screenshotBitmap = ReadPixelData(renderer, displayId, displayBuffer, x, y, width, height);
-    return CompareBitmapToImageInFile(screenshotBitmap, screenshotFileName, maxAveragePercentErrorPerPixel);
+    return CompareBitmapToImageInFile(screenshotBitmap, screenshotFileName, maxAveragePercentErrorPerPixel, saveDiffOnError);
 }
 
-bool RendererTestUtils::CompareBitmapToImageInFile(const Image& actualBitmap, const String& expectedScreenshotFileName, float maxAveragePercentErrorPerPixel)
+bool RendererTestUtils::CompareBitmapToImageInFile(const Image& actualBitmap, const String& expectedScreenshotFileName, float maxAveragePercentErrorPerPixel, bool saveDiffOnError)
 {
     Image expectedBitmap;
     expectedBitmap.loadFromFilePNG("./res/" + expectedScreenshotFileName + ".PNG");
@@ -76,25 +83,28 @@ bool RendererTestUtils::CompareBitmapToImageInFile(const Image& actualBitmap, co
 
     if (averagePercentErrorPerPixel > maxAveragePercentErrorPerPixel)
     {
-        printf("Screenshot comparison failed: %s (%ux%u)\n", expectedScreenshotFileName.c_str(), diff.getWidth(), diff.getHeight());
-        printf(" - avg error per pixel %.2f, maximum allowed error is %.2f\n", averagePercentErrorPerPixel, maxAveragePercentErrorPerPixel);
-        printf(" - total error R=%i, G=%i, B=%i, A=%i\n", sumOfPixelDiff.x, sumOfPixelDiff.y, sumOfPixelDiff.z, sumOfPixelDiff.w);
-        printf(" - number of pixels different by more than 1 (one or more color channels): %u\n", diff.getNumberOfNonBlackPixels(1));
-        printf(" - number of pixels different by more than 64 (one or more color channels): %u\n", diff.getNumberOfNonBlackPixels(64));
-        printf(" - number of pixels different by more than 128 (one or more color channels): %u\n", diff.getNumberOfNonBlackPixels(128));
-        printf(" - number of pixels different by 255 (one or more color channels): %u\n", diff.getNumberOfNonBlackPixels(254));
+        if (saveDiffOnError)
+        {
+            printf("Screenshot comparison failed: %s (%ux%u)\n", expectedScreenshotFileName.c_str(), diff.getWidth(), diff.getHeight());
+            printf(" - avg error per pixel %.2f, maximum allowed error is %.2f\n", averagePercentErrorPerPixel, maxAveragePercentErrorPerPixel);
+            printf(" - total error R=%i, G=%i, B=%i, A=%i\n", sumOfPixelDiff.x, sumOfPixelDiff.y, sumOfPixelDiff.z, sumOfPixelDiff.w);
+            printf(" - number of pixels different by more than 1 (one or more color channels): %u\n", diff.getNumberOfNonBlackPixels(1));
+            printf(" - number of pixels different by more than 64 (one or more color channels): %u\n", diff.getNumberOfNonBlackPixels(64));
+            printf(" - number of pixels different by more than 128 (one or more color channels): %u\n", diff.getNumberOfNonBlackPixels(128));
+            printf(" - number of pixels different by 255 (one or more color channels): %u\n", diff.getNumberOfNonBlackPixels(254));
 
-        const String screenShotPath = String("./res/diffs");
-        File diffDirectory(screenShotPath);
-        diffDirectory.createDirectory();
+            const String screenShotPath = String("./res/diffs");
+            File diffDirectory(screenShotPath);
+            diffDirectory.createDirectory();
 
-        actualBitmap.saveToFilePNG(screenShotPath + "/" + expectedScreenshotFileName + "_ACTUAL.PNG");
-        diff.saveToFilePNG(screenShotPath + "/" + expectedScreenshotFileName + "_DIFF.PNG");
+            actualBitmap.saveToFilePNG(screenShotPath + "/" + expectedScreenshotFileName + "_ACTUAL.PNG");
+            diff.saveToFilePNG(screenShotPath + "/" + expectedScreenshotFileName + "_DIFF.PNG");
 
-        //Create separate RGB and Alpha diffs
-        std::pair<Image, Image> colorAndAlphaDiffImages = diff.createSeparateColorAndAlphaImages();
-        colorAndAlphaDiffImages.first.saveToFilePNG(screenShotPath + "/" + expectedScreenshotFileName + "_DIFF_RGB.PNG");
-        colorAndAlphaDiffImages.second.saveToFilePNG(screenShotPath + "/" + expectedScreenshotFileName + "_DIFF_ALPHA.PNG");
+            //Create separate RGB and Alpha diffs
+            std::pair<Image, Image> colorAndAlphaDiffImages = diff.createSeparateColorAndAlphaImages();
+            colorAndAlphaDiffImages.first.saveToFilePNG(screenShotPath + "/" + expectedScreenshotFileName + "_DIFF_RGB.PNG");
+            colorAndAlphaDiffImages.second.saveToFilePNG(screenShotPath + "/" + expectedScreenshotFileName + "_DIFF_ALPHA.PNG");
+        }
 
         return false;
     }

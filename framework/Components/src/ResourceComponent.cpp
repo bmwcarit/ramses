@@ -39,6 +39,11 @@ namespace ramses_internal
         return m_resourceStorage.getResources();
     }
 
+    bool ResourceComponent::knowsResource(const ResourceContentHash& hash) const
+    {
+        return m_resourceStorage.knowsResource(hash);
+    }
+
     ramses_internal::ManagedResource ResourceComponent::manageResource(const IResource& resource, bool deletionAllowed)
     {
         return m_resourceStorage.manageResource(resource, deletionAllowed);
@@ -94,17 +99,19 @@ namespace ramses_internal
     {
         IInputStream* resourceStream = nullptr;
         ResourceFileEntry entry;
-        const EStatus canLoadFromFile = m_resourceFiles.getEntry(hash, resourceStream, entry);
+        SceneFileHandle fileHandle;
+        const EStatus canLoadFromFile = m_resourceFiles.getEntry(hash, resourceStream, entry, fileHandle);
         if (canLoadFromFile == EStatus::Ok)
         {
             m_statistics.statResourcesLoadedFromFileNumber.incCounter(1);
             m_statistics.statResourcesLoadedFromFileSize.incCounter(entry.sizeInBytes);
 
-            IResource* lowLevelResource = ResourcePersistation::RetrieveResourceFromStream(*resourceStream, entry);
+            std::unique_ptr<IResource> lowLevelResource = ResourcePersistation::RetrieveResourceFromStream(*resourceStream, entry);
             if (lowLevelResource)
-                return m_resourceStorage.manageResource(*lowLevelResource, true);
-            else
-                LOG_ERROR_P(CONTEXT_CLIENT, "ResourceComponent::loadResource: RetrieveResourceFromStream failed for {} ({})", entry.resourceInfo.type, entry.resourceInfo.hash);
+                return m_resourceStorage.manageResource(*lowLevelResource.release(), true);
+
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceComponent::loadResource: RetrieveResourceFromStream failed for type {}, hash {}, fileHandle {}, offset {}, size {}, streamState {}",
+                        entry.resourceInfo.type, entry.resourceInfo.hash, fileHandle, entry.offsetInBytes, entry.sizeInBytes, resourceStream->getState());
         }
 
         return ManagedResource();
@@ -133,7 +140,7 @@ namespace ramses_internal
         }
 
         if (!failed.empty())
-            LOG_ERROR_P(CONTEXT_CLIENT, "ResourceComponent::resolveResources: failed to load resources: {}", failed);
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceComponent::resolveResources: failed to load resources: {}", failed);
 
         return result;
     }

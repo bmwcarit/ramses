@@ -23,11 +23,11 @@ namespace ramses_internal
         cache->getResourceData(resourceId, readBuffer.data(), resourceSize);
 
         BinaryInputStream resourceStream(readBuffer.data());
-        const IResource* resourceObject = SingleResourceSerialization::DeserializeResource(resourceStream, resourceId);
+        std::unique_ptr<IResource> resourceObject = SingleResourceSerialization::DeserializeResource(resourceStream, resourceId);
 
         static ResourceDeleterCallingCallback deleter = ResourceDeleterCallingCallback(DefaultManagedResourceDeleterCallback::GetInstance());
 
-        return ManagedResource{ resourceObject, deleter };
+        return ManagedResource{ resourceObject.release(), deleter };
     }
 
     void RendererResourceManagerUtils::StoreResource(IRendererResourceCache* cache, const IResource* resource, SceneId sceneId)

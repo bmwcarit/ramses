@@ -1502,6 +1502,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfStreamTextureStateIsN
     createRenderableAndResourcesWithStreamTexture();
 
     expectStreamTextureUploaded();
+    expectVertexArrayUploaded();
     update();
     expectRenderableResourcesClean();
 
@@ -1806,6 +1807,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfFlushAppliedWithResources)
     setRenderableResources();
 
     expectModifiedScenesReportedToRenderer();
+    expectVertexArrayUploaded();
     update();
     expectRenderableResourcesClean();
 
@@ -1830,6 +1832,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_IfPendingFlushNotApplie
     {
         setRenderableResources();
         expectModifiedScenesReportedToRenderer();
+        expectVertexArrayUploaded();
         update();
         expectRenderableResourcesClean();
         EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
@@ -1865,6 +1868,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_AfterPendingFlushApplied)
         createRenderable();
         setRenderableResources();
         expectModifiedScenesReportedToRenderer();
+        expectVertexArrayUploaded();
         update();
         expectRenderableResourcesClean();
     }
@@ -1877,8 +1881,10 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_AfterPendingFlushApplied)
         expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 });
         setRenderableResources(0u, MockResourceHash::IndexArrayHash2);
         reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Provided);
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getResourceDeviceHandle(MockResourceHash::IndexArrayHash2)).WillOnce(Return(DeviceResourceHandle::Invalid())).RetiresOnSaturation();
     }
     expectNoModifiedScenesReportedToRenderer();
+    expectVertexArrayUnloaded();
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 
@@ -3716,12 +3722,15 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
     mapScene(scene);
     mapScene(sceneInterrupted);
 
+    expectVertexArrayUploaded(sceneInterrupted);
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
+
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
     // add blocking flush so that upcoming flushes are queuing up
     expectResourcesReferencedAndProvided({ MockResourceHash::IndexArrayHash2 }, sceneInterrupted);
     setRenderableResources(sceneInterrupted, MockResourceHash::IndexArrayHash2);
     reportResourceAs(MockResourceHash::IndexArrayHash2, EResourceStatus::Provided);
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getResourceDeviceHandle(MockResourceHash::IndexArrayHash2)).Times(AnyNumber()).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
     update();
 
     // flushes are blocked due to unresolved resource
@@ -3733,9 +3742,10 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfMaximumNumberOfPending
     // will force apply and log blocking resources
     EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getResourceType(_)).Times(AnyNumber());
     expectResourcesUnreferenced({ MockResourceHash::IndexArrayHash }, sceneInterrupted);
+    expectVertexArrayUnloaded(sceneInterrupted);
     for (UInt i = 0u; i < ForceApplyFlushesLimit + 1u; ++i)
     {
-        performFlush(sceneInterrupted);
+        performFlushWithCreateNodeAction(sceneInterrupted);
         update();
     }
 
@@ -4134,6 +4144,7 @@ TEST_F(ARendererSceneUpdater, reportsRecoveryAfterExpirationForSceneBeingFlushed
     createRenderableNoFlush(scene);
     performFlushWithExpiration(scene, expTS);
     reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
+    expectVertexArrayUploaded();
     update();
 
     for (UInt32 i = 0u; i < ForceApplyFlushesLimit / 2u; ++i)
@@ -4861,6 +4872,7 @@ TEST_F(ARendererSceneUpdater, propagatesGeneratedSceneReferenceActionsToSceneRef
     expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
     createRenderable();
     reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
+    expectVertexArrayUploaded();
     update();
     EXPECT_FALSE(lastFlushWasAppliedOnRendererScene());
 

@@ -8,7 +8,7 @@
 
 FIND_PACKAGE(PkgConfig QUIET)
 
-IF (${PKG_CONFIG_FOUND})
+IF (NOT WIN32 AND PKG_CONFIG_FOUND)
     SET(harfbuzz_minversion 1.2.7)
 
     PKG_CHECK_MODULES(freetype freetype2)

@@ -38,6 +38,8 @@ namespace ramses
         IFontInstance*          getFontInstance(FontInstanceId fontInstanceId) const;
 
         FontId                  createFreetype2Font(const char* fontPath);
+        FontId                  createFreetype2FontFromFileDescriptor(int fd, size_t offset, size_t length);
+
         FontInstanceId          createFreetype2FontInstance(FontId fontId, uint32_t size, bool forceAutohinting);
         FontInstanceId          createFreetype2FontInstanceWithHarfBuzz(FontId fontId, uint32_t size, bool forceAutohinting);
 
@@ -52,10 +54,11 @@ namespace ramses
     private:
         FontInstanceId  reserveFontInstanceId();
         void            registerFontInstance(FontInstanceId fontInstanceId, std::unique_ptr<IFontInstance> fontInstance);
+        FontId          createFreetype2FontCommon(std::unique_ptr<ramses_internal::FreetypeFontFace> face);
 
         SharedFTLibrary m_ft2Library;
 
-        std::unordered_map<FontId, std::unique_ptr<FreetypeFontFace>> m_fonts;
+        std::unordered_map<FontId, std::unique_ptr<ramses_internal::FreetypeFontFace>> m_fonts;
         FontId m_lastFontId{ 0u };
 
         using FontInstances = std::unordered_map<FontInstanceId, std::unique_ptr<IFontInstance>>;

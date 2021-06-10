@@ -223,7 +223,7 @@ namespace ramses
          *
          *          IMPORTANT: Expiration timestamp value is bound to current state of scene (once it is flushed) and for all subsequent flushes until changed again or disabled.
          *                     Once expiration timestamp is set to non-zero all subscribed renderers will periodically check it from that point on.
-         *                     User is responsible for calling this method to keep the expiration reasonably in future.
+         *                     User is responsible for calling this method to keep the expiration up-to-date during the lifecycle of the scene.
          *
          *          Setting the expiration timestamp to non-zero value enables the monitoring (#ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringEnabled),
          *          to disable the expiration monitoring set expiration timestamp to 0 followed by a flush.

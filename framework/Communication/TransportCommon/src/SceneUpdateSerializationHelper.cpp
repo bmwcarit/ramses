@@ -247,9 +247,10 @@ namespace ramses_internal
             is >> hash;
             ResourceSerializationHelper::DeserializedResourceHeader header =
                 ResourceSerializationHelper::ResourceFromMetadataStream(is);
-            std::unique_ptr<IResource> resource(header.resource);
+
             const size_t expectedDataSize = header.compressionStatus == EResourceCompressionStatus_Compressed ?
                 header.compressedSize : header.decompressedSize;
+
             if (data.size() != expectedDataSize)
             {
                 LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceSerialization::Deserialize: Expected resource size {} but got {}, compression state {}",
@@ -263,11 +264,11 @@ namespace ramses_internal
                 // any compressing on renderer side anyway.To implement correctly, we need to break network/file
                 // compatibility by serializing the IResource::CompressionLevel instead of EResourceCompressionStatus
                 if (header.compressionStatus == EResourceCompressionStatus_Compressed)
-                    resource->setCompressedResourceData(CompressedResourceBlob(data.size(), data.data()), IResource::CompressionLevel::Offline, header.decompressedSize, hash);
+                    header.resource->setCompressedResourceData(CompressedResourceBlob(data.size(), data.data()), IResource::CompressionLevel::Offline, header.decompressedSize, hash);
                 else
-                    resource->setResourceData(ResourceBlob(data.size(), data.data()), hash);
+                    header.resource->setResourceData(ResourceBlob(data.size(), data.data()), hash);
             }
-            return resource;
+            return std::move(header.resource);
         }
     }
 }

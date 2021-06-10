@@ -17,7 +17,6 @@ namespace ramses_internal
 {
     using StringVector = std::vector<String>;
     using StringSet = HashSet<String>;
-    struct ResourceContentHash;
 
     class StringUtils
     {
@@ -34,16 +33,16 @@ namespace ramses_internal
         * @param[in] string string to split
         * @param[out] tokens set of token strings
         */
-        static void Tokenize(const String& string, StringVector& tokens, const char split = ' ');
+        static std::vector<String> Tokenize(const String& string, const char split = ' ');
 
         /**
         * Split a string into separate tokens
         * @param[in] string string to split
         * @param[out] tokens set of token strings
         */
-        static void Tokenize(const String& string, StringSet& tokens, const char split = ' ');
+        static HashSet<String> TokenizeToSet(const String& string, const char split = ' ');
 
-        static void GetLineTokens(const ramses_internal::String& line, char split, std::vector<ramses_internal::String>& tokens);
+        static std::vector<String> TokenizeTrimmed(const ramses_internal::String& line, char split);
     };
 }
 

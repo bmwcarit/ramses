@@ -61,15 +61,13 @@ bool FileUtils::WriteHashToFile(ramses_internal::ResourceContentHash hash, const
 
 bool FileUtils::ReadFileLines(const char* filePath, std::vector<ramses_internal::String>& lines)
 {
-    lines.clear();
-
     ramses_internal::String contents;
     if (!ReadFileContentsToString(filePath, contents))
     {
         return false;
     }
 
-    ramses_internal::StringUtils::Tokenize(contents, lines, '\n');
+    lines = ramses_internal::StringUtils::Tokenize(contents, '\n');
     return true;
 }
 

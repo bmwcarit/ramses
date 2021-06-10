@@ -9,48 +9,49 @@
 #include "Utils/LogHelper.h"
 #include "Utils/LogMacros.h"
 #include "Utils/StringUtils.h"
+#include "absl/strings/ascii.h"
 
 
 namespace ramses_internal
 {
     namespace LogHelper
     {
-        bool StringToLogLevel(ramses_internal::String str, ELogLevel& logLevel)
+        bool StringToLogLevel(String str, ELogLevel& logLevel)
         {
-            str.toLowerCase();
+            str = absl::AsciiStrToLower(str);
             // Trim string because envvar on windows may have space(s) appended
             str = StringUtils::Trim(str.c_str());
-            if (str == ramses_internal::String("trace") || str == ramses_internal::String("6"))
+            if (str == "trace" || str == "6")
             {
                 logLevel = ELogLevel::Trace;
                 return true;
             }
-            else if (str == ramses_internal::String("debug") || str == ramses_internal::String("5"))
+            else if (str == "debug" || str == "5")
             {
                 logLevel = ELogLevel::Debug;
                 return true;
             }
-            else if (str == ramses_internal::String("info") || str == ramses_internal::String("4"))
+            else if (str == "info" || str == "4")
             {
                 logLevel = ELogLevel::Info;
                 return true;
             }
-            else if (str == ramses_internal::String("warn") || str == ramses_internal::String("3"))
+            else if (str == "warn" || str == "3")
             {
                 logLevel = ELogLevel::Warn;
                 return true;
             }
-            else if (str == ramses_internal::String("error") || str == ramses_internal::String("2"))
+            else if (str == "error" || str == "2")
             {
                 logLevel = ELogLevel::Error;
                 return true;
             }
-            else if (str == ramses_internal::String("fatal") || str == ramses_internal::String("1"))
+            else if (str == "fatal" || str == "1")
             {
                 logLevel = ELogLevel::Fatal;
                 return true;
             }
-            else if (str == ramses_internal::String("off") || str == ramses_internal::String("0"))
+            else if (str == "off" || str == "0")
             {
                 logLevel = ELogLevel::Off;
                 return true;
@@ -65,16 +66,16 @@ namespace ramses_internal
             UInt currentCommandStart = 0;
             do
             {
-                Int currentCommandEnd = filterCommand.find(',', currentCommandStart);
-                if (currentCommandEnd <= 0)
+                size_t currentCommandEnd = filterCommand.find(',', currentCommandStart);
+                if (currentCommandEnd == 0 || currentCommandEnd == String::npos)
                 {
                     // no more ',', so command goes until end of string
-                    currentCommandEnd = static_cast<int32_t>(filterCommand.size());
+                    currentCommandEnd = filterCommand.size();
                 }
-                const Int positionOfColon = filterCommand.find(':', currentCommandStart);
-                const Int lengthOfLogLevelString = positionOfColon - currentCommandStart;
-                if (lengthOfLogLevelString > 0)
+                const size_t positionOfColon = filterCommand.find(':', currentCommandStart);
+                if (positionOfColon != String::npos && currentCommandStart < positionOfColon)
                 {
+                    const Int lengthOfLogLevelString = positionOfColon - currentCommandStart;
                     const String logLevelStr = filterCommand.substr(currentCommandStart, lengthOfLogLevelString);
                     ELogLevel logLevel;
                     if (StringToLogLevel(logLevelStr, logLevel))

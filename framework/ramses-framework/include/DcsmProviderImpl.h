@@ -48,9 +48,11 @@ namespace ramses
         status_t requestContentFocus(ContentID contentID);
 
         status_t dispatchEvents(ramses::IDcsmProviderEventHandler& handler);
+        status_t dispatchEvents(ramses::IDcsmProviderEventHandlerExtended& handler);
 
         virtual void contentSizeChange(ContentID, const CategoryInfoUpdate&, AnimationInformation) override;
         virtual void contentStateChange(ContentID, ramses_internal::EDcsmState, const CategoryInfoUpdate&, AnimationInformation) override;
+        virtual void contentStatus(ContentID, std::unique_ptr<DcsmStatusMessageImpl>&&) override;
 
     private:
         struct DcsmProviderMapContent
@@ -68,6 +70,7 @@ namespace ramses
 
         ramses_internal::IDcsmComponent& m_dcsm;
         ramses::IDcsmProviderEventHandler* m_handler = nullptr;
+        ramses::IDcsmProviderEventHandlerExtended* m_msgHandler = nullptr;
 
         std::unordered_map<ramses::ContentID, DcsmProviderMapContent> m_contents;
     };

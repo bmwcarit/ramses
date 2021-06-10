@@ -45,6 +45,7 @@ namespace ramses_internal
         virtual void reserveResourceCount(uint32_t) override {};
         MOCK_METHOD(ManagedResourceVector, resolveResources, (ResourceContentHashVector& vec), (override));
         MOCK_METHOD(ResourceInfo const&, getResourceInfo, (ResourceContentHash const& hash), (override));
+        MOCK_METHOD(bool, knowsResource, (ResourceContentHash const& hash), (const, override));
     };
 
     class SceneGraphProviderComponentMock : public ISceneGraphProviderComponent

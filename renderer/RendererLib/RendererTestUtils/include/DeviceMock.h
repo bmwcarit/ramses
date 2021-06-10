@@ -68,11 +68,12 @@ namespace ramses_internal
         MOCK_METHOD(DeviceResourceHandle, allocateVertexBuffer, (UInt32), (override));
         MOCK_METHOD(void, uploadVertexBufferData, (DeviceResourceHandle, const Byte*, UInt32), (override));
         MOCK_METHOD(void, deleteVertexBuffer, (DeviceResourceHandle), (override));
-        MOCK_METHOD(void, activateVertexBuffer, (DeviceResourceHandle, DataFieldHandle, UInt32, UInt32, EDataType, UInt16, UInt16), (override));
+        MOCK_METHOD(DeviceResourceHandle, allocateVertexArray, (const VertexArrayInfo&), (override));
+        MOCK_METHOD(void, activateVertexArray, (DeviceResourceHandle handle), (override));
+        MOCK_METHOD(void, deleteVertexArray, (DeviceResourceHandle handle), (override));
         MOCK_METHOD(DeviceResourceHandle, allocateIndexBuffer, (EDataType, UInt32), (override));
         MOCK_METHOD(void, uploadIndexBufferData, (DeviceResourceHandle, const Byte*, UInt32), (override));
         MOCK_METHOD(void, deleteIndexBuffer, (DeviceResourceHandle), (override));
-        MOCK_METHOD(void, activateIndexBuffer, (DeviceResourceHandle), (override));
 
         MOCK_METHOD(std::unique_ptr<const GPUResource>, uploadShader, (const EffectResource&), (override));
         MOCK_METHOD(DeviceResourceHandle, registerShader, (std::unique_ptr<const GPUResource>), (override));
@@ -121,6 +122,7 @@ namespace ramses_internal
         static const DeviceResourceHandle FakeShaderDeviceHandle                 ;
         static const DeviceResourceHandle FakeVertexBufferDeviceHandle           ;
         static const DeviceResourceHandle FakeIndexBufferDeviceHandle            ;
+        static const DeviceResourceHandle FakeVertexArrayDeviceHandle            ;
         static const DeviceResourceHandle FakeTextureDeviceHandle                ;
         static const DeviceResourceHandle FakeFrameBufferRenderTargetDeviceHandle;
         static const DeviceResourceHandle FakeRenderTargetDeviceHandle           ;

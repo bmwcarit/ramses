@@ -15,6 +15,7 @@
 #include "Utils/LogMacros.h"
 #include "RamsesFrameworkTypesImpl.h"
 #include "PlatformAbstraction/Macros.h"
+#include "DcsmStatusMessageImpl.h"
 
 namespace ramses
 {
@@ -179,6 +180,18 @@ namespace ramses
     status_t DcsmProviderImpl::dispatchEvents(ramses::IDcsmProviderEventHandler& handler)
     {
         m_handler = &handler;
+        m_msgHandler = nullptr;
+        if (!m_dcsm.dispatchProviderEvents(*this))
+            return addErrorEntry("DcsmProvider::dispatchEvents failed, failure to call dispatchEvents on component.");
+
+        // we might want to reset the handler again here, but it makes testing way more difficult and I don't think it is necessary
+        return StatusOK;
+    }
+
+    status_t DcsmProviderImpl::dispatchEvents(ramses::IDcsmProviderEventHandlerExtended& handler)
+    {
+        m_handler = &handler;
+        m_msgHandler = &handler;
         if (!m_dcsm.dispatchProviderEvents(*this))
             return addErrorEntry("DcsmProvider::dispatchEvents failed, failure to call dispatchEvents on component.");
 
@@ -263,5 +276,20 @@ namespace ramses
         }
 
         content.status = state;
+    }
+
+    void DcsmProviderImpl::contentStatus(ContentID content, std::unique_ptr<DcsmStatusMessageImpl>&& message)
+    {
+        if (!m_msgHandler)
+        {
+            LOG_WARN(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStatus: received DcsmStatusMessage but ignored it because no suitable handler provided.");
+            return;
+        }
+
+        auto msg = DcsmStatusMessageImpl::CreateMessage(std::move(message));
+        if (msg)
+            m_msgHandler->contentStatus(content, *msg);
+        else
+            LOG_ERROR(ramses_internal::CONTEXT_DCSM, "DcsmProvider::contentStatus: callback triggered for unknown DCSM status message, ignoring.");
     }
 }

@@ -46,6 +46,7 @@ namespace ramses_internal
 
     void ResourceBase::compress(CompressionLevel level) const
     {
+        std::unique_lock<std::mutex> l(m_compressionLock);
         if (level > m_currentCompression &&
             m_data.size() > 1000) // only compress if it pays off
         {
@@ -61,6 +62,7 @@ namespace ramses_internal
 
     void ResourceBase::decompress() const
     {
+        std::unique_lock<std::mutex> l(m_compressionLock);
         if (!m_data.data())
         {
             assert(m_compressedData.data());

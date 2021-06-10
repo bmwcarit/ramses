@@ -71,7 +71,6 @@ namespace ramses_internal
         constexpr Float dot(const Vector4& other) const;
         constexpr Vector4 cross(const Vector4& other) const;
         Float length() const;
-        Float angle(const Vector4& other) const; ///< in radians
 
         friend constexpr Vector4 operator*(const Float scalar, const Vector4&);
     };
@@ -234,11 +233,6 @@ namespace ramses_internal
         y /= scalar;
         z /= scalar;
         w /= scalar;
-    }
-
-    inline Float Vector4::angle(const Vector4& other) const
-    {
-        return std::acos(dot(other) / (length() * other.length()));
     }
 
     inline

@@ -16,6 +16,7 @@ namespace ramses
 {
     class IDcsmConsumerEventHandler;
     class CategoryInfoUpdate;
+    class DcsmStatusMessage;
 
     class IDcsmConsumerImpl
     {
@@ -27,6 +28,7 @@ namespace ramses
         virtual status_t contentSizeChange(ContentID contentID, const CategoryInfoUpdate& size, AnimationInformation animationInformation) = 0;
         virtual status_t contentStateChange(ContentID contentID, EDcsmState status, AnimationInformation animationInformation) = 0;
         virtual status_t acceptStopOffer(ContentID contentID, AnimationInformation animationInformation) = 0;
+        virtual status_t sendContentStatus(ContentID contentID, DcsmStatusMessage const& message) = 0;
     };
 }
 

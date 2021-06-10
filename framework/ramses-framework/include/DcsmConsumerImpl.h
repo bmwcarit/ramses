@@ -30,6 +30,7 @@ namespace ramses
         virtual status_t contentSizeChange(ContentID contentID, const CategoryInfoUpdate& size, AnimationInformation animationInformation) override;
         virtual status_t contentStateChange(ContentID contentID, EDcsmState status, AnimationInformation animationInformation) override;
         virtual status_t acceptStopOffer(ContentID contentID, AnimationInformation animationInformation) override;
+        virtual status_t sendContentStatus(ContentID contentID, DcsmStatusMessage const& message) override;
 
     private:
         ramses_internal::DcsmComponent& m_component;

@@ -83,12 +83,14 @@ namespace ramses_internal
         virtual DeviceResourceHandle    allocateVertexBuffer        (UInt32 totalSizeInBytes) = 0;
         virtual void                    uploadVertexBufferData      (DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) = 0;
         virtual void                    deleteVertexBuffer          (DeviceResourceHandle handle) = 0;
-        virtual void                    activateVertexBuffer        (DeviceResourceHandle handle, DataFieldHandle field, UInt32 instancingDivisor, UInt32 startVertex, EDataType bufferDataType, UInt16 offsetWithinElement, UInt16 stride) = 0;
 
         virtual DeviceResourceHandle    allocateIndexBuffer         (EDataType dataType, UInt32 sizeInBytes) = 0;
         virtual void                    uploadIndexBufferData       (DeviceResourceHandle handle, const Byte* data, UInt32 dataSize) = 0;
         virtual void                    deleteIndexBuffer           (DeviceResourceHandle handle) = 0;
-        virtual void                    activateIndexBuffer         (DeviceResourceHandle handle) = 0;
+
+        virtual DeviceResourceHandle    allocateVertexArray         (const VertexArrayInfo& vertexArrayInfo) = 0;
+        virtual void                    activateVertexArray         (DeviceResourceHandle handle) = 0;
+        virtual void                    deleteVertexArray           (DeviceResourceHandle handle) = 0;
 
         virtual std::unique_ptr<const GPUResource> uploadShader     (const EffectResource& effect) = 0;
         virtual DeviceResourceHandle    registerShader              (std::unique_ptr<const GPUResource> shaderResource) = 0;

@@ -10,6 +10,7 @@
 #include "Components/FileInputStreamContainer.h"
 #include "Components/MemoryInputStreamContainer.h"
 #include "Components/OffsetFileInputStreamContainer.h"
+#include "FileDescriptorHelper.h"
 #include "gtest/gtest.h"
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -65,7 +66,7 @@ namespace ramses_internal
             EXPECT_TRUE(f.write(dataW.data(), dataW.size()));
         }
 
-        const int fd = ::open("test.bin", O_RDONLY);
+        const int fd = FileDescriptorHelper::OpenFileDescriptorBinary("test.bin");
         OffsetFileInputStreamContainer is(fd, 1, 3);
         std::array<Byte, 3> dataR = {0};
         is.getStream().read(dataR.data(), dataR.size());

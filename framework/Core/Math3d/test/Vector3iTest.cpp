@@ -145,28 +145,11 @@ TEST_F(Vector3iTest, Dot)
     EXPECT_EQ(32, scalar);
 }
 
-TEST_F(Vector3iTest, Cross)
-{
-    ramses_internal::Vector3i vec2(-7, 8, 9);
-    ramses_internal::Vector3i vec3 = vec1.cross(vec2);
-    EXPECT_EQ(-6 , vec3.x);
-    EXPECT_EQ(-30, vec3.y);
-    EXPECT_EQ(22 , vec3.z);
-}
-
 TEST_F(Vector3iTest, Length)
 {
     ramses_internal::Vector3i vec2(2, 4, 4);
     ramses_internal::Float length = vec2.length();
     EXPECT_FLOAT_EQ(6, length);
-}
-
-TEST_F(Vector3iTest, Angle)
-{
-    ramses_internal::Vector3i vec2(1, 0, 0);
-    ramses_internal::Vector3i vec3(0, 1, 0);
-    ramses_internal::Float angle = ramses_internal::PlatformMath::Rad2Deg(vec2.angle(vec3));
-    EXPECT_FLOAT_EQ(90, angle);
 }
 
 TEST_F(Vector3iTest, Equality)

@@ -60,4 +60,11 @@ namespace ramses
         return result;
     }
 
+    ramses::status_t DcsmConsumer::sendContentStatus(ContentID contentID, DcsmStatusMessage const& message)
+    {
+        const status_t result = impl.sendContentStatus(contentID, message);
+        LOG_HL_CLIENT_API2(result, contentID, LOG_API_GENERIC_OBJECT_STRING(message));
+        return result;
+    }
+
 }

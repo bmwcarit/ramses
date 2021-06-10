@@ -12,6 +12,7 @@
 #include "Collections/Vector.h"
 #include "ManagedResource.h"
 #include "Collections/Pair.h"
+#include <memory>
 
 namespace ramses_internal
 {
@@ -26,8 +27,8 @@ namespace ramses_internal
         static void WriteNamedResourcesWithTOCToStream(BinaryFileOutputStream& outStream, const ManagedResourceVector& resourcesForFile, bool compress);
         static void WriteOneResourceToStream(IOutputStream& outStream, const ManagedResource& resource);
 
-        static IResource* ReadOneResourceFromStream(IInputStream& inStream, const ResourceContentHash& hash);
-        static IResource* RetrieveResourceFromStream(IInputStream& inStream, const ResourceFileEntry& entry);
+        static std::unique_ptr<IResource> ReadOneResourceFromStream(IInputStream& inStream, const ResourceContentHash& hash);
+        static std::unique_ptr<IResource> RetrieveResourceFromStream(IInputStream& inStream, const ResourceFileEntry& entry);
     };
 }
 

@@ -18,6 +18,7 @@
 #include "InplaceStringTokenizer.h"
 #include "Utils/ArgumentBool.h"
 #include "PlatformAbstraction/Macros.h"
+#include "absl/strings/match.h"
 
 namespace ramses_internal
 {
@@ -198,7 +199,7 @@ namespace ramses_internal
     template<>
     inline void Argument<Vector3>::interpretValue(const String& valueString)
     {
-        if (valueString.startsWith("[") && valueString.endsWith("]"))
+        if (absl::StartsWith(valueString, "[") && absl::EndsWith(valueString, "]"))
         {
             auto withoutBrackets = valueString.substr(1, valueString.size() - 2);
 
