@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -141,6 +141,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ae3b28f371bf659543c373c66637a520b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmContentControl.html#ae3b28f371bf659543c373c66637a520b">update</a> (uint64_t timeStampNow, <a class="el" href="classramses_1_1IDcsmContentControlEventHandler.html">IDcsmContentControlEventHandler</a> &amp;eventHandler)</td></tr>
 <tr class="memdesc:ae3b28f371bf659543c373c66637a520b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Do one update cycle which flushes any pending commands, dispatches events from both Dcsm and renderer's scene control and executes any scheduled operations to be done at given time.  <a href="classramses_1_1DcsmContentControl.html#ae3b28f371bf659543c373c66637a520b">More...</a><br /></td></tr>
 <tr class="separator:ae3b28f371bf659543c373c66637a520b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6c5821c16d858f5b3c91926aa17e61f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmContentControl.html#ae6c5821c16d858f5b3c91926aa17e61f">sendContentStatus</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, <a class="el" href="classramses_1_1DcsmStatusMessage.html">DcsmStatusMessage</a> const &amp;message)</td></tr>
+<tr class="memdesc:ae6c5821c16d858f5b3c91926aa17e61f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a message to the provider of the content assigned to this content control.  <a href="classramses_1_1DcsmContentControl.html#ae6c5821c16d858f5b3c91926aa17e61f">More...</a><br /></td></tr>
+<tr class="separator:ae6c5821c16d858f5b3c91926aa17e61f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75b44b5692b3bf660e7b65da496d86e1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmContentControl.html#a75b44b5692b3bf660e7b65da496d86e1">DcsmContentControl</a> ()=delete</td></tr>
 <tr class="memdesc:a75b44b5692b3bf660e7b65da496d86e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deleted default constructor.  <a href="classramses_1_1DcsmContentControl.html#a75b44b5692b3bf660e7b65da496d86e1">More...</a><br /></td></tr>
 <tr class="separator:a75b44b5692b3bf660e7b65da496d86e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -765,6 +768,44 @@ RequestTimeout</h1>
 
 </div>
 </div>
+<a id="ae6c5821c16d858f5b3c91926aa17e61f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae6c5821c16d858f5b3c91926aa17e61f">&#9670;&nbsp;</a></span>sendContentStatus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::DcsmContentControl::sendContentStatus </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a>&#160;</td>
+          <td class="paramname"><em>contentID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classramses_1_1DcsmStatusMessage.html">DcsmStatusMessage</a> const &amp;&#160;</td>
+          <td class="paramname"><em>message</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Send a message to the provider of the content assigned to this content control. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">contentID</td><td>Content for which the message should be sent. </td></tr>
+    <tr><td class="paramname">message</td><td>An implementation of <a class="el" href="classramses_1_1DcsmStatusMessage.html" title="The base class of a message to be sent from DCSM consumer to provider.">DcsmStatusMessage</a>, containing data to be carried to the provider.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
 <a id="a43101621107f973ba858bc3b96bd44d8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a43101621107f973ba858bc3b96bd44d8">&#9670;&nbsp;</a></span>setCategoryInfo()</h2>
 
@@ -970,7 +1011,7 @@ RequestTimeout</h1>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/c/src/mirror/renderer/RendererLib/ramses-renderer-api/include/ramses-renderer-api/<a class="el" href="DcsmContentControl_8h_source.html">DcsmContentControl.h</a></li>
+<li>/c/src/genivi/renderer/RendererLib/ramses-renderer-api/include/ramses-renderer-api/<a class="el" href="DcsmContentControl_8h_source.html">DcsmContentControl.h</a></li>
 </ul>
 </div><!-- contents -->
 <div class="ttc" id="aclassramses_1_1DcsmContentControl_html_ae3b28f371bf659543c373c66637a520b"><div class="ttname"><a href="classramses_1_1DcsmContentControl.html#ae3b28f371bf659543c373c66637a520b">ramses::DcsmContentControl::update</a></div><div class="ttdeci">status_t update(uint64_t timeStampNow, IDcsmContentControlEventHandler &amp;eventHandler)</div><div class="ttdoc">Do one update cycle which flushes any pending commands, dispatches events from both Dcsm and renderer...</div></div>

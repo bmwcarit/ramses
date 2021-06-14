@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -111,6 +111,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7edf660e262483ae434501bdd60f8ae0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmConsumer.html#a7edf660e262483ae434501bdd60f8ae0">acceptStopOffer</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, <a class="el" href="structramses_1_1AnimationInformation.html">AnimationInformation</a> animationInformation)</td></tr>
 <tr class="memdesc:a7edf660e262483ae434501bdd60f8ae0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept a provider requesting to stop offering a content assigned to this consumer. May only be called as an answer to contentStopOfferRequest callback. The content may not be used after the given animation time any longer and also may not be assigned again until offered again.  <a href="classramses_1_1DcsmConsumer.html#a7edf660e262483ae434501bdd60f8ae0">More...</a><br /></td></tr>
 <tr class="separator:a7edf660e262483ae434501bdd60f8ae0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5283d0fc62638949a0a3dabecb41079"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmConsumer.html#aa5283d0fc62638949a0a3dabecb41079">sendContentStatus</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, <a class="el" href="classramses_1_1DcsmStatusMessage.html">DcsmStatusMessage</a> const &amp;message)</td></tr>
+<tr class="memdesc:aa5283d0fc62638949a0a3dabecb41079"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a message to the provider of the content assigned to this consumer.  <a href="classramses_1_1DcsmConsumer.html#aa5283d0fc62638949a0a3dabecb41079">More...</a><br /></td></tr>
+<tr class="separator:aa5283d0fc62638949a0a3dabecb41079"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d18b8aa422aa36f2024a98693c4323b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmConsumer.html#a8d18b8aa422aa36f2024a98693c4323b">DcsmConsumer</a> ()=delete</td></tr>
 <tr class="memdesc:a8d18b8aa422aa36f2024a98693c4323b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deleted default constructor.  <a href="classramses_1_1DcsmConsumer.html#a8d18b8aa422aa36f2024a98693c4323b">More...</a><br /></td></tr>
 <tr class="separator:a8d18b8aa422aa36f2024a98693c4323b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -516,6 +519,44 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<a id="aa5283d0fc62638949a0a3dabecb41079"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa5283d0fc62638949a0a3dabecb41079">&#9670;&nbsp;</a></span>sendContentStatus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::DcsmConsumer::sendContentStatus </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a>&#160;</td>
+          <td class="paramname"><em>contentID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classramses_1_1DcsmStatusMessage.html">DcsmStatusMessage</a> const &amp;&#160;</td>
+          <td class="paramname"><em>message</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Send a message to the provider of the content assigned to this consumer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">contentID</td><td>Content for which the message should be sent. </td></tr>
+    <tr><td class="paramname">message</td><td>An implementation of <a class="el" href="classramses_1_1DcsmStatusMessage.html" title="The base class of a message to be sent from DCSM consumer to provider.">DcsmStatusMessage</a>, containing data to be carried to the provider.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="a283001f34595040ae8b89c79009a38da"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a283001f34595040ae8b89c79009a38da">&#9670;&nbsp;</a></span>impl</h2>
@@ -533,7 +574,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/c/src/mirror/framework/ramses-framework-api/include/ramses-framework-api/<a class="el" href="DcsmConsumer_8h_source.html">DcsmConsumer.h</a></li>
+<li>/c/src/genivi/framework/ramses-framework-api/include/ramses-framework-api/<a class="el" href="DcsmConsumer_8h_source.html">DcsmConsumer.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

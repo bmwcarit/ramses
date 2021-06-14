@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RAMSES Documentation: General Overview</title>
+<title>RAMSES Documentation: Ramses concepts</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -65,47 +65,59 @@ $(function() {
 </div><!-- top -->
 <div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">General Overview </div>  </div>
+<div class="title">Ramses concepts </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md100"></a>
-Content</h1>
-<p>This document contains the overview of the RAMSES components, API and usecases. The SDK offers an object-oriented API for application development using the RAMSES framework. This API provides a full-featured 3D content scene graph with all required primitives and relations, as well as API for rendering content from distributed sources.</p>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md86"></a>
+Overview</h1>
+<p>Ramses is a framework for distributed rendering of 3D content. It was initially created to visualize 3D scenes across different devices in the car which are reachable over a network. Ramses was developed by the BMW Group and published as an open source software under the MPL 2.0 license under the GENIVI Alliance umbrella.</p>
+<h1><a class="anchor" id="autotoc_md87"></a>
+Components</h1>
+<p>RAMSES consists of three logical components:</p><ul>
+<li>client (creates and publishes 3D content)</li>
+<li>renderer (consumes and displays)</li>
+<li>daemon (global address broker, exchanges connection info between clients and renderers in case the underlying communication is TCP)</li>
+</ul>
+<p>These components can be deployed as separate applications and communicate over network, or can be all used in a local rendering setup (within a monolithic application) - or in various hybrid combinations.</p>
+<h2><a class="anchor" id="autotoc_md88"></a>
+The Client component</h2>
+<p>Clients create scenes and manage their content, but cannot decide if and where a scene is shown (similar to a video stream which provides the video, but anyone can subscribe to it). For details on the various features of the Client API, see the following sections:</p>
 <ul>
 <li><a class="el" href="ClientAPI.html">RAMSES Client API</a></li>
 <li><a class="el" href="Validation.html">RAMSES Validation</a></li>
 <li><a class="el" href="Resources.html">RAMSES Resources</a></li>
 <li><a class="el" href="Effects.html">RAMSES Effects and Binary Shaders</a></li>
 <li><a class="el" href="TextRendering.html">RAMSES Rendering of Text</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md89"></a>
+The Renderer component</h2>
+<p>Renderers act as content consumers, they can subscribe to content changes from clients and show it on screen. Renderers cannot change scene content directly, but can control when a scene is shown/hidden, in special cases can render off screen (<a class="el" href="OffscreenBuffers.html">RAMSES Offscreen Buffers</a>) and link certain types of data across scenes.</p>
+<p>For details on the various aspects of the Renderer, see the following sections:</p>
+<ul>
 <li><a class="el" href="RendererAPI.html">RAMSES Renderer API</a></li>
 <li><a class="el" href="OffscreenBuffers.html">RAMSES Offscreen Buffers</a></li>
-<li><a class="el" href="CodeExamples.html">Exemplary API snippets</a></li>
 <li><a class="el" href="ContentExpiration.html">RAMSES Content Expiration and Time Limited Validity of Content</a></li>
-<li><a class="el" href="DCSMProtocol.html">The Display Cluster State Management Protocol</a></li>
-<li><a class="el" href="SceneReferencing.html">Scene Referencing and DCSM</a></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md101"></a>
-RAMSES&gt; - Rendering Architecture for Multi-Screen EnvironmentS</h1>
-<p>RAMSES is a framework for distributed rendering of 3D content. It was created to enable future automotive use cases with application content being rendered on any display that is available in the car.</p>
-<p>The RAMSES concept also extends to different kinds of displays and can be used for seamless CE-Device or Backend Services integration, augmented and virtual reality rendering.</p>
-<h1><a class="anchor" id="autotoc_md102"></a>
-Components</h1>
-<p>RAMSES consists of three fundamental components:</p><ul>
-<li>client (the instance creating 3D content)</li>
-<li>renderer (the instance which rasterizes images and shows them on displays)</li>
-<li>daemon (global address broker, exchanges connection info between clients and renderers in case the underlying communication is TCP)</li>
-</ul>
-<p>There can only be one daemon (when TCP communication is used), but arbitrary number of client and renderer instances. The daemon only "broadcasts" the existence of clients and renderers to each other (providers and consumers of scenes, respectively). The role of the ramses daemon is usually taken over by other means in other communication middlewares.</p>
-<p>Clients create scenes and manage their content, but cannot decide if and where a scene is shown (similar to a video stream which provides the video, but anyone can subscribe to it). Renderers act as content consumers and can subscribe to scenes from clients and show them. Renderers can not change scene content, but can change where and how a scene is shown - for example can show two scenes in split screen, or blend one scene on top of another, in special cases can link data across scenes.</p>
-<h1><a class="anchor" id="autotoc_md103"></a>
-Example</h1>
-<p>In a very simplified example, a client instance (e.g. the Navigation process) will create a 3D scene and "publish" it within the connected RAMSES applications (e.g. the renderer of each HMI). These renderers will "subscribe" to the published scene and show it on the screen.</p>
-<h1><a class="anchor" id="autotoc_md104"></a>
-Component deployment and communication</h1>
-<p>The three RAMSES components (client, renderer, daemon) can all live in the same process, or can be deployed across different processes or even different hardware units. Depending on the concrete deployment, RAMSES will use different communication channels to send data from the client to the renderer. If the client and renderer are in the same process, they will not use any network communication, but will exchange data over local memory. If the client and renderer are not in the same process, the connection will be established over a network protocol (TCP by default).</p>
-<h1><a class="anchor" id="autotoc_md105"></a>
-Embedded compositing</h1>
-<p>In addition to distributing 3D scenes, RAMSES can composit other OpenGL native applications using the Wayland protocol. The Wayland protocol, when supported natively by the graphics drivers, enables efficient compositing of 2D images with zero copy (i.e. no pixel buffers are copied throughout the system unless when directly rendered to the screen). In the RAMSES case, it is called "embedded compositing" because the RAMSES renderer is itself composited into the system compositor. Thus, applications which connect to RAMSES via Wayland are "embedded" into the RAMSES renderer, which is in turn "embedded" into the system compositor final rendering. For more details regarding embedded compositing see the documentation page dedicated to it. </p>
+<h2><a class="anchor" id="autotoc_md90"></a>
+The Daemon component</h2>
+<p>In TCP-based a network deployment, the daemon "broadcasts" the existence of clients and renderers to each other (providers and consumers of scenes, respectively). This allows clients and renderers connected to the same daemon to find each other. After this initial discovery the communication is via a direct connection between to the clients and renderers.</p>
+<p>Other communication middlewares normally include a discovery mechanism already and make the ramses daemon superfluous.</p>
+<p>In a purely local rendering setup where the only clients and renderers are within a single process the daemon is normally also not needed.</p>
+<h2><a class="anchor" id="autotoc_md91"></a>
+Component deployment and communication</h2>
+<p>The three RAMSES components (client, renderer, daemon) can all live in the same process, or can be deployed across different processes or even different hardware units. Depending on the concrete deployment, Ramses will use different communication channels to send data from the client to the renderer. If the client and renderer are in the same process, they will not use any network communication, but will exchange data over local memory. If the client and renderer are not in the same process, the connection will be established over a network protocol (TCP by default).</p>
+<h1><a class="anchor" id="autotoc_md92"></a>
+Advanced concepts</h1>
+<p>Ramses offers some additional features and concepts which are specific to distributed rendering and designed to make it easier to share, link, composit visually demanding content in a environment with strict timing and performance constraints.</p>
+<h2><a class="anchor" id="autotoc_md93"></a>
+The DCSM protocol</h2>
+<p>The DCSM (Display Cluster State Management) is an additional protocol and API layer which resides both on the client and the renderer components. It is designed to give a fine-grained control over the state of content other than just showing and hiding it. See <a class="el" href="DCSMProtocol.html">the section on DCSM</a> for a general overview of the DCSM features. The <a class="el" href="SceneReferencing.html">scene referencing</a> explains how to let scenes reference other scenes and control their state remotely.</p>
+<h2><a class="anchor" id="autotoc_md94"></a>
+Compositing</h2>
+<p>In addition to distributing 3D scenes, Ramses can composite other OpenGL native applications using the Wayland protocol. The Wayland protocol enables efficient compositing of 2D images with zero copy (i.e. no pixel buffers are copied throughout the system unless when directly rendered to the screen). In the RAMSES case, it is called "embedded compositing" because the RAMSES renderer is itself composited into the system compositor. Thus, applications which connect to RAMSES via Wayland are "embedded" into the RAMSES renderer, which is in turn "embedded" into the system compositor final rendering. For more details regarding embedded compositing visit the <a class="el" href="EmbCompMain.html">documentation page</a> dedicated to it.</p>
+<h1><a class="anchor" id="autotoc_md95"></a>
+Examples</h1>
+<p>If you prefer to see code instead of reading diagrams and concepts - consider looking at the <a class="el" href="CodeExamples.html">code examples</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->

@@ -1,0 +1,4 @@
+<map id="ramses::DcsmStatusMessage" name="ramses::DcsmStatusMessage">
+<area shape="rect" id="node1" title="The base class of a message to be sent from DCSM consumer to provider." alt="" coords="10,5,225,32"/>
+<area shape="rect" id="node2" href="$classramses_1_1StreamStatusMessage.html" title="A message containing a stream status." alt="" coords="5,80,229,107"/>
+</map>

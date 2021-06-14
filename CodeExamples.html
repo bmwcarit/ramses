@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -68,14 +68,14 @@ $(function() {
 <div class="title">Exemplary API snippets </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md138"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md128"></a>
 RAMSES API Usage by Example</h1>
 <p>Note: The following example code snippets</p><ul>
 <li>omit error checking to keep code snippets small</li>
 <li>do not represent full applications</li>
 </ul>
 <p>The full source code of the examples is available in examples section of this document.</p>
-<h2><a class="anchor" id="autotoc_md139"></a>
+<h2><a class="anchor" id="autotoc_md129"></a>
 Minimal</h2>
 <p>This client implements the minimal requirements for a client to provide content within the RAMSES distributed system. </p><div class="fragment"><div class="line">    <span class="comment">// register at RAMSES daemon</span></div>
 <div class="line">    <a class="code" href="classramses_1_1RamsesFramework.html">ramses::RamsesFramework</a> framework(argc, argv);</div>
@@ -105,7 +105,7 @@ Minimal</h2>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// disconnect from RAMSES daemon</span></div>
 <div class="line">    framework.disconnect();</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md140"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md130"></a>
 Basic Geometry</h2>
 <p>This code creates a simple geometry. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -142,7 +142,7 @@ Basic Geometry</h2>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered</span></div>
 <div class="line">    renderGroup-&gt;addMeshNode(*meshNode);</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md141"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md131"></a>
 Basic Scene Graph</h2>
 <p>This code creates a simple scene graph with multiple nodes. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -165,7 +165,7 @@ Basic Scene Graph</h2>
 <div class="line">            renderGroup-&gt;addMeshNode(*meshNode);</div>
 <div class="line">        }</div>
 <div class="line">    }</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md142"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md132"></a>
 Basic Animation</h2>
 <p>This code creates a simple animation of a color of an appearance. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -228,7 +228,7 @@ Basic Animation</h2>
 <div class="line"> </div>
 <div class="line">        std::this_thread::sleep_for(std::chrono::milliseconds(20));</div>
 <div class="line">    }</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md143"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md133"></a>
 Basic Realtime Animation</h2>
 <p>This code creates a simple realtime animation sequence with three triangles. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -319,7 +319,7 @@ Basic Realtime Animation</h2>
 <div class="line"> </div>
 <div class="line">        std::this_thread::sleep_for(std::chrono::milliseconds(10));</div>
 <div class="line">    }</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md144"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md134"></a>
 Basic Texturing</h2>
 <p>This code creates a simple scene demonstrating basic usage of textures. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -373,7 +373,7 @@ Basic Texturing</h2>
 <div class="line">    meshNode-&gt;<a class="code" href="classramses_1_1MeshNode.html#abf97e76c45b196bc3ee0eea5fac8032e">setGeometryBinding</a>(*geometry);</div>
 <div class="line">    <span class="comment">// mesh needs to be added to a render group that belongs to a render pass with camera in order to be rendered</span></div>
 <div class="line">    renderGroup-&gt;addMeshNode(*meshNode);</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md145"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md135"></a>
 Basic Blending</h2>
 <p>This code creates a simple scene consisting of three triangles with alpha blending. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -401,7 +401,7 @@ Basic Blending</h2>
 <div class="line">    renderGroup-&gt;addMeshNode(*meshNodeRed, 0);</div>
 <div class="line">    renderGroup-&gt;addMeshNode(*meshNodeGreen, 1);</div>
 <div class="line">    renderGroup-&gt;addMeshNode(*meshNodeBlue, 2);</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md146"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md136"></a>
 Basic GLSL Import</h2>
 <p>This code creates an appearance by importing GLSL ES 2.0 shader code files. The appearance is then used to render a simple geometry. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -439,7 +439,7 @@ Basic GLSL Import</h2>
 <div class="line">    effect-&gt;<a class="code" href="classramses_1_1Effect.html#a991b1b19203b657810f0c5917e213ad7">findUniformInput</a>(<span class="stringliteral">&quot;color&quot;</span>, colorInput);</div>
 <div class="line">    appearance-&gt;<a class="code" href="classramses_1_1Appearance.html#a5b29e6be97053f2a3aae5216806018f6">setInputValueVector4f</a>(colorInput, 0.1f, 0.5f, 0.2f, 1.0);</div>
 <div class="line"> </div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md147"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md137"></a>
 Basic Render Groups Handling</h2>
 <p>This code shows the usage of (nested) render groups. Render groups are containing renderables which are rendered within the render pass the render group is added to. The renderables inside one render group have an order in which they are rendered. A render group can also contain other nested render groups with their renderables. The example shows a render group containing two elements, a mesh and a nested render group with two further meshes. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -508,7 +508,7 @@ Basic Render Groups Handling</h2>
 <div class="line">    nestedRenderGroup-&gt;<a class="code" href="classramses_1_1RenderGroup.html#a78df5ac3c86bb456a5e7a62d76a60b12">addMeshNode</a>(*meshNodeB, 2);</div>
 <div class="line">    nestedRenderGroup-&gt;<a class="code" href="classramses_1_1RenderGroup.html#a78df5ac3c86bb456a5e7a62d76a60b12">addMeshNode</a>(*meshNodeC, 1);</div>
 <div class="line"> </div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md148"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md138"></a>
 Render Pass and Camera Setup</h2>
 <p>This code shows the usage of renderpasses and cameras. Each renderpass needs to have a valid camera assigned. The example creates two renderpasses, each with a camera using different projection and viewport parameters. In order for a mesh to be rendered it must be added to a renderpass. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -574,7 +574,7 @@ Render Pass and Camera Setup</h2>
 <div class="line">    renderGroupA-&gt;<a class="code" href="classramses_1_1RenderGroup.html#a78df5ac3c86bb456a5e7a62d76a60b12">addMeshNode</a>(*meshNodeA);</div>
 <div class="line">    renderGroupB-&gt;<a class="code" href="classramses_1_1RenderGroup.html#a78df5ac3c86bb456a5e7a62d76a60b12">addMeshNode</a>(*meshNodeB);</div>
 <div class="line"> </div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md149"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md139"></a>
 Basic Render Target Handling</h2>
 <p>This code shows the usage of a render target in combination with render passes. A render target can be assigned to a render pass, so the pass renders its meshes into a render target. The render target can be then used as texture input in a following render pass. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -675,7 +675,7 @@ Basic Render Target Handling</h2>
 <div class="line">    renderGroupA-&gt;<a class="code" href="classramses_1_1RenderGroup.html#a78df5ac3c86bb456a5e7a62d76a60b12">addMeshNode</a>(*meshNodeA);</div>
 <div class="line">    renderGroupB-&gt;<a class="code" href="classramses_1_1RenderGroup.html#a78df5ac3c86bb456a5e7a62d76a60b12">addMeshNode</a>(*meshNodeB);</div>
 <div class="line"> </div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md150"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md140"></a>
 Basic Compositing</h2>
 <p>This code creates a stream-texture that consists of a fallback texture and an id for mapping to a render-target. The renderer can replace the fallback texture by the content of a render-target, when the render-target is connected to the renderer. The id is an integer to identify the render-target. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -687,7 +687,7 @@ Basic Compositing</h2>
 <div class="line">    <span class="comment">// use Texture2D as fallback for StreamTexture</span></div>
 <div class="line">    <a class="code" href="classramses_1_1StreamTexture.html">ramses::StreamTexture</a>* streamTexture = scene-&gt;<a class="code" href="classramses_1_1Scene.html#a6787d55f4a7a98e888146614e51c0f0d">createStreamTexture</a>(*texture, surfaceId, <span class="stringliteral">&quot;streamTexture&quot;</span>);</div>
 <div class="line"> </div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md151"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md141"></a>
 Data Buffers (vertices)</h2>
 <p>This example creates a scene with a shape. Some of the shape's vertices are changed every frame and thus translated around the scene.</p>
 <p>The first part of the example shows the setup of the data buffer objects. In contrast to ressources, data buffers get created via the scene (and are owned by the scene). </p><div class="fragment"><div class="line">    <span class="comment">//</span></div>
@@ -730,7 +730,7 @@ Data Buffers (vertices)</h2>
 <div class="line"> </div>
 <div class="line">        std::this_thread::sleep_for(std::chrono::milliseconds(20));</div>
 <div class="line">    }</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md152"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md142"></a>
 Data Buffers (textures)</h2>
 <p>This example creates a scene with two quads. Each quad is showing the same texture. The difference between both quads is, that they are are showing different mipmap levels of the same texture. The texture's content within each mipmap layer is changed every frame.</p>
 <p>The first part of the example shows the setup of the data buffer objects. In contrast to client resources, data buffers get created via the scene (and are owned by the scene). </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
@@ -794,7 +794,7 @@ Data Buffers (textures)</h2>
 <div class="line"> </div>
 <div class="line">        std::this_thread::sleep_for(std::chrono::milliseconds(100));</div>
 <div class="line">    }</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md153"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md143"></a>
 Basic File/Asset Loading</h2>
 <p>This code loads an asset (a serialized ramses scene). </p><div class="fragment"><div class="line">        <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">        <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -803,7 +803,7 @@ Basic File/Asset Loading</h2>
 <div class="line">        <span class="comment">// make changes to loaded scene</span></div>
 <div class="line">        <a class="code" href="classramses_1_1RamsesObject.html">ramses::RamsesObject</a>* loadedObject = loadedScene-&gt;<a class="code" href="classramses_1_1Scene.html#ab1cc70b998f11fa845dcb0f021e8b50b">findObjectByName</a>(<span class="stringliteral">&quot;scale node&quot;</span>);</div>
 <div class="line">        <a class="code" href="classramses_1_1Node.html">ramses::Node</a>* loadedScaleNode = ramses::RamsesUtils::TryConvert&lt;ramses::Node&gt;(*loadedObject);</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md154"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md144"></a>
 Render Once Render Pass</h2>
 <p>This code shows the usage of a render pass that is rendered only once into a render target. A heavy content that is mostly static can benefit from this feature where it is rendered only once or with low frequency and the result in form of a render buffer is used every frame in the main scene. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -824,7 +824,7 @@ Render Once Render Pass</h2>
 <div class="line">        renderPassRT-&gt;<a class="code" href="classramses_1_1RenderPass.html#a12cab56b855c8d3dc92da7e7bc7eb372">retriggerRenderOnce</a>();</div>
 <div class="line">        scene-&gt;<a class="code" href="classramses_1_1Scene.html#ac12e7548df54a23bc10c1e5629c1aa88">flush</a>();</div>
 <div class="line">    }</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md155"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md145"></a>
 Geometry Instancing</h2>
 <p>This code demonstrates usage of geometry instancing via ramses apis. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -949,7 +949,7 @@ Geometry Instancing</h2>
 <div class="line">        t++;</div>
 <div class="line">        std::this_thread::sleep_for(std::chrono::milliseconds(10));</div>
 <div class="line">    }</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md156"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md146"></a>
 Geometry Shaders</h2>
 <p>This code demonstrates usage of geometry shaders in ramses. </p><div class="fragment"><div class="line">    <span class="comment">// create an appearance for red triangle</span></div>
 <div class="line">    <a class="code" href="classramses_1_1EffectDescription.html">ramses::EffectDescription</a> effectDesc;</div>
@@ -973,7 +973,7 @@ Geometry Shaders</h2>
 <div class="line">    <a class="code" href="classramses_1_1UniformInput.html">ramses::UniformInput</a> xMultiplierInput;</div>
 <div class="line">    effect-&gt;<a class="code" href="classramses_1_1Effect.html#a991b1b19203b657810f0c5917e213ad7">findUniformInput</a>(<span class="stringliteral">&quot;x_multiplier&quot;</span>, xMultiplierInput);</div>
 <div class="line"> </div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md157"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md147"></a>
 Interleaved vertex attributes</h2>
 <p>This code demonstrates usage of interleaved vertex attributes via ramses apis. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -1029,7 +1029,7 @@ Interleaved vertex attributes</h2>
 <div class="line">    meshNode-&gt;<a class="code" href="classramses_1_1MeshNode.html#a03307af9bb4e533eca06fd119f635481">setAppearance</a>(*appearance);</div>
 <div class="line">    meshNode-&gt;<a class="code" href="classramses_1_1MeshNode.html#ae7f99ac6ac11b6013f8aa6a37da0e4ac">setIndexCount</a>(3);</div>
 <div class="line">    meshNode-&gt;<a class="code" href="classramses_1_1MeshNode.html#abf97e76c45b196bc3ee0eea5fac8032e">setGeometryBinding</a>(*geometry);</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md158"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md148"></a>
 Multiple Displays</h2>
 <p>This code creates a renderer with two displays and shows how a scene can be mapped to a display. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -1051,7 +1051,7 @@ Multiple Displays</h2>
 <div class="line">    sceneControlAPI.setSceneState(sceneId2, <a class="code" href="namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82caa15a459a0439bde1ab6508bce7a05547">ramses::RendererSceneState::Rendered</a>);</div>
 <div class="line">    sceneControlAPI.flush();</div>
 <div class="line"> </div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md159"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md149"></a>
 Data Linking</h2>
 <p>This code creates two scenes, maps them to a display and shows how transformation data can be linked from one scene to the other.</p>
 <p>Client side configuration: </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
@@ -1091,7 +1091,7 @@ Data Linking</h2>
 <div class="line">    sceneControlAPI.linkData(quadSceneId, dataProviderId, triangleSceneId, dataConsumerId);</div>
 <div class="line">    <span class="comment">// link texture</span></div>
 <div class="line">    sceneControlAPI.linkData(triangleSceneId, textureProviderId, quadSceneId2, textureConsumerId);</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md160"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md150"></a>
 Viewport Linking</h2>
 <p>This code creates two scenes with content and a master scene. The master scene is only used to control position and size of the other two scenes (in 2D) using data linking - it links viewport parameters to the other scenes' cameras. The master scene has no knowledge of the other scenes except for their camera viewport data consumer IDs.</p>
 <p>Content side setup: </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
@@ -1126,7 +1126,7 @@ Viewport Linking</h2>
 <div class="line">    sceneControlAPI.linkData(sceneIdMaster, VP2OffsetProviderId, sceneId2, VPOffsetConsumerId);</div>
 <div class="line">    sceneControlAPI.linkData(sceneIdMaster, VP2SizeProviderId, sceneId2, VPSizeConsumerId);</div>
 <div class="line">    sceneControlAPI.flush();</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md161"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md151"></a>
 Offscreen Buffer</h2>
 <p>This code creates a consumer scene with two quads next to each other and two texture consumers. Then a provider scene with a quad is created twice while one is rendered into an offscreen buffer and the other one into a multisampled offscreen buffer. The two offscreen buffers are then linked to the consumer scene so that they are used as textures on the two quads and the difference between multisampled and regular offscreen buffer becomes visible. On top the offscreen buffers are periodically linked and unlinked from their consumers so the fallback Texture/RenderBuffer is shown. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -1211,7 +1211,7 @@ Offscreen Buffer</h2>
 <div class="line">        std::this_thread::sleep_for(std::chrono::milliseconds{ 15u });</div>
 <div class="line">    }</div>
 <div class="line"> </div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md162"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md152"></a>
 Pick Handling</h2>
 <p>This code creates a scene with two triangles and two pickable objects exactly covering these two triangles. The pickable objects use the scenes camera. This is needed for the intersection algorithm to unproject the pick ray in the same space as the object in the scene, that should be picked. When the user clicks on either of the two triangles in the renderer window the triangles change color. </p><div class="fragment"><div class="line">    <span class="comment">// use triangle&#39;s vertex position array as PickableObject geometry</span></div>
 <div class="line">    <span class="comment">// the two PickableObjects are exactly covering the two triangles</span></div>
@@ -1245,7 +1245,7 @@ Pick Handling</h2>
 <div class="line">        <span class="comment">// signal the scene it is in a state that can be rendered</span></div>
 <div class="line">        clientScene-&gt;flush();</div>
 <div class="line">        sceneControlAPI.flush();</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md163"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md153"></a>
 Basic Text</h2>
 <p>This code creates a basic text using a text API. </p><div class="fragment"><div class="line">    <span class="comment">// IMPORTANT NOTE: For simplicity and readability the example code does not check return values from API calls.</span></div>
 <div class="line">    <span class="comment">//                 This should not be the case for real applications.</span></div>
@@ -1310,7 +1310,7 @@ Basic Text</h2>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// apply changes</span></div>
 <div class="line">    scene-&gt;<a class="code" href="classramses_1_1Scene.html#ac12e7548df54a23bc10c1e5629c1aa88">flush</a>();</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md164"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md154"></a>
 Text with multiple languages</h2>
 <p>This code creates a text using a text API containing several languages. </p><div class="fragment"><div class="line">    <span class="comment">// create font instances</span></div>
 <div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::FontId</a> hebrewFont   = fontRegistry.<a class="code" href="classramses_1_1FontRegistry.html#adf7913b93f629e241ab11f936705c49d">createFreetype2Font</a>(<span class="stringliteral">&quot;res/ramses-example-text-languages-Arimo-Regular.ttf&quot;</span>);</div>
@@ -1336,13 +1336,13 @@ Text with multiple languages</h2>
 <div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::TextLineId</a> textId3 = textCache.createTextLine(textCache.getPositionedGlyphs(hebrewString, hebrewFontInst), *textEffect);</div>
 <div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::TextLineId</a> textId4 = textCache.createTextLine(textCache.getPositionedGlyphs(arabicString, arabicFontInst), *textEffect);</div>
 <div class="line">    <span class="keyword">const</span> <a class="code" href="classramses_1_1StronglyTypedValue.html">ramses::TextLineId</a> textId5 = textCache.createTextLine(textCache.getPositionedGlyphs(arabicString, arabicFontInst_shaped), *textEffect);</div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md165"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md155"></a>
 Local rendering of scenes</h2>
 <p>This code demonstrates creating a scene and rendering it locally via ramses apis. See example code in <a class="el" href="ramses-example-local-client_2src_2main_8cpp.html">examples/ramses-example-local-client/src/main.cpp</a></p>
-<h2><a class="anchor" id="autotoc_md166"></a>
+<h2><a class="anchor" id="autotoc_md156"></a>
 Local rendering of scenes via DCSM</h2>
 <p>This code demonstrates creating a scene and rendering it locally via dcsm (on top of ramses apis) See example code in <a class="el" href="ramses-example-local-client-dcsm_2src_2main_8cpp.html">examples/ramses-example-local-client-dcsm/src/main.cpp</a></p>
-<h2><a class="anchor" id="autotoc_md167"></a>
+<h2><a class="anchor" id="autotoc_md157"></a>
 DCSM Provider</h2>
 <p>This code offers a small scene via DCSM and is able to resize it and run a hide/show animation. A renderer side application which is supposed to work with this example properly needs to understand the DCSM protocol. For the standalone renderer this can be enabled with the "-dcsm" command line parameter. </p><div class="fragment"><div class="line"> </div>
 <div class="line">        <span class="comment">// first is to offer the content to a consumer listening</span></div>
@@ -1359,7 +1359,7 @@ DCSM Provider</h2>
 <div class="line">            std::this_thread::sleep_for(std::chrono::milliseconds(16u));</div>
 <div class="line">        }</div>
 <div class="line"> </div>
-</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md168"></a>
+</div><!-- fragment --> <h2><a class="anchor" id="autotoc_md158"></a>
 Scene referencing</h2>
 <p>This code creates two scenes with content and a master scene. The master scene is only used to control position and size of the other two scenes (in 2D) using data linking - it links viewport parameters to the other scenes' cameras. The master scene has no knowledge of the other scenes except for their camera viewport data consumer IDs. The example also shows how a client can control rendering states of other scenes without access to renderer API.</p>
 <p>Create scene references and get the to a rendered state: </p><div class="fragment"><div class="line">    <span class="comment">// create a scene reference for both scenes</span></div>

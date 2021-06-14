@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -68,7 +68,7 @@ $(function() {
 <div class="title">RAMSES Validation </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md109"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md99"></a>
 Error checks</h1>
 <p>The RAMSES API is designed to check most errors on usage - for example trying to create TextureSampler using a write-only RenderBuffer will result in error. The error message will appear in log and/or can be retrieved by using RamsesClient::getStatusMessage and passing the status code returned from the API call.</p>
 <p>However, there are cases where:</p><ul>
@@ -78,7 +78,7 @@ Error checks</h1>
 <p>One good example of an invalid state is a cyclic dependency on the node graph. If one creates three nodes A, B, C and sets following parent-child dependencies: A-&gt;B B-&gt;C C-&gt;A</p>
 <p>This is not an error that RAMSES checks, because it is very expensive to traverse the whole scene graph every time a new node is added as a child of another node.</p>
 <p>For development purposes, there are other means to check the state of the scene(s) and understand why the resulting image is not as expected.</p>
-<h1><a class="anchor" id="autotoc_md110"></a>
+<h1><a class="anchor" id="autotoc_md100"></a>
 Client side validation</h1>
 <p>The state of a RAMSES object can be checked at any time by calling validate() method on its instance. The validate method is available on all RAMSES client objects and will do two things:</p><ul>
 <li>return an overall result status of the object (valid or invalid)</li>
@@ -95,7 +95,7 @@ Client side validation</h1>
  # prints validation report for object with name "MyMesh" from scene with id 15<br  />
  validate 15 info MyMesh<br  />
 </p>
-<h1><a class="anchor" id="autotoc_md111"></a>
+<h1><a class="anchor" id="autotoc_md101"></a>
 Renderer side validation</h1>
 <p>The RAMSES client has a very rich information about a scene - it knows the names of objects, it has detailed scenegraph information. The renderer, however, does not necessarily have all this information (the reason for that is that data sent over network to the renderer must be kept very minimal).</p>
 <p>There can be a case when a scene is in valid state on the client (according to validation described above), but it is not rendered in the the desired way. Such cases can be difficult to analyze. One simple tool to show the state of the renderer and get an overview of what is being rendered is to the "rinfo" shell command (only available on renderer side). While validate() focuses on scene content, the purpose of "rinfo" is to get overview of how is that content interpreted. It reports all the information about displays, scenes it knows and their states, more or less detailed rendering queue for each shown scene and so on.</p>

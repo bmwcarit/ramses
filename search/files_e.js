@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['geometrybinding_2eh_2080',['GeometryBinding.h',['../GeometryBinding_8h.html',1,'']]],
-  ['glyph_2eh_2081',['Glyph.h',['../Glyph_8h.html',1,'']]],
-  ['glyphmetrics_2eh_2082',['GlyphMetrics.h',['../GlyphMetrics_8h.html',1,'']]]
+  ['fontcascade_2eh_2098',['FontCascade.h',['../FontCascade_8h.html',1,'']]],
+  ['fontinstanceid_2eh_2099',['FontInstanceId.h',['../FontInstanceId_8h.html',1,'']]],
+  ['fontinstanceoffsets_2eh_2100',['FontInstanceOffsets.h',['../FontInstanceOffsets_8h.html',1,'']]],
+  ['fontregistry_2eh_2101',['FontRegistry.h',['../FontRegistry_8h.html',1,'']]]
 ];

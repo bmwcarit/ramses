@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -124,8 +124,11 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:afe1b185a02f0760a766d1c1cd6125e6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">No longer request an assigned <a class="el" href="classramses_1_1DcsmConsumer.html" title="Class representing DCSM consumer side.">DcsmConsumer</a> to focus this content for given focusrequest within a category. Should be called, when the logical reason for the focus is no longer given.  <a href="classramses_1_1DcsmProvider.html#afe1b185a02f0760a766d1c1cd6125e6e">More...</a><br /></td></tr>
 <tr class="separator:afe1b185a02f0760a766d1c1cd6125e6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4abf0eac049513310d2dfb0bd0937d09"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmProvider.html#a4abf0eac049513310d2dfb0bd0937d09">dispatchEvents</a> (<a class="el" href="classramses_1_1IDcsmProviderEventHandler.html">IDcsmProviderEventHandler</a> &amp;handler)</td></tr>
-<tr class="memdesc:a4abf0eac049513310d2dfb0bd0937d09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Communication from <a class="el" href="classramses_1_1DcsmConsumer.html" title="Class representing DCSM consumer side.">DcsmConsumer</a> will be handled by a <a class="el" href="classramses_1_1DcsmProvider.html" title="Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...">DcsmProvider</a>. Some of this communication results in an event. Calls handler functions synchronously in the caller context for DCSM events which were received asynchronously. This function must be called regularly to avoid buffer overflow of the internal queue.  <a href="classramses_1_1DcsmProvider.html#a4abf0eac049513310d2dfb0bd0937d09">More...</a><br /></td></tr>
+<tr class="memdesc:a4abf0eac049513310d2dfb0bd0937d09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calls a callback function for every internal event except the content status event, which will be discarded.  <a href="classramses_1_1DcsmProvider.html#a4abf0eac049513310d2dfb0bd0937d09">More...</a><br /></td></tr>
 <tr class="separator:a4abf0eac049513310d2dfb0bd0937d09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1cd23e5d6ba805d690a6eb1565e13cde"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmProvider.html#a1cd23e5d6ba805d690a6eb1565e13cde">dispatchEvents</a> (<a class="el" href="classramses_1_1IDcsmProviderEventHandlerExtended.html">IDcsmProviderEventHandlerExtended</a> &amp;handler)</td></tr>
+<tr class="memdesc:a1cd23e5d6ba805d690a6eb1565e13cde"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calls a callback function for every internal event including the content status event.  <a href="classramses_1_1DcsmProvider.html#a1cd23e5d6ba805d690a6eb1565e13cde">More...</a><br /></td></tr>
+<tr class="separator:a1cd23e5d6ba805d690a6eb1565e13cde"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c8ac2f09c572140bd144f19ba776598"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmProvider.html#a8c8ac2f09c572140bd144f19ba776598">DcsmProvider</a> (DcsmProviderImpl &amp;)</td></tr>
 <tr class="memdesc:a8c8ac2f09c572140bd144f19ba776598"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor of <a class="el" href="classramses_1_1DcsmProvider.html" title="Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...">DcsmProvider</a>.  <a href="classramses_1_1DcsmProvider.html#a8c8ac2f09c572140bd144f19ba776598">More...</a><br /></td></tr>
 <tr class="separator:a8c8ac2f09c572140bd144f19ba776598"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -329,7 +332,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <a id="a4abf0eac049513310d2dfb0bd0937d09"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4abf0eac049513310d2dfb0bd0937d09">&#9670;&nbsp;</a></span>dispatchEvents()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a4abf0eac049513310d2dfb0bd0937d09">&#9670;&nbsp;</a></span>dispatchEvents() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -344,7 +347,36 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Communication from <a class="el" href="classramses_1_1DcsmConsumer.html" title="Class representing DCSM consumer side.">DcsmConsumer</a> will be handled by a <a class="el" href="classramses_1_1DcsmProvider.html" title="Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...">DcsmProvider</a>. Some of this communication results in an event. Calls handler functions synchronously in the caller context for DCSM events which were received asynchronously. This function must be called regularly to avoid buffer overflow of the internal queue. </p>
+<p>Calls a callback function for every internal event except the content status event, which will be discarded. </p>
+<p>Communication from <a class="el" href="classramses_1_1DcsmConsumer.html" title="Class representing DCSM consumer side.">DcsmConsumer</a> will be handled by a <a class="el" href="classramses_1_1DcsmProvider.html" title="Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...">DcsmProvider</a>. Some of this communication results in an event. Calls handler functions synchronously in the caller context for DCSM events which were received asynchronously. This function must be called regularly to avoid buffer overflow of the internal queue.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">handler</td><td>A class which handles feedback from <a class="el" href="classramses_1_1DcsmProvider.html" title="Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...">DcsmProvider</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>StatusOK for success, otherwise the returned status can be used to resolve error message using <a class="el" href="classramses_1_1StatusObject.html#a1fbbfea27c8eb369b1f21de42f2e88b1" title="Get the string description for a status provided by a RAMSES API function.">getStatusMessage()</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a1cd23e5d6ba805d690a6eb1565e13cde"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1cd23e5d6ba805d690a6eb1565e13cde">&#9670;&nbsp;</a></span>dispatchEvents() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> ramses::DcsmProvider::dispatchEvents </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classramses_1_1IDcsmProviderEventHandlerExtended.html">IDcsmProviderEventHandlerExtended</a> &amp;&#160;</td>
+          <td class="paramname"><em>handler</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Calls a callback function for every internal event including the content status event. </p>
+<p>Communication from <a class="el" href="classramses_1_1DcsmConsumer.html" title="Class representing DCSM consumer side.">DcsmConsumer</a> will be handled by a <a class="el" href="classramses_1_1DcsmProvider.html" title="Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...">DcsmProvider</a>. Some of this communication results in an event. Calls handler functions synchronously in the caller context for DCSM events which were received asynchronously. This function must be called regularly to avoid buffer overflow of the internal queue.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">handler</td><td>A class which handles feedback from <a class="el" href="classramses_1_1DcsmProvider.html" title="Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...">DcsmProvider</a> </td></tr>
@@ -769,7 +801,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/c/src/mirror/framework/ramses-framework-api/include/ramses-framework-api/<a class="el" href="DcsmProvider_8h_source.html">DcsmProvider.h</a></li>
+<li>/c/src/genivi/framework/ramses-framework-api/include/ramses-framework-api/<a class="el" href="DcsmProvider_8h_source.html">DcsmProvider.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -75,13 +75,13 @@ $(function() {
 <li>control render looping, timing, limits</li>
 <li>access/control to the system compositor controller</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md122"></a>
+<h1><a class="anchor" id="autotoc_md112"></a>
 Display Management</h1>
 <p>The renderer setup consists of a <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">ramses::RamsesRenderer</a> object and a set of displays belonging to it. Every display can be configured through an individual <a class="el" href="classramses_1_1DisplayConfig.html" title="The DisplayConfig holds a set of parameters to be used to initialize a display.">ramses::DisplayConfig</a>.</p>
-<h1><a class="anchor" id="autotoc_md123"></a>
+<h1><a class="anchor" id="autotoc_md113"></a>
 Scene control and scene states</h1>
 <p>A renderer offers a set of APIs to allow to control the scene states. Currently there are the RendererSceneControl and the DcsmContentControl. They can be created with the <a class="el" href="classramses_1_1RamsesRenderer.html#aca664b15215a8cb1f410db4da3c65296" title="Get scene control API.">ramses::RamsesRenderer::getSceneControlAPI</a> respectively the <a class="el" href="classramses_1_1RamsesRenderer.html#a3c18812bd5b480e6373cc9c1949564ca" title="Create ramses::DcsmContentControl to control content states.">ramses::RamsesRenderer::createDcsmContentControl</a> functions.</p>
-<h2><a class="anchor" id="autotoc_md124"></a>
+<h2><a class="anchor" id="autotoc_md114"></a>
 RendererSceneControl</h2>
 <p>Graphical content (a <a class="el" href="classramses_1_1Scene.html" title="The Scene holds a scene graph. It is the essential class for distributing content to the ramses syste...">ramses::Scene</a> provided from <a class="el" href="classramses_1_1RamsesClient.html" title="Entry point of RAMSES client API.">ramses::RamsesClient</a>) is always in a certain state, a state in the context of single <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">ramses::RamsesRenderer</a> instance. Typically the desired state to reach is that the scene is rendered, however the scene has to go through several other states to reach that:</p>
 <ol type="1">
@@ -95,25 +95,25 @@ RendererSceneControl</h2>
 <img src="renderer_scene_states.png" alt=""/>
 <div class="caption">
 Renderer Scene States</div></div>
-<h2><a class="anchor" id="autotoc_md125"></a>
+<h2><a class="anchor" id="autotoc_md115"></a>
 DcsmContentControl</h2>
 <p>DcsmContentControl uses a RendererSceneControl and a DcsmConsumer to allow a user to render ramses scene Dcsm contents with one interface. Refer to the <a class="el" href="DCSMProtocol.html">The Display Cluster State Management Protocol</a> documentation for details.</p>
-<h2><a class="anchor" id="autotoc_md126"></a>
+<h2><a class="anchor" id="autotoc_md116"></a>
 Data Linking</h2>
 <p>In order to achieve scene interaction, it is possible to attach scene content of one scene to scene content of another scene. There are several types of data links, all of them have a data provider on one side and one or more consumers on the other side, the consumers then use the data of the provider.</p>
 <p>Provider and consumer data is tagged with an ID on RAMSES client scene side and then can be linked on RAMSES renderer side. Scenes with provider and consumer data can come from different clients that do not have to know each other (only the tagged data IDs are globally known) and once the scenes are subscribed (mapped in case of texture linking) on renderer they can be linked together.</p>
 <p>Data links are dynamic so any change to provider data (including animations) will be reflected to all its consumers.</p>
 <p>Data links of any kind can only be established if provider scene and consumer scene are mapped to the same display via <a class="el" href="classramses_1_1RendererSceneControl.html#a4065e5ff1fad466e3524022a368711d9" title="Set scene display mapping.">ramses::RendererSceneControl::setSceneMapping</a> or - in case of DCSM contents - the contents' categories are mapped to the same display via <a class="el" href="classramses_1_1DcsmContentControl.html#aa8734f90d738f111b2ccd5be33800c77" title="Add a content category.">ramses::DcsmContentControl::addContentCategory</a>.</p>
-<h3><a class="anchor" id="autotoc_md127"></a>
+<h3><a class="anchor" id="autotoc_md117"></a>
 Transformation Linking</h3>
 <p>For transformation data linking the provided scene content is the transformation matrix of a scenegraph node (any <a class="el" href="classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it...">ramses::Node</a> typed object in scene), which can be consumed by node(s) of consumer scene(s). The consumer node (and all its children in scenegraph topology) will transform using the provider node's transformation.</p>
-<h3><a class="anchor" id="autotoc_md128"></a>
+<h3><a class="anchor" id="autotoc_md118"></a>
 DataObject Linking</h3>
 <p><a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene.">ramses::DataObject</a> can be used to set values of <a class="el" href="classramses_1_1Appearance.html" title="The Appearance describes how an object should look like. This includes GLSL uniform values,...">ramses::Appearance</a> uniforms or <a class="el" href="classramses_1_1Camera.html" title="The Camera base class is part of a scene and defines a view into the scene defined by the client appl...">ramses::Camera</a> parameters which can also be linked across scenes. As long as data type is matched a data value stored in a <a class="el" href="classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene.">ramses::DataObject</a> of one scene can be used as uniform input of an <a class="el" href="classramses_1_1Appearance.html" title="The Appearance describes how an object should look like. This includes GLSL uniform values,...">ramses::Appearance</a> in another scene.</p>
-<h3><a class="anchor" id="autotoc_md129"></a>
+<h3><a class="anchor" id="autotoc_md119"></a>
 Texture Linking</h3>
 <p>Texture resources can be tagged as data providers and can be consumed in another scene by <a class="el" href="classramses_1_1TextureSampler.html" title="The TextureSampler holds a texture and its sampling parameters.">ramses::TextureSampler</a>.</p>
-<h1><a class="anchor" id="autotoc_md130"></a>
+<h1><a class="anchor" id="autotoc_md120"></a>
 Renderer API calls &amp; Events</h1>
 <p>Renderer API calls are handled asynchronously. This means that the result or information about success of the requested renderer operation is not available immediately after the API call. The result of the API call will be delivered via renderer events. The <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">ramses::RamsesRenderer</a> and <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes.">ramses::RendererSceneControl</a> each offer its own event dispatching mechanism, such that an object implementing <a class="el" href="classramses_1_1IRendererEventHandler.html" title="Provides an interface for handling the result of renderer events. Implementation of this interface mu...">ramses::IRendererEventHandler</a>/<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html" title="Provides an interface for handling the result of renderer scene control events. Implementation of thi...">ramses::IRendererSceneControlEventHandler</a> interface can handle and process renderer/scene control events.</p>
 <p>Events generated as a result of a <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">ramses::RamsesRenderer</a> or <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes.">ramses::RendererSceneControl</a> API call can have different statuses reported:</p><ul>
@@ -122,7 +122,7 @@ Renderer API calls &amp; Events</h1>
 <li>[INDIRECT] the event was generated as consequence of another event from Ramses client side (e.g. scene unpublish or disconnect) or some other internal event</li>
 <li>A special case of status report is 'no status' - scene state change requests (<a class="el" href="classramses_1_1RendererSceneControl.html#a3a67e00fdc6770676e44f1bc254604a0" title="Request state change of a scene.">ramses::RendererSceneControl::setSceneState</a>) might not generate any event in case that a condition to reach desired state is not met (e.g. scene not published, display not created, etc.). Note that these will not timeout explicitly, it is responsibility of the application to implement timeout logic.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md131"></a>
+<h2><a class="anchor" id="autotoc_md121"></a>
 Renderer API transactions</h2>
 <p>The <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">ramses::RamsesRenderer</a> and <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes.">ramses::RendererSceneControl</a> calls are queued and only executed when committed. To commit a batch of calls use <a class="el" href="classramses_1_1RamsesRenderer.html#a6307f22a698040fc1f68f771a39ff253" title="Submits renderer commands (API calls on this instance of RamsesRenderer) since previous flush to be e...">ramses::RamsesRenderer::flush()</a> and <a class="el" href="classramses_1_1RendererSceneControl.html#afae8c8a433e1a29ea4912d1db4be7311" title="Submits scene control commands (API calls on RendererSceneControl) since previous flush to be execute...">ramses::RendererSceneControl::flush()</a> respectively. All calls since the last flush will then be executed together (preserving order) in the very next renderer update loop (either <a class="el" href="classramses_1_1RamsesRenderer.html#a8bceaf9ed2fd659a05d2b12645a6bfdd" title="Prepare content to be rendered in next frame and render next frame.">ramses::RamsesRenderer::doOneLoop()</a> or in render thread). </p>
 </div></div><!-- contents -->

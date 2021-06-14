@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -68,14 +68,14 @@ $(function() {
 <div class="title">RAMSES Offscreen Buffers </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md132"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md122"></a>
 Overview</h1>
 <p>When a RAMSES Client Scene is subscribed, mapped to display and shown, RAMSES Renderer renders it directly into the display's framebuffer. This default behaviour can be modified by assigning the scene to an offscreen buffer using Renderer API, scene will then not be rendered directly to display's framebuffer anymore but to a buffer that can be used as texture input in another scene.</p>
-<h1><a class="anchor" id="autotoc_md133"></a>
+<h1><a class="anchor" id="autotoc_md123"></a>
 Using Offscreen Buffers</h1>
 <p>All scenes that are supposed to be assigned to an offscreen buffer have to be mapped to the same display where the offscreen buffer was created. There can be multiple scenes rendered to the same offscreen buffer but a scene can be rendered to exactly one buffer or framebuffer.</p>
 <p>An offscreen buffer can then be linked to another scene's (consumer scene) texture input similar to Texture Data Linking. Consumer scene where the offscreen buffer is to be used as texture has to have a Texture Consumer which is in fact a TextureSampler with a Data Consumer Id. Consumer scene has to also be mapped to the same display as the offscreen buffer (and scenes rendered into it).</p>
-<h2><a class="anchor" id="autotoc_md134"></a>
+<h2><a class="anchor" id="autotoc_md124"></a>
 Scene To Offscreen Buffer Assignment Rules</h2>
 <ul>
 <li>Scene has to be mapped to the same display where offscreen buffer was created.</li>
@@ -84,7 +84,7 @@ Scene To Offscreen Buffer Assignment Rules</h2>
 <li>Scene can be reassigned to another offscreen buffer or display's framebuffer, then it stops being rendered into the original offscreen buffer.</li>
 <li>Offscreen buffer cannot be destroyed if there are any scene assigned to it.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md135"></a>
+<h2><a class="anchor" id="autotoc_md125"></a>
 Offscreen Buffer To Consumer Scene Linking Rules</h2>
 <p>These rules are analogical to scene to scene Texture Data Linking.</p><ul>
 <li>The consumer scene has to be mapped to the same display where the linked offscreen buffer was created.</li>
@@ -92,10 +92,10 @@ Offscreen Buffer To Consumer Scene Linking Rules</h2>
 <li>When a linked consumer scene is unmapped from its display, the offscreen buffer is unlinked. Next time the scene is mapped to a display it will have no links (even if it is the same display as before).</li>
 <li>If an offscreen buffer is destroyed, it is unlinked from any linked scenes. Previously linked consumer scene(s) will then use their original texture.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md136"></a>
+<h2><a class="anchor" id="autotoc_md126"></a>
 Clearing Rules</h2>
 <p>Clearing of offscreen buffers is currently implicit and cannot be controlled by user explicitly. An offscreen buffer will be cleared at the beginning of every frame only if there is any scene mapped to it. This means that if a single scene that is mapped to the offscreen buffer gets unmapped for any of the reasons mentioned above, the offscreen buffer will not be cleared until there is another scene assigned to it. However the offscreen buffer would be cleared if it has hidden scenes assigned to it.</p>
-<h2><a class="anchor" id="autotoc_md137"></a>
+<h2><a class="anchor" id="autotoc_md127"></a>
 Render Order</h2>
 <p>RAMSES Renderer allows user to define scene render order when mapping a scene to a display. Assigning a scene to offscreen buffer or linking an offscreen buffer to a consumer scene DOES NOT AFFECT the render order of any of the scenes involved. It is user's responsibility to define the render order so that desired result is achieved, this in most cases means to render the scene(s) assigned to an offscreen buffer BEFORE the consumer scene using the contents of the offscreen buffer. </p>
 </div></div><!-- contents -->

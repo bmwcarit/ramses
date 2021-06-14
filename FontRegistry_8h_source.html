@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RAMSES Documentation: /c/src/mirror/client/ramses-client/ramses-text-api/include/ramses-text-api/FontRegistry.h Source File</title>
+<title>RAMSES Documentation: /c/src/genivi/client/ramses-client/ramses-text-api/include/ramses-text-api/FontRegistry.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -97,30 +97,32 @@ $(function() {
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        <span class="keyword">virtual</span> <a class="code" href="classramses_1_1IFontInstance.html">IFontInstance</a>*  getFontInstance(<a class="code" href="classramses_1_1StronglyTypedValue.html">FontInstanceId</a> fontInstanceId) <span class="keyword">const override</span>;</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        <a class="code" href="classramses_1_1StronglyTypedValue.html">FontId</a>                  createFreetype2Font(<span class="keyword">const</span> <span class="keywordtype">char</span>* fontPath);</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        <a class="code" href="classramses_1_1StronglyTypedValue.html">FontId</a> createFreetype2Font(<span class="keyword">const</span> <span class="keywordtype">char</span>* fontPath);</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <a class="code" href="classramses_1_1StronglyTypedValue.html">FontInstanceId</a>          createFreetype2FontInstance(<a class="code" href="classramses_1_1StronglyTypedValue.html">FontId</a> fontId, uint32_t size, <span class="keywordtype">bool</span> forceAutohinting = <span class="keyword">false</span>);</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <a class="code" href="classramses_1_1StronglyTypedValue.html">FontInstanceId</a>          createFreetype2FontInstanceWithHarfBuzz(<a class="code" href="classramses_1_1StronglyTypedValue.html">FontId</a> fontId, uint32_t size, <span class="keywordtype">bool</span> forceAutohinting = <span class="keyword">false</span>);</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="keywordtype">bool</span>                    deleteFont(<a class="code" href="classramses_1_1StronglyTypedValue.html">FontId</a> fontId);</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <a class="code" href="classramses_1_1StronglyTypedValue.html">FontId</a> createFreetype2FontFromFileDescriptor(<span class="keywordtype">int</span> fd, <span class="keywordtype">size_t</span> offset, <span class="keywordtype">size_t</span> length);</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <a class="code" href="classramses_1_1StronglyTypedValue.html">FontInstanceId</a>          createFreetype2FontInstance(<a class="code" href="classramses_1_1StronglyTypedValue.html">FontId</a> fontId, uint32_t size, <span class="keywordtype">bool</span> forceAutohinting = <span class="keyword">false</span>);</div>
 <div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <span class="keywordtype">bool</span>                    deleteFontInstance(<a class="code" href="classramses_1_1StronglyTypedValue.html">FontInstanceId</a> fontInstance);</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
-<div class="line"><a name="l00089"></a><span class="lineno"><a class="line" href="classramses_1_1FontRegistry.html#a7781a98feddf1482265657b074da80d8">   89</a></span>&#160;        <span class="keyword">class </span>FontRegistryImpl&amp; <a class="code" href="classramses_1_1FontRegistry.html#a7781a98feddf1482265657b074da80d8">impl</a>;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        <a class="code" href="classramses_1_1FontRegistry.html">FontRegistry</a>(<span class="keyword">const</span> <a class="code" href="classramses_1_1FontRegistry.html">FontRegistry</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        <a class="code" href="classramses_1_1FontRegistry.html">FontRegistry</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1FontRegistry.html">FontRegistry</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    };</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;}</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <a class="code" href="classramses_1_1StronglyTypedValue.html">FontInstanceId</a>          createFreetype2FontInstanceWithHarfBuzz(<a class="code" href="classramses_1_1StronglyTypedValue.html">FontId</a> fontId, uint32_t size, <span class="keywordtype">bool</span> forceAutohinting = <span class="keyword">false</span>);</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        <span class="keywordtype">bool</span>                    deleteFont(<a class="code" href="classramses_1_1StronglyTypedValue.html">FontId</a> fontId);</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        <span class="keywordtype">bool</span>                    deleteFontInstance(<a class="code" href="classramses_1_1StronglyTypedValue.html">FontInstanceId</a> fontInstance);</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
+<div class="line"><a name="l00107"></a><span class="lineno"><a class="line" href="classramses_1_1FontRegistry.html#a7781a98feddf1482265657b074da80d8">  107</a></span>&#160;        <span class="keyword">class </span>FontRegistryImpl&amp; <a class="code" href="classramses_1_1FontRegistry.html#a7781a98feddf1482265657b074da80d8">impl</a>;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;        <a class="code" href="classramses_1_1FontRegistry.html">FontRegistry</a>(<span class="keyword">const</span> <a class="code" href="classramses_1_1FontRegistry.html">FontRegistry</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;        <a class="code" href="classramses_1_1FontRegistry.html">FontRegistry</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1FontRegistry.html">FontRegistry</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    };</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;}</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160; </div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassramses_1_1IFontAccessor_html"><div class="ttname"><a href="classramses_1_1IFontAccessor.html">ramses::IFontAccessor</a></div><div class="ttdoc">Interface for getting font instances using font instance ids.</div><div class="ttdef"><b>Definition:</b> IFontAccessor.h:26</div></div>
 <div class="ttc" id="anamespaceramses_html"><div class="ttname"><a href="namespaceramses.html">ramses</a></div><div class="ttdoc">The RAMSES namespace contains all client side objects and functions used to implement RAMSES applicat...</div><div class="ttdef"><b>Definition:</b> AnimatedProperty.h:14</div></div>
 <div class="ttc" id="aclassramses_1_1FontRegistry_html"><div class="ttname"><a href="classramses_1_1FontRegistry.html">ramses::FontRegistry</a></div><div class="ttdoc">Font registry can be used to load Freetype2 fonts and create font instances (optionally with Harfbuzz...</div><div class="ttdef"><b>Definition:</b> FontRegistry.h:21</div></div>
-<div class="ttc" id="aclassramses_1_1FontRegistry_html_a7781a98feddf1482265657b074da80d8"><div class="ttname"><a href="classramses_1_1FontRegistry.html#a7781a98feddf1482265657b074da80d8">ramses::FontRegistry::impl</a></div><div class="ttdeci">class FontRegistryImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> FontRegistry.h:89</div></div>
+<div class="ttc" id="aclassramses_1_1FontRegistry_html_a7781a98feddf1482265657b074da80d8"><div class="ttname"><a href="classramses_1_1FontRegistry.html#a7781a98feddf1482265657b074da80d8">ramses::FontRegistry::impl</a></div><div class="ttdeci">class FontRegistryImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> FontRegistry.h:107</div></div>
 <div class="ttc" id="aAPIExport_8h_html_a721d93a66de17b98189db7bd091cf29f"><div class="ttname"><a href="APIExport_8h.html#a721d93a66de17b98189db7bd091cf29f">RAMSES_API</a></div><div class="ttdeci">#define RAMSES_API</div><div class="ttdef"><b>Definition:</b> APIExport.h:35</div></div>
 <div class="ttc" id="aclassramses_1_1IFontInstance_html"><div class="ttname"><a href="classramses_1_1IFontInstance.html">ramses::IFontInstance</a></div><div class="ttdoc">Interface for font instance that can be used to query glyph metadata and bitmaps.</div><div class="ttdef"><b>Definition:</b> IFontInstance.h:22</div></div>
 <div class="ttc" id="aIFontAccessor_8h_html"><div class="ttname"><a href="IFontAccessor_8h.html">IFontAccessor.h</a></div></div>

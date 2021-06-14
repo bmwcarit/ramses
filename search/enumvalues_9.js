@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['modelmatrix_3680',['ModelMatrix',['../namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529fa3e04ff8d5f81e0e803be16ae79aaf3c6',1,'ramses']]],
-  ['modelviewmatrix_3681',['ModelViewMatrix',['../namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529faa5f6f5560bfb195748b692c47b3d4379',1,'ramses']]],
-  ['modelviewmatrix33_3682',['ModelViewMatrix33',['../namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529fa30b9bc96e96c47e4090bc71bacfe1c45',1,'ramses']]],
-  ['modelviewprojectionmatrix_3683',['ModelViewProjectionMatrix',['../namespaceramses.html#a62ffd4eb754f4139d86eec8b4529529fa45f966892aa9712b434b27ea5513b63a',1,'ramses']]]
+  ['localandremote_3713',['LocalAndRemote',['../namespaceramses.html#a5c6768ac12230d47013c798237d1c738a12b19f250930ff2f9899dff1a263bc8a',1,'ramses']]],
+  ['localonly_3714',['LocalOnly',['../namespaceramses.html#a5c6768ac12230d47013c798237d1c738a4750cc207381749aa40657c50f76f3e0',1,'ramses']]]
 ];

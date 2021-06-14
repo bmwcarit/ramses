@@ -17,7 +17,7 @@
 <text text-anchor="start" x="8" y="-40.5" font-family="Helvetica,sans-Serif" font-size="10.00">ramses::StronglyTypedValue</text>
 <text text-anchor="start" x="8" y="-29.5" font-family="Helvetica,sans-Serif" font-size="10.00">&lt; uint32_t, std::numeric</text>
 <text text-anchor="start" x="8" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">_limits&lt; uint32_t &gt;::max</text>
-<text text-anchor="middle" x="77.5" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">(), GlyphIdTag &gt;</text>
+<text text-anchor="middle" x="77.5" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">(), FontInstanceIdTag &gt;</text>
 </a>
 </g>
 </g>

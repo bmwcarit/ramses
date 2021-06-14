@@ -1,5 +1,6 @@
 <map id="ramses::IDcsmProviderEventHandler" name="ramses::IDcsmProviderEventHandler">
-<area shape="rect" id="node1" title="An Interface for a class, whose functions are called as reaction to DcsmConsumer communication after ..." alt="" coords="79,5,290,47"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,95,177,121"/>
-<area shape="rect" id="node3" href="$classLocalDCSMExample.html" title=" " alt="" coords="202,95,354,121"/>
+<area shape="rect" id="node1" title="An Interface for a class, whose functions are called as reaction to DcsmConsumer communication after ..." alt="" coords="173,5,383,47"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,102,177,129"/>
+<area shape="rect" id="node3" href="$classLocalDCSMExample.html" title=" " alt="" coords="202,102,354,129"/>
+<area shape="rect" id="node4" href="$classramses_1_1IDcsmProviderEventHandlerExtended.html" title="An Interface for a class, whose functions are called as reaction to a DcsmConsumer message after call..." alt="" coords="378,95,589,136"/>
 </map>

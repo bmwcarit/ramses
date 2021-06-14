@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -68,7 +68,7 @@ $(function() {
 <div class="title">Scene Referencing and DCSM </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md182"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md172"></a>
 The concept</h1>
 <p>There are two main roles in the DCSM/Ramses ecosystem:</p><ul>
 <li>content provider (RamsesClient + DcsmProvider)<ul>
@@ -98,10 +98,10 @@ The concept</h1>
 </li>
 </ul>
 <p>The participant B represents a new role which combines the two basic roles of provider and consumer. The important aspect to realize here is that C does not know anything about A and does not care about its content, it only takes content from B. Whether content from B nests other contents or not is irrelevant for C. Using this content nesting approach allows a nice and clearly defined separation of responsibilities between various components. In theory it can also scale to arbitrary number of nesting layers and arbitrary number of contents nested in each layer.</p>
-<h1><a class="anchor" id="autotoc_md183"></a>
+<h1><a class="anchor" id="autotoc_md173"></a>
 The concept vs Ramses</h1>
 <p>This concept works well with DCSM, the provider/consumer layer in the middle simply implements both <a class="el" href="classramses_1_1DcsmProvider.html" title="Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...">ramses::DcsmProvider</a> and <a class="el" href="classramses_1_1DcsmConsumer.html" title="Class representing DCSM consumer side.">ramses::DcsmConsumer</a>. However applying this concept on Ramses level reveals a problem - the content to be nested coming from lower layer carries a very limited set of information - content ID, scene ID and maybe some DCSM metadata. Also there is typically just one <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">ramses::RamsesRenderer</a> for given content and it is owned by a consumer which in case of nesting is in the top layer, so it is inaccessible from any other layer.</p>
-<h1><a class="anchor" id="autotoc_md184"></a>
+<h1><a class="anchor" id="autotoc_md174"></a>
 Scene Referencing</h1>
 <p>To tackle the problem Ramses provides a scene referencing API which allows any scene to 'reference' another scene just by its scene ID, this establishes a master scene and referenced scene relationship. It is important to realize that this does NOT expose any of the referenced scene's Ramses objects (meshnodes, appearances, ...) to the master scene. Instead the API allows to change the referenced scenes rendering states similar to the <a class="el" href="classramses_1_1RendererSceneControl.html" title="Control states of scenes.">ramses::RendererSceneControl</a> API, i.e. rendering state, render order, data linking etc., see the <a class="el" href="classramses_1_1Scene.html" title="The Scene holds a scene graph. It is the essential class for distributing content to the ramses syste...">ramses::Scene</a> and <a class="el" href="classramses_1_1SceneReference.html" title="The SceneReference object refers to another ramses scene using its sceneId.">ramses::SceneReference</a> API docs for details. Even though limited, this already gives a number of possibilities how to composite/nest scenes together.</p>
 <p>Overview of the example above, now with scene referencing:</p><ul>
@@ -132,11 +132,11 @@ Scene Referencing</h1>
 <li>referenced scene's render order is relative to its master scene's render order</li>
 </ul>
 <p>Check out the scene referencing example in Ramses SDK to get the feeling of how to use the API for a basic use case.</p>
-<h1><a class="anchor" id="autotoc_md185"></a>
+<h1><a class="anchor" id="autotoc_md175"></a>
 Scene Referencing events</h1>
 <p>The mechanism of events dispatching is used in several Ramses APIs and it is not different with scene referencing. With scene referencing however we deal with two remote participants (referenced scene's provider and consumer with renderer), both contributing to the overall state. This makes it even more important to use the events carefully as means of synchronization and correct sequence of commands.</p>
 <p>One event in particular can be helpful to achieve well defined behavior - a versioned flush applied event (<a class="el" href="classramses_1_1IClientEventHandler.html#af2b3c29f18d4d17cfb5754601b8b37c6" title="This method will be called after a flush with version tag (ramses::Scene::flush) has been applied and...">ramses::IClientEventHandler::sceneReferenceFlushed</a>). As stated above master scene has no access to referenced scene's internals, it can only request state changes for the scene as a whole on renderer's side. But Ramses scene can be flushed with a version tag, the said event is emitted whenever a referenced scene is flushed with version tag and that flush is fully applied to the scene on renderer's side. The version tag itself is a user defined value, so there can be an agreement how to interprete the value by the application logic (see <a class="el" href="classramses_1_1Scene.html#ac12e7548df54a23bc10c1e5629c1aa88" title="Commits all changes done to the scene since the last flush or since scene creation....">ramses::Scene::flush</a>).</p>
-<h1><a class="anchor" id="autotoc_md186"></a>
+<h1><a class="anchor" id="autotoc_md176"></a>
 Understanding READY state</h1>
 <p>The READY state is probably the most important state and should always be used as synchronization point whenever there is need to show a scene/content 'at once' (with minimal delay), Ramses guarantees to show any given READY scene in the very next frame after the show request. This is essential if a collection of scenes/contents need to appear together, which is probably the case whenever scene referencing is used. There are however different meanings of 'ready' and in the context of scene referencing good understanding might be necessary to properly implement some more advanced use cases.</p>
 <p>There are two basic types of READY, one in the DCSM context (<a class="el" href="namespaceramses.html#aee996152a40d451bbbefff0ae96c66d3ae7d31fc0602fb2ede144d18cdffd816b" title="Request content to be prepare to be shown at any time.">ramses::EDcsmState::Ready</a>) and the other in Ramses rendering context (ramses::RenderState::Ready). Even though seemingly independent they need to be considered both together by any content consumer (including the middle layer consumer using scene referencing).</p><ul>

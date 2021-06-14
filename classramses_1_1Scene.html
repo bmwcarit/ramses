@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -3132,7 +3132,7 @@ false, if scene is currently not published. </dd></dl>
 
 <p>Expiration timestamp is a point in time till which the scene is considered to be up-to-date. </p>
 <p>Logic on renderer side will check the time every frame and in case it detects the scene to be rendered after its expiration timestamp it will generate an event (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#a994131648d8494923fd77c31a106c4c0" title="This method will be called if a scene which is enabled for expiration monitoring (sceneExpirationMoni...">ramses::IRendererSceneControlEventHandler::sceneExpired</a>).</p>
-<p>IMPORTANT: Expiration timestamp value is bound to current state of scene (once it is flushed) and for all subsequent flushes until changed again or disabled. Once expiration timestamp is set to non-zero all subscribed renderers will periodically check it from that point on. User is responsible for calling this method to keep the expiration reasonably in future.</p>
+<p>IMPORTANT: Expiration timestamp value is bound to current state of scene (once it is flushed) and for all subsequent flushes until changed again or disabled. Once expiration timestamp is set to non-zero all subscribed renderers will periodically check it from that point on. User is responsible for calling this method to keep the expiration up-to-date during the lifecycle of the scene.</p>
 <p>Setting the expiration timestamp to non-zero value enables the monitoring (<a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#aa36f55ffddbe50085cb19020d9bc6886" title="This method will be called whenever a scene which was not previously monitored for expiration has req...">ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringEnabled</a>), to disable the expiration monitoring set expiration timestamp to 0 followed by a flush. By default the expiration checking is disabled. If an expired scene recovers while monitoring is disabled, there will be no event of recovery after monitoring re-enabled. If scene is expired at the moment monitoring is enabled, there will be event of expiration (after <a class="el" href="classramses_1_1IRendererSceneControlEventHandler.html#aa36f55ffddbe50085cb19020d9bc6886" title="This method will be called whenever a scene which was not previously monitored for expiration has req...">ramses::IRendererSceneControlEventHandler::sceneExpirationMonitoringEnabled</a>).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -3286,7 +3286,7 @@ false, if scene is currently not published. </dd></dl>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/c/src/mirror/client/ramses-client/ramses-client-api/include/ramses-client-api/<a class="el" href="Scene_8h_source.html">Scene.h</a></li>
+<li>/c/src/genivi/client/ramses-client/ramses-client-api/include/ramses-client-api/<a class="el" href="Scene_8h_source.html">Scene.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

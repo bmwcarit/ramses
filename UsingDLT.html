@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -68,17 +68,17 @@ $(function() {
 <div class="title">Using DLT with RAMSES </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md88"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md192"></a>
 What is being logged by RAMSES and where</h1>
 <p>RAMSES has a lot of logging information, but most of it is hidden (log level debug or lower) unless explicitly enabled in order to avoid spam. Two of the things which are always logged are:</p><ul>
 <li>The RAMSES version and some system information the first time a ramses application is instantiated</li>
 <li>Changes to scene states (new scene published, existing scene shown/hidden, etc.)</li>
 </ul>
 <p>Other logs have to be enabled explicitly by turning up the log level of the corresponding log contexts within the application which is being debugged.</p>
-<h1><a class="anchor" id="autotoc_md89"></a>
+<h1><a class="anchor" id="autotoc_md193"></a>
 Application ID</h1>
 <p>DLT allows each application to have an application ID. Since RAMSES is not a standalone application, it doesn't have its own application ID. It is recommended that every application using RAMSES sets a unique application ID via RamsesFramework::setDLTApplicationID(). The application ID (visible in DltViewer for every log message) can be used to easily identify which RAMSES instance was the source of that log message. Be watchful when filtering logs to filter for the correct application ID - this is possible by either enabling the log contexts for that specific application ID only and disabling the rest, or by specifying it in the log filters.</p>
-<h1><a class="anchor" id="autotoc_md90"></a>
+<h1><a class="anchor" id="autotoc_md194"></a>
 User-related log contexts</h1>
 <p><b>RAPI</b><br  />
  Contains all "non-const" calls to RAMSES Client API methods, such as Scene::createMeshNode(). These log messages are logged with trace log level for performance reasons. To enable it, the context log level must be set to "verbose" from the DLT Viewer.</p>
@@ -88,7 +88,7 @@ User-related log contexts</h1>
  Used to pass DLT injections to RAMSES over the ramses shell (RAMSH) - see below how to do that</p>
 <p><b>RRND</b><br  />
  Shows state changes of scenes on the renderer. This includes availability and subscription status as well as whether the scene is mapped (i.e. on the GPU) and shown (being rendered to a buffer, not necessarily visible)</p>
-<h1><a class="anchor" id="autotoc_md91"></a>
+<h1><a class="anchor" id="autotoc_md195"></a>
 Other, less interesting log contexts</h1>
 <p><b>RFRA</b><br  />
  Internal logs from the ramses framework.</p>
@@ -100,7 +100,7 @@ Other, less interesting log contexts</h1>
  Profiling logs.</p>
 <p><b>RSMT</b><br  />
  Used for automated smoke tests.</p>
-<h1><a class="anchor" id="autotoc_md92"></a>
+<h1><a class="anchor" id="autotoc_md196"></a>
 DLT injections</h1>
 <p>DLT provides a way to send messages to an application, called "injections". Injections are typically used for debugging purposes such as enabling specific features temporarily or controlling the flow of the application.</p>
 <p>In order to send an injection to RAMSES:</p><ul>

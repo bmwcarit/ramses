@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -68,21 +68,21 @@ $(function() {
 <div class="title">Storing GLSL as binary shaders </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md194"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md202"></a>
 Summary</h1>
 <p>As described in <a class="el" href="EffectLifecycle.html">Effect lifecycle in RAMSES</a>, effects need to be preprocessed by RAMSES before passing them to an offline shader compiler which in turn creates binary shaders. In short, the tool generates two things:</p><ul>
 <li>parsed shader source code which RAMSES would pass to OpenGL</li>
 <li>effect ID which will be used by <a class="el" href="classramses_1_1IBinaryShaderCache.html" title="An interface used to exchange Binary Shader Cache with the RamsesRenderer. The RamsesRenderer will no...">ramses::IBinaryShaderCache</a> to resolve binary shaders on the renderer side</li>
 </ul>
 <p>The shader source is stored separately for the vertex and fragment shaders, so that they can be passed directly to an offline shader compiler.</p>
-<h1><a class="anchor" id="autotoc_md195"></a>
+<h1><a class="anchor" id="autotoc_md203"></a>
 Usage</h1>
 <p>With full named parameters: </p><div class="fragment"><div class="line"><a class="code" href="namespaceramses.html">ramses</a>-shader-from-glsl-shader --in-vertex-shader &lt;filename&gt; --in-fragment-shader &lt;filename&gt;</div>
 <div class="line">--in-config &lt;filename&gt; --out-vertex-shader &lt;filename&gt; --out-fragment-shader &lt;filename&gt;</div>
 <div class="line">--out-effect-id &lt;filename&gt; --out-effect-<span class="keywordtype">id</span>-type &lt;client|renderer&gt;</div>
 </div><!-- fragment --><p>With short named parameters: </p><div class="fragment"><div class="line"><a class="code" href="namespaceramses.html">ramses</a>-shader-from-glsl-shader -iv &lt;filename&gt; -if &lt;filename&gt; -ic &lt;filename&gt; -ov &lt;filename&gt; -of &lt;filename&gt;</div>
 <div class="line">-oe &lt;filename&gt; -ot &lt;client|renderer&gt;</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md196"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md204"></a>
 Parameter description:</h2>
 <p><b>&ndash;in-vertex-shader/-iv:</b> input file containing the vertex shader to convert <br  />
  <b>&ndash;in-fragment-shader/-if:</b> input file containing the fragment shader to convert <br  />
@@ -92,7 +92,7 @@ Parameter description:</h2>
  <b>&ndash;out-effect-id/-oe:</b> path to file where the ramses effect ID will be stored <br  />
  <b>&ndash;out-effect-id-type/-ot:</b> which type (client or renderer) of effectId to use when writing the effectId; see <a class="el" href="EffectLifecycle.html">Effect lifecycle in RAMSES</a> for more info <br  />
 </p>
-<h2><a class="anchor" id="autotoc_md197"></a>
+<h2><a class="anchor" id="autotoc_md205"></a>
 Effect config file description:</h2>
 <p>Besides the vertex and fragment shaders, the user also has to provide a configuration which contains additional information such as definition of Attribute Semantics, Uniform Semantics and Compiler Defines. The config file has a fixed and simple line-based format. Below is a complete example of a config file which has all possible types of parameters which can be passed to RAMSES. It is possible to omit properties which are not needed.</p>
 <div class="fragment"><div class="line">UNIFORM_SEMANTIC matrix44fInput EEffectUniformSemantic_ModelViewMatrix</div>
@@ -101,13 +101,13 @@ Effect config file description:</h2>
 <div class="line">DEFINE enable_multidraw</div>
 <div class="line">DEFINE draw_buffers</div>
 </div><!-- fragment --><p>The configuration properties are exactly the same as those provided to <a class="el" href="classramses_1_1EffectDescription.html" title="An effect description holds all necessary information for an effect to be created.">ramses::EffectDescription</a> when creating effects with the RAMSES API. See the documentation of <a class="el" href="classramses_1_1EffectDescription.html" title="An effect description holds all necessary information for an effect to be created.">ramses::EffectDescription</a> for more details.</p>
-<h3><a class="anchor" id="autotoc_md198"></a>
+<h3><a class="anchor" id="autotoc_md206"></a>
 Uniform semantic definition: UNIFORM_SEMANTIC inputName EEffectUniformSemantic_XXXX</h3>
 <p>To define a Uniform Semantic, start a line with keyword UNIFORM_SEMANTIC. The second token is the inputName for the semantic, and the third token is the semantic name.</p>
-<h3><a class="anchor" id="autotoc_md199"></a>
+<h3><a class="anchor" id="autotoc_md207"></a>
 Attribute semantic definition: ATTRIBUTE_SEMANTIC inputName EEffectAttributeSemantic::XXX</h3>
 <p>To define an attribute semantic, start a line with keyWord ATTRIBUTE_SEMANTIC. The second token is the inputName for the semantic, and the third token is the semantic name.</p>
-<h3><a class="anchor" id="autotoc_md200"></a>
+<h3><a class="anchor" id="autotoc_md208"></a>
 Compiler defintion: DEFINE nameOrExpression</h3>
 <p>To define a compiler defintion, the first Token is the keyword DEFINE, and the second token is the definition statement. </p>
 </div></div><!-- contents -->

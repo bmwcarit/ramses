@@ -138,6 +138,7 @@ var menudata={children:[
 {text:"x",url:"functions_vars.html#index_x"},
 {text:"y",url:"functions_vars.html#index_y"}]},
 {text:"Typedefs",url:"functions_type.html"},
+{text:"Enumerations",url:"functions_enum.html"},
 {text:"Related Functions",url:"functions_rela.html",children:[
 {text:"a",url:"functions_rela.html#index_a"},
 {text:"c",url:"functions_rela.html#index_c"},

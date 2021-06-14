@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.103</span>
+   &#160;<span id="projectnumber">27.0.105</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -108,6 +108,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:adf7913b93f629e241ab11f936705c49d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a9e71bf1963aa3e607ac625a84f66143e">FontId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1FontRegistry.html#adf7913b93f629e241ab11f936705c49d">createFreetype2Font</a> (const char *fontPath)</td></tr>
 <tr class="memdesc:adf7913b93f629e241ab11f936705c49d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load Freetype2 font from file.  <a href="classramses_1_1FontRegistry.html#adf7913b93f629e241ab11f936705c49d">More...</a><br /></td></tr>
 <tr class="separator:adf7913b93f629e241ab11f936705c49d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a379788dc72589522f27d71b5a9479ab0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a9e71bf1963aa3e607ac625a84f66143e">FontId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1FontRegistry.html#a379788dc72589522f27d71b5a9479ab0">createFreetype2FontFromFileDescriptor</a> (int fd, size_t offset, size_t length)</td></tr>
+<tr class="memdesc:a379788dc72589522f27d71b5a9479ab0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load Freetype2 font from an open file descriptor.  <a href="classramses_1_1FontRegistry.html#a379788dc72589522f27d71b5a9479ab0">More...</a><br /></td></tr>
+<tr class="separator:a379788dc72589522f27d71b5a9479ab0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a47e62f1d6b99fcaeded6929a93128e6d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a7a1f3ed855229ca4ac9a0729ecb5e54d">FontInstanceId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1FontRegistry.html#a47e62f1d6b99fcaeded6929a93128e6d">createFreetype2FontInstance</a> (<a class="el" href="namespaceramses.html#a9e71bf1963aa3e607ac625a84f66143e">FontId</a> fontId, uint32_t size, bool forceAutohinting=false)</td></tr>
 <tr class="memdesc:a47e62f1d6b99fcaeded6929a93128e6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create Freetype2 font instance.  <a href="classramses_1_1FontRegistry.html#a47e62f1d6b99fcaeded6929a93128e6d">More...</a><br /></td></tr>
 <tr class="separator:a47e62f1d6b99fcaeded6929a93128e6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -248,6 +251,53 @@ Public Attributes</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>The font id, <a class="el" href="classramses_1_1StronglyTypedValue.html#af3fe119eff10ba4ef87f1fe6ab02f4f4" title="Static Getter for Invalid.">FontId::Invalid()</a> on error </dd></dl>
 <dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a34">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a34">ramses-example-text-languages/src/main.cpp</a>.</dd>
 </dl>
+
+</div>
+</div>
+<a id="a379788dc72589522f27d71b5a9479ab0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a379788dc72589522f27d71b5a9479ab0">&#9670;&nbsp;</a></span>createFreetype2FontFromFileDescriptor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceramses.html#a9e71bf1963aa3e607ac625a84f66143e">FontId</a> ramses::FontRegistry::createFreetype2FontFromFileDescriptor </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>fd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>length</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Load Freetype2 font from an open file descriptor. </p>
+<p>The font file must be in the already opened filedescriptor at absolute position offset within the file. The filedescriptor must be opened for read access and may not be modified anymore after this call. The filedescriptor must support seeking. Ramses takes ownership of the filedescriptor and will close it when not needed anymore.</p>
+<p>The behavior is undefined if the filedescriptor does not contain a complete and valid font at offset.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">fd</td><td>Open and readable filedescriptor. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">offset</td><td>Absolute starting position of the font data within fd. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Size of the font data within fd. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The font id, <a class="el" href="classramses_1_1StronglyTypedValue.html#af3fe119eff10ba4ef87f1fe6ab02f4f4" title="Static Getter for Invalid.">FontId::Invalid()</a> on error </dd></dl>
 
 </div>
 </div>
@@ -488,7 +538,7 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/c/src/mirror/client/ramses-client/ramses-text-api/include/ramses-text-api/<a class="el" href="FontRegistry_8h_source.html">FontRegistry.h</a></li>
+<li>/c/src/genivi/client/ramses-client/ramses-text-api/include/ramses-text-api/<a class="el" href="FontRegistry_8h_source.html">FontRegistry.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
