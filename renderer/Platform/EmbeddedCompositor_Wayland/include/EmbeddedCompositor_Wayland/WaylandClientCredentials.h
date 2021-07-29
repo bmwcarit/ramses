@@ -38,7 +38,7 @@ template <>
 struct fmt::formatter<ramses_internal::WaylandClientCredentials> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses_internal::WaylandClientCredentials& cred, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::WaylandClientCredentials& cred, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "[pid:{} uid:{} gid:{}]",
                               cred.getProcessId(),

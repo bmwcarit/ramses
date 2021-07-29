@@ -18,7 +18,7 @@ namespace ramses_internal
 {
     namespace
     {
-        const char* EnvironmentVariableNames[] =
+        const char* const EnvironmentVariableNames[] =
         {
             "XDG_RUNTIME_DIR",
             "WAYLAND_SOCKET",

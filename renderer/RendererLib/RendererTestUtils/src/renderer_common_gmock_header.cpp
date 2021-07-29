@@ -25,11 +25,12 @@ namespace ramses_internal
         *os << "\nWindowHeight=" << config.getDesiredWindowHeight();
         *os << "\nWindowPositionX=" << config.getWindowPositionX();
         *os << "\nWindowPositionY=" << config.getWindowPositionY();
+        *os << "\nWaylandSocketEmbedded=" << config.getWaylandSocketEmbedded().c_str();
+        *os << "\nWaylandSocketEmbeddedFD=" << config.getWaylandSocketEmbeddedFD();
     }
 
     void PrintTo(const RendererConfig& config, ::std::ostream* os)
     {
         *os << "SCEnabled=" << config.getSystemCompositorControlEnabled();
-        *os << "\nWaylandSocketEmbedded=" << config.getWaylandSocketEmbedded().c_str();
     }
 }

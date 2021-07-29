@@ -72,6 +72,11 @@ namespace ramses_internal
         RendererSceneUpdater::handlePickEvent(sceneId, coords); // NOLINT clang-tidy: We really mean to call into RendererSceneUpdater
     }
 
+    void RendererSceneUpdaterFacade::setForceMapTimeout(std::chrono::milliseconds timeout)
+    {
+        m_maximumWaitingTimeToForceMap = timeout;
+    }
+
     RendererSceneUpdaterFacade::~RendererSceneUpdaterFacade() = default;
 
     std::unique_ptr<IRendererResourceManager> RendererSceneUpdaterFacade::createResourceManager(

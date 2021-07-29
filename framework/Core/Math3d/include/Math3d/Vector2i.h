@@ -193,7 +193,7 @@ namespace ramses_internal
     IInputStream&
     operator>>(IInputStream& inputStream, Vector2i& vector)
     {
-        return inputStream.read(reinterpret_cast<Char*>(vector.data), sizeof(vector.data));
+        return inputStream.read(vector.data, sizeof(vector.data));
     }
 
     constexpr inline Vector2i operator*(const Int32 scalar, const Vector2i& vec)
@@ -206,7 +206,7 @@ template <>
 struct fmt::formatter<ramses_internal::Vector2i> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses_internal::Vector2i& m, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::Vector2i& m, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "[{} {}]", m.data[0], m.data[1]);
     }

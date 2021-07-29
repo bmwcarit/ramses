@@ -1250,9 +1250,10 @@ namespace ramses
             auto& contentInfo = m_contents.find(contentID)->second;
 
             if (currState == ContentState::Available || currState == ContentState::Invalid)
-            {
                 contentInfo.displayBufferAssignment = {};
-            }
+
+            if (lastState == ContentState::Available && currState == ContentState::Ready)
+                contentInfo.readyRequestTimeOut = std::numeric_limits<uint64_t>::max();
 
             LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:handleContentStateChange: content " << contentID << " state changed from " << ContentStateName(lastState) << " to " << ContentStateName(currState));
             m_pendingEvents.push_back({ EventType::ContentStateChanged, contentID, contentInfo.category, currState, lastState, DcsmContentControlEventResult::OK });

@@ -39,7 +39,7 @@ template <>
 struct fmt::formatter<ramses::CategoryInfoUpdate> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses::CategoryInfoUpdate& categoryInfo, FormatContext& ctx)
+    constexpr auto format(const ramses::CategoryInfoUpdate& categoryInfo, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "{}",categoryInfo.impl.getCategoryInfo());
     }
@@ -49,7 +49,7 @@ template <>
 struct fmt::formatter<ramses::SizeInfo> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses::SizeInfo& sizeInfo, FormatContext& ctx)
+    constexpr auto format(const ramses::SizeInfo& sizeInfo, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "{}/{}", sizeInfo.width, sizeInfo.height);
     }
@@ -59,7 +59,7 @@ template <>
 struct fmt::formatter<ramses::Rect> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses::Rect& rect, FormatContext& ctx)
+    constexpr auto format(const ramses::Rect& rect, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "{}/{}/{}/{}", rect.x, rect.y, rect.width, rect.height);
     }
@@ -69,7 +69,7 @@ template <>
 struct fmt::formatter<ramses::AnimationInformation> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses::AnimationInformation& ai, FormatContext& ctx)
+    constexpr auto format(const ramses::AnimationInformation& ai, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "[{}; {}]", ai.startTime, ai.finishTime);
     }
@@ -79,7 +79,7 @@ template <>
 struct fmt::formatter<ramses::resourceId_t> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses::resourceId_t& res, FormatContext& ctx)
+    constexpr auto format(const ramses::resourceId_t& res, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "0x{:016X}:{:016X}", res.highPart, res.lowPart);
     }

@@ -103,6 +103,16 @@ namespace ramses
         status_t setCarModelView(const CarModelViewMetadata& viewMetadata, const AnimationInformation& timingInfo);
 
         /**
+         * @brief Set car model view extended metadata entry. Provides additional values for setCarModelView()
+         *
+         * @note Should only be used in combination with setCarModelView()
+         * @param viewMetadata extended view metadata for the car model
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t setCarModelViewExtended(const CarModelViewMetadataExtended& viewMetadata);
+
+        /**
          * @brief Set car model visibility metadata entry. Requests car model visibility at consumer side.
          *
          * @param visiblity visibility of car model
@@ -149,6 +159,16 @@ namespace ramses
          *         to resolve error message using getStatusMessage().
          */
         status_t setDisplayedDataFlags(uint32_t flags);
+
+        /**
+         * @brief   Set widget layout dependency to the given M Modes
+         * @details Used to restrict the widget availability in the WidgetConfigurator for certain M modes
+         *
+         * @param flags Bitmask of displaycluster::M_Modes
+         * @return StatusOK for success, otherwise the returned status can be used
+         *         to resolve error message using getStatusMessage().
+         */
+        status_t setLayoutAvailability(uint8_t flags);
 
         /**
          * @brief Deleted move constructor

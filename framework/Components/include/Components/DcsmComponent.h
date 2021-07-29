@@ -63,6 +63,7 @@ namespace ramses_internal
         virtual bool sendContentEnableFocusRequest(ContentID contentID, int32_t) override;
         virtual bool sendContentDisableFocusRequest(ContentID contentID, int32_t) override;
         virtual bool sendRequestStopOfferContent(ContentID contentID) override;
+        virtual bool sendForceStopOfferContent(ContentID contentID) override;
         virtual bool sendUpdateContentMetadata(ContentID contentID, const DcsmMetadata& metadata) override;
 
         // IDcsmProviderServiceHandler implementation
@@ -154,7 +155,7 @@ namespace ramses_internal
 
         void addProviderEvent_CanvasSizeChange(ContentID contentID, CategoryInfo categoryInfo, AnimationInformation, const Guid& consumerID);
         void addProviderEvent_ContentStateChange(ContentID contentID, EDcsmState status, CategoryInfo categoryInfo,AnimationInformation, const Guid& consumerID);
-        void addProviderEvent_ContentStatus(ContentID contentID, uint64_t messageID, absl::Span<const Byte> message, const Guid& consumerID);
+        void addProviderEvent_ContentStatus(ContentID contentID, std::unique_ptr<ramses::DcsmStatusMessageImpl>&& message, const Guid& consumerID);
         void addConsumerEvent_OfferContent(ContentID contentID, Category, ETechnicalContentType technicalContentType, const Guid& providerID);
         void addConsumerEvent_ContentDescription(ContentID contentID, TechnicalContentDescriptor technicalContentDescriptor, const Guid& providerID);
         void addConsumerEvent_ContentReady(ContentID contentID, const Guid& providerID);
@@ -174,7 +175,6 @@ namespace ramses_internal
         bool isLocallyProvidingContent(const char* callerMethod, ContentID content) const;
         bool isValidContent(const char* callerMethod, ContentID content) const;
         bool isValidStateTransition(const char* callerMethod, const ContentInfo& ci, EDcsmState transition, ContentState& newState) const;
-        bool isContentStatusMessageKnown(const char* callerMethod, uint64_t messageID) const;
 
         const Guid m_myID;
         ICommunicationSystem& m_communicationSystem;

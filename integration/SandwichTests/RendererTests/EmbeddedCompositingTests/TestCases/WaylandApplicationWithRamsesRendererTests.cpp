@@ -15,14 +15,17 @@ namespace ramses_internal
 {
     void WaylandApplicationWithRamsesRendererTests::setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework)
     {
-        testFramework.createTestCaseWithDefaultDisplay(CanRunRamsesRendererWithinExistingWaylandApplication, *this, "CanRunRamsesRendererWithinExistingWaylandApplication");
+        ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u, true);
+        displayConfig.setWindowRectangle(0u, 0u, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
+        displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
+        displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
+
+        testFramework.createTestCase(CanRunRamsesRendererWithinExistingWaylandApplication, *this, "CanRunRamsesRendererWithinExistingWaylandApplication").m_displayConfigs.push_back(displayConfig);
     }
 
     bool WaylandApplicationWithRamsesRendererTests::runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase)
     {
         Bool testResultValue = true;
-
-        testFramework.setEnvironmentVariableWaylandDisplay();
 
         switch(testCase.m_id)
         {

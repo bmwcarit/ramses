@@ -65,8 +65,11 @@ function(ACME_CURRENT_FOLDER_PATH OUT)
     # first get path relative to ramses root dir
     string(REGEX REPLACE "${PROJECT_SOURCE_DIR}/" "" ACME_relative_path "${CMAKE_CURRENT_SOURCE_DIR}")
     string(REGEX REPLACE "/[^/]*$" "" ACME_folder_path "${ACME_relative_path}")
-    if (NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-        # optionally adjust path for ramses used as subdirectory
+    if (ramses-sdk_FOLDER_PREFIX)
+        # use user provided prefix if given
+        set(ACME_folder_path "${ramses-sdk_FOLDER_PREFIX}/${ACME_folder_path}")
+    elseif (NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+        # otherwise adjust path for ramses used as subdirectory
         string(REGEX REPLACE "${CMAKE_SOURCE_DIR}/" "" ACME_folder_prefix_path "${PROJECT_SOURCE_DIR}")
         set(ACME_folder_path "${ACME_folder_prefix_path}/${ACME_folder_path}")
     endif()

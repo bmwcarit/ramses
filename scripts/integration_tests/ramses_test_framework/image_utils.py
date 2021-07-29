@@ -10,6 +10,7 @@ from __future__ import division
 from builtins import range
 from PIL import ImageChops
 from PIL import ImageEnhance
+from PIL import Image
 import os.path
 from ramses_test_framework import log
 
@@ -94,10 +95,12 @@ def compareUnequal(image1, image2, numberOfRequiredUnequalPixels, percentageOfRG
 
 
 def create_diff_images(image1, image2, originalFilePath, scaleFactor):
-    diff = ImageChops.difference(image1, image2)
-    diff = diff.convert(mode='RGBA')  # following ops cannot work with mode '1' or 'L' that might result from diffing
-    diffScaled = ImageEnhance.Contrast(diff).enhance(scaleFactor)
+    diff = ImageChops.difference(image1.convert(mode='RGBA'), image2.convert(mode='RGBA'))
+    diffScaled = ImageEnhance.Contrast(diff.convert(mode="L")).enhance(scaleFactor)
     (root, ext) = os.path.splitext(originalFilePath)
     diff.save(root + "_DIFF" + ext)
+    diff_R, diff_G, diff_B, diff_A = diff.split()
+    Image.merge(mode="RGB", bands=[diff_R, diff_G, diff_B]).save(root + "_DIFF_RGB" + ext)
+    Image.merge(mode="L", bands=[diff_A]).save(root + "_DIFF_ALPHA" + ext)
     diffScaled.save(root + "_DIFF_SCALED" + ext)
     log.info("diff files saved")

@@ -217,7 +217,7 @@ template <>
 struct fmt::formatter<ramses_internal::Matrix22f> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses_internal::Matrix22f& m, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::Matrix22f& m, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "[{} {}; {} {}]",
                               m.data[0], m.data[2],

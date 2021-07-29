@@ -34,7 +34,8 @@ namespace ramses_internal
         SceneUpdate sceneUpdate;
         if (!verifyAndGetResourceChanges(sceneUpdate, hasNewActions))
         {
-            LOG_ERROR(CONTEXT_CLIENT, "ClientSceneLogicDirect::flushSceneActions: At least one resource can't be loaded, Scene can't be rendered. Consult log and run Scene::validate() for more information");
+            LOG_ERROR_P(CONTEXT_CLIENT, "ClientSceneLogicDirect::flushSceneActions: At least one resource can't be loaded, "
+                        "Scene {} can't be rendered. Consult log and run Scene::validate() for more information",  m_scene.getSceneId());
             return false;
         }
 
@@ -64,7 +65,7 @@ namespace ramses_internal
         if (isPublished())
         {
             const bool addSizeInfo = sceneSizes > m_previousSceneSizes;
-            sceneUpdate.flushInfos = { m_flushCounter, versionTag, addSizeInfo?sceneSizes: SceneSizeInformation(), m_resourceChanges, m_scene.getSceneReferenceActions(), flushTimeInfo, addSizeInfo, true};
+            sceneUpdate.flushInfos = { m_flushCounter, versionTag, addSizeInfo?sceneSizes: SceneSizeInformation(), m_resourceChangesSinceLastFlush, m_scene.getSceneReferenceActions(), flushTimeInfo, addSizeInfo, true};
             m_previousSceneSizes = sceneSizes;
         }
 

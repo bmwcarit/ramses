@@ -27,7 +27,7 @@ namespace ramses_internal
             : senderID(1000)
             , displayHandle(1u)
             , rendererScenes(rendererEventCollector)
-            , expirationMonitor(rendererScenes, rendererEventCollector)
+            , expirationMonitor(rendererScenes, rendererEventCollector, rendererStatistics)
             , renderer(displayHandle, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
             , sceneStateExecutor(renderer, rendererSceneSender, rendererEventCollector)
         {

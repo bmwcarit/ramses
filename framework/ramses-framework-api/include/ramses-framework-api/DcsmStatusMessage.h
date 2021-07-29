@@ -34,6 +34,18 @@ namespace ramses
         class StreamStatusMessage const* getAsStreamStatus() const;
 
         /**
+         * @brief Convenience function to get the derived class of DcsmStatusMessage easily.
+         * @return Pointer to ActiveLayoutMessage class if type of this message is ActiveLayout, nullptr otherwise.
+         */
+        class ActiveLayoutMessage const* getAsActiveLayout() const;
+
+        /**
+         * @brief Convenience function to get the derived class of DcsmStatusMessage easily.
+         * @return Pointer to ActiveLayoutMessage class if type of this message is ActiveLayout, nullptr otherwise.
+         */
+        class WidgetFocusStatusMessage const* getAsWidgetFocusStatus() const;
+
+        /**
          * @brief Default destructor of DcsmStatusMessage
          */
         virtual ~DcsmStatusMessage();
@@ -100,6 +112,80 @@ namespace ramses
          * @param impl_ impl
          */
         explicit StreamStatusMessage(std::unique_ptr<DcsmStatusMessageImpl>&& impl_);
+    };
+
+
+    /**
+     * @brief A status message containing the instrument cluster's active layout.
+     */
+    class RAMSES_API ActiveLayoutMessage : public DcsmStatusMessage
+    {
+    public:
+        /**
+         * @brief The possible layout values in the instrument cluster.
+         */
+        enum class Layout : uint32_t
+        {
+            Drive = 0,
+            Focus,
+            Gallery,
+            Autonomous,
+            Sport_Road,
+            Sport_Track,
+        };
+
+        /**
+        * @brief Create an ActiveLayoutMessage object containing the provided layout.
+        * @param layout The layout to transmit.
+        */
+        explicit ActiveLayoutMessage(Layout layout);
+
+        /**
+         * @brief Returns the active layout
+         * @return active layout
+         */
+        Layout getLayout() const;
+
+        /**
+         * @brief Constructor from impl, only for internal usage
+         * @param impl_ impl
+         */
+        explicit ActiveLayoutMessage(std::unique_ptr<DcsmStatusMessageImpl>&& impl_);
+    };
+
+    /**
+     * @brief A message containing the widget focus state
+     */
+    class RAMSES_API WidgetFocusStatusMessage : public DcsmStatusMessage
+    {
+    public:
+        /**
+         * @brief The focus states of the widget on the instrument cluster.
+         */
+        enum class Status : uint32_t
+        {
+            Unknown = 0,
+            Focused,               ///< widget is focused
+            NotFocused,            ///< widget is not focused
+        };
+
+        /**
+        * @brief Create a WidgetFocusStatusMessage object containing the provided status.
+        * @param status The status to transmit.
+        */
+        explicit WidgetFocusStatusMessage(Status status);
+
+        /**
+         * @brief Returns the contained status.
+         * @return status the contained status.
+         */
+        Status getWidgetFocusStatus() const;
+
+        /**
+         * @brief Constructor from impl, only for internal usage
+         * @param impl_ impl
+         */
+        explicit WidgetFocusStatusMessage(std::unique_ptr<DcsmStatusMessageImpl>&& impl_);
     };
 }
 

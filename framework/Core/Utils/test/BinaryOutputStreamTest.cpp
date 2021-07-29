@@ -12,6 +12,7 @@
 #include "Utils/BinaryInputStream.h"
 #include "Math3d/Matrix44f.h"
 #include "Collections/Guid.h"
+#include "UnsafeTestMemoryHelpers.h"
 
 namespace ramses_internal
 {
@@ -38,11 +39,11 @@ namespace ramses_internal
         outStream << static_cast<uint16_t>(5) << static_cast<uint16_t>(6) << static_cast<uint16_t>(7);
 
         const Byte* data = outStream.getData();
-        EXPECT_EQ(5, *reinterpret_cast<const uint16_t*>(data));
+        EXPECT_EQ(5, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint16_t>(data));
         data += sizeof(uint16_t);
-        EXPECT_EQ(6, *reinterpret_cast<const uint16_t*>(data));
+        EXPECT_EQ(6, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint16_t>(data));
         data += sizeof(uint16_t);
-        EXPECT_EQ(7, *reinterpret_cast<const uint16_t*>(data));
+        EXPECT_EQ(7, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint16_t>(data));
     }
 
     TEST(BinaryOutputStreamTest, InsertBool)
@@ -52,11 +53,11 @@ namespace ramses_internal
         outStream << true << false << true;
 
         const Byte* data = outStream.getData();
-        EXPECT_TRUE(*reinterpret_cast<const bool*>(data));
+        EXPECT_TRUE(UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<bool>(data));
         data += sizeof(bool);
-        EXPECT_FALSE(*reinterpret_cast<const bool*>(data));
+        EXPECT_FALSE(UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<bool>(data));
         data += sizeof(bool);
-        EXPECT_TRUE(*reinterpret_cast<const bool*>(data));
+        EXPECT_TRUE(UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<bool>(data));
     }
 
     TEST(BinaryOutputStreamTest, InsertInt)
@@ -66,11 +67,11 @@ namespace ramses_internal
         outStream << 5 << 6 << 7;
 
         const Byte* data = outStream.getData();
-        EXPECT_EQ(5, *reinterpret_cast<const int32_t*>(data));
+        EXPECT_EQ(5, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<int32_t>(data));
         data += sizeof(int32_t);
-        EXPECT_EQ(6, *reinterpret_cast<const int32_t*>(data));
+        EXPECT_EQ(6, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<int32_t>(data));
         data += sizeof(int32_t);
-        EXPECT_EQ(7, *reinterpret_cast<const int32_t*>(data));
+        EXPECT_EQ(7, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<int32_t>(data));
     }
 
     TEST(BinaryOutputStreamTest, InsertUInt)
@@ -79,15 +80,15 @@ namespace ramses_internal
         outStream << 0u << 5u << 6u << 7u << std::numeric_limits<uint32_t>::max();
 
         const Byte* data = outStream.getData();
-        EXPECT_EQ(0u, *reinterpret_cast<const uint32_t*>(data));
+        EXPECT_EQ(0u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(data));
         data += sizeof(uint32_t);
-        EXPECT_EQ(5u, *reinterpret_cast<const uint32_t*>(data));
+        EXPECT_EQ(5u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(data));
         data += sizeof(uint32_t);
-        EXPECT_EQ(6u, *reinterpret_cast<const uint32_t*>(data));
+        EXPECT_EQ(6u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(data));
         data += sizeof(uint32_t);
-        EXPECT_EQ(7u, *reinterpret_cast<const uint32_t*>(data));
+        EXPECT_EQ(7u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(data));
         data += sizeof(uint32_t);
-        EXPECT_EQ(std::numeric_limits<uint32_t>::max(), *reinterpret_cast<const uint32_t*>(data));
+        EXPECT_EQ(std::numeric_limits<uint32_t>::max(), UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(data));
     }
 
     TEST(BinaryOutputStreamTest, InsertInt64)
@@ -97,11 +98,11 @@ namespace ramses_internal
         outStream << static_cast<int64_t>(5) << static_cast<int64_t>(6) << static_cast<int64_t>(7);
 
         const Byte* data = outStream.getData();
-        EXPECT_EQ(static_cast<int64_t>(5), *reinterpret_cast<const int64_t*>(data));
+        EXPECT_EQ(5, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<int64_t>(data));
         data += sizeof(int64_t);
-        EXPECT_EQ(static_cast<int64_t>(6), *reinterpret_cast<const int64_t*>(data));
+        EXPECT_EQ(6, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<int64_t>(data));
         data += sizeof(int64_t);
-        EXPECT_EQ(static_cast<int64_t>(7), *reinterpret_cast<const int64_t*>(data));
+        EXPECT_EQ(7, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<int64_t>(data));
     }
 
     TEST(BinaryOutputStreamTest, InsertUInt64)
@@ -110,15 +111,15 @@ namespace ramses_internal
         outStream << static_cast<uint64_t>(0u) << static_cast<uint64_t>(5u) << static_cast<uint64_t>(6u) << static_cast<uint64_t>(7u) << std::numeric_limits<uint64_t>::max();
 
         const Byte* data = outStream.getData();
-        EXPECT_EQ(static_cast<uint64_t>(0u), *reinterpret_cast<const uint64_t*>(data));
+        EXPECT_EQ(0u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint64_t>(data));
         data += sizeof(uint64_t);
-        EXPECT_EQ(static_cast<uint64_t>(5u), *reinterpret_cast<const uint64_t*>(data));
+        EXPECT_EQ(5u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint64_t>(data));
         data += sizeof(uint64_t);
-        EXPECT_EQ(static_cast<uint64_t>(6u), *reinterpret_cast<const uint64_t*>(data));
+        EXPECT_EQ(6u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint64_t>(data));
         data += sizeof(uint64_t);
-        EXPECT_EQ(static_cast<uint64_t>(7u), *reinterpret_cast<const uint64_t*>(data));
+        EXPECT_EQ(7u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint64_t>(data));
         data += sizeof(uint64_t);
-        EXPECT_EQ(std::numeric_limits<uint64_t>::max(), *reinterpret_cast<const uint64_t*>(data));
+        EXPECT_EQ(std::numeric_limits<uint64_t>::max(), UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint64_t>(data));
     }
 
     TEST(BinaryOutputStreamTest, InsertFloat)
@@ -127,11 +128,11 @@ namespace ramses_internal
         outStream << 5.0f << 6.0f << 7.0f;
 
         const Byte* data = outStream.getData();
-        EXPECT_EQ(5.0f, *reinterpret_cast<const float*>(data));
+        EXPECT_EQ(5.0f, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<float>(data));
         data += sizeof(int32_t);
-        EXPECT_EQ(6.0f, *reinterpret_cast<const float*>(data));
+        EXPECT_EQ(6.0f, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<float>(data));
         data += sizeof(int32_t);
-        EXPECT_EQ(7.0f, *reinterpret_cast<const float*>(data));
+        EXPECT_EQ(7.0f, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<float>(data));
     }
 
     TEST(BinaryOutputStreamTest, InsertGuid)
@@ -159,14 +160,14 @@ namespace ramses_internal
         outStream << 5 << testString << 7.0f;
 
         const Byte* data = outStream.getData();
-        EXPECT_EQ(5, *reinterpret_cast<const int32_t*>(data));
+        EXPECT_EQ(5, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<int32_t>(data));
         data += sizeof(int32_t);
-        const uint32_t len = *reinterpret_cast<const uint32_t*>(data);
+        const uint32_t len = UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(data);
         EXPECT_EQ(len, static_cast<uint32_t>(testString.size()));
         data += sizeof(int32_t);
         EXPECT_EQ(0, std::memcmp(testString.data(), data, testString.size()));
         data += testString.size() * sizeof(char);
-        EXPECT_EQ(7.0f, *reinterpret_cast<const float*>(data));
+        EXPECT_EQ(7.0f, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<float>(data));
     }
 
     TEST(BinaryOutputStreamTest, InsertString)
@@ -175,7 +176,7 @@ namespace ramses_internal
 
         outStream << String("Hello World with a lot of characters");
 
-        const uint32_t strlen = *reinterpret_cast<const uint32_t*>(outStream.getData());
+        const uint32_t strlen = UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(outStream.getData());
 
         char* buffer = new char[strlen + 1];
 

@@ -11,7 +11,7 @@
 
 namespace ramses
 {
-    static const char* RamsesObjectTypeNames[] =
+    static const char* const RamsesObjectTypeNames[] =
     {
         "ERamsesObjectType_Invalid",
         "ERamsesObjectType_RamsesObject",

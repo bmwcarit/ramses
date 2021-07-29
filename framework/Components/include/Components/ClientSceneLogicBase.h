@@ -60,10 +60,10 @@ namespace ramses_internal
         EScenePublicationMode m_scenePublicationMode;
 
         UInt64                 m_flushCounter = 0u;
-        ResourceContentHashVector m_lastFlushClientResourcesInUse;
+        ResourceContentHashVector m_lastFlushResourcesInUse;
 
-        ResourceChanges m_resourceChanges; // keep container memory allocated
-        ResourceContentHashVector m_newResources; // keep container memory allocated
+        ResourceChanges m_resourceChangesSinceLastFlush; // keep container memory allocated
+        ResourceContentHashVector m_currentFlushResourcesInUse; // keep container memory allocated
         AnimationSystemFactory m_animationSystemFactory;
 
         // resource statistics gathered while flushing the last time

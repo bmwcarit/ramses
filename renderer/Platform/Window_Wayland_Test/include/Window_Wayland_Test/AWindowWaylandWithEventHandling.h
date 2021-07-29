@@ -13,7 +13,6 @@
 #include "RendererLib/EKeyEventType.h"
 #include "RendererLib/EKeyModifier.h"
 #include "PlatformAbstraction/PlatformThread.h"
-#include "Window_Wayland/WindowEventsPollingManager_Wayland.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -56,7 +55,6 @@ namespace ramses_internal
         virtual void TearDown() override
         {
             closeOpenGLContext();
-            m_windowEventsPollingManager.removeWindow(this->m_window);
             this->destroyWaylandWindow();
             closeInputDevice(keyboardFd);
             closeInputDevice(mouseFd);
@@ -73,7 +71,6 @@ namespace ramses_internal
             this->createWaylandWindow();
 
             ASSERT_TRUE(this->m_window->init());
-            m_windowEventsPollingManager.addWindow(this->m_window);
 
             makeWindowVisible();
 
@@ -201,7 +198,6 @@ namespace ramses_internal
             for (UInt32 i = 0; i < 10;
                  i++) // enforce handling of all enqueued m_window events which will trigger our event handler
             {
-                this->m_windowEventsPollingManager.pollWindowsTillAnyCanRender();
                 this->m_window->handleEvents();
             }
         }
@@ -233,8 +229,6 @@ namespace ramses_internal
         EGLDisplay eglDisplay = EGL_NO_DISPLAY;
         EGLSurface eglSurface = EGL_NO_SURFACE;
         EGLContext eglContext = EGL_NO_CONTEXT;
-
-        WindowEventsPollingManager_Wayland m_windowEventsPollingManager {std::chrono::microseconds{10000u}};
     };
 }
 

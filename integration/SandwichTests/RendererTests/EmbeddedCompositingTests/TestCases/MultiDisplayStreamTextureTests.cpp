@@ -16,29 +16,55 @@ namespace ramses_internal
 {
     void MultiDisplayStreamTextureTests::setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework)
     {
-        ramses::DisplayConfig displayConfig1 = RendererTestUtils::CreateTestDisplayConfig(0, true);
-        displayConfig1.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
-
-        ramses::DisplayConfig displayConfig2 = RendererTestUtils::CreateTestDisplayConfig(1, true);
-        displayConfig2.setWindowRectangle(DisplayWidth, 0, DisplayWidth, DisplayHeight);
-
-        auto& testCaseTwoDisplaysWithCompositingOnFirstDisplayOnly = testFramework.createTestCase(TwoDisplaysWithCompositingOnFirstDisplayOnly, *this, "TwoDisplaysWithCompositingOnFirstDisplayOnly");
-        testCaseTwoDisplaysWithCompositingOnFirstDisplayOnly.m_displayConfigs.push_back(displayConfig1);
-        testCaseTwoDisplaysWithCompositingOnFirstDisplayOnly.m_displayConfigs.push_back(displayConfig2);
+        testFramework.createTestCaseWithoutRenderer(TwoDisplaysWithCompositingOnFirstDisplayOnly, *this, "TwoDisplaysWithCompositingOnFirstDisplayOnly");
+        testFramework.createTestCaseWithoutRenderer(TwoDisplaysWithCompositingOnSecondDisplayOnly, *this, "TwoDisplaysWithCompositingOnSecondDisplayOnly");
+        testFramework.createTestCaseWithoutRenderer(TwoDisplaysWithCompositingOnBothDisplays, *this, "TwoDisplaysWithCompositingOnBothDisplays");
+        testFramework.createTestCaseWithoutRenderer(SingleDisplayWithCompositing_SetOnRendererConfig, *this, "SingleDisplayWithCompositing_SetOnRendererConfig");
+        testFramework.createTestCaseWithoutRenderer(TwoDisplaysWithCompositingOnFirstDisplayOnly_SetOnRendererConfig, *this, "TwoDisplaysWithCompositingOnFirstDisplayOnly_SetOnRendererConfig");
     }
 
     bool MultiDisplayStreamTextureTests::runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase)
     {
+        const ramses::RendererConfig rendererConfig = RendererTestUtils::CreateTestRendererConfig();
+
+        ramses::DisplayConfig displayConfigWithEC = RendererTestUtils::CreateTestDisplayConfig(0, true);
+        displayConfigWithEC.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
+        displayConfigWithEC.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
+        displayConfigWithEC.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
+
+        ramses::DisplayConfig displayConfigWithoutEC = RendererTestUtils::CreateTestDisplayConfig(1, true);
+        displayConfigWithoutEC.setWindowRectangle(DisplayWidth, 0, DisplayWidth, DisplayHeight);
+        displayConfigWithoutEC.setWaylandEmbeddedCompositingSocketName("");
+        displayConfigWithoutEC.setWaylandEmbeddedCompositingSocketGroup("");
+
+        ramses::DisplayConfig displayConfigWithOtherEC = RendererTestUtils::CreateTestDisplayConfig(2, true);
+        displayConfigWithOtherEC.setWindowRectangle(2 * DisplayWidth, 0, DisplayWidth, DisplayHeight);
+        displayConfigWithOtherEC.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestAlternateEmbeddedCompositingDisplayName.c_str());
+        displayConfigWithOtherEC.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
+
+        //configs needed for EC tests with renderer config
+        ramses::RendererConfig rendererConfigWithEC = RendererTestUtils::CreateTestRendererConfig();
+        //hack to take/steal EC socket config set on cmd line args from display config
+        rendererConfigWithEC.setWaylandEmbeddedCompositingSocketName(displayConfigWithEC.impl.getWaylandEmbeddedCompositingSocketName());
+        rendererConfigWithEC.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
+
+        ramses::DisplayConfig otherDisplayConfigWithoutEC = RendererTestUtils::CreateTestDisplayConfig(3, true);
+        otherDisplayConfigWithoutEC.setWindowRectangle(3 * DisplayWidth, 0, DisplayWidth, DisplayHeight);
+        otherDisplayConfigWithoutEC.setWaylandEmbeddedCompositingSocketName("");
+        otherDisplayConfigWithoutEC.setWaylandEmbeddedCompositingSocketGroup("");
+
         Bool testResultValue = true;
 
         const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
-
-        testFramework.setEnvironmentVariableWaylandDisplay();
 
         switch(testCase.m_id)
         {
         case TwoDisplaysWithCompositingOnFirstDisplayOnly:
         {
+            testFramework.initializeRenderer(rendererConfig);
+            testFramework.createDisplay(displayConfigWithEC);
+            testFramework.createDisplay(displayConfigWithoutEC);
+
             createAndShowScene<EmbeddedCompositorScene>(testFramework, EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight, 0u);
             createAndShowScene<EmbeddedCompositorScene>(testFramework, EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight, 1u);
 
@@ -54,14 +80,137 @@ namespace ramses_internal
 
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture"   , 0u);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1"          , 1u);
+
+            testFramework.stopTestApplicationAndWaitUntilDisconnected();
             break;
         }
+        case TwoDisplaysWithCompositingOnSecondDisplayOnly:
+        {
+            testFramework.initializeRenderer(rendererConfig);
+            testFramework.createDisplay(displayConfigWithoutEC);
+            testFramework.createDisplay(displayConfigWithEC);
+
+            createAndShowScene<EmbeddedCompositorScene>(testFramework, EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight, 0u);
+            createAndShowScene<EmbeddedCompositorScene>(testFramework, EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight, 1u);
+
+            //fallback on both displays
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 0u);
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 1u);
+
+            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::DisplayName, 1u);
+            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
+            testFramework.waitForContentOnStreamTexture(streamTextureSourceId, 1u);
+
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1"          , 0u);
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture"   , 1u);
+
+            testFramework.stopTestApplicationAndWaitUntilDisconnected(1u);
+            break;
+        }
+        case TwoDisplaysWithCompositingOnBothDisplays:
+        {
+            testFramework.initializeRenderer(rendererConfig);
+            testFramework.createDisplay(displayConfigWithEC);
+            testFramework.createDisplay(displayConfigWithOtherEC);
+
+            createAndShowScene<EmbeddedCompositorScene>(testFramework, EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight, 0u);
+            createAndShowScene<EmbeddedCompositorScene>(testFramework, EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight, 1u);
+
+            //fallback on both displays
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 0u);
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 1u);
+
+            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::DisplayName, 0u);
+            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
+            testFramework.waitForContentOnStreamTexture(streamTextureSourceId, 0u);
+
+            //composited texture only on 1st display
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture"   , 0u);
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1"          , 1u);
+
+            testFramework.stopTestApplicationAndWaitUntilDisconnected(0u);
+
+            //fallback on both displays
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 0u);
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 1u);
+
+            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::AlternateDisplayName, 1u);
+            TestApplicationSurfaceId surfaceId2 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId2, streamTextureSourceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId2);
+            testFramework.waitForContentOnStreamTexture(streamTextureSourceId, 1u);
+
+            //composited texture only on 2nd display
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1"          , 0u);
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture"   , 1u);
+
+            testFramework.stopTestApplicationAndWaitUntilDisconnected(1u);
+
+            //fallback on both displays
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 0u);
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 1u);
+            break;
+        }
+        case SingleDisplayWithCompositing_SetOnRendererConfig:
+        {
+            testFramework.initializeRenderer(rendererConfigWithEC);
+            // Use display config without EC. Nevertheless, EC gets created (because EC config is set on renderer config)
+            testFramework.createDisplay(displayConfigWithoutEC);
+
+            createAndShowScene<EmbeddedCompositorScene>(testFramework, EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight, 0u);
+
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 0u);
+
+            testFramework.startTestApplicationAndWaitUntilConnected();
+            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
+            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture"   , 0u);
+
+            testFramework.stopTestApplicationAndWaitUntilDisconnected();
+            break;
+        }
+        case TwoDisplaysWithCompositingOnFirstDisplayOnly_SetOnRendererConfig:
+        {
+            testFramework.initializeRenderer(rendererConfigWithEC);
+            // Use display config without EC. Nevertheless, EC gets created on 1st display ONLY (because EC config is set on renderer config)
+            testFramework.createDisplay(displayConfigWithoutEC);
+            testFramework.createDisplay(otherDisplayConfigWithoutEC);
+
+            createAndShowScene<EmbeddedCompositorScene>(testFramework, EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight, 0u);
+            createAndShowScene<EmbeddedCompositorScene>(testFramework, EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight, 1u);
+
+            //fallback on both displays
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 0u);
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 1u);
+
+            testFramework.startTestApplicationAndWaitUntilConnected();
+            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
+            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture"   , 0u);
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1"          , 1u);
+
+            testFramework.stopTestApplicationAndWaitUntilDisconnected();
+            break;
+        }
+
         default:
             assert(false);
         }
 
         LOG_INFO(CONTEXT_RENDERER, "MultiDisplayStreamTextureTests::runEmbeddedCompositingTestCase waiting until client test application has terminated ...");
-        testFramework.stopTestApplicationAndWaitUntilDisconnected();
+        testFramework.destroyDisplays();
+        testFramework.destroyRenderer();
+
         return testResultValue;
     }
 }

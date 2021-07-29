@@ -50,4 +50,11 @@ namespace ramses
     {
         return impl->deleteTextLine(textId);
     }
+
+    bool TextCache::ContainsRenderableGlyphs(const GlyphMetricsVector& glyphMetrics)
+    {
+        return !std::all_of(glyphMetrics.begin(), glyphMetrics.end(), [](const GlyphMetrics& glyphMetric) {
+            return glyphMetric.width == 0 || glyphMetric.height == 0;
+        });
+    }
 }

@@ -14,6 +14,8 @@
 namespace ramses
 {
     class TextureSampler;
+    class Effect;
+    class Appearance;
 }
 
 namespace ramses_internal
@@ -32,11 +34,15 @@ namespace ramses_internal
             EState_SetClientTexture,
             EState_SetTextureBuffer,
             EState_SetRenderBuffer,
-            EState_SetStreamTexture
+            EState_SetStreamTexture,
+            EState_NoTextureSampler,
+            EState_SetTextureSampler,
         };
 
     protected:
         ramses::TextureSampler* m_sampler = nullptr;
+        const ramses::Effect* m_effect = nullptr;
+        ramses::Appearance* m_appearance = nullptr;
     };
 }
 

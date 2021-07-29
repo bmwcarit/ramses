@@ -249,7 +249,7 @@ namespace ramses
         stopOfferByProvider(id, AnimationInformation{200, 300});
     }
 
-    TEST_F(ADcsmSystem, canSendMessageFromConsumerToProvider)
+    TEST_F(ADcsmSystem, canSendStreamStatusMessageFromConsumerToProvider)
     {
         offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
         assignContentToConsumer(id, categoryInfo, AnimationInformation(), sceneId_t(18));
@@ -261,6 +261,38 @@ namespace ramses
             {
                 EXPECT_EQ(contentID, id);
                 EXPECT_EQ(message.getAsStreamStatus()->getStreamStatus(), StreamStatusMessage::Status::Invalid);
+            });
+        dispatch();
+    }
+
+    TEST_F(ADcsmSystem, canSendActiveLayoutMessageFromConsumerToProvider)
+    {
+        offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
+        assignContentToConsumer(id, categoryInfo, AnimationInformation(), sceneId_t(18));
+        dispatch();
+
+        EXPECT_EQ(StatusOK, consumer.sendContentStatus(id, ActiveLayoutMessage(ActiveLayoutMessage::Layout::Gallery)));
+
+        EXPECT_CALL(provHandler, contentStatus(_, _)).WillOnce([&](ContentID contentID, DcsmStatusMessage const& message)
+            {
+                EXPECT_EQ(contentID, id);
+                EXPECT_EQ(message.getAsActiveLayout()->getLayout(), ActiveLayoutMessage::Layout::Gallery);
+            });
+        dispatch();
+    }
+
+    TEST_F(ADcsmSystem, canSendWidgetFocusStatusMessageFromConsumerToProvider)
+    {
+        offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
+        assignContentToConsumer(id, categoryInfo, AnimationInformation(), sceneId_t(18));
+        dispatch();
+
+        EXPECT_EQ(StatusOK, consumer.sendContentStatus(id, WidgetFocusStatusMessage(WidgetFocusStatusMessage::Status::Focused)));
+
+        EXPECT_CALL(provHandler, contentStatus(_, _)).WillOnce([&](ContentID contentID, DcsmStatusMessage const& message)
+            {
+                EXPECT_EQ(contentID, id);
+                EXPECT_EQ(message.getAsWidgetFocusStatus()->getWidgetFocusStatus(), WidgetFocusStatusMessage::Status::Focused);
             });
         dispatch();
     }

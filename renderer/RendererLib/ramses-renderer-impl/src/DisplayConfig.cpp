@@ -214,4 +214,29 @@ namespace ramses
     {
         return impl.getWindowsWindowHandle();
     }
+
+    status_t DisplayConfig::setWaylandEmbeddedCompositingSocketName(const char* socketname)
+    {
+        return impl.setWaylandEmbeddedCompositingSocketName(socketname);
+    }
+
+    const char *DisplayConfig::getWaylandEmbeddedCompositingSocketName() const
+    {
+        return impl.getWaylandEmbeddedCompositingSocketName();
+    }
+
+    status_t DisplayConfig::setWaylandEmbeddedCompositingSocketGroup(const char* groupname)
+    {
+        return impl.setWaylandEmbeddedCompositingSocketGroup(groupname);
+    }
+
+    status_t DisplayConfig::setWaylandEmbeddedCompositingSocketFD(int socketFileDescriptor)
+    {
+        return impl.setWaylandEmbeddedCompositingSocketFD(socketFileDescriptor);
+    }
+
+    status_t DisplayConfig::setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions)
+    {
+        return impl.setWaylandEmbeddedCompositingSocketPermissions(permissions);
+    }
 }

@@ -10,7 +10,6 @@
 
 #include "Window_Wayland_IVI/Window_Wayland_IVI.h"
 #include "SystemCompositorController_Wayland_IVI/SystemCompositorController_Wayland_IVI.h"
-#include "Window_Wayland/WindowEventsPollingManager_Wayland.h"
 #include "RendererLib/RendererConfig.h"
 #include "RendererLib/DisplayConfig.h"
 #include "Utils/ThreadLocalLogForced.h"
@@ -55,20 +54,13 @@ namespace ramses_internal
             return false;
         }
 
-        auto window = std::make_unique<Window_Wayland_IVI>(displayConfig, windowEventHandler, 0u);
+        auto window = std::make_unique<Window_Wayland_IVI>(displayConfig, windowEventHandler, 0u, m_frameCallbackMaxPollTime);
         if (window->init())
         {
-            m_windowEventsPollingManager.addWindow(window.get());
             m_window = std::move(window);
             return true;
         }
 
         return false;
-    }
-
-    void Platform_Wayland_IVI_EGL_ES_3_0::destroyWindow()
-    {
-        m_windowEventsPollingManager.removeWindow(static_cast<Window_Wayland*>(m_window.get()));
-        Platform_Wayland_EGL::destroyWindow();
     }
 }

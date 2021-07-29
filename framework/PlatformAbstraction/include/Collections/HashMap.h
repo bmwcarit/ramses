@@ -72,16 +72,19 @@ namespace ramses_internal
             void destructKeyValue()
             {
                 // inplace destruction of typed value
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) uses valid object in keyValuePairMemory
                 reinterpret_cast<Pair*>(keyValuePairMemory)->~Pair();
             }
 
             Pair& getKeyValuePair()
             {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) uses valid object in keyValuePairMemory
                 return *reinterpret_cast<Pair*>(keyValuePairMemory);
             }
 
             const Pair& getKeyValuePair() const
             {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) uses valid object in keyValuePairMemory
                 return *reinterpret_cast<const Pair*>(keyValuePairMemory);
             }
 

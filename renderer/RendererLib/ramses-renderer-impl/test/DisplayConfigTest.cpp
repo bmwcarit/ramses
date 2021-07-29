@@ -44,6 +44,10 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
 
     EXPECT_FALSE(defaultDisplayConfig.getWindowsWindowHandle().isValid());
     EXPECT_FALSE(defaultDisplayConfig.getX11WindowHandle().isValid());
+
+    EXPECT_EQ(defaultDisplayConfig.getWaylandSocketEmbedded(), displayConfig.getWaylandSocketEmbedded());
+    EXPECT_EQ(defaultDisplayConfig.getWaylandSocketEmbeddedGroup(), displayConfig.getWaylandSocketEmbeddedGroup());
+    EXPECT_EQ(defaultDisplayConfig.getWaylandSocketEmbeddedFD(), displayConfig.getWaylandSocketEmbeddedFD());
 }
 
 TEST_F(ADisplayConfig, setsFullscreenState)
@@ -206,4 +210,33 @@ TEST_F(ADisplayConfig, setAsyncEffectUploadEnabled)
 {
     EXPECT_EQ(ramses::StatusOK, ramses::DisplayConfig::setAsyncEffectUploadEnabled(config, false));
     EXPECT_FALSE(config.impl.getInternalDisplayConfig().isAsyncEffectUploadEnabled());
+}
+
+TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketGroup)
+{
+    config.setWaylandEmbeddedCompositingSocketGroup("permissionGroup");
+    EXPECT_STREQ("permissionGroup", config.impl.getWaylandSocketEmbeddedGroup());
+}
+
+TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketPermissions)
+{
+    config.setWaylandEmbeddedCompositingSocketPermissions(0660);
+    EXPECT_EQ(0660u, config.impl.getWaylandSocketEmbeddedPermissions());
+}
+
+TEST_F(ADisplayConfig, cannotSetInvalidEmbeddedCompositingSocketPermissions)
+{
+    EXPECT_NE(ramses::StatusOK, config.setWaylandEmbeddedCompositingSocketPermissions(0));
+}
+
+TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketname)
+{
+    config.setWaylandEmbeddedCompositingSocketName("wayland-x123");
+    EXPECT_STREQ("wayland-x123", config.getWaylandEmbeddedCompositingSocketName());
+}
+
+TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketFD)
+{
+    config.setWaylandEmbeddedCompositingSocketFD(23);
+    EXPECT_EQ(23, config.impl.getWaylandSocketEmbeddedFD());
 }

@@ -12,7 +12,6 @@
 #include "RendererAPI/IDevice.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "RendererAPI/ISystemCompositorController.h"
-#include "RendererAPI/IWindowEventsPollingManager.h"
 #include "RendererLib/RenderBackend.h"
 #include "RendererLib/ResourceUploadRenderBackend.h"
 #include "RendererLib/RendererConfig.h"
@@ -57,7 +56,7 @@ namespace ramses_internal
         if (!createContext(displayConfig))
         {
             LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: context creation failed");
-            destroyWindow();
+            m_window.reset();
             return nullptr;
         }
 
@@ -69,23 +68,23 @@ namespace ramses_internal
             LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: device creation failed");
             m_context->disable();
             m_context.reset();
-            destroyWindow();
+            m_window.reset();
             return nullptr;
         }
 
         assert(!m_embeddedCompositor);
         if (!createEmbeddedCompositor(displayConfig))
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: embedded compositor creation failed, it cannot be used on this display");
-            // create dummy EC implementation
-            Platform_Base::createEmbeddedCompositor(displayConfig);
-            Platform_Base::createTextureUploadingAdapter();
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: embedded compositor creation failed");
+            m_device.reset();
+            m_context->disable();
+            m_context.reset();
+            m_window.reset();
+            return nullptr;
         }
-        else
-        {
-            assert(!m_textureUploadingAdapter);
-            createTextureUploadingAdapter();
-        }
+
+        assert(!m_textureUploadingAdapter);
+        createTextureUploadingAdapter(displayConfig);
 
         assert(!m_renderBackend);
         m_renderBackend = std::make_unique<RenderBackend>(*m_window, *m_context, *m_device, *m_embeddedCompositor, *m_textureUploadingAdapter);
@@ -106,7 +105,7 @@ namespace ramses_internal
         m_context->disable();
         m_context.reset();
         LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy window");
-        destroyWindow();
+        m_window.reset();
 
         m_renderBackend.reset();
 
@@ -154,12 +153,7 @@ namespace ramses_internal
         return m_systemCompositorController.get();
     }
 
-    const IWindowEventsPollingManager* Platform_Base::getWindowEventsPollingManager() const
-    {
-        return nullptr;
-    }
-
-    void Platform_Base::createTextureUploadingAdapter()
+    void Platform_Base::createTextureUploadingAdapter(const DisplayConfig&)
     {
         assert(!m_textureUploadingAdapter);
         m_textureUploadingAdapter = std::make_unique<TextureUploadingAdapter_Base>(*m_device);
@@ -177,10 +171,5 @@ namespace ramses_internal
     bool Platform_Base::createSystemCompositorController()
     {
         return true;
-    }
-
-    void Platform_Base::destroyWindow()
-    {
-        m_window.reset();
     }
 }

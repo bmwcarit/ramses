@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "ramses-framework-api/StronglyTypedValue.h"
+#include "UnsafeTestMemoryHelpers.h"
 #include "gmock/gmock.h"
 #include <cstdint>
 #include <unordered_set>
@@ -158,8 +159,8 @@ namespace ramses
         EXPECT_TRUE(StronglyTypedUInt32(123).isValid());
         EXPECT_TRUE(StronglyTypedUInt32(0).isValid());
 
-        EXPECT_TRUE(StronglyTypedPtr(reinterpret_cast<void*>(123u)).isValid());
-        EXPECT_TRUE(StronglyTypedPtr(reinterpret_cast<void*>(1u)).isValid());
+        EXPECT_TRUE(StronglyTypedPtr(ramses_internal::UnsafeTestMemoryHelpers::ForgeArbitraryPointer(123u)).isValid());
+        EXPECT_TRUE(StronglyTypedPtr(ramses_internal::UnsafeTestMemoryHelpers::ForgeArbitraryPointer(1u)).isValid());
     }
 
     // enforce performance guarantees

@@ -7,6 +7,8 @@
 //  -------------------------------------------------------------------------
 
 #include "Utils/File.h"
+#include "Utils/LogMacros.h"
+#include <cerrno>
 
 namespace ramses_internal
 {
@@ -36,8 +38,7 @@ namespace ramses_internal
 
     File::~File()
     {
-        if (m_handle != nullptr)
-            fclose(m_handle);
+        close();
     }
 
     File::File(File&& other) noexcept
@@ -110,7 +111,10 @@ namespace ramses_internal
         }
         FILE* handle = fopen(m_path.c_str(), flags);
         if (handle == nullptr)
+        {
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::open: fopen {} with flags {} failed, errno is {}", m_path, flags, errno);
             return false;
+        }
 
         m_handle = handle;
         m_isOpen = true;
@@ -122,7 +126,10 @@ namespace ramses_internal
         if (m_handle == nullptr)
             return false;
         if (fflush(m_handle) != 0)
+        {
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::flush: fflush failed for {}, errno is {}", m_path, errno);
             return false;
+        }
         return true;
     }
 
@@ -131,7 +138,11 @@ namespace ramses_internal
         if (m_handle == nullptr)
             return false;
 
-        fclose(m_handle);
+        if (fclose(m_handle) != 0)
+        {
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::close: fclose failed for {}, errno is {}", m_path, errno);
+            return false;
+        }
         m_handle = nullptr;
         m_isOpen = false;
         return true;
@@ -159,10 +170,12 @@ namespace ramses_internal
 
         if (feof(m_handle))
         {
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::read: fread attempted to read {} bytes from {}, got only {} due to eof", length, m_path, result);
             numBytes = result;
             return EStatus::Eof;
         }
 
+        LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::read: fread attempted to read {} bytes from {}, got only {} due to read error", length, m_path, result);
         return EStatus::Error;
     }
 
@@ -178,7 +191,10 @@ namespace ramses_internal
 
         size_t result = fwrite(buffer, length, 1, m_handle);
         if (result != 1u)
+        {
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::write: fwrite attempted to write {} bytes to {} and failed", length, m_path);
             return false;
+        }
 
         return true;
     }
@@ -201,7 +217,10 @@ namespace ramses_internal
         size_t result = fseek(m_handle, static_cast<long>(offset), nativeOrigin);
 
         if (0 != result)
+        {
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::seek: fseek attempted to seek to {} bytes from {} of file {} and failed, errno is {}", offset, origin, m_path, errno);
             return false;
+        }
 
         return true;
     }

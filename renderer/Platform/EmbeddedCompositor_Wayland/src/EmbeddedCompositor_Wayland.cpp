@@ -16,7 +16,6 @@
 #include "EmbeddedCompositor_Wayland/TextureUploadingAdapter_Wayland.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
 #include "EmbeddedCompositor_Wayland/WaylandOutputParams.h"
-#include "RendererLib/RendererConfig.h"
 #include "RendererLib/DisplayConfig.h"
 #include "RendererLib/RendererLogContext.h"
 #include "Utils/ThreadLocalLogForced.h"
@@ -27,11 +26,11 @@
 
 namespace ramses_internal
 {
-    EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const RendererConfig& rendererConfig, const DisplayConfig& displayConfig, IContext& context)
-        : m_waylandEmbeddedSocketName(rendererConfig.getWaylandSocketEmbedded())
-        , m_waylandEmbeddedSocketGroup(rendererConfig.getWaylandSocketEmbeddedGroup())
-        , m_waylandEmbeddedSocketPermissions(rendererConfig.getWaylandSocketEmbeddedPermissions())
-        , m_waylandEmbeddedSocketFD(rendererConfig.getWaylandSocketEmbeddedFD())
+    EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const DisplayConfig& displayConfig, IContext& context)
+        : m_waylandEmbeddedSocketName(displayConfig.getWaylandSocketEmbedded())
+        , m_waylandEmbeddedSocketGroup(displayConfig.getWaylandSocketEmbeddedGroup())
+        , m_waylandEmbeddedSocketPermissions(displayConfig.getWaylandSocketEmbeddedPermissions())
+        , m_waylandEmbeddedSocketFD(displayConfig.getWaylandSocketEmbeddedFD())
         , m_context(context)
         , m_compositorGlobal(*this)
         , m_waylandOutputGlobal({ displayConfig.getDesiredWindowWidth(), displayConfig.getDesiredWindowHeight() })
@@ -242,7 +241,15 @@ namespace ramses_internal
         }
         else if (nullptr != linuxDmabufBuffer)
         {
-            static_cast<TextureUploadingAdapter_Wayland&>(textureUploadingAdapter).uploadTextureFromLinuxDmabuf(textureHandle, linuxDmabufBuffer);
+            const auto success = static_cast<TextureUploadingAdapter_Wayland&>(textureUploadingAdapter).uploadTextureFromLinuxDmabuf(textureHandle, linuxDmabufBuffer);
+
+            if(!success)
+            {
+                StringOutputStream message;
+                message << "Failed creating EGL image from dma buffer for stream source id: " << waylandSurface->getIviSurfaceId();
+
+                waylandBufferResource.postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_WL_BUFFER, String(message.release()));
+            }
         }
         else
         {

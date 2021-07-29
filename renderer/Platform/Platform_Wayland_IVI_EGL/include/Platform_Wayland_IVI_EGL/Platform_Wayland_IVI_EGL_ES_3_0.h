@@ -21,7 +21,6 @@ namespace ramses_internal
     protected:
         bool createSystemCompositorController() override;
         bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
-        void destroyWindow() override;
     };
 }
 

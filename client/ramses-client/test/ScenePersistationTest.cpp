@@ -79,6 +79,7 @@
 #include "Utils/File.h"
 #include "ramses-utils.h"
 #include "FileDescriptorHelper.h"
+#include "UnsafeTestMemoryHelpers.h"
 
 #include "ArrayBufferImpl.h"
 #include "Texture2DBufferImpl.h"
@@ -818,9 +819,9 @@ namespace ramses
         EXPECT_EQ(6 * sizeof(uint32_t), m_scene.impl.getIScene().getDataBuffer(loadedBuffer->impl.getDataBufferHandle()).data.size());
         EXPECT_EQ(5 * sizeof(uint32_t), m_scene.impl.getIScene().getDataBuffer(loadedBuffer->impl.getDataBufferHandle()).usedSize);
 
-        const uint32_t* loadedDataBufferData = reinterpret_cast<const uint32_t*>(m_scene.impl.getIScene().getDataBuffer(loadedBuffer->impl.getDataBufferHandle()).data.data());
-        EXPECT_EQ(6u, loadedDataBufferData[3]);
-        EXPECT_EQ(7u, loadedDataBufferData[4]);
+        const ramses_internal::Byte* loadedDataBufferData = m_scene.impl.getIScene().getDataBuffer(loadedBuffer->impl.getDataBufferHandle()).data.data();
+        EXPECT_EQ(6u, ramses_internal::UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(loadedDataBufferData, 3));
+        EXPECT_EQ(7u, ramses_internal::UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(loadedDataBufferData, 4));
 
         EXPECT_EQ(6u, loadedBuffer->getMaximumNumberOfElements());
         EXPECT_EQ(5u, loadedBuffer->getUsedNumberOfElements());
@@ -855,13 +856,13 @@ namespace ramses
         EXPECT_EQ(56u, ramses_internal::TextureBuffer::GetMipMapDataSizeInBytes(loadedInternalBuffer));
         EXPECT_EQ(ramses_internal::ETextureFormat::RGBA8, loadedInternalBuffer.textureFormat);
 
-        const uint32_t* loadedBufferDataMip0 = reinterpret_cast<const uint32_t*>(loadedInternalBuffer.mipMaps[0].data.data());
-        const uint32_t* loadedBufferDataMip1 = reinterpret_cast<const uint32_t*>(loadedInternalBuffer.mipMaps[1].data.data());
-        EXPECT_EQ(12u, loadedBufferDataMip0[0]);
-        EXPECT_EQ(23u, loadedBufferDataMip0[1]);
-        EXPECT_EQ(34u, loadedBufferDataMip0[3 * 1 + 0]);
-        EXPECT_EQ(56u, loadedBufferDataMip0[3 * 1 + 1]);
-        EXPECT_EQ(78u, loadedBufferDataMip1[0]);
+        const ramses_internal::Byte* loadedBufferDataMip0 = loadedInternalBuffer.mipMaps[0].data.data();
+        const ramses_internal::Byte* loadedBufferDataMip1 = loadedInternalBuffer.mipMaps[1].data.data();
+        EXPECT_EQ(12u, ramses_internal::UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(loadedBufferDataMip0, 0));
+        EXPECT_EQ(23u, ramses_internal::UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(loadedBufferDataMip0, 1));
+        EXPECT_EQ(34u, ramses_internal::UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(loadedBufferDataMip0, 3 * 1 + 0));
+        EXPECT_EQ(56u, ramses_internal::UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(loadedBufferDataMip0, 3 * 1 + 1));
+        EXPECT_EQ(78u, ramses_internal::UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(loadedBufferDataMip1, 0));
 
         //client API
         EXPECT_EQ(2u, loadedBuffer->getMipLevelCount());
@@ -877,8 +878,8 @@ namespace ramses
         EXPECT_EQ(ETextureFormat::RGBA8, loadedBuffer->getTexelFormat());
         std::array<uint32_t, 12> bufferForMip0;
         std::array<uint32_t, 2> bufferForMip1;
-        EXPECT_EQ(StatusOK, loadedBuffer->getMipLevelData(0u, reinterpret_cast<char*>(bufferForMip0.data()), static_cast<uint32_t>(bufferForMip0.size() * sizeof(uint32_t))));
-        EXPECT_EQ(StatusOK, loadedBuffer->getMipLevelData(1u, reinterpret_cast<char*>(bufferForMip1.data()), static_cast<uint32_t>(bufferForMip1.size() * sizeof(uint32_t))));
+        EXPECT_EQ(StatusOK, loadedBuffer->getMipLevelData(0u, bufferForMip0.data(), static_cast<uint32_t>(bufferForMip0.size() * sizeof(uint32_t))));
+        EXPECT_EQ(StatusOK, loadedBuffer->getMipLevelData(1u, bufferForMip1.data(), static_cast<uint32_t>(bufferForMip1.size() * sizeof(uint32_t))));
         EXPECT_EQ(12u, bufferForMip0[0]);
         EXPECT_EQ(23u, bufferForMip0[1]);
         EXPECT_EQ(34u, bufferForMip0[3 * 1 + 0]);

@@ -13,8 +13,6 @@ namespace ramses_internal
 {
     enum class ETestForkerApplicationMessage
     {
-        SetEnvironementVariable_WaylandDisplay,
-        SetEnvironementVariable_WaylandSocket,
         StopForkerApplication,
         ForkTestApplication,
         WaitForTestApplicationExit,

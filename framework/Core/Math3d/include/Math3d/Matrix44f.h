@@ -97,7 +97,7 @@ namespace ramses_internal
 
     inline IInputStream& operator>>(IInputStream& stream, Matrix44f& value)
     {
-        return stream.read(reinterpret_cast<Char*>(value.data), sizeof(value.data));
+        return stream.read(value.data, sizeof(value.data));
     }
 
     constexpr inline
@@ -435,7 +435,7 @@ template <>
 struct fmt::formatter<ramses_internal::Matrix44f> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses_internal::Matrix44f& m, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::Matrix44f& m, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(),
                               "[{} {} {} {}; {} {} {} {}; {} {} {} {}; {} {} {} {}]",

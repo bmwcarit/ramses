@@ -81,9 +81,9 @@ template <>
 struct fmt::formatter<ramses_internal::ResourceContentHash> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses_internal::ResourceContentHash& res, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::ResourceContentHash& res, FormatContext& ctx)
     {
-        const char* typeShortString;
+        const char* typeShortString = nullptr;
         const uint32_t type = (res.highPart >> 60LU) & 0xF;
         switch (type)
         {
@@ -116,7 +116,7 @@ template <>
 struct fmt::formatter<ramses_internal::ResourceContentHashVector> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses_internal::ResourceContentHashVector& hashes, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::ResourceContentHashVector& hashes, FormatContext& ctx)
     {
         fmt::format_to(ctx.out(), "[{} resources:", hashes.size());
         for (auto const& hash : hashes)

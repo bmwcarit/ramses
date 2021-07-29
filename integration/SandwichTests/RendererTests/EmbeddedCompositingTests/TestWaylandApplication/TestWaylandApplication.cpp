@@ -11,6 +11,7 @@
 #include "TestSignalHandler.h"
 #include "SHMTriangleDrawer.h"
 #include "TestScenes/MultipleTrianglesScene.h"
+#include "WaylandUtilities/WaylandEnvironmentUtils.h"
 
 #include "TestScenesAndRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
@@ -109,7 +110,12 @@ namespace ramses_internal
         {
         case ETestWaylandApplicationMessage::InitializeTestApplication:
         {
-            if (!initializeWayland())
+            String displayName;
+            bool useSocketFD;
+
+            bis >> displayName >> useSocketFD;
+
+            if (!initializeWayland(displayName.c_str(), useSocketFD))
             {
                 LOG_ERROR(CONTEXT_RENDERER, "TestWaylandApplication::dispatchIncomingMessage(): failed initializing wayland");
                 return false;
@@ -383,10 +389,24 @@ namespace ramses_internal
         return false;
     }
 
-    bool TestWaylandApplication::initializeWayland()
+    bool TestWaylandApplication::initializeWayland(const String& displayName, bool connectUsingFD)
     {
         LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication started");
-        bool bSuccess = m_waylandHandler.init();
+
+        int socketFD = -1;
+        if(connectUsingFD)
+        {
+            m_socket = std::make_unique<ramses_internal::UnixDomainSocket>(displayName, WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
+            socketFD = m_socket->createConnectedFileDescriptor(false);
+
+            if(socketFD == -1)
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "TestWaylandApplication: Could not create file desciptor for display socket");
+                return false;
+            }
+        }
+
+        bool bSuccess = m_waylandHandler.init(displayName, socketFD);
         LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication m_waylandHandler initialized");
         if (!bSuccess)
         {
@@ -502,11 +522,13 @@ namespace ramses_internal
         displayConfig1.setWindowRectangle(0, 0, windowWidth, windowHeight);
         displayConfig1.impl.setWaylandDisplay(systemCompositorDisplay);
         displayConfig1.setWaylandIviLayerID(ramses::waylandIviLayerId_t(waylandIviLayerId.getValue()));
+        displayConfig1.setWaylandEmbeddedCompositingSocketName("");
 
         ramses::DisplayConfig displayConfig2 = RendererTestUtils::CreateTestDisplayConfig(iviSurfaceIdOffset + 1);
         displayConfig2.setWindowRectangle(windowWidth, 0, windowWidth, windowHeight);
         displayConfig2.impl.setWaylandDisplay(systemCompositorDisplay);
         displayConfig2.setWaylandIviLayerID(ramses::waylandIviLayerId_t(waylandIviLayerId.getValue()));
+        displayConfig2.setWaylandEmbeddedCompositingSocketName("");
 
         const auto displayHandle1 = testRenderer.createDisplay(displayConfig1);
         const auto displayHandle2 = testRenderer.createDisplay(displayConfig2);

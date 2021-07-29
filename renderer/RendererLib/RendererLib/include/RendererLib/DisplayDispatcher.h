@@ -50,6 +50,8 @@ namespace ramses_internal
         void setMinFrameDuration(std::chrono::microseconds minFrameDuration);
         void setMinFrameDuration(std::chrono::microseconds minFrameDuration, DisplayHandle display);
 
+        const RendererConfig& getRendererConfig() const;
+
         // needed for EC tests...
         IEmbeddedCompositingManager& getECManager(DisplayHandle display);
         IEmbeddedCompositor& getEC(DisplayHandle display);

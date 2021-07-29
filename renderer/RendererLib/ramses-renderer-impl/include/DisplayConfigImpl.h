@@ -52,6 +52,20 @@ namespace ramses
         void*    getWindowsWindowHandle() const;
         status_t setAsyncEffectUploadEnabled(bool enabled);
 
+        status_t setWaylandEmbeddedCompositingSocketGroup(const char* groupname);
+        const char* getWaylandSocketEmbeddedGroup() const;
+
+        status_t setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
+        uint32_t getWaylandSocketEmbeddedPermissions() const;
+
+        status_t setWaylandEmbeddedCompositingSocketName(const char* socketname);
+        const char* getWaylandEmbeddedCompositingSocketName() const;
+
+        status_t setWaylandEmbeddedCompositingSocketFD(int fd);
+        int getWaylandSocketEmbeddedFD() const;
+
+        virtual status_t validate() const override;
+
         //impl methods
         const ramses_internal::DisplayConfig& getInternalDisplayConfig() const;
 

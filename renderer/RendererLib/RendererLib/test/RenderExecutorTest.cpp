@@ -451,6 +451,7 @@ protected:
     {
         scene.updateRenderablesAndResourceCache(resourceManager, embeddedCompositingManager);
         scene.updateRenderableVertexArrays(resourceManager, renderablesWithUpdatedVAOs);
+        scene.markVertexArraysClean();
         scene.updateRenderableWorldMatrices();
     }
 

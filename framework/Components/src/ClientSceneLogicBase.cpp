@@ -28,8 +28,6 @@ namespace ramses_internal
         , m_sceneId(scene.getSceneId())
         , m_scene(scene)
         , m_scenePublicationMode(EScenePublicationMode_Unpublished)
-        , m_resourceChanges()
-        , m_newResources()
         , m_animationSystemFactory(ramses_internal::EAnimationSystemOwner_Scenemanager)
     {
         std::fill(m_resourceCount.begin(), m_resourceCount.end(), 0);
@@ -121,21 +119,21 @@ namespace ramses_internal
         SceneActionCollectionCreator creator(sceneUpdate.actions);
         SceneDescriber::describeScene<IScene>(scene, creator);
 
-        m_resourceChanges.clear();
+        m_resourceChangesSinceLastFlush.clear();
         size_t sceneResourcesSize = 0u;
-        ResourceUtils::GetAllSceneResourcesFromScene(m_resourceChanges.m_sceneResourceActions, scene, sceneResourcesSize);
+        ResourceUtils::GetAllSceneResourcesFromScene(m_resourceChangesSinceLastFlush.m_sceneResourceActions, scene, sceneResourcesSize);
 
-        m_resourceChanges.m_resourcesAdded = m_lastFlushClientResourcesInUse;
+        m_resourceChangesSinceLastFlush.m_resourcesAdded = m_lastFlushResourcesInUse;
 
         // flush asynchronously & check if there already was a named flush
-        if (!m_resourceChanges.m_resourcesAdded.empty())
-            sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChanges.m_resourcesAdded);
-        assert(sceneUpdate.resources.size() == m_resourceChanges.m_resourcesAdded.size());
-        sceneUpdate.flushInfos = { m_flushCounter, versionTag, scene.getSceneSizeInformation(), m_resourceChanges, {}, flushTimeInfo, true, true };
+        if (!m_resourceChangesSinceLastFlush.m_resourcesAdded.empty())
+            sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChangesSinceLastFlush.m_resourcesAdded);
+        assert(sceneUpdate.resources.size() == m_resourceChangesSinceLastFlush.m_resourcesAdded.size());
+        sceneUpdate.flushInfos = { m_flushCounter, versionTag, scene.getSceneSizeInformation(), m_resourceChangesSinceLastFlush, {}, flushTimeInfo, true, true };
         LOG_INFO(CONTEXT_CLIENT, "Sending scene " << scene.getSceneId() << " to " << m_subscribersWaitingForScene.size() << " subscribers, " <<
             sceneUpdate.actions.numberOfActions() << " scene actions (" << sceneUpdate.actions.collectionData().size() << " bytes)" <<
-            m_resourceChanges.m_resourcesAdded.size() << " client resources, " <<
-            m_resourceChanges.m_sceneResourceActions.size() << " scene resource actions (" << sceneResourcesSize << " bytes in total used by scene resources)");
+            m_resourceChangesSinceLastFlush.m_resourcesAdded.size() << " client resources, " <<
+            m_resourceChangesSinceLastFlush.m_sceneResourceActions.size() << " scene resource actions (" << sceneResourcesSize << " bytes in total used by scene resources)");
 
         for(const auto& subscriber : m_subscribersWaitingForScene)
         {
@@ -207,7 +205,7 @@ namespace ramses_internal
         std::fill(m_resourceMaxSize.begin(), m_resourceMaxSize.end(), 0);
         std::fill(m_resourceDataSize.begin(), m_resourceDataSize.end(), 0);
 
-        for (auto const& hash : m_newResources)
+        for (auto const& hash : m_currentFlushResourcesInUse)
         {
             if (!m_resourceComponent.knowsResource(hash))
                 continue; // no log, this will be logged when trying to load it
@@ -254,7 +252,7 @@ namespace ramses_internal
 
     bool ClientSceneLogicBase::verifyAndGetResourceChanges(SceneUpdate& sceneUpdate, bool hasNewActions)
     {
-        m_resourceChanges.clear();
+        m_resourceChangesSinceLastFlush.clear();
 
         // optimization: early out if nothing changed in the scene
         if (!hasNewActions)
@@ -262,23 +260,23 @@ namespace ramses_internal
 
         if (m_scene.haveResourcesChanged())
         {
-            m_newResources.clear();
-            ResourceUtils::GetAllResourcesFromScene(m_newResources, m_scene);
-            ResourceUtils::DiffResources(m_lastFlushClientResourcesInUse, m_newResources, m_resourceChanges);
+            m_currentFlushResourcesInUse.clear();
+            ResourceUtils::GetAllResourcesFromScene(m_currentFlushResourcesInUse, m_scene);
+            ResourceUtils::DiffResources(m_lastFlushResourcesInUse, m_currentFlushResourcesInUse, m_resourceChangesSinceLastFlush);
 
-            if (!m_resourceChanges.m_resourcesAdded.empty())
+            if (!m_resourceChangesSinceLastFlush.m_resourcesAdded.empty())
             {
-                sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChanges.m_resourcesAdded);
-                if (sceneUpdate.resources.size() != m_resourceChanges.m_resourcesAdded.size())
+                sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChangesSinceLastFlush.m_resourcesAdded);
+                if (sceneUpdate.resources.size() != m_resourceChangesSinceLastFlush.m_resourcesAdded.size())
                     return false;
             }
 
             updateResourceStatistics();
 
-            m_lastFlushClientResourcesInUse.swap(m_newResources);
+            m_lastFlushResourcesInUse.swap(m_currentFlushResourcesInUse);
         }
 
-        m_resourceChanges.m_sceneResourceActions = m_scene.getSceneResourceActions();
+        m_resourceChangesSinceLastFlush.m_sceneResourceActions = m_scene.getSceneResourceActions();
 
         return true;
     }

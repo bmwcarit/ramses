@@ -39,7 +39,7 @@ class ARendererCommandExecutor : public ::testing::Test
 public:
     ARendererCommandExecutor()
         : m_rendererScenes(m_rendererEventCollector)
-        , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector)
+        , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector, m_rendererStatistics)
         , m_renderer(m_displayHandle, m_rendererScenes, m_rendererEventCollector, m_expirationMonitor, m_rendererStatistics)
         , m_sceneStateExecutor(m_renderer, m_sceneEventSender, m_rendererEventCollector)
         , m_commandExecutor(m_renderer, m_commandBuffer, m_sceneUpdater, m_sceneControlLogic, m_rendererEventCollector, m_frameTimer)
@@ -49,7 +49,6 @@ public:
 
         // enable SC
         ON_CALL(m_renderer.m_platform, getSystemCompositorController()).WillByDefault(Return(&m_renderer.m_platform.systemCompositorControllerMock));
-        ON_CALL(m_renderer.m_platform, getWindowEventsPollingManager()).WillByDefault(Return(&m_renderer.m_platform.windowEventsPollingManagerMock));
     }
 
     void doCommandExecutorLoop()

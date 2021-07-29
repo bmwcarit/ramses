@@ -124,7 +124,7 @@ template <>
 struct fmt::formatter<ramses_internal::ResourceChanges> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses_internal::ResourceChanges& rc, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::ResourceChanges& rc, FormatContext& ctx)
     {
         fmt::format_to(ctx.out(), "\n[ new client resources:");
         for (const auto& res : rc.m_resourcesAdded)

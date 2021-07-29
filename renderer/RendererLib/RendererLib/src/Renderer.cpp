@@ -13,7 +13,6 @@
 #include "RendererAPI/IWindow.h"
 #include "RendererAPI/IContext.h"
 #include "RendererAPI/IDevice.h"
-#include "RendererAPI/IWindowEventsPollingManager.h"
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererLib/DisplayController.h"
 #include "RendererLib/RendererLogContext.h"
@@ -383,8 +382,6 @@ namespace ramses_internal
 
         m_profilerStatistics.startRegion(FrameProfilerStatistics::ERegion::HandleDisplayEvents);
         {
-            if (m_platform.getWindowEventsPollingManager())
-                m_platform.getWindowEventsPollingManager()->pollWindowsTillAnyCanRender();
             handleDisplayEvents();
         }
         m_profilerStatistics.endRegion(FrameProfilerStatistics::ERegion::HandleDisplayEvents);

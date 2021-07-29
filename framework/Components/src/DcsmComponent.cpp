@@ -617,6 +617,37 @@ namespace ramses_internal
         return true;
     }
 
+    bool DcsmComponent::sendForceStopOfferContent(ContentID contentID)
+    {
+        LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendForceStopOfferContent: ContentID " << contentID);
+
+        PlatformGuard guard(m_frameworkLock);
+        if (!m_localProviderAvailable)
+        {
+            LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::sendForceStopOfferContent: called without local provider active");
+            return false;
+        }
+
+        const char* methodName = "sendForceStopOfferContent";
+        if (!isLocallyProvidingContent(methodName, contentID))
+            return false;
+
+        ContentInfo& ci = m_contentRegistry[contentID];
+
+        if (m_localConsumerAvailable)
+            addConsumerEvent_ForceStopOfferContent(contentID, m_myID);
+        if (m_connected && !ci.localOnly)
+            m_communicationSystem.sendDcsmBroadcastForceStopOfferContent(contentID);
+
+        ci.state = ContentState::Unknown;
+        ci.contentDescriptor = TechnicalContentDescriptor::Invalid();
+        ci.metadata = DcsmMetadata{};
+        ci.m_currentFocusRequests.clear();
+        ci.consumerID = Guid();
+
+        return true;
+    }
+
     bool DcsmComponent::sendUpdateContentMetadata(ContentID contentID, const DcsmMetadata& metadata)
     {
         PlatformGuard guard(m_frameworkLock);
@@ -796,8 +827,8 @@ namespace ramses_internal
 
     bool DcsmComponent::sendContentStatus(ContentID contentID, ramses::DcsmStatusMessageImpl const& message)
     {
-        LOG_INFO_P(CONTEXT_DCSM, "DcsmComponent({})::sendContentStatus: ContentID {}, message of type {} with size {}",
-            m_myID, contentID, message.getType(), message.getData().size());
+        LOG_INFO_P(CONTEXT_DCSM, "DcsmComponent({})::sendContentStatus: ContentID {}, message {}",
+            m_myID, contentID, message);
         PlatformGuard guard(m_frameworkLock);
 
         if (!m_localConsumerAvailable)
@@ -825,7 +856,8 @@ namespace ramses_internal
         if (m_myID == to)
         {
             assert(m_localProviderAvailable && "Logic error in provider disable");
-            addProviderEvent_ContentStatus(contentID, static_cast<uint64_t>(message.getType()), { message.getData().data(), message.getData().size() }, m_myID);
+            auto msgCopy = std::make_unique<ramses::DcsmStatusMessageImpl>(static_cast<ramses::DcsmStatusMessageImpl::Type>(message.getType()), message.getData());
+            addProviderEvent_ContentStatus(contentID, std::move(msgCopy), m_myID);
         }
         else
         {
@@ -859,13 +891,13 @@ namespace ramses_internal
         m_providerEventsSignal.notify_one();
     }
 
-    void DcsmComponent::addProviderEvent_ContentStatus(ContentID contentID, uint64_t messageID, absl::Span<const Byte> message, const Guid& consumerID)
+    void DcsmComponent::addProviderEvent_ContentStatus(ContentID contentID, std::unique_ptr<ramses::DcsmStatusMessageImpl>&& message, const Guid& consumerID)
     {
         DcsmEvent event;
         event.cmdType = EDcsmCommandType::ContentStatus;
         event.contentID = contentID;
         event.from = consumerID;
-        event.contentStatus = std::make_unique<ramses::DcsmStatusMessageImpl>(messageID, message);
+        event.contentStatus = std::move(message);
         m_providerEvents.push_back(std::move(event));
         m_providerEventsSignal.notify_one();
     }
@@ -1152,8 +1184,16 @@ namespace ramses_internal
 
     void DcsmComponent::handleContentStatus(ContentID contentID, uint64_t messageID, absl::Span<const Byte> message, const Guid& consumerID)
     {
+        if (!ramses::DcsmStatusMessageImpl::isValidType(messageID))
+        {
+            LOG_WARN_P(CONTEXT_DCSM, "DcsmComponent({})::handleContentStatus: from {}, ContentID {} messageID {} is unknown. Ignoring message of size:{}",
+                m_myID, consumerID, contentID, messageID, message.size());
+            return;
+        }
+
+        auto statusMsg = std::make_unique<ramses::DcsmStatusMessageImpl>(static_cast<ramses::DcsmStatusMessageImpl::Type>(messageID), message);
         LOG_INFO(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleContentStatus: from " << consumerID << ", ContentID " << contentID
-            << ", messageID " << messageID << ", with size " << message.size() << ", hasLocalProvider " << m_localProviderAvailable);
+            << ", messageID " << messageID << ", message " << *statusMsg << ", hasLocalProvider " << m_localProviderAvailable);
 
         if (!m_localProviderAvailable)
         {
@@ -1175,10 +1215,7 @@ namespace ramses_internal
         if (!isAllowedToReceiveFrom(methodName, consumerID))
             return;
 
-        if (!isContentStatusMessageKnown(methodName, messageID))
-            return;
-
-        addProviderEvent_ContentStatus(contentID, messageID, message, consumerID);
+        addProviderEvent_ContentStatus(contentID, std::move(statusMsg), consumerID);
     }
 
     void DcsmComponent::handleOfferContent(ContentID contentID, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, const Guid& providerID)
@@ -1257,6 +1294,8 @@ namespace ramses_internal
             LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::handleContentReady: received descriptor different from the ones previously sent" << ci->contentDescriptor);
             return;
         }
+
+        ci->contentDescriptor = technicalContentDescriptor;
         addConsumerEvent_ContentDescription(contentID, technicalContentDescriptor, providerID);
     }
 
@@ -1836,16 +1875,6 @@ namespace ramses_internal
         };
         LOG_WARN(CONTEXT_DCSM, "DcsmComponent(" << m_myID << ")::" << callerMethod << ": invalid technicalContentType " << static_cast<std::underlying_type_t<EDcsmState>>(val));
         return false;
-    }
-
-    bool DcsmComponent::isContentStatusMessageKnown(const char* callerMethod, uint64_t messageID) const
-    {
-        if (static_cast<ramses::DcsmStatusMessageImpl::Type>(messageID) >= ramses::DcsmStatusMessageImpl::Type::NumElements)
-        {
-            LOG_WARN_P(CONTEXT_DCSM, "DcsmComponent({})::{}: messageID {} is unknown. Ignoring message.", m_myID, callerMethod, messageID);
-            return false;
-        }
-        return true;
     }
 
     void DcsmComponent::writeStateForLog(StringOutputStream& sos)

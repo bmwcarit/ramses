@@ -12,9 +12,9 @@
 
 
 
-Welcome to the Ramses User documentation! Don't know what Ramses is or what it's good for? Check out the public
-<a href="https://github.com/GENIVI/ramses">README</a> or the <a href="https://github.com/GENIVI/ramses/wiki">Wiki pages</a>
-or <a href="https://www.youtube.com/watch?v=tyzvEI25BMg">watch the demo video</a>.
+Welcome to the Ramses User documentation! Don't know what Ramses is or want to get a general overview of the
+Ramses ecosystem? Check out the SDK docs at <a href="https://ramses-sdk.readthedocs.io/en/latest/">ReadTheDocs</a> or
+the <a href="https://github.com/GENIVI/ramses/wiki">Wiki pages</a> or <a href="https://www.youtube.com/watch?v=tyzvEI25BMg">watch the demo video</a>.
 
 # Ramses Concepts
 

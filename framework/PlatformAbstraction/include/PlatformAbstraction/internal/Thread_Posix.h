@@ -117,6 +117,7 @@ namespace internal
     inline void* Thread::Run(void* arg)
     {
         assert(arg);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) must restore original type after going through C
         Fun_t* fun = reinterpret_cast<Fun_t*>(arg);
         (*fun)();
         return nullptr;

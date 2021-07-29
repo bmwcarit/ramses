@@ -23,7 +23,7 @@ namespace ramses_internal
         std::chrono::milliseconds timingReportingPeriod,
         const String& kpiFilename)
         : m_rendererScenes(m_rendererEventCollector)
-        , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector)
+        , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector, m_rendererStatistics)
         , m_renderer(display, platform, m_rendererScenes, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, m_rendererStatistics)
         , m_sceneStateExecutor(m_renderer, rendererSceneSender, m_rendererEventCollector)
         , m_rendererSceneUpdater(display, platform, m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, notifier)

@@ -113,7 +113,7 @@ namespace ramses_internal
         NiceMock<EmbeddedCompositor_WaylandMock>        m_compositorMock;
         NiceMock<WaylandSurfaceMock>                    m_surfaceMock;
         NiceMock<ContextMock>                           m_contextMock;
-        EmbeddedCompositor_Wayland                      m_waylandCompositor{{}, {}, m_contextMock};
+        EmbeddedCompositor_Wayland                      m_waylandCompositor{{}, m_contextMock};
 
         StrictMock<WaylandClientMock>                   m_clientMock;
         StrictMock<NativeWaylandResourceMockWithDestructor>*  m_nativeResourceMock = nullptr;

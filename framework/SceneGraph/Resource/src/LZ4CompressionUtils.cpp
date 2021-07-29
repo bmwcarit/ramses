@@ -25,14 +25,18 @@ namespace ramses_internal
 
             if (level == CompressionLevel::Fast)
             {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) external API expects char* to binary data
                 realCompressedSize = LZ4_compress_default(reinterpret_cast<const char*>(plainBuffer.data()),
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) external API expects char* to binary data
                     reinterpret_cast<char*>(compressedBuffer.data()),
                     plainSize,
                     static_cast<int>(compressedBuffer.size()));
             }
             else
             {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) external API expects char* to binary data
                 realCompressedSize = LZ4_compress_HC(reinterpret_cast<const char*>(plainBuffer.data()),
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) external API expects char* to binary data
                     reinterpret_cast<char*>(compressedBuffer.data()),
                     plainSize,
                     static_cast<int>(compressedBuffer.size()),
@@ -53,7 +57,9 @@ namespace ramses_internal
                 return ResourceBlob();
 
             ResourceBlob plainBuffer(uncompressedSize);
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) external API expects char* to binary data
             int bytesDecompressed = LZ4_decompress_safe(reinterpret_cast<const char*>(compressedData.data()),
+                                                        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) external API expects char* to binary data
                                                         reinterpret_cast<char*>(plainBuffer.data()),
                                                         static_cast<int>(compressedData.size()),
                                                         static_cast<int>(plainBuffer.size()));

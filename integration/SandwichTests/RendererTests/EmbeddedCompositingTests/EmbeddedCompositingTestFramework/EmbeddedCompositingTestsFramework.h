@@ -24,22 +24,27 @@ namespace ramses_internal
     class TestForkingController;
     class RendererLogContext;
 
+    enum class EConnectionMode
+    {
+        DisplayName,
+        AlternateDisplayName,
+        DisplayFD,
+    };
+
     class EmbeddedCompositingTestsFramework: public RendererTestsFramework
     {
     public:
-        EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config);
+        EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config, const String& embeddedCompositingSocketGroupName);
 
         //control test app lifecycle
-        void                            startTestApplication(bool initialize = true);
-        void                            initializeTestApplication();
-        void                            startTestApplicationAndWaitUntilConnected();
-        void                            stopTestApplicationAndWaitUntilDisconnected();
+        void                            startTestApplication();
+        void                            initializeTestApplication(EConnectionMode connectionMode = EConnectionMode::DisplayName);
+        void                            startTestApplicationAndWaitUntilConnected(EConnectionMode connectionMode = EConnectionMode::DisplayName, uint32_t displayIdx = 0u);
+        void                            stopTestApplicationAndWaitUntilDisconnected(uint32_t displayIdx = 0u);
         void                            killTestApplication();
-        void                            setEnvironmentVariableWaylandSocket();
-        void                            setEnvironmentVariableWaylandDisplay();
 
         //wait for events
-        void                            waitForContentOnStreamTexture(WaylandIviSurfaceId sourceId);
+        void                            waitForContentOnStreamTexture(WaylandIviSurfaceId sourceId, uint32_t displayIdx = 0u);
         void                            waitForUnavailablilityOfContentOnStreamTexture(WaylandIviSurfaceId sourceId);
         void                            waitForSurfaceAvailableForStreamTexture(WaylandIviSurfaceId sourceId);
         void                            waitForSurfaceUnavailableForStreamTexture(WaylandIviSurfaceId sourceId);
@@ -47,7 +52,7 @@ namespace ramses_internal
         Bool                            waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId waylandSurfaceId, UInt64 numberOfComittedBuffers, UInt32 timeoutMilliseconds = std::numeric_limits<ramses_internal::UInt32>::max());
         void                            waitForBufferAttachedToIviSurface(WaylandIviSurfaceId waylandSurfaceId);
         void                            waitForNoBufferAttachedToIviSurface(WaylandIviSurfaceId waylandSurfaceId);
-        void                            waitUntilNumberOfCompositorConnections(UInt32 numberOfConnections, bool doResourceUpdate = false);
+        void                            waitUntilNumberOfCompositorConnections(UInt32 numberOfConnections, bool doResourceUpdate = false, uint32_t displayIdx = 0u);
 
         //send message to test app
         TestApplicationSurfaceId        sendCreateSurfaceWithEGLContextToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval);
@@ -82,16 +87,24 @@ namespace ramses_internal
         String                          getTitleOfIviSurface(WaylandIviSurfaceId waylandSurfaceId);
         void                            logEmbeddedCompositor(RendererLogContext& logContext);
 
+        // This is needed due to the conflict resulting from mandating the possibility to set EC config on both RendererConfig
+        // and DisplayConfig, as well as parsing EC config from cmd line to RendererConfig
+        const String&                   getEmbeddedCompositingSocketGroupName() const;
+
+        const static String             TestEmbeddedCompositingDisplayName;
+        const static String             TestAlternateEmbeddedCompositingDisplayName;
+
     protected:
         TestApplicationSurfaceId sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, Bool useEGL);
         void sendStopToTestApplication();
 
-        IEmbeddedCompositingManager& getEmbeddedCompositorManager();
-        IEmbeddedCompositor& getEmbeddedCompositor();
+        IEmbeddedCompositingManager& getEmbeddedCompositorManager(uint32_t displayIdx = 0u);
+        IEmbeddedCompositor& getEmbeddedCompositor(uint32_t displayIdx = 0u);
 
         TestForkingController& m_testForkingController;
         TestApplicationSurfaceId m_nextSurfaceId = TestApplicationSurfaceId(0);
         TestApplicationShellSurfaceId m_nextShellSurfaceId = TestApplicationShellSurfaceId(0);
+        const String m_embeddedCompositingSocketGroupName;
     };
 }
 

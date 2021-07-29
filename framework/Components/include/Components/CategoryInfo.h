@@ -70,7 +70,7 @@ template <>
 struct fmt::formatter<ramses_internal::CategoryInfo> : public ramses_internal::SimpleFormatterBase
 {
     template <typename FormatContext>
-    auto format(const ramses_internal::CategoryInfo& categoryInfo, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::CategoryInfo& categoryInfo, FormatContext& ctx)
     {
         fmt::format_to(ctx.out(), "[");
         if (categoryInfo.hasCategoryRectChange())

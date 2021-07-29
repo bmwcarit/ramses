@@ -15,6 +15,7 @@
 #include "NamedPipe.h"
 #include "WaylandHandler.h"
 #include "OpenGLTriangleDrawer.h"
+#include "WaylandUtilities/UnixDomainSocket.h"
 #include "Utils/LogMacros.h"
 #include <vector>
 
@@ -34,7 +35,7 @@ namespace ramses_internal
         bool readBufferFromTestFramework();
         Bool dispatchIncomingMessage();
 
-        bool initializeWayland();
+        bool initializeWayland(const String& displayName, bool connectUsingFD);
         void stopWayland();
         void renderFrameToEGLBuffer(TestApplicationSurfaceId surfaceId, bool useCallback);
         void renderFrameToSharedMemoryBuffer(TestApplicationSurfaceId surfaceId, bool useCallback);
@@ -53,6 +54,7 @@ namespace ramses_internal
         ETriangleColor                          m_triangleColor;
 
         std::vector<Byte>                       m_readingBuffer;
+        std::unique_ptr<ramses_internal::UnixDomainSocket> m_socket;
     };
 }
 #endif

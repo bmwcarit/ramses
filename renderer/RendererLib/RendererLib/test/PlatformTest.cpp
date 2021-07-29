@@ -41,7 +41,7 @@ namespace ramses_internal
 
             EXPECT_CALL(platform, createEmbeddedCompositor(_));
 
-            EXPECT_CALL(platform, createTextureUploadingAdapter());
+            EXPECT_CALL(platform, createTextureUploadingAdapter(_));
 
             return platform.createRenderBackend(displayConfig, windowEventHandlerMock);
         }
@@ -165,7 +165,7 @@ namespace ramses_internal
     }
 
 
-    TEST_F(APlatformTest, DISABLED_RenderBackendCreationFailsIfEmbeddedCompositorFailsInitialization)
+    TEST_F(APlatformTest, RenderBackendCreationFailsIfEmbeddedCompositorFailsInitialization)
     {
         StrictMock<Platform_BaseMock> platform(rendererConfig);
 

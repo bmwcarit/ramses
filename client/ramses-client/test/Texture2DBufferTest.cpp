@@ -15,6 +15,7 @@
 #include "Scene/ClientScene.h"
 #include "ramses-client-api/Texture2DBuffer.h"
 #include "Texture2DBufferImpl.h"
+#include "UnsafeTestMemoryHelpers.h"
 
 using namespace testing;
 using namespace ramses_internal;
@@ -88,18 +89,17 @@ namespace ramses
 
         // update mipLevel = 0
         EXPECT_EQ(StatusOK, textureBuffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()));
-        const uint32_t* textureBufferDataMip0 = reinterpret_cast<const uint32_t*>(this->m_scene.impl.getIScene().getTextureBuffer(textureBufferHandle).mipMaps[0].data.data());
+        const Byte* textureBufferDataMip0 = this->m_scene.impl.getIScene().getTextureBuffer(textureBufferHandle).mipMaps[0].data.data();
 
-        EXPECT_EQ(12u, textureBufferDataMip0[0]);
-        EXPECT_EQ(23u, textureBufferDataMip0[1]);
-        EXPECT_EQ(34u, textureBufferDataMip0[3 * 1 + 0]);
-        EXPECT_EQ(56u, textureBufferDataMip0[3 * 1 + 1]);
+        EXPECT_EQ(12u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(textureBufferDataMip0, 0));
+        EXPECT_EQ(23u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(textureBufferDataMip0, 1));
+        EXPECT_EQ(34u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(textureBufferDataMip0, 3 * 1 + 0));
+        EXPECT_EQ(56u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(textureBufferDataMip0, 3 * 1 + 1));
 
         // update mipLevel = 1
         EXPECT_EQ(StatusOK, textureBuffer.updateData(1, 0, 0, 1, 1, std::array<uint32_t, 1>{ {78} }.data()));
-        const uint32_t* textureBufferDataMip1 = reinterpret_cast<const uint32_t*>(this->m_scene.impl.getIScene().getTextureBuffer(textureBufferHandle).mipMaps[1].data.data());
-
-        EXPECT_EQ(78u, textureBufferDataMip1[0]);
+        const Byte* textureBufferDataMip1 = this->m_scene.impl.getIScene().getTextureBuffer(textureBufferHandle).mipMaps[1].data.data();
+        EXPECT_EQ(78u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(textureBufferDataMip1, 0));
     }
 
     TEST_F(ATexture2DBuffer, CanGetDataUpdates)
@@ -110,7 +110,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, textureBuffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()));
 
         std::array<uint32_t, 12> mipLevel0RetrievedData;
-        textureBuffer.getMipLevelData(0u, reinterpret_cast<char*>(mipLevel0RetrievedData.data()), textureBuffer.getMipLevelDataSizeInBytes(0u));
+        textureBuffer.getMipLevelData(0u, mipLevel0RetrievedData.data(), textureBuffer.getMipLevelDataSizeInBytes(0u));
 
         EXPECT_EQ(12u, mipLevel0RetrievedData[0]);
         EXPECT_EQ(23u, mipLevel0RetrievedData[1]);
@@ -121,7 +121,7 @@ namespace ramses
         EXPECT_EQ(StatusOK, textureBuffer.updateData(1, 0, 0, 1, 1, std::array<uint32_t, 1>{ {78} }.data()));
 
         std::array<uint32_t, 2> mipLevel1RetrievedData;
-        textureBuffer.getMipLevelData(1u, reinterpret_cast<char*>(mipLevel1RetrievedData.data()), textureBuffer.getMipLevelDataSizeInBytes(1u));
+        textureBuffer.getMipLevelData(1u, mipLevel1RetrievedData.data(), textureBuffer.getMipLevelDataSizeInBytes(1u));
 
         EXPECT_EQ(78u, mipLevel1RetrievedData[0]);
     }
@@ -132,13 +132,13 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, textureBuffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()));
         std::array<uint32_t, 2> mipLevel0RetrievedData;
-        textureBuffer.getMipLevelData(0u, reinterpret_cast<char*>(&mipLevel0RetrievedData), sizeof(uint32_t) * 2u);
+        textureBuffer.getMipLevelData(0u, &mipLevel0RetrievedData, sizeof(uint32_t) * 2u);
         EXPECT_EQ(12u, mipLevel0RetrievedData[0]);
         EXPECT_EQ(23u, mipLevel0RetrievedData[1]);
 
         EXPECT_EQ(StatusOK, textureBuffer.updateData(1, 0, 0, 1, 2, std::array<uint32_t, 2>{ {78, 87} }.data()));
         uint32_t mipLevel1RetrievedData;
-        textureBuffer.getMipLevelData(1u, reinterpret_cast<char*>(&mipLevel1RetrievedData), sizeof(uint32_t));
+        textureBuffer.getMipLevelData(1u, &mipLevel1RetrievedData, sizeof(uint32_t));
         EXPECT_EQ(78u, mipLevel1RetrievedData);
     }
 

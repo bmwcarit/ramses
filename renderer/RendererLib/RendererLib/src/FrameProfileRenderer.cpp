@@ -25,7 +25,7 @@ namespace ramses_internal
     static const Float CounterAreaHeight(150.f);
     static const Float CounterGridlinePixelDistance(120.f);
 
-    static const char* SimpleColorFragmentShader =  R"GLSL(
+    static const char* const SimpleColorFragmentShader =  R"GLSL(
         #version 300 es
         precision highp float;
 
@@ -37,7 +37,7 @@ namespace ramses_internal
             fragColor = color;
         })GLSL";
 
-    static const char* IndexedColorFragmentShader = R"GLSL(
+    static const char* const IndexedColorFragmentShader = R"GLSL(
         #version 300 es
         precision highp float;
 
@@ -66,7 +66,7 @@ namespace ramses_internal
             fragColor = colors[colorId];
         })GLSL";
 
-    static const char* StackedTimingLineVertexShader = R"GLSL(
+    static const char* const StackedTimingLineVertexShader = R"GLSL(
         #version 300 es
 
         uniform mat4 mvpMatrix;
@@ -85,7 +85,7 @@ namespace ramses_internal
             colorId = gl_VertexID % 16;
         })GLSL";
 
-    static const char* TimingLineVertexShader = R"GLSL(
+    static const char* const TimingLineVertexShader = R"GLSL(
         #version 300 es
 
         uniform mat4 mvpMatrix;
@@ -102,7 +102,7 @@ namespace ramses_internal
             gl_Position = mvpMatrix * pos;
         })GLSL";
 
-    static const char* SimpleVertexShader = R"GLSL(
+    static const char* const SimpleVertexShader = R"GLSL(
         #version 300 es
 
         uniform mat4 mvpMatrix;

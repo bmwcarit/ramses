@@ -179,6 +179,14 @@ namespace ramses_internal
         m_lastFrameTick = currTick;
     }
 
+    void RendererStatistics::addExpirationOffset(SceneId sceneId, int64_t expirationOffset)
+    {
+        m_sceneStatistics[sceneId].expirationOffset.update(expirationOffset);
+        m_sceneStatistics[sceneId].numExpirationOffsets++;
+        if (expirationOffset > 0)
+            m_sceneStatistics[sceneId].numExpiredOffsets++;
+    }
+
     void RendererStatistics::reset()
     {
         m_timeBase = PlatformTime::GetMillisecondsMonotonic();
@@ -212,6 +220,9 @@ namespace ramses_internal
             sceneStat.numResourcesRemovedPerFlush.reset();
             sceneStat.numSceneResourceActionsPerFlush.reset();
             sceneStat.flushLatency.reset();
+            sceneStat.expirationOffset.reset();
+            sceneStat.numExpirationOffsets = 0u;
+            sceneStat.numExpiredOffsets = 0u;
             sceneStat.sceneResourcesUploaded = 0u;
             sceneStat.sceneResourcesBytesUploaded = 0u;
             sceneStat.numRendered = 0u;
@@ -272,6 +283,7 @@ namespace ramses_internal
             const auto& numResourcesRemovedPerFlush = sceneStats.numResourcesRemovedPerFlush;
             const auto& numSceneResourceActionsPerFlush = sceneStats.numSceneResourceActionsPerFlush;
             const auto& flushLatency = sceneStats.flushLatency;
+            const auto& expirationOffset = sceneStats.expirationOffset;
 
             str << "Scene " << sceneStatsIt.first << ": ";
             str << "rendered " << sceneStats.numRendered;
@@ -290,6 +302,9 @@ namespace ramses_internal
                 str << ", RC-/F (" << numResourcesRemovedPerFlush.minValue << "/" << numResourcesRemovedPerFlush.maxValue << "/" << static_cast<float>(numResourcesRemovedPerFlush.sum) / sceneStats.numFlushesArrived << ")";
                 str << ", RS/F (" << numSceneResourceActionsPerFlush.minValue << "/" << numSceneResourceActionsPerFlush.maxValue << "/" << static_cast<float>(numSceneResourceActionsPerFlush.sum) / sceneStats.numFlushesArrived << ")";
             }
+            if (sceneStats.numExpirationOffsets > 0u)
+                str << ", Exp (" << sceneStats.numExpiredOffsets << "/" << sceneStats.numExpirationOffsets << ":" << expirationOffset.minValue << "/" << expirationOffset.maxValue << "/" << static_cast<float>(expirationOffset.sum) / sceneStats.numExpirationOffsets << ")";
+
             if (sceneStats.sceneResourcesUploaded > 0u)
                 str << ", RSUploaded " << sceneStats.sceneResourcesUploaded << " (" << sceneStats.sceneResourcesBytesUploaded << " B)";
             str << "\n";

@@ -39,6 +39,9 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_STREQ("", m_config.getWaylandDisplay().c_str());
     EXPECT_EQ(ramses_internal::ERenderBufferType_DepthStencilBuffer, m_config.getDepthStencilBufferType());
     EXPECT_TRUE(m_config.isAsyncEffectUploadEnabled());
+    EXPECT_EQ(ramses_internal::String(""), m_config.getWaylandSocketEmbedded());
+    EXPECT_EQ(ramses_internal::String(""), m_config.getWaylandSocketEmbeddedGroup());
+    EXPECT_EQ(-1, m_config.getWaylandSocketEmbeddedFD());
 
     // this value is used in HL API, so test that value does not change unnoticed
     EXPECT_TRUE(ramses_internal::IntegrityRGLDeviceUnit::Invalid().getValue() == 0xFFFFFFFF);
@@ -100,6 +103,18 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
 
     m_config.setAsyncEffectUploadEnabled(false);
     EXPECT_FALSE(m_config.isAsyncEffectUploadEnabled());
+
+    m_config.setWaylandEmbeddedCompositingSocketName("wayland-11");
+    EXPECT_EQ(ramses_internal::String("wayland-11"), m_config.getWaylandSocketEmbedded());
+
+    m_config.setWaylandEmbeddedCompositingSocketFD(42);
+    EXPECT_EQ(42, m_config.getWaylandSocketEmbeddedFD());
+
+    m_config.setWaylandEmbeddedCompositingSocketGroup("groupname1");
+    EXPECT_EQ(ramses_internal::String("groupname1"), m_config.getWaylandSocketEmbeddedGroup());
+
+    m_config.setWaylandEmbeddedCompositingSocketPermissions(0654);
+    EXPECT_EQ(0654u, m_config.getWaylandSocketEmbeddedPermissions());
 }
 
 TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)

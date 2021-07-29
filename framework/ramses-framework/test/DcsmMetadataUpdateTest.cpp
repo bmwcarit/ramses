@@ -42,6 +42,7 @@ namespace ramses
         EXPECT_FALSE(dmp.hasStreamID());
         EXPECT_FALSE(dmp.hasDisplayedDataFlags());
         EXPECT_FALSE(dmp.hasContentFlippedVertically());
+        EXPECT_FALSE(dmp.hasLayoutAvailability());
     }
 
     TEST_F(ADcsmMetadataUpdate, returnsPreviewImagePng)
@@ -107,6 +108,17 @@ namespace ramses
         EXPECT_EQ(timingp, dmp.getCarModelViewAnimationInfo());
     }
 
+    TEST_F(ADcsmMetadataUpdate, returnsCarModelViewExtended)
+    {
+        constexpr CarModelViewMetadataExtended cmExt{ 0.1f,0.2f,9,10 };
+
+        EXPECT_TRUE(md.setCarModelViewExtended(cmExt));
+        dmp.impl.setMetadata(md);
+        EXPECT_TRUE(dmp.hasCarModelViewExtended());
+
+        EXPECT_EQ(cmExt, dmp.getCarModelViewExtended());
+    }
+
     TEST_F(ADcsmMetadataUpdate, returnsCarModelVisibility)
     {
         EXPECT_TRUE(md.setCarModelVisibility(true));
@@ -145,5 +157,13 @@ namespace ramses
         dmp.impl.setMetadata(md);
         EXPECT_TRUE(dmp.hasDisplayedDataFlags());
         EXPECT_EQ(13u, dmp.getDisplayedDataFlags());
+    }
+
+    TEST_F(ADcsmMetadataUpdate, returnsLayoutAvailability)
+    {
+        EXPECT_TRUE(md.setLayoutAvailability(5));
+        dmp.impl.setMetadata(md);
+        EXPECT_TRUE(dmp.hasLayoutAvailability());
+        EXPECT_EQ(5u, dmp.getLayoutAvailability());
     }
 }

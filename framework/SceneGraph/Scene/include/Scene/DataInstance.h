@@ -34,6 +34,7 @@ namespace ramses_internal
         template <typename DATATYPE>
         const DATATYPE* getTypedDataPointer(UInt32 fieldOffset) const
         {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(tobias) questionable if correct because because objects have no lifetime
             return reinterpret_cast<const DATATYPE*>(&m_data[fieldOffset]);
         }
 

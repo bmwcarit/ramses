@@ -135,7 +135,11 @@ namespace ramses
         GlyphMetricsVector      getPositionedGlyphs(const std::u32string& str, const FontInstanceOffsets& fontOffsets);
 
         /**
-        * @brief Create the scene objects, e.g., mesh and appearance...etc, needed for rendering a text line (represented by glyph metrics)
+        * @brief Create the scene objects, e.g., mesh and appearance...etc, needed for rendering a text line (represented by glyph metrics).
+        * If the provided string of glyphs contains no render-able characters (e.g. it has only white spaces), the method will fail with an error.
+        * If you want to avoid having such errors, filter out the \p glyphs with no visual
+        * representation (e.g. control characters) and use the helper method ContainsRenderableGlyphs on top to check if the remaining glyphs
+        * contain at least one renderable (size not zero) glyph so they can be used as input for createTextLine.
         *
         * This method will always produce exactly one MeshNode. We do this by enforcing that all glyphs are rendered in the same texture atlas page,
         * thus making it possible to create one mesh instead of several. The effect argument has special requirements - it needs to have
@@ -170,6 +174,15 @@ namespace ramses
         * @return True on success, false otherwise
         */
         bool                    deleteTextLine(TextLineId textId);
+
+        /**
+        * @brief Check if provided GlyphMetricsVector contains at least one renderable glyph
+        * If this functions returns false, the provided input cannot be used as input for the
+        * function createTextLine. The function call will simply fail.
+        * @param[in] glyphMetrics GlyphMetrics to be checked
+        * @ return True if the provided vector contains at least one renderable glyph
+        */
+        static bool             ContainsRenderableGlyphs(const GlyphMetricsVector& glyphMetrics);
 
         /**
         * Stores internal data for implementation specifics of TextCache.

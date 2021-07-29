@@ -67,7 +67,7 @@ template <>
 struct fmt::formatter<ramses_internal::SomeIPMsgHeader> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses_internal::SomeIPMsgHeader& hdr, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::SomeIPMsgHeader& hdr, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "Hdr(pid:{} sid:{} mid:{})",
                               hdr.participantId, hdr.sessionId, hdr.messageId);

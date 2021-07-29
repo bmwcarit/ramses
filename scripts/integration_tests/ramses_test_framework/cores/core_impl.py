@@ -114,7 +114,8 @@ class CoreImpl(object):
 
     def tear_down(self, shutdownTargets):
         anyTargetWasConnected = False
-        for target in itervalues(self.targets):
+        nonBridgeTargets = [self.targets[i] for i in self.targets.keys() if i not in self.bridgeTargets.keys()]
+        for target in nonBridgeTargets:
             anyTargetWasConnected |= target.isConnected
             target.target_specific_tear_down(shutdown=shutdownTargets)
 
@@ -124,7 +125,7 @@ class CoreImpl(object):
                 # wait time till all targets should have finished shutdown properly
                 time.sleep(60)
 
-            for target in itervalues(self.targets):
+            for target in nonBridgeTargets:
                 if target.powerDevice is not None:
                     target.powerDevice.switch(target.powerOutletNr, False)
 

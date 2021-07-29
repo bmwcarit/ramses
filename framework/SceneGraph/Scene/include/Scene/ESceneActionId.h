@@ -390,20 +390,6 @@ case ENUMVALUE: return #ENUMVALUE
         }
         return "Unknown Message Type";
     }
-
-    inline
-        IOutputStream& operator<<(IOutputStream& outputStream, ESceneActionId messageId)
-    {
-        outputStream << static_cast<uint32_t>(messageId);
-        return outputStream;
-    }
-
-    inline
-    IInputStream& operator>>(IInputStream& inputStream, ESceneActionId& messageId)
-    {
-        inputStream >> reinterpret_cast<uint32_t&>(messageId);
-        return inputStream;
-    }
 }
 
 #endif

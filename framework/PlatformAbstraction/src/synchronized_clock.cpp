@@ -43,7 +43,7 @@ namespace ramses_internal
     {
         clockid_t GetClockId()
         {
-            int fd = open("/dev/ptp0", O_RDWR);
+            int fd = open("/dev/ptp0", O_RDONLY);
             if (fd < 0)
             {
                 LOG_WARN(CONTEXT_FRAMEWORK, "PlatformTimePTP::GetClockId: failed to open /dev/ptp0 with error: " << strerror(errno));

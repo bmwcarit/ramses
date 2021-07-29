@@ -32,6 +32,7 @@ namespace ramses
         MOCK_METHOD(bool, sendContentDescription, (ramses_internal::ContentID, ramses_internal::TechnicalContentDescriptor), (override));
         MOCK_METHOD(bool, sendContentReady, (ramses_internal::ContentID), (override));
         MOCK_METHOD(bool, sendRequestStopOfferContent, (ramses_internal::ContentID), (override));
+        MOCK_METHOD(bool, sendForceStopOfferContent, (ramses_internal::ContentID), (override));
         MOCK_METHOD(bool, sendUpdateContentMetadata, (ramses_internal::ContentID contentID, const ramses_internal::DcsmMetadata& metadata), (override));
 
         MOCK_METHOD(bool, sendCanvasSizeChange, (ramses_internal::ContentID, const ramses_internal::CategoryInfo&, ramses_internal::AnimationInformation), (override));
@@ -936,7 +937,7 @@ namespace ramses
         EXPECT_CALL(compMock, dispatchProviderEvents(_)).WillOnce([this](auto&)
             {
                 StreamStatusMessage msg(StreamStatusMessage::Status::Halted);
-                auto impl = std::make_unique<DcsmStatusMessageImpl>(static_cast<uint64_t>(msg.impl->getType()), absl::Span<const ramses_internal::Byte>{ msg.impl->getData().data(), msg.impl->getData().size() });
+                auto impl = std::make_unique<DcsmStatusMessageImpl>(msg.impl->getType(), absl::Span<const ramses_internal::Byte>{ msg.impl->getData().data(), msg.impl->getData().size() });
                 provider->impl.contentStatus(ContentID(123), std::move(impl));
                 return true;
             });
@@ -950,6 +951,47 @@ namespace ramses
 
         EXPECT_EQ(provider->dispatchEvents(handler), StatusOK);
     }
+
+    TEST_F(ADcsmProvider, emitsActiveLayoutMessageIfComponentEmitsActiveLayoutEvent)
+    {
+        EXPECT_CALL(compMock, dispatchProviderEvents(_)).WillOnce([this](auto&)
+            {
+                ActiveLayoutMessage msg(ActiveLayoutMessage::Layout::Gallery);
+                auto impl = std::make_unique<DcsmStatusMessageImpl>(msg.impl->getType(), absl::Span<const ramses_internal::Byte>{ msg.impl->getData().data(), msg.impl->getData().size() });
+                provider->impl.contentStatus(ContentID(117), std::move(impl));
+                return true;
+            });
+        EXPECT_CALL(handler, contentStatus(ContentID(117), _)).WillOnce([](auto, auto const& message)
+            {
+                EXPECT_EQ(message.impl->getType(), DcsmStatusMessageImpl::Type::ActiveLayout);
+                auto highptr = message.getAsActiveLayout();
+                ASSERT_TRUE(highptr);
+                EXPECT_EQ(highptr->getLayout(), ActiveLayoutMessage::Layout::Gallery);
+            });
+
+        EXPECT_EQ(provider->dispatchEvents(handler), StatusOK);
+    }
+
+    TEST_F(ADcsmProvider, emitsWidgetFocusStatusMessageIfComponentEmitsWidgetFocusEvent)
+    {
+        EXPECT_CALL(compMock, dispatchProviderEvents(_)).WillOnce([this](auto&)
+            {
+                WidgetFocusStatusMessage msg(WidgetFocusStatusMessage::Status::NotFocused);
+                auto impl = std::make_unique<DcsmStatusMessageImpl>(msg.impl->getType(), absl::Span<const ramses_internal::Byte>{ msg.impl->getData().data(), msg.impl->getData().size() });
+                provider->impl.contentStatus(ContentID(117), std::move(impl));
+                return true;
+            });
+        EXPECT_CALL(handler, contentStatus(ContentID(117), _)).WillOnce([](auto, auto const& message)
+            {
+                EXPECT_EQ(message.impl->getType(), DcsmStatusMessageImpl::Type::WidgetFocusStatus);
+                auto highptr = message.getAsWidgetFocusStatus();
+                ASSERT_TRUE(highptr);
+                EXPECT_EQ(highptr->getWidgetFocusStatus(), WidgetFocusStatusMessage::Status::NotFocused);
+            });
+
+        EXPECT_EQ(provider->dispatchEvents(handler), StatusOK);
+    }
+
 
     class ADcsmProviderFromFramework : public Test
     {

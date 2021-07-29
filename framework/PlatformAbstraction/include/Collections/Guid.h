@@ -99,7 +99,7 @@ namespace ramses_internal
     inline IInputStream& operator>>(IInputStream& stream, Guid& guid)
     {
         uint64_t value = 0;
-        stream.read(reinterpret_cast<char*>(&value), sizeof(value));
+        stream.read(&value, sizeof(value));
         guid = Guid(value);
         return stream;
     }
@@ -115,7 +115,7 @@ struct fmt::formatter<ramses_internal::Guid>
     }
 
     template<typename FormatContext>
-    auto format(const ramses_internal::Guid& guid, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::Guid& guid, FormatContext& ctx)
     {
         const uint64_t v = guid.get();
         if (v < 256)

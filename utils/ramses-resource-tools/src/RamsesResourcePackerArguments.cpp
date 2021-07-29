@@ -13,14 +13,14 @@
 
 namespace
 {
-    const char* IN_RESOURCE_FILES_CONFIG_NAME = "in-resource-files-config";
-    const char* IN_RESOURCE_FILES_CONFIG_SHORT_NAME = "ir";
+    const char* const IN_RESOURCE_FILES_CONFIG_NAME = "in-resource-files-config";
+    const char* const IN_RESOURCE_FILES_CONFIG_SHORT_NAME = "ir";
 
-    const char* OUT_RESOURCE_FILE_NAME = "out-resource-file";
-    const char* OUT_RESOURCE_FILE_SHORT_NAME = "or";
+    const char* const OUT_RESOURCE_FILE_NAME = "out-resource-file";
+    const char* const OUT_RESOURCE_FILE_SHORT_NAME = "or";
 
-    const char* OUT_COMPRESSION = "out-compression";
-    const char* OUT_COMPRESSION_SHORT = "oc";
+    const char* const OUT_COMPRESSION = "out-compression";
+    const char* const OUT_COMPRESSION_SHORT = "oc";
 }
 
 bool RamsesResourcePackerArguments::parseArguments(int argc, char const*const* argv)

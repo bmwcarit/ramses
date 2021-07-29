@@ -713,6 +713,8 @@ namespace ramses_internal
                     assert(m_displayResourceManager);
                     m_tempRenderablesWithUpdatedVertexArrays.clear();
 
+                    bool dirtyVAOLeft = false;
+
                     const auto& vertexArraysDirtinessFlags = rendererScene.getVertexArraysDirtinessFlags();
                     for (RenderableHandle renderable(0u); renderable < rendererScene.getRenderableCount(); ++renderable)
                     {
@@ -729,12 +731,16 @@ namespace ramses_internal
                             }
 
                             // upload new VAO based on updated parameters
-                            if (rendererScene.isRenderableAllocated(renderable)
-                                && !rendererScene.renderableResourcesDirty(renderable)
-                                && rendererScene.getRenderable(renderable).visibilityMode != EVisibilityMode::Off)
+                            if (rendererScene.isRenderableAllocated(renderable))
                             {
-                                SceneResourceUploader::UploadVertexArray(rendererScene, renderable, *m_displayResourceManager);
-                                updated = true;
+                                if (!rendererScene.renderableResourcesDirty(renderable)
+                                    && rendererScene.getRenderable(renderable).visibilityMode != EVisibilityMode::Off)
+                                {
+                                    SceneResourceUploader::UploadVertexArray(rendererScene, renderable, *m_displayResourceManager);
+                                    updated = true;
+                                }
+                                else
+                                    dirtyVAOLeft = true;
                             }
 
                             if (updated)
@@ -743,6 +749,8 @@ namespace ramses_internal
                     }
 
                     rendererScene.updateRenderableVertexArrays(*m_displayResourceManager, m_tempRenderablesWithUpdatedVertexArrays);
+                    if (!dirtyVAOLeft)
+                        rendererScene.markVertexArraysClean();
                 }
             }
         }
@@ -805,18 +813,7 @@ namespace ramses_internal
                 }
 
                 if (!canBeMapped)
-                {
-                    const auto numPendingFlushes = getNumberOfPendingNonEmptyFlushes(sceneId);
-                    if (numPendingFlushes > m_maximumPendingFlushes)
-                    {
-                        LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene " << sceneId << " due to " << numPendingFlushes << " pending flushes, renderer cannot catch up with resource updates.");
-                        const auto usedResources = resourceManager.getResourcesInUseByScene(sceneId);
-                        if (usedResources)
-                            logMissingResources(*usedResources, sceneId);
-
-                        canBeMapped = true;
-                    }
-                }
+                    canBeMapped = checkIfForceMapNeeded(sceneId);
 
                 if (canBeMapped)
                 {
@@ -849,46 +846,6 @@ namespace ramses_internal
             }
         }
 
-        // check scenes that take too long to be mapped
-        for (auto& sceneMapReq : m_scenesToBeMapped)
-        {
-            constexpr std::chrono::seconds MappingLogPeriod{ 1u };
-            constexpr size_t MaxNumResourcesToLog = 20u;
-
-            auto& mapRequest = sceneMapReq.second;
-            const auto currentFrameTime = m_frameTimer.getFrameStartTime();
-            if (currentFrameTime - mapRequest.lastLogTimeStamp > MappingLogPeriod)
-            {
-                LOG_WARN_F(CONTEXT_RENDERER, [&](ramses_internal::StringOutputStream& logger)
-                {
-                    const auto totalWaitingTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentFrameTime - mapRequest.requestTimeStamp);
-                    const IRendererResourceManager& resourceManager = *m_displayResourceManager;
-
-                    logger << "Scene " << sceneMapReq.first << " waiting " << totalWaitingTime.count() << " ms for resources in order to be mapped: ";
-                    size_t numResourcesWaiting = 0u;
-                    const auto usedResources = resourceManager.getResourcesInUseByScene(sceneMapReq.first);
-                    if (usedResources)
-                    {
-                        for (const auto& res : *usedResources)
-                        {
-                            const auto resStatus = resourceManager.getResourceStatus(res);
-                            if (resStatus != EResourceStatus::Uploaded)
-                            {
-                                if (++numResourcesWaiting <= MaxNumResourcesToLog)
-                                    logger << res << " <" << resStatus << ">; ";
-                            }
-                        }
-                    }
-                    logger << " " << numResourcesWaiting << " unresolved resources in total";
-                });
-
-                mapRequest.lastLogTimeStamp = currentFrameTime;
-
-                // log at most 1 scene in one frame
-                break;
-            }
-        }
-
         for (const auto& rendererScene : m_rendererScenes)
         {
             const SceneId sceneId = rendererScene.key;
@@ -902,6 +859,68 @@ namespace ramses_internal
                 m_modifiedScenesToRerender.put(sceneId);
             }
         }
+    }
+
+    bool RendererSceneUpdater::checkIfForceMapNeeded(SceneId sceneId)
+    {
+        constexpr std::chrono::seconds MappingLogPeriod{ 1u };
+        constexpr size_t MaxNumResourcesToLog = 20u;
+
+        assert(m_scenesToBeMapped.count(sceneId) != 0);
+        auto& mapRequest = m_scenesToBeMapped[sceneId];
+        const auto currentFrameTime = m_frameTimer.getFrameStartTime();
+        const auto totalWaitingTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentFrameTime - mapRequest.requestTimeStamp);
+
+        // log missing resources every period
+        if (currentFrameTime - mapRequest.lastLogTimeStamp > MappingLogPeriod)
+        {
+            LOG_WARN_F(CONTEXT_RENDERER, [&](ramses_internal::StringOutputStream& logger)
+            {
+                logger << "Scene " << sceneId << " waiting " << totalWaitingTime.count() << " ms for resources in order to be mapped: ";
+                size_t numResourcesWaiting = 0u;
+                const auto usedResources = m_displayResourceManager->getResourcesInUseByScene(sceneId);
+                if (usedResources)
+                {
+                    for (const auto& res : *usedResources)
+                    {
+                        const auto resStatus = m_displayResourceManager->getResourceStatus(res);
+                        if (resStatus != EResourceStatus::Uploaded)
+                        {
+                            if (++numResourcesWaiting <= MaxNumResourcesToLog)
+                                logger << res << " <" << resStatus << ">; ";
+                        }
+                    }
+                }
+                logger << " " << numResourcesWaiting << " unresolved resources in total";
+            });
+
+            mapRequest.lastLogTimeStamp = currentFrameTime;
+        }
+
+        // check if force map needed due to too many pending flushes
+        const auto numPendingFlushes = getNumberOfPendingNonEmptyFlushes(sceneId);
+        if (numPendingFlushes > m_maximumPendingFlushes)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene " << sceneId << " due to " << numPendingFlushes << " pending flushes, renderer cannot catch up with resource updates.");
+            const auto usedResources = m_displayResourceManager->getResourcesInUseByScene(sceneId);
+            if (usedResources)
+                logMissingResources(*usedResources, sceneId);
+
+            return true;
+        }
+
+        // check if force map needed due to too long waiting
+        if (totalWaitingTime > m_maximumWaitingTimeToForceMap)
+        {
+            // Scene might already have broken resources in it before mapping and then new flushes won't be blocked
+            // therefore this additional time-based criteria for force mapping.
+            // It is still error but it is not necessary to block on it forever.
+            LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene " << sceneId << " due to " << totalWaitingTime.count()
+                << " ms waiting time to be mapped, renderer cannot catch up with resource updates or scene has broken resources.");
+            return true;
+        }
+
+        return false;
     }
 
     void RendererSceneUpdater::applySceneActions(RendererCachedScene& scene, PendingFlush& flushInfo)

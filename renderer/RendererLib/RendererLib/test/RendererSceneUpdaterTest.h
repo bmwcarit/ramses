@@ -49,7 +49,7 @@ class ARendererSceneUpdater : public ::testing::Test
 public:
     ARendererSceneUpdater()
         : rendererScenes(rendererEventCollector)
-        , expirationMonitor(rendererScenes, rendererEventCollector)
+        , expirationMonitor(rendererScenes, rendererEventCollector, rendererStatistics)
         , renderer(Display, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
         , sceneStateExecutor(renderer, sceneEventSender, rendererEventCollector)
         , rendererSceneUpdater(new RendererSceneUpdaterFacade(Display, renderer.m_platform, renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor, notifier, &rendererResourceCacheMock))
@@ -77,6 +77,7 @@ public:
 protected:
     void update()
     {
+        frameTimer.startFrame();
         renderer.getProfilerStatistics().markFrameFinished(std::chrono::microseconds{ 0u });
         EXPECT_CALL(sceneReferenceLogic, update());
         if (rendererSceneUpdater->m_resourceManagerMock)

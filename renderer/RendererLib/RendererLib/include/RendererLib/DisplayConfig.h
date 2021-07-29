@@ -87,6 +87,18 @@ namespace ramses_internal
         void setAsyncEffectUploadEnabled(bool enabled);
         bool isAsyncEffectUploadEnabled() const;
 
+        void setWaylandEmbeddedCompositingSocketName(const String& socket);
+        const String& getWaylandSocketEmbedded() const;
+
+        void setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions);
+        const String& getWaylandSocketEmbeddedGroup() const;
+
+        void setWaylandEmbeddedCompositingSocketFD(int fd);
+        int getWaylandSocketEmbeddedFD() const;
+
+        bool setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
+        uint32_t getWaylandSocketEmbeddedPermissions() const;
+
         Bool operator==(const DisplayConfig& other) const;
         Bool operator!=(const DisplayConfig& other) const;
 
@@ -117,6 +129,11 @@ namespace ramses_internal
         Vector4 m_clearColor{ 0.f, 0.f, 0.f, 1.0f };
         ERenderBufferType m_depthStencilBufferType = ERenderBufferType_DepthStencilBuffer;
         bool m_asyncEffectUploadEnabled = true;
+
+        String m_waylandSocketEmbedded;
+        String m_waylandSocketEmbeddedGroupName;
+        uint32_t m_waylandSocketEmbeddedPermissions = 0;
+        int m_waylandSocketEmbeddedFD = -1;
     };
 }
 

@@ -63,6 +63,13 @@ namespace ramses
         return StatusOK;
     }
 
+    status_t DcsmMetadataCreatorImpl::setCarModelViewExtended(const CarModelViewMetadataExtended& data)
+    {
+        if (!m_metadata.setCarModelViewExtended(data))
+            return addErrorEntry("DcsmMetadataCreatorImpl::setCarModelViewExtended: input not valid");
+        return StatusOK;
+    }
+
     status_t DcsmMetadataCreatorImpl::setCarModelVisibility(bool visibility)
     {
         if (!m_metadata.setCarModelVisibility(visibility))
@@ -95,6 +102,13 @@ namespace ramses
     {
         if (!m_metadata.setDisplayedDataFlags(flags))
             return addErrorEntry("DcsmMetadataCreatorImpl::setDisplayedDataFlags: input not valid");
+        return StatusOK;
+    }
+
+    status_t DcsmMetadataCreatorImpl::setLayoutAvailability(uint8_t flags)
+    {
+        if (!m_metadata.setLayoutAvailability(flags))
+            return addErrorEntry("DcsmMetadataCreatorImpl::setLayoutAvailability: input not valid");
         return StatusOK;
     }
 

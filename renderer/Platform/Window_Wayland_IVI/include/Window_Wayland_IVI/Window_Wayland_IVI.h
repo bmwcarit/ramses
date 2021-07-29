@@ -20,7 +20,7 @@ namespace ramses_internal
     class Window_Wayland_IVI : public Window_Wayland
     {
     public:
-        Window_Wayland_IVI(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
+        Window_Wayland_IVI(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id, std::chrono::microseconds frameCallbackMaxPollTime);
         ~Window_Wayland_IVI() override;
 
     private:

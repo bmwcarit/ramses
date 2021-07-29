@@ -16,25 +16,25 @@
 
 namespace ramses_internal
 {
-    class Window_Android : public Window_Base
+    class Window_Android final : public Window_Base
     {
     public:
         Window_Android(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
-        ~Window_Android() final;
+        ~Window_Android() override;
 
-        virtual bool init() override;
+        bool init() override;
 
-        void handleEvents() override final;
+        void handleEvents() override;
 
         EGLNativeDisplayType getNativeDisplayHandle() const;
         ANativeWindow* getNativeWindowHandle() const;
 
-        bool hasTitle() const override final
+        bool hasTitle() const override
         {
             return false;
         }
 
-        Bool setFullscreen(Bool fullscreen) override final;
+        Bool setFullscreen(Bool fullscreen) override;
 
     private:
         ANativeWindow* m_nativeWindow;

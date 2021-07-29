@@ -19,7 +19,7 @@ template <>
 struct fmt::formatter<ramses::TextureSwizzle> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses::TextureSwizzle& swizzle, FormatContext& ctx)
+    constexpr auto format(const ramses::TextureSwizzle& swizzle, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "TextureSwizzling:[{};{};{};{}]",
                               ramses_internal::EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelRed)),

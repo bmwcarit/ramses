@@ -32,6 +32,7 @@ namespace ramses_internal
         action.write(numElements);
         if (numElements > 0u)
         {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(tobias) questionable if correct because ELEMENTTYPE not POD
             const Byte* rawData = reinterpret_cast<const Byte*>(dataArray.data());
             const UInt32 size = numElements * sizeof(ELEMENTTYPE);
             action.write(rawData, size);

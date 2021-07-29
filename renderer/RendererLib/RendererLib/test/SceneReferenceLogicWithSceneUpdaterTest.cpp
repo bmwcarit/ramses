@@ -39,7 +39,7 @@ namespace ramses_internal
     public:
         ASceneReferenceLogicWithSceneUpdater()
             : m_scenes(m_eventCollector)
-            , m_expirationMonitor(m_scenes, m_eventCollector)
+            , m_expirationMonitor(m_scenes, m_eventCollector, m_rendererStatistics)
             , m_renderer(DisplayId, m_scenes, m_eventCollector, m_expirationMonitor, m_rendererStatistics)
             , m_sceneStateExecutor(m_renderer, m_sceneEventSenderFromSceneUpdater, m_eventCollector)
             , m_sceneUpdater(DisplayId, m_platform, m_renderer, m_scenes, m_sceneStateExecutor, m_eventCollector, m_frameTimer, m_expirationMonitor, m_notifier)

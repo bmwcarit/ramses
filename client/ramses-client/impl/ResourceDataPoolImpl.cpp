@@ -149,6 +149,8 @@ namespace ramses
         const ramses_internal::SceneFileHandle fileHandle = m_client.getClientApplication().addResourceFile(resourceFileStream, loadedTOC);
         m_filenameToHandle.put(filename, fileHandle);
 
+        LOG_INFO_P(CONTEXT_CLIENT, "ResourceDataPool::addResourceDataFile: Filename '{}' has handle {}", filename, fileHandle);
+
         // read HL Resources
         inputStream.seek(static_cast<ramses_internal::Int>(offsetForHLToc), ramses_internal::IInputStream::Seek::FromBeginning);
 

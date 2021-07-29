@@ -21,6 +21,7 @@
 #include "PlatformAbstraction/PlatformThread.h"
 #include "ContentStates.h"
 #include "Ramsh/RamshCommandExit.h"
+#include "Ramsh/RamshCommandDcsmStatusMessage.h"
 #include "RamsesFrameworkImpl.h"
 #include "Ramsh/Ramsh.h"
 
@@ -158,6 +159,9 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
 
     if (enabledcsm)
     {
+        auto commandSendContentStatus = std::make_shared<ramses_internal::RamshCommandSendDcsmStatusMessage>();
+        framework.impl.getRamsh().add(commandSendContentStatus);
+
         ramses::DcsmContentControl& dcsmContentControl = *renderer.createDcsmContentControl();
         for (const auto& ci : categories)
         {
@@ -170,6 +174,10 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
             dcsmContentControl.update(0, handler);
+
+            auto contentraw = commandSendContentStatus->popContentID();
+            if (contentraw.isValid())
+                dcsmContentControl.sendContentStatus(contentraw, ramses::StreamStatusMessage(ramses::StreamStatusMessage::Status::Enabled));
         }
     }
     else

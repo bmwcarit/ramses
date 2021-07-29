@@ -8,6 +8,7 @@
 
 #include "ramses-text/TextCacheImpl.h"
 #include "ramses-text-api/TextLine.h"
+#include "ramses-text-api/TextCache.h"
 #include "ramses-text-api/IFontAccessor.h"
 #include "ramses-text-api/IFontInstance.h"
 
@@ -97,8 +98,16 @@ namespace ramses
             }
         }
 
+        const bool allGlyphsEmpty = !TextCache::ContainsRenderableGlyphs(glyphs);
+
+        if (allGlyphsEmpty)
+        {
+            LOG_ERROR(CONTEXT_TEXT, "TextCache::createTextLine failed - string has only empty glyphs (whitespace or control signs). Can't create a mesh for them!");
+            return {};
+        }
+
         const GlyphGeometry geometry = m_textureAtlas.mapGlyphsAndCreateGeometry(glyphs);
-        if (geometry.atlasPage == std::numeric_limits<decltype(geometry.atlasPage)>::max() || geometry.indices.empty())
+        if (geometry.atlasPage == std::numeric_limits<decltype(geometry.atlasPage)>::max())
         {
             LOG_ERROR(CONTEXT_TEXT, "TextCache::createTextLine failed - glyphs could not be mapped in atlas");
             return {};

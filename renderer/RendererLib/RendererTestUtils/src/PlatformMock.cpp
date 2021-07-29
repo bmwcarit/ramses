@@ -20,10 +20,7 @@ namespace ramses_internal
 
         // SC disabled by default
         ON_CALL(*this, getSystemCompositorController()).WillByDefault(Return(nullptr));
-        ON_CALL(*this, getWindowEventsPollingManager()).WillByDefault(Return(nullptr));
-
         EXPECT_CALL(*this, getSystemCompositorController()).Times(AnyNumber());
-        EXPECT_CALL(*this, getWindowEventsPollingManager()).Times(AnyNumber());
     }
 
     template <template<typename> class MOCK_TYPE>

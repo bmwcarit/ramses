@@ -15,9 +15,9 @@
 
 namespace ramses_internal
 {
-    TestForkingController::TestForkingController(const String& waylandSocket)
+    TestForkingController::TestForkingController()
     {
-        startForkerApplication(waylandSocket);
+        startForkerApplication();
     }
 
     TestForkingController::~TestForkingController()
@@ -26,20 +26,6 @@ namespace ramses_internal
         pid_t processEndStatus = ::waitpid(m_testForkerApplicationProcessId, nullptr, 0);
         UNUSED(processEndStatus);
         assert(m_testForkerApplicationProcessId == processEndStatus);
-    }
-
-    void TestForkingController::setEnvironmentVariableWaylandDisplay()
-    {
-        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::setEmbeddedCompositorWaylandSocket(): sending message to forker");
-        const ETestForkerApplicationMessage message = ETestForkerApplicationMessage::SetEnvironementVariable_WaylandDisplay;
-        m_testToForkerPipe.write(&message, sizeof(ETestForkerApplicationMessage));
-    }
-
-    void TestForkingController::setEnvironmentVariableWaylandSocket()
-    {
-        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::setEnvironmentVariableWaylandSocket(): sending message to forker");
-        const ETestForkerApplicationMessage message = ETestForkerApplicationMessage::SetEnvironementVariable_WaylandSocket;
-        m_testToForkerPipe.write(&message, sizeof(ETestForkerApplicationMessage));
     }
 
     void TestForkingController::startTestApplication()
@@ -69,7 +55,7 @@ namespace ramses_internal
         }
     }
 
-    void TestForkingController::startForkerApplication(const String& waylandSocket)
+    void TestForkingController::startForkerApplication()
     {
         LOG_INFO(CONTEXT_RENDERER, "TestForkingController::startForkerApplication starting forker");
 
@@ -86,7 +72,7 @@ namespace ramses_internal
         }
         else if (m_testForkerApplicationProcessId == 0)
         {
-            TestForkerApplication forkerApplication(waylandSocket, m_testToForkerPipe.getName(), m_testToWaylandClientPipe.getName(), m_waylandClientToTestPipe.getName());
+            TestForkerApplication forkerApplication(m_testToForkerPipe.getName(), m_testToWaylandClientPipe.getName(), m_waylandClientToTestPipe.getName());
             forkerApplication.run();
             exit(0);
         }

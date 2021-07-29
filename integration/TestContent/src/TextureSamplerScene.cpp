@@ -50,7 +50,7 @@ namespace ramses_internal
             m_sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, *texture);
         }
 
-        const ramses::Effect* effect = getTestEffect("ramses-test-client-textured");
+        m_effect = getTestEffect("ramses-test-client-textured");
 
         const uint16_t indicesArray[] = { 0, 1, 2, 2, 1, 3 };
         const ramses::ArrayResource* indices = m_scene.createArrayResource(ramses::EDataType::UInt16, 6, indicesArray);
@@ -66,24 +66,27 @@ namespace ramses_internal
         const float textureCoordsArray[] = { 0.f, 0.f, 2.f, 0.f, 0.f, 2.f, 2.f, 2.f };
         const ramses::ArrayResource* textureCoords = m_scene.createArrayResource(ramses::EDataType::Vector2F, 4, textureCoordsArray);
 
-        ramses::Appearance* appearance = m_scene.createAppearance(*effect, "appearance");
+        m_appearance = m_scene.createAppearance(*m_effect, "appearance");
 
         ramses::AttributeInput positionsInput;
         ramses::AttributeInput texCoordsInput;
-        effect->findAttributeInput("a_position", positionsInput);
-        effect->findAttributeInput("a_texcoord", texCoordsInput);
+        m_effect->findAttributeInput("a_position", positionsInput);
+        m_effect->findAttributeInput("a_texcoord", texCoordsInput);
 
-        ramses::GeometryBinding* geometry = m_scene.createGeometryBinding(*effect, "triangle geometry");
+        ramses::GeometryBinding* geometry = m_scene.createGeometryBinding(*m_effect, "triangle geometry");
         geometry->setIndices(*indices);
         geometry->setInputBuffer(positionsInput, *vertexPositions);
         geometry->setInputBuffer(texCoordsInput, *textureCoords);
 
-        ramses::UniformInput textureInput;
-        effect->findUniformInput("u_texture", textureInput);
-        appearance->setInputTexture(textureInput, *m_sampler);
+        if (state != EState_NoTextureSampler)
+        {
+            ramses::UniformInput textureInput;
+            m_effect->findUniformInput("u_texture", textureInput);
+            m_appearance->setInputTexture(textureInput, *m_sampler);
+        }
 
         ramses::MeshNode* meshNode = m_scene.createMeshNode("quad");
-        meshNode->setAppearance(*appearance);
+        meshNode->setAppearance(*m_appearance);
         meshNode->setGeometryBinding(*geometry);
 
         ramses::Node* transNode = m_scene.createNode();
@@ -144,6 +147,18 @@ namespace ramses_internal
             const ramses::Texture2D* fallbackTexture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 3, 3, 1, mipLevelData, false);
             const auto texture = m_scene.createStreamTexture(*fallbackTexture, ramses::waylandIviSurfaceId_t(666));
             m_sampler->setTextureData(*texture);
+            break;
+        }
+
+        case EState_SetTextureSampler:
+        {
+            const ramses::MipLevelData mipLevelData[] = { { sizeof(rgb8), rgb8 } };
+
+            const ramses::Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 3, 3, 1, mipLevelData, false);
+            m_sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Repeat, ramses::ETextureAddressMode_Repeat, ramses::ETextureSamplingMethod_Nearest, ramses::ETextureSamplingMethod_Nearest, *texture);
+            ramses::UniformInput textureInput;
+            m_effect->findUniformInput("u_texture", textureInput);
+            m_appearance->setInputTexture(textureInput, *m_sampler);
             break;
         }
         default:

@@ -79,7 +79,13 @@ namespace ramses_internal
             EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
         }
 
-        void updateRenderableResources(bool withStreamTexture = false)
+        void expectRenderableVertexArrayDirty(RenderableHandle renderable)
+        {
+            EXPECT_TRUE(scene.hasDirtyVertexArrays());
+            EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
+        }
+
+        void updateRenderableResources(bool withStreamTexture = false, bool dirtyVAOLeft = false)
         {
             if (withStreamTexture)
             {
@@ -87,6 +93,8 @@ namespace ramses_internal
             }
             scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
             scene.updateRenderableVertexArrays(sceneHelper.resourceManager, {});
+            if(!dirtyVAOLeft)
+                scene.markVertexArraysClean();
         }
 
         void updateResourcesAndExpectFallbackTextureHandle(const TextureSamplerHandle textureSampler, const DeviceResourceHandle deviceHandleFromEmbeddedCompositingManager)
@@ -94,6 +102,7 @@ namespace ramses_internal
             EXPECT_CALL(sceneHelper.embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(deviceHandleFromEmbeddedCompositingManager));
             updateRenderableResources();
             scene.updateRenderableVertexArrays(sceneHelper.resourceManager, {});
+            scene.markVertexArraysClean();
 
             //expect correct device handle
             EXPECT_EQ(DeviceMock::FakeTextureDeviceHandle, scene.getCachedHandlesForTextureSamplers()[textureSampler.asMemoryHandle()]);
@@ -104,14 +113,17 @@ namespace ramses_internal
             EXPECT_CALL(sceneHelper.embeddedCompositingManager, getCompositedTextureDeviceHandleForStreamTexture(_)).WillOnce(Return(deviceHandleFromEmbeddedCompositingManager));
             scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
             scene.updateRenderableVertexArrays(sceneHelper.resourceManager, updatedRenderables);
+            scene.markVertexArraysClean();
 
             EXPECT_EQ(deviceHandleFromEmbeddedCompositingManager, scene.getCachedHandlesForTextureSamplers()[textureSampler.asMemoryHandle()]);
         }
 
-        void updateRenderableResourcesAndVertexArray(const RenderableVector& renderables)
+        void updateRenderableResourcesAndVertexArray(const RenderableVector& renderables, bool dirtyVAOLeft = false)
         {
             scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
             scene.updateRenderableVertexArrays(sceneHelper.resourceManager, renderables);
+            if(!dirtyVAOLeft)
+                scene.markVertexArraysClean();
         }
 
         TextureSamplerHandle setResourcesAndSamplerWithStreamTexture(const RenderableHandle renderable, WaylandIviSurfaceId sourceId, ResourceContentHash fallbackTexture)
@@ -344,7 +356,7 @@ namespace ramses_internal
         scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Geometry, vertexData);
         scene.updateRenderablesResourcesDirtiness();
         EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
-        EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
+        expectRenderableVertexArrayDirty(renderable);
     }
 
     TEST_F(AResourceCachedScene, MarksRenderableDirtyIfUniformDataInstanceIsUpdated)
@@ -360,7 +372,7 @@ namespace ramses_internal
         scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, uniformData);
         scene.updateRenderablesResourcesDirtiness();
         EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
-        EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
+        expectRenderableVertexArrayDirty(renderable);
     }
 
     TEST_F(AResourceCachedScene, MarksRenderableDirtyIfDataInstanceFieldIsUpdated)
@@ -376,7 +388,7 @@ namespace ramses_internal
         scene.setDataResource(vertexData, sceneHelper.vertAttribField, MockResourceHash::VertArrayHash2, DataBufferHandle::Invalid(), 0u, 0u, 0u);
         scene.updateRenderablesResourcesDirtiness();
         EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
-        EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
+        expectRenderableVertexArrayDirty(renderable);
     }
 
     TEST_F(AResourceCachedScene, MarksRenderableDirtyIfDataTextureSamplerIsUpdated)
@@ -792,7 +804,7 @@ namespace ramses_internal
         expectRenderableResourcesClean(renderable);
 
         scene.setDataResource(vertexDataInstance, sceneHelper.vertAttribField, ResourceContentHash::Invalid(), verticesDataBuffer, 0u, 0u, 0u);
-        updateRenderableResourcesAndVertexArray({ renderable });
+        updateRenderableResourcesAndVertexArray({ renderable }, false);
 
         EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
         EXPECT_FALSE(scene.isRenderableVertexArrayDirty(renderable));
@@ -841,7 +853,7 @@ namespace ramses_internal
         const DataInstanceHandle vertexDataInstance = sceneHelper.createAndAssignVertexDataInstance(renderable);
         sceneHelper.setResourcesToRenderable(renderable, false, true);
         scene.setDataResource(vertexDataInstance, sceneHelper.vertAttribField, ResourceContentHash::Invalid(), verticesDataBuffer, 0u, 0u, 0u);
-        updateRenderableResourcesAndVertexArray({ renderable });
+        updateRenderableResourcesAndVertexArray({ renderable }, false);
         expectRenderableResourcesClean(renderable);
 
         const DataBufferHandle dummyDataBuffer(1234u);
@@ -851,7 +863,7 @@ namespace ramses_internal
         EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
 
         scene.updateRenderableVertexArrays(sceneHelper.resourceManager, {});
-        EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
+        expectRenderableVertexArrayDirty(renderable);
     }
 
     TEST_F(AResourceCachedScene, CanGetDeviceHandleForVertexArray_DoesNotChangeHandleIfContentOfDataBufferIsUpdated)
@@ -864,9 +876,10 @@ namespace ramses_internal
 
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
         EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
-        EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
+        expectRenderableVertexArrayDirty(renderable);
 
         scene.updateRenderableVertexArrays(sceneHelper.resourceManager, { renderable });
+        scene.markVertexArraysClean();
         EXPECT_FALSE(scene.isRenderableVertexArrayDirty(renderable));
 
         scene.updateDataBuffer(verticesDataBuffer, sizeof(Float) * 3, 0u, reinterpret_cast<Byte*>(std::array<Float, 3>().data()));
@@ -892,7 +905,7 @@ namespace ramses_internal
 
         scene.updateRenderableResources(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
         EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
-        EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
+        expectRenderableVertexArrayDirty(renderable);
     }
 
     TEST_F(AResourceCachedScene, MarkVertexArrayDirtyAfterStartVertexIsUpdated)
@@ -907,7 +920,7 @@ namespace ramses_internal
 
         scene.setRenderableStartVertex(renderable, 10u);
         EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
-        EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
+        expectRenderableVertexArrayDirty(renderable);
     }
 
     TEST_F(AResourceCachedScene, ExpectValidVertexArrayHandleAfterSwitchingFromDataBufferToExistingResource)
@@ -938,7 +951,7 @@ namespace ramses_internal
         expectRenderableResourcesClean(renderable);
 
         scene.releaseRenderable(renderable);
-        EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
+        expectRenderableVertexArrayDirty(renderable);
 
         //next call to update cleans up dirty VAO
         updateRenderableResourcesAndVertexArray({ renderable });
@@ -951,15 +964,15 @@ namespace ramses_internal
         const DataInstanceHandle vertexDataInstance = sceneHelper.createAndAssignVertexDataInstance(renderable);
 
         sceneHelper.setResourcesToRenderable(renderable, false);
-        updateRenderableResources();
+        updateRenderableResources(false, true);
         expectRenderableResourcesDirty(renderable);
-        EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
+        expectRenderableVertexArrayDirty(renderable);
 
         scene.setDataResource(vertexDataInstance, sceneHelper.vertAttribField, ResourceContentHash::Invalid(), verticesDataBuffer, 0u, 0u, 0u);
-        updateRenderableResources();
+        updateRenderableResources(false, true);
         //stays dirty
         expectRenderableResourcesDirty(renderable);
-        EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
+        expectRenderableVertexArrayDirty(renderable);
 
         sceneHelper.createAndAssignUniformDataInstance(renderable, sceneHelper.createTextureSamplerWithFakeTexture());
         updateRenderableResourcesAndVertexArray({ renderable });
@@ -1161,7 +1174,7 @@ namespace ramses_internal
         scene.setRenderableVisibility(renderable, EVisibilityMode::Visible);
         expectRenderableResourcesDirty(renderable);
         EXPECT_TRUE(scene.renderableResourcesDirty(renderable));
-        EXPECT_TRUE(scene.isRenderableVertexArrayDirty(renderable));
+        expectRenderableVertexArrayDirty(renderable);
 
         // test upcoming calls explicitly
         Mock::VerifyAndClearExpectations(&sceneHelper.resourceManager);

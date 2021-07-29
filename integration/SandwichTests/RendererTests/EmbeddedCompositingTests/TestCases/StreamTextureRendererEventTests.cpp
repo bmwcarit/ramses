@@ -16,16 +16,21 @@ namespace ramses_internal
 {
     void StreamTextureRendererEventTests::setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework)
     {
-        testFramework.createTestCaseWithDefaultDisplay(SurfaceAvailableEventGeneratedWhenBufferAttached, *this, "SurfaceAvailableEventGeneratedWhenBufferAttached");
-        testFramework.createTestCaseWithDefaultDisplay(SurfaceUnavailableEventGeneratedWhenBufferDetached, *this, "SurfaceUnavailableEventGeneratedWhenBufferDetached");
-        testFramework.createTestCaseWithDefaultDisplay(SurfaceUnavailableEventGeneratedWhenSurfaceDestroyed, *this, "SurfaceUnavailableEventGeneratedWhenSurfaceDestroyed");
-        testFramework.createTestCaseWithDefaultDisplay(SurfaceUnavailableEventGeneratedWhenIviSurfaceDestroyed, *this, "SurfaceUnavailableEventGeneratedWhenIviSurfaceDestroyed");
-        testFramework.createTestCaseWithDefaultDisplay(SurfaceUnavailableEventGeneratedWhenClientIsKilled, *this, "SurfaceUnavailableEventGeneratedWhenClientIsKilled");
-        testFramework.createTestCaseWithDefaultDisplay(NoSurfaceEventGeneratedWhenBufferAttachedAndDetachedInSameLoop, *this, "NoSurfaceEventGeneratedWhenBufferAttachedAndDetachedInSameLoop");
-        testFramework.createTestCaseWithDefaultDisplay(SurfaceAvailableAndUnavailableEventsGeneratedWhenBufferAttachedAndDetachedInDifferentLoops, *this, "SurfaceAvailableAndUnavailableEventsGeneratedWhenBufferAttachedAndDetachedInDifferentLoops");
-        testFramework.createTestCaseWithDefaultDisplay(SurfaceAvailableEventsGeneratedTwiceWhenBufferReattached, *this, "SurfaceAvailableEventsGeneratedTwiceWhenBufferReattached");
-        testFramework.createTestCaseWithDefaultDisplay(SurfaceAvailableEventGeneratedWhenBufferAttached_NoSceneAvailable, *this, "SurfaceAvailableEventGeneratedWhenBufferAttached_NoSceneAvailable");
-        testFramework.createTestCaseWithDefaultDisplay(SurfaceUnavailableEventGeneratedWhenBufferDetached_NoSceneAvailable, *this, "SurfaceUnavailableEventGeneratedWhenBufferDetached_NoSceneAvailable");
+        ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u, true);
+        displayConfig.setWindowRectangle(0u, 0u, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
+        displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
+        displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
+
+        testFramework.createTestCase(SurfaceAvailableEventGeneratedWhenBufferAttached, *this, "SurfaceAvailableEventGeneratedWhenBufferAttached").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SurfaceUnavailableEventGeneratedWhenBufferDetached, *this, "SurfaceUnavailableEventGeneratedWhenBufferDetached").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SurfaceUnavailableEventGeneratedWhenSurfaceDestroyed, *this, "SurfaceUnavailableEventGeneratedWhenSurfaceDestroyed").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SurfaceUnavailableEventGeneratedWhenIviSurfaceDestroyed, *this, "SurfaceUnavailableEventGeneratedWhenIviSurfaceDestroyed").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SurfaceUnavailableEventGeneratedWhenClientIsKilled, *this, "SurfaceUnavailableEventGeneratedWhenClientIsKilled").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(NoSurfaceEventGeneratedWhenBufferAttachedAndDetachedInSameLoop, *this, "NoSurfaceEventGeneratedWhenBufferAttachedAndDetachedInSameLoop").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SurfaceAvailableAndUnavailableEventsGeneratedWhenBufferAttachedAndDetachedInDifferentLoops, *this, "SurfaceAvailableAndUnavailableEventsGeneratedWhenBufferAttachedAndDetachedInDifferentLoops").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SurfaceAvailableEventsGeneratedTwiceWhenBufferReattached, *this, "SurfaceAvailableEventsGeneratedTwiceWhenBufferReattached").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SurfaceAvailableEventGeneratedWhenBufferAttached_NoSceneAvailable, *this, "SurfaceAvailableEventGeneratedWhenBufferAttached_NoSceneAvailable").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SurfaceUnavailableEventGeneratedWhenBufferDetached_NoSceneAvailable, *this, "SurfaceUnavailableEventGeneratedWhenBufferDetached_NoSceneAvailable").m_displayConfigs.push_back(displayConfig);
     }
 
     bool StreamTextureRendererEventTests::runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase)
@@ -42,8 +47,6 @@ namespace ramses_internal
     {
         Bool testResultValue = true;
         const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
-
-        testFramework.setEnvironmentVariableWaylandDisplay();
 
         switch(testCase.m_id)
         {

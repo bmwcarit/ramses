@@ -20,7 +20,6 @@
 
 #include "RenderBackendMock.h"
 #include "SystemCompositorControllerMock.h"
-#include "WindowEventsPollingManagerMock.h"
 #include "ResourceUploadRenderBackendMock.h"
 
 namespace ramses_internal
@@ -39,9 +38,7 @@ namespace ramses_internal
         MOCK_METHOD(IResourceUploadRenderBackend*, createResourceUploadRenderBackend, (), (override));
         MOCK_METHOD(void, destroyResourceUploadRenderBackend, (), (override));
         MOCK_METHOD(ISystemCompositorController*, getSystemCompositorController, (), (override));
-        MOCK_METHOD(const IWindowEventsPollingManager*, getWindowEventsPollingManager, (), (const, override));
 
-        MOCK_TYPE<WindowEventsPollingManagerMock>   windowEventsPollingManagerMock;
         MOCK_TYPE<RenderBackendMock<MOCK_TYPE>>     renderBackendMock;
         MOCK_TYPE<ResourceUploadRenderBackendMock<MOCK_TYPE>> resourceUploadRenderBackendMock;
         MOCK_TYPE<SystemCompositorControllerMock>   systemCompositorControllerMock;

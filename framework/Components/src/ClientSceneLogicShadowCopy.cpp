@@ -39,7 +39,8 @@ namespace ramses_internal
         SceneUpdate sceneUpdate;
         if (!verifyAndGetResourceChanges(sceneUpdate, hasNewActions))
         {
-            LOG_ERROR(CONTEXT_CLIENT, "ClientSceneLogicShadowCopy::flushSceneActions: At least one resource can not be loaded, Scene is not valid. Consult previous log messages or run Scene::validate() for more information.");
+            LOG_ERROR_P(CONTEXT_CLIENT, "ClientSceneLogicShadowCopy::flushSceneActions: At least one resource can't be loaded, "
+                        "Scene {} can't be rendered. Consult log and run Scene::validate() for more information", m_scene.getSceneId());
             return false;
         }
 
@@ -48,7 +49,7 @@ namespace ramses_internal
 
         // swap out of ClientScene and reserve new memory there
         sceneUpdate.actions.swap(m_scene.getSceneActionCollection());
-        m_lastFlushUsedResources = m_resourceComponent.resolveResources(m_lastFlushClientResourcesInUse); // keep ll resources alive, in case we need to send a scene update to a new subscriber
+        m_lastFlushUsedResources = m_resourceComponent.resolveResources(m_lastFlushResourcesInUse); // keep ll resources alive, in case we need to send a scene update to a new subscriber
 
         if (m_flushCounter == 0)
         {
@@ -68,7 +69,7 @@ namespace ramses_internal
 
         const bool skipSceneActionSend =
             m_flushCounter != 0 &&      // never skip first flush (might block renderer side transition subscription pending -> subscibed)
-            m_resourceChanges.empty() &&   // no resource changes (client+scene)
+            m_resourceChangesSinceLastFlush.empty() &&   // no resource changes (client+scene)
             sceneUpdate.actions.empty() &&  // no other sceneactions yet
             m_scene.getSceneReferenceActions().empty() &&  // no scenereference updates
             !hasExpirationTSChange && // no expiration monitoring change
@@ -77,7 +78,7 @@ namespace ramses_internal
         ++m_flushCounter;
 
         if (isPublished())
-            sceneUpdate.flushInfos = { m_flushCounter, versionTag, sceneSizes, m_resourceChanges, m_scene.getSceneReferenceActions(), flushTimeInfo,sceneSizes > m_sceneShadowCopy.getSceneSizeInformation(), true };
+            sceneUpdate.flushInfos = { m_flushCounter, versionTag, sceneSizes, m_resourceChangesSinceLastFlush, m_scene.getSceneReferenceActions(), flushTimeInfo,sceneSizes > m_sceneShadowCopy.getSceneSizeInformation(), true };
 
         // reserve memory in ClientScene after flush because flush might add a lot of data
         m_scene.getSceneActionCollection().reserveAdditionalCapacity(sceneUpdate.actions.collectionData().size(), sceneUpdate.actions.numberOfActions());

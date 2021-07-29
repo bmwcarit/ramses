@@ -40,6 +40,7 @@ namespace ramses_internal
 
                         sos << waylandSocketEmbedded.getHelpString();
                         sos << waylandSocketEmbeddedGroup.getHelpString();
+                        sos << waylandSocketEmbeddedPermissions.getHelpString();
                         sos << kpiFilename.getHelpString();
                         sos << systemCompositorControllerEnabled.getHelpString();
                     }));

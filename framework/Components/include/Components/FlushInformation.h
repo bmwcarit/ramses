@@ -85,7 +85,7 @@ template <>
 struct fmt::formatter<ramses_internal::FlushInformation> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses_internal::FlushInformation& fi, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::FlushInformation& fi, FormatContext& ctx)
     {
         fmt::format_to(ctx.out(),
             "FlushInformation:[valid:{};flushcounter:{};version:{};resChanges[+:{};-:{};resActions:{}];refActions:{};time[{};exp:{};int:{}];sizeInfo:",

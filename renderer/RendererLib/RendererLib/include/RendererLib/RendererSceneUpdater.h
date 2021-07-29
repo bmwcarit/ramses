@@ -114,6 +114,8 @@ namespace ramses_internal
 
         virtual void destroyResourceManager();
 
+        std::chrono::milliseconds m_maximumWaitingTimeToForceMap{ 2000 };
+
     private:
         void destroyScene(SceneId sceneID);
         void unloadSceneResourcesAndUnrefSceneResources(SceneId sceneId);
@@ -126,7 +128,6 @@ namespace ramses_internal
 
         bool areResourcesFromPendingFlushesUploaded(SceneId sceneId) const;
 
-        void logTooManyFlushesAndUnsubscribeIfRemoteScene(SceneId sceneId, std::size_t numPendingFlushes);
         void consolidatePendingSceneActions(SceneId sceneID, SceneUpdate&& sceneUpdate);
         void consolidateResourceDataForMapping(SceneId sceneID);
         void referenceAndProvidePendingResourceData(SceneId sceneID);
@@ -146,6 +147,8 @@ namespace ramses_internal
         void markScenesDependantOnModifiedConsumersAsModified(const DataReferenceLinkManager& dataRefLinkManager, const TransformationLinkManager &transfLinkManager, const TextureLinkManager& texLinkManager);
         void markScenesDependantOnModifiedOffscreenBuffersAsModified(const TextureLinkManager& texLinkManager);
 
+        bool checkIfForceMapNeeded(SceneId sceneId);
+        void logTooManyFlushesAndUnsubscribeIfRemoteScene(SceneId sceneId, std::size_t numPendingFlushes);
         void logMissingResources(const PendingData& pendingData, SceneId sceneId) const;
         void logMissingResources(const ResourceContentHashVector& neededResources, SceneId sceneId) const;
         uint32_t getNumberOfPendingNonEmptyFlushes(SceneId sceneId) const;

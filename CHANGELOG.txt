@@ -1,3 +1,71 @@
+27.0.110
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Added static helper function TextCache::ContainsRenderableGlyphs that checks if a GlyphMetricsVector
+          contains at least one renderable glyph and thus can be used as input for TextCache::createTextLine.
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fix open permissions for ptp device
+
+27.0.109
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Added carModelViewExtended field to DCSM metadata (extended features to transform
+          the remote car model).
+        - Added new DCSM content status message: WidgetFocusStatusMessage
+          for sending the widget's focus state from consumer to content provider
+
+27.0.108
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Add cmake variable ramses-sdk_FOLDER_PREFIX to configure VS folder path prefix
+        - Add flip content vertically metadata to dcsm provider tool
+
+        API changes
+        ------------------------------------------------------------------------
+        - API for configuring EC is ADDED to DisplayConfig.
+            - Corresponding API in RendererConfig is marked as deprecated WITHOUT change in syntax or behavior.
+            - The newly added API (configuring EC on DisplayConfig) was introduced in 27.0.106 and reverted
+              in 27.0.107 since the change broke functionality of RendererConfig. In this release the (re-)added
+              API in DisplayConfig does not have a direct effect on supported use cases for configuring EC on RendererConfig.
+        - Added new DCSM content status message: ActiveLayoutMessage
+          for sending the current layout from consumer to content provider
+
+27.0.107
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Revert breaking EC configuration on RendererConfig and remove EC configuration from
+          DisplayConfig
+
+27.0.106
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Display creation DOES fail if EC creation fails
+            - A change was introduced as a temporary measure in 27.0.105 that lets display
+              creation not fail if EC creation fails. This change is reverted and a proper
+              fix is introduced. See API changes of RendererConfig and DisplayConfig.
+
+        API changes
+        ------------------------------------------------------------------------
+        - API for configuring EC is moved from RendererConfig to DisplayConfig
+            - Allows configuring EC per display
+            - API in RendererConfig is not removed. It is marked as deprecated and always fails
+        - Add layoutAvailability field to DCSM metadata
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Failing to create EGL image from DMA buffer does not lead to a segfault
+          in RAMSES renderer. An error code ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_WL_BUFFER
+          is sent to wayland client.
+        - Fix segfault caused by activating VAO that was not uploaded due to wrong handling of dirtiness
+          in resource cached scene.
+
 27.0.105
 -------------------
         General changes
@@ -85,6 +153,12 @@
         Bugfixes
         ------------------------------------------------------------------------
         - Fix Node::setRotation with convention forgetting convention when identity values were set for angles
+
+27.0.15
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - avoid referenced scene stuck in subscription requested state due to race with its master destruction
 
 27.0.14
 -------------------

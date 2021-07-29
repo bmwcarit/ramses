@@ -77,6 +77,7 @@ namespace ramses
     template <typename OBJECT_TYPE>
     void DeserializationContext::resolveDependencyIDImplAndStoreAsPointer(OBJECT_TYPE*& ptrId) const
     {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) ptr really stores an id here
         const ObjectIDType id = static_cast<ObjectIDType>(reinterpret_cast<std::uintptr_t>(ptrId));
         assert(id < m_objectImpls.size());
         ptrId = static_cast<OBJECT_TYPE*>(m_objectImpls[id]);
@@ -87,6 +88,7 @@ namespace ramses
     {
         ObjectIDType objID = GetObjectIDNull();
         inStream >> objID;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) ptr really stores an id here
         ptr = reinterpret_cast<PTR_TYPE*>(size_t(objID));
     }
 }

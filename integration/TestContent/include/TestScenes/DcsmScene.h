@@ -21,7 +21,7 @@ namespace ramses
 
 namespace ramses_internal
 {
-    class DcsmScene : public MultipleTrianglesScene, public ramses::IDcsmProviderEventHandler
+    class DcsmScene : public MultipleTrianglesScene, public ramses::IDcsmProviderEventHandlerExtended
     {
     public:
         DcsmScene(ramses::Scene& scene, UInt32 state, const Vector3& cameraPosition, ramses::DcsmProvider& dcsmProvider,
@@ -33,6 +33,7 @@ namespace ramses_internal
         virtual void contentSizeChange(ramses::ContentID, const ramses::CategoryInfoUpdate&, ramses::AnimationInformation) override {}
         virtual void contentReadyRequested(ramses::ContentID) override;
         virtual void contentRelease(ramses::ContentID, ramses::AnimationInformation) override {}
+        virtual void contentStatus(ramses::ContentID, ramses::DcsmStatusMessage const&) override;
         virtual void dispatchHandler() override;
 
     private:

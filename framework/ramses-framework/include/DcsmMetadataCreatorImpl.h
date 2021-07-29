@@ -28,11 +28,13 @@ namespace ramses
         status_t setWidgetHUDLineID(int32_t widgetHudLineID);
         status_t setCarModel(int32_t carModel);
         status_t setCarModelView(const CarModelViewMetadata& data, const AnimationInformation& timingInfo);
+        status_t setCarModelViewExtended(const CarModelViewMetadataExtended& data);
         status_t setCarModelVisibility(bool visibility);
         status_t setExclusiveBackground(bool state);
         status_t setStreamID(int32_t streamID);
         status_t setDisplayedDataFlags(uint32_t flags);
         status_t setContentFlippedVertically(bool state);
+        status_t setLayoutAvailability(uint8_t flags);
 
         ramses_internal::DcsmMetadata getMetadata() const;
 

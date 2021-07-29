@@ -21,6 +21,7 @@ namespace ramses_internal
         {
             assert(elementCount > 0u);
 
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) safe to get Byte*
             const Byte* data = reinterpret_cast<const Byte*>(elements);
             const UInt32 dataSize = sizeof(T) * elementCount;
 

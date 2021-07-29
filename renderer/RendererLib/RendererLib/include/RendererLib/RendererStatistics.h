@@ -46,6 +46,8 @@ namespace ramses_internal
         void untrackOffscreenBuffer(DeviceResourceHandle offscreenBuffer);
         void untrackStreamTexture(WaylandIviSurfaceId sourceId);
 
+        void addExpirationOffset(SceneId sceneId, int64_t expirationOffset);
+
         void frameFinished(UInt32 drawCalls);
         void reset();
 
@@ -87,6 +89,11 @@ namespace ramses_internal
             SummaryEntry<UInt> numResourcesRemovedPerFlush;
             SummaryEntry<UInt> numSceneResourceActionsPerFlush;
             SummaryEntry<int64_t> flushLatency;
+
+            // expiration offset in milliseconds, can be negative and zero (=healthy) or positive (=expired)
+            SummaryEntry<int64_t> expirationOffset;
+            UInt numExpirationOffsets;
+            UInt numExpiredOffsets;
 
             UInt sceneResourcesUploaded = 0u;
             UInt sceneResourcesBytesUploaded = 0u;

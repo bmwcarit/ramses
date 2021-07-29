@@ -16,7 +16,6 @@ namespace ramses_internal
     class IWindowEventHandler;
     class IResourceUploadRenderBackend;
     class ISystemCompositorController;
-    class IWindowEventsPollingManager;
 
     class IPlatform
     {
@@ -27,7 +26,6 @@ namespace ramses_internal
         virtual void                          destroyResourceUploadRenderBackend() = 0;
 
         virtual ISystemCompositorController* getSystemCompositorController() = 0;
-        virtual const IWindowEventsPollingManager* getWindowEventsPollingManager() const = 0;
 
         virtual ~IPlatform() = default;
     };

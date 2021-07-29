@@ -14,8 +14,9 @@ namespace ramses_internal
 {
     Window_Wayland_IVI::Window_Wayland_IVI(const DisplayConfig& displayConfig,
                                            IWindowEventHandler& windowEventHandler,
-                                           UInt32               id)
-        : Window_Wayland(displayConfig, windowEventHandler, id)
+                                           UInt32               id,
+                                           std::chrono::microseconds frameCallbackMaxPollTime)
+        : Window_Wayland(displayConfig, windowEventHandler, id, frameCallbackMaxPollTime)
     {
     }
 

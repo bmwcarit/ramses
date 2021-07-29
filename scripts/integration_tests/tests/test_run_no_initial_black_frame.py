@@ -9,7 +9,6 @@
 from ramses_test_framework import test_classes
 from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
-from ramses_test_framework.targets.target import DEFAULT_TEST_LAYER
 
 
 # The test start a RAMSES renderer, those surface is initially invisible. The test application then
@@ -24,13 +23,14 @@ class TestNoInitialBlackFrame(test_classes.OnSelectedTargetsTest):
     def impl_setUp(self):
         self.percentageOfRGBDifferenceAllowedPerPixel = 0.008  # allows +/- 2 for rgb values (needed e.g. for ufo driver)
 
-        self.testLayer = DEFAULT_TEST_LAYER + 1
         self.testSurface = 101
 
         # Start black background renderer
         self.rendererbackground = self.target.start_default_renderer("--wayland-socket-embedded wayland-12")
         self.checkThatApplicationWasStarted(self.rendererbackground)
         self.addCleanup(self.target.kill_application, self.rendererbackground)
+        self.rendererbackground.send_ramsh_command("skipUnmodifiedBuffers 0", waitForRendererConfirmation=True)
+        self.validateScreenshot(self.rendererbackground, "black_rgb.png", useSystemCompositorForScreenshot=False)
 
         applicationName = "ramses-local-client-test-{}".format(self.target.defaultPlatform)
         self.application = self.target.start_renderer(applicationName, args="-sid {} -tn 4".format(self.testSurface), automap=True)

@@ -11,28 +11,24 @@
 
 #include "Window_Wayland/Window_Wayland.h"
 #include "Platform_EGL/Platform_EGL.h"
-#include "Window_Wayland/WindowEventsPollingManager_Wayland.h"
 
 namespace ramses_internal
 {
     class Platform_Wayland_EGL : public Platform_EGL<Window_Wayland>
     {
-    public:
-        const IWindowEventsPollingManager* getWindowEventsPollingManager() const override final;
-
     protected:
         explicit Platform_Wayland_EGL(const RendererConfig& rendererConfig);
         virtual ~Platform_Wayland_EGL() override;
 
         virtual bool createEmbeddedCompositor(const DisplayConfig& displayConfig) override final;
-        virtual void createTextureUploadingAdapter() override final;
+        virtual void createTextureUploadingAdapter(const DisplayConfig& displayConfig) override final;
 
         virtual uint32_t getSwapInterval() const override final;
 
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
-        Bool isCreatingWaylandEmbeddedCompositorRequired() const;
+        Bool isCreatingWaylandEmbeddedCompositorRequired(const DisplayConfig& displayConfig) const;
 
-        WindowEventsPollingManager_Wayland m_windowEventsPollingManager;
+        const std::chrono::microseconds m_frameCallbackMaxPollTime;
     };
 }
 

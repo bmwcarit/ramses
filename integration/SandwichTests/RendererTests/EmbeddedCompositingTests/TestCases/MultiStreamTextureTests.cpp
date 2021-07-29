@@ -17,6 +17,8 @@ namespace ramses_internal
     {
         ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0, true);
         displayConfig.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
+        displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
+        displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
 
         testFramework.createTestCase(ShowDifferentFallbackTexturesOnStreamTexturesWithSameSourceId, *this, "ShowDifferentFallbackTexturesOnStreamTexturesWithSameSourceId").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(ShowStreamTextureOnTwoStreamTexturesWithSameSourceId, *this, "ShowStreamTextureOnTwoStreamTexturesWithSameSourceId").m_displayConfigs.push_back(displayConfig);
@@ -32,8 +34,6 @@ namespace ramses_internal
         const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
         const WaylandIviSurfaceId secondStreamTextureSourceId(EmbeddedCompositorScene::GetSecondStreamTextureSourceId());
         const WaylandIviSurfaceId thirdStreamTextureSourceId(EmbeddedCompositorScene::GetThirdStreamTextureSourceId());
-
-        testFramework.setEnvironmentVariableWaylandDisplay();
 
         switch(testCase.m_id)
         {

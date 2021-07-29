@@ -12,19 +12,19 @@
 #include "Platform_Base/Window_Base.h"
 #include "Window_Wayland/WlContext.h"
 #include "InputHandling_Wayland.h"
+#include <chrono>
 
 namespace ramses_internal
 {
     class Window_Wayland : public Window_Base
     {
     public:
-        Window_Wayland(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
+        Window_Wayland(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id, std::chrono::microseconds frameCallbackMaxPollTime);
         ~Window_Wayland() override;
 
         virtual bool init() override final;
 
         Bool canRenderNewFrame() const override final;
-        void dispatchWaylandDisplayEvents(Bool dispatchNewEventsFromDisplayFD) const;
         void handleEvents() override final;
         void frameRendered() override final;
 
@@ -45,6 +45,7 @@ namespace ramses_internal
 
         void registerFrameRenderingDoneCallback();
         Bool setFullscreen(Bool fullscreen) override final;
+        void dispatchWaylandDisplayEvents(std::chrono::milliseconds pollTime) const;
 
         static void RegistryGlobalCreated(void* data, wl_registry* wl_registry, uint32_t name, const char* interface, uint32_t version);
         static void RegistryGlobalRemoved(void* data, wl_registry* wl_registry, uint32_t name);
@@ -73,6 +74,8 @@ namespace ramses_internal
                 global_remove = RegistryGlobalRemoved;
             }
         } m_registryListener;
+
+        const std::chrono::microseconds m_frameCallbackMaxPollTime;
     };
 }
 

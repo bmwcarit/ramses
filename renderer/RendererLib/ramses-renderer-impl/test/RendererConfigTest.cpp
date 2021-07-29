@@ -19,9 +19,10 @@ TEST(ARendererConfig, hasDefaultValuesUponConstruction)
 
     const ramses_internal::RendererConfig& internalConfig = config.impl.getInternalRendererConfig();
 
-    EXPECT_EQ(defaultConfig.getWaylandSocketEmbedded(), internalConfig.getWaylandSocketEmbedded());
-    EXPECT_EQ(defaultConfig.getWaylandSocketEmbeddedGroup(), internalConfig.getWaylandSocketEmbeddedGroup());
-    EXPECT_EQ(defaultConfig.getWaylandSocketEmbeddedFD(), internalConfig.getWaylandSocketEmbeddedFD());
+    EXPECT_EQ(defaultConfig.getKPIFileName(), internalConfig.getKPIFileName());
+    EXPECT_EQ(defaultConfig.getFrameCallbackMaxPollTime(), internalConfig.getFrameCallbackMaxPollTime());
+    EXPECT_EQ(defaultConfig.getRenderThreadLoopTimingReportingPeriod(), internalConfig.getRenderThreadLoopTimingReportingPeriod());
+    EXPECT_EQ(defaultConfig.getSystemCompositorControlEnabled(), internalConfig.getSystemCompositorControlEnabled());
 }
 
 TEST(ARendererConfig, canEnableSystemCompositor)
@@ -34,9 +35,9 @@ TEST(ARendererConfig, canEnableSystemCompositor)
 TEST(ARendererConfig, canBeCopyConstructed)
 {
     ramses::RendererConfig config;
-    EXPECT_EQ(ramses::StatusOK, config.setWaylandEmbeddedCompositingSocketFD(333));
+    EXPECT_EQ(ramses::StatusOK, config.setFrameCallbackMaxPollTime(333u));
     ramses::RendererConfig configOther(config);
-    EXPECT_EQ(333, configOther.impl.getInternalRendererConfig().getWaylandSocketEmbeddedFD());
+    EXPECT_EQ(333u, configOther.impl.getInternalRendererConfig().getFrameCallbackMaxPollTime().count());
 }
 
 TEST(ARendererConfig, canSetBinaryShaderCache)

@@ -37,6 +37,7 @@ namespace ramses_internal
         virtual bool sendContentEnableFocusRequest(ContentID contentID, int32_t focusRequest) = 0;
         virtual bool sendContentDisableFocusRequest(ContentID contentID, int32_t focusRequest) = 0;
         virtual bool sendRequestStopOfferContent(ContentID contentID) = 0;
+        virtual bool sendForceStopOfferContent(ContentID contentID) = 0;
 
         virtual bool sendUpdateContentMetadata(ContentID contentID, const DcsmMetadata& metadata) = 0;
 

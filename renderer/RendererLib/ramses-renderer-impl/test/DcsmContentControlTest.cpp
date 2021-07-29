@@ -302,6 +302,19 @@ class ADcsmContentControlP : public ADcsmContentControl, public testing::WithPar
             }
         }
 
+        void expectRequestToReleaseTechnicalContentFromReady(TechnicalContentDescriptor techId = TechnicalContentDescriptor{ SceneId1.getValue() })
+        {
+            if (GetParam() == ETechnicalContentType::RamsesSceneID)
+            {
+                const sceneId_t sceneId{techId.getValue()};
+                EXPECT_CALL(m_sceneControlMock, setSceneState(sceneId, RendererSceneState::Available));
+            }
+            else if (GetParam() == ETechnicalContentType::WaylandIviSurfaceID)
+            {
+                EXPECT_CALL(m_sceneControlMock, destroyStreamBuffer(_, streamBufferId_t{static_cast<uint32_t>(techId.getValue())}));
+            }
+        }
+
         void expectRequestToReleaseTechnicalContentFromShown(TechnicalContentDescriptor techId = TechnicalContentDescriptor{ SceneId1.getValue() })
         {
             if (GetParam() == ETechnicalContentType::RamsesSceneID)
@@ -2318,6 +2331,158 @@ TEST_P(ADcsmContentControlP, handlesTimeOutWhenRequestReadyButNotReachedDcsmAndR
     update(200);
 }
 
+TEST_P(ADcsmContentControlP, doesNotTimeOutWhenReachingReadyInTime)
+{
+    update(100);
+    offerContentAndRequestReady(m_contentID1, m_categoryID1, TechnicalContentDescriptor{SceneId1.getValue()}, false, 50);
+    expectReactionToContentDescription();
+    update(111);
+    signalTechnicalContentReady();
+    update(121);
+
+    m_dcsmHandler.contentReady(m_contentID1);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update(131);
+    update(141);
+
+    // no timeout
+    update(151);
+}
+
+TEST_P(ADcsmContentControlP, doesNotTimeOutWhenReachingReadyInTimeAndContinuesToShow)
+{
+    update(100);
+    offerContentAndRequestReady(m_contentID1, m_categoryID1, TechnicalContentDescriptor{SceneId1.getValue()}, false, 50);
+    expectReactionToContentDescription();
+    update(111);
+    signalTechnicalContentReady();
+    update(121);
+
+    m_dcsmHandler.contentReady(m_contentID1);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update(131);
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{0, 0}));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.showContent(m_contentID1, {}));
+    expectRequestToShowTechnicalContent();
+    update(141);
+
+    EXPECT_CALL(m_eventHandlerMock, contentShown(m_contentID1));
+    signalTechnicalContentShown();
+
+    // no timeout
+    update(151);
+}
+
+TEST_P(ADcsmContentControlP, doesNotTimeOutWhenReachingReadyInTimeShowsAndHidesAgain)
+{
+    update(100);
+    offerContentAndRequestReady(m_contentID1, m_categoryID1, TechnicalContentDescriptor{SceneId1.getValue()}, false, 50);
+    expectReactionToContentDescription();
+    update(111);
+    signalTechnicalContentReady();
+    update(121);
+
+    m_dcsmHandler.contentReady(m_contentID1);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update(131);
+
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{0, 0}));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.showContent(m_contentID1, {}));
+    expectRequestToShowTechnicalContent();
+    update(141);
+
+    EXPECT_CALL(m_eventHandlerMock, contentShown(m_contentID1));
+    signalTechnicalContentShown();
+
+    update(145);
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{0, 0}));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.hideContent(m_contentID1, {}));
+    expectRequestToHideTechnicalContent();
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update(148);
+
+    signalTechnicalContentHidden();
+
+    // no timeout
+    update(151);
+}
+
+TEST_P(ADcsmContentControlP, doesNotTimeOutWhenReachingReadyAndFallingBackToAvailable)
+{
+    update(100);
+    offerContentAndRequestReady(m_contentID1, m_categoryID1, TechnicalContentDescriptor{SceneId1.getValue()}, false, 50);
+    expectReactionToContentDescription();
+    update(111);
+    signalTechnicalContentReady();
+    update(121);
+
+    m_dcsmHandler.contentReady(m_contentID1);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update(131);
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{0, 0}));
+    expectRequestToReleaseTechnicalContentFromReady();
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, {}));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    update(141);
+
+    signalTechnicalContentReleased();
+
+    // no timeout
+    update(151);
+}
+
+TEST_P(ADcsmContentControlP, ignoresOldTimeoutWhenRerequestingReady)
+{
+    update(100);
+    offerContentAndRequestReady(m_contentID1, m_categoryID1, TechnicalContentDescriptor{SceneId1.getValue()}, false, 50);
+    expectReactionToContentDescription();
+    update(111);
+    signalTechnicalContentReady();
+    update(121);
+
+    m_dcsmHandler.contentReady(m_contentID1);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update(131);
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{0, 0}));
+    expectRequestToReleaseTechnicalContentFromReady();
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, {}));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    update(141);
+
+    signalTechnicalContentReleased();
+    update(145);
+
+    // request ready
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{0, 0}));
+    if (GetParam() == ETechnicalContentType::RamsesSceneID)
+    {
+        EXPECT_CALL(m_sceneControlMock, setSceneMapping(SceneId1, m_displayId));
+        EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    }
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 50));
+    if (GetParam() == ETechnicalContentType::WaylandIviSurfaceID)
+    {
+        expectReactionToContentDescription();
+        m_dcsmHandler.contentDescription(m_contentID1, TechnicalContentDescriptor{WaylandSurfaceID.getValue()});
+    }
+
+    update(148);
+
+    // no timeout
+    update(151);
+
+    // timeout
+    expectRequestToReleaseTechnicalContentFromReady();
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{0, 0}));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::TimedOut));
+    update(200);
+}
+
 TEST_P(ADcsmContentControlP, failsToDataLinkUnknownProviderContent)
 {
     constexpr dataProviderId_t providerId{ 12 };
@@ -3512,6 +3677,20 @@ TEST_P(ADcsmContentControlP, canNotChangeStateOfUnknownContent)
 TEST_F(ADcsmContentControl, simplyPipesThroughSendContentStatusCallToConsumer)
 {
     StreamStatusMessage msg(StreamStatusMessage::Status::Ready);
+    EXPECT_CALL(m_dcsmConsumerMock, sendContentStatus(m_contentID1, Ref(msg))).WillOnce(Return(status_t{ 43 }));
+    EXPECT_EQ(status_t{ 43 }, m_dcsmContentControl.sendContentStatus(m_contentID1, msg));
+}
+
+TEST_F(ADcsmContentControl, simplyPipesThroughSendActiveLayoutCallToConsumer)
+{
+    ActiveLayoutMessage msg(ActiveLayoutMessage::Layout::Autonomous);
+    EXPECT_CALL(m_dcsmConsumerMock, sendContentStatus(m_contentID1, Ref(msg))).WillOnce(Return(status_t{ 43 }));
+    EXPECT_EQ(status_t{ 43 }, m_dcsmContentControl.sendContentStatus(m_contentID1, msg));
+}
+
+TEST_F(ADcsmContentControl, simplyPipesThroughSendWidgetFocusStatusCallToConsumer)
+{
+    WidgetFocusStatusMessage msg(WidgetFocusStatusMessage::Status::NotFocused);
     EXPECT_CALL(m_dcsmConsumerMock, sendContentStatus(m_contentID1, Ref(msg))).WillOnce(Return(status_t{ 43 }));
     EXPECT_EQ(status_t{ 43 }, m_dcsmContentControl.sendContentStatus(m_contentID1, msg));
 }

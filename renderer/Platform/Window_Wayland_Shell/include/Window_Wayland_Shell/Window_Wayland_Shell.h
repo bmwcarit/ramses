@@ -16,7 +16,7 @@ namespace ramses_internal
     class Window_Wayland_Shell : public Window_Wayland
     {
     public:
-        Window_Wayland_Shell(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id);
+        Window_Wayland_Shell(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id, std::chrono::microseconds frameCallbackMaxPollTime);
         ~Window_Wayland_Shell() override;
         void setTitle(const String& title) override;
 

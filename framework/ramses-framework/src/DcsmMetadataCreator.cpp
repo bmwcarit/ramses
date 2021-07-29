@@ -73,6 +73,13 @@ namespace ramses
         return status;
     }
 
+    status_t DcsmMetadataCreator::setCarModelViewExtended(const CarModelViewMetadataExtended& data)
+    {
+        const auto status = impl.setCarModelViewExtended(data);
+        LOG_HL_CLIENT_API1(status, data);
+        return status;
+    }
+
     status_t DcsmMetadataCreator::setCarModelVisibility(bool visibility)
     {
         const auto status = impl.setCarModelVisibility(visibility);
@@ -104,6 +111,13 @@ namespace ramses
     status_t DcsmMetadataCreator::setDisplayedDataFlags(uint32_t flags)
     {
         const auto status = impl.setDisplayedDataFlags(flags);
+        LOG_HL_CLIENT_API1(status, flags);
+        return status;
+    }
+
+    status_t DcsmMetadataCreator::setLayoutAvailability(uint8_t flags)
+    {
+        const auto status = impl.setLayoutAvailability(flags);
         LOG_HL_CLIENT_API1(status, flags);
         return status;
     }

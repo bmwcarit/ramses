@@ -12,6 +12,7 @@
 #include "Math3d/Matrix44f.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "Collections/String.h"
+#include "UnsafeTestMemoryHelpers.h"
 
 namespace ramses_internal
 {
@@ -87,7 +88,7 @@ namespace ramses_internal
         String value = "Hello World";
         uint32_t strlen = static_cast<uint32_t>(value.size());
 
-        PlatformMemory::Copy(buffer, reinterpret_cast<char*>(&strlen), sizeof(uint32_t));
+        UnsafeTestMemoryHelpers::WriteToMemoryBlob(strlen, buffer);
         PlatformMemory::Copy(buffer + sizeof(uint32_t), value.c_str(), value.size() + 1);
 
         BinaryInputStream inStream(buffer);
@@ -103,7 +104,7 @@ namespace ramses_internal
         String value = "";
         uint32_t strlen = static_cast<uint32_t>(value.size());
 
-        PlatformMemory::Copy(buffer, reinterpret_cast<char*>(&strlen), sizeof(uint32_t));
+        UnsafeTestMemoryHelpers::WriteToMemoryBlob(strlen, buffer);
         PlatformMemory::Copy(buffer + sizeof(uint32_t), value.c_str(), value.size() + 1);
 
         BinaryInputStream inStream(buffer);

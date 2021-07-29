@@ -133,7 +133,7 @@ namespace ramses_internal
         // read data
         std::vector<Byte>& rawActionData = actions.getRawDataForDirectWriting();
         rawActionData.resize(sizeOfAllSceneActions);
-        inStream.read(reinterpret_cast<char*>(rawActionData.data()), static_cast<UInt32>(rawActionData.size()));
+        inStream.read(rawActionData.data(), rawActionData.size());
 
         std::array<uint32_t, NumOfSceneActionTypes> objectCounts = {};
 

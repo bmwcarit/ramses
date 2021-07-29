@@ -51,7 +51,7 @@
                 assert(false && "invalid format for enum class");                                                                                                \
             return it;                                                                                                                                           \
         }                                                                                                                                                        \
-        template <typename FormatContext> auto format(type index, FormatContext& ctx)                                                                            \
+        template <typename FormatContext> constexpr auto format(type index, FormatContext& ctx)                                                                            \
         {                                                                                                                                                        \
             const auto value = static_cast<uint64_t>(index);                                                                                                  \
             if (value >= static_cast<uint64_t>(oneAfterLastElement))                                                                                          \
@@ -82,7 +82,7 @@
                 assert(false && "invalid format for enum class");                                                                                                \
             return it;                                                                                                                                           \
         }                                                                                                                                                        \
-        template <typename FormatContext> auto format(type index, FormatContext& ctx)                                                                            \
+        template <typename FormatContext> constexpr auto format(type index, FormatContext& ctx)                                                                            \
         {                                                                                                                                                        \
             const auto value = static_cast<uint64_t>(index);                                                                                                     \
             if (value > lastValue)                                                                                                                               \

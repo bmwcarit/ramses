@@ -29,6 +29,23 @@ namespace ramses
         return nullptr;
     }
 
+    ActiveLayoutMessage const* DcsmStatusMessage::getAsActiveLayout() const
+    {
+        if (DcsmStatusMessageImpl::Type::ActiveLayout == impl->getType())
+            return static_cast<ActiveLayoutMessage const*>(this);
+
+        return nullptr;
+    }
+
+    WidgetFocusStatusMessage const* DcsmStatusMessage::getAsWidgetFocusStatus() const
+    {
+        if (DcsmStatusMessageImpl::Type::WidgetFocusStatus == impl->getType())
+            return static_cast<WidgetFocusStatusMessage const*>(this);
+
+        return nullptr;
+    }
+
+
     // ------------------------------------------------------------------------------
 
     StreamStatusMessage::StreamStatusMessage(std::unique_ptr<DcsmStatusMessageImpl>&& impl_)
@@ -50,6 +67,53 @@ namespace ramses
         stream >> status;
         return status;
     }
+
+
+    // ------------------------------------------------------------------------------
+
+    ActiveLayoutMessage::ActiveLayoutMessage(std::unique_ptr<DcsmStatusMessageImpl>&& impl_)
+        : DcsmStatusMessage(std::move(impl_))
+    {
+    }
+
+    ActiveLayoutMessage::ActiveLayoutMessage(Layout layout)
+        : DcsmStatusMessage(std::make_unique<DcsmStatusMessageImpl>(DcsmStatusMessageImpl::Type::ActiveLayout, sizeof(ActiveLayoutMessage::Layout)))
+    {
+        auto stream = impl->getOStream();
+        stream << layout;
+    }
+
+    ActiveLayoutMessage::Layout ActiveLayoutMessage::getLayout() const
+    {
+        ActiveLayoutMessage::Layout layout;
+        auto stream = impl->getIStream();
+        stream >> layout;
+        return layout;
+    }
+
+
+    // ------------------------------------------------------------------------------
+
+    WidgetFocusStatusMessage::WidgetFocusStatusMessage(std::unique_ptr<DcsmStatusMessageImpl>&& impl_)
+        : DcsmStatusMessage(std::move(impl_))
+    {
+    }
+
+    WidgetFocusStatusMessage::WidgetFocusStatusMessage(Status status)
+        : DcsmStatusMessage(std::make_unique<DcsmStatusMessageImpl>(DcsmStatusMessageImpl::Type::WidgetFocusStatus, sizeof(WidgetFocusStatusMessage::Status)))
+    {
+        auto stream = impl->getOStream();
+        stream << status;
+    }
+
+    WidgetFocusStatusMessage::Status WidgetFocusStatusMessage::getWidgetFocusStatus() const
+    {
+        WidgetFocusStatusMessage::Status status;
+        auto stream = impl->getIStream();
+        stream >> status;
+        return status;
+    }
+
 }
 
 

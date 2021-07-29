@@ -20,11 +20,12 @@ namespace ramses_internal
 {
     class RendererScenes;
     class RendererEventCollector;
+    class RendererStatistics;
 
     class SceneExpirationMonitor
     {
     public:
-        SceneExpirationMonitor(const RendererScenes& scenes, RendererEventCollector& eventCollector);
+        SceneExpirationMonitor(const RendererScenes& scenes, RendererEventCollector& eventCollector, RendererStatistics& statistics);
         ~SceneExpirationMonitor();
 
         void onFlushApplied(SceneId sceneId, FlushTime::Clock::time_point expirationTimestamp, SceneVersionTag versionTag, UInt64 flushIndex);
@@ -50,10 +51,13 @@ namespace ramses_internal
             TimeStampTag expirationTSOfRenderedScene;
             bool inExpiredState = false;
         };
+
+        void checkAndTriggerExpirationEvent(SceneId sceneId, SceneTimestamps& ts, bool expired);
         std::unordered_map<SceneId, SceneTimestamps> m_monitoredScenes;
 
         const RendererScenes& m_scenes;
         RendererEventCollector& m_eventCollector;
+        RendererStatistics& m_statistics;
     };
 }
 

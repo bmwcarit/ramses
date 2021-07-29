@@ -8,6 +8,7 @@
 
 #include "Common/StronglyTypedValue.h"
 #include "PlatformAbstraction/PlatformTypes.h"
+#include "UnsafeTestMemoryHelpers.h"
 #include "gtest/gtest.h"
 #include <type_traits>
 #include <unordered_set>
@@ -164,8 +165,8 @@ namespace ramses_internal
         EXPECT_TRUE(StronglyTypedUInt32(123).isValid());
         EXPECT_TRUE(StronglyTypedUInt32(0).isValid());
 
-        EXPECT_TRUE(StronglyTypedPtr(reinterpret_cast<void*>(123u)).isValid());
-        EXPECT_TRUE(StronglyTypedPtr(reinterpret_cast<void*>(1u)).isValid());
+        EXPECT_TRUE(StronglyTypedPtr(UnsafeTestMemoryHelpers::ForgeArbitraryPointer(123u)).isValid());
+        EXPECT_TRUE(StronglyTypedPtr(UnsafeTestMemoryHelpers::ForgeArbitraryPointer(1u)).isValid());
     }
 
     TEST(AStronglyTypedValue, canUseWithFmtlib)

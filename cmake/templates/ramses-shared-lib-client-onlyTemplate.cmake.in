@@ -54,4 +54,20 @@ MARK_AS_ADVANCED(
     ramses-shared-lib-client-only_INCLUDE_DIRS
     ramses-shared-lib-client-only_LIBRARIES
     ramses-shared-lib-client-only_FOUND
-)
+    )
+
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
+    if (NOT TARGET ramses-ramses-shared-lib-client-only)
+        add_library(ramses-ramses-shared-lib-client-only SHARED IMPORTED GLOBAL)
+        set_target_properties(ramses-ramses-shared-lib-client-only PROPERTIES IMPORTED_LOCATION ${ramses-shared-lib-client-only_LIBRARIES})
+        if (MSVC)
+            set_target_properties(ramses-ramses-shared-lib-client-only PROPERTIES IMPORTED_IMPLIB ${ramses-shared-lib-client-only_LIBRARIES})
+        endif()
+        target_include_directories(ramses-ramses-shared-lib-client-only INTERFACE ${ramses-shared-lib-client-only_INCLUDE_DIRS})
+
+        if (NOT TARGET ramses::client-only)
+            add_library(ramses::client-only ALIAS ramses-ramses-shared-lib-client-only)
+            message(STATUS "Created ramses-shared-lib-client-only import target ramses::client-only")
+        endif()
+    endif()
+endif()

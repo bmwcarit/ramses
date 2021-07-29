@@ -218,4 +218,64 @@ namespace ramses
         m_internalConfig.setAsyncEffectUploadEnabled(enabled);
         return StatusOK;
     }
+
+    status_t DisplayConfigImpl::setWaylandEmbeddedCompositingSocketGroup(const char* groupname)
+    {
+        m_internalConfig.setWaylandEmbeddedCompositingSocketGroup(groupname);
+        return StatusOK;
+    }
+
+    const char* DisplayConfigImpl::getWaylandSocketEmbeddedGroup() const
+    {
+        return m_internalConfig.getWaylandSocketEmbeddedGroup().c_str();
+    }
+
+    status_t DisplayConfigImpl::setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions)
+    {
+        if (m_internalConfig.setWaylandEmbeddedCompositingSocketPermissions(permissions))
+            return StatusOK;
+        return addErrorEntry("DisplayConfig::setWaylandEmbeddedCompositingSocketPermissions failed");
+    }
+
+    uint32_t DisplayConfigImpl::getWaylandSocketEmbeddedPermissions() const
+    {
+        return m_internalConfig.getWaylandSocketEmbeddedPermissions();
+    }
+
+    status_t DisplayConfigImpl::setWaylandEmbeddedCompositingSocketName(const char* socketname)
+    {
+        m_internalConfig.setWaylandEmbeddedCompositingSocketName(socketname);
+        return StatusOK;
+    }
+
+    const char* DisplayConfigImpl::getWaylandEmbeddedCompositingSocketName() const
+    {
+        return m_internalConfig.getWaylandSocketEmbedded().c_str();
+    }
+
+    status_t DisplayConfigImpl::setWaylandEmbeddedCompositingSocketFD(int fd)
+    {
+        m_internalConfig.setWaylandEmbeddedCompositingSocketFD(fd);
+        return StatusOK;
+    }
+
+    int DisplayConfigImpl::getWaylandSocketEmbeddedFD() const
+    {
+        return m_internalConfig.getWaylandSocketEmbeddedFD();
+    }
+
+    status_t DisplayConfigImpl::validate() const
+    {
+        status_t status = StatusObjectImpl::validate();
+
+        const ramses_internal::String& embeddedCompositorFilename = m_internalConfig.getWaylandSocketEmbedded();
+        int embeddedCompositorFileDescriptor                      = m_internalConfig.getWaylandSocketEmbeddedFD();
+
+        if(embeddedCompositorFilename.size() == 0u && embeddedCompositorFileDescriptor < 0)
+            status = addValidationMessage(EValidationSeverity_Info, "no socket information for EmbeddedCompositor set (neither file descriptor nor file name). No embedded compositor available.");
+        else if(embeddedCompositorFilename.size() > 0u && embeddedCompositorFileDescriptor >= 0)
+            status = addValidationMessage(EValidationSeverity_Info, "Competing settings for EmbeddedCompositor are set (file descriptor and file name). File descriptor setting will be preferred.");
+
+        return status;
+    }
 }

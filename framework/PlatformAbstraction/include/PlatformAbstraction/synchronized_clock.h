@@ -21,7 +21,8 @@ namespace ramses_internal
 
     struct synchronized_clock final
     {
-        using duration =  std::chrono::nanoseconds;
+        using duration = std::chrono::nanoseconds;
+        using milliseconds = std::chrono::milliseconds;
         using rep = duration::rep;
         using period = duration::period;
         using time_point = std::chrono::time_point<synchronized_clock, duration>;

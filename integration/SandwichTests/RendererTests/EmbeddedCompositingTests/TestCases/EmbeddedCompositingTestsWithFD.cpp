@@ -30,15 +30,15 @@ namespace ramses_internal
         UnixDomainSocket socket(m_waylandSocket, WaylandEnvironmentUtils::GetVariable(WaylandEnvironmentVariable::XDGRuntimeDir));
 
         ramses::RendererConfig rendererConfig = RendererTestUtils::CreateTestRendererConfig();
-        rendererConfig.setWaylandEmbeddedCompositingSocketName("");
-        rendererConfig.setWaylandEmbeddedCompositingSocketGroup("");
-        rendererConfig.setWaylandEmbeddedCompositingSocketFD(socket.createBoundFileDescriptor());
 
         const UInt32 displayWidth = ramses_internal::IntegrationScene::DefaultViewportWidth;
         const UInt32 displayHeight = ramses_internal::IntegrationScene::DefaultViewportHeight;
 
         ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0, true);
         displayConfig.setWindowRectangle(0, 0, displayWidth, displayHeight);
+        displayConfig.setWaylandEmbeddedCompositingSocketName("");
+        displayConfig.setWaylandEmbeddedCompositingSocketGroup("");
+        displayConfig.setWaylandEmbeddedCompositingSocketFD(socket.createBoundFileDescriptor());
 
         switch(testCase.m_id)
         {
@@ -48,9 +48,7 @@ namespace ramses_internal
 
             testFramework.createDisplay(displayConfig);
 
-            testFramework.setEnvironmentVariableWaylandSocket();
-
-            testFramework.startTestApplicationAndWaitUntilConnected();
+            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::DisplayFD);
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
 
             testFramework.destroyDisplays();
@@ -62,15 +60,11 @@ namespace ramses_internal
             testFramework.initializeRenderer(rendererConfig);
             testFramework.createDisplay(displayConfig);
 
-            testFramework.setEnvironmentVariableWaylandSocket();
-
-            testFramework.startTestApplicationAndWaitUntilConnected();
+            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::DisplayFD);
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
 
             //reconnect
-            testFramework.setEnvironmentVariableWaylandSocket();
-
-            testFramework.startTestApplicationAndWaitUntilConnected();
+            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::DisplayFD);
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
 
             testFramework.destroyDisplays();
@@ -79,8 +73,8 @@ namespace ramses_internal
         }
         case FDTest_WaylandClientCanConnectToSocketBeforeEmbeddedCompositorIsInitialized:
         {
-            testFramework.setEnvironmentVariableWaylandSocket();
             testFramework.startTestApplication();
+            testFramework.initializeTestApplication(EConnectionMode::DisplayFD);
 
             testFramework.initializeRenderer(rendererConfig);
             testFramework.createDisplay(displayConfig);
@@ -95,8 +89,8 @@ namespace ramses_internal
         case FDTest_WaylandClientCanConnectToSocketBeforeAndAfterEmbeddedCompositorIsInitialized:
         {
             //before EC init
-            testFramework.setEnvironmentVariableWaylandSocket();
             testFramework.startTestApplication();
+            testFramework.initializeTestApplication(EConnectionMode::DisplayFD);
 
             testFramework.initializeRenderer(rendererConfig);
             testFramework.createDisplay(displayConfig);
@@ -105,9 +99,7 @@ namespace ramses_internal
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
 
             //reconnect
-            testFramework.setEnvironmentVariableWaylandSocket();
-
-            testFramework.startTestApplicationAndWaitUntilConnected();
+            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::DisplayFD);
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
 
             testFramework.destroyDisplays();
@@ -120,15 +112,11 @@ namespace ramses_internal
             testFramework.createDisplay(displayConfig);
 
             //connect using wayland socket
-            testFramework.setEnvironmentVariableWaylandSocket();
-
-            testFramework.startTestApplicationAndWaitUntilConnected();
+            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::DisplayFD);
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
 
             //connect using wayland display
-            testFramework.setEnvironmentVariableWaylandDisplay();
-
-            testFramework.startTestApplicationAndWaitUntilConnected();
+            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::DisplayName);
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
 
             testFramework.destroyDisplays();

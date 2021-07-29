@@ -31,7 +31,6 @@ namespace ramses_internal
     class ISystemCompositorController;
     class DisplayConfig;
     class IPlatform;
-    class IWindowEventsPollingManager;
     class RendererScenes;
     class RendererEventCollector;
     class FrameTimer;

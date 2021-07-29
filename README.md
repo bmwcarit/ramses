@@ -7,9 +7,10 @@
 * [License](#license)
 
 ## What is RAMSES
-RAMSES is an abbreviation for "Rendering Architecture for Multi-Screen
-EnvironmentS". It implements a distributed system for rendering 3D content
-with focus on bandwidth and resource efficiency.
+
+RAMSES is 3D rendering engine with focus on bandwidth and resource efficiency.
+For a broader overview and introduction to the ecosystem and tools, visit our
+[SDK docs](https://ramses-sdk.readthedocs.io/).
 
 Have a look at our showcase video: [![RAMSES Distributed Rendering Engine Showcase Video](https://img.youtube.com/vi/tyzvEI25BMg/0.jpg)](https://www.youtube.com/watch?v=tyzvEI25BMg)
 
@@ -21,14 +22,8 @@ You can find additional resources here:
 RAMSES can be cloned from its Genivi repository using git:
 
 ```
-git clone https://github.com/GENIVI/ramses <ramses-sdk>
-cd <ramses-sdk>
-git submodule update --init --recursive
+git clone --recurse-submodules https://github.com/GENIVI/ramses <ramses-sdk>
 ```
-
-If you use the https variant, you will not get the required dependencies
-and have to download them yourself! Therefore we strongly advise to use the
-'git' protocol for download as shown above.
 
 ## Building and testing
 General building tips: RAMSES's build system is based on CMake. It has

@@ -387,4 +387,9 @@ namespace ramses_internal
         const IDisplayBundle& displayBundle = *m_displays.cbegin()->second.displayBundle;
         return displayBundle.hasSystemCompositorController();
     }
+
+    const RendererConfig& DisplayDispatcher::getRendererConfig() const
+    {
+        return m_rendererConfig;
+    }
 }

@@ -101,6 +101,17 @@ namespace ramses
         EXPECT_EQ(dm, dmf.impl.getMetadata());
     }
 
+    TEST_F(ADcsmMetadataCreator, canSetCarModelViewExtended)
+    {
+        const CarModelViewMetadataExtended cm{10, 11, 0.1f, 0.2f};
+        DcsmMetadataCreator dmf;
+        EXPECT_EQ(StatusOK, dmf.setCarModelViewExtended(cm));
+
+        ramses_internal::DcsmMetadata dm;
+        dm.setCarModelViewExtended(cm);
+        EXPECT_EQ(dm, dmf.impl.getMetadata());
+    }
+
     TEST_F(ADcsmMetadataCreator, canSetCarModelVisibility)
     {
         DcsmMetadataCreator dmf;
@@ -148,6 +159,16 @@ namespace ramses
 
         ramses_internal::DcsmMetadata dm;
         dm.setDisplayedDataFlags(123);
+        EXPECT_EQ(dm, dmf.impl.getMetadata());
+    }
+
+    TEST_F(ADcsmMetadataCreator, canSetLayoutAvailability)
+    {
+        DcsmMetadataCreator dmf;
+        EXPECT_EQ(StatusOK, dmf.setLayoutAvailability(0x31));
+
+        ramses_internal::DcsmMetadata dm;
+        dm.setLayoutAvailability(0x31);
         EXPECT_EQ(dm, dmf.impl.getMetadata());
     }
 }

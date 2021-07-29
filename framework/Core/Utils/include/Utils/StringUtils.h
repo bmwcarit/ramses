@@ -12,6 +12,7 @@
 #include "Collections/String.h"
 #include "Collections/HashSet.h"
 #include "Collections/Vector.h"
+#include "absl/strings/string_view.h"
 
 namespace ramses_internal
 {
@@ -23,10 +24,10 @@ namespace ramses_internal
     public:
         /**
         * Return a trimmed string without leading and ending spaces
-        * @param nativeString string to trim
+        * @param string string to trim
         * @return trimmed String
         */
-        static String Trim(const Char* nativeString);
+        static String Trim(absl::string_view string);
 
         /**
         * Split a string into separate tokens

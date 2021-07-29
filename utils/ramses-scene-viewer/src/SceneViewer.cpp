@@ -81,33 +81,39 @@ namespace ramses_internal
         : m_parser(argc, argv)
         , m_helpArgument(m_parser, "help", "help", "Print this help")
         , m_scenePathAndFileArgument(m_parser, "s", "scene", String(), "Scene path+file")
+        , m_noValidation(m_parser, "nv", "no-validation", "Disable scene validation")
         , m_validationUnrequiredObjectsDirectoryArgument(m_parser, "vd", "validation-output-directory", String(), "Directory Path were validation output should be saved")
         , m_screenshotFile(m_parser, "x", "screenshot-file", {}, "Screenshot filename. Setting to non-empty enables screenshot capturing after the scene is shown")
+        , m_noSkub(m_parser, "ns", "no-skub", "Disable skub, render also when no changes")
     {
         GetRamsesLogger().initialize(m_parser, String(), String(), false, true);
 
         const bool   helpRequested    = m_helpArgument;
-        const String scenePathAndFile = m_scenePathAndFileArgument;
-        m_sceneName = ramses_internal::File(scenePathAndFile).getFileName().stdRef();
+        String scenePathAndFile = m_scenePathAndFileArgument;
 
         if (helpRequested)
         {
             printUsage();
+            return;
         }
-        else
+
+        if (scenePathAndFile.empty())
         {
-            if (scenePathAndFile != "")
-            {
-                const String& sceneFile = scenePathAndFile + ".ramses";
-                loadAndRenderScene(argc, argv, sceneFile);
-            }
-            else
-            {
-                LOG_ERROR(CONTEXT_CLIENT,
-                          "A scene file including path has to be specified by option "
-                              << m_scenePathAndFileArgument.getHelpString());
-            }
+            LOG_ERROR(CONTEXT_CLIENT,
+                      "A scene file including path has to be specified by option "
+                      << m_scenePathAndFileArgument.getHelpString());
+            return;
         }
+
+        const File sceneFile(scenePathAndFile);
+        if (!sceneFile.exists())
+        {
+            // try with extension
+            scenePathAndFile += ".ramses";
+        }
+
+        m_sceneName = sceneFile.getFileName().stdRef();
+        loadAndRenderScene(argc, argv, scenePathAndFile);
     }
 
     void SceneViewer::printUsage() const
@@ -142,6 +148,7 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_CLIENT, "Creation of renderer failed");
             return;
         }
+        renderer->setSkippingOfUnmodifiedBuffers(!m_noSkub);
         renderer->startThread();
 
         const ramses::DisplayConfig displayConfig(argc, argv);
@@ -160,17 +167,20 @@ namespace ramses_internal
 
         loadedScene->publish();
         loadedScene->flush();
-        validateContent(*client, *loadedScene);
-        if (m_validationUnrequiredObjectsDirectoryArgument.wasDefined() && m_validationUnrequiredObjectsDirectoryArgument.hasValue())
+        if (!m_noValidation)
         {
-            std::string unrequiredObjectsReportFilePath = ramses_internal::String(m_validationUnrequiredObjectsDirectoryArgument).c_str();
+            validateContent(*client, *loadedScene);
+            if (m_validationUnrequiredObjectsDirectoryArgument.wasDefined() && m_validationUnrequiredObjectsDirectoryArgument.hasValue())
+            {
+                std::string unrequiredObjectsReportFilePath = ramses_internal::String(m_validationUnrequiredObjectsDirectoryArgument).c_str();
 
-            unrequiredObjectsReportFilePath.append(m_sceneName + "_unrequObjsReport.txt");
-            std::ofstream unrequObjsOfstream(unrequiredObjectsReportFilePath);
+                unrequiredObjectsReportFilePath.append(m_sceneName + "_unrequObjsReport.txt");
+                std::ofstream unrequObjsOfstream(unrequiredObjectsReportFilePath);
 
-            ramses::RamsesHMIUtils::DumpUnrequiredSceneObjectsToFile(*loadedScene, unrequObjsOfstream);
+                ramses::RamsesHMIUtils::DumpUnrequiredSceneObjectsToFile(*loadedScene, unrequObjsOfstream);
+            }
+            ramses::RamsesHMIUtils::DumpUnrequiredSceneObjects(*loadedScene);
         }
-        ramses::RamsesHMIUtils::DumpUnrequiredSceneObjects(*loadedScene);
 
         ramses::RendererMate rendererMate(renderer->impl, framework.impl);
         // allow camera free move

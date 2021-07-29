@@ -32,7 +32,7 @@ class ARenderer : public ::testing::TestWithParam<bool> // parametrized with/out
 public:
     ARenderer()
         : rendererScenes(rendererEventCollector)
-        , expirationMonitor(rendererScenes, rendererEventCollector)
+        , expirationMonitor(rendererScenes, rendererEventCollector, rendererStatistics)
         , renderer(DisplayHandle{ 1u }, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
     {
         // caller is expected to have a display prefix for logs
@@ -44,10 +44,7 @@ public:
 
         // Enable/disable SC
         if (GetParam())
-        {
             ON_CALL(renderer.m_platform, getSystemCompositorController()).WillByDefault(Return(&renderer.m_platform.systemCompositorControllerMock));
-            ON_CALL(renderer.m_platform, getWindowEventsPollingManager()).WillByDefault(Return(&renderer.m_platform.windowEventsPollingManagerMock));
-        }
     }
 
     virtual ~ARenderer()
@@ -129,9 +126,6 @@ public:
 
     void doOneRendererLoop()
     {
-        if (GetParam())
-            EXPECT_CALL(renderer.m_platform.windowEventsPollingManagerMock, pollWindowsTillAnyCanRender());
-
         renderer.getProfilerStatistics().markFrameFinished(std::chrono::microseconds{ 0u });
         renderer.doOneRenderLoop();
     }
@@ -870,8 +864,6 @@ TEST_P(ARenderer, skipsFrameIfDisplayControllerCanNotRenderNewFrame)
     EXPECT_CALL(*renderer.m_displayController, canRenderNewFrame()).WillRepeatedly(Return(false));
 
     //renderer must not try to render on that display
-    if(GetParam())
-        EXPECT_CALL(renderer.m_platform.windowEventsPollingManagerMock, pollWindowsTillAnyCanRender()).Times(1u);
     EXPECT_CALL(*renderer.m_displayController, swapBuffers()).Times(0);
     EXPECT_CALL(*renderer.m_displayController, getEmbeddedCompositingManager()).Times(0);
     EXPECT_CALL(renderer.m_embeddedCompositingManager, notifyClients()).Times(0);

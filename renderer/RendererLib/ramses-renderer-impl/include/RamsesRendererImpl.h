@@ -41,7 +41,6 @@
 
 namespace ramses_internal
 {
-    class RendererConfig;
     class IBinaryShaderCache;
 }
 

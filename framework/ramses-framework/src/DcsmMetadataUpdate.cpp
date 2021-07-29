@@ -94,6 +94,16 @@ namespace ramses
         return impl.getCarModelView();
     }
 
+    bool DcsmMetadataUpdate::hasCarModelViewExtended() const
+    {
+        return impl.hasCarModelViewExtended();
+    }
+
+    CarModelViewMetadataExtended DcsmMetadataUpdate::getCarModelViewExtended() const
+    {
+        return impl.getCarModelViewExtended();
+    }
+
     AnimationInformation DcsmMetadataUpdate::getCarModelViewAnimationInfo() const
     {
         return impl.getCarModelViewAnimationInfo();
@@ -147,5 +157,15 @@ namespace ramses
     uint32_t DcsmMetadataUpdate::getDisplayedDataFlags() const
     {
         return impl.getDisplayedDataFlags();
+    }
+
+    bool DcsmMetadataUpdate::hasLayoutAvailability() const
+    {
+        return impl.hasLayoutAvailability();
+    }
+
+    uint8_t DcsmMetadataUpdate::getLayoutAvailability() const
+    {
+        return impl.getLayoutAvailability();
     }
 }

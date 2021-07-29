@@ -37,6 +37,8 @@ namespace ramses_internal
 
             // NOTE: Add new metadata after this one counting up for 27.0.100 and upwards
             ContentFlippedVertically = 1001,
+            LayoutAvailability = 1002,
+            WidgetCarModelViewExtended = 1003,
         };
 
         constexpr const uint32_t CurrentMetadataVersion = 1;
@@ -56,11 +58,13 @@ namespace ramses_internal
             !m_hasWidgetHUDLineID &&
             !m_hasCarModel &&
             !m_hasCarModelView &&
+            !m_hasCarModelViewExtended &&
             !m_hasCarModelVisibility &&
             !m_hasExclusiveBackground &&
             !m_hasStreamID &&
             !m_hasDisplayedDataFlags &&
-            !m_hasContentFlippedVertically;
+            !m_hasContentFlippedVertically &&
+            !m_hasLayoutAvailability;
     }
 
     std::vector<Byte> DcsmMetadata::toBinary() const
@@ -74,11 +78,13 @@ namespace ramses_internal
             (m_hasWidgetHUDLineID ? 1 : 0) +
             (m_hasCarModel ? 1 : 0) +
             (m_hasCarModelView ? 1 : 0) +
+            (m_hasCarModelViewExtended ? 1 : 0) +
             (m_hasCarModelVisibility ? 1 : 0) +
             (m_hasExclusiveBackground ? 1 : 0) +
             (m_hasStreamID ? 1 : 0) +
             (m_hasDisplayedDataFlags ? 1 : 0) +
-            (m_hasContentFlippedVertically ? 1 : 0);
+            (m_hasContentFlippedVertically ? 1 : 0) +
+            (m_hasLayoutAvailability ? 1 : 0);
         os << CurrentMetadataVersion
            << numEntries;
 
@@ -146,6 +152,18 @@ namespace ramses_internal
                << m_carModelViewTiming.startTimeStamp
                << m_carModelViewTiming.finishedTimeStamp;
         }
+        if (m_hasCarModelViewExtended)
+        {
+            constexpr size_t numberOfViewValues = 4; // roll, cameraTranslation(x,y,z)
+            constexpr size_t sizeData = sizeof(float) * numberOfViewValues;
+            static_assert(sizeData==sizeof(ramses::CarModelViewMetadataExtended), "size mismatch of CarModelViewMetadataExtended");
+            os << DcsmMetadataType::WidgetCarModelViewExtended
+               << uint32_t(sizeData)
+               << m_carModelViewExtended.roll
+               << m_carModelViewExtended.cameraLocalTranslation_x
+               << m_carModelViewExtended.cameraLocalTranslation_y
+               << m_carModelViewExtended.cameraLocalTranslation_z;
+        }
         if (m_hasCarModelVisibility)
         {
             constexpr uint32_t size = static_cast<uint32_t>(sizeof(int32_t));
@@ -182,6 +200,12 @@ namespace ramses_internal
             os << DcsmMetadataType::ContentFlippedVertically
                << size
                << state;
+        }
+        if (m_hasLayoutAvailability)
+        {
+            os << DcsmMetadataType::LayoutAvailability
+                << static_cast<uint32_t>(sizeof(m_layoutAvailability))
+                << m_layoutAvailability;
         }
 
         return os.release();
@@ -222,7 +246,7 @@ namespace ramses_internal
                 m_hasPreviewDescription = true;
                 m_previewDescription.clear();
                 m_previewDescription.resize(size / 4);   // TODO(tobias) avoid zero init
-                is.read(reinterpret_cast<char*>(&m_previewDescription[0]), size);
+                is.read(&m_previewDescription[0], size);
                 break;
 
             case DcsmMetadataType::WidgetOrder:
@@ -260,6 +284,14 @@ namespace ramses_internal
                 is >> m_carModelViewTiming.finishedTimeStamp;
                 break;
 
+            case DcsmMetadataType::WidgetCarModelViewExtended:
+                m_hasCarModelViewExtended = true;
+                is >> m_carModelViewExtended.roll;
+                is >> m_carModelViewExtended.cameraLocalTranslation_x;
+                is >> m_carModelViewExtended.cameraLocalTranslation_y;
+                is >> m_carModelViewExtended.cameraLocalTranslation_z;
+                break;
+
             case DcsmMetadataType::WidgetCarModelVisibility:
             {
                 m_hasCarModelVisibility = true;
@@ -294,6 +326,12 @@ namespace ramses_internal
                 int32_t state = 0;
                 is >> state;
                 m_contentFlippedVertically = (state == 0) ? false : true;
+                break;
+            }
+            case DcsmMetadataType::LayoutAvailability:
+            {
+                m_hasLayoutAvailability = true;
+                is >> m_layoutAvailability;
                 break;
             }
             default:
@@ -344,6 +382,11 @@ namespace ramses_internal
             m_carModelView = other.m_carModelView;
             m_carModelViewTiming = other.m_carModelViewTiming;
         }
+        if (other.m_hasCarModelViewExtended)
+        {
+            m_hasCarModelViewExtended = true;
+            m_carModelViewExtended = other.m_carModelViewExtended;
+        }
         if (other.m_hasCarModelVisibility)
         {
             m_hasCarModelVisibility = true;
@@ -368,6 +411,11 @@ namespace ramses_internal
         {
             m_hasContentFlippedVertically = true;
             m_contentFlippedVertically = other.m_contentFlippedVertically;
+        }
+        if (other.m_hasLayoutAvailability)
+        {
+            m_hasLayoutAvailability = true;
+            m_layoutAvailability = other.m_layoutAvailability;
         }
     }
 
@@ -466,6 +514,16 @@ namespace ramses_internal
         return true;
     }
 
+
+    bool DcsmMetadata::setCarModelViewExtended(const ramses::CarModelViewMetadataExtended& values)
+    {
+        LOG_INFO_P(CONTEXT_DCSM, "DcsmMetadata::setCarModelviewExtended: {}", values);
+
+        m_carModelViewExtended = values;
+        m_hasCarModelViewExtended = true;
+        return true;
+    }
+
     bool DcsmMetadata::setCarModelVisibility(bool visibility)
     {
         LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::setCarModelVisibility: " << visibility);
@@ -511,6 +569,15 @@ namespace ramses_internal
         return true;
     }
 
+    bool DcsmMetadata::setLayoutAvailability(uint8_t flags)
+    {
+        LOG_INFO(CONTEXT_DCSM, "DcsmMetadata::setLayoutAvailability: " << flags);
+
+        m_layoutAvailability = flags;
+        m_hasLayoutAvailability = true;
+        return true;
+    }
+
     bool DcsmMetadata::hasPreviewImagePng() const
     {
         return m_hasPreviewImagePng;
@@ -546,6 +613,11 @@ namespace ramses_internal
         return m_hasCarModelView;
     }
 
+    bool DcsmMetadata::hasCarModelViewExtended() const
+    {
+        return m_hasCarModelViewExtended;
+    }
+
     bool DcsmMetadata::hasCarModelVisibility() const
     {
         return m_hasCarModelVisibility;
@@ -569,6 +641,11 @@ namespace ramses_internal
     bool DcsmMetadata::hasDisplayedDataFlags() const
     {
         return m_hasDisplayedDataFlags;
+    }
+
+    bool DcsmMetadata::hasLayoutAvailability() const
+    {
+        return m_hasLayoutAvailability;
     }
 
     std::vector<unsigned char> DcsmMetadata::getPreviewImagePng() const
@@ -606,6 +683,11 @@ namespace ramses_internal
         return m_carModelView;
     }
 
+    ramses::CarModelViewMetadataExtended DcsmMetadata::getCarModelViewExtended() const
+    {
+        return m_carModelViewExtended;
+    }
+
     AnimationInformation DcsmMetadata::getCarModelViewAnimationInfo() const
     {
         return m_carModelViewTiming;
@@ -636,6 +718,11 @@ namespace ramses_internal
         return m_displayedDataFlags;
     }
 
+    uint8_t DcsmMetadata::getLayoutAvailability() const
+    {
+        return m_layoutAvailability;
+    }
+
     bool DcsmMetadata::operator==(const DcsmMetadata& other) const
     {
         return m_hasPreviewImagePng == other.m_hasPreviewImagePng &&
@@ -652,6 +739,8 @@ namespace ramses_internal
             m_carModel == other.m_carModel &&
             m_hasCarModelView == other.m_hasCarModelView &&
             m_carModelView == other.m_carModelView &&
+            m_hasCarModelViewExtended == other.m_hasCarModelViewExtended &&
+            m_carModelViewExtended == other.m_carModelViewExtended &&
             m_carModelViewTiming == other.m_carModelViewTiming &&
             m_hasCarModelVisibility == other.m_hasCarModelVisibility &&
             m_carModelVisibility == other.m_carModelVisibility &&
@@ -662,7 +751,9 @@ namespace ramses_internal
             m_hasDisplayedDataFlags == other.m_hasDisplayedDataFlags &&
             m_displayedDataFlags == other.m_displayedDataFlags &&
             m_hasContentFlippedVertically == other.m_hasContentFlippedVertically &&
-            m_contentFlippedVertically == other.m_contentFlippedVertically;
+            m_contentFlippedVertically == other.m_contentFlippedVertically &&
+            m_hasLayoutAvailability == other.m_hasLayoutAvailability &&
+            m_layoutAvailability == other.m_layoutAvailability;
     }
 
     bool DcsmMetadata::operator!=(const DcsmMetadata& other) const

@@ -14,20 +14,27 @@ namespace ramses_internal
 {
     void SharedMemoryBufferTests::setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework)
     {
-        testFramework.createTestCaseWithDefaultDisplay(ShowSharedMemoryStreamTexture, *this, "ShowSharedMemoryStreamTexture");
-        testFramework.createTestCaseWithDefaultDisplay(ShowFallbackTextureWhenBufferIsDetachedFromSurface, *this, "ShowFallbackTextureWhenBufferIsDetachedFromSurface");
-        testFramework.createTestCaseWithDefaultDisplay(ShowFallbackTextureWhenBufferIsDetachedFromSurfaceAndLastFrameNotUsedForRendering, *this, "ShowFallbackTextureWhenBufferIsDetachedFromSurfaceAndLastFrameNotUsedForRendering");
-        testFramework.createTestCaseWithDefaultDisplay(ClientAttachesAndDestroysBufferWithoutCommit, *this, "ClientAttachesAndDestroysBufferWithoutCommit");
-        testFramework.createTestCaseWithDefaultDisplay(SwitchBetweenBufferTypes_ShmThenEgl, *this, "SwitchBetweenBufferTypes_ShmThenEgl");
-        testFramework.createTestCaseWithDefaultDisplay(SwitchBetweenBufferTypes_EglThenShmThenEgl, *this, "SwitchBetweenBufferTypes_EglThenShmThenEgl");
-        testFramework.createTestCaseWithDefaultDisplay(SwitchBetweenBufferTypes_EglThenShmThenDestroyShmThenEgl, *this, "SwitchBetweenBufferTypes_EglThenShmThenDestroyShmThenEgl");
-        testFramework.createTestCaseWithDefaultDisplay(SwitchBetweenBufferTypes_ShmAttachedWithoutCommitThenEgl, *this, "SwitchBetweenBufferTypes_ShmAttachedWithoutCommitThenEgl");
-        testFramework.createTestCaseWithDefaultDisplay(SwitchBetweenBufferTypes_ShmAttachedWithoutCommitThenDestroyedThenEgl, *this, "SwitchBetweenBufferTypes_ShmAttachedWithoutCommitThenDestroyedThenEgl");
-        testFramework.createTestCaseWithDefaultDisplay(SwitchBetweenBufferTypes_ShmThenDestroyShmThenEgl, *this, "SwitchBetweenBufferTypes_ShmThenDestroyShmThenEgl");
-        testFramework.createTestCaseWithDefaultDisplay(SwitchBetweenBufferTypes_ConfidenceTest, *this, "SwitchBetweenBufferTypes_ConfidenceTest");
+        ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u, true);
+        displayConfig.setWindowRectangle(0u, 0u, DisplayWidth, DisplayHeight);
+        displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
+        displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
+
+        testFramework.createTestCase(ShowSharedMemoryStreamTexture, *this, "ShowSharedMemoryStreamTexture").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowFallbackTextureWhenBufferIsDetachedFromSurface, *this, "ShowFallbackTextureWhenBufferIsDetachedFromSurface").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowFallbackTextureWhenBufferIsDetachedFromSurfaceAndLastFrameNotUsedForRendering, *this, "ShowFallbackTextureWhenBufferIsDetachedFromSurfaceAndLastFrameNotUsedForRendering").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientAttachesAndDestroysBufferWithoutCommit, *this, "ClientAttachesAndDestroysBufferWithoutCommit").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SwitchBetweenBufferTypes_ShmThenEgl, *this, "SwitchBetweenBufferTypes_ShmThenEgl").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SwitchBetweenBufferTypes_EglThenShmThenEgl, *this, "SwitchBetweenBufferTypes_EglThenShmThenEgl").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SwitchBetweenBufferTypes_EglThenShmThenDestroyShmThenEgl, *this, "SwitchBetweenBufferTypes_EglThenShmThenDestroyShmThenEgl").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SwitchBetweenBufferTypes_ShmAttachedWithoutCommitThenEgl, *this, "SwitchBetweenBufferTypes_ShmAttachedWithoutCommitThenEgl").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SwitchBetweenBufferTypes_ShmAttachedWithoutCommitThenDestroyedThenEgl, *this, "SwitchBetweenBufferTypes_ShmAttachedWithoutCommitThenDestroyedThenEgl").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SwitchBetweenBufferTypes_ShmThenDestroyShmThenEgl, *this, "SwitchBetweenBufferTypes_ShmThenDestroyShmThenEgl").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SwitchBetweenBufferTypes_ConfidenceTest, *this, "SwitchBetweenBufferTypes_ConfidenceTest").m_displayConfigs.push_back(displayConfig);
 
         ramses::DisplayConfig displayConfigForTwoStreams = RendererTestUtils::CreateTestDisplayConfig(0, true);
         displayConfigForTwoStreams.setWindowRectangle(0, 0, DisplayWidthTwoStreams, DisplayHeight);
+        displayConfigForTwoStreams.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
+        displayConfigForTwoStreams.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
 
         testFramework.createTestCase(ShowSameBufferOnTwoStreamTextures, *this, "ShowSameBufferOnTwoStreamTextures").m_displayConfigs.push_back(displayConfigForTwoStreams);
         testFramework.createTestCase(TestCorrectBufferRelease, *this, "TestCorrectBufferRelease").m_displayConfigs.push_back(displayConfigForTwoStreams);
@@ -40,8 +47,6 @@ namespace ramses_internal
         Bool testResultValue = true;
         const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
         const WaylandIviSurfaceId secondStreamTextureSourceId(EmbeddedCompositorScene::GetSecondStreamTextureSourceId());
-
-        testFramework.setEnvironmentVariableWaylandDisplay();
 
         switch(testCase.m_id)
         {

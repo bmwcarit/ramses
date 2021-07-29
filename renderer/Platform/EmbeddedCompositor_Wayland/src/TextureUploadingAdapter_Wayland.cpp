@@ -223,7 +223,6 @@ namespace ramses_internal
         attribs[atti++] = EGL_NONE;
 
         const EGLImage eglImage = m_waylandEglExtensionProcs.eglCreateImageKHR(nullptr, EGL_LINUX_DMA_BUF_EXT, nullptr, attribs);
-        assert(EGL_NO_IMAGE != eglImage);
         if (EGL_NO_IMAGE == eglImage)
         {
             LOG_ERROR(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: Creating EGL image failed width egl error code : " << eglGetError());
@@ -236,7 +235,7 @@ namespace ramses_internal
         return new DmabufEglImage(*this, eglImage, GL_TEXTURE_EXTERNAL_OES);
     }
 
-    void TextureUploadingAdapter_Wayland::uploadTextureFromLinuxDmabuf(DeviceResourceHandle textureHandle, LinuxDmabufBufferData* dmabuf)
+    bool TextureUploadingAdapter_Wayland::uploadTextureFromLinuxDmabuf(DeviceResourceHandle textureHandle, LinuxDmabufBufferData* dmabuf)
     {
 
         DmabufEglImage* image;
@@ -246,7 +245,9 @@ namespace ramses_internal
         if (iter == m_dmabufEglImagesMap.end())
         {
             image = importDmabufToEglImage(dmabuf);
-            assert(nullptr != image);
+            if(image == nullptr)
+                return false;
+
             dmabuf->setDestroyCallback(std::bind(&TextureUploadingAdapter_Wayland::handleDmabufDestroy, this, std::placeholders::_1));
             m_dmabufEglImagesMap[dmabuf] = image;
         }
@@ -259,6 +260,8 @@ namespace ramses_internal
         const GLuint texID = m_device.getTextureAddress(textureHandle);
         glBindTexture(GL_TEXTURE_2D, texID);
         m_waylandEglExtensionProcs.glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, image->getEglImage());
+
+        return true;
     }
 
     TextureUploadingAdapter_Wayland::DmabufEglImage::DmabufEglImage(TextureUploadingAdapter_Wayland& parent, EGLImage eglImage, GLenum textureTarget)

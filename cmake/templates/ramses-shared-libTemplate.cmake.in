@@ -116,3 +116,19 @@ MARK_AS_ADVANCED(
     ramses-shared-lib_LIBRARIES
     ramses-shared-lib_FOUND
 )
+
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
+    if (NOT TARGET ramses-ramses-shared-lib)
+        add_library(ramses-ramses-shared-lib SHARED IMPORTED GLOBAL)
+        set_target_properties(ramses-ramses-shared-lib PROPERTIES IMPORTED_LOCATION ${ramses-shared-lib_LIBRARIES})
+        if (MSVC)
+            set_target_properties(ramses-ramses-shared-lib PROPERTIES IMPORTED_IMPLIB ${ramses-shared-lib_LIBRARIES})
+        endif()
+        target_include_directories(ramses-ramses-shared-lib INTERFACE ${ramses-shared-lib_INCLUDE_DIRS})
+
+        if (NOT TARGET ramses::ramses)
+            add_library(ramses::ramses ALIAS ramses-ramses-shared-lib)
+            message(STATUS "Created ramses-shared-lib import target ramses::ramses")
+        endif()
+    endif()
+endif()

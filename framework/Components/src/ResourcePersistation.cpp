@@ -93,6 +93,9 @@ namespace ramses_internal
 
     std::unique_ptr<IResource> ResourcePersistation::RetrieveResourceFromStream(IInputStream& inStream, const ResourceFileEntry& fileEntry)
     {
+        LOG_DEBUG_P(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: Hash {}, Size {}, Offset {}",
+                    fileEntry.resourceInfo.hash, fileEntry.sizeInBytes, fileEntry.offsetInBytes);
+
         if (inStream.seek(fileEntry.offsetInBytes, IInputStream::Seek::FromBeginning) != EStatus::Ok)
         {
             LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: seek failed for resource {}", fileEntry.resourceInfo.hash);

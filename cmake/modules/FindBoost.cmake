@@ -140,7 +140,15 @@ IF (Boost_FOUND)
         ENDIF()
     ENDIF()
 
-    ACME_INFO("+ Boost (${Boost_SOURCE_TYPE}, ${Boost_LIBRARY_TYPE})")
+    # find version
+    file(READ "${Boost_INCLUDE_DIR}/boost/version.hpp" BOOST_version_file)
+    string(REGEX MATCH "BOOST_LIB_VERSION[ ]+\"([^\"]+)" BOOST_version_match_full "${BOOST_version_file}")
+    string(REPLACE "_" "." BOOST_version "${CMAKE_MATCH_1}")
+    if (NOT BOOST_version)
+        message(FATAL_ERROR "boost version could not be extracted from ${Boost_INCLUDE_DIR}/boost/version.hpp (found: ${BOOST_version})")
+    endif()
+
+    ACME_INFO("+ Boost (${Boost_SOURCE_TYPE}, ${Boost_LIBRARY_TYPE}, ${BOOST_version})")
 ELSE()
     ACME_INFO("- Boost")
 ENDIF()

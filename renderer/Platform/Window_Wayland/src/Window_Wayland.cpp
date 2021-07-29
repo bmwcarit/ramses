@@ -10,15 +10,18 @@
 #include "Utils/ThreadLocalLogForced.h"
 #include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "RendererLib/DisplayConfig.h"
+#include <poll.h>
 
 namespace ramses_internal
 {
     Window_Wayland::Window_Wayland(const DisplayConfig& displayConfig,
                                    IWindowEventHandler& windowEventHandler,
-                                   UInt32               id)
+                                   UInt32               id,
+                                   std::chrono::microseconds frameCallbackMaxPollTime)
         : Window_Base(displayConfig, windowEventHandler, id)
         , m_waylandDisplay(displayConfig.getWaylandDisplay())
         , m_inputHandling(windowEventHandler)
+        , m_frameCallbackMaxPollTime(frameCallbackMaxPollTime)
     {
     }
 
@@ -33,6 +36,8 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_RENDERER, "Window_Wayland::init Could not connect to system compositor (compositor running and or correct socket set?)");
             return false;
         }
+
+        m_wlContext.displayFD = wl_display_get_fd(m_wlContext.display);
 
         m_wlContext.registry = wl_display_get_registry(m_wlContext.display);
 
@@ -136,7 +141,7 @@ namespace ramses_internal
     void Window_Wayland::handleEvents()
     {
         LOG_TRACE(CONTEXT_RENDERER, "Window_Wayland::handleEvents Updating Wayland window");
-        dispatchWaylandDisplayEvents(false);
+        dispatchWaylandDisplayEvents(std::chrono::milliseconds{ 0u });
     }
 
     void Window_Wayland::frameRendered()
@@ -147,6 +152,18 @@ namespace ramses_internal
 
     Bool Window_Wayland::canRenderNewFrame() const
     {
+        const auto startTime = std::chrono::steady_clock::now();
+        std::chrono::microseconds elapsedTime{ 0u };
+
+        while(!m_wlContext.previousFrameRenderingDone && elapsedTime < m_frameCallbackMaxPollTime)
+        {
+            const auto pollTime = m_frameCallbackMaxPollTime - elapsedTime;
+            dispatchWaylandDisplayEvents(std::chrono::duration_cast<std::chrono::milliseconds>(pollTime));
+
+            const auto currentTime = std::chrono::steady_clock::now();
+            elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - startTime);
+        }
+
         return m_wlContext.previousFrameRenderingDone;
     }
 
@@ -204,15 +221,25 @@ namespace ramses_internal
         return true;
     }
 
-    void Window_Wayland::dispatchWaylandDisplayEvents(Bool dispatchNewEventsFromDisplayFD) const
+    void Window_Wayland::dispatchWaylandDisplayEvents(std::chrono::milliseconds pollTime) const
     {
         // dispatch enqueued events, this does not read the socket so we could still miss some events here...
         wl_display_dispatch_pending(m_wlContext.display);
 
-        if(dispatchNewEventsFromDisplayFD)
+
+        pollfd pollFileDescriptor = {m_wlContext.displayFD, POLLIN, 0};
+        if (poll(&pollFileDescriptor, 1u, static_cast<int>(pollTime.count())) == -1)
         {
-            wl_display_dispatch(m_wlContext.display);
+            LOG_ERROR(CONTEXT_RENDERER, "Window_Wayland::dispatchWaylandDisplayEvents: error in poll :" << std::strerror(errno));
+            assert(false);
+            return;
         }
+
+        //calling poll() sets the .revents field of every pollfd struct to a bitmask of
+        //the received events on that fd
+        const bool dispatchNewEventsFromDisplayFD = (pollFileDescriptor.revents & POLLIN) != 0;
+        if(dispatchNewEventsFromDisplayFD)
+            wl_display_dispatch(m_wlContext.display);
     }
 
     void Window_Wayland::registryGlobalCreated(wl_registry* wl_registry, uint32_t name, const char* interface, uint32_t version)

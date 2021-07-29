@@ -374,6 +374,115 @@ namespace ramses
         static status_t setAsyncEffectUploadEnabled(DisplayConfig& config, bool enabled);
 
         /**
+         * @brief      Set the name to be used for the embedded compositing
+         *             display socket name.
+         *
+         * @details    The embedded compositor communicates with its clients via
+         *             a socket file. There are two distinct ways to connect the
+         *             embedded compositor with its socketfile. Either you
+         *             provide a name for the socket file or the file descriptor
+         *             of the socket file.
+         *
+         *             This method is used to set the file name of the socket.
+         *
+         *             Providing the name of the socket file leads to the
+         *             embedded compositor searching/creating the socket file in
+         *             the directory pointed to by $XDG_RUNTIME_DIR. If a
+         *             groupname is set, also the group is set.
+         *
+         *             Be aware that the socket file name is only used if the
+         *             file descriptor is set to an invalid value (default), see
+         *             RendererConfig::setWaylandEmbeddedCompositingSocketFD
+         *
+         *             If both filename and file descriptor are set display
+         *             creation will fail.
+         *
+         * @param[in]  socketname  The file name of the socket file.
+         *
+         * @return     StatusOK for success, otherwise the returned status can
+         *             be used to resolve error message using
+         *             getStatusMessage().
+         */
+        status_t setWaylandEmbeddedCompositingSocketName(const char* socketname);
+
+        /**
+        * @brief Get the current setting of embedded compositing display socket name
+        *
+        * @return Wayland display name to use for embedded compositing socket
+        */
+        const char* getWaylandEmbeddedCompositingSocketName() const;
+
+        /**
+        * @brief Request that the embedded compositing display socket belongs to the given group.
+        *
+        * @param[in] groupname The group name of the socket.
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setWaylandEmbeddedCompositingSocketGroup(const char* groupname);
+
+        /**
+         * @brief      Set the file descriptor for the embedded compositor
+         *             display socket.
+         *
+         * @details    The embedded compositor communicates with its clients via
+         *             a socket file. There are two distinct ways to connect the
+         *             embedded compositor with its socketfile.
+         *
+         *             Either you provide a name for the socket file or the file
+         *             descriptor of the socket file.
+         *
+         *             This method is used to set the file descriptor.
+         *
+         *             When the file descriptor is set, the embedded compositor
+         *             will use this file descriptor directly as its socket. It
+         *             is expected that this file descriptor is belonging to a
+         *             file already open, bind and listen to.
+         *
+         *             If both filename and file descriptor are set display
+         *             creation will fail.
+         *
+         * @param      socketFileDescriptor  The file descriptor of the socket
+         *                                   for the embedded compositor.
+         *
+         * @return     StatusOK for success, otherwise the returned status can
+         *             be used to resolve error message using
+         *             getStatusMessage().
+         */
+        status_t setWaylandEmbeddedCompositingSocketFD(int socketFileDescriptor);
+
+        /**
+        * @brief       Request that the embedded compositing display socket obtains the permissions given.
+        *
+        * @details     The format should be the same as expected by chmod() mode argument. Permissions value may not
+        *              be 0. If not set "user+group can read/write (0660)" is used as default.
+        *
+        *              The socket should be readable and writable for the required users, some examples values are:
+        *              * Only user r/w:  384u (or in octal 0600)
+        *              * User+Group r/w: 432u (or in octal 0660)
+        *              * Everyone r/w:   438u (or in octal 0666)
+        *
+        *              This value is only used when socket is given as name, e.g. via
+        *              setWaylandEmbeddedCompositingSocketName(), not when passed in as filedescriptor.
+        *
+        * @param[in]   permissions The permissions of the socket.
+        * @return      StatusOK for success, otherwise the returned status can be used
+        *              to resolve error message using getStatusMessage().
+        */
+        status_t setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
+
+        /**
+        * @brief Set the Wayland display name to connect system compositor to.
+        *        This will override the default behavior which is to use WAYLAND_DISPLAY environment variable
+        *
+        * @param[in] waylandDisplay Wayland display name to use for connection
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setSystemCompositorWaylandDisplay(const char* waylandDisplay);
+
+
+        /**
         * Stores internal data for implementation specifics of DisplayConfig.
         */
         class DisplayConfigImpl& impl;

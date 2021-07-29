@@ -11,9 +11,9 @@ from ramses_test_framework import log
 from ramses_test_framework.ramses_test_extensions import with_ramses_process_check
 
 
-class EmbeddedCompositorBase(test_classes.OnAllDefaultTargetsTest):
+class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
     def __init__(self, methodName='runTest', testSceneState=0):
-        test_classes.OnAllDefaultTargetsTest.__init__(self, methodName)
+        test_classes.OnSelectedTargetsTest.__init__(self, methodName)
         self._testSceneState = testSceneState
 
     @with_ramses_process_check

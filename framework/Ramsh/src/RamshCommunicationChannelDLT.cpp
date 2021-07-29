@@ -19,7 +19,7 @@ namespace ramses_internal
 
     int RamshCommunicationChannelDLT::dltInjectionCallbackF(uint32_t sid, void* data, uint32_t length)
     {
-        String incoming = String(reinterpret_cast<char*>(data), 0, length - 1);//use length to avoid unterminated strings copied to target buffer
+        String incoming = String(static_cast<const char*>(data), 0, length - 1);//use length to avoid unterminated strings copied to target buffer
 
         LOG_DEBUG(CONTEXT_RAMSH, "Received dlt injection with service id " << sid << ", length is " << length);
         LOG_INFO(CONTEXT_RAMSH, "Calling command '" << incoming << "' received from dlt injection");

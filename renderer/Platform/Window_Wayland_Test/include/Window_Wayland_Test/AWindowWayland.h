@@ -17,6 +17,7 @@
 #include "WaylandUtilities/UnixDomainSocket.h"
 #include "Utils/StringUtils.h"
 #include "Utils/ThreadLocalLog.h"
+#include <chrono>
 
 namespace ramses_internal
 {
@@ -40,7 +41,7 @@ namespace ramses_internal
         {
             WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);
 
-            m_window = new WINDOWTYPE(m_config.impl.getInternalDisplayConfig(), m_eventHandlerMock, 0);
+            m_window = new WINDOWTYPE(m_config.impl.getInternalDisplayConfig(), m_eventHandlerMock, 0, std::chrono::microseconds{100000u});
         }
 
         void destroyWaylandWindow()

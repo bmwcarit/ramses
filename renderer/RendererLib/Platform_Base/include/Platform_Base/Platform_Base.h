@@ -35,20 +35,18 @@ namespace ramses_internal
         virtual void                          destroyResourceUploadRenderBackend() override final;
 
         virtual ISystemCompositorController* getSystemCompositorController() override;
-        virtual const IWindowEventsPollingManager* getWindowEventsPollingManager() const override;
 
     protected:
         explicit Platform_Base(const RendererConfig& rendererConfig);
         virtual ~Platform_Base() override;
 
         virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) = 0;
-        virtual void destroyWindow();
         virtual bool createContext(const DisplayConfig& displayConfig) = 0;
         virtual bool createContextUploading() = 0;
         virtual bool createDevice() = 0;
         virtual bool createDeviceUploading() = 0;
         virtual bool createEmbeddedCompositor(const DisplayConfig& displayConfig);
-        virtual void createTextureUploadingAdapter();
+        virtual void createTextureUploadingAdapter(const DisplayConfig& displayConfig);
         virtual bool createSystemCompositorController();
 
         RendererConfig m_rendererConfig;

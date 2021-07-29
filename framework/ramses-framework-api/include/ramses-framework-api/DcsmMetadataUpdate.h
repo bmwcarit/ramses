@@ -140,6 +140,21 @@ namespace ramses
         CarModelViewMetadata getCarModelView() const;
 
         /**
+         * @brief Check if object contains car model view extended metadata entry.
+         *
+         * @return true when has car model view extended metadata, false when not
+         */
+        bool hasCarModelViewExtended() const;
+
+        /**
+         * @brief Get car model view extended metadata entry.
+         *        Value is undefined when not hasCarModelViewExtended().
+         *
+         * @return car model view extended metadata
+         */
+        CarModelViewMetadataExtended getCarModelViewExtended() const;
+
+        /**
         * @brief Get animation information associated with car model view metadata entry.
         *        Value is undefined when not hasCarModelView().
         *
@@ -224,6 +239,20 @@ namespace ramses
          */
         bool getContentFlippedVertically() const;
 
+        /**
+        * @brief Check if object contains layoutAvailability metadata entry.
+        *
+        * @return true when has layoutAvailability metadata, false when not
+        */
+        bool hasLayoutAvailability() const;
+
+        /**
+        * @brief Get layout availability metadata entry.
+        *        Value is undefined when not #hasLayoutAvailability().
+        *
+        * @return Bitmask of displaycluster::M_Modes
+        */
+        uint8_t getLayoutAvailability() const;
 
         /**
          * @brief Deleted default constructor

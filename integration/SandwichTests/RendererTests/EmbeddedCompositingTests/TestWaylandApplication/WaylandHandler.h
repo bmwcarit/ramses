@@ -73,7 +73,7 @@ namespace ramses_internal
     class WaylandHandler
     {
     public:
-        bool init();
+        bool init(const String& displayName, int displayFD);
         bool initWithSharedDisplayConnection(WaylandHandler& handlerToShareDisplay);
         void deinit();
 
@@ -145,7 +145,7 @@ namespace ramses_internal
               int32_t factor);
 
         bool setupEGL();
-        bool setupWayland();
+        bool setupWayland(const String& displayName, int displayFD);
         void closeWayland();
         bool createSurface(TestWaylandWindow& window);
         bool createEGLWindow(TestWaylandWindow& window);

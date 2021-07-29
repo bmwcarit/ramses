@@ -374,6 +374,7 @@ namespace ramses
         Effect* textEffect = createTestEffect(m_scene);
         ASSERT_TRUE(textEffect != nullptr);
 
+        ASSERT_TRUE(TextCache::ContainsRenderableGlyphs(positionedGlyphs));
         const TextLineId textLineId = m_textCache.createTextLine(positionedGlyphs, *textEffect);
         EXPECT_TRUE(textLineId.isValid());
         const TextLine* textLine = m_textCache.getTextLine(textLineId);
@@ -488,6 +489,20 @@ namespace ramses
         ASSERT_TRUE(textEffect != nullptr);
 
         EXPECT_FALSE(m_textCache.createTextLine({}, *textEffect).isValid());
+    }
+
+    TEST_F(ATextCache, failsToCreateTextLineFromOnlyNonRenderableInput)
+    {
+        const std::u32string str = U"  ";
+        const auto positionedGlyphs = m_textCache.getPositionedGlyphs(str, LatinFontInstance12);
+
+        Effect* textEffect = createTestEffect(m_scene);
+        ASSERT_TRUE(textEffect != nullptr);
+
+        ASSERT_FALSE(TextCache::ContainsRenderableGlyphs(positionedGlyphs));
+
+        const TextLineId textLineId = m_textCache.createTextLine(positionedGlyphs, *textEffect);
+        EXPECT_FALSE(textLineId.isValid());
     }
 
     TEST_F(ATextCache, failsToCreateTextLineUsingNonTextEffect)

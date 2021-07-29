@@ -79,7 +79,7 @@ namespace ramses_internal
             return ctx.begin(); \
         } \
         template<typename FormatContext> \
-        auto format(const ::stronglyType& str, FormatContext& ctx) {    \
+        constexpr auto format(const ::stronglyType& str, FormatContext& ctx) {    \
             return fmt::format_to(ctx.out(), "{}", str.getValue()); \
         } \
     };

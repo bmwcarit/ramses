@@ -21,6 +21,7 @@
 #include "Utils/BinaryOutputStream.h"
 #include "ResourceMock.h"
 #include "InputStreamMock.h"
+#include "UnsafeTestMemoryHelpers.h"
 #include <cstring>
 
 using namespace testing;
@@ -138,7 +139,7 @@ namespace ramses_internal
         ResourceBlob vertices(cnt * EnumToSize(EDataType::Vector2F));
         for (UInt i = 0; i < 2*cnt; ++i)
         {
-            reinterpret_cast<Float*>(vertices.data())[i] = i*.1f;
+            UnsafeTestMemoryHelpers::WriteToMemoryBlob(i*.1f, vertices.data(), i);
         }
         res.setResourceData(std::move(vertices));
 
@@ -159,7 +160,7 @@ namespace ramses_internal
         ResourceBlob indices(cnt * EnumToSize(EDataType::UInt16));
         for (UInt i = 0; i < cnt; ++i)
         {
-            reinterpret_cast<UInt16*>(indices.data())[i] = static_cast<UInt16>(i);
+            UnsafeTestMemoryHelpers::WriteToMemoryBlob(static_cast<UInt16>(i), indices.data(), i);
         }
         res.setResourceData(std::move(indices));
 
@@ -180,7 +181,7 @@ namespace ramses_internal
         ResourceBlob indices(cnt * EnumToSize(EDataType::UInt32));
         for (UInt i = 0; i < cnt; ++i)
         {
-            reinterpret_cast<UInt32*>(indices.data())[i] = static_cast<UInt32>(i);
+            UnsafeTestMemoryHelpers::WriteToMemoryBlob(static_cast<UInt32>(i), indices.data(), i);
         }
         res.setResourceData(std::move(indices));
 
@@ -255,7 +256,7 @@ namespace ramses_internal
         {
             ASSERT_TRUE(loadedTOC.containsResource(hash));
             auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash));
-            ASSERT_EQ(absl::MakeSpan(reinterpret_cast<const uint8_t*>(dataA), sizeof(dataA)), loadedResource->getResourceData().span());
+            ASSERT_TRUE(UnsafeTestMemoryHelpers::CompareMemoryBlobToSpan(dataA, sizeof(dataA), loadedResource->getResourceData().span()));
             ASSERT_EQ(flag1, loadedResource->getCacheFlag());
             EXPECT_EQ(String("res1"), loadedResource->getName());
         }
@@ -263,7 +264,7 @@ namespace ramses_internal
         {
             ASSERT_TRUE(loadedTOC.containsResource(hash2));
             auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash2));
-            ASSERT_EQ(absl::MakeSpan(reinterpret_cast<const uint8_t*>(dataB), sizeof(dataB)), loadedResource->getResourceData().span());
+            ASSERT_TRUE(UnsafeTestMemoryHelpers::CompareMemoryBlobToSpan(dataB, sizeof(dataB), loadedResource->getResourceData().span()));
             ASSERT_EQ(flag2, loadedResource->getCacheFlag());
             EXPECT_EQ(String("res2"), loadedResource->getName());
         }

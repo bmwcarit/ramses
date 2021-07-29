@@ -24,7 +24,7 @@ namespace ramses_internal
         ~TextureUploadingAdapter_Wayland();
 
         void uploadTextureFromWaylandResource(DeviceResourceHandle textureHandle, EGLClientBuffer bufferResource);
-        void uploadTextureFromLinuxDmabuf(DeviceResourceHandle textureHandle, LinuxDmabufBufferData* dmabuf);
+        bool uploadTextureFromLinuxDmabuf(DeviceResourceHandle textureHandle, LinuxDmabufBufferData* dmabuf);
 
     private:
         class DmabufEglImage

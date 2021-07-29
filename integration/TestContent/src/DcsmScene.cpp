@@ -9,6 +9,7 @@
 #include "TestScenes/DcsmScene.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-framework-api/DcsmProvider.h"
+#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
@@ -16,6 +17,18 @@ namespace ramses_internal
         : MultipleTrianglesScene(scene, state, cameraPosition, vpWidth, vpHeight)
         , m_dcsmProvider(dcsmProvider)
     {
+    }
+
+    void DcsmScene::contentStatus(ramses::ContentID id, ramses::DcsmStatusMessage const& msg)
+    {
+        if (auto statusMsg = msg.getAsStreamStatus())
+            LOG_INFO_P(CONTEXT_FRAMEWORK, "DcsmScene::contentStatus: received DcsmStatusMessage of type StreamStatus with value {} for content {}", statusMsg->getStreamStatus(), id.getValue());
+        else if (auto layoutMsg = msg.getAsActiveLayout())
+            LOG_INFO_P(CONTEXT_FRAMEWORK, "DcsmScene::contentStatus: received DcsmStatusMessage of type ActiveLayout with value {} for content {}", layoutMsg->getLayout(), id.getValue());
+        else if (auto focusMsg = msg.getAsWidgetFocusStatus())
+            LOG_INFO_P(CONTEXT_FRAMEWORK, "DcsmScene::contentStatus: received DcsmStatusMessage of type WidgetFocusStatus with value {} for content {}", focusMsg->getWidgetFocusStatus(), id.getValue());
+        else
+            LOG_INFO_P(CONTEXT_FRAMEWORK, "DcsmScene::contentStatus: received unknown DcsmStatusMessage for content {}", id.getValue());
     }
 
     void DcsmScene::dispatchHandler()

@@ -15,9 +15,9 @@
 
 namespace ramses_internal
 {
-    bool WaylandHandler::init()
+    bool WaylandHandler::init(const String& displayName, int displayFD)
     {
-        if (!setupWayland())
+        if (!setupWayland(displayName, displayFD))
         {
             LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::setupWaylandEGLWindow(): could not setup Wayland");
             return false;
@@ -354,12 +354,16 @@ namespace ramses_internal
         UNUSED(name);
     }
 
-    bool WaylandHandler::setupWayland()
+    bool WaylandHandler::setupWayland(const String& displayName, int displayFD)
     {
         LOG_INFO(CONTEXT_RENDERER, "WaylandHandler::setupWayland(): will connect to display");
 
         WaylandEnvironmentUtils::LogEnvironmentState("");
-        wayland.display = wl_display_connect(nullptr);
+        if(displayFD != -1)
+            wayland.display = wl_display_connect_to_fd(displayFD);
+        else
+            wayland.display = wl_display_connect(displayName.c_str());
+
         if (wayland.display == nullptr)
         {
             LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::setupWayland(): wl_display_connect() failed");

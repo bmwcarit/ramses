@@ -40,6 +40,8 @@ namespace ramses_internal
         virtual void handleSceneUpdate(SceneId sceneId, SceneUpdate&& update) override;
         virtual void handlePickEvent(SceneId sceneId, Vector2 coords) override;
 
+        void setForceMapTimeout(std::chrono::milliseconds timeout);
+
         testing::StrictMock<RendererResourceManagerRefCountMock>* m_resourceManagerMock = nullptr;
 
     protected:

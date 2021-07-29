@@ -246,7 +246,7 @@ template <typename UniqueId>
 struct fmt::formatter<ramses_internal::TypedMemoryHandle<UniqueId>> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses_internal::TypedMemoryHandle<UniqueId>& str, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::TypedMemoryHandle<UniqueId>& str, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "{}", str.asMemoryHandle());
     }

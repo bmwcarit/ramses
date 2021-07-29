@@ -83,7 +83,10 @@ namespace ramses
         *        supported. It might be disallowed to create any client depending on internal policy.
         *        Ownership of the client will remain with the framework.
         *
-        *        Must create all client objects before calling connect().
+        *        Must create all client instances before calling #connect().
+        *
+        *        The created instance is valid until #destroyClient() is called or it will be
+        *        automatically deleted in the RamsesFramework destructor.
         *
         * @param applicationName a name for the ramses client application
         *
@@ -112,6 +115,9 @@ namespace ramses
         *
         *        Must create the renderer object before calling #connect().
         *
+        *        The created instance is valid until #destroyRenderer() is called or it will be
+        *        automatically deleted in the RamsesFramework destructor.
+        *
         * @param config  Set of configuration flags and attributes for the ramses renderer
         *
         * @return The new RamsesRenderer object or nullptr if the creation failed or was denied.
@@ -138,6 +144,9 @@ namespace ramses
         *
         *        Must call #connect() before communication with remote Dcsm consumers is possible.
         *
+        *        The created instance is valid until #destroyDcsmProvider() is called or it will be
+        *        automatically deleted in the RamsesFramework destructor.
+        *
         * @return The new DcsmProvider object or nullptr if the creation failed or was denied.
         */
         DcsmProvider* createDcsmProvider();
@@ -161,6 +170,9 @@ namespace ramses
         *        Ownership of the consumer will remain with the framework.
         *
         *        Must call #connect() before communication with remote Dcsm providers is possible.
+        *
+        *        The created instance is valid until #destroyDcsmConsumer() is called or it will be
+        *        automatically deleted in the RamsesFramework destructor.
         *
         * @return The new DcsmConsumer object or nullptr if the creation failed or was denied.
         */
@@ -197,7 +209,7 @@ namespace ramses
         *
         * The command has to be provided via shared_ptr to avoid lifetime issues. Internally ramses will only store
         * a std::weak_ptr to the command. Therefore it is valid to let go of the shared_ptr on caller side and expect
-        * that no calls will happen in the command anymore. This allows to have user obejct references in the command
+        * that no calls will happen in the command anymore. This allows to have user object references in the command
         * implementation with a shorter lifetime than RamsesFramework.
         *
         * It is not possible to delete commands. They are expected to be long-living and are bound to the lifetime
@@ -211,6 +223,11 @@ namespace ramses
 
         /**
         * @brief Destructor of RamsesFramework
+        *
+        * This will destroy all objects created with this RamsesFramework instance (RamsesRenderer, RamsesClient,
+        * DcsmProvider, DcsmConsumer), so there is no general need to explicitly destroy these objects individually,
+        * if not specifically intended to do so.
+        *
         */
         ~RamsesFramework() override;
 

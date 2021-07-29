@@ -9,6 +9,7 @@
 #include "Collections/StringOutputStream.h"
 #include "Collections/String.h"
 #include "framework_common_gmock_header.h"
+#include "UnsafeTestMemoryHelpers.h"
 #include "gmock/gmock.h"
 
 
@@ -199,7 +200,7 @@ namespace ramses_internal
     TEST(AStringOutputStream, PrintsNonNullVoidPointerAsHex)
     {
         StringOutputStream stream;
-        void* forgedPointer = reinterpret_cast<void*>(1024);
+        void* forgedPointer = UnsafeTestMemoryHelpers::ForgeArbitraryPointer(1024);
         stream << forgedPointer;
         EXPECT_EQ("0x400", stream.data());
     }

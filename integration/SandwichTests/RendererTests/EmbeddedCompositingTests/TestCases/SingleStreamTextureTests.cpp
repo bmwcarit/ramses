@@ -23,38 +23,43 @@ namespace ramses_internal
 
     void SingleStreamTextureTests::setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework)
     {
-        testFramework.createTestCaseWithDefaultDisplay(ShowFallbackTexture, *this, "ShowFallbackTexture");
-        testFramework.createTestCaseWithDefaultDisplay(ShowStreamTexture, *this, "ShowStreamTexture");
-        testFramework.createTestCaseWithDefaultDisplay(StreamTextureWithDifferentSizeFromFallbackTexture, *this, "StreamTextureWithDifferentSizeFromFallbackTexture");
-        testFramework.createTestCaseWithDefaultDisplay(ShowStreamTextureWithTexCoordsOffset, *this, "ShowStreamTextureWithTexCoordsOffset");
-        testFramework.createTestCaseWithDefaultDisplay(ShowFallbackTextureAfterSurfaceIsDestroyed, *this, "ShowFallbackTextureAfterSurfaceIsDestroyed");
-        testFramework.createTestCaseWithDefaultDisplay(StreamTextureContentAvailableBeforeSceneCreated, *this, "StreamTextureCreatedAfterClientUpdate");
-        testFramework.createTestCaseWithDefaultDisplay(TestCorrectNumberOfCommitedFrames, *this, "TestCorrectNumberOfCommitedFrames");
-        testFramework.createTestCaseWithDefaultDisplay(ShowStreamTextureAfterChangingSurfaceSize, *this, "ShowStreamTextureAfterChangingSurfaceSize");
-        testFramework.createTestCaseWithDefaultDisplay(ShowStreamTextureAfterRecreatingSurfaceWithDifferentSize, *this, "ShowStreamTextureAfterRecreatingSurfaceWithDifferentSize");
-        testFramework.createTestCaseWithDefaultDisplay(ShowStreamTextureAfterRecreatingScene, *this, "ShowStreamTextureAfterRecreatingScene");
-        testFramework.createTestCaseWithDefaultDisplay(ShowFallbackTextureWhenNoSurfaceUpdate, *this, "ShowFallbackTextureWhenNoSurfaceUpdate");
-        testFramework.createTestCaseWithDefaultDisplay(EachFrameOfClientIsSynchronouslyDisplayedByRenderer, *this, "EachFrameOfClientIsSynchronouslyDisplayedByRenderer");
-        testFramework.createTestCaseWithDefaultDisplay(SwapIntervalZeroDoesNotBlockClient, *this, "SwapIntervalZeroDoesNotBlockClient");
-        testFramework.createTestCaseWithDefaultDisplay(SwapIntervalOneBlocksClient, *this, "SwapIntervalOneBlocksClient");
-        testFramework.createTestCaseWithDefaultDisplay(ShowStreamTextureAfterClientRecreated, *this, "ShowStreamTextureAfterClientRecreated");
-        testFramework.createTestCaseWithDefaultDisplay(ShowStreamTextureAfterSurfaceRecreated, *this, "ShowStreamTextureAfterSurfaceRecreated");
-        testFramework.createTestCaseWithDefaultDisplay(ClientReceivesFrameCallback, *this, "ClientReceivesFrameCallback");
-        testFramework.createTestCaseWithDefaultDisplay(ClientCanBindMultipleTimesToEmbeddedCompositor, *this, "ClientCanBindMultipleTimesToEmbeddedCompositor");
-        testFramework.createTestCaseWithDefaultDisplay(ShowFallbackTextureWhenClientIsKilled, *this, "ShowFallbackTextureWhenClientIsKilled");
-        testFramework.createTestCaseWithDefaultDisplay(ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlyFirstSurface, *this, "ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlyFirstSurface");
-        testFramework.createTestCaseWithDefaultDisplay(ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlySecondSurface, *this, "ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlySecondSurface");
-        testFramework.createTestCaseWithDefaultDisplay(ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesBothSurfaces, *this, "ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesBothSurfaces");
-        testFramework.createTestCaseWithDefaultDisplay(ClientUsesShellSurface, *this, "ClientUsesShellSurface");
-        testFramework.createTestCaseWithDefaultDisplay(ShowFallbackTextureWhenIVISurfaceDestroyed, *this, "ShowFallbackTextureWhenIVISurfaceDestroyed");
-        testFramework.createTestCaseWithDefaultDisplay(ClientCanNotCreateTwoIVISurfacesWithSameIdForSameSurface, *this, "ClientCanNotCreateTwoIVISurfacesWithSameIdForSameSurface");
-        testFramework.createTestCaseWithDefaultDisplay(ClientCanNotCreateTwoIVISurfacesWithDifferentIdsForSameSurface, *this, "ClientCanNotCreateTwoIVISurfacesWithDifferentIdsForSameSurface");
-        testFramework.createTestCaseWithDefaultDisplay(ClientRecreatesIVISurfaceWithSameId, *this, "ClientRecreatesIVISurfaceWithSameId");
-        testFramework.createTestCaseWithDefaultDisplay(ShowStreamTextureWhenIVISurfaceIsCreatedAfterUpdate, *this, "ShowStreamTextureWhenIVISurfaceIsCreatedAfterUpdate");
-        testFramework.createTestCaseWithDefaultDisplay(ClientCanNotUseShellSurfaceWhenSurfaceHasBeenDeleted, *this, "ClientCanNotUseShellSurfaceWhenSurfaceHasBeenDeleted");
-        testFramework.createTestCaseWithDefaultDisplay(ClientCanNotCreateTwoShellSurfacesForSameSurface, *this, "ClientCanNotCreateTwoShellSurfacesForSameSurface");
-        testFramework.createTestCaseWithDefaultDisplay(SurfaceHasNoTitleWhenShellSurfaceDestroyed, *this, "SurfaceHasNoTitleWhenShellSurfaceDestroyed");
-        testFramework.createTestCaseWithDefaultDisplay(CompositorLogsInfo, *this, "CompositorLogsInfo");
+        ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u, true);
+        displayConfig.setWindowRectangle(0u, 0u, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
+        displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
+        displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
+
+        testFramework.createTestCase(ShowFallbackTexture, *this, "ShowFallbackTexture").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowStreamTexture, *this, "ShowStreamTexture").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(StreamTextureWithDifferentSizeFromFallbackTexture, *this, "StreamTextureWithDifferentSizeFromFallbackTexture").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowStreamTextureWithTexCoordsOffset, *this, "ShowStreamTextureWithTexCoordsOffset").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowFallbackTextureAfterSurfaceIsDestroyed, *this, "ShowFallbackTextureAfterSurfaceIsDestroyed").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(StreamTextureContentAvailableBeforeSceneCreated, *this, "StreamTextureCreatedAfterClientUpdate").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(TestCorrectNumberOfCommitedFrames, *this, "TestCorrectNumberOfCommitedFrames").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowStreamTextureAfterChangingSurfaceSize, *this, "ShowStreamTextureAfterChangingSurfaceSize").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowStreamTextureAfterRecreatingSurfaceWithDifferentSize, *this, "ShowStreamTextureAfterRecreatingSurfaceWithDifferentSize").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowStreamTextureAfterRecreatingScene, *this, "ShowStreamTextureAfterRecreatingScene").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowFallbackTextureWhenNoSurfaceUpdate, *this, "ShowFallbackTextureWhenNoSurfaceUpdate").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(EachFrameOfClientIsSynchronouslyDisplayedByRenderer, *this, "EachFrameOfClientIsSynchronouslyDisplayedByRenderer").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SwapIntervalZeroDoesNotBlockClient, *this, "SwapIntervalZeroDoesNotBlockClient").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SwapIntervalOneBlocksClient, *this, "SwapIntervalOneBlocksClient").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowStreamTextureAfterClientRecreated, *this, "ShowStreamTextureAfterClientRecreated").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowStreamTextureAfterSurfaceRecreated, *this, "ShowStreamTextureAfterSurfaceRecreated").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientReceivesFrameCallback, *this, "ClientReceivesFrameCallback").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientCanBindMultipleTimesToEmbeddedCompositor, *this, "ClientCanBindMultipleTimesToEmbeddedCompositor").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowFallbackTextureWhenClientIsKilled, *this, "ShowFallbackTextureWhenClientIsKilled").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlyFirstSurface, *this, "ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlyFirstSurface").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlySecondSurface, *this, "ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlySecondSurface").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesBothSurfaces, *this, "ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesBothSurfaces").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientUsesShellSurface, *this, "ClientUsesShellSurface").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowFallbackTextureWhenIVISurfaceDestroyed, *this, "ShowFallbackTextureWhenIVISurfaceDestroyed").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientCanNotCreateTwoIVISurfacesWithSameIdForSameSurface, *this, "ClientCanNotCreateTwoIVISurfacesWithSameIdForSameSurface").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientCanNotCreateTwoIVISurfacesWithDifferentIdsForSameSurface, *this, "ClientCanNotCreateTwoIVISurfacesWithDifferentIdsForSameSurface").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientRecreatesIVISurfaceWithSameId, *this, "ClientRecreatesIVISurfaceWithSameId").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ShowStreamTextureWhenIVISurfaceIsCreatedAfterUpdate, *this, "ShowStreamTextureWhenIVISurfaceIsCreatedAfterUpdate").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientCanNotUseShellSurfaceWhenSurfaceHasBeenDeleted, *this, "ClientCanNotUseShellSurfaceWhenSurfaceHasBeenDeleted").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientCanNotCreateTwoShellSurfacesForSameSurface, *this, "ClientCanNotCreateTwoShellSurfacesForSameSurface").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(SurfaceHasNoTitleWhenShellSurfaceDestroyed, *this, "SurfaceHasNoTitleWhenShellSurfaceDestroyed").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(CompositorLogsInfo, *this, "CompositorLogsInfo").m_displayConfigs.push_back(displayConfig);
     }
 
     bool SingleStreamTextureTests::runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase)
@@ -62,8 +67,6 @@ namespace ramses_internal
         Bool testResultValue = true;
         const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
         const WaylandIviSurfaceId secondStreamTextureSourceId(EmbeddedCompositorScene::GetSecondStreamTextureSourceId());
-
-        testFramework.setEnvironmentVariableWaylandDisplay();
 
         switch(testCase.m_id)
         {

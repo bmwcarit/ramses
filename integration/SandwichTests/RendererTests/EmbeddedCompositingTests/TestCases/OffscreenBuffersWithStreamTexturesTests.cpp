@@ -15,7 +15,12 @@ namespace ramses_internal
 {
     void OffscreenBuffersWithStreamTexturesTests::setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework)
     {
-        testFramework.createTestCaseWithDefaultDisplay(CanUseStreamTextureInASceneMappedToOffscreenBuffer, *this, "CanUseStreamTextureInASceneMappedToOffscreenBuffer");
+        ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u, true);
+        displayConfig.setWindowRectangle(0u, 0u, IntegrationScene::DefaultViewportWidth, IntegrationScene::DefaultViewportHeight);
+        displayConfig.setWaylandEmbeddedCompositingSocketName(EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName.c_str());
+        displayConfig.setWaylandEmbeddedCompositingSocketGroup(testFramework.getEmbeddedCompositingSocketGroupName().c_str());
+
+        testFramework.createTestCase(CanUseStreamTextureInASceneMappedToOffscreenBuffer, *this, "CanUseStreamTextureInASceneMappedToOffscreenBuffer").m_displayConfigs.push_back(displayConfig);
     }
 
     bool OffscreenBuffersWithStreamTexturesTests::runEmbeddedCompositingTestCase(EmbeddedCompositingTestsFramework& testFramework, const RenderingTestCase& testCase)
@@ -23,8 +28,6 @@ namespace ramses_internal
         Bool testResultValue = true;
 
         const WaylandIviSurfaceId streamTextureSourceId(EmbeddedCompositorScene::GetStreamTextureSourceId());
-
-        testFramework.setEnvironmentVariableWaylandDisplay();
 
         switch(testCase.m_id)
         {

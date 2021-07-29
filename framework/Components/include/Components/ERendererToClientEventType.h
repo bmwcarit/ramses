@@ -38,7 +38,7 @@ template <>
             return ctx.begin();
         }
         template<typename FormatContext>
-            auto format(const ramses_internal::ERendererToClientEventType& thetype, FormatContext& ctx) {
+            constexpr auto format(const ramses_internal::ERendererToClientEventType& thetype, FormatContext& ctx) {
                 return fmt::format_to(ctx.out(), "{}",
                     EnumToString(thetype));
         }

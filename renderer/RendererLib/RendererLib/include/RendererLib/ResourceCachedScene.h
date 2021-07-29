@@ -69,6 +69,7 @@ namespace ramses_internal
         void setRenderableResourcesDirtyByStreamTexture(StreamTextureHandle streamTextureHandle) const;
 
         bool hasDirtyVertexArrays() const;
+        void markVertexArraysClean();
         bool isRenderableVertexArrayDirty(RenderableHandle renderable) const;
         void updateRenderableVertexArrays(const IResourceDeviceHandleAccessor& resourceAccessor, const RenderableVector& renderablesWithUpdatedVertexArrays);
 

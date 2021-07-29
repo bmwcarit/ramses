@@ -232,6 +232,48 @@ namespace ramses_internal
     {
         return m_asyncEffectUploadEnabled;
     }
+    void DisplayConfig::setWaylandEmbeddedCompositingSocketName(const String& socket)
+    {
+        m_waylandSocketEmbedded = socket;
+    }
+
+    void DisplayConfig::setWaylandEmbeddedCompositingSocketFD(int fd)
+    {
+        m_waylandSocketEmbeddedFD = fd;
+    }
+
+    const String& DisplayConfig::getWaylandSocketEmbedded() const
+    {
+        return m_waylandSocketEmbedded;
+    }
+
+    const String& DisplayConfig::getWaylandSocketEmbeddedGroup() const
+    {
+        return m_waylandSocketEmbeddedGroupName;
+    }
+
+    int DisplayConfig::getWaylandSocketEmbeddedFD() const
+    {
+        return m_waylandSocketEmbeddedFD;
+    }
+
+    void DisplayConfig::setWaylandEmbeddedCompositingSocketGroup(const String& groupNameForSocketPermissions)
+    {
+        m_waylandSocketEmbeddedGroupName = groupNameForSocketPermissions;
+    }
+
+    bool DisplayConfig::setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions)
+    {
+        if (permissions == 0)
+            return false;
+        m_waylandSocketEmbeddedPermissions = permissions;
+        return true;
+    }
+
+    uint32_t DisplayConfig::getWaylandSocketEmbeddedPermissions() const
+    {
+        return m_waylandSocketEmbeddedPermissions;
+    }
 
     Bool DisplayConfig::operator == (const DisplayConfig& other) const
     {
@@ -254,7 +296,11 @@ namespace ramses_internal
             m_windowsWindowHandle        == other.m_windowsWindowHandle &&
             m_waylandDisplay             == other.m_waylandDisplay &&
             m_depthStencilBufferType     == other.m_depthStencilBufferType &&
-            m_asyncEffectUploadEnabled   == other.m_asyncEffectUploadEnabled;
+            m_asyncEffectUploadEnabled   == other.m_asyncEffectUploadEnabled &&
+            m_waylandSocketEmbedded      == other.m_waylandSocketEmbedded &&
+            m_waylandSocketEmbeddedGroupName    == other.m_waylandSocketEmbeddedGroupName &&
+            m_waylandSocketEmbeddedPermissions  == other.m_waylandSocketEmbeddedPermissions &&
+            m_waylandSocketEmbeddedFD    == other.m_waylandSocketEmbeddedFD;
     }
 
     Bool DisplayConfig::operator != (const DisplayConfig& other) const

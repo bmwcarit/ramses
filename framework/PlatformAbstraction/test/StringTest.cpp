@@ -10,6 +10,7 @@
 #include "framework_common_gmock_header.h"
 #include "Collections/HashMap.h"
 #include "IOStreamTester.h"
+#include "UnsafeTestMemoryHelpers.h"
 #include "gtest/gtest.h"
 #include <cstring>
 
@@ -651,10 +652,10 @@ TEST(String, ReservePreventReallocAndCapacityChange)
         String s("A");
         s.reserve(i);
         const size_t capacityBefore = s.capacity();
-        const std::uintptr_t ptrBefore = reinterpret_cast<std::uintptr_t>(s.c_str());
+        const std::uintptr_t ptrBefore = UnsafeTestMemoryHelpers::PointerToInteger(s.c_str());
         s.resize(i);
         const size_t capacityAfter = s.capacity();
-        const std::uintptr_t ptrAfter = reinterpret_cast<std::uintptr_t>(s.c_str());
+        const std::uintptr_t ptrAfter = UnsafeTestMemoryHelpers::PointerToInteger(s.c_str());
         EXPECT_EQ(capacityBefore, capacityAfter);
         EXPECT_EQ(ptrBefore, ptrAfter);
     }

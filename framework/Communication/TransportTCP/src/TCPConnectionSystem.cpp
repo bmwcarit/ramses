@@ -324,7 +324,7 @@ namespace ramses_internal
         LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendMessageToParticipant: To " << pp->address.getParticipantId() <<
                   ", MsgType " << msg.messageType << ", Size " << fullSize);
 
-        RawBinaryOutputStream s(reinterpret_cast<uint8_t*>(pp->currentOutBuffer.data()), static_cast<uint32_t>(pp->currentOutBuffer.size()));
+        RawBinaryOutputStream s(pp->currentOutBuffer.data(), pp->currentOutBuffer.size());
         const uint32_t remainingSize = fullSize - sizeof(pp->lengthReceiveBuffer);
         s << remainingSize
           << m_protocolVersion;

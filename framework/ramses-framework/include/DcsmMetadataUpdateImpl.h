@@ -45,6 +45,9 @@ namespace ramses
         CarModelViewMetadata getCarModelView() const;
         AnimationInformation getCarModelViewAnimationInfo() const;
 
+        bool hasCarModelViewExtended() const;
+        CarModelViewMetadataExtended getCarModelViewExtended() const;
+
         bool hasCarModelVisibility() const;
         bool getCarModelVisibility() const;
 
@@ -59,6 +62,9 @@ namespace ramses
 
         bool hasContentFlippedVertically() const;
         bool getContentFlippedVertically() const;
+
+        bool hasLayoutAvailability() const;
+        uint8_t getLayoutAvailability() const;
 
         void setMetadata(ramses_internal::DcsmMetadata metadata);
         ramses_internal::DcsmMetadata getMetadata() const;

@@ -1271,6 +1271,7 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendContentReady(ContentID(2)));
         EXPECT_FALSE(comp.sendContentEnableFocusRequest(ContentID(2), 32));
         EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(2)));
+        EXPECT_FALSE(comp.sendForceStopOfferContent(ContentID(2)));
     }
 
     TEST_F(ADcsmComponent, localProvider_nonTransitions_Offered)
@@ -1852,6 +1853,7 @@ namespace ramses_internal
         EXPECT_FALSE(comp.sendContentReady(ContentID(2)));
         EXPECT_FALSE(comp.sendContentEnableFocusRequest(ContentID(2), 32));
         EXPECT_FALSE(comp.sendRequestStopOfferContent(ContentID(2)));
+        EXPECT_FALSE(comp.sendForceStopOfferContent(ContentID(2)));
         EXPECT_FALSE(comp.sendUpdateContentMetadata(ContentID(2), metadata));
     }
 
@@ -3217,7 +3219,7 @@ namespace ramses_internal
         ramses::StreamStatusMessage msg(ramses::StreamStatusMessage::Status::ChannelError);
         EXPECT_CALL(comm, sendDcsmContentStatus(remoteId, ContentID(2), _, _)).WillOnce([](auto, auto, uint64_t type, std::vector<Byte> const& data)
             {
-                auto impl = std::make_unique<ramses::DcsmStatusMessageImpl>(type, absl::Span<const Byte>{ data.data(), data.size() });
+                auto impl = std::make_unique<ramses::DcsmStatusMessageImpl>(static_cast<ramses::DcsmStatusMessageImpl::Type>(type), absl::Span<const Byte>{ data.data(), data.size() });
                 auto received = ramses::DcsmStatusMessageImpl::CreateMessage(std::move(impl));
                 EXPECT_TRUE(received);
                 EXPECT_EQ(ramses::DcsmStatusMessageImpl::Type::StreamStatus, received->impl->getType());
@@ -3441,6 +3443,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3), ETechnicalContentType::RamsesSceneID, "mycontent2", false));
         EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(4), metadata));
         EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(4)));
+        EXPECT_TRUE(comp.sendForceStopOfferContent(ContentID(5)));
         EXPECT_TRUE(comp.setLocalProviderAvailability(false));
     }
 
@@ -3454,6 +3457,7 @@ namespace ramses_internal
         EXPECT_TRUE(comp.sendOfferContent(ContentID(5), Category(3), ETechnicalContentType::RamsesSceneID, "mycontent2", false));
         EXPECT_TRUE(comp.sendUpdateContentMetadata(ContentID(4), metadata));
         EXPECT_TRUE(comp.sendRequestStopOfferContent(ContentID(4)));
+        EXPECT_TRUE(comp.sendForceStopOfferContent(ContentID(5)));
         EXPECT_TRUE(comp.setLocalProviderAvailability(false));
     }
 
@@ -3602,5 +3606,78 @@ namespace ramses_internal
 
         EXPECT_EQ(CS::Assigned, comp.getContentState(ContentID(2)));
     }
-}
 
+    TEST_F(ADcsmComponent, stateFlow_LocalProviderLocalConsumer_Offered_ForceUnoffer)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_LPLC(2, CS::Offered);
+
+        EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(2)));
+        comp.sendForceStopOfferContent(ContentID(2));
+
+        EXPECT_CALL(consumer, forceContentOfferStopped(ramses::ContentID(2)));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+
+        EXPECT_EQ(CS::Unknown, comp.getContentState(ContentID(2)));
+        EXPECT_EQ(Guid(), comp.getContentConsumerID(ContentID(2)));
+    }
+
+    TEST_F(ADcsmComponent, stateFlow_LocalProviderLocalConsumer_Offered_ForceUnoffer_LocalOnly)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_LPLC(2, CS::Offered, true, true);
+
+        comp.sendForceStopOfferContent(ContentID(2));
+
+        EXPECT_CALL(consumer, forceContentOfferStopped(ramses::ContentID(2)));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+
+        EXPECT_EQ(CS::Unknown, comp.getContentState(ContentID(2)));
+        EXPECT_EQ(Guid(), comp.getContentConsumerID(ContentID(2)));
+    }
+
+    TEST_F(ADcsmComponent, stateFlow_LocalProviderRemoteConsumer_Offered_ForceUnoffer)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        comp.newParticipantHasConnected(remoteId);
+        getContentToState_LPRC(2, CS::Offered);
+
+        EXPECT_CALL(comm, sendDcsmBroadcastForceStopOfferContent(ContentID(2)));
+        comp.sendForceStopOfferContent(ContentID(2));
+
+        EXPECT_EQ(CS::Unknown, comp.getContentState(ContentID(2)));
+        EXPECT_EQ(Guid(), comp.getContentConsumerID(ContentID(2)));
+    }
+
+    TEST_F(ADcsmComponent, stateFlow_LocalProviderLocalConsumer_Shown_ForceUnoffer_LocalOnly)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_LPLC(2, CS::Shown, true, true);
+
+        comp.sendForceStopOfferContent(ContentID(2));
+
+        EXPECT_CALL(consumer, forceContentOfferStopped(ramses::ContentID(2)));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+
+        EXPECT_EQ(CS::Unknown, comp.getContentState(ContentID(2)));
+        EXPECT_EQ(Guid(), comp.getContentConsumerID(ContentID(2)));
+    }
+
+    TEST_F(ADcsmComponent, stateFlow_LocalProviderLocalConsumer_StopOfferRequested_ForceUnoffer_LocalOnly)
+    {
+        EXPECT_TRUE(comp.setLocalProviderAvailability(true));
+        EXPECT_TRUE(comp.setLocalConsumerAvailability(true));
+        getContentToState_LPLC(2, CS::StopOfferRequested, true, true);
+
+        comp.sendForceStopOfferContent(ContentID(2));
+
+        EXPECT_CALL(consumer, forceContentOfferStopped(ramses::ContentID(2)));
+        EXPECT_TRUE(comp.dispatchConsumerEvents(consumer));
+
+        EXPECT_EQ(CS::Unknown, comp.getContentState(ContentID(2)));
+        EXPECT_EQ(Guid(), comp.getContentConsumerID(ContentID(2)));
+    }
+}

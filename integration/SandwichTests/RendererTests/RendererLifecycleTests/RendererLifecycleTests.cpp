@@ -18,6 +18,7 @@
 #include "TestScenes/TextScene.h"
 #include "TestScenes/FileLoadingScene.h"
 #include "TestScenes/Texture2DFormatScene.h"
+#include "TestScenes/TextureSamplerScene.h"
 #include "TestScenes/TransformationLinkScene.h"
 #include "TestScenes/VisibilityScene.h"
 #include "RendererTestUtils.h"
@@ -1733,6 +1734,29 @@ namespace ramses_internal
         ASSERT_TRUE(testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered));
 
         ASSERT_TRUE(checkScreenshot(display_2, "ARendererInstance_Three_Triangles"));
+
+        testScenesAndRenderer.unpublish(sceneId);
+        testScenesAndRenderer.destroyRenderer();
+    }
+
+    TEST_F(ARendererLifecycleTest, VertexArrayGetsUploadedWhenRenderableResourcesUploaded)
+    {
+        // Test dirtiness of VAO is handled correctly in case renderable stays dirty after geometry
+        // resources are ready, e.g., in case VAO upload is blocked till other renderable resources
+        // get uploaded
+        const ramses::sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<TextureSamplerScene>(TextureSamplerScene::EState_NoTextureSampler, Vector3(0.0f, 0.0f, 5.0f));
+        testScenesAndRenderer.initializeRenderer();
+        const ramses::displayId_t display = createDisplayForWindow();
+        ASSERT_TRUE(display != ramses::displayId_t::Invalid());
+
+        testScenesAndRenderer.publish(sceneId);
+        testScenesAndRenderer.flush(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        ASSERT_TRUE(testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered));
+
+        testScenesAndRenderer.getScenesRegistry().setSceneState<TextureSamplerScene>(sceneId, TextureSamplerScene::EState_SetTextureSampler);
+        testScenesAndRenderer.flush(sceneId, ramses::sceneVersionTag_t{ 1u });
+        testRenderer.waitForFlush(sceneId, ramses::sceneVersionTag_t{ 1u });
 
         testScenesAndRenderer.unpublish(sceneId);
         testScenesAndRenderer.destroyRenderer();

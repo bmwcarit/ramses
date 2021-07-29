@@ -27,6 +27,7 @@
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "Components/ManagedResource.h"
 #include "RamsesClientImpl.h"
+#include "UnsafeTestMemoryHelpers.h"
 
 #include <thread>
 
@@ -812,7 +813,7 @@ namespace ramses
 
         m_scene.destroy(*b);
         ramses_internal::ManagedResource aRes = client.impl.getResource(a->impl.getLowlevelResourceHash());
-        EXPECT_EQ(absl::MakeSpan(reinterpret_cast<const uint8_t*>(data), sizeof(data)), aRes->getResourceData().span());
+        EXPECT_TRUE(ramses_internal::UnsafeTestMemoryHelpers::CompareMemoryBlobToSpan(&data, sizeof(data), aRes->getResourceData().span()));
     }
 
     TEST_F(AResourceTestClient, createFloatArray)

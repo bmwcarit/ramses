@@ -483,7 +483,7 @@ template <>
 struct fmt::formatter<ramses_internal::String> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses_internal::String& str, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::String& str, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(), "{}", str.stdRef());
     }

@@ -1625,7 +1625,7 @@ TEST_F(ARendererSceneUpdater, multipleFlushesWithRemoveAndAddAndRemoveBlockingRe
     destroyDisplay();
 }
 
-TEST_F(ARendererSceneUpdater, willMapSceneAfterMaximumNumberOfPendingFlushesReached)
+TEST_F(ARendererSceneUpdater, willForceMapSceneAfterMaximumNumberOfPendingFlushesReached)
 {
     createDisplayAndExpectSuccess();
     createPublishAndSubscribeScene();
@@ -1658,6 +1658,44 @@ TEST_F(ARendererSceneUpdater, willMapSceneAfterMaximumNumberOfPendingFlushesReac
         performFlushWithCreateNodeAction();
         update();
     }
+    // expect force mapped
+    EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
+    expectInternalSceneStateEvent(ERendererEventType::SceneMapped);
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    update();
+
+    unmapScene();
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, willForceMapSceneAfterMaximumWaitingTimeReached)
+{
+    createDisplayAndExpectSuccess();
+    createPublishAndSubscribeScene();
+
+    createRenderable();
+    update();
+    EXPECT_TRUE(lastFlushWasAppliedOnRendererScene());
+
+    requestMapScene();
+    EXPECT_EQ(ESceneState::MapRequested, sceneStateExecutor.getSceneState(getSceneId()));
+
+    // mapping blocked by effect
+    expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash });
+    reportResourceAs(MockResourceHash::EffectHash, EResourceStatus::Provided);
+    update();
+    EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
+    update();
+    EXPECT_EQ(ESceneState::MappingAndUploading, sceneStateExecutor.getSceneState(getSceneId()));
+    update();
+
+    constexpr std::chrono::milliseconds testTimeout{ 30 };
+    rendererSceneUpdater->setForceMapTimeout(testTimeout);
+    std::this_thread::sleep_for(testTimeout * 2);
+    update();
+    update();
+
     // expect force mapped
     EXPECT_EQ(ESceneState::Mapped, sceneStateExecutor.getSceneState(getSceneId()));
     expectInternalSceneStateEvent(ERendererEventType::SceneMapped);

@@ -16,9 +16,9 @@
 
 namespace
 {
-    const char* KEY_WORD_DEFINE = "DEFINE";
-    const char* KEY_WORD_UNIFORM_SEMANTIC = "UNIFORM_SEMANTIC";
-    const char* KEY_WORD_ATTRIBUTE_SEMANTIC = "ATTRIBUTE_SEMANTIC";
+    const char* const KEY_WORD_DEFINE = "DEFINE";
+    const char* const KEY_WORD_UNIFORM_SEMANTIC = "UNIFORM_SEMANTIC";
+    const char* const KEY_WORD_ATTRIBUTE_SEMANTIC = "ATTRIBUTE_SEMANTIC";
 }
 
 EffectConfig::EffectConfig()

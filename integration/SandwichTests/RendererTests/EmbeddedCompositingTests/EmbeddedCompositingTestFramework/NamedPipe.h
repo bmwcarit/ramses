@@ -46,8 +46,15 @@ namespace ramses_internal
             }
         }
 
+        NamedPipe(const NamedPipe&) = delete;
+        NamedPipe& operator=(const NamedPipe&) = delete;
+
+        NamedPipe(NamedPipe&&) = delete;
+        NamedPipe& operator=(NamedPipe&&) = delete;
+
         ~NamedPipe()
         {
+            LOG_INFO(CONTEXT_RENDERER, "NamedPipe::~NamedPipe closing pipe [name=" << m_pipeName << ", FD=" << m_pipeFileDescriptor << ", createPipe=" << m_createPipe << "]");
             if(m_createPipe)
             {
                 ::close(m_pipeFileDescriptor);

@@ -214,7 +214,7 @@ namespace ramses
         m_glyphPage->updateDataWithPadding(subPixelQuad, &texelData[0], tempCache);
 
         uint8_t databuffer[PageWidth * PageHeight * 4];
-        m_glyphPage->getTextureBuffer().getMipLevelData(0, reinterpret_cast<char*>(databuffer), PageWidth * PageHeight * 4);
+        m_glyphPage->getTextureBuffer().getMipLevelData(0, databuffer, PageWidth * PageHeight * 4);
         uint8_t currentlyExpectedFakeTexelColor = 1;
         for (uint32_t row = 0; row < PageHeight; row++)
         {

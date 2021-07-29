@@ -86,9 +86,7 @@ state remotely.
 
 In addition to distributing 3D scenes, Ramses can composite other OpenGL native applications using the Wayland protocol. The Wayland protocol enables efficient compositing
 of 2D images with zero copy (i.e. no pixel buffers are copied throughout the system unless when directly rendered to
-the screen). In the RAMSES case, it is called "embedded compositing" because the RAMSES renderer is itself composited into the system compositor. Thus, applications which
-connect to RAMSES via Wayland are "embedded" into the RAMSES renderer, which is in turn "embedded" into the system compositor final rendering. For more details regarding
-embedded compositing  visit the @ref EmbCompMain "documentation page" dedicated to it.
+the screen). In the RAMSES case, it is called "embedded compositing" because the RAMSES renderer is itself composited into the system compositor. Thus, applications which connect to RAMSES via Wayland are "embedded" into the RAMSES renderer, which is in turn "embedded" into the system compositor final rendering. For more details regarding embedded compositing  visit the @ref EmbCompMain "documentation page" dedicated to it.
 
 # Examples
 

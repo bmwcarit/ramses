@@ -485,7 +485,7 @@ namespace ramses_internal
         EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId12, RendererSceneState::Available));
         updateLogicAndVerifyExpectations();
 
-        // now report ref scenes as requested Ready
+        // now report ref scenes as requested Available
         EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
         EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
 
@@ -497,7 +497,7 @@ namespace ramses_internal
         EXPECT_EQ(MasterSceneId1, m_ownership.getSceneOwner(RefSceneId11));
         EXPECT_EQ(MasterSceneId1, m_ownership.getSceneOwner(RefSceneId12));
 
-        // simulate master scene Available
+        // simulate master scene Ready
         EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
 
         // request ref scenes available in new cycle
@@ -507,7 +507,66 @@ namespace ramses_internal
         EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId12, RendererSceneState::Ready));
         updateLogicAndVerifyExpectations();
 
-        // now report ref scenes as requested available
+        // now report ref scenes as requested Ready
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+
+        // destroy master second time
+        m_scenes.destroyScene(MasterSceneId1);
+        EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId11, RendererSceneState::Available));
+        EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId12, RendererSceneState::Available));
+        updateLogicAndVerifyExpectations();
+    }
+
+    TEST_F(ASceneReferenceLogic, canHandleMasterWithRefsAfterItWasDestroyedAndMadeAvailableAgain_whenRefsDidNotArriveYet)
+    {
+        // refs will never arrive
+        m_scenes.destroyScene(RefSceneId11);
+        m_scenes.destroyScene(RefSceneId12);
+
+        // simulate master scene Ready
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+
+        // request ref scenes Ready
+        m_scenes.getScene(MasterSceneId1).requestSceneReferenceState(RefSceneHandle11, RendererSceneState::Ready);
+        m_scenes.getScene(MasterSceneId1).requestSceneReferenceState(RefSceneHandle12, RendererSceneState::Ready);
+        EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId11, RendererSceneState::Ready));
+        EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId12, RendererSceneState::Ready));
+        updateLogicAndVerifyExpectations();
+
+        // now report ref scenes as requested Ready
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+
+        // destroy master
+        m_scenes.destroyScene(MasterSceneId1);
+        EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId11, RendererSceneState::Available));
+        EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId12, RendererSceneState::Available));
+        updateLogicAndVerifyExpectations();
+
+        // now report ref scenes as requested Available
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Available; }));
+
+        // recreate master with refs
+        SceneAllocateHelper masterScene1{ m_scenes.createScene(SceneInfo{ MasterSceneId1 }) };
+        masterScene1.allocateSceneReference(RefSceneId11, RefSceneHandle11);
+        masterScene1.allocateSceneReference(RefSceneId12, RefSceneHandle12);
+        updateLogicAndVerifyExpectations();
+        EXPECT_EQ(MasterSceneId1, m_ownership.getSceneOwner(RefSceneId11));
+        EXPECT_EQ(MasterSceneId1, m_ownership.getSceneOwner(RefSceneId12));
+
+        // simulate master scene Ready
+        EXPECT_CALL(m_sceneLogic, getSceneInfo(MasterSceneId1, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
+
+        // request ref scenes available in new cycle
+        m_scenes.getScene(MasterSceneId1).requestSceneReferenceState(RefSceneHandle11, RendererSceneState::Ready);
+        m_scenes.getScene(MasterSceneId1).requestSceneReferenceState(RefSceneHandle12, RendererSceneState::Ready);
+        EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId11, RendererSceneState::Ready));
+        EXPECT_CALL(m_sceneLogic, setSceneState(RefSceneId12, RendererSceneState::Ready));
+        updateLogicAndVerifyExpectations();
+
+        // now report ref scenes as requested Ready
         EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId11, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
         EXPECT_CALL(m_sceneLogic, getSceneInfo(RefSceneId12, _, _, _)).WillRepeatedly(Invoke([](auto, auto& targetState, auto&, auto&) { targetState = RendererSceneState::Ready; }));
 
@@ -547,27 +606,42 @@ namespace ramses_internal
             EXPECT_EQ(eventsOriginal[i].eventType, events[i].eventType);
     }
 
-    TEST_F(ASceneReferenceLogic, extractsButDoesNotSendSceneRefEventsOfImplicitOrIrrelevantTypes)
+    TEST_F(ASceneReferenceLogic, discardsSceneEventsOfIrrelevantTypesComingFromReferencedScenes)
     {
         updateLogicAndVerifyExpectations();
         EXPECT_TRUE(m_logic.hasAnyReferencedScenes());
 
-        RendererEventVector events
+        // 2 sets of same type of events but from different sources
+
+        // these come from referenced scene and will be discarded
+        RendererEventVector eventsToDiscard
         {
             { ERendererEventType::SceneDataSlotProviderCreated },
-            { ERendererEventType::DisplayCreated }, // will be kept
-            { ERendererEventType::SceneDataSlotProviderDestroyed }, { ERendererEventType::SceneDataSlotConsumerCreated }, { ERendererEventType::SceneDataSlotConsumerDestroyed }
+            { ERendererEventType::SceneDataSlotProviderDestroyed },
+            { ERendererEventType::SceneDataSlotConsumerCreated },
+            { ERendererEventType::SceneDataSlotConsumerDestroyed }
         };
-        // all of them 'belong' to ref scene
-        for (auto& evt : events)
-            evt.sceneId = RefSceneId12;
-        RendererEventVector eventsOriginal = events;
+        eventsToDiscard[0].providerSceneId = eventsToDiscard[1].providerSceneId = RefSceneId12;
+        eventsToDiscard[2].consumerSceneId = eventsToDiscard[3].consumerSceneId = RefSceneId21;
 
+        // these come from master scene and will be kept
+        RendererEventVector eventsToKeep = eventsToDiscard;
+        eventsToKeep[0].providerSceneId = eventsToKeep[1].providerSceneId = MasterSceneId1;
+        eventsToKeep[2].consumerSceneId = eventsToKeep[3].consumerSceneId = MasterSceneId2;
+
+        // concatenate and process
+        RendererEventVector events = eventsToDiscard;
+        events.insert(events.end(), eventsToKeep.cbegin(), eventsToKeep.cend());
         m_logic.extractAndSendSceneReferenceEvents(events);
 
-        // display creation event was the only one kept
-        ASSERT_EQ(1u, events.size());
-        EXPECT_EQ(ERendererEventType::DisplayCreated, events[0].eventType);
+        // only those meant to be kept are left in processed list
+        ASSERT_EQ(eventsToKeep.size(), events.size());
+        for (size_t i = 0; i < eventsToKeep.size(); ++i)
+        {
+            EXPECT_EQ(eventsToKeep[i].eventType, events[i].eventType);
+            EXPECT_EQ(eventsToKeep[i].providerSceneId, events[i].providerSceneId);
+            EXPECT_EQ(eventsToKeep[i].consumerSceneId, events[i].consumerSceneId);
+        }
     }
 
     TEST_F(ASceneReferenceLogic, extractsButDoesNotSendSceneRefEventsOfUnusedDataLinkingTypes)

@@ -17,11 +17,11 @@ namespace ramses
         assert(m_type < Type::NumElements);
     }
 
-    DcsmStatusMessageImpl::DcsmStatusMessageImpl(uint64_t messageID, absl::Span<const ramses_internal::Byte> message)
-        : m_type(static_cast<Type>(messageID))
+    DcsmStatusMessageImpl::DcsmStatusMessageImpl(Type type, absl::Span<const ramses_internal::Byte> message)
+        : m_type(type)
         , m_data(message.size())
     {
-        assert(static_cast<Type>(messageID) < Type::NumElements);
+        assert(m_type < Type::NumElements);
         std::memcpy(m_data.data(), message.data(), message.size());
     }
 
@@ -31,6 +31,10 @@ namespace ramses
         {
         case Type::StreamStatus:
             return std::make_unique<StreamStatusMessage>(std::move(impl));
+        case Type::ActiveLayout:
+            return std::make_unique<ActiveLayoutMessage>(std::move(impl));
+        case Type::WidgetFocusStatus:
+            return std::make_unique<WidgetFocusStatusMessage>(std::move(impl));
         case Type::NumElements:
             assert(false);
         }

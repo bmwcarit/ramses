@@ -21,13 +21,11 @@ namespace ramses_internal
     class TestForkingController
     {
     public:
-        explicit TestForkingController(const String& waylandSocket);
+        explicit TestForkingController();
         ~TestForkingController();
         TestForkingController(const TestForkingController&) = delete;
         TestForkingController& operator=(const TestForkingController&) = delete;
 
-        void setEnvironmentVariableWaylandDisplay();
-        void setEnvironmentVariableWaylandSocket();
         void startTestApplication();
         void waitForTestApplicationExit();
         void sendMessageToTestApplication(const BinaryOutputStream& os);
@@ -36,7 +34,7 @@ namespace ramses_internal
         void killTestApplication();
 
     private:
-        void startForkerApplication(const String& waylandSocket);
+        void startForkerApplication();
         void stopForkerApplication();
         void sendForkRequest();
         void sendWaitForExitRequest();

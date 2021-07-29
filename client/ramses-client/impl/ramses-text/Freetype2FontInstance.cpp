@@ -157,12 +157,13 @@ namespace ramses
                 }
             }
 
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) safe because C-style inheritance, valid if ftGlyph->format == FT_GLYPH_FORMAT_BITMAP
             const FT_BitmapGlyph bitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(ftGlyph);
             const QuadSize glyphBitmapSize(bitmapGlyph->bitmap.width, bitmapGlyph->bitmap.rows);
             data.width = glyphBitmapSize.x;
             data.height = glyphBitmapSize.y;
             const uint32_t numberPixels = glyphBitmapSize.getArea();
-            const uint8_t* bitmapBuffer = reinterpret_cast<uint8_t*>(bitmapGlyph->bitmap.buffer);
+            const uint8_t* bitmapBuffer = bitmapGlyph->bitmap.buffer;
             data.data = GlyphData(bitmapBuffer, bitmapBuffer + numberPixels);
         }
         FT_Done_Glyph(ftGlyph);

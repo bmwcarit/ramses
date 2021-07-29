@@ -15,6 +15,9 @@
 
 namespace ramses_internal
 {
+    static const ramses::CarModelViewMetadataExtended carModelViewExtA = {11, 12, 13.2f, 14};
+    static const ramses::CarModelViewMetadataExtended carModelViewExtB = {21, 20.5f, 19, 18};
+
     class ADcsmMetadata : public testing::Test
     {
     public:
@@ -31,11 +34,13 @@ namespace ramses_internal
             EXPECT_TRUE(filledDm.setWidgetHUDLineID(m_widgethudlineID));
             EXPECT_TRUE(filledDm.setCarModel(1));
             EXPECT_TRUE(filledDm.setCarModelView({ 1,2,3,4,5,6,7, 0.1f, 5.f }, {8,9}));
+            EXPECT_TRUE(filledDm.setCarModelViewExtended(carModelViewExtA));
             EXPECT_TRUE(filledDm.setCarModelVisibility(true));
             EXPECT_TRUE(filledDm.setExclusiveBackground(true));
             EXPECT_TRUE(filledDm.setStreamID(49));
             EXPECT_TRUE(filledDm.setDisplayedDataFlags(22));
             EXPECT_TRUE(filledDm.setContentFlippedVertically(true));
+            EXPECT_TRUE(filledDm.setLayoutAvailability(3));
         }
 
         DcsmMetadata serializeDeserialize(const DcsmMetadata& ref)
@@ -90,11 +95,13 @@ namespace ramses_internal
         EXPECT_FALSE(dm.hasWidgetBackgroundID());
         EXPECT_FALSE(dm.hasCarModel());
         EXPECT_FALSE(dm.hasCarModelView());
+        EXPECT_FALSE(dm.hasCarModelViewExtended());
         EXPECT_FALSE(dm.hasCarModelVisibility());
         EXPECT_FALSE(dm.hasExclusiveBackground());
         EXPECT_FALSE(dm.hasStreamID());
         EXPECT_FALSE(dm.hasDisplayedDataFlags());
         EXPECT_FALSE(dm.hasContentFlippedVertically());
+        EXPECT_FALSE(dm.hasLayoutAvailability());
     }
 
     TEST_F(ADcsmMetadata, canSetGetPreviewImagePngHeader)
@@ -228,6 +235,14 @@ namespace ramses_internal
         EXPECT_EQ(timing, dm.getCarModelViewAnimationInfo());
     }
 
+    TEST_F(ADcsmMetadata, canSetGetCarModelViewExtended)
+    {
+        DcsmMetadata dm;
+        dm.setCarModelViewExtended(carModelViewExtB);
+        EXPECT_TRUE(dm.hasCarModelViewExtended());
+        EXPECT_EQ(carModelViewExtB, dm.getCarModelViewExtended());
+    }
+
     TEST_F(ADcsmMetadata, canSetGetCarModelVisibility)
     {
         DcsmMetadata dm;
@@ -266,6 +281,14 @@ namespace ramses_internal
         EXPECT_TRUE(dm.setDisplayedDataFlags(123));
         EXPECT_TRUE(dm.hasDisplayedDataFlags());
         EXPECT_EQ(123u, dm.getDisplayedDataFlags());
+    }
+
+    TEST_F(ADcsmMetadata, canSetGetLayoutAvailability)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setLayoutAvailability(6u));
+        EXPECT_TRUE(dm.hasLayoutAvailability());
+        EXPECT_EQ(6u, dm.getLayoutAvailability());
     }
 
     TEST_F(ADcsmMetadata, canCompare)
@@ -400,6 +423,9 @@ namespace ramses_internal
 
         EXPECT_TRUE(dm.setDisplayedDataFlags(0));
         EXPECT_TRUE(dm.hasDisplayedDataFlags());
+
+        EXPECT_TRUE(dm.setLayoutAvailability(0));
+        EXPECT_TRUE(dm.hasLayoutAvailability());
     }
 
     TEST_F(ADcsmMetadata, canSetWidgetHUDlineIDToNewValue)
@@ -430,6 +456,15 @@ namespace ramses_internal
         EXPECT_EQ(values, dm.getCarModelView());
         constexpr AnimationInformation timing{ 9,8 };
         EXPECT_EQ(timing, dm.getCarModelViewAnimationInfo());
+    }
+
+    TEST_F(ADcsmMetadata, canSetCarModelViewExtendedToNewValue)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setCarModelViewExtended(carModelViewExtA));
+        EXPECT_TRUE(dm.setCarModelViewExtended(carModelViewExtB));
+        EXPECT_TRUE(dm.hasCarModelViewExtended());
+        EXPECT_EQ(carModelViewExtB, dm.getCarModelViewExtended());
     }
 
     TEST_F(ADcsmMetadata, canSetCarModelVisibilityToNewValue)
@@ -544,6 +579,19 @@ namespace ramses_internal
         EXPECT_EQ(timing, dm.getCarModelViewAnimationInfo());
     }
 
+    TEST_F(ADcsmMetadata, canUpdateCarModelViewExtendedFromOther)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setCarModelViewExtended(carModelViewExtA));
+
+        DcsmMetadata otherDm;
+        EXPECT_TRUE(otherDm.setCarModelViewExtended(carModelViewExtB));
+
+        dm.updateFromOther(otherDm);
+        EXPECT_TRUE(dm.hasCarModelViewExtended());
+        EXPECT_EQ(carModelViewExtB, dm.getCarModelViewExtended());
+    }
+
     TEST_F(ADcsmMetadata, canUpdateCarModelVisibilityFromOther)
     {
         DcsmMetadata dm;
@@ -609,6 +657,19 @@ namespace ramses_internal
         EXPECT_EQ(11u, dm.getDisplayedDataFlags());
     }
 
+    TEST_F(ADcsmMetadata, canUpdateLayoutAvailabilityFromOther)
+    {
+        DcsmMetadata dm;
+        EXPECT_TRUE(dm.setLayoutAvailability(23u));
+
+        DcsmMetadata otherDm;
+        EXPECT_TRUE(otherDm.setLayoutAvailability(14u));
+
+        dm.updateFromOther(otherDm);
+        EXPECT_TRUE(dm.hasLayoutAvailability());
+        EXPECT_EQ(14u, dm.getLayoutAvailability());
+    }
+
     TEST_F(ADcsmMetadata, canUpdateEmptyWithValues)
     {
         DcsmMetadata otherDm;
@@ -619,11 +680,13 @@ namespace ramses_internal
         EXPECT_TRUE(otherDm.setWidgetHUDLineID(789));
         EXPECT_TRUE(otherDm.setCarModel(1234));
         EXPECT_TRUE(otherDm.setCarModelView({ 1,2,3,4,5,6,7,0.1f,0.2f }, { 8,9 }));
+        EXPECT_TRUE(otherDm.setCarModelViewExtended(carModelViewExtA));
         EXPECT_TRUE(otherDm.setCarModelVisibility(true));
         EXPECT_TRUE(otherDm.setExclusiveBackground(true));
         EXPECT_TRUE(otherDm.setStreamID(45));
         EXPECT_TRUE(otherDm.setDisplayedDataFlags(22));
         EXPECT_TRUE(otherDm.setContentFlippedVertically(true));
+        EXPECT_TRUE(otherDm.setLayoutAvailability(15));
 
         DcsmMetadata dm;
         dm.updateFromOther(otherDm);
@@ -641,6 +704,8 @@ namespace ramses_internal
         EXPECT_EQ(1234, dm.getCarModel());
         EXPECT_TRUE(dm.hasCarModelView());
         EXPECT_EQ(ramses::CarModelViewMetadata({1,2,3,4,5,6,7,0.1f,0.2f}), dm.getCarModelView());
+        EXPECT_TRUE(dm.hasCarModelViewExtended());
+        EXPECT_EQ(carModelViewExtA, dm.getCarModelViewExtended());
         EXPECT_EQ(AnimationInformation({ 8,9 }), dm.getCarModelViewAnimationInfo());
         EXPECT_TRUE(dm.hasCarModelVisibility());
         EXPECT_TRUE(dm.getCarModelVisibility());
@@ -652,6 +717,8 @@ namespace ramses_internal
         EXPECT_EQ(22u, dm.getDisplayedDataFlags());
         EXPECT_TRUE(dm.hasContentFlippedVertically());
         EXPECT_TRUE(dm.getContentFlippedVertically());
+        EXPECT_TRUE(dm.hasLayoutAvailability());
+        EXPECT_EQ(15u, dm.getLayoutAvailability());
     }
 
     TEST_F(ADcsmMetadata, canSkipDeserializeUnknownTypes)
@@ -714,6 +781,11 @@ namespace ramses_internal
         EXPECT_NE(fmt::to_string(filledDm).find("22"), std::string::npos);
     }
 
+    TEST_F(ADcsmMetadata, containsLayoutAvailabilityWhenLogged)
+    {
+        EXPECT_NE(fmt::to_string(filledDm).find("layoutAvailability:3"), std::string::npos);
+    }
+
     TEST_F(ADcsmMetadata, containsFullSetOfCarviewWhenLogged)
     {
         // ensure log contains expected values
@@ -727,5 +799,11 @@ namespace ramses_internal
         EXPECT_NE(s.find('7'), std::string::npos);  //fov
         EXPECT_NE(s.find('8'), std::string::npos);  //animation start
         EXPECT_NE(s.find('9'), std::string::npos);  //animation end
+    }
+
+    TEST_F(ADcsmMetadata, containsCarModelViewExtendedWhenLogged)
+    {
+        const std::string s = fmt::to_string(filledDm);
+        EXPECT_NE(s.find("carViewExt:r:11,t(12,13.2,14)"), std::string::npos);
     }
 }

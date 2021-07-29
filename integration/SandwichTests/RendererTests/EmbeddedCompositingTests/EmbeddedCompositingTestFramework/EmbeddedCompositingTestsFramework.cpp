@@ -20,40 +20,53 @@
 
 namespace ramses_internal
 {
-    EmbeddedCompositingTestsFramework::EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config)
+    const String EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName = "ramses-ec-display";
+    const String EmbeddedCompositingTestsFramework::TestAlternateEmbeddedCompositingDisplayName = "ramses-ec-alternate-display";
+
+    EmbeddedCompositingTestsFramework::EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config, const String& embeddedCompositingSocketGroupName)
         : RendererTestsFramework(generateScreenshots, config)
         , m_testForkingController(testForkingController)
+        , m_embeddedCompositingSocketGroupName(embeddedCompositingSocketGroupName)
     {
         TestSignalHandler::RegisterSignalHandlersForCurrentProcess("EmbeddedCompositingTestsFramework");
     }
 
-    void EmbeddedCompositingTestsFramework::startTestApplication(bool initialize)
+    void EmbeddedCompositingTestsFramework::startTestApplication()
     {
         m_testForkingController.startTestApplication();
-
-        if(initialize)
-            initializeTestApplication();
     }
 
-    void EmbeddedCompositingTestsFramework::startTestApplicationAndWaitUntilConnected()
+    void EmbeddedCompositingTestsFramework::startTestApplicationAndWaitUntilConnected(EConnectionMode connectionMode, uint32_t displayIdx)
     {
         m_testForkingController.startTestApplication();
-        initializeTestApplication();
-        waitUntilNumberOfCompositorConnections(1);
+        initializeTestApplication(connectionMode);
+        waitUntilNumberOfCompositorConnections(1, false, displayIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::initializeTestApplication()
+    void EmbeddedCompositingTestsFramework::initializeTestApplication(EConnectionMode connectionMode)
     {
         BinaryOutputStream bos;
-        bos << ETestWaylandApplicationMessage::InitializeTestApplication;
+        switch(connectionMode)
+        {
+        case EConnectionMode::DisplayName:
+            bos << ETestWaylandApplicationMessage::InitializeTestApplication << TestEmbeddedCompositingDisplayName << false;
+            break;
+        case EConnectionMode::AlternateDisplayName:
+            bos << ETestWaylandApplicationMessage::InitializeTestApplication << TestAlternateEmbeddedCompositingDisplayName << false;
+            break;
+        case EConnectionMode::DisplayFD:
+            bos << ETestWaylandApplicationMessage::InitializeTestApplication << TestEmbeddedCompositingDisplayName << true;
+            break;
+        }
+
         m_testForkingController.sendMessageToTestApplication(bos);
     }
 
-    void EmbeddedCompositingTestsFramework::stopTestApplicationAndWaitUntilDisconnected()
+    void EmbeddedCompositingTestsFramework::stopTestApplicationAndWaitUntilDisconnected(uint32_t displayIdx)
     {
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::stopTestApplicationAndWaitUntilDisconnected waiting until client test application has terminated ...");
         sendStopToTestApplication();
-        waitUntilNumberOfCompositorConnections(0);
+        waitUntilNumberOfCompositorConnections(0u, false, displayIdx);
 
         // When TestWaylandApplication has disconnected from the EC, it can still run, so wait on the final answer, that
         // it has really reached it's end. For example, in the test case ClientCreatesTwoSurfaceWithSameIVIId the client
@@ -63,10 +76,10 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::stopTestApplicationAndWaitUntilDisconnected stop confirmation received");
     }
 
-    void EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(WaylandIviSurfaceId sourceId)
+    void EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(WaylandIviSurfaceId sourceId, uint32_t displayIdx)
     {
-        const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
-        IEmbeddedCompositingManager& embeddedCompositorManager = getEmbeddedCompositorManager();
+        const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor(displayIdx);
+        IEmbeddedCompositingManager& embeddedCompositorManager = getEmbeddedCompositorManager(displayIdx);
 
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(): waiting for content on stream source id :" << sourceId.getValue());
 
@@ -127,10 +140,15 @@ namespace ramses_internal
         getEmbeddedCompositor().logInfos(logContext);
     }
 
-    void EmbeddedCompositingTestsFramework::waitUntilNumberOfCompositorConnections(uint32_t numberOfConnections, bool doResourceUpdate)
+    const String& EmbeddedCompositingTestsFramework::getEmbeddedCompositingSocketGroupName() const
     {
-        const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
-        IEmbeddedCompositingManager& embeddedCompositingManager = getEmbeddedCompositorManager();
+        return m_embeddedCompositingSocketGroupName;
+    }
+
+    void EmbeddedCompositingTestsFramework::waitUntilNumberOfCompositorConnections(uint32_t numberOfConnections, bool doResourceUpdate, uint32_t displayIdx)
+    {
+        const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor(displayIdx);
+        IEmbeddedCompositingManager& embeddedCompositingManager = getEmbeddedCompositorManager(displayIdx);
 
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCompositorConnections(): waiting for number of connections reaching " << numberOfConnections);
 
@@ -357,18 +375,18 @@ namespace ramses_internal
         m_testForkingController.sendMessageToTestApplication(bos);
     }
 
-    IEmbeddedCompositor& EmbeddedCompositingTestsFramework::getEmbeddedCompositor()
+    IEmbeddedCompositor& EmbeddedCompositingTestsFramework::getEmbeddedCompositor(uint32_t displayIdx)
     {
         const TestDisplays& displays = getDisplays();
-        assert(displays.size() > 0);
-        return getTestRenderer().getEmbeddedCompositor(displays[0].displayId);
+        assert(displays.size() > displayIdx);
+        return getTestRenderer().getEmbeddedCompositor(displays[displayIdx].displayId);
     }
 
-    IEmbeddedCompositingManager& EmbeddedCompositingTestsFramework::getEmbeddedCompositorManager()
+    IEmbeddedCompositingManager& EmbeddedCompositingTestsFramework::getEmbeddedCompositorManager(uint32_t displayIdx)
     {
         const TestDisplays& displays = getDisplays();
-        assert(displays.size() > 0);
-        return getTestRenderer().getEmbeddedCompositorManager(displays[0].displayId);
+        assert(displays.size() > displayIdx);
+        return getTestRenderer().getEmbeddedCompositorManager(displays[displayIdx].displayId);
     }
 
     void EmbeddedCompositingTestsFramework::setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility)
@@ -417,16 +435,6 @@ namespace ramses_internal
     void EmbeddedCompositingTestsFramework::killTestApplication()
     {
         m_testForkingController.killTestApplication();
-    }
-
-    void EmbeddedCompositingTestsFramework::setEnvironmentVariableWaylandSocket()
-    {
-        m_testForkingController.setEnvironmentVariableWaylandSocket();
-    }
-
-    void EmbeddedCompositingTestsFramework::setEnvironmentVariableWaylandDisplay()
-    {
-        m_testForkingController.setEnvironmentVariableWaylandDisplay();
     }
 
     UInt32 EmbeddedCompositingTestsFramework::getNumberOfAllocatedSHMBufferFromTestApplication()

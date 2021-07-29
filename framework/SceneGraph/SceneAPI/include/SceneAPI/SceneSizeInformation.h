@@ -140,7 +140,7 @@ template <>
 struct fmt::formatter<ramses_internal::SceneSizeInformation> : public ramses_internal::SimpleFormatterBase
 {
     template<typename FormatContext>
-    auto format(const ramses_internal::SceneSizeInformation& si, FormatContext& ctx)
+    constexpr auto format(const ramses_internal::SceneSizeInformation& si, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(),
                               "[node={} camera={} transform={} renderable={} state={} datalayout={} datainstance={} renderGroup={} renderPass={} blitPass={} "

@@ -44,18 +44,21 @@ namespace ramses_internal
 
     const char* EffectResource::getVertexShader() const
     {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) safe to get char* from blob
         const char* data = reinterpret_cast<const char*>(getResourceData().data());
         return data;
     }
 
     const char* EffectResource::getFragmentShader() const
     {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) safe to get char* from blob
         const char* data = reinterpret_cast<const char*>(getResourceData().data());
         return data + m_fragmentShaderOffset;
     }
 
     const char* EffectResource::getGeometryShader() const
     {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) safe to get char* from blob
         const char* data = reinterpret_cast<const char*>(getResourceData().data());
         return data + m_geometryShaderOffset;
     }

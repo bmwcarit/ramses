@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-static const char* providerFragmentShaderCode = R"GLSL(
+static const char* const providerFragmentShaderCode = R"GLSL(
 #version 100
 uniform highp vec4 color;
 void main(void)
@@ -15,7 +15,7 @@ void main(void)
 }
 )GLSL";
 
-static const char* providerVertexShaderCode = R"GLSL(
+static const char* const providerVertexShaderCode = R"GLSL(
 #version 100
 uniform highp mat4 mvpMatrix;
 attribute vec3 a_position;
@@ -25,7 +25,7 @@ void main()
 }
 )GLSL";
 
-static const char* consumerVertShader = R"GLSL(
+static const char* const consumerVertShader = R"GLSL(
 #version 100
 uniform highp mat4 mvpMatrix;
 attribute vec3 a_position;
@@ -38,7 +38,7 @@ void main()
 }
 )GLSL";
 
-static const char* consumerFragshader = R"GLSL(
+static const char* const consumerFragshader = R"GLSL(
 #version 100
 precision mediump float;
 uniform sampler2D textureSampler;

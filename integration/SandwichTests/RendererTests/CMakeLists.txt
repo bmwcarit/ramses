@@ -84,7 +84,7 @@ ACME_MODULE(
 if(TARGET EmbeddedCompositingTests-wayland-ivi-egl-es-3-0)
     ACME_ADD_TEST(EmbeddedCompositingTests-wayland-ivi-egl-es-3-0
         RNDSANDWICHTEST_SWRAST
-         -lid 3 -wse wayland-100 -scc --filterOut ShowStreamTextureAfterChangingSurfaceSize -wsegn ramses-build
+         -lid 3 -scc --filterOut ShowStreamTextureAfterChangingSurfaceSize
         )
 endif()
 
@@ -132,7 +132,7 @@ IF (ramses-sdk_BUILD_TESTS)
                 # A limited set of EC tests executed in the gate (executing all tests takes too long)
                 ACME_ADD_TEST(EmbeddedCompositingTests-${TEST_PLATFORM}
                     RNDSANDWICHTEST_VALGRINDGATE
-                     -scc -lid 3 -wse wayland-100 -wsegn ramses-build --filterIn ShowStreamTextureAfterRecreatingScene:Recreated:ClientCanBindMultipleTimes
+                     -scc -lid 3 --filterIn ShowStreamTextureAfterRecreatingScene:Recreated:ClientCanBindMultipleTimes
                 )
             ENDIF()
 

@@ -58,6 +58,7 @@ namespace ramses
         metaDataStream << llhash;
         metaDataStream << name;
         metaDataStream << static_cast<uint32_t>(type);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) external API expects char* to binary data
         const cityhash::uint128 cityHashMetadataAndBlob = cityhash::CityHash128(reinterpret_cast<const char*>(metaDataStream.getData()), metaDataStream.getSize());
         hash.highPart = cityhash::Uint128High64(cityHashMetadataAndBlob);
         hash.lowPart = cityhash::Uint128Low64(cityHashMetadataAndBlob);

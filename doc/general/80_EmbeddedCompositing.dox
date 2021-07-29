@@ -34,7 +34,7 @@ and use such a socket on the RAMSES renderer to use the nested
 compositing functionality.
 
 In the most common way the RAMSES renderer creates the socket file. This
-can be done by settig the file name in the renderer configuration.
+can be done by settig the file name in the display configuration.
 RAMSES will then on startup (if embedded compositing is available)
 create the unix domain socket. Client applications can connect to the socket
 created by the renderer using the socket name, the socket file descriptor or the dedicated
@@ -47,7 +47,7 @@ The second way to create a unix domain socket to be used for connection between 
 is to create and bind the unix domain socket outside of RAMSES and
 only pass it's file descriptor to the renderer. This way, the renderer and all clients can
 be started separately and independently from each other. For more details,
-check \ref ramses::RendererConfig::setWaylandEmbeddedCompositingSocketFD.
+check \ref ramses::DisplayConfig::setWaylandEmbeddedCompositingSocketFD.
 
 
 ## Configuration
@@ -75,7 +75,7 @@ Command line
     or
     --wayland-socket-embedded filename
 
-API in `RendererConfig`
+API in `DisplayConfig`
 
     status_t setWaylandEmbeddedCompositingSocketName(const char* socketname);
 
@@ -90,14 +90,14 @@ Command line
     or
     --wayland-socket-embedded-groupname groupname
 
-API in `RendererConfig` : \ref ramses::RendererConfig::setWaylandEmbeddedCompositingSocketGroup
+API in `DisplayConfig` : \ref ramses::DisplayConfig::setWaylandEmbeddedCompositingSocketGroup
 
 #### Socket file descriptor
 
 Instead of the creating the socket file via RAMSES, you can provide
 the externally created socket file descriptor.
 
-This works via API in `RendererConfig` : \ref ramses::RendererConfig::setWaylandEmbeddedCompositingSocketFD
+This works via API in `DisplayConfig` : \ref ramses::DisplayConfig::setWaylandEmbeddedCompositingSocketFD
 
 
 ## Embedded Compositing API

@@ -32,6 +32,7 @@ namespace ramses_internal
         }
 
         wl_display*       display = nullptr;
+        int               displayFD = -1;
         wl_registry*      registry = nullptr;
         wl_surface*       surface = nullptr;
         wl_compositor*    compositor = nullptr;

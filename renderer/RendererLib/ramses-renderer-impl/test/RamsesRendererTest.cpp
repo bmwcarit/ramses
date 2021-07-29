@@ -231,6 +231,47 @@ TEST_F(ARamsesRenderer, createsCommandForLoggingRenderInfo)
     cmdVisitor.visit(commandBuffer);
 }
 
+TEST_F(ARamsesRenderer, canCreateDisplayWithEmbeddedCompositingSetOnRendererConfig)
+{
+    ramses::RamsesFramework ramsesFramework;
+    ramses::RendererConfig rendererConfig;
+    rendererConfig.setWaylandEmbeddedCompositingSocketName("ec-socket");
+    ramses::RamsesRenderer* ramsesRenderer = ramsesFramework.createRenderer(rendererConfig);
+
+    const ramses::displayId_t displayId = ramsesRenderer->createDisplay({});
+    EXPECT_NE(ramses::displayId_t::Invalid(), displayId);
+
+    EXPECT_CALL(cmdVisitor, createDisplayContext(_, ramses_internal::DisplayHandle{ displayId.getValue() }, _));
+    cmdVisitor.visit(ramsesRenderer->impl.getPendingCommands());
+}
+
+TEST_F(ARamsesRenderer, canCreateDisplayWithEmbeddedCompositingSetOnDisplayConfig)
+{
+    ramses::DisplayConfig displayConfig;
+    displayConfig.setWaylandEmbeddedCompositingSocketName("ec-socket");
+    const ramses::displayId_t displayId = renderer.createDisplay(displayConfig);
+    EXPECT_NE(ramses::displayId_t::Invalid(), displayId);
+
+    EXPECT_CALL(cmdVisitor, createDisplayContext(_, ramses_internal::DisplayHandle{ displayId.getValue() }, _));
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRenderer, canNotCreateDisplayIfEmbeddedCompositingSetOnBothRendererAndDisplayConfig)
+{
+    ramses::RamsesFramework ramsesFramework;
+    ramses::RendererConfig rendererConfig;
+    rendererConfig.setWaylandEmbeddedCompositingSocketName("ec-socket");
+    ramses::RamsesRenderer* ramsesRenderer = ramsesFramework.createRenderer(rendererConfig);
+
+    ramses::DisplayConfig displayConfig;
+    displayConfig.setWaylandEmbeddedCompositingSocketName("ec-socket");
+    const ramses::displayId_t displayId = ramsesRenderer->createDisplay(displayConfig);
+    EXPECT_EQ(ramses::displayId_t::Invalid(), displayId);
+
+    EXPECT_CALL(cmdVisitor, createDisplayContext(_, ramses_internal::DisplayHandle{ displayId.getValue() }, _)).Times(0u);
+    cmdVisitor.visit(ramsesRenderer->impl.getPendingCommands());
+}
+
 /*
 * Update warping data
 */

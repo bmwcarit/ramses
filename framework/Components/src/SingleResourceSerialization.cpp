@@ -56,14 +56,14 @@ namespace ramses_internal
         {
             // read compressed data from stream
             CompressedResourceBlob compressedData(header.compressedSize);
-            input.read(reinterpret_cast<char*>(compressedData.data()), static_cast<uint32_t>(compressedData.size()));
+            input.read(compressedData.data(), compressedData.size());
             header.resource->setCompressedResourceData(std::move(compressedData), IResource::CompressionLevel::Offline, header.decompressedSize, hash);
         }
         else
         {
             // read uncompressed data from stream
             ResourceBlob uncompressedData(header.decompressedSize);
-            input.read(reinterpret_cast<char*>(uncompressedData.data()), static_cast<uint32_t>(uncompressedData.size()));
+            input.read(uncompressedData.data(), uncompressedData.size());
             header.resource->setResourceData(std::move(uncompressedData), hash);
         }
 

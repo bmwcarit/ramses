@@ -41,8 +41,10 @@ namespace ramses_internal
         CommandLineParser m_parser;
         ArgumentBool   m_helpArgument;
         ArgumentString m_scenePathAndFileArgument;
+        ArgumentBool   m_noValidation;
         ArgumentString m_validationUnrequiredObjectsDirectoryArgument;
         ArgumentString m_screenshotFile;
+        ArgumentBool   m_noSkub;
     };
 }
 

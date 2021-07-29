@@ -41,7 +41,7 @@ namespace ramses
         return ramses_internal::EVisibilityMode::Visible;
     }
 
-    const char* VisibilityModeNames[] =
+    const char* const VisibilityModeNames[] =
     {
         "Off",
         "Invisible",

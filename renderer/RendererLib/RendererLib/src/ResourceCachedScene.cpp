@@ -623,15 +623,15 @@ namespace ramses_internal
 
     void ResourceCachedScene::updateRenderableVertexArrays(const IResourceDeviceHandleAccessor& resourceAccessor, const RenderableVector& renderablesWithUpdatedVertexArrays)
     {
-        bool dirtyVaoLeft = false;
         for (const auto renderableHandle : renderablesWithUpdatedVertexArrays)
         {
             const UInt32 renderableAsIndex = renderableHandle.asMemoryHandle();
             assert(m_renderableVertexArrayDirty[renderableAsIndex]);
 
             m_vertexArrayCache[renderableAsIndex].deviceHandle = {};
-            const bool renderableResourcesUploaded = !m_renderableResourcesDirty[renderableAsIndex];
-            if (isRenderableAllocated(renderableHandle) && renderableResourcesUploaded)
+            if (!isRenderableAllocated(renderableHandle))
+                setRenderableVertexArrayDirtyFlag(renderableHandle, false);
+            else if (!m_renderableResourcesDirty[renderableAsIndex])
             {
                 assert(getRenderable(renderableHandle).visibilityMode != EVisibilityMode::Off);
                 const auto geometryInstance = getRenderable(renderableHandle).dataInstances[ERenderableDataSlotType_Geometry];
@@ -642,15 +642,15 @@ namespace ramses_internal
 
                 m_vertexArrayCache[renderableAsIndex].usesIndexArray = usesIndices;
                 m_vertexArrayCache[renderableAsIndex].deviceHandle = resourceAccessor.getVertexArrayDeviceHandle(renderableHandle, getSceneId());
-            }
 
-            if (renderableResourcesUploaded)
                 setRenderableVertexArrayDirtyFlag(renderableHandle, false);
-            else
-                dirtyVaoLeft = true;
+            }
         }
+    }
 
-        m_renderableVertexArraysDirty = dirtyVaoLeft;
+    void ResourceCachedScene::markVertexArraysClean()
+    {
+        m_renderableVertexArraysDirty = false;
     }
 
     Bool ResourceCachedScene::doesDataInstanceReferToDirtyTextureSampler(DataInstanceHandle handle) const

@@ -497,12 +497,14 @@ namespace ramses
     template <typename ContainerT, typename ElementT>
     status_t AppearanceImpl::setInputValueWithElementTypeCast(const EffectInputImpl& input, uint32_t elementCount, const ElementT* valuesIn)
     {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(tobias) questionable if correct because ContainerT not POD
         return setDataArrayChecked<ContainerT>(elementCount, reinterpret_cast<const ContainerT*>(valuesIn), input);
     }
 
     template <typename ContainerT, typename ElementT>
     status_t AppearanceImpl::getInputValueWithElementTypeCast(const EffectInputImpl& input, uint32_t elementCount, ElementT* valuesOut) const
     {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(tobias) questionable if correct because ContainerT not POD
         return getDataArrayChecked<ContainerT>(elementCount, reinterpret_cast<ContainerT*>(valuesOut), input);
     }
 

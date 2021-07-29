@@ -7,9 +7,10 @@
 //  -------------------------------------------------------------------------
 
 #include "renderer_common_gmock_header.h"
-#include "gtest/gtest.h"
+#include "gmock/gmock.h"
 #include "RendererLib/SceneExpirationMonitor.h"
 #include "RendererLib/RendererScenes.h"
+#include "RendererLib/RendererStatistics.h"
 #include "RendererEventCollector.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Utils/ThreadLocalLog.h"
@@ -22,7 +23,7 @@ class ASceneExpirationMonitor : public ::testing::Test
 public:
     ASceneExpirationMonitor()
         : rendererScenes(eventCollector)
-        , expirationMonitor(rendererScenes, eventCollector)
+        , expirationMonitor(rendererScenes, eventCollector, statistics)
     {
         // caller is expected to have a display prefix for logs
         ThreadLocalLog::SetPrefix(1);
@@ -82,9 +83,24 @@ protected:
         }
     }
 
+    void stopMonitoringSceneAndDiscardAllEvents(SceneId sceneId)
+    {
+        expirationMonitor.onDestroyed(sceneId);
+        RendererEventVector dummy;
+        eventCollector.appendAndConsumePendingEvents(dummy, dummy);
+    }
+
+    std::string logOutput() const
+    {
+        StringOutputStream strstr;
+        statistics.writeStatsToStream(strstr);
+        return strstr.release();
+    }
+
     RendererEventCollector eventCollector;
     RendererScenes         rendererScenes;
     SceneExpirationMonitor expirationMonitor;
+    RendererStatistics     statistics;
 
     const FlushTime::Clock::time_point currentFakeTime{ std::chrono::milliseconds(10000) };
 
@@ -826,4 +842,102 @@ TEST_F(ASceneExpirationMonitor, willReportExpiredIfReenabledWhileExpired)
     expectEvents({ { scene1, ERendererEventType::SceneExpired } });
 
     stopMonitoringScenes({ scene1 });
+}
+
+TEST_F(ASceneExpirationMonitor, willReportExpirationAppliedToStatistics)
+{
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1), {}, 0);
+
+    expirationMonitor.checkExpiredScenes(currentFakeTime);
+    statistics.frameFinished(0u);
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (0/1:-1/-1/-1)"));
+
+    statistics.reset();
+
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(10));
+    statistics.frameFinished(0u);
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (1/1:9/9/9)"));
+
+    stopMonitoringSceneAndDiscardAllEvents(scene1);
+}
+
+TEST_F(ASceneExpirationMonitor, willReportExpirationRenderedToStatistics)
+{
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1), {}, 0);
+    expirationMonitor.onRendered(scene1);
+
+    expirationMonitor.checkExpiredScenes(currentFakeTime);
+    statistics.frameFinished(0u);
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (0/1:-1/-1/-1)"));
+
+    statistics.reset();
+
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(10));
+    statistics.frameFinished(0u);
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (1/1:9/9/9)"));
+
+    stopMonitoringSceneAndDiscardAllEvents(scene1);
+}
+
+TEST_F(ASceneExpirationMonitor, willReportExpirationPendingToStatistics)
+{
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::hours(1), {}, 0);
+
+    auto& pendingFlushes = rendererScenes.getStagingInfo(scene1).pendingData.pendingFlushes;
+    pendingFlushes.resize(3u);
+    pendingFlushes[0].timeInfo.expirationTimestamp = FlushTime::InvalidTimestamp;
+    pendingFlushes[1].timeInfo.expirationTimestamp = currentFakeTime;
+    pendingFlushes[2].timeInfo.expirationTimestamp = currentFakeTime + std::chrono::milliseconds(1);
+
+    expirationMonitor.checkExpiredScenes(currentFakeTime);
+    statistics.frameFinished(0u);
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (0/1:-1/-1/-1)"));
+
+    statistics.reset();
+
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(10));
+    statistics.frameFinished(0u);
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (1/1:9/9/9)"));
+
+    stopMonitoringSceneAndDiscardAllEvents(scene1);
+}
+
+TEST_F(ASceneExpirationMonitor, willReportMaximumExpirationToStatistics)
+{
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(5), {}, 0);
+    expirationMonitor.onRendered(scene1);
+
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(4), {}, 0);
+
+    auto& pendingFlushes = rendererScenes.getStagingInfo(scene1).pendingData.pendingFlushes;
+    pendingFlushes.resize(3u);
+    pendingFlushes[0].timeInfo.expirationTimestamp = FlushTime::InvalidTimestamp;
+    pendingFlushes[1].timeInfo.expirationTimestamp = currentFakeTime;
+    pendingFlushes[2].timeInfo.expirationTimestamp = currentFakeTime + std::chrono::milliseconds(3);
+
+    expirationMonitor.checkExpiredScenes(currentFakeTime);
+    statistics.frameFinished(0u);
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (0/1:-3/-3/-3)"));
+
+    statistics.reset();
+
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(2), {}, 0);
+    expirationMonitor.onRendered(scene1);
+
+    expirationMonitor.checkExpiredScenes(currentFakeTime);
+    statistics.frameFinished(0u);
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (0/1:-2/-2/-2)"));
+
+    statistics.reset();
+
+    expirationMonitor.onFlushApplied(scene1, currentFakeTime + std::chrono::milliseconds(1), {}, 0);
+    expirationMonitor.onRendered(scene1);
+
+    expirationMonitor.checkExpiredScenes(currentFakeTime + std::chrono::milliseconds(2));
+    statistics.frameFinished(0u);
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (1/1:1/1/1)"));
+
+    statistics.reset();
+
+    stopMonitoringSceneAndDiscardAllEvents(scene1);
 }

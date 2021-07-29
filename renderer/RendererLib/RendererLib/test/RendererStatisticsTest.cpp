@@ -331,6 +331,39 @@ TEST_F(ARendererStatistics, tracksShaderCompilationAndTimes)
     EXPECT_THAT(logOutput(), Not(HasSubstr("shadersCompiled")));
 }
 
+
+TEST_F(ARendererStatistics, tracksExpirationOffsets)
+{
+    stats.addExpirationOffset(sceneId1, -100);
+    stats.addExpirationOffset(sceneId1, -80);
+    stats.addExpirationOffset(sceneId1, -120);
+    stats.frameFinished(0u);
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (0/3:-120/-80/-100)"));
+    stats.reset();
+
+    stats.addExpirationOffset(sceneId1, -30);
+    stats.addExpirationOffset(sceneId1, 10);
+    stats.addExpirationOffset(sceneId1, -10);
+    stats.frameFinished(0u);
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (1/3:-30/10/-10)"));
+    stats.reset();
+
+    stats.addExpirationOffset(sceneId1, -30);
+    stats.addExpirationOffset(sceneId2, 30);
+    stats.addExpirationOffset(sceneId1, -20);
+    stats.addExpirationOffset(sceneId2, 20);
+    stats.addExpirationOffset(sceneId1, -10);
+    stats.addExpirationOffset(sceneId2, 10);
+    stats.frameFinished(0u);
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (0/3:-30/-10/-20)"));
+    EXPECT_THAT(logOutput(), HasSubstr("Exp (3/3:10/30/20)"));
+    stats.reset();
+
+    stats.frameFinished(0u);
+    EXPECT_THAT(logOutput(), Not(HasSubstr("Exp (")));
+}
+
+
 TEST_F(ARendererStatistics, confidenceTest_fullLogOutput)
 {
     for (size_t period = 0u; period < 2u; ++period)

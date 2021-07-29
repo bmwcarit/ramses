@@ -66,6 +66,44 @@ namespace ramses
         /// Camera frustum far plane
         float farPlane;
     };
+
+    /**
+     * @brief Struct containing extended metadata about car model views
+     * It's an extension for CarModelViewMetadata
+     */
+    struct CarModelViewMetadataExtended
+    {
+        /**
+         * @brief Equals operator
+         *
+         * @param[in] rhs The instance to compare to
+         * @return True if equal, false otherwise
+         */
+        constexpr bool operator==(const CarModelViewMetadataExtended& rhs) const
+        {
+            return roll == rhs.roll && cameraLocalTranslation_x == rhs.cameraLocalTranslation_x && cameraLocalTranslation_y == rhs.cameraLocalTranslation_y &&
+                   cameraLocalTranslation_z == rhs.cameraLocalTranslation_z;
+        }
+
+        /**
+         * @brief The inequality comparison operator
+         * @param rhs The instance to compare to
+         * @return True if not same, false otherwise
+         */
+        constexpr bool operator!=(const CarModelViewMetadataExtended& rhs) const
+        {
+            return !(*this == rhs);
+        }
+
+        /// The roll of the view
+        float roll;
+        /// The x value of the local camera translation
+        float cameraLocalTranslation_x;
+        /// The y value of the local camera translation
+        float cameraLocalTranslation_y;
+        /// The z value of the local camera translation
+        float cameraLocalTranslation_z;
+    };
 }
 
 #endif

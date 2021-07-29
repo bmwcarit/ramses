@@ -149,10 +149,12 @@ namespace ramses_internal
             }
             case ERendererEventType::SceneDataSlotProviderCreated:
             case ERendererEventType::SceneDataSlotProviderDestroyed:
+                // implicit or irrelevant - if for referenced scene, these must be removed from event queue but are not sent to master scene client
+                return findMasterSceneForReferencedScene(evt.providerSceneId).isValid();
             case ERendererEventType::SceneDataSlotConsumerCreated:
             case ERendererEventType::SceneDataSlotConsumerDestroyed:
                 // implicit or irrelevant - if for referenced scene, these must be removed from event queue but are not sent to master scene client
-                return findMasterSceneForReferencedScene(evt.sceneId).isValid();
+                return findMasterSceneForReferencedScene(evt.consumerSceneId).isValid();
             case ERendererEventType::SceneDataBufferLinked:
             case ERendererEventType::SceneDataBufferLinkFailed:
             case ERendererEventType::SceneDataUnlinkedAsResultOfClientSceneChange:
@@ -274,12 +276,9 @@ namespace ramses_internal
                 for (const auto& sceneRefIt : masterInfo.sceneReferences)
                 {
                     const auto sceneRefId = sceneRefIt.first;
-                    if (m_rendererScenes.hasScene(sceneRefId))
-                    {
-                        const auto cleanupState = RendererSceneState::Available;
-                        LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: cleaning up (master {} / ref {}) by setting state to {}", masterScene.first, sceneRefId, EnumToString(cleanupState));
-                        m_sceneLogic.setSceneState(sceneRefId, cleanupState);
-                    }
+                    constexpr auto cleanupState = RendererSceneState::Available;
+                    LOG_INFO_P(CONTEXT_RENDERER, "SceneReferenceLogic: cleaning up (master {} / ref {}) by setting state to {}", masterScene.first, sceneRefId, EnumToString(cleanupState));
+                    m_sceneLogic.setSceneState(sceneRefId, cleanupState);
                 }
                 masterInfo.pendingActions.clear();
                 masterInfo.sceneReferencesWithFlushNotification.clear();

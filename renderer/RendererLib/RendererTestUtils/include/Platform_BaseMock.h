@@ -36,7 +36,7 @@ namespace ramses_internal
         MOCK_METHOD(bool, createDeviceUploading, (), (override));
         MOCK_METHOD(bool, createEmbeddedCompositor, (const DisplayConfig& displayConfig), (override));
         MOCK_METHOD(bool, createSystemCompositorController, (), (override));
-        MOCK_METHOD(void, createTextureUploadingAdapter, (), (override));
+        MOCK_METHOD(void, createTextureUploadingAdapter, (const DisplayConfig& displayConfig), (override));
 
         WindowMock*                     window                     = new ::testing::StrictMock<WindowMock>;
         ContextMock*                    context                    = new ::testing::StrictMock<ContextMock>;

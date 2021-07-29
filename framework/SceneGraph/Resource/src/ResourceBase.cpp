@@ -25,8 +25,8 @@ namespace ramses_internal
         else
         {
             // hash blob
-            const char* blobToHash = reinterpret_cast<const char*>(m_data.data());
-            const cityhash::uint128 cityHashBlob = cityhash::CityHash128(blobToHash, m_data.size());
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) external API expects char* to binary data
+            const cityhash::uint128 cityHashBlob = cityhash::CityHash128(reinterpret_cast<const char*>(m_data.data()), m_data.size());
 
             // hash metadata
             BinaryOutputStream metaDataStream(1024);
@@ -34,6 +34,7 @@ namespace ramses_internal
             serializeResourceMetadataToStream(metaDataStream);
             metaDataStream << cityhash::Uint128Low64(cityHashBlob);
             metaDataStream << cityhash::Uint128High64(cityHashBlob);
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) external API expects char* to binary data
             const cityhash::uint128 cityHashMetadataAndBlob = cityhash::CityHash128(reinterpret_cast<const char*>(metaDataStream.getData()), metaDataStream.getSize());
 
             // store resource type in resource hash highest nibble. assume enough bits left for hash and useful in case of error

@@ -22,7 +22,6 @@
 
 namespace ramses_internal
 {
-    class RendererConfig;
     class DisplayConfig;
     class IContext;
     class IWaylandCompositorConnection;
@@ -34,7 +33,7 @@ namespace ramses_internal
     class EmbeddedCompositor_Wayland: public IEmbeddedCompositor, public IEmbeddedCompositor_Wayland
     {
     public:
-        EmbeddedCompositor_Wayland(const RendererConfig& rendererConfig, const DisplayConfig& displayConfig, IContext& context);
+        EmbeddedCompositor_Wayland(const DisplayConfig& displayConfig, IContext& context);
         virtual ~EmbeddedCompositor_Wayland() override;
 
         Bool init();

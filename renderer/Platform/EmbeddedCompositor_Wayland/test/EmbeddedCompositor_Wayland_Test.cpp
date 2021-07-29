@@ -166,14 +166,14 @@ namespace ramses_internal
             else
                 WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
 
-            RendererConfig rendererConfig;
-            rendererConfig.setWaylandEmbeddedCompositingSocketName(ecSocketName);
-            rendererConfig.setWaylandEmbeddedCompositingSocketGroup(ecSocketGroup);
-            rendererConfig.setWaylandEmbeddedCompositingSocketFD(ecSocketFD);
+            DisplayConfig displayConfig;
+            displayConfig.setWaylandEmbeddedCompositingSocketName(ecSocketName);
+            displayConfig.setWaylandEmbeddedCompositingSocketGroup(ecSocketGroup);
+            displayConfig.setWaylandEmbeddedCompositingSocketFD(ecSocketFD);
             if (ecSocketPermissions != 0)
-                rendererConfig.setWaylandEmbeddedCompositingSocketPermissions(ecSocketPermissions);
+                displayConfig.setWaylandEmbeddedCompositingSocketPermissions(ecSocketPermissions);
 
-            embeddedCompositor = std::make_unique<EmbeddedCompositor_Wayland>(rendererConfig, DisplayConfig{}, context);
+            embeddedCompositor = std::make_unique<EmbeddedCompositor_Wayland>(displayConfig, context);
             return embeddedCompositor->init();
         }
 

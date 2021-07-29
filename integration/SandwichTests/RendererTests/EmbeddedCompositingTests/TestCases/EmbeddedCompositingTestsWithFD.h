@@ -16,8 +16,7 @@ namespace ramses_internal
     class EmbeddedCompositingTestsWithFD : public IEmbeddedCompositingTest
     {
     public:
-        explicit EmbeddedCompositingTestsWithFD(const String& waylandSocket)
-            : m_waylandSocket(waylandSocket)
+        explicit EmbeddedCompositingTestsWithFD()
         {
         }
 
@@ -35,7 +34,7 @@ namespace ramses_internal
             FDTest_CanConnectUsingWaylandSocketAndWaylandDisplay,
         };
 
-        const String m_waylandSocket;
+        const String m_waylandSocket = EmbeddedCompositingTestsFramework::TestEmbeddedCompositingDisplayName;
     };
 }
 

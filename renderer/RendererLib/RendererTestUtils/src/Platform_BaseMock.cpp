@@ -55,7 +55,7 @@ namespace ramses_internal
             return m_systemCompositorController.get();
         }));
 
-        ON_CALL(*this, createTextureUploadingAdapter()).WillByDefault(Invoke([this]() {
+        ON_CALL(*this, createTextureUploadingAdapter(_)).WillByDefault(Invoke([this](auto&) {
             assert(!m_textureUploadingAdapter);
             m_textureUploadingAdapter = std::move(textureUploadingAdapterOwningPtr);
         }));
