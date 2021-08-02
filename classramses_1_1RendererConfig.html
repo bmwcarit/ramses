@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.105</span>
+   &#160;<span id="projectnumber">27.0.110</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -127,7 +127,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a29abe034f1853338b3535fcc8e9e197e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current setting of embedded compositing display socket name.  <a href="classramses_1_1RendererConfig.html#a29abe034f1853338b3535fcc8e9e197e">More...</a><br /></td></tr>
 <tr class="separator:a29abe034f1853338b3535fcc8e9e197e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9196a63eb52df10afdacc32f47d09323"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RendererConfig.html#a9196a63eb52df10afdacc32f47d09323">setWaylandEmbeddedCompositingSocketGroup</a> (const char *groupname)</td></tr>
-<tr class="memdesc:a9196a63eb52df10afdacc32f47d09323"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request that the embedded compositing display socket obtains the group given by the given name.  <a href="classramses_1_1RendererConfig.html#a9196a63eb52df10afdacc32f47d09323">More...</a><br /></td></tr>
+<tr class="memdesc:a9196a63eb52df10afdacc32f47d09323"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request that the embedded compositing display socket belongs to the given group.  <a href="classramses_1_1RendererConfig.html#a9196a63eb52df10afdacc32f47d09323">More...</a><br /></td></tr>
 <tr class="separator:a9196a63eb52df10afdacc32f47d09323"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad77fb27c024c6b7c80958a3fa0e5af8e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1RendererConfig.html#ad77fb27c024c6b7c80958a3fa0e5af8e">setWaylandEmbeddedCompositingSocketPermissions</a> (uint32_t permissions)</td></tr>
 <tr class="memdesc:ad77fb27c024c6b7c80958a3fa0e5af8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request that the embedded compositing display socket obtains the permissions given.  <a href="classramses_1_1RendererConfig.html#ad77fb27c024c6b7c80958a3fa0e5af8e">More...</a><br /></td></tr>
@@ -376,6 +376,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Get the current setting of embedded compositing display socket name. </p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000008">Deprecated:</a></b></dt><dd>This function is deprecated and will be removed in one of the next major releases. Use <a class="el" href="classramses_1_1DisplayConfig.html#a2528176e7dfe61a43edefa841b151607" title="Get the current setting of embedded compositing display socket name.">ramses::DisplayConfig::getWaylandEmbeddedCompositingSocketName</a> instead if possible.</dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>Wayland display name to use for embedded compositing socket </dd></dl>
 
 </div>
@@ -568,11 +569,12 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Set the file descriptor for the embedded compositor display socket. </p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000011">Deprecated:</a></b></dt><dd>This function is deprecated and will be removed in one of the next major releases. Use <a class="el" href="classramses_1_1DisplayConfig.html#aa29c7db806eb96c4769f2d0567516147" title="Set the file descriptor for the embedded compositor display socket.">ramses::DisplayConfig::setWaylandEmbeddedCompositingSocketFD</a> instead if possible. Note: setting EC config on both <a class="el" href="classramses_1_1RendererConfig.html" title="The RendererConfig holds a set of parameters to be used to initialize a renderer.">ramses::RendererConfig</a> and <a class="el" href="classramses_1_1DisplayConfig.html" title="The DisplayConfig holds a set of parameters to be used to initialize a display.">ramses::DisplayConfig</a> will lead to display creation failure.</dd></dl>
 <p>The embedded compositor communicates with its clients via a socket file. There are two distinct ways to connect the embedded compositor with its socketfile.</p>
 <p>Either you provide a name for the socket file or the file descriptor of the socket file.</p>
 <p>This method is used to set the file descriptor.</p>
 <p>When the file descriptor is set, the embedded compositor will use this file descriptor directly as its socket. It is expected that this file descriptor is belonging to a file already open, bind and listen to.</p>
-<p>If neither filename nor file descriptor is set display creation will fail. If both filename and file descriptor are set display creation will fail.</p>
+<p>If both filename and file descriptor are set display creation will fail.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">socketFileDescriptor</td><td>The file descriptor of the socket for the embedded compositor.</td></tr>
@@ -599,8 +601,8 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Request that the embedded compositing display socket obtains the group given by the given name. </p>
-<p>This value is only used when socket is given as name, e.g. via <a class="el" href="classramses_1_1RendererConfig.html#a97146e70d5a577718c9f6f7cf631a986" title="Set the name to be used for the embedded compositing display socket name.">setWaylandEmbeddedCompositingSocketName()</a>, not when passed in as filedescriptor.</p>
+<p>Request that the embedded compositing display socket belongs to the given group. </p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000009">Deprecated:</a></b></dt><dd>This function is deprecated and will be removed in one of the next major releases. Use <a class="el" href="classramses_1_1DisplayConfig.html#af31ece7687fb5c6fa4a2284bed5fa15e" title="Request that the embedded compositing display socket belongs to the given group.">ramses::DisplayConfig::setWaylandEmbeddedCompositingSocketGroup</a> instead if possible. Note: setting EC config on both <a class="el" href="classramses_1_1RendererConfig.html" title="The RendererConfig holds a set of parameters to be used to initialize a renderer.">ramses::RendererConfig</a> and <a class="el" href="classramses_1_1DisplayConfig.html" title="The DisplayConfig holds a set of parameters to be used to initialize a display.">ramses::DisplayConfig</a> will lead to display creation failure.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">groupname</td><td>The group name of the socket. </td></tr>
@@ -628,11 +630,12 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Set the name to be used for the embedded compositing display socket name. </p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000007">Deprecated:</a></b></dt><dd>This function is deprecated and will be removed in one of the next major releases. Use <a class="el" href="classramses_1_1DisplayConfig.html#a3d69b3b0e4b91d5c6f741fc8118a7424" title="Set the name to be used for the embedded compositing display socket name.">ramses::DisplayConfig::setWaylandEmbeddedCompositingSocketName</a> instead if possible. Note: setting EC config on both <a class="el" href="classramses_1_1RendererConfig.html" title="The RendererConfig holds a set of parameters to be used to initialize a renderer.">ramses::RendererConfig</a> and <a class="el" href="classramses_1_1DisplayConfig.html" title="The DisplayConfig holds a set of parameters to be used to initialize a display.">ramses::DisplayConfig</a> will lead to display creation failure.</dd></dl>
 <p>The embedded compositor communicates with its clients via a socket file. There are two distinct ways to connect the embedded compositor with its socketfile. Either you provide a name for the socket file or the file descriptor of the socket file.</p>
 <p>This method is used to set the file name of the socket.</p>
-<p>Providing the name of the socket file leads to the embedded compositor searching/creating the socket file in the directory pointed to by $XDG_RUNTIME_DIR. If a groupname or permissions are given, they will be set.</p>
+<p>Providing the name of the socket file leads to the embedded compositor searching/creating the socket file in the directory pointed to by $XDG_RUNTIME_DIR. If a groupname is set, also the group is set.</p>
 <p>Be aware that the socket file name is only used if the file descriptor is set to an invalid value (default), see <a class="el" href="classramses_1_1RendererConfig.html#a19cba6f38acdbe49c7be02896f59842b" title="Set the file descriptor for the embedded compositor display socket.">RendererConfig::setWaylandEmbeddedCompositingSocketFD</a></p>
-<p>If neither filename nor file descriptor is set display creation will fail. If both filename and file descriptor are set display creation will fail.</p>
+<p>If both filename and file descriptor are set display creation will fail.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">socketname</td><td>The file name of the socket file.</td></tr>
@@ -660,6 +663,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Request that the embedded compositing display socket obtains the permissions given. </p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000010">Deprecated:</a></b></dt><dd>This function is deprecated and will be removed in one of the next major releases. Use <a class="el" href="classramses_1_1DisplayConfig.html#a451c624919a97369c81ffbb362ed19c3" title="Request that the embedded compositing display socket obtains the permissions given.">ramses::DisplayConfig::setWaylandEmbeddedCompositingSocketPermissions</a> instead if possible. Note: setting EC config on both <a class="el" href="classramses_1_1RendererConfig.html" title="The RendererConfig holds a set of parameters to be used to initialize a renderer.">ramses::RendererConfig</a> and <a class="el" href="classramses_1_1DisplayConfig.html" title="The DisplayConfig holds a set of parameters to be used to initialize a display.">ramses::DisplayConfig</a> will lead to display creation failure.</dd></dl>
 <p>The format should be the same as expected by chmod() mode argument. Permissions value may not be 0. If not set "user+group can read/write (0660)" is used as default.</p>
 <p>The socket should be readable and writable for the required users, some examples values are:</p><ul>
 <li>Only user r/w: 384u (or in octal 0600)</li>
@@ -694,7 +698,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/c/src/genivi/renderer/RendererLib/ramses-renderer-api/include/ramses-renderer-api/<a class="el" href="RendererConfig_8h_source.html">RendererConfig.h</a></li>
+<li>/c/src/mirror/renderer/RendererLib/ramses-renderer-api/include/ramses-renderer-api/<a class="el" href="RendererConfig_8h_source.html">RendererConfig.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

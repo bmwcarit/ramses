@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.105</span>
+   &#160;<span id="projectnumber">27.0.110</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -232,6 +232,9 @@ $(function() {
 <li>setCarModelView()
 : <a class="el" href="classramses_1_1DcsmMetadataCreator.html#aa6f0a4c8b4a5831a82d2f7bdc47f8f9c">ramses::DcsmMetadataCreator</a>
 </li>
+<li>setCarModelViewExtended()
+: <a class="el" href="classramses_1_1DcsmMetadataCreator.html#ae8f7116a849436f614c08b69b5ec4784">ramses::DcsmMetadataCreator</a>
+</li>
 <li>setCarModelVisibility()
 : <a class="el" href="classramses_1_1DcsmMetadataCreator.html#a6fe3515006aff16c5061cb613a37b05a">ramses::DcsmMetadataCreator</a>
 </li>
@@ -416,6 +419,9 @@ $(function() {
 <li>setLayerVisibility()
 : <a class="el" href="classramses_1_1RamsesRenderer.html#a2b316650d87b61a4dbf4f8c19bd23807">ramses::RamsesRenderer</a>
 </li>
+<li>setLayoutAvailability()
+: <a class="el" href="classramses_1_1DcsmMetadataCreator.html#a610fabba8d57cb2292667e73f4558876">ramses::DcsmMetadataCreator</a>
+</li>
 <li>setLoopMode()
 : <a class="el" href="classramses_1_1RamsesRenderer.html#a2203f9f2e6a6ab233809e1ee85367d89">ramses::RamsesRenderer</a>
 </li>
@@ -482,7 +488,7 @@ $(function() {
 : <a class="el" href="classramses_1_1DisplayConfig.html#ad9d2f99c99c0707d4345c2078753aafb">ramses::DisplayConfig</a>
 </li>
 <li>setRotation()
-: <a class="el" href="classramses_1_1Node.html#acf1c0f0d1ddd4700b2516e87fd2a86d0">ramses::Node</a>
+: <a class="el" href="classramses_1_1Node.html#a0c9769d4deaa0de60452e72acd1ed2db">ramses::Node</a>
 </li>
 <li>setSafeRect()
 : <a class="el" href="classramses_1_1CategoryInfoUpdate.html#a727aa968dffdc429d7ed0edd6670f89d">ramses::CategoryInfoUpdate</a>
@@ -530,10 +536,11 @@ $(function() {
 : <a class="el" href="classramses_1_1RamsesRenderer.html#a6732097772becc5818ba94f7aa845a10">ramses::RamsesRenderer</a>
 </li>
 <li>setSystemCompositorWaylandDisplay()
-: <a class="el" href="classramses_1_1RendererConfig.html#a21ee6f70e4b61fc79e3b2d605a09d509">ramses::RendererConfig</a>
+: <a class="el" href="classramses_1_1DisplayConfig.html#afcd9775e5a47c8432698e147da08feb9">ramses::DisplayConfig</a>
+, <a class="el" href="classramses_1_1RendererConfig.html#a21ee6f70e4b61fc79e3b2d605a09d509">ramses::RendererConfig</a>
 </li>
 <li>setTextureData()
-: <a class="el" href="classramses_1_1TextureSampler.html#a64ea4aa5ff3330f0896e4bea6c439aa9">ramses::TextureSampler</a>
+: <a class="el" href="classramses_1_1TextureSampler.html#a47380d01f9542ca82ace600bde56f07d">ramses::TextureSampler</a>
 </li>
 <li>setTime()
 : <a class="el" href="classramses_1_1AnimationSystem.html#acb47a27af5f5a904f338cb2c053d4b06">ramses::AnimationSystem</a>
@@ -580,16 +587,20 @@ $(function() {
 : <a class="el" href="classramses_1_1DisplayConfig.html#a0b0d1f6d33670505182bad91bdb25336">ramses::DisplayConfig</a>
 </li>
 <li>setWaylandEmbeddedCompositingSocketFD()
-: <a class="el" href="classramses_1_1RendererConfig.html#a19cba6f38acdbe49c7be02896f59842b">ramses::RendererConfig</a>
+: <a class="el" href="classramses_1_1DisplayConfig.html#aa29c7db806eb96c4769f2d0567516147">ramses::DisplayConfig</a>
+, <a class="el" href="classramses_1_1RendererConfig.html#a19cba6f38acdbe49c7be02896f59842b">ramses::RendererConfig</a>
 </li>
 <li>setWaylandEmbeddedCompositingSocketGroup()
-: <a class="el" href="classramses_1_1RendererConfig.html#a9196a63eb52df10afdacc32f47d09323">ramses::RendererConfig</a>
+: <a class="el" href="classramses_1_1DisplayConfig.html#af31ece7687fb5c6fa4a2284bed5fa15e">ramses::DisplayConfig</a>
+, <a class="el" href="classramses_1_1RendererConfig.html#a9196a63eb52df10afdacc32f47d09323">ramses::RendererConfig</a>
 </li>
 <li>setWaylandEmbeddedCompositingSocketName()
-: <a class="el" href="classramses_1_1RendererConfig.html#a97146e70d5a577718c9f6f7cf631a986">ramses::RendererConfig</a>
+: <a class="el" href="classramses_1_1DisplayConfig.html#a3d69b3b0e4b91d5c6f741fc8118a7424">ramses::DisplayConfig</a>
+, <a class="el" href="classramses_1_1RendererConfig.html#a97146e70d5a577718c9f6f7cf631a986">ramses::RendererConfig</a>
 </li>
 <li>setWaylandEmbeddedCompositingSocketPermissions()
-: <a class="el" href="classramses_1_1RendererConfig.html#ad77fb27c024c6b7c80958a3fa0e5af8e">ramses::RendererConfig</a>
+: <a class="el" href="classramses_1_1DisplayConfig.html#a451c624919a97369c81ffbb362ed19c3">ramses::DisplayConfig</a>
+, <a class="el" href="classramses_1_1RendererConfig.html#ad77fb27c024c6b7c80958a3fa0e5af8e">ramses::RendererConfig</a>
 </li>
 <li>setWaylandIviLayerID()
 : <a class="el" href="classramses_1_1DisplayConfig.html#a92079ef324e668e93ec24bad7f336455">ramses::DisplayConfig</a>
@@ -736,9 +747,10 @@ $(function() {
 </li>
 <li>Status
 : <a class="el" href="classramses_1_1StreamStatusMessage.html#ab04c1510bc4ff1b7a16f6741b8489eef">ramses::StreamStatusMessage</a>
+, <a class="el" href="classramses_1_1WidgetFocusStatusMessage.html#ac7daff13a7cca48758daf883c1f85d38">ramses::WidgetFocusStatusMessage</a>
 </li>
 <li>StatusObject()
-: <a class="el" href="classramses_1_1StatusObject.html#a19aaed5d79ca0590e38e800734e65751">ramses::StatusObject</a>
+: <a class="el" href="classramses_1_1StatusObject.html#a0e7d7495b7a081aa9bc3a4b8eac36e19">ramses::StatusObject</a>
 </li>
 <li>stop()
 : <a class="el" href="classramses_1_1AnimationSequence.html#ad56e222c3a4b8fd36f3349a9b26c5513">ramses::AnimationSequence</a>
@@ -777,7 +789,7 @@ $(function() {
 : <a class="el" href="structramses_1_1RamsesVersion.html#a065dad3e3a826575148de1468d678657">ramses::RamsesVersion</a>
 </li>
 <li>StronglyTypedValue()
-: <a class="el" href="classramses_1_1StronglyTypedValue.html#a435e0981de271208171a833842522ee4">ramses::StronglyTypedValue&lt; _baseType, _invalid, _uniqueId &gt;</a>
+: <a class="el" href="classramses_1_1StronglyTypedValue.html#a9df0a155206c3984ca60ffbce05df602">ramses::StronglyTypedValue&lt; _baseType, _invalid, _uniqueId &gt;</a>
 </li>
 <li>supportsCharacter()
 : <a class="el" href="classramses_1_1IFontInstance.html#a86d3640d63a5325c6fbbe6ff164d2b90">ramses::IFontInstance</a>

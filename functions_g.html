@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.105</span>
+   &#160;<span id="projectnumber">27.0.110</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -103,6 +103,9 @@ $(function() {
 <li>getAppearance()
 : <a class="el" href="classramses_1_1MeshNode.html#a1949667b7361191ec10b267b89a00d8d">ramses::MeshNode</a>
 </li>
+<li>getAsActiveLayout()
+: <a class="el" href="classramses_1_1DcsmStatusMessage.html#a7d2c386dff047c6a0a41840ba3d5f02d">ramses::DcsmStatusMessage</a>
+</li>
 <li>getAscender()
 : <a class="el" href="classramses_1_1IFontInstance.html#a4cd837f9bb535970a36fc70c58827739">ramses::IFontInstance</a>
 </li>
@@ -111,6 +114,9 @@ $(function() {
 </li>
 <li>getAsStreamStatus()
 : <a class="el" href="classramses_1_1DcsmStatusMessage.html#a6f0da3cf2db7bda2683284059c59914d">ramses::DcsmStatusMessage</a>
+</li>
+<li>getAsWidgetFocusStatus()
+: <a class="el" href="classramses_1_1DcsmStatusMessage.html#a31931f97a3a9a13736ea78f340733593">ramses::DcsmStatusMessage</a>
 </li>
 <li>getAttributeInput()
 : <a class="el" href="classramses_1_1Effect.html#ad0e65cc103258312bf703f9b3744612c">ramses::Effect</a>
@@ -163,6 +169,9 @@ $(function() {
 </li>
 <li>getCarModelViewAnimationInfo()
 : <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a15922ad9cd354aa21a91f3a18ea21040">ramses::DcsmMetadataUpdate</a>
+</li>
+<li>getCarModelViewExtended()
+: <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a90ca7e03b2fd8a817f9f9e9c30df3089">ramses::DcsmMetadataUpdate</a>
 </li>
 <li>getCarModelVisibility()
 : <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#afeaf793cb6210963270291fd28cf0c19">ramses::DcsmMetadataUpdate</a>
@@ -360,6 +369,12 @@ $(function() {
 : <a class="el" href="classramses_1_1ResourceDataPool.html#a37ece31cb38b75149375fbf15d3dbf7a">ramses::ResourceDataPool</a>
 , <a class="el" href="classramses_1_1Scene.html#abe76540e779cf3a012e0570e0d9767be">ramses::Scene</a>
 </li>
+<li>getLayout()
+: <a class="el" href="classramses_1_1ActiveLayoutMessage.html#a8aa486d4365678b36ddc970487f43733">ramses::ActiveLayoutMessage</a>
+</li>
+<li>getLayoutAvailability()
+: <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#a3a7b034878e0e29d925f880a45fb01a3">ramses::DcsmMetadataUpdate</a>
+</li>
 <li>getLeftPlane()
 : <a class="el" href="classramses_1_1Camera.html#a5f804c0b3fc622cb39378e72617f1756">ramses::Camera</a>
 </li>
@@ -511,7 +526,7 @@ $(function() {
 : <a class="el" href="classramses_1_1Node.html#aede06973b48683a244e6bf1c67b857a0">ramses::Node</a>
 </li>
 <li>getScene()
-: <a class="el" href="classramses_1_1RamsesClient.html#ac7129e4e9c1514418849a00b821e3945">ramses::RamsesClient</a>
+: <a class="el" href="classramses_1_1RamsesClient.html#ab622880cf0503003665d5daa3ed64210">ramses::RamsesClient</a>
 </li>
 <li>getSceneControlAPI()
 : <a class="el" href="classramses_1_1RamsesRenderer.html#aca664b15215a8cb1f410db4da3c65296">ramses::RamsesRenderer</a>
@@ -653,7 +668,8 @@ $(function() {
 : <a class="el" href="classramses_1_1DisplayConfig.html#ad4762f8bcecc33f0d495e2445ae8e6ae">ramses::DisplayConfig</a>
 </li>
 <li>getWaylandEmbeddedCompositingSocketName()
-: <a class="el" href="classramses_1_1RendererConfig.html#a29abe034f1853338b3535fcc8e9e197e">ramses::RendererConfig</a>
+: <a class="el" href="classramses_1_1DisplayConfig.html#a2528176e7dfe61a43edefa841b151607">ramses::DisplayConfig</a>
+, <a class="el" href="classramses_1_1RendererConfig.html#a29abe034f1853338b3535fcc8e9e197e">ramses::RendererConfig</a>
 </li>
 <li>getWaylandIviLayerID()
 : <a class="el" href="classramses_1_1DisplayConfig.html#af4c9394c2aed8ed0c6cce0dde98d1423">ramses::DisplayConfig</a>
@@ -663,6 +679,9 @@ $(function() {
 </li>
 <li>getWidgetBackgroundID()
 : <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#aefd62c518f41393a804390db52255097">ramses::DcsmMetadataUpdate</a>
+</li>
+<li>getWidgetFocusStatus()
+: <a class="el" href="classramses_1_1WidgetFocusStatusMessage.html#aab4fef7127ebd85ed5fd84f88628764c">ramses::WidgetFocusStatusMessage</a>
 </li>
 <li>getWidgetHUDLineID()
 : <a class="el" href="classramses_1_1DcsmMetadataUpdate.html#aa7b81f1c622644187e63165e177b5c51">ramses::DcsmMetadataUpdate</a>

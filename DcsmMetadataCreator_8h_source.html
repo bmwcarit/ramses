@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RAMSES Documentation: /c/src/genivi/framework/ramses-framework-api/include/ramses-framework-api/DcsmMetadataCreator.h Source File</title>
+<title>RAMSES Documentation: /c/src/mirror/framework/ramses-framework-api/include/ramses-framework-api/DcsmMetadataCreator.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.105</span>
+   &#160;<span id="projectnumber">27.0.110</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -111,36 +111,41 @@ $(function() {
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setCarModelView(<span class="keyword">const</span> <a class="code" href="structramses_1_1CarModelViewMetadata.html">CarModelViewMetadata</a>&amp; viewMetadata, <span class="keyword">const</span> <a class="code" href="structramses_1_1AnimationInformation.html">AnimationInformation</a>&amp; timingInfo);</div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setCarModelVisibility(<span class="keywordtype">bool</span> visiblity);</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setExclusiveBackground(<span class="keywordtype">bool</span> state);</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setCarModelViewExtended(<span class="keyword">const</span> <a class="code" href="structramses_1_1CarModelViewMetadataExtended.html">CarModelViewMetadataExtended</a>&amp; viewMetadata);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setCarModelVisibility(<span class="keywordtype">bool</span> visiblity);</div>
 <div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160; </div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setStreamID(int32_t streamID);</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160; </div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setContentFlippedVertically(<span class="keywordtype">bool</span> state);</div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160; </div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setDisplayedDataFlags(uint32_t flags);</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160; </div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>(<a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>&amp;&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160; </div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>&amp; operator=(<a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>&amp;&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160; </div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>(<span class="keyword">const</span> <a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160; </div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setExclusiveBackground(<span class="keywordtype">bool</span> state);</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160; </div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setStreamID(int32_t streamID);</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160; </div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setContentFlippedVertically(<span class="keywordtype">bool</span> state);</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160; </div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setDisplayedDataFlags(uint32_t flags);</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160; </div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setLayoutAvailability(uint8_t flags);</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160; </div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>(<a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>&amp;&amp; other) = <span class="keyword">delete</span>;</div>
 <div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160; </div>
-<div class="line"><a name="l00182"></a><span class="lineno"><a class="line" href="classramses_1_1DcsmMetadataCreator.html#acbf7f30981bba489134b6fa14712e11a">  182</a></span>&#160;        <span class="keyword">class </span>DcsmMetadataCreatorImpl&amp; <a class="code" href="classramses_1_1DcsmMetadataCreator.html#acbf7f30981bba489134b6fa14712e11a">impl</a>;</div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;    };</div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;}</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>&amp; operator=(<a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>&amp;&amp; other) = <span class="keyword">delete</span>;</div>
 <div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160; </div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>(<span class="keyword">const</span> <a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160; </div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;        <a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1DcsmMetadataCreator.html">DcsmMetadataCreator</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160; </div>
+<div class="line"><a name="l00202"></a><span class="lineno"><a class="line" href="classramses_1_1DcsmMetadataCreator.html#acbf7f30981bba489134b6fa14712e11a">  202</a></span>&#160;        <span class="keyword">class </span>DcsmMetadataCreatorImpl&amp; <a class="code" href="classramses_1_1DcsmMetadataCreator.html#acbf7f30981bba489134b6fa14712e11a">impl</a>;</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;    };</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;}</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160; </div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassramses_1_1StatusObject_html"><div class="ttname"><a href="classramses_1_1StatusObject.html">ramses::StatusObject</a></div><div class="ttdoc">The StatusObject provides status message handling.</div><div class="ttdef"><b>Definition:</b> StatusObject.h:21</div></div>
 <div class="ttc" id="astructramses_1_1AnimationInformation_html"><div class="ttname"><a href="structramses_1_1AnimationInformation.html">ramses::AnimationInformation</a></div><div class="ttdef"><b>Definition:</b> DcsmApiTypes.h:151</div></div>
 <div class="ttc" id="astructramses_1_1CarModelViewMetadata_html"><div class="ttname"><a href="structramses_1_1CarModelViewMetadata.html">ramses::CarModelViewMetadata</a></div><div class="ttdoc">Struct containing metadata about car model views.</div><div class="ttdef"><b>Definition:</b> CarModelViewMetadata.h:19</div></div>
 <div class="ttc" id="anamespaceramses_html"><div class="ttname"><a href="namespaceramses.html">ramses</a></div><div class="ttdoc">The RAMSES namespace contains all client side objects and functions used to implement RAMSES applicat...</div><div class="ttdef"><b>Definition:</b> AnimatedProperty.h:14</div></div>
 <div class="ttc" id="aAPIExport_8h_html_a721d93a66de17b98189db7bd091cf29f"><div class="ttname"><a href="APIExport_8h.html#a721d93a66de17b98189db7bd091cf29f">RAMSES_API</a></div><div class="ttdeci">#define RAMSES_API</div><div class="ttdef"><b>Definition:</b> APIExport.h:35</div></div>
-<div class="ttc" id="aclassramses_1_1DcsmMetadataCreator_html_acbf7f30981bba489134b6fa14712e11a"><div class="ttname"><a href="classramses_1_1DcsmMetadataCreator.html#acbf7f30981bba489134b6fa14712e11a">ramses::DcsmMetadataCreator::impl</a></div><div class="ttdeci">class DcsmMetadataCreatorImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> DcsmMetadataCreator.h:182</div></div>
+<div class="ttc" id="astructramses_1_1CarModelViewMetadataExtended_html"><div class="ttname"><a href="structramses_1_1CarModelViewMetadataExtended.html">ramses::CarModelViewMetadataExtended</a></div><div class="ttdoc">Struct containing extended metadata about car model views It's an extension for CarModelViewMetadata.</div><div class="ttdef"><b>Definition:</b> CarModelViewMetadata.h:74</div></div>
+<div class="ttc" id="aclassramses_1_1DcsmMetadataCreator_html_acbf7f30981bba489134b6fa14712e11a"><div class="ttname"><a href="classramses_1_1DcsmMetadataCreator.html#acbf7f30981bba489134b6fa14712e11a">ramses::DcsmMetadataCreator::impl</a></div><div class="ttdeci">class DcsmMetadataCreatorImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> DcsmMetadataCreator.h:202</div></div>
 <div class="ttc" id="aclassramses_1_1DcsmMetadataCreator_html"><div class="ttname"><a href="classramses_1_1DcsmMetadataCreator.html">ramses::DcsmMetadataCreator</a></div><div class="ttdoc">Class to create DCSM metadata object to be used in DcsmProvider.</div><div class="ttdef"><b>Definition:</b> DcsmMetadataCreator.h:29</div></div>
 <div class="ttc" id="anamespaceramses_html_a4f09a899b38b8d7bc61f01a2d181ea22"><div class="ttname"><a href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">ramses::status_t</a></div><div class="ttdeci">uint32_t status_t</div><div class="ttdoc">Status is a handle to the result of an API call.</div><div class="ttdef"><b>Definition:</b> RamsesFrameworkTypes.h:25</div></div>
 <div class="ttc" id="aRamsesFrameworkTypes_8h_html"><div class="ttname"><a href="RamsesFrameworkTypes_8h.html">RamsesFrameworkTypes.h</a></div></div>

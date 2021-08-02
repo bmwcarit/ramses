@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.105</span>
+   &#160;<span id="projectnumber">27.0.110</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -78,8 +78,8 @@ Introduction</h2>
 <p>RAMSES provides an API for embedded compositing. Note that for embedded compositing to work the platform's system compositor has to support the wayland protocol.</p>
 <p>The RAMSES renderer as a provider of the compositing service is called the <em>server</em>, while the other applications embedding their surfaces are called <em>clients</em>.</p>
 <p>To establish a connection between the server and its client processes a UNIX domain socket (IPC) is used. There are two distinct ways to create and use such a socket on the RAMSES renderer to use the nested compositing functionality.</p>
-<p>In the most common way the RAMSES renderer creates the socket file. This can be done by settig the file name in the renderer configuration. RAMSES will then on startup (if embedded compositing is available) create the unix domain socket. Client applications can connect to the socket created by the renderer using the socket name, the socket file descriptor or the dedicated environment variables as specified by wayland protocol: WAYLAND_DISPLAY or WAYLAND_SOCKET (for more info refer to official Wayland docs).</p>
-<p>Letting RAMSES create the socket file implies that all the clients can be started only after the renderer has fully inititalized. The second way to create a unix domain socket to be used for connection between server and client is to create and bind the unix domain socket outside of RAMSES and only pass it's file descriptor to the renderer. This way, the renderer and all clients can be started separately and independently from each other. For more details, check <a class="el" href="classramses_1_1RendererConfig.html#a19cba6f38acdbe49c7be02896f59842b">ramses::RendererConfig::setWaylandEmbeddedCompositingSocketFD</a>.</p>
+<p>In the most common way the RAMSES renderer creates the socket file. This can be done by settig the file name in the display configuration. RAMSES will then on startup (if embedded compositing is available) create the unix domain socket. Client applications can connect to the socket created by the renderer using the socket name, the socket file descriptor or the dedicated environment variables as specified by wayland protocol: WAYLAND_DISPLAY or WAYLAND_SOCKET (for more info refer to official Wayland docs).</p>
+<p>Letting RAMSES create the socket file implies that all the clients can be started only after the renderer has fully inititalized. The second way to create a unix domain socket to be used for connection between server and client is to create and bind the unix domain socket outside of RAMSES and only pass it's file descriptor to the renderer. This way, the renderer and all clients can be started separately and independently from each other. For more details, check <a class="el" href="classramses_1_1DisplayConfig.html#aa29c7db806eb96c4769f2d0567516147">ramses::DisplayConfig::setWaylandEmbeddedCompositingSocketFD</a>.</p>
 <h2><a class="anchor" id="autotoc_md178"></a>
 Configuration</h2>
 <p>Configuration might happen via command line or via API.</p>
@@ -91,18 +91,18 @@ Socket filename</h4>
 <p>Command line </p><pre class="fragment">-wse filename
 or
 --wayland-socket-embedded filename
-</pre><p>API in <code>RendererConfig</code> </p><pre class="fragment">status_t setWaylandEmbeddedCompositingSocketName(const char* socketname);
+</pre><p>API in <code>DisplayConfig</code> </p><pre class="fragment">status_t setWaylandEmbeddedCompositingSocketName(const char* socketname);
 </pre><h4><a class="anchor" id="autotoc_md180"></a>
 Socket group ownership.</h4>
 <p>It's possible to set the groupname for the socket file. If this option is set the group ownership of the socket file will be transered to this group.</p>
 <p>Command line </p><pre class="fragment">-wsegn groupname
 or
 --wayland-socket-embedded-groupname groupname
-</pre><p>API in <code>RendererConfig</code> : <a class="el" href="classramses_1_1RendererConfig.html#a9196a63eb52df10afdacc32f47d09323">ramses::RendererConfig::setWaylandEmbeddedCompositingSocketGroup</a></p>
+</pre><p>API in <code>DisplayConfig</code> : <a class="el" href="classramses_1_1DisplayConfig.html#af31ece7687fb5c6fa4a2284bed5fa15e">ramses::DisplayConfig::setWaylandEmbeddedCompositingSocketGroup</a></p>
 <h4><a class="anchor" id="autotoc_md181"></a>
 Socket file descriptor</h4>
 <p>Instead of the creating the socket file via RAMSES, you can provide the externally created socket file descriptor.</p>
-<p>This works via API in <code>RendererConfig</code> : <a class="el" href="classramses_1_1RendererConfig.html#a19cba6f38acdbe49c7be02896f59842b">ramses::RendererConfig::setWaylandEmbeddedCompositingSocketFD</a></p>
+<p>This works via API in <code>DisplayConfig</code> : <a class="el" href="classramses_1_1DisplayConfig.html#aa29c7db806eb96c4769f2d0567516147">ramses::DisplayConfig::setWaylandEmbeddedCompositingSocketFD</a></p>
 <h2><a class="anchor" id="autotoc_md182"></a>
 Embedded Compositing API</h2>
 <p>The only type available for RAMSES clients to facilitate embedded compositing is <a class="el" href="classramses_1_1StreamTexture.html">ramses::StreamTexture</a>. The notion behind the StreamTexture is that</p><ul>

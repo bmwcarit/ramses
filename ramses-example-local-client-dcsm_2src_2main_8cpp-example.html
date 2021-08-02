@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.105</span>
+   &#160;<span id="projectnumber">27.0.110</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -77,7 +77,7 @@ $(function() {
 <div class="line"><span class="comment">//  file, You can obtain one at https://mozilla.org/MPL/2.0/.</span></div>
 <div class="line"><span class="comment">//  -------------------------------------------------------------------------</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* providerFragmentShaderCode = R<span class="stringliteral">&quot;GLSL(</span></div>
+<div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> providerFragmentShaderCode = R<span class="stringliteral">&quot;GLSL(</span></div>
 <div class="line"><span class="stringliteral">#version 100</span></div>
 <div class="line"><span class="stringliteral">uniform highp vec4 color;</span></div>
 <div class="line"><span class="stringliteral">void main(void)</span></div>
@@ -86,7 +86,7 @@ $(function() {
 <div class="line"><span class="stringliteral">}</span></div>
 <div class="line"><span class="stringliteral">)GLSL&quot;;</span></div>
 <div class="line"><span class="stringliteral"></span> </div>
-<div class="line"><span class="stringliteral"></span><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* providerVertexShaderCode = R<span class="stringliteral">&quot;GLSL(</span></div>
+<div class="line"><span class="stringliteral"></span><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> providerVertexShaderCode = R<span class="stringliteral">&quot;GLSL(</span></div>
 <div class="line"><span class="stringliteral">#version 100</span></div>
 <div class="line"><span class="stringliteral">uniform highp mat4 mvpMatrix;</span></div>
 <div class="line"><span class="stringliteral">attribute vec3 a_position;</span></div>
@@ -96,7 +96,7 @@ $(function() {
 <div class="line"><span class="stringliteral">}</span></div>
 <div class="line"><span class="stringliteral">)GLSL&quot;;</span></div>
 <div class="line"><span class="stringliteral"></span> </div>
-<div class="line"><span class="stringliteral"></span><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* consumerVertShader = R<span class="stringliteral">&quot;GLSL(</span></div>
+<div class="line"><span class="stringliteral"></span><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> consumerVertShader = R<span class="stringliteral">&quot;GLSL(</span></div>
 <div class="line"><span class="stringliteral">#version 100</span></div>
 <div class="line"><span class="stringliteral">uniform highp mat4 mvpMatrix;</span></div>
 <div class="line"><span class="stringliteral">attribute vec3 a_position;</span></div>
@@ -109,7 +109,7 @@ $(function() {
 <div class="line"><span class="stringliteral">}</span></div>
 <div class="line"><span class="stringliteral">)GLSL&quot;;</span></div>
 <div class="line"><span class="stringliteral"></span> </div>
-<div class="line"><span class="stringliteral"></span><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* consumerFragshader = R<span class="stringliteral">&quot;GLSL(</span></div>
+<div class="line"><span class="stringliteral"></span><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> consumerFragshader = R<span class="stringliteral">&quot;GLSL(</span></div>
 <div class="line"><span class="stringliteral">#version 100</span></div>
 <div class="line"><span class="stringliteral">precision mediump float;</span></div>
 <div class="line"><span class="stringliteral">uniform sampler2D textureSampler;</span></div>

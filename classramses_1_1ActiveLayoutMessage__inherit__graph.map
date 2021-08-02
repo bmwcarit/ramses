@@ -1,0 +1,4 @@
+<map id="ramses::ActiveLayoutMessage" name="ramses::ActiveLayoutMessage">
+<area shape="rect" id="node1" title="A status message containing the instrument cluster&#39;s active layout." alt="" coords="5,80,227,107"/>
+<area shape="rect" id="node2" href="$classramses_1_1DcsmStatusMessage.html" title="The base class of a message to be sent from DCSM consumer to provider." alt="" coords="9,5,223,32"/>
+</map>

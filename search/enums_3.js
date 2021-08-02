@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['status_3264',['Status',['../classramses_1_1StreamStatusMessage.html#ab04c1510bc4ff1b7a16f6741b8489eef',1,'ramses::StreamStatusMessage']]]
+  ['rendererscenestate_3312',['RendererSceneState',['../namespaceramses.html#a7eda01f5f51a4235b9185fdaa007e82c',1,'ramses']]]
 ];

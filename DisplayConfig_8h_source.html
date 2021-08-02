@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RAMSES Documentation: /c/src/genivi/renderer/RendererLib/ramses-renderer-api/include/ramses-renderer-api/DisplayConfig.h Source File</title>
+<title>RAMSES Documentation: /c/src/mirror/renderer/RendererLib/ramses-renderer-api/include/ramses-renderer-api/DisplayConfig.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.105</span>
+   &#160;<span id="projectnumber">27.0.110</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -158,13 +158,26 @@ $(function() {
 <div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160; </div>
 <div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;        <span class="keyword">static</span> <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setAsyncEffectUploadEnabled(<a class="code" href="classramses_1_1DisplayConfig.html">DisplayConfig</a>&amp; config, <span class="keywordtype">bool</span> enabled);</div>
 <div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160; </div>
-<div class="line"><a name="l00379"></a><span class="lineno"><a class="line" href="classramses_1_1DisplayConfig.html#a34f22be295f778aee0c9ba153582244c">  379</a></span>&#160;        <span class="keyword">class </span>DisplayConfigImpl&amp; <a class="code" href="classramses_1_1DisplayConfig.html#a34f22be295f778aee0c9ba153582244c">impl</a>;</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160; </div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;        <a class="code" href="classramses_1_1DisplayConfig.html">DisplayConfig</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1DisplayConfig.html">DisplayConfig</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;    };</div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;}</div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160; </div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setWaylandEmbeddedCompositingSocketName(<span class="keyword">const</span> <span class="keywordtype">char</span>* socketname);</div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160; </div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;        <span class="keyword">const</span> <span class="keywordtype">char</span>* getWaylandEmbeddedCompositingSocketName() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160; </div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setWaylandEmbeddedCompositingSocketGroup(<span class="keyword">const</span> <span class="keywordtype">char</span>* groupname);</div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160; </div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setWaylandEmbeddedCompositingSocketFD(<span class="keywordtype">int</span> socketFileDescriptor);</div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160; </div>
+<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);</div>
+<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160; </div>
+<div class="line"><a name="l00482"></a><span class="lineno">  482</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setSystemCompositorWaylandDisplay(<span class="keyword">const</span> <span class="keywordtype">char</span>* waylandDisplay);</div>
+<div class="line"><a name="l00483"></a><span class="lineno">  483</span>&#160; </div>
+<div class="line"><a name="l00484"></a><span class="lineno">  484</span>&#160; </div>
+<div class="line"><a name="l00488"></a><span class="lineno"><a class="line" href="classramses_1_1DisplayConfig.html#a34f22be295f778aee0c9ba153582244c">  488</a></span>&#160;        <span class="keyword">class </span>DisplayConfigImpl&amp; <a class="code" href="classramses_1_1DisplayConfig.html#a34f22be295f778aee0c9ba153582244c">impl</a>;</div>
+<div class="line"><a name="l00489"></a><span class="lineno">  489</span>&#160; </div>
+<div class="line"><a name="l00495"></a><span class="lineno">  495</span>&#160;        <a class="code" href="classramses_1_1DisplayConfig.html">DisplayConfig</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1DisplayConfig.html">DisplayConfig</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00496"></a><span class="lineno">  496</span>&#160;    };</div>
+<div class="line"><a name="l00497"></a><span class="lineno">  497</span>&#160;}</div>
+<div class="line"><a name="l00498"></a><span class="lineno">  498</span>&#160; </div>
+<div class="line"><a name="l00499"></a><span class="lineno">  499</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassramses_1_1StatusObject_html"><div class="ttname"><a href="classramses_1_1StatusObject.html">ramses::StatusObject</a></div><div class="ttdoc">The StatusObject provides status message handling.</div><div class="ttdef"><b>Definition:</b> StatusObject.h:21</div></div>
 <div class="ttc" id="aclassramses_1_1DisplayConfig_html"><div class="ttname"><a href="classramses_1_1DisplayConfig.html">ramses::DisplayConfig</a></div><div class="ttdoc">The DisplayConfig holds a set of parameters to be used to initialize a display.</div><div class="ttdef"><b>Definition:</b> DisplayConfig.h:21</div></div>
@@ -172,7 +185,7 @@ $(function() {
 <div class="ttc" id="anamespaceramses_html"><div class="ttname"><a href="namespaceramses.html">ramses</a></div><div class="ttdoc">The RAMSES namespace contains all client side objects and functions used to implement RAMSES applicat...</div><div class="ttdef"><b>Definition:</b> AnimatedProperty.h:14</div></div>
 <div class="ttc" id="anamespaceramses_html_a2778df9cdbae5cb361850633bfde5895"><div class="ttname"><a href="namespaceramses.html#a2778df9cdbae5cb361850633bfde5895">ramses::EDepthBufferType</a></div><div class="ttdeci">EDepthBufferType</div><div class="ttdoc">Specifies type of depth buffer created within an offscreen buffer.</div><div class="ttdef"><b>Definition:</b> Types.h:287</div></div>
 <div class="ttc" id="aAPIExport_8h_html_a721d93a66de17b98189db7bd091cf29f"><div class="ttname"><a href="APIExport_8h.html#a721d93a66de17b98189db7bd091cf29f">RAMSES_API</a></div><div class="ttdeci">#define RAMSES_API</div><div class="ttdef"><b>Definition:</b> APIExport.h:35</div></div>
-<div class="ttc" id="aclassramses_1_1DisplayConfig_html_a34f22be295f778aee0c9ba153582244c"><div class="ttname"><a href="classramses_1_1DisplayConfig.html#a34f22be295f778aee0c9ba153582244c">ramses::DisplayConfig::impl</a></div><div class="ttdeci">class DisplayConfigImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> DisplayConfig.h:379</div></div>
+<div class="ttc" id="aclassramses_1_1DisplayConfig_html_a34f22be295f778aee0c9ba153582244c"><div class="ttname"><a href="classramses_1_1DisplayConfig.html#a34f22be295f778aee0c9ba153582244c">ramses::DisplayConfig::impl</a></div><div class="ttdeci">class DisplayConfigImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> DisplayConfig.h:488</div></div>
 <div class="ttc" id="aclassramses_1_1StronglyTypedValue_html"><div class="ttname"><a href="classramses_1_1StronglyTypedValue.html">ramses::StronglyTypedValue</a></div><div class="ttdoc">Helper class to create strongly typed values out of various types.</div><div class="ttdef"><b>Definition:</b> StronglyTypedValue.h:22</div></div>
 <div class="ttc" id="anamespaceramses_html_a4f09a899b38b8d7bc61f01a2d181ea22"><div class="ttname"><a href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">ramses::status_t</a></div><div class="ttdeci">uint32_t status_t</div><div class="ttdoc">Status is a handle to the result of an API call.</div><div class="ttdef"><b>Definition:</b> RamsesFrameworkTypes.h:25</div></div>
 <div class="ttc" id="aRamsesFrameworkTypes_8h_html"><div class="ttname"><a href="RamsesFrameworkTypes_8h.html">RamsesFrameworkTypes.h</a></div></div>

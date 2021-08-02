@@ -1,4 +1,6 @@
 <map id="ramses::DcsmStatusMessage" name="ramses::DcsmStatusMessage">
-<area shape="rect" id="node1" title="The base class of a message to be sent from DCSM consumer to provider." alt="" coords="10,5,225,32"/>
-<area shape="rect" id="node2" href="$classramses_1_1StreamStatusMessage.html" title="A message containing a stream status." alt="" coords="5,80,229,107"/>
+<area shape="rect" id="node1" title="The base class of a message to be sent from DCSM consumer to provider." alt="" coords="5,56,220,83"/>
+<area shape="rect" id="node2" href="$classramses_1_1ActiveLayoutMessage.html" title="A status message containing the instrument cluster&#39;s active layout." alt="" coords="269,5,491,32"/>
+<area shape="rect" id="node3" href="$classramses_1_1StreamStatusMessage.html" title="A message containing a stream status." alt="" coords="268,56,492,83"/>
+<area shape="rect" id="node4" href="$classramses_1_1WidgetFocusStatusMessage.html" title="A message containing the widget focus state." alt="" coords="279,107,481,149"/>
 </map>

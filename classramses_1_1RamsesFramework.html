@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.105</span>
+   &#160;<span id="projectnumber">27.0.110</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -311,6 +311,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Destructor of <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a>. </p>
+<p>This will destroy all objects created with this <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a> instance (<a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a>, <a class="el" href="classramses_1_1RamsesClient.html" title="Entry point of RAMSES client API.">RamsesClient</a>, <a class="el" href="classramses_1_1DcsmProvider.html" title="Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...">DcsmProvider</a>, <a class="el" href="classramses_1_1DcsmConsumer.html" title="Class representing DCSM consumer side.">DcsmConsumer</a>), so there is no general need to explicitly destroy these objects individually, if not specifically intended to do so. </p>
 
 </div>
 </div>
@@ -367,7 +368,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Register a ramsh command that can be invoked via console and DLT injection. </p>
 <p>This is for testing and debugging purpose only. Command injection is not guaranteed to work in production.</p>
-<p>The command has to be provided via shared_ptr to avoid lifetime issues. Internally ramses will only store a std::weak_ptr to the command. Therefore it is valid to let go of the shared_ptr on caller side and expect that no calls will happen in the command anymore. This allows to have user obejct references in the command implementation with a shorter lifetime than <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a>.</p>
+<p>The command has to be provided via shared_ptr to avoid lifetime issues. Internally ramses will only store a std::weak_ptr to the command. Therefore it is valid to let go of the shared_ptr on caller side and expect that no calls will happen in the command anymore. This allows to have user object references in the command implementation with a shorter lifetime than <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a>.</p>
 <p>It is not possible to delete commands. They are expected to be long-living and are bound to the lifetime of the <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a> object.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -419,7 +420,8 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Create a new <a class="el" href="classramses_1_1RamsesClient.html" title="Entry point of RAMSES client API.">RamsesClient</a> linked to this framework. Creation of multiple clients is supported. It might be disallowed to create any client depending on internal policy. Ownership of the client will remain with the framework. </p>
-<p>Must create all client objects before calling <a class="el" href="classramses_1_1RamsesFramework.html#a6687dcdae0b5d9f7e19fb91dcdca547f" title="Tries to establish a connection to the RAMSES system.">connect()</a>.</p>
+<p>Must create all client instances before calling <a class="el" href="classramses_1_1RamsesFramework.html#a6687dcdae0b5d9f7e19fb91dcdca547f" title="Tries to establish a connection to the RAMSES system.">connect()</a>.</p>
+<p>The created instance is valid until <a class="el" href="classramses_1_1RamsesFramework.html#a657185d1a2a69fc451c0b4495d8955e0" title="Destroy a RamsesClient created with this framework. This method will fail when handed an object creat...">destroyClient()</a> is called or it will be automatically deleted in the <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a> destructor.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">applicationName</td><td>a name for the ramses client application</td></tr>
@@ -449,6 +451,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Create a new <a class="el" href="classramses_1_1DcsmConsumer.html" title="Class representing DCSM consumer side.">DcsmConsumer</a> linked to this framework. Only one <a class="el" href="classramses_1_1DcsmConsumer.html" title="Class representing DCSM consumer side.">DcsmConsumer</a> can exist per <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a> instance. It might be disallowed to create any consumer depending on internal policy. Ownership of the consumer will remain with the framework. </p>
 <p>Must call <a class="el" href="classramses_1_1RamsesFramework.html#a6687dcdae0b5d9f7e19fb91dcdca547f" title="Tries to establish a connection to the RAMSES system.">connect()</a> before communication with remote Dcsm providers is possible.</p>
+<p>The created instance is valid until <a class="el" href="classramses_1_1RamsesFramework.html#a81ef6d2e325393bdf792b35b21db365e" title="Destroy a DcsmConsumer created with this framework. This method will fail when handed an object creat...">destroyDcsmConsumer()</a> is called or it will be automatically deleted in the <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a> destructor.</p>
 <dl class="section return"><dt>Returns</dt><dd>The new <a class="el" href="classramses_1_1DcsmConsumer.html" title="Class representing DCSM consumer side.">DcsmConsumer</a> object or nullptr if the creation failed or was denied. </dd></dl>
 
 </div>
@@ -470,6 +473,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Create a new <a class="el" href="classramses_1_1DcsmProvider.html" title="Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...">DcsmProvider</a> linked to this framework. Only one <a class="el" href="classramses_1_1DcsmProvider.html" title="Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...">DcsmProvider</a> can exist per <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a> instance. Depending on user the creation is not allowed and will always fail. </p>
 <p>Must call <a class="el" href="classramses_1_1RamsesFramework.html#a6687dcdae0b5d9f7e19fb91dcdca547f" title="Tries to establish a connection to the RAMSES system.">connect()</a> before communication with remote Dcsm consumers is possible.</p>
+<p>The created instance is valid until <a class="el" href="classramses_1_1RamsesFramework.html#a997e4b94bb61a73b8ab4a326adb6243c" title="Destroy a DcsmProvider created with this framework. This method will fail when handed an object creat...">destroyDcsmProvider()</a> is called or it will be automatically deleted in the <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a> destructor.</p>
 <dl class="section return"><dt>Returns</dt><dd>The new <a class="el" href="classramses_1_1DcsmProvider.html" title="Class used to offer ramses content and meta infos to a consumer and synchronize actions between clien...">DcsmProvider</a> object or nullptr if the creation failed or was denied. </dd></dl>
 
 </div>
@@ -492,6 +496,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Create a new <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a> linked to this framework. Only one <a class="el" href="classramses_1_1RamsesRenderer.html" title="RamsesRenderer is the main renderer component which provides API to configure and control the way con...">RamsesRenderer</a> can exist per <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a> instance. It might be disallowed to create any renderer depending on internal policy. Ownership of the renderer will remain with the framework. </p>
 <p>Must create the renderer object before calling <a class="el" href="classramses_1_1RamsesFramework.html#a6687dcdae0b5d9f7e19fb91dcdca547f" title="Tries to establish a connection to the RAMSES system.">connect()</a>.</p>
+<p>The created instance is valid until <a class="el" href="classramses_1_1RamsesFramework.html#af7c6df3d3a8907bf91f5ff468d534b16" title="Destroy a RamsesRenderer created with this framework. This method will fail when handed an object cre...">destroyRenderer()</a> is called or it will be automatically deleted in the <a class="el" href="classramses_1_1RamsesFramework.html" title="Class representing ramses framework components that are needed to initialize an instance of ramses cl...">RamsesFramework</a> destructor.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">config</td><td>Set of configuration flags and attributes for the ramses renderer</td></tr>
@@ -743,7 +748,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/c/src/genivi/framework/ramses-framework-api/include/ramses-framework-api/<a class="el" href="RamsesFramework_8h_source.html">RamsesFramework.h</a></li>
+<li>/c/src/mirror/framework/ramses-framework-api/include/ramses-framework-api/<a class="el" href="RamsesFramework_8h_source.html">RamsesFramework.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
