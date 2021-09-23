@@ -1,3 +1,27 @@
+27.0.111
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Scaling is applied before rotation in all transformation matrices
+            - 'M = T * R * S' replaces the old formula 'M = T * S * R'
+            - This behavior is consistent with standard matrix math of right-handed coordinate systems
+            - To restore the old behavior, create two nodes A and B where 'A = T * S' and 'B = R' and set B as a child of A
+          for focus request.
+        - Bidi markers are no longer logged as errors for freetype-only font instances
+
+        API changes
+        ------------------------------------------------------------------------
+        - Added helper function TextCache::ApplyTrackingToGlyphs that makes it possible to increase or reduce space
+          uniformly between glyphs.
+        - Added option to inform DCSM Provider about active Layout via CategoryInfoUpdate.
+          This will replace ActiveLayoutMessage in the future.
+        - Add optional IRendererEventHandler::renderThreadLoopTimingsPerDisplay
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fixed scene expiration logs if no scenes are monitored
+        - Fix SomeIP duplicate messages after multiple reconnects
+
 27.0.110
 -------------------
         API changes

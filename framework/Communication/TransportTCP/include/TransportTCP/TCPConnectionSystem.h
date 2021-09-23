@@ -67,8 +67,8 @@ namespace ramses_internal
         virtual bool sendDcsmUpdateContentMetadata(const Guid& to, ContentID contentID, const DcsmMetadata& metadata) override;
 
         // dcsm renderer -> client
-        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& sizeinfo, AnimationInformation ai) override;
-        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo& si, AnimationInformation ai) override;
+        virtual bool sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation ai) override;
+        virtual bool sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation ai) override;
         virtual bool sendDcsmContentStatus(const Guid& to, ContentID contentID, uint64_t messageID, std::vector<Byte> const& message) override;
 
         // set service handlers

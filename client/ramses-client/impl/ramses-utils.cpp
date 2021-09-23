@@ -312,9 +312,9 @@ namespace ramses
         return cubeMipMaps;
     }
 
-    void RamsesUtils::DeleteGeneratedMipMaps(MipLevelData*& data, uint32_t numMipMaps)
+    void RamsesUtils::DeleteGeneratedMipMaps(MipLevelData*& data, uint32_t mipMapCount)
     {
-        for (uint32_t i = 0; i < numMipMaps; i++)
+        for (uint32_t i = 0; i < mipMapCount; i++)
         {
             delete[] data[i].m_data;
         }
@@ -323,9 +323,9 @@ namespace ramses
         data = nullptr;
     }
 
-    void RamsesUtils::DeleteGeneratedMipMaps(CubeMipLevelData*& data, uint32_t numMipMaps)
+    void RamsesUtils::DeleteGeneratedMipMaps(CubeMipLevelData*& data, uint32_t mipMapCount)
     {
-        for (size_t level = 0u; level < numMipMaps; level++)
+        for (size_t level = 0u; level < mipMapCount; level++)
         {
             delete[] data[level].m_dataPX;
             delete[] data[level].m_dataNX;

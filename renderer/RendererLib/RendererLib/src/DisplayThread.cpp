@@ -91,6 +91,8 @@ namespace ramses_internal
         {
             bool doUpdate = false;
             std::chrono::microseconds minimumFrameDuration{ 0 };
+
+            m_display->traceId() = 10000;
             ELoopMode loopMode = ELoopMode::UpdateAndRender;
             {
                 std::lock_guard<std::mutex> lock{ m_lock };
@@ -99,23 +101,31 @@ namespace ramses_internal
                 loopMode = m_loopMode;
             }
 
+            m_display->traceId() = 10001;
             m_notifier.notifyAlive(m_aliveIdentifier);
+            m_display->traceId() = 10002;
             if (!doUpdate)
             {
                 std::unique_lock<std::mutex> lock{ m_lock };
                 // need to recheck conditions to avoid race between start/stop/dtor
+                m_display->traceId() = 10003;
                 if (!isCancelRequested() && !m_isUpdating)
                     m_sleepConditionVar.wait_for(lock, m_notifier.calculateTimeout());
             }
             else
             {
+                m_display->traceId() = 10004;
                 auto loopStartTime = std::chrono::steady_clock::now();
                 m_display->doOneLoop(loopMode, lastLoopSleepTime);
                 const auto loopEndTime = std::chrono::steady_clock::now();
 
+                m_display->traceId() = 10005;
                 const auto currentLoopDuration = std::chrono::duration_cast<std::chrono::microseconds>(loopEndTime - loopStartTime);
                 lastLoopSleepTime = sleepToControlFramerate(currentLoopDuration, minimumFrameDuration);
+                m_display->traceId() = 10006;
             }
+
+            m_frameCounter++;
         }
 
         // release display before thread exit, it might contain platform components that need to be deinitialized in same thread
@@ -136,5 +146,10 @@ namespace ramses_internal
         }
 
         return sleepTime;
+    }
+
+    uint32_t DisplayThread::getFrameCounter() const
+    {
+        return m_frameCounter;
     }
 }

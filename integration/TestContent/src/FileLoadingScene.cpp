@@ -226,9 +226,9 @@ namespace ramses_internal
         animationSystem->setTime(20800u);
     }
 
-    void FileLoadingScene::loadFromFiles(ramses::RamsesClient& ramses, const String& folder)
+    void FileLoadingScene::loadFromFiles(ramses::RamsesClient& client, const String& folder)
     {
-        ramses::Scene* loadedScene = ramses.loadSceneFromFile((folder + String("/tempfile.ramses")).c_str());
+        ramses::Scene* loadedScene = client.loadSceneFromFile((folder + String("/tempfile.ramses")).c_str());
 
         // make changes to loaded scene
         ramses::Node& loadedScaleNode = ramses::RamsesObjectTypeUtils::ConvertTo<ramses::Node>(*loadedScene->findObjectByName("scale node"));

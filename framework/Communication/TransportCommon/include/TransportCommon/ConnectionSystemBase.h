@@ -803,15 +803,21 @@ namespace ramses_internal
             }
             else
             {
-                if (prevSkipSendPinfoOnNextMismatch)
+                // may not skip when has sent anything else than pinfo to remote. otherwise state on remote might get mixed up
+                if (prevSkipSendPinfoOnNextMismatch && previousSendMessageId == 2)
                 {
                     // skip sending and keep last announced session because we assume last pinfo reached receiver and is treated as valid there
-                    LOG_WARN(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleParticipantInfo: Skip sending pinfo to " << pstate->pid << ", iid " << senderInstanceId);
+                    LOG_WARN(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleParticipantInfo: Skip sending pinfo to " << pstate->pid <<
+                             ", iid " << senderInstanceId << ", keep sendSessionId " << previousSendSessionId << ", sendMessageId " << previousSendMessageId);
                     pstate->sendSessionId = previousSendSessionId;
                     pstate->sendMessageId = previousSendMessageId;
                 }
                 else
                 {
+                    if (prevSkipSendPinfoOnNextMismatch)
+                        LOG_WARN(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleParticipantInfo: Will not skip send pinfo to " << pstate->pid <<
+                                 ", iid " << senderInstanceId << ", because data already sent: sendSessionId " << previousSendSessionId << ", sendMessageId " << previousSendMessageId);
+
                     if (!trySendParticipantInfo(*pstate))
                     {
                         LOG_INFO(m_logContext,
@@ -838,6 +844,15 @@ namespace ramses_internal
     template <typename Callbacks>
     void ConnectionSystemBase<Callbacks>::run()
     {
+#ifdef __ghs__
+#   ifdef RAMSES_CONN_KEEPALIVE_THREAD_PRIORITY
+        setThreadPriorityIntegrity(RAMSES_CONN_KEEPALIVE_THREAD_PRIORITY, "keepalive thread");
+#   endif
+#   ifdef RAMSES_CONN_KEEPALIVE_THREAD_CORE_BINDING
+        setThreadCoreBindingIntegrity(RAMSES_CONN_KEEPALIVE_THREAD_CORE_BINDING, "keepalive thread");
+#   endif
+#endif
+
         LOG_INFO(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::run: Keepalive thread started");
         assert(m_keepAliveInterval > std::chrono::milliseconds{0});
 

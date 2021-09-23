@@ -51,7 +51,7 @@ namespace ramses_internal
         constexpr Vector4i operator*(const Vector4i& vec) const;
         constexpr void operator*=(const Int32 scalar);
         constexpr void operator*=(const Vector4i& vec);
-        constexpr Vector4i operator/(const Vector4i& scalar) const;
+        constexpr Vector4i operator/(const Vector4i& other) const;
 
         constexpr bool operator==(const Vector4i& other) const;
         constexpr bool operator!=(const Vector4i& other) const;

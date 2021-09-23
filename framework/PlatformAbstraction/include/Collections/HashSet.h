@@ -12,6 +12,7 @@
 #include "PlatformAbstraction/Hash.h"
 #include "PlatformAbstraction/Macros.h"
 #include "Collections/HashMap.h"
+#include "Utils/AssertMovable.h"
 
 namespace ramses_internal
 {
@@ -291,7 +292,7 @@ namespace ramses_internal
     HashSet<T>::HashSet(HashSet&& other) noexcept
         : m_map(std::move(other.m_map))
     {
-        static_assert(std::is_nothrow_move_constructible<HashSet>::value, "HashSet must be movable");
+        ASSERT_MOVABLE(HashSet)
     }
 
     template <class T>
@@ -437,8 +438,6 @@ namespace ramses_internal
     template <class T>
     HashSet<T>& HashSet<T>::operator=(HashSet<T>&& other) noexcept
     {
-        static_assert(std::is_nothrow_move_assignable<HashSet>::value, "HashSet must be movable");
-
         m_map = std::move(other.m_map);
         return *this;
     }

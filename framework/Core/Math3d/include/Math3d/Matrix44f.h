@@ -427,8 +427,7 @@ namespace ramses_internal
         return Vector3(rotatedExtPoint.x, rotatedExtPoint.y, rotatedExtPoint.z);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Matrix44f>::value, "Matrix44f must be movable");
-    static_assert(std::is_nothrow_move_assignable<Matrix44f>::value, "Matrix44f must be movable");
+    ASSERT_MOVABLE(Matrix44f)
 }
 
 template <>

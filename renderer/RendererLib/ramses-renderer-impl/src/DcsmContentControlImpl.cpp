@@ -49,10 +49,7 @@ namespace ramses
             return addErrorEntry("DcsmContentControl::addContentCategory: cannot add category without setting at least renderSize and categoryRect for category");
         }
 
-        ramses_internal::CategoryInfo info;
-        info.setCategoryRect(categoryInformation.getCategoryRect().x, categoryInformation.getCategoryRect().y, categoryInformation.getCategoryRect().width, categoryInformation.getCategoryRect().height);
-        info.setRenderSize(categoryInformation.getRenderSize().width, categoryInformation.getRenderSize().height);
-        info.setSafeRect(categoryInformation.getSafeRect().x, categoryInformation.getSafeRect().y, categoryInformation.getSafeRect().width, categoryInformation.getSafeRect().height);
+        ramses_internal::CategoryInfo info = categoryInformation.impl.getCategoryInfo();
         m_categories.insert({ category, {info, display, {} }});
 
         auto it = m_offeredContentsForOtherCategories.begin();
@@ -224,8 +221,8 @@ namespace ramses
         }
         CHECK_RETURN_ERR(combinedStat);
 
-        // size updated immediately in order to report the latest size to newly offered contents to this category
-        it->second.categoryInfo = categoryInfo.impl.getCategoryInfo();
+        // merge updated parts of new info to saved info to be able to send merged info to new providers
+        it->second.categoryInfo.updateSelf(categoryInfo.impl.getCategoryInfo());
 
         return StatusOK;
     }
@@ -602,6 +599,20 @@ namespace ramses
             m_pendingEvents.push_back({ EventType::ContentMetadataUpdate, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK, metadataUpdate.impl.getMetadata() });
     }
 
+    void DcsmContentControlImpl::resetContentStateAfterTechnicalContentReset(ContentID contentID)
+    {
+        LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:resetContentStateToAssigned: content " << contentID << " will be reset to assigned");
+        auto contentIt = m_contents.find(contentID);
+        if (contentIt == m_contents.end())
+            return;
+
+        // signal temporary NotAvailable to user to indicate failure, will be immediately followed by Available event
+        m_pendingEvents.push_back({ EventType::ContentNotAvailable, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK });
+
+        if (StatusOK == m_dcsmConsumer.contentStateChange(contentID, EDcsmState::Assigned, {}))
+            contentIt->second.dcsmState = ContentDcsmState::Assigned;
+    }
+
     void DcsmContentControlImpl::applyTechnicalStateChange(TechnicalContentDescriptor techId, RendererSceneState state)
     {
         auto& sceneInfo = m_techContents[techId];
@@ -613,11 +624,19 @@ namespace ramses
         // set new actual scene state which might modify consolidated state of some of the associated contents
         sceneInfo.sharedState.setReportedState(state);
         if (state == RendererSceneState::Unavailable)
-            sceneInfo.sharedState.setRequestedState(state);
+            sceneInfo.sharedState.setRequestedState(RendererSceneState::Unavailable);
 
         // emit event if state changed for any of the associated contents
         for (const auto contentID : sceneInfo.associatedContents)
+        {
+            if (state == RendererSceneState::Unavailable)
+            {
+                resetContentStateAfterTechnicalContentReset(contentID); // triggers a contentNotAvailable event to indicate failure
+                lastStates[contentID] = ContentState::Invalid; // force trigger the next state update event
+                sceneInfo.sharedState.setDesiredState({ contentID, false }, RendererSceneState::Available);
+            }
             handleContentStateChange(contentID, lastStates[contentID]);
+        }
 
         // trigger a potential state change that might result out of the new actual state
         goToConsolidatedDesiredState(techId);
@@ -1001,6 +1020,7 @@ namespace ramses
         }
         else
         {
+            state = RendererSceneState::Unavailable;
             if (m_availableStreams.count(streamId) == 0)
                 LOG_WARN_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl::streamAvailabilityChanged: unavailable stream {} received another unavailable event", streamId);
             m_availableStreams.erase(streamId);
@@ -1369,10 +1389,10 @@ namespace ramses
         return findContentsAssociatingTechnicalIdAndType(TechnicalContentDescriptor{ surfaceId.getValue() }, ETechnicalContentType::WaylandIviSurfaceID);
     }
 
-    std::vector<ContentID> DcsmContentControlImpl::findContentsAssociatingTechnicalIdAndType(TechnicalContentDescriptor techId, ETechnicalContentType type) const
+    std::vector<ContentID> DcsmContentControlImpl::findContentsAssociatingTechnicalIdAndType(TechnicalContentDescriptor descriptor, ETechnicalContentType type) const
     {
         std::vector<ContentID> contents;
-        const auto it = std::find_if(m_techContents.begin(), m_techContents.end(), [techId, type](auto const& entry){ return entry.first == techId && entry.second.techType == type; });
+        const auto it = std::find_if(m_techContents.begin(), m_techContents.end(), [descriptor, type](auto const& entry){ return entry.first == descriptor && entry.second.techType == type; });
         if (it != m_techContents.cend())
             contents.assign(it->second.associatedContents.cbegin(), it->second.associatedContents.cend());
 

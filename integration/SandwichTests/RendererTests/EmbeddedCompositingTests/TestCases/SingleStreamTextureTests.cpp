@@ -47,9 +47,7 @@ namespace ramses_internal
         testFramework.createTestCase(ClientReceivesFrameCallback, *this, "ClientReceivesFrameCallback").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(ClientCanBindMultipleTimesToEmbeddedCompositor, *this, "ClientCanBindMultipleTimesToEmbeddedCompositor").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(ShowFallbackTextureWhenClientIsKilled, *this, "ShowFallbackTextureWhenClientIsKilled").m_displayConfigs.push_back(displayConfig);
-        testFramework.createTestCase(ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlyFirstSurface, *this, "ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlyFirstSurface").m_displayConfigs.push_back(displayConfig);
-        testFramework.createTestCase(ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlySecondSurface, *this, "ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlySecondSurface").m_displayConfigs.push_back(displayConfig);
-        testFramework.createTestCase(ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesBothSurfaces, *this, "ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesBothSurfaces").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(ClientCreatesTwoSurfacesWithSameIVIIdSendsErrorToClient, *this, "ClientCreatesTwoSurfacesWithSameIVIIdDoesNotCrashRenderer").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(ClientUsesShellSurface, *this, "ClientUsesShellSurface").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(ShowFallbackTextureWhenIVISurfaceDestroyed, *this, "ShowFallbackTextureWhenIVISurfaceDestroyed").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(ClientCanNotCreateTwoIVISurfacesWithSameIdForSameSurface, *this, "ClientCanNotCreateTwoIVISurfacesWithSameIdForSameSurface").m_displayConfigs.push_back(displayConfig);
@@ -134,7 +132,7 @@ namespace ramses_internal
             testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
             testFramework.sendDestroySurfaceToTestApplication(surfaceId);
-            testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
+            testFramework.waitForSurfaceUnavailableForStreamTexture(streamTextureSourceId);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1");
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -284,11 +282,14 @@ namespace ramses_internal
             // Second frame is blocked, must be timed out
             testResultValue &= !testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 2, 5000);
 
-            // Render one frame and unblock test client, so that it can render the next frame
+            // Render 1st frame and unblock test client, so that it can render the next frame
             testFramework.renderOneFrame();
 
             // Now, client is unblocked
             testResultValue &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 2);
+
+            // Render 2nd frame to unblock test client, so that it can be destroyed without blocking
+            testFramework.renderOneFrame();
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
             break;
@@ -402,54 +403,7 @@ namespace ramses_internal
             break;
         }
 
-        case ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlyFirstSurface:
-        {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
-            testFramework.startTestApplicationAndWaitUntilConnected();
-            TestApplicationSurfaceId surfaceId1 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId1, streamTextureSourceId);
-            TestApplicationSurfaceId surfaceId2 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId2, streamTextureSourceId);
-
-            UNUSED(surfaceId2);
-
-            // The embedded compositor sends a wl_resource_post_error to the client, for the second
-            // ivi_application_surface_create. This terminates the wayland display connection of the client to the
-            // embedded compositor.
-
-            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId1);
-            testFramework.waitUntilNumberOfCompositorConnections(0, true);
-
-            testFramework.stopTestApplicationAndWaitUntilDisconnected();
-            break;
-        }
-
-        case ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesOnlySecondSurface:
-        {
-            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
-            testFramework.startTestApplicationAndWaitUntilConnected();
-            TestApplicationSurfaceId surfaceId1 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId1, streamTextureSourceId);
-            TestApplicationSurfaceId surfaceId2 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId2, streamTextureSourceId);
-
-            UNUSED(surfaceId1);
-
-            // There was a bug where the update of the second surface caused crash in the embedded compositor.
-            // Both surfaces were registered with the same ivi-id. When the second surface has done an update, the first surface was found for compositing
-            // upload to texture, but the buffer of this surface is a nullptr.
-            //
-            // Now, the embedded compositor sends a wl_resource_post_error to the client, for the second ivi_application_surface_create.
-            // This terminates the wayland display connection of the client to the embedded compositor.
-
-            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId2);
-            testFramework.waitUntilNumberOfCompositorConnections(0, true);
-
-            testFramework.stopTestApplicationAndWaitUntilDisconnected();
-            break;
-        }
-
-        case ClientCreatesTwoSurfacesWithSameIVIIdAndUpdatesBothSurfaces:
+        case ClientCreatesTwoSurfacesWithSameIVIIdSendsErrorToClient:
         {
             testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE);
             testFramework.startTestApplicationAndWaitUntilConnected();
@@ -461,9 +415,6 @@ namespace ramses_internal
             // The embedded compositor sends a wl_resource_post_error to the client, for the second
             // ivi_application_surface_create. This terminates the wayland display connection of the client to the
             // embedded compositor.
-
-            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId1);
-            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId2);
             testFramework.waitUntilNumberOfCompositorConnections(0, true);
 
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
@@ -721,7 +672,7 @@ namespace ramses_internal
     bool SingleStreamTextureTests::recreateSurfaceRenderAndCheckOneFrame(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId& testSurfaceIdOut, UInt32 surfaceWidth, UInt32 surfaceHeight, WaylandIviSurfaceId streamTextureSourceId, const ramses_internal::String& expectedImageName)
     {
         testFramework.sendDestroySurfaceToTestApplication(testSurfaceIdOut);
-        testFramework.waitForUnavailablilityOfContentOnStreamTexture(streamTextureSourceId);
+        testFramework.waitForSurfaceUnavailableForStreamTexture(streamTextureSourceId);
         testSurfaceIdOut = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(surfaceWidth, surfaceHeight, 1);
         testFramework.sendCreateIVISurfaceToTestApplication(testSurfaceIdOut, streamTextureSourceId);
         testFramework.sendRenderOneFrameToEGLBufferToTestApplication(testSurfaceIdOut);

@@ -140,10 +140,15 @@ class RemoteTarget(Target):
             return False
 
         if transfer_binaries:
-            self._prepare_install_directory()
-            binariesTransferSuccessful = self._transfer_binaries()
-            if not binariesTransferSuccessful:
-                return False
+            return self.do_transfer_binaries()
+
+        return True
+
+    def do_transfer_binaries(self):
+        self._prepare_install_directory()
+        binariesTransferSuccessful = self._transfer_binaries()
+        if not binariesTransferSuccessful:
+            return False
 
         return True
 
@@ -166,6 +171,9 @@ class RemoteTarget(Target):
         rsa_key = None
         if self.privateKey is not None:
             rsa_key = paramiko.RSAKey.from_private_key_file(self.privateKey)
+        else:
+            if self.password is None:
+                self.password = ""  # paramiko does not support no auth, so we give it an empty password
 
         # wait till SSH connection can be established
         nrAttempts = 0

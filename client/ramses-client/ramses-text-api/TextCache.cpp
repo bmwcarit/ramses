@@ -57,4 +57,14 @@ namespace ramses
             return glyphMetric.width == 0 || glyphMetric.height == 0;
         });
     }
+
+    void TextCache::ApplyTrackingToGlyphs(GlyphMetricsVector& glyphMetrics, int32_t trackingFactor, int32_t fontSize)
+    {
+        const int32_t trackingInPixels = fontSize * trackingFactor / 1000;
+
+        for (auto& glyphMetric : glyphMetrics)
+        {
+            glyphMetric.advance += trackingInPixels;
+        }
+    }
 }

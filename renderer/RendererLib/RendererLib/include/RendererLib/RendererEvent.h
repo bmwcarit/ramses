@@ -211,6 +211,7 @@ namespace ramses_internal
         WaylandIviSurfaceId         streamSourceId;
         PickableObjectIds           pickedObjectIds;
         FrameTimings                frameTimings;
+        bool                        isFirstDisplay;
     };
     using RendererEventVector = std::vector<RendererEvent>;
 

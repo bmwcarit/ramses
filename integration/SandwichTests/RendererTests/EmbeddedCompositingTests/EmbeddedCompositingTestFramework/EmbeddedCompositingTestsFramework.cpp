@@ -31,19 +31,19 @@ namespace ramses_internal
         TestSignalHandler::RegisterSignalHandlersForCurrentProcess("EmbeddedCompositingTestsFramework");
     }
 
-    void EmbeddedCompositingTestsFramework::startTestApplication()
+    void EmbeddedCompositingTestsFramework::startTestApplication(uint32_t testAppIdx)
     {
-        m_testForkingController.startTestApplication();
+        m_testForkingController.startTestApplication(testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::startTestApplicationAndWaitUntilConnected(EConnectionMode connectionMode, uint32_t displayIdx)
+    void EmbeddedCompositingTestsFramework::startTestApplicationAndWaitUntilConnected(EConnectionMode connectionMode, uint32_t displayIdx, uint32_t testAppIdx)
     {
-        m_testForkingController.startTestApplication();
-        initializeTestApplication(connectionMode);
+        m_testForkingController.startTestApplication(testAppIdx);
+        initializeTestApplication(connectionMode, testAppIdx);
         waitUntilNumberOfCompositorConnections(1, false, displayIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::initializeTestApplication(EConnectionMode connectionMode)
+    void EmbeddedCompositingTestsFramework::initializeTestApplication(EConnectionMode connectionMode, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         switch(connectionMode)
@@ -59,20 +59,20 @@ namespace ramses_internal
             break;
         }
 
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::stopTestApplicationAndWaitUntilDisconnected(uint32_t displayIdx)
+    void EmbeddedCompositingTestsFramework::stopTestApplicationAndWaitUntilDisconnected(uint32_t displayIdx, uint32_t testAppIdx)
     {
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::stopTestApplicationAndWaitUntilDisconnected waiting until client test application has terminated ...");
-        sendStopToTestApplication();
+        sendStopToTestApplication(testAppIdx);
         waitUntilNumberOfCompositorConnections(0u, false, displayIdx);
 
         // When TestWaylandApplication has disconnected from the EC, it can still run, so wait on the final answer, that
         // it has really reached it's end. For example, in the test case ClientCreatesTwoSurfaceWithSameIVIId the client
         // connection is already terminated by an error, before stopTestApplicationAndWaitUntilDisconnected is called.
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::stopTestApplicationAndWaitUntilDisconnected waiting on confirmation ... ");
-        m_testForkingController.waitForTestApplicationExit();
+        m_testForkingController.waitForTestApplicationExit(testAppIdx);
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::stopTestApplicationAndWaitUntilDisconnected stop confirmation received");
     }
 
@@ -241,138 +241,138 @@ namespace ramses_internal
         return getTestRenderer().waitForStreamSurfaceAvailabilityChange(ramses::waylandIviSurfaceId_t(streamSource.getValue()), available);
     }
 
-    void EmbeddedCompositingTestsFramework::sendStopToTestApplication()
+    void EmbeddedCompositingTestsFramework::sendStopToTestApplication(uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::StopApplication;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceWithEGLContextToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval)
+    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceWithEGLContextToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, uint32_t testAppIdx)
     {
-        return sendCreateSurfaceToTestApplication(width, height, swapInterval, true);
+        return sendCreateSurfaceToTestApplication(width, height, swapInterval, true, testAppIdx);
     }
 
-    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceWithoutEGLContextToTestApplication(UInt32 width, UInt32 height)
+    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceWithoutEGLContextToTestApplication(UInt32 width, UInt32 height, uint32_t testAppIdx)
     {
-        return sendCreateSurfaceToTestApplication(width, height, 0, false);
+        return sendCreateSurfaceToTestApplication(width, height, 0, false, testAppIdx);
     }
 
-    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, Bool useEGL)
+    TestApplicationSurfaceId EmbeddedCompositingTestsFramework::sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, Bool useEGL, uint32_t testAppIdx)
     {
         const auto surfaceId = m_nextSurfaceId;
 
         BinaryOutputStream bos;
         IOutputStream& ios = bos;
         ios << ETestWaylandApplicationMessage::CreateSurface << surfaceId.getValue() << width << height << swapInterval << useEGL;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
 
         m_nextSurfaceId = TestApplicationSurfaceId(m_nextSurfaceId.getValue() + 1);
 
         return surfaceId;
     }
 
-    TestApplicationShellSurfaceId EmbeddedCompositingTestsFramework::sendCreateShellSurfaceToTestApplication(TestApplicationSurfaceId surfaceId)
+    TestApplicationShellSurfaceId EmbeddedCompositingTestsFramework::sendCreateShellSurfaceToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t testAppIdx)
     {
         const auto shellSurfaceId = m_nextShellSurfaceId;
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::CreateShellSurface << surfaceId.getValue() << shellSurfaceId.getValue();
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
 
         m_nextShellSurfaceId = TestApplicationShellSurfaceId(m_nextShellSurfaceId.getValue() + 1);
 
         return shellSurfaceId;
     }
 
-    void EmbeddedCompositingTestsFramework::sendDestroyShellSurfaceToTestApplication(TestApplicationShellSurfaceId shellSurfaceId)
+    void EmbeddedCompositingTestsFramework::sendDestroyShellSurfaceToTestApplication(TestApplicationShellSurfaceId shellSurfaceId, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::DestroyShellSurface << shellSurfaceId.getValue();
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendSetShellSurfaceTitleToTestApplication(TestApplicationShellSurfaceId shellSurfaceId, const String& title)
+    void EmbeddedCompositingTestsFramework::sendSetShellSurfaceTitleToTestApplication(TestApplicationShellSurfaceId shellSurfaceId, const String& title, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::SetShellSurfaceTitle << shellSurfaceId.getValue() << title;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendSetShellSurfaceDummyValuesToTestApplication(TestApplicationSurfaceId surfaceId, TestApplicationShellSurfaceId shellSurfaceId)
+    void EmbeddedCompositingTestsFramework::sendSetShellSurfaceDummyValuesToTestApplication(TestApplicationSurfaceId surfaceId, TestApplicationShellSurfaceId shellSurfaceId, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::SetShellSurfaceDummyValues << surfaceId.getValue() << shellSurfaceId.getValue();
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendDestroySurfaceToTestApplication(TestApplicationSurfaceId surfaceId)
+    void EmbeddedCompositingTestsFramework::sendDestroySurfaceToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::DestroySurface << surfaceId.getValue();
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendDestroyIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId)
+    void EmbeddedCompositingTestsFramework::sendDestroyIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::DestroyIVISurface << surfaceId.getValue();
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendCreateIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId, WaylandIviSurfaceId surfaceIviId)
+    void EmbeddedCompositingTestsFramework::sendCreateIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId, WaylandIviSurfaceId surfaceIviId, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::CreateIVISurface << surfaceId.getValue() << surfaceIviId.getValue();
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendRenderOneFrameToEGLBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback)
+    void EmbeddedCompositingTestsFramework::sendRenderOneFrameToEGLBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::RenderOneFrame_ToEGLBuffer << surfaceId.getValue() << waitOnFramecallback;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendRenderOneFrameToSharedMemoryBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback)
+    void EmbeddedCompositingTestsFramework::sendRenderOneFrameToSharedMemoryBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::RenderOneFrame_ToSharedMemoryBuffer << surfaceId.getValue() << waitOnFramecallback;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendAttachBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool commit)
+    void EmbeddedCompositingTestsFramework::sendAttachBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool commit, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::AttachBuffer << surfaceId.getValue() << commit;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendDestroyBuffersToTestApplication()
+    void EmbeddedCompositingTestsFramework::sendDestroyBuffersToTestApplication(uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::DestroyBuffers;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendRenderOneFrameToTwoSurfacesAndWaitOnFrameCallbackToTestApplication(TestApplicationSurfaceId surfaceId1, TestApplicationSurfaceId surfaceId2)
+    void EmbeddedCompositingTestsFramework::sendRenderOneFrameToTwoSurfacesAndWaitOnFrameCallbackToTestApplication(TestApplicationSurfaceId surfaceId1, TestApplicationSurfaceId surfaceId2, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::RenderOneFrameToTwoSurfaces << surfaceId1.getValue() << surfaceId2.getValue() << true;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendAdditionalConnectToEmbeddedCompositorToTestApplication()
+    void EmbeddedCompositingTestsFramework::sendAdditionalConnectToEmbeddedCompositorToTestApplication(uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::AdditionalConnectToEmbeddedCompositor;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendDetachBufferFromSurfaceToTestApplication(TestApplicationSurfaceId surfaceId)
+    void EmbeddedCompositingTestsFramework::sendDetachBufferFromSurfaceToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::DetachBufferFromSurface << surfaceId.getValue();
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
     IEmbeddedCompositor& EmbeddedCompositingTestsFramework::getEmbeddedCompositor(uint32_t displayIdx)
@@ -394,21 +394,21 @@ namespace ramses_internal
         getTestRenderer().setSurfaceVisibility(surfaceId, visibility);
     }
 
-    void EmbeddedCompositingTestsFramework::sendSetSurfaceSizeToTestApplicaton(TestApplicationSurfaceId surfaceId, UInt32 width, UInt32 height)
+    void EmbeddedCompositingTestsFramework::sendSetSurfaceSizeToTestApplicaton(TestApplicationSurfaceId surfaceId, UInt32 width, UInt32 height, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::SetSurfaceSize << surfaceId.getValue() << width << height;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendSetTriangleColorToTestApplication(ETriangleColor color)
+    void EmbeddedCompositingTestsFramework::sendSetTriangleColorToTestApplication(ETriangleColor color, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::SetTriangleColor << static_cast<uint32_t>(color);
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    bool EmbeddedCompositingTestsFramework::sendStartRamsesRendererAndRunRenderingTest()
+    bool EmbeddedCompositingTestsFramework::sendStartRamsesRendererAndRunRenderingTest(uint32_t testAppIdx)
     {
         const auto& displays = getDisplays();
 
@@ -417,57 +417,57 @@ namespace ramses_internal
 
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::StartRamsesRendererAndRunRenderingTest << waylandIviLayerId.getValue() << iviSurfaceOffset;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
 
         bool testSucessResult = false;
-        m_testForkingController.getAnswerFromTestApplication(testSucessResult, getTestRenderer().getEmbeddedCompositorManager(displays[0].displayId));
+        m_testForkingController.getAnswerFromTestApplication(testSucessResult, getTestRenderer().getEmbeddedCompositorManager(displays[0].displayId), testAppIdx);
 
         return testSucessResult;
     }
 
-    void EmbeddedCompositingTestsFramework::sendSetRequiredWaylandOutputVersion(uint32_t protocolVersion)
+    void EmbeddedCompositingTestsFramework::sendSetRequiredWaylandOutputVersion(uint32_t protocolVersion, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::SetRequiredWaylandOutputVersion << protocolVersion;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::killTestApplication()
+    void EmbeddedCompositingTestsFramework::killTestApplication(uint32_t testAppIdx)
     {
-        m_testForkingController.killTestApplication();
+        m_testForkingController.killTestApplication(testAppIdx);
     }
 
-    UInt32 EmbeddedCompositingTestsFramework::getNumberOfAllocatedSHMBufferFromTestApplication()
+    UInt32 EmbeddedCompositingTestsFramework::getNumberOfAllocatedSHMBufferFromTestApplication(uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::GetNumberOfAllocatedSHMBuffer;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
 
         UInt32 numberOfAllocatedSHMBuffer(0);
-        m_testForkingController.getAnswerFromTestApplication(numberOfAllocatedSHMBuffer, getEmbeddedCompositorManager());
+        m_testForkingController.getAnswerFromTestApplication(numberOfAllocatedSHMBuffer, getEmbeddedCompositorManager(), testAppIdx);
         return numberOfAllocatedSHMBuffer;
     }
 
-    Bool EmbeddedCompositingTestsFramework::getIsBufferFreeFromTestApplication(UInt32 buffer)
+    Bool EmbeddedCompositingTestsFramework::getIsBufferFreeFromTestApplication(UInt32 buffer, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::GetIsBufferFree << buffer;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
 
         bool isBufferFree(false);
-        m_testForkingController.getAnswerFromTestApplication(isBufferFree, getEmbeddedCompositorManager());
+        m_testForkingController.getAnswerFromTestApplication(isBufferFree, getEmbeddedCompositorManager(), testAppIdx);
         return isBufferFree;
     }
 
-    Bool EmbeddedCompositingTestsFramework::getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams)
+    Bool EmbeddedCompositingTestsFramework::getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::GetWaylandOutputParams;
-        m_testForkingController.sendMessageToTestApplication(bos);
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
 
         bool errorsFound = false;
-        m_testForkingController.getAnswerFromTestApplication(errorsFound, getEmbeddedCompositorManager());
-        m_testForkingController.getAnswerFromTestApplication(resultWaylandOutputParams, getEmbeddedCompositorManager());
+        m_testForkingController.getAnswerFromTestApplication(errorsFound, getEmbeddedCompositorManager(), testAppIdx);
+        m_testForkingController.getAnswerFromTestApplication(resultWaylandOutputParams, getEmbeddedCompositorManager(), testAppIdx);
 
         return errorsFound;
     }

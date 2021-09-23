@@ -223,10 +223,10 @@ namespace ramses_internal
         collection.write(UInt64{});
     }
 
-    void SceneActionCollectionCreator::releaseNode(NodeHandle nodeToBeReleased)
+    void SceneActionCollectionCreator::releaseNode(NodeHandle nodeHandle)
     {
         collection.beginWriteSceneAction(ESceneActionId::ReleaseNode);
-        collection.write(nodeToBeReleased);
+        collection.write(nodeHandle);
     }
 
     void SceneActionCollectionCreator::addChildToNode(NodeHandle parent, NodeHandle child)

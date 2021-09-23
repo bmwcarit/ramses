@@ -81,8 +81,8 @@ namespace ramses
         m_aliveInterval = interval;
     }
 
-    void TCPConfig::setAliveTimeout(std::chrono::milliseconds factor)
+    void TCPConfig::setAliveTimeout(std::chrono::milliseconds timeout)
     {
-        m_aliveTimeout = factor;
+        m_aliveTimeout = timeout;
     }
 }

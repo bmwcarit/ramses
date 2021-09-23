@@ -10,6 +10,7 @@
 #define RAMSES_DATAINSTANCE_H
 
 #include "Scene/DataLayout.h"
+#include "Utils/AssertMovable.h"
 
 namespace ramses_internal
 {
@@ -60,8 +61,7 @@ namespace ramses_internal
         std::vector<Byte> m_data;
     };
 
-    static_assert(std::is_nothrow_move_constructible<DataInstance>::value, "DataInstance must be movable");
-    static_assert(std::is_nothrow_move_assignable<DataInstance>::value, "DataInstance must be movable");
+    ASSERT_MOVABLE(DataInstance)
 }
 
 #endif

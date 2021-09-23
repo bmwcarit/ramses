@@ -382,6 +382,7 @@ namespace ramses_internal
 
         m_profilerStatistics.startRegion(FrameProfilerStatistics::ERegion::HandleDisplayEvents);
         {
+            m_traceId = 100;
             handleDisplayEvents();
         }
         m_profilerStatistics.endRegion(FrameProfilerStatistics::ERegion::HandleDisplayEvents);
@@ -390,6 +391,7 @@ namespace ramses_internal
         bool swapBuffers = false;
         if (m_canRenderFrame)
         {
+            m_traceId = 104;
             // FRAMEBUFFER AND OFFSCREEN BUFFERS
             LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop begin frame to offscreen buffers");
             renderToOffscreenBuffers();
@@ -410,8 +412,11 @@ namespace ramses_internal
         m_profilerStatistics.startRegion(FrameProfilerStatistics::ERegion::SwapBuffersAndNotifyClients);
         if (swapBuffers)
         {
+            m_traceId = 105;
             m_displayController->swapBuffers();
+            m_traceId = 106;
             m_statistics.framebufferSwapped();
+            m_traceId = 107;
             m_displayController->getEmbeddedCompositingManager().notifyClients();
             LOG_TRACE(CONTEXT_PROFILING, "Renderer::doOneRenderLoop swapBuffers");
         }

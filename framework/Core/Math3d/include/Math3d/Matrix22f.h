@@ -208,8 +208,7 @@ namespace ramses_internal
         return !operator==(other);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Matrix22f>::value, "Matrix22f must be movable");
-    static_assert(std::is_nothrow_move_assignable<Matrix22f>::value, "Matrix22f must be movable");
+    ASSERT_MOVABLE(Matrix22f)
 }
 
 

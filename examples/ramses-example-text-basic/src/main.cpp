@@ -64,22 +64,35 @@ int main(int argc, char* argv[])
 
     // create font instance
     ramses::FontId font = fontRegistry.createFreetype2Font("res/ramses-example-text-basic-Roboto-Bold.ttf");
-    ramses::FontInstanceId fontInstance = fontRegistry.createFreetype2FontInstance(font, 64);
+    const int32_t fontSize = 64;
+    ramses::FontInstanceId fontInstance = fontRegistry.createFreetype2FontInstance(font, fontSize);
 
     // load rasterized glyphs for each character
     const std::u32string string = U"Hello World!";
-    const ramses::GlyphMetricsVector positionedGlyphs = textCache.getPositionedGlyphs(string, fontInstance);
+    ramses::GlyphMetricsVector positionedGlyphs = textCache.getPositionedGlyphs(string, fontInstance);
+    ramses::GlyphMetricsVector trackedPositionedGlyphs = textCache.getPositionedGlyphs(string, fontInstance);
+
+    // add some character tracking (unit is em --> relative to fontSize)
+    // that reduces the spaces between the individual glyphs
+    ramses::TextCache::ApplyTrackingToGlyphs(trackedPositionedGlyphs, -50, fontSize);
 
     // create RAMSES meshes/texture page to hold the glyphs and text geometry
     const ramses::TextLineId textId = textCache.createTextLine(positionedGlyphs, *textEffect);
     ramses::TextLine* textLine = textCache.getTextLine(textId);
 
+    const ramses::TextLineId trackedTextId = textCache.createTextLine(trackedPositionedGlyphs, *textEffect);
+    ramses::TextLine* trackedTextLine = textCache.getTextLine(trackedTextId);
+
     textLine->meshNode->getAppearance()->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
     textLine->meshNode->getAppearance()->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha);
+    trackedTextLine->meshNode->getAppearance()->setBlendingOperations(ramses::EBlendOperation_Add, ramses::EBlendOperation_Add);
+    trackedTextLine->meshNode->getAppearance()->setBlendingFactors(ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha, ramses::EBlendFactor_SrcAlpha, ramses::EBlendFactor_OneMinusSrcAlpha);
 
     // add the text meshes to the render pass to show them
-    textLine->meshNode->setTranslation(20.0f, 20.0f, -0.5f);
+    textLine->meshNode->setTranslation(20.0f, 100.0f, -0.5f);
     renderGroup->addMeshNode(*textLine->meshNode);
+    trackedTextLine->meshNode->setTranslation(20.0f, 20.0f, -0.5f);
+    renderGroup->addMeshNode(*trackedTextLine->meshNode);
 
     // apply changes
     scene->flush();

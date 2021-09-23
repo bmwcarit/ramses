@@ -13,6 +13,7 @@
 #include "Collections/IInputStream.h"
 #include "Collections/IOutputStream.h"
 #include "PlatformAbstraction/FmtBase.h"
+#include "Utils/AssertMovable.h"
 
 namespace ramses_internal
 {
@@ -245,8 +246,7 @@ namespace ramses_internal
             , vec.z * scalar);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Vector3>::value, "Vector3 must be movable");
-    static_assert(std::is_nothrow_move_assignable<Vector3>::value, "Vector3 must be movable");
+    ASSERT_MOVABLE(Vector3)
 }
 
 template <>

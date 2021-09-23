@@ -86,6 +86,42 @@ namespace ramses_internal
             Matrix44f::RotationEuler({ -0.5f, 0.f, 0.f }, ERotationConvention::Legacy_ZYX));
     }
 
+    TEST_F(ATransformationCachedScene, AppliesTranslationAfterRotation)
+    {
+        const Vector3 translation(0.5f);
+        const Vector3 rotation{ 30.f, 0.f, 0.f };
+        this->scene.setTranslation(this->transform, translation);
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::XYZ);
+
+        this->expectCorrectMatrices(this->nodeWithTransform,
+            Matrix44f::Translation(translation) * Matrix44f::RotationEuler(rotation, ERotationConvention::XYZ),
+            Matrix44f::RotationEuler(-rotation, ERotationConvention::XYZ) * Matrix44f::Translation(-translation));
+    }
+
+    TEST_F(ATransformationCachedScene, AppliesTranslationAfterScaling)
+    {
+        const Vector3 translation(0.5f);
+        const Vector3 scaling{ 1.f, 2.f, 3.f };
+        this->scene.setTranslation(this->transform, translation);
+        this->scene.setScaling(this->transform, scaling);
+
+        this->expectCorrectMatrices(this->nodeWithTransform,
+            Matrix44f::Translation(translation) * Matrix44f::Scaling(scaling),
+            Matrix44f::Scaling(scaling.inverse()) * Matrix44f::Translation(-translation));
+    }
+
+    TEST_F(ATransformationCachedScene, AppliesScalingBeforeRotation)
+    {
+        const Vector3 rotation{ 30.f, 0.f, 0.f };
+        const Vector3 scaling{ 2.f, 3.f, 4.f };
+        this->scene.setRotation(this->transform, rotation, ERotationConvention::XYZ);
+        this->scene.setScaling(this->transform, scaling);
+
+        this->expectCorrectMatrices(this->nodeWithTransform,
+            Matrix44f::RotationEuler(rotation, ERotationConvention::XYZ) * Matrix44f::Scaling(scaling),
+            Matrix44f::Scaling(scaling.inverse()) * Matrix44f::RotationEuler(-rotation, ERotationConvention::XYZ));
+    }
+
     TEST_F(ATransformationCachedScene, GivesCorrectValueWhenRotationConventionIsSet)
     {
         const Vector3 rotation{ 5.f, 10.0f, 150.0f };
@@ -284,12 +320,12 @@ namespace ramses_internal
 
         const Matrix44f expectedWorldMatrix =
             Matrix44f::Translation(translation) *
-            Matrix44f::Scaling(scaling) *
-            Matrix44f::RotationEuler(rotation, ERotationConvention::Legacy_ZYX);
+            Matrix44f::RotationEuler(rotation, ERotationConvention::Legacy_ZYX)*
+            Matrix44f::Scaling(scaling);
 
         const Matrix44f expectedObjectMatrix =
-            Matrix44f::RotationEuler(rotation, ERotationConvention::Legacy_ZYX).transpose() *
             Matrix44f::Scaling(scaling.inverse()) *
+            Matrix44f::RotationEuler(rotation, ERotationConvention::Legacy_ZYX).transpose() *
             Matrix44f::Translation(-translation);
 
         this->expectCorrectMatrices(this->nodeWithoutTransform, expectedWorldMatrix, expectedObjectMatrix);

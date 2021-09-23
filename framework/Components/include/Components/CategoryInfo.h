@@ -43,7 +43,24 @@ namespace ramses_internal
         uint32_t getSafeRectHeight() const;
         bool hasSafeRectChange() const;
 
+        enum class Layout : uint32_t
+        {
+            Drive = 0,
+            Focus,
+            Gallery,
+            Autonomous,
+            Sport_Road,
+            Sport_Track,
+
+            NUM_ELEMENTS
+        };
+        void setActiveLayout(Layout layout);
+        Layout getActiveLayout() const;
+        bool hasActiveLayoutChange() const;
+
         std::vector<Byte> toBinary() const;
+
+        void updateSelf(CategoryInfo const& infoUpdate);
 
         bool operator==(const CategoryInfo& rhs) const;
         bool operator!=(const CategoryInfo& rhs) const;
@@ -60,11 +77,28 @@ namespace ramses_internal
         uint32_t m_safeRectY;
         uint32_t m_safeRectWidth;
         uint32_t m_safeRectHeight;
+        Layout m_activeLayout;
         bool m_categoryRectChanged;
         bool m_renderSizeChanged;
         bool m_safeRectChanged;
+        bool m_activeLayoutChanged;
+    };
+
+    static const char* CategoryInfoLayoutNames[] =
+    {
+        "Drive",
+        "Focus",
+        "Gallery",
+        "Autonomous",
+        "Sport_Road",
+        "Sport_Track",
     };
 }
+
+MAKE_ENUM_CLASS_PRINTABLE(ramses_internal::CategoryInfo::Layout,
+                          "Layout",
+                          ramses_internal::CategoryInfoLayoutNames,
+                          ramses_internal::CategoryInfo::Layout::NUM_ELEMENTS);
 
 template <>
 struct fmt::formatter<ramses_internal::CategoryInfo> : public ramses_internal::SimpleFormatterBase
@@ -86,9 +120,13 @@ struct fmt::formatter<ramses_internal::CategoryInfo> : public ramses_internal::S
         }
         if (categoryInfo.hasSafeRectChange())
         {
-            fmt::format_to(ctx.out(), "safeRect:xy{}:{} {}x{}",
+            fmt::format_to(ctx.out(), "safeRect:xy{}:{} {}x{};",
                            categoryInfo.getSafeRectX(), categoryInfo.getSafeRectY(),
                            categoryInfo.getSafeRectWidth(), categoryInfo.getSafeRectHeight());
+        }
+        if (categoryInfo.hasActiveLayoutChange())
+        {
+            fmt::format_to(ctx.out(), "activeLayout:{}", categoryInfo.getActiveLayout());
         }
         return fmt::format_to(ctx.out(), "]");
     }

@@ -34,7 +34,7 @@ namespace ramses
         // Free space management
         const Quads& getFreeSpace() const;
         QuadOffset claimSpace(QuadIndex freeQuadIndex, const QuadSize& subportionSize);
-        void releaseSpace(Quad quad);
+        void releaseSpace(Quad box);
         QuadIndex findFreeSpace(QuadSize const& size) const;
 
         // Texture data management

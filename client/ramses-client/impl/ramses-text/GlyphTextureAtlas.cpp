@@ -130,9 +130,9 @@ namespace ramses
         }
     }
 
-    GlyphGeometry GlyphTextureAtlas::mapGlyphsAndCreateGeometry(const GlyphMetricsVector& glyphs)
+    GlyphGeometry GlyphTextureAtlas::mapGlyphsAndCreateGeometry(const GlyphMetricsVector& positionedGlyphVector)
     {
-        assert(glyphs.end() == std::find_if(glyphs.begin(), glyphs.end(), [this](GlyphMetrics const& glyph)
+        assert(positionedGlyphVector.end() == std::find_if(positionedGlyphVector.begin(), positionedGlyphVector.end(), [this](GlyphMetrics const& glyph)
         {
             return !isGlyphRegistered(glyph.key);
         }));
@@ -141,7 +141,7 @@ namespace ramses
         bool success = false;
         for (; atlasPage < m_glyphAtlasPages.size(); ++atlasPage)
         {
-            success = findMappingForPage(atlasPage, glyphs);
+            success = findMappingForPage(atlasPage, positionedGlyphVector);
             if (success)
                 break;
         }
@@ -150,7 +150,7 @@ namespace ramses
         {
             // no results, so try new, empty page
             atlasPage = createNewPage();
-            if (!findMappingForPage(atlasPage, glyphs))
+            if (!findMappingForPage(atlasPage, positionedGlyphVector))
             {
                 m_glyphAtlasPages.pop_back();
                 LOG_ERROR(CONTEXT_TEXT, "GlyphTextureAtlas::mapGlyphsAndCreateGeometry failed - glyphs do not fit on one page, reduce string or increase atlas texture size");
@@ -158,7 +158,7 @@ namespace ramses
             }
         }
 
-        return createGlyphsGeometry(atlasPage, glyphs);
+        return createGlyphsGeometry(atlasPage, positionedGlyphVector);
     }
 
     GlyphGeometry GlyphTextureAtlas::createGlyphsGeometry(size_t atlasPage, const GlyphMetricsVector& glyphs)
@@ -237,11 +237,11 @@ namespace ramses
         return geometry;
     }
 
-    void GlyphTextureAtlas::unmapGlyphsFromPage(const GlyphMetricsVector& glyphs, size_t atlasPage)
+    void GlyphTextureAtlas::unmapGlyphsFromPage(const GlyphMetricsVector& positionedGlyphVector, size_t atlasPage)
     {
         std::vector<GlyphKey> tomap;
         std::vector<GlyphKey> mapped;
-        categorizeGlyphs(atlasPage, glyphs, tomap, mapped);
+        categorizeGlyphs(atlasPage, positionedGlyphVector, tomap, mapped);
         assert(tomap.empty());
 
         for (const auto& glyphkey : mapped)

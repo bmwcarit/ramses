@@ -15,6 +15,7 @@
 #include "RendererAPI/IEmbeddedCompositingManager.h"
 #include "Utils/LogMacros.h"
 #include "Utils/BinaryOutputStream.h"
+#include <memory>
 
 namespace ramses_internal
 {
@@ -26,37 +27,48 @@ namespace ramses_internal
         TestForkingController(const TestForkingController&) = delete;
         TestForkingController& operator=(const TestForkingController&) = delete;
 
-        void startTestApplication();
-        void waitForTestApplicationExit();
-        void sendMessageToTestApplication(const BinaryOutputStream& os);
+        void startTestApplication(uint32_t testAppIdx);
+        void waitForTestApplicationExit(uint32_t testAppIdx);
+        void sendMessageToTestApplication(const BinaryOutputStream& os, uint32_t testAppIdx);
         template <typename T>
-        bool getAnswerFromTestApplication(T& value, IEmbeddedCompositingManager& embeddedCompositingManager);
-        void killTestApplication();
+        bool getAnswerFromTestApplication(T& value, IEmbeddedCompositingManager& embeddedCompositingManager, uint32_t testAppIdx);
+        void killTestApplication(uint32_t testAppIdx);
 
     private:
+        struct TestPipes
+        {
+            std::unique_ptr<NamedPipe> testToWaylandClientPipe;
+            std::unique_ptr<NamedPipe> waylandClientToTestPipe;
+        };
+
         void startForkerApplication();
         void stopForkerApplication();
-        void sendForkRequest();
-        void sendWaitForExitRequest();
+        void sendForkRequest(uint32_t testAppIdx);
+        void sendWaitForExitRequest(uint32_t testAppIdx);
 
-        NamedPipe       m_testToForkerPipe{"/tmp/ramses-ec-tests-testToForkerPipe", true};
-        NamedPipe       m_testToWaylandClientPipe{"/tmp/ramses-ec-tests-testToWaylandClientPipe", true};
-        NamedPipe       m_waylandClientToTestPipe{"/tmp/ramses-ec-tests-waylandClientToTestPipe", true};
-        pid_t           m_testForkerApplicationProcessId = -1;
+        const std::array<std::pair<String,String>, 2>   m_testPipeNames{{
+                                                            {"/tmp/ramses-ec-tests-testToWaylandClientPipe-0", "/tmp/ramses-ec-tests-waylandClientToTestPipe-0"},
+                                                            {"/tmp/ramses-ec-tests-testToWaylandClientPipe-1", "/tmp/ramses-ec-tests-waylandClientToTestPipe-1"}
+                                                        }};
+
+        NamedPipe               m_testToForkerPipe{"/tmp/ramses-ec-tests-testToForkerPipe", true};
+        std::vector<TestPipes>  m_testPipes;
+        pid_t                   m_testForkerApplicationProcessId = -1;
     };
 
     template <typename T>
-    bool TestForkingController::getAnswerFromTestApplication(T& value, IEmbeddedCompositingManager& embeddedCompositingManager)
+    bool TestForkingController::getAnswerFromTestApplication(T& value, IEmbeddedCompositingManager& embeddedCompositingManager, uint32_t testAppIdx)
     {
         LOG_INFO(CONTEXT_RENDERER, "TestForkingController::getAnswerFromTestApplication");
+        assert(testAppIdx < m_testPipes.size());
 
         const uint32_t timeOutInMS = 20;
-        while (!m_waylandClientToTestPipe.waitOnData(timeOutInMS))
+        while (!m_testPipes[testAppIdx].waylandClientToTestPipe->waitOnData(timeOutInMS))
         {
             embeddedCompositingManager.processClientRequests();
         }
 
-        const EReadFromPipeStatus readingStatus = m_waylandClientToTestPipe.read(&value, sizeof(value));
+        const EReadFromPipeStatus readingStatus = m_testPipes[testAppIdx].waylandClientToTestPipe->read(&value, sizeof(value));
         switch (readingStatus)
         {
         case EReadFromPipeStatus_Failure:

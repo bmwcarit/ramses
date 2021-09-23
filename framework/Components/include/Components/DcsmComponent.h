@@ -48,12 +48,12 @@ namespace ramses_internal
         virtual bool setLocalConsumerAvailability(bool available) override;
         virtual bool setLocalProviderAvailability(bool available) override;
 
-        virtual void newParticipantHasConnected(const Guid& guid) override;
-        virtual void participantHasDisconnected(const Guid& guid) override;
+        virtual void newParticipantHasConnected(const Guid& newParticipant) override;
+        virtual void participantHasDisconnected(const Guid& from) override;
 
         // Local consumer send methods
         virtual bool sendCanvasSizeChange(ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation ai) override;
-        virtual bool sendContentStateChange(ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation ai) override;
+        virtual bool sendContentStateChange(ContentID contentID, EDcsmState state, const CategoryInfo& categoryInfo, AnimationInformation ai) override;
         virtual bool sendContentStatus(ContentID contentID, ramses::DcsmStatusMessageImpl const& message) override;
 
         // Local provider send methods
@@ -68,7 +68,7 @@ namespace ramses_internal
 
         // IDcsmProviderServiceHandler implementation
         virtual void handleCanvasSizeChange(ContentID contentID, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID) override;
-        virtual void handleContentStateChange(ContentID contentID, EDcsmState status, const CategoryInfo& categoryInfo, AnimationInformation, const Guid& consumerID) override;
+        virtual void handleContentStateChange(ContentID contentID, EDcsmState state, const CategoryInfo& categoryInfo, AnimationInformation ai, const Guid& consumerID) override;
         virtual void handleContentStatus(ContentID contentID, uint64_t messageID, absl::Span<const Byte> message, const Guid& consumerID) override;
 
         // IDcsmConsumerServiceHandler implementation

@@ -68,6 +68,9 @@ namespace ramses
         std::unordered_map<GlyphId, GlyphMetrics> m_glyphMetricsCache;
         std::unordered_map<GlyphId, GlyphBitmapData> m_glyphBitmapCache;
         mutable std::unordered_map<unsigned long, bool> m_supportedCharacters;
+
+    private:
+        static constexpr bool IsBidiMarker(char32_t character);
     };
 }
 

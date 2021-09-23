@@ -39,11 +39,11 @@ namespace ramses_internal
 
     private:
         static void HandleVisibilityCallback(void*                   data,
-                                             ivi_controller_surface* ivi_controller_surface,
+                                             ivi_controller_surface* iviControllerSurface,
                                              int32_t                 visibility);
 
         static void HandleOpacityCallBack(void*                   data,
-                                          ivi_controller_surface* ivi_controller_surface,
+                                          ivi_controller_surface* iviControllerSurface,
                                           wl_fixed_t              opacity);
 
         static void HandleSourceRectangleCallback(void*                   data,

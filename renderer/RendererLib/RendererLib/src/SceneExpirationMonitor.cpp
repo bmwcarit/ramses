@@ -75,6 +75,9 @@ namespace ramses_internal
 
     void SceneExpirationMonitor::checkExpiredScenes(FlushTime::Clock::time_point currentTime)
     {
+        if (m_monitoredScenes.empty()) // early out if there are no monitored scenes
+            return;
+
         if (currentTime == FlushTime::InvalidTimestamp) // early out if current time is invalid
         {
             LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Current time is invalid. This is an error. Marking all monitored scenes as expired.");

@@ -11,6 +11,7 @@
 
 #include "TransportCommon/ConnectionSystemBase.h"
 #include "MockConnectionStatusListener.h"
+#include "SomeIPStackMocks.h"
 #include "gmock/gmock.h"
 
 namespace ramses_internal

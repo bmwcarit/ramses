@@ -31,7 +31,7 @@ namespace ramses_internal
 
         constexpr Vector2i();
         constexpr Vector2i(const Int32 _x, const Int32 _y);
-        explicit constexpr Vector2i(const Int32 value);
+        explicit constexpr Vector2i(const Int32 xy);
 
         constexpr Vector2i(const Vector2i& other) = default;
         constexpr Vector2i& operator=(const Vector2i& other) = default;

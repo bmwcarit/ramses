@@ -12,6 +12,7 @@
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/ERotationConvention.h"
 #include "Math3d/Vector3.h"
+#include "Utils/AssertMovable.h"
 
 namespace ramses_internal
 {
@@ -25,8 +26,7 @@ namespace ramses_internal
         NodeHandle node;
     };
 
-    static_assert(std::is_nothrow_move_constructible<TopologyTransform>::value, "Transform must be movable");
-    static_assert(std::is_nothrow_move_assignable<TopologyTransform>::value, "Transform must be movable");
+    ASSERT_MOVABLE(TopologyTransform)
 }
 
 #endif

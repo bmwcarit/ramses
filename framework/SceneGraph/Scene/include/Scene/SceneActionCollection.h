@@ -19,6 +19,7 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "PlatformAbstraction/Macros.h"
+#include "Utils/AssertMovable.h"
 #include <type_traits>
 #include <algorithm>
 #include <iterator>
@@ -35,8 +36,16 @@ namespace ramses_internal
         SceneActionCollection(const SceneActionCollection&) = delete;
         SceneActionCollection& operator=(const SceneActionCollection&) = delete;
 
+// C++14 does not require noexcept move constructor/assignments for std::vector moves
+// But with the exception of ghs compiler all std libs of our supported compilers guarantee
+// noexcept for this, so we can guarantee noexcept for SceneActionCollection moves as well.
+#ifdef __ghs__
+        SceneActionCollection(SceneActionCollection&&) = default;
+        SceneActionCollection& operator=(SceneActionCollection&&) = default;
+#else
         SceneActionCollection(SceneActionCollection&&) noexcept = default;
         SceneActionCollection& operator=(SceneActionCollection&&) noexcept = default;
+#endif
 
         SceneActionCollection copy() const;
 
@@ -192,16 +201,15 @@ namespace ramses_internal
         std::vector<ActionInfo> m_actionInfo;
     };
 
-    static_assert(std::is_nothrow_move_constructible<SceneActionCollection>::value, "SceneActionCollection must be movable");
-    static_assert(std::is_nothrow_move_assignable<SceneActionCollection>::value, "SceneActionCollection must be movable");
+    ASSERT_MOVABLE(SceneActionCollection)
 
     inline SceneActionCollection::SceneActionCollection()
     {
     }
 
-    inline SceneActionCollection::SceneActionCollection(UInt initialCapacity, UInt initialNumberOfSceneActionsInformationCapacity)
+    inline SceneActionCollection::SceneActionCollection(UInt initialDataCapacity, UInt initialNumberOfSceneActionsInformationCapacity)
     {
-        m_data.reserve(initialCapacity);
+        m_data.reserve(initialDataCapacity);
         m_actionInfo.reserve(initialNumberOfSceneActionsInformationCapacity);
     }
 

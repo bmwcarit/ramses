@@ -13,6 +13,7 @@
 #include "Collections/IInputStream.h"
 #include "Collections/IOutputStream.h"
 #include "PlatformAbstraction/FmtBase.h"
+#include "Utils/AssertMovable.h"
 
 namespace ramses_internal
 {
@@ -31,7 +32,7 @@ namespace ramses_internal
 
         constexpr Vector2();
         constexpr Vector2(const Float _x, const Float _y);
-        explicit constexpr Vector2(const Float value);
+        explicit constexpr Vector2(const Float xy);
 
         constexpr Vector2(const Vector2& other) = default;
         constexpr Vector2& operator=(const Vector2& other) = default;
@@ -210,8 +211,7 @@ namespace ramses_internal
         return Vector2(vec.x * scalar, vec.y * scalar);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Vector2>::value, "Vector2 must be movable");
-    static_assert(std::is_nothrow_move_assignable<Vector2>::value, "Vector2 must be movable");
+    ASSERT_MOVABLE(Vector2)
 }
 
 template <>

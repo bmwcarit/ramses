@@ -11,6 +11,7 @@
 
 #include "SceneAPI/SceneTypes.h"
 #include "PlatformAbstraction/PlatformTypes.h"
+#include "Utils/AssertMovable.h"
 
 namespace ramses_internal
 {
@@ -20,8 +21,7 @@ namespace ramses_internal
         NodeHandle       parent;
     };
 
-    static_assert(std::is_nothrow_move_constructible<TopologyNode>::value, "TopologyNode must be movable");
-    static_assert(std::is_nothrow_move_assignable<TopologyNode>::value, "TopologyNode must be movable");
+    ASSERT_MOVABLE(TopologyNode)
 }
 
 #endif

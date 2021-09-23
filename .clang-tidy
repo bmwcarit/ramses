@@ -154,7 +154,7 @@ Checks:
     google-runtime-operator,
     google-build-explicit-make-pair,
 
-    hicpp-avoid-goto,
+    # alias: hicpp-avoid-goto,
     # TODO hicpp-multiway-paths-covered,
     # TODO hicpp-named-parameter,
     hicpp-no-assembler,
@@ -210,7 +210,7 @@ Checks:
     readability-deleted-default,
     readability-isolate-declaration,
     readability-delete-null-pointer,
-    # TODO readability-inconsistent-declaration-parameter-name,
+    readability-inconsistent-declaration-parameter-name,
     readability-non-const-parameter,
     readability-redundant-control-flow,
     readability-redundant-declaration,

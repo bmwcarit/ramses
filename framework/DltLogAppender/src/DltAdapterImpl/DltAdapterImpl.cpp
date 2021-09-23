@@ -231,7 +231,7 @@ namespace ramses_internal
         m_initialized = false;
     }
 
-    bool DltAdapterImpl::registerInjectionCallback(LogContext* ctx, uint32_t sid, int (*dlt_injection_callback)(uint32_t service_id, void *data, uint32_t length))
+    bool DltAdapterImpl::registerInjectionCallback(LogContext* ctx, uint32_t sid, int (*dltInjectionCallback)(uint32_t service_id, void *data, uint32_t length))
     {
         if(!m_initialized)
         {
@@ -243,7 +243,7 @@ namespace ramses_internal
             fprintf(stderr, "DltAdapterImpl::registerInjectionCallback: no dlt context\n");
             return false;
         }
-        if (dlt_register_injection_callback(dltContext, sid, dlt_injection_callback) < 0)
+        if (dlt_register_injection_callback(dltContext, sid, dltInjectionCallback) < 0)
         {
             fprintf(stderr, "DltAdapterImpl::registerInjectionCallback: failed\n");
             return false;

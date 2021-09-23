@@ -10,6 +10,11 @@
 
 namespace ramses_internal
 {
-    DisplayThreadMock::DisplayThreadMock() = default;
+    DisplayThreadMock::DisplayThreadMock()
+    {
+        ON_CALL(*this, getFrameCounter()).WillByDefault(Return(0u));
+        EXPECT_CALL(*this, getFrameCounter()).Times(AnyNumber());
+    }
+
     DisplayThreadMock::~DisplayThreadMock() = default;
 }

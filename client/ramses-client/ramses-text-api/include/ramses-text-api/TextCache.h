@@ -185,6 +185,21 @@ namespace ramses
         static bool             ContainsRenderableGlyphs(const GlyphMetricsVector& glyphMetrics);
 
         /**
+        * @brief Apply character tracking (positive or negative) to each glyph in provided GlyphMetricsVector.
+        * This means that that the space between the individual glyphs can be increased (positive tracking) or decreased (negative tracking).
+        * The tracking factor is calculated in em, so it's relative to the font size (1/1000 of font size in pixels).
+        * So having a tracking factor of 1000 and a font size of 10 would result in an extra of 10 pixels space between every glyph
+        * (1000/1000 * 10 = 10px).
+        * Overdoing the negative tracking is not advised, as the glyphs will then potentially be printed on top of each other.
+        * This helper function should only be used on Latin fonts as for all other font types this kind of tracking may lead to
+        * unexpected visual output.
+        * @param[in] glyphMetrics GlyphMetrics that get tracking applied on
+        * @param[in] trackingFactor factor of tracking intensity (higher --> bigger tracking effect)
+        * @param[in] fontSize size of the font that contains the glyphs to be tracked
+        */
+        static void             ApplyTrackingToGlyphs(GlyphMetricsVector& glyphMetrics, int32_t trackingFactor, int32_t fontSize);
+
+        /**
         * Stores internal data for implementation specifics of TextCache.
         */
         class TextCacheImpl* impl;

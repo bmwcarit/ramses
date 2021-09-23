@@ -13,6 +13,7 @@
 #include "Collections/IOutputStream.h"
 #include "Math3d/Vector3.h"
 #include "PlatformAbstraction/FmtBase.h"
+#include "Utils/AssertMovable.h"
 
 namespace ramses_internal
 {
@@ -59,7 +60,7 @@ namespace ramses_internal
         constexpr void operator*=(const Float scalar);
         constexpr void operator*=(const Vector4& vec);
         constexpr Vector4 operator/(const Float scalar) const;
-        constexpr Vector4 operator/(const Vector4& vec) const;
+        constexpr Vector4 operator/(const Vector4& other) const;
         constexpr void operator/=(const Float scalar);
 
         constexpr bool operator==(const Vector4& other) const;
@@ -270,8 +271,7 @@ namespace ramses_internal
             , vec.w * scalar);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Vector4>::value, "Vector4 must be movable");
-    static_assert(std::is_nothrow_move_assignable<Vector4>::value, "Vector4 must be movable");
+    ASSERT_MOVABLE(Vector4)
 }
 
 template <>

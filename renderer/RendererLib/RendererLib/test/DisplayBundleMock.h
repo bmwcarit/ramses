@@ -31,6 +31,7 @@ namespace ramses_internal
         MOCK_METHOD(IEmbeddedCompositingManager&, getECManager, (), (override));
         MOCK_METHOD(IEmbeddedCompositor&, getEC, (), (override));
         MOCK_METHOD(bool, hasSystemCompositorController, (), (const, override));
+        MOCK_METHOD(std::atomic_int&, traceId, (), (override));
     };
 }
 #endif

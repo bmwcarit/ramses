@@ -42,12 +42,12 @@ namespace ramses
          *        Sends a DCSM canvasSizeEvent for the given content ID. May only be called for offered content IDs.
          *
          * @param contentID  content to assign to this consumer
-         * @param size       expected size of the assigned category
+         * @param categoryInfo  expected size of the assigned category
          *
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t assignContentToConsumer(ContentID contentID, const CategoryInfoUpdate& size);
+        status_t assignContentToConsumer(ContentID contentID, const CategoryInfoUpdate& categoryInfo);
 
         /**
          * @brief Send a DCSM contentSizeEvent for the given content ID. May only be called on assigned content IDs.
@@ -59,13 +59,13 @@ namespace ramses
          *        viewport size for this content changes while it is still using the content.
          *
          * @param contentID  content which is affected by the canvas size change
-         * @param size       expected size after the transition
+         * @param categoryInfo  expected size after the transition
          * @param animationInformation start and end times of the transition. May be null for immediate change.
          *
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t contentSizeChange(ContentID contentID, const CategoryInfoUpdate& size, AnimationInformation animationInformation);
+        status_t contentSizeChange(ContentID contentID, const CategoryInfoUpdate& categoryInfo, AnimationInformation animationInformation);
 
         /**
          * @brief Send a DCSM contentStateChange for the given content ID. May only be called on assigned content IDs.

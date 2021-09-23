@@ -228,8 +228,8 @@ namespace ramses_internal
             const auto& transform = SceneT<MEMORYPOOL>::getTransform(*transformHandlePtr);
             const Matrix44f matrix =
                 Matrix44f::Translation(transform.translation) *
-                Matrix44f::Scaling(transform.scaling) *
-                Matrix44f::RotationEuler(transform.rotation, transform.rotationConvention);
+                Matrix44f::RotationEuler(transform.rotation, transform.rotationConvention) *
+                Matrix44f::Scaling(transform.scaling);
 
             chainMatrix *= matrix;
         }
@@ -243,8 +243,8 @@ namespace ramses_internal
         {
             const auto& transform = SceneT<MEMORYPOOL>::getTransform(*transformHandlePtr);
             const Matrix44f matrix =
-                Matrix44f::RotationEuler(transform.rotation, transform.rotationConvention).transpose() *
                 Matrix44f::Scaling(transform.scaling.inverse()) *
+                Matrix44f::RotationEuler(transform.rotation, transform.rotationConvention).transpose() *
                 Matrix44f::Translation(-transform.translation);
 
             chainMatrix = matrix * chainMatrix;

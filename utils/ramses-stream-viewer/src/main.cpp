@@ -72,7 +72,6 @@ public:
         : m_ramsesClient(ramsesClient)
     {
         ramses::SceneConfig conf;
-        conf.setPublicationMode(publicationMode);
         m_scene = m_ramsesClient.createScene(sceneId, conf);
         auto camera = m_scene->createPerspectiveCamera("my camera");
         camera->setViewport(0, 0, displayWidth, displayHeight);

@@ -52,12 +52,12 @@ namespace ramses_internal
 
     inline
     IInputStream&
-    BinaryFileInputStream::read(void* data, size_t size)
+    BinaryFileInputStream::read(void* buffer, size_t size)
     {
         if (m_state != EStatus::Ok)
             return *this;
         size_t numBytesRead = 0;
-        m_state = m_file.read(data, size, numBytesRead);
+        m_state = m_file.read(buffer, size, numBytesRead);
         return *this;
     }
 

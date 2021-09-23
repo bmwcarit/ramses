@@ -617,6 +617,27 @@ namespace ramses_internal
 
         EXPECT_CALL(stream, seek(_, _)).WillOnce(Return(EStatus::Error));
         EXPECT_CALL(stream, getState()).WillRepeatedly(Return(EStatus::Ok));
-        EXPECT_FALSE(localResourceComponent.loadResource(hash));
+        EXPECT_CALL(stream, getPos(_)).WillOnce(Return(EStatus::Ok));
+        EXPECT_EQ(localResourceComponent.loadResource(hash), ManagedResource());
+    }
+
+    TEST_F(AResourceComponentTest, catchesExceptionWhenDeserializingResource)
+    {
+        ResourceContentHash hash(1, 2);
+
+        auto streamContainer = std::make_shared<InputStreamContainerMock>();
+        StrictMock<InputStreamMock> stream;
+        EXPECT_CALL(*streamContainer, getStream()).WillRepeatedly(ReturnRef(stream));
+
+        ResourceTableOfContents toc;
+        toc.registerContents(ResourceInfo(EResourceType_Effect, hash, 10, 0), 0, 5);
+
+        localResourceComponent.addResourceFile(streamContainer, toc);
+
+        EXPECT_CALL(stream, seek(_, _)).WillOnce(Return(EStatus::Ok));
+        EXPECT_CALL(stream, getState()).WillRepeatedly(Return(EStatus::Ok));
+        EXPECT_CALL(stream, getPos(_)).WillOnce(Return(EStatus::Ok));
+        EXPECT_CALL(stream, read(_, _)).WillOnce(Throw(std::bad_alloc()));
+        EXPECT_NO_THROW(EXPECT_EQ(localResourceComponent.loadResource(hash), ManagedResource()));
     }
 }

@@ -86,6 +86,8 @@ namespace ramses_internal
         SceneReferenceOwnership& m_sharedOwnership;
 
         std::vector<SceneId> m_masterScenesWithChangedExpirationState;
+
+        friend class RendererLogger;
     };
 }
 

@@ -13,6 +13,7 @@
 #include "Collections/StringOutputStream.h"
 #include "Components/DcsmTypes.h"
 #include "absl/types/span.h"
+#include "Utils/AssertMovable.h"
 #include <vector>
 #include <string>
 #include <cstdint>
@@ -126,8 +127,7 @@ namespace ramses_internal
         bool m_hasLayoutAvailability = false;
     };
 
-    static_assert(std::is_nothrow_move_constructible<DcsmMetadata>::value, "DcsmMetadata must be movable");
-    static_assert(std::is_nothrow_move_assignable<DcsmMetadata>::value, "DcsmMetadata must be movable");
+    ASSERT_MOVABLE(DcsmMetadata)
 }
 
 template<>

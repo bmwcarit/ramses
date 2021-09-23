@@ -24,10 +24,10 @@ namespace ramses_internal
 
         template <typename EDataType>
         static EDataType InterpolateCubicBezier(
-            const EDataType& p0,
-            const EDataType& p1,
-            const EDataType& p2,
-            const EDataType& p3,
+            const EDataType& startValue,
+            const EDataType& endValue,
+            const EDataType& startTangent,
+            const EDataType& endTangent,
             Float fraction);
 
         template <typename EDataType>
@@ -74,10 +74,10 @@ namespace ramses_internal
 
     template <typename EDataType>
     EDataType Interpolator::InterpolateCubicBezier(
-        const EDataType& p0,
-        const EDataType& p1,
-        const EDataType& p2,
-        const EDataType& p3,
+        const EDataType& startValue,
+        const EDataType& endValue,
+        const EDataType& startTangent,
+        const EDataType& endTangent,
         Float fraction)
     {
         using TypeTraits = AnimatableTypeTraits<EDataType>;
@@ -85,10 +85,10 @@ namespace ramses_internal
         typename TypeTraits::CorrespondingFloatType coeffB;
         typename TypeTraits::CorrespondingFloatType coeffC;
         typename TypeTraits::CorrespondingFloatType coeffD;
-        const typename TypeTraits::CorrespondingFloatType p0f = TypeTraits::ToCorrespondingFloatType(p0);
-        const typename TypeTraits::CorrespondingFloatType p1f = TypeTraits::ToCorrespondingFloatType(p1);
-        const typename TypeTraits::CorrespondingFloatType p2f = TypeTraits::ToCorrespondingFloatType(p2);
-        const typename TypeTraits::CorrespondingFloatType p3f = TypeTraits::ToCorrespondingFloatType(p3);
+        const typename TypeTraits::CorrespondingFloatType p0f = TypeTraits::ToCorrespondingFloatType(startValue);
+        const typename TypeTraits::CorrespondingFloatType p1f = TypeTraits::ToCorrespondingFloatType(endValue);
+        const typename TypeTraits::CorrespondingFloatType p2f = TypeTraits::ToCorrespondingFloatType(startTangent);
+        const typename TypeTraits::CorrespondingFloatType p3f = TypeTraits::ToCorrespondingFloatType(endTangent);
         Interpolator::ComputeCoeffsCubicBezier(p0f, p1f, p2f, p3f, coeffA, coeffB, coeffC, coeffD);
 
         const typename TypeTraits::CorrespondingFloatType ret = Interpolator::InterpolateCubicBezierCoeffs(coeffA, coeffB, coeffC, coeffD, fraction);
@@ -182,9 +182,9 @@ namespace ramses_internal
 
     // Specializations for boolean due to unsupported arithmetic operations
     template <>
-    inline bool Interpolator::InterpolateLinear<bool>(const bool& startValue, const bool& endValue, Float segmentTime)
+    inline bool Interpolator::InterpolateLinear<bool>(const bool& startValue, const bool& endValue, Float fraction)
     {
-        return (segmentTime < 0.5f ? startValue : endValue);
+        return (fraction < 0.5f ? startValue : endValue);
     }
 
     template <>
@@ -193,11 +193,11 @@ namespace ramses_internal
         const bool& endValue,
         const bool& startTangent,
         const bool& endTangent,
-        Float segmentTime)
+        Float fraction)
     {
         UNUSED(startTangent);
         UNUSED(endTangent);
-        return Interpolator::InterpolateLinear(startValue, endValue, segmentTime);
+        return Interpolator::InterpolateLinear(startValue, endValue, fraction);
     }
 }
 

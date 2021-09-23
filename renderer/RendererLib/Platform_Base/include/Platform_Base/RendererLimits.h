@@ -20,7 +20,7 @@ namespace ramses_internal
     public:
         // Device limits
         uint32_t getMaximumTextureUnits() const;
-        void     setMaximumTextureUnits(uint32_t count);
+        void     setMaximumTextureUnits(uint32_t units);
 
         uint32_t getMaximumSamples() const;
         void     setMaximumSamples(uint32_t samples);

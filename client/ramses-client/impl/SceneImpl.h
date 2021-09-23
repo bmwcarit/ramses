@@ -338,7 +338,7 @@ namespace ramses
         using NodeVisibilityPair = std::pair<NodeImpl*, EVisibilityMode>;
         using NodeVisibilityInfoVector = std::vector<NodeVisibilityPair>;
 
-        void applyVisibilityToSubtree(NodeImpl& node, EVisibilityMode visibilityToApply);
+        void applyVisibilityToSubtree(NodeImpl& initialNode, EVisibilityMode initialVisibility);
         void prepareListOfDirtyNodesForHierarchicalVisibility(NodeVisibilityInfoVector& nodesToProcess);
         void applyHierarchicalVisibility();
 
@@ -382,9 +382,9 @@ namespace ramses
     }
 
     template <typename T>
-    void SceneImpl::enqueueSceneCommand(T cmd)
+    void SceneImpl::enqueueSceneCommand(T commands)
     {
-        m_commandBuffer.enqueueCommand(std::move(cmd));
+        m_commandBuffer.enqueueCommand(std::move(commands));
     }
 }
 

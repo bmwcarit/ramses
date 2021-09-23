@@ -21,6 +21,7 @@ namespace ramses_internal
             filled.setCategoryRect(12, 34, 56, 78);
             filled.setRenderSize(88,99);
             filled.setSafeRect(4,3,2,1);
+            filled.setActiveLayout(CategoryInfo::Layout::Focus);
         }
 
         CategoryInfo serializeDeserialize(const CategoryInfo& ref)
@@ -67,6 +68,8 @@ namespace ramses_internal
         EXPECT_EQ(0u, value.getRenderSizeWidth());
         EXPECT_EQ(0u, value.getRenderSizeHeight());
         EXPECT_FALSE(value.hasRenderSizeChange());
+        EXPECT_EQ(CategoryInfo::Layout::Drive, value.getActiveLayout());
+        EXPECT_FALSE(value.hasActiveLayoutChange());
     }
 
     TEST(CategoryInfo, setCategoryRect)
@@ -104,6 +107,16 @@ namespace ramses_internal
         EXPECT_TRUE(value.hasRenderSizeChange());
         EXPECT_EQ(1u, value.getRenderSizeWidth());
         EXPECT_EQ(2u, value.getRenderSizeHeight());
+    }
+
+    TEST(CategoryInfo, setActiveLayout)
+    {
+        CategoryInfo value;
+        EXPECT_FALSE(value.hasActiveLayoutChange());
+
+        value.setActiveLayout(CategoryInfo::Layout::Sport_Track);
+        EXPECT_TRUE(value.hasActiveLayoutChange());
+        EXPECT_EQ(CategoryInfo::Layout::Sport_Track, value.getActiveLayout());
     }
 
     TEST_F(ACategoryInfo, canCopyConstruct)
@@ -166,6 +179,7 @@ namespace ramses_internal
         ci.setCategoryRect(4,3,2,1);
         ci.setRenderSize(5,6);
         ci.setSafeRect(7,8,9,0);
+        ci.setActiveLayout(CategoryInfo::Layout::Autonomous);
         EXPECT_EQ(ci, serializeDeserialize(ci));
     }
 
@@ -211,6 +225,61 @@ namespace ramses_internal
     TEST_F(ACategoryInfo, canFormat)
     {
         EXPECT_EQ("[]", fmt::to_string(empty));
-        EXPECT_EQ("[categoryRect:xy12:34 56x78;rendSize:88x99;safeRect:xy4:3 2x1]", fmt::to_string(filled));
+        EXPECT_EQ("[categoryRect:xy12:34 56x78;rendSize:88x99;safeRect:xy4:3 2x1;activeLayout:Layout::Focus]", fmt::to_string(filled));
+    }
+
+    TEST_F(ACategoryInfo, emptyInfoUpdatesSelfProperly)
+    {
+        CategoryInfo ci1;
+        CategoryInfo ci2;
+        ci2.setCategoryRect(4,3,2,1);
+        ci2.setRenderSize(5,6);
+
+        ci1.updateSelf(ci2);
+        EXPECT_EQ(ci1, ci2);
+
+        ci2.setSafeRect(7,8,9,0);
+        ci2.setActiveLayout(CategoryInfo::Layout::Autonomous);
+
+        ci1.updateSelf(ci2);
+        EXPECT_EQ(ci1, ci2);
+    }
+
+    TEST_F(ACategoryInfo, nonemptyInfoUpdatesSelfProperly)
+    {
+        CategoryInfo ci1;
+        ci1.setCategoryRect(44,33,22,11);
+        ci1.setRenderSize(55,66);
+        ci1.setSafeRect(77,88,99,90);
+        ci1.setActiveLayout(CategoryInfo::Layout::Sport_Track);
+
+        CategoryInfo ci2;
+        ci2.setCategoryRect(4,3,2,1);
+        ci2.setRenderSize(5,6);
+
+        ci1.updateSelf(ci2);
+        EXPECT_NE(ci1, ci2);
+        EXPECT_EQ(ci1.getCategoryX(), ci2.getCategoryX());
+        EXPECT_EQ(ci1.getCategoryY(), ci2.getCategoryY());
+        EXPECT_EQ(ci1.getCategoryWidth(), ci2.getCategoryWidth());
+        EXPECT_EQ(ci1.getCategoryHeight(), ci2.getCategoryHeight());
+        EXPECT_EQ(ci1.getRenderSizeWidth(), ci2.getRenderSizeWidth());
+        EXPECT_EQ(ci1.getRenderSizeHeight(), ci2.getRenderSizeHeight());
+        EXPECT_NE(ci1.getSafeRectX(), ci2.getSafeRectX());
+        EXPECT_NE(ci1.getSafeRectY(), ci2.getSafeRectY());
+        EXPECT_NE(ci1.getSafeRectWidth(), ci2.getSafeRectWidth());
+        EXPECT_NE(ci1.getSafeRectHeight(), ci2.getSafeRectHeight());
+        EXPECT_NE(ci1.getActiveLayout(), ci2.getActiveLayout());
+        EXPECT_EQ(ci1.getSafeRectX(), 77u);
+        EXPECT_EQ(ci1.getSafeRectY(), 88u);
+        EXPECT_EQ(ci1.getSafeRectWidth(), 99u);
+        EXPECT_EQ(ci1.getSafeRectHeight(), 90u);
+        EXPECT_EQ(ci1.getActiveLayout(), CategoryInfo::Layout::Sport_Track);
+
+        ci2.setSafeRect(7,8,9,0);
+        ci2.setActiveLayout(CategoryInfo::Layout::Autonomous);
+
+        ci1.updateSelf(ci2);
+        EXPECT_EQ(ci1, ci2);
     }
 }

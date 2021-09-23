@@ -10,6 +10,7 @@
 #include "ramses-text-api/TextLine.h"
 #include "ramses-text-api/FontRegistry.h"
 #include "ramses-text-api/IFontInstance.h"
+#include "ramses-text-api/LayoutUtils.h"
 #include "ramses-client-api/Scene.h"
 #include "ramses-client-api/RamsesClient.h"
 #include "ramses-client-api/UniformInput.h"
@@ -551,5 +552,87 @@ namespace ramses
         ASSERT_TRUE(textEffect != nullptr);
 
         EXPECT_FALSE(m_textCache.createTextLine(positionedGlyphs, *textEffect).isValid());
+    }
+
+    TEST_F(ATextCache, addingTrackingResultsInRightBoundingBox)
+    {
+        const std::u32string str = U"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        auto positionedGlyphsNoTracking = m_textCache.getPositionedGlyphs(str, LatinFontInstance20);
+
+        const uint32_t initialBBwidth = 333u;
+        const LayoutUtils::StringBoundingBox intitialbb = LayoutUtils::GetBoundingBoxForString(positionedGlyphsNoTracking.begin(), positionedGlyphsNoTracking.end());
+        EXPECT_EQ(intitialbb.width, initialBBwidth);
+
+        // 0 tracking should result in no bounding box width difference
+        TextCache::ApplyTrackingToGlyphs(positionedGlyphsNoTracking, 0, 20);
+        const LayoutUtils::StringBoundingBox bb0 = LayoutUtils::GetBoundingBoxForString(positionedGlyphsNoTracking.begin(), positionedGlyphsNoTracking.end());
+        EXPECT_EQ(bb0.width, initialBBwidth);
+
+        //positive tracking
+        auto positionedGlyphsTracking50 = m_textCache.getPositionedGlyphs(str, LatinFontInstance20);
+        // 20 * 50/ 1000 = 1px
+        //results in 1 pixel per glyph (accept last one, because advance of last glyph is ignored)
+        TextCache::ApplyTrackingToGlyphs(positionedGlyphsTracking50, 50, 20);
+        const LayoutUtils::StringBoundingBox bb50 = LayoutUtils::GetBoundingBoxForString(positionedGlyphsTracking50.begin(), positionedGlyphsTracking50.end());
+        EXPECT_EQ(bb50.width, initialBBwidth + str.size() -1u);
+
+        auto positionedGlyphsTracking100 = m_textCache.getPositionedGlyphs(str, LatinFontInstance20);
+        // 20 * 100/ 1000 = 2px
+        TextCache::ApplyTrackingToGlyphs(positionedGlyphsTracking100, 100, 20);
+        const LayoutUtils::StringBoundingBox bb100 = LayoutUtils::GetBoundingBoxForString(positionedGlyphsTracking100.begin(), positionedGlyphsTracking100.end());
+        EXPECT_EQ(bb100.width, initialBBwidth + (2u * (str.size() - 1u)));
+
+        auto positionedGlyphsTracking1000 = m_textCache.getPositionedGlyphs(str, LatinFontInstance20);
+        // 20 * 1000/ 1000 = 20px
+        TextCache::ApplyTrackingToGlyphs(positionedGlyphsTracking1000, 1000, 20);
+        const LayoutUtils::StringBoundingBox bb1000 = LayoutUtils::GetBoundingBoxForString(positionedGlyphsTracking1000.begin(), positionedGlyphsTracking1000.end());
+        EXPECT_EQ(bb1000.width, initialBBwidth + (20u * (str.size() - 1u)));
+
+        //negative tracking
+        auto positionedGlyphsTracking50Negative = m_textCache.getPositionedGlyphs(str, LatinFontInstance20);
+        // 20 * -50/ 1000 = -1px
+        TextCache::ApplyTrackingToGlyphs(positionedGlyphsTracking50Negative, -50, 20);
+        const LayoutUtils::StringBoundingBox bb50n = LayoutUtils::GetBoundingBoxForString(positionedGlyphsTracking50Negative.begin(), positionedGlyphsTracking50Negative.end());
+        EXPECT_EQ(bb50n.width, initialBBwidth - (str.size() - 1u));
+
+        auto positionedGlyphsTracking100Negative = m_textCache.getPositionedGlyphs(str, LatinFontInstance20);
+        // 20 * -100/ 1000 = -2px
+        TextCache::ApplyTrackingToGlyphs(positionedGlyphsTracking100Negative, -100, 20);
+        const LayoutUtils::StringBoundingBox bb100n = LayoutUtils::GetBoundingBoxForString(positionedGlyphsTracking100Negative.begin(), positionedGlyphsTracking100Negative.end());
+        EXPECT_EQ(bb100n.width, initialBBwidth - (2u * (str.size() - 1u)));
+
+        // adding more negative tracking leads to garbage results, as the characters are printed on top of each other
+    }
+
+    TEST_F(ATextCache, freetypeIgnoresBidiMarkers)
+    {
+        const auto noMarkers = m_textCache.getPositionedGlyphs(U"test", LatinFontInstance12);
+
+        const auto lrm = m_textCache.getPositionedGlyphs( U"\u200etest", LatinFontInstance12);
+        EXPECT_EQ(noMarkers, lrm);
+
+        const auto lre = m_textCache.getPositionedGlyphs( U"\u202atest\u202c", LatinFontInstance12);
+        EXPECT_EQ(noMarkers, lre);
+
+        const auto lri = m_textCache.getPositionedGlyphs( U"\u2066test\u2069", LatinFontInstance12);
+        EXPECT_EQ(noMarkers, lri);
+
+        const auto lro = m_textCache.getPositionedGlyphs( U"\u202dtest\u202c", LatinFontInstance12);
+        EXPECT_EQ(noMarkers, lro);
+
+        const auto rlm = m_textCache.getPositionedGlyphs( U"\u200ftest", LatinFontInstance12);
+        EXPECT_EQ(noMarkers, rlm);
+
+        const auto alm = m_textCache.getPositionedGlyphs( U"\u061ctest", LatinFontInstance12);
+        EXPECT_EQ(noMarkers, alm);
+
+        const auto rle = m_textCache.getPositionedGlyphs( U"\u202btest\u202c", LatinFontInstance12);
+        EXPECT_EQ(noMarkers, rle);
+
+        const auto rli = m_textCache.getPositionedGlyphs( U"\u2067test\u2069", LatinFontInstance12);
+        EXPECT_EQ(noMarkers, rli);
+
+        const auto rlo = m_textCache.getPositionedGlyphs( U"\u202etest\u202c", LatinFontInstance12);
+        EXPECT_EQ(noMarkers, rlo);
     }
 }

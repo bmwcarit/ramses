@@ -57,12 +57,13 @@ namespace ramses
         LOG_HL_CLIENT_API_NOARG(LOG_API_VOID);
     }
 
-    CategoryInfoUpdate::CategoryInfoUpdate(SizeInfo renderSize, Rect categoryRect, Rect safeRect)
+    CategoryInfoUpdate::CategoryInfoUpdate(SizeInfo renderSize, Rect categoryRect, Rect safeRect, CategoryInfoUpdate::Layout layout)
         : CategoryInfoUpdate()
     {
         setRenderSize(renderSize);
         setCategoryRect(categoryRect);
         setSafeRect(safeRect);
+        setActiveLayout(layout);
     }
 
     bool CategoryInfoUpdate::operator!=(const CategoryInfoUpdate& rhs) const
@@ -100,6 +101,23 @@ namespace ramses
     bool CategoryInfoUpdate::hasRenderSizeUpdate() const
     {
         return impl.hasRenderSizeUpdate();
+    }
+
+    CategoryInfoUpdate::Layout CategoryInfoUpdate::getActiveLayout() const
+    {
+        return impl.getActiveLayout();
+    }
+
+    status_t CategoryInfoUpdate::setActiveLayout(CategoryInfoUpdate::Layout layout)
+    {
+        const auto status = impl.setActiveLayout(layout);
+        LOG_HL_CLIENT_API1(status, layout);
+        return status;
+    }
+
+    bool CategoryInfoUpdate::hasActiveLayoutUpdate() const
+    {
+        return impl.hasActiveLayoutUpdate();
     }
 
 }

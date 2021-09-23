@@ -15,6 +15,7 @@
 #include "Collections/IInputStream.h"
 #include "PlatformAbstraction/Hash.h"
 #include "PlatformAbstraction/FmtBase.h"
+#include "Utils/AssertMovable.h"
 #include "absl/strings/string_view.h"
 #include <string>
 #include <cctype>
@@ -136,8 +137,7 @@ namespace ramses_internal
         return stream;
     }
 
-    static_assert(std::is_nothrow_move_constructible<String>::value, "String must be movable");
-    static_assert(std::is_nothrow_move_assignable<String>::value, "String must be movable");
+    ASSERT_MOVABLE(String)
 
     // free comparison functions
     inline bool operator==(const char* a, const String& b)
@@ -174,10 +174,10 @@ namespace ramses_internal
      * Implementation String
      */
 
-    inline String::String(const Char* other)
+    inline String::String(const Char* data)
     {
-        if (other != nullptr && *other != 0)
-            m_string = other;
+        if (data != nullptr && *data != 0)
+            m_string = data;
     }
 
     inline String::String(const Char* data, UInt start, UInt end)
@@ -479,6 +479,9 @@ namespace ramses_internal
     }
 }
 
+// disable formatter for c++17 and up to prevent ambiguity between this formatter and formatting
+// via implicit conversion from String to string_view.
+#if __cplusplus < 201703L
 template <>
 struct fmt::formatter<ramses_internal::String> : public ramses_internal::SimpleFormatterBase
 {
@@ -488,6 +491,7 @@ struct fmt::formatter<ramses_internal::String> : public ramses_internal::SimpleF
         return fmt::format_to(ctx.out(), "{}", str.stdRef());
     }
 };
+#endif
 
 template<>
 struct std::hash<ramses_internal::String>

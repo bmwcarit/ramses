@@ -48,13 +48,13 @@ namespace ramses_internal
         m_rendererCommands.enqueueCommand(RendererCommand::ScenePublished{ newScene.sceneID, newScene.publicationMode });
     }
 
-    void RendererFrameworkLogic::handleSceneBecameUnavailable(const SceneId& sceneId, const Guid& providerID)
+    void RendererFrameworkLogic::handleSceneBecameUnavailable(const SceneId& unavailableScene, const Guid& providerID)
     {
-        LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleSceneBecameUnavailable: scene unpublished: " << sceneId << " by " << providerID);
+        LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleSceneBecameUnavailable: scene unpublished: " << unavailableScene << " by " << providerID);
 
-        assert(m_sceneClients.contains(sceneId));
-        m_sceneClients.remove(sceneId);
-        m_rendererCommands.enqueueCommand(RendererCommand::SceneUnpublished{ sceneId });
+        assert(m_sceneClients.contains(unavailableScene));
+        m_sceneClients.remove(unavailableScene);
+        m_rendererCommands.enqueueCommand(RendererCommand::SceneUnpublished{ unavailableScene });
     }
 
     void RendererFrameworkLogic::handleInitializeScene(const SceneInfo& sceneInfo, const Guid& providerID)

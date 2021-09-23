@@ -30,7 +30,7 @@ namespace ramses_internal
         bool wasSuccessfullyInitialized() const;
 
     private:
-        static void ResourceDestroyedCallback(wl_resource* dmabufConnectionResource);
+        static void ResourceDestroyedCallback(wl_resource* dmabufParamsResource);
 
         static void DmabufParamsDestroyCallback(wl_client* client, wl_resource* dmabufParamsResource);
         static void DmabufParamsAddCallback(wl_client* client, wl_resource* dmabufParamsResource, int32_t fd, uint32_t plane_idx, uint32_t offset, uint32_t stride, uint32_t modifier_hi, uint32_t modifier_lo);

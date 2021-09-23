@@ -36,6 +36,10 @@ namespace ramses
         bool hasSafeRectUpdate() const;
         Rect getSafeRect() const;
         status_t setSafeRect(Rect rect);
+
+        bool hasActiveLayoutUpdate() const;
+        CategoryInfoUpdate::Layout getActiveLayout() const;
+        status_t setActiveLayout(CategoryInfoUpdate::Layout layout);
     private:
         ramses_internal::CategoryInfo m_categoryInfo;
     };

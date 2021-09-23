@@ -12,6 +12,7 @@
 #include "SceneAPI/EDataBufferType.h"
 #include "SceneAPI/EDataType.h"
 #include "Collections/Vector.h"
+#include "Utils/AssertMovable.h"
 
 namespace ramses_internal
 {
@@ -23,8 +24,7 @@ namespace ramses_internal
         std::vector<Byte>    data;
     };
 
-    static_assert(std::is_nothrow_move_constructible<GeometryDataBuffer>::value, "GeometryDataBuffer must be movable");
-    static_assert(std::is_nothrow_move_assignable<GeometryDataBuffer>::value, "GeometryDataBuffer must be movable");
+    ASSERT_MOVABLE(GeometryDataBuffer)
 }
 
 #endif

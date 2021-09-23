@@ -35,7 +35,7 @@ namespace ramses_internal
         virtual void                        releaseTextureSampler(TextureSamplerHandle handle) override;
 
         virtual DataSlotHandle              allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid()) override;
-        virtual void                        setDataSlotTexture(DataSlotHandle providerId, const ResourceContentHash& texture) override;
+        virtual void                        setDataSlotTexture(DataSlotHandle providerHandle, const ResourceContentHash& texture) override;
         virtual void                        releaseDataSlot(DataSlotHandle handle) override;
 
         // functions which both affect client and scene resources

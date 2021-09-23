@@ -226,7 +226,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::disconnectFromNetwork: done");
     }
 
-    void SceneGraphComponent::newParticipantHasConnected(const Guid& to)
+    void SceneGraphComponent::newParticipantHasConnected(const Guid& connnectedParticipant)
     {
         PlatformGuard guard(m_frameworkLock);
 
@@ -235,13 +235,13 @@ namespace ramses_internal
         {
             if (p.value.publicationMode != EScenePublicationMode_LocalOnly)
             {
-                LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::newParticipantHasConnected: publishing scene to new particpant: " << to << " scene is: " << p.key << " mode: " << EnumToString(p.value.publicationMode) << " from: " << m_myID);
+                LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::newParticipantHasConnected: publishing scene to new particpant: " << connnectedParticipant << " scene is: " << p.key << " mode: " << EnumToString(p.value.publicationMode) << " from: " << m_myID);
                 availableScenes.push_back(p.value);
             }
         }
 
         if (availableScenes.size() > 0)
-            m_communicationSystem.sendScenesAvailable(to, availableScenes);
+            m_communicationSystem.sendScenesAvailable(connnectedParticipant, availableScenes);
     }
 
     void SceneGraphComponent::participantHasDisconnected(const Guid& disconnnectedParticipant)
@@ -259,6 +259,7 @@ namespace ramses_internal
         {
             if (it->second.provider == disconnnectedParticipant)
             {
+                LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::participantHasDisconnected: locally unpublish " << it->first << " from " << disconnnectedParticipant);
                 if (m_sceneRendererHandler)
                     m_sceneRendererHandler->handleSceneBecameUnavailable(it->first, disconnnectedParticipant);
                 it = m_remoteScenes.erase(it);

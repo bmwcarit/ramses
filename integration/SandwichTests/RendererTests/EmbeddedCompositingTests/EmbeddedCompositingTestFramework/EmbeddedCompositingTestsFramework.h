@@ -37,11 +37,11 @@ namespace ramses_internal
         EmbeddedCompositingTestsFramework(bool generateScreenshots, TestForkingController& testForkingController, const ramses::RamsesFrameworkConfig& config, const String& embeddedCompositingSocketGroupName);
 
         //control test app lifecycle
-        void                            startTestApplication();
-        void                            initializeTestApplication(EConnectionMode connectionMode = EConnectionMode::DisplayName);
-        void                            startTestApplicationAndWaitUntilConnected(EConnectionMode connectionMode = EConnectionMode::DisplayName, uint32_t displayIdx = 0u);
-        void                            stopTestApplicationAndWaitUntilDisconnected(uint32_t displayIdx = 0u);
-        void                            killTestApplication();
+        void                            startTestApplication(uint32_t testAppIdx = 0u);
+        void                            initializeTestApplication(EConnectionMode connectionMode = EConnectionMode::DisplayName, uint32_t testAppIdx = 0u);
+        void                            startTestApplicationAndWaitUntilConnected(EConnectionMode connectionMode = EConnectionMode::DisplayName, uint32_t displayIdx = 0u, uint32_t testAppIdx = 0u);
+        void                            stopTestApplicationAndWaitUntilDisconnected(uint32_t displayIdx = 0u, uint32_t testAppIdx = 0u);
+        void                            killTestApplication(uint32_t testAppIdx = 0u);
 
         //wait for events
         void                            waitForContentOnStreamTexture(WaylandIviSurfaceId sourceId, uint32_t displayIdx = 0u);
@@ -55,31 +55,31 @@ namespace ramses_internal
         void                            waitUntilNumberOfCompositorConnections(UInt32 numberOfConnections, bool doResourceUpdate = false, uint32_t displayIdx = 0u);
 
         //send message to test app
-        TestApplicationSurfaceId        sendCreateSurfaceWithEGLContextToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval);
-        TestApplicationShellSurfaceId   sendCreateShellSurfaceToTestApplication(TestApplicationSurfaceId surfaceId);
-        void                            sendSetShellSurfaceTitleToTestApplication(TestApplicationShellSurfaceId, const String& title);
-        void                            sendSetShellSurfaceDummyValuesToTestApplication(TestApplicationSurfaceId surfaceId, TestApplicationShellSurfaceId shellSurfaceId);
-        void                            sendDestroyShellSurfaceToTestApplication(TestApplicationShellSurfaceId shellSurfaceId);
-        TestApplicationSurfaceId        sendCreateSurfaceWithoutEGLContextToTestApplication(UInt32 width, UInt32 height);
-        void                            sendDestroySurfaceToTestApplication(TestApplicationSurfaceId surfaceId);
-        void                            sendCreateIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId, WaylandIviSurfaceId newSurfaceIviId);
-        void                            sendDestroyIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId);
-        void                            sendRenderOneFrameToEGLBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback = false);
-        void                            sendRenderOneFrameToSharedMemoryBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback = false);
-        void                            sendAttachBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool commit = false);
-        void                            sendDestroyBuffersToTestApplication();
-        void                            sendRenderOneFrameToTwoSurfacesAndWaitOnFrameCallbackToTestApplication(TestApplicationSurfaceId surfaceId1, TestApplicationSurfaceId surfaceId2);
-        void                            sendAdditionalConnectToEmbeddedCompositorToTestApplication();
-        void                            sendDetachBufferFromSurfaceToTestApplication(TestApplicationSurfaceId surfaceId);
-        void                            sendSetSurfaceSizeToTestApplicaton(TestApplicationSurfaceId surfaceId, UInt32 width, UInt32 height);
-        void                            sendSetTriangleColorToTestApplication(ETriangleColor color);
-        bool                            sendStartRamsesRendererAndRunRenderingTest();
-        void                            sendSetRequiredWaylandOutputVersion(uint32_t protocolVersion);
+        TestApplicationSurfaceId        sendCreateSurfaceWithEGLContextToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, uint32_t testAppIdx = 0u);
+        TestApplicationShellSurfaceId   sendCreateShellSurfaceToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t testAppIdx = 0u);
+        void                            sendSetShellSurfaceTitleToTestApplication(TestApplicationShellSurfaceId, const String& title, uint32_t testAppIdx = 0u);
+        void                            sendSetShellSurfaceDummyValuesToTestApplication(TestApplicationSurfaceId surfaceId, TestApplicationShellSurfaceId shellSurfaceId, uint32_t testAppIdx = 0u);
+        void                            sendDestroyShellSurfaceToTestApplication(TestApplicationShellSurfaceId shellSurfaceId, uint32_t testAppIdx = 0u);
+        TestApplicationSurfaceId        sendCreateSurfaceWithoutEGLContextToTestApplication(UInt32 width, UInt32 height, uint32_t testAppIdx = 0u);
+        void                            sendDestroySurfaceToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t testAppIdx = 0u);
+        void                            sendCreateIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId, WaylandIviSurfaceId newSurfaceIviId, uint32_t testAppIdx = 0u);
+        void                            sendDestroyIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t testAppIdx = 0u);
+        void                            sendRenderOneFrameToEGLBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback = false, uint32_t testAppIdx = 0u);
+        void                            sendRenderOneFrameToSharedMemoryBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback = false, uint32_t testAppIdx = 0u);
+        void                            sendAttachBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool commit = false, uint32_t testAppIdx = 0u);
+        void                            sendDestroyBuffersToTestApplication(uint32_t testAppIdx = 0u);
+        void                            sendRenderOneFrameToTwoSurfacesAndWaitOnFrameCallbackToTestApplication(TestApplicationSurfaceId surfaceId1, TestApplicationSurfaceId surfaceId2, uint32_t testAppIdx = 0u);
+        void                            sendAdditionalConnectToEmbeddedCompositorToTestApplication(uint32_t testAppIdx = 0u);
+        void                            sendDetachBufferFromSurfaceToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t testAppIdx = 0u);
+        void                            sendSetSurfaceSizeToTestApplicaton(TestApplicationSurfaceId surfaceId, UInt32 width, UInt32 height, uint32_t testAppIdx = 0u);
+        void                            sendSetTriangleColorToTestApplication(ETriangleColor color, uint32_t testAppIdx = 0u);
+        bool                            sendStartRamsesRendererAndRunRenderingTest(uint32_t testAppIdx = 0u);
+        void                            sendSetRequiredWaylandOutputVersion(uint32_t protocolVersion, uint32_t testAppIdx = 0u);
 
         //get message from test app
-        UInt32                          getNumberOfAllocatedSHMBufferFromTestApplication();
-        Bool                            getIsBufferFreeFromTestApplication(UInt32 buffer);
-        Bool                            getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams);
+        UInt32                          getNumberOfAllocatedSHMBufferFromTestApplication(uint32_t testAppIdx = 0u);
+        Bool                            getIsBufferFreeFromTestApplication(UInt32 buffer, uint32_t testAppIdx = 0u);
+        Bool                            getWaylandOutputParamsFromTestApplication(WaylandOutputTestParams& resultWaylandOutputParams, uint32_t testAppIdx = 0u);
 
         //local renderer
         void                            renderOneFrame();
@@ -95,8 +95,8 @@ namespace ramses_internal
         const static String             TestAlternateEmbeddedCompositingDisplayName;
 
     protected:
-        TestApplicationSurfaceId sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, Bool useEGL);
-        void sendStopToTestApplication();
+        TestApplicationSurfaceId sendCreateSurfaceToTestApplication(UInt32 width, UInt32 height, UInt32 swapInterval, Bool useEGL, uint32_t testAppIdx);
+        void sendStopToTestApplication(uint32_t testAppIdx);
 
         IEmbeddedCompositingManager& getEmbeddedCompositorManager(uint32_t displayIdx = 0u);
         IEmbeddedCompositor& getEmbeddedCompositor(uint32_t displayIdx = 0u);

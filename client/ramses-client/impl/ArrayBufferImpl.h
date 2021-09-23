@@ -36,7 +36,7 @@ namespace ramses
         uint32_t getUsedNumberOfElements() const;
         uint32_t getUsedElementCount() const;
         EDataType getDataType() const;
-        status_t getData(ramses_internal::Byte* buffer, uint32_t bufferSize) const;
+        status_t getData(ramses_internal::Byte* buffer, uint32_t numElements) const;
 
     private:
         ramses_internal::DataBufferHandle m_dataBufferHandle;

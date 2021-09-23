@@ -74,23 +74,23 @@ namespace ramses_internal
         }
     }
 
-    void ResourceUploader::unloadResource(IRenderBackend& rendererBackend, EResourceType type, ResourceContentHash, const DeviceResourceHandle handle)
+    void ResourceUploader::unloadResource(IRenderBackend& renderBackend, EResourceType type, ResourceContentHash /*hash*/, const DeviceResourceHandle handle)
     {
         switch (type)
         {
         case EResourceType_VertexArray:
-            rendererBackend.getDevice().deleteVertexBuffer(handle);
+            renderBackend.getDevice().deleteVertexBuffer(handle);
             break;
         case EResourceType_IndexArray:
-            rendererBackend.getDevice().deleteIndexBuffer(handle);
+            renderBackend.getDevice().deleteIndexBuffer(handle);
             break;
         case EResourceType_Texture2D:
         case EResourceType_Texture3D:
         case EResourceType_TextureCube:
-            rendererBackend.getDevice().deleteTexture(handle);
+            renderBackend.getDevice().deleteTexture(handle);
             break;
         case EResourceType_Effect:
-            rendererBackend.getDevice().deleteShader(handle);
+            renderBackend.getDevice().deleteShader(handle);
             break;
         default:
             assert(false && "Unexpected resource type");

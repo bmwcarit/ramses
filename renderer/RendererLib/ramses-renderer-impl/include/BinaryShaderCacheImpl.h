@@ -48,7 +48,7 @@ namespace ramses
 
     private:
         static void serializeBinaryShader(ramses_internal::IOutputStream& outputStream, const ramses_internal::ResourceContentHash& effectId, const ramses_internal::UInt8Vector& binaryShaderData, ramses_internal::BinaryShaderFormatID binaryShaderFormat);
-        static bool deserializeBinaryShader(ramses_internal::IInputStream& outputStream, ramses_internal::ResourceContentHash& effectId, ramses_internal::UInt8Vector& binaryShaderData, ramses_internal::BinaryShaderFormatID& binaryShaderFormat);
+        static bool deserializeBinaryShader(ramses_internal::IInputStream& inputStream, ramses_internal::ResourceContentHash& effectId, ramses_internal::UInt8Vector& binaryShaderData, ramses_internal::BinaryShaderFormatID& binaryShaderFormat);
 
         struct BinaryShader
         {

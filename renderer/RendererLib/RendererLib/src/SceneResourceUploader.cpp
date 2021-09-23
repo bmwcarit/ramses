@@ -45,22 +45,22 @@ namespace ramses_internal
         resourceManager.uploadBlitPassRenderTargets(blitPass, blitPassData.sourceRenderBuffer, blitPassData.destinationRenderBuffer, scene.getSceneId());
     }
 
-    void SceneResourceUploader::UploadTextureBuffer(const IScene& scene, TextureBufferHandle handle, IRendererResourceManager& resourceManager)
+    void SceneResourceUploader::UploadTextureBuffer(const IScene& scene, TextureBufferHandle textureBuffer, IRendererResourceManager& resourceManager)
     {
-        const TextureBuffer& texBuffer = scene.getTextureBuffer(handle);
+        const TextureBuffer& texBuffer = scene.getTextureBuffer(textureBuffer);
         const auto& mipMaps = texBuffer.mipMaps;
         const auto& mip0 = mipMaps[0];
-        resourceManager.uploadTextureBuffer(handle, mip0.width, mip0.height, texBuffer.textureFormat, static_cast<UInt32>(mipMaps.size()), scene.getSceneId());
+        resourceManager.uploadTextureBuffer(textureBuffer, mip0.width, mip0.height, texBuffer.textureFormat, static_cast<UInt32>(mipMaps.size()), scene.getSceneId());
     }
 
-    void SceneResourceUploader::UpdateTextureBuffer(const IScene& scene, TextureBufferHandle handle, IRendererResourceManager& resourceManager)
+    void SceneResourceUploader::UpdateTextureBuffer(const IScene& scene, TextureBufferHandle textureBuffer, IRendererResourceManager& resourceManager)
     {
-        const TextureBuffer& texBuffer = scene.getTextureBuffer(handle);
+        const TextureBuffer& texBuffer = scene.getTextureBuffer(textureBuffer);
         const auto& mipMaps = texBuffer.mipMaps;
         for (UInt32 mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipMaps.size()); ++mipLevel)
         {
             const auto& mip = mipMaps[mipLevel];
-            resourceManager.updateTextureBuffer(handle, mipLevel, 0u, 0u, mip.width, mip.height, texBuffer.mipMaps[mipLevel].data.data(), scene.getSceneId());
+            resourceManager.updateTextureBuffer(textureBuffer, mipLevel, 0u, 0u, mip.width, mip.height, texBuffer.mipMaps[mipLevel].data.data(), scene.getSceneId());
         }
     }
 

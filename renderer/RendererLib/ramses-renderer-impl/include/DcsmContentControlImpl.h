@@ -84,7 +84,7 @@ namespace ramses
         // todo (jonathan) cleanup with next major version
         // IRendererSceneControlEventHandler_SpecialForWayland
         virtual void streamBufferLinked(streamBufferId_t streamBufferId, sceneId_t consumerSceneId, dataConsumerId_t consumerDataSlotId, bool success) override;
-        virtual void streamBufferEnabled(streamBufferId_t streamBufferId, bool state) override;
+        virtual void streamBufferEnabled(streamBufferId_t streamBufferId, bool status) override;
 
         void executePendingCommands();
         void dispatchPendingEvents(IDcsmContentControlEventHandler& eventHandler);
@@ -95,6 +95,7 @@ namespace ramses
         void scheduleHideAnimation(ContentID contentID, AnimationInformation animTime, RendererSceneState targetState);
         ContentState determineCurrentContentState(ContentID contentID) const;
         void processTimedOutRequests();
+        void resetContentStateAfterTechnicalContentReset(ContentID contentID);
 
         TechnicalContentDescriptor getTechnicalContentAssociatedWithContent(ContentID contentID) const;
         std::vector<ContentID> findContentsAssociatingSceneId(sceneId_t sceneId) const;

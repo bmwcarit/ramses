@@ -115,11 +115,11 @@ namespace ramses
         /**
          * @brief Set car model visibility metadata entry. Requests car model visibility at consumer side.
          *
-         * @param visiblity visibility of car model
+         * @param visibility visibility of car model
          * @return StatusOK for success, otherwise the returned status can be used
          *         to resolve error message using getStatusMessage().
          */
-        status_t setCarModelVisibility(bool visiblity);
+        status_t setCarModelVisibility(bool visibility);
 
         /**
          * @brief Set the exclusive background metadata entry. Requests to show widget exclusively

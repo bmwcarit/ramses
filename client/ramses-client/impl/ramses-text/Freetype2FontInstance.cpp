@@ -52,6 +52,8 @@ namespace ramses
         GlyphId lastGlyphId(0);
         for (auto it = charsBegin; it != charsEnd; ++it)
         {
+            if (IsBidiMarker(*it))
+                continue;
             const GlyphId glyphId = getGlyphId(*it);
             const GlyphMetrics* glyphMetricsEntry = getGlyphMetricsData(glyphId);
             if (glyphMetricsEntry == nullptr)
@@ -90,16 +92,16 @@ namespace ramses
         return data->data;
     }
 
-    bool Freetype2FontInstance::supportsCharacter(char32_t charcode) const
+    bool Freetype2FontInstance::supportsCharacter(char32_t character) const
     {
-        const auto it = m_supportedCharacters.find(charcode);
+        const auto it = m_supportedCharacters.find(character);
 
         if (m_supportedCharacters.end() != it)
             return it->second;
 
         //if the font doesn't contain a glyph for the queried charcode it's not supported
-        const bool isCharSupported = (0 != getGlyphId(charcode).getValue());
-        m_supportedCharacters[charcode] = isCharSupported;
+        const bool isCharSupported = (0 != getGlyphId(character).getValue());
+        m_supportedCharacters[character] = isCharSupported;
         return isCharSupported;
     }
 
@@ -238,10 +240,32 @@ namespace ramses
         return m_descender;
     }
 
-    GlyphId Freetype2FontInstance::getGlyphId(char32_t charcode) const
+    GlyphId Freetype2FontInstance::getGlyphId(char32_t character) const
     {
         activateSize();
-        return GlyphId(FT_Get_Char_Index(m_face, charcode));
+        return GlyphId(FT_Get_Char_Index(m_face, character));
+    }
+
+    constexpr bool Freetype2FontInstance::IsBidiMarker(char32_t character)
+    {
+        switch (character)
+        {
+        case 0x061C: // alm
+        case 0x200E: // lrm
+        case 0x200F: // rlm
+        case 0x2066: // lri
+        case 0x2067: // rli
+        case 0x2068: // fsi
+        case 0x2069: // pdi
+        case 0x202A: // lre
+        case 0x202B: // rle
+        case 0x202C: // pdf
+        case 0x202D: // lro
+        case 0x202E: // rlo
+            return true;
+        default:
+            return false;
+        }
     }
 
     void Freetype2FontInstance::cacheAllSupportedCharacters()

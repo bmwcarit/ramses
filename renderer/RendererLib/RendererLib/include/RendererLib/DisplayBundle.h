@@ -46,6 +46,8 @@ namespace ramses_internal
         virtual IEmbeddedCompositor& getEC() = 0;
         virtual bool hasSystemCompositorController() const = 0;
 
+        virtual std::atomic_int& traceId() = 0;
+
         virtual ~IDisplayBundle() = default;
     };
 
@@ -58,6 +60,7 @@ namespace ramses_internal
             IPlatform& platform,
             IThreadAliveNotifier& notifier,
             std::chrono::milliseconds timingReportingPeriod,
+            bool isFirstDisplay,
             const String& kpiFilename = {});
 
         virtual void doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime) override;
@@ -75,6 +78,9 @@ namespace ramses_internal
 
         // needed for Renderer lifecycle tests...
         virtual bool hasSystemCompositorController() const override;
+
+        // TODO vaclav remove, debugging only
+        virtual std::atomic_int& traceId() override { return m_renderer.m_traceId; }
 
     private:
         void update();
@@ -104,10 +110,11 @@ namespace ramses_internal
         RendererEventVector   m_rendererEvents;
         RendererEventVector   m_sceneControlEvents;
 
-        std::chrono::milliseconds m_timingReportingPeriod{ 0 };
+        const std::chrono::milliseconds m_timingReportingPeriod{ 0 };
         std::chrono::microseconds m_sumFrameTimes{ 0 };
         std::chrono::microseconds m_maxFrameTime{ 0 };
         size_t m_loopsWithinMeasurePeriod{ 0u };
+        const bool m_isFirstDisplay;
 
         // TODO rework KPI monitor
         uint64_t m_lastUpdateTimeStampMilliSec = 0;

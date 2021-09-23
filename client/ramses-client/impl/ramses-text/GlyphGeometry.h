@@ -9,6 +9,8 @@
 #ifndef RAMSES_GLYPHGEOMETRY_H
 #define RAMSES_GLYPHGEOMETRY_H
 
+#include "Utils/AssertMovable.h"
+
 #include <cstdint>
 #include <limits>
 #include <vector>
@@ -23,8 +25,7 @@ namespace ramses
         size_t atlasPage = std::numeric_limits<size_t>::max();
     };
 
-    static_assert(std::is_nothrow_move_constructible<GlyphGeometry>::value, "GlyphGeometry must be movable");
-    static_assert(std::is_nothrow_move_assignable<GlyphGeometry>::value, "GlyphGeometry must be movable");
+    ASSERT_MOVABLE(GlyphGeometry)
 }
 
 #endif

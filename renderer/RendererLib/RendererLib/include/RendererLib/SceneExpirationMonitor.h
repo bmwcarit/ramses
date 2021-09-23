@@ -52,7 +52,7 @@ namespace ramses_internal
             bool inExpiredState = false;
         };
 
-        void checkAndTriggerExpirationEvent(SceneId sceneId, SceneTimestamps& ts, bool expired);
+        void checkAndTriggerExpirationEvent(SceneId sceneId, SceneTimestamps& timestamps, bool expired);
         std::unordered_map<SceneId, SceneTimestamps> m_monitoredScenes;
 
         const RendererScenes& m_scenes;

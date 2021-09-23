@@ -513,7 +513,11 @@ namespace ramses
                 rendererEventHandler.windowMoved(displayId_t{ event.displayHandle.asMemoryHandle() }, event.moveEvent.posX, event.moveEvent.posY);
                 break;
             case ramses_internal::ERendererEventType::FrameTimingReport:
-                rendererEventHandler.renderThreadLoopTimings(event.frameTimings.maximumLoopTimeWithinPeriod, event.frameTimings.averageLoopTimeWithinPeriod);
+                if (event.isFirstDisplay)
+                    rendererEventHandler.renderThreadLoopTimings(event.frameTimings.maximumLoopTimeWithinPeriod, event.frameTimings.averageLoopTimeWithinPeriod);
+#ifdef RAMSES_ENABLE_RENDER_LOOP_TIMINGS_PER_DISPLAY
+                rendererEventHandler.renderThreadLoopTimingsPerDisplay(displayId_t{ event.displayHandle.asMemoryHandle() }, event.frameTimings.maximumLoopTimeWithinPeriod, event.frameTimings.averageLoopTimeWithinPeriod);
+#endif
                 break;
             default:
                 assert(false);

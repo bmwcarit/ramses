@@ -64,6 +64,19 @@ namespace ramses_internal
 
     void WaylandHandler::deinit()
     {
+        if(wayland.display != nullptr)
+        {
+            //handle events in case compositor posted error
+            checkAndHandleEvents();
+
+            //check for errors on display and skip deinit if compositor posted error
+            if(wl_display_get_error(wayland.display) != 0)
+            {
+                LOG_INFO(CONTEXT_RENDERER, "WaylandHandler::deinit(): wayland display has error, deinit will be be skipped!");
+                return;
+            }
+        }
+
         WindowsHashMap windowsToDelete = m_windows;
         for (auto i: windowsToDelete)
         {
@@ -510,9 +523,6 @@ namespace ramses_internal
         {
             if (window.eglsurface != EGL_NO_SURFACE)
             {
-                //TODO Mohamed: figure out what is the real issue and remove this roundtrip
-                //when real issue fixed
-                wl_display_roundtrip(wayland.display);
                 if (eglDestroySurface(egldisplay, window.eglsurface) != EGL_TRUE)
                 {
                     LOG_ERROR(CONTEXT_RENDERER,

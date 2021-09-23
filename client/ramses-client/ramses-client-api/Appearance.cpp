@@ -94,10 +94,10 @@ namespace ramses
         return impl.getDepthFunction(func);
     }
 
-    status_t Appearance::setScissorTest(EScissorTest mode, int16_t x, int16_t y, uint16_t width, uint16_t height)
+    status_t Appearance::setScissorTest(EScissorTest state, int16_t x, int16_t y, uint16_t width, uint16_t height)
     {
-        const status_t status = impl.setScissorTest(mode, x, y, width, height);
-        LOG_HL_CLIENT_API5(status, mode, x, y, width, height);
+        const status_t status = impl.setScissorTest(state, x, y, width, height);
+        LOG_HL_CLIENT_API5(status, state, x, y, width, height);
         return status;
     }
 
@@ -191,9 +191,9 @@ namespace ramses
         return impl.getInputValue(input.impl, elementCount, valuesOut);
     }
 
-    status_t Appearance::setInputValueFloat(const UniformInput& input, float x)
+    status_t Appearance::setInputValueFloat(const UniformInput& input, float value)
     {
-        return impl.setInputValue(input.impl, 1u, &x);
+        return impl.setInputValue(input.impl, 1u, &value);
     }
 
     status_t Appearance::setInputValueFloat(const UniformInput& input, uint32_t elementCount, const float* values)
@@ -201,9 +201,9 @@ namespace ramses
         return impl.setInputValue(input.impl, elementCount, values);
     }
 
-    status_t Appearance::getInputValueFloat(const UniformInput& input, float& x) const
+    status_t Appearance::getInputValueFloat(const UniformInput& input, float& valueOut) const
     {
-        return impl.getInputValue(input.impl, 1u, &x);
+        return impl.getInputValue(input.impl, 1u, &valueOut);
     }
 
     status_t Appearance::getInputValueFloat(const UniformInput& input, uint32_t elementCount, float* valuesOut) const

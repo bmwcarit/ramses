@@ -29,6 +29,19 @@ namespace ramses
     {
     public:
 
+        /**
+         * @brief The possible layout values in the instrument cluster.
+         */
+        enum class Layout : uint32_t
+        {
+            Drive = 0,
+            Focus,
+            Gallery,
+            Autonomous,
+            Sport_Road,
+            Sport_Track,
+        };
+
         /// @brief Default constructor with no data set
         CategoryInfoUpdate();
 
@@ -38,8 +51,9 @@ namespace ramses
          * @param renderSize the new render size
          * @param categoryRect the new category rect
          * @param safeRect the new safe rect
+         * @param layout the new active layout
          */
-        CategoryInfoUpdate(SizeInfo renderSize, Rect categoryRect, Rect safeRect = {0,0,0,0});
+        CategoryInfoUpdate(SizeInfo renderSize, Rect categoryRect, Rect safeRect = {0,0,0,0}, Layout layout = Layout::Drive);
 
         /// Destructor
         ~CategoryInfoUpdate();
@@ -129,6 +143,35 @@ namespace ramses
          *          to resolve error message using getStatusMessage().
          */
         status_t setSafeRect(Rect rect);
+
+        /**
+         * @brief Check if object contains active layout update.
+         *
+         * @return true when has active layout update, false when not.
+         */
+        bool hasActiveLayoutUpdate() const;
+
+        /**
+         * @brief Get new active layout.
+         *        Only valid when hasActiveLayoutUpdate().
+         *
+         * @return The currently active layout.
+         */
+        Layout getActiveLayout() const;
+
+        /**
+         * @brief Set new active layout.
+         *
+         * @param layout The currently active layout.
+         *
+         * The active layout provides information about the overall layout of the contents on
+         * the consumer side. Depending on the layout, provider might want to provide different
+         * visuals for his contents.
+         *
+         * @return StatusOK for success, otherwise the returned status can be used
+         *          to resolve error message using getStatusMessage().
+         */
+        status_t setActiveLayout(CategoryInfoUpdate::Layout layout);
 
         /**
          * @brief Constructor from impl

@@ -64,6 +64,7 @@ namespace ramses_internal
         virtual void stopUpdating() = 0;
         virtual void setLoopMode(ELoopMode loopMode) = 0;
         virtual void setMinFrameDuration(std::chrono::microseconds minLoopPeriod) = 0;
+        virtual uint32_t getFrameCounter() const = 0;
     };
 
     class DisplayThread final : public IDisplayThread, private Runnable
@@ -77,6 +78,7 @@ namespace ramses_internal
 
         virtual void setLoopMode(ELoopMode loopMode) override;
         virtual void setMinFrameDuration(std::chrono::microseconds minLoopPeriod) override;
+        virtual uint32_t getFrameCounter() const override;
 
     private:
         virtual void run() override;
@@ -95,6 +97,8 @@ namespace ramses_internal
 
         IThreadAliveNotifier& m_notifier;
         const uint64_t m_aliveIdentifier;
+
+        std::atomic_uint32_t m_frameCounter{ 0u };
     };
 }
 

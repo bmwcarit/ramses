@@ -12,6 +12,7 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "PlatformAbstraction/Macros.h"
+#include "Utils/AssertMovable.h"
 #include "absl/types/span.h"
 #include <memory>
 
@@ -62,7 +63,8 @@ namespace ramses_internal
         : m_size(size)
         , m_data(std::move(other.m_data))
     {
-        static_assert(std::is_nothrow_move_constructible<HeapArray>::value, "HeapArray must be movable");
+        ASSERT_MOVABLE(HeapArray)
+
         other.m_size = 0;
     }
 
@@ -72,7 +74,6 @@ namespace ramses_internal
         : m_size(o.m_size)
         , m_data(std::move(o.m_data))
     {
-        static_assert(std::is_nothrow_move_assignable<HeapArray>::value, "HeapArray must be movable");
         o.m_size = 0;
     }
 

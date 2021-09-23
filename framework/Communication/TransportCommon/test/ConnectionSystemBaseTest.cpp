@@ -1009,6 +1009,44 @@ namespace ramses_internal
         expectRemoteDisconnects({10});
     }
 
+    TEST_F(AConnectionSystemConnected, doesNotSkipPinfoWhenSentDataAlready)
+    {
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 0, _, _)).WillOnce(Return(true));
+        fromStack.handleServiceAvailable(TestInstanceId(1));
+
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 123, 1}, 99, TestInstanceId(1), 10, 0, 0);
+        // now fully connected
+
+        // disconnect+connect by counter mismatch due to new session -> sending pinfo
+        EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 124, 1}, 99, TestInstanceId(1), 10, 0, 0);
+
+        // send something to other side to prevent skip pinfo
+        SomeIPMsgHeader firstTestMessageHdr;
+        EXPECT_CALL(stack, sendTestMessage(TestInstanceId(1), ValidHdr(pid, 2u), 123)).
+            WillOnce(DoAll(SaveArg<1>(&firstTestMessageHdr), Return(true)));
+        EXPECT_TRUE(connsys->sendTestMessage(Guid(10), 123));
+
+        // disconnect+connect but suppress sending pinfo again to avoid reconnect ping-pong
+        EXPECT_CALL(connsys->connections, participantHasDisconnected(Guid(10)));
+        EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 10, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(connsys->connections, newParticipantHasConnected(Guid(10)));
+        fromStack.handleParticipantInfo(SomeIPMsgHeader{10, 128, 1}, 99, TestInstanceId(1), 10, 0, 0);
+
+        // send another message, must have a new session
+        SomeIPMsgHeader secondTestMessageHdr;
+        EXPECT_CALL(stack, sendTestMessage(TestInstanceId(1), ValidHdr(pid, 2u), 456)).
+            WillOnce(DoAll(SaveArg<1>(&secondTestMessageHdr), Return(true)));
+        EXPECT_TRUE(connsys->sendTestMessage(Guid(10), 456));
+
+        EXPECT_NE(firstTestMessageHdr.sessionId, secondTestMessageHdr.sessionId);
+
+        expectRemoteDisconnects({10});
+    }
+
     TEST_F(AConnectionSystemConnected, canHandleKeepaliveAsFirstMesageFromUnknown)
     {
         EXPECT_CALL(stack, sendParticipantInfo(TestInstanceId(1), ValidHdr(pid, 1u), 99, iid, 0, _, _)).WillOnce(Return(true));

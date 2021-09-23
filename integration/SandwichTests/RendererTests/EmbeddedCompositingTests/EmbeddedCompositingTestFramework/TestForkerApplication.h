@@ -17,19 +17,24 @@ namespace ramses_internal
     class TestForkerApplication
     {
     public:
-        TestForkerApplication(const String& testToForkerPipeName, const String& testToWaylandClientPipeName, const String& waylandClientToTestPipeName);
+        TestForkerApplication(const String& testToForkerPipeName, const std::vector<std::pair<String,String>>& testPipeNames);
         void run();
 
     private:
         bool handleIncomingMessage();
-        void startTestApplication();
-        void waitForTestApplicationExit();
-        void killTestApplication();
+        void startTestApplication(uint32_t testAppIdx);
+        void waitForTestApplicationExit(uint32_t testAppIdx);
+        void killTestApplication(uint32_t testAppIdx);
 
         NamedPipe m_testToForkerPipe;
-        const String m_testToWaylandClientPipeName;
-        const String m_waylandClientToTestPipeName;
-        pid_t m_testApplicationProcessId;
+
+        struct TestApplicationInfo
+        {
+            const String testToWaylandClientPipeName;
+            const String waylandClientToTestPipeName;
+            pid_t testApplicationProcessId;
+        };
+        std::vector<TestApplicationInfo> m_testApplicationInfo;
     };
 }
 

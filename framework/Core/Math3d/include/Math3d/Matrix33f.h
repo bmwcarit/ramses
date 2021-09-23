@@ -13,6 +13,8 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "Math3d/Vector3.h"
 #include "PlatformAbstraction/FmtBase.h"
+#include "Utils/AssertMovable.h"
+
 #include <cassert>
 
 namespace ramses_internal
@@ -212,8 +214,7 @@ namespace ramses_internal
         return *(&m11 + (row * 3) + column);
     }
 
-    static_assert(std::is_nothrow_move_constructible<Matrix33f>::value, "Matrix33f must be movable");
-    static_assert(std::is_nothrow_move_assignable<Matrix33f>::value, "Matrix33f must be movable");
+    ASSERT_MOVABLE(Matrix33f)
 }
 
 template <>

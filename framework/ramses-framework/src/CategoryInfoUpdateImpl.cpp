@@ -76,4 +76,19 @@ namespace ramses
         return StatusOK;
     }
 
+    bool CategoryInfoUpdateImpl::hasActiveLayoutUpdate() const
+    {
+        return m_categoryInfo.hasActiveLayoutChange();
+    }
+
+    CategoryInfoUpdate::Layout CategoryInfoUpdateImpl::getActiveLayout() const
+    {
+        return static_cast<CategoryInfoUpdate::Layout>(m_categoryInfo.getActiveLayout());
+    }
+
+    status_t CategoryInfoUpdateImpl::setActiveLayout(CategoryInfoUpdate::Layout layout)
+    {
+        m_categoryInfo.setActiveLayout(static_cast<ramses_internal::CategoryInfo::Layout>(layout));
+        return StatusOK;
+    }
 }

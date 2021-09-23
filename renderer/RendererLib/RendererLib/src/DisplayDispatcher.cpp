@@ -57,6 +57,19 @@ namespace ramses_internal
             if (!pendingCmds.empty())
                 displayBundle.pushAndConsumeCommands(pendingCmds);
         }
+
+        // TODO vaclav remove, for debugging if display thread stuck
+        if (m_threadedDisplays && m_displayThreadsUpdating && m_loopCounter++ > 100)
+        {
+            m_loopCounter = 0;
+            for (auto& display : m_displays)
+            {
+                const auto frameCounter = display.second.displayThread->getFrameCounter();
+                //if (display.second.lastFrameCounter == frameCounter)
+                    LOG_WARN_P(CONTEXT_RENDERER, "Display {} potentially stuck at trace ID {}", display.first, display.second.displayBundle->traceId());
+                display.second.lastFrameCounter = frameCounter;
+            }
+        }
     }
 
     void DisplayDispatcher::doOneLoop(std::chrono::microseconds sleepTime)
@@ -165,7 +178,8 @@ namespace ramses_internal
             m_rendererSceneSender,
             *bundle.platform,
             m_notifier,
-            firstDisplay ? m_rendererConfig.getRenderThreadLoopTimingReportingPeriod() : std::chrono::milliseconds{ 0 },
+            m_rendererConfig.getRenderThreadLoopTimingReportingPeriod(),
+            firstDisplay,
             firstDisplay ? m_rendererConfig.getKPIFileName() : String{})
         };
         if (m_threadedDisplays)

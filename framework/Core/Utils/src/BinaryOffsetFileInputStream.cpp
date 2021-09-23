@@ -61,7 +61,7 @@ namespace ramses_internal
         return *this;
     }
 
-    EStatus BinaryOffsetFileInputStream::seek(Int offset, Seek origin)
+    EStatus BinaryOffsetFileInputStream::seek(Int numberOfBytesToSeek, Seek origin)
     {
         if (m_state != EStatus::Ok)
             return EStatus::Error;
@@ -70,10 +70,10 @@ namespace ramses_internal
         switch (origin)
         {
         case Seek::FromBeginning:
-            newPos = static_cast<Int>(m_startPos + offset);
+            newPos = static_cast<Int>(m_startPos + numberOfBytesToSeek);
             break;
         case Seek::Relative:
-            newPos = static_cast<Int>(m_pos + offset);
+            newPos = static_cast<Int>(m_pos + numberOfBytesToSeek);
             break;
         }
         if (newPos < static_cast<Int>(m_startPos) || newPos > static_cast<Int>(m_startPos + m_length))

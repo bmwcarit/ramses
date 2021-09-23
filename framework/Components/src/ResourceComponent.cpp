@@ -100,21 +100,43 @@ namespace ramses_internal
         IInputStream* resourceStream = nullptr;
         ResourceFileEntry entry;
         SceneFileHandle fileHandle;
-        const EStatus canLoadFromFile = m_resourceFiles.getEntry(hash, resourceStream, entry, fileHandle);
-        if (canLoadFromFile == EStatus::Ok)
+        std::unique_ptr<IResource> lowLevelResource;
+
+        if (EStatus::Ok != m_resourceFiles.getEntry(hash, resourceStream, entry, fileHandle))
+            return {};
+
+        try
         {
-            m_statistics.statResourcesLoadedFromFileNumber.incCounter(1);
-            m_statistics.statResourcesLoadedFromFileSize.incCounter(entry.sizeInBytes);
-
-            std::unique_ptr<IResource> lowLevelResource = ResourcePersistation::RetrieveResourceFromStream(*resourceStream, entry);
-            if (lowLevelResource)
-                return m_resourceStorage.manageResource(*lowLevelResource.release(), true);
-
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceComponent::loadResource: RetrieveResourceFromStream failed for type {}, hash {}, fileHandle {}, offset {}, size {}, streamState {}",
-                        entry.resourceInfo.type, entry.resourceInfo.hash, fileHandle, entry.offsetInBytes, entry.sizeInBytes, resourceStream->getState());
+            lowLevelResource = ResourcePersistation::RetrieveResourceFromStream(*resourceStream, entry);
+        }
+        catch(std::exception const& e)
+        {
+            size_t currentPos = 0;
+            resourceStream->getPos(currentPos);
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceComponent::loadResource: RetrieveResourceFromStream CRITICALLY failed with a std::exception ('{}')"
+                " for type {}, hash {}, fileHandle {}, offset {}, size {}, streamState {}, current streamPos {}. No resource created, expect further errors.",
+                e.what(), entry.resourceInfo.type, entry.resourceInfo.hash, fileHandle, entry.offsetInBytes, entry.sizeInBytes, resourceStream->getState(), currentPos);
+#ifdef __ghs__
+            // this shortened fatal log will ultimately lead to a system reset on some platforms and will be integrated in the crash report
+            LOG_FATAL_P(CONTEXT_FRAMEWORK, "load resource exception {}, file/pos/size {}:{}:{} , streamState {}, streamPos {}",
+                e.what(), fileHandle, entry.offsetInBytes, entry.sizeInBytes, resourceStream->getState(), currentPos);
+#endif
+            return {};
+        }
+        if (!lowLevelResource)
+        {
+            size_t currentPos = 0;
+            resourceStream->getPos(currentPos);
+            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceComponent::loadResource: RetrieveResourceFromStream CRITICALLY failed and did not return a resource"
+                " for type {}, hash {}, fileHandle {}, offset {}, size {}, streamState {}, current streamPos {}. Expect further errors.",
+                entry.resourceInfo.type, entry.resourceInfo.hash, fileHandle, entry.offsetInBytes, entry.sizeInBytes, resourceStream->getState(), currentPos);
+            return {};
         }
 
-        return ManagedResource();
+        m_statistics.statResourcesLoadedFromFileNumber.incCounter(1);
+        m_statistics.statResourcesLoadedFromFileSize.incCounter(entry.sizeInBytes);
+
+        return m_resourceStorage.manageResource(*lowLevelResource.release(), true);
     }
 
     void ResourceComponent::reserveResourceCount(uint32_t totalCount)

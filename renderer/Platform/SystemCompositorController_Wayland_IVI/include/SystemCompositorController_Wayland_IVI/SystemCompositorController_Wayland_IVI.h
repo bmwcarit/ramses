@@ -51,7 +51,7 @@ namespace ramses_internal
         void registryHandleGlobal(wl_registry* registry, uint32_t name, const char* interface, uint32_t version);
         void iviControllerHandleScreen(ivi_controller* controller, uint32_t id_screen, ivi_controller_screen* nativeControllerScreen);
         void iviControllerHandleLayer(ivi_controller* controller, uint32_t id_layer);
-        void iviControllerHandleSurface(ivi_controller* controller, uint32_t id_surface);
+        void iviControllerHandleSurface(ivi_controller* controller, uint32_t iviID);
 
         static void RegistryHandleGlobalCallback(
             void* data, wl_registry* registry, uint32_t name, const char* interface, uint32_t version);

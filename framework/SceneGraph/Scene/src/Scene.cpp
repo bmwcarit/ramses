@@ -701,9 +701,9 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visible)
+    void SceneT<MEMORYPOOL>::setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visibility)
     {
-        m_renderables.getMemory(renderableHandle)->visibilityMode = visible;
+        m_renderables.getMemory(renderableHandle)->visibilityMode = visibility;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -836,9 +836,9 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::releaseRenderable(RenderableHandle nodeHandle)
+    void SceneT<MEMORYPOOL>::releaseRenderable(RenderableHandle renderableHandle)
     {
-        m_renderables.release(nodeHandle);
+        m_renderables.release(renderableHandle);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -860,27 +860,27 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Float* newValue)
+    void SceneT<MEMORYPOOL>::setDataFloatArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Float* data)
     {
-        setInstanceDataInternal<Float>(containerHandle, fieldId, elementCount, newValue);
+        setInstanceDataInternal<Float>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector2* newValue)
+    void SceneT<MEMORYPOOL>::setDataVector2fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector2* data)
     {
-        setInstanceDataInternal<Vector2>(containerHandle, fieldId, elementCount, newValue);
+        setInstanceDataInternal<Vector2>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector3* newValue)
+    void SceneT<MEMORYPOOL>::setDataVector3fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector3* data)
     {
-        setInstanceDataInternal<Vector3>(containerHandle, fieldId, elementCount, newValue);
+        setInstanceDataInternal<Vector3>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector4* newValue)
+    void SceneT<MEMORYPOOL>::setDataVector4fArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector4* data)
     {
-        setInstanceDataInternal<Vector4>(containerHandle, fieldId, elementCount, newValue);
+        setInstanceDataInternal<Vector4>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -902,37 +902,37 @@ namespace ramses_internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Int32* newValue)
+    void SceneT<MEMORYPOOL>::setDataIntegerArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Int32* data)
     {
-        setInstanceDataInternal<Int32>(containerHandle, fieldId, elementCount, newValue);
+        setInstanceDataInternal<Int32>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector2i* newValue)
+    void SceneT<MEMORYPOOL>::setDataVector2iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector2i* data)
     {
-        setInstanceDataInternal<Vector2i>(containerHandle, fieldId, elementCount, newValue);
+        setInstanceDataInternal<Vector2i>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector3i* newValue)
+    void SceneT<MEMORYPOOL>::setDataVector3iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector3i* data)
     {
-        setInstanceDataInternal<Vector3i>(containerHandle, fieldId, elementCount, newValue);
+        setInstanceDataInternal<Vector3i>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector4i* newValue)
+    void SceneT<MEMORYPOOL>::setDataVector4iArray(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UInt32 elementCount, const Vector4i* data)
     {
-        setInstanceDataInternal<Vector4i>(containerHandle, fieldId, elementCount, newValue);
+        setInstanceDataInternal<Vector4i>(containerHandle, fieldId, elementCount, data);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
-    void SceneT<MEMORYPOOL>::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle fieldId, const ResourceContentHash& newHashValue, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride)
+    void SceneT<MEMORYPOOL>::setDataResource(DataInstanceHandle containerHandle, DataFieldHandle fieldId, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride)
     {
         //one and only one (xor) of newHashValue and dataBuffer must be valid
-        assert(!newHashValue.isValid() ^ !dataBuffer.isValid());
+        assert(!hash.isValid() ^ !dataBuffer.isValid());
 
         ResourceField newField;
-        newField.hash = newHashValue;
+        newField.hash = hash;
         newField.dataBuffer = dataBuffer;
         newField.instancingDivisor = instancingDivisor;
         newField.offsetWithinElementInBytes = offsetWithinElementInBytes;

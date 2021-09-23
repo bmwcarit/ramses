@@ -14,6 +14,7 @@
 #include "PlatformAbstraction/Hash.h"
 #include "PlatformAbstraction/PlatformMemory.h"
 #include "PlatformAbstraction/Macros.h"
+#include "Utils/AssertMovable.h"
 #include <cmath>
 #include <functional>
 #include <new>
@@ -429,7 +430,7 @@ namespace ramses_internal
          * Reserve space for given number of bits elements. Does nothing if the
          * HashMap is already bigger.
          */
-        void reserve(size_t minimumCapacity);
+        void reserve(size_t requestedCapacity);
 
         RNODISCARD size_t capacity() const;
 
@@ -533,7 +534,7 @@ namespace ramses_internal
         // poor mans move because must HashMap cannot work with nullptr data
         : HashMap()
     {
-        static_assert(std::is_nothrow_move_constructible<HashMap>::value, "HashMap must be movable");
+        ASSERT_MOVABLE(HashMap)
 
         swap(other);
         other.clear();
@@ -592,8 +593,6 @@ namespace ramses_internal
     template <class Key, class T>
     inline HashMap<Key, T>& HashMap<Key, T>::operator=(HashMap<Key, T>&& other) noexcept
     {
-        static_assert(std::is_nothrow_move_assignable<HashMap>::value, "HashMap must be movable");
-
         if (&other == this)
         {
             // self assignment

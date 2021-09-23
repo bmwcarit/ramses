@@ -70,6 +70,8 @@ namespace ramses_internal
             DisplayBundleShared displayBundle;
             std::unique_ptr<IDisplayThread> displayThread;
             RendererCommands pendingCommands;
+            // TODO vaclav remove, debug only
+            uint32_t lastFrameCounter = 0;
         };
         // virtual to allow mock of display thread
         virtual Display createDisplayBundle(DisplayHandle displayHandle);
@@ -104,6 +106,9 @@ namespace ramses_internal
         // to avoid re-allocs
         RendererCommands m_tmpCommands;
         RendererEventVector m_tmpEvents;
+
+        // TODO vaclav remove, debug only
+        int m_loopCounter = 0;
     };
 }
 

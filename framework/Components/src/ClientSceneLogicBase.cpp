@@ -21,8 +21,8 @@
 
 namespace ramses_internal
 {
-    ClientSceneLogicBase::ClientSceneLogicBase(ISceneGraphSender& scenegraphProviderComponent, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress)
-        : m_scenegraphSender(scenegraphProviderComponent)
+    ClientSceneLogicBase::ClientSceneLogicBase(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress)
+        : m_scenegraphSender(sceneGraphSender)
         , m_resourceComponent(res)
         , m_myID(clientAddress)
         , m_sceneId(scene.getSceneId())

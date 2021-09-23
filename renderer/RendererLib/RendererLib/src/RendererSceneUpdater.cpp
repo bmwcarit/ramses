@@ -204,48 +204,56 @@ namespace ramses_internal
     void RendererSceneUpdater::updateScenes()
     {
         {
+            m_renderer.m_traceId = 1;
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes request resources from network, upload used resources and unload obsolete resources");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateClientResources);
             requestAndUploadAndUnloadResources();
         }
 
         {
+            m_renderer.m_traceId = 2;
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes try to apply pending flushes, only apply sync flushes if all resources available");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::ApplySceneActions);
             tryToApplyPendingFlushes();
         }
 
         {
+            m_renderer.m_traceId = 3;
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes executing pending scene reference commands and updates states");
             assert(m_sceneReferenceLogic);
             m_sceneReferenceLogic->update();
         }
 
         {
+            m_renderer.m_traceId = 4;
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes unref obsolete client resources and upload pending scene resources");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateSceneResources);
             processStagedResourceChangesFromAppliedFlushes();
         }
 
         {
+            m_renderer.m_traceId = 5;
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update embedded compositing resources");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateEmbeddedCompositingResources);
             uploadUpdatedECStreams();
         }
 
         {
+            m_renderer.m_traceId = 6;
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update scenes stream texture dirtiness");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateStreamTextures);
             handleECStreamAvailabilityChanges();
         }
 
         {
+            m_renderer.m_traceId = 7;
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update scenes to be mapped/shown");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateScenesToBeMapped);
             updateScenesStates();
         }
 
         {
+            m_renderer.m_traceId = 8;
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update scenes resource cache");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateResourceCache);
             updateScenesResourceCache();
@@ -253,23 +261,27 @@ namespace ramses_internal
         }
 
         {
+            m_renderer.m_traceId = 9;
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update scenes real-time animation systems");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateAnimations);
             updateScenesRealTimeAnimationSystems();
         }
 
         {
+            m_renderer.m_traceId = 10;
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update scenes transformation cache and transformation links");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateTransformations);
             updateScenesTransformationCache();
         }
 
         {
+            m_renderer.m_traceId = 11;
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update scenes data links");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateDataLinks);
             updateScenesDataLinks();
         }
 
+        m_renderer.m_traceId = 12;
         for (const auto scene : m_modifiedScenesToRerender)
         {
             if (m_sceneStateExecutor.getSceneState(scene) == ESceneState::Rendered)

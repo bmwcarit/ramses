@@ -17,10 +17,10 @@ namespace ramses
     {
         CategoryInfoUpdate defaultConstructed;
         CategoryInfoUpdate setAfterward;
-        CategoryInfoUpdate constructorZero(SizeInfo{ 0, 0 }, Rect{0, 0, 0, 0}, Rect{0, 0, 0, 0});
-        CategoryInfoUpdate constructorAllSizes(SizeInfo{ 4, 5 }, Rect{0, 0, 4, 5}, Rect{1, 2, 3, 4});
+        CategoryInfoUpdate constructorZero(SizeInfo{ 0, 0 }, Rect{0, 0, 0, 0}, Rect{0, 0, 0, 0}, CategoryInfoUpdate::Layout::Drive);
+        CategoryInfoUpdate constructorAllSizes(SizeInfo{ 4, 5 }, Rect{0, 0, 4, 5}, Rect{1, 2, 3, 4}, CategoryInfoUpdate::Layout::Drive);
         CategoryInfoUpdate constructorWithDefaultForSafeRect(SizeInfo{ 4, 5 }, Rect{0, 0, 4, 5});
-        CategoryInfoUpdate constructorSafeRectSetToZero(SizeInfo{ 4, 5 }, Rect{0, 0, 4, 5}, Rect{0, 0, 0, 0});
+        CategoryInfoUpdate constructorSafeRectSetToZero(SizeInfo{ 4, 5 }, Rect{0, 0, 4, 5}, Rect{0, 0, 0, 0}, CategoryInfoUpdate::Layout::Drive);
 
         EXPECT_FALSE(constructorZero == defaultConstructed);
         EXPECT_FALSE(constructorZero == constructorWithDefaultForSafeRect);
@@ -36,6 +36,7 @@ namespace ramses
         setAfterward.setRenderSize({ 4, 5 });
         setAfterward.setCategoryRect({ 0, 0, 4, 5 });
         setAfterward.setSafeRect({ 1, 2, 3, 4 });
+        setAfterward.setActiveLayout(CategoryInfoUpdate::Layout::Drive);
         EXPECT_TRUE(constructorAllSizes == setAfterward);
     }
 
@@ -56,6 +57,7 @@ namespace ramses
         EXPECT_EQ(0u, update.getSafeRect().y);
         EXPECT_EQ(0u, update.getSafeRect().width);
         EXPECT_EQ(0u, update.getSafeRect().height);
+        EXPECT_EQ(CategoryInfoUpdate::Layout::Drive, update.getActiveLayout());
     }
 
     TEST(ACategoryInfoUpdate, setCategoryRect)
@@ -95,6 +97,16 @@ namespace ramses
         EXPECT_EQ(2u, update.getRenderSize().height);
     }
 
+    TEST(ACategoryInfoUpdate, setActiveLayout)
+    {
+        CategoryInfoUpdate update;
+
+        EXPECT_FALSE(update.hasActiveLayoutUpdate());
+        update.setActiveLayout(CategoryInfoUpdate::Layout::Sport_Road);
+        EXPECT_TRUE(update.hasActiveLayoutUpdate());
+        EXPECT_EQ(CategoryInfoUpdate::Layout::Sport_Road, update.getActiveLayout());
+    }
+
     TEST(ACategoryInfoUpdate, setCategoryRectMultipleTimesUpdatesValues)
     {
         CategoryInfoUpdate update;
@@ -129,6 +141,15 @@ namespace ramses
         EXPECT_EQ(15u, update.getSafeRect().height);
     }
 
+    TEST(ACategoryInfoUpdate, setActiveLayoutMultipleTimesUpdatesValues)
+    {
+        CategoryInfoUpdate update;
+        update.setActiveLayout(CategoryInfoUpdate::Layout::Sport_Road);
+        update.setActiveLayout(CategoryInfoUpdate::Layout::Gallery);
+        EXPECT_TRUE(update.hasActiveLayoutUpdate());
+        EXPECT_EQ(CategoryInfoUpdate::Layout::Gallery, update.getActiveLayout());
+    }
+
     TEST(ACategoryInfoUpdate, AssignFromInternalObject)
     {
         ramses_internal::CategoryInfo info;
@@ -138,14 +159,17 @@ namespace ramses
         EXPECT_FALSE(update.hasCategoryRectUpdate());
         EXPECT_FALSE(update.hasRenderSizeUpdate());
         EXPECT_FALSE(update.hasSafeRectUpdate());
+        EXPECT_FALSE(update.hasActiveLayoutUpdate());
 
         info.setCategoryRect(1, 2, 3, 4);
         info.setRenderSize(11,22);
         info.setSafeRect(5,6,7,8);
+        info.setActiveLayout(ramses_internal::CategoryInfo::Layout::Autonomous);
         update.impl.setCategoryInfo(info);
         EXPECT_TRUE(update.hasCategoryRectUpdate());
         EXPECT_TRUE(update.hasSafeRectUpdate());
         EXPECT_TRUE(update.hasRenderSizeUpdate());
+        EXPECT_TRUE(update.hasActiveLayoutUpdate());
         EXPECT_EQ(1u, update.getCategoryRect().x);
         EXPECT_EQ(2u, update.getCategoryRect().y);
         EXPECT_EQ(3u, update.getCategoryRect().width);
@@ -156,5 +180,6 @@ namespace ramses
         EXPECT_EQ(6u, update.getSafeRect().y);
         EXPECT_EQ(7u, update.getSafeRect().width);
         EXPECT_EQ(8u, update.getSafeRect().height);
+        EXPECT_EQ(CategoryInfoUpdate::Layout::Autonomous, update.getActiveLayout());
     }
 }

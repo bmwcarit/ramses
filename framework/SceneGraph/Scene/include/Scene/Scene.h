@@ -280,7 +280,7 @@ namespace ramses_internal
         virtual UInt32                  getPickableObjectCount          () const override final;
         virtual void                    setPickableObjectId             (PickableObjectHandle pickableHandle, PickableObjectId id) override;
         virtual void                    setPickableObjectCamera         (PickableObjectHandle pickableHandle, CameraHandle cameraHandle) override;
-        virtual void                    setPickableObjectEnabled        (PickableObjectHandle pickableHandel, bool isEnabled) override;
+        virtual void                    setPickableObjectEnabled        (PickableObjectHandle pickableHandle, bool isEnabled) override;
         virtual const PickableObject&   getPickableObject               (PickableObjectHandle pickableHandle) const override final;
         const PickableObjectMemoryPool& getPickableObjects              () const;
 
@@ -422,9 +422,9 @@ namespace ramses_internal
 
     // SceneT::is*Allocated calls are inlined because heavily used. Allow devirtualization and inlining together with final
     template <template<typename, typename> class MEMORYPOOL>
-    inline bool SceneT<MEMORYPOOL>::isCameraAllocated(CameraHandle camera) const
+    inline bool SceneT<MEMORYPOOL>::isCameraAllocated(CameraHandle handle) const
     {
-        return m_cameras.isAllocated(camera);
+        return m_cameras.isAllocated(handle);
     }
 
     template <template<typename, typename> class MEMORYPOOL>

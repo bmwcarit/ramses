@@ -20,7 +20,7 @@ namespace ramses
     class StreamTextureImpl final : public SceneObjectImpl
     {
     public:
-        StreamTextureImpl(SceneImpl& client, const char* name);
+        StreamTextureImpl(SceneImpl& scene, const char* name);
         virtual ~StreamTextureImpl() override;
 
         virtual status_t serialize(ramses_internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;

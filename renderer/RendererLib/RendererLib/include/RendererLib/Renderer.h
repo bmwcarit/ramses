@@ -105,6 +105,9 @@ namespace ramses_internal
 
         static const Vector4 DefaultClearColor;
 
+        // TODO vaclav remove, for debugging only
+        std::atomic_int m_traceId{ 0 };
+
     protected:
         virtual IDisplayController* createDisplayControllerFromConfig(const DisplayConfig& config);
 

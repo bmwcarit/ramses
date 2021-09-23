@@ -315,26 +315,26 @@ namespace ramses_internal
         return false;
     }
 
-    bool SomeIPConnectionSystemMultiplexer::sendDcsmCanvasSizeChange(const Guid& to, ContentID content, const CategoryInfo& ci, AnimationInformation ai)
+    bool SomeIPConnectionSystemMultiplexer::sendDcsmCanvasSizeChange(const Guid& to, ContentID contentID, const CategoryInfo& ci, AnimationInformation ai)
     {
         if (m_dcsmConnectionSystem)
-            return m_dcsmConnectionSystem->sendCanvasSizeChange(to, content, ci, 0, ai);
+            return m_dcsmConnectionSystem->sendCanvasSizeChange(to, contentID, ci, 0, ai);
         LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmCanvasSizeChange: dcsm not enabled");
         return false;
     }
 
-    bool SomeIPConnectionSystemMultiplexer::sendDcsmContentStateChange(const Guid& to, ContentID content, EDcsmState state, const CategoryInfo& ci, AnimationInformation ai)
+    bool SomeIPConnectionSystemMultiplexer::sendDcsmContentStateChange(const Guid& to, ContentID contentID, EDcsmState state, const CategoryInfo& ci, AnimationInformation ai)
     {
         if (m_dcsmConnectionSystem)
-            return m_dcsmConnectionSystem->sendContentStateChange(to, content, state, ci, ai);
+            return m_dcsmConnectionSystem->sendContentStateChange(to, contentID, state, ci, ai);
         LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentStateChange: dcsm not enabled");
         return false;
     }
 
-    bool SomeIPConnectionSystemMultiplexer::sendDcsmContentStatus(const Guid& to, ContentID content, uint64_t messageID, std::vector<ramses_internal::Byte> const& message)
+    bool SomeIPConnectionSystemMultiplexer::sendDcsmContentStatus(const Guid& to, ContentID contentID, uint64_t messageID, std::vector<ramses_internal::Byte> const& message)
     {
         if (m_dcsmConnectionSystem)
-            return m_dcsmConnectionSystem->sendContentStatus(to, content, messageID, message);
+            return m_dcsmConnectionSystem->sendContentStatus(to, contentID, messageID, message);
         LOG_ERROR(CONTEXT_COMMUNICATION, "SomeIPConnectionSystemMultiplexer(" << m_someipCommunicationUserID << ")::sendDcsmContentStatus: dcsm not enabled");
         return false;
     }

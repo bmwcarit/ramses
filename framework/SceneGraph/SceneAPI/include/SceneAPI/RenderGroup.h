@@ -11,6 +11,7 @@
 
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/SceneTypes.h"
+#include "Utils/AssertMovable.h"
 
 namespace ramses_internal
 {
@@ -27,8 +28,7 @@ namespace ramses_internal
         RenderGroupOrderVector renderGroups;
     };
 
-    static_assert(std::is_nothrow_move_constructible<RenderGroup>::value, "RenderGroup must be movable");
-    static_assert(std::is_nothrow_move_assignable<RenderGroup>::value, "RenderGroup must be movable");
+    ASSERT_MOVABLE(RenderGroup)
 }
 
 #endif

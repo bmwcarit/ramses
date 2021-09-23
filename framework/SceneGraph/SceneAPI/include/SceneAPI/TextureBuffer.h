@@ -13,6 +13,7 @@
 #include "SceneAPI/TextureEnums.h"
 #include "Resource/TextureMetaInfo.h"
 #include "Math3d/Quad.h"
+#include "Utils/AssertMovable.h"
 #include <numeric>
 #include <vector>
 
@@ -38,8 +39,7 @@ namespace ramses_internal
         }
     };
 
-    static_assert(std::is_nothrow_move_constructible<TextureBuffer>::value, "TextureBuffer must be movable");
-    static_assert(std::is_nothrow_move_assignable<TextureBuffer>::value, "TextureBuffer must be movable");
+    ASSERT_MOVABLE(TextureBuffer)
 }
 
 #endif

@@ -135,6 +135,26 @@ namespace ramses
         */
         virtual void renderThreadLoopTimings(std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime) = 0;
 
+#ifdef RAMSES_ENABLE_RENDER_LOOP_TIMINGS_PER_DISPLAY
+        /**
+        * @brief This method will be called in period given to renderer config (#ramses::RendererConfig::setRenderThreadLoopTimingReportingPeriod)
+        *        and provides rough performance indicators - maximum and average loop (frame) time within that measure period.
+        *
+        * This method will be called for all displays with different displayId values. There is no guarantee that all displays appear within
+        * the same dispatch call.
+        *
+        * @param[in] displayId The display the timing information is for
+        * @param[in] maximumLoopTime The maximum time a loop of the first display within the last measure period
+        * @param[in] averageLooptime The average time a loop of the first display within the last measure period
+        */
+        virtual void renderThreadLoopTimingsPerDisplay(displayId_t displayId, std::chrono::microseconds maximumLoopTime, std::chrono::microseconds averageLooptime)
+        {
+            (void)displayId;
+            (void)maximumLoopTime;
+            (void)averageLooptime;
+        }
+#endif
+
         /**
         * @brief Empty destructor
         */

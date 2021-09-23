@@ -29,6 +29,7 @@
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererLib/DisplaySetup.h"
 #include "RendererLib/StagingInfo.h"
+#include "RendererLib/SceneReferenceLogic.h"
 #include "RenderExecutor.h"
 #include "RenderExecutorLogger.h"
 #include "RendererEventCollector.h"
@@ -105,6 +106,7 @@ namespace ramses_internal
             LogSceneResources(updater, context);
             LogRenderQueue(updater, context);
             LogLinks(updater.m_rendererScenes, context);
+            LogReferencedScenes(updater, context);
             LogEmbeddedCompositor(updater, context);
             LogEventQueue(updater, context);
             break;
@@ -267,6 +269,12 @@ namespace ramses_internal
 
     void RendererLogger::LogClientResources(const RendererSceneUpdater& updater, RendererLogContext& context)
     {
+        if (!updater.m_renderer.hasDisplayController())
+        {
+            context << RendererLogContext::NewLine << "Skipping resources section due to missing display controller!" << RendererLogContext::NewLine;
+            return;
+        }
+
         StartSection("RENDERER CLIENT RESOURCES", context);
 
         const RendererResourceManager* resourceManager = static_cast<const RendererResourceManager*>(updater.m_displayResourceManager.get());
@@ -370,6 +378,12 @@ namespace ramses_internal
 
     void RendererLogger::LogSceneResources(const RendererSceneUpdater& updater, RendererLogContext& context)
     {
+        if (!updater.m_renderer.hasDisplayController())
+        {
+            context << RendererLogContext::NewLine << "Skipping scene resources section due to missing display controller!" << RendererLogContext::NewLine;
+            return;
+        }
+
         StartSection("RENDERER SCENE RESOURCES", context);
         context << "Resources for " << updater.m_rendererScenes.size() << " Scene(s)" << RendererLogContext::NewLine << RendererLogContext::NewLine;
 
@@ -534,6 +548,12 @@ namespace ramses_internal
 
     void RendererLogger::LogMissingResources(const RendererSceneUpdater& updater, RendererLogContext& context)
     {
+        if (!updater.m_renderer.hasDisplayController())
+        {
+            context << RendererLogContext::NewLine << "Skipping missing resources section due to missing display controller!" << RendererLogContext::NewLine;
+            return;
+        }
+
         StartSection("RENDERER MISSING RESOURCES", context);
         HashMap<SceneId, std::pair<size_t, ResourceContentHashVector>> missingResourcesPerScene;
 
@@ -606,6 +626,12 @@ namespace ramses_internal
 
     void RendererLogger::LogRenderQueue(const RendererSceneUpdater& updater, RendererLogContext& context)
     {
+        if (!updater.m_renderer.hasDisplayController())
+        {
+            context << RendererLogContext::NewLine << "Skipping render queue section due to missing display controller!" << RendererLogContext::NewLine;
+            return;
+        }
+
         StartSection("RENDERER QUEUE", context);
 
         const Renderer& renderer = updater.m_renderer;
@@ -678,6 +704,12 @@ namespace ramses_internal
 
     void RendererLogger::LogStreamTextures(const RendererSceneUpdater& updater, RendererLogContext& context)
     {
+        if (!updater.m_renderer.hasDisplayController())
+        {
+            context << RendererLogContext::NewLine << "Skipping stream textures section due to missing display controller!" << RendererLogContext::NewLine;
+            return;
+        }
+
         StartSection("RENDERER STREAM TEXTURES", context);
         SceneIdVector knownSceneIds;
         updater.m_sceneStateExecutor.m_scenesStateInfo.getKnownSceneIds(knownSceneIds);
@@ -796,6 +828,72 @@ namespace ramses_internal
             }
         }
         EndSection("RENDERER STREAM TEXTURES", context);
+    }
+
+    void RendererLogger::LogReferencedScenes(const RendererSceneUpdater& updater, RendererLogContext& context)
+    {
+        StartSection("SCENE REFERENCING", context);
+
+        assert(updater.m_sceneReferenceLogic);
+        const auto& sceneRefLogic = static_cast<const SceneReferenceLogic&>(*updater.m_sceneReferenceLogic);
+        context << sceneRefLogic.m_masterScenes.size() << " master scene(s)" << RendererLogContext::NewLine << RendererLogContext::NewLine;
+
+        context.indent();
+        for (const auto& masterSceneIt : sceneRefLogic.m_masterScenes)
+        {
+            const auto masterSceneId = masterSceneIt.first;
+            const auto& masterInfo = masterSceneIt.second;
+            context << "Master Scene [id: " << masterSceneId << "] " << RendererLogContext::NewLine << RendererLogContext::NewLine;
+            context.indent();
+
+            context << "- referenced scenes (Ids): ";
+            if (!masterInfo.sceneReferences.empty())
+            {
+                context << " [ ";
+                for (const auto& refScene : masterInfo.sceneReferences)
+                    context << refScene.first << " ";
+                context << "]";
+            }
+            context << RendererLogContext::NewLine;
+
+            context << "- pending actions (action types): ";
+            if (!masterInfo.pendingActions.empty())
+            {
+                context << " [ ";
+                for (const auto& action : masterInfo.pendingActions)
+                    context << action.type << " ";
+                context << "]";
+            }
+            context << RendererLogContext::NewLine;
+
+            context << "- flush notification enabled for scenes (Ids): ";
+            if (!masterInfo.sceneReferencesWithFlushNotification.empty())
+            {
+                context << " [ ";
+                for (const auto& scene : masterInfo.sceneReferencesWithFlushNotification)
+                    context << scene << " ";
+                context << "]";
+            }
+            context << RendererLogContext::NewLine;
+
+            context << "- expiration states (Id/state): ";
+            if (!masterInfo.expirationStates.empty())
+            {
+                context << " [ ";
+                for (const auto& scene : masterInfo.expirationStates)
+                    context << scene.first << "/" << scene.second << " ";
+                context << "]";
+            }
+            context << RendererLogContext::NewLine;
+
+            context << "- consolidated expiration state: " << masterInfo.consolidatedExpirationState << RendererLogContext::NewLine;
+            context << "- master destroyed: " << masterInfo.destroyed << RendererLogContext::NewLine;
+
+            context.unindent();
+        }
+        context.unindent();
+
+        EndSection("SCENE REFERENCING", context);
     }
 
     void RendererLogger::LogLinks(const RendererScenes& scenes, RendererLogContext& context)
@@ -1028,6 +1126,12 @@ namespace ramses_internal
 
     void RendererLogger::LogEmbeddedCompositor(const RendererSceneUpdater& updater, RendererLogContext& context)
     {
+        if (!updater.m_renderer.hasDisplayController())
+        {
+            context << RendererLogContext::NewLine << "Skipping EC section due to missing display controller!" << RendererLogContext::NewLine;
+            return;
+        }
+
         StartSection("EMBEDDED COMPOSITOR", context);
 
         const WaylandIviSurfaceId iviSurfaceId = updater.m_renderer.getDisplayController().getRenderBackend().getWindow().getWaylandIviSurfaceID();
@@ -1067,49 +1171,56 @@ namespace ramses_internal
 
     void RendererLogger::LogPeriodicInfo(const RendererSceneUpdater& updater)
     {
-        LOG_INFO_F(CONTEXT_PERIODIC, ([&](StringOutputStream& sos) {
-                    sos.reserve(2048);
+        LOG_INFO_F(CONTEXT_PERIODIC, ([&](StringOutputStream& sos)
+        {
+            sos.reserve(2048);
 
-                    SceneIdVector knownSceneIds;
-                    updater.m_sceneStateExecutor.m_scenesStateInfo.getKnownSceneIds(knownSceneIds);
-                    sos << "Renderer: " << knownSceneIds.size() << " scene(s):";
-                    Bool first = true;
-                    for(const auto& sceneId : knownSceneIds)
-                    {
-                        if (first)
-                        {
-                            first = false;
-                        }
-                        else
-                        {
-                            sos << ",";
-                        }
-                        const ESceneState sceneState = updater.m_sceneStateExecutor.getSceneState(sceneId);
-                        sos << " " << sceneId << " " << EnumToString(sceneState);
-                        if (updater.m_rendererScenes.hasScene(sceneId))
-                        {
-                            const auto& stagingInfo = updater.m_rendererScenes.getStagingInfo(sceneId);
-                            if (stagingInfo.lastAppliedVersionTag.isValid())
-                                sos << " (versionTag " << stagingInfo.lastAppliedVersionTag << ")";
+            SceneIdVector knownSceneIds;
+            updater.m_sceneStateExecutor.m_scenesStateInfo.getKnownSceneIds(knownSceneIds);
+            sos << "Renderer: " << knownSceneIds.size() << " scene(s):";
+            for(const auto& sceneId : knownSceneIds)
+            {
+                const ESceneState sceneState = updater.m_sceneStateExecutor.getSceneState(sceneId);
+                sos << "  " << sceneId << " " << EnumToString(sceneState);
+                if (updater.m_rendererScenes.hasScene(sceneId))
+                {
+                    const auto& stagingInfo = updater.m_rendererScenes.getStagingInfo(sceneId);
+                    if (stagingInfo.lastAppliedVersionTag.isValid())
+                        sos << " (versionTag " << stagingInfo.lastAppliedVersionTag << ")";
 
-                            const auto& pendingFlushes = stagingInfo.pendingData.pendingFlushes;
-                            if (!pendingFlushes.empty())
-                                sos << " (" << pendingFlushes.size() << " pending flushes)";
-                        }
-                    }
+                    const auto& pendingFlushes = stagingInfo.pendingData.pendingFlushes;
+                    if (!pendingFlushes.empty())
+                        sos << " (" << pendingFlushes.size() << " pending flushes)";
+                }
+            }
 
-                    sos << "\n";
-                    updater.m_renderer.getStatistics().writeStatsToStream(sos);
-                    sos << "\nTime budgets:"
-                        << " sceneResourceUpload " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload).count()) << "us"
-                        << " resourceUpload " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ResourcesUpload).count()) << "us"
-                        << " obRender " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender).count()) << "us"
-                        << " skub=" << updater.m_skipUnmodifiedScenes;
-                    sos << "\n";
-                    updater.m_renderer.getProfilerStatistics().writeLongestFrameTimingsToStream(sos);
-                    sos << "\n";
-                    updater.m_renderer.getMemoryStatistics().writeMemoryUsageSummaryToString(sos);
-                }));
+            // scene referencing rper
+            assert(updater.m_sceneReferenceLogic);
+            const auto& sceneRefLogic = static_cast<const SceneReferenceLogic&>(*updater.m_sceneReferenceLogic);
+            if (!sceneRefLogic.m_masterScenes.empty())
+            {
+                sos << "\nSRef:";
+                for (const auto& masterSceneIt : sceneRefLogic.m_masterScenes)
+                {
+                    sos << " " << masterSceneIt.first << "->[";
+                    for (const auto& refScene : masterSceneIt.second.sceneReferences)
+                        sos << " " << refScene.first;
+                    sos << " ] ";
+                }
+            }
+
+            sos << "\n";
+            updater.m_renderer.getStatistics().writeStatsToStream(sos);
+            sos << "\nTime budgets:"
+                << " sceneResourceUpload " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload).count()) << "us"
+                << " resourceUpload " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ResourcesUpload).count()) << "us"
+                << " obRender " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender).count()) << "us"
+                << " skub=" << updater.m_skipUnmodifiedScenes;
+            sos << "\n";
+            updater.m_renderer.getProfilerStatistics().writeLongestFrameTimingsToStream(sos);
+            sos << "\n";
+            updater.m_renderer.getMemoryStatistics().writeMemoryUsageSummaryToString(sos);
+        }));
 
         updater.m_renderer.getStatistics().reset();
         updater.m_renderer.getProfilerStatistics().resetFrameTimings();

@@ -10,7 +10,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 SET(RAMSES_VERSION_MAJOR 27)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 110)
+SET(RAMSES_VERSION_PATCH 111)
 SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
@@ -19,6 +19,7 @@ PROJECT(ramses-sdk VERSION ${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAM
 
 # TODO(tobias) must be here because used inside platformConfig, rework order of all options to solve properly
 OPTION(ramses-sdk_WARNINGS_AS_ERRORS "Enable warnings as errors during build" OFF)
+set(ramses-sdk_CPP_VERSION "14" CACHE STRING "Set used c++ version, must be 14, 17 or 20")
 
 include(cmake/ramses/setCmakePolicies.cmake NO_POLICY_SCOPE)  # we want to propagate policy settings out!
 include(cmake/ramses/platformDetection.cmake)
@@ -51,7 +52,7 @@ ELSE ()
     ENDIF ()
 ENDIF (NOT CMAKE_BUILD_TYPE)
 
-MESSAGE(STATUS "Ramses Build Config: SystemName ${CMAKE_SYSTEM_NAME}, SystemVersion ${CMAKE_SYSTEM_VERSION}, CompilerID ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}, TargetOS ${TARGET_OS}, BuildType ${CMAKE_BUILD_TYPE}, TargetBitness ${TARGET_BITNESS}")
+MESSAGE(STATUS "Ramses Build Config: SystemName ${CMAKE_SYSTEM_NAME}, SystemVersion ${CMAKE_SYSTEM_VERSION}, CompilerID ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}, TargetOS ${TARGET_OS}, BuildType ${CMAKE_BUILD_TYPE}, TargetBitness ${TARGET_BITNESS} c++${ramses-sdk_CPP_VERSION}")
 
 # find options
 OPTION(ramses-sdk_ALLOW_PLATFORM_FREETYPE "Enable to search for platform provided freetype and harfbuzz" ON)

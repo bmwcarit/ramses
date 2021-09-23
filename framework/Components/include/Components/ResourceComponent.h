@@ -36,7 +36,7 @@ namespace ramses_internal
         virtual bool hasResourceFile(SceneFileHandle handle) const override;
 
         virtual void reserveResourceCount(uint32_t totalCount) override;
-        virtual ManagedResourceVector resolveResources(ResourceContentHashVector& vec) override;
+        virtual ManagedResourceVector resolveResources(ResourceContentHashVector& hashes) override;
 
         virtual ResourceInfo const& getResourceInfo(ResourceContentHash const& hash) override;
         virtual bool knowsResource(const ResourceContentHash& hash) const override;

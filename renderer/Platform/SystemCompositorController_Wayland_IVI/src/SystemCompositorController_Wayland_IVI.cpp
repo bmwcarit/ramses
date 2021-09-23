@@ -519,16 +519,16 @@ namespace ramses_internal
 
     void SystemCompositorController_Wayland_IVI::IVIControllerHandleErrorCallback(void*           data,
                                                                                   ivi_controller* controller,
-                                                                                  int32_t         object_id,
-                                                                                  int32_t         object_type,
-                                                                                  int32_t         error_code,
-                                                                                  const char*     error_text)
+                                                                                  int32_t         objectId,
+                                                                                  int32_t         objectType,
+                                                                                  int32_t         errorCode,
+                                                                                  const char*     errorText)
     {
         UNUSED(data);
         UNUSED(controller);
-        UNUSED(object_id);
-        UNUSED(object_type);
-        UNUSED(error_code);
-        UNUSED(error_text);
+        UNUSED(objectId);
+        UNUSED(objectType);
+        UNUSED(errorCode);
+        UNUSED(errorText);
     }
 }

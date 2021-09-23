@@ -303,4 +303,45 @@ namespace ramses
         offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
         EXPECT_NE(StatusOK, consumer.sendContentStatus(id, StreamStatusMessage(StreamStatusMessage::Status::Invalid)));
     }
+
+    TEST_F(ADcsmSystem, transmitsCategoryInfoUpdatesCorrectlyToProvider)
+    {
+        offerContent(id, Category(111), sceneId_t(18), EDcsmOfferingMode::LocalAndRemote);
+        EXPECT_EQ(provider.markContentReady(id), StatusOK);
+
+        assignContentToConsumer(id, categoryInfo, AnimationInformation(), sceneId_t(18));
+
+        EXPECT_CALL(consHandler, contentReady(id));
+        EXPECT_EQ(consumer.contentStateChange(id, EDcsmState::Ready, AnimationInformation()), StatusOK);
+        dispatch();
+
+        showContent(id, AnimationInformation{ 200, 300 });
+
+        CategoryInfoUpdate update({ 1, 2 }, { 3, 4, 5, 6 }, { 7, 8, 9, 0 }, CategoryInfoUpdate::Layout::Sport_Road);
+        EXPECT_EQ(StatusOK, consumer.contentSizeChange(id, update, {}));
+
+        EXPECT_CALL(provHandler, contentSizeChange(id, _, _)).WillOnce(Invoke([&update](auto, CategoryInfoUpdate const& update_, auto) {
+            EXPECT_TRUE(update_.hasCategoryRectUpdate());
+            EXPECT_TRUE(update_.hasSafeRectUpdate());
+            EXPECT_TRUE(update_.hasRenderSizeUpdate());
+            EXPECT_TRUE(update_.hasActiveLayoutUpdate());
+            EXPECT_EQ(update_, update);
+        }));
+        dispatch();
+
+        CategoryInfoUpdate updatePartial;
+        updatePartial.setRenderSize({ 10, 20 });
+        updatePartial.setActiveLayout(CategoryInfoUpdate::Layout::Sport_Track);
+        EXPECT_EQ(StatusOK, consumer.contentSizeChange(id, updatePartial, {}));
+
+        EXPECT_CALL(provHandler, contentSizeChange(id, _, _)).WillOnce(Invoke([&updatePartial](auto, CategoryInfoUpdate const& update_, auto) {
+            EXPECT_FALSE(update_.hasCategoryRectUpdate());
+            EXPECT_FALSE(update_.hasSafeRectUpdate());
+            EXPECT_TRUE(update_.hasRenderSizeUpdate());
+            EXPECT_TRUE(update_.hasActiveLayoutUpdate());
+            EXPECT_EQ(update_.getCategoryRect(), updatePartial.getCategoryRect());
+            EXPECT_EQ(update_.getActiveLayout(), updatePartial.getActiveLayout());
+        }));
+        dispatch();
+    }
 }

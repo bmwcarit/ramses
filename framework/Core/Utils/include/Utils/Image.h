@@ -12,6 +12,7 @@
 #include "PlatformAbstraction/PlatformTypes.h"
 #include "PlatformAbstraction/Macros.h"
 #include "Math3d/Vector4i.h"
+#include "Utils/AssertMovable.h"
 #include <vector>
 #include <array>
 #include <cassert>
@@ -58,8 +59,7 @@ namespace ramses_internal
         std::vector<UInt8> m_data;
     };
 
-    static_assert(std::is_nothrow_move_constructible<Image>::value, "Image must be movable");
-    static_assert(std::is_nothrow_move_assignable<Image>::value, "Image must be movable");
+    ASSERT_MOVABLE(Image)
 
     template <typename Iter>
     Image::Image(UInt32 width, UInt32 height, Iter begin, Iter end, bool flipVertically /*= false*/)

@@ -64,11 +64,11 @@ namespace ramses_internal
         virtual void sendResourceAvailabilityEvent(const Guid& to, ResourceAvailabilityEvent const& event) override;
 
         // IConnectionStatusListener
-        virtual void newParticipantHasConnected(const Guid& guid) override;
-        virtual void participantHasDisconnected(const Guid& guid) override;
+        virtual void newParticipantHasConnected(const Guid& connnectedParticipant) override;
+        virtual void participantHasDisconnected(const Guid& disconnnectedParticipant) override;
 
         // ISceneGraphProviderComponent
-        virtual void handleCreateScene(ClientScene& scene, bool enableLocalOnlyOptimization, ISceneProviderEventConsumer& eventInterface) override;
+        virtual void handleCreateScene(ClientScene& scene, bool enableLocalOnlyOptimization, ISceneProviderEventConsumer& eventConsumer) override;
         virtual void handlePublishScene(SceneId sceneId, EScenePublicationMode publicationMode) override;
         virtual void handleUnpublishScene(SceneId sceneId) override;
         virtual bool handleFlush(SceneId sceneId, const FlushTimeInformation& flushTimeInfo, SceneVersionTag versionTag) override;

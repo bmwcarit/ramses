@@ -38,7 +38,7 @@ namespace ramses
     public:
         explicit ResourceDataPoolImpl(RamsesClientImpl& client);
 
-        resourceId_t addArrayResourceData(EDataType type, uint32_t size, const void* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
+        resourceId_t addArrayResourceData(EDataType type, uint32_t numElements, const void* arrayData, resourceCacheFlag_t cacheFlag, const char* name);
         resourceId_t addTexture2DData(ETextureFormat format, uint32_t width, uint32_t height, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
         resourceId_t addTexture3DData(ETextureFormat format, uint32_t width, uint32_t height, uint32_t depth, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, resourceCacheFlag_t cacheFlag, const char* name);
         resourceId_t addTextureCubeData(ETextureFormat format, uint32_t size, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
@@ -73,7 +73,7 @@ namespace ramses
         };
 
         ramses::Resource* createResourceForScene(Scene& scene, ResourceFileAddress const& address, resourceId_t const& id) const;
-        ramses::Resource* createResourceForScene(Scene& scene, ResourceData const& resourceData) const;
+        ramses::Resource* createResourceForScene(Scene& scene, ResourceData const& poolData) const;
 
         resourceId_t addResourceDataToPool(ramses_internal::ManagedResource const& res, const char* name, ERamsesObjectType type);
 

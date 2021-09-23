@@ -11,6 +11,7 @@
 
 #include "SceneAPI/SceneTypes.h"
 #include "Math3d/Vector4.h"
+#include "Utils/AssertMovable.h"
 
 namespace ramses_internal
 {
@@ -27,8 +28,7 @@ namespace ramses_internal
         RenderGroupOrderVector renderGroups;
     };
 
-    static_assert(std::is_nothrow_move_constructible<RenderPass>::value, "RenderPass must be movable");
-    static_assert(std::is_nothrow_move_assignable<RenderPass>::value, "RenderPass must be movable");
+    ASSERT_MOVABLE(RenderPass)
 }
 
 #endif

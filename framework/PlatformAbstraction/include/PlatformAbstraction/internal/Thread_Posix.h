@@ -10,6 +10,7 @@
 #define RAMSES_PLATFORMABSTRACTION_THREAD_POSIX_H
 
 #include "PlatformAbstraction/Macros.h"
+#include "Utils/AssertMovable.h"
 #include <thread>
 #include <functional>
 #include <cassert>
@@ -72,8 +73,7 @@ namespace internal
         std::unique_ptr<Fun_t> m_fun;
     };
 
-    static_assert(std::is_nothrow_move_constructible<Thread>::value, "Thread must be movable");
-    static_assert(std::is_nothrow_move_assignable<Thread>::value, "Thread must be movable");
+    ASSERT_MOVABLE(Thread)
 
     inline Thread::Thread(Thread&& other) noexcept
         : m_running(other.m_running)

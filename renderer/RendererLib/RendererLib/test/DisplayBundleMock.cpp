@@ -7,9 +7,18 @@
 //  -------------------------------------------------------------------------
 
 #include "DisplayBundleMock.h"
+#include <atomic>
+
+using namespace testing;
 
 namespace ramses_internal
 {
-    DisplayBundleMock::DisplayBundleMock() = default;
+    DisplayBundleMock::DisplayBundleMock()
+    {
+        static std::atomic_int dummy;
+        ON_CALL(*this, traceId()).WillByDefault(ReturnRef(dummy));
+        EXPECT_CALL(*this, traceId()).Times(AnyNumber());
+    }
+
     DisplayBundleMock::~DisplayBundleMock() = default;
 }

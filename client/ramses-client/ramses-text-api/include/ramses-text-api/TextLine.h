@@ -46,8 +46,8 @@ namespace ramses
         ArrayBuffer*         indices = nullptr;
     };
 
-    static_assert(std::is_nothrow_move_constructible<TextLine>::value, "TextLine must be movable");
-    static_assert(std::is_nothrow_move_assignable<TextLine>::value, "TextLine must be movable");
+    static_assert(std::is_move_constructible<TextLine>::value, "TextLine must be movable");
+    static_assert(std::is_move_assignable<TextLine>::value, "TextLine must be movable");
 }
 
 #endif

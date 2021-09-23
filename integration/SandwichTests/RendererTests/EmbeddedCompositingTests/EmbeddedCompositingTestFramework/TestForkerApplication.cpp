@@ -15,14 +15,14 @@
 
 namespace ramses_internal
 {
-    TestForkerApplication::TestForkerApplication(const String& testToForkerPipeName, const String& testToWaylandClientPipeName, const String& waylandClientToTestPipeName)
+    TestForkerApplication::TestForkerApplication(const String& testToForkerPipeName, const std::vector<std::pair<String,String>>& testPipeNames)
         : m_testToForkerPipe(testToForkerPipeName, false)
-        , m_testToWaylandClientPipeName(testToWaylandClientPipeName)
-        , m_waylandClientToTestPipeName(waylandClientToTestPipeName)
-        , m_testApplicationProcessId(0)
     {
         TestSignalHandler::RegisterSignalHandlersForCurrentProcess("TestForkerApplication");
         m_testToForkerPipe.open();
+
+        for(const auto& pipeNames : testPipeNames)
+            m_testApplicationInfo.push_back({pipeNames.first, pipeNames.second, 0});
     }
 
     void TestForkerApplication::run()
@@ -63,19 +63,25 @@ namespace ramses_internal
         case ETestForkerApplicationMessage::ForkTestApplication:
         {
             LOG_INFO(CONTEXT_RENDERER, "TestForkerApplication::handleIncomingMessage received fork test application message");
-            startTestApplication();
+            uint32_t testAppIdx = 0u;
+            m_testToForkerPipe.read(&testAppIdx, sizeof(testAppIdx));
+            startTestApplication(testAppIdx);
             break;
         }
         case ETestForkerApplicationMessage::KillTestApplication:
         {
             LOG_INFO(CONTEXT_RENDERER, "TestForkerApplication::handleIncomingMessage received kill test application message");
-            killTestApplication();
+            uint32_t testAppIdx = 0u;
+            m_testToForkerPipe.read(&testAppIdx, sizeof(testAppIdx));
+            killTestApplication(testAppIdx);
             break;
         }
         case ETestForkerApplicationMessage::WaitForTestApplicationExit:
         {
             LOG_INFO(CONTEXT_RENDERER, "TestForkerApplication::handleIncomingMessage received wait for test application exit message");
-            waitForTestApplicationExit();
+            uint32_t testAppIdx = 0u;
+            m_testToForkerPipe.read(&testAppIdx, sizeof(testAppIdx));
+            waitForTestApplicationExit(testAppIdx);
             break;
         }
         default:
@@ -87,16 +93,24 @@ namespace ramses_internal
         return true;
     }
 
-    void TestForkerApplication::startTestApplication()
+    void TestForkerApplication::startTestApplication(uint32_t testAppIdx)
     {
-        m_testApplicationProcessId = fork();
-        if (m_testApplicationProcessId == -1)
+        assert(testAppIdx < m_testApplicationInfo.size());
+
+        if(m_testApplicationInfo[testAppIdx].testApplicationProcessId > 0)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "TestForkerApplication::startApplication trying to fork test app while it is still running");
+            exit(1);
+        }
+
+        m_testApplicationInfo[testAppIdx].testApplicationProcessId = fork();
+        if (m_testApplicationInfo[testAppIdx].testApplicationProcessId == -1)
         {
             LOG_ERROR(CONTEXT_RENDERER, "TestForkerApplication::startApplication fork for application failed");
         }
-        else if (m_testApplicationProcessId == 0)
+        else if (m_testApplicationInfo[testAppIdx].testApplicationProcessId == 0)
         {
-            TestWaylandApplication testApplication(m_testToWaylandClientPipeName, m_waylandClientToTestPipeName);
+            TestWaylandApplication testApplication(m_testApplicationInfo[testAppIdx].testToWaylandClientPipeName, m_testApplicationInfo[testAppIdx].waylandClientToTestPipeName);
             const Bool testApplicationExitStatus = testApplication.run();
 
             // TODO(tobias) this seems totally wrong as true is error condition as exit code
@@ -104,16 +118,18 @@ namespace ramses_internal
         }
     }
 
-    void TestForkerApplication::waitForTestApplicationExit()
+    void TestForkerApplication::waitForTestApplicationExit(uint32_t testAppIdx)
     {
-        assert(m_testApplicationProcessId > 0);
-        ::waitpid(m_testApplicationProcessId, nullptr, 0);
-        m_testApplicationProcessId = 0;
+        assert(testAppIdx < m_testApplicationInfo.size());
+        assert(m_testApplicationInfo[testAppIdx].testApplicationProcessId > 0);
+        ::waitpid(m_testApplicationInfo[testAppIdx].testApplicationProcessId, nullptr, 0);
+        m_testApplicationInfo[testAppIdx].testApplicationProcessId = 0;
     }
 
-    void TestForkerApplication::killTestApplication()
+    void TestForkerApplication::killTestApplication(uint32_t testAppIdx)
     {
-        kill(m_testApplicationProcessId, SIGKILL);
-        waitForTestApplicationExit();
+        assert(testAppIdx < m_testApplicationInfo.size());
+        kill(m_testApplicationInfo[testAppIdx].testApplicationProcessId, SIGKILL);
+        waitForTestApplicationExit(testAppIdx);
     }
 }

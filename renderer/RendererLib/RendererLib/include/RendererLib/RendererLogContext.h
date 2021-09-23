@@ -33,7 +33,7 @@ namespace ramses_internal
 
         void indent();
         void unindent();
-        Bool isLogLevelFlagEnabled(ERendererLogLevelFlag level) const;
+        Bool isLogLevelFlagEnabled(ERendererLogLevelFlag logLevelFlag) const;
 
         void setNodeHandleFilter(NodeHandle nodeHandleFilter);
         Bool isMatchingNodeHandeFilter(NodeHandle nodeHandleFilter) const;

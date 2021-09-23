@@ -1007,9 +1007,9 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::activateRenderTarget(DeviceResourceHandle renderTarget)
+    void Device_GL::activateRenderTarget(DeviceResourceHandle handle)
     {
-        const auto renderTargetPair = std::find_if(m_pairedRenderTargets.cbegin(), m_pairedRenderTargets.cend(), [renderTarget](const RenderTargetPair& rtPair) -> bool {return rtPair.renderTargets[0] == renderTarget; });
+        const auto renderTargetPair = std::find_if(m_pairedRenderTargets.cbegin(), m_pairedRenderTargets.cend(), [handle](const RenderTargetPair& rtPair) -> bool {return rtPair.renderTargets[0] == handle; });
 
         const GPUResource* rtResource = nullptr;
         if (renderTargetPair != m_pairedRenderTargets.cend())
@@ -1019,7 +1019,7 @@ namespace ramses_internal
         }
         else
         {
-            rtResource = &m_resourceMapper.getResource(renderTarget);
+            rtResource = &m_resourceMapper.getResource(handle);
         }
 
         const GLHandle rtGlAddress = rtResource->getGPUAddress();
@@ -1188,14 +1188,14 @@ namespace ramses_internal
         m_resourceMapper.deleteResource(handle);
     }
 
-    std::unique_ptr<const GPUResource> Device_GL::uploadShader(const EffectResource& effect)
+    std::unique_ptr<const GPUResource> Device_GL::uploadShader(const EffectResource& shader)
     {
         ShaderProgramInfo programInfo;
         String debugErrorLog;
-        const Bool uploadSuccessful = ShaderUploader_GL::UploadShaderProgramFromSource(effect, programInfo, debugErrorLog);
+        const Bool uploadSuccessful = ShaderUploader_GL::UploadShaderProgramFromSource(shader, programInfo, debugErrorLog);
 
         if (uploadSuccessful)
-            return std::make_unique<const ShaderGPUResource_GL>(effect, programInfo);
+            return std::make_unique<const ShaderGPUResource_GL>(shader, programInfo);
         else
         {
             LOG_ERROR(CONTEXT_RENDERER, "Device_GL::uploadShader: shader upload failed: " << debugErrorLog);
@@ -1208,7 +1208,7 @@ namespace ramses_internal
         return m_resourceMapper.registerResource(std::move(shaderResource));
     }
 
-    DeviceResourceHandle Device_GL::uploadBinaryShader(const EffectResource& effect, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat)
+    DeviceResourceHandle Device_GL::uploadBinaryShader(const EffectResource& shader, const UInt8* binaryShaderData, UInt32 binaryShaderDataSize, BinaryShaderFormatID binaryShaderFormat)
     {
         ShaderProgramInfo programInfo;
         String debugErrorLog;
@@ -1216,12 +1216,12 @@ namespace ramses_internal
 
         if (uploadSuccessful)
         {
-            LOG_INFO(CONTEXT_SMOKETEST, "Device_GL::uploadShader: renderer successfully uploaded binary shader for effect " << effect.getName());
-            return m_resourceMapper.registerResource(std::make_unique<ShaderGPUResource_GL>(effect, programInfo));
+            LOG_INFO(CONTEXT_SMOKETEST, "Device_GL::uploadShader: renderer successfully uploaded binary shader for effect " << shader.getName());
+            return m_resourceMapper.registerResource(std::make_unique<ShaderGPUResource_GL>(shader, programInfo));
         }
         else
         {
-            LOG_INFO(CONTEXT_RENDERER, "Device_GL::uploadShader: renderer failed to upload binary shader for effect " << effect.getName() << ". Error was: " << debugErrorLog);
+            LOG_INFO(CONTEXT_RENDERER, "Device_GL::uploadShader: renderer failed to upload binary shader for effect " << shader.getName() << ". Error was: " << debugErrorLog);
             return DeviceResourceHandle::Invalid();
         }
     }
@@ -1261,7 +1261,7 @@ namespace ramses_internal
         m_resourceMapper.deleteResource(handle);
     }
 
-    void Device_GL::activateTexture(DeviceResourceHandle textureResource, DataFieldHandle field)
+    void Device_GL::activateTexture(DeviceResourceHandle handle, DataFieldHandle field)
     {
         GLInputLocation uniformLocation;
         if (getUniformLocation(field, uniformLocation))
@@ -1271,7 +1271,7 @@ namespace ramses_internal
             assert(static_cast<UInt32>(textureSlot.slot) < m_limits.getMaximumTextureUnits());
             glActiveTexture(GL_TEXTURE0 + textureSlot.slot);
 
-            const auto renderTargetPair = std::find_if(m_pairedRenderTargets.cbegin(), m_pairedRenderTargets.cend(), [textureResource](const RenderTargetPair& rtPair) -> bool {return rtPair.colorBuffers[0] == textureResource; });
+            const auto renderTargetPair = std::find_if(m_pairedRenderTargets.cbegin(), m_pairedRenderTargets.cend(), [handle](const RenderTargetPair& rtPair) -> bool {return rtPair.colorBuffers[0] == handle; });
 
             const GPUResource* resource = nullptr;
             if (renderTargetPair != m_pairedRenderTargets.cend())
@@ -1280,7 +1280,7 @@ namespace ramses_internal
             }
             else
             {
-                resource = &m_resourceMapper.getResource(textureResource);
+                resource = &m_resourceMapper.getResource(handle);
             }
 
             const GLenum target = TypesConversion_GL::GetTextureTargetFromTextureInputType(textureSlot.textureType);

@@ -122,37 +122,44 @@ namespace ramses_internal
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 0u);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 1u);
 
-            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::DisplayName, 0u);
-            TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
-            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId);
+            //start test app that gets connected to 1st display
+            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::DisplayName, 0u, 0u);
+
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1, 0u);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId, 0u);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId, false, 0u);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId, 0u);
 
             //composited texture only on 1st display
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture"   , 0u);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1"          , 1u);
 
-            testFramework.stopTestApplicationAndWaitUntilDisconnected(0u);
+            //start 2nd test app that gets connected to 2nd display
+            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::AlternateDisplayName, 1u, 1u);
 
-            //fallback on both displays
-            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 0u);
-            testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 1u);
-
-            testFramework.startTestApplicationAndWaitUntilConnected(EConnectionMode::AlternateDisplayName, 1u);
-            TestApplicationSurfaceId surfaceId2 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1);
-            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId2, streamTextureSourceId);
-            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId2);
+            const TestApplicationSurfaceId surfaceId2 = testFramework.sendCreateSurfaceWithEGLContextToTestApplication(384, 384, 1, 1u);
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId2, streamTextureSourceId, 1u);
+            testFramework.sendRenderOneFrameToEGLBufferToTestApplication(surfaceId2, false, 1u);
             testFramework.waitForContentOnStreamTexture(streamTextureSourceId, 1u);
+
+            //composited texture on both displays
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture"   , 0u);
+            testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture"   , 1u);
+
+            //stop 1st test app
+            testFramework.stopTestApplicationAndWaitUntilDisconnected(0u, 0u);
 
             //composited texture only on 2nd display
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1"          , 0u);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_RedTriangleStreamTexture"   , 1u);
 
-            testFramework.stopTestApplicationAndWaitUntilDisconnected(1u);
+            //stop 2nd test app
+            testFramework.stopTestApplicationAndWaitUntilDisconnected(1u, 1u);
 
             //fallback on both displays
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 0u);
             testResultValue &= testFramework.renderAndCompareScreenshot("EC_FallbackTexture_1", 1u);
+
             break;
         }
         case SingleDisplayWithCompositing_SetOnRendererConfig:

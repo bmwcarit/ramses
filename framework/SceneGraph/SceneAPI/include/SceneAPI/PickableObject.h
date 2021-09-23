@@ -10,6 +10,7 @@
 #define RAMSES_INTERNAL_PICKABLEOBJECT_H
 
 #include "SceneAPI/SceneTypes.h"
+#include "Utils/AssertMovable.h"
 
 namespace ramses_internal
 {
@@ -22,8 +23,7 @@ namespace ramses_internal
         bool isEnabled = true;
     };
 
-    static_assert(std::is_nothrow_move_constructible<PickableObject>::value, "PickableObject must be movable");
-    static_assert(std::is_nothrow_move_assignable<PickableObject>::value, "PickableObject must be movable");
+    ASSERT_MOVABLE(PickableObject)
 }
 
 #endif

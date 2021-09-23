@@ -193,14 +193,14 @@ void RendererTestsFramework::createBufferDataLink(ramses::streamBufferId_t provi
     m_testRenderer.createBufferDataLink(providerBuffer, consumerScene, consumerTag);
 }
 
-void RendererTestsFramework::createDataLink(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerId, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId)
+void RendererTestsFramework::createDataLink(ramses::sceneId_t providerScene, ramses::dataProviderId_t providerTag, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag)
 {
-    m_testRenderer.createDataLink(providerScene, providerId, consumerScene, consumerId);
+    m_testRenderer.createDataLink(providerScene, providerTag, consumerScene, consumerTag);
 }
 
-void RendererTestsFramework::removeDataLink(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerId)
+void RendererTestsFramework::removeDataLink(ramses::sceneId_t consumerScene, ramses::dataConsumerId_t consumerTag)
 {
-    m_testRenderer.removeDataLink(consumerScene, consumerId);
+    m_testRenderer.removeDataLink(consumerScene, consumerTag);
 }
 
 void RendererTestsFramework::setWarpingMeshData(const ramses::WarpingMeshData& meshData, uint32_t testDisplayIdx)

@@ -35,9 +35,9 @@ namespace ramses_internal
         bool            checkSocketFilePath() const;
         int             createSocketLockFile() const;
         static int      createAndOpenSocket();
-        static int      setCloExecFlagInFD(int fd);
+        static int      setCloExecFlagInFD(int socketFileDescriptor);
         bool            bindSocketToFile() const;
-        bool            connectSocketToFile(int fd) const;
+        bool            connectSocketToFile(int socketFileDescriptor) const;
         socklen_t       fillSockaddrForUnixDomain(sockaddr_un& addrToFill) const;
 
         const String m_xdgRuntimeDir;

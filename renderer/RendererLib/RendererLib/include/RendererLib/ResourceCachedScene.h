@@ -27,7 +27,7 @@ namespace ramses_internal
     class ResourceCachedScene : public DataReferenceLinkCachedScene
     {
     public:
-        explicit ResourceCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& creationInfo = SceneInfo());
+        explicit ResourceCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
         virtual void                        preallocateSceneSize(const SceneSizeInformation& sizeInfo) override;
         // Renderable allocation
@@ -44,7 +44,7 @@ namespace ramses_internal
         // Renderable data (stuff required for rendering)
         virtual void                        setRenderableDataInstance   (RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
         virtual void                        setDataResource             (DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, UInt32 instancingDivisor, UInt16 offsetWithinElementInBytes, UInt16 stride) override;
-        virtual void                        setDataTextureSamplerHandle (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
+        virtual void                        setDataTextureSamplerHandle (DataInstanceHandle dataInstanceHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
 
         virtual void                        setForceFallbackImage       (StreamTextureHandle streamTextureHandle, Bool forceFallbackImage) override;
 

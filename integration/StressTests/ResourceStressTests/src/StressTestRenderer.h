@@ -38,7 +38,7 @@ namespace ramses_internal
         void waitForSceneState(ramses::sceneId_t sceneId, ramses::RendererSceneState state);
         void linkOffscreenBufferToSceneTexture(ramses::sceneId_t sceneId, ramses::displayBufferId_t offscreenBuffer, ramses::dataConsumerId_t consumerTexture);
 
-        void waitForFlush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t flushName);
+        void waitForFlush(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t flushVersion);
         void consumePendingEvents();
 
     private:

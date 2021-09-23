@@ -6,8 +6,14 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+# check selected c++ version
+set(ramses-sdk_ALLOWED_CPP_VERSIONS 14 17 20)
+if (NOT ramses-sdk_CPP_VERSION IN_LIST ramses-sdk_ALLOWED_CPP_VERSIONS)
+    message(FATAL_ERROR "ramses-sdk_CPP_VERSION=${ramses-sdk_CPP_VERSION} must be in ${ramses-sdk_ALLOWED_CPP_VERSIONS}")
+endif()
+
 # let cmake know c++ version
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD ${ramses-sdk_CPP_VERSION})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -45,7 +51,7 @@ SET(RAMSES_RELEASE_FLAGS)
 # gcc OR clang (they share a lot)
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     ADD_FLAGS(RAMSES_C_CXX_FLAGS "-fPIC -pthread -fvisibility=hidden")
-    ADD_FLAGS(RAMSES_CXX_FLAGS "-std=c++14")
+    ADD_FLAGS(RAMSES_CXX_FLAGS "-std=c++${ramses-sdk_CPP_VERSION}")
     ADD_FLAGS(RAMSES_C_FLAGS "-std=c11")
     ADD_FLAGS(RAMSES_DEBUG_FLAGS "-ggdb -D_DEBUG -fno-omit-frame-pointer")
     ADD_FLAGS(RAMSES_RELEASE_FLAGS "-O2 -DNDEBUG -fstack-protector-strong -D_FORTIFY_SOURCE=2")
@@ -141,8 +147,8 @@ ENDIF()
 
 # flags for integrity
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Integrity")
-    target_compile_options(ramses-build-options-base INTERFACE --diag_suppress=381,111,2008,620,82,1974,1932,1721,1704,540,68,991,177,174 --pending_instantiations=200)
-    ADD_FLAGS(CMAKE_EXE_LINKER_FLAGS "--c++14")
+    target_compile_options(ramses-build-options-base INTERFACE --diag_suppress=381,111,2008,620,82,1974,1932,1721,1704,540,68,991,177,174 --pending_instantiations=200 --exceptions)
+    ADD_FLAGS(CMAKE_EXE_LINKER_FLAGS "--c++${ramses-sdk_CPP_VERSION}")
     ADD_FLAGS(RAMSES_RELEASE_FLAGS "-DNDEBUG")
 
     if (ramses-sdk_WARNINGS_AS_ERRORS)
@@ -159,7 +165,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     REMOVE_FROM_FLAGS("${CMAKE_CXX_FLAGS}" "/W1;/W2;/W3;/W4" CMAKE_CXX_FLAGS)
 
     ADD_FLAGS(RAMSES_C_CXX_FLAGS "/MP /DNOMINMAX")
-    ADD_FLAGS(RAMSES_CXX_FLAGS "/std:c++14 /bigobj")
+    ADD_FLAGS(RAMSES_CXX_FLAGS "/std:c++${ramses-sdk_CPP_VERSION} /bigobj")
     target_compile_options(ramses-build-options-base INTERFACE /W4 /wd4503 /wd4265 /wd4201 /wd4127 /wd4996 /wd4702)
     ADD_FLAGS(RAMSES_RELEASE_FLAGS "/MD /O2 /Ob2 /DNDEBUG")
     ADD_FLAGS(RAMSES_DEBUG_FLAGS "/MDd /Zi /Od /D_DEBUG")

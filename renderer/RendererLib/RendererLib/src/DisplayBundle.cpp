@@ -21,8 +21,10 @@ namespace ramses_internal
         IPlatform& platform,
         IThreadAliveNotifier& notifier,
         std::chrono::milliseconds timingReportingPeriod,
+        bool isFirstDisplay,
         const String& kpiFilename)
-        : m_rendererScenes(m_rendererEventCollector)
+        : m_display(display)
+        , m_rendererScenes(m_rendererEventCollector)
         , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector, m_rendererStatistics)
         , m_renderer(display, platform, m_rendererScenes, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, m_rendererStatistics)
         , m_sceneStateExecutor(m_renderer, rendererSceneSender, m_rendererEventCollector)
@@ -31,6 +33,7 @@ namespace ramses_internal
         , m_rendererCommandExecutor(m_renderer, m_pendingCommands, m_rendererSceneUpdater, m_sceneControlLogic, m_rendererEventCollector, m_frameTimer)
         , m_sceneReferenceLogic(m_rendererScenes, m_sceneControlLogic, m_rendererSceneUpdater, rendererSceneSender, m_sceneReferenceOwnership)
         , m_timingReportingPeriod{ timingReportingPeriod }
+        , m_isFirstDisplay(isFirstDisplay)
         , m_kpiMonitor(kpiFilename.empty() ? nullptr : new Monitor(kpiFilename))
     {
         m_rendererSceneUpdater.setSceneReferenceLogicHandler(m_sceneReferenceLogic);
@@ -38,6 +41,7 @@ namespace ramses_internal
 
     void DisplayBundle::doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime)
     {
+        m_renderer.m_traceId = 1000;
         updateTiming();
 
         switch (loopMode)
@@ -52,6 +56,7 @@ namespace ramses_internal
         }
 
         collectEvents();
+        m_renderer.m_traceId = 1100;
         finishFrameStatistics(sleepTime);
     }
 
@@ -63,16 +68,20 @@ namespace ramses_internal
     void DisplayBundle::update()
     {
         m_rendererCommandExecutor.executePendingCommands();
+        m_renderer.m_traceId = 1001;
         updateSceneControlLogic();
         m_rendererSceneUpdater.updateScenes();
+        m_renderer.m_traceId = 1002;
         m_renderer.updateSystemCompositorController();
 
+        m_renderer.m_traceId = 1003;
         m_expirationMonitor.checkExpiredScenes(FlushTime::Clock::now());
     }
 
     void DisplayBundle::render()
     {
         m_renderer.doOneRenderLoop();
+        m_renderer.m_traceId = 1004;
         m_rendererSceneUpdater.processScreenshotResults();
     }
 
@@ -80,7 +89,9 @@ namespace ramses_internal
     {
         std::lock_guard<std::mutex> g{ m_eventsLock };
 
+        m_renderer.m_traceId = 1005;
         m_rendererEventCollector.appendAndConsumePendingEvents(m_rendererEvents, m_sceneControlEvents);
+        m_renderer.m_traceId = 1006;
         m_sceneReferenceLogic.extractAndSendSceneReferenceEvents(m_sceneControlEvents);
     }
 
@@ -119,12 +130,15 @@ namespace ramses_internal
         InternalSceneStateEvents internalSceneEvents;
         m_rendererEventCollector.dispatchInternalSceneStateEvents(internalSceneEvents);
 
+        m_renderer.m_traceId = 1010;
         for (const auto& evt : internalSceneEvents)
             m_sceneControlLogic.processInternalEvent(evt);
 
+        m_renderer.m_traceId = 1011;
         RendererSceneControlLogic::Events outSceneEvents;
         m_sceneControlLogic.consumeEvents(outSceneEvents);
 
+        m_renderer.m_traceId = 1012;
         for (const auto& evt : outSceneEvents)
             m_rendererEventCollector.addSceneEvent(ERendererEventType::SceneStateChanged, evt.sceneId, evt.state);
     }
@@ -182,7 +196,7 @@ namespace ramses_internal
             m_sumFrameTimes += frameTime;
             if (m_sumFrameTimes >= m_timingReportingPeriod && m_loopsWithinMeasurePeriod > 0)
             {
-                m_rendererEventCollector.addFrameTimingReport(m_maxFrameTime, m_sumFrameTimes / m_loopsWithinMeasurePeriod);
+                m_rendererEventCollector.addFrameTimingReport(m_display, m_isFirstDisplay, m_maxFrameTime, m_sumFrameTimes / m_loopsWithinMeasurePeriod);
                 m_maxFrameTime = std::chrono::microseconds{ 0 };
                 m_sumFrameTimes = std::chrono::microseconds{ 0 };
                 m_loopsWithinMeasurePeriod = 0u;

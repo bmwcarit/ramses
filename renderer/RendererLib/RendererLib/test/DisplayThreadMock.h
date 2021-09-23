@@ -25,6 +25,7 @@ namespace ramses_internal
         MOCK_METHOD(void, stopUpdating, (), (override));
         MOCK_METHOD(void, setLoopMode, (ELoopMode), (override));
         MOCK_METHOD(void, setMinFrameDuration, (std::chrono::microseconds), (override));
+        MOCK_METHOD(uint32_t, getFrameCounter, (), (const, override));
     };
 }
 #endif

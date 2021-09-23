@@ -106,7 +106,7 @@ namespace ramses
         void               markRequiredTextureBuffer(const TextureSamplerSet& requiredTextureSamplers);
         StreamTextureSet   markRequiredStreamTextures(const TextureSamplerSet& requiredTextureSamplers);
         RenderBufferSet    getRequiredRenderBuffers(RenderBufferSet& requiredRenderBuffers);
-        void               markRequiredResourcesFromHash(const ResourceContentHashSet& requiredBufferResourceHashes);
+        void               markRequiredResourcesFromHash(const ResourceContentHashSet& requiredResourceHashes);
 
         template <class T> void markAllParentNodesAsRequired(const T& requiredNodes);
 

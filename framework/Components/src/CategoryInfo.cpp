@@ -21,6 +21,7 @@ namespace ramses_internal
             CategoryRect = 1,
             RenderSize = 2,
             SafeRect = 3,
+            ActiveLayout = 4,
         };
 
         constexpr const uint32_t CurrentBinaryCategoryInfoVersion = 1;
@@ -37,9 +38,11 @@ namespace ramses_internal
         , m_safeRectY(0)
         , m_safeRectWidth(0)
         , m_safeRectHeight(0)
+        , m_activeLayout(CategoryInfo::Layout::Drive)
         , m_categoryRectChanged(false)
         , m_renderSizeChanged(false)
         , m_safeRectChanged(false)
+        , m_activeLayoutChanged(false)
     {
     }
 
@@ -145,13 +148,30 @@ namespace ramses_internal
         return m_safeRectChanged;
     }
 
+    void CategoryInfo::setActiveLayout(Layout layout)
+    {
+        m_activeLayout = layout;
+        m_activeLayoutChanged = true;
+    }
+
+    CategoryInfo::Layout CategoryInfo::getActiveLayout() const
+    {
+        return m_activeLayout;
+    }
+
+    bool CategoryInfo::hasActiveLayoutChange() const
+    {
+        return m_activeLayoutChanged;
+    }
+
     std::vector<Byte> CategoryInfo::toBinary() const
     {
         BinaryOutputStream os;
         const uint32_t numEntries =
             (m_categoryRectChanged ? 1 : 0)
             + (m_renderSizeChanged ? 1 : 0)
-            + (m_safeRectChanged ? 1 : 0);
+            + (m_safeRectChanged ? 1 : 0)
+            + (m_activeLayoutChanged ? 1 : 0);
         os << CurrentBinaryCategoryInfoVersion
             << numEntries;
 
@@ -183,6 +203,13 @@ namespace ramses_internal
                 << m_safeRectY
                 << m_safeRectWidth
                 << m_safeRectHeight;
+        }
+        if (m_activeLayoutChanged)
+        {
+            constexpr uint32_t size = static_cast<uint32_t>(sizeof(CategoryInfo::Layout));
+            os << CategoryInfoUpdateType::ActiveLayout
+                << size
+                << m_activeLayout;
         }
         return os.release();
     }
@@ -230,6 +257,10 @@ namespace ramses_internal
                 is >> m_safeRectWidth;
                 is >> m_safeRectHeight;
                 break;
+            case CategoryInfoUpdateType::ActiveLayout:
+                m_activeLayoutChanged = true;
+                is >> m_activeLayout;
+                break;
             default:
                 LOG_WARN(CONTEXT_DCSM, "CategoryInfo::fromBinary: skip unknown type " << static_cast<uint32_t>(type) << ", size " << size);
                 is.skip(size);
@@ -237,6 +268,21 @@ namespace ramses_internal
         }
 
         assert(is.readPosition() == &*data.end());
+    }
+
+    void CategoryInfo::updateSelf(CategoryInfo const& infoUpdate)
+    {
+        if (infoUpdate.hasCategoryRectChange())
+            setCategoryRect(infoUpdate.getCategoryX(), infoUpdate.getCategoryY(), infoUpdate.getCategoryWidth(), infoUpdate.getCategoryHeight());
+
+        if (infoUpdate.hasRenderSizeChange())
+            setRenderSize(infoUpdate.getRenderSizeWidth(), infoUpdate.getRenderSizeHeight());
+
+        if (infoUpdate.hasSafeRectChange())
+            setSafeRect(infoUpdate.getSafeRectX(), infoUpdate.getSafeRectY(), infoUpdate.getSafeRectWidth(), infoUpdate.getSafeRectHeight());
+
+        if (infoUpdate.hasActiveLayoutChange())
+            setActiveLayout(infoUpdate.getActiveLayout());
     }
 
     bool CategoryInfo::operator==(const CategoryInfo& rhs) const
@@ -253,7 +299,9 @@ namespace ramses_internal
             && m_safeRectY == rhs.m_safeRectY
             && m_safeRectWidth == rhs.m_safeRectWidth
             && m_safeRectHeight == rhs.m_safeRectHeight
-            && m_safeRectChanged == rhs.m_safeRectChanged;
+            && m_safeRectChanged == rhs.m_safeRectChanged
+            && m_activeLayout == rhs.m_activeLayout
+            && m_activeLayoutChanged == rhs.m_activeLayoutChanged;
     }
 
     bool CategoryInfo::operator!=(const CategoryInfo& rhs) const

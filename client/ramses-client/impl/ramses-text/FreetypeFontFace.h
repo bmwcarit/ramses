@@ -40,7 +40,7 @@ namespace ramses_internal
     class FreetypeFontFaceFilePath : public FreetypeFontFace
     {
     public:
-        FreetypeFontFaceFilePath(const char* fontPth, FT_Library freetypeLib);
+        FreetypeFontFaceFilePath(const char* fontPath, FT_Library freetypeLib);
 
         bool init() override;
 
