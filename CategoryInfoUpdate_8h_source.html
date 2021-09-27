@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RAMSES Documentation: /c/src/mirror/framework/ramses-framework-api/include/ramses-framework-api/CategoryInfoUpdate.h Source File</title>
+<title>RAMSES Documentation: /home/q479098/src/mirror/framework/ramses-framework-api/include/ramses-framework-api/CategoryInfoUpdate.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.110</span>
+   &#160;<span id="projectnumber">27.0.111</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -95,48 +95,64 @@ $(function() {
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    {</div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>();</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160; </div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>(<a class="code" href="structramses_1_1SizeInfo.html">SizeInfo</a> renderSize, <a class="code" href="structramses_1_1Rect.html">Rect</a> categoryRect, <a class="code" href="structramses_1_1Rect.html">Rect</a> safeRect = {0,0,0,0});</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        ~<a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>();</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keywordtype">bool</span> hasCategoryRectUpdate() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <a class="code" href="structramses_1_1Rect.html">Rect</a> getCategoryRect() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setCategoryRect(<a class="code" href="structramses_1_1Rect.html">Rect</a> rect);</div>
+<div class="line"><a name="l00035"></a><span class="lineno"><a class="line" href="classramses_1_1CategoryInfoUpdate.html#a14e361baf3e0eff347163556a7f00201">   35</a></span>&#160;        <span class="keyword">enum class</span> <a class="code" href="classramses_1_1CategoryInfoUpdate.html#a14e361baf3e0eff347163556a7f00201">Layout</a> : uint32_t</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        {</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;            Drive = 0,</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;            Focus,</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;            Gallery,</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;            Autonomous,</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            Sport_Road,</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;            Sport_Track,</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        };</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>();</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>(<a class="code" href="structramses_1_1SizeInfo.html">SizeInfo</a> renderSize, <a class="code" href="structramses_1_1Rect.html">Rect</a> categoryRect, <a class="code" href="structramses_1_1Rect.html">Rect</a> safeRect = {0,0,0,0}, Layout layout = Layout::Drive);</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        ~CategoryInfoUpdate();</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <span class="keywordtype">bool</span> hasCategoryRectUpdate() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        Rect getCategoryRect() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        <span class="keywordtype">bool</span> hasRenderSizeUpdate() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        <a class="code" href="structramses_1_1SizeInfo.html">SizeInfo</a> getRenderSize() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setRenderSize(<a class="code" href="structramses_1_1SizeInfo.html">SizeInfo</a> sizeInfo);</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;        <span class="keywordtype">bool</span> hasSafeRectUpdate() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;        <a class="code" href="structramses_1_1Rect.html">Rect</a> getSafeRect() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setSafeRect(<a class="code" href="structramses_1_1Rect.html">Rect</a> rect);</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160; </div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;        <span class="keyword">explicit</span> <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>(CategoryInfoUpdateImpl&amp; impl_);</div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160; </div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>(<a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>&amp;&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160; </div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;        <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>&amp; operator=(<a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>&amp;&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160; </div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;        <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>(<span class="keyword">const</span> <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160; </div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;        <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>&amp; rhs) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;        <span class="keywordtype">bool</span> operator!=(<span class="keyword">const</span> <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>&amp; rhs) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160; </div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;        <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160; </div>
-<div class="line"><a name="l00181"></a><span class="lineno"><a class="line" href="classramses_1_1CategoryInfoUpdate.html#a9973086168e37be6c1de59a1d5bd99f6">  181</a></span>&#160;        CategoryInfoUpdateImpl&amp; <a class="code" href="classramses_1_1CategoryInfoUpdate.html#a9973086168e37be6c1de59a1d5bd99f6">impl</a>;</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;    };</div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;}</div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160; </div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setCategoryRect(Rect rect);</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        <span class="keywordtype">bool</span> hasRenderSizeUpdate() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        SizeInfo getRenderSize() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setRenderSize(SizeInfo sizeInfo);</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160; </div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        <span class="keywordtype">bool</span> hasSafeRectUpdate() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160; </div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;        Rect getSafeRect() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setSafeRect(Rect rect);</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160; </div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        <span class="keywordtype">bool</span> hasActiveLayoutUpdate() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160; </div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        Layout getActiveLayout() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160; </div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;        <a class="code" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a> setActiveLayout(<a class="code" href="classramses_1_1CategoryInfoUpdate.html#a14e361baf3e0eff347163556a7f00201">CategoryInfoUpdate::Layout</a> layout);</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160; </div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;        <span class="keyword">explicit</span> CategoryInfoUpdate(CategoryInfoUpdateImpl&amp; impl_);</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160; </div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;        CategoryInfoUpdate(CategoryInfoUpdate&amp;&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160; </div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;        CategoryInfoUpdate&amp; operator=(CategoryInfoUpdate&amp;&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160; </div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;        CategoryInfoUpdate(<span class="keyword">const</span> CategoryInfoUpdate&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160; </div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;        <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> CategoryInfoUpdate&amp; rhs) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;        <span class="keywordtype">bool</span> operator!=(<span class="keyword">const</span> CategoryInfoUpdate&amp; rhs) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160; </div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;        CategoryInfoUpdate&amp; operator=(<span class="keyword">const</span> CategoryInfoUpdate&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160; </div>
+<div class="line"><a name="l00224"></a><span class="lineno"><a class="line" href="classramses_1_1CategoryInfoUpdate.html#a9973086168e37be6c1de59a1d5bd99f6">  224</a></span>&#160;        CategoryInfoUpdateImpl&amp; <a class="code" href="classramses_1_1CategoryInfoUpdate.html#a9973086168e37be6c1de59a1d5bd99f6">impl</a>;</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    };</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;}</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160; </div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassramses_1_1StatusObject_html"><div class="ttname"><a href="classramses_1_1StatusObject.html">ramses::StatusObject</a></div><div class="ttdoc">The StatusObject provides status message handling.</div><div class="ttdef"><b>Definition:</b> StatusObject.h:21</div></div>
 <div class="ttc" id="anamespaceramses_html"><div class="ttname"><a href="namespaceramses.html">ramses</a></div><div class="ttdoc">The RAMSES namespace contains all client side objects and functions used to implement RAMSES applicat...</div><div class="ttdef"><b>Definition:</b> AnimatedProperty.h:14</div></div>
@@ -144,11 +160,12 @@ $(function() {
 <div class="ttc" id="aAPIExport_8h_html_a721d93a66de17b98189db7bd091cf29f"><div class="ttname"><a href="APIExport_8h.html#a721d93a66de17b98189db7bd091cf29f">RAMSES_API</a></div><div class="ttdeci">#define RAMSES_API</div><div class="ttdef"><b>Definition:</b> APIExport.h:35</div></div>
 <div class="ttc" id="aDcsmApiTypes_8h_html"><div class="ttname"><a href="DcsmApiTypes_8h.html">DcsmApiTypes.h</a></div></div>
 <div class="ttc" id="aclassramses_1_1CategoryInfoUpdate_html"><div class="ttname"><a href="classramses_1_1CategoryInfoUpdate.html">ramses::CategoryInfoUpdate</a></div><div class="ttdoc">Update of information about a DCSM category. Contains information like changes in size....</div><div class="ttdef"><b>Definition:</b> CategoryInfoUpdate.h:28</div></div>
+<div class="ttc" id="aclassramses_1_1CategoryInfoUpdate_html_a14e361baf3e0eff347163556a7f00201"><div class="ttname"><a href="classramses_1_1CategoryInfoUpdate.html#a14e361baf3e0eff347163556a7f00201">ramses::CategoryInfoUpdate::Layout</a></div><div class="ttdeci">Layout</div><div class="ttdoc">The possible layout values in the instrument cluster.</div><div class="ttdef"><b>Definition:</b> CategoryInfoUpdate.h:35</div></div>
 <div class="ttc" id="astructramses_1_1SizeInfo_html"><div class="ttname"><a href="structramses_1_1SizeInfo.html">ramses::SizeInfo</a></div><div class="ttdoc">Size information for DCSM canvas size change.</div><div class="ttdef"><b>Definition:</b> DcsmApiTypes.h:108</div></div>
 <div class="ttc" id="anamespaceramses_html_a4f09a899b38b8d7bc61f01a2d181ea22"><div class="ttname"><a href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">ramses::status_t</a></div><div class="ttdeci">uint32_t status_t</div><div class="ttdoc">Status is a handle to the result of an API call.</div><div class="ttdef"><b>Definition:</b> RamsesFrameworkTypes.h:25</div></div>
 <div class="ttc" id="aRamsesFrameworkTypes_8h_html"><div class="ttname"><a href="RamsesFrameworkTypes_8h.html">RamsesFrameworkTypes.h</a></div></div>
 <div class="ttc" id="aStatusObject_8h_html"><div class="ttname"><a href="StatusObject_8h.html">StatusObject.h</a></div></div>
-<div class="ttc" id="aclassramses_1_1CategoryInfoUpdate_html_a9973086168e37be6c1de59a1d5bd99f6"><div class="ttname"><a href="classramses_1_1CategoryInfoUpdate.html#a9973086168e37be6c1de59a1d5bd99f6">ramses::CategoryInfoUpdate::impl</a></div><div class="ttdeci">CategoryInfoUpdateImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> CategoryInfoUpdate.h:181</div></div>
+<div class="ttc" id="aclassramses_1_1CategoryInfoUpdate_html_a9973086168e37be6c1de59a1d5bd99f6"><div class="ttname"><a href="classramses_1_1CategoryInfoUpdate.html#a9973086168e37be6c1de59a1d5bd99f6">ramses::CategoryInfoUpdate::impl</a></div><div class="ttdeci">CategoryInfoUpdateImpl &amp; impl</div><div class="ttdef"><b>Definition:</b> CategoryInfoUpdate.h:224</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

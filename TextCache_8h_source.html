@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RAMSES Documentation: /c/src/mirror/client/ramses-client/ramses-text-api/include/ramses-text-api/TextCache.h Source File</title>
+<title>RAMSES Documentation: /home/q479098/src/mirror/client/ramses-client/ramses-text-api/include/ramses-text-api/TextCache.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.110</span>
+   &#160;<span id="projectnumber">27.0.111</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -115,15 +115,17 @@ $(function() {
 <div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160; </div>
 <div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">bool</span>             ContainsRenderableGlyphs(<span class="keyword">const</span> <a class="code" href="namespaceramses.html#ae9c5e75c9066f4b607272c9602c1bb7c">GlyphMetricsVector</a>&amp; glyphMetrics);</div>
 <div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160; </div>
-<div class="line"><a name="l00190"></a><span class="lineno"><a class="line" href="classramses_1_1TextCache.html#ad206606dc39fbcf10c7149d9ec661161">  190</a></span>&#160;        <span class="keyword">class </span>TextCacheImpl* <a class="code" href="classramses_1_1TextCache.html#ad206606dc39fbcf10c7149d9ec661161">impl</a>;</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160; </div>
-<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;        <a class="code" href="classramses_1_1TextCache.html">TextCache</a>(<span class="keyword">const</span> <a class="code" href="classramses_1_1TextCache.html">TextCache</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160; </div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;        <a class="code" href="classramses_1_1TextCache.html">TextCache</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1TextCache.html">TextCache</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    };</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;}</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">void</span>             ApplyTrackingToGlyphs(<a class="code" href="namespaceramses.html#ae9c5e75c9066f4b607272c9602c1bb7c">GlyphMetricsVector</a>&amp; glyphMetrics, int32_t trackingFactor, int32_t fontSize);</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160; </div>
+<div class="line"><a name="l00205"></a><span class="lineno"><a class="line" href="classramses_1_1TextCache.html#ad206606dc39fbcf10c7149d9ec661161">  205</a></span>&#160;        <span class="keyword">class </span>TextCacheImpl* <a class="code" href="classramses_1_1TextCache.html#ad206606dc39fbcf10c7149d9ec661161">impl</a>;</div>
 <div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160; </div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;        <a class="code" href="classramses_1_1TextCache.html">TextCache</a>(<span class="keyword">const</span> <a class="code" href="classramses_1_1TextCache.html">TextCache</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160; </div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;        <a class="code" href="classramses_1_1TextCache.html">TextCache</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classramses_1_1TextCache.html">TextCache</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    };</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;}</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160; </div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="astructramses_1_1TextLine_html"><div class="ttname"><a href="structramses_1_1TextLine.html">ramses::TextLine</a></div><div class="ttdoc">Groups the scene objects needed to render a text line.</div><div class="ttdef"><b>Definition:</b> TextLine.h:33</div></div>
 <div class="ttc" id="aclassramses_1_1Scene_html"><div class="ttname"><a href="classramses_1_1Scene.html">ramses::Scene</a></div><div class="ttdoc">The Scene holds a scene graph. It is the essential class for distributing content to the ramses syste...</div><div class="ttdef"><b>Definition:</b> Scene.h:81</div></div>
@@ -137,7 +139,7 @@ $(function() {
 <div class="ttc" id="aclassramses_1_1StronglyTypedValue_html"><div class="ttname"><a href="classramses_1_1StronglyTypedValue.html">ramses::StronglyTypedValue&lt; uint32_t, std::numeric_limits&lt; uint32_t &gt;::max(), FontInstanceIdTag &gt;</a></div></div>
 <div class="ttc" id="aTextLine_8h_html"><div class="ttname"><a href="TextLine_8h.html">TextLine.h</a></div></div>
 <div class="ttc" id="aclassramses_1_1Effect_html"><div class="ttname"><a href="classramses_1_1Effect.html">ramses::Effect</a></div><div class="ttdoc">An effect describes how an object will be rendered to the screen.</div><div class="ttdef"><b>Definition:</b> Effect.h:25</div></div>
-<div class="ttc" id="aclassramses_1_1TextCache_html_ad206606dc39fbcf10c7149d9ec661161"><div class="ttname"><a href="classramses_1_1TextCache.html#ad206606dc39fbcf10c7149d9ec661161">ramses::TextCache::impl</a></div><div class="ttdeci">class TextCacheImpl * impl</div><div class="ttdef"><b>Definition:</b> TextCache.h:190</div></div>
+<div class="ttc" id="aclassramses_1_1TextCache_html_ad206606dc39fbcf10c7149d9ec661161"><div class="ttname"><a href="classramses_1_1TextCache.html#ad206606dc39fbcf10c7149d9ec661161">ramses::TextCache::impl</a></div><div class="ttdeci">class TextCacheImpl * impl</div><div class="ttdef"><b>Definition:</b> TextCache.h:205</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

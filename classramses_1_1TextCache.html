@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.110</span>
+   &#160;<span id="projectnumber">27.0.111</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -121,6 +121,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:afeb86f28787e7acf77d0fd6c7e2c0f7f"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1TextCache.html#afeb86f28787e7acf77d0fd6c7e2c0f7f">ContainsRenderableGlyphs</a> (const <a class="el" href="namespaceramses.html#ae9c5e75c9066f4b607272c9602c1bb7c">GlyphMetricsVector</a> &amp;glyphMetrics)</td></tr>
 <tr class="memdesc:afeb86f28787e7acf77d0fd6c7e2c0f7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if provided GlyphMetricsVector contains at least one renderable glyph If this functions returns false, the provided input cannot be used as input for the function createTextLine. The function call will simply fail.  <a href="classramses_1_1TextCache.html#afeb86f28787e7acf77d0fd6c7e2c0f7f">More...</a><br /></td></tr>
 <tr class="separator:afeb86f28787e7acf77d0fd6c7e2c0f7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d9b1d89118efce8cd6d1df1dfdc7a99"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1TextCache.html#a1d9b1d89118efce8cd6d1df1dfdc7a99">ApplyTrackingToGlyphs</a> (<a class="el" href="namespaceramses.html#ae9c5e75c9066f4b607272c9602c1bb7c">GlyphMetricsVector</a> &amp;glyphMetrics, int32_t trackingFactor, int32_t fontSize)</td></tr>
+<tr class="memdesc:a1d9b1d89118efce8cd6d1df1dfdc7a99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply character tracking (positive or negative) to each glyph in provided GlyphMetricsVector. This means that that the space between the individual glyphs can be increased (positive tracking) or decreased (negative tracking). The tracking factor is calculated in em, so it's relative to the font size (1/1000 of font size in pixels). So having a tracking factor of 1000 and a font size of 10 would result in an extra of 10 pixels space between every glyph (1000/1000 * 10 = 10px). Overdoing the negative tracking is not advised, as the glyphs will then potentially be printed on top of each other. This helper function should only be used on Latin fonts as for all other font types this kind of tracking may lead to unexpected visual output.  <a href="classramses_1_1TextCache.html#a1d9b1d89118efce8cd6d1df1dfdc7a99">More...</a><br /></td></tr>
+<tr class="separator:a1d9b1d89118efce8cd6d1df1dfdc7a99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -258,6 +261,60 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a1d9b1d89118efce8cd6d1df1dfdc7a99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1d9b1d89118efce8cd6d1df1dfdc7a99">&#9670;&nbsp;</a></span>ApplyTrackingToGlyphs()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void ramses::TextCache::ApplyTrackingToGlyphs </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceramses.html#ae9c5e75c9066f4b607272c9602c1bb7c">GlyphMetricsVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>glyphMetrics</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>trackingFactor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>fontSize</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Apply character tracking (positive or negative) to each glyph in provided GlyphMetricsVector. This means that that the space between the individual glyphs can be increased (positive tracking) or decreased (negative tracking). The tracking factor is calculated in em, so it's relative to the font size (1/1000 of font size in pixels). So having a tracking factor of 1000 and a font size of 10 would result in an extra of 10 pixels space between every glyph (1000/1000 * 10 = 10px). Overdoing the negative tracking is not advised, as the glyphs will then potentially be printed on top of each other. This helper function should only be used on Latin fonts as for all other font types this kind of tracking may lead to unexpected visual output. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">glyphMetrics</td><td><a class="el" href="structramses_1_1GlyphMetrics.html" title="GlyphMetrics describes a glyph&#39;s position and dimensions in the rasterized glyph bitmap space.">GlyphMetrics</a> that get tracking applied on </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">trackingFactor</td><td>factor of tracking intensity (higher --&gt; bigger tracking effect) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">fontSize</td><td>size of the font that contains the glyphs to be tracked </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a38">ramses-example-text-basic/src/main.cpp</a>.</dd>
+</dl>
+
+</div>
+</div>
 <a id="afeb86f28787e7acf77d0fd6c7e2c0f7f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afeb86f28787e7acf77d0fd6c7e2c0f7f">&#9670;&nbsp;</a></span>ContainsRenderableGlyphs()</h2>
 
@@ -332,7 +389,7 @@ Public Attributes</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Id of the text line created </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a38">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a38">ramses-example-text-languages/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a39">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a38">ramses-example-text-languages/src/main.cpp</a>.</dd>
 </dl>
 
 </div>
@@ -495,7 +552,7 @@ Public Attributes</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A pointer to the text line object, or nullptr on failure </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a40">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a41">ramses-example-text-languages/src/main.cpp</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="ramses-example-text-basic_2src_2main_8cpp-example.html#a41">ramses-example-text-basic/src/main.cpp</a>, and <a class="el" href="ramses-example-text-languages_2src_2main_8cpp-example.html#a41">ramses-example-text-languages/src/main.cpp</a>.</dd>
 </dl>
 
 </div>
@@ -552,7 +609,7 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/c/src/mirror/client/ramses-client/ramses-text-api/include/ramses-text-api/<a class="el" href="TextCache_8h_source.html">TextCache.h</a></li>
+<li>/home/q479098/src/mirror/client/ramses-client/ramses-text-api/include/ramses-text-api/<a class="el" href="TextCache_8h_source.html">TextCache.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

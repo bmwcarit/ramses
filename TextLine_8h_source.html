@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RAMSES Documentation: /c/src/mirror/client/ramses-client/ramses-text-api/include/ramses-text-api/TextLine.h Source File</title>
+<title>RAMSES Documentation: /home/q479098/src/mirror/client/ramses-client/ramses-text-api/include/ramses-text-api/TextLine.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.110</span>
+   &#160;<span id="projectnumber">27.0.111</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -105,8 +105,8 @@ $(function() {
 <div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="structramses_1_1TextLine.html#a86627eb98c6e83a676b268cdacf91006">   46</a></span>&#160;        <a class="code" href="classramses_1_1ArrayBuffer.html">ArrayBuffer</a>*         <a class="code" href="structramses_1_1TextLine.html#a86627eb98c6e83a676b268cdacf91006">indices</a> = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    };</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    static_assert(std::is_nothrow_move_constructible&lt;TextLine&gt;::value, <span class="stringliteral">&quot;TextLine must be movable&quot;</span>);</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    static_assert(std::is_nothrow_move_assignable&lt;TextLine&gt;::value, <span class="stringliteral">&quot;TextLine must be movable&quot;</span>);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    static_assert(std::is_move_constructible&lt;TextLine&gt;::value, <span class="stringliteral">&quot;TextLine must be movable&quot;</span>);</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    static_assert(std::is_move_assignable&lt;TextLine&gt;::value, <span class="stringliteral">&quot;TextLine must be movable&quot;</span>);</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;}</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="preprocessor">#endif</span></div>

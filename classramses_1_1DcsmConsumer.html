@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="ramses_small.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">RAMSES Documentation
-   &#160;<span id="projectnumber">27.0.110</span>
+   &#160;<span id="projectnumber">27.0.111</span>
    </div>
    <div id="projectbrief">Information for RAMSES users and developers</div>
   </td>
@@ -99,12 +99,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2ca18aa9a4cafba170ace3351c349940"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmConsumer.html#a2ca18aa9a4cafba170ace3351c349940">dispatchEvents</a> (<a class="el" href="classramses_1_1IDcsmConsumerEventHandler.html">IDcsmConsumerEventHandler</a> &amp;handler)</td></tr>
 <tr class="memdesc:a2ca18aa9a4cafba170ace3351c349940"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calls handler functions synchronously in the caller context for DCSM events which were received asynchronously. This function must be called regularly to avoid buffer overflow of the internal queue.  <a href="classramses_1_1DcsmConsumer.html#a2ca18aa9a4cafba170ace3351c349940">More...</a><br /></td></tr>
 <tr class="separator:a2ca18aa9a4cafba170ace3351c349940"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8ce0b6f7b4bcae78a82e736e6c0346bd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmConsumer.html#a8ce0b6f7b4bcae78a82e736e6c0346bd">assignContentToConsumer</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, const <a class="el" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a> &amp;size)</td></tr>
-<tr class="memdesc:a8ce0b6f7b4bcae78a82e736e6c0346bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exclusively assign an offered content to this consumer. Sends a DCSM canvasSizeEvent for the given content ID. May only be called for offered content IDs.  <a href="classramses_1_1DcsmConsumer.html#a8ce0b6f7b4bcae78a82e736e6c0346bd">More...</a><br /></td></tr>
-<tr class="separator:a8ce0b6f7b4bcae78a82e736e6c0346bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8e3633fc4360a5d4aab547dd5a38234"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmConsumer.html#ac8e3633fc4360a5d4aab547dd5a38234">contentSizeChange</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, const <a class="el" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a> &amp;size, <a class="el" href="structramses_1_1AnimationInformation.html">AnimationInformation</a> animationInformation)</td></tr>
-<tr class="memdesc:ac8e3633fc4360a5d4aab547dd5a38234"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a DCSM contentSizeEvent for the given content ID. May only be called on assigned content IDs. Informs provider about canvas size change so it can adapt its content if needed. To allow a smooth transition animation start and end timestamp can be given during which the size change should be applied.  <a href="classramses_1_1DcsmConsumer.html#ac8e3633fc4360a5d4aab547dd5a38234">More...</a><br /></td></tr>
-<tr class="separator:ac8e3633fc4360a5d4aab547dd5a38234"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4181db1a6f3df4da75595fe7625b2776"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmConsumer.html#a4181db1a6f3df4da75595fe7625b2776">assignContentToConsumer</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, const <a class="el" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a> &amp;categoryInfo)</td></tr>
+<tr class="memdesc:a4181db1a6f3df4da75595fe7625b2776"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exclusively assign an offered content to this consumer. Sends a DCSM canvasSizeEvent for the given content ID. May only be called for offered content IDs.  <a href="classramses_1_1DcsmConsumer.html#a4181db1a6f3df4da75595fe7625b2776">More...</a><br /></td></tr>
+<tr class="separator:a4181db1a6f3df4da75595fe7625b2776"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecd95805f42cefd94b7b76e92ff49f4f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmConsumer.html#aecd95805f42cefd94b7b76e92ff49f4f">contentSizeChange</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, const <a class="el" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a> &amp;categoryInfo, <a class="el" href="structramses_1_1AnimationInformation.html">AnimationInformation</a> animationInformation)</td></tr>
+<tr class="memdesc:aecd95805f42cefd94b7b76e92ff49f4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a DCSM contentSizeEvent for the given content ID. May only be called on assigned content IDs. Informs provider about canvas size change so it can adapt its content if needed. To allow a smooth transition animation start and end timestamp can be given during which the size change should be applied.  <a href="classramses_1_1DcsmConsumer.html#aecd95805f42cefd94b7b76e92ff49f4f">More...</a><br /></td></tr>
+<tr class="separator:aecd95805f42cefd94b7b76e92ff49f4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a08597b1a8040439c2fe5fdf76e68e359"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceramses.html#a4f09a899b38b8d7bc61f01a2d181ea22">status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classramses_1_1DcsmConsumer.html#a08597b1a8040439c2fe5fdf76e68e359">contentStateChange</a> (<a class="el" href="namespaceramses.html#a3afc170ddc2bef679c658876de95df45">ContentID</a> contentID, <a class="el" href="namespaceramses.html#aee996152a40d451bbbefff0ae96c66d3">EDcsmState</a> state, <a class="el" href="structramses_1_1AnimationInformation.html">AnimationInformation</a> animationInformation)</td></tr>
 <tr class="memdesc:a08597b1a8040439c2fe5fdf76e68e359"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a DCSM contentStateChange for the given content ID. May only be called on assigned content IDs. Requests switch to a different content state from provider side. For more information refer to EDcsmState enum and DCSM documentation.  <a href="classramses_1_1DcsmConsumer.html#a08597b1a8040439c2fe5fdf76e68e359">More...</a><br /></td></tr>
 <tr class="separator:a08597b1a8040439c2fe5fdf76e68e359"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -328,8 +328,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="a8ce0b6f7b4bcae78a82e736e6c0346bd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8ce0b6f7b4bcae78a82e736e6c0346bd">&#9670;&nbsp;</a></span>assignContentToConsumer()</h2>
+<a id="a4181db1a6f3df4da75595fe7625b2776"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4181db1a6f3df4da75595fe7625b2776">&#9670;&nbsp;</a></span>assignContentToConsumer()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -344,7 +344,7 @@ Additional Inherited Members</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a> &amp;&#160;</td>
-          <td class="paramname"><em>size</em>&#160;</td>
+          <td class="paramname"><em>categoryInfo</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -358,7 +358,7 @@ Additional Inherited Members</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">contentID</td><td>content to assign to this consumer </td></tr>
-    <tr><td class="paramname">size</td><td>expected size of the assigned category</td></tr>
+    <tr><td class="paramname">categoryInfo</td><td>expected size of the assigned category</td></tr>
   </table>
   </dd>
 </dl>
@@ -366,8 +366,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="ac8e3633fc4360a5d4aab547dd5a38234"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac8e3633fc4360a5d4aab547dd5a38234">&#9670;&nbsp;</a></span>contentSizeChange()</h2>
+<a id="aecd95805f42cefd94b7b76e92ff49f4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aecd95805f42cefd94b7b76e92ff49f4f">&#9670;&nbsp;</a></span>contentSizeChange()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -382,7 +382,7 @@ Additional Inherited Members</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="classramses_1_1CategoryInfoUpdate.html">CategoryInfoUpdate</a> &amp;&#160;</td>
-          <td class="paramname"><em>size</em>, </td>
+          <td class="paramname"><em>categoryInfo</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -403,7 +403,7 @@ Additional Inherited Members</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">contentID</td><td>content which is affected by the canvas size change </td></tr>
-    <tr><td class="paramname">size</td><td>expected size after the transition </td></tr>
+    <tr><td class="paramname">categoryInfo</td><td>expected size after the transition </td></tr>
     <tr><td class="paramname">animationInformation</td><td>start and end times of the transition. May be null for immediate change.</td></tr>
   </table>
   </dd>
@@ -574,7 +574,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/c/src/mirror/framework/ramses-framework-api/include/ramses-framework-api/<a class="el" href="DcsmConsumer_8h_source.html">DcsmConsumer.h</a></li>
+<li>/home/q479098/src/mirror/framework/ramses-framework-api/include/ramses-framework-api/<a class="el" href="DcsmConsumer_8h_source.html">DcsmConsumer.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
