@@ -1,8 +1,7 @@
 <map id="ramses::AnimationSystemRealTime" name="ramses::AnimationSystemRealTime">
-<area shape="rect" id="node1" title="The AnimationSystemRealTime is a special version of AnimationSystem that is designed to use system ti..." alt="" coords="5,379,261,405"/>
-<area shape="rect" id="node2" href="$classramses_1_1AnimationSystem.html" title="The AnimationSystem holds all animation related data." alt="" coords="36,304,231,331"/>
-<area shape="rect" id="node3" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene." alt="" coords="54,229,213,256"/>
-<area shape="rect" id="node4" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient." alt="" coords="54,155,213,181"/>
-<area shape="rect" id="node5" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework." alt="" coords="47,80,219,107"/>
-<area shape="rect" id="node6" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling." alt="" coords="53,5,214,32"/>
+<area shape="rect" id="node2" href="$classramses_1_1AnimationSystem.html" title="The AnimationSystem holds all animation related data. " alt="" coords="33,304,209,331"/>
+<area shape="rect" id="node3" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene. " alt="" coords="47,229,195,256"/>
+<area shape="rect" id="node4" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="49,155,194,181"/>
+<area shape="rect" id="node5" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="41,80,201,107"/>
+<area shape="rect" id="node6" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="47,5,196,32"/>
 </map>

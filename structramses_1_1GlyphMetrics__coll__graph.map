@@ -1,6 +1,5 @@
 <map id="ramses::GlyphMetrics" name="ramses::GlyphMetrics">
-<area shape="rect" id="node1" title="GlyphMetrics describes a glyph&#39;s position and dimensions in the rasterized glyph bitmap space." alt="" coords="573,75,737,102"/>
-<area shape="rect" id="node2" href="$structramses_1_1GlyphKey.html" title="GlyphKey identifies a glyph with a specific font instance." alt="" coords="357,75,497,102"/>
-<area shape="rect" id="node3" href="$classramses_1_1StronglyTypedValue.html" title=" " alt="" coords="5,5,212,76"/>
-<area shape="rect" id="node4" href="$classramses_1_1StronglyTypedValue.html" title=" " alt="" coords="5,100,212,171"/>
+<area shape="rect" id="node2" href="$structramses_1_1GlyphKey.html" title="GlyphKey identifies a glyph with a specific font instance. " alt="" coords="332,75,463,102"/>
+<area shape="rect" id="node3" href="$classramses_1_1StronglyTypedValue.html" title="ramses::StronglyTypedValue\l\&lt; uint32_t, std::numeric\l_limits\&lt; uint32_t \&gt;::max\l(), FontInstanceIdTag \&gt;" alt="" coords="5,5,196,76"/>
+<area shape="rect" id="node4" href="$classramses_1_1StronglyTypedValue.html" title="ramses::StronglyTypedValue\l\&lt; uint32_t, std::numeric\l_limits\&lt; uint32_t \&gt;::max\l(), GlyphIdTag \&gt;" alt="" coords="5,100,196,171"/>
 </map>

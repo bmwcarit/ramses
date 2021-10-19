@@ -1,4 +1,3 @@
 <map id="ramses::RenderTargetDescription" name="ramses::RenderTargetDescription">
-<area shape="rect" id="node1" title="RenderTargetDescription holds all necessary information for a RenderTarget to be created." alt="" coords="5,80,244,107"/>
-<area shape="rect" id="node2" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling." alt="" coords="44,5,205,32"/>
+<area shape="rect" id="node2" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="40,5,189,32"/>
 </map>

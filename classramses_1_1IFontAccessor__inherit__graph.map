@@ -1,4 +1,3 @@
 <map id="ramses::IFontAccessor" name="ramses::IFontAccessor">
-<area shape="rect" id="node1" title="Interface for getting font instances using font instance ids." alt="" coords="5,5,173,32"/>
-<area shape="rect" id="node2" href="$classramses_1_1FontRegistry.html" title="Font registry can be used to load Freetype2 fonts and create font instances (optionally with Harfbuzz..." alt="" coords="9,80,169,107"/>
+<area shape="rect" id="node2" href="$classramses_1_1FontRegistry.html" title="Font registry can be used to load Freetype2 fonts and create font instances (optionally with Harfbuzz..." alt="" coords="11,80,159,107"/>
 </map>

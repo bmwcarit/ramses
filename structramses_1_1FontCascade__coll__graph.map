@@ -1,5 +1,4 @@
 <map id="ramses::FontCascade" name="ramses::FontCascade">
-<area shape="rect" id="node1" title="struct to define a font cascade" alt="" coords="349,65,511,91"/>
-<area shape="rect" id="node2" href="$classramses_1_1StronglyTypedValue.html" title=" " alt="" coords="5,5,212,76"/>
-<area shape="rect" id="node3" href="$classramses_1_1IFontAccessor.html" title="Interface for getting font instances using font instance ids." alt="" coords="25,101,193,127"/>
+<area shape="rect" id="node2" href="$classramses_1_1StronglyTypedValue.html" title="ramses::StronglyTypedValue\l\&lt; uint32_t, std::numeric\l_limits\&lt; uint32_t \&gt;::max\l(), FontInstanceIdTag \&gt;" alt="" coords="5,5,196,76"/>
+<area shape="rect" id="node3" href="$classramses_1_1IFontAccessor.html" title="Interface for getting font instances using font instance ids. " alt="" coords="21,101,180,127"/>
 </map>
