@@ -43,6 +43,7 @@ namespace ramses_internal
         void operator()(const RendererCommand::CreateDisplay& cmd);
         void operator()(const RendererCommand::DestroyDisplay& cmd);
         void operator()(const RendererCommand::CreateOffscreenBuffer& cmd);
+        void operator()(const RendererCommand::CreateDmaOffscreenBuffer& cmd);
         void operator()(const RendererCommand::DestroyOffscreenBuffer& cmd);
         void operator()(const RendererCommand::CreateStreamBuffer& cmd);
         void operator()(const RendererCommand::DestroyStreamBuffer& cmd);

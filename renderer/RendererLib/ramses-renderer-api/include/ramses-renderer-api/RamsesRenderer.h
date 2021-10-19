@@ -234,8 +234,8 @@ namespace ramses
         displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
 
         /**
-        * @brief   Will create an offscreen buffer that can be used to render scenes into (see RamsesRenderer::assignSceneToDisplayBuffer)
-        *          and can be linked as input to a consumer texture sampler (see RamsesRenderer::linkOffscreenBufferToConsumer).
+        * @brief   Will create an offscreen buffer that can be used to render scenes into (see #ramses::RendererSceneControl::setSceneDisplayBufferAssignment)
+        *          and can be linked as input to a consumer texture sampler (see #ramses::RendererSceneControl::linkOffscreenBuffer).
         * @details The created offscreen buffer always has color, depth and stencil buffer attached.
         *          A multisampled buffer will be created if sampleCount greater than 0, note that the value is just a hint for the device,
         *          the actual number of samples might be different depending on device driver implementation.
@@ -253,8 +253,8 @@ namespace ramses
         displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount = 0u);
 
         /**
-        * @brief Will create an offscreen buffer that can be used to render scenes into (see RamsesRenderer::assignSceneToDisplayBuffer)
-        *        and can be linked as input to a consumer texture sampler (see RamsesRenderer::linkOffscreenBufferToConsumer).
+        * @brief Will create an offscreen buffer that can be used to render scenes into (see #ramses::RendererSceneControl::setSceneDisplayBufferAssignment)
+        *        and can be linked as input to a consumer texture sampler (see #ramses::RendererSceneControl::linkOffscreenBuffer).
         *
         *        The created offscreen buffer always has a color buffer, but depth and stencil buffers can be configured.
         *
@@ -271,9 +271,9 @@ namespace ramses
         static displayBufferId_t createOffscreenBuffer(RamsesRenderer& renderer, displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount = 0u, EDepthBufferType depthBufferType = EDepthBufferType_DepthStencil);
 
         /**
-        * @brief     Additional API to create an offscreen buffer as interruptible.
-        *            This allows the renderer to interrupt rendering of scenes to such offscreen buffer
-        *            if the time budget for rendering is exceeded within a frame (see SetFrameTimerLimits).
+        * @brief     Additional API to create an offscreen buffer as interruptible. (see #createOffscreenBuffer)
+        * @details   This allows the renderer to interrupt rendering of scenes to such offscreen buffer
+        *            if the time budget for rendering is exceeded within a frame (see #setFrameTimerLimits).
         *            The rendering continues next frame starting from the interruption point.
         *
         *            The renderer creates two render targets on GPU (front and back) for every
@@ -299,7 +299,7 @@ namespace ramses
         /**
         * @brief     Additional API to create an offscreen buffer as interruptible.
         *            This allows the renderer to interrupt rendering of scenes to such offscreen buffer
-        *            if the time budget for rendering is exceeded within a frame (see SetFrameTimerLimits).
+        *            if the time budget for rendering is exceeded within a frame (see #setFrameTimerLimits).
         *            The rendering continues next frame starting from the interruption point.
         *
         *            The renderer creates two render targets on GPU (front and back) for every
@@ -323,6 +323,71 @@ namespace ramses
         *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
         */
         static displayBufferId_t createInterruptibleOffscreenBuffer(RamsesRenderer& renderer, displayId_t display, uint32_t width, uint32_t height, EDepthBufferType depthBufferType = EDepthBufferType_DepthStencil);
+
+        /**
+        * @brief     Additional API to create an offscreen buffer using DMA buffer for internal storage. (see #createOffscreenBuffer)
+        * @details   The created offscreen buffer uses a DMA buffer based on a GBM buffer object for its internal storage, which can be mapped to CPU
+        *            memory, instead of standard OpenGL textures and render storages. The created offscreen buffer can be rendered into and linked
+        *            to texture consumers, like other offscreen buffer types.
+        *            This type of offscreen buffers can be created only if the platform provides the necessary support, and if the render node for creation
+        *            of GBM device is provided on #ramses::DisplayConfig::setPlatformRenderNode.
+        *
+        *            DMA offscreen buffer can only have a color component, no depth or stencil.
+        *
+        *            Notes:
+        *            It is of particular importance to avoid CPU operations on the mapped memory while GPU could be accessing the offscreen buffer's memory
+        *            for executing asynchronous rendering commands.
+        *               * If a DMA offscreen buffer is being used by the GPU for rendering operations, it is the responsibility of the user not to attempt
+        *                 accessing the CPU mapped memory for that buffer.
+        *               * Due to the asynchronous nature of OpenGL and render pipeline execution, an offscreen buffer can still be in use after the call to
+        *                 #doOneLoop is finished. It is important to submit the commands to get the offscreen buffer out of the rendering pipeline, then make
+        *                 at least two calls to #doOneLoop (in case of double buffering) before accessing the CPU mapped memory for that buffer
+        *               * An offscreen buffer is a part of the rendering pipeline as long as it is either being used as input, i.e., by linking to a
+        *                 texture consumer via #ramses::RendererSceneControl::linkOffscreenBuffer, or being used for output by rendering some scenes into it
+        *                 via #ramses::RendererSceneControl::setSceneDisplayBufferAssignment
+        *
+        *            It is only possible to create DMA offscreen buffers if renderer is running using #doOneLoop.
+        *            Calling this method on a renderer with display threads will fail right away with error status
+        *            without invoking a callback #ramses::IRendererEventHandler::offscreenBufferCreated.
+        *
+        * @param[in] display  Id of display for which the buffer should be created
+        * @param[in] width    Width of the buffer to be created (has to be higher than 0 and lower than 4096)
+        * @param[in] height   Height of the buffer to be created (has to be higher than 0 and lower than 4096)
+        * @param[in] bufferFourccFormat  Format to be used for underlying storage of the buffer, as specified in drm_fourcc.h on the target platform
+        * @param[in] usageFlags  Usage flags used for creation of the underlying GBM buffer object, as specific in enum gbm_bo_flags on the target platform
+        * @param[in] modifier  Optional format modifier. If not needed set to DRM_FORMAT_MOD_INVALID.
+        * @return Identifier of the created offscreen buffer.
+        *         In case of unsupported resolution or renderer running in own thread \c displayBufferId_t::Invalid() will be returned with no renderer event generated.
+        *         Note that the buffer will be created asynchronously and there will be a renderer event once the operation is finished.
+        */
+        displayBufferId_t createDmaOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t bufferFourccFormat, uint32_t usageFlags, uint64_t modifier);
+
+        /**
+        * @brief   Get the FD and stride for a DMA offscreen buffer previously created on the given display
+        * @details Get the file descriptor and stride for the underlying GBM buffer object used for a DMA offscreenbuffer
+        *          that was created using #ramses::RamsesRenderer::createDmaOffscreenBuffer.
+        *          This function can be safely called only after a successful offscreen buffer event
+        *          is disptched (using #ramses::IRendererEventHandler::offscreenBufferCreated) for the meant offscreen buffer.
+        *
+        *          The file descriptor could be used for mapping the underlying memory used by
+        *          the offscreen buffer to CPU. As long the mapped memory is in use it is important to watch
+        *          the mentioned considerations in #createDmaOffscreenBuffer. It is the responsibility of the user
+        *          to unmap that memory on offscreen buffer destruction or when the CPU operations do not need to be applied
+        *          to that memory any more.
+        *
+        *          Stride could be used for calculating addresses of specific pixels within mapped memory,
+        *          where the data for each row in the image starts at a multiple of stride.
+        *          Buffer stride can be different from the calculatable row size in bytes relying
+        *          only on buffer width and format pixel size.
+        *
+        * @param[in] display  Id of display for which the buffer was created
+        * @param[in] displayBufferId  Id of the DMA offscreen buffer for which the FD should be returned
+        * @param[out] fd File descriptor of underlying GBM buffer object for DMA offscreen buffer
+        * @param[out] stride Stride of DMA offsceen buffer in bytes
+        * @return StatusOK for success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t getDmaOffscreenBufferFDAndStride(displayId_t display, displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const;
 
         /**
         * @brief Will destroy a previously created offscreen buffer.

@@ -239,4 +239,9 @@ namespace ramses
     {
         return impl.setWaylandEmbeddedCompositingSocketPermissions(permissions);
     }
+
+    status_t DisplayConfig::setPlatformRenderNode(const char* renderNode)
+    {
+        return impl.setPlatformRenderNode(renderNode);
+    }
 }

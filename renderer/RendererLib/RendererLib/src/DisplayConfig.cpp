@@ -275,6 +275,16 @@ namespace ramses_internal
         return m_waylandSocketEmbeddedPermissions;
     }
 
+    void DisplayConfig::setPlatformRenderNode(const String& renderNode)
+    {
+        m_platformRenderNode = renderNode;
+    }
+
+    const String& DisplayConfig::getPlatformRenderNode() const
+    {
+        return m_platformRenderNode;
+    }
+
     Bool DisplayConfig::operator == (const DisplayConfig& other) const
     {
         return
@@ -300,7 +310,8 @@ namespace ramses_internal
             m_waylandSocketEmbedded      == other.m_waylandSocketEmbedded &&
             m_waylandSocketEmbeddedGroupName    == other.m_waylandSocketEmbeddedGroupName &&
             m_waylandSocketEmbeddedPermissions  == other.m_waylandSocketEmbeddedPermissions &&
-            m_waylandSocketEmbeddedFD    == other.m_waylandSocketEmbeddedFD;
+            m_waylandSocketEmbeddedFD    == other.m_waylandSocketEmbeddedFD &&
+            m_platformRenderNode         == other.m_platformRenderNode;
     }
 
     Bool DisplayConfig::operator != (const DisplayConfig& other) const

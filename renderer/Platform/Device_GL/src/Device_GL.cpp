@@ -21,7 +21,7 @@
 
 #include "SceneAPI/PixelRectangle.h"
 #include "RendererAPI/IContext.h"
-#include "SceneAPI/RenderBuffer.h"
+#include "RendererAPI/IDeviceExtension.h"
 #include "Resource/EffectResource.h"
 
 #include "Math3d/Vector2.h"
@@ -38,6 +38,7 @@
 #include "Utils/TextureMathUtils.h"
 #include "PlatformAbstraction/PlatformStringUtils.h"
 #include "PlatformAbstraction/Macros.h"
+
 
 namespace ramses_internal
 {
@@ -69,7 +70,7 @@ namespace ramses_internal
         const GLTextureInfo m_textureInfo;
     };
 
-    Device_GL::Device_GL(IContext& context, UInt8 majorApiVersion, UInt8 minorApiVersion, bool isEmbedded)
+    Device_GL::Device_GL(IContext& context, UInt8 majorApiVersion, UInt8 minorApiVersion, bool isEmbedded, IDeviceExtension* deviceExtension)
         : Device_Base(context)
         , m_activeShader(nullptr)
         , m_activePrimitiveDrawMode(EDrawMode::Triangles)
@@ -78,6 +79,7 @@ namespace ramses_internal
         , m_minorApiVersion(minorApiVersion)
         , m_isEmbedded(isEmbedded)
         , m_debugOutput()
+        , m_deviceExtension(deviceExtension)
     {
 #if defined _DEBUG
         m_debugOutput.enable(context);
@@ -739,25 +741,56 @@ namespace ramses_internal
         }
     }
 
-    DeviceResourceHandle Device_GL::uploadRenderBuffer(const RenderBuffer& buffer)
+    DeviceResourceHandle Device_GL::uploadRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType type, ETextureFormat format, ERenderBufferAccessMode accessMode, uint32_t sampleCount)
     {
         GLHandle bufferGLHandle = InvalidGLHandle;
-        switch (buffer.accessMode)
+        switch (accessMode)
         {
         case ERenderBufferAccessMode_ReadWrite:
-            bufferGLHandle = createTexture(buffer.width, buffer.height, buffer.format, buffer.sampleCount);
+            bufferGLHandle = createTexture(width, height, format, sampleCount);
             break;
         case ERenderBufferAccessMode_WriteOnly:
-            bufferGLHandle = createRenderBuffer(buffer.width, buffer.height, buffer.format, buffer.sampleCount);
+            bufferGLHandle = createRenderBuffer(width, height, format, sampleCount);
             break;
         default:
             assert(false);
         }
 
         if (bufferGLHandle != InvalidGLHandle)
-            return m_resourceMapper.registerResource(std::make_unique<RenderBufferGPUResource>(bufferGLHandle, buffer.width, buffer.height, buffer.type, buffer.format, buffer.sampleCount, buffer.accessMode));
+            return m_resourceMapper.registerResource(std::make_unique<RenderBufferGPUResource>(bufferGLHandle, width, height, type, format, sampleCount, accessMode));
 
         return DeviceResourceHandle::Invalid();
+    }
+
+    DeviceResourceHandle Device_GL::uploadDmaRenderBuffer(UInt32 width, UInt32 height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers)
+    {
+        if(m_deviceExtension == nullptr)
+            return {};
+
+        return m_deviceExtension->createDmaRenderBuffer(width, height, fourccFormat, usageFlags, modifiers);
+    }
+
+    int Device_GL::getDmaRenderBufferFD(DeviceResourceHandle handle)
+    {
+        if(m_deviceExtension == nullptr)
+            return -1;
+
+        return m_deviceExtension->getDmaRenderBufferFD(handle);
+    }
+
+    uint32_t Device_GL::getDmaRenderBufferStride(DeviceResourceHandle handle)
+    {
+        if(m_deviceExtension == nullptr)
+            return 0u;
+        return m_deviceExtension->getDmaRenderBufferStride(handle);
+    }
+
+    void Device_GL::destroyDmaRenderBuffer(DeviceResourceHandle handle)
+    {
+        if(m_deviceExtension == nullptr)
+            return;
+
+        m_deviceExtension->destroyDmaRenderBuffer(handle);
     }
 
     void Device_GL::deleteRenderBuffer(DeviceResourceHandle bufferHandle)

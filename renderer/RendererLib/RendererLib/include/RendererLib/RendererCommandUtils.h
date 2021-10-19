@@ -32,6 +32,7 @@ namespace ramses_internal
         inline std::string ToString(const RendererCommand::CreateDisplay& cmd) { return fmt::format("CreateDisplay (displayId={})", cmd.display); }
         inline std::string ToString(const RendererCommand::DestroyDisplay& cmd) { return fmt::format("DestroyDisplay (displayId={})", cmd.display); }
         inline std::string ToString(const RendererCommand::CreateOffscreenBuffer& cmd) { return fmt::format("CreateOffscreenBuffer (displayId={} OB={} wh={}x{} msaa={} interruptible={} depthStencil={})", cmd.display, cmd.offscreenBuffer, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible, cmd.depthStencilBufferType); }
+        inline std::string ToString(const RendererCommand::CreateDmaOffscreenBuffer& cmd) { return fmt::format("CreateOffscreenBuffer (displayId={} OB={} wh={}x{} fourccFormat={} usage={} modifiers={})", cmd.display, cmd.offscreenBuffer, cmd.width, cmd.height, cmd.dmaBufferFourccFormat.getValue(), cmd.dmaBufferUsageFlags.getValue(), cmd.dmaBufferModifiers.getValue()); }
         inline std::string ToString(const RendererCommand::DestroyOffscreenBuffer& cmd) { return fmt::format("DestroyOffscreenBuffer (displayId={} OB={})", cmd.display, cmd.offscreenBuffer); }
         inline std::string ToString(const RendererCommand::CreateStreamBuffer& cmd) { return fmt::format("CreateStreamBuffer (displayId={} SB={})", cmd.display, cmd.streamBuffer); }
         inline std::string ToString(const RendererCommand::DestroyStreamBuffer& cmd) { return fmt::format("DestroyStreamBuffer (displayId={} SB={})", cmd.display, cmd.streamBuffer); }
@@ -97,6 +98,14 @@ namespace ramses_internal
         }
         template <>
         inline RendererEvent GenerateFailEventForCommand<RendererCommand::CreateOffscreenBuffer>(const RendererCommand::CreateOffscreenBuffer& cmd)
+        {
+            RendererEvent evt{ ERendererEventType::OffscreenBufferCreateFailed };
+            evt.displayHandle = cmd.display;
+            evt.offscreenBuffer = cmd.offscreenBuffer;
+            return evt;
+        }
+        template <>
+        inline RendererEvent GenerateFailEventForCommand<RendererCommand::CreateDmaOffscreenBuffer>(const RendererCommand::CreateDmaOffscreenBuffer& cmd)
         {
             RendererEvent evt{ ERendererEventType::OffscreenBufferCreateFailed };
             evt.displayHandle = cmd.display;

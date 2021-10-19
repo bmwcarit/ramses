@@ -37,6 +37,8 @@ namespace ramses_internal
 
             EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
 
+            EXPECT_CALL(platform, createDeviceExtension(_));
+
             EXPECT_CALL(platform, createDevice());
 
             EXPECT_CALL(platform, createEmbeddedCompositor(_));
@@ -142,6 +144,27 @@ namespace ramses_internal
         }
     }
 
+    TEST_F(APlatformTest, RenderBackendCreationFailsIfDeviceExtensionFailsInitialization)
+    {
+        StrictMock<Platform_BaseMock> platform(rendererConfig);
+
+        {
+            InSequence s;
+            EXPECT_CALL(platform, createWindow(_, _));
+
+            EXPECT_CALL(platform, createContext(_));
+
+            EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
+
+            EXPECT_CALL(platform, createDeviceExtension(_)).WillOnce(Return(false));
+
+            IRenderBackend* renderBackend = platform.createRenderBackend(displayConfig, windowEventHandlerMock);
+            EXPECT_EQ(nullptr, renderBackend);
+
+            verifyAndClearExpectationsOnRenderBackendMockObjects(platform);
+        }
+    }
+
     TEST_F(APlatformTest, RenderBackendCreationFailsIfDeviceFailsInitialization)
     {
         StrictMock<Platform_BaseMock> platform(rendererConfig);
@@ -154,6 +177,8 @@ namespace ramses_internal
 
             EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
 
+            EXPECT_CALL(platform, createDeviceExtension(_));
+
             EXPECT_CALL(platform, createDevice()).WillOnce(Return(false)); //device fails init
             EXPECT_CALL(*platform.context, disable());
 
@@ -163,7 +188,6 @@ namespace ramses_internal
             verifyAndClearExpectationsOnRenderBackendMockObjects(platform);
         }
     }
-
 
     TEST_F(APlatformTest, RenderBackendCreationFailsIfEmbeddedCompositorFailsInitialization)
     {
@@ -176,6 +200,8 @@ namespace ramses_internal
             EXPECT_CALL(platform, createContext(_));
 
             EXPECT_CALL(*platform.context, enable()).WillOnce(Return(true));
+
+            EXPECT_CALL(platform, createDeviceExtension(_));
 
             EXPECT_CALL(platform, createDevice());
 

@@ -48,6 +48,7 @@ TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
     EXPECT_EQ(defaultDisplayConfig.getWaylandSocketEmbedded(), displayConfig.getWaylandSocketEmbedded());
     EXPECT_EQ(defaultDisplayConfig.getWaylandSocketEmbeddedGroup(), displayConfig.getWaylandSocketEmbeddedGroup());
     EXPECT_EQ(defaultDisplayConfig.getWaylandSocketEmbeddedFD(), displayConfig.getWaylandSocketEmbeddedFD());
+    EXPECT_EQ(defaultDisplayConfig.getPlatformRenderNode(), displayConfig.getPlatformRenderNode());
 }
 
 TEST_F(ADisplayConfig, setsFullscreenState)
@@ -239,4 +240,10 @@ TEST_F(ADisplayConfig, canSetEmbeddedCompositingSocketFD)
 {
     config.setWaylandEmbeddedCompositingSocketFD(23);
     EXPECT_EQ(23, config.impl.getWaylandSocketEmbeddedFD());
+}
+
+TEST_F(ADisplayConfig, canSetPlatformRenderNode)
+{
+    config.setPlatformRenderNode("abcd");
+    EXPECT_STREQ("abcd", config.impl.getPlatformRenderNode());
 }

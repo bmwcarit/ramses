@@ -208,7 +208,7 @@ TEST_F(ARendererCommandExecutor, readPixelsFromDisplayBuffer)
     EXPECT_TRUE(consumeRendererEvents().empty()); // events are only added by the WindowedRenderer
 }
 
-TEST_F(ARendererCommandExecutor, createOffscreenBufferAndGenerateEvent)
+TEST_F(ARendererCommandExecutor, createOffscreenBuffer)
 {
     constexpr DisplayHandle display{ 1 };
     constexpr OffscreenBufferHandle buffer{ 2 };
@@ -216,28 +216,19 @@ TEST_F(ARendererCommandExecutor, createOffscreenBufferAndGenerateEvent)
     m_commandBuffer.enqueueCommand(RendererCommand::CreateOffscreenBuffer{ display, buffer, 1u, 2u, 3u, true, ERenderBufferType_DepthStencilBuffer });
     EXPECT_CALL(m_sceneUpdater, handleBufferCreateRequest(buffer, 1u, 2u, 3u, true, ERenderBufferType_DepthStencilBuffer)).WillOnce(Return(true));
     doCommandExecutorLoop();
-
-    const RendererEventVector events = consumeRendererEvents();
-    ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(ERendererEventType::OffscreenBufferCreated, events.front().eventType);
-    EXPECT_EQ(display, events.front().displayHandle);
-    EXPECT_EQ(buffer, events.front().offscreenBuffer);
 }
 
-TEST_F(ARendererCommandExecutor, createOffscreenBufferAndGenerateEventOnFail)
+TEST_F(ARendererCommandExecutor, createDmaOffscreenBuffer)
 {
     constexpr DisplayHandle display{ 1 };
     constexpr OffscreenBufferHandle buffer{ 2 };
+    constexpr DmaBufferFourccFormat fourccFormat{ 555u };
+    constexpr DmaBufferUsageFlags usageFlags{ 666u };
+    constexpr DmaBufferModifiers modifiers{ 777u };
 
-    m_commandBuffer.enqueueCommand(RendererCommand::CreateOffscreenBuffer{ display, buffer, 1u, 2u, 3u, true, ERenderBufferType_DepthBuffer });
-    EXPECT_CALL(m_sceneUpdater, handleBufferCreateRequest(buffer, 1u, 2u, 3u, true, ERenderBufferType_DepthBuffer)).WillOnce(Return(false));
+    m_commandBuffer.enqueueCommand(RendererCommand::CreateDmaOffscreenBuffer{ display, buffer, 1u, 2u, fourccFormat, usageFlags, modifiers });
+    EXPECT_CALL(m_sceneUpdater, handleDmaBufferCreateRequest(buffer, 1u, 2u, fourccFormat, usageFlags, modifiers)).WillOnce(Return(true));
     doCommandExecutorLoop();
-
-    const RendererEventVector events = consumeRendererEvents();
-    ASSERT_EQ(1u, events.size());
-    EXPECT_EQ(ERendererEventType::OffscreenBufferCreateFailed, events.front().eventType);
-    EXPECT_EQ(display, events.front().displayHandle);
-    EXPECT_EQ(buffer, events.front().offscreenBuffer);
 }
 
 TEST_F(ARendererCommandExecutor, destroysOffscreenBufferAndGenerateEvent)
@@ -254,6 +245,8 @@ TEST_F(ARendererCommandExecutor, destroysOffscreenBufferAndGenerateEvent)
     EXPECT_EQ(ERendererEventType::OffscreenBufferDestroyed, events.front().eventType);
     EXPECT_EQ(display, events.front().displayHandle);
     EXPECT_EQ(buffer, events.front().offscreenBuffer);
+    EXPECT_EQ(-1, events.front().dmaBufferFD);
+    EXPECT_EQ(0u, events.front().dmaBufferStride);
 }
 
 TEST_F(ARendererCommandExecutor, destroysOffscreenBufferAndGenerateEventOnFail)

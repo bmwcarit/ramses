@@ -31,15 +31,8 @@ ACME_MODULE(
                             libdrm
                             WaylandUtilities
                             Context_EGL
+                            WaylandEGLExtensionProcs
 )
-
-if (TARGET EmbeddedCompositor_Wayland)
-    # check for eglmesaext header and ensure its included when availble
-    find_file(ramses-sdk_HAS_EGLMESAEXT "EGL/eglmesaext.h")
-    if (ramses-sdk_HAS_EGLMESAEXT)
-        target_compile_definitions(EmbeddedCompositor_Wayland PUBLIC "RAMSES_HAS_EGLMESAEXT=1")
-    endif()
-endif()
 
 ACME_MODULE(
 

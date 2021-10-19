@@ -12,22 +12,27 @@
 namespace ramses
 {
     /**
-     * Specifies the rotation convention used in calculation of transforms in a right-handed coordinate system
+     * Specifies the rotation convention used in calculation of transforms in a right-handed coordinate system. The
+     * order of the letters in each enum value represents the position of the corresponding rotation matrix
+     * in the multiplication chain. For example XYZ means the rotation matrix will be of the shape Rx * Ry * Rz * v
+     * where v is a vector or another matrix and R are right-handed rotation matrices which rotate around an
+     * axis specified by the rotation order. Check the specific enum documentation for the exact rotation order
+     * in terms of 'which rotation is applied first'.
     */
     enum class ERotationConvention
     {
-        XYZ,        ///< Euler rotation convention XYZ
-        XZY,        ///< Euler rotation convention XZY
-        YXZ,        ///< Euler rotation convention YXZ
-        YZX,        ///< Euler rotation convention YZX
-        ZXY,        ///< Euler rotation convention ZXY
-        ZYX,        ///< Euler rotation convention ZYX
-        XYX,        ///< Euler rotation convention XYX
-        XZX,        ///< Euler rotation convention XZX
-        YXY,        ///< Euler rotation convention YXY
-        YZY,        ///< Euler rotation convention YZY
-        ZXZ,        ///< Euler rotation convention ZXZ
-        ZYZ,        ///< Euler rotation convention ZYZ
+        XYZ,        ///< rotates around Z then Y then X axis
+        XZY,        ///< rotates around Y then Z then X axis
+        YXZ,        ///< rotates around Z then X then Y axis
+        YZX,        ///< rotates around X then Z then Y axis
+        ZXY,        ///< rotates around Y then X then Z axis
+        ZYX,        ///< rotates around X then Y then Z axis
+        XYX,        ///< rotates around X then Y then X axis
+        XZX,        ///< rotates around X then Z then X axis
+        YXY,        ///< rotates around Y then X then Y axis
+        YZY,        ///< rotates around Y then Z then Y axis
+        ZXZ,        ///< rotates around Z then X then Z axis
+        ZYZ,        ///< rotates around Z then Y then Z axis
     };
 }
 

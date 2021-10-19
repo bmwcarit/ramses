@@ -19,6 +19,7 @@ namespace ramses_internal
 {
     class ITextureUploadingAdapter;
     class IDevice;
+    class IDeviceExtension;
     class IEmbeddedCompositor;
     class IWindow;
     class IContext;
@@ -43,6 +44,7 @@ namespace ramses_internal
         virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) = 0;
         virtual bool createContext(const DisplayConfig& displayConfig) = 0;
         virtual bool createContextUploading() = 0;
+        virtual bool createDeviceExtension(const DisplayConfig& displayConfig);
         virtual bool createDevice() = 0;
         virtual bool createDeviceUploading() = 0;
         virtual bool createEmbeddedCompositor(const DisplayConfig& displayConfig);
@@ -56,6 +58,7 @@ namespace ramses_internal
         std::unique_ptr<IWindow> m_window;
         std::unique_ptr<IContext> m_context;
         std::unique_ptr<IContext> m_contextUploading;
+        std::unique_ptr<IDeviceExtension> m_deviceExtension;
         std::unique_ptr<IDevice> m_device;
         std::unique_ptr<IDevice> m_deviceUploading;
         std::unique_ptr<ISystemCompositorController> m_systemCompositorController;

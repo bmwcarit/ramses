@@ -91,9 +91,12 @@ namespace ramses_internal
         MOCK_METHOD(DeviceResourceHandle, uploadStreamTexture2D, (DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle), (override));
         MOCK_METHOD(void, deleteTexture, (DeviceResourceHandle), (override));
         MOCK_METHOD(void, activateTexture, (DeviceResourceHandle, DataFieldHandle), (override));
-
-        MOCK_METHOD(DeviceResourceHandle, uploadRenderBuffer, (const RenderBuffer&), (override));
+        MOCK_METHOD(DeviceResourceHandle, uploadRenderBuffer, (uint32_t, uint32_t, ERenderBufferType, ETextureFormat, ERenderBufferAccessMode, uint32_t), (override));
         MOCK_METHOD(void, deleteRenderBuffer, (DeviceResourceHandle), (override));
+        MOCK_METHOD(DeviceResourceHandle, uploadDmaRenderBuffer, (UInt32, UInt32, DmaBufferFourccFormat, DmaBufferUsageFlags, DmaBufferModifiers), (override));
+        MOCK_METHOD(int, getDmaRenderBufferFD, (DeviceResourceHandle handle), (override));
+        MOCK_METHOD(UInt32, getDmaRenderBufferStride, (DeviceResourceHandle handle), (override));
+        MOCK_METHOD(void, destroyDmaRenderBuffer, (DeviceResourceHandle handle), (override));
         MOCK_METHOD(void, activateTextureSamplerObject, (const TextureSamplerStates&, DataFieldHandle), (override));
         MOCK_METHOD(DeviceResourceHandle, getFramebufferRenderTarget, (), (const, override));
         MOCK_METHOD(DeviceResourceHandle, uploadRenderTarget, (const DeviceHandleVector&), (override));
@@ -127,6 +130,7 @@ namespace ramses_internal
         static const DeviceResourceHandle FakeFrameBufferRenderTargetDeviceHandle;
         static const DeviceResourceHandle FakeRenderTargetDeviceHandle           ;
         static const DeviceResourceHandle FakeRenderBufferDeviceHandle           ;
+        static const DeviceResourceHandle FakeDmaRenderBufferDeviceHandle        ;
         static const DeviceResourceHandle FakeTextureSamplerDeviceHandle         ;
         static const DeviceResourceHandle FakeBlitPassRenderTargetDeviceHandle   ;
         static constexpr BinaryShaderFormatID FakeSupportedBinaryShaderFormat{ 63666u };

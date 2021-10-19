@@ -23,7 +23,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandDisplay.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufGlobal.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabufConnection.h"
-#include "EmbeddedCompositor_Wayland/WaylandEGLExtensionProcs.h"
+#include "WaylandEGLExtensionProcs/WaylandEGLExtensionProcs.h"
 
 namespace ramses_internal
 {

@@ -462,6 +462,7 @@ TEST_F(ARendererSceneUpdater, canCreateOffscreenBuffer_WithColorBufferOnly)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer, DeviceMock::FakeRenderTargetDeviceHandle, false, ERenderBufferType_InvalidBuffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 4u, false, ERenderBufferType_InvalidBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     destroyDisplay();
 }
@@ -473,6 +474,7 @@ TEST_F(ARendererSceneUpdater, canCreateOffscreenBuffer_WithDepthStencilBuffers)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 4u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     destroyDisplay();
 }
@@ -484,6 +486,7 @@ TEST_F(ARendererSceneUpdater, canCreateDoubleBufferedOffscreenBuffer_WithColorBu
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer, DeviceMock::FakeRenderTargetDeviceHandle, true, ERenderBufferType_InvalidBuffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, true, ERenderBufferType_InvalidBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     destroyDisplay();
 }
@@ -495,6 +498,40 @@ TEST_F(ARendererSceneUpdater, canCreateDoubleBufferedOffscreenBuffer_WithDepthSt
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer, DeviceMock::FakeRenderTargetDeviceHandle, true);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, true, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, canCreateDmaOffscreenBuffer)
+{
+    createDisplayAndExpectSuccess();
+
+    constexpr OffscreenBufferHandle buffer(1u);
+    constexpr DmaBufferFourccFormat fourccFormat{ 123u };
+    constexpr DmaBufferUsageFlags usageFlags{ 456u };
+    constexpr DmaBufferModifiers modifiers{ 789u };
+
+    expectDmaOffscreenBufferUploaded(buffer, DeviceMock::FakeRenderTargetDeviceHandle, fourccFormat, usageFlags, modifiers);
+
+    constexpr int resultFD = 111;
+    constexpr uint32_t resultStride = 222u;
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getDmaOffscreenBufferFD(buffer)).WillOnce(Return(resultFD));
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getDmaOffscreenBufferStride(buffer)).WillOnce(Return(resultStride));
+    EXPECT_TRUE(rendererSceneUpdater->handleDmaBufferCreateRequest(buffer, 1u, 1u, fourccFormat, usageFlags, modifiers));
+
+    RendererEventVector rendererEvents;
+    RendererEventVector sceneEvents;
+    rendererEventCollector.appendAndConsumePendingEvents(rendererEvents, sceneEvents);
+    ASSERT_EQ(rendererEvents.size(), 1u);
+    EXPECT_EQ(sceneEvents.size(), 0u);
+
+    const auto& event = rendererEvents.front();
+    EXPECT_EQ(ERendererEventType::OffscreenBufferCreated, event.eventType);
+    EXPECT_EQ(Display, event.displayHandle);
+    EXPECT_EQ(buffer, event.offscreenBuffer);
+    EXPECT_EQ(resultFD, event.dmaBufferFD);
+    EXPECT_EQ(resultStride, event.dmaBufferStride);
 
     destroyDisplay();
 }
@@ -503,6 +540,17 @@ TEST_F(ARendererSceneUpdater, failsToCreateOffscreenBufferOnUnknownDisplay)
 {
     const OffscreenBufferHandle buffer(1u);
     EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreateFailed);
+}
+
+TEST_F(ARendererSceneUpdater, failsToCreateDmaOffscreenBufferOnUnknownDisplay)
+{
+    const OffscreenBufferHandle buffer(1u);
+    constexpr DmaBufferFourccFormat fourccFormat{ 123u };
+    constexpr DmaBufferUsageFlags usageFlags{ 456u };
+    constexpr DmaBufferModifiers modifiers{ 789u };
+    EXPECT_FALSE(rendererSceneUpdater->handleDmaBufferCreateRequest(buffer, 1u, 1u, fourccFormat, usageFlags, modifiers));
+    expectEvent(ERendererEventType::OffscreenBufferCreateFailed);
 }
 
 TEST_F(ARendererSceneUpdater, failsToCreateOffscreenBufferWithSameID)
@@ -512,8 +560,27 @@ TEST_F(ARendererSceneUpdater, failsToCreateOffscreenBufferWithSameID)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
-
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
     EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreateFailed);
+
+    destroyDisplay();
+}
+
+TEST_F(ARendererSceneUpdater, failsToCreateDmaOffscreenBufferWithSameID)
+{
+    createDisplayAndExpectSuccess();
+
+    const OffscreenBufferHandle buffer(1u);
+    constexpr DmaBufferFourccFormat fourccFormat{ 123u };
+    constexpr DmaBufferUsageFlags usageFlags{ 456u };
+    constexpr DmaBufferModifiers modifiers{ 789u };
+
+    expectOffscreenBufferUploaded(buffer);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
+    EXPECT_FALSE(rendererSceneUpdater->handleDmaBufferCreateRequest(buffer, 1u, 1u, fourccFormat, usageFlags, modifiers));
+    expectEvent(ERendererEventType::OffscreenBufferCreateFailed);
 
     destroyDisplay();
 }
@@ -525,6 +592,7 @@ TEST_F(ARendererSceneUpdater, canDestroyOffscreenBuffer)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
@@ -539,6 +607,7 @@ TEST_F(ARendererSceneUpdater, canDestroyDoubleBufferedOffscreenBuffer)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer, DeviceMock::FakeRenderTargetDeviceHandle, true);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, true, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     expectOffscreenBufferDeleted(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
@@ -570,6 +639,7 @@ TEST_F(ARendererSceneUpdater, canAssignSceneToOffscreenBuffer)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     createPublishAndSubscribeScene();
     mapScene(0u);
@@ -586,6 +656,7 @@ TEST_F(ARendererSceneUpdater, canAssignSceneToFramebuffer_MultipleTimes)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     createPublishAndSubscribeScene();
     mapScene(0u);
@@ -626,6 +697,7 @@ TEST_F(ARendererSceneUpdater, confidence_failsToDestroyOffscreenBufferIfScenesAr
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     createPublishAndSubscribeScene();
     mapScene(0u);
@@ -649,6 +721,7 @@ TEST_F(ARendererSceneUpdater, setsClearFlagsForOB)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     EXPECT_CALL(renderer, setClearFlags(DeviceMock::FakeRenderTargetDeviceHandle, EClearFlags_Color));
     rendererSceneUpdater->handleSetClearFlags(buffer, EClearFlags_Color);
@@ -666,6 +739,7 @@ TEST_F(ARendererSceneUpdater, setsClearFlagsForFBIfNoOBSpecified)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     EXPECT_CALL(renderer, setClearFlags(renderer.getDisplayController().getDisplayBuffer(), EClearFlags_Color));
     rendererSceneUpdater->handleSetClearFlags(OffscreenBufferHandle::Invalid(), EClearFlags_Color);
@@ -701,6 +775,8 @@ TEST_F(ARendererSceneUpdater, setsClearColorForOB)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
+
 
     EXPECT_CALL(renderer, setClearColor(DeviceMock::FakeRenderTargetDeviceHandle, Vector4{ 1, 2, 3, 4 }));
     rendererSceneUpdater->handleSetClearColor(buffer, { 1, 2, 3, 4 });
@@ -718,6 +794,7 @@ TEST_F(ARendererSceneUpdater, setsClearColorForFBIfNoOBSpecified)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     EXPECT_CALL(renderer, setClearColor(renderer.getDisplayController().getDisplayBuffer(), Vector4{ 1, 2, 3, 4 }));
     rendererSceneUpdater->handleSetClearColor(OffscreenBufferHandle::Invalid(), { 1, 2, 3, 4 });
@@ -774,6 +851,7 @@ TEST_F(ARendererSceneUpdater, readPixelsFromOffscreenbuffer)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 10u, 10u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     const UInt32 x = 1u;
     const UInt32 y = 2u;
@@ -859,6 +937,7 @@ TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfRectangleIsOutOfOffs
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 10u, 10u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     const Bool fullScreen = false;
     const Bool sendViaDLT = false;
@@ -1184,6 +1263,7 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenBufferDestroyed_OB)
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
@@ -1277,6 +1357,7 @@ TEST_F(ARendererSceneUpdater, triggersRemovalOfBufferLinkWhenConsumerSceneUnmapp
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToConsumer(buffer));
     EXPECT_FALSE(rendererScenes.getSceneLinksManager().getTextureLinkManager().getOffscreenBufferLinks().hasAnyLinksToProvider(getSceneId(0u)));
@@ -1352,6 +1433,7 @@ TEST_F(ARendererSceneUpdater, failsToCreateBufferLinkIfConsumerSceneNotOnDisplay
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     createBufferLink(buffer, SceneId{ 666u }, DataSlotId{ 1u }, true);
 
@@ -2375,6 +2457,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_IfScene
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2418,6 +2501,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_IfScene
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2465,6 +2549,7 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_OffscreenBufferLinking_
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2508,6 +2593,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_TwoCons
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2561,11 +2647,13 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Indirec
     const OffscreenBufferHandle buffer1(1u);
     expectOffscreenBufferUploaded(buffer1);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     const OffscreenBufferHandle buffer2(2u);
     const DeviceResourceHandle offscreenBufferDeviceHandle(5556u);
     expectOffscreenBufferUploaded(buffer2, offscreenBufferDeviceHandle);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2621,12 +2709,14 @@ TEST_F(ARendererSceneUpdater, DoesNotMarkSceneAsModified_OffscreenBufferLinking_
     const OffscreenBufferHandle buffer1(1u);
     expectOffscreenBufferUploaded(buffer1);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer1, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     const OffscreenBufferHandle buffer2(2u);
     const DeviceResourceHandle offscreenBufferDeviceHandle(5556u);
     expectOffscreenBufferUploaded(buffer2, offscreenBufferDeviceHandle);
 
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     createPublishAndSubscribeScene();
     createPublishAndSubscribeScene();
@@ -2680,6 +2770,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     {
         expectOffscreenBufferUploaded(buffer, DeviceResourceHandle(buffer.asMemoryHandle()));
         EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+        expectEvent(ERendererEventType::OffscreenBufferCreated);
     }
 
     for (UInt32 i = 0u; i < 6; ++i)
@@ -2751,6 +2842,7 @@ TEST_F(ARendererSceneUpdater, MarkSceneAsModified_OffscreenBufferLinking_Confide
     {
         expectOffscreenBufferUploaded(buffer, DeviceResourceHandle(buffer.asMemoryHandle()));
         EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+        expectEvent(ERendererEventType::OffscreenBufferCreated);
     }
 
     for (UInt32 i = 0u; i < 5; ++i)
@@ -2838,6 +2930,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferLinkedToScen
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
     EXPECT_TRUE(assignSceneToDisplayBuffer(scene2, buffer));
 
     const DataSlotId consumer = createTextureConsumer(scene1);
@@ -2877,6 +2970,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_IfOffscreenBufferUnlinkedFrom
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
     EXPECT_TRUE(assignSceneToDisplayBuffer(scene2, buffer));
 
     const DataSlotId consumer = createTextureConsumer(scene1);
@@ -2925,6 +3019,7 @@ TEST_F(ARendererSceneUpdater, MarksSceneAsModified_WhenProviderSceneAssignedToOB
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
     EXPECT_TRUE(assignSceneToDisplayBuffer(scene2, buffer));
 
     expectNoModifiedScenesReportedToRenderer();
@@ -3297,6 +3392,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneAssignedTo
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer, DeviceResourceHandle(321u));
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
     EXPECT_TRUE(assignSceneToDisplayBuffer(sceneToAssign, buffer));
 
     showAndInitiateInterruptedRendering(scene, sceneInterrupted);
@@ -3382,6 +3478,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfAnotherSceneUnlinkedFr
     const OffscreenBufferHandle buffer(1u);
     expectOffscreenBufferUploaded(buffer, DeviceResourceHandle(321u));
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
     const DataSlotId texConsumer = createTextureConsumer(sceneToUnlink);
     createBufferLink(buffer, getSceneId(sceneToUnlink), texConsumer);
 
@@ -3588,6 +3685,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferCreated
     const OffscreenBufferHandle buffer2(1u);
     expectOffscreenBufferUploaded(buffer2, DeviceResourceHandle(321u));
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer2, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
 
@@ -3610,6 +3708,7 @@ TEST_F(ARendererSceneUpdater, resetsInterruptedRenderingIfOffscreenBufferDeleted
     constexpr DeviceResourceHandle bufferDeviceHandle{ 321u };
     expectOffscreenBufferUploaded(buffer, bufferDeviceHandle);
     EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, false, ERenderBufferType_DepthStencilBuffer));
+    expectEvent(ERendererEventType::OffscreenBufferCreated);
 
     const UInt32 scene = createPublishAndSubscribeScene();
     const UInt32 sceneInterrupted = createPublishAndSubscribeScene();

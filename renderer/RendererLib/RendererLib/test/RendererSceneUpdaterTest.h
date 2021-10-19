@@ -609,6 +609,18 @@ protected:
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferHandle(rtDeviceHandleToReturn)).Times(AnyNumber()).WillRepeatedly(Return(buffer));
     }
 
+    void expectDmaOffscreenBufferUploaded(OffscreenBufferHandle buffer, DeviceResourceHandle rtDeviceHandleToReturn, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers)
+    {
+        {
+            InSequence seq;
+            EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
+            EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadDmaOffscreenBuffer(buffer, _, _, fourccFormat, usageFlags, modifiers));
+            EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferDeviceHandle(buffer)).WillRepeatedly(Return(rtDeviceHandleToReturn));
+        }
+        // scene updater queries offscreen buffer from device handle when updating modified scenes states
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getOffscreenBufferHandle(rtDeviceHandleToReturn)).Times(AnyNumber()).WillRepeatedly(Return(buffer));
+    }
+
     void expectOffscreenBufferDeleted(OffscreenBufferHandle buffer, DeviceResourceHandle deviceHandle = DeviceMock::FakeRenderTargetDeviceHandle)
     {
         InSequence seq;
@@ -948,6 +960,7 @@ protected:
         const OffscreenBufferHandle buffer(111u);
         expectOffscreenBufferUploaded(buffer, DeviceMock::FakeRenderTargetDeviceHandle, true);
         EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 1u, 1u, 0u, true, ERenderBufferType_DepthStencilBuffer));
+        expectEvent(ERendererEventType::OffscreenBufferCreated);
         EXPECT_TRUE(assignSceneToDisplayBuffer(interruptedSceneIdx, buffer));
 
         showScene(sceneIdx);

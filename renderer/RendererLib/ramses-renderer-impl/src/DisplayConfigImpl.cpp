@@ -264,6 +264,17 @@ namespace ramses
         return m_internalConfig.getWaylandSocketEmbeddedFD();
     }
 
+    status_t DisplayConfigImpl::setPlatformRenderNode(const char* renderNode)
+    {
+        m_internalConfig.setPlatformRenderNode(renderNode);
+        return StatusOK;
+    }
+
+    const char* DisplayConfigImpl::getPlatformRenderNode() const
+    {
+        return m_internalConfig.getPlatformRenderNode().c_str();
+    }
+
     status_t DisplayConfigImpl::validate() const
     {
         status_t status = StatusObjectImpl::validate();

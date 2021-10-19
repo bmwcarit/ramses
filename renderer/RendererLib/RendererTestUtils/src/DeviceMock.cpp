@@ -20,6 +20,7 @@ namespace ramses_internal
     const DeviceResourceHandle DeviceMock::FakeFrameBufferRenderTargetDeviceHandle(5555u);
     const DeviceResourceHandle DeviceMock::FakeRenderTargetDeviceHandle(6666u);
     const DeviceResourceHandle DeviceMock::FakeRenderBufferDeviceHandle(7777u);
+    const DeviceResourceHandle DeviceMock::FakeDmaRenderBufferDeviceHandle(7778u);
     const DeviceResourceHandle DeviceMock::FakeTextureSamplerDeviceHandle(8888u);
     const DeviceResourceHandle DeviceMock::FakeBlitPassRenderTargetDeviceHandle(9999u);
     constexpr BinaryShaderFormatID DeviceMock::FakeSupportedBinaryShaderFormat;
@@ -50,7 +51,8 @@ namespace ramses_internal
         ON_CALL(*this, registerShader(_)).WillByDefault(Return(FakeShaderDeviceHandle));
         ON_CALL(*this, uploadBinaryShader(_, _, _, _)).WillByDefault(Return(FakeShaderDeviceHandle));
         ON_CALL(*this, allocateTexture2D(_, _, _, _, _, _)).WillByDefault(Return(FakeTextureDeviceHandle));
-        ON_CALL(*this, uploadRenderBuffer(_)).WillByDefault(Return(FakeRenderBufferDeviceHandle));
+        ON_CALL(*this, uploadRenderBuffer(_, _, _, _, _, _)).WillByDefault(Return(FakeRenderBufferDeviceHandle));
+        ON_CALL(*this, uploadDmaRenderBuffer(_, _, _, _, _)).WillByDefault(Return(FakeDmaRenderBufferDeviceHandle));
         ON_CALL(*this, uploadRenderTarget(_)).WillByDefault(Return(FakeRenderTargetDeviceHandle));
         ON_CALL(*this, getFramebufferRenderTarget()).WillByDefault(Return(FakeFrameBufferRenderTargetDeviceHandle));
 

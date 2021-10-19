@@ -238,6 +238,21 @@ namespace ramses
         return bufferId;
     }
 
+    displayBufferId_t RamsesRenderer::createDmaOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t bufferFourccFormat, uint32_t usageFlags, uint64_t modifier)
+    {
+        ramses_internal::DmaBufferFourccFormat bufferFormat { bufferFourccFormat };
+        ramses_internal::DmaBufferUsageFlags bufferUsage { usageFlags };
+        ramses_internal::DmaBufferModifiers bufferModifer { modifier };
+        const auto bufferId = impl.createDmaOffscreenBuffer(display, width, height, bufferFormat, bufferUsage, bufferModifer);
+        LOG_HL_RENDERER_API6(bufferId, display, width, height, bufferFourccFormat, usageFlags, modifier);
+        return bufferId;
+    }
+
+    status_t RamsesRenderer::getDmaOffscreenBufferFDAndStride(displayId_t display, displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const
+    {
+        return impl.getDmaOffscreenBufferFDAndStride(display, displayBufferId, fd, stride);
+    }
+
     displayBufferId_t RamsesRenderer::createInterruptibleOffscreenBuffer(RamsesRenderer& renderer, displayId_t display, uint32_t width, uint32_t height, EDepthBufferType depthBufferType)
     {
         const auto bufferId = renderer.impl.createOffscreenBuffer(display, width, height, 0u, true, depthBufferType);

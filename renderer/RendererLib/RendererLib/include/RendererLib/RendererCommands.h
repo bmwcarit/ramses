@@ -125,6 +125,17 @@ namespace ramses_internal
             ERenderBufferType depthStencilBufferType;
         };
 
+        struct CreateDmaOffscreenBuffer
+        {
+            DisplayHandle display;
+            OffscreenBufferHandle offscreenBuffer;
+            uint32_t width;
+            uint32_t height;
+            DmaBufferFourccFormat dmaBufferFourccFormat;
+            DmaBufferUsageFlags dmaBufferUsageFlags;
+            DmaBufferModifiers dmaBufferModifiers;
+        };
+
         struct DestroyOffscreenBuffer
         {
             DisplayHandle display;
@@ -315,6 +326,7 @@ namespace ramses_internal
             CreateDisplay,
             DestroyDisplay,
             CreateOffscreenBuffer,
+            CreateDmaOffscreenBuffer,
             DestroyOffscreenBuffer,
             CreateStreamBuffer,
             DestroyStreamBuffer,

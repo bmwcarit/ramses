@@ -10,7 +10,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 SET(RAMSES_VERSION_MAJOR 27)
 SET(RAMSES_VERSION_MINOR 0)
-SET(RAMSES_VERSION_PATCH 111)
+SET(RAMSES_VERSION_PATCH 112)
 SET(RAMSES_VERSION_POSTFIX "")
 
 CMAKE_POLICY(SET CMP0048 NEW)
@@ -157,6 +157,7 @@ ACME2_PROJECT(
                                 ON   renderer/RendererLib
 
                                 # Auxilary platform components
+                                AUTO renderer/Platform/WaylandEGLExtensionProcs
                                 AUTO renderer/Platform/WaylandUtilities
                                 AUTO renderer/Platform/SystemCompositorController_Wayland_IVI
 
@@ -170,6 +171,7 @@ ACME2_PROJECT(
 
                                 # Device Components
                                 AUTO renderer/Platform/Device_GL
+                                AUTO renderer/Platform/Device_EGL_Extension
 
                                 # Other Components
                                 # TODO Mohamed: those components should be possible to move before window components (have less deps)

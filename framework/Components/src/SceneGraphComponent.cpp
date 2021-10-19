@@ -259,7 +259,6 @@ namespace ramses_internal
         {
             if (it->second.provider == disconnnectedParticipant)
             {
-                LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::participantHasDisconnected: locally unpublish " << it->first << " from " << disconnnectedParticipant);
                 if (m_sceneRendererHandler)
                     m_sceneRendererHandler->handleSceneBecameUnavailable(it->first, disconnnectedParticipant);
                 it = m_remoteScenes.erase(it);

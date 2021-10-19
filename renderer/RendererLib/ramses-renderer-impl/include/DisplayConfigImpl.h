@@ -64,6 +64,9 @@ namespace ramses
         status_t setWaylandEmbeddedCompositingSocketFD(int fd);
         int getWaylandSocketEmbeddedFD() const;
 
+        status_t setPlatformRenderNode(const char* renderNode);
+        const char* getPlatformRenderNode() const;
+
         virtual status_t validate() const override;
 
         //impl methods

@@ -59,13 +59,14 @@ namespace ramses_internal
         }
 
         // TODO vaclav remove, for debugging if display thread stuck
-        if (m_threadedDisplays && m_displayThreadsUpdating && m_loopCounter++ > 100)
+        const auto estNumFramesWithinWatchdogTimeoutPeriod = std::chrono::seconds{ 1 } / m_generalMinFrameDuration;
+        if (m_threadedDisplays && m_displayThreadsUpdating && m_loopCounter++ > estNumFramesWithinWatchdogTimeoutPeriod / 2)
         {
             m_loopCounter = 0;
             for (auto& display : m_displays)
             {
                 const auto frameCounter = display.second.displayThread->getFrameCounter();
-                //if (display.second.lastFrameCounter == frameCounter)
+                if (display.second.lastFrameCounter == frameCounter)
                     LOG_WARN_P(CONTEXT_RENDERER, "Display {} potentially stuck at trace ID {}", display.first, display.second.displayBundle->traceId());
                 display.second.lastFrameCounter = frameCounter;
             }

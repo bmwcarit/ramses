@@ -50,7 +50,7 @@ namespace ramses_internal
             InSequence seq;
             expectCreationSequence();
 
-            EXPECT_CALL(m_renderBackend.deviceMock, uploadRenderBuffer(_)).Times(2u);
+            EXPECT_CALL(m_renderBackend.deviceMock, uploadRenderBuffer(_, _, _, _, _, _)).Times(2u);
             EXPECT_CALL(m_renderBackend.deviceMock, uploadRenderTarget(_));
 
             EXPECT_CALL(m_renderBackend.deviceMock, uploadShader(_));

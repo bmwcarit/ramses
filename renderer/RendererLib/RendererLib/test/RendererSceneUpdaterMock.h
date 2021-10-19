@@ -30,6 +30,7 @@ namespace ramses_internal
         MOCK_METHOD(void, handleSceneUnpublished, (SceneId sceneId), (override));
         MOCK_METHOD(void, handleSceneReceived, (const SceneInfo& sceneInfo), (override));
         MOCK_METHOD(bool, handleBufferCreateRequest, (OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType), (override));
+        MOCK_METHOD(bool, handleDmaBufferCreateRequest, (OffscreenBufferHandle buffer, UInt32 width, UInt32 height, DmaBufferFourccFormat format, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers), (override));
         MOCK_METHOD(bool, handleBufferDestroyRequest, (OffscreenBufferHandle buffer), (override));
         MOCK_METHOD(bool, handleBufferCreateRequest, (StreamBufferHandle buffer, WaylandIviSurfaceId source), (override));
         MOCK_METHOD(bool, handleBufferDestroyRequest, (StreamBufferHandle buffer), (override));

@@ -72,9 +72,14 @@ namespace ramses_internal
         virtual DeviceResourceHandle uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle) override;
         virtual void deleteTexture(DeviceResourceHandle handle) override;
         virtual void activateTexture(DeviceResourceHandle handle, DataFieldHandle field) override;
-        virtual DeviceResourceHandle    uploadRenderBuffer(const RenderBuffer& renderBuffer) override;
+        virtual DeviceResourceHandle    uploadRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType type, ETextureFormat format, ERenderBufferAccessMode accessMode, uint32_t sampleCount) override;
         virtual void                    deleteRenderBuffer(DeviceResourceHandle handle) override;
         virtual void                    activateTextureSamplerObject(const TextureSamplerStates& samplerStates, DataFieldHandle field) override;
+
+        virtual DeviceResourceHandle    uploadDmaRenderBuffer(UInt32 width, UInt32 height, DmaBufferFourccFormat format, DmaBufferUsageFlags bufferUsage, DmaBufferModifiers bufferModifiers) override;
+        virtual int                     getDmaRenderBufferFD(DeviceResourceHandle handle) override;
+        virtual uint32_t                getDmaRenderBufferStride(DeviceResourceHandle handle) override;
+        virtual void                    destroyDmaRenderBuffer(DeviceResourceHandle handle) override;
 
         virtual DeviceResourceHandle    getFramebufferRenderTarget() const override;
         virtual DeviceResourceHandle    uploadRenderTarget(const DeviceHandleVector& renderBuffers) override;

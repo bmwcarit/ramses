@@ -45,6 +45,7 @@ namespace ramses_internal
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::CreateDisplay& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::DestroyDisplay& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::CreateOffscreenBuffer& cmd) const { return cmd.display; }
+        absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::CreateDmaOffscreenBuffer& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::DestroyOffscreenBuffer& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::CreateStreamBuffer& cmd) const { return cmd.display; }
         absl::optional<DisplayHandle> getDisplayOf(const RendererCommand::DestroyStreamBuffer& cmd) const { return cmd.display; }

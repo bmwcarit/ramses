@@ -8,11 +8,6 @@
 
 FIND_PACKAGE(OpenGL)
 
-# ACME doesn't pass on definitions, so forced to do it this way
-IF(OpenGL_FOUND)
-    ADD_DEFINITIONS(${OpenGL_DEFINITIONS})
-ENDIF(OpenGL_FOUND)
-
 ACME_MODULE(
 
     #==========================================================================
@@ -35,3 +30,7 @@ ACME_MODULE(
                             OpenGL
 )
 
+# ACME doesn't pass on definitions, so forced to do it this way
+IF(TARGET Device_GL)
+    target_compile_definitions(Device_GL PUBLIC ${OpenGL_DEFINITIONS})
+ENDIF()

@@ -27,7 +27,7 @@ namespace ramses_internal
     bool Platform_Windows_WGL_4_5::createDevice()
     {
         assert(m_context);
-        auto device = std::make_unique<Device_GL>(*m_context, uint8_t{ 4 }, uint8_t{ 5 }, false);
+        auto device = std::make_unique<Device_GL>(*m_context, uint8_t{ 4 }, uint8_t{ 5 }, false, nullptr);
         if (device->init())
             m_device = std::move(device);
 
@@ -37,7 +37,7 @@ namespace ramses_internal
     bool Platform_Windows_WGL_4_5::createDeviceUploading()
     {
         assert(m_contextUploading);
-        auto device = std::make_unique<Device_GL>(*m_contextUploading, uint8_t{ 4 }, uint8_t{ 5 }, false);
+        auto device = std::make_unique<Device_GL>(*m_contextUploading, uint8_t{ 4 }, uint8_t{ 5 }, false, nullptr);
         if (device->init())
             m_deviceUploading = std::move(device);
 

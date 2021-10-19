@@ -147,33 +147,41 @@ namespace ramses_internal
         const OffscreenBufferHandle buffer(11u);
         const DisplayHandle display(22u);
 
-        m_rendererEventCollector.addOBEvent(ERendererEventType::OffscreenBufferCreated, buffer, display);
+        m_rendererEventCollector.addOBEvent(ERendererEventType::OffscreenBufferCreated, buffer, display, 123, 456u);
         RendererEventVector resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(ERendererEventType::OffscreenBufferCreated, resultEvents[0].eventType);
         EXPECT_EQ(buffer, resultEvents[0].offscreenBuffer);
         EXPECT_EQ(display, resultEvents[0].displayHandle);
+        EXPECT_EQ(123, resultEvents[0].dmaBufferFD);
+        EXPECT_EQ(456u, resultEvents[0].dmaBufferStride);
 
-        m_rendererEventCollector.addOBEvent(ERendererEventType::OffscreenBufferCreateFailed, buffer, display);
+        m_rendererEventCollector.addOBEvent(ERendererEventType::OffscreenBufferCreateFailed, buffer, display, -1, 0u);
         resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(ERendererEventType::OffscreenBufferCreateFailed, resultEvents[0].eventType);
         EXPECT_EQ(buffer, resultEvents[0].offscreenBuffer);
         EXPECT_EQ(display, resultEvents[0].displayHandle);
+        EXPECT_EQ(-1, resultEvents[0].dmaBufferFD);
+        EXPECT_EQ(0u, resultEvents[0].dmaBufferStride);
 
-        m_rendererEventCollector.addOBEvent(ERendererEventType::OffscreenBufferDestroyed, buffer, display);
+        m_rendererEventCollector.addOBEvent(ERendererEventType::OffscreenBufferDestroyed, buffer, display, -1, 0u);
         resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(ERendererEventType::OffscreenBufferDestroyed, resultEvents[0].eventType);
         EXPECT_EQ(buffer, resultEvents[0].offscreenBuffer);
         EXPECT_EQ(display, resultEvents[0].displayHandle);
+        EXPECT_EQ(-1, resultEvents[0].dmaBufferFD);
+        EXPECT_EQ(0u, resultEvents[0].dmaBufferStride);
 
-        m_rendererEventCollector.addOBEvent(ERendererEventType::OffscreenBufferDestroyFailed, buffer, display);
+        m_rendererEventCollector.addOBEvent(ERendererEventType::OffscreenBufferDestroyFailed, buffer, display, -1, 0u);
         resultEvents = consumeRendererEvents();
         ASSERT_EQ(1u, resultEvents.size());
         EXPECT_EQ(ERendererEventType::OffscreenBufferDestroyFailed, resultEvents[0].eventType);
         EXPECT_EQ(buffer, resultEvents[0].offscreenBuffer);
         EXPECT_EQ(display, resultEvents[0].displayHandle);
+        EXPECT_EQ(-1, resultEvents[0].dmaBufferFD);
+        EXPECT_EQ(0u, resultEvents[0].dmaBufferStride);
     }
 
     TEST_F(ARendererEventCollector, CanAddSceneFlushEvent)

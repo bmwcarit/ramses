@@ -67,6 +67,7 @@ namespace ramses_internal
         virtual void                 unloadRenderTarget(RenderTargetHandle renderTarget, SceneId sceneId) override;
 
         virtual void                 uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
+        virtual void                 uploadDmaOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers) override;
         virtual void                 unloadOffscreenBuffer(OffscreenBufferHandle bufferHandle) override;
 
         virtual void                 uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId source) override;
@@ -99,6 +100,8 @@ namespace ramses_internal
         // Renderer resources
         virtual DeviceResourceHandle getOffscreenBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const override;
         virtual DeviceResourceHandle getOffscreenBufferColorBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const override;
+        virtual int getDmaOffscreenBufferFD(OffscreenBufferHandle bufferHandle) const override;
+        virtual UInt32 getDmaOffscreenBufferStride(OffscreenBufferHandle bufferHandle) const override;
         virtual OffscreenBufferHandle getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const override;
         virtual DeviceResourceHandle getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const override;
 
@@ -110,6 +113,7 @@ namespace ramses_internal
         using SceneResourceRegistryMap = HashMap<SceneId, RendererSceneResourceRegistry>;
 
         RendererSceneResourceRegistry& getSceneResourceRegistry(SceneId sceneId);
+        void clearRenderTarget(DeviceResourceHandle handle);
 
         struct OffscreenBufferDescriptor
         {
@@ -118,6 +122,7 @@ namespace ramses_internal
             DeviceResourceHandle m_colorBufferHandle[2];
             DeviceResourceHandle m_depthBufferHandle;
             UInt32 m_estimatedVRAMUsage;
+            Bool isDmaBuffer = false;
         };
         using OffscreenBufferMap = MemoryPool<OffscreenBufferDescriptor, OffscreenBufferHandle>;
         using StreamBufferMap = MemoryPool<WaylandIviSurfaceId, StreamBufferHandle>;

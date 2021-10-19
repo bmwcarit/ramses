@@ -468,7 +468,7 @@ TEST_F(ARendererResourceManager, canUploadAndUnloadRenderTargetBuffer)
     RenderBufferHandle bufferHandle(1u);
     const RenderBuffer colorBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
 
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorBuffer)));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u));
     resourceManager.uploadRenderTargetBuffer(bufferHandle, fakeSceneId, colorBuffer);
 
     EXPECT_EQ(DeviceMock::FakeRenderBufferDeviceHandle, resourceManager.getRenderTargetBufferDeviceHandle(bufferHandle, fakeSceneId));
@@ -486,11 +486,15 @@ TEST_F(ARendererResourceManager, canUploadAndUnloadBlitPassRenderTargets)
     const RenderBuffer renderBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
 
     const DeviceResourceHandle sourceRenderBufferDeviceHandle(201u);
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(renderBuffer))).WillOnce(Return(sourceRenderBufferDeviceHandle));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock,
+        uploadRenderBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u))
+        .WillOnce(Return(sourceRenderBufferDeviceHandle));
     resourceManager.uploadRenderTargetBuffer(sourceRenderBufferHandle, fakeSceneId, renderBuffer);
 
     const DeviceResourceHandle destinationRenderBufferDeviceHandle(202u);
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(renderBuffer))).WillOnce(Return(destinationRenderBufferDeviceHandle));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock,
+        uploadRenderBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u))
+        .WillOnce(Return(destinationRenderBufferDeviceHandle));
     resourceManager.uploadRenderTargetBuffer(destinationRenderBufferHandle, fakeSceneId, renderBuffer);
 
     const DeviceResourceHandle blittingRenderTargetSrcDeviceHandle(203u);
@@ -531,8 +535,8 @@ TEST_F(ARendererResourceManager, canUploadAndUnloadRenderTargetWithBuffers)
 
     {
         InSequence seq;
-        EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorBuffer)));
-        EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(depthBuffer)));
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u));
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(800u, 600u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_ReadWrite, 0u));
         EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
     }
 
@@ -579,10 +583,9 @@ TEST_F(ARendererResourceManager, GetsInvalidDeviceHandleForUnknownOffscreenBuffe
 TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorBuffer)
 {
     const OffscreenBufferHandle bufferHandle(1u);
-    const RenderBuffer colorOffscreenBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
 
     InSequence seq;
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer)));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
@@ -604,11 +607,9 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorBuffer)
 TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthBuffers)
 {
     const OffscreenBufferHandle bufferHandle(1u);
-    const RenderBuffer colorOffscreenBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
-    const RenderBuffer depthOffscreenBuffer(1u, 1u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_WriteOnly, 0u);
     InSequence seq;
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer)));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(depthOffscreenBuffer)));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(1u, 1u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_WriteOnly, 0u));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
@@ -630,11 +631,9 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthBuffers)
 TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilAttached)
 {
     const OffscreenBufferHandle bufferHandle(1u);
-    const RenderBuffer colorOffscreenBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
-    const RenderBuffer depthOffscreenBuffer(1u, 1u, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 0u);
     InSequence seq;
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer)));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(depthOffscreenBuffer)));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(1u, 1u, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 0u));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
@@ -656,11 +655,9 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilA
 TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilAttachedWithMSAAenabled)
 {
     const OffscreenBufferHandle bufferHandle(1u);
-    const RenderBuffer colorOffscreenBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 4u);
-    const RenderBuffer depthOffscreenBuffer(1u, 1u, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 4u);
     InSequence seq;
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer)));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(depthOffscreenBuffer)));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 4u));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(1u, 1u, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 4u));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
@@ -682,18 +679,17 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilA
 TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorBuffer_WithDoubleBuffering)
 {
     const OffscreenBufferHandle bufferHandle(1u);
-    const RenderBuffer colorOffscreenBuffer1(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
-    const RenderBuffer colorOffscreenBuffer2(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
-
     const DeviceResourceHandle colorBufferDeviceHandle1{ 7771u };
     const DeviceResourceHandle colorBufferDeviceHandle2{ 7778u };
     const DeviceResourceHandle offscreenBufferDeviceHandle1{ 7798u };
     const DeviceResourceHandle offscreenBufferDeviceHandle2{ 7799u };
     InSequence seq;
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer1))).WillOnce(Return(colorBufferDeviceHandle1));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u))
+        .WillOnce(Return(colorBufferDeviceHandle1));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(Eq(DeviceHandleVector({ colorBufferDeviceHandle1 })))).WillOnce(Return(offscreenBufferDeviceHandle1));
 
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer2))).WillOnce(Return(colorBufferDeviceHandle2));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u))
+        .WillOnce(Return(colorBufferDeviceHandle2));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(Eq(DeviceHandleVector({ colorBufferDeviceHandle2 })))).WillOnce(Return(offscreenBufferDeviceHandle2));
 
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(offscreenBufferDeviceHandle1));
@@ -725,21 +721,20 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorBuffer_WithDoubl
 TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilBuffers_WithDoubleBuffering)
 {
     const OffscreenBufferHandle bufferHandle(1u);
-    const RenderBuffer colorOffscreenBuffer1(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
-    const RenderBuffer colorOffscreenBuffer2(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
-    const RenderBuffer depthOffscreenBuffer(1u, 1u, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 0u);
-
     const DeviceResourceHandle colorBufferDeviceHandle1{ 7771u };
     const DeviceResourceHandle colorBufferDeviceHandle2{ 7778u };
     const DeviceResourceHandle depthBufferDeviceHandle{ 7796u };
     const DeviceResourceHandle offscreenBufferDeviceHandle1{ 7798u };
     const DeviceResourceHandle offscreenBufferDeviceHandle2{ 7799u };
     InSequence seq;
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer1))).WillOnce(Return(colorBufferDeviceHandle1));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(depthOffscreenBuffer))).WillOnce(Return(depthBufferDeviceHandle));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u))
+        .WillOnce(Return(colorBufferDeviceHandle1));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(1u, 1u, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, 0u))
+        .WillOnce(Return(depthBufferDeviceHandle));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(Eq(DeviceHandleVector({colorBufferDeviceHandle1, depthBufferDeviceHandle})))).WillOnce(Return(offscreenBufferDeviceHandle1));
 
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorOffscreenBuffer2))).WillOnce(Return(colorBufferDeviceHandle2));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u))
+        .WillOnce(Return(colorBufferDeviceHandle2));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(Eq(DeviceHandleVector({ colorBufferDeviceHandle2, depthBufferDeviceHandle })))).WillOnce(Return(offscreenBufferDeviceHandle2));
 
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(offscreenBufferDeviceHandle1));
@@ -768,11 +763,43 @@ TEST_F(ARendererResourceManager, UploadsOffscreenBufferWithColorAndDepthStencilB
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_)).Times(3u);
 }
 
+TEST_F(ARendererResourceManager, UploadsDmaOffscreenBuffer)
+{
+    constexpr OffscreenBufferHandle bufferHandle(1u);
+
+    constexpr DmaBufferFourccFormat bufferFormat{ 777u };
+    constexpr DmaBufferUsageFlags bufferUsageFlags{ 888u };
+    constexpr DmaBufferModifiers bufferModifiers{ 999u };
+    InSequence seq;
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadDmaRenderBuffer(10u, 20u, bufferFormat, bufferUsageFlags, bufferModifiers));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
+    RenderState::ScissorRegion scissorRegion{};
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
+    resourceManager.uploadDmaOffscreenBuffer(bufferHandle, 10u, 20u, bufferFormat, bufferUsageFlags, bufferModifiers);
+
+    EXPECT_EQ(DeviceMock::FakeRenderTargetDeviceHandle, resourceManager.getOffscreenBufferDeviceHandle(bufferHandle));
+    EXPECT_EQ(DeviceMock::FakeDmaRenderBufferDeviceHandle, resourceManager.getOffscreenBufferColorBufferDeviceHandle(bufferHandle));
+    EXPECT_EQ(bufferHandle, resourceManager.getOffscreenBufferHandle(DeviceMock::FakeRenderTargetDeviceHandle));
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, getDmaRenderBufferFD(DeviceMock::FakeDmaRenderBufferDeviceHandle)).WillOnce(Return(123));
+    EXPECT_EQ(123, resourceManager.getDmaOffscreenBufferFD(bufferHandle));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, getDmaRenderBufferStride(DeviceMock::FakeDmaRenderBufferDeviceHandle)).WillOnce(Return(432u));
+    EXPECT_EQ(432u, resourceManager.getDmaOffscreenBufferStride(bufferHandle));
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, destroyDmaRenderBuffer(_));
+}
+
 TEST_F(ARendererResourceManager, CanUnloadOffscreenBuffer_WithColorBuffer)
 {
     const OffscreenBufferHandle bufferHandle(1u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_, _, _, _, _, _));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
@@ -793,7 +820,7 @@ TEST_F(ARendererResourceManager, CanUnloadOffscreenBuffer_WithColorAndDepthStenc
 {
     const OffscreenBufferHandle bufferHandle(1u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_)).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_, _, _, _, _, _)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
@@ -814,7 +841,7 @@ TEST_F(ARendererResourceManager, CanUnloadDoubleBufferedOffscreenBuffer_WithColo
 {
     const OffscreenBufferHandle bufferHandle(1u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_)).Times(2u);
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_)).Times(2u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_, _, _, _, _, _)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(2u);
@@ -837,7 +864,7 @@ TEST_F(ARendererResourceManager, CanUnloadDoubleBufferedOffscreenBuffer_WithColo
 {
     const OffscreenBufferHandle bufferHandle(1u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_)).Times(2u);
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_)).Times(3u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_, _, _, _, _, _)).Times(3u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(2u);
@@ -853,6 +880,35 @@ TEST_F(ARendererResourceManager, CanUnloadDoubleBufferedOffscreenBuffer_WithColo
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_)).Times(3u);
     resourceManager.unloadOffscreenBuffer(bufferHandle);
 
+    EXPECT_FALSE(resourceManager.getOffscreenBufferDeviceHandle(bufferHandle).isValid());
+}
+
+TEST_F(ARendererResourceManager, CanUnloadDmaOffscreenBuffer)
+{
+    constexpr OffscreenBufferHandle bufferHandle(1u);
+
+    constexpr DmaBufferFourccFormat bufferFormat{ 777u };
+    constexpr DmaBufferUsageFlags bufferUsageFlags{ 888u };
+    constexpr DmaBufferModifiers bufferModifiers{ 999u };
+    InSequence seq;
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadDmaRenderBuffer(10u, 20u, bufferFormat, bufferUsageFlags, bufferModifiers));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f }));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, depthWrite(EDepthWrite::Enabled));
+    RenderState::ScissorRegion scissorRegion{};
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, scissorTest(EScissorTest::Disabled, scissorRegion));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, clear(_));
+    resourceManager.uploadDmaOffscreenBuffer(bufferHandle, 10u, 20u, bufferFormat, bufferUsageFlags, bufferModifiers);
+
+    EXPECT_EQ(DeviceMock::FakeRenderTargetDeviceHandle, resourceManager.getOffscreenBufferDeviceHandle(bufferHandle));
+    EXPECT_EQ(DeviceMock::FakeDmaRenderBufferDeviceHandle, resourceManager.getOffscreenBufferColorBufferDeviceHandle(bufferHandle));
+    EXPECT_EQ(bufferHandle, resourceManager.getOffscreenBufferHandle(DeviceMock::FakeRenderTargetDeviceHandle));
+
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderTarget(_));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, destroyDmaRenderBuffer(_));
+    resourceManager.unloadOffscreenBuffer(bufferHandle);
     EXPECT_FALSE(resourceManager.getOffscreenBufferDeviceHandle(bufferHandle).isValid());
 }
 
@@ -1120,10 +1176,10 @@ TEST_F(ARendererResourceManager, unloadsAllSceneResources)
     RenderBufferHandleVector bufferHandles;
     bufferHandles.push_back(RenderBufferHandle(1u));
     bufferHandles.push_back(RenderBufferHandle(5u));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u));
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(800u, 600u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_ReadWrite, 0u));
     const RenderBuffer colorBuffer(800u, 600u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u);
     const RenderBuffer depthBuffer(800u, 600u, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_ReadWrite, 0u);
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(colorBuffer)));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(Eq(depthBuffer)));
     resourceManager.uploadRenderTargetBuffer(bufferHandles[0], fakeSceneId, colorBuffer);
     resourceManager.uploadRenderTargetBuffer(bufferHandles[1], fakeSceneId, depthBuffer);
 
@@ -1296,7 +1352,7 @@ TEST_F(ARendererResourceManager, UnloadsAllRemainingOffscreenBuffersAndStreamBuf
     constexpr OffscreenBufferHandle obHandle{ 1u };
     constexpr OffscreenBufferHandle obHandle2{ 2u };
     EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderTarget(_)).Times(2u);
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_)).Times(4u);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(_, _, _, _, _, _)).Times(4u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, activateRenderTarget(_)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, colorMask(true, true, true, true)).Times(2u);
     EXPECT_CALL(platform.renderBackendMock.deviceMock, clearColor(Vector4{ 0.f, 0.f, 0.f, 1.f })).Times(2u);

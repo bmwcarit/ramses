@@ -15,6 +15,10 @@
 #include "Context_EGL/Context_EGL.h"
 #include "Device_GL/Device_GL.h"
 
+#ifdef DEVICE_EGL_EXTENSION_SUPPORTED
+#include "Device_EGL_Extension/Device_EGL_Extension.h"
+#endif
+
 #include <EGL/eglext.h>
 
 namespace ramses_internal
@@ -44,15 +48,31 @@ namespace ramses_internal
         virtual bool createDevice() override final
         {
             assert(m_context);
-            m_device = createDeviceInternal(*m_context);
+            m_device = createDeviceInternal(*m_context, m_deviceExtension.get());
             return m_device != nullptr;
         }
 
         virtual bool createDeviceUploading() override final
         {
             assert(m_contextUploading);
-            m_deviceUploading = createDeviceInternal(*m_contextUploading);
+            m_deviceUploading = createDeviceInternal(*m_contextUploading, nullptr);
             return m_deviceUploading != nullptr;
+        }
+
+        bool createDeviceExtension(const DisplayConfig& displayConfig) override final
+        {
+            const auto& platformRenderNode = displayConfig.getPlatformRenderNode();
+            if(platformRenderNode == "")
+                return true;
+
+#ifdef DEVICE_EGL_EXTENSION_SUPPORTED
+            Context_EGL& context = static_cast<Context_EGL&>(*m_context);
+            auto deviceExtension = std::make_unique<Device_EGL_Extension>(context, platformRenderNode);
+            if(deviceExtension->init())
+                m_deviceExtension = std::move(deviceExtension);
+#endif
+
+            return m_deviceExtension != nullptr;
         }
 
         virtual uint32_t getSwapInterval() const = 0;
@@ -82,9 +102,9 @@ namespace ramses_internal
             return {};
         }
 
-        std::unique_ptr<Device_GL> createDeviceInternal(IContext& context)
+        std::unique_ptr<Device_GL> createDeviceInternal(IContext& context, IDeviceExtension* deviceExtension)
         {
-            auto device = std::make_unique<Device_GL>(context, uint8_t{ 3 }, uint8_t{ 0 }, true);
+            auto device = std::make_unique<Device_GL>(context, uint8_t{ 3 }, uint8_t{ 0 }, true, deviceExtension);
             if (device->init())
                 return device;
 

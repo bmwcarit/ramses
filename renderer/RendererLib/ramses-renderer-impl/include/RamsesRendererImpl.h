@@ -63,7 +63,6 @@ namespace ramses
         displayId_t createDisplay(const DisplayConfig& config);
         status_t    destroyDisplay(displayId_t displayId);
         displayBufferId_t getDisplayFramebuffer(displayId_t displayId) const;
-
         const ramses_internal::DisplayDispatcher& getDisplayDispatcher() const;
         ramses_internal::DisplayDispatcher& getDisplayDispatcher();
 
@@ -71,9 +70,11 @@ namespace ramses
         DcsmContentControl* createDcsmContentControl();
 
         displayBufferId_t createOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, uint32_t sampleCount, bool interruptible, EDepthBufferType depthBufferType);
+        displayBufferId_t createDmaOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, ramses_internal::DmaBufferFourccFormat dmaBufferFourccFormat, ramses_internal::DmaBufferUsageFlags dmaBufferUsageFlags, ramses_internal::DmaBufferModifiers dmaBufferModifiers);
         status_t destroyOffscreenBuffer(displayId_t display, displayBufferId_t offscreenBuffer);
         status_t setDisplayBufferClearFlags(displayId_t display, displayBufferId_t displayBuffer, uint32_t clearFlags);
         status_t setDisplayBufferClearColor(displayId_t display, displayBufferId_t displayBuffer, float r, float g, float b, float a);
+        status_t getDmaOffscreenBufferFDAndStride(displayId_t display, displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const;
 
         streamBufferId_t allocateStreamBuffer();
         streamBufferId_t createStreamBuffer(displayId_t display, waylandIviSurfaceId_t source);
@@ -131,6 +132,15 @@ namespace ramses
         streamBufferId_t                                                            m_nextStreamBufferId{ 0u };
         DisplayFrameBufferMap                                                       m_displayFramebuffers;
         bool                                                                        m_systemCompositorEnabled;
+
+        struct OffscreenDmaBufferInfo
+        {
+            displayId_t display;
+            displayBufferId_t displayBuffer;
+            int fd;
+            uint32_t stride;
+        };
+        std::vector<OffscreenDmaBufferInfo>                                         m_offscreenDmaBufferInfos;
 
         ramses_internal::ELoopMode                                                  m_loopMode;
         std::unique_ptr<ramses_internal::CommandDispatchingThread>                  m_commandDispatchingThread;

@@ -1,3 +1,17 @@
+27.0.112
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Introduce DMA offscreen buffers to RamsesRenderer and DisplayConfig
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fixed coordinates for the mouse wheel event (Windows only)
+        - Revert "Fix SomeIP duplicate messages after multiple reconnects" because it caused reconnects
+          leading to very high cpu usage
+        - Only show display stuck message when really stuck, decrease print frequency to make it
+          smaller than watchdog
+
 27.0.111
 -------------------
         General changes

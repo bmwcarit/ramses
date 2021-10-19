@@ -481,6 +481,26 @@ namespace ramses
         */
         status_t setSystemCompositorWaylandDisplay(const char* waylandDisplay);
 
+        /**
+        * @brief Set the render node to use for creating GBM buffer objects used for creating DMA Offscreen buffers
+        *        on platforms that support creation of DMA buffers.
+        *
+        * @brief Set the socket of a DRM driver's render node to load and create a GBM (Generic Buffer Manager) device.
+        *        If the socket is opened successfully a GBM device is created using gbm_create_device.
+        *        The GBM device can be used to create DMA buffers which act as regular offscreen buffers but also allow
+        *        direct memory access from application's side. This can be helpful for use cases that require CPU read or write of memory
+        *        that is used for rendering as well.
+        *
+        *        Setting a valid render node is a pre-requisite to creating DMA offscreen buffers using #ramses::RamsesRenderer::createDmaOffscreenBuffer.
+        *        Setting an invalid render node, or failing to create a GBM device using the passed render node
+        *        will result in display creation failure.
+        *
+        *
+        * @param[in] renderNode Render node used to load for creating of GBM device using gbm_create_device
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t setPlatformRenderNode(const char* renderNode);
 
         /**
         * Stores internal data for implementation specifics of DisplayConfig.

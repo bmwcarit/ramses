@@ -99,6 +99,9 @@ namespace ramses_internal
         bool setWaylandEmbeddedCompositingSocketPermissions(uint32_t permissions);
         uint32_t getWaylandSocketEmbeddedPermissions() const;
 
+        void setPlatformRenderNode(const String& renderNode);
+        const String& getPlatformRenderNode() const;
+
         Bool operator==(const DisplayConfig& other) const;
         Bool operator!=(const DisplayConfig& other) const;
 
@@ -134,6 +137,7 @@ namespace ramses_internal
         String m_waylandSocketEmbeddedGroupName;
         uint32_t m_waylandSocketEmbeddedPermissions = 0;
         int m_waylandSocketEmbeddedFD = -1;
+        String m_platformRenderNode;
     };
 }
 

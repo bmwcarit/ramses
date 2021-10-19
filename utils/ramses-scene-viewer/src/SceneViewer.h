@@ -32,6 +32,14 @@ namespace ramses_internal
         SceneViewer(int argc, char* argv[]);
 
     protected:
+        enum class GuiMode
+        {
+            Off,
+            Overlay, ///< Debugging gui overlaps the rendered scene
+            Window   ///< Separate window for the debugging gui
+        };
+
+        GuiMode getGuiMode() const;
         void printUsage() const;
         void loadAndRenderScene(int argc, char* argv[], const String& sceneFile);
         ramses::Scene* loadScene(ramses::RamsesClient& client, const String& sceneFile);
@@ -45,6 +53,7 @@ namespace ramses_internal
         ArgumentString m_validationUnrequiredObjectsDirectoryArgument;
         ArgumentString m_screenshotFile;
         ArgumentBool   m_noSkub;
+        ArgumentString m_guiModeArgument;
     };
 }
 

@@ -33,6 +33,8 @@ public:
     MOCK_METHOD(DeviceResourceHandle, getOffscreenBufferDeviceHandle, (OffscreenBufferHandle), (const, override));
     MOCK_METHOD(OffscreenBufferHandle, getOffscreenBufferHandle, (DeviceResourceHandle), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getOffscreenBufferColorBufferDeviceHandle, (OffscreenBufferHandle), (const, override));
+    MOCK_METHOD(int, getDmaOffscreenBufferFD, (OffscreenBufferHandle), (const, override));
+    MOCK_METHOD(UInt32, getDmaOffscreenBufferStride, (OffscreenBufferHandle), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getStreamBufferDeviceHandle, (StreamBufferHandle bufferHandle), (const, override));
     MOCK_METHOD(void, getBlitPassRenderTargetsDeviceHandle, (BlitPassHandle, SceneId, DeviceResourceHandle&, DeviceResourceHandle&), (const, override));
     MOCK_METHOD(DeviceResourceHandle, getDataBufferDeviceHandle, (DataBufferHandle, SceneId), (const, override));
@@ -53,6 +55,7 @@ public:
     MOCK_METHOD(void, uploadRenderTarget, (RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId), (override));
     MOCK_METHOD(void, unloadRenderTarget, (RenderTargetHandle renderTarget, SceneId sceneId), (override));
     MOCK_METHOD(void, uploadOffscreenBuffer, (OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, bool isDoubleBuffered, ERenderBufferType depthStencilBufferType), (override));
+    MOCK_METHOD(void, uploadDmaOffscreenBuffer, (OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers), (override));
     MOCK_METHOD(void, unloadOffscreenBuffer, (OffscreenBufferHandle bufferHandle), (override));
     MOCK_METHOD(void, uploadStreamBuffer, (StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId), (override));
     MOCK_METHOD(void, unloadStreamBuffer, (StreamBufferHandle bufferHandle), (override));

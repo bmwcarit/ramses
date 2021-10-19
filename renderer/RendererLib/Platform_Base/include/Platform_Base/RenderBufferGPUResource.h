@@ -10,6 +10,7 @@
 #define RAMSES_RENDERBUFFERGPURESOURCE_H
 
 #include "Platform_Base/GpuResource.h"
+#include "SceneAPI/TextureEnums.h"
 
 namespace ramses_internal
 {

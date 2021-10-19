@@ -385,4 +385,24 @@ namespace ramses
     {
         return getIScene().getDataReference(m_dataInstance, ramses_internal::Camera::FrustumPlanesField) != m_frustumPlanesDataReference;
     }
+
+    ramses_internal::DataInstanceHandle CameraNodeImpl::getViewportOffsetHandle() const
+    {
+        return getIScene().getDataReference(m_dataInstance, ramses_internal::Camera::ViewportOffsetField);
+    }
+
+    ramses_internal::DataInstanceHandle CameraNodeImpl::getViewportSizeHandle() const
+    {
+        return getIScene().getDataReference(m_dataInstance, ramses_internal::Camera::ViewportSizeField);
+    }
+
+    ramses_internal::DataInstanceHandle CameraNodeImpl::getFrustrumPlanesHandle() const
+    {
+        return getIScene().getDataReference(m_dataInstance, ramses_internal::Camera::FrustumPlanesField);
+    }
+
+    ramses_internal::DataInstanceHandle CameraNodeImpl::getFrustrumNearFarPlanesHandle() const
+    {
+        return getIScene().getDataReference(m_dataInstance, ramses_internal::Camera::FrustumNearFarPlanesField);
+    }
 }

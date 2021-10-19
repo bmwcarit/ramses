@@ -71,6 +71,7 @@ namespace ramses_internal
         virtual void handleSceneUnpublished(SceneId sceneId) override;
         virtual void handleSceneReceived(const SceneInfo& sceneInfo) override;
         virtual bool handleBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) override;
+        virtual bool handleDmaBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers) override;
         virtual bool handleBufferDestroyRequest(OffscreenBufferHandle buffer) override;
         virtual bool handleBufferCreateRequest(StreamBufferHandle buffer, WaylandIviSurfaceId source) override;
         virtual bool handleBufferDestroyRequest(StreamBufferHandle buffer) override;

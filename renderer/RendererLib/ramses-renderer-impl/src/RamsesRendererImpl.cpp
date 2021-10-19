@@ -271,7 +271,33 @@ namespace ramses
             break;
         }
 
-        ramses_internal::RendererCommand::CreateOffscreenBuffer cmd{ displayHandle, bufferHandle, width, height, sampleCount, interruptible, depthBufferTypeInternal};
+        ramses_internal::RendererCommand::CreateOffscreenBuffer cmd{ displayHandle, bufferHandle, width, height, sampleCount, interruptible, depthBufferTypeInternal };
+        m_pendingRendererCommands.push_back(std::move(cmd));
+
+        return bufferId;
+    }
+
+    displayBufferId_t RamsesRendererImpl::createDmaOffscreenBuffer(displayId_t display, uint32_t width, uint32_t height, ramses_internal::DmaBufferFourccFormat dmaBufferFourccFormat, ramses_internal::DmaBufferUsageFlags dmaBufferUsageFlags, ramses_internal::DmaBufferModifiers dmaBufferModifiers)
+    {
+        if(isThreaded())
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RamsesRenderer::createDmaOffscreenBuffer: failed to create offscreen buffer, renderer must be used only with doOneLoop (not running the renderer thread)!");
+            return {};
+        }
+
+        if (width < 1u || width > 4096u ||
+            height < 1u || height > 4096u)
+        {
+            LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "RamsesRenderer::createDmaOffscreenBuffer: failed to create offscreen buffer, resolution must be higher than 0x0 and lower than 4096x4096!");
+            return {};
+        }
+
+        const ramses_internal::DisplayHandle displayHandle(display.getValue());
+        const displayBufferId_t bufferId = m_nextDisplayBufferId;
+        const ramses_internal::OffscreenBufferHandle bufferHandle(bufferId.getValue());
+        m_nextDisplayBufferId.getReference() = m_nextDisplayBufferId.getValue() + 1;
+
+        ramses_internal::RendererCommand::CreateDmaOffscreenBuffer cmd{ displayHandle, bufferHandle, width, height, dmaBufferFourccFormat, dmaBufferUsageFlags, dmaBufferModifiers };
         m_pendingRendererCommands.push_back(std::move(cmd));
 
         return bufferId;
@@ -323,6 +349,19 @@ namespace ramses
 
         const ramses_internal::DisplayHandle displayHandle{ display.getValue() };
         m_pendingRendererCommands.push_back(ramses_internal::RendererCommand::SetClearColor{ displayHandle, bufferHandle, { r, g, b, a } });
+
+        return StatusOK;
+    }
+
+    status_t RamsesRendererImpl::getDmaOffscreenBufferFDAndStride(displayId_t display, displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const
+    {
+        const auto it = std::find_if(m_offscreenDmaBufferInfos.cbegin(), m_offscreenDmaBufferInfos.cend(), [&](const auto& dmaBufInfo){ return dmaBufInfo.display == display && dmaBufInfo.displayBuffer == displayBufferId;});
+
+        if(it == m_offscreenDmaBufferInfos.cend())
+            return addErrorEntry(::fmt::format("RamsesRenderer::getDmaOffscreenBufferFDAndStride: no DMA buffer created for buffer {} on display {}", displayBufferId, display));
+
+        fd = it->fd;
+        stride = it->stride;
 
         return StatusOK;
     }
@@ -482,14 +521,29 @@ namespace ramses
                 rendererEventHandler.warpingMeshDataUpdated(displayId_t{ event.displayHandle.asMemoryHandle() }, ERendererEventResult_FAIL);
                 break;
             case ramses_internal::ERendererEventType::OffscreenBufferCreated:
-                rendererEventHandler.offscreenBufferCreated(displayId_t{ event.displayHandle.asMemoryHandle() }, displayBufferId_t{ event.offscreenBuffer.asMemoryHandle() }, ERendererEventResult_OK);
+            {
+                const displayId_t display{ event.displayHandle.asMemoryHandle() };
+                const displayBufferId_t displayBuffer{ event.offscreenBuffer.asMemoryHandle() };
+                assert(std::find_if(m_offscreenDmaBufferInfos.cbegin(), m_offscreenDmaBufferInfos.cend(), [&](const auto& dmaBufInfo){ return dmaBufInfo.display == display && dmaBufInfo.displayBuffer == displayBuffer;}) == m_offscreenDmaBufferInfos.cend());
+                m_offscreenDmaBufferInfos.push_back({ display, displayBuffer, event.dmaBufferFD, event.dmaBufferStride });
+
+                rendererEventHandler.offscreenBufferCreated(display, displayBuffer, ERendererEventResult_OK);
                 break;
+            }
             case ramses_internal::ERendererEventType::OffscreenBufferCreateFailed:
                 rendererEventHandler.offscreenBufferCreated(displayId_t{ event.displayHandle.asMemoryHandle() }, displayBufferId_t{ event.offscreenBuffer.asMemoryHandle() }, ERendererEventResult_FAIL);
                 break;
             case ramses_internal::ERendererEventType::OffscreenBufferDestroyed:
-                rendererEventHandler.offscreenBufferDestroyed(displayId_t{ event.displayHandle.asMemoryHandle() }, displayBufferId_t{ event.offscreenBuffer.asMemoryHandle() }, ERendererEventResult_OK);
+            {
+                const displayId_t display{ event.displayHandle.asMemoryHandle() };
+                const displayBufferId_t displayBuffer{ event.offscreenBuffer.asMemoryHandle() };
+                rendererEventHandler.offscreenBufferDestroyed(display, displayBuffer, ERendererEventResult_OK);
+
+                const auto it = std::find_if(m_offscreenDmaBufferInfos.cbegin(), m_offscreenDmaBufferInfos.cend(), [&](const auto& dmaBufInfo){ return dmaBufInfo.display == display && dmaBufInfo.displayBuffer == displayBuffer;});
+                if(it != m_offscreenDmaBufferInfos.cend())
+                    m_offscreenDmaBufferInfos.erase(it);
                 break;
+            }
             case ramses_internal::ERendererEventType::OffscreenBufferDestroyFailed:
                 rendererEventHandler.offscreenBufferDestroyed(displayId_t{ event.displayHandle.asMemoryHandle() }, displayBufferId_t{ event.offscreenBuffer.asMemoryHandle() }, ERendererEventResult_FAIL);
                 break;

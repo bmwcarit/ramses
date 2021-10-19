@@ -32,6 +32,8 @@ namespace ramses_internal
             return true;
         }));
 
+        ON_CALL(*this, createDeviceExtension(_)).WillByDefault(Return(true));
+
         ON_CALL(*this, createDevice()).WillByDefault(Invoke([this]() {
             assert(!m_device);
             m_device = std::move(deviceOwningPtr);

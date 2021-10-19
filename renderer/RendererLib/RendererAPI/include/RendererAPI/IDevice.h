@@ -20,7 +20,6 @@
 
 namespace ramses_internal
 {
-    struct RenderBuffer;
     class EffectResource;
 
     class Vector2;
@@ -111,8 +110,13 @@ namespace ramses_internal
         virtual int                     getTextureAddress           (DeviceResourceHandle handle) const = 0;
 
         // Render buffers/targets
-        virtual DeviceResourceHandle    uploadRenderBuffer          (const RenderBuffer& renderBuffer) = 0;
+        virtual DeviceResourceHandle    uploadRenderBuffer          (uint32_t width, uint32_t height, ERenderBufferType type, ETextureFormat format, ERenderBufferAccessMode accessMode, uint32_t sampleCount) = 0;
         virtual void                    deleteRenderBuffer          (DeviceResourceHandle handle) = 0;
+
+        virtual DeviceResourceHandle    uploadDmaRenderBuffer       (UInt32 width, UInt32 height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers) = 0;
+        virtual int                     getDmaRenderBufferFD        (DeviceResourceHandle handle) = 0;
+        virtual uint32_t                getDmaRenderBufferStride    (DeviceResourceHandle handle) = 0;
+        virtual void                    destroyDmaRenderBuffer      (DeviceResourceHandle handle) = 0;
 
         virtual void                    activateTextureSamplerObject(const TextureSamplerStates& samplerStates, DataFieldHandle field) = 0;
 

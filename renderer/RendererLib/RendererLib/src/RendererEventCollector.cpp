@@ -113,13 +113,15 @@ namespace ramses_internal
         pushToSceneControlEventQueue(std::move(event));
     }
 
-    void RendererEventCollector::addOBEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display)
+    void RendererEventCollector::addOBEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display, int dmaBufferFD, uint32_t dmaBufferStride)
     {
-        LOG_INFO(CONTEXT_RENDERER, eventType << " display=" << display << " bufferHandle=" << buffer);
+        LOG_INFO(CONTEXT_RENDERER, eventType << " display=" << display << " bufferHandle=" << buffer << " dmaBufferFD=" << dmaBufferFD << " dmaBufferStride=" << dmaBufferStride);
 
         RendererEvent event(eventType);
         event.offscreenBuffer = buffer;
         event.displayHandle = display;
+        event.dmaBufferFD = dmaBufferFD;
+        event.dmaBufferStride = dmaBufferStride;
         pushToRendererEventQueue(std::move(event));
     }
 

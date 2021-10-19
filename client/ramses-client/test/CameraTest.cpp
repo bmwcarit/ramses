@@ -15,6 +15,8 @@
 #include "ramses-client-api/DataVector2f.h"
 #include "ramses-client-api/DataVector4f.h"
 #include "Math3d/CameraMatrixHelper.h"
+#include "DataObjectImpl.h"
+#include "CameraNodeImpl.h"
 #include "ramses-utils.h"
 
 namespace ramses
@@ -210,12 +212,16 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, this->camera->bindViewportOffset(*do1));
         EXPECT_EQ(StatusOK, this->camera->bindViewportSize(*do2));
+        EXPECT_EQ(do1->impl.getDataReference(), this->camera->impl.getViewportOffsetHandle());
+        EXPECT_EQ(do2->impl.getDataReference(), this->camera->impl.getViewportSizeHandle());
 
         EXPECT_TRUE(this->camera->isViewportOffsetBound());
         EXPECT_TRUE(this->camera->isViewportSizeBound());
 
         EXPECT_EQ(StatusOK, this->camera->unbindViewportOffset());
         EXPECT_EQ(StatusOK, this->camera->unbindViewportSize());
+        EXPECT_NE(do1->impl.getDataReference(), this->camera->impl.getViewportOffsetHandle());
+        EXPECT_NE(do2->impl.getDataReference(), this->camera->impl.getViewportSizeHandle());
 
         EXPECT_FALSE(this->camera->isViewportOffsetBound());
         EXPECT_FALSE(this->camera->isViewportSizeBound());
@@ -228,9 +234,13 @@ namespace ramses
 
         EXPECT_EQ(StatusOK, this->camera->bindFrustumPlanes(*do1, *do2));
         EXPECT_TRUE(this->camera->isFrustumPlanesBound());
+        EXPECT_EQ(do1->impl.getDataReference(), this->camera->impl.getFrustrumPlanesHandle());
+        EXPECT_EQ(do2->impl.getDataReference(), this->camera->impl.getFrustrumNearFarPlanesHandle());
 
         EXPECT_EQ(StatusOK, this->camera->unbindFrustumPlanes());
         EXPECT_FALSE(this->camera->isFrustumPlanesBound());
+        EXPECT_NE(do1->impl.getDataReference(), this->camera->impl.getFrustrumPlanesHandle());
+        EXPECT_NE(do2->impl.getDataReference(), this->camera->impl.getFrustrumNearFarPlanesHandle());
     }
 
     TYPED_TEST(ACamera, getsReferencedViewportValuesWhenBound)

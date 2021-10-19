@@ -93,6 +93,18 @@ namespace ramses_internal
         return *m_sceneResourceRegistryMap.get(sceneId);
     }
 
+    void RendererResourceManager::clearRenderTarget(DeviceResourceHandle handle)
+    {
+        // TODO Violin/Mohamed: this code could be optimized if needed... No need to have two additional FBO activations just to set their clear state
+        IDevice& device = m_renderBackend.getDevice();
+        device.activateRenderTarget(handle);
+        device.colorMask(true, true, true, true);
+        device.clearColor({ 0.f, 0.f, 0.f, 1.f });
+        device.depthWrite(EDepthWrite::Enabled);
+        device.scissorTest(EScissorTest::Disabled, {});
+        device.clear(EClearFlags_All);
+    }
+
     void RendererResourceManager::unloadAllSceneResourcesForScene(SceneId sceneId)
     {
         if (m_sceneResourceRegistryMap.contains(sceneId))
@@ -227,6 +239,20 @@ namespace ramses_internal
         return m_offscreenBuffers.getMemory(bufferHandle)->m_colorBufferHandle[0];
     }
 
+    int RendererResourceManager::getDmaOffscreenBufferFD(OffscreenBufferHandle bufferHandle) const
+    {
+        assert(m_offscreenBuffers.isAllocated(bufferHandle));
+        const auto& obDescriptor = *m_offscreenBuffers.getMemory(bufferHandle);
+        return m_renderBackend.getDevice().getDmaRenderBufferFD(obDescriptor.m_colorBufferHandle[0u]);
+    }
+
+    UInt32 RendererResourceManager::getDmaOffscreenBufferStride(OffscreenBufferHandle bufferHandle) const
+    {
+        assert(m_offscreenBuffers.isAllocated(bufferHandle));
+        const auto& obDescriptor = *m_offscreenBuffers.getMemory(bufferHandle);
+        return m_renderBackend.getDevice().getDmaRenderBufferStride(obDescriptor.m_colorBufferHandle[0u]);
+    }
+
     OffscreenBufferHandle RendererResourceManager::getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const
     {
         for (OffscreenBufferHandle handle(0u); handle < m_offscreenBuffers.getTotalCount(); ++handle)
@@ -266,7 +292,13 @@ namespace ramses_internal
 
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
         IDevice& device = m_renderBackend.getDevice();
-        const DeviceResourceHandle deviceHandle = device.uploadRenderBuffer(renderBuffer);
+        const DeviceResourceHandle deviceHandle = device.uploadRenderBuffer(renderBuffer.width, renderBuffer.height, renderBuffer.type, renderBuffer.format, renderBuffer.accessMode, renderBuffer.sampleCount);
+        assert(deviceHandle.isValid());
+        if (!deviceHandle.isValid())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::uploadRenderTargetBuffer failed to create render buffer, this is fatal...");
+            device.isDeviceStatusHealthy();
+        }
 
         sceneResources.addRenderBuffer(renderBufferHandle, deviceHandle, memSize, ERenderBufferAccessMode_WriteOnly == renderBuffer.accessMode);
         m_stats.sceneResourceUploaded(sceneId, memSize);
@@ -323,6 +355,26 @@ namespace ramses_internal
         sceneResources.removeRenderTarget(renderTarget);
     }
 
+    void RendererResourceManager::uploadDmaOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers)
+    {
+        assert(!m_offscreenBuffers.isAllocated(bufferHandle));
+        IDevice& device = m_renderBackend.getDevice();
+
+        m_offscreenBuffers.allocate(bufferHandle);
+        OffscreenBufferDescriptor& offscreenBufferDesc = *m_offscreenBuffers.getMemory(bufferHandle);
+        offscreenBufferDesc.isDmaBuffer = true;
+
+        offscreenBufferDesc.m_colorBufferHandle[0] = device.uploadDmaRenderBuffer(width, height, dmaBufferFourccFormat, dmaBufferUsageFlags, dmaBufferModifiers);
+
+        offscreenBufferDesc.m_estimatedVRAMUsage = width * height * GetTexelSizeFromFormat(ETextureFormat::RGBA8);
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::uploadDmaOffscreenBuffer handle={} {}x{} fourccFormat={} usage={} modifier={} estimatedSize(RGBA8)={}KB", bufferHandle,
+            width, height, dmaBufferFourccFormat.getValue(), dmaBufferUsageFlags.getValue(), dmaBufferModifiers.getValue(), offscreenBufferDesc.m_estimatedVRAMUsage / 1024);
+
+        offscreenBufferDesc.m_renderTargetHandle[0] = device.uploadRenderTarget({ offscreenBufferDesc.m_colorBufferHandle[0] });
+
+        clearRenderTarget(offscreenBufferDesc.m_renderTargetHandle[0]);
+    }
+
     void RendererResourceManager::uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType)
     {
         assert(!m_offscreenBuffers.isAllocated(bufferHandle));
@@ -330,8 +382,10 @@ namespace ramses_internal
 
         m_offscreenBuffers.allocate(bufferHandle);
         OffscreenBufferDescriptor& offscreenBufferDesc = *m_offscreenBuffers.getMemory(bufferHandle);
+        offscreenBufferDesc.isDmaBuffer = false;
 
-        offscreenBufferDesc.m_colorBufferHandle[0] = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, sampleCount));
+        offscreenBufferDesc.m_colorBufferHandle[0] = device.uploadRenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, sampleCount);
+
         uint32_t texelSize = GetTexelSizeFromFormat(ETextureFormat::RGBA8) * (isDoubleBuffered ? 2u : 1u); // only color buffer is double
         switch (depthStencilBufferType)
         {
@@ -339,11 +393,11 @@ namespace ramses_internal
             offscreenBufferDesc.m_depthBufferHandle = {};
             break;
         case ERenderBufferType_DepthBuffer:
-            offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_WriteOnly, sampleCount));
+            offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(width, height, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_WriteOnly, sampleCount);
             texelSize += 4; // using 32bits for memory estimation which is probably what driver will allocate anyway
             break;
         case ERenderBufferType_DepthStencilBuffer:
-            offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, sampleCount));
+            offscreenBufferDesc.m_depthBufferHandle = device.uploadRenderBuffer(width, height, ERenderBufferType_DepthStencilBuffer, ETextureFormat::Depth24_Stencil8, ERenderBufferAccessMode_WriteOnly, sampleCount);
             texelSize += 4;
             break;
         case ERenderBufferType_ColorBuffer:
@@ -363,7 +417,7 @@ namespace ramses_internal
 
         if (isDoubleBuffered)
         {
-            offscreenBufferDesc.m_colorBufferHandle[1] = device.uploadRenderBuffer(RenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, sampleCount));
+            offscreenBufferDesc.m_colorBufferHandle[1] = device.uploadRenderBuffer(width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, sampleCount);
 
             DeviceHandleVector bufferDeviceHandles2;
             bufferDeviceHandles2.push_back(offscreenBufferDesc.m_colorBufferHandle[1]);
@@ -372,23 +426,12 @@ namespace ramses_internal
             offscreenBufferDesc.m_renderTargetHandle[1] = device.uploadRenderTarget(bufferDeviceHandles2);
         }
 
-        // TODO Violin this code could be optimized if needed... No need to have two additional FBO activations just to set their clear state
         // Initial clear of the buffers
-        device.activateRenderTarget(offscreenBufferDesc.m_renderTargetHandle[0]);
-        device.colorMask(true, true, true, true);
-        device.clearColor({ 0.f, 0.f, 0.f, 1.f });
-        device.depthWrite(EDepthWrite::Enabled);
-        device.scissorTest(EScissorTest::Disabled, {});
-        device.clear(EClearFlags_All);
+        clearRenderTarget(offscreenBufferDesc.m_renderTargetHandle[0]);
 
         if (isDoubleBuffered)
         {
-            device.activateRenderTarget(offscreenBufferDesc.m_renderTargetHandle[1]);
-            device.colorMask(true, true, true, true);
-            device.clearColor({ 0.f, 0.f, 0.f, 1.f });
-            device.depthWrite(EDepthWrite::Enabled);
-            device.scissorTest(EScissorTest::Disabled, {});
-            device.clear(EClearFlags_All);
+            clearRenderTarget(offscreenBufferDesc.m_renderTargetHandle[1]);
             device.pairRenderTargetsForDoubleBuffering(offscreenBufferDesc.m_renderTargetHandle, offscreenBufferDesc.m_colorBufferHandle);
         }
     }
@@ -402,18 +445,24 @@ namespace ramses_internal
         const OffscreenBufferDescriptor& offscreenBufferDesc = *m_offscreenBuffers.getMemory(bufferHandle);
 
         device.deleteRenderTarget(offscreenBufferDesc.m_renderTargetHandle[0]);
-        if (offscreenBufferDesc.m_renderTargetHandle[1].isValid())
+
+        if(offscreenBufferDesc.isDmaBuffer)
+            device.destroyDmaRenderBuffer(offscreenBufferDesc.m_colorBufferHandle[0]);
+        else
         {
-            device.deleteRenderTarget(offscreenBufferDesc.m_renderTargetHandle[1]);
-            device.unpairRenderTargets(offscreenBufferDesc.m_renderTargetHandle[0]);
+            if (offscreenBufferDesc.m_renderTargetHandle[1].isValid())
+            {
+                device.deleteRenderTarget(offscreenBufferDesc.m_renderTargetHandle[1]);
+                device.unpairRenderTargets(offscreenBufferDesc.m_renderTargetHandle[0]);
+            }
+            device.deleteRenderBuffer(offscreenBufferDesc.m_colorBufferHandle[0]);
+
+            if(offscreenBufferDesc.m_depthBufferHandle.isValid())
+                device.deleteRenderBuffer(offscreenBufferDesc.m_depthBufferHandle);
+
+            if (offscreenBufferDesc.m_colorBufferHandle[1].isValid())
+                device.deleteRenderBuffer(offscreenBufferDesc.m_colorBufferHandle[1]);
         }
-        device.deleteRenderBuffer(offscreenBufferDesc.m_colorBufferHandle[0]);
-
-        if(offscreenBufferDesc.m_depthBufferHandle.isValid())
-            device.deleteRenderBuffer(offscreenBufferDesc.m_depthBufferHandle);
-
-        if (offscreenBufferDesc.m_colorBufferHandle[1].isValid())
-            device.deleteRenderBuffer(offscreenBufferDesc.m_colorBufferHandle[1]);
 
         m_offscreenBuffers.release(bufferHandle);
     }
@@ -499,6 +548,12 @@ namespace ramses_internal
         rbDeviceHandles.clear();
         rbDeviceHandles.push_back(destinationRenderBufferDeviceHandle);
         const DeviceResourceHandle blitRtDest = device.uploadRenderTarget(rbDeviceHandles);
+        assert(blitRtSource.isValid() && blitRtDest.isValid());
+        if (!blitRtSource.isValid() || !blitRtDest.isValid())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::uploadBlitPassRenderTargets failed to create blit render target(s), this is fatal...");
+            device.isDeviceStatusHealthy();
+        }
 
         sceneResources.addBlitPass(blitPass, blitRtSource, blitRtDest);
     }
@@ -543,6 +598,12 @@ namespace ramses_internal
         }
 
         assert(deviceHandle.isValid());
+        if (!deviceHandle.isValid())
+        {
+            LOG_ERROR_P(CONTEXT_RENDERER, "RendererResourceManager::uploadDataBuffer sceneId={} handle={} dataType={} size={} failed to allocate data buffer, this is fatal...",
+                sceneId, dataBufferHandle, EnumToString(dataType), dataSizeInBytes);
+            device.isDeviceStatusHealthy();
+        }
 
         sceneResources.addDataBuffer(dataBufferHandle, deviceHandle, dataBufferType, dataSizeInBytes);
         m_stats.sceneResourceUploaded(sceneId, dataSizeInBytes);
@@ -613,12 +674,18 @@ namespace ramses_internal
         assert(!IsFormatCompressed(textureFormat)); //can not be a compressed format
 
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
-
         const UInt32 totalSizeInBytes = TextureMathUtils::GetTotalMemoryUsedByMipmappedTexture(GetTexelSizeFromFormat(textureFormat), width, height, 1u, mipLevelCount);
+        LOG_INFO_P(CONTEXT_RENDERER, "RendererResourceManager::uploadTextureBuffer sceneId={} handle={} {}x{} format={} mips={} estimatedSize={}KB", sceneId, textureBufferHandle,
+            width, height, EnumToString(textureFormat), mipLevelCount, totalSizeInBytes / 1024);
 
         IDevice& device = m_renderBackend.getDevice();
         DeviceResourceHandle deviceHandle = device.allocateTexture2D(width, height, textureFormat, DefaultTextureSwizzleArray, mipLevelCount, totalSizeInBytes);
         assert(deviceHandle.isValid());
+        if (!deviceHandle.isValid())
+        {
+            LOG_ERROR_P(CONTEXT_RENDERER, "RendererResourceManager::uploadTextureBuffer failed to allocate texture buffer, this is fatal...");
+            device.isDeviceStatusHealthy();
+        }
 
         sceneResources.addTextureBuffer(textureBufferHandle, deviceHandle, textureFormat, totalSizeInBytes);
         m_stats.sceneResourceUploaded(sceneId, totalSizeInBytes);
@@ -662,7 +729,16 @@ namespace ramses_internal
 
     void RendererResourceManager::uploadVertexArray(RenderableHandle renderableHandle, const VertexArrayInfo& vertexArrayInfo, SceneId sceneId)
     {
-        const auto deviceHandle = m_renderBackend.getDevice().allocateVertexArray(vertexArrayInfo);
+        IDevice& device = m_renderBackend.getDevice();
+        const auto deviceHandle = device.allocateVertexArray(vertexArrayInfo);
+        assert(deviceHandle.isValid());
+        if (!deviceHandle.isValid())
+        {
+            LOG_ERROR_P(CONTEXT_RENDERER, "RendererResourceManager::uploadVertexArray sceneId={} renderableHandle={} failed to allocate vertex array, this is fatal...",
+                sceneId, renderableHandle);
+            device.isDeviceStatusHealthy();
+        }
+
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
         sceneResources.addVertexArray(renderableHandle, deviceHandle);
     }

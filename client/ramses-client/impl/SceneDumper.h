@@ -46,8 +46,10 @@ namespace ramses
     class SceneDumper
     {
     public:
+        using RamsesObjectImplSet = ramses_internal::HashSet<const RamsesObjectImpl*>;
         explicit SceneDumper(const ramses::SceneImpl& scene);
         void dumpUnrequiredObjects(ramses_internal::StringOutputStream& output);
+        const RamsesObjectImplSet& getRequiredObjects() const;
     private:
         using GeometryBindingSet = ramses_internal::HashSet<const GeometryBindingImpl *>;
         using TextureSamplerSet = ramses_internal::HashSet<const TextureSamplerImpl *>;
@@ -125,7 +127,7 @@ namespace ramses
 
         const RamsesClientImpl&     m_client;
         const RamsesObjectRegistry& m_objectRegistry;
-        ramses_internal::HashSet<const RamsesObjectImpl*> m_requiredObjects;
+        RamsesObjectImplSet         m_requiredObjects;
 
         RenderBufferHandleRenderBufferSetMap              m_blitPassDestinationRenderBufferToSourceRenderBuffersMap;
         RenderBufferHandleRenderPassSetMap                m_destinationRenderBufferHandleToRenderPassSetMap;

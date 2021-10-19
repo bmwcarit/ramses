@@ -72,6 +72,7 @@ namespace ramses_internal
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateDisplay{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::DestroyDisplay{ cmdDisplay }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateOffscreenBuffer{ cmdDisplay, {}, {}, {}, {}, {}, ERenderBufferType_DepthStencilBuffer }));
+        EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateDmaOffscreenBuffer{ cmdDisplay, {}, {}, {}, {}, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::DestroyOffscreenBuffer{ cmdDisplay, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::CreateStreamBuffer{ cmdDisplay, {}, {} }));
         EXPECT_EQ(cmdDisplay, tracker.determineDisplayFromRendererCommand(RendererCommand::DestroyStreamBuffer{ cmdDisplay, {} }));

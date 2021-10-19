@@ -803,21 +803,15 @@ namespace ramses_internal
             }
             else
             {
-                // may not skip when has sent anything else than pinfo to remote. otherwise state on remote might get mixed up
-                if (prevSkipSendPinfoOnNextMismatch && previousSendMessageId == 2)
+                if (prevSkipSendPinfoOnNextMismatch)
                 {
                     // skip sending and keep last announced session because we assume last pinfo reached receiver and is treated as valid there
-                    LOG_WARN(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleParticipantInfo: Skip sending pinfo to " << pstate->pid <<
-                             ", iid " << senderInstanceId << ", keep sendSessionId " << previousSendSessionId << ", sendMessageId " << previousSendMessageId);
+                    LOG_WARN(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleParticipantInfo: Skip sending pinfo to " << pstate->pid << ", iid " << senderInstanceId);
                     pstate->sendSessionId = previousSendSessionId;
                     pstate->sendMessageId = previousSendMessageId;
                 }
                 else
                 {
-                    if (prevSkipSendPinfoOnNextMismatch)
-                        LOG_WARN(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleParticipantInfo: Will not skip send pinfo to " << pstate->pid <<
-                                 ", iid " << senderInstanceId << ", because data already sent: sendSessionId " << previousSendSessionId << ", sendMessageId " << previousSendMessageId);
-
                     if (!trySendParticipantInfo(*pstate))
                     {
                         LOG_INFO(m_logContext,

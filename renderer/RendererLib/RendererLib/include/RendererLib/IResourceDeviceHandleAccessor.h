@@ -27,6 +27,8 @@ namespace ramses_internal
         virtual void                 getBlitPassRenderTargetsDeviceHandle(BlitPassHandle blitPassHandle, SceneId sceneId, DeviceResourceHandle& srcRT, DeviceResourceHandle& dstRT) const = 0;
         virtual DeviceResourceHandle getOffscreenBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const = 0;
         virtual DeviceResourceHandle getOffscreenBufferColorBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const = 0;
+        virtual int                  getDmaOffscreenBufferFD(OffscreenBufferHandle bufferHandle) const = 0;
+        virtual UInt32               getDmaOffscreenBufferStride(OffscreenBufferHandle bufferHandle) const = 0;
         virtual OffscreenBufferHandle getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const = 0;
         virtual DeviceResourceHandle getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const = 0;
         virtual DeviceResourceHandle getDataBufferDeviceHandle(DataBufferHandle dataBufferHandle, SceneId sceneId) const = 0;

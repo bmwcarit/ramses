@@ -461,11 +461,12 @@ namespace ramses_internal
 
         m_commandBuffer.enqueueCommand(RendererCommand::DestroyOffscreenBuffer{ display2, {} });
         m_commandBuffer.enqueueCommand(RendererCommand::CreateOffscreenBuffer{ display2, {}, {}, {}, {}, {}, ERenderBufferType_DepthStencilBuffer });
+        m_commandBuffer.enqueueCommand(RendererCommand::CreateDmaOffscreenBuffer{ display2, {}, {}, {}, {}, {}, {} });
         expectNoCommandPushed(display1);
         update();
 
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchRendererEvents(_));
-        dispatchAndExpectRendererEvents({ ERendererEventType::OffscreenBufferDestroyFailed, ERendererEventType::OffscreenBufferCreateFailed });
+        dispatchAndExpectRendererEvents({ ERendererEventType::OffscreenBufferDestroyFailed, ERendererEventType::OffscreenBufferCreateFailed, ERendererEventType::OffscreenBufferCreateFailed });
 
         // no more events
         EXPECT_CALL(*m_displayDispatcher.getDisplayBundleMock(display1), dispatchRendererEvents(_));

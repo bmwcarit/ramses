@@ -315,9 +315,9 @@ namespace ramses_internal
         logResourceActivation("texture", handle, field);
     }
 
-    DeviceResourceHandle LoggingDevice::uploadRenderBuffer(const RenderBuffer& renderBuffer)
+    DeviceResourceHandle LoggingDevice::uploadRenderBuffer(uint32_t, uint32_t, ERenderBufferType type, ETextureFormat, ERenderBufferAccessMode, uint32_t)
     {
-        m_logContext << "upload render buffer [type: " << EnumToString(renderBuffer.type) << "]" << RendererLogContext::NewLine;
+        m_logContext << "upload render buffer [type: " << EnumToString(type) << "]" << RendererLogContext::NewLine;
         return DeviceResourceHandle::Invalid();
     }
 
@@ -337,6 +337,29 @@ namespace ramses_internal
             << "; mag sampling: " << EnumToString(samplerState.m_magSamplingMode)
             << "; anisotropyLevel: " << samplerState.m_anisotropyLevel
             << RendererLogContext::NewLine;
+    }
+
+    DeviceResourceHandle LoggingDevice::uploadDmaRenderBuffer(UInt32 width, UInt32 height, DmaBufferFourccFormat format, DmaBufferUsageFlags bufferUsage, DmaBufferModifiers bufferModifiers)
+    {
+        m_logContext << "upload dma render buffer [width: " << width << " height: " << height << "format: " << format.getValue()  << " usage: " << bufferUsage.getValue() << " modifiers: " << bufferModifiers.getValue() << "]" << RendererLogContext::NewLine;
+        return {};
+    }
+
+    int LoggingDevice::getDmaRenderBufferFD(DeviceResourceHandle handle)
+    {
+        m_logContext << "get dma render buffer FD [handle: " << handle << "]" << RendererLogContext::NewLine;
+        return -1;
+    }
+
+    uint32_t LoggingDevice::getDmaRenderBufferStride(DeviceResourceHandle handle)
+    {
+        m_logContext << "get dma render buffer stride [handle: " << handle << "]" << RendererLogContext::NewLine;
+        return 0;
+    }
+
+    void LoggingDevice::destroyDmaRenderBuffer(DeviceResourceHandle handle)
+    {
+        m_logContext << "destroy dma render buffer [handle: " << handle << "]" << RendererLogContext::NewLine;
     }
 
     DeviceResourceHandle LoggingDevice::getFramebufferRenderTarget() const

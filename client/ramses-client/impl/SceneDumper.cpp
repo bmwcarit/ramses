@@ -122,6 +122,11 @@ namespace ramses
         outputNotRequiredObjects(output);
     }
 
+    const SceneDumper::RamsesObjectImplSet& SceneDumper::getRequiredObjects() const
+    {
+        return m_requiredObjects;
+    }
+
     void SceneDumper::setupMaps()
     {
         setupMap<TextureSampler, TextureSamplerImpl, ramses_internal::TextureSamplerHandle>(m_textureSamplerHandleToObjectMap);

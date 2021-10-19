@@ -9,6 +9,7 @@
 #include "Platform_Base/Platform_Base.h"
 #include "RendererAPI/IWindow.h"
 #include "RendererAPI/IContext.h"
+#include "RendererAPI/IDeviceExtension.h"
 #include "RendererAPI/IDevice.h"
 #include "RendererAPI/IEmbeddedCompositor.h"
 #include "RendererAPI/ISystemCompositorController.h"
@@ -37,6 +38,16 @@ namespace ramses_internal
         assert(!m_textureUploadingAdapter);
     }
 
+    bool Platform_Base::createDeviceExtension(const DisplayConfig& displayConfig)
+    {
+        if(displayConfig.getPlatformRenderNode() != "")
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base::createDeviceExtension: Device extension is not supported for this platform!");
+            return false;
+        }
+        return true;
+    }
+
     IRenderBackend* Platform_Base::createRenderBackend(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
     {
         if (m_rendererConfig.getSystemCompositorControlEnabled() && !createSystemCompositorController())
@@ -62,10 +73,20 @@ namespace ramses_internal
 
         m_context->enable();
 
+        assert(!m_deviceExtension);
+        if(!createDeviceExtension(displayConfig))
+        {
+            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: device extension creation failed");
+            m_window.reset();
+            m_context.reset();
+            return nullptr;
+        }
+
         assert(!m_device);
         if (!createDevice())
         {
             LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: device creation failed");
+            m_deviceExtension.reset();
             m_context->disable();
             m_context.reset();
             m_window.reset();
@@ -77,6 +98,7 @@ namespace ramses_internal
         {
             LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: embedded compositor creation failed");
             m_device.reset();
+            m_deviceExtension.reset();
             m_context->disable();
             m_context.reset();
             m_window.reset();
@@ -101,6 +123,8 @@ namespace ramses_internal
         m_embeddedCompositor.reset();
         LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy device");
         m_device.reset();
+        LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy device extension");
+        m_deviceExtension.reset();
         LOG_DEBUG(CONTEXT_RENDERER, "Platform_Base::destroyRenderBackend: destroy context");
         m_context->disable();
         m_context.reset();

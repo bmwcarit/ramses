@@ -25,8 +25,8 @@ namespace ramses_internal
     {
         if (effectIds != EPostProcessingEffect_None)
         {
-            m_scenesColorBuffer = m_device.uploadRenderBuffer      ({ m_displayWidth, m_displayHeight, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8,   ERenderBufferAccessMode_ReadWrite, 0u });
-            m_sceneDepthStencilBuffer = m_device.uploadRenderBuffer({ m_displayWidth, m_displayHeight, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_WriteOnly, 0u });
+            m_scenesColorBuffer       = m_device.uploadRenderBuffer(m_displayWidth, m_displayHeight, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8,   ERenderBufferAccessMode_ReadWrite, 0u);
+            m_sceneDepthStencilBuffer = m_device.uploadRenderBuffer(m_displayWidth, m_displayHeight, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_WriteOnly, 0u);
             assert(m_scenesColorBuffer.isValid());
             assert(m_sceneDepthStencilBuffer.isValid());
 

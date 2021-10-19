@@ -25,8 +25,8 @@ class TestMultipleIVILayers(test_classes.OnSelectedTargetsTest):
         self.percentageOfRGBDifferenceAllowedPerPixel = 0.004  # allows +/- 1 for rgb values (needed e.g. for ufo driver)
 
         if self.target.systemCompositorControllerSupported:
-            firstLayerIviId = DEFAULT_TEST_LAYER
-            secondLayerIviId = DEFAULT_TEST_LAYER + 1
+            firstLayerIviId = DEFAULT_TEST_LAYER + 1
+            secondLayerIviId = DEFAULT_TEST_LAYER + 2
             self.firstSurfaceIviId = DEFAULT_TEST_SURFACE
             self.secondSurfaceIviId = DEFAULT_TEST_SURFACE + 1
 

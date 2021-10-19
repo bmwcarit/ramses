@@ -136,15 +136,20 @@ namespace ramses_internal
     void RendererCommandExecutor::operator()(const RendererCommand::CreateOffscreenBuffer& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        const bool succeeded = m_sceneUpdater.handleBufferCreateRequest(cmd.offscreenBuffer, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible, cmd.depthStencilBufferType);
-        m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType::OffscreenBufferCreated : ERendererEventType::OffscreenBufferCreateFailed), cmd.offscreenBuffer, cmd.display);
+        m_sceneUpdater.handleBufferCreateRequest(cmd.offscreenBuffer, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible, cmd.depthStencilBufferType);
+    }
+
+    void RendererCommandExecutor::operator()(const RendererCommand::CreateDmaOffscreenBuffer& cmd)
+    {
+        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.handleDmaBufferCreateRequest(cmd.offscreenBuffer, cmd.width, cmd.height, cmd.dmaBufferFourccFormat, cmd.dmaBufferUsageFlags, cmd.dmaBufferModifiers);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::DestroyOffscreenBuffer& cmd)
     {
         LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
         const bool succeeded = m_sceneUpdater.handleBufferDestroyRequest(cmd.offscreenBuffer);
-        m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType::OffscreenBufferDestroyed : ERendererEventType::OffscreenBufferDestroyFailed), cmd.offscreenBuffer, cmd.display);
+        m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType::OffscreenBufferDestroyed : ERendererEventType::OffscreenBufferDestroyFailed), cmd.offscreenBuffer, cmd.display, -1, 0u);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::CreateStreamBuffer& cmd)

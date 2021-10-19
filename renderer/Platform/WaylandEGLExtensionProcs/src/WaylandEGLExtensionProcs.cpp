@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "EmbeddedCompositor_Wayland/WaylandEGLExtensionProcs.h"
+#include "WaylandEGLExtensionProcs/WaylandEGLExtensionProcs.h"
 #include "Utils/ThreadLocalLogForced.h"
 #include <cassert>
 

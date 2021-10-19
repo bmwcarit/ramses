@@ -8,6 +8,7 @@
 //  -------------------------------------------------------------------------
 
 #include "SceneViewer.h"
+#include "SceneViewerGui.h"
 
 #include "ramses-client.h"
 #include "ramses-utils.h"
@@ -15,6 +16,7 @@
 #include "Utils/Argument.h"
 #include "Utils/LogMacros.h"
 #include "Utils/RamsesLogger.h"
+#include "Utils/ImguiClientHelper.h"
 
 #include "ramses-renderer-api/RamsesRenderer.h"
 #include "ramses-renderer-api/DisplayConfig.h"
@@ -85,6 +87,7 @@ namespace ramses_internal
         , m_validationUnrequiredObjectsDirectoryArgument(m_parser, "vd", "validation-output-directory", String(), "Directory Path were validation output should be saved")
         , m_screenshotFile(m_parser, "x", "screenshot-file", {}, "Screenshot filename. Setting to non-empty enables screenshot capturing after the scene is shown")
         , m_noSkub(m_parser, "ns", "no-skub", "Disable skub, render also when no changes")
+        , m_guiModeArgument(m_parser, "gui", "gui", "window", "Debugging Gui display mode [off|overlay|window]")
     {
         GetRamsesLogger().initialize(m_parser, String(), String(), false, true);
 
@@ -118,7 +121,7 @@ namespace ramses_internal
 
     void SceneViewer::printUsage() const
     {
-        const std::string argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_validationUnrequiredObjectsDirectoryArgument.getHelpString() + m_screenshotFile.getHelpString();
+        const std::string argumentHelpString = m_helpArgument.getHelpString() + m_scenePathAndFileArgument.getHelpString() + m_validationUnrequiredObjectsDirectoryArgument.getHelpString() + m_screenshotFile.getHelpString() + m_guiModeArgument.getHelpString();
         const String& programName = m_parser.getProgramName();
         LOG_INFO(CONTEXT_CLIENT,
                 "\nUsage: " << programName << " [options] -s <sceneFileName>\n"
@@ -128,11 +131,25 @@ namespace ramses_internal
         ramses_internal::RendererConfigUtils::PrintCommandLineOptions();
     }
 
+    SceneViewer::GuiMode SceneViewer::getGuiMode() const
+    {
+        if (!m_screenshotFile.hasValue())
+        {
+            const String guiMode = m_guiModeArgument;
+            if (guiMode == "window")
+                return GuiMode::Window;
+            else if (guiMode == "overlay")
+                return GuiMode::Overlay;
+        }
+        return GuiMode::Off;
+    }
+
     void SceneViewer::loadAndRenderScene(int argc, char* argv[], const String& sceneFile)
     {
         ramses::RamsesFrameworkConfig frameworkConfig(argc, argv);
         frameworkConfig.setRequestedRamsesShellType(ramses::ERamsesShellType_Console);
         ramses::RamsesFramework framework(frameworkConfig);
+        const GuiMode guiMode = getGuiMode();
 
         auto client = framework.createClient("client-scene-reader");
         if (!client)
@@ -153,6 +170,13 @@ namespace ramses_internal
 
         const ramses::DisplayConfig displayConfig(argc, argv);
         const ramses::displayId_t displayId = renderer->createDisplay(displayConfig);
+
+        ramses::DisplayConfig displayConfigGui(argc, argv);
+        displayConfigGui.setWindowRectangle(0, 0, 800, 768);
+        displayConfigGui.setResizable(true);
+        if (displayConfig.getWaylandIviSurfaceID() == displayConfigGui.getWaylandIviSurfaceID())
+            displayConfigGui.setWaylandIviSurfaceID(ramses::waylandIviSurfaceId_t(displayConfig.getWaylandIviSurfaceID().getValue() + 1));
+        const ramses::displayId_t displayIdGui = (guiMode == GuiMode::Window) ? renderer->createDisplay(displayConfigGui) : displayId;
         renderer->flush();
 
         framework.connect();
@@ -179,7 +203,8 @@ namespace ramses_internal
 
                 ramses::RamsesHMIUtils::DumpUnrequiredSceneObjectsToFile(*loadedScene, unrequObjsOfstream);
             }
-            ramses::RamsesHMIUtils::DumpUnrequiredSceneObjects(*loadedScene);
+            if (guiMode == GuiMode::Off)
+                ramses::RamsesHMIUtils::DumpUnrequiredSceneObjects(*loadedScene);
         }
 
         ramses::RendererMate rendererMate(renderer->impl, framework.impl);
@@ -189,18 +214,33 @@ namespace ramses_internal
         rendererMate.setSceneMapping(loadedScene->getSceneId(), displayId);
         rendererMate.setSceneState(loadedScene->getSceneId(), ramses::RendererSceneState::Rendered);
 
+        // avoid sceneId collision
+        const ramses::sceneId_t imguiSceneId = (loadedScene->getSceneId() == ramses::sceneId_t(999)) ? ramses::sceneId_t(1000) : ramses::sceneId_t(999);
+        int32_t winX;
+        int32_t winY;
+        uint32_t winWidth;
+        uint32_t winHeight;
+        if (guiMode == GuiMode::Window)
+            displayConfigGui.getWindowRectangle(winX, winY, winWidth, winHeight);
+        else
+            displayConfig.getWindowRectangle(winX, winY, winWidth, winHeight);
+        ImguiClientHelper imguiHelper(*client, winWidth, winHeight, imguiSceneId);
+        SceneViewerGui gui(*loadedScene, sceneFile.stdRef(), imguiHelper);
+
         std::unique_ptr<ScreenshotRendererEventHandler> eventHandler;
         const String screenshotFile = m_screenshotFile;
+        if (guiMode != GuiMode::Off)
+        {
+            imguiHelper.setDisplayId(displayIdGui);
+            rendererMate.setSceneMapping(imguiSceneId, displayIdGui);
+            rendererMate.setSceneState(imguiSceneId, ramses::RendererSceneState::Rendered);
+        }
+
         if (!screenshotFile.empty())
         {
             if (!displayConfig.isWindowFullscreen())
             {
-                int32_t x;
-                int32_t y;
-                uint32_t w;
-                uint32_t h;
-                displayConfig.getWindowRectangle(x, y, w, h);
-                eventHandler = std::make_unique<ScreenshotRendererEventHandler>(*renderer, displayId, w, h, screenshotFile.c_str());
+                eventHandler = std::make_unique<ScreenshotRendererEventHandler>(*renderer, displayId, winWidth, winHeight, screenshotFile.c_str());
             }
             else
                 LOG_ERROR(CONTEXT_CLIENT, "Screenshot in fullscreen mode is not supported");
@@ -216,9 +256,10 @@ namespace ramses_internal
                     break;
             }
             else
-                rendererMate.dispatchAndFlush(dummy);
+                rendererMate.dispatchAndFlush(dummy, &imguiHelper);
 
-            ramses_internal::PlatformThread::Sleep(30u);
+            gui.drawFrame();
+            ramses_internal::PlatformThread::Sleep(20u);
         }
     }
 

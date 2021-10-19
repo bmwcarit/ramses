@@ -10,6 +10,7 @@
 #define RAMSES_INTERNALRENDERERAPI_TYPES_H
 
 #include "SceneAPI/Handles.h"
+#include "Common/StronglyTypedValue.h"
 #include "SceneAPI/RendererSceneState.h"
 #include "Collections/Vector.h"
 #include "Collections/HashSet.h"
@@ -37,6 +38,15 @@ namespace ramses_internal
     using OffscreenBufferHandle = TypedMemoryHandle<OffscreenBufferHandleTag>;
     struct StreamBufferHandleTag {};
     using StreamBufferHandle = TypedMemoryHandle<StreamBufferHandleTag>;
+
+    struct DmaBufferFourccFormatTag{};
+    using DmaBufferFourccFormat = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), DmaBufferFourccFormatTag>;
+
+    struct DmaBufferUsageFlagsTag{};
+    using DmaBufferUsageFlags = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), DmaBufferUsageFlagsTag>;
+
+    struct DmaBufferModifiersTag{};
+    using DmaBufferModifiers = StronglyTypedValue<uint64_t, std::numeric_limits<uint64_t>::max(), DmaBufferModifiersTag>;
 
     using GenericDataPtr = void *;
     using GenericConstDataPtr = const void *;

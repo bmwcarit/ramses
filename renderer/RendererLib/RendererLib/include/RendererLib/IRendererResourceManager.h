@@ -76,6 +76,7 @@ namespace ramses_internal
 
         // Renderer resources
         virtual void             uploadOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType) = 0;
+        virtual void             uploadDmaOffscreenBuffer(OffscreenBufferHandle bufferHandle, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers) = 0;
         virtual void             unloadOffscreenBuffer(OffscreenBufferHandle bufferHandle) = 0;
 
         virtual void             uploadStreamBuffer(StreamBufferHandle bufferHandle, WaylandIviSurfaceId surfaceId) = 0;

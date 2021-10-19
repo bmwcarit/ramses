@@ -197,7 +197,10 @@ namespace ramses_internal
         const int packedWheelDelta = WHEEL_DELTA << 16;
         sendMouseEvent(7, 12, WM_MOUSEWHEEL, packedWheelDelta);
 
-        EXPECT_CALL(eventHandlerMock, onMouseEvent(EMouseEventType_WheelUp, 7, 12)).Times(1);
+        POINT pt = {7, 12};
+        ScreenToClient(window.getNativeWindowHandle(), &pt);
+
+        EXPECT_CALL(eventHandlerMock, onMouseEvent(EMouseEventType_WheelUp, pt.x, pt.y)).Times(1);
         processAllEvents();
     }
 
@@ -206,7 +209,10 @@ namespace ramses_internal
         const auto packedWheelDelta = static_cast<unsigned int>(-(WHEEL_DELTA << 16));
         sendMouseEvent(7, 12, WM_MOUSEWHEEL, packedWheelDelta);
 
-        EXPECT_CALL(eventHandlerMock, onMouseEvent(EMouseEventType_WheelDown, 7, 12)).Times(1);
+        POINT pt = {7, 12};
+        ScreenToClient(window.getNativeWindowHandle(), &pt);
+
+        EXPECT_CALL(eventHandlerMock, onMouseEvent(EMouseEventType_WheelDown, pt.x, pt.y)).Times(1);
         processAllEvents();
     }
 
@@ -215,7 +221,10 @@ namespace ramses_internal
         const int packedWheelDelta = (3*WHEEL_DELTA) << 16;
         sendMouseEvent(7, 12, WM_MOUSEWHEEL, packedWheelDelta);
 
-        EXPECT_CALL(eventHandlerMock, onMouseEvent(EMouseEventType_WheelUp, 7, 12)).Times(3);
+        POINT pt = {7, 12};
+        ScreenToClient(window.getNativeWindowHandle(), &pt);
+
+        EXPECT_CALL(eventHandlerMock, onMouseEvent(EMouseEventType_WheelUp, pt.x, pt.y)).Times(3);
         processAllEvents();
     }
 

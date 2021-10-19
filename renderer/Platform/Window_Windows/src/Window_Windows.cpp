@@ -407,8 +407,9 @@ namespace ramses_internal
     LRESULT WINAPI Window_Windows::WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         LRESULT  lRet = 1;
-        int x = GET_X_LPARAM(lParam);
-        int y = GET_Y_LPARAM(lParam);
+        POINT pt;
+        pt.x = GET_X_LPARAM(lParam);
+        pt.y = GET_Y_LPARAM(lParam);
 
         //WARNING! This works only in 64 bit systems. For 32 bit, GWLP_USERDATA should be exchanged with GWL_USERDATA
         Window_Windows* window = reinterpret_cast<Window_Windows*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
@@ -429,12 +430,12 @@ namespace ramses_internal
             if (!window->m_isMouseTracked)
             {
                 window->m_isMouseTracked = TrackMouse(hWnd);
-                window->handleMouseEvent(EMouseEventType_WindowEnter, x, y);
+                window->handleMouseEvent(EMouseEventType_WindowEnter, pt.x, pt.y);
             }
 
-            window->m_mousePosX = x;
-            window->m_mousePosY = y;
-            window->handleMouseEvent(EMouseEventType_Move, x, y);
+            window->m_mousePosX = pt.x;
+            window->m_mousePosY = pt.y;
+            window->handleMouseEvent(EMouseEventType_Move, pt.x, pt.y);
 
             break;
         case WM_LBUTTONDOWN:
@@ -442,7 +443,7 @@ namespace ramses_internal
             if (NULL != window)
             {
                 window->m_bLButtonDown = true;
-                window->handleMouseEvent(EMouseEventType_LeftButtonDown, x, y);
+                window->handleMouseEvent(EMouseEventType_LeftButtonDown, pt.x, pt.y);
             }
         }
         break;
@@ -451,7 +452,7 @@ namespace ramses_internal
             if (NULL != window)
             {
                 window->m_bLButtonDown = false;
-                window->handleMouseEvent(EMouseEventType_LeftButtonUp, x, y);
+                window->handleMouseEvent(EMouseEventType_LeftButtonUp, pt.x, pt.y);
             }
         }
         break;
@@ -460,7 +461,7 @@ namespace ramses_internal
             if (NULL != window)
             {
                 window->m_bRButtonDown = true;
-                window->handleMouseEvent(EMouseEventType_RightButtonDown, x, y);
+                window->handleMouseEvent(EMouseEventType_RightButtonDown, pt.x, pt.y);
             }
         }
         break;
@@ -469,7 +470,7 @@ namespace ramses_internal
             if (NULL != window)
             {
                 window->m_bRButtonDown = false;
-                window->handleMouseEvent(EMouseEventType_RightButtonUp, x, y);
+                window->handleMouseEvent(EMouseEventType_RightButtonUp, pt.x, pt.y);
             }
         }
         break;
@@ -478,7 +479,7 @@ namespace ramses_internal
             if (NULL != window)
             {
                 window->m_bMButtonDown = true;
-                window->handleMouseEvent(EMouseEventType_MiddleButtonDown, x, y);
+                window->handleMouseEvent(EMouseEventType_MiddleButtonDown, pt.x, pt.y);
             }
         }
         break;
@@ -487,7 +488,7 @@ namespace ramses_internal
             if (NULL != window)
             {
                 window->m_bMButtonDown = false;
-                window->handleMouseEvent(EMouseEventType_MiddleButtonUp, x, y);
+                window->handleMouseEvent(EMouseEventType_MiddleButtonUp, pt.x, pt.y);
             }
         }
         break;
@@ -495,6 +496,7 @@ namespace ramses_internal
         {
             if (NULL != window)
             {
+                ScreenToClient(hWnd, &pt);
                 short totalDelta = GET_WHEEL_DELTA_WPARAM(wParam);
                 EMouseEventType event = (totalDelta > 0) ? EMouseEventType_WheelUp : EMouseEventType_WheelDown;
 
@@ -504,7 +506,7 @@ namespace ramses_internal
                 // eat-up all distance scrolled
                 while (totalDelta)
                 {
-                    window->handleMouseEvent(event, x, y);
+                    window->handleMouseEvent(event, pt.x, pt.y);
                     totalDelta -= WHEEL_DELTA;
                 }
             }

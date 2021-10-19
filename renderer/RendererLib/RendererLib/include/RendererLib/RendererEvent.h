@@ -212,6 +212,8 @@ namespace ramses_internal
         PickableObjectIds           pickedObjectIds;
         FrameTimings                frameTimings;
         bool                        isFirstDisplay;
+        int                         dmaBufferFD = -1;
+        uint32_t                    dmaBufferStride = 0u;
     };
     using RendererEventVector = std::vector<RendererEvent>;
 

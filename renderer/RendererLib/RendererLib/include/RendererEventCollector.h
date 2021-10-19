@@ -30,7 +30,7 @@ namespace ramses_internal
         void addDataLinkEvent(ERendererEventType eventType, SceneId providerSceneId, SceneId consumerSceneId, DataSlotId providerdataId, DataSlotId consumerdataId);
         void addBufferEvent(ERendererEventType eventType, OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId);
         void addBufferEvent(ERendererEventType eventType, StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId);
-        void addOBEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display);
+        void addOBEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display, int dmaBufferFD, uint32_t dmaBufferStride);
         void addSceneFlushEvent(ERendererEventType eventType, SceneId sceneId, SceneVersionTag sceneVersionTag);
         void addWindowEvent(ERendererEventType eventType, DisplayHandle display, MouseEvent mouseEvent);
         void addWindowEvent(ERendererEventType eventType, DisplayHandle display, KeyEvent keyEvent);

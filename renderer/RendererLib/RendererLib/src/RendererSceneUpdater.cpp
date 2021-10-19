@@ -1167,29 +1167,70 @@ namespace ramses_internal
 
     bool RendererSceneUpdater::handleBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, UInt32 sampleCount, Bool isDoubleBuffered, ERenderBufferType depthStencilBufferType)
     {
+        bool success = false;
         if (!m_renderer.hasDisplayController())
         {
             LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest cannot create an offscreen buffer on invalid display.");
-            return false;
         }
-
-        assert(m_displayResourceManager);
-        IRendererResourceManager& resourceManager = *m_displayResourceManager;
-        if (resourceManager.getOffscreenBufferDeviceHandle(buffer).isValid())
+        else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest an offscreen buffer with the same ID (" << buffer << ") already exists!");
-            return false;
+            assert(m_displayResourceManager);
+            IRendererResourceManager& resourceManager = *m_displayResourceManager;
+            if (resourceManager.getOffscreenBufferDeviceHandle(buffer).isValid())
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest an offscreen buffer with the same ID (" << buffer << ") already exists!");
+            }
+            else
+            {
+                resourceManager.uploadOffscreenBuffer(buffer, width, height, sampleCount, isDoubleBuffered, depthStencilBufferType);
+                const DeviceResourceHandle deviceHandle = resourceManager.getOffscreenBufferDeviceHandle(buffer);
+                m_renderer.resetRenderInterruptState();
+                m_renderer.registerOffscreenBuffer(deviceHandle, width, height, isDoubleBuffered);
+
+                LOG_INFO_P(CONTEXT_RENDERER, "Created offscreen buffer {} (device handle {}): {}x{} {}", buffer, deviceHandle, width, height, (isDoubleBuffered ? " interruptible" : ""));
+                success = true;
+            }
         }
 
-        resourceManager.uploadOffscreenBuffer(buffer, width, height, sampleCount, isDoubleBuffered, depthStencilBufferType);
-        const DeviceResourceHandle deviceHandle = resourceManager.getOffscreenBufferDeviceHandle(buffer);
-        m_renderer.resetRenderInterruptState();
-        m_renderer.registerOffscreenBuffer(deviceHandle, width, height, isDoubleBuffered);
+        m_rendererEventCollector.addOBEvent((success ? ERendererEventType::OffscreenBufferCreated : ERendererEventType::OffscreenBufferCreateFailed), buffer, m_display, -1, 0);
 
-        LOG_INFO(CONTEXT_RENDERER, "Created offscreen buffer " << buffer.asMemoryHandle() << " (device handle " << deviceHandle.asMemoryHandle() << "): " << width << "x" << height
-            << (isDoubleBuffered ? " interruptible" : ""));
+        return success;
+    }
 
-        return true;
+    bool RendererSceneUpdater::handleDmaBufferCreateRequest(OffscreenBufferHandle buffer, UInt32 width, UInt32 height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers)
+    {
+        bool success = false;
+        int dmaBufferFD = -1;
+        UInt32 dmaBufferStride = 0u;
+        if (!m_renderer.hasDisplayController())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleDmaBufferCreateRequest cannot create an offscreen buffer on invalid display.");
+        }
+        else
+        {
+            assert(m_displayResourceManager);
+            IRendererResourceManager& resourceManager = *m_displayResourceManager;
+            if (resourceManager.getOffscreenBufferDeviceHandle(buffer).isValid())
+            {
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleDmaBufferCreateRequest an offscreen buffer with the same ID (" << buffer << ") already exists!");
+            }
+            else
+            {
+                resourceManager.uploadDmaOffscreenBuffer(buffer, width, height, dmaBufferFourccFormat, dmaBufferUsageFlags, dmaBufferModifiers);
+                const DeviceResourceHandle deviceHandle = resourceManager.getOffscreenBufferDeviceHandle(buffer);
+                m_renderer.resetRenderInterruptState();
+                m_renderer.registerOffscreenBuffer(deviceHandle, width, height, false);
+
+                LOG_INFO_P(CONTEXT_RENDERER, "Created DMA offscreen buffer {} (device handle {}): {}x{}", buffer, deviceHandle, width, height);
+                dmaBufferFD = resourceManager.getDmaOffscreenBufferFD(buffer);
+                dmaBufferStride = resourceManager.getDmaOffscreenBufferStride(buffer);
+                success = true;
+            }
+        }
+
+        m_rendererEventCollector.addOBEvent((success ? ERendererEventType::OffscreenBufferCreated : ERendererEventType::OffscreenBufferCreateFailed), buffer, m_display, dmaBufferFD, dmaBufferStride);
+
+        return success;
     }
 
     bool RendererSceneUpdater::handleBufferDestroyRequest(OffscreenBufferHandle buffer)

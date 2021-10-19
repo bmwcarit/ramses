@@ -103,6 +103,11 @@ namespace ramses_internal
             handleBufferCreateRequest(cmd.offscreenBuffer, cmd.display, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible, cmd.depthStencilBufferType);
         }
 
+        void operator()(const RendererCommand::CreateDmaOffscreenBuffer& cmd)
+        {
+            handleDmaBufferCreateRequest(cmd.offscreenBuffer, cmd.display, cmd.width, cmd.height, cmd.dmaBufferFourccFormat, cmd.dmaBufferUsageFlags, cmd.dmaBufferModifiers);
+        }
+
         void operator()(const RendererCommand::DestroyOffscreenBuffer& cmd)
         {
             handleBufferDestroyRequest(cmd.offscreenBuffer, cmd.display);
@@ -234,6 +239,7 @@ namespace ramses_internal
         MOCK_METHOD(void, handleSetClearColor, (DisplayHandle, OffscreenBufferHandle, const Vector4&));
         MOCK_METHOD(void, handlePick, (SceneId, const Vector2&));
         MOCK_METHOD(void, handleBufferCreateRequest, (OffscreenBufferHandle, DisplayHandle, uint32_t, uint32_t, uint32_t, bool, ERenderBufferType));
+        MOCK_METHOD(void, handleDmaBufferCreateRequest, (OffscreenBufferHandle, DisplayHandle, uint32_t, uint32_t, DmaBufferFourccFormat, DmaBufferUsageFlags, DmaBufferModifiers));
         MOCK_METHOD(void, handleBufferDestroyRequest, (OffscreenBufferHandle, DisplayHandle));
         MOCK_METHOD(void, handleBufferCreateRequest, (StreamBufferHandle, DisplayHandle, WaylandIviSurfaceId));
         MOCK_METHOD(void, handleBufferDestroyRequest, (StreamBufferHandle, DisplayHandle));

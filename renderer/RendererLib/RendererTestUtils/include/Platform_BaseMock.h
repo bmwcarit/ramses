@@ -32,6 +32,7 @@ namespace ramses_internal
         MOCK_METHOD(bool, createWindow, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
         MOCK_METHOD(bool, createContext, (const DisplayConfig& displayConfig), (override));
         MOCK_METHOD(bool, createContextUploading, (), (override));
+        MOCK_METHOD(bool, createDeviceExtension, (const DisplayConfig& displayConfig), (override));
         MOCK_METHOD(bool, createDevice, (), (override));
         MOCK_METHOD(bool, createDeviceUploading, (), (override));
         MOCK_METHOD(bool, createEmbeddedCompositor, (const DisplayConfig& displayConfig), (override));

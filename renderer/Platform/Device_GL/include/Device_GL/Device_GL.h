@@ -20,12 +20,13 @@ namespace ramses_internal
 {
     class ShaderGPUResource_GL;
     class RenderBufferGPUResource;
+    class IDeviceExtension;
     struct GLTextureInfo;
 
     class Device_GL final : public Device_Base
     {
     public:
-        explicit Device_GL(IContext& context, UInt8 majorApiVersion, UInt8 minorApiVersion, bool isEmbedded);
+        explicit Device_GL(IContext& context, UInt8 majorApiVersion, UInt8 minorApiVersion, bool isEmbedded, IDeviceExtension* deviceExtension);
         virtual ~Device_GL() override;
 
         Bool init();
@@ -96,8 +97,13 @@ namespace ramses_internal
         virtual void                    activateTexture     (DeviceResourceHandle handle, DataFieldHandle field) override;
         virtual int                     getTextureAddress   (DeviceResourceHandle handle) const override;
 
-        virtual DeviceResourceHandle    uploadRenderBuffer  (const RenderBuffer& renderBuffer) override;
+        virtual DeviceResourceHandle    uploadRenderBuffer  (uint32_t width, uint32_t height, ERenderBufferType type, ETextureFormat format, ERenderBufferAccessMode accessMode, uint32_t sampleCount) override;
         virtual void                    deleteRenderBuffer  (DeviceResourceHandle handle) override;
+
+        virtual DeviceResourceHandle    uploadDmaRenderBuffer   (UInt32 width, UInt32 height, DmaBufferFourccFormat fourccFormat, DmaBufferUsageFlags usageFlags, DmaBufferModifiers modifiers) override;
+        virtual int                     getDmaRenderBufferFD    (DeviceResourceHandle handle) override;
+        virtual uint32_t                getDmaRenderBufferStride(DeviceResourceHandle handle) override;
+        virtual void                    destroyDmaRenderBuffer  (DeviceResourceHandle handle) override;
 
         virtual void                    activateTextureSamplerObject(const TextureSamplerStates& samplerStates, DataFieldHandle field) override;
 
@@ -144,6 +150,7 @@ namespace ramses_internal
         DebugOutput                 m_debugOutput;
         HashSet<String>             m_apiExtensions;
         std::vector<GLint>          m_supportedBinaryProgramFormats;
+        IDeviceExtension*           m_deviceExtension = nullptr;
 
         std::unordered_map<uint64_t, DeviceResourceHandle> m_textureSamplerObjectsCache;
 

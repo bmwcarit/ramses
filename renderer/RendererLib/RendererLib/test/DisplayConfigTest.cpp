@@ -42,6 +42,7 @@ TEST_F(AInternalDisplayConfig, hasDefaultValues)
     EXPECT_EQ(ramses_internal::String(""), m_config.getWaylandSocketEmbedded());
     EXPECT_EQ(ramses_internal::String(""), m_config.getWaylandSocketEmbeddedGroup());
     EXPECT_EQ(-1, m_config.getWaylandSocketEmbeddedFD());
+    EXPECT_EQ(ramses_internal::String(""), m_config.getPlatformRenderNode());
 
     // this value is used in HL API, so test that value does not change unnoticed
     EXPECT_TRUE(ramses_internal::IntegrityRGLDeviceUnit::Invalid().getValue() == 0xFFFFFFFF);
@@ -115,6 +116,9 @@ TEST_F(AInternalDisplayConfig, setAndGetValues)
 
     m_config.setWaylandEmbeddedCompositingSocketPermissions(0654);
     EXPECT_EQ(0654u, m_config.getWaylandSocketEmbeddedPermissions());
+
+    m_config.setPlatformRenderNode("/some/render/node");
+    EXPECT_EQ(ramses_internal::String("/some/render/node"), m_config.getPlatformRenderNode());
 }
 
 TEST_F(AInternalDisplayConfig, getsValuesAssignedFromCommandLine)

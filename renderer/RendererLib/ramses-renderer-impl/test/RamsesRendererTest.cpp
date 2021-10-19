@@ -343,6 +343,54 @@ TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferCreate_WithDe
     cmdVisitor.visit(commandBuffer);
 }
 
+TEST_F(ARamsesRendererWithDisplay, createsCommandForDmaOffscreenBufferCreate)
+{
+    constexpr uint32_t fourccFormat = 777u;
+    constexpr uint32_t bufferUsageFlags = 888u;
+    constexpr uint64_t modifier = 999u;
+    EXPECT_NE(ramses::displayBufferId_t::Invalid(), renderer.createDmaOffscreenBuffer(displayId, 40u, 40u, fourccFormat, bufferUsageFlags, modifier));
+    EXPECT_CALL(cmdVisitor, handleDmaBufferCreateRequest(_, ramses_internal::DisplayHandle{ displayId.getValue() }, 40u, 40u, ramses_internal::DmaBufferFourccFormat(fourccFormat), ramses_internal::DmaBufferUsageFlags(bufferUsageFlags), ramses_internal::DmaBufferModifiers(modifier)));
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, failsToCreateDmaOffscreenBufferIfRendererIsRunningInOwnThread)
+{
+    renderer.startThread();
+
+    constexpr uint32_t fourccFormat = 777u;
+    constexpr uint32_t bufferUsageFlags = 888u;
+    constexpr uint64_t modifier = 999u;
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createDmaOffscreenBuffer(displayId, 40u, 40u, fourccFormat, bufferUsageFlags, modifier));
+    EXPECT_CALL(cmdVisitor, handleDmaBufferCreateRequest(_, _, _, _, _, _, _)).Times(0);
+    cmdVisitor.visit(commandBuffer);
+}
+
+TEST_F(ARamsesRendererWithDisplay, canGetDmaOffscreenBufferFDAndStride)
+{
+    ramses_internal::RendererEvent event;
+    event.eventType = ramses_internal::ERendererEventType::OffscreenBufferCreated;
+    event.displayHandle = ramses_internal::DisplayHandle{displayId.getValue()};
+    event.offscreenBuffer = ramses_internal::OffscreenBufferHandle{ 10u };
+    event.dmaBufferFD = 20;
+    event.dmaBufferStride = 30u;
+    renderer.impl.getDisplayDispatcher().injectRendererEvent(std::move(event));
+
+    ramses::RendererEventHandlerEmpty dummyHandler;
+    renderer.dispatchEvents(dummyHandler);
+    int resultFD = -1;
+    uint32_t resultStride = 0u;
+    EXPECT_EQ(ramses::StatusOK, renderer.getDmaOffscreenBufferFDAndStride(displayId, ramses::displayBufferId_t{ 10u }, resultFD, resultStride));
+    EXPECT_EQ(20, resultFD);
+    EXPECT_EQ(30u, resultStride);
+}
+
+TEST_F(ARamsesRendererWithDisplay, reportsErrorIfGetingFDAndStrideForUnknownDmaOffscreenBuffer)
+{
+    int resultFD = -1;
+    uint32_t resultStride = 0u;
+    EXPECT_NE(ramses::StatusOK, renderer.getDmaOffscreenBufferFDAndStride(displayId, ramses::displayBufferId_t{ 10u }, resultFD, resultStride));
+}
+
 TEST_F(ARamsesRendererWithDisplay, createsCommandForOffscreenBufferDestroy)
 {
     const ramses::displayBufferId_t bufferId(0u);
@@ -360,6 +408,19 @@ TEST_F(ARamsesRendererWithDisplay, failsToCreateOffscreenBufferWithUnsupportedRe
     EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 1u, 5000u, 4u));
     EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createOffscreenBuffer(displayId, 5000u, 5000u, 4u));
 }
+
+TEST_F(ARamsesRendererWithDisplay, failsToCreateDmaOffscreenBufferWithUnsupportedResolution)
+{
+    constexpr uint32_t fourccFormat = 777u;
+    constexpr uint32_t bufferUsageFlags = 888u;
+    constexpr uint64_t modifier = 999u;
+
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createDmaOffscreenBuffer(displayId, 0u, 1u, fourccFormat, bufferUsageFlags, modifier));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createDmaOffscreenBuffer(displayId, 1u, 0u, fourccFormat, bufferUsageFlags, modifier));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createDmaOffscreenBuffer(displayId, 0u, 0u, fourccFormat, bufferUsageFlags, modifier));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createDmaOffscreenBuffer(displayId, 5000u, 1u, fourccFormat, bufferUsageFlags, modifier));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createDmaOffscreenBuffer(displayId, 1u, 5000u, fourccFormat, bufferUsageFlags, modifier));
+    EXPECT_EQ(ramses::displayBufferId_t::Invalid(), renderer.createDmaOffscreenBuffer(displayId, 5000u, 5000u, fourccFormat, bufferUsageFlags, modifier));}
 
 /*
 * Stream buffers

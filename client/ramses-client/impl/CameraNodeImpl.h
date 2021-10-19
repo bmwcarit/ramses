@@ -70,6 +70,11 @@ namespace ramses
         bool isViewportSizeBound() const;
         bool isFrustumPlanesBound() const;
 
+        ramses_internal::DataInstanceHandle getViewportOffsetHandle() const;
+        ramses_internal::DataInstanceHandle getViewportSizeHandle() const;
+        ramses_internal::DataInstanceHandle getFrustrumPlanesHandle() const;
+        ramses_internal::DataInstanceHandle getFrustrumNearFarPlanesHandle() const;
+
     private:
         ramses_internal::ProjectionParams getProjectionParams() const;
         void                              updateProjectionParamsOnScene(const ramses_internal::ProjectionParams& params);
