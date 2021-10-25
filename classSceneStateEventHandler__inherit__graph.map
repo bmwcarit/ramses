@@ -1,4 +1,5 @@
 <map id="SceneStateEventHandler" name="SceneStateEventHandler">
-<area shape="rect" id="node2" href="$classramses_1_1RendererSceneControlEventHandlerEmpty.html" title="Convenience empty implementation of IRendererSceneControlEventHandler that can be used to derive from..." alt="" coords="7,95,213,136"/>
-<area shape="rect" id="node3" href="$classramses_1_1IRendererSceneControlEventHandler.html" title="Provides an interface for handling the result of renderer scene control events. Implementation of thi..." alt="" coords="5,5,215,47"/>
+<area shape="rect" id="node1" title=" " alt="" coords="27,184,210,211"/>
+<area shape="rect" id="node2" href="$classramses_1_1RendererSceneControlEventHandlerEmpty.html" title="Convenience empty implementation of IRendererSceneControlEventHandler that can be used to derive from..." alt="" coords="7,95,230,136"/>
+<area shape="rect" id="node3" href="$classramses_1_1IRendererSceneControlEventHandler.html" title="Provides an interface for handling the result of renderer scene control events. Implementation of thi..." alt="" coords="5,5,232,47"/>
 </map>

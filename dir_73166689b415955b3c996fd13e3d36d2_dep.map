@@ -1,8 +1,8 @@
-<map id="/home/ramses/dev/oss&#45;ramses/examples/ramses&#45;example&#45;local&#45;viewport&#45;link/src" name="/home/ramses/dev/oss&#45;ramses/examples/ramses&#45;example&#45;local&#45;viewport&#45;link/src">
-<area shape="rect" id="node1" href="dir_73166689b415955b3c996fd13e3d36d2.html" title="src" alt="" coords="93,52,165,100"/>
-<area shape="rect" id="node2" href="dir_db3a54907829b36871118d03417739cd.html" title="client" alt="" coords="45,148,117,196"/>
-<area shape="rect" id="edge1-headlabel" href="dir_000060_000000.html" title="3" alt="" coords="105,128,113,142"/>
-<area shape="rect" id="node3" href="dir_d10aa5f1e26260a914a037377583e9a7.html" title="renderer" alt="" coords="141,148,213,196"/>
-<area shape="rect" id="edge2-headlabel" href="dir_000060_000073.html" title="4" alt="" coords="161,120,169,135"/>
-<area shape="rect" id="clust1" href="dir_ffda64cfe0c4d6c7b1553eea2acfd5bb.html" title="ramses&#45;example&#45;local&#45;viewport&#45;link" alt="" coords="16,16,243,111"/>
+<map id="/home/q479098/src/mirror/examples/ramses&#45;example&#45;local&#45;viewport&#45;link/src" name="/home/q479098/src/mirror/examples/ramses&#45;example&#45;local&#45;viewport&#45;link/src">
+<area shape="rect" id="node1" href="dir_73166689b415955b3c996fd13e3d36d2.html" title="src" alt="" coords="109,52,181,100"/>
+<area shape="rect" id="node2" href="dir_db3a54907829b36871118d03417739cd.html" title="client" alt="" coords="60,148,132,196"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000066_000000.html" title="3" alt="" coords="119,128,129,143"/>
+<area shape="rect" id="node3" href="dir_d10aa5f1e26260a914a037377583e9a7.html" title="renderer" alt="" coords="156,148,233,196"/>
+<area shape="rect" id="edge2-headlabel" href="dir_000066_000079.html" title="4" alt="" coords="177,121,186,135"/>
+<area shape="rect" id="clust1" href="dir_ffda64cfe0c4d6c7b1553eea2acfd5bb.html" title="ramses&#45;example&#45;local&#45;viewport&#45;link" alt="" coords="16,16,275,111"/>
 </map>

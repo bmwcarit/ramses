@@ -1,4 +1,5 @@
 <map id="ramses::DcsmContentControlEventHandlerEmpty" name="ramses::DcsmContentControlEventHandlerEmpty">
-<area shape="rect" id="node3" href="$classLocalDCSMExample.html" title="LocalDCSMExample" alt="" coords="33,184,177,211"/>
-<area shape="rect" id="node2" href="$classramses_1_1IDcsmContentControlEventHandler.html" title="Callback handler interface for events emitted by ramses::DcsmContentControl. " alt="" coords="5,5,205,47"/>
+<area shape="rect" id="node1" title="Convenience empty implementation of IDcsmContentControlEventHandler that can be used to derive from w..." alt="" coords="7,95,221,136"/>
+<area shape="rect" id="node3" href="$classLocalDCSMExample.html" title=" " alt="" coords="38,184,190,211"/>
+<area shape="rect" id="node2" href="$classramses_1_1IDcsmContentControlEventHandler.html" title="Callback handler interface for events emitted by ramses::DcsmContentControl." alt="" coords="5,5,223,47"/>
 </map>
