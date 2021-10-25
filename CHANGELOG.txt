@@ -1,3 +1,9 @@
+27.0.113
+-------------------
+        API changes
+        ------------------------------------------------------------------------
+        - Added function RamsesFrameWork::executeRamshCommand to programmatically execute ramsh commands
+
 27.0.112
 -------------------
         API changes

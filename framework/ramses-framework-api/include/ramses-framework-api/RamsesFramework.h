@@ -9,12 +9,14 @@
 #ifndef RAMSES_RAMSESFRAMEWORK_H
 #define RAMSES_RAMSESFRAMEWORK_H
 
-#include "stdint.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "RamsesFrameworkConfig.h"
-#include "ramses-framework-api/APIExport.h"
+#include "ramses-framework-api/RamsesFrameworkConfig.h"
 #include "ramses-framework-api/StatusObject.h"
+#include "ramses-framework-api/APIExport.h"
+
 #include <memory>
+#include <string>
+#include <cstdint>
 
 namespace ramses
 {
@@ -220,6 +222,19 @@ namespace ramses
         *         to resolve error message using getStatusMessage().
         */
         status_t addRamshCommand(const std::shared_ptr<IRamshCommand>& command);
+
+        /**
+        * @brief Execute a ramsh command programmatically
+        *
+        * Instead of typing the command in ramsh console or using DLT injection this function enables the user to
+        * execute a ramsh command in code. The input is a string that contains the command and args.
+        * For setting the consoleLogLevel the input string with command and argument would be: "setLogLevelConsole trace".
+        *
+        * @param[in] input a a string containing the ramsh command and args
+        * @return StatusOK on success, otherwise the returned status can be used
+        *         to resolve error message using getStatusMessage().
+        */
+        status_t executeRamshCommand(const std::string& input);
 
         /**
         * @brief Destructor of RamsesFramework

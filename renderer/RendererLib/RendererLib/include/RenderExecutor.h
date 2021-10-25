@@ -16,13 +16,13 @@
 namespace ramses_internal
 {
     class IDevice;
-    class RendererLogContext;
+    struct RenderingContext;
     class FrameTimer;
 
     class RenderExecutor
     {
     public:
-        RenderExecutor(IDevice& device, const TargetBufferInfo& bufferInfo, const SceneRenderExecutionIterator& renderFrom = {}, const FrameTimer* frameTimer = nullptr);
+        RenderExecutor(IDevice& device, const RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr);
 
         SceneRenderExecutionIterator executeScene(const RendererCachedScene& scene) const;
 

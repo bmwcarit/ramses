@@ -938,24 +938,28 @@ namespace ramses_internal
     {
         assert(allBuffersHaveTheSameSize(renderBuffers));
 
+        if (renderBuffers.size() > m_limits.getMaximumDrawBuffers())
+        {
+            LOG_ERROR_P(CONTEXT_RENDERER, "Device_GL::uploadRenderTarget failed: this device supports at most {} render buffers attached to render target, requested {}.",
+                m_limits.getMaximumDrawBuffers(), renderBuffers.size());
+            return DeviceResourceHandle::Invalid();
+        }
+
         GLHandle fboAddress = InvalidGLHandle;
         glGenFramebuffers(1, &fboAddress);
         assert(fboAddress != InvalidGLHandle);
         glBindFramebuffer(GL_FRAMEBUFFER, fboAddress);
 
-        GLenum drawBuffers[16];
-        UInt32 colorBufferSlot = 0;
-
-        for (UInt i = 0; i < renderBuffers.size(); ++i)
+        // colorBuffers will contain color attachments slots (no depth/stencil), to define fragment shader mapping via glDrawBuffers
+        std::vector<GLenum> colorBuffers;
+        colorBuffers.reserve(renderBuffers.size());
+        for (const DeviceResourceHandle rbHandle : renderBuffers)
         {
-            const RenderBufferGPUResource& bufferGPUResource = m_resourceMapper.getResourceAs<RenderBufferGPUResource>(renderBuffers[i]);
-            bindRenderBufferToRenderTarget(bufferGPUResource, colorBufferSlot);
+            const RenderBufferGPUResource& bufferGPUResource = m_resourceMapper.getResourceAs<RenderBufferGPUResource>(rbHandle);
+            bindRenderBufferToRenderTarget(bufferGPUResource, colorBuffers.size());
 
             if (ERenderBufferType_ColorBuffer == bufferGPUResource.getType())
-            {
-                drawBuffers[colorBufferSlot] = GL_COLOR_ATTACHMENT0 + colorBufferSlot;
-                colorBufferSlot++;
-            }
+                colorBuffers.push_back(GL_COLOR_ATTACHMENT0 + static_cast<GLenum>(colorBuffers.size()));
         }
 
         // Always check that our framebuffer is ok
@@ -965,7 +969,7 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_RENDERER, "Device_GL::createRenderTargetComponents Framebuffer status not complete! GL error code: " << FBOstatus);
             return DeviceResourceHandle::Invalid();
         }
-        glDrawBuffers(colorBufferSlot, drawBuffers);
+        glDrawBuffers(static_cast<GLsizei>(colorBuffers.size()), colorBuffers.data());
 
         const DeviceResourceHandle fboHandle = m_resourceMapper.registerResource(std::make_unique<RenderTargetGPUResource>(fboAddress));
         return fboHandle;
@@ -981,7 +985,7 @@ namespace ramses_internal
         m_resourceMapper.deleteResource(handle);
     }
 
-    void Device_GL::bindRenderBufferToRenderTarget(const RenderBufferGPUResource& renderBufferGpuResource, const UInt32 colorBufferSlot)
+    void Device_GL::bindRenderBufferToRenderTarget(const RenderBufferGPUResource& renderBufferGpuResource, size_t colorBufferSlot)
     {
         switch (renderBufferGpuResource.getAccessMode())
         {
@@ -997,7 +1001,7 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::bindReadWriteRenderBufferToRenderTarget(const ERenderBufferType bufferType, const UInt32 colorBufferSlot, const GLHandle bufferGLHandle, const bool multiSample)
+    void Device_GL::bindReadWriteRenderBufferToRenderTarget(ERenderBufferType bufferType, size_t colorBufferSlot, GLHandle bufferGLHandle, const bool multiSample)
     {
         const int texTarget = (multiSample) ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
         switch (bufferType)
@@ -1010,7 +1014,7 @@ namespace ramses_internal
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, texTarget, bufferGLHandle, 0);
             break;
         case ERenderBufferType_ColorBuffer:
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorBufferSlot, texTarget, bufferGLHandle, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + static_cast<GLenum>(colorBufferSlot), texTarget, bufferGLHandle, 0);
             break;
         case ERenderBufferType_InvalidBuffer:
         default:
@@ -1019,7 +1023,7 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::bindWriteOnlyRenderBufferToRenderTarget(const ERenderBufferType bufferType, const UInt32 colorBufferSlot, const GLHandle bufferGLHandle)
+    void Device_GL::bindWriteOnlyRenderBufferToRenderTarget(ERenderBufferType bufferType, size_t colorBufferSlot, GLHandle bufferGLHandle)
     {
         switch (bufferType)
         {
@@ -1031,7 +1035,7 @@ namespace ramses_internal
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, bufferGLHandle);
             break;
         case ERenderBufferType_ColorBuffer:
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorBufferSlot, GL_RENDERBUFFER, bufferGLHandle);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + static_cast<GLenum>(colorBufferSlot), GL_RENDERBUFFER, bufferGLHandle);
             break;
         case ERenderBufferType_InvalidBuffer:
         default:
@@ -1421,7 +1425,6 @@ namespace ramses_internal
         glGetIntegerv(GL_MAX_SAMPLES, &maxMSAASamples);
         m_limits.setMaximumSamples(maxMSAASamples);
 
-
         std::array<GLint, 2> maxViewport;
         glGetIntegerv(GL_MAX_VIEWPORT_DIMS, maxViewport.data());
         m_limits.setMaxViewport(maxViewport[0], maxViewport[1]);
@@ -1465,6 +1468,10 @@ namespace ramses_internal
         {
             LOG_WARN(CONTEXT_RENDERER, "Device_GL::queryDeviceDependentFeatures:  anisotropic filtering not available on this device");
         }
+
+        GLint maxDrawBuffers{ 0 };
+        glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
+        m_limits.setMaximumDrawBuffers(maxDrawBuffers);
     }
 
     void Device_GL::readPixels(UInt8* buffer, UInt32 x, UInt32 y, UInt32 width, UInt32 height)

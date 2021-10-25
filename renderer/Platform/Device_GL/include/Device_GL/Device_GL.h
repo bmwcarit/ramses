@@ -158,9 +158,9 @@ namespace ramses_internal
         Bool getAttributeLocation(DataFieldHandle field, GLInputLocation& location) const;
 
         Bool allBuffersHaveTheSameSize(const DeviceHandleVector& renderBuffers) const;
-        void bindRenderBufferToRenderTarget(const RenderBufferGPUResource& renderBufferGpuResource, const UInt32 colorBufferSlot);
-        void bindReadWriteRenderBufferToRenderTarget(const ERenderBufferType bufferType, const UInt32 colorBufferSlot, const GLHandle bufferGLHandle, const bool multiSample);
-        void bindWriteOnlyRenderBufferToRenderTarget(const ERenderBufferType bufferType, const UInt32 colorBufferSlot, const GLHandle bufferGLHandle);
+        void bindRenderBufferToRenderTarget(const RenderBufferGPUResource& renderBufferGpuResource, size_t colorBufferSlot);
+        void bindReadWriteRenderBufferToRenderTarget(ERenderBufferType bufferType, size_t colorBufferSlot, GLHandle bufferGLHandle, bool multiSample);
+        void bindWriteOnlyRenderBufferToRenderTarget(ERenderBufferType bufferType, size_t colorBufferSlot, GLHandle bufferGLHandle);
         GLHandle createTexture(UInt32 width, UInt32 height, ETextureFormat storageFormat, UInt32 sampleCount) const;
         GLHandle createRenderBuffer(UInt32 width, UInt32 height, ETextureFormat format, UInt32 sampleCount);
 

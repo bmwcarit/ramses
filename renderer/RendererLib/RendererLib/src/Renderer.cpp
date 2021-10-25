@@ -13,6 +13,7 @@
 #include "RendererAPI/IWindow.h"
 #include "RendererAPI/IContext.h"
 #include "RendererAPI/IDevice.h"
+#include "RendererAPI/RenderingContext.h"
 #include "RendererLib/RendererCachedScene.h"
 #include "RendererLib/DisplayController.h"
 #include "RendererLib/RendererLogContext.h"
@@ -241,6 +242,11 @@ namespace ramses_internal
 
         m_displayController->clearBuffer(m_frameBufferDeviceHandle, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
 
+        RenderingContext renderContext;
+        renderContext.displayBufferDeviceHandle = m_frameBufferDeviceHandle;
+        renderContext.viewportWidth = displayBufferInfo.viewport.width;
+        renderContext.viewportHeight = displayBufferInfo.viewport.height;
+
         m_tempScenesRendered.clear();
         const auto& assignedScenes = displayBufferInfo.scenes;
         for (const auto& sceneInfo : assignedScenes)
@@ -248,7 +254,7 @@ namespace ramses_internal
             if (sceneInfo.shown)
             {
                 const RendererCachedScene& scene = m_rendererScenes.getScene(sceneInfo.sceneId);
-                m_displayController->renderScene(scene, m_frameBufferDeviceHandle, displayBufferInfo.viewport);
+                m_displayController->renderScene(scene, renderContext);
                 onSceneWasRendered(scene);
                 m_tempScenesRendered.push_back(sceneInfo.sceneId);
             }
@@ -284,6 +290,11 @@ namespace ramses_internal
             const auto& displayBufferInfo = m_displayBuffersSetup.getDisplayBuffer(displayBuffer);
             m_displayController->clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
 
+            RenderingContext renderContext;
+            renderContext.displayBufferDeviceHandle = displayBuffer;
+            renderContext.viewportWidth = displayBufferInfo.viewport.width;
+            renderContext.viewportHeight = displayBufferInfo.viewport.height;
+
             m_tempScenesRendered.clear();
             const auto& assignedScenes = displayBufferInfo.scenes;
             for (const auto& sceneInfo : assignedScenes)
@@ -291,7 +302,7 @@ namespace ramses_internal
                 if (sceneInfo.shown)
                 {
                     const RendererCachedScene& scene = m_rendererScenes.getScene(sceneInfo.sceneId);
-                    m_displayController->renderScene(scene, displayBuffer, displayBufferInfo.viewport);
+                    m_displayController->renderScene(scene, renderContext);
                     onSceneWasRendered(scene);
                     m_tempScenesRendered.push_back(sceneInfo.sceneId);
                 }
@@ -322,6 +333,11 @@ namespace ramses_internal
         {
             const auto& displayBufferInfo = m_displayBuffersSetup.getDisplayBuffer(displayBuffer);
 
+            RenderingContext renderContext;
+            renderContext.displayBufferDeviceHandle = displayBuffer;
+            renderContext.viewportWidth = displayBufferInfo.viewport.width;
+            renderContext.viewportHeight = displayBufferInfo.viewport.height;
+
             if (!m_rendererInterruptState.isInterrupted(displayBuffer))
             {
                 // remove buffer from list of buffers to re-render as soon as we start rendering into it (even if it gets interrupted later on)
@@ -343,7 +359,8 @@ namespace ramses_internal
                     continue;
 
                 const RendererCachedScene& scene = m_rendererScenes.getScene(sceneId);
-                const SceneRenderExecutionIterator interruptState = m_displayController->renderScene(scene, displayBuffer, displayBufferInfo.viewport, m_rendererInterruptState.getExecutorState(), &m_frameTimer);
+                renderContext.renderFrom = m_rendererInterruptState.getExecutorState();
+                const SceneRenderExecutionIterator interruptState = m_displayController->renderScene(scene, renderContext, &m_frameTimer);
 
                 if (RendererInterruptState::IsInterrupted(interruptState))
                 {

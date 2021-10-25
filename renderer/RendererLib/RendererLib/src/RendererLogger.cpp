@@ -695,8 +695,8 @@ namespace ramses_internal
             {
                 const RendererCachedScene& renderScene = updater.m_renderer.m_rendererScenes.getScene(sceneInfo.sceneId);
                 LoggingDevice logDevice(displayController.getRenderBackend().getDevice(), context);
-                const TargetBufferInfo targetBufferInfo{ displayController.m_postProcessing->getScenesRenderTarget(), displayController.getDisplayWidth(), displayController.getDisplayHeight() };
-                RenderExecutorLogger executor(logDevice, targetBufferInfo, context);
+                const RenderingContext renderContext{ displayController.m_postProcessing->getScenesRenderTarget(), displayController.getDisplayWidth(), displayController.getDisplayHeight(), {} };
+                RenderExecutorLogger executor(logDevice, renderContext, context);
                 executor.logScene(renderScene);
             }
         }

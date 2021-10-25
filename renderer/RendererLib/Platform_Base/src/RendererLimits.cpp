@@ -57,6 +57,16 @@ namespace ramses_internal
         return m_maxViewportHeight;
     }
 
+    UInt32 RendererLimits::getMaximumDrawBuffers() const
+    {
+        return m_maximumDrawBuffers;
+    }
+
+    void RendererLimits::setMaximumDrawBuffers(uint32_t drawBuffers)
+    {
+        m_maximumDrawBuffers = drawBuffers;
+    }
+
     bool RendererLimits::isTextureFormatAvailable(ETextureFormat format) const
     {
         return m_availableTextureFormats.contains(format);
@@ -74,6 +84,7 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "  - maximum number of MSAA samples:             " << m_maximumSamples);
         LOG_INFO(CONTEXT_RENDERER, "  - maximum number of anisotropy samples:       " << m_maximumAnisotropy);
         LOG_INFO(CONTEXT_RENDERER, "  - maximum viewport size:                      " << m_maxViewportWidth << " x " << m_maxViewportHeight);
+        LOG_INFO(CONTEXT_RENDERER, "  - maximum number of FBO draw buffers:         " << m_maximumDrawBuffers);
 
         LOG_INFO(CONTEXT_RENDERER, "  - supported texture formats: " << m_availableTextureFormats.size());
         for(const auto& texture : m_availableTextureFormats)

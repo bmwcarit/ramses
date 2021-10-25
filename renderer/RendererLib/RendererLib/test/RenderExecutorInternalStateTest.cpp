@@ -43,9 +43,9 @@ namespace ramses_internal
     {
     public:
         ARenderExecutorInternalState()
-            : m_bufferInfo{ DeviceResourceHandle(0u), FakeVpWidth, FakeVpHeight }
-            , m_executorState(m_device, m_bufferInfo)
-            , m_executorStateWithTimer(m_device, m_bufferInfo, {}, &m_frameTimer)
+            : m_renderContext{ DeviceResourceHandle(0u), FakeVpWidth, FakeVpHeight, SceneRenderExecutionIterator{} }
+            , m_executorState(m_device, m_renderContext)
+            , m_executorStateWithTimer(m_device, m_renderContext, &m_frameTimer)
             , m_rendererScenes(m_rendererEventCollector)
             , m_sceneLinksManager(m_rendererScenes.getSceneLinksManager())
             , m_sceneId(666u)
@@ -58,7 +58,7 @@ namespace ramses_internal
 
     protected:
         StrictMock<DeviceMock>             m_device;
-        TargetBufferInfo                   m_bufferInfo;
+        RenderingContext                   m_renderContext;
         FrameTimer                         m_frameTimer;
         RenderExecutorInternalState        m_executorState;
         RenderExecutorInternalState        m_executorStateWithTimer;
@@ -103,11 +103,12 @@ namespace ramses_internal
         }
     };
 
-    TEST_F(ARenderExecutorInternalState, canGetTargetBufferInfo)
+    TEST_F(ARenderExecutorInternalState, canGetRenderingContext)
     {
-        EXPECT_EQ(DeviceResourceHandle(0u), m_executorState.getTargetBufferInfo().deviceHandle);
-        EXPECT_EQ(FakeVpWidth, m_executorState.getTargetBufferInfo().width);
-        EXPECT_EQ(FakeVpHeight, m_executorState.getTargetBufferInfo().height);
+        EXPECT_EQ(DeviceResourceHandle(0u), m_executorState.getRenderingContext().displayBufferDeviceHandle);
+        EXPECT_EQ(FakeVpWidth, m_executorState.getRenderingContext().viewportWidth);
+        EXPECT_EQ(FakeVpHeight, m_executorState.getRenderingContext().viewportHeight);
+        EXPECT_EQ(SceneRenderExecutionIterator{}, m_executorState.getRenderingContext().renderFrom);
     }
 
     TEST_F(ARenderExecutorInternalState, hasIdentityProjectionMatrixInDefaultState)

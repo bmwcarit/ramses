@@ -86,6 +86,7 @@ namespace ramses
         ramses_internal::StatisticCollectionFramework& getStatisticCollection();
         static void SetConsoleLogLevel(ELogLevel logLevel);
         status_t addRamshCommand(const std::shared_ptr<IRamshCommand>& command);
+        status_t executeRamshCommand(const std::string& input);
 
     private:
         RamsesFrameworkImpl(const RamsesFrameworkConfigImpl& config, const ramses_internal::ParticipantIdentifier& participantAddress);

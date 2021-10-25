@@ -53,10 +53,9 @@ namespace ramses_internal
         validateRenderingStatusHealthy();
     }
 
-    SceneRenderExecutionIterator DisplayController::renderScene(const RendererCachedScene& scene, DeviceResourceHandle buffer, const Viewport& viewport, const SceneRenderExecutionIterator& renderFrom, const FrameTimer* frameTimer)
+    SceneRenderExecutionIterator DisplayController::renderScene(const RendererCachedScene& scene, const RenderingContext& renderContext, const FrameTimer* frameTimer)
     {
-        const TargetBufferInfo bufferInfo{ buffer, viewport.width, viewport.height };
-        RenderExecutor executor(m_renderBackend.getDevice(), bufferInfo, renderFrom, frameTimer);
+        RenderExecutor executor(m_renderBackend.getDevice(), renderContext, frameTimer);
 
         return executor.executeScene(scene);
     }

@@ -32,6 +32,9 @@ namespace ramses_internal
         uint32_t getMaxViewportWidth() const;
         uint32_t getMaxViewportHeight() const;
 
+        UInt32   getMaximumDrawBuffers() const;
+        void     setMaximumDrawBuffers(uint32_t drawBuffers);
+
         // Texture formats
         bool isTextureFormatAvailable(ETextureFormat format) const;
         void addTextureFormat(ETextureFormat format);
@@ -44,6 +47,7 @@ namespace ramses_internal
         uint32_t m_maximumAnisotropy = 1u;
         uint32_t m_maxViewportWidth = 16u;
         uint32_t m_maxViewportHeight = 16u;
+        uint32_t m_maximumDrawBuffers = 4u;
         HashSet<ETextureFormat> m_availableTextureFormats;
     };
 }

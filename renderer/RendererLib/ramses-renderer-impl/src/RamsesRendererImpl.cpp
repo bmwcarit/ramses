@@ -408,7 +408,7 @@ namespace ramses
 
         const auto it = m_displayFramebuffers.find(displayId);
         if (it == m_displayFramebuffers.cend())
-            return addErrorEntry("RendererSceneControl::setDisplayBufferClearColor failed: display does not exist.");
+            return addErrorEntry("RamsesRenderer::readPixels failed: display does not exist.");
 
         ramses_internal::OffscreenBufferHandle bufferHandle{ displayBuffer.getValue() };
         // if buffer to read from is display's framebuffer pass invalid OB to internal renderer

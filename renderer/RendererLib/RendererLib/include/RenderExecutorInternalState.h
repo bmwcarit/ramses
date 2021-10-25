@@ -14,7 +14,7 @@
 #include "SceneAPI/Handles.h"
 #include "SceneAPI/Viewport.h"
 #include "RendererAPI/SceneRenderExecutionIterator.h"
-#include "RendererAPI/Types.h"
+#include "RendererAPI/RenderingContext.h"
 #include "RendererLib/FrameTimer.h"
 #include "RenderExecutorInternalRenderStates.h"
 
@@ -94,25 +94,18 @@ namespace ramses_internal
         Bool      m_changed;
     };
 
-    struct TargetBufferInfo
-    {
-        DeviceResourceHandle deviceHandle;
-        uint32_t width;
-        uint32_t height;
-    };
-
     // RenderExecutor is _stateless_, this only keeps an internal state during execution
     // to avoid copying it around
     class RenderExecutorInternalState
     {
     public:
-        RenderExecutorInternalState(IDevice& device, const TargetBufferInfo& bufferInfo, const SceneRenderExecutionIterator& renderFrom = {}, const FrameTimer* frameTimer = nullptr);
+        RenderExecutorInternalState(IDevice& device, const RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr);
 
         IDevice&                   getDevice() const;
 
         void                       setScene(const RendererCachedScene& scene);
         const RendererCachedScene& getScene() const;
-        const TargetBufferInfo&    getTargetBufferInfo() const;
+        const RenderingContext&    getRenderingContext() const;
 
         const Matrix44f&           getProjectionMatrix() const;
         const Vector3&             getCameraWorldPosition() const;
@@ -150,7 +143,7 @@ namespace ramses_internal
     private:
         IDevice&                    m_device;
         const RendererCachedScene*  m_scene;
-        const TargetBufferInfo      m_targetBufferInfo;
+        RenderingContext            m_renderContext;
 
         RenderableHandle            m_renderable;
 
@@ -187,9 +180,9 @@ namespace ramses_internal
         return *m_scene;
     }
 
-    inline const TargetBufferInfo& RenderExecutorInternalState::getTargetBufferInfo() const
+    inline const RenderingContext& RenderExecutorInternalState::getRenderingContext() const
     {
-        return m_targetBufferInfo;
+        return m_renderContext;
     }
 
     inline const Matrix44f& RenderExecutorInternalState::getProjectionMatrix() const

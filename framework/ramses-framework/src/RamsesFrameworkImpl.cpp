@@ -9,6 +9,7 @@
 #include "RamsesFrameworkImpl.h"
 #include "Utils/Argument.h"
 #include "Utils/LogMacros.h"
+#include "Ramsh/RamshTools.h"
 #include "PlatformAbstraction/PlatformEnvironmentVariables.h"
 #include "ramses-sdk-build-config.h"
 #include "TransportCommon/CommunicationSystemFactory.h"
@@ -220,6 +221,16 @@ namespace ramses
         if (!m_ramsh->add(commandWrapper, false))
             return addErrorEntry("addRamshCommand: command not valid");
         m_publicRamshCommands.push_back(commandWrapper);
+        return StatusOK;
+    }
+
+    status_t RamsesFrameworkImpl::executeRamshCommand(const std::string& input)
+    {
+        if (input.empty())
+            return addErrorEntry("executeRamshCommand: command may not be empty");
+        LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFrameworkImpl::executeRamshCommand: '{}'", fmt::join(input, " "));
+        if (!m_ramsh->execute(RamshTools::parseCommandString(input.c_str())))
+            return addErrorEntry("executeRamshCommand: executing command failed");
         return StatusOK;
     }
 

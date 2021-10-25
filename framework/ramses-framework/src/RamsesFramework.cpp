@@ -11,6 +11,8 @@
 
 #include "APILoggingHelper.h"
 
+#include <string>
+
 namespace ramses
 {
     RamsesFramework::RamsesFramework()
@@ -124,4 +126,8 @@ namespace ramses
         return result;
     }
 
+    status_t RamsesFramework::executeRamshCommand(const std::string& input)
+    {
+        return impl.executeRamshCommand(input);
+    }
 }

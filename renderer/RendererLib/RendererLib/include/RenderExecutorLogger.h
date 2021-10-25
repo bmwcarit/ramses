@@ -14,11 +14,12 @@
 namespace ramses_internal
 {
     class RendererLogContext;
+    struct RenderingContext;
 
     class RenderExecutorLogger : public RenderExecutor
     {
     public:
-        RenderExecutorLogger(IDevice& device, const TargetBufferInfo& bufferInfo, RendererLogContext& context);
+        RenderExecutorLogger(IDevice& device, const RenderingContext& renderContext, RendererLogContext& context);
 
         // Equivalent to RenderExecutor::executeScene(), but logs instead of rendering
         void logScene(const RendererCachedScene& scene) const;

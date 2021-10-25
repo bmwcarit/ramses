@@ -14,8 +14,8 @@
 
 namespace ramses_internal
 {
-    RenderExecutorLogger::RenderExecutorLogger(IDevice& device, const TargetBufferInfo& bufferInfo, RendererLogContext& context)
-        : RenderExecutor(device, bufferInfo)
+    RenderExecutorLogger::RenderExecutorLogger(IDevice& device, const RenderingContext& renderContext, RendererLogContext& context)
+        : RenderExecutor(device, renderContext)
         , m_logContext(context)
     {
     }

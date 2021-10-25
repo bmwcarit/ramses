@@ -469,8 +469,8 @@ protected:
     SceneRenderExecutionIterator executeScene(SceneRenderExecutionIterator renderFrom = {}, const FrameTimer* frameTimer = nullptr)
     {
         const Viewport vp(fakeViewportX, fakeViewportY, fakeViewportWidth, fakeViewportHeight);
-        const TargetBufferInfo bufferInfo{ DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, vp.width, vp.height };
-        RenderExecutor executor(device, bufferInfo, renderFrom, frameTimer);
+        const RenderingContext renderContext{ DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, vp.width, vp.height, renderFrom };
+        RenderExecutor executor(device, renderContext, frameTimer);
 
         return executor.executeScene(scene);
     }

@@ -978,10 +978,19 @@ protected:
         EXPECT_CALL(*renderer.m_displayController, executePostProcessing());
         EXPECT_CALL(*renderer.m_displayController, swapBuffers());
 
-        EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(getSceneId(sceneIdx))), DisplayControllerMock::FakeFrameBufferHandle, _, _, _));
+        EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(getSceneId(sceneIdx))), _, nullptr)).WillOnce(
+            [](const auto&, const RenderingContext& renderContext, const auto*) {
+            EXPECT_EQ(DisplayControllerMock::FakeFrameBufferHandle, renderContext.displayBufferDeviceHandle);
+            return SceneRenderExecutionIterator{};
+        });
+
         SceneRenderExecutionIterator interruptedState;
         interruptedState.incrementRenderableIdx();
-        EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(getSceneId(interruptedSceneIdx))), DeviceMock::FakeRenderTargetDeviceHandle, _, _, _)).WillOnce(Return(interruptedState));
+        EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(getSceneId(interruptedSceneIdx))), _, _)).WillOnce(
+            [interruptedState](const auto&, const RenderingContext& renderContext, const auto*) {
+            EXPECT_EQ(DeviceMock::FakeRenderTargetDeviceHandle, renderContext.displayBufferDeviceHandle);
+            return interruptedState;
+        });
 
         renderer.doOneRenderLoop();
         EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
@@ -1001,7 +1010,7 @@ protected:
         EXPECT_CALL(*renderer.m_displayController, canRenderNewFrame()).WillOnce(Return(true));
         EXPECT_CALL(*renderer.m_displayController, executePostProcessing()).Times(AnyNumber());
         EXPECT_CALL(*renderer.m_displayController, swapBuffers()).Times(AnyNumber());
-        EXPECT_CALL(*renderer.m_displayController, renderScene(_, _, _, _, _)).Times(AnyNumber());
+        EXPECT_CALL(*renderer.m_displayController, renderScene(_, _, _)).Times(AnyNumber());
 
         renderer.doOneRenderLoop();
     }

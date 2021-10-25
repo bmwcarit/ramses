@@ -132,12 +132,22 @@ public:
 
     void expectSceneRendered(SceneId sceneId, DeviceResourceHandle buffer = DisplayControllerMock::FakeFrameBufferHandle)
     {
-        EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(sceneId)), buffer, _, sceneRenderBegin, nullptr));
+        EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(sceneId)), _, nullptr))
+            .WillOnce([buffer, this](const auto&, const RenderingContext& renderContext, const auto*) {
+            EXPECT_EQ(buffer, renderContext.displayBufferDeviceHandle);
+            EXPECT_EQ(sceneRenderBegin, renderContext.renderFrom);
+            return SceneRenderExecutionIterator{};
+        });
     }
 
     void expectSceneRenderedWithInterruptionEnabled(SceneId sceneId, DeviceResourceHandle buffer, SceneRenderExecutionIterator expectedRenderBegin, SceneRenderExecutionIterator stateToSimulate)
     {
-        EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(sceneId)), buffer, _, expectedRenderBegin, &renderer.FrameTimerInstance)).WillOnce(Return(stateToSimulate));
+        EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(sceneId)), _, &renderer.FrameTimerInstance))
+            .WillOnce([buffer, expectedRenderBegin, stateToSimulate](const auto&, const RenderingContext& renderContext, const auto*) {
+            EXPECT_EQ(buffer, renderContext.displayBufferDeviceHandle);
+            EXPECT_EQ(expectedRenderBegin, renderContext.renderFrom);
+            return stateToSimulate;
+        });
     }
 
     void expectDisplayControllerReadPixels(DeviceResourceHandle deviceHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height)

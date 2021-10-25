@@ -15,8 +15,8 @@ namespace ramses_internal
 {
     UInt32 RenderExecutor::NumRenderablesToRenderInBetweenTimeBudgetChecks = RenderExecutor::DefaultNumRenderablesToRenderInBetweenTimeBudgetChecks;
 
-    RenderExecutor::RenderExecutor(IDevice& device, const TargetBufferInfo& bufferInfo, const SceneRenderExecutionIterator& renderFrom, const FrameTimer* frameTimer)
-        : m_state(device, bufferInfo, renderFrom, frameTimer)
+    RenderExecutor::RenderExecutor(IDevice& device, const RenderingContext& renderContext, const FrameTimer* frameTimer)
+        : m_state(device, renderContext, frameTimer)
     {
     }
 
@@ -432,7 +432,7 @@ namespace ramses_internal
         else
         {
             // Framebuffer
-            renderTargetDeviceResource = m_state.getTargetBufferInfo().deviceHandle;
+            renderTargetDeviceResource = m_state.getRenderingContext().displayBufferDeviceHandle;
         }
 
         IDevice& device = m_state.getDevice();
@@ -495,7 +495,8 @@ namespace ramses_internal
         }
         case EFixedSemantics::DisplayBufferResolution:
         {
-            const Vector2 bufferRes{ float(m_state.getTargetBufferInfo().width), float(m_state.getTargetBufferInfo().height) };
+            const RenderingContext& ctx = m_state.getRenderingContext();
+            const Vector2 bufferRes{ float(ctx.viewportWidth), float(ctx.viewportHeight) };
             scene.setDataSingleVector2f(dataInstHandle, dataFieldHandle, bufferRes);
             break;
         }

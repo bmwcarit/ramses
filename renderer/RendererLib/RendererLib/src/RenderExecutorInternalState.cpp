@@ -8,15 +8,16 @@
 
 #include "RenderExecutorInternalState.h"
 #include "RendererLib/RendererCachedScene.h"
+#include "RendererAPI/RenderingContext.h"
 
 namespace ramses_internal
 {
-    RenderExecutorInternalState::RenderExecutorInternalState(IDevice& device, const TargetBufferInfo& bufferInfo, const SceneRenderExecutionIterator& renderFrom, const FrameTimer* frameTimer)
+    RenderExecutorInternalState::RenderExecutorInternalState(IDevice& device, const RenderingContext& renderContext, const FrameTimer* frameTimer)
         : viewportState(Viewport(std::numeric_limits<Int32>::max(), std::numeric_limits<Int32>::max(), std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max()))
-        , m_currentRenderIterator(renderFrom)
+        , m_currentRenderIterator(renderContext.renderFrom)
         , m_device(device)
         , m_scene(nullptr)
-        , m_targetBufferInfo(bufferInfo)
+        , m_renderContext(renderContext)
         , m_projectionMatrix(Matrix44f::Identity)
         , m_cameraWorldPosition(0.0f)
         , m_frameTimer(frameTimer)

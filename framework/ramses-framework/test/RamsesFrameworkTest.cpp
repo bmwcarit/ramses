@@ -12,7 +12,6 @@
 #include "RamsesFrameworkImpl.h"
 #include "ApiRamshCommandMock.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "Ramsh/Ramsh.h"
 
 using namespace ramses;
 using namespace testing;
@@ -93,19 +92,25 @@ TEST(ARamsesFramework, canAddAndTriggerRamshCommands)
     EXPECT_EQ(StatusOK, fw.addRamshCommand(cmd_a));
     EXPECT_EQ(StatusOK, fw.addRamshCommand(cmd_b));
 
-    std::vector<std::string> inp_a;
-    inp_a.push_back("foo");
+    std::string inp_a = "foo";
     EXPECT_CALL(*cmd_a, execute(std::vector<std::string>{"foo"})).WillOnce(Return(true));
-    EXPECT_TRUE(fw.impl.getRamsh().execute(inp_a));
+    EXPECT_EQ(StatusOK, fw.executeRamshCommand(inp_a));
 
-    std::vector<std::string> inp_b;
-    inp_b.push_back("bar");
-    inp_b.push_back("baz");
+    std::string inp_b = "bar baz";
     EXPECT_CALL(*cmd_b, execute(std::vector<std::string>{"bar", "baz"})).WillOnce(Return(true));
-    EXPECT_TRUE(fw.impl.getRamsh().execute(inp_b));
+    EXPECT_EQ(StatusOK, fw.executeRamshCommand(inp_b));
 
     cmd_a.reset();
-    EXPECT_FALSE(fw.impl.getRamsh().execute(inp_a));
+    EXPECT_NE(StatusOK, fw.executeRamshCommand(inp_a));
+}
+
+TEST(ARamsesFramwork, canExecuteExistingAndFailingInvalidRamshCommands)
+{
+    RamsesFramework fw;
+    EXPECT_EQ(StatusOK, fw.executeRamshCommand("help"));
+    EXPECT_EQ(StatusOK, fw.executeRamshCommand("setLogLevelConsole trace"));
+    EXPECT_NE(StatusOK, fw.executeRamshCommand("invalid ramsh command"));
+    EXPECT_NE(StatusOK, fw.executeRamshCommand(""));
 }
 
 TEST(ARamsesFramework, failsToAddInvalidRamshCommands)

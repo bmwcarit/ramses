@@ -16,7 +16,7 @@ namespace ramses_internal
 {
     class IRenderBackend;
     class IEmbeddedCompositingManager;
-    struct Viewport;
+    struct RenderingContext;
     class RendererCachedScene;
     class Matrix44f;
     class Vector3;
@@ -34,7 +34,7 @@ namespace ramses_internal
         virtual Bool                    canRenderNewFrame() const = 0;
         virtual void                    enableContext() = 0;
         virtual void                    swapBuffers() = 0;
-        virtual SceneRenderExecutionIterator renderScene(const RendererCachedScene& scene, DeviceResourceHandle buffer, const Viewport& viewport, const SceneRenderExecutionIterator& renderFrom = {}, const FrameTimer* frameTimer = nullptr) = 0;
+        virtual SceneRenderExecutionIterator renderScene(const RendererCachedScene& scene, const RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr) = 0;
         virtual void                    executePostProcessing() = 0;
         virtual void                    clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const Vector4& clearColor) = 0;
 
