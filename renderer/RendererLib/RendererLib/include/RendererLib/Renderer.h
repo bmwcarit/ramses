@@ -142,7 +142,7 @@ namespace ramses_internal
         std::unique_ptr<FrameProfileRenderer> m_frameProfileRenderer;
 
         // temporary containers kept to avoid re-allocations
-        std::vector<SceneId> m_tempScenesRendered;
+        std::vector<SceneId> m_tempScenesToRender;
     };
 }
 

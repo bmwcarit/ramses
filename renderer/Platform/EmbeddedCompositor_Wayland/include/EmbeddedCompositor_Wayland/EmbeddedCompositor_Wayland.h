@@ -53,7 +53,7 @@ namespace ramses_internal
         virtual Bool isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
         virtual UInt32 getNumberOfCompositorConnections() const override;
         virtual Bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
-        virtual const IWaylandSurface& findSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const final;
+        const IWaylandSurface& findSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const;
         virtual String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
         virtual void logInfos(RendererLogContext& context) const override;
 

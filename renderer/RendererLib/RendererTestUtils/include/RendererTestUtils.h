@@ -64,6 +64,12 @@ public:
         ramses_internal::UInt32 width,
         ramses_internal::UInt32 height);
 
+    static bool CompareBitmapToImageInFile(
+        const ramses_internal::Image& actualBitmap,
+        const ramses_internal::String& expectedScreenshotFileName,
+        float maxAveragePercentErrorPerPixel,
+        bool saveDiffOnError);
+
     static ramses::displayId_t  CreateDisplayImmediate(ramses::RamsesRenderer& renderer, const ramses::DisplayConfig& displayConfig);
     static void                 DestroyDisplayImmediate(ramses::RamsesRenderer& renderer, ramses::displayId_t displayId);
 
@@ -80,12 +86,6 @@ public:
     static const float DefaultMaxAveragePercentPerPixel;
 
 private:
-    static bool CompareBitmapToImageInFile(
-        const ramses_internal::Image& actualBitmap,
-        const ramses_internal::String& expectedScreenshotFileName,
-        float maxAveragePercentErrorPerPixel,
-        bool saveDiffOnError);
-
     static absl::optional<std::chrono::microseconds> MaxFrameCallbackPollingTime;
     static absl::optional<ramses_internal::String> WaylandDisplayForSystemCompositorController;
     static std::vector<const char*> CommandLineArgs;

@@ -50,22 +50,28 @@ public:
         : m_dcsmContentControl(renderer)
     {}
 
-    std::unordered_set<ramses::ContentID> readyContents;
+    void makeContentExclusive(const ramses::ContentID& contentID)
+    {
+        m_exclusiveContent = contentID;
+    }
 
     virtual void contentAvailable(ramses::ContentID contentID, ramses::Category ) override
     {
-        readyContents.erase(contentID);
+        // If content to filter is reset and this content is not the specific content, then stop the ramping
+        if (m_exclusiveContent.isValid() && m_exclusiveContent != contentID)
+            return;
         m_dcsmContentControl.requestContentReady(contentID, 0u);
     }
 
     virtual void contentReady(ramses::ContentID contentID, ramses::DcsmContentControlEventResult ) override
     {
-        readyContents.insert(contentID);
         m_dcsmContentControl.showContent(contentID, ramses::AnimationInformation{});
     }
 
 private:
     ramses::DcsmContentControl& m_dcsmContentControl;
+    // If value == 0u, then render all contents; then render the set content value
+    ramses::ContentID m_exclusiveContent;
 };
 
 ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
@@ -78,6 +84,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
     ramses_internal::ArgumentUInt32    msaaSamples(parser, "msaa", "msaaSamples", 1u);
     ramses_internal::ArgumentBool      enabledcsm(parser, "dcsm", "enable-dcsm");
     ramses_internal::ArgumentString    categoriesToParse(parser, "c", "categories", "");
+    ramses_internal::ArgumentUInt32    contentIDToFilter(parser, "con", "content", 0u);
 
     std::vector<MappingCommand> mappingCommands;
     {
@@ -132,6 +139,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
             sos << "-msaa    --msaaSamples             number of samples per pixel to use for multisampling (default 1)\n";
             sos << "-dcsm    --enable-dcsm             enable DCSM mode where only DCSM content can be rendered\n";
             sos << "-c       --categories              list of categories to register: categoryID,renderWidth,renderHeight,categoryOffsetX,categoryOffsetY,categoryWidth,categoryHeight,displayIdx[,categoryID,renderWidth,renderHeight,categoryOffsetX,categoryOffsetY,categoryWidth,categoryHeight,displayIdx]*\n";
+            sos << "-con     --content                 show content exclusively, ignore other contents offered for the category\n";
         }));
         ramses_internal::RendererConfigUtils::PrintCommandLineOptions();
         return 0;
@@ -170,6 +178,7 @@ ramses_internal::Int32 main(ramses_internal::Int32 argc, char * argv[])
         }
 
         Handler handler(dcsmContentControl);
+        handler.makeContentExclusive(ramses::ContentID(contentIDToFilter));
         while (!commandExit->exitRequested())
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));

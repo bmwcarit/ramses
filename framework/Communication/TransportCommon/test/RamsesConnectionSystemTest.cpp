@@ -8,7 +8,6 @@
 
 #include "TransportCommon/RamsesConnectionSystem.h"
 #include "SomeIPStackMocks.h"
-#include "Utils/StatisticCollection.h"
 #include "MockConnectionStatusListener.h"
 #include "ServiceHandlerMocks.h"
 #include "gmock/gmock.h"
@@ -33,7 +32,7 @@ namespace ramses_internal
         std::unique_ptr<RamsesConnectionSystem> construct(const std::shared_ptr<StrictMock<SomeIPRamsesStackMock>>& stackMock)
         {
             EXPECT_CALL(stack, getServiceInstanceId()).WillRepeatedly(Return(RamsesInstanceId(5)));
-            auto ptr = RamsesConnectionSystem::Construct(stackMock, 3, ParticipantIdentifier(Guid(pid), "foobar"), 99, lock, stats,
+            auto ptr = RamsesConnectionSystem::Construct(stackMock, 3, ParticipantIdentifier(Guid(pid), "foobar"), 99, lock,
                                                        std::chrono::milliseconds(0), std::chrono::milliseconds(0),
                                                        CountingConnectionSystemClock());
             assert(ptr);
@@ -48,10 +47,10 @@ namespace ramses_internal
 
         void connectRemote(RamsesInstanceId remoteIid, const Guid& remotePid, uint64_t sessionId = 123)
         {
-            EXPECT_CALL(stack, sendParticipantInfo(remoteIid, ValidHdr(pid, 1u), 99, RamsesInstanceId{5}, 0, _, _)).WillOnce(Return(true));
+            EXPECT_CALL(stack, sendParticipantInfo(remoteIid, ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, RamsesInstanceId{5}, 0, _, _)).WillOnce(Return(true));
             fromStack.handleServiceAvailable(remoteIid);
             EXPECT_CALL(connections, newParticipantHasConnected(remotePid));
-            fromStack.handleParticipantInfo(SomeIPMsgHeader{remotePid.get(), sessionId, 1}, 99, remoteIid, 0, 0, 0);
+            fromStack.handleParticipantInfo(SomeIPMsgHeader{remotePid.get(), sessionId, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, remoteIid, 0, 0, 0);
         }
 
         void expectRemoteDisconnects(std::initializer_list<uint64_t> guids)
@@ -66,7 +65,6 @@ namespace ramses_internal
         StrictMock<SceneProviderServiceHandlerMock> sceneProvider;
         StrictMock<SceneRendererServiceHandlerMock> sceneRenderer;
         PlatformLock lock;
-        StatisticCollectionFramework stats;
         uint64_t pid{4};
         std::unique_ptr<RamsesConnectionSystem> connsys;
         ISomeIPRamsesStackCallbacks& fromStack;

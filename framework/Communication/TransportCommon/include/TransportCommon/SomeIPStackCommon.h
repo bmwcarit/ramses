@@ -17,6 +17,15 @@ namespace ramses_internal
 {
     class StringOutputStream;
 
+    namespace SomeIPConstants
+    {
+        static constexpr uint32_t FallbackMinorProtocolVersion = 0;
+
+        static constexpr const char* const ParticipantInfoExpectedReceiverPidKey = "%expectedReceiverPid";
+        static constexpr const char* const ParticipantInfoMinorProtocolVersionKey = "%minorProtocolVersion";
+        static constexpr const char* const KeepAliveUsingPreviousMessageIdKey = "%usingPreviousMessageId";
+    }
+
     struct SomeIPMsgHeader
     {
         uint64_t participantId;
@@ -40,8 +49,8 @@ namespace ramses_internal
         virtual void handleServiceAvailable(InstanceIdType iid) = 0;
         virtual void handleServiceUnavailable(InstanceIdType iid) = 0;
 
-        virtual void handleParticipantInfo(const SomeIPMsgHeader& header, uint16_t protocolVersion, InstanceIdType senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow) = 0;
-        virtual void handleKeepAlive(const SomeIPMsgHeader& header, uint64_t timestampNow) = 0;
+        virtual void handleParticipantInfo(const SomeIPMsgHeader& header, uint16_t protocolVersion, uint32_t minorProtocolVersion, InstanceIdType senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow) = 0;
+        virtual void handleKeepAlive(const SomeIPMsgHeader& header, uint64_t timestampNow, bool usingPreviousMessageId) = 0;
     };
 
     template <typename InstanceIdT>
@@ -58,8 +67,8 @@ namespace ramses_internal
 
         virtual InstanceIdType getServiceInstanceId() const = 0;
 
-        virtual bool sendParticipantInfo(InstanceIdType to, const SomeIPMsgHeader& header, uint16_t protocolVersion, InstanceIdType senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow) = 0;
-        virtual bool sendKeepAlive(InstanceIdType to, const SomeIPMsgHeader& header, uint64_t timestampNow) = 0;
+        virtual bool sendParticipantInfo(InstanceIdType to, const SomeIPMsgHeader& header, uint16_t protocolVersion, uint32_t minorProtocolVersion, InstanceIdType senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow) = 0;
+        virtual bool sendKeepAlive(InstanceIdType to, const SomeIPMsgHeader& header, uint64_t timestampNow, bool usingPreviousMessageId) = 0;
     };
 }
 

@@ -46,6 +46,7 @@ namespace ramses_internal
                 TestInstanceId to;
                 SomeIPMsgHeader hdr;
                 uint16_t protocolVersion;
+                uint32_t minorProtocolVersion;
                 TestInstanceId senderInstanceId;
                 uint64_t expectedReceiverPid;
                 uint8_t clockType;
@@ -57,6 +58,7 @@ namespace ramses_internal
                 TestInstanceId to;
                 SomeIPMsgHeader hdr;
                 uint64_t timestampNow;
+                bool usingPreviousMessageId;
             };
 
             struct Test
@@ -186,16 +188,16 @@ namespace ramses_internal
                 return m_iid;
             }
 
-            virtual bool sendParticipantInfo(InstanceIdType to, const SomeIPMsgHeader& header, uint16_t protocolVersion, InstanceIdType senderInstanceId,
+            virtual bool sendParticipantInfo(InstanceIdType to, const SomeIPMsgHeader& header, uint16_t protocolVersion, uint32_t minorProtocolVersion, InstanceIdType senderInstanceId,
                                              uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow) override
             {
-                m_outQueue.push(Message::ParticipantInfo{to, header, protocolVersion, senderInstanceId, expectedReceiverPid, clockType, timestampNow});
+                m_outQueue.push(Message::ParticipantInfo{to, header, protocolVersion, minorProtocolVersion, senderInstanceId, expectedReceiverPid, clockType, timestampNow});
                 return true;
             }
 
-            virtual bool sendKeepAlive(InstanceIdType to, const SomeIPMsgHeader& header, uint64_t timestampNow) override
+            virtual bool sendKeepAlive(InstanceIdType to, const SomeIPMsgHeader& header, uint64_t timestampNow, bool usingPreviousMessageId) override
             {
-                m_outQueue.push(Message::KeepAlive{to, header, timestampNow});
+                m_outQueue.push(Message::KeepAlive{to, header, timestampNow, usingPreviousMessageId});
                 return true;
             }
 
@@ -255,6 +257,7 @@ namespace ramses_internal
                         if (m_iid == pinfo->to)
                             m_callbacks.handleParticipantInfo(pinfo->hdr,
                                                               pinfo->protocolVersion,
+                                                              pinfo->minorProtocolVersion,
                                                               pinfo->senderInstanceId,
                                                               pinfo->expectedReceiverPid,
                                                               pinfo->clockType,
@@ -263,7 +266,7 @@ namespace ramses_internal
                     else if (auto alive = absl::get_if<Message::KeepAlive>(&msg))
                     {
                         if (m_iid == alive->to)
-                            m_callbacks.handleKeepAlive(alive->hdr, alive->timestampNow);
+                            m_callbacks.handleKeepAlive(alive->hdr, alive->timestampNow, alive->usingPreviousMessageId);
                     }
                     else if (auto test = absl::get_if<Message::Test>(&msg))
                     {
@@ -316,7 +319,7 @@ namespace ramses_internal
                                  UInt32 protocolVersion, PlatformLock& lock,
                                  std::chrono::milliseconds keepAliveInterval, std::chrono::milliseconds keepAliveTimeout,
                                  EventQueue& eventQueue)
-                : ConnectionSystemBase(_stack, communicationUserID, namedPid, protocolVersion, lock, m_stats,
+                : ConnectionSystemBase(_stack, communicationUserID, namedPid, protocolVersion, lock,
                                        keepAliveInterval, keepAliveTimeout,
                                        []() { return std::chrono::steady_clock::now(); },
                                        CONTEXT_COMMUNICATION, "TEST")
@@ -340,7 +343,6 @@ namespace ramses_internal
 
         private:
             std::shared_ptr<QueueForwardingStack> m_stack;
-            StatisticCollectionFramework m_stats;
             EventQueue& m_eventQueue;
         };
 
@@ -482,8 +484,8 @@ namespace ramses_internal
             std::lock_guard<std::recursive_mutex> l1(a.m_lock);
             std::lock_guard<std::recursive_mutex> l2(b.m_lock);
 
-            b2a.push(Message::ParticipantInfo{TestInstanceId(1), SomeIPMsgHeader{2, 123, 1}, 199, TestInstanceId(2), 1, 0, 0});
-            a2b.push(Message::ParticipantInfo{TestInstanceId(2), SomeIPMsgHeader{1, 234, 1}, 199, TestInstanceId(1), 2, 0, 0});
+            b2a.push(Message::ParticipantInfo{TestInstanceId(1), SomeIPMsgHeader{2, 123, 1}, 199, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(2), 1, 0, 0});
+            a2b.push(Message::ParticipantInfo{TestInstanceId(2), SomeIPMsgHeader{1, 234, 1}, 199, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(1), 2, 0, 0});
         }
 
         // wait until no new events appear for some time.
@@ -529,7 +531,7 @@ namespace ramses_internal
         EXPECT_TRUE(a.connect());
 
         to.push(Message::Available{TestInstanceId(2)});
-        to.push(Message::ParticipantInfo{TestInstanceId(1), SomeIPMsgHeader{2, 123, 1}, 199, TestInstanceId(2), 1, 0, 0});
+        to.push(Message::ParticipantInfo{TestInstanceId(1), SomeIPMsgHeader{2, 123, 1}, 199, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(2), 1, 0, 0});
 
         EXPECT_TRUE(a.nextEvent(Event::NewParticipant{Guid(2)}));
         EXPECT_TRUE(a.nextEvent(Event::ParticipantGone{Guid(2)}));
@@ -586,9 +588,9 @@ namespace ramses_internal
                 dst.push(Message::Unavailable{TestInstanceId()});
 
             if (rnd() < 5)
-                dst.push(Message::KeepAlive{TestInstanceId(dstId), SomeIPMsgHeader{srcId, num(), num()}, 0});
+                dst.push(Message::KeepAlive{TestInstanceId(dstId), SomeIPMsgHeader{srcId, num(), num()}, 0, false});
             if (rnd() < 5)
-                dst.push(Message::KeepAlive{TestInstanceId(dstId), SomeIPMsgHeader{num(), num(), num()}, 0});
+                dst.push(Message::KeepAlive{TestInstanceId(dstId), SomeIPMsgHeader{num(), num(), num()}, 0, false});
 
             if (rnd() < 10)
                 dst.push(Message::Test{TestInstanceId(dstId), SomeIPMsgHeader{srcId, num(), num()}, num()});
@@ -597,20 +599,20 @@ namespace ramses_internal
 
             if (rnd() < 10)
                 dst.push(Message::ParticipantInfo{TestInstanceId(dstId), SomeIPMsgHeader{srcId, num(), 1},
-                                                  199, TestInstanceId(srcId), dstId, 0, 0});
+                                                  199, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(srcId), dstId, 0, 0});
             if (rnd() < 5)
             {
                 // pid and senderInstanceId must be same, diff not supported yet
                 const auto senderId = num();
                 dst.push(Message::ParticipantInfo{TestInstanceId(dstId), SomeIPMsgHeader{senderId, num(), num()},
-                                                  199, TestInstanceId(senderId), num(), 0, 0});
+                                                  199, SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(senderId), num(), 0, 0});
             }
             if (rnd() < 2)
             {
                 // pid and senderInstanceId must be same, diff not supported yet
                 const auto senderId = num();
                 dst.push(Message::ParticipantInfo{TestInstanceId(dstId), SomeIPMsgHeader{senderId, num(), num()},
-                                                  num(), TestInstanceId(senderId), num(), 0, 0});
+                                                  num(), SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(senderId), num(), 0, 0});
             }
 
             // let connection systems catch up from time to time

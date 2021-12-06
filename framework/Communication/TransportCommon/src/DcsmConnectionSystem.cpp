@@ -14,18 +14,18 @@
 namespace ramses_internal
 {
     std::unique_ptr<DcsmConnectionSystem> DcsmConnectionSystem::Construct(const std::shared_ptr<ISomeIPDcsmStack>& stack, UInt32 communicationUserID, const ParticipantIdentifier& namedPid,
-                                                                          UInt32 protocolVersion, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection,
+                                                                          UInt32 protocolVersion, PlatformLock& frameworkLock,
                                                                           std::chrono::milliseconds keepAliveInterval, std::chrono::milliseconds keepAliveTimeout,
                                                                           std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow)
     {
         if (!CheckConstructorArguments(stack, communicationUserID, namedPid, protocolVersion, keepAliveInterval, keepAliveTimeout, CONTEXT_DCSM, "DCSM"))
             return nullptr;
-        return std::unique_ptr<DcsmConnectionSystem>(new DcsmConnectionSystem(stack, communicationUserID, namedPid, protocolVersion, frameworkLock, statisticCollection,
+        return std::unique_ptr<DcsmConnectionSystem>(new DcsmConnectionSystem(stack, communicationUserID, namedPid, protocolVersion, frameworkLock,
                                                                               keepAliveInterval, keepAliveTimeout, std::move(steadyClockNow)));
     }
 
     DcsmConnectionSystem::DcsmConnectionSystem(const std::shared_ptr<ISomeIPDcsmStack>& stack, UInt32 communicationUserID, const ParticipantIdentifier& namedPid,
-                                               UInt32 protocolVersion, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection,
+                                               UInt32 protocolVersion, PlatformLock& frameworkLock,
                                                std::chrono::milliseconds keepAliveInterval, std::chrono::milliseconds keepAliveTimeout,
                                                std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow)
         : ConnectionSystemBase(stack,
@@ -33,7 +33,6 @@ namespace ramses_internal
                                namedPid,
                                protocolVersion,
                                frameworkLock,
-                               statisticCollection,
                                keepAliveInterval, keepAliveTimeout,
                                std::move(steadyClockNow),
                                CONTEXT_DCSM,

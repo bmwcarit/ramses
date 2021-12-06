@@ -1995,29 +1995,34 @@ namespace ramses
 
     status_t SceneImpl::saveToFile(const char* fileName, bool compress) const
     {
+        if (fileName == nullptr)
+            return addErrorEntry("Scene::saveToFile failed, filename was null");
+
+        LOG_INFO_P(CONTEXT_CLIENT, "Scene::saveToFile: filename '{}', compress {}", fileName, compress);
+
         ramses_internal::File outputFile(fileName);
         ramses_internal::BinaryFileOutputStream outputStream(outputFile);
         if (!outputFile.isOpen())
-            return addErrorEntry("Scene::saveToFile failed, could not open file for writing.");
+            return addErrorEntry(fmt::format("Scene::saveToFile failed, could not open file for writing: '{}'", fileName));
 
         ramses_internal::RamsesVersion::WriteToStream(outputStream, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH);
 
         ramses_internal::UInt bytesForVersion = 0;
         if (!outputFile.getPos(bytesForVersion))
-            return addErrorEntry("Scene::saveToFile failed, error getting save file position.");
+            return addErrorEntry(fmt::format("Scene::saveToFile failed, error getting save file position: '{}'", fileName));
 
         // reserve space for offset to SceneObjects and LL-Objects
         const uint64_t bytesForOffsets = sizeof(uint64_t) * 2u;
         const uint64_t offsetSceneObjectsStart = bytesForVersion + bytesForOffsets;
 
         if (!outputFile.seek(static_cast<ramses_internal::Int>(offsetSceneObjectsStart), ramses_internal::File::SeekOrigin::BeginningOfFile))
-            return addErrorEntry("Scene::saveToFile failed, error seeking file.");
+            return addErrorEntry(fmt::format("Scene::saveToFile failed, error seeking file: '{}'", fileName));
 
         const status_t status = writeSceneObjectsToStream(outputStream);
 
         ramses_internal::UInt offsetLLResourcesStart = 0;
         if (!outputFile.getPos(offsetLLResourcesStart))
-            return addErrorEntry("Scene::saveToFile failed, error getting save file position.");
+            return addErrorEntry(fmt::format("Scene::saveToFile failed, error getting save file position: '{}'", fileName));
 
         ResourceObjects resources;
         resources.reserve(m_resources.size());
@@ -2026,15 +2031,15 @@ namespace ramses
         getClientImpl().writeLowLevelResourcesToStream(resources, outputStream, compress);
 
         if (!outputFile.seek(bytesForVersion, ramses_internal::File::SeekOrigin::BeginningOfFile))
-            return addErrorEntry("Scene::saveToFile failed, error seeking file.");
+            return addErrorEntry(fmt::format("Scene::saveToFile failed, error seeking file: '{}'", fileName));
 
         outputStream << static_cast<uint64_t>(offsetSceneObjectsStart);
         outputStream << static_cast<uint64_t>(offsetLLResourcesStart);
 
         if (!outputFile.close())
-            return addErrorEntry("Scene::saveToFile failed, close file failed.");
+            return addErrorEntry(fmt::format("Scene::saveToFile failed, close file failed: '{}'", fileName));
 
-        LOG_INFO(ramses_internal::CONTEXT_CLIENT, "Scene::saveToFile:  '" << fileName << "'.");
+        LOG_INFO_P(ramses_internal::CONTEXT_CLIENT, "Scene::saveToFile: done writing '{}'", fileName);
 
         return status;
     }

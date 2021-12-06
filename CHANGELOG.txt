@@ -1,3 +1,16 @@
+27.0.114
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Optimized ramses-scene-viewer for texture analysis (CSV export, png
+          export, performance/usability improvements).
+
+        Performance improvements
+        ------------------------------------------------------------------------
+        - Clear display buffers (FB or OB) right before rendering to avoid unnecessary
+          reactivation of render targets
+        - Hint OpenGL/driver to discard depth/stencil components if not needed anymore in render pipeline
+
 27.0.113
 -------------------
         API changes
@@ -519,7 +532,7 @@
 
         Documentation
         ------------------------------------------------------------------------
-        - Published doxygen API docs at https://genivi.github.io/ramses (currently showing
+        - Published doxygen API docs at https://covesa.github.io/ramses (currently showing
             only the RAMSES version released latest)
 
 25.0.5

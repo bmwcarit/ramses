@@ -167,6 +167,18 @@ namespace ramses_internal
         return offscreenBufferId;
     }
 
+    ramses::displayBufferId_t TestRenderer::createDmaOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, uint32_t bufferFourccFormat, uint32_t bufferUsageFlags, uint64_t modifier)
+    {
+        ramses::displayBufferId_t offscreenBufferId;
+        offscreenBufferId = m_renderer->createDmaOffscreenBuffer(displayId, width, height, bufferFourccFormat, bufferUsageFlags, modifier);
+        m_renderer->flush();
+
+        ramses::RendererAndSceneTestEventHandler eventHandler(*m_renderer);
+        eventHandler.waitForOffscreenBufferCreation(offscreenBufferId);
+
+        return offscreenBufferId;
+    }
+
     void TestRenderer::destroyOffscreenBuffer(ramses::displayId_t displayId, ramses::displayBufferId_t buffer)
     {
         m_renderer->destroyOffscreenBuffer(displayId, buffer);
@@ -192,6 +204,11 @@ namespace ramses_internal
     {
         m_renderer->setDisplayBufferClearColor(displayId, buffer, clearColor.r, clearColor.g, clearColor.b, clearColor.a);
         m_renderer->flush();
+    }
+
+    bool TestRenderer::getDmaOffscreenBufferFDAndStride(ramses::displayId_t displayId, ramses::displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const
+    {
+        return m_renderer->getDmaOffscreenBufferFDAndStride(displayId, displayBufferId, fd, stride) == ramses::StatusOK;
     }
 
     ramses::streamBufferId_t TestRenderer::createStreamBuffer(ramses::displayId_t displayId, ramses::waylandIviSurfaceId_t source)

@@ -669,7 +669,12 @@ namespace ramses_internal
         return testResultValue;
     }
 
-    bool SingleStreamTextureTests::recreateSurfaceRenderAndCheckOneFrame(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId& testSurfaceIdOut, UInt32 surfaceWidth, UInt32 surfaceHeight, WaylandIviSurfaceId streamTextureSourceId, const ramses_internal::String& expectedImageName)
+    bool SingleStreamTextureTests::recreateSurfaceRenderAndCheckOneFrame(EmbeddedCompositingTestsFramework& testFramework,
+                                                                         TestApplicationSurfaceId& testSurfaceIdOut,
+                                                                         UInt32 surfaceWidth,
+                                                                         UInt32 surfaceHeight,
+                                                                         WaylandIviSurfaceId streamTextureSourceId,
+                                                                         const ramses_internal::String& expectedImageName)
     {
         testFramework.sendDestroySurfaceToTestApplication(testSurfaceIdOut);
         testFramework.waitForSurfaceUnavailableForStreamTexture(streamTextureSourceId);
@@ -680,7 +685,13 @@ namespace ramses_internal
         return testFramework.renderAndCompareScreenshot(expectedImageName);
     }
 
-    bool SingleStreamTextureTests::resizeSurfaceRenderAndCheckOneFrame(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId testSurfaceId, UInt32 surfaceWidth, UInt32 surfaceHeight, WaylandIviSurfaceId streamTextureSourceId, UInt32 frameCount, const ramses_internal::String& expectedImageName)
+    bool SingleStreamTextureTests::resizeSurfaceRenderAndCheckOneFrame(EmbeddedCompositingTestsFramework& testFramework,
+                                                                       TestApplicationSurfaceId testSurfaceId,
+                                                                       UInt32 surfaceWidth,
+                                                                       UInt32 surfaceHeight,
+                                                                       WaylandIviSurfaceId streamTextureSourceId,
+                                                                       UInt32 frameCount,
+                                                                       const ramses_internal::String& expectedImageName)
     {
         testFramework.sendSetSurfaceSizeToTestApplicaton(testSurfaceId, surfaceWidth, surfaceHeight);
         testFramework.sendRenderOneFrameToEGLBufferToTestApplication(testSurfaceId);
@@ -688,7 +699,13 @@ namespace ramses_internal
         return frameCountReached && testFramework.renderAndCompareScreenshot(expectedImageName);
     }
 
-    bool SingleStreamTextureTests::renderFramesOnTestApplicationAndTakeScreenshots(EmbeddedCompositingTestsFramework& testFramework, TestApplicationSurfaceId testSurfaceId, WaylandIviSurfaceId streamTextureSourceId, const UInt32 frameCountToRender, const ETriangleColor triangleColors[], const String screenshotFiles[], const UInt32 triangleColorCount)
+    bool SingleStreamTextureTests::renderFramesOnTestApplicationAndTakeScreenshots(EmbeddedCompositingTestsFramework& testFramework,
+                                                                                   TestApplicationSurfaceId testSurfaceId,
+                                                                                   WaylandIviSurfaceId streamTextureSourceId,
+                                                                                   const UInt32 frameCountToRender,
+                                                                                   const ETriangleColor triangleColors[],
+                                                                                   const String screenshotFiles[],
+                                                                                   const UInt32 triangleColorCount)
     {
         for (UInt32 frameIndex = 0u; frameIndex < frameCountToRender; ++frameIndex)
         {

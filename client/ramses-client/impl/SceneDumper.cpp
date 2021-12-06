@@ -388,14 +388,16 @@ namespace ramses
 
     void SceneDumper::markRequiredEffects(const AppearanceSet& requiredAppearances)
     {
+        ramses_internal::HashSet<ramses_internal::ResourceContentHash> requiredResourceHashes;
         for (auto appearance : requiredAppearances)
         {
             const EffectImpl* effect = appearance->getEffectImpl();
             if (effect)
             {
-                addToRequiredObjects(*effect);
+                requiredResourceHashes.put(effect->getLowlevelResourceHash());
             }
         }
+        markRequiredResourcesFromHash(requiredResourceHashes);
     }
 
     void SceneDumper::markRequiredTextures(const TextureSamplerSet& requiredTextureSamplers)

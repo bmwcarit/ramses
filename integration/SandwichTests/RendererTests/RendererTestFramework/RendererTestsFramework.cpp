@@ -143,6 +143,22 @@ ramses::displayBufferId_t RendererTestsFramework::createOffscreenBuffer(uint32_t
     return buffer;
 }
 
+ramses::displayBufferId_t RendererTestsFramework::createDmaOffscreenBuffer(uint32_t testDisplayIdx, uint32_t width, uint32_t height, uint32_t bufferFourccFormat, uint32_t bufferUsageFlags, uint64_t modifier)
+{
+    assert(testDisplayIdx < m_displays.size());
+    const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
+    ramses::displayBufferId_t buffer = m_testRenderer.createDmaOffscreenBuffer(displayId, width, height, bufferFourccFormat, bufferUsageFlags, modifier);
+    m_displays[testDisplayIdx].offscreenBuffers.push_back(buffer);
+    return buffer;
+}
+
+bool RendererTestsFramework::getDmaOffscreenBufferFDAndStride(uint32_t testDisplayIdx, ramses::displayBufferId_t displayBufferId, int &fd, uint32_t &stride) const
+{
+    assert(testDisplayIdx < m_displays.size());
+    const ramses::displayId_t displayId = m_displays[testDisplayIdx].displayId;
+    return m_testRenderer.getDmaOffscreenBufferFDAndStride(displayId, displayBufferId, fd, stride);
+}
+
 void RendererTestsFramework::destroyOffscreenBuffer(uint32_t testDisplayIdx, ramses::displayBufferId_t buffer)
 {
     assert(testDisplayIdx < m_displays.size());

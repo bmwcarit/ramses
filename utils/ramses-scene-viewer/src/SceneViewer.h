@@ -9,13 +9,14 @@
 #ifndef RAMSES_SCENE_VIEWER_SCENEVIEWER_H
 #define RAMSES_SCENE_VIEWER_SCENEVIEWER_H
 
-#include <memory>
 #include "Utils/CommandLineParser.h"
 #include "Utils/Argument.h"
 #include "Collections/String.h"
-#include "ramses-framework-api/RamsesFrameworkTypes.h"
-#include "ramses-renderer-api/IRendererEventHandler.h"
-#include "ramses-renderer-api/RamsesRenderer.h"
+#include "ramses-framework-api/RamsesFrameworkConfig.h"
+#include "ramses-renderer-api/RendererConfig.h"
+#include "ramses-renderer-api/DisplayConfig.h"
+#include <memory>
+#include <vector>
 
 namespace ramses
 {
@@ -31,19 +32,21 @@ namespace ramses_internal
     public:
         SceneViewer(int argc, char* argv[]);
 
-    protected:
+        int run();
+
+    private:
         enum class GuiMode
         {
             Off,
-            Overlay, ///< Debugging gui overlaps the rendered scene
-            Window   ///< Separate window for the debugging gui
+            On,       ///< Loaded scene rendered to offscreen buffer (configurable size and position)
+            Overlay,  ///< Debugging gui overlaps the rendered scene (no offscreen buffer)
+            Invalid
         };
 
         GuiMode getGuiMode() const;
         void printUsage() const;
-        void loadAndRenderScene(int argc, char* argv[], const String& sceneFile);
-        ramses::Scene* loadScene(ramses::RamsesClient& client, const String& sceneFile);
-        void validateContent(const ramses::RamsesClient& client, const ramses::Scene& scene) const;
+        int loadAndRenderScene(const String& sceneFile);
+        void validateContent(const ramses::Scene& scene) const;
 
         std::string m_sceneName;
         CommandLineParser m_parser;
@@ -54,6 +57,11 @@ namespace ramses_internal
         ArgumentString m_screenshotFile;
         ArgumentBool   m_noSkub;
         ArgumentString m_guiModeArgument;
+
+        ramses::RamsesFrameworkConfig  m_frameworkConfig;
+        ramses::RendererConfig         m_rendererConfig;
+        ramses::DisplayConfig          m_displayConfig;
+        const std::vector<const char*> m_args;
     };
 }
 

@@ -11,5 +11,5 @@
 int main(int argc, char* argv[])
 {
     ramses_internal::SceneViewer sceneViewer(argc, argv);
-    return 0;
+    return sceneViewer.run();
 }

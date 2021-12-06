@@ -14,7 +14,10 @@
 #include "SceneAPI/ResourceContentHash.h"
 #include "RamsesObjectVector.h"
 #include "SceneDumper.h"
+#include "ProgressMonitor.h"
 #include <unordered_map>
+#include <map>
+#include <array>
 
 namespace ramses
 {
@@ -43,7 +46,8 @@ namespace ramses_internal
     {
     public:
         SceneViewerGui(ramses::Scene& scene, const std::string& filename, ImguiClientHelper& imguiHelper);
-        void drawFrame();
+        void draw();
+        void setSceneTexture(ramses::TextureSampler* sampler, uint32_t width, uint32_t height);
 
     private:
         const ramses::RenderBuffer* findRenderBuffer(ramses_internal::RenderBufferHandle handle) const;
@@ -59,8 +63,22 @@ namespace ramses_internal
         const ramses_internal::DataSlot* findDataSlot(ramses_internal::TextureSamplerHandle handle) const;
         const ramses_internal::DataSlot* findDataSlot(ramses_internal::ResourceContentHash hash) const;
 
+        void zoomIn();
+        void zoomOut();
+
+        void drawInspectionWindow();
+        void drawSceneTexture();
+        void drawMenuBar();
+        void drawMenuItemShowWindow();
+        void drawMenuItemShowPreview();
+        void drawMenuItemCopyTexture2D();
+        void drawMenuItemStorePng();
+
+        /**
+         * Draws all objects of type T that own a link to the target object
+         */
         template<class T, class Filter>
-        void drawAll(const char* headline, Filter f);
+        void drawRefs(const char* headline, const ramses::RamsesObjectImpl& target, Filter f);
 
         void draw(ramses::RamsesObjectImpl& obj);
         void drawNode(ramses::NodeImpl& obj);
@@ -97,18 +115,31 @@ namespace ramses_internal
         void drawRenderHierarchy();
         void drawErrors();
 
-        bool drawRamsesObject(ramses::RamsesObjectImpl& obj) const;
+        void updateResourceInfo();
+
+        bool drawRamsesObject(ramses::RamsesObjectImpl& obj);
+
         template<class C>
-        bool drawRamsesObject(ramses::RamsesObjectImpl& obj, const C& drawTreeNode) const;
+        bool drawRamsesObject(ramses::RamsesObjectImpl& obj, const C& drawTreeNode);
+
+        void drawUnusedObject(ramses::RamsesObjectImpl& obj);
+
+        void logRamsesObject(ramses::RamsesObjectImpl& obj);
+        void logResource(ramses::ResourceImpl& obj);
+        void logTexture2D(ramses::Texture2DImpl& obj);
 
         void saveSceneToFile();
+        std::string saveTexture2D(const ramses::Texture2DImpl& obj) const;
 
         struct ResourceInfo
         {
             ramses::RamsesObjectVector objects;
+            std::unordered_multimap<ramses_internal::ResourceContentHash, ramses::Resource*> hashLookup;
             uint32_t compressedSize = 0U;
             uint32_t decompressedSize = 0U;
             uint32_t unavailable = 0U;
+            int displayLimit = 1000;
+            uint32_t displayedSize = 0U;
         };
 
         // Stores RenderPasses, RenderGroups, MeshNodes in drawing order
@@ -119,6 +150,8 @@ namespace ramses_internal
             std::unordered_map<const ramses::RamsesObjectImpl*, std::vector<const ramses::RenderGroupImpl*>> renderGroupMap;
         };
 
+        using SceneObjects = std::map<ramses::ERamsesObjectType, std::vector<const ramses::RamsesObject*>>;
+
         ImguiClientHelper&        m_imguiHelper;
         ImGuiTextFilter           m_filter;
         ramses::Scene&            m_scene;
@@ -126,6 +159,7 @@ namespace ramses_internal
         const std::string         m_loadedSceneFile;
         std::string               m_filename;
         std::string               m_lastErrorMessage;
+        SceneObjects              m_sceneObjects;
         ResourceInfo              m_resourceInfo;
         RenderInfo                m_renderInfo;
         bool                      m_compressFile = false;
@@ -139,6 +173,45 @@ namespace ramses_internal
             uint32_t                height;
         };
         std::unordered_map<const ramses_internal::TextureResource*, PreviewInfo> m_texturePreview;
+
+        struct RefKey
+        {
+            const ramses::RamsesObjectImpl* target;
+            std::string               headline;
+
+            bool operator==(const RefKey& rhs) const
+            {
+                return target == rhs.target && headline == rhs.headline;
+            }
+        };
+
+        struct RefKeyHash
+        {
+            size_t operator()(const RefKey& key) const
+            {
+                // there are only few (usually 1-3) back reference categories (headlines) per target
+                // so it's probably good enough to just hash the target
+                return std::hash<const void*>()(key.target);
+            }
+        };
+
+        std::unordered_map<RefKey, ramses::RamsesObjectVector, RefKeyHash> m_refs;
+
+        ramses::RamsesObjectVector m_objectsWithErrors;
+
+        struct Settings
+        {
+            bool showWindow = true;
+            bool showPreview = false;
+            const std::array<float, 6> zoomLevels = {(1.f / 4.f), (1.f / 3.f), (1.f / 2.f), (2.f / 3.f), (3.f / 4.f), 1.f};
+            int zoomIx = 4;
+        };
+        Settings m_settings;
+
+        ProgressMonitor m_progress;
+
+        ramses::TextureSampler* m_sceneTexture = nullptr;
+        ImVec2 m_sceneTextureSize;
     };
 }
 

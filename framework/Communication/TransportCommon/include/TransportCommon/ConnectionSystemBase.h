@@ -15,7 +15,6 @@
 #include "Collections/HashMap.h"
 #include "PlatformAbstraction/PlatformThread.h"
 #include "Utils/LogMacros.h"
-#include "Utils/StatisticCollection.h"
 #include "PlatformAbstraction/PlatformTime.h"
 #include <memory>
 #include <condition_variable>
@@ -25,7 +24,6 @@
 
 namespace ramses_internal
 {
-    class StatisticCollectionFramework;
 
     template <typename Callbacks>
     class ConnectionSystemBase : public Callbacks, public Runnable
@@ -75,7 +73,7 @@ namespace ramses_internal
                                               const LogContext& logContext, const String& serviceTypeName);
 
         ConnectionSystemBase(std::shared_ptr<ISomeIPStackCommon<InstanceIdType>> stack, UInt32 communicationUserID, const ParticipantIdentifier& namedPid,
-                             UInt32 protocolVersion, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection,
+                             UInt32 protocolVersion, PlatformLock& frameworkLock,
                              std::chrono::milliseconds keepAliveInterval, std::chrono::milliseconds keepAliveTimeout,
                              std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow,
                              const LogContext& logContext, const String& serviceTypeName);
@@ -107,8 +105,8 @@ namespace ramses_internal
         virtual void handleServiceAvailable(InstanceIdType iid) override final;
         virtual void handleServiceUnavailable(InstanceIdType iid) override final;
 
-        virtual void handleParticipantInfo(const SomeIPMsgHeader& header, uint16_t protocolVersion, InstanceIdType senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow) override final;
-        virtual void handleKeepAlive(const SomeIPMsgHeader& header, uint64_t timestampNow) override final;
+        virtual void handleParticipantInfo(const SomeIPMsgHeader& header, uint16_t protocolVersion, uint32_t minorProtocolVersion, InstanceIdType senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow) override final;
+        virtual void handleKeepAlive(const SomeIPMsgHeader& header, uint64_t timestampNow, bool usingPreviousMessageId) override final;
 
         const UInt32 m_protocolVersion;
         const ParticipantIdentifier m_participantId;
@@ -120,7 +118,6 @@ namespace ramses_internal
         const String m_serviceTypeName;
 
         PlatformLock& m_frameworkLock;
-        StatisticCollectionFramework& m_statisticCollection;
 
         ConnectionStatusUpdateNotifier m_connectionStatusUpdateNotifier;
         std::shared_ptr<ISomeIPStackCommon<InstanceIdType>> m_stack;
@@ -187,7 +184,6 @@ namespace ramses_internal
                                                           const ParticipantIdentifier&                               namedPid,
                                                           UInt32                                                     protocolVersion,
                                                           PlatformLock&                                              frameworkLock,
-                                                          StatisticCollectionFramework&                              statisticCollection,
                                                           std::chrono::milliseconds                                  keepAliveInterval,
                                                           std::chrono::milliseconds                                  keepAliveTimeout,
                                                           std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow,
@@ -203,7 +199,6 @@ namespace ramses_internal
         , m_logContext(logContext)
         , m_serviceTypeName(serviceTypeName)
         , m_frameworkLock(frameworkLock)
-        , m_statisticCollection(statisticCollection)
         , m_connectionStatusUpdateNotifier(fmt::to_string(m_communicationUserID), serviceTypeName.stdRef(), frameworkLock)
         , m_stack(std::move(stack))
         , m_thread(String(fmt::format("R_CONN_{}", serviceTypeName)))
@@ -331,7 +326,6 @@ namespace ramses_internal
         {
             ++pstate.sendMessageId;
             pstate.lastSent = m_steadyClockNow();
-            m_statisticCollection.statMessagesSent.incCounter(1);
         }
         else
         {
@@ -392,8 +386,6 @@ namespace ramses_internal
     template <typename Callbacks>
     auto ConnectionSystemBase<Callbacks>::processMessageHeaderGeneric(const SomeIPMsgHeader& header, const char* callerMethod) -> ParticipantState*
     {
-        m_statisticCollection.statMessagesReceived.incCounter(1);
-
         // find pstate
         const Guid pid(header.participantId);
         auto it = m_knownParticipants.find(pid);
@@ -504,11 +496,12 @@ namespace ramses_internal
         assert(pstate.iid != InstanceIdType());
         assert(m_availableInstances.contains(pstate.iid));
 
+        const uint32_t minorProtocolVersion = SomeIPConstants::FallbackMinorProtocolVersion;
         const SomeIPMsgHeader header = generateHeaderForParticipant(pstate);
-        LOG_INFO(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::sendParticipantInfo: to " << pstate.pid << ", protocolVersion " << m_protocolVersion
+        LOG_INFO(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::sendParticipantInfo: to " << pstate.pid << ", protocolVersion " << m_protocolVersion << "/" << minorProtocolVersion
                  << ", senderInstanceId " << m_serviceIID << ", " << header);
         const bool result = handleSendResult(pstate, "trySendParticipantInfo",
-                                             m_stack->sendParticipantInfo(pstate.iid, header, static_cast<uint16_t>(m_protocolVersion), m_serviceIID, pstate.pid.get(), 0, 0));  // TODO(tobias): clocktype + timestamp
+                                             m_stack->sendParticipantInfo(pstate.iid, header, static_cast<uint16_t>(m_protocolVersion), minorProtocolVersion, m_serviceIID, pstate.pid.get(), 0, 0));  // TODO(tobias): clocktype + timestamp
 
         // record send timestamp to prevent flooding on error
         if (!result)
@@ -600,9 +593,9 @@ namespace ramses_internal
     }
 
     template <typename Callbacks>
-    void ConnectionSystemBase<Callbacks>::handleParticipantInfo(const SomeIPMsgHeader& header, uint16_t protocolVersion, InstanceIdType senderInstanceId, uint64_t /*expectedReceiverPid*/, uint8_t /*clockType*/, uint64_t /*timestampNow*/)
+    void ConnectionSystemBase<Callbacks>::handleParticipantInfo(const SomeIPMsgHeader& header, uint16_t protocolVersion, uint32_t minorProtocolVersion, InstanceIdType senderInstanceId, uint64_t /*expectedReceiverPid*/, uint8_t /*clockType*/, uint64_t /*timestampNow*/)
     {
-        m_statisticCollection.statMessagesReceived.incCounter(1);
+        (void)minorProtocolVersion; // TODO
 
         Guid pid(header.participantId);
         if (protocolVersion != m_protocolVersion)
@@ -931,7 +924,7 @@ namespace ramses_internal
                     LOG_TRACE(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::doOneThreadLoop: Send keepalive to " << pstate.iid);
                     // already successfully sent something, send keepalive
                     handleSendResult(pstate, "keepAlive/thread",
-                                     m_stack->sendKeepAlive(pstate.iid, generateHeaderForParticipant(pstate), 0));
+                                     m_stack->sendKeepAlive(pstate.iid, generateHeaderForParticipant(pstate), 0, false));
                 }
             }
 
@@ -1030,11 +1023,17 @@ namespace ramses_internal
 
     // handlers for generic ISomeIPCallbacks callbacks
     template <typename Callbacks>
-    void ConnectionSystemBase<Callbacks>::handleKeepAlive(const SomeIPMsgHeader& header, uint64_t /*timestampNow*/)
+    void ConnectionSystemBase<Callbacks>::handleKeepAlive(const SomeIPMsgHeader& header, uint64_t /*timestampNow*/, bool usingPreviousMessageId)
     {
         ParticipantState* pstate = processMessageHeaderGeneric(header, "handleKeepAlive");
         if (!pstate)
             return;
+
+        if (usingPreviousMessageId)
+        {
+            LOG_ERROR(m_logContext, "ConnectionSystemBase(" << m_communicationUserID << ":" << m_serviceTypeName << ")::handleKeepAlive: Logic error! Received non-inrementing keepalive from " <<
+                      pstate->pid << ", " << header);
+        }
 
         // check if sid/mid expected
         if (header.sessionId == pstate->expectedRecvSessionId &&

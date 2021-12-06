@@ -111,6 +111,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle    uploadRenderTarget  (const DeviceHandleVector& renderBuffers) override;
         virtual void                    activateRenderTarget(DeviceResourceHandle handle) override;
         virtual void                    deleteRenderTarget(DeviceResourceHandle handle) override;
+        virtual void                    discardDepthStencil() override;
 
         virtual void                    pairRenderTargetsForDoubleBuffering(DeviceResourceHandle renderTargets[2], DeviceResourceHandle colorBuffers[2]) override;
         virtual void                    unpairRenderTargets(DeviceResourceHandle renderTarget) override;

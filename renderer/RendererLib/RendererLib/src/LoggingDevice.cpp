@@ -268,7 +268,9 @@ namespace ramses_internal
 
     DeviceResourceHandle LoggingDevice::allocateTexture2D(UInt32 width, UInt32 height, ETextureFormat format, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32 totalSizeInBytes)
     {
-        m_logContext << "allocate texture2d [ (w,h):(" << width << "," << height << ") mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format) << "textureSwizzle:"<< EnumToString(swizzle[0]) << ";" << EnumToString(swizzle[1]) << ";" << EnumToString(swizzle[2]) << ";" << EnumToString(swizzle[3]) << ";" << " totalSizeInBytes:" << totalSizeInBytes << "]" << RendererLogContext::NewLine;
+        m_logContext << "allocate texture2d [ (w,h):(" << width << "," << height << ") mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format)
+                     << "textureSwizzle:"<< EnumToString(swizzle[0]) << ";" << EnumToString(swizzle[1]) << ";" << EnumToString(swizzle[2]) << ";" << EnumToString(swizzle[3])
+                     << ";" << " totalSizeInBytes:" << totalSizeInBytes << "]" << RendererLogContext::NewLine;
         return DeviceResourceHandle::Invalid();
     }
 
@@ -280,7 +282,8 @@ namespace ramses_internal
 
     DeviceResourceHandle LoggingDevice::allocateTextureCube(UInt32 faceSize, ETextureFormat format, const TextureSwizzleArray& swizzle, UInt32 mipLevelCount, UInt32)
     {
-        m_logContext << "allocate textureCube [ faceSize:" << faceSize << " mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format) << "textureSwizzle:"<< EnumToString(swizzle[0]) << ";" << EnumToString(swizzle[1]) << ";" << EnumToString(swizzle[2]) << ";" << EnumToString(swizzle[3]) <<  "]" << RendererLogContext::NewLine;
+        m_logContext << "allocate textureCube [ faceSize:" << faceSize << " mipLevelCount:" << mipLevelCount << " format:" << EnumToString(format)
+                     << "textureSwizzle:"<< EnumToString(swizzle[0]) << ";" << EnumToString(swizzle[1]) << ";" << EnumToString(swizzle[2]) << ";" << EnumToString(swizzle[3]) <<  "]" << RendererLogContext::NewLine;
         return DeviceResourceHandle::Invalid();
     }
 
@@ -381,6 +384,11 @@ namespace ramses_internal
     void LoggingDevice::deleteRenderTarget(DeviceResourceHandle handle)
     {
         m_logContext << "delete render target [handle: " << handle << "]" << RendererLogContext::NewLine;
+    }
+
+    void LoggingDevice::discardDepthStencil()
+    {
+        m_logContext << "discard depthstencil buffer" << RendererLogContext::NewLine;
     }
 
     void LoggingDevice::blitRenderTargets(DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& /*srcRect*/, const PixelRectangle& /*dstRect*/, Bool /*colorOnly*/)

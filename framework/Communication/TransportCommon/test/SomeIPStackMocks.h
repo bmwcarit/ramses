@@ -43,8 +43,8 @@ namespace ramses_internal
         MOCK_METHOD(void, handleServiceAvailable, (DcsmInstanceId iid), (override));
         MOCK_METHOD(void, handleServiceUnavailable, (DcsmInstanceId iid), (override));
 
-        MOCK_METHOD(void, handleParticipantInfo, (const SomeIPMsgHeader& header, uint16_t protocolVersion, DcsmInstanceId senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow), (override));
-        MOCK_METHOD(void, handleKeepAlive, (const SomeIPMsgHeader& header, uint64_t timestampNow), (override));
+        MOCK_METHOD(void, handleParticipantInfo, (const SomeIPMsgHeader& header, uint16_t protocolVersion, uint32_t minorProtocolVersion, DcsmInstanceId senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow), (override));
+        MOCK_METHOD(void, handleKeepAlive, (const SomeIPMsgHeader& header, uint64_t timestampNow, bool usingPreviousMessageId), (override));
 
         MOCK_METHOD(void, handleOfferContent, (const SomeIPMsgHeader& header, ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, uint32_t sortOrder), (override));
         MOCK_METHOD(void, handleRequestStopOfferContent, (const SomeIPMsgHeader& header, ContentID content, bool forceStopOffer), (override));
@@ -74,8 +74,8 @@ namespace ramses_internal
         MOCK_METHOD(void, setCallbacks, (ISomeIPDcsmStackCallbacks*), (override));
         MOCK_METHOD(DcsmStackSendDataSizes, getSendDataSizes, (), (const, override));
 
-        MOCK_METHOD(bool, sendParticipantInfo, (DcsmInstanceId to, const SomeIPMsgHeader& header, uint16_t protocolVersion, DcsmInstanceId senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow), (override));
-        MOCK_METHOD(bool, sendKeepAlive, (DcsmInstanceId to, const SomeIPMsgHeader& header, uint64_t timestampNow), (override));
+        MOCK_METHOD(bool, sendParticipantInfo, (DcsmInstanceId to, const SomeIPMsgHeader& header, uint16_t protocolVersion, uint32_t minorProtocolVersion, DcsmInstanceId senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow), (override));
+        MOCK_METHOD(bool, sendKeepAlive, (DcsmInstanceId to, const SomeIPMsgHeader& header, uint64_t timestampNow, bool usingPreviousMessageId), (override));
 
         MOCK_METHOD(bool, sendOfferContent, (DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, Category category, ETechnicalContentType technicalContentType, const std::string& friendlyName, uint32_t sortOrder), (override));
         MOCK_METHOD(bool, sendRequestStopOfferContent, (DcsmInstanceId to, const SomeIPMsgHeader& header, ContentID content, bool forceStopOffer), (override));
@@ -100,8 +100,8 @@ namespace ramses_internal
         MOCK_METHOD(void, handleServiceAvailable, (RamsesInstanceId iid), (override));
         MOCK_METHOD(void, handleServiceUnavailable, (RamsesInstanceId iid), (override));
 
-        MOCK_METHOD(void, handleParticipantInfo, (const SomeIPMsgHeader& header, uint16_t protocolVersion, RamsesInstanceId senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow), (override));
-        MOCK_METHOD(void, handleKeepAlive, (const SomeIPMsgHeader& header, uint64_t timestampNow), (override));
+        MOCK_METHOD(void, handleParticipantInfo, (const SomeIPMsgHeader& header, uint16_t protocolVersion, uint32_t minorProtocolVersion, RamsesInstanceId senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow), (override));
+        MOCK_METHOD(void, handleKeepAlive, (const SomeIPMsgHeader& header, uint64_t timestampNow, bool usingPreviousMessageId), (override));
 
         MOCK_METHOD(void, handleRendererEvent, (const SomeIPMsgHeader& header, SceneId sceneId, const std::vector<Byte>& data), (override));
         MOCK_METHOD(void, handleSceneUpdate, (const SomeIPMsgHeader& header, SceneId sceneId, absl::Span<const Byte> sceneUpdate), (override));
@@ -124,8 +124,8 @@ namespace ramses_internal
         MOCK_METHOD(void, setCallbacks, (ISomeIPRamsesStackCallbacks*), (override));
         MOCK_METHOD(RamsesStackSendDataSizes, getSendDataSizes, (), (const, override));
 
-        MOCK_METHOD(bool, sendParticipantInfo, (RamsesInstanceId to, const SomeIPMsgHeader& header, uint16_t protocolVersion, RamsesInstanceId senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow), (override));
-        MOCK_METHOD(bool, sendKeepAlive, (RamsesInstanceId to, const SomeIPMsgHeader& header, uint64_t timestampNow), (override));
+        MOCK_METHOD(bool, sendParticipantInfo, (RamsesInstanceId to, const SomeIPMsgHeader& header, uint16_t protocolVersion, uint32_t minorProtocolVersion, RamsesInstanceId senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow), (override));
+        MOCK_METHOD(bool, sendKeepAlive, (RamsesInstanceId to, const SomeIPMsgHeader& header, uint64_t timestampNow, bool usingPreviousMessageId), (override));
 
         MOCK_METHOD(bool, sendRendererEvent, (RamsesInstanceId to, const SomeIPMsgHeader& header, SceneId sceneId, const std::vector<Byte>& data), (override));
         MOCK_METHOD(bool, sendSceneUpdate, (RamsesInstanceId to, const SomeIPMsgHeader& header, SceneId sceneId, const std::vector<Byte>& sceneUpdate), (override));

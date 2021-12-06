@@ -113,6 +113,7 @@
 #define glCompressedTexSubImage2D(...)  glCompressedTexSubImage2DNative(__VA_ARGS__)
 #define glCompressedTexSubImage3D(...)  glCompressedTexSubImage3DNative(__VA_ARGS__)
 #define glGetInternalformativ(...)      glGetInternalformativNative(__VA_ARGS__)
+#define glInvalidateFramebuffer(...)    glInvalidateFramebufferNative(__VA_ARGS__)
 
 #define DECLARE_ALL_API_PROCS                                                                   \
 DECLARE_API_PROC(PFNGLGETSTRINGIPROC, glGetStringi);                                            \
@@ -181,7 +182,7 @@ DECLARE_API_PROC(PFNGLACTIVETEXTUREPROC, glActiveTexture);                      
 DECLARE_API_PROC(PFNGLBLENDEQUATIONPROC, glBlendEquation);                                      \
 DECLARE_API_PROC(PFNGLBLENDEQUATIONSEPARATEPROC, glBlendEquationSeparate);                      \
 DECLARE_API_PROC(PFNGLBLENDFUNCSEPARATEPROC, glBlendFuncSeparate);                              \
-DECLARE_API_PROC(PFNGLBLENDCOLORPROC, glBlendColor);                              \
+DECLARE_API_PROC(PFNGLBLENDCOLORPROC, glBlendColor);                                            \
 DECLARE_API_PROC(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap);                                    \
 DECLARE_API_PROC(PFNGLCLEARDEPTHFPROC, glClearDepthf);                                          \
 DECLARE_API_PROC(PFNGLCOMPRESSEDTEXIMAGE2DPROC, glCompressedTexImage2D);                        \
@@ -200,6 +201,7 @@ DECLARE_API_PROC(PFNGLTEXSUBIMAGE3DPROC, glTexSubImage3D);                      
 DECLARE_API_PROC(PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC, glCompressedTexSubImage2D);                  \
 DECLARE_API_PROC(PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC, glCompressedTexSubImage3D);                  \
 DECLARE_API_PROC(PFNGLGETINTERNALFORMATIVPROC, glGetInternalformativ);                          \
+DECLARE_API_PROC(PFNGLINVALIDATEFRAMEBUFFERPROC, glInvalidateFramebuffer);                      \
 
 #define LOAD_ALL_API_PROCS(CONTEXT)                                                               \
 LOAD_API_PROC(CONTEXT, PFNGLGETSTRINGIPROC, glGetStringi);                                        \
@@ -281,12 +283,13 @@ LOAD_API_PROC(CONTEXT, PFNGLDRAWELEMENTSINSTANCEDPROC, glDrawElementsInstanced);
 LOAD_API_PROC(CONTEXT, PFNGLDRAWARRAYSINSTANCEDPROC, glDrawArraysInstanced);                      \
 LOAD_API_PROC(CONTEXT, PFNGLVERTEXATTRIBDIVISORPROC, glVertexAttribDivisor);                      \
 LOAD_API_PROC(CONTEXT, PFNGLTEXSTORAGE2DPROC, glTexStorage2D);                                    \
-LOAD_API_PROC(CONTEXT, PFNGLTEXSTORAGE2DMULTISAMPLEPROC, glTexStorage2DMultisample);                                    \
+LOAD_API_PROC(CONTEXT, PFNGLTEXSTORAGE2DMULTISAMPLEPROC, glTexStorage2DMultisample);              \
 LOAD_API_PROC(CONTEXT, PFNGLTEXSTORAGE3DPROC, glTexStorage3D);                                    \
 LOAD_API_PROC(CONTEXT, PFNGLTEXSUBIMAGE3DPROC, glTexSubImage3D);                                  \
 LOAD_API_PROC(CONTEXT, PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC, glCompressedTexSubImage2D);              \
 LOAD_API_PROC(CONTEXT, PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC, glCompressedTexSubImage3D);              \
 LOAD_API_PROC(CONTEXT, PFNGLGETINTERNALFORMATIVPROC, glGetInternalformativ);                      \
+LOAD_API_PROC(CONTEXT, PFNGLINVALIDATEFRAMEBUFFERPROC, glInvalidateFramebuffer);                  \
 
 //In WGL (Windows), all api procs are static and need explicit definition in a source file
 #define DEFINE_ALL_API_PROCS                                                                   \
@@ -369,11 +372,12 @@ DEFINE_API_PROC(PFNGLDRAWELEMENTSINSTANCEDPROC, glDrawElementsInstanced);       
 DEFINE_API_PROC(PFNGLDRAWARRAYSINSTANCEDPROC, glDrawArraysInstanced);                          \
 DEFINE_API_PROC(PFNGLVERTEXATTRIBDIVISORPROC, glVertexAttribDivisor);                          \
 DEFINE_API_PROC(PFNGLTEXSTORAGE2DPROC, glTexStorage2D);                                        \
-DEFINE_API_PROC(PFNGLTEXSTORAGE2DMULTISAMPLEPROC, glTexStorage2DMultisample);                                        \
+DEFINE_API_PROC(PFNGLTEXSTORAGE2DMULTISAMPLEPROC, glTexStorage2DMultisample);                  \
 DEFINE_API_PROC(PFNGLTEXSTORAGE3DPROC, glTexStorage3D);                                        \
 DEFINE_API_PROC(PFNGLTEXSUBIMAGE3DPROC, glTexSubImage3D);                                      \
 DEFINE_API_PROC(PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC, glCompressedTexSubImage2D);                  \
 DEFINE_API_PROC(PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC, glCompressedTexSubImage3D);                  \
 DEFINE_API_PROC(PFNGLGETINTERNALFORMATIVPROC, glGetInternalformativ);                          \
+DEFINE_API_PROC(PFNGLINVALIDATEFRAMEBUFFERPROC, glInvalidateFramebuffer);                      \
 
 #endif

@@ -148,7 +148,6 @@ def main():
         r'asan_suppressions\.txt$',
         r'lsan_suppressions\.txt$',
         r'tsan_blacklist\.txt$',
-        r'DOCKER_TAG$',
         r'maven_settings\.xml$',
         r'\.config$',
         r'\.conf$',

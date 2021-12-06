@@ -50,6 +50,45 @@ namespace ramses_internal
                 fun(tokenStart);
             }
         }
+
+        template <typename F>
+        void TokenizeToMultilineCStrings(std::string& s, size_t maxBlockSize, char splitToken, F&& fun)
+        {
+            size_t currentStart = 0;
+            size_t nextEnd = 0;
+            do {
+                nextEnd = currentStart + maxBlockSize;
+                if (nextEnd >= s.size())
+                {
+                    if (currentStart != s.size())
+                        fun(s.c_str() + currentStart);
+                }
+                else
+                {
+                    const size_t splitPos = s.rfind(splitToken, nextEnd);
+                    size_t nextStart;
+                    if (splitPos != std::string::npos && splitPos > currentStart)
+                    {
+                        nextEnd = splitPos;
+                        nextStart = nextEnd + 1;
+                    }
+                    else
+                    {
+                        nextStart = nextEnd;
+                    }
+
+                    if (currentStart != nextEnd)
+                    {
+                        const char c = s[nextEnd];
+                        s[nextEnd] = '\0';
+                        fun(s.c_str() + currentStart);
+                        s[nextEnd] = c;
+                    }
+
+                    currentStart = nextStart;
+                }
+            } while (nextEnd < s.size());
+        }
     }
 }
 

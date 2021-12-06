@@ -716,7 +716,11 @@ namespace ramses
     }
 
     template <typename MipDataStorageType>
-    ramses_internal::ManagedResource RamsesClientImpl::createManagedTexture(ramses_internal::EResourceType textureType, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipDataStorageType mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name)
+    ramses_internal::ManagedResource RamsesClientImpl::createManagedTexture(ramses_internal::EResourceType textureType,
+                                                                            uint32_t width, uint32_t height, uint32_t depth,
+                                                                            ETextureFormat format,
+                                                                            uint32_t mipMapCount, const MipDataStorageType mipLevelData[], bool generateMipChain,
+                                                                            const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name)
     {
         if (!TextureUtils::TextureParametersValid(width, height, depth, mipMapCount) || !TextureUtils::MipDataValid(width, height, depth, mipMapCount, mipLevelData, format))
         {
@@ -744,8 +748,16 @@ namespace ramses
 
         return manageResource(resource);
     }
-    template ramses_internal::ManagedResource RamsesClientImpl::createManagedTexture(ramses_internal::EResourceType textureType, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
-    template ramses_internal::ManagedResource RamsesClientImpl::createManagedTexture(ramses_internal::EResourceType textureType, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
+    template ramses_internal::ManagedResource RamsesClientImpl::createManagedTexture(ramses_internal::EResourceType textureType,
+                                                                                     uint32_t width, uint32_t height, uint32_t depth,
+                                                                                     ETextureFormat format,
+                                                                                     uint32_t mipMapCount, const MipLevelData mipLevelData[], bool generateMipChain,
+                                                                                     const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
+    template ramses_internal::ManagedResource RamsesClientImpl::createManagedTexture(ramses_internal::EResourceType textureType,
+                                                                                     uint32_t width, uint32_t height, uint32_t depth,
+                                                                                     ETextureFormat format,
+                                                                                     uint32_t mipMapCount, const CubeMipLevelData mipLevelData[], bool generateMipChain,
+                                                                                     const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
 
     ramses_internal::ManagedResource RamsesClientImpl::createManagedEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name, std::string& errorMessages)
     {

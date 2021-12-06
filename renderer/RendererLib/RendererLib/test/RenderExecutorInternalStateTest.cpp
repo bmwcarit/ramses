@@ -38,12 +38,11 @@ namespace ramses_internal
         const Float FakeFoV = 30.0f;
     }
 
-
     class ARenderExecutorInternalState : public ::testing::Test
     {
     public:
         ARenderExecutorInternalState()
-            : m_renderContext{ DeviceResourceHandle(0u), FakeVpWidth, FakeVpHeight, SceneRenderExecutionIterator{} }
+            : m_renderContext{ DeviceResourceHandle(0u), FakeVpWidth, FakeVpHeight, SceneRenderExecutionIterator{}, EClearFlags_All, Vector4{1.f}, false }
             , m_executorState(m_device, m_renderContext)
             , m_executorStateWithTimer(m_device, m_renderContext, &m_frameTimer)
             , m_rendererScenes(m_rendererEventCollector)
@@ -109,6 +108,8 @@ namespace ramses_internal
         EXPECT_EQ(FakeVpWidth, m_executorState.getRenderingContext().viewportWidth);
         EXPECT_EQ(FakeVpHeight, m_executorState.getRenderingContext().viewportHeight);
         EXPECT_EQ(SceneRenderExecutionIterator{}, m_executorState.getRenderingContext().renderFrom);
+        EXPECT_EQ(EClearFlags_All, m_executorState.getRenderingContext().displayBufferClearPending);
+        EXPECT_EQ(Vector4{ 1.f }, m_executorState.getRenderingContext().displayBufferClearColor);
     }
 
     TEST_F(ARenderExecutorInternalState, hasIdentityProjectionMatrixInDefaultState)

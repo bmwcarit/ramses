@@ -124,6 +124,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle    uploadRenderTarget          (const DeviceHandleVector& renderBuffers) = 0;
         virtual void                    activateRenderTarget        (DeviceResourceHandle handle) = 0;
         virtual void                    deleteRenderTarget          (DeviceResourceHandle handle) = 0;
+        virtual void                    discardDepthStencil         () = 0;
 
         virtual void                    pairRenderTargetsForDoubleBuffering (DeviceResourceHandle renderTargets[2], DeviceResourceHandle colorBuffers[2]) = 0;
         virtual void                    unpairRenderTargets               (DeviceResourceHandle renderTarget) = 0;

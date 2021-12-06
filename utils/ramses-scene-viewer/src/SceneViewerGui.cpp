@@ -11,6 +11,7 @@
 #include "SceneDumper.h"
 #include "ramses-renderer-api/DisplayConfig.h"
 #include "ramses-client-api/Scene.h"
+#include "ramses-utils.h"
 
 #include "SceneImpl.h"
 #include "NodeImpl.h"
@@ -128,10 +129,54 @@ namespace ramses_internal
             assert(std::string(name).find("ERamsesObjectType_") == 0);
             return name + 18;
         }
+
+        uint8_t getChannelColor(const std::array<uint8_t,4>& rgba, ramses::ETextureChannelColor channelColor)
+        {
+            switch (channelColor)
+            {
+            case ramses::ETextureChannelColor::Red:
+                return rgba[0];
+            case ramses::ETextureChannelColor::Green:
+                return rgba[1];
+            case ramses::ETextureChannelColor::Blue:
+                return rgba[2];
+            case ramses::ETextureChannelColor::Alpha:
+                return rgba[3];
+            case ramses::ETextureChannelColor::One:
+                return 255;
+            case ramses::ETextureChannelColor::Zero:
+                return 0;
+            }
+            return 0;
+        }
+
+        void applySwizzle(std::array<uint8_t, 4>& rgba, const ramses::TextureSwizzle& swizzle)
+        {
+            const auto r = getChannelColor(rgba, swizzle.channelRed);
+            const auto g = getChannelColor(rgba, swizzle.channelGreen);
+            const auto b = getChannelColor(rgba, swizzle.channelBlue);
+            const auto a = getChannelColor(rgba, swizzle.channelAlpha);
+            rgba         = {r, g, b, a};
+        }
+
+        template<class T>
+        void convertToRgba(std::vector<uint8_t>& rgbaData, const ramses_internal::ResourceBlob& blob, const ramses::TextureSwizzle& swizzle, const T& readPixel)
+        {
+            const auto* end = blob.data() + blob.size();
+            const auto* buf = blob.data();
+            while (buf < end)
+            {
+                std::array<uint8_t, 4> rgba = {0, 0, 0, 0};
+                buf = readPixel(buf, rgba);
+                applySwizzle(rgba, swizzle);
+                rgbaData.insert(rgbaData.end(), rgba.begin(), rgba.end());
+            }
+        }
+
     } // namespace
 
     template<class C>
-    bool SceneViewerGui::drawRamsesObject(ramses::RamsesObjectImpl& obj, const C& drawTreeNode)const
+    bool SceneViewerGui::drawRamsesObject(ramses::RamsesObjectImpl& obj, const C& drawTreeNode)
     {
         const char* report = obj.getValidationReport(ramses::EValidationSeverity_Warning);
         const bool hasIssues = report && report[0] != 0;
@@ -145,24 +190,73 @@ namespace ramses_internal
             ImGui::PushStyleColor(ImGuiCol_Text, ImColor(127, 127, 127).Value);
         }
         const bool isOpen = drawTreeNode();
+
+        if (ImGui::BeginPopupContextItem(obj.getName().c_str()))
+        {
+            if (ImGui::MenuItem("Copy name"))
+            {
+                ImGui::LogToClipboard();
+                ImGui::LogText("%s", obj.getName().c_str());
+                ImGui::LogFinish();
+            }
+            ImGui::EndPopup();
+        }
+
         if (hasIssues)
         {
-            ImGui::PopStyleColor();
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("%s", report);
+            if (isOpen)
+                ImGui::TextWrapped("%s", report);
+            ImGui::PopStyleColor();
         }
         else if (isUnused)
         {
             ImGui::PopStyleColor();
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Unnecessary object");
+            if (isOpen)
+                drawUnusedObject(obj);
         }
         return isOpen;
     }
 
-    bool SceneViewerGui::drawRamsesObject(ramses::RamsesObjectImpl& obj) const
+    bool SceneViewerGui::drawRamsesObject(ramses::RamsesObjectImpl& obj)
     {
         return drawRamsesObject(obj, [&]() {
             return ImGui::TreeNode(&obj, "%s[%u]: %s", shortName(obj.getType()), obj.getObjectRegistryHandle().asMemoryHandle(), obj.getName().c_str());
             });
+    }
+
+    void SceneViewerGui::drawUnusedObject(ramses::RamsesObjectImpl& obj)
+    {
+        if (obj.isOfType(ramses::ERamsesObjectType_Resource))
+        {
+            ImGui::Text("Unused or duplicate resource");
+            if (ImGui::TreeNode("Duplicates (same hash):"))
+            {
+                updateResourceInfo();
+                auto& hlResource = static_cast<ramses::ResourceImpl&>(obj);
+                auto range = m_resourceInfo.hashLookup.equal_range(hlResource.getLowlevelResourceHash());
+                for (auto it = range.first; it != range.second; ++it)
+                {
+                    draw(it->second->impl);
+                }
+                ImGui::TreePop();
+            }
+        }
+        else
+        {
+            switch (obj.getType())
+            {
+            case ramses::ERamsesObjectType_Node:
+                ImGui::Text("Unused node (not a parent of a mesh node or camera node)");
+                break;
+            default:
+                ImGui::Text("Unused object");
+                break;
+            }
+        }
     }
 
     SceneViewerGui::SceneViewerGui(ramses::Scene& scene, const std::string& filename, ImguiClientHelper& imguiHelper)
@@ -385,32 +479,36 @@ namespace ramses_internal
     }
 
     template<class T, class Filter>
-    void SceneViewerGui::drawAll(const char* headline, Filter filter)
+    void SceneViewerGui::drawRefs(const char* headline, const ramses::RamsesObjectImpl& target, Filter filter)
     {
-        if (ImGui::TreeNode(headline))
+        const RefKey key = {&target, headline};
+        auto   result = m_refs.insert({key, ramses::RamsesObjectVector()});
+
+        ramses::RamsesObjectVector& filteredList = result.first->second;
+        if (result.second)
         {
+            // fill the list initially
             const auto type = ramses::TYPE_ID_OF_RAMSES_OBJECT<T>::ID;
-            if (ramses::RamsesObjectTypeUtils::IsConcreteType(type))
+            ramses::RamsesObjectVector objects;
+            m_scene.impl.getObjectRegistry().getObjectsOfType(objects, type);
+            for (ramses::RamsesObject* obj : objects)
             {
-                ramses::RamsesObjectRegistryIterator it(m_scene.impl.getObjectRegistry(), type);
-                while (const T* obj = it.getNext<T>())
-                {
-                    if (filter(obj))
-                        draw(obj->impl);
-                }
+                const T* tObj = static_cast<const T*>(obj);
+                if (filter(tObj))
+                    filteredList.push_back(obj);
             }
-            else
+        }
+
+        if (!filteredList.empty())
+        {
+            if (ImGui::TreeNode(headline, "%s (%zu):", headline, filteredList.size()))
             {
-                ramses::RamsesObjectVector objects;
-                m_scene.impl.getObjectRegistry().getObjectsOfType(objects, type);
-                for (ramses::RamsesObject* obj : objects)
+                for (ramses::RamsesObject* obj : filteredList)
                 {
-                    const T* tObj = static_cast<const T*>(obj);
-                    if (filter(tObj))
-                        draw(tObj->impl);
+                    draw(obj->impl);
                 }
+                ImGui::TreePop();
             }
-            ImGui::TreePop();
         }
     }
 
@@ -604,7 +702,7 @@ namespace ramses_internal
         draw(obj.getAppearance()->impl);
         draw(obj.getGeometryBinding()->impl);
         drawNodeChildrenParent(obj);
-        drawAll<ramses::RenderGroup>("Used by RenderGroup:", [&](const ramses::RenderGroup* ref) { return ref->impl.contains(obj); });
+        drawRefs<ramses::RenderGroup>("Used by RenderGroup", obj, [&](const ramses::RenderGroup* ref) { return ref->impl.contains(obj); });
     }
 
     void SceneViewerGui::drawPickableObject(ramses::PickableObjectImpl& obj)
@@ -700,14 +798,16 @@ namespace ramses_internal
             }
         }
         drawNodeChildrenParent(obj);
-        drawAll<ramses::RenderPass>("Used by RenderPass:", [&](const ramses::RenderPass* ref) {
+        drawRefs<ramses::RenderPass>("Used by RenderPass", obj, [&](const ramses::RenderPass* ref) {
             return ref->impl.getCamera() == &obj.getRamsesObject();
         });
     }
 
     void SceneViewerGui::drawResource(ramses::ResourceImpl& obj)
     {
-        auto resource = m_scene.getRamsesClient().impl.getResource(obj.getLowlevelResourceHash());
+        const auto hash = obj.getLowlevelResourceHash();
+        auto resource = m_scene.getRamsesClient().impl.getResource(hash);
+        ImGui::Text("Hash: %" PRIX64 ":%" PRIX64, hash.highPart, hash.lowPart);
         if (resource)
         {
             double      size       = resource->getDecompressedDataSize();
@@ -763,8 +863,8 @@ namespace ramses_internal
             ImGui::BulletText(format, shortName(a.dataType), a.inputName.c_str(), a.elementCount, EFixedSemanticsNames[static_cast<int>(a.semantics)]);
         }
 
-        drawAll<ramses::Appearance>("Used by Appearance:", [&](const ramses::Appearance* ref) { return ref->impl.getEffectImpl()== &obj; });
-        drawAll<ramses::GeometryBinding>("Used by GeometryBinding:", [&](const ramses::GeometryBinding* ref) { return &ref->impl.getEffect().impl == &obj; });
+        drawRefs<ramses::Appearance>("Used by Appearance", obj, [&](const ramses::Appearance* ref) { return ref->impl.getEffectImpl()== &obj; });
+        drawRefs<ramses::GeometryBinding>("Used by GeometryBinding", obj, [&](const ramses::GeometryBinding* ref) { return &ref->impl.getEffect().impl == &obj; });
     }
 
     void SceneViewerGui::drawRenderPass(ramses::RenderPassImpl& obj)
@@ -895,7 +995,7 @@ namespace ramses_internal
             draw(*const_cast<ramses::RamsesObjectImpl*>(it));
         }
 
-        drawAll<ramses::RenderPass>("Used by RenderPass:", [&](const ramses::RenderPass* ref) {
+        drawRefs<ramses::RenderPass>("Used by RenderPass", obj, [&](const ramses::RenderPass* ref) {
             const auto& groups = ref->impl.getAllRenderGroups();
             return std::find(groups.begin(), groups.end(), &obj) != groups.end();
         });
@@ -914,7 +1014,7 @@ namespace ramses_internal
             else
                 ImGui::Text("RenderBuffer not found");
         }
-        drawAll<ramses::RenderPass>("Used by RenderPass:", [&](const ramses::RenderPass* ref) {
+        drawRefs<ramses::RenderPass>("Used by RenderPass", obj, [&](const ramses::RenderPass* ref) {
             return (ref->impl.getRenderTarget() == &obj.getRamsesObject());
         });
     }
@@ -927,7 +1027,7 @@ namespace ramses_internal
         ImGui::Text("BufferFormat: %s", EnumToString(rb.format));
         ImGui::Text("AccessMode: %s", EnumToString(rb.accessMode));
         ImGui::Text("SampleCount: %u", rb.sampleCount);
-        drawAll<ramses::RenderTarget>("Used by RenderTarget:", [&](const ramses::RenderTarget* ref) {
+        drawRefs<ramses::RenderTarget>("Used by RenderTarget", obj, [&](const ramses::RenderTarget* ref) {
             const auto rtHandle   = ref->impl.getRenderTargetHandle();
             const uint32_t numBuffers = m_scene.impl.getIScene().getRenderTargetRenderBufferCount(rtHandle);
             for (uint32_t i = 0; i < numBuffers; ++i)
@@ -938,11 +1038,11 @@ namespace ramses_internal
             }
             return false;
         });
-        drawAll<ramses::TextureSampler>("Used by TextureSampler:", [&](const ramses::TextureSampler* ref) {
+        drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
             const ramses_internal::TextureSampler& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
             return (sampler.contentType == TextureSampler::ContentType::RenderBuffer) && (sampler.contentHandle == obj.getRenderBufferHandle().asMemoryHandle());
         });
-        drawAll<ramses::BlitPass>("Used by BlitPass:", [&](const ramses::BlitPass* ref) {
+        drawRefs<ramses::BlitPass>("Used by BlitPass", obj, [&](const ramses::BlitPass* ref) {
             const auto& bp = m_scene.impl.getIScene().getBlitPass(ref->impl.getBlitPassHandle());
             return (bp.sourceRenderBuffer == obj.getRenderBufferHandle()) || (bp.destinationRenderBuffer == obj.getRenderBufferHandle());
         });
@@ -1122,7 +1222,7 @@ namespace ramses_internal
             ImGui::TreePop();
         }
         draw(effect.impl);
-        drawAll<ramses::MeshNode>("Used by MeshNode:", [&](const ramses::MeshNode* ref) {
+        drawRefs<ramses::MeshNode>("Used by MeshNode", obj, [&](const ramses::MeshNode* ref) {
             return ref->impl.getAppearanceImpl() == &obj;
         });
     }
@@ -1312,7 +1412,7 @@ namespace ramses_internal
         }
 
         draw(effect.impl);
-        drawAll<ramses::MeshNode>("Used by MeshNode:", [&](const ramses::MeshNode* ref) {
+        drawRefs<ramses::MeshNode>("Used by MeshNode", obj, [&](const ramses::MeshNode* ref) {
             return ref->impl.getGeometryBindingImpl() == &obj;
         });
     }
@@ -1340,7 +1440,7 @@ namespace ramses_internal
             {
                 const auto& blob = textureResource->getResourceData();
                 ramses::MipLevelData mipLevelData(static_cast<uint32_t>(blob.size()), blob.data());
-                ramses::Texture2D* texture = m_imguiHelper.getScene()->createTexture2D(obj.getTextureFormat(), obj.getWidth(), obj.getHeight(), 1, &mipLevelData);
+                ramses::Texture2D* texture = m_imguiHelper.getScene()->createTexture2D(obj.getTextureFormat(), obj.getWidth(), obj.getHeight(), 1, &mipLevelData, false, swizzle);
                 preview.width = obj.getWidth();
                 preview.height = obj.getHeight();
                 preview.sampler = m_imguiHelper.getScene()->createTextureSampler(ramses::ETextureAddressMode_Clamp,
@@ -1357,6 +1457,10 @@ namespace ramses_internal
 
             if (preview.sampler != nullptr)
             {
+                if (ImGui::Button("Save png"))
+                {
+                    m_lastErrorMessage = saveTexture2D(obj);
+                }
                 if (ImGui::ImageButton(preview.sampler, ImVec2(128, 128)))
                     ImGui::OpenPopup("image_full");
                 if (ImGui::BeginPopup("image_full", ImGuiWindowFlags_HorizontalScrollbar))
@@ -1367,7 +1471,7 @@ namespace ramses_internal
             }
         }
 
-        drawAll<ramses::TextureSampler>("Used by TextureSampler:", [&](const ramses::TextureSampler* ref) {
+        drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
             const auto& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
             return (sampler.contentType == TextureSampler::ContentType::ClientTexture) && (sampler.textureResource == obj.getLowlevelResourceHash());
         });
@@ -1379,7 +1483,7 @@ namespace ramses_internal
         ImGui::Text("Width:%u Height:%u Format:%s", obj.getWidth(), obj.getHeight(), ramses::getTextureFormatString(obj.getTextureFormat()));
         ImGui::Text("Depth:%u", obj.getDepth());
 
-        drawAll<ramses::TextureSampler>("Used by TextureSampler:", [&](const ramses::TextureSampler* ref) {
+        drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
             const auto& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
             return (sampler.contentType == TextureSampler::ContentType::ClientTexture) && (sampler.textureResource == obj.getLowlevelResourceHash());
         });
@@ -1396,7 +1500,7 @@ namespace ramses_internal
             ImGui::BulletText("area: x:%d y:%d w:%d h:%d", it->usedRegion.x, it->usedRegion.y, it->usedRegion.width, it->usedRegion.height);
             ImGui::BulletText("size (kB): %lu", it->data.size() / 1024);
         }
-        drawAll<ramses::TextureSampler>("Used by TextureSampler:", [&](const ramses::TextureSampler* ref) {
+        drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
             const auto& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
             return (sampler.contentType == TextureSampler::ContentType::TextureBuffer) && (sampler.contentHandle == obj.getTextureBufferHandle());
         });
@@ -1413,7 +1517,7 @@ namespace ramses_internal
             EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelBlue)),
             EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelAlpha)));
 
-        drawAll<ramses::TextureSampler>("Used by TextureSampler:", [&](const ramses::TextureSampler* ref) {
+        drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
             const auto& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
             return (sampler.contentType == TextureSampler::ContentType::ClientTexture) && (sampler.textureResource == obj.getLowlevelResourceHash());
         });
@@ -1434,7 +1538,7 @@ namespace ramses_internal
         else
             ImGui::Text("missing");
 
-        drawAll<ramses::TextureSampler>("Used by TextureSampler:", [&](const ramses::TextureSampler* ref) {
+        drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
             const auto& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
             return (sampler.contentType == TextureSampler::ContentType::StreamTexture) && (sampler.contentHandle == obj.getHandle());
         });
@@ -1496,7 +1600,7 @@ namespace ramses_internal
             ImGui::Text("Type: %s (tbd.)", ramses::RamsesObjectTypeUtils::GetRamsesObjectTypeName(obj.getTextureType()));
         }
 
-        drawAll<ramses::Appearance>("Used by Appearance:", [&](const ramses::Appearance* ref) {
+        drawRefs<ramses::Appearance>("Used by Appearance", obj, [&](const ramses::Appearance* ref) {
             const ramses::Effect& effect = ref->getEffect();
             for (uint32_t i = 0; i < effect.getUniformInputCount(); ++i)
             {
@@ -1525,7 +1629,7 @@ namespace ramses_internal
     {
         drawResource(obj);
         ImGui::Text("%s[%u]", EnumToString(obj.getElementType()), obj.getElementCount());
-        drawAll<ramses::GeometryBinding>("Used by GeometryBinding:", [&](const ramses::GeometryBinding* ref) {
+        drawRefs<ramses::GeometryBinding>("Used by GeometryBinding", obj, [&](const ramses::GeometryBinding* ref) {
             auto&          iScene     = m_scene.impl.getIScene();
             const auto&    layout     = iScene.getDataLayout(ref->impl.getAttributeDataLayout());
             const uint32_t fieldCount = layout.getFieldCount();
@@ -1543,7 +1647,7 @@ namespace ramses_internal
     void SceneViewerGui::drawArrayBuffer(ramses::ArrayBufferImpl& obj)
     {
         ImGui::Text("%s[%u]", EnumToString(obj.getDataType()), obj.getElementCount());
-        drawAll<ramses::GeometryBinding>("Used by GeometryBinding:", [&](const ramses::GeometryBinding* ref) {
+        drawRefs<ramses::GeometryBinding>("Used by GeometryBinding", obj, [&](const ramses::GeometryBinding* ref) {
             auto&          iScene     = m_scene.impl.getIScene();
             const auto&    layout     = iScene.getDataLayout(ref->impl.getAttributeDataLayout());
             const uint32_t fieldCount = layout.getFieldCount();
@@ -1617,7 +1721,7 @@ namespace ramses_internal
             ImGui::Text("tbd. %s", EnumToString(obj.getDataType()));
         }
 
-        drawAll<ramses::Appearance>("Used by Appearance:", [&](const ramses::Appearance* ref) {
+        drawRefs<ramses::Appearance>("Used by Appearance", obj, [&](const ramses::Appearance* ref) {
             const ramses::Effect& effect = ref->getEffect();
             for (uint32_t i = 0; i < effect.getUniformInputCount(); ++i)
             {
@@ -1630,7 +1734,7 @@ namespace ramses_internal
             return false;
         });
 
-        drawAll<ramses::Camera>("Used by Camera:", [&](const ramses::Camera* ref) {
+        drawRefs<ramses::Camera>("Used by Camera", obj, [&](const ramses::Camera* ref) {
             auto fp = findDataObject(ref->impl.getFrustrumPlanesHandle());
             auto nf = findDataObject(ref->impl.getFrustrumNearFarPlanesHandle());
             auto pos = findDataObject(ref->impl.getViewportOffsetHandle());
@@ -1696,30 +1800,47 @@ namespace ramses_internal
         ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         if (ImGui::CollapsingHeader("Scene objects"))
         {
-            m_filter.Draw();
-
-            const auto& reg = m_scene.impl.getObjectRegistry();
-            for (uint32_t i = 0u; i < ramses::ERamsesObjectType_NUMBER_OF_TYPES; ++i)
+            ImGui::Text("Name filter:");
+            if (m_filter.Draw() || m_sceneObjects.empty())
             {
-                const ramses::ERamsesObjectType type = static_cast<ramses::ERamsesObjectType>(i);
-                if (ramses::RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ramses::ERamsesObjectType_SceneObject)
-                    && !ramses::RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ramses::ERamsesObjectType_AnimationObject)
-                    && ramses::RamsesObjectTypeUtils::IsConcreteType(type))
+                const auto& reg = m_scene.impl.getObjectRegistry();
+                for (uint32_t i = 0u; i < ramses::ERamsesObjectType_NUMBER_OF_TYPES; ++i)
                 {
-                    const char* typeName = ramses::RamsesObjectTypeUtils::GetRamsesObjectTypeName(type);
-                    const auto  numberOfObjects = reg.getNumberOfObjects(type);
-                    if (numberOfObjects > 0)
+                    const auto type = static_cast<ramses::ERamsesObjectType>(i);
+
+                    if (ramses::RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ramses::ERamsesObjectType_SceneObject)
+                        && !ramses::RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ramses::ERamsesObjectType_AnimationObject)
+                        && ramses::RamsesObjectTypeUtils::IsConcreteType(type))
                     {
-                        if (ImGui::TreeNode(typeName, "%s (%u)", typeName, numberOfObjects))
+                        auto& objects = m_sceneObjects[type];
+                        const auto numberOfObjects = reg.getNumberOfObjects(type);
+                        objects.reserve(numberOfObjects);
+                        objects.clear();
+                        if (numberOfObjects > 0u)
                         {
                             ramses::RamsesObjectRegistryIterator iter(reg, ramses::ERamsesObjectType(i));
-                            while (const ramses::RamsesObject* obj = iter.getNext())
+                            while (const auto* obj = iter.getNext())
                             {
                                 if (m_filter.PassFilter(obj->getName()))
-                                    draw(obj->impl);
+                                    objects.push_back(obj);
                             }
-                            ImGui::TreePop();
                         }
+                    }
+                }
+            }
+
+            for (const auto& it : m_sceneObjects)
+            {
+                if (!it.second.empty())
+                {
+                    const char* typeName = ramses::RamsesObjectTypeUtils::GetRamsesObjectTypeName(it.first);
+                    if (ImGui::TreeNode(typeName, "%s (%zu)", typeName, it.second.size()))
+                    {
+                        for (auto* obj : it.second)
+                        {
+                            draw(obj->impl);
+                        }
+                        ImGui::TreePop();
                     }
                 }
             }
@@ -1755,41 +1876,84 @@ namespace ramses_internal
 
     void SceneViewerGui::drawResources()
     {
-        if (ImGui::CollapsingHeader("Resources"))
+        const bool isOpen = (ImGui::CollapsingHeader("Resources"));
+
+        if (ImGui::BeginPopupContextItem("ResourcesContextMenu"))
         {
-            const auto& reg = m_scene.impl.getObjectRegistry();
-            if (m_resourceInfo.objects.empty())
-            {
-                reg.getObjectsOfType(m_resourceInfo.objects, ramses::ERamsesObjectType_Resource);
+            drawMenuItemCopyTexture2D();
+            drawMenuItemStorePng();
+            ImGui::EndPopup();
+        }
 
-                auto compareSize = [&](ramses::RamsesObject* a, ramses::RamsesObject* b) {
-                    ManagedResource resourceA = m_scene.getRamsesClient().impl.getResource(static_cast<ramses::Resource*>(a)->impl.getLowlevelResourceHash());
-                    ManagedResource resourceB = m_scene.getRamsesClient().impl.getResource(static_cast<ramses::Resource*>(b)->impl.getLowlevelResourceHash());
-                    const uint32_t sizeA     = resourceA ? resourceA->getDecompressedDataSize() : 0u;
-                    const uint32_t sizeB     = resourceB ? resourceB->getDecompressedDataSize() : 0u;
-                    return sizeA > sizeB;
-                };
-                std::sort(m_resourceInfo.objects.begin(), m_resourceInfo.objects.end(), compareSize);
-
-                for (auto it : m_resourceInfo.objects)
-                {
-                    auto hlResource = static_cast<ramses::Resource*>(it);
-                    auto resource   = m_scene.getRamsesClient().impl.getResource(hlResource->impl.getLowlevelResourceHash());
-                    if (resource)
-                    {
-                        m_resourceInfo.compressedSize += resource->getCompressedDataSize();
-                        m_resourceInfo.decompressedSize += resource->getDecompressedDataSize();
-                    }
-                    else
-                        ++m_resourceInfo.unavailable;
-                }
-            }
+        if (isOpen)
+        {
+            updateResourceInfo();
             ImGui::Text("%lu resources", m_resourceInfo.objects.size());
             ImGui::Text("Size: %u kB (compressed: %u kB)", m_resourceInfo.decompressedSize / 1024U, m_resourceInfo.compressedSize / 1024U);
             ImGui::Text("Not loaded: %u", m_resourceInfo.unavailable);
+            ImGui::Text("Size of displayed resources: %u kB", m_resourceInfo.displayedSize / 1024U);
+            if (ImGui::InputInt("Display limit", &m_resourceInfo.displayLimit))
+            {
+                m_resourceInfo.displayedSize = 0U;
+            }
             ImGui::Text("Resources sorted by size (decending):");
+            int count = 0;
+            const bool updateDisplayedSize = (m_resourceInfo.displayedSize == 0U);
             for (auto it : m_resourceInfo.objects)
+            {
+                ++count;
+                if (count > m_resourceInfo.displayLimit)
+                {
+                    break;
+                }
+                if (updateDisplayedSize)
+                {
+                    auto hlResource = static_cast<ramses::Resource*>(it);
+                    auto resource = m_scene.getRamsesClient().impl.getResource(hlResource->impl.getLowlevelResourceHash());
+                    if (resource && m_usedObjects.contains(&hlResource->impl))
+                    {
+                        // don't count duplicates
+                        m_resourceInfo.displayedSize += resource->getDecompressedDataSize();
+                    }
+                }
                 draw(it->impl);
+            }
+        }
+    }
+
+    void SceneViewerGui::updateResourceInfo()
+    {
+        if (m_resourceInfo.objects.empty())
+        {
+            const auto& reg = m_scene.impl.getObjectRegistry();
+            reg.getObjectsOfType(m_resourceInfo.objects, ramses::ERamsesObjectType_Resource);
+
+            auto compareSize = [&](ramses::RamsesObject* a, ramses::RamsesObject* b) {
+                ManagedResource resourceA = m_scene.getRamsesClient().impl.getResource(static_cast<ramses::Resource*>(a)->impl.getLowlevelResourceHash());
+                ManagedResource resourceB = m_scene.getRamsesClient().impl.getResource(static_cast<ramses::Resource*>(b)->impl.getLowlevelResourceHash());
+                const uint32_t  sizeA     = resourceA ? resourceA->getDecompressedDataSize() : 0u;
+                const uint32_t  sizeB     = resourceB ? resourceB->getDecompressedDataSize() : 0u;
+                return sizeA > sizeB;
+            };
+            std::sort(m_resourceInfo.objects.begin(), m_resourceInfo.objects.end(), compareSize);
+
+            for (auto it : m_resourceInfo.objects)
+            {
+                auto hlResource = static_cast<ramses::Resource*>(it);
+                auto resource   = m_scene.getRamsesClient().impl.getResource(hlResource->impl.getLowlevelResourceHash());
+                m_resourceInfo.hashLookup.insert({hlResource->impl.getLowlevelResourceHash(), hlResource});
+                if (resource)
+                {
+                    if (m_usedObjects.contains(&hlResource->impl))
+                    {
+                        // don't count duplicates
+                        m_resourceInfo.compressedSize += resource->getCompressedDataSize();
+                        m_resourceInfo.decompressedSize += resource->getDecompressedDataSize();
+                    }
+                }
+                else
+                    ++m_resourceInfo.unavailable;
+            }
         }
     }
 
@@ -1840,16 +2004,23 @@ namespace ramses_internal
             if (ImGui::CollapsingHeader("Objects with warnings/errors"))
             {
                 ImGui::Text("Hover mouse for details");
-                const auto& reg = m_scene.impl.getObjectRegistry();
-                ramses::RamsesObjectVector allObjects;
-                reg.getObjectsOfType(allObjects, ramses::ERamsesObjectType_RamsesObject);
-                for (const auto* obj : allObjects)
+                if (m_objectsWithErrors.empty())
                 {
-                    const char* report = obj->getValidationReport(ramses::EValidationSeverity_Warning);
-                    if (report && report[0] != 0)
+                    const auto&                reg = m_scene.impl.getObjectRegistry();
+                    ramses::RamsesObjectVector allObjects;
+                    reg.getObjectsOfType(allObjects, ramses::ERamsesObjectType_RamsesObject);
+                    for (auto* obj : allObjects)
                     {
-                        draw(obj->impl);
+                        const char* report = obj->getValidationReport(ramses::EValidationSeverity_Warning);
+                        if (report && report[0] != 0)
+                        {
+                            m_objectsWithErrors.push_back(obj);
+                        }
                     }
+                }
+                for (auto* obj : m_objectsWithErrors)
+                {
+                    draw(obj->impl);
                 }
             }
         }
@@ -1867,7 +2038,6 @@ namespace ramses_internal
                 File file = File(String(m_filename));
                 if (m_loadedSceneFile == m_filename)
                 {
-                    ImGui::OpenPopup("Error");
                     m_lastErrorMessage = "Cannot save to the same file that is currently open.";
                 }
                 else if (file.exists() && !m_alwaysOverwrite)
@@ -1905,38 +2075,260 @@ namespace ramses_internal
         }
     }
 
-    void SceneViewerGui::drawFrame()
+    void SceneViewerGui::draw()
     {
-        ImGui::NewFrame();
-        std::string windowTitle = fmt::format("[Scene] id:{} name:{}", m_scene.getSceneId().getValue(), m_scene.getName());
-        ImGui::Begin(windowTitle.c_str());
-
-        if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        if (ImGui::IsKeyPressed(ramses::EKeyCode_F11))
         {
-            ImGui::Text("%s", m_lastErrorMessage.c_str());
-            ImGui::Separator();
+            m_settings.showWindow = !m_settings.showWindow;
+        }
 
-            if (ImGui::Button("OK", ImVec2(120, 0)))
+        if (ImGui::IsKeyPressed(ramses::EKeyCode_F10))
+        {
+            m_settings.showPreview = !m_settings.showPreview;
+        }
+
+        if (ImGui::BeginPopupContextVoid("GlobalContextMenu"))
+        {
+            drawMenuItemShowWindow();
+            drawMenuItemShowPreview();
+            ImGui::Separator();
+            drawMenuItemCopyTexture2D();
+            drawMenuItemStorePng();
+            ImGui::EndPopup();
+        }
+
+        if (m_progress.isRunning() && !m_progress.canceled)
+        {
+            ImGui::OpenPopup("Progress");
+        }
+
+        if (ImGui::BeginPopupModal("Progress", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            const uint32_t current = m_progress.current;
+            ImGui::TextUnformatted(m_progress.getDescription().c_str());
+            ImGui::TextUnformatted(fmt::format("{} of {}", current, m_progress.getTotal()).c_str());
+            ImGui::Separator();
+            if (ImGui::Button("Cancel", ImVec2(120,0)))
+            {
+                m_progress.canceled = true;
+                ImGui::CloseCurrentPopup();
+            }
+            if (!m_progress.isRunning())
             {
                 ImGui::CloseCurrentPopup();
+                auto result = m_progress.getResult();
+                if (!result.empty())
+                {
+                    m_lastErrorMessage = fmt::format("{}", fmt::join(result, "\n"));
+                }
             }
             ImGui::EndPopup();
         }
 
-        drawFile();
-        drawSceneObjects();
-        drawNodeHierarchy();
-        drawResources();
-        drawRenderHierarchy();
-        drawErrors();
+        if (!m_lastErrorMessage.empty())
+        {
+            ImGui::OpenPopup("Error");
+        }
 
-        ImGui::End();
+        if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::TextUnformatted(m_lastErrorMessage.c_str());
+            ImGui::Separator();
 
-        // ImGui::ShowDemoWindow();
-        ImGui::EndFrame();
+            if (ImGui::Button("OK", ImVec2(120, 0)))
+            {
+                m_lastErrorMessage.clear();
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Copy Message", ImVec2(120, 0)))
+            {
+                ImGui::LogToClipboard();
+                ImGui::LogText("%s", m_lastErrorMessage.c_str());
+                ImGui::LogFinish();
+            }
+            ImGui::EndPopup();
+        }
 
-        m_scene.flush();
-        m_imguiHelper.draw();
+        drawSceneTexture();
+        drawInspectionWindow();
+    }
+
+    void SceneViewerGui::setSceneTexture(ramses::TextureSampler* sampler, uint32_t width, uint32_t height)
+    {
+        m_sceneTexture       = sampler;
+        m_sceneTextureSize.x = static_cast<float>(width);
+        m_sceneTextureSize.y = static_cast<float>(height);
+    }
+
+    void SceneViewerGui::zoomIn()
+    {
+        if (m_settings.zoomIx < (static_cast<int>(m_settings.zoomLevels.size()) - 1))
+        {
+            ++m_settings.zoomIx;
+        }
+    }
+
+    void SceneViewerGui::zoomOut()
+    {
+        if (m_settings.zoomIx > 0)
+        {
+            --m_settings.zoomIx;
+        }
+    }
+
+    void SceneViewerGui::drawSceneTexture()
+    {
+        if (m_sceneTexture)
+        {
+            if (m_settings.showPreview)
+            {
+                if (ImGui::Begin("Preview", &m_settings.showPreview, ImGuiWindowFlags_AlwaysAutoResize))
+                {
+                    if (ImGui::GetIO().KeyCtrl)
+                    {
+                        if (ImGui::GetIO().MouseWheel >= 1.f)
+                        {
+                            zoomIn();
+                        }
+                        if (ImGui::GetIO().MouseWheel <= -1.f)
+                        {
+                            zoomOut();
+                        }
+                    }
+                    const auto f = m_settings.zoomLevels[m_settings.zoomIx];
+                    if (ImGui::SmallButton("-"))
+                        zoomOut();
+                    ImGui::SameLine();
+                    if (ImGui::SmallButton("+"))
+                        zoomIn();
+                    ImGui::SameLine();
+                    ImGui::Text("Zoom %d%%", static_cast<int>(f * 100));
+                    ImVec2 size(m_sceneTextureSize.x * f, m_sceneTextureSize.y * f);
+                    ImGui::Image(m_sceneTexture, size, ImVec2(0, 1), ImVec2(1, 0));
+                    ImGui::End();
+                }
+                else
+                {
+                    ImGui::End();
+                }
+            }
+            else
+            {
+                ImGui::GetBackgroundDrawList()->AddImage(m_sceneTexture, ImVec2(0, 0), m_sceneTextureSize, ImVec2(0, 1), ImVec2(1, 0));
+            }
+        }
+    }
+
+    void SceneViewerGui::drawInspectionWindow()
+    {
+        if (m_settings.showWindow)
+        {
+            const std::string windowTitle = fmt::format("[Scene] id:{} name:{}", m_scene.getSceneId().getValue(), m_scene.getName());
+            if (!ImGui::Begin(windowTitle.c_str(), &m_settings.showWindow, ImGuiWindowFlags_MenuBar))
+            {
+                ImGui::End();
+                return;
+            }
+            drawMenuBar();
+            drawFile();
+            drawSceneObjects();
+            drawNodeHierarchy();
+            drawResources();
+            drawRenderHierarchy();
+            drawErrors();
+            ImGui::End();
+        }
+    }
+
+    void SceneViewerGui::drawMenuBar()
+    {
+        if (ImGui::BeginMenuBar())
+        {
+            if (ImGui::BeginMenu("Tools"))
+            {
+                drawMenuItemCopyTexture2D();
+                drawMenuItemStorePng();
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Settings"))
+            {
+                drawMenuItemShowWindow();
+                drawMenuItemShowPreview();
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        }
+    }
+
+    void SceneViewerGui::drawMenuItemShowWindow()
+    {
+        ImGui::MenuItem("Show Inspection Window", "F11", &m_settings.showWindow);
+    }
+
+    void SceneViewerGui::drawMenuItemShowPreview()
+    {
+        if (m_sceneTexture)
+        {
+            ImGui::MenuItem("Show Preview Window", "F10", &m_settings.showPreview);
+        }
+    }
+
+    void SceneViewerGui::drawMenuItemCopyTexture2D()
+    {
+        if (ImGui::MenuItem("Copy Texture2D list (CSV)"))
+        {
+            ramses::RamsesObjectRegistryIterator iter(m_scene.impl.getObjectRegistry(), ramses::ERamsesObjectType_Texture2D);
+            ImGui::LogToClipboard();
+            ImGui::LogText("Id, Name, Type, Hash, Loaded, Size, CompressedSize, Size, Format, Swizzle\n");
+            while (const auto* obj = iter.getNext<ramses::Texture2D>())
+            {
+                logTexture2D(obj->impl);
+            }
+            ImGui::LogFinish();
+        }
+    }
+
+    void SceneViewerGui::drawMenuItemStorePng()
+    {
+        if (ImGui::MenuItem("Export all 2D textures to png"))
+        {
+            auto storeAllTextures = [&](ramses::RamsesObjectVector objects) {
+                std::vector<std::string> errorList;
+                for (auto it = objects.begin(); it != objects.end() && !m_progress.canceled; ++it)
+                {
+                    const ramses::Texture2D* obj = static_cast<ramses::Texture2D*>(*it);
+                    ++m_progress.current;
+                    const auto error = saveTexture2D(obj->impl);
+                    if (!error.empty())
+                    {
+                        errorList.push_back(error);
+                    }
+                }
+                return errorList;
+            };
+
+            ramses::RamsesObjectVector objects;
+            m_scene.impl.getObjectRegistry().getObjectsOfType(objects, ramses::ERamsesObjectType_Texture2D);
+            m_progress.stop();
+            ProgressMonitor::FutureList futures;
+            const size_t tasks     = objects.size() > 16u ? 4u : 1u;
+            const auto   chunkSize = objects.size() / tasks;
+            for (size_t i = 0; i < tasks; ++i)
+            {
+                const auto begin = objects.begin() + i * chunkSize;
+                if (i + 1 == tasks)
+                {
+                    futures.push_back(std::async(std::launch::async, storeAllTextures, ramses::RamsesObjectVector(begin, objects.end())));
+                }
+                else
+                {
+                    futures.push_back(std::async(std::launch::async, storeAllTextures, ramses::RamsesObjectVector(begin, begin + chunkSize)));
+                }
+            }
+            m_progress.start(std::move(futures), static_cast<uint32_t>(objects.size()), "Saving Texture2D to png");
+        }
     }
 
     void SceneViewerGui::saveSceneToFile()
@@ -1944,8 +2336,101 @@ namespace ramses_internal
         const auto status = m_scene.saveToFile(m_filename.c_str(), m_compressFile);
         if (status != ramses::StatusOK)
         {
-            ImGui::OpenPopup("Error");
             m_lastErrorMessage = m_scene.getStatusMessage(status);
         }
+    }
+
+    std::string SceneViewerGui::saveTexture2D(const ramses::Texture2DImpl& obj) const
+    {
+        auto resource = m_scene.getRamsesClient().impl.getResource(obj.getLowlevelResourceHash());
+        std::string errorMsg;
+        if (resource)
+        {
+            const ramses_internal::TextureResource* textureResource = resource->convertTo<ramses_internal::TextureResource>();
+            const auto& blob = textureResource->getResourceData();
+            const auto filename = fmt::format("{:04}_{}.png", obj.getObjectRegistryHandle().asMemoryHandle(), obj.getName());
+            std::vector<uint8_t> imageData;
+            imageData.reserve(static_cast<size_t>(obj.getWidth()) * obj.getHeight() * 4u);
+            if (obj.getTextureFormat() == ramses::ETextureFormat::RGBA8)
+            {
+                // just copy the blob
+                imageData.insert(imageData.end(), blob.data(), blob.data() + blob.size());
+            }
+            else
+            {
+                // convert to rgba
+                const auto swizzle = obj.getTextureSwizzle();
+                switch (obj.getTextureFormat())
+                {
+                case ramses::ETextureFormat::R8:
+                    convertToRgba(imageData, blob, swizzle, [](const Byte* ptr, std::array<uint8_t, 4>& rgba) {
+                        rgba[0] = *ptr++;
+                        return ptr;
+                    });
+                    break;
+                case ramses::ETextureFormat::RG8:
+                    convertToRgba(imageData, blob, swizzle, [](const Byte* ptr, std::array<uint8_t, 4>& rgba) {
+                        rgba[0] = *ptr++;
+                        rgba[1] = *ptr++;
+                        return ptr;
+                    });
+                    break;
+                case ramses::ETextureFormat::RGB8:
+                    convertToRgba(imageData, blob, swizzle, [](const Byte* ptr, std::array<uint8_t, 4>& rgba) {
+                        rgba[0] = *ptr++;
+                        rgba[1] = *ptr++;
+                        rgba[2] = *ptr++;
+                        return ptr;
+                    });
+                    break;
+                default:
+                    errorMsg = fmt::format("Cannot save: {} (Image format is not supported: {}).", filename, ramses::getTextureFormatString(obj.getTextureFormat()));
+                    break;
+                }
+            }
+
+            if (errorMsg.empty() && !ramses::RamsesUtils::SaveImageBufferToPng(filename, imageData, obj.getWidth(), obj.getHeight()))
+            {
+                errorMsg = fmt::format("Cannot save: {}", filename);
+            }
+        }
+        return errorMsg;
+    }
+
+    void SceneViewerGui::logRamsesObject(ramses::RamsesObjectImpl& obj)
+    {
+        ImGui::LogText(R"(%u,"%s","%s",)", obj.getObjectRegistryHandle().asMemoryHandle(), obj.getName().c_str(), shortName(obj.getType()));
+    }
+
+    void SceneViewerGui::logResource(ramses::ResourceImpl& obj)
+    {
+        logRamsesObject(obj);
+        const auto hash = obj.getLowlevelResourceHash();
+        auto resource = m_scene.getRamsesClient().impl.getResource(hash);
+        ImGui::LogText("%" PRIX64 ":%" PRIX64 ",", hash.highPart, hash.lowPart);
+        if (resource)
+        {
+            ImGui::LogText("true, %u, %u,", resource->getDecompressedDataSize(), resource->getCompressedDataSize());
+        }
+        else
+        {
+            ImGui::LogText("false, 0, 0,");
+        }
+    }
+
+    void SceneViewerGui::logTexture2D(ramses::Texture2DImpl& obj)
+    {
+        logResource(obj);
+        ImGui::LogText("w:%u h:%u,%s, ", obj.getWidth(), obj.getHeight(), ramses::getTextureFormatString(obj.getTextureFormat()));
+        const auto& swizzle = obj.getTextureSwizzle();
+        ImGui::LogText("r:%s g:%s b:%s a:%s, ",
+            EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelRed)),
+            EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelGreen)),
+            EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelBlue)),
+            EnumToString(ramses::TextureUtils::GetTextureChannelColorInternal(swizzle.channelAlpha)));
+        const auto* slot = findDataSlot(obj.getLowlevelResourceHash());
+        if (slot)
+            ImGui::LogText("DataSlot: %u %s,", slot->id.getValue(), EnumToString(slot->type));
+        ImGui::LogText("\n");
     }
 }

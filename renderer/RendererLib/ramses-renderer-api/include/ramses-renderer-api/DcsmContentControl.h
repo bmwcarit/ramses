@@ -83,8 +83,8 @@ namespace ramses
         status_t addContentCategory(Category category, displayId_t display, const CategoryInfoUpdate& categoryInformation);
 
         /** @brief Remove a content category
-        * @details Removes a content category. No more offers will be received for this category, any content assigned to this category will
-        *          be dropped (Hide, Release)
+        * @details Removes a content category. No more offers will be received for this category. All contents for this category
+        *          will remain in their state, and will need to be ramped down manually, if required.
         *
         * @param category Category to remove
         */

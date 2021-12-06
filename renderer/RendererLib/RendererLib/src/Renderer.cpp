@@ -23,6 +23,7 @@
 #include "RendererLib/SceneExpirationMonitor.h"
 #include "Platform_Base/Platform_Base.h"
 #include "Utils/ThreadLocalLogForced.h"
+#include "absl/algorithm/container.h"
 
 namespace ramses_internal
 {
@@ -240,15 +241,21 @@ namespace ramses_internal
             return false;
         }
 
-        m_displayController->clearBuffer(m_frameBufferDeviceHandle, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
 
         RenderingContext renderContext;
         renderContext.displayBufferDeviceHandle = m_frameBufferDeviceHandle;
         renderContext.viewportWidth = displayBufferInfo.viewport.width;
         renderContext.viewportHeight = displayBufferInfo.viewport.height;
+        renderContext.displayBufferClearPending = displayBufferInfo.clearFlags;
+        renderContext.displayBufferClearColor = displayBufferInfo.clearColor;
+        renderContext.displayBufferDepthDiscard = false; // discarding is not meant for default framebuffer, see Device_GL::discardDepthStencil()
 
-        m_tempScenesRendered.clear();
+        // FB was marked for re-render but has no shown scenes -> clear it
         const auto& assignedScenes = displayBufferInfo.scenes;
+        const bool hasAnyShownScene = absl::c_any_of(assignedScenes, [](const auto& s) { return s.shown; });
+        if (!hasAnyShownScene)
+            m_displayController->clearBuffer(m_frameBufferDeviceHandle, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
+
         for (const auto& sceneInfo : assignedScenes)
         {
             if (sceneInfo.shown)
@@ -256,15 +263,8 @@ namespace ramses_internal
                 const RendererCachedScene& scene = m_rendererScenes.getScene(sceneInfo.sceneId);
                 m_displayController->renderScene(scene, renderContext);
                 onSceneWasRendered(scene);
-                m_tempScenesRendered.push_back(sceneInfo.sceneId);
             }
         }
-        LOG_TRACE_F(CONTEXT_PROFILING, ([&](StringOutputStream& logStream)
-        {
-            logStream << "Renderer::renderToFramebuffer rendered scenes:";
-            for (auto sceneId : m_tempScenesRendered)
-                logStream << " " << sceneId;
-        }));
 
         m_displayController->executePostProcessing();
 
@@ -288,31 +288,34 @@ namespace ramses_internal
         for (const auto displayBuffer : displayBuffersToRender)
         {
             const auto& displayBufferInfo = m_displayBuffersSetup.getDisplayBuffer(displayBuffer);
-            m_displayController->clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
 
             RenderingContext renderContext;
             renderContext.displayBufferDeviceHandle = displayBuffer;
             renderContext.viewportWidth = displayBufferInfo.viewport.width;
             renderContext.viewportHeight = displayBufferInfo.viewport.height;
+            renderContext.displayBufferClearPending = displayBufferInfo.clearFlags;
+            renderContext.displayBufferClearColor = displayBufferInfo.clearColor;
 
-            m_tempScenesRendered.clear();
-            const auto& assignedScenes = displayBufferInfo.scenes;
-            for (const auto& sceneInfo : assignedScenes)
+            m_tempScenesToRender.clear();
+            for (const auto& assignedScene : displayBufferInfo.scenes)
+                if (assignedScene.shown)
+                    m_tempScenesToRender.push_back(assignedScene.sceneId);
+
+            // OB was marked for re-render but has no shown scenes -> clear it
+            if (m_tempScenesToRender.empty())
+                m_displayController->clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
+
+            for (const auto& sceneId : m_tempScenesToRender)
             {
-                if (sceneInfo.shown)
-                {
-                    const RendererCachedScene& scene = m_rendererScenes.getScene(sceneInfo.sceneId);
-                    m_displayController->renderScene(scene, renderContext);
-                    onSceneWasRendered(scene);
-                    m_tempScenesRendered.push_back(sceneInfo.sceneId);
-                }
+                // offscreen buffer depth component may be discarded after last scene rendered into it and it is not kept for next frame (clear is enabled)
+                if (sceneId == m_tempScenesToRender.back()
+                    && IsClearFlagSet(displayBufferInfo.clearFlags, EClearFlags_Depth) && IsClearFlagSet(displayBufferInfo.clearFlags, EClearFlags_Stencil))
+                    renderContext.displayBufferDepthDiscard = true;
+
+                const RendererCachedScene& scene = m_rendererScenes.getScene(sceneId);
+                m_displayController->renderScene(scene, renderContext);
+                onSceneWasRendered(scene);
             }
-            LOG_TRACE_F(CONTEXT_PROFILING, ([&](StringOutputStream& logStream)
-            {
-                logStream << "Renderer::renderToOffscreenBuffers OB" << displayBuffer.asMemoryHandle() << " rendered scenes:";
-                for (auto sceneId : m_tempScenesRendered)
-                    logStream << " " << sceneId;
-            }));
 
             processScheduledScreenshots(displayBuffer);
 
@@ -337,17 +340,24 @@ namespace ramses_internal
             renderContext.displayBufferDeviceHandle = displayBuffer;
             renderContext.viewportWidth = displayBufferInfo.viewport.width;
             renderContext.viewportHeight = displayBufferInfo.viewport.height;
+            renderContext.displayBufferClearPending = EClearFlags_None; // set clear flags accordingly below only if not in interrupted state
 
+            const auto& assignedScenes = displayBufferInfo.scenes;
             if (!m_rendererInterruptState.isInterrupted(displayBuffer))
             {
                 // remove buffer from list of buffers to re-render as soon as we start rendering into it (even if it gets interrupted later on)
                 m_displayBuffersSetup.setDisplayBufferToBeRerendered(displayBuffer, false);
-                // clear buffer only if we just started rendering into it
-                m_displayController->clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
-                LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers interruptible OB " << displayBuffer.asMemoryHandle() << " cleared");
+                // clear buffer only if we just started rendering into it and no scene shown to keep expected behavior (no scene -> clear buffer)
+                const bool hasAnyShownScene = absl::c_any_of(assignedScenes, [](const auto& s) { return s.shown; });
+                if (!hasAnyShownScene)
+                    m_displayController->clearBuffer(displayBuffer, displayBufferInfo.clearFlags, displayBufferInfo.clearColor);
+                else
+                {
+                    renderContext.displayBufferClearPending = displayBufferInfo.clearFlags;
+                    renderContext.displayBufferClearColor = displayBufferInfo.clearColor;
+                }
             }
 
-            const auto& assignedScenes = displayBufferInfo.scenes;
             for (const auto& sceneInfo : assignedScenes)
             {
                 if (!sceneInfo.shown)

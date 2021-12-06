@@ -70,8 +70,8 @@ namespace ramses_internal
             EXPECT_CALL(*connsys->stack, connect()).WillRepeatedly(Return(rnd() > 20));
             EXPECT_CALL(*connsys->stack, disconnect()).WillRepeatedly(Return(rnd() > 20));
 
-            EXPECT_CALL(*connsys->stack, sendParticipantInfo(_, _, _, _, _, _, _)).WillRepeatedly(Return(rnd() > 20));
-            EXPECT_CALL(*connsys->stack, sendKeepAlive(_, _, _)).WillRepeatedly(Return(rnd() > 20));
+            EXPECT_CALL(*connsys->stack, sendParticipantInfo(_, _, _, _, _, _, _, _)).WillRepeatedly(Return(rnd() > 20));
+            EXPECT_CALL(*connsys->stack, sendKeepAlive(_, _, _, _)).WillRepeatedly(Return(rnd() > 20));
             EXPECT_CALL(*connsys->stack, sendTestMessage(_, _, _)).WillRepeatedly(Return(rnd() > 20));
 
             EXPECT_CALL(connsys->consumer, handleTestMessage(_, _)).WillRepeatedly(Return(rnd() > 20));
@@ -91,9 +91,9 @@ namespace ramses_internal
             if (rnd() < 75)
                 connsys->sendTestMessage(Guid(num()), num());
             if (rnd() < 30)
-                fromStack->handleParticipantInfo(SomeIPMsgHeader{num(), num(), num()}, static_cast<uint16_t>(num()), TestInstanceId(static_cast<uint16_t>(num())), num(), static_cast<uint8_t>(num()), num());
+                fromStack->handleParticipantInfo(SomeIPMsgHeader{num(), num(), num()}, static_cast<uint16_t>(num()), SomeIPConstants::FallbackMinorProtocolVersion, TestInstanceId(static_cast<uint16_t>(num())), num(), static_cast<uint8_t>(num()), num());
             if (rnd() < 40)
-                fromStack->handleKeepAlive(SomeIPMsgHeader{num(), num(), num()}, num());
+                fromStack->handleKeepAlive(SomeIPMsgHeader{num(), num(), num()}, num(), false);
             if (rnd() < 40)
                 connsys->handleTestMessage(SomeIPMsgHeader{num(), num(), num()}, num());
             if (rnd() < 50)

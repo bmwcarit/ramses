@@ -36,7 +36,7 @@ public:
     MOCK_METHOD(void, enableContext, (), (override));
     MOCK_METHOD(void, swapBuffers, (), (override));
     MOCK_METHOD(void, clearBuffer, (DeviceResourceHandle, uint32_t clearFlags, const Vector4&), (override));
-    MOCK_METHOD(SceneRenderExecutionIterator, renderScene, (const RendererCachedScene&, const RenderingContext&, const FrameTimer*), (override));
+    MOCK_METHOD(SceneRenderExecutionIterator, renderScene, (const RendererCachedScene&, RenderingContext&, const FrameTimer*), (override));
     MOCK_METHOD(void, executePostProcessing, (), (override));
     MOCK_METHOD(DeviceResourceHandle, getDisplayBuffer, (), (const, override));
     MOCK_METHOD(void, readPixels, (DeviceResourceHandle framebufferHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height, std::vector<UInt8>& dataOut), (override));

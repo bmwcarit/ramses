@@ -53,7 +53,7 @@ namespace ramses_internal
         validateRenderingStatusHealthy();
     }
 
-    SceneRenderExecutionIterator DisplayController::renderScene(const RendererCachedScene& scene, const RenderingContext& renderContext, const FrameTimer* frameTimer)
+    SceneRenderExecutionIterator DisplayController::renderScene(const RendererCachedScene& scene, RenderingContext& renderContext, const FrameTimer* frameTimer)
     {
         RenderExecutor executor(m_renderBackend.getDevice(), renderContext, frameTimer);
 

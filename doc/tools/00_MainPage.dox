@@ -31,6 +31,11 @@ into files, but also other types of RAMSES resources.
 
 @ref ExampleUsageAllTools
 
+# Scene viewer
+
+Ramses scenes can be stored to a file @ref ramses::Scene::saveToFile().
+These scene files can be viewed and inspected by the @ref SceneViewer.
+
 # Logging
 
 Ramses uses DLT to publish logs. See @ref DltIntroduction for an overview of DLT in general, and @ref UsingDLT for

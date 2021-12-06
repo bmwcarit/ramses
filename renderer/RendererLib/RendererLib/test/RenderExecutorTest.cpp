@@ -124,6 +124,7 @@ class ARenderExecutor: public ::testing::Test
 public:
     ARenderExecutor()
         : device(renderer.deviceMock)
+        , renderContext{ DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, fakeViewportWidth, fakeViewportHeight, {}, EClearFlags_All, Vector4{0.f}, false }
         , rendererScenes(rendererEventCollector)
         , scene(rendererScenes.createScene(SceneInfo()))
         , sceneAllocator(scene)
@@ -158,8 +159,9 @@ protected:
     StrictMock<RenderBackendStrictMock> renderer;
     NiceMock<EmbeddedCompositingManagerMock> embeddedCompositingManager;
     StrictMock<DeviceMock>& device;
-
     NiceMock<RendererResourceManagerMock> resourceManager;
+
+    RenderingContext renderContext;
 
     RendererEventCollector rendererEventCollector;
     RendererScenes rendererScenes;
@@ -183,6 +185,8 @@ protected:
 
     DataLayoutHandle uniformLayout;
     DataLayoutHandle geometryLayout;
+
+    Sequence deviceSequence;
 
     ProjectionParams getDefaultProjectionParams(ECameraProjectionType cameraProjType = ECameraProjectionType::Perspective)
     {
@@ -319,8 +323,10 @@ protected:
     RenderTargetHandle createRenderTarget(UInt32 width = 800u, UInt32 height = 600u)
     {
         const RenderTargetHandle targetHandle = sceneAllocator.allocateRenderTarget();
-        const RenderBufferHandle bufferHandle = sceneAllocator.allocateRenderBuffer({ width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u });
-        scene.addRenderTargetRenderBuffer(targetHandle, bufferHandle);
+        const RenderBufferHandle colorBufferHandle = sceneAllocator.allocateRenderBuffer({ width, height, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u });
+        const RenderBufferHandle depthBufferHandle = sceneAllocator.allocateRenderBuffer({ width, height, ERenderBufferType_DepthBuffer, ETextureFormat::Depth24, ERenderBufferAccessMode_WriteOnly, 0u });
+        scene.addRenderTargetRenderBuffer(targetHandle, colorBufferHandle);
+        scene.addRenderTargetRenderBuffer(targetHandle, depthBufferHandle);
 
         return targetHandle;
     }
@@ -345,6 +351,8 @@ protected:
         Matrix44f expectedViewMatrix = Matrix44f::Identity)
     {
         expectActivateRenderTarget(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, true);
+        if (renderContext.displayBufferClearPending != EClearFlags_None)
+            expectClearRenderTarget(renderContext.displayBufferClearPending);
         const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projectionParams);
         expectFrameRenderCommands(renderable, expectedModelMatrix, expectedViewMatrix, projMatrix);
     }
@@ -369,82 +377,87 @@ protected:
 
         if (expectRenderStateChanges == EExpectedRenderStateChange::All)
         {
-            EXPECT_CALL(device, scissorTest(_, _))                                                                                                .RetiresOnSaturation();
-            EXPECT_CALL(device, depthFunc(_))                                                                                                     .RetiresOnSaturation();
-            EXPECT_CALL(device, depthWrite(_))                                                                                                    .RetiresOnSaturation();
-            EXPECT_CALL(device, stencilFunc(_,_,_))                                                                                               .RetiresOnSaturation();
-            EXPECT_CALL(device, stencilOp(_,_,_))                                                                                                 .RetiresOnSaturation();
-            EXPECT_CALL(device, blendOperations(_, _))                                                                                            .RetiresOnSaturation();
-            EXPECT_CALL(device, blendFactors(_, _, _, _))                                                                                         .RetiresOnSaturation();
-            EXPECT_CALL(device, blendColor(_))                                                                                                    .RetiresOnSaturation();
-            EXPECT_CALL(device, colorMask(_, _, _, _))                                                                                            .RetiresOnSaturation();
-            EXPECT_CALL(device, cullMode(_))                                                                                                      .RetiresOnSaturation();
+            EXPECT_CALL(device, scissorTest(_, _))                                                                                                .InSequence(deviceSequence);
+            EXPECT_CALL(device, depthFunc(_))                                                                                                     .InSequence(deviceSequence);
+            EXPECT_CALL(device, depthWrite(_))                                                                                                    .InSequence(deviceSequence);
+            EXPECT_CALL(device, stencilFunc(_,_,_))                                                                                               .InSequence(deviceSequence);
+            EXPECT_CALL(device, stencilOp(_,_,_))                                                                                                 .InSequence(deviceSequence);
+            EXPECT_CALL(device, blendOperations(_, _))                                                                                            .InSequence(deviceSequence);
+            EXPECT_CALL(device, blendFactors(_, _, _, _))                                                                                         .InSequence(deviceSequence);
+            EXPECT_CALL(device, blendColor(_))                                                                                                    .InSequence(deviceSequence);
+            EXPECT_CALL(device, colorMask(_, _, _, _))                                                                                            .InSequence(deviceSequence);
+            EXPECT_CALL(device, cullMode(_))                                                                                                      .InSequence(deviceSequence);
         }
         else if (expectRenderStateChanges == EExpectedRenderStateChange::CausedByClear)
         {
-            EXPECT_CALL(device, scissorTest(_, _)).RetiresOnSaturation();
-            EXPECT_CALL(device, depthWrite(_)).RetiresOnSaturation();
-            EXPECT_CALL(device, colorMask(_, _, _, _)).RetiresOnSaturation();
+            EXPECT_CALL(device, scissorTest(_, _)).InSequence(deviceSequence);
+            EXPECT_CALL(device, depthWrite(_)).InSequence(deviceSequence);
+            EXPECT_CALL(device, colorMask(_, _, _, _)).InSequence(deviceSequence);
         }
-        EXPECT_CALL(device, drawMode(_)).RetiresOnSaturation();
+        EXPECT_CALL(device, drawMode(_)).InSequence(deviceSequence);
 
         if (expectShaderActivation)
         {
-            EXPECT_CALL(device, activateShader(FakeShaderDeviceHandle))                                                                           .RetiresOnSaturation();
+            EXPECT_CALL(device, activateShader(FakeShaderDeviceHandle))                                                                           .InSequence(deviceSequence);
         }
-        EXPECT_CALL(device, activateVertexArray(_))                                                                               .RetiresOnSaturation();
-        EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefField1, 1, Matcher<const Float*>(Pointee(Eq(0.1f)))))                                       .RetiresOnSaturation();
-        EXPECT_CALL(device, setConstant(fieldModelMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedModelMatrix)))))                  .RetiresOnSaturation();
-        EXPECT_CALL(device, setConstant(fieldViewMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedViewMatrix)))))                    .RetiresOnSaturation();
-        EXPECT_CALL(device, setConstant(fieldProjMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedProjMatrix)))))                    .RetiresOnSaturation();
-        EXPECT_CALL(device, activateTexture(FakeTextureDeviceHandle, textureField))                                                                         .RetiresOnSaturation();
+        EXPECT_CALL(device, activateVertexArray(_))                                                                               .InSequence(deviceSequence);
+        EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefField1, 1, Matcher<const Float*>(Pointee(Eq(0.1f)))))                                       .InSequence(deviceSequence);
+        EXPECT_CALL(device, setConstant(fieldModelMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedModelMatrix)))))                  .InSequence(deviceSequence);
+        EXPECT_CALL(device, setConstant(fieldViewMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedViewMatrix)))))                    .InSequence(deviceSequence);
+        EXPECT_CALL(device, setConstant(fieldProjMatrix, 1, Matcher<const Matrix44f*>(Pointee(PermissiveMatrixEq(expectedProjMatrix)))))                    .InSequence(deviceSequence);
+        EXPECT_CALL(device, activateTexture(FakeTextureDeviceHandle, textureField))                                                                         .InSequence(deviceSequence);
         const TextureSamplerStates expectedSamplerStates(EWrapMethod::Clamp, EWrapMethod::Repeat, EWrapMethod::RepeatMirrored, ESamplingMethod::Nearest_MipMapNearest, ESamplingMethod::Nearest, 2u);
-        EXPECT_CALL(device, activateTextureSamplerObject(Property(&TextureSamplerStates::hash, Eq(expectedSamplerStates.hash())), textureField)).RetiresOnSaturation();
-        EXPECT_CALL(device, activateTexture(FakeTextureDeviceHandle, textureFieldMS))                                                                         .RetiresOnSaturation();
-        EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefField2, 1, Matcher<const Float*>(Pointee(Eq(-666.f)))))                                     .RetiresOnSaturation();
-        EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefFieldMatrix22f, 1, Matcher<const Matrix22f*>(Pointee(Eq(Matrix22f(1,2,3,4))))))             .RetiresOnSaturation();
+        EXPECT_CALL(device, activateTextureSamplerObject(Property(&TextureSamplerStates::hash, Eq(expectedSamplerStates.hash())), textureField)).InSequence(deviceSequence);
+        EXPECT_CALL(device, activateTexture(FakeTextureDeviceHandle, textureFieldMS))                                                                         .InSequence(deviceSequence);
+        EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefField2, 1, Matcher<const Float*>(Pointee(Eq(-666.f)))))                                     .InSequence(deviceSequence);
+        EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefFieldMatrix22f, 1, Matcher<const Matrix22f*>(Pointee(Eq(Matrix22f(1,2,3,4))))))             .InSequence(deviceSequence);
         if (expectIndexedRendering)
         {
-            EXPECT_CALL(device, drawIndexedTriangles(startIndex, indexCount, instanceCount)).RetiresOnSaturation();
+            EXPECT_CALL(device, drawIndexedTriangles(startIndex, indexCount, instanceCount)).InSequence(deviceSequence);
         }
         else
         {
-            EXPECT_CALL(device, drawTriangles(startIndex, indexCount, instanceCount)).RetiresOnSaturation();
+            EXPECT_CALL(device, drawTriangles(startIndex, indexCount, instanceCount)).InSequence(deviceSequence);
         }
     }
 
     void expectActivateRenderTarget(DeviceResourceHandle rtDeviceHandle, bool expectViewport = true, const Viewport& viewport = Viewport(fakeViewportX, fakeViewportY, fakeViewportWidth, fakeViewportHeight))
     {
-        EXPECT_CALL(device, activateRenderTarget(rtDeviceHandle)).Times(1);
+        EXPECT_CALL(device, activateRenderTarget(rtDeviceHandle)).InSequence(deviceSequence);
         if (expectViewport)
         {
-            EXPECT_CALL(device, setViewport(viewport.posX, viewport.posY, viewport.width, viewport.height)).Times(1);
+            EXPECT_CALL(device, setViewport(viewport.posX, viewport.posY, viewport.width, viewport.height)).InSequence(deviceSequence);
         }
     }
 
     void expectActivateFramebufferRenderTarget(bool expectViewport = true)
     {
-        EXPECT_CALL(device, activateRenderTarget(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle)).Times(1);
+        EXPECT_CALL(device, activateRenderTarget(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle)).InSequence(deviceSequence);
         if (expectViewport)
-            EXPECT_CALL(device, setViewport(fakeViewportX, fakeViewportY, fakeViewportWidth, fakeViewportHeight)).Times(1);
+            EXPECT_CALL(device, setViewport(fakeViewportX, fakeViewportY, fakeViewportWidth, fakeViewportHeight)).InSequence(deviceSequence);
     }
 
     void expectClearRenderTarget(UInt32 clearFlags = EClearFlags_All)
     {
         if (clearFlags & EClearFlags_Color)
         {
-            EXPECT_CALL(device, colorMask(true, true, true, true));
-            EXPECT_CALL(device, clearColor(_));
+            EXPECT_CALL(device, colorMask(true, true, true, true)).InSequence(deviceSequence);
+            EXPECT_CALL(device, clearColor(_)).InSequence(deviceSequence);
         }
         if (clearFlags & EClearFlags_Depth)
         {
-            EXPECT_CALL(device, depthWrite(EDepthWrite::Enabled));
+            EXPECT_CALL(device, depthWrite(EDepthWrite::Enabled)).InSequence(deviceSequence);
         }
 
         RenderState::ScissorRegion scissorRegion{};
-        EXPECT_CALL(device, scissorTest(EScissorTest::Disabled, scissorRegion));
+        EXPECT_CALL(device, scissorTest(EScissorTest::Disabled, scissorRegion)).InSequence(deviceSequence);
 
-        EXPECT_CALL(device, clear(clearFlags));
+        EXPECT_CALL(device, clear(clearFlags)).InSequence(deviceSequence);
+    }
+
+    void expectDepthStencilDiscard()
+    {
+        EXPECT_CALL(device, discardDepthStencil()).InSequence(deviceSequence);
     }
 
     void updateScenes(const RenderableVector& renderablesWithUpdatedVAOs)
@@ -460,18 +473,16 @@ protected:
         updateScenes({renderable});
 
         expectActivateFramebufferRenderTarget();
+        expectClearRenderTarget();
         expectFrameRenderCommands(renderable, Matrix44f::Identity, Matrix44f::Identity, projMatrix, true, EExpectedRenderStateChange::All, instanceCount);
         executeScene();
 
         Mock::VerifyAndClearExpectations(&renderer);
     }
 
-    SceneRenderExecutionIterator executeScene(SceneRenderExecutionIterator renderFrom = {}, const FrameTimer* frameTimer = nullptr)
+    SceneRenderExecutionIterator executeScene(const FrameTimer* frameTimer = nullptr)
     {
-        const Viewport vp(fakeViewportX, fakeViewportY, fakeViewportWidth, fakeViewportHeight);
-        const RenderingContext renderContext{ DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, vp.width, vp.height, renderFrom };
         RenderExecutor executor(device, renderContext, frameTimer);
-
         return executor.executeScene(scene);
     }
 };
@@ -525,6 +536,7 @@ TEST_F(ARenderExecutor, RenderRenderableWithoutIndexArray)
         InSequence seq;
 
         expectActivateFramebufferRenderTarget();
+        expectClearRenderTarget();
         expectFrameRenderCommands(renderable, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, true, EExpectedRenderStateChange::All, 1, false);
     }
 
@@ -561,6 +573,7 @@ TEST_F(ARenderExecutor, RenderMultipleConsecutiveRenderPassesIntoOneRenderTarget
         expectClearRenderTarget();
         expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
         expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+        expectDepthStencilDiscard();
     }
 
     executeScene();
@@ -599,9 +612,11 @@ TEST_F(ARenderExecutor, RenderMultipleRenderPassesIntoMultipleRenderTargets)
         expectActivateRenderTarget(renderTargetDeviceHandle1, true, fakeVp1);
         expectClearRenderTarget();
         expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix1);
+        expectDepthStencilDiscard();
         expectActivateRenderTarget(renderTargetDeviceHandle2, true, fakeVp2);
         expectClearRenderTarget();
         expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix2, false, EExpectedRenderStateChange::CausedByClear);
+        expectDepthStencilDiscard();
     }
 
     executeScene();
@@ -630,11 +645,13 @@ TEST_F(ARenderExecutor, ResetsCachedRenderStatesAfterClearingRenderTargets)
         InSequence seq;
 
         expectActivateFramebufferRenderTarget();
+        expectClearRenderTarget();
         expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, projMatrix);
         expectActivateRenderTarget(renderTargetDeviceHandle2, false);
         expectClearRenderTarget();
         //render states are set again but shader and index buffer do not have to be set again
         expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::CausedByClear);
+        expectDepthStencilDiscard();
     }
 
     executeScene();
@@ -698,8 +715,10 @@ TEST_F(ARenderExecutor, RenderMultipleRenderPassesIntoOneRenderTargetAndEachClea
         expectClearRenderTarget(EClearFlags_Stencil);                     // pass 4
         expectClearRenderTarget(EClearFlags_Color | EClearFlags_Depth);   // pass 5
         expectClearRenderTarget(EClearFlags_Color | EClearFlags_Stencil); // pass 6
+        expectDepthStencilDiscard();
         expectClearRenderTarget(EClearFlags_Depth | EClearFlags_Stencil); // pass 7
         // pass 8 no clear expectation
+        expectDepthStencilDiscard();
     }
 
     executeScene();
@@ -712,8 +731,9 @@ TEST_F(ARenderExecutor, DoesNotRenderRenderableIfResourcesInvalid)
     createTestRenderable(InvalidDataInstances, createRenderGroup(pass));
 
     updateScenes({});
-    // empty frame
     expectActivateFramebufferRenderTarget();
+    expectClearRenderTarget();
+    // empty frame
 
     executeScene();
 }
@@ -726,8 +746,9 @@ TEST_F(ARenderExecutor, DoesNotRenderRenderableWithNoResourcesAssigned)
     scene.addRenderableToRenderGroup(group, renderable, 0);
 
     updateScenes({ renderable });
-    // empty frame
     expectActivateFramebufferRenderTarget();
+    expectClearRenderTarget();
+    // empty frame
 
     executeScene();
 }
@@ -741,6 +762,7 @@ TEST_F(ARenderExecutor, DoesNotRenderRenderableWithoutDataInstance)
 
     updateScenes({});
     expectActivateFramebufferRenderTarget();
+    expectClearRenderTarget();
 
     executeScene();
 }
@@ -835,11 +857,12 @@ TEST_F(ARenderExecutor, RendersRenderableInTwoPassesUsingTheSameCamera)
     scene.setTranslation(cameraTransform2, Vector3(4.f, 5.f, 6.f));
 
     updateScenes({ renderable1, renderable2 });
-    // reversed order because of google mock convention
     expectActivateFramebufferRenderTarget();
+    expectClearRenderTarget();
+
     const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
-    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Translation(Vector3(-4.f, -5.f, -6.f)), projMatrix, false, EExpectedRenderStateChange::None);
     expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Translation(Vector3(-1.f, -2.f, -3.f)), projMatrix);
+    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Translation(Vector3(-4.f, -5.f, -6.f)), projMatrix, false, EExpectedRenderStateChange::None);
     executeScene();
     Mock::VerifyAndClearExpectations(&device);
 }
@@ -855,10 +878,11 @@ TEST_F(ARenderExecutor, RenderStatesAppliedOnceIfSameForMultipleRenderables)
     updateScenes({ renderable1, renderable2 });
 
     const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
-    // reversed order because of google mock convention
     expectActivateFramebufferRenderTarget();
-    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::None);
+    expectClearRenderTarget();
+
     expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, projMatrix);
+    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::None);
 
     executeScene();
     Mock::VerifyAndClearExpectations(&device);
@@ -897,10 +921,11 @@ TEST_F(ARenderExecutor, RenderStatesAppliedForEachRenderableIfDifferent)
     updateScenes({ renderable1, renderable2 });
 
     const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
-    // reversed order because of google mock convention
     expectActivateFramebufferRenderTarget();
-    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::All);
+    expectClearRenderTarget();
+
     expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, projMatrix);
+    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::All);
 
     executeScene();
     Mock::VerifyAndClearExpectations(&device);
@@ -951,10 +976,11 @@ TEST_F(ARenderExecutor, AppliesParentTransformationToBothChildNodes)
     updateScenes({ renderable1, renderable2 });
 
     const Matrix44f projMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
-    // reversed order because of google mock convention
     expectActivateFramebufferRenderTarget();
-    expectFrameRenderCommands(renderable2, Matrix44f::Translation(Vector3(0.30f)), Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::None);
+    expectClearRenderTarget();
+
     expectFrameRenderCommands(renderable1, Matrix44f::Translation(Vector3(0.40f)), Matrix44f::Identity, projMatrix);
+    expectFrameRenderCommands(renderable2, Matrix44f::Translation(Vector3(0.30f)), Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::None);
     executeScene();
 
     Mock::VerifyAndClearExpectations(&device);
@@ -962,10 +988,9 @@ TEST_F(ARenderExecutor, AppliesParentTransformationToBothChildNodes)
     scene.setTranslation(transformParent, Vector3(0.0f));
     updateScenes({});
 
-    // reversed order because of google mock convention
     expectActivateFramebufferRenderTarget();
-    expectFrameRenderCommands(renderable2, Matrix44f::Translation(Vector3(0.05f)), Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::None);
     expectFrameRenderCommands(renderable1, Matrix44f::Translation(Vector3(0.15f)), Matrix44f::Identity, projMatrix);
+    expectFrameRenderCommands(renderable2, Matrix44f::Translation(Vector3(0.05f)), Matrix44f::Identity, projMatrix, false, EExpectedRenderStateChange::None);
     executeScene();
 
     Mock::VerifyAndClearExpectations(&device);
@@ -978,7 +1003,7 @@ TEST_F(ARenderExecutor, ExecutesBlitPass)
     const BlitPassHandle blitPassHandle = createBlitPass(sourceRenderBuffer, destinationRenderBuffer);
     updateScenes({});
 
-    EXPECT_CALL(device, blitRenderTargets(_, _, _, _, _));
+    EXPECT_CALL(device, blitRenderTargets(_, _, _, _, _)).InSequence(deviceSequence);
     executeScene();
 
     scene.releaseRenderBuffer(sourceRenderBuffer);
@@ -1002,14 +1027,15 @@ TEST_F(ARenderExecutor, ActivatesRenderTargetForRenderPassAfterExecutingBlitPass
     updateScenes({});
 
     {
-        InSequence s;
         //first render pass
-        EXPECT_CALL(device, activateRenderTarget(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle));
-        EXPECT_CALL(device, setViewport(_, _, _, _));
+        expectActivateFramebufferRenderTarget();
+        expectClearRenderTarget();
+
         //blit pass
-        EXPECT_CALL(device, blitRenderTargets(_, _, _, _, _));
+        EXPECT_CALL(device, blitRenderTargets(_, _, _, _, _)).InSequence(deviceSequence);
+
         //second render pass
-        EXPECT_CALL(device, activateRenderTarget(DeviceMock::FakeFrameBufferRenderTargetDeviceHandle));
+        expectActivateFramebufferRenderTarget(false);
     }
 
     executeScene();
@@ -1041,15 +1067,15 @@ TEST_F(ARenderExecutor, willRenderAllRenderablesIfWithinTimeBudget)
     const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
 
     {
-        InSequence s;
-
         expectActivateRenderTarget(renderTargetDeviceHandle);
         expectClearRenderTarget();
         expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
         expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+        expectDepthStencilDiscard();
 
         expectActivateFramebufferRenderTarget(false);
-        expectFrameRenderCommands(renderable3, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+        expectClearRenderTarget();
+        expectFrameRenderCommands(renderable3, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::CausedByClear);
         expectFrameRenderCommands(renderable4, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     }
 
@@ -1057,7 +1083,7 @@ TEST_F(ARenderExecutor, willRenderAllRenderablesIfWithinTimeBudget)
     frameTimer.startFrame();
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, std::numeric_limits<UInt64>::max());
 
-    const auto renderIterator = executeScene({}, &frameTimer);
+    const auto renderIterator = executeScene(&frameTimer);
     EXPECT_EQ(SceneRenderExecutionIterator(), renderIterator); // finished
 }
 
@@ -1080,6 +1106,7 @@ TEST_F(ARenderExecutor, willRenderAtLeastOneRenderableBatchIfExceededTimeBudget)
         InSequence s;
 
         expectActivateFramebufferRenderTarget();
+        expectClearRenderTarget();
 
         // one batch of renderables is rendered, first sets states
         expectFrameRenderCommands(batchRenderables.front(), Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
@@ -1094,7 +1121,7 @@ TEST_F(ARenderExecutor, willRenderAtLeastOneRenderableBatchIfExceededTimeBudget)
     frameTimer.startFrame();
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, 0u);
 
-    const auto renderIterator = executeScene({}, &frameTimer);
+    const auto renderIterator = executeScene(&frameTimer);
     EXPECT_NE(SceneRenderExecutionIterator(), renderIterator); // not finished
 }
 
@@ -1140,65 +1167,469 @@ TEST_F(ARenderExecutor, willContinueRenderingWhereLeftOffLastRenderWhenInterrupt
     frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, 0u);
 
     {
-        InSequence s;
         expectActivateRenderTarget(renderTargetDeviceHandle);
         expectClearRenderTarget();
         expectFrameRenderCommands(batchRenderables1.front(), Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
         for (auto it = batchRenderables1.cbegin() + 1; it != batchRenderables1.cend(); ++it)
             expectFrameRenderCommands(*it, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     }
-    SceneRenderExecutionIterator renderIterator = executeScene({}, &frameTimer);
+    SceneRenderExecutionIterator renderIterator = executeScene(&frameTimer);
     EXPECT_EQ(0u, renderIterator.getRenderPassIdx());
     EXPECT_EQ(1u * RenderExecutor::NumRenderablesToRenderInBetweenTimeBudgetChecks, renderIterator.getRenderableIdx());
     EXPECT_EQ(1u * RenderExecutor::NumRenderablesToRenderInBetweenTimeBudgetChecks, renderIterator.getFlattenedRenderableIdx());
 
     {
-        InSequence s;
         expectActivateRenderTarget(renderTargetDeviceHandle); // no clear
         expectFrameRenderCommands(batchRenderables2.front(), Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
         for (auto it = batchRenderables2.cbegin() + 1; it != batchRenderables2.cend(); ++it)
             expectFrameRenderCommands(*it, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     }
-    renderIterator = executeScene(renderIterator, &frameTimer);
+    renderContext.renderFrom = renderIterator;
+    renderIterator = executeScene(&frameTimer);
     EXPECT_EQ(0u, renderIterator.getRenderPassIdx());
     EXPECT_EQ(2u * RenderExecutor::NumRenderablesToRenderInBetweenTimeBudgetChecks, renderIterator.getRenderableIdx());
     EXPECT_EQ(2u * RenderExecutor::NumRenderablesToRenderInBetweenTimeBudgetChecks, renderIterator.getFlattenedRenderableIdx());
 
     {
-        InSequence s;
         // last render interrupted at last renderable from pass1, so it continues from there including activating of pass1's RT
         // even though there are no more renderables to render
         expectActivateRenderTarget(renderTargetDeviceHandle);
+        expectDepthStencilDiscard();
+
         expectActivateFramebufferRenderTarget(false);
+        expectClearRenderTarget();
         expectFrameRenderCommands(batchRenderables3.front(), Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
         for (auto it = batchRenderables3.cbegin() + 1; it != batchRenderables3.cend(); ++it)
             expectFrameRenderCommands(*it, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     }
-    renderIterator = executeScene(renderIterator, &frameTimer);
+    renderContext.renderFrom = renderIterator;
+    renderIterator = executeScene(&frameTimer);
     EXPECT_EQ(1u, renderIterator.getRenderPassIdx());
     EXPECT_EQ(1u * RenderExecutor::NumRenderablesToRenderInBetweenTimeBudgetChecks, renderIterator.getRenderableIdx());
     EXPECT_EQ(3u * RenderExecutor::NumRenderablesToRenderInBetweenTimeBudgetChecks, renderIterator.getFlattenedRenderableIdx());
 
     {
-        InSequence s;
         expectActivateFramebufferRenderTarget();
         expectFrameRenderCommands(batchRenderables4.front(), Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
         for (auto it = batchRenderables4.cbegin() + 1; it != batchRenderables4.cend(); ++it)
             expectFrameRenderCommands(*it, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
     }
-    renderIterator = executeScene(renderIterator, &frameTimer);
+    renderContext.renderFrom = renderIterator;
+    renderIterator = executeScene(&frameTimer);
     EXPECT_EQ(1u, renderIterator.getRenderPassIdx());
     EXPECT_EQ(2u * RenderExecutor::NumRenderablesToRenderInBetweenTimeBudgetChecks, renderIterator.getRenderableIdx());
     EXPECT_EQ(4u * RenderExecutor::NumRenderablesToRenderInBetweenTimeBudgetChecks, renderIterator.getFlattenedRenderableIdx());
 
     {
-        InSequence s;
         // last render interrupted at last renderable from pass2, so it continues from there including activating of pass2's RT being FB
         // even though there are no more renderables to render
         expectActivateFramebufferRenderTarget();
         // no additional render operation (eg. blit passes)
     }
-    renderIterator = executeScene(renderIterator, &frameTimer);
+    renderContext.renderFrom = renderIterator;
+    renderIterator = executeScene(&frameTimer);
     EXPECT_EQ(SceneRenderExecutionIterator(), renderIterator); // finished
 }
+
+TEST_F(ARenderExecutor, ClearsDispBufferBeforeRenderingIntoIt_MainOnly)
+{
+    const RenderPassHandle passMain = createRenderPassWithCamera(getDefaultProjectionParams(ECameraProjectionType::Perspective));
+    const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(passMain));
+
+    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+    updateScenes({ renderable1 });
+
+    expectActivateFramebufferRenderTarget();
+    expectClearRenderTarget(EClearFlags_All);
+    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+
+    executeScene();
+
+    // main disp buffer was cleared, no pending clear in rendering context
+    EXPECT_EQ(EClearFlags_None, renderContext.displayBufferClearPending);
+}
+
+TEST_F(ARenderExecutor, ClearsDispBufferBeforeRenderingIntoIt_RenderTargetThenMain)
+{
+    const RenderPassHandle passRT = createRenderPassWithCamera(getDefaultProjectionParams(ECameraProjectionType::Perspective));
+    const RenderPassHandle passMain = createRenderPassWithCamera(getDefaultProjectionParams(ECameraProjectionType::Perspective));
+    const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(passRT));
+    const RenderableHandle renderable2 = createTestRenderable(createTestDataInstance(), createRenderGroup(passMain));
+    const RenderTargetHandle rt = createRenderTarget(16, 20);
+    scene.setRenderPassRenderTarget(passRT, rt);
+    scene.setRenderPassRenderOrder(passRT, 1);
+    scene.setRenderPassRenderOrder(passMain, 2);
+
+    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+    updateScenes({ renderable1, renderable2 });
+    const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(rt, scene.getSceneId());
+
+    expectActivateRenderTarget(renderTargetDeviceHandle);
+    expectClearRenderTarget(EClearFlags_All);
+    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectDepthStencilDiscard();
+
+    expectActivateFramebufferRenderTarget(false);
+    expectClearRenderTarget(EClearFlags_All);
+    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, ARenderExecutor::EExpectedRenderStateChange::CausedByClear);
+
+    executeScene();
+
+    // main disp buffer was cleared, no pending clear in rendering context
+    EXPECT_EQ(EClearFlags_None, renderContext.displayBufferClearPending);
+}
+
+TEST_F(ARenderExecutor, ClearsDispBufferBeforeRenderingIntoIt_MainThenRenderTarget)
+{
+    const RenderPassHandle passMain = createRenderPassWithCamera(getDefaultProjectionParams(ECameraProjectionType::Perspective));
+    const RenderPassHandle passRT = createRenderPassWithCamera(getDefaultProjectionParams(ECameraProjectionType::Perspective));
+    const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(passMain));
+    const RenderableHandle renderable2 = createTestRenderable(createTestDataInstance(), createRenderGroup(passRT));
+    const RenderTargetHandle rt = createRenderTarget(16, 20);
+    scene.setRenderPassRenderTarget(passRT, rt);
+    scene.setRenderPassRenderOrder(passMain, 1);
+    scene.setRenderPassRenderOrder(passRT, 2);
+
+    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+    updateScenes({ renderable1, renderable2 });
+    const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(rt, scene.getSceneId());
+
+    expectActivateFramebufferRenderTarget();
+    expectClearRenderTarget(EClearFlags_All);
+    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectActivateRenderTarget(renderTargetDeviceHandle, false);
+    expectClearRenderTarget(EClearFlags_All);
+    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, ARenderExecutor::EExpectedRenderStateChange::CausedByClear);
+    expectDepthStencilDiscard();
+
+    executeScene();
+
+    // main disp buffer was cleared, no pending clear in rendering context
+    EXPECT_EQ(EClearFlags_None, renderContext.displayBufferClearPending);
+}
+
+TEST_F(ARenderExecutor, DoesNotClearDispBufferWhenNotRenderingIntoIt_RenderTargetOnly)
+{
+    const RenderPassHandle passRT = createRenderPassWithCamera(getDefaultProjectionParams(ECameraProjectionType::Perspective));
+    const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(passRT));
+    const RenderTargetHandle rt = createRenderTarget(16, 20);
+    scene.setRenderPassRenderTarget(passRT, rt);
+
+    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+    updateScenes({ renderable1 });
+    const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(rt, scene.getSceneId());
+
+    expectActivateRenderTarget(renderTargetDeviceHandle);
+    expectClearRenderTarget(EClearFlags_All);
+    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectDepthStencilDiscard();
+
+    executeScene();
+
+    // main disp buffer was NOT cleared, pending clear still set in rendering context
+    EXPECT_EQ(EClearFlags_All, renderContext.displayBufferClearPending);
+}
+
+TEST_F(ARenderExecutor, ClearsDispBufferBeforeRenderingIntoIt_InterruptedRenderTargetThenMain)
+{
+    const RenderPassHandle passRT = createRenderPassWithCamera(getDefaultProjectionParams(ECameraProjectionType::Perspective));
+    const DataInstances dataInstances = createTestDataInstance();
+    const RenderTargetHandle rt = createRenderTarget(16, 20);
+    scene.setRenderPassRenderTarget(passRT, rt);
+
+    const RenderGroupHandle renderGroup = createRenderGroup(passRT);
+    RenderableVector batchRenderables;
+    batchRenderables.resize(RenderExecutor::DefaultNumRenderablesToRenderInBetweenTimeBudgetChecks);
+    for (auto& renderable : batchRenderables)
+        renderable = createTestRenderable(dataInstances, renderGroup);
+
+    const RenderPassHandle passMain = createRenderPassWithCamera(getDefaultProjectionParams(ECameraProjectionType::Perspective));
+    const RenderableHandle renderableMain = createTestRenderable(createTestDataInstance(), createRenderGroup(passMain));
+
+    scene.setRenderPassRenderOrder(passRT, 1);
+    scene.setRenderPassRenderOrder(passMain, 2);
+
+    auto allRenderables = batchRenderables;
+    allRenderables.push_back(renderableMain);
+    updateScenes(allRenderables);
+
+    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(ProjectionParams::Perspective(fakeFieldOfView, fakeAspectRatio, fakeNearPlane, fakeFarPlane));
+    const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(rt, scene.getSceneId());
+
+    expectActivateRenderTarget(renderTargetDeviceHandle);
+    expectClearRenderTarget(EClearFlags_All);
+
+    // one batch of renderables is rendered, first sets states
+    expectFrameRenderCommands(batchRenderables.front(), Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    for (auto it = batchRenderables.cbegin() + 1; it != batchRenderables.cend(); ++it)
+        expectFrameRenderCommands(*it, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+
+    FrameTimer frameTimer;
+    frameTimer.startFrame();
+    frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, 0u);
+
+    const auto renderIterator = executeScene(&frameTimer);
+    EXPECT_NE(SceneRenderExecutionIterator(), renderIterator); // not finished
+
+    // main disp buffer was NOT cleared due to interrupt, pending clear kept in rendering context
+    EXPECT_EQ(EClearFlags_All, renderContext.displayBufferClearPending);
+
+    expectActivateRenderTarget(renderTargetDeviceHandle); // will be activated to finish previous pass (although no more renderables to render in it)
+    expectDepthStencilDiscard();
+
+    expectActivateFramebufferRenderTarget(false);
+    expectClearRenderTarget(EClearFlags_All);
+    expectFrameRenderCommands(renderableMain, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+
+    renderContext.renderFrom = renderIterator;
+    executeScene();
+
+    // main disp buffer was cleared, no pending clear in rendering context
+    EXPECT_EQ(EClearFlags_None, renderContext.displayBufferClearPending);
+}
+
+TEST_F(ARenderExecutor, discardsDepthStencilAfterLastPassRenderingToFB_ifAllowedByRenderContext)
+{
+    const auto projParams = getDefaultProjectionParams(ECameraProjectionType::Perspective);
+    const RenderPassHandle pass1 = createRenderPassWithCamera(projParams);
+    const RenderPassHandle pass2 = createRenderPassWithCamera(projParams);
+    const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass1));
+    const RenderableHandle renderable2 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass2));
+    scene.setRenderPassClearFlag(pass2, EClearFlags_None);
+    scene.setRenderPassRenderOrder(pass1, 0);
+    scene.setRenderPassRenderOrder(pass2, 1);
+
+    updateScenes({ renderable1, renderable2 });
+
+    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+
+    expectActivateFramebufferRenderTarget();
+    expectClearRenderTarget();
+    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+    expectDepthStencilDiscard();
+
+    renderContext.displayBufferDepthDiscard = true;
+    executeScene();
+}
+
+TEST_F(ARenderExecutor, doesNotDiscardDepthStencil_ifNotAllowedByRenderContext)
+{
+    const auto projParams = getDefaultProjectionParams(ECameraProjectionType::Perspective);
+    const RenderPassHandle pass1 = createRenderPassWithCamera(projParams);
+    const RenderPassHandle pass2 = createRenderPassWithCamera(projParams);
+    const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass1));
+    const RenderableHandle renderable2 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass2));
+    scene.setRenderPassClearFlag(pass2, EClearFlags_None);
+    scene.setRenderPassRenderOrder(pass1, 0);
+    scene.setRenderPassRenderOrder(pass2, 1);
+
+    updateScenes({ renderable1, renderable2 });
+
+    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+
+    expectActivateFramebufferRenderTarget();
+    expectClearRenderTarget();
+    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+    // no discard
+
+    renderContext.displayBufferDepthDiscard = false;
+    executeScene();
+}
+
+TEST_F(ARenderExecutor, discardsDepthStencilAfterLastPassRenderingToFB_withRTPassInBetween)
+{
+    const auto projParams = getDefaultProjectionParams(ECameraProjectionType::Perspective);
+    const RenderPassHandle pass1 = createRenderPassWithCamera(projParams);
+    const RenderPassHandle pass2 = createRenderPassWithCamera(projParams);
+    const RenderPassHandle pass3 = createRenderPassWithCamera(projParams);
+    const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass1));
+    const RenderableHandle renderable2 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass2));
+    const RenderableHandle renderable3 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass3));
+    scene.setRenderPassClearFlag(pass3, EClearFlags_None);
+    scene.setRenderPassRenderOrder(pass1, 0);
+    scene.setRenderPassRenderOrder(pass2, 1);
+    scene.setRenderPassRenderOrder(pass3, 2);
+
+    // second pass uses RT
+    const RenderTargetHandle targetHandle = createRenderTarget(16, 20);
+    scene.setRenderPassRenderTarget(pass2, targetHandle);
+
+    updateScenes({ renderable1, renderable2, renderable3 });
+
+    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
+
+    // pass1
+    expectActivateFramebufferRenderTarget();
+    expectClearRenderTarget();
+    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    // no discard
+
+    // pass2
+    expectActivateRenderTarget(renderTargetDeviceHandle, false);
+    expectClearRenderTarget();
+    expectFrameRenderCommands(renderable2, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::CausedByClear);
+    expectDepthStencilDiscard(); // discard for RT
+
+    // pass3
+    expectActivateFramebufferRenderTarget(false);
+    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix, false, EExpectedRenderStateChange::None);
+    expectDepthStencilDiscard(); // discard for FB
+
+    renderContext.displayBufferDepthDiscard = true;
+    executeScene();
+}
+
+TEST_F(ARenderExecutor, discardsDepthStencilWhenRenderToRTWithClear)
+{
+    const auto projParams = getDefaultProjectionParams(ECameraProjectionType::Perspective);
+    const RenderPassHandle pass1 = createRenderPassWithCamera(projParams);
+    const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass1));
+    const RenderTargetHandle targetHandle = createRenderTarget(16, 20);
+    scene.setRenderPassRenderTarget(pass1, targetHandle);
+
+    updateScenes({ renderable1 });
+
+    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
+
+    expectActivateRenderTarget(renderTargetDeviceHandle);
+    expectClearRenderTarget();
+    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    expectDepthStencilDiscard();
+
+    executeScene();
+}
+
+TEST_F(ARenderExecutor, doesNotDiscardDepthStencilWhenRenderToRTWithNoDepthComponent)
+{
+    const auto projParams = getDefaultProjectionParams(ECameraProjectionType::Perspective);
+    const RenderPassHandle pass1 = createRenderPassWithCamera(projParams);
+    const RenderableHandle renderable1 = createTestRenderable(createTestDataInstance(), createRenderGroup(pass1));
+    const RenderTargetHandle targetHandle = sceneAllocator.allocateRenderTarget();
+    const RenderBufferHandle colorBufferHandle = sceneAllocator.allocateRenderBuffer({ 1u, 1u, ERenderBufferType_ColorBuffer, ETextureFormat::RGBA8, ERenderBufferAccessMode_ReadWrite, 0u });
+    scene.addRenderTargetRenderBuffer(targetHandle, colorBufferHandle);
+    scene.setRenderPassRenderTarget(pass1, targetHandle);
+
+    updateScenes({ renderable1 });
+
+    const Matrix44f expectedProjectionMatrix = CameraMatrixHelper::ProjectionMatrix(projParams);
+    const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
+
+    expectActivateRenderTarget(renderTargetDeviceHandle);
+    expectClearRenderTarget();
+    expectFrameRenderCommands(renderable1, Matrix44f::Identity, Matrix44f::Identity, expectedProjectionMatrix);
+    // dicard would be here if there was a depth component to discard
+
+    executeScene();
+}
+
+TEST_F(ARenderExecutor, discardsDepthStencilWhenRenderToRT_onlyIfNextPassClearsDepthAndStencil)
+{
+    const RenderTargetHandle targetHandle = createRenderTarget(1, 1);
+    const auto projParams = getDefaultProjectionParams(ECameraProjectionType::Perspective);
+
+    const RenderPassHandle pass1 = createRenderPassWithCamera(projParams);
+    const RenderPassHandle pass2 = createRenderPassWithCamera(projParams);
+    const RenderPassHandle pass3 = createRenderPassWithCamera(projParams);
+    const RenderPassHandle pass4 = createRenderPassWithCamera(projParams);
+    const RenderPassHandle pass5 = createRenderPassWithCamera(projParams);
+    const RenderPassHandle pass6 = createRenderPassWithCamera(projParams);
+    const RenderPassHandle pass7 = createRenderPassWithCamera(projParams);
+    const RenderPassHandle pass8 = createRenderPassWithCamera(projParams);
+
+    scene.setRenderPassRenderTarget(pass1, targetHandle);
+    scene.setRenderPassRenderTarget(pass2, targetHandle);
+    scene.setRenderPassRenderTarget(pass3, targetHandle);
+    scene.setRenderPassRenderTarget(pass4, targetHandle);
+    scene.setRenderPassRenderTarget(pass5, targetHandle);
+    scene.setRenderPassRenderTarget(pass6, targetHandle);
+    // pass7 is FB pass
+    scene.setRenderPassRenderTarget(pass8, targetHandle);
+
+    scene.setRenderPassClearFlag(pass1, EClearFlags_None);
+    scene.setRenderPassClearFlag(pass2, EClearFlags_Color);
+    scene.setRenderPassClearFlag(pass3, EClearFlags_Depth);
+    scene.setRenderPassClearFlag(pass4, EClearFlags_Stencil);
+    scene.setRenderPassClearFlag(pass5, EClearFlags_Color | EClearFlags_Depth);
+    scene.setRenderPassClearFlag(pass6, EClearFlags_Color | EClearFlags_Stencil);
+    scene.setRenderPassClearFlag(pass7, EClearFlags_All);
+    scene.setRenderPassClearFlag(pass8, EClearFlags_Depth | EClearFlags_Stencil);
+
+    scene.setRenderPassRenderOrder(pass1, 0);
+    scene.setRenderPassRenderOrder(pass2, 1);
+    scene.setRenderPassRenderOrder(pass3, 2);
+    scene.setRenderPassRenderOrder(pass4, 3);
+    scene.setRenderPassRenderOrder(pass5, 4);
+    scene.setRenderPassRenderOrder(pass6, 5);
+    scene.setRenderPassRenderOrder(pass7, 6);
+    scene.setRenderPassRenderOrder(pass8, 7);
+
+    updateScenes({});
+
+    const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
+    expectActivateRenderTarget(renderTargetDeviceHandle);
+    // pass 1, no clear
+    expectClearRenderTarget(EClearFlags_Color);                       // pass 2
+    expectClearRenderTarget(EClearFlags_Depth);                       // pass 3
+    expectClearRenderTarget(EClearFlags_Stencil);                     // pass 4
+    expectClearRenderTarget(EClearFlags_Color | EClearFlags_Depth);   // pass 5
+    expectClearRenderTarget(EClearFlags_Color | EClearFlags_Stencil); // pass 6
+    expectDepthStencilDiscard(); // next pass (pass8) rendering to RT clears depth+stencil, can discard
+
+    // pass 7 to FB
+    expectActivateFramebufferRenderTarget(false);
+    expectClearRenderTarget();
+    expectDepthStencilDiscard(); // no other pass rendering to FB, can discard
+
+    // pass 8
+    expectActivateRenderTarget(renderTargetDeviceHandle, false);
+    expectClearRenderTarget(EClearFlags_Depth | EClearFlags_Stencil);
+    // next pass is pass1 next frame which does not clear, therefore cannot discard here even though at end of frame
+
+    renderContext.displayBufferDepthDiscard = true;
+    executeScene();
+}
+
+TEST_F(ARenderExecutor, doesNotDiscardDepthStencilIfUpcomingPassUsesItAsBlitPassSource)
+{
+    const RenderTargetHandle targetHandle = createRenderTarget(1, 1);
+    const RenderBufferHandle depthBuffer = scene.getRenderTargetRenderBuffer(targetHandle, 1u);
+    const auto projParams = getDefaultProjectionParams(ECameraProjectionType::Perspective);
+
+    const RenderPassHandle pass1 = createRenderPassWithCamera(projParams);
+    const BlitPassHandle pass2 = createBlitPass(depthBuffer, createRenderbuffer());
+    const RenderPassHandle pass3 = createRenderPassWithCamera(projParams);
+
+    scene.setRenderPassRenderTarget(pass1, targetHandle);
+    scene.setRenderPassRenderTarget(pass3, targetHandle);
+
+    scene.setRenderPassClearFlag(pass1, EClearFlags_All);
+    scene.setRenderPassClearFlag(pass3, EClearFlags_All);
+
+    scene.setRenderPassRenderOrder(pass1, 0);
+    scene.setBlitPassRenderOrder(pass2, 1);
+    scene.setRenderPassRenderOrder(pass3, 2);
+
+    updateScenes({});
+
+    // pass1
+    const DeviceResourceHandle renderTargetDeviceHandle = resourceManager.getRenderTargetDeviceHandle(targetHandle, scene.getSceneId());
+    expectActivateRenderTarget(renderTargetDeviceHandle);
+    expectClearRenderTarget();
+    // no discard due to blit using depth as source next
+
+    // pass2 blit
+    EXPECT_CALL(device, blitRenderTargets(_, _, _, _, _)).InSequence(deviceSequence);
+
+    // pass3
+    expectActivateRenderTarget(renderTargetDeviceHandle, false);
+    expectClearRenderTarget();
+    expectDepthStencilDiscard();
+
+    executeScene();
+}
+
 }

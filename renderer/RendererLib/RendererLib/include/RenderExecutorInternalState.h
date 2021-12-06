@@ -99,13 +99,13 @@ namespace ramses_internal
     class RenderExecutorInternalState
     {
     public:
-        RenderExecutorInternalState(IDevice& device, const RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr);
+        RenderExecutorInternalState(IDevice& device, RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr);
 
         IDevice&                   getDevice() const;
 
         void                       setScene(const RendererCachedScene& scene);
         const RendererCachedScene& getScene() const;
-        const RenderingContext&    getRenderingContext() const;
+        RenderingContext&          getRenderingContext();
 
         const Matrix44f&           getProjectionMatrix() const;
         const Vector3&             getCameraWorldPosition() const;
@@ -143,7 +143,7 @@ namespace ramses_internal
     private:
         IDevice&                    m_device;
         const RendererCachedScene*  m_scene;
-        RenderingContext            m_renderContext;
+        RenderingContext&           m_renderContext;
 
         RenderableHandle            m_renderable;
 
@@ -180,7 +180,7 @@ namespace ramses_internal
         return *m_scene;
     }
 
-    inline const RenderingContext& RenderExecutorInternalState::getRenderingContext() const
+    inline RenderingContext& RenderExecutorInternalState::getRenderingContext()
     {
         return m_renderContext;
     }

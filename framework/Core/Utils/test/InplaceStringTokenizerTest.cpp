@@ -8,10 +8,12 @@
 
 #include "Utils/InplaceStringTokenizer.h"
 #include "Collections/Vector.h"
-#include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 namespace ramses_internal
 {
+    using namespace ::testing;
+
     static std::vector<String> CollectTokens(const char* str, UInt maxStringLength, Char splitToken)
     {
         std::vector<String> res;
@@ -85,5 +87,58 @@ namespace ramses_internal
         EXPECT_EQ("56", v[2]);
         EXPECT_EQ("789", v[3]);
         EXPECT_EQ("0", v[4]);
+    }
+
+    static std::vector<std::string> CollectMultilineTokens(const char* str, size_t maxBlockSize, char splitToken)
+    {
+        std::vector<std::string> res;
+        std::string in(str);
+        InplaceStringTokenizer::TokenizeToMultilineCStrings(in, maxBlockSize, splitToken,
+                                                            [&res](const char* s) { res.push_back(s); });
+        EXPECT_EQ(std::string(str), in);
+        return res;
+    }
+
+    TEST(AInplaceStringTokenizer, MultilineNoSeparator)
+    {
+        EXPECT_THAT(CollectMultilineTokens("", 4, '\n'),
+                    ElementsAre());
+        EXPECT_THAT(CollectMultilineTokens("1", 4, '\n'),
+                    ElementsAre("1"));
+        EXPECT_THAT(CollectMultilineTokens("123", 4, '\n'),
+                    ElementsAre("123"));
+        EXPECT_THAT(CollectMultilineTokens("1234", 4, '\n'),
+                    ElementsAre("1234"));
+        EXPECT_THAT(CollectMultilineTokens("12345", 4, '\n'),
+                    ElementsAre("1234", "5"));
+
+        EXPECT_THAT(CollectMultilineTokens("12345678", 4, '\n'),
+                    ElementsAre("1234", "5678"));
+        EXPECT_THAT(CollectMultilineTokens("123456789", 4, '\n'),
+                    ElementsAre("1234", "5678", "9"));
+    }
+
+    TEST(AInplaceStringTokenizer, MultilineWithSeparator)
+    {
+        EXPECT_THAT(CollectMultilineTokens("\n", 4, '\n'),
+                    ElementsAre("\n"));
+        EXPECT_THAT(CollectMultilineTokens("123\n", 4, '\n'),
+                    ElementsAre("123\n"));
+        EXPECT_THAT(CollectMultilineTokens("1234\n", 4, '\n'),
+                    ElementsAre("1234"));
+        EXPECT_THAT(CollectMultilineTokens("12345\n", 4, '\n'),
+                    ElementsAre("1234", "5\n"));
+
+        EXPECT_THAT(CollectMultilineTokens("123\n45", 4, '\n'),
+                    ElementsAre("123", "45"));
+        EXPECT_THAT(CollectMultilineTokens("123\n456789", 4, '\n'),
+                    ElementsAre("123", "4567", "89"));
+
+        EXPECT_THAT(CollectMultilineTokens("12\n34\n56789", 4, '\n'),
+                    ElementsAre("12", "34", "5678", "9"));
+        EXPECT_THAT(CollectMultilineTokens("12\n3\n456789", 4, '\n'),
+                    ElementsAre("12\n3", "4567", "89"));
+        EXPECT_THAT(CollectMultilineTokens("12\n\n\n34\n56789", 4, '\n'),
+                    ElementsAre("12\n\n", "34", "5678", "9"));
     }
 }

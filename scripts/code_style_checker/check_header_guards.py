@@ -76,6 +76,12 @@ def check_header_guards(filename, file_contents):
 
         return valid
 
+    # try pragma once and early out if found
+    pragma_once_re = re.compile(r"(\s*)#pragma once\n", re.MULTILINE)
+    pragma_once_match = re.match(pragma_once_re, file_contents)
+    if pragma_once_match is not None:
+        return None
+
     # find the ifndef guard
     ifndef_re = re.compile(r"(\s*)#ifndef .*", re.MULTILINE)
     ifndef_match = re.match(ifndef_re, file_contents)

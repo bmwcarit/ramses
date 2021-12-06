@@ -12,6 +12,8 @@
 #include "RendererAPI/Types.h"
 #include "RendererAPI/SceneRenderExecutionIterator.h"
 #include "SceneAPI/Viewport.h"
+#include "SceneAPI/RenderState.h"
+#include "Math3d/Vector4.h"
 
 namespace ramses_internal
 {
@@ -21,6 +23,10 @@ namespace ramses_internal
         uint32_t viewportWidth = 0u;
         uint32_t viewportHeight = 0u;
         SceneRenderExecutionIterator renderFrom;
+
+        uint32_t displayBufferClearPending = EClearFlags_None;
+        Vector4 displayBufferClearColor;
+        bool displayBufferDepthDiscard = false;
     };
 }
 

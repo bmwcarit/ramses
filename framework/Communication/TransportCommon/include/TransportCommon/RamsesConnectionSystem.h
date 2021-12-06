@@ -25,7 +25,7 @@ namespace ramses_internal
     {
     public:
         static std::unique_ptr<RamsesConnectionSystem> Construct(std::shared_ptr<ISomeIPRamsesStack> stack, UInt32 communicationUserID, const ParticipantIdentifier& namedPid,
-                                                                 UInt32 protocolVersion, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection,
+                                                                 UInt32 protocolVersion, PlatformLock& frameworkLock,
                                                                  std::chrono::milliseconds keepAliveInterval, std::chrono::milliseconds keepAliveTimeout,
                                                                  std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow);
         ~RamsesConnectionSystem() override;
@@ -46,7 +46,7 @@ namespace ramses_internal
 
     private:
         RamsesConnectionSystem(std::shared_ptr<ISomeIPRamsesStack> stack, UInt32 communicationUserID, const ParticipantIdentifier& namedPid,
-                               UInt32 protocolVersion, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection,
+                               UInt32 protocolVersion, PlatformLock& frameworkLock,
                                std::chrono::milliseconds keepAliveInterval, std::chrono::milliseconds keepAliveTimeout,
                                std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow);
 

@@ -16,14 +16,13 @@ namespace ramses_internal
 {
     class IDcsmProviderServiceHandler;
     class IDcsmConsumerServiceHandler;
-    class StatisticCollectionFramework;
     class DcsmMetadata;
 
     class DcsmConnectionSystem : public ConnectionSystemBase<ISomeIPDcsmStackCallbacks>
     {
     public:
         static std::unique_ptr<DcsmConnectionSystem> Construct(const std::shared_ptr<ISomeIPDcsmStack>& stack, UInt32 communicationUserID, const ParticipantIdentifier& namedPid,
-                                                               UInt32 protocolVersion, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection,
+                                                               UInt32 protocolVersion, PlatformLock& frameworkLock,
                                                                std::chrono::milliseconds keepAliveInterval, std::chrono::milliseconds keepAliveTimeout,
                                                                std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow);
 
@@ -50,7 +49,7 @@ namespace ramses_internal
 
     private:
         DcsmConnectionSystem(const std::shared_ptr<ISomeIPDcsmStack>& stack, UInt32 communicationUserID, const ParticipantIdentifier& namedPid,
-                             UInt32 protocolVersion, PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection,
+                             UInt32 protocolVersion, PlatformLock& frameworkLock,
                              std::chrono::milliseconds keepAliveInterval, std::chrono::milliseconds keepAliveTimeout,
                              std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow);
 

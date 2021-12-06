@@ -10,6 +10,8 @@
 #include "Utils/LogMessage.h"
 #include "Utils/LogContext.h"
 #include "Utils/RamsesLogger.h"
+#include "Utils/InplaceStringTokenizer.h"
+#include <string>
 
 #include <android/log.h>
 
@@ -44,6 +46,18 @@ namespace ramses_internal
             break;
         }
 
-        __android_log_print(logLevel, logMessage.getContext().getContextName(), "%s", logMessage.getStream().c_str());
+        constexpr size_t maxLogSize = 1023;
+        const std::string& str = logMessage.getStream().data();
+        if (str.size() <= maxLogSize)
+            __android_log_write(logLevel, logMessage.getContext().getContextName(), str.c_str());
+        else
+        {
+            // create modifyable copy of msg
+            std::string modStr = str;
+            InplaceStringTokenizer::TokenizeToMultilineCStrings(modStr, maxLogSize, '\n',
+                [&](const char* tok) {
+                    __android_log_write(logLevel, logMessage.getContext().getContextName(), tok);
+                });
+        }
     }
 }

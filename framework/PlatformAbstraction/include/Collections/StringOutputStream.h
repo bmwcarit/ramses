@@ -32,6 +32,13 @@ namespace ramses_internal
             return *this;
         }
 
+        template <typename... Args>
+        void formatTo(const char* fmtSpec, const Args& ... values)
+        {
+            m_buffer.reserve(m_buffer.size() + fmt::formatted_size(fmtSpec, values...));
+            fmt::format_to(std::back_inserter(m_buffer), fmtSpec, values...);
+        }
+
         void reserve(size_t capacity);
         RNODISCARD size_t capacity() const;
 

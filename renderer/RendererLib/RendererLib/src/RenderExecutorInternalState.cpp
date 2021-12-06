@@ -12,7 +12,7 @@
 
 namespace ramses_internal
 {
-    RenderExecutorInternalState::RenderExecutorInternalState(IDevice& device, const RenderingContext& renderContext, const FrameTimer* frameTimer)
+    RenderExecutorInternalState::RenderExecutorInternalState(IDevice& device, RenderingContext& renderContext, const FrameTimer* frameTimer)
         : viewportState(Viewport(std::numeric_limits<Int32>::max(), std::numeric_limits<Int32>::max(), std::numeric_limits<UInt32>::max(), std::numeric_limits<UInt32>::max()))
         , m_currentRenderIterator(renderContext.renderFrom)
         , m_device(device)
@@ -26,6 +26,9 @@ namespace ramses_internal
         // For that reason the cached state here needs to be set to another 'invalid' so it can properly
         // track state change. (In case framebuffer is used as first RT after initialization)
         renderTargetState.setState(RenderTargetHandle::Invalid() - 1u);
+
+        assert(!(m_renderContext.displayBufferDepthDiscard && m_renderContext.renderFrom != SceneRenderExecutionIterator{})
+            && "Discard depth not supported for incremental rendering (interruptible buffers)!");
     }
 
     void RenderExecutorInternalState::setCamera(CameraHandle camera)

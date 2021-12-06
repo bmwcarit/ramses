@@ -64,10 +64,12 @@ namespace ramses_internal
         void doOneLoop();
 
         ramses::displayBufferId_t createOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, bool interruptible, uint32_t sampleCount = 0u, ramses::EDepthBufferType depthBufferType = ramses::EDepthBufferType_DepthStencil);
+        ramses::displayBufferId_t createDmaOffscreenBuffer(ramses::displayId_t displayId, uint32_t width, uint32_t height, uint32_t bufferFourccFormat, uint32_t bufferUsageFlags, uint64_t modifier);
         void destroyOffscreenBuffer(ramses::displayId_t displayId, ramses::displayBufferId_t buffer);
         void assignSceneToDisplayBuffer(ramses::sceneId_t sceneId, ramses::displayBufferId_t buffer, int32_t renderOrder);
         void setClearFlags(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, uint32_t clearFlags);
         void setClearColor(ramses::displayId_t displayId, ramses::displayBufferId_t buffer, const ramses_internal::Vector4& clearColor);
+        bool getDmaOffscreenBufferFDAndStride(ramses::displayId_t displayId, ramses::displayBufferId_t displayBufferId, int& fd, uint32_t& stride) const;
 
         ramses::streamBufferId_t createStreamBuffer(ramses::displayId_t displayId, ramses::waylandIviSurfaceId_t source);
         void destroyStreamBuffer(ramses::displayId_t displayId, ramses::streamBufferId_t buffer);

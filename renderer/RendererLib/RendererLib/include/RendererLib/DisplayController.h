@@ -36,7 +36,7 @@ namespace ramses_internal
         virtual Bool                    canRenderNewFrame() const override;
         virtual void                    enableContext() override;
         virtual void                    swapBuffers() override;
-        virtual SceneRenderExecutionIterator renderScene(const RendererCachedScene& scene, const RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr) override;
+        virtual SceneRenderExecutionIterator renderScene(const RendererCachedScene& scene, RenderingContext& renderContext, const FrameTimer* frameTimer = nullptr) override;
         virtual void                    executePostProcessing() override;
         virtual void                    clearBuffer(DeviceResourceHandle buffer, uint32_t clearFlags, const Vector4& clearColor) override;
 

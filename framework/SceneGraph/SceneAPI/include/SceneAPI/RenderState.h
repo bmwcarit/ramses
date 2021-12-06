@@ -138,12 +138,17 @@ namespace ramses_internal
 
     enum EClearFlags : uint32_t
     {
-        EClearFlags_None     = 0,
+        EClearFlags_None    = 0,
         EClearFlags_Color   = BIT(0u),
         EClearFlags_Depth   = BIT(1u),
         EClearFlags_Stencil = BIT(2u),
         EClearFlags_All     = EClearFlags_Color | EClearFlags_Depth | EClearFlags_Stencil
     };
+
+    constexpr bool IsClearFlagSet(uint32_t clearFlags, EClearFlags clearFlagToCheckIfSet)
+    {
+        return (clearFlags & clearFlagToCheckIfSet) == clearFlagToCheckIfSet;
+    }
 
     static const char* BlendOperationNames[] =
     {

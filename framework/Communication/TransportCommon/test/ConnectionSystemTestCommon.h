@@ -40,8 +40,8 @@ namespace ramses_internal
 
             MOCK_METHOD(InstanceIdType, getServiceInstanceId, (), (const, override));
 
-            MOCK_METHOD(bool, sendParticipantInfo, (InstanceIdType to, const SomeIPMsgHeader& header, uint16_t protocolVersion, InstanceIdType senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow), (override));
-            MOCK_METHOD(bool, sendKeepAlive, (InstanceIdType to, const SomeIPMsgHeader& header, uint64_t timestampNow), (override));
+            MOCK_METHOD(bool, sendParticipantInfo, (InstanceIdType to, const SomeIPMsgHeader& header, uint16_t protocolVersion, uint32_t minorProtocolVersion, InstanceIdType senderInstanceId, uint64_t expectedReceiverPid, uint8_t clockType, uint64_t timestampNow), (override));
+            MOCK_METHOD(bool, sendKeepAlive, (InstanceIdType to, const SomeIPMsgHeader& header, uint64_t timestampNow, bool usingPreviousMessageId), (override));
 
             MOCK_METHOD(bool, sendTestMessage, (InstanceIdType to, const SomeIPMsgHeader& header, uint32_t arg), ());  // not derived from interface
         };
@@ -59,7 +59,7 @@ namespace ramses_internal
                                  UInt32 protocolVersion, PlatformLock& lock,
                                  std::chrono::milliseconds keepAliveInterval, std::chrono::milliseconds keepAliveTimeout,
                                  std::function<std::chrono::steady_clock::time_point(void)> steadyClockNow)
-                : ConnectionSystemBase(_stack, communicationUserID, namedPid, protocolVersion, lock, stats,
+                : ConnectionSystemBase(_stack, communicationUserID, namedPid, protocolVersion, lock,
                                        keepAliveInterval, keepAliveTimeout,
                                        std::move(steadyClockNow),
                                        CONTEXT_COMMUNICATION, "TEST")
@@ -96,7 +96,6 @@ namespace ramses_internal
             }
 
             std::shared_ptr<StrictMock<StackMock>> stack;
-            StatisticCollectionFramework stats;
             StrictMock<MockConnectionStatusListener> connections;
             StrictMock<MessageConsumerMock> consumer;
         };

@@ -74,40 +74,29 @@ public:
         renderer.destroyDisplayContext();
     }
 
-    void expectOffscreenBufferRendered(std::initializer_list<DeviceResourceHandle> buffers, uint32_t clearFlags = EClearFlags_All, const Vector4& clearColor = Renderer::DefaultClearColor)
+    void expectOffscreenBufferCleared(DeviceResourceHandle buffer, uint32_t clearFlags = EClearFlags_All, const Vector4& clearColor = Renderer::DefaultClearColor)
     {
-        for (auto buffer : buffers)
-            EXPECT_CALL(*renderer.m_displayController, clearBuffer(buffer, clearFlags, clearColor)).InSequence(SeqRender);
+        EXPECT_CALL(*renderer.m_displayController, clearBuffer(buffer, clearFlags, clearColor)).InSequence(SeqRender);
     }
 
-    void expectInterruptibleOffscreenBufferRendered(std::initializer_list<DeviceResourceHandle> buffers, const std::vector< std::pair<bool, bool> >& expectClearAndSwap = {}, uint32_t clearFlags = EClearFlags_All)
+    void expectInterruptibleOffscreenBufferSwapped(DeviceResourceHandle buffer)
     {
-        UInt32 bufferIdx = 0u;
-        for (auto buffer : buffers)
-        {
-            const bool expectClear = expectClearAndSwap.empty() || expectClearAndSwap[bufferIdx].first;
-            const bool expectSwap = expectClearAndSwap.empty() || expectClearAndSwap[bufferIdx].second;
-
-            if (expectClear)
-                EXPECT_CALL(*renderer.m_displayController, clearBuffer(buffer, clearFlags, Renderer::DefaultClearColor)).InSequence(SeqRender);
-            if (expectSwap)
-                EXPECT_CALL(renderer.m_platform.renderBackendMock.deviceMock, swapDoubleBufferedRenderTarget(buffer)).InSequence(SeqRender);
-
-            ++bufferIdx;
-        }
+        EXPECT_CALL(renderer.m_platform.renderBackendMock.deviceMock, swapDoubleBufferedRenderTarget(buffer)).InSequence(SeqRender);
 
         // rendering to interruptible buffers calls this uninteresting getter which gets reset with gmock verification
         EXPECT_CALL(*renderer.m_displayController, getRenderBackend()).Times(AnyNumber());
     }
 
-    void expectFrameBufferRendered(bool expectRerender = true, uint32_t clearFlags = EClearFlags_All, const Vector4& clearColor = Renderer::DefaultClearColor)
+    void expectFrameBufferRendered(bool expectRerender = true, uint32_t expectRendererClear = EClearFlags_All, const Vector4& clearColor = Renderer::DefaultClearColor)
     {
         EXPECT_CALL(*renderer.m_displayController, handleWindowEvents()).InSequence(SeqPreRender);
         EXPECT_CALL(*renderer.m_displayController, canRenderNewFrame()).InSequence(SeqPreRender).WillOnce(Return(true));
 
         if (expectRerender)
         {
-            EXPECT_CALL(*renderer.m_displayController, clearBuffer(DisplayControllerMock::FakeFrameBufferHandle, clearFlags, clearColor)).InSequence(SeqRender);
+            // normally render executor clears, in some cases (no scene assigned) renderer clears instead
+            if (expectRendererClear != EClearFlags_None)
+                EXPECT_CALL(*renderer.m_displayController, clearBuffer(DisplayControllerMock::FakeFrameBufferHandle, expectRendererClear, clearColor));
             EXPECT_CALL(*renderer.m_displayController, executePostProcessing()).InSequence(SeqRender);
         }
         else
@@ -130,24 +119,53 @@ public:
         renderer.doOneRenderLoop();
     }
 
-    void expectSceneRendered(SceneId sceneId, DeviceResourceHandle buffer = DisplayControllerMock::FakeFrameBufferHandle)
+    enum class EDiscardDepth
     {
-        EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(sceneId)), _, nullptr))
-            .WillOnce([buffer, this](const auto&, const RenderingContext& renderContext, const auto*) {
+        Allowed,
+        Disallowed
+    };
+
+    void expectSceneRenderedExt(
+        SceneId sceneId,
+        DeviceResourceHandle buffer,
+        uint32_t dispBufferClearFlags,
+        const Vector4& dispBufferClearColor,
+        SceneRenderExecutionIterator expectedRenderBegin,
+        SceneRenderExecutionIterator iteratorToReturn,
+        uint32_t clearFlagsToModify,
+        EDiscardDepth discardAllowed,
+        const FrameTimer* frameTimer = nullptr)
+    {
+        EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(sceneId)), _, frameTimer))
+            .WillOnce([=](const auto&, RenderingContext& renderContext, const auto*) {
             EXPECT_EQ(buffer, renderContext.displayBufferDeviceHandle);
-            EXPECT_EQ(sceneRenderBegin, renderContext.renderFrom);
-            return SceneRenderExecutionIterator{};
+            EXPECT_EQ(expectedRenderBegin, renderContext.renderFrom);
+            EXPECT_EQ(dispBufferClearFlags, renderContext.displayBufferClearPending);
+            if (dispBufferClearFlags != EClearFlags_None) // color is relevant only if clearing something
+            {
+                EXPECT_EQ(dispBufferClearColor, renderContext.displayBufferClearColor);
+            }
+            renderContext.displayBufferClearPending = clearFlagsToModify;
+            EXPECT_EQ((discardAllowed == EDiscardDepth::Allowed), renderContext.displayBufferDepthDiscard);
+            return iteratorToReturn;
         });
     }
 
-    void expectSceneRenderedWithInterruptionEnabled(SceneId sceneId, DeviceResourceHandle buffer, SceneRenderExecutionIterator expectedRenderBegin, SceneRenderExecutionIterator stateToSimulate)
+    void expectSceneRendered(SceneId sceneId, DeviceResourceHandle buffer = DisplayControllerMock::FakeFrameBufferHandle,
+        uint32_t dispBufferClearFlags = EClearFlags_All, const Vector4& dispBufferClearColor = Renderer::DefaultClearColor)
     {
-        EXPECT_CALL(*renderer.m_displayController, renderScene(Ref(rendererScenes.getScene(sceneId)), _, &renderer.FrameTimerInstance))
-            .WillOnce([buffer, expectedRenderBegin, stateToSimulate](const auto&, const RenderingContext& renderContext, const auto*) {
-            EXPECT_EQ(buffer, renderContext.displayBufferDeviceHandle);
-            EXPECT_EQ(expectedRenderBegin, renderContext.renderFrom);
-            return stateToSimulate;
-        });
+        expectSceneRenderedExt(sceneId, buffer, dispBufferClearFlags, dispBufferClearColor, sceneRenderBegin, sceneRenderBegin, dispBufferClearFlags, EDiscardDepth::Disallowed);
+    }
+
+    void expectSceneRenderedWithInterruptionEnabled(SceneId sceneId, DeviceResourceHandle buffer, SceneRenderExecutionIterator expectedRenderBegin,
+        SceneRenderExecutionIterator stateToSimulate, uint32_t dispBufferClearFlags = EClearFlags_All)
+    {
+        expectSceneRenderedExt(sceneId, buffer, dispBufferClearFlags, Renderer::DefaultClearColor, expectedRenderBegin, stateToSimulate, dispBufferClearFlags, EDiscardDepth::Disallowed, &renderer.FrameTimerInstance);
+    }
+
+    void expectSceneRendered(SceneId sceneId, DeviceResourceHandle buffer, EDiscardDepth discardAllowed)
+    {
+        expectSceneRenderedExt(sceneId, buffer, EClearFlags_All, Renderer::DefaultClearColor, sceneRenderBegin, sceneRenderBegin, EClearFlags_All, discardAllowed);
     }
 
     void expectDisplayControllerReadPixels(DeviceResourceHandle deviceHandle, UInt32 x, UInt32 y, UInt32 width, UInt32 height)
@@ -359,29 +377,6 @@ TEST_P(ARenderer, assignsSceneFromInterruptibleOffscreenBufferToNormalOB)
     unassignScene(sceneId);
 }
 
-TEST_P(ARenderer, clearsOffscreenBufferIfThereIsSceneAssignedToIt)
-{
-    createDisplayController();
-
-    const SceneId sceneId(12u);
-    createScene(sceneId);
-
-    const DeviceResourceHandle fakeOffscreenBuffer(313u);
-    renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
-    assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
-    showScene(sceneId);
-
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer });
-    expectFrameBufferRendered();
-    expectSceneRendered(sceneId, fakeOffscreenBuffer);
-    expectSwapBuffers();
-
-    doOneRendererLoop();
-
-    hideScene(sceneId);
-    unassignScene(sceneId);
-}
-
 TEST_P(ARenderer, SetsLayerVisibilityInSystemCompositorController)
 {
     if (GetParam())
@@ -393,14 +388,14 @@ TEST_P(ARenderer, SetsLayerVisibilityInSystemCompositorController)
     renderer.systemCompositorSetIviLayerVisibility(WaylandIviLayerId(17u), true);
 }
 
-TEST_P(ARenderer, doesNotClearOffscreenBufferIfThereIsNoSceneAssignedToIt)
+TEST_P(ARenderer, doesNotClearOrRenderToOffscreenBufferIfThereIsNoSceneAssignedToIt)
 {
     createDisplayController();
 
     const DeviceResourceHandle fakeOffscreenBuffer(313u);
     renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
 
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_All);
     // no offscreen buffer clear expectation
     expectSwapBuffers();
     doOneRendererLoop();
@@ -417,8 +412,8 @@ TEST_P(ARenderer, clearsOffscreenBufferIfThereIsSceneAssignedToItAndNotShown)
     renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
     assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
 
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer });
-    expectFrameBufferRendered();
+    expectOffscreenBufferCleared(fakeOffscreenBuffer);
+    expectFrameBufferRendered(true, EClearFlags_All);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -438,7 +433,7 @@ TEST_P(ARenderer, clearsOffscreenBufferAndFramebufferWithRelatedColors)
     renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
     assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
 
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer });
+    expectOffscreenBufferCleared(fakeOffscreenBuffer);
     expectFrameBufferRendered(true, EClearFlags_All, displayClearColor);
     expectSwapBuffers();
     doOneRendererLoop();
@@ -470,7 +465,7 @@ TEST_P(ARenderer, clearsOffscreenBufferWithCustomClearColor)
 
     assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
 
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer }, EClearFlags_All, obClearColor);
+    expectOffscreenBufferCleared(fakeOffscreenBuffer, EClearFlags_All, obClearColor);
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
@@ -494,7 +489,7 @@ TEST_P(ARenderer, clearsBothFramebufferAndOffscreenBufferWithDifferentClearColor
 
     assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
 
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer }, EClearFlags_All, obClearColor);
+    expectOffscreenBufferCleared(fakeOffscreenBuffer, EClearFlags_All, obClearColor);
     expectFrameBufferRendered(true, EClearFlags_All, displayClearColor);
     expectSwapBuffers();
     doOneRendererLoop();
@@ -502,38 +497,68 @@ TEST_P(ARenderer, clearsBothFramebufferAndOffscreenBufferWithDifferentClearColor
     unassignScene(sceneId);
 }
 
-TEST_P(ARenderer, doesNotClearDisplayBuffersWithDisabledClear_FB)
+TEST_P(ARenderer, clearsFBIfNoSceneAssigned)
 {
     createDisplayController();
 
-    constexpr DeviceResourceHandle fakeOffscreenBuffer1{ 313u };
-    constexpr DeviceResourceHandle fakeOffscreenBuffer2{ 314u };
-    renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, false);
-    renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, true);
+    // use some non-default clear flags
+    EXPECT_CALL(renderer, setClearFlags(DisplayControllerMock::FakeFrameBufferHandle, EClearFlags_Depth));
+    renderer.setClearFlags(DisplayControllerMock::FakeFrameBufferHandle, EClearFlags_Depth);
 
-    // assign scene to trigger render of OB
-    constexpr SceneId sceneId1{ 12u };
-    constexpr SceneId sceneId2{ 13u };
-    createScene(sceneId1);
-    createScene(sceneId2);
-    assignSceneToDisplayBuffer(sceneId1, 0, fakeOffscreenBuffer1);
-    assignSceneToDisplayBuffer(sceneId2, 0, fakeOffscreenBuffer2);
-
-    // disable clear for FB
-    EXPECT_CALL(renderer, setClearFlags(DisplayControllerMock::FakeFrameBufferHandle, EClearFlags_None));
-    renderer.setClearFlags(DisplayControllerMock::FakeFrameBufferHandle, EClearFlags_None);
-
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer1 });
-    expectFrameBufferRendered(true, EClearFlags_None);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer2 }, { {true, true} });
+    expectFrameBufferRendered(true, EClearFlags_Depth);
     expectSwapBuffers();
     doOneRendererLoop();
-
-    unassignScene(sceneId1);
-    unassignScene(sceneId2);
 }
 
-TEST_P(ARenderer, doesNotClearDisplayBuffersWithDisabledClear_OBs)
+TEST_P(ARenderer, clearsFBIfNoShownSceneAssigned)
+{
+    createDisplayController();
+
+    // assign scene to trigger render of OB
+    constexpr SceneId sceneId1{ 12u };
+    constexpr SceneId sceneId2{ 13u };
+    createScene(sceneId1);
+    createScene(sceneId2);
+    assignSceneToDisplayBuffer(sceneId1, 0);
+    assignSceneToDisplayBuffer(sceneId2, 0);
+
+    // use some non-default clear flags
+    EXPECT_CALL(renderer, setClearFlags(DisplayControllerMock::FakeFrameBufferHandle, EClearFlags_Depth));
+    renderer.setClearFlags(DisplayControllerMock::FakeFrameBufferHandle, EClearFlags_Depth);
+
+    expectFrameBufferRendered(true, EClearFlags_Depth);
+    expectSwapBuffers();
+    doOneRendererLoop();
+}
+
+TEST_P(ARenderer, clearsOBOnRerenderIfNoSceneAssigned)
+{
+    createDisplayController();
+
+    constexpr DeviceResourceHandle fakeOffscreenBuffer1{ 313u };
+    constexpr DeviceResourceHandle fakeOffscreenBuffer2{ 314u };
+    renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, false);
+    renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, true);
+
+    // use some non-default clear flags
+    EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer1, EClearFlags_Depth));
+    EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer2, EClearFlags_Depth));
+    EXPECT_CALL(renderer, setClearColor(fakeOffscreenBuffer1, Vector4{ 1,2,3,4 }));
+    EXPECT_CALL(renderer, setClearColor(fakeOffscreenBuffer2, Renderer::DefaultClearColor));
+    renderer.setClearFlags(fakeOffscreenBuffer1, EClearFlags_Depth);
+    renderer.setClearFlags(fakeOffscreenBuffer2, EClearFlags_Depth);
+    renderer.setClearColor(fakeOffscreenBuffer1, Vector4{ 1,2,3,4 });
+    renderer.setClearColor(fakeOffscreenBuffer2, Renderer::DefaultClearColor);
+
+    expectOffscreenBufferCleared(fakeOffscreenBuffer1, EClearFlags_Depth, Vector4{ 1,2,3,4 });
+    expectFrameBufferRendered();
+    expectOffscreenBufferCleared(fakeOffscreenBuffer2, EClearFlags_Depth);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer2);
+    expectSwapBuffers();
+    doOneRendererLoop();
+}
+
+TEST_P(ARenderer, clearsOBOnRerenderIfNoShownSceneAssigned)
 {
     createDisplayController();
 
@@ -550,15 +575,16 @@ TEST_P(ARenderer, doesNotClearDisplayBuffersWithDisabledClear_OBs)
     assignSceneToDisplayBuffer(sceneId1, 0, fakeOffscreenBuffer1);
     assignSceneToDisplayBuffer(sceneId2, 0, fakeOffscreenBuffer2);
 
-    // disable clear for OBs
-    EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer1, EClearFlags_None));
-    EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer2, EClearFlags_None));
-    renderer.setClearFlags(fakeOffscreenBuffer1, EClearFlags_None);
-    renderer.setClearFlags(fakeOffscreenBuffer2, EClearFlags_None);
+    // use some non-default clear flags
+    EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer1, EClearFlags_Depth));
+    EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer2, EClearFlags_Depth));
+    renderer.setClearFlags(fakeOffscreenBuffer1, EClearFlags_Depth);
+    renderer.setClearFlags(fakeOffscreenBuffer2, EClearFlags_Depth);
 
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer1 }, EClearFlags_None);
+    expectOffscreenBufferCleared(fakeOffscreenBuffer1, EClearFlags_Depth);
     expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer2 }, { {true, true} }, EClearFlags_None);
+    expectOffscreenBufferCleared(fakeOffscreenBuffer2, EClearFlags_Depth);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer2);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -584,9 +610,8 @@ TEST_P(ARenderer, rendersTwoOffscreenBuffersWithContentInCorrectOrder)
     showScene(sceneId1);
     showScene(sceneId2);
 
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer1, fakeOffscreenBuffer2 });
-    expectSceneRendered(sceneId1, fakeOffscreenBuffer1);
-    expectSceneRendered(sceneId2, fakeOffscreenBuffer2);
+    expectSceneRendered(sceneId1, fakeOffscreenBuffer1, EDiscardDepth::Allowed);
+    expectSceneRendered(sceneId2, fakeOffscreenBuffer2, EDiscardDepth::Allowed);
     expectFrameBufferRendered();
 
     expectSwapBuffers();
@@ -598,7 +623,7 @@ TEST_P(ARenderer, rendersTwoOffscreenBuffersWithContentInCorrectOrder)
     unassignScene(sceneId2);
 }
 
-TEST_P(ARenderer, sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenBufferAndRemapped)
+TEST_P(ARenderer, assignSceneToFramebufferFromPreviouslyAssignedToOffscreenBuffer)
 {
     createDisplayController();
 
@@ -610,8 +635,7 @@ TEST_P(ARenderer, sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenB
     assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer });
-    expectSceneRendered(sceneId, fakeOffscreenBuffer);
+    expectSceneRendered(sceneId, fakeOffscreenBuffer, EDiscardDepth::Allowed);
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
@@ -620,7 +644,7 @@ TEST_P(ARenderer, sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenB
 
     hideScene(sceneId);
     unassignScene(sceneId);
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer });
+    expectOffscreenBufferCleared(fakeOffscreenBuffer); // will also clear OB after scene is removed from it
     expectFrameBufferRendered(false);
     doOneRendererLoop();
 
@@ -630,7 +654,7 @@ TEST_P(ARenderer, sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenB
     assignSceneToDisplayBuffer(sceneId, 0, framebuffer);
     showScene(sceneId);
     EXPECT_EQ(framebuffer, renderer.getBufferSceneIsAssignedTo(sceneId));
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSceneRendered(sceneId);
     expectSwapBuffers();
     doOneRendererLoop();
@@ -667,16 +691,15 @@ TEST_P(ARenderer, rendersScenesInOrderAccordingToLocalOrderWithinDisplayBuffer)
     showScene(sceneId3);
     showScene(sceneId4);
 
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer1, fakeOffscreenBuffer2 });
     {
         InSequence s;
-        expectSceneRendered(sceneId1, fakeOffscreenBuffer1);
-        expectSceneRendered(sceneId3, fakeOffscreenBuffer1);
+        expectSceneRendered(sceneId1, fakeOffscreenBuffer1, EDiscardDepth::Disallowed);
+        expectSceneRendered(sceneId3, fakeOffscreenBuffer1, EDiscardDepth::Allowed);
     }
     {
         InSequence s;
-        expectSceneRendered(sceneId2, fakeOffscreenBuffer2);
-        expectSceneRendered(sceneId4, fakeOffscreenBuffer2);
+        expectSceneRendered(sceneId2, fakeOffscreenBuffer2, EDiscardDepth::Disallowed);
+        expectSceneRendered(sceneId4, fakeOffscreenBuffer2, EDiscardDepth::Allowed);
     }
     expectFrameBufferRendered();
     expectSwapBuffers();
@@ -749,7 +772,7 @@ TEST_P(ARenderer, rendersMappedAndShownScene)
     showScene(sceneId);
 
     expectSceneRendered(sceneId);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -773,7 +796,7 @@ TEST_P(ARenderer, rendersTwoMappedAndShownScenes)
 
     expectSceneRendered(sceneId1);
     expectSceneRendered(sceneId2);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -802,7 +825,7 @@ TEST_P(ARenderer, rendersTwoMappedAndShownScenesWithAscendingRenderOrder)
         expectSceneRendered(sceneId1);
         expectSceneRendered(sceneId2);
     }
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -832,7 +855,7 @@ TEST_P(ARenderer, rendersTwoMappedAndShownScenesWithDescendingRenderOrder)
         expectSceneRendered(sceneId2);
         expectSceneRendered(sceneId1);
     }
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -914,7 +937,7 @@ TEST_P(ARenderer, canTakeASingleScreenshot_Offscreenbuffer)
     scheduleScreenshot(obDeviceHandle, 1u, 2u, 3u, 4u);
 
     expectDisplayControllerReadPixels(obDeviceHandle, 1u, 2u, 3u, 4u);
-    expectOffscreenBufferRendered({ obDeviceHandle });
+    expectOffscreenBufferCleared(obDeviceHandle);
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
@@ -942,7 +965,8 @@ TEST_P(ARenderer, canTakeASingleScreenshot_InterruptibleOffscreenbuffer)
 
     expectDisplayControllerReadPixels(obDeviceHandle, 1u, 2u, 3u, 4u);
     expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ obDeviceHandle }, { {true, true} });
+    expectOffscreenBufferCleared(obDeviceHandle);
+    expectInterruptibleOffscreenBufferSwapped(obDeviceHandle);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1005,7 +1029,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     // render
     scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
     expectSceneRendered(sceneId);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1022,7 +1046,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
     expectSceneRendered(sceneId);
     renderer.markBufferWithSceneForRerender(sceneId);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1034,7 +1058,7 @@ TEST_P(ARenderer, marksRenderOncePassesAsRenderedAfterRenderingScene)
     scene.updateRenderablesAndResourceCache(sceneHelper.resourceManager, sceneHelper.embeddedCompositingManager);
     expectSceneRendered(sceneId);
     renderer.markBufferWithSceneForRerender(sceneId);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1055,7 +1079,7 @@ TEST_P(ARenderer, doesNotClearAndRerenderIfNoChangeToScene)
     showScene(sceneId);
 
     expectSceneRendered(sceneId);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1081,8 +1105,7 @@ TEST_P(ARenderer, doesNotClearAndRerenderOffscreenBufferIfNoChangeToScene)
     assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer });
-    expectSceneRendered(sceneId, fakeOffscreenBuffer);
+    expectSceneRendered(sceneId, fakeOffscreenBuffer, EDiscardDepth::Allowed);
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
@@ -1107,7 +1130,7 @@ TEST_P(ARenderer, clearAndRerenderIfSceneMarkedAsChanged)
     showScene(sceneId);
 
     expectSceneRendered(sceneId);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1117,7 +1140,7 @@ TEST_P(ARenderer, clearAndRerenderIfSceneMarkedAsChanged)
     // mark change
     renderer.markBufferWithSceneForRerender(sceneId);
     expectSceneRendered(sceneId);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
     // no change
@@ -1126,7 +1149,7 @@ TEST_P(ARenderer, clearAndRerenderIfSceneMarkedAsChanged)
     // mark change
     renderer.markBufferWithSceneForRerender(sceneId);
     expectSceneRendered(sceneId);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1146,8 +1169,7 @@ TEST_P(ARenderer, clearAndRerenderOffscreenBufferIfSceneMarkedAsChanged)
     assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer });
-    expectSceneRendered(sceneId, fakeOffscreenBuffer);
+    expectSceneRendered(sceneId, fakeOffscreenBuffer, EDiscardDepth::Allowed);
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
@@ -1157,8 +1179,7 @@ TEST_P(ARenderer, clearAndRerenderOffscreenBufferIfSceneMarkedAsChanged)
     doOneRendererLoop();
     // mark change
     renderer.markBufferWithSceneForRerender(sceneId);
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer });
-    expectSceneRendered(sceneId, fakeOffscreenBuffer);
+    expectSceneRendered(sceneId, fakeOffscreenBuffer, EDiscardDepth::Allowed);
     expectFrameBufferRendered(false);
     doOneRendererLoop(); // framebuffer not cleared/swapped as there is no scene assigned
     // no change
@@ -1166,8 +1187,7 @@ TEST_P(ARenderer, clearAndRerenderOffscreenBufferIfSceneMarkedAsChanged)
     doOneRendererLoop();
     // mark change
     renderer.markBufferWithSceneForRerender(sceneId);
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer });
-    expectSceneRendered(sceneId, fakeOffscreenBuffer);
+    expectSceneRendered(sceneId, fakeOffscreenBuffer, EDiscardDepth::Allowed);
     expectFrameBufferRendered(false);
     doOneRendererLoop(); // framebuffer not cleared/swapped as there is no scene assigned
 
@@ -1187,8 +1207,7 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfSceneAssign
     assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer });
-    expectSceneRendered(sceneId, fakeOffscreenBuffer);
+    expectSceneRendered(sceneId, fakeOffscreenBuffer, EDiscardDepth::Allowed);
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
@@ -1201,8 +1220,8 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfSceneAssign
 
     // assign back to FB causes clear/render of both buffers
     renderer.assignSceneToDisplayBuffer(sceneId, DisplayControllerMock::FakeFrameBufferHandle, 0);
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer });
-    expectFrameBufferRendered(true);
+    expectOffscreenBufferCleared(fakeOffscreenBuffer);
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSceneRendered(sceneId, DisplayControllerMock::FakeFrameBufferHandle);
     expectSwapBuffers();
     doOneRendererLoop();
@@ -1213,8 +1232,7 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfSceneAssign
 
     // assign back to offscreen buffer causes clear/render of both buffers
     renderer.assignSceneToDisplayBuffer(sceneId, fakeOffscreenBuffer, 0);
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer });
-    expectSceneRendered(sceneId, fakeOffscreenBuffer);
+    expectSceneRendered(sceneId, fakeOffscreenBuffer, EDiscardDepth::Allowed);
     expectFrameBufferRendered(true); // framebuffer cleared/swapped
     expectSwapBuffers();
     doOneRendererLoop();
@@ -1233,7 +1251,7 @@ TEST_P(ARenderer, clearAndRerenderBufferIfSceneHidden)
     showScene(sceneId);
 
     expectSceneRendered(sceneId);
-    expectFrameBufferRendered(true);
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1264,7 +1282,7 @@ TEST_P(ARenderer, clearAndRerenderBufferIfClearColorChanged)
     showScene(sceneId);
 
     expectSceneRendered(sceneId);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1274,8 +1292,8 @@ TEST_P(ARenderer, clearAndRerenderBufferIfClearColorChanged)
 
     // setting clear color causes clear/render
     renderer.setClearColor(DisplayControllerMock::FakeFrameBufferHandle, { 1, 2, 3, 4 });
-    expectSceneRendered(sceneId);
-    expectFrameBufferRendered(true, EClearFlags_All, { 1, 2, 3, 4 });
+    expectSceneRendered(sceneId, DisplayControllerMock::FakeFrameBufferHandle, EClearFlags_All, { 1, 2, 3, 4 });
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1301,8 +1319,7 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfOBClearColo
     assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
     showScene(sceneId);
 
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer }, EClearFlags_All, obClearColor1);
-    expectSceneRendered(sceneId, fakeOffscreenBuffer);
+    expectSceneRenderedExt(sceneId, fakeOffscreenBuffer, EClearFlags_All, obClearColor1, {}, {}, EClearFlags_All, EDiscardDepth::Allowed);
     expectFrameBufferRendered();
     expectSwapBuffers();
     doOneRendererLoop();
@@ -1316,9 +1333,8 @@ TEST_P(ARenderer, clearAndRerenderBothFramebufferAndOffscreenBufferIfOBClearColo
     // change clear color
     const Vector4 obClearColor2(.2f, .3f, .4f, .5f);
     renderer.setClearColor(fakeOffscreenBuffer, obClearColor2);
-    expectOffscreenBufferRendered({ fakeOffscreenBuffer }, EClearFlags_All, obClearColor2);
     expectFrameBufferRendered(true);
-    expectSceneRendered(sceneId, fakeOffscreenBuffer);
+    expectSceneRenderedExt(sceneId, fakeOffscreenBuffer, EClearFlags_All, obClearColor2, {}, {}, EClearFlags_All, EDiscardDepth::Allowed);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1343,8 +1359,8 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreShownScenes)
     showScene(sceneId);
 
     expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, true } });
-    expectSceneRenderedWithInterruptionEnabled(sceneId, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderBegin);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
+    expectSceneRenderedWithInterruptionEnabled(sceneId, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderBegin, EClearFlags_All);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1353,10 +1369,11 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreShownScenes)
     expectSwapBuffers();
     doOneRendererLoop();
 
-    // hide scene will trigger re-render of OB
+    // hide scene will trigger re-render and extra clear of OB
     hideScene(sceneId);
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, true } });
+    expectOffscreenBufferCleared(fakeOffscreenBuffer);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
     doOneRendererLoop();
 
     // re-render FB to reflect finished interruptible OB in previous frame
@@ -1386,7 +1403,7 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreMappedScenes)
     showScene(sceneId);
 
     expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, true } });
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
     expectSceneRenderedWithInterruptionEnabled(sceneId, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderBegin);
     expectSwapBuffers();
     doOneRendererLoop();
@@ -1400,7 +1417,8 @@ TEST_P(ARenderer, clearAndSwapInterruptibleOBOnlyOnceIfNoMoreMappedScenes)
     hideScene(sceneId);
     unassignScene(sceneId);
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, true } });
+    expectOffscreenBufferCleared(fakeOffscreenBuffer);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
     doOneRendererLoop();
 
     // re-render FB to reflect finished interruptible OB in previous frame
@@ -1456,9 +1474,9 @@ TEST_P(ARenderer, rendersScenesToFBAndOBWithNoInterruption)
     showScene(sceneIdFB);
     showScene(sceneIdOB);
 
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSceneRendered(sceneIdFB);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer });
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
     expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderBegin);
     expectSwapBuffers();
     doOneRendererLoop();
@@ -1480,10 +1498,10 @@ TEST_P(ARenderer, doesNotSwapOffscreenBufferIfRenderingIntoItInterrupted)
     assignSceneToDisplayBuffer(sceneIdOB, 0, fakeOffscreenBuffer);
     showScene(sceneIdOB);
 
-    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted);
+    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted, EClearFlags_All); // expect clear
 
     expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, false } }); // expect clear but not swap due to interruption
+    // expect no OB swap due to interruption
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1504,26 +1522,26 @@ TEST_P(ARenderer, doesNotClearAndPassesPreviousStateWhenInterruptedAndSwapsAfter
     showScene(sceneIdOB);
 
     // start rendering and interrupt
-    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted);
+    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted, EClearFlags_All); // expect clear
     expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, false } }); // expect clear but not swap due to interruption
+    // expect no OB swap due to interruption
     expectSwapBuffers();
     doOneRendererLoop();
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // continue from interruption point and interrupt again
-    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderInterrupted2);
+    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderInterrupted2, EClearFlags_None); // no clear due to previous interruption
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { false, false } }); // no clear and no swap due to interruption before and now again
+    // no OB swap due to interruption again
     doOneRendererLoop();
     EXPECT_TRUE(renderer.hasAnyBufferWithInterruptedRendering());
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // continue from interruption point and finish
-    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted2, sceneRenderBegin);
+    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted2, sceneRenderBegin, EClearFlags_None); // no clear due to previous interruption
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { false, true } }); // no clear but swap after finish
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer); // swap after finish
     doOneRendererLoop();
     EXPECT_FALSE(renderer.hasAnyBufferWithInterruptedRendering());
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
@@ -1557,19 +1575,18 @@ TEST_P(ARenderer, rendersScenesToFBEvenIfOBInterrupted)
 
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, false } });
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
-    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
-    expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { false, true } });
+    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
+    expectFrameBufferRendered(false, EClearFlags_None);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
     doOneRendererLoop();
 
     // re-render FB to reflect change happened to OB in previous frame
     expectSceneRendered(sceneIdFB);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1598,8 +1615,7 @@ TEST_P(ARenderer, alwaysRendersScenesToFBWhenModifiedEvenIfOBInterrupted)
     //FB rendered, OB interrupted
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, false } });
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1607,9 +1623,8 @@ TEST_P(ARenderer, alwaysRendersScenesToFBWhenModifiedEvenIfOBInterrupted)
     renderer.markBufferWithSceneForRerender(sceneIdFB);
     //FB rendered, OB interrupted
     expectSceneRendered(sceneIdFB);
-    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderInterrupted2);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { false, false } });
+    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderInterrupted2, EClearFlags_None);
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1617,15 +1632,15 @@ TEST_P(ARenderer, alwaysRendersScenesToFBWhenModifiedEvenIfOBInterrupted)
     renderer.markBufferWithSceneForRerender(sceneIdFB);
     //FB rendered, OB finished
     expectSceneRendered(sceneIdFB);
-    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted2, sceneRenderBegin);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { false, true } });
+    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted2, sceneRenderBegin, EClearFlags_None);
+    expectFrameBufferRendered(true, EClearFlags_None);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
     expectSwapBuffers();
     doOneRendererLoop();
 
     // re-render FB to reflect change happened to OB in previous frame
     expectSceneRendered(sceneIdFB);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1656,20 +1671,19 @@ TEST_P(ARenderer, doesNotSkipFramesTillAllInterruptionsFinishedAndRendered)
     // FB rendered, OB interrupted
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, false } });
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
     // FB skipped, OB finished
-    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
+    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { false, true } });
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
     doOneRendererLoop();
 
     // re-render FB to reflect change happened to OB in previous frame
     expectSceneRendered(sceneIdFB);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1708,33 +1722,31 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleScene
     // FB rendered, OB scene1 interrupted, OB scene2 skipped
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneId1OB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, false } });
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // FB skipped, OB scene1 finished, OB scene2 interrupted
-    expectSceneRenderedWithInterruptionEnabled(sceneId1OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted);
+    expectSceneRenderedWithInterruptionEnabled(sceneId1OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
+    expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted, EClearFlags_None);
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { false, false } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // FB skipped (as OB is not done rendering yet), OB scene1 skipped, OB scene2 finished
-    expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
+    expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { false, true } });
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // re-render FB to reflect change happened to OB scene 1 and scene 2 in previous frames
     expectSceneRendered(sceneIdFB);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1780,24 +1792,23 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleScene
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneId1OB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, false } });
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // FB skipped, OB scene1 skipped, OB scene2 finished
-    expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
+    expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { false, true } });
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // re-render FB to reflect change happened to OB scene 1 and scene 2 in previous frames
     expectSceneRendered(sceneIdFB);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1844,27 +1855,26 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
     // FB rendered, OB1 interrupted, OB2 skipped
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneIdOB1, fakeOffscreenBuffer1, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer1 }, { { true, false } });
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // FB skipped, OB1 finished, OB2 interrupted
-    expectSceneRenderedWithInterruptionEnabled(sceneIdOB1, fakeOffscreenBuffer1, sceneRenderInterrupted, sceneRenderBegin);
+    expectSceneRenderedWithInterruptionEnabled(sceneIdOB1, fakeOffscreenBuffer1, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
     expectSceneRenderedWithInterruptionEnabled(sceneIdOB2, fakeOffscreenBuffer2, sceneRenderBegin, sceneRenderInterrupted);
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer1, fakeOffscreenBuffer2 }, { { false, true }, { true, false } });
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer1);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // FB re-rendered to reflect changed in OB1, OB1 skipped, OB2 finished
     expectSceneRendered(sceneIdFB);
-    expectSceneRenderedWithInterruptionEnabled(sceneIdOB2, fakeOffscreenBuffer2, sceneRenderInterrupted, sceneRenderBegin);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer2 }, { { false, true } });
+    expectSceneRenderedWithInterruptionEnabled(sceneIdOB2, fakeOffscreenBuffer2, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
+    expectFrameBufferRendered(true, EClearFlags_None);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer2);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1872,7 +1882,7 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
 
     // re-render FB to reflect change happened to OB2 in previous frame
     expectSceneRendered(sceneIdFB);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -1927,53 +1937,50 @@ TEST_P(ARenderer, interruptingEveryFrameGetsToAllRenderedState_withMultipleOffsc
     // FB rendered, OB1 scene1 interrupted, rest skipped
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneId1OB1, fakeOffscreenBuffer1, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer1 }, { { true, false } });
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // FB skipped, OB1 scene1 finished, OB1 scene2 interrupted, rest skipped
-    expectSceneRenderedWithInterruptionEnabled(sceneId1OB1, fakeOffscreenBuffer1, sceneRenderInterrupted, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(sceneId2OB1, fakeOffscreenBuffer1, sceneRenderBegin, sceneRenderInterrupted);
+    expectSceneRenderedWithInterruptionEnabled(sceneId1OB1, fakeOffscreenBuffer1, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
+    expectSceneRenderedWithInterruptionEnabled(sceneId2OB1, fakeOffscreenBuffer1, sceneRenderBegin, sceneRenderInterrupted, EClearFlags_None);
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer1 }, { { false, false } });
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // FB skipped, OB1 scene1 skipped, OB1 scene2 finished, OB2 scene1 interrupted, rest skipped
-    expectSceneRenderedWithInterruptionEnabled(sceneId2OB1, fakeOffscreenBuffer1, sceneRenderInterrupted, sceneRenderBegin);
+    expectSceneRenderedWithInterruptionEnabled(sceneId2OB1, fakeOffscreenBuffer1, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
     expectSceneRenderedWithInterruptionEnabled(sceneId1OB2, fakeOffscreenBuffer2, sceneRenderBegin, sceneRenderInterrupted);
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer1, fakeOffscreenBuffer2 }, { { false, true },{ true, false } });
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer1);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // FB re-rendered to reflect changes in OB1, OB1 skipped, OB2 scene1 finished, OB2 scene2 interrupted
     expectSceneRendered(sceneIdFB);
-    expectSceneRenderedWithInterruptionEnabled(sceneId1OB2, fakeOffscreenBuffer2, sceneRenderInterrupted, sceneRenderBegin);
-    expectSceneRenderedWithInterruptionEnabled(sceneId2OB2, fakeOffscreenBuffer2, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer2 }, { { false, false } });
+    expectSceneRenderedWithInterruptionEnabled(sceneId1OB2, fakeOffscreenBuffer2, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
+    expectSceneRenderedWithInterruptionEnabled(sceneId2OB2, fakeOffscreenBuffer2, sceneRenderBegin, sceneRenderInterrupted, EClearFlags_None);
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // FB skipped, OB1 skipped, OB2 scene2 finished
-    expectSceneRenderedWithInterruptionEnabled(sceneId2OB2, fakeOffscreenBuffer2, sceneRenderInterrupted, sceneRenderBegin);
+    expectSceneRenderedWithInterruptionEnabled(sceneId2OB2, fakeOffscreenBuffer2, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer2 }, { { false, true } });
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer2);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
 
     // FB re-rendered to reflect changes in OB2, rest skipped
     expectSceneRendered(sceneIdFB);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -2019,8 +2026,7 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInte
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneId1OB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, false } });
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -2030,9 +2036,9 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInte
     renderer.markBufferWithSceneForRerender(sceneId1OB);
 
     // FB skipped, OB scene1 skipped, OB scene2 finished
-    expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
+    expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { false, true } });
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
     doOneRendererLoop();
 
     Mock::VerifyAndClearExpectations(renderer.m_displayController);
@@ -2042,8 +2048,8 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInte
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneId1OB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderBegin);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, true } });
+    expectFrameBufferRendered(true, EClearFlags_None);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -2051,7 +2057,7 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInte
 
     // re-render FB one more time to reflect changes
     expectSceneRendered(sceneIdFB);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -2097,8 +2103,8 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneOnAn
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneId1OB, fakeOffscreenBuffer1, sceneRenderBegin, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer2, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer1, fakeOffscreenBuffer2 }, { { true, true }, { true, false } });
+    expectFrameBufferRendered(true, EClearFlags_None);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer1);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -2109,9 +2115,9 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneOnAn
 
     // FB re-rendered to reflect finished OB1, OB1 scene skipped due to interruption, OB2 scene finished
     expectSceneRendered(sceneIdFB);
-    expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer2, sceneRenderInterrupted, sceneRenderBegin);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer2 }, { { false, true } });
+    expectSceneRenderedWithInterruptionEnabled(sceneId2OB, fakeOffscreenBuffer2, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
+    expectFrameBufferRendered(true, EClearFlags_None);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer2);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -2120,8 +2126,8 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneOnAn
     // FB re-rendered to reflect finished OB2, OB1 scene re-rendered due to modification, OB2 scene skipped
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneId1OB, fakeOffscreenBuffer1, sceneRenderBegin, sceneRenderBegin);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer1 }, { { true, true } });
+    expectFrameBufferRendered(true, EClearFlags_None);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer1);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -2129,7 +2135,7 @@ TEST_P(ARenderer, willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneOnAn
 
     // FB re-rendered once more to reflect changes from OB1
     expectSceneRendered(sceneIdFB);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -2190,12 +2196,12 @@ TEST_P(ARenderer, willRenderAllScenesFromAllBuffersInOneFrameIfWithinBudget)
     showScene(sceneIdDisp1OBint2scene2);
 
     // all rendered
-    expectOffscreenBufferRendered({ disp1OB });
-    expectSceneRendered(sceneIdDisp1OBscene, disp1OB);
-    expectFrameBufferRendered();
+    expectSceneRendered(sceneIdDisp1OBscene, disp1OB, EDiscardDepth::Allowed);
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSceneRendered(sceneIdDisp1FB);
 
-    expectInterruptibleOffscreenBufferRendered({ disp1OBint1, disp1OBint2 }, { { true, true },{ true, true } });
+    expectInterruptibleOffscreenBufferSwapped(disp1OBint1);
+    expectInterruptibleOffscreenBufferSwapped(disp1OBint2);
     expectSceneRenderedWithInterruptionEnabled(sceneIdDisp1OBint1scene1, disp1OBint1, sceneRenderBegin, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(sceneIdDisp1OBint1scene2, disp1OBint1, sceneRenderBegin, sceneRenderBegin);
     expectSceneRenderedWithInterruptionEnabled(sceneIdDisp1OBint2scene1, disp1OBint2, sceneRenderBegin, sceneRenderBegin);
@@ -2210,7 +2216,7 @@ TEST_P(ARenderer, willRenderAllScenesFromAllBuffersInOneFrameIfWithinBudget)
     // FB has to be re-rendered because there were some interruptible OBs finished last frame,
     // interruptible OBs are rendered at end of frame so the FBs have to be rendered again next frame
     // in order to use the latest state of the OBs wherever they are used in FBs
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSceneRendered(sceneIdDisp1FB);
     expectSwapBuffers();
 
@@ -2260,8 +2266,7 @@ TEST_P(ARenderer, canMapSceneWhileThereIsInterruption)
     // FB rendered, OB interrupted
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderBegin, sceneRenderInterrupted);
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { true, false } });
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -2269,16 +2274,16 @@ TEST_P(ARenderer, canMapSceneWhileThereIsInterruption)
     assignSceneToDisplayBuffer(sceneId2, 0);
 
     // FB rendered because of new scene mapped, OB finished
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSceneRendered(sceneIdFB);
-    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin);
-    expectInterruptibleOffscreenBufferRendered({ fakeOffscreenBuffer }, { { false, true } });
+    expectSceneRenderedWithInterruptionEnabled(sceneIdOB, fakeOffscreenBuffer, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
+    expectInterruptibleOffscreenBufferSwapped(fakeOffscreenBuffer);
     expectSwapBuffers();
     doOneRendererLoop();
 
     // re-render FB to reflect change happened to OB in previous frame
     expectSceneRendered(sceneIdFB);
-    expectFrameBufferRendered();
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -2314,9 +2319,10 @@ TEST_P(ARenderer, doesNotReportSceneIfNotRenderedToExpirationMonitor)
     assignSceneToDisplayBuffer(sceneIdOB, 0, ob);
     assignSceneToDisplayBuffer(sceneIdOBint, 0, obInt);
 
-    expectOffscreenBufferRendered({ ob });
+    expectOffscreenBufferCleared(ob);
     expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ obInt }, { { true, true } });
+    expectOffscreenBufferCleared(obInt);
+    expectInterruptibleOffscreenBufferSwapped(obInt);
     expectSwapBuffers();
     doOneRendererLoop();
 
@@ -2355,10 +2361,9 @@ TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitor)
     showScene(sceneIdOB);
     showScene(sceneIdOBint);
 
-    expectOffscreenBufferRendered({ ob });
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ obInt }, { { true, true } });
-    expectSceneRendered(sceneIdOB, ob);
+    expectFrameBufferRendered(true, EClearFlags_None);
+    expectInterruptibleOffscreenBufferSwapped(obInt);
+    expectSceneRendered(sceneIdOB, ob, EDiscardDepth::Allowed);
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneIdOBint, obInt, sceneRenderBegin, sceneRenderBegin);
     expectSwapBuffers();
@@ -2396,8 +2401,7 @@ TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitorOnlyAfterFullyRendere
     showScene(sceneIdFB);
     showScene(sceneIdOBint);
 
-    expectFrameBufferRendered();
-    expectInterruptibleOffscreenBufferRendered({ obInt }, { { true, false } });
+    expectFrameBufferRendered(true, EClearFlags_None);
     expectSceneRendered(sceneIdFB);
     expectSceneRenderedWithInterruptionEnabled(sceneIdOBint, obInt, sceneRenderBegin, sceneRenderInterrupted);
     expectSwapBuffers();
@@ -2407,8 +2411,8 @@ TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitorOnlyAfterFullyRendere
     expectScenesReportedToExpirationMonitorAsRendered({ sceneIdFB });
 
     expectFrameBufferRendered(false);
-    expectInterruptibleOffscreenBufferRendered({ obInt }, { { false, true } });
-    expectSceneRenderedWithInterruptionEnabled(sceneIdOBint, obInt, sceneRenderInterrupted, sceneRenderBegin);
+    expectInterruptibleOffscreenBufferSwapped(obInt);
+    expectSceneRenderedWithInterruptionEnabled(sceneIdOBint, obInt, sceneRenderInterrupted, sceneRenderBegin, EClearFlags_None);
     doOneRendererLoop();
 
     // OB scene is reported now as it was fully rendered
@@ -2420,4 +2424,203 @@ TEST_P(ARenderer, reportsSceneAsRenderedToExpirationMonitorOnlyAfterFullyRendere
     unassignScene(sceneIdOBint);
     expirationMonitor.onDestroyed(sceneIdFB);
     expirationMonitor.onDestroyed(sceneIdOBint);
+}
+
+TEST_P(ARenderer, pendingClearFlagPersistsAcrossScenes_FB)
+{
+    createDisplayController();
+    constexpr SceneId scene1{ 1u };
+    constexpr SceneId scene2{ 3u };
+    createScene(scene1);
+    createScene(scene2);
+
+    assignSceneToDisplayBuffer(scene1, 0);
+    assignSceneToDisplayBuffer(scene2, 0);
+
+    showScene(scene1);
+    showScene(scene2);
+
+    expectFrameBufferRendered(true, EClearFlags_None);
+    // simulate that the render executor cleared and reset pending clear in context
+    expectSceneRenderedExt(scene1, DisplayControllerMock::FakeFrameBufferHandle, EClearFlags_All, Renderer::DefaultClearColor, {}, {}, EClearFlags_None, EDiscardDepth::Disallowed);
+    // next scene render will pass the modified flags
+    expectSceneRendered(scene2, DisplayControllerMock::FakeFrameBufferHandle, EClearFlags_None);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    hideScene(scene1);
+    hideScene(scene2);
+    unassignScene(scene1);
+    unassignScene(scene2);
+}
+
+TEST_P(ARenderer, pendingClearFlagPersistsAcrossScenes_OB)
+{
+    createDisplayController();
+    constexpr SceneId scene1{ 1u };
+    constexpr SceneId scene2{ 3u };
+    createScene(scene1);
+    createScene(scene2);
+
+    constexpr DeviceResourceHandle ob{ 317u };
+    renderer.registerOffscreenBuffer(ob, 1u, 1u, false);
+
+    assignSceneToDisplayBuffer(scene1, 0, ob);
+    assignSceneToDisplayBuffer(scene2, 0, ob);
+
+    showScene(scene1);
+    showScene(scene2);
+
+    expectFrameBufferRendered();
+    // simulate that the render executor cleared and reset pending clear in context
+    expectSceneRenderedExt(scene1, ob, EClearFlags_All, Renderer::DefaultClearColor, {}, {}, EClearFlags_None, EDiscardDepth::Disallowed);
+    // next scene render will pass the modified flags
+    expectSceneRenderedExt(scene2, ob, EClearFlags_None, Renderer::DefaultClearColor, {}, {}, EClearFlags_None, EDiscardDepth::Allowed);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    hideScene(scene1);
+    hideScene(scene2);
+    unassignScene(scene1);
+    unassignScene(scene2);
+}
+
+TEST_P(ARenderer, pendingClearFlagPersistsAcrossScenes_OBinterruptible)
+{
+    createDisplayController();
+    constexpr SceneId scene1{ 1u };
+    constexpr SceneId scene2{ 3u };
+    createScene(scene1);
+    createScene(scene2);
+
+    constexpr DeviceResourceHandle ob{ 317u };
+    renderer.registerOffscreenBuffer(ob, 1u, 1u, true);
+
+    assignSceneToDisplayBuffer(scene1, 0, ob);
+    assignSceneToDisplayBuffer(scene2, 0, ob);
+
+    showScene(scene1);
+    showScene(scene2);
+
+    expectFrameBufferRendered();
+    // simulate that the render executor cleared and reset pending clear in context
+    expectSceneRenderedExt(scene1, ob, EClearFlags_All, Renderer::DefaultClearColor, {}, {}, EClearFlags_None, EDiscardDepth::Disallowed, &renderer.FrameTimerInstance);
+    // next scene render will pass the modified flags
+    expectSceneRenderedWithInterruptionEnabled(scene2, ob, {}, {}, EClearFlags_None);
+    expectInterruptibleOffscreenBufferSwapped(ob);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    hideScene(scene1);
+    hideScene(scene2);
+    unassignScene(scene1);
+    unassignScene(scene2);
+}
+
+TEST_P(ARenderer, allowDepthDiscardOnlyForLastRenderedSceneToOffscreenbuffer)
+{
+    createDisplayController();
+
+    const DeviceResourceHandle fakeOffscreenBuffer1(313u);
+    renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, false);
+
+    const SceneId sceneId1(12u);
+    const SceneId sceneId2(13u);
+    const SceneId sceneId3(14u);
+    createScene(sceneId1);
+    createScene(sceneId2);
+    createScene(sceneId3);
+    assignSceneToDisplayBuffer(sceneId1, 0, fakeOffscreenBuffer1);
+    assignSceneToDisplayBuffer(sceneId2, 1, fakeOffscreenBuffer1);
+    assignSceneToDisplayBuffer(sceneId3, 2, fakeOffscreenBuffer1);
+    showScene(sceneId1);
+    showScene(sceneId2);
+    // sceneId3 not shown
+
+    expectSceneRendered(sceneId1, fakeOffscreenBuffer1, EDiscardDepth::Disallowed);
+    expectSceneRendered(sceneId2, fakeOffscreenBuffer1, EDiscardDepth::Allowed);
+    expectFrameBufferRendered();
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    hideScene(sceneId1);
+    hideScene(sceneId2);
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
+    unassignScene(sceneId3);
+}
+
+TEST_P(ARenderer, allowDepthDiscardOnlyIfBothDepthAndStencilClearEnabled)
+{
+    createDisplayController();
+
+    const DeviceResourceHandle fakeOffscreenBuffer1(313u);
+    const DeviceResourceHandle fakeOffscreenBuffer2(314u);
+    const DeviceResourceHandle fakeOffscreenBuffer3(315u);
+    renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, false);
+    renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, false);
+    renderer.registerOffscreenBuffer(fakeOffscreenBuffer3, 1u, 2u, false);
+    EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer1, EClearFlags_Color | EClearFlags_Stencil));
+    EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer2, EClearFlags_Color | EClearFlags_Depth));
+    EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer3, EClearFlags_Depth | EClearFlags_Stencil));
+    renderer.setClearFlags(fakeOffscreenBuffer1, EClearFlags_Color | EClearFlags_Stencil);
+    renderer.setClearFlags(fakeOffscreenBuffer2, EClearFlags_Color | EClearFlags_Depth);
+    renderer.setClearFlags(fakeOffscreenBuffer3, EClearFlags_Depth | EClearFlags_Stencil);
+
+    const SceneId sceneId1(12u);
+    const SceneId sceneId2(13u);
+    const SceneId sceneId3(14u);
+    createScene(sceneId1);
+    createScene(sceneId2);
+    createScene(sceneId3);
+    assignSceneToDisplayBuffer(sceneId1, 0, fakeOffscreenBuffer1);
+    assignSceneToDisplayBuffer(sceneId2, 0, fakeOffscreenBuffer2);
+    assignSceneToDisplayBuffer(sceneId3, 0, fakeOffscreenBuffer3);
+    showScene(sceneId1);
+    showScene(sceneId2);
+    showScene(sceneId3);
+
+    expectSceneRenderedExt(sceneId1, fakeOffscreenBuffer1, EClearFlags_Color | EClearFlags_Stencil, Renderer::DefaultClearColor, {}, {}, 0u, EDiscardDepth::Disallowed);
+    expectSceneRenderedExt(sceneId2, fakeOffscreenBuffer2, EClearFlags_Color | EClearFlags_Depth, Renderer::DefaultClearColor, {}, {}, 0u, EDiscardDepth::Disallowed);
+    expectSceneRenderedExt(sceneId3, fakeOffscreenBuffer3, EClearFlags_Depth | EClearFlags_Stencil, Renderer::DefaultClearColor, {}, {}, 0u, EDiscardDepth::Allowed);
+    expectFrameBufferRendered();
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    hideScene(sceneId1);
+    hideScene(sceneId2);
+    hideScene(sceneId3);
+    unassignScene(sceneId1);
+    unassignScene(sceneId2);
+    unassignScene(sceneId3);
+}
+
+TEST_P(ARenderer, neverAllowsDepthDiscardForFBOrInterruptibleOB)
+{
+    createDisplayController();
+    const SceneId sceneIdFB(1u);
+    const SceneId sceneIdOBint(3u);
+    createScene(sceneIdFB);
+    createScene(sceneIdOBint);
+
+    DeviceResourceHandle obInt(317u);
+    renderer.registerOffscreenBuffer(obInt, 1u, 1u, true);
+
+    assignSceneToDisplayBuffer(sceneIdFB, 0);
+    assignSceneToDisplayBuffer(sceneIdOBint, 0, obInt);
+
+    showScene(sceneIdFB);
+    showScene(sceneIdOBint);
+
+    expectFrameBufferRendered(true, EClearFlags_None);
+    expectSceneRendered(sceneIdFB, DisplayControllerMock::FakeFrameBufferHandle, EDiscardDepth::Disallowed);
+    expectSceneRenderedExt(sceneIdOBint, obInt, EClearFlags_All, Renderer::DefaultClearColor, {}, {}, 0u, EDiscardDepth::Disallowed, &renderer.FrameTimerInstance);
+    expectInterruptibleOffscreenBufferSwapped(obInt);
+    expectSwapBuffers();
+    doOneRendererLoop();
+
+    hideScene(sceneIdFB);
+    hideScene(sceneIdOBint);
+    unassignScene(sceneIdFB);
+    unassignScene(sceneIdOBint);
 }

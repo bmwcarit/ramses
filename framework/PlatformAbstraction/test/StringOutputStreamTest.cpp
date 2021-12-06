@@ -235,4 +235,28 @@ namespace ramses_internal
         stream << "bar";
         EXPECT_EQ("foobar", stream.data());
     }
+
+    TEST(AStringOutputStream, CanFormatToSimpleValues)
+    {
+        StringOutputStream stream;
+        stream.formatTo("{}", 123);
+        stream.formatTo(", {}", "456");
+        EXPECT_EQ("123, 456", stream.data());
+    }
+
+    TEST(AStringOutputStream, CanFormatToComplexValues)
+    {
+        StringOutputStream stream;
+        stream.formatTo("{:x}{}{}", 123, "456", std::string("789"));
+        EXPECT_EQ("7b456789", stream.data());
+    }
+
+    TEST(AStringOutputStream, CanCombineFormatToAndOperator)
+    {
+        StringOutputStream stream;
+        stream.formatTo("{}", 123);
+        stream << "456";
+        stream.formatTo("{}", 789);
+        EXPECT_EQ("123456789", stream.data());
+    }
 }

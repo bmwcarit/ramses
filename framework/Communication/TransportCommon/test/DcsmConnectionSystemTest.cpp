@@ -8,7 +8,6 @@
 
 #include "TransportCommon/DcsmConnectionSystem.h"
 #include "SomeIPStackMocks.h"
-#include "Utils/StatisticCollection.h"
 #include "MockConnectionStatusListener.h"
 #include "ServiceHandlerMocks.h"
 #include "gmock/gmock.h"
@@ -34,7 +33,7 @@ namespace ramses_internal
         std::unique_ptr<DcsmConnectionSystem> construct(const std::shared_ptr<StrictMock<SomeIPDcsmStackMock>>& stackMock)
         {
             EXPECT_CALL(stack, getServiceInstanceId()).WillRepeatedly(Return(DcsmInstanceId(5)));
-            auto ptr = DcsmConnectionSystem::Construct(stackMock, 3, ParticipantIdentifier(Guid(pid), "foobar"), 99, lock, stats,
+            auto ptr = DcsmConnectionSystem::Construct(stackMock, 3, ParticipantIdentifier(Guid(pid), "foobar"), 99, lock,
                                                        std::chrono::milliseconds(0), std::chrono::milliseconds(0),
                                                        CountingConnectionSystemClock());
             assert(ptr);
@@ -48,10 +47,10 @@ namespace ramses_internal
 
         void connectRemote(DcsmInstanceId remoteIid, const Guid& remotePid, uint64_t sessionId = 123)
         {
-            EXPECT_CALL(stack, sendParticipantInfo(remoteIid, ValidHdr(pid, 1u), 99, DcsmInstanceId{5}, 0, _, _)).WillOnce(Return(true));
+            EXPECT_CALL(stack, sendParticipantInfo(remoteIid, ValidHdr(pid, 1u), 99, SomeIPConstants::FallbackMinorProtocolVersion, DcsmInstanceId{5}, 0, _, _)).WillOnce(Return(true));
             fromStack.handleServiceAvailable(remoteIid);
             EXPECT_CALL(connections, newParticipantHasConnected(remotePid));
-            fromStack.handleParticipantInfo(SomeIPMsgHeader{remotePid.get(), sessionId, 1}, 99, remoteIid, 0, 0, 0);
+            fromStack.handleParticipantInfo(SomeIPMsgHeader{remotePid.get(), sessionId, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, remoteIid, 0, 0, 0);
         }
 
         void expectRemoteDisconnects(std::initializer_list<uint64_t> guids)
@@ -66,7 +65,6 @@ namespace ramses_internal
         StrictMock<DcsmProviderServiceHandlerMock> provider;
         StrictMock<DcsmConsumerServiceHandlerMock> consumer;
         PlatformLock lock;
-        StatisticCollectionFramework stats;
         uint64_t pid{4};
         std::unique_ptr<DcsmConnectionSystem> connsys;
         ISomeIPDcsmStackCallbacks& fromStack;

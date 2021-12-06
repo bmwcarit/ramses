@@ -102,6 +102,7 @@ namespace ramses_internal
         MOCK_METHOD(DeviceResourceHandle, uploadRenderTarget, (const DeviceHandleVector&), (override));
         MOCK_METHOD(void, activateRenderTarget, (DeviceResourceHandle), (override));
         MOCK_METHOD(void, deleteRenderTarget, (DeviceResourceHandle), (override));
+        MOCK_METHOD(void, discardDepthStencil, (), (override));
         MOCK_METHOD(void, blitRenderTargets, (DeviceResourceHandle, DeviceResourceHandle, const PixelRectangle&, const PixelRectangle&, Bool), (override));
 
         MOCK_METHOD(void, pairRenderTargetsForDoubleBuffering, (DeviceResourceHandle[2], DeviceResourceHandle[2]), (override));

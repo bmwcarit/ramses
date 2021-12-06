@@ -85,6 +85,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle    uploadRenderTarget(const DeviceHandleVector& renderBuffers) override;
         virtual void                    activateRenderTarget(DeviceResourceHandle handle) override;
         virtual void                    deleteRenderTarget(DeviceResourceHandle handle) override;
+        virtual void                    discardDepthStencil() override;
         virtual void                    blitRenderTargets(DeviceResourceHandle rtSrc, DeviceResourceHandle rtDst, const PixelRectangle& srcRect, const PixelRectangle& dstRect, Bool colorOnly) override;
 
         virtual void drawIndexedTriangles(Int32 startOffset, Int32 elementCount, UInt32 instanceCount) override;

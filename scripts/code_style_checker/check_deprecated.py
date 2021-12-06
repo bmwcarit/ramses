@@ -19,7 +19,7 @@ g_re_unwanted_fmt_include = re.compile(r'#\s*include\s*["<]fmt/(?!(?:format|chro
 g_re_unwanted_system_include = re.compile(r'#\s*include\s*"[^\.]+"')
 g_re_unwanted_force_thread_local = re.compile(r'#include\s*["<"]Utils/ThreadLocalLogForced\.h[">]')
 
-g_max_line_length = 400
+g_max_line_length = 350
 
 
 def check_deprecated(filename, file_contents, clean_file_contents, file_lines, clean_file_lines):

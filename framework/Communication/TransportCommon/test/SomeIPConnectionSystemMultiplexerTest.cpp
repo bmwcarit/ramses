@@ -10,7 +10,6 @@
 #include "Collections/StringOutputStream.h"
 #include "TransportCommon/DcsmConnectionSystem.h"
 #include "TransportCommon/RamsesConnectionSystem.h"
-#include "Utils/StatisticCollection.h"
 #include "SomeIPStackMocks.h"
 #include "ServiceHandlerMocks.h"
 #include "SceneUpdateSerializerTestHelper.h"
@@ -107,7 +106,7 @@ namespace ramses_internal
         auto MakeDcsm()
         {
             EXPECT_CALL(*dcsmStack, getServiceInstanceId()).WillRepeatedly(Return(DcsmInstanceId(2)));
-            return DcsmConnectionSystem::Construct(dcsmStack, commUser, namedPid, 99, lock, stats,
+            return DcsmConnectionSystem::Construct(dcsmStack, commUser, namedPid, 99, lock,
                                                    std::chrono::milliseconds(0), std::chrono::milliseconds(0),
                                                    clock);
         }
@@ -116,7 +115,7 @@ namespace ramses_internal
         {
             EXPECT_CALL(*ramsesStack, getServiceInstanceId()).WillRepeatedly(Return(RamsesInstanceId(2)));
             EXPECT_CALL(*ramsesStack, getSendDataSizes()).WillRepeatedly(Return(RamsesStackSendDataSizes{1000, 1000, 10, 10}));
-            return RamsesConnectionSystem::Construct(ramsesStack, commUser, namedPid, 99, lock, stats,
+            return RamsesConnectionSystem::Construct(ramsesStack, commUser, namedPid, 99, lock,
                                                      std::chrono::milliseconds(0), std::chrono::milliseconds(0),
                                                      clock);
         }
@@ -125,7 +124,6 @@ namespace ramses_internal
         ParticipantIdentifier namedPid{Guid(2), "Foo"};
         PlatformLock lock;
         StrictMock<Callbacks> callbacks;
-        StatisticCollectionFramework stats;
         std::function<std::chrono::steady_clock::time_point(void)> clock {[](){ return std::chrono::steady_clock::time_point{}; }};
         std::shared_ptr<StrictMock<SomeIPDcsmStackMock>> dcsmStack{std::make_shared<StrictMock<SomeIPDcsmStackMock>>()};
         std::shared_ptr<StrictMock<SomeIPRamsesStackMock>> ramsesStack{std::make_shared<StrictMock<SomeIPRamsesStackMock>>()};
@@ -243,8 +241,8 @@ namespace ramses_internal
         EXPECT_CALL(callbacks, doFinalizeConnect());
         EXPECT_TRUE(csm->connectServices());
 
-        EXPECT_CALL(*dcsmStack, sendParticipantInfo(_, _, _, _, _, _, _)).WillOnce(InvokeWithoutArgs([&](){
-            csm->dcsmStackCallbacks().handleParticipantInfo(SomeIPMsgHeader{1, 1, 1}, 99, DcsmInstanceId(1), 2, 0, 0);
+        EXPECT_CALL(*dcsmStack, sendParticipantInfo(_, _, _, _, _, _, _, _)).WillOnce(InvokeWithoutArgs([&](){
+            csm->dcsmStackCallbacks().handleParticipantInfo(SomeIPMsgHeader{1, 1, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, DcsmInstanceId(1), 2, 0, 0);
             return true;
         }));
         csm->dcsmStackCallbacks().handleServiceAvailable(DcsmInstanceId(1));
@@ -322,8 +320,8 @@ namespace ramses_internal
         EXPECT_CALL(callbacks, doFinalizeConnect());
         EXPECT_TRUE(csm->connectServices());
 
-        EXPECT_CALL(*ramsesStack, sendParticipantInfo(_, _, _, _, _, _, _)).WillOnce(InvokeWithoutArgs([&](){
-            csm->ramsesStackCallbacks().handleParticipantInfo(SomeIPMsgHeader{1, 1, 1}, 99, RamsesInstanceId(1), 2, 0, 0);
+        EXPECT_CALL(*ramsesStack, sendParticipantInfo(_, _, _, _, _, _, _, _)).WillOnce(InvokeWithoutArgs([&](){
+            csm->ramsesStackCallbacks().handleParticipantInfo(SomeIPMsgHeader{1, 1, 1}, 99, SomeIPConstants::FallbackMinorProtocolVersion, RamsesInstanceId(1), 2, 0, 0);
             return true;
         }));
         csm->ramsesStackCallbacks().handleServiceAvailable(RamsesInstanceId(1));

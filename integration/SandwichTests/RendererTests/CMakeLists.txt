@@ -88,6 +88,26 @@ if(TARGET EmbeddedCompositingTests-wayland-ivi-egl-es-3-0)
         )
 endif()
 
+RENDERER_MODULE_PER_CONFIG_STATIC(DmaOffscreenBufferRenderingTests
+    TYPE                    BINARY
+    ENABLE_INSTALL          ON
+
+    INCLUDE_BASE            RendererTestFramework
+                            DmaOffscreenBufferRenderingTests
+
+    FILES_PRIVATE_HEADER    DmaOffscreenBufferRenderingTests/*.h
+                            RendererTestFramework/*.h
+
+    FILES_SOURCE            DmaOffscreenBufferRenderingTests/*.cpp
+                            RendererTestFramework/*.cpp
+
+    ${RendererTests-resources_MIXIN}
+
+    DEPENDENCIES            TestContent
+                            FrameworkTestUtils
+                            RendererTestUtils
+                            Device_EGL_Extension
+)
 
 # Tests which are supposed to be run with valgrind
 SET(VALGRIND_PLATFORMS

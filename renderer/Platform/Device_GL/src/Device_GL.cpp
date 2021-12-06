@@ -985,6 +985,14 @@ namespace ramses_internal
         m_resourceMapper.deleteResource(handle);
     }
 
+    void Device_GL::discardDepthStencil()
+    {
+        // Not to be used with default framebuffer which might need (depending on implementation) different enums for attachments
+        // https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glInvalidateFramebuffer.xhtml
+        constexpr std::array<GLenum, 3> depthStencilAttachments = { GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT, GL_DEPTH_STENCIL_ATTACHMENT };
+        glInvalidateFramebuffer(GL_FRAMEBUFFER, static_cast<GLsizei>(depthStencilAttachments.size()), depthStencilAttachments.data());
+    }
+
     void Device_GL::bindRenderBufferToRenderTarget(const RenderBufferGPUResource& renderBufferGpuResource, size_t colorBufferSlot)
     {
         switch (renderBufferGpuResource.getAccessMode())

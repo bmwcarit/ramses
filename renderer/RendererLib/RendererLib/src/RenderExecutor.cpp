@@ -15,7 +15,7 @@ namespace ramses_internal
 {
     UInt32 RenderExecutor::NumRenderablesToRenderInBetweenTimeBudgetChecks = RenderExecutor::DefaultNumRenderablesToRenderInBetweenTimeBudgetChecks;
 
-    RenderExecutor::RenderExecutor(IDevice& device, const RenderingContext& renderContext, const FrameTimer* frameTimer)
+    RenderExecutor::RenderExecutor(IDevice& device, RenderingContext& renderContext, const FrameTimer* frameTimer)
         : m_state(device, renderContext, frameTimer)
     {
     }
@@ -36,12 +36,12 @@ namespace ramses_internal
                     assert(m_state.m_currentRenderIterator.getFlattenedRenderableIdx() > 0);
                     return m_state.m_currentRenderIterator;
                 }
+                if (canDiscardDepthBuffer())
+                    m_state.getDevice().discardDepthStencil();
                 break;
             case ERenderingPassType::BlitPass:
                 executeBlitPass(scene, passInfo.getBlitPassHandle());
                 break;
-            default:
-                assert(false);
             }
         }
 
@@ -59,23 +59,35 @@ namespace ramses_internal
         m_state.renderPassState.setState(pass);
         if (m_state.renderPassState.hasChanged() && renderPassIsExecutedFromBeginning)
         {
-            // Clear only if rendering into render target, not framebuffer
+            UInt32 clearFlags = EClearFlags_None;
+            Vector4 clearColor;
+
+            // clear only if rendering into render target or display buffer clear pending
             const RenderTargetHandle renderTarget = m_state.renderTargetState.getState();
-            const UInt32 clearFlags = renderPass.clearFlags;
-            if (renderTarget.isValid() && clearFlags != EClearFlags_None)
+            RenderingContext& renderContext = m_state.getRenderingContext();
+            if (renderTarget.isValid())
+            {
+                clearFlags = renderPass.clearFlags;
+                clearColor = renderPass.clearColor;
+            }
+            else if (renderContext.displayBufferClearPending != EClearFlags_None)
+            {
+                clearFlags = renderContext.displayBufferClearPending;
+                clearColor = renderContext.displayBufferClearColor;
+                renderContext.displayBufferClearPending = EClearFlags_None;
+            }
+
+            if (clearFlags != EClearFlags_None)
             {
                 if (clearFlags & EClearFlags_Color)
                 {
                     m_state.getDevice().colorMask(true, true, true, true);
-                    m_state.getDevice().clearColor(renderPass.clearColor);
+                    m_state.getDevice().clearColor(clearColor);
                 }
                 if (clearFlags & EClearFlags_Depth)
-                {
                     m_state.getDevice().depthWrite(EDepthWrite::Enabled);
-                }
 
                 m_state.getDevice().scissorTest(EScissorTest::Disabled, {});
-
                 m_state.getDevice().clear(clearFlags);
 
                 //reset cached render states that were updated on device before clearing
@@ -538,5 +550,84 @@ namespace ramses_internal
         const DeviceResourceHandle blitPassRenderTargetSrcDeviceHandle = scene.getCachedHandlesForBlitPassRenderTargets()[indexToCache];
         const DeviceResourceHandle blitPassRenderTargetDstDeviceHandle = scene.getCachedHandlesForBlitPassRenderTargets()[indexToCache + 1u];
         m_state.getDevice().blitRenderTargets(blitPassRenderTargetSrcDeviceHandle, blitPassRenderTargetDstDeviceHandle, blitPass.sourceRegion, blitPass.destinationRegion, false);
+    }
+
+    bool RenderExecutor::canDiscardDepthBuffer() const
+    {
+        const auto& scene = m_state.getScene();
+        const uint32_t currRenderPassIdx = m_state.m_currentRenderIterator.getRenderPassIdx();
+        const RenderingPassInfoVector& orderedPasses = scene.getSortedRenderingPasses();
+        const auto currentRenderPass = orderedPasses[currRenderPassIdx].getRenderPassHandle();
+        const auto rt = scene.getRenderPass(currentRenderPass).renderTarget;
+
+        // early out whenever any condition for discard not met
+        if (!rt.isValid())
+        {
+            // display buffer can be discarded only if flag from renderer set
+            if (!m_state.getRenderingContext().displayBufferDepthDiscard)
+                return false;
+
+            // and this is the last render pass into it
+            // (blit passes are irrelevant as they work only with scene rendertargets, not display buffers)
+            for (uint32_t rpIdx = currRenderPassIdx + 1; rpIdx < orderedPasses.size(); ++rpIdx)
+            {
+                const auto& rpInfo = orderedPasses[rpIdx];
+                if (rpInfo.getType() == ERenderingPassType::RenderPass)
+                {
+                    const auto rp = rpInfo.getRenderPassHandle();
+                    if (!scene.getRenderPass(rp).renderTarget.isValid())
+                        return false;
+                }
+            }
+        }
+        else
+        {
+            const RenderBufferHandle depthRB = FindDepthRenderBufferInRenderTarget(scene, rt);
+            // no depth, nothing to discard
+            // there is no harm in discarding anyway but this is early out to skip unnecessary lookups below
+            if (!depthRB.isValid())
+                return false;
+
+            // find next pass using this depth RB
+            // check each pass starting from next till this pass (across frame boundary, including this pass)
+            for (uint32_t i = 0u; i < uint32_t(orderedPasses.size()); ++i)
+            {
+                const uint32_t rpIdx = (currRenderPassIdx + 1u + i) % orderedPasses.size();
+                const auto& rpInfo = orderedPasses[rpIdx];
+                if (rpInfo.getType() == ERenderingPassType::RenderPass)
+                {
+                    // next pass using this depth buffer decides if can discard based on clear
+                    const auto& rpData = scene.getRenderPass(rpInfo.getRenderPassHandle());
+                    if (FindDepthRenderBufferInRenderTarget(scene, rpData.renderTarget) == depthRB)
+                        return IsClearFlagSet(rpData.clearFlags, EClearFlags_Depth) && IsClearFlagSet(rpData.clearFlags, EClearFlags_Stencil);
+                }
+                else
+                {
+                    // cannot discard if some upcoming blit pass uses this depth buffer as source
+                    const auto& bpData = scene.getBlitPass(rpInfo.getBlitPassHandle());
+                    if (bpData.sourceRenderBuffer == depthRB)
+                        return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    RenderBufferHandle RenderExecutor::FindDepthRenderBufferInRenderTarget(const IScene& scene, RenderTargetHandle renderTarget)
+    {
+        if (!renderTarget.isValid())
+            return RenderBufferHandle::Invalid();
+
+        const auto rbCount = scene.getRenderTargetRenderBufferCount(renderTarget);
+        for (uint32_t rbIdx = 0u; rbIdx < rbCount; ++rbIdx)
+        {
+            const auto rb = scene.getRenderTargetRenderBuffer(renderTarget, rbIdx);
+            const auto rbType = scene.getRenderBuffer(rb).type;
+            if (rbType == ERenderBufferType_DepthBuffer || rbType == ERenderBufferType_DepthStencilBuffer)
+                return rb;
+        }
+
+        return RenderBufferHandle::Invalid();
     }
 }
