@@ -1,4 +1,3 @@
 <map id="ramses::FontInstanceOffset" name="ramses::FontInstanceOffset">
-<area shape="rect" id="node1" title="A list of tuples from font instances and offsets into a string." alt="" coords="345,27,545,54"/>
-<area shape="rect" id="node2" href="$classramses_1_1StronglyTypedValue.html" title=" " alt="" coords="5,5,212,76"/>
+<area shape="rect" id="node2" href="$classramses_1_1StronglyTypedValue.html" title="ramses::StronglyTypedValue\l\&lt; uint32_t, std::numeric\l_limits\&lt; uint32_t \&gt;::max\l(), FontInstanceIdTag \&gt;" alt="" coords="5,5,196,76"/>
 </map>

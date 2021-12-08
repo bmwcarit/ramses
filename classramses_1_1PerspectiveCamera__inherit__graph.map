@@ -1,9 +1,8 @@
 <map id="ramses::PerspectiveCamera" name="ramses::PerspectiveCamera">
-<area shape="rect" id="node1" title="The PerspectiveCamera is a local camera which defines a perspective view into the scene." alt="" coords="5,453,211,480"/>
-<area shape="rect" id="node2" href="$classramses_1_1Camera.html" title="The Camera base class is part of a scene and defines a view into the scene defined by the client appl..." alt="" coords="43,379,173,405"/>
-<area shape="rect" id="node3" href="$classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it..." alt="" coords="52,304,164,331"/>
-<area shape="rect" id="node4" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene." alt="" coords="29,229,187,256"/>
-<area shape="rect" id="node5" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient." alt="" coords="29,155,187,181"/>
-<area shape="rect" id="node6" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework." alt="" coords="22,80,194,107"/>
-<area shape="rect" id="node7" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling." alt="" coords="27,5,189,32"/>
+<area shape="rect" id="node2" href="$classramses_1_1Camera.html" title="The Camera base class is part of a scene and defines a view into the scene defined by the client appl..." alt="" coords="40,379,159,405"/>
+<area shape="rect" id="node3" href="$classramses_1_1Node.html" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it..." alt="" coords="47,304,151,331"/>
+<area shape="rect" id="node4" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene. " alt="" coords="25,229,173,256"/>
+<area shape="rect" id="node5" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="27,155,172,181"/>
+<area shape="rect" id="node6" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="19,80,179,107"/>
+<area shape="rect" id="node7" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="25,5,174,32"/>
 </map>

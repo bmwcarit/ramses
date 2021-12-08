@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['localdcsmexample_1959',['LocalDCSMExample',['../classLocalDCSMExample.html',1,'']]]
+  ['localdcsmexample',['LocalDCSMExample',['../classLocalDCSMExample.html',1,'']]]
 ];
