@@ -1,0 +1,37 @@
+name: Update docs
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish_docs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Fetch submodules
+      run: |
+        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+        git submodule sync --recursive
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --recursive
+
+    - name: Create Build Environment
+      run: |
+        cmake -E make_directory ${{runner.workspace}}/build
+        sudo apt install graphviz doxygen
+
+    - name: Build docs
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: |
+        cmake $GITHUB_WORKSPACE
+        cmake --build . --target doc
+
+    - name: Deploy to github pages
+      uses: JamesIves/github-pages-deploy-action@4.1.7
+      with:
+        branch: gh-pages
+        folder: ${{runner.workspace}}/build/doc/html
