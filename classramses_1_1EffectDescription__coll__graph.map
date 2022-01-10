@@ -1,3 +1,4 @@
 <map id="ramses::EffectDescription" name="ramses::EffectDescription">
-<area shape="rect" id="node2" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="18,5,167,32"/>
+<area shape="rect" id="node1" title="An effect description holds all necessary information for an effect to be created." alt="" coords="5,80,195,107"/>
+<area shape="rect" id="node2" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling." alt="" coords="19,5,181,32"/>
 </map>

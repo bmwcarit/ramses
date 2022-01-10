@@ -1,11 +1,12 @@
 <map id="ramses::Node" name="ramses::Node">
-<area shape="rect" id="node6" href="$classramses_1_1Camera.html" title="The Camera base class is part of a scene and defines a view into the scene defined by the client appl..." alt="" coords="149,379,268,405"/>
-<area shape="rect" id="node9" href="$classramses_1_1MeshNode.html" title="The MeshNode holds all information which is needed to render an object to the screen. " alt="" coords="291,379,427,405"/>
-<area shape="rect" id="node10" href="$classramses_1_1PickableObject.html" title="PickableObject provides a way to specify a &#39;pickable&#39; area. " alt="" coords="452,379,613,405"/>
-<area shape="rect" id="node2" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene. " alt="" coords="285,229,433,256"/>
-<area shape="rect" id="node3" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="287,155,432,181"/>
-<area shape="rect" id="node4" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="279,80,439,107"/>
-<area shape="rect" id="node5" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="285,5,434,32"/>
-<area shape="rect" id="node7" href="$classramses_1_1OrthographicCamera.html" title="The OrthographicCamera is a local camera which defines an orthographic view into the scene..." alt="" coords="5,453,199,480"/>
-<area shape="rect" id="node8" href="$classramses_1_1PerspectiveCamera.html" title="The PerspectiveCamera is a local camera which defines a perspective view into the scene..." alt="" coords="223,453,411,480"/>
+<area shape="rect" id="node1" title="The Node is the base class of all nodes and provides scene graph functionality which propagates to it..." alt="" coords="335,304,447,331"/>
+<area shape="rect" id="node6" href="$classramses_1_1Camera.html" title="The Camera base class is part of a scene and defines a view into the scene defined by the client appl..." alt="" coords="163,379,293,405"/>
+<area shape="rect" id="node9" href="$classramses_1_1MeshNode.html" title="The MeshNode holds all information which is needed to render an object to the screen." alt="" coords="317,379,464,405"/>
+<area shape="rect" id="node10" href="$classramses_1_1PickableObject.html" title="PickableObject provides a way to specify a &#39;pickable&#39; area." alt="" coords="489,379,663,405"/>
+<area shape="rect" id="node2" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene." alt="" coords="311,229,470,256"/>
+<area shape="rect" id="node3" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient." alt="" coords="311,155,470,181"/>
+<area shape="rect" id="node4" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework." alt="" coords="305,80,477,107"/>
+<area shape="rect" id="node5" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling." alt="" coords="310,5,471,32"/>
+<area shape="rect" id="node7" href="$classramses_1_1OrthographicCamera.html" title="The OrthographicCamera is a local camera which defines an orthographic view into the scene." alt="" coords="5,453,219,480"/>
+<area shape="rect" id="node8" href="$classramses_1_1PerspectiveCamera.html" title="The PerspectiveCamera is a local camera which defines a perspective view into the scene." alt="" coords="243,453,448,480"/>
 </map>

@@ -1,4 +1,5 @@
 <map id="ramses::IRendererEventHandler" name="ramses::IRendererEventHandler">
-<area shape="rect" id="node2" href="$classramses_1_1RendererEventHandlerEmpty.html" title="Convenience empty implementation of IRendererEventHandler that can be used to derive from when only s..." alt="" coords="7,80,213,121"/>
-<area shape="rect" id="node3" href="$classLocalDCSMExample.html" title="LocalDCSMExample" alt="" coords="38,169,182,196"/>
+<area shape="rect" id="node1" title="Provides an interface for handling the result of renderer events. Implementation of this interface mu..." alt="" coords="5,5,235,32"/>
+<area shape="rect" id="node2" href="$classramses_1_1RendererEventHandlerEmpty.html" title="Convenience empty implementation of IRendererEventHandler that can be used to derive from when only s..." alt="" coords="7,80,233,121"/>
+<area shape="rect" id="node3" href="$classLocalDCSMExample.html" title=" " alt="" coords="44,169,196,196"/>
 </map>

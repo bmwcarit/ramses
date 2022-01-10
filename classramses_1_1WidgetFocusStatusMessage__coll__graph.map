@@ -1,3 +1,4 @@
 <map id="ramses::WidgetFocusStatusMessage" name="ramses::WidgetFocusStatusMessage">
-<area shape="rect" id="node2" href="$classramses_1_1DcsmStatusMessage.html" title="The base class of a message to be sent from DCSM consumer to provider. " alt="" coords="5,5,204,32"/>
+<area shape="rect" id="node1" title="A message containing the widget focus state." alt="" coords="11,80,214,121"/>
+<area shape="rect" id="node2" href="$classramses_1_1DcsmStatusMessage.html" title="The base class of a message to be sent from DCSM consumer to provider." alt="" coords="5,5,220,32"/>
 </map>

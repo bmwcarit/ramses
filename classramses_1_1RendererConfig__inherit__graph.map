@@ -1,3 +1,4 @@
 <map id="ramses::RendererConfig" name="ramses::RendererConfig">
-<area shape="rect" id="node2" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="13,5,162,32"/>
+<area shape="rect" id="node1" title="The RendererConfig holds a set of parameters to be used to initialize a renderer." alt="" coords="5,80,184,107"/>
+<area shape="rect" id="node2" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling." alt="" coords="14,5,175,32"/>
 </map>

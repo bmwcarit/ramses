@@ -1,8 +1,9 @@
 <map id="ramses::SplineBezierVector2f" name="ramses::SplineBezierVector2f">
-<area shape="rect" id="node2" href="$classramses_1_1Spline.html" title="The Spline is a set of keys describing an animation. " alt="" coords="48,379,157,405"/>
-<area shape="rect" id="node3" href="$classramses_1_1AnimationObject.html" title="The AnimationObject is a base class for all client API objects owned by an AnimationSystem. " alt="" coords="18,304,187,331"/>
-<area shape="rect" id="node4" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene. " alt="" coords="29,229,177,256"/>
-<area shape="rect" id="node5" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="30,155,175,181"/>
-<area shape="rect" id="node6" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="23,80,183,107"/>
-<area shape="rect" id="node7" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="28,5,177,32"/>
+<area shape="rect" id="node1" title="The SplineBezierVector2f stores spline keys of type Vector2f that can be used for animation with Bezi..." alt="" coords="5,453,219,480"/>
+<area shape="rect" id="node2" href="$classramses_1_1Spline.html" title="The Spline is a set of keys describing an animation." alt="" coords="53,379,171,405"/>
+<area shape="rect" id="node3" href="$classramses_1_1AnimationObject.html" title="The AnimationObject is a base class for all client API objects owned by an AnimationSystem." alt="" coords="19,304,205,331"/>
+<area shape="rect" id="node4" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene." alt="" coords="33,229,191,256"/>
+<area shape="rect" id="node5" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient." alt="" coords="33,155,191,181"/>
+<area shape="rect" id="node6" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework." alt="" coords="26,80,198,107"/>
+<area shape="rect" id="node7" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling." alt="" coords="31,5,193,32"/>
 </map>

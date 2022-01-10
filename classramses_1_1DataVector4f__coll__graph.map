@@ -1,7 +1,8 @@
 <map id="ramses::DataVector4f" name="ramses::DataVector4f">
-<area shape="rect" id="node2" href="$classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene. " alt="" coords="16,304,155,331"/>
-<area shape="rect" id="node3" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene. " alt="" coords="11,229,159,256"/>
-<area shape="rect" id="node4" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient. " alt="" coords="13,155,158,181"/>
-<area shape="rect" id="node5" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework. " alt="" coords="5,80,165,107"/>
-<area shape="rect" id="node6" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling. " alt="" coords="11,5,160,32"/>
+<area shape="rect" id="node1" title="The DataVector4f data object stores a vector with 4 float components within a scene." alt="" coords="10,379,173,405"/>
+<area shape="rect" id="node2" href="$classramses_1_1DataObject.html" title="The DataObject is a base class for data container for storing data in a scene." alt="" coords="16,304,167,331"/>
+<area shape="rect" id="node3" href="$classramses_1_1SceneObject.html" title="The SceneObject is a base class for all client API objects owned by a Scene." alt="" coords="12,229,171,256"/>
+<area shape="rect" id="node4" href="$classramses_1_1ClientObject.html" title="The ClientObject is a base class for all client API objects owned by a RamsesClient." alt="" coords="12,155,171,181"/>
+<area shape="rect" id="node5" href="$classramses_1_1RamsesObject.html" title="The RamsesObject is a base class for all client API objects owned by the framework." alt="" coords="5,80,177,107"/>
+<area shape="rect" id="node6" href="$classramses_1_1StatusObject.html" title="The StatusObject provides status message handling." alt="" coords="11,5,172,32"/>
 </map>

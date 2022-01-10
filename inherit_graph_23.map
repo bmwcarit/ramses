@@ -1,9 +1,9 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classramses_1_1IDcsmContentControlEventHandler.html" title="Callback handler interface for events emitted by ramses::DcsmContentControl. " alt="" coords="10,5,210,47"/>
-<area shape="rect" id="node2" href="$classramses_1_1DcsmContentControlEventHandlerEmpty.html" title="Convenience empty implementation of IDcsmContentControlEventHandler that can be used to derive from w..." alt="" coords="267,5,463,47"/>
-<area shape="rect" id="node3" href="$classLocalDCSMExample.html" title="LocalDCSMExample" alt="" coords="541,78,685,105"/>
-<area shape="rect" id="node4" href="$classramses_1_1IDcsmProviderEventHandler.html" title="An Interface for a class, whose functions are called as reaction to DcsmConsumer communication after ..." alt="" coords="268,136,463,177"/>
-<area shape="rect" id="node5" href="$classramses_1_1IDcsmProviderEventHandlerExtended.html" title="An Interface for a class, whose functions are called as reaction to a DcsmConsumer message after call..." alt="" coords="516,136,711,177"/>
-<area shape="rect" id="node6" href="$classramses_1_1IRendererEventHandler.html" title="Provides an interface for handling the result of renderer events. Implementation of this interface mu..." alt="" coords="5,78,215,105"/>
-<area shape="rect" id="node7" href="$classramses_1_1RendererEventHandlerEmpty.html" title="Convenience empty implementation of IRendererEventHandler that can be used to derive from when only s..." alt="" coords="263,71,468,112"/>
+<area shape="rect" id="node1" href="$classramses_1_1IDcsmContentControlEventHandler.html" title="Callback handler interface for events emitted by ramses::DcsmContentControl." alt="" coords="11,5,229,47"/>
+<area shape="rect" id="node2" href="$classramses_1_1DcsmContentControlEventHandlerEmpty.html" title="Convenience empty implementation of IDcsmContentControlEventHandler that can be used to derive from w..." alt="" coords="289,5,502,47"/>
+<area shape="rect" id="node3" href="$classLocalDCSMExample.html" title=" " alt="" coords="585,78,737,105"/>
+<area shape="rect" id="node4" href="$classramses_1_1IDcsmProviderEventHandler.html" title="An Interface for a class, whose functions are called as reaction to DcsmConsumer communication after ..." alt="" coords="290,136,501,177"/>
+<area shape="rect" id="node5" href="$classramses_1_1IDcsmProviderEventHandlerExtended.html" title="An Interface for a class, whose functions are called as reaction to a DcsmConsumer message after call..." alt="" coords="556,136,767,177"/>
+<area shape="rect" id="node6" href="$classramses_1_1IRendererEventHandler.html" title="Provides an interface for handling the result of renderer events. Implementation of this interface mu..." alt="" coords="5,78,235,105"/>
+<area shape="rect" id="node7" href="$classramses_1_1RendererEventHandlerEmpty.html" title="Convenience empty implementation of IRendererEventHandler that can be used to derive from when only s..." alt="" coords="283,71,508,112"/>
 </map>
